@@ -92,8 +92,6 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetFloat64("FolderSize", cacheSizeGb);
     archive->SetUInt32("NumberOfFiles", filesCount);
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
-    archive->SetUInt32("Port", listenPort);
-    archive->SetUInt32("HttpPort", listenHttpPort);
     archive->SetBool("AutoStart", autoStart);
     archive->SetBool("SystemStartup", launchOnSystemStartup);
     archive->SetBool("Restart", restartOnCrash);
@@ -121,8 +119,6 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
     filesCount = archive->GetUInt32("NumberOfFiles", DEFAULT_FILES_COUNT);
     autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
-    listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
-    listenHttpPort = archive->GetUInt32("HttpPort", DEFAULT_HTTP_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
     launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
     restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);

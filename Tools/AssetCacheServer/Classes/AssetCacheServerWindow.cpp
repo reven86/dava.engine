@@ -60,8 +60,6 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
-    connect(ui->httpPortSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnHttpPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnAutoStartToggled(bool)));
     connect(ui->restartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRestartToggled(bool)));
     connect(ui->advancedLabel, &QLabel::linkActivated, this, &AssetCacheServerWindow::OnAdvancedLinkActivated);
@@ -330,14 +328,6 @@ void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
     ui->autoSaveLabel2->setVisible(show);
     ui->autoSaveTimeoutSpinBox->setVisible(show);
 
-    ui->portLabel->setVisible(show);
-    ui->portLabel2->setVisible(show);
-    ui->portSpinBox->setVisible(show);
-
-    ui->httpPortLabel->setVisible(show);
-    ui->httpPortLabel2->setVisible(show);
-    ui->httpPortSpinBox->setVisible(show);
-
     ui->autoStartLabel->setVisible(show);
     ui->autoStartLabel2->setVisible(show);
     ui->autoStartCheckBox->setVisible(show);
@@ -485,8 +475,6 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetCacheSizeGb(ui->cacheSizeSpinBox->value());
     serverCore.Settings().SetFilesCount(ui->numberOfFilesSpinBox->value());
     serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
-    serverCore.Settings().SetPort(ui->portSpinBox->value());
-    serverCore.Settings().SetHttpPort(ui->httpPortSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
     serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
     serverCore.Settings().SetRestartOnCrash(ui->restartCheckBox->isChecked());
@@ -509,8 +497,6 @@ void AssetCacheServerWindow::LoadSettings()
     ui->cacheSizeSpinBox->setValue(serverCore.Settings().GetCacheSizeGb());
     ui->numberOfFilesSpinBox->setValue(serverCore.Settings().GetFilesCount());
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
-    ui->portSpinBox->setValue(serverCore.Settings().GetPort());
-    ui->httpPortSpinBox->setValue(serverCore.Settings().GetHttpPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
     ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
     ui->restartCheckBox->setEnabled(serverCore.Settings().IsLaunchOnSystemStartup());
