@@ -273,4 +273,65 @@ enum class eErrorCode
 
 } // namespace DAVA
 
+
+#ifdef __DAVAENGINE_ANDROID__
+namespace std
+{
+template <class _Ty>
+using remove_const_t = typename remove_const<_Ty>::type;
+
+template <class _Ty>
+using remove_volatile_t = typename remove_volatile<_Ty>::type;
+
+template <class _Ty>
+using remove_cv_t = typename remove_cv<_Ty>::type;
+
+template <class _Ty>
+using add_const_t = typename add_const<_Ty>::type;
+
+template <class _Ty>
+using add_volatile_t = typename add_volatile<_Ty>::type;
+
+template <class _Ty>
+using add_cv_t = typename add_cv<_Ty>::type;
+
+template <class _Ty>
+using remove_reference_t = typename remove_reference<_Ty>::type;
+
+template <class _Ty>
+using add_lvalue_reference_t = typename add_lvalue_reference<_Ty>::type;
+
+template <class _Ty>
+using add_rvalue_reference_t = typename add_rvalue_reference<_Ty>::type;
+
+template <class _Ty>
+using remove_pointer_t = typename remove_pointer<_Ty>::type;
+
+template <class _Ty>
+using add_pointer_t = typename add_pointer<_Ty>::type;
+
+template <bool _Test, class _Ty1, class _Ty2>
+using conditional_t = typename conditional<_Test, _Ty1, _Ty2>::type;
+
+template <class _Ty>
+using decay_t = typename decay<_Ty>::type;
+
+template <bool _Test, class _Ty = void>
+using enable_if_t = typename enable_if<_Test, _Ty>::type;
+
+template <class _Ty, class... _Types>
+inline typename enable_if<!is_array<_Ty>::value, unique_ptr<_Ty>>::type make_unique(_Types&&... _Args)
+{
+    return (unique_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
+}
+
+template <class _Ty>
+inline typename enable_if<is_array<_Ty>::value && extent<_Ty>::value == 0, unique_ptr<_Ty>>::type make_unique(size_t _Size)
+{
+    typedef typename remove_extent<_Ty>::type _Elem;
+    return (unique_ptr<_Ty>(new _Elem[_Size]()));
+}
+}
+#endif
+
 #endif // __DAVAENGINE_BASETYPES_H__
