@@ -24,7 +24,7 @@ void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet& styleShe
     if (it == styleSheets.end())
     {
         styleSheets.push_back(styleSheet);
-        
+
         maxStyleSheetHierarchyDepth = Max(maxStyleSheetHierarchyDepth, styleSheet.GetStyleSheet()->GetSelectorChain().GetSize());
     }
     else
@@ -50,7 +50,7 @@ const Vector<UIPriorityStyleSheet>& UIControlPackageContext::GetSortedStyleSheet
 
     return styleSheets;
 }
-    
+
 int32 UIControlPackageContext::GetMaxStyleSheetHierarchyDepth() const
 {
     return maxStyleSheetHierarchyDepth;
