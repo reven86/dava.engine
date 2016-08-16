@@ -130,7 +130,7 @@ if ( WINDOWS_UAP )
     set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     
-else if ( WIN32 )
+elseif ( WIN32 )
     if ( X64_MODE )
         set ( INC_ARCH "x64" )
     else ()
@@ -140,7 +140,7 @@ else if ( WIN32 )
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/win32/${INC_ARCH}" )
                                         
-else if ( ANDROID )
+elseif ( ANDROID )
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/android" )
 
