@@ -20,9 +20,6 @@ extern "C" {
 #ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
 # define OPENSSL_NO_EC_NISTP_64_GCC_128
 #endif
-#ifndef OPENSSL_NO_ENGINE
-# define OPENSSL_NO_ENGINE
-#endif
 #ifndef OPENSSL_NO_GMP
 # define OPENSSL_NO_GMP
 #endif
@@ -94,9 +91,6 @@ extern "C" {
 # endif
 # if defined(OPENSSL_NO_EC_NISTP_64_GCC_128) && !defined(NO_EC_NISTP_64_GCC_128)
 #  define NO_EC_NISTP_64_GCC_128
-# endif
-# if defined(OPENSSL_NO_ENGINE) && !defined(NO_ENGINE)
-#  define NO_ENGINE
 # endif
 # if defined(OPENSSL_NO_GMP) && !defined(NO_GMP)
 #  define NO_GMP

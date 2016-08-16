@@ -2,7 +2,7 @@ CRYPTO_COMMON_CFLAGS := \
   -DANDROID -DOPENSSL_NO_ASM -DOPENSSL_THREADS -D_REENTRANT \
   -DDSO_DLFCN -DHAVE_DLFCN_H -DOPENSSL_NO_CAST -DOPENSSL_NO_CAMELLIA \
   -DOPENSSL_NO_IDEA -DOPENSSL_NO_MDC2 -DOPENSSL_NO_SEED -DOPENSSL_NO_WHIRLPOOL \
-  -DOPENSSL_NO_ENGINE -DOPENSSL_NO_HW -DOPENSSL_NO_COMP
+  -DOPENSSL_NO_HW -DOPENSSL_NO_COMP
 CRYPTO_COMMON_CFLAGS += -Wno-typedef-redefinition -Wno-sign-compare\
   -Wno-incompatible-pointer-types-discards-qualifiers
 CRYPTO_CSOURCES := \
@@ -109,7 +109,14 @@ CRYPTO_CSOURCES := \
   x509v3/v3_ncons.c x509v3/v3_ocsp.c x509v3/v3_pci.c x509v3/v3_pcia.c \
   x509v3/v3_pcons.c x509v3/v3_pku.c x509v3/v3_pmaps.c x509v3/v3_prn.c \
   x509v3/v3_purp.c x509v3/v3_skey.c x509v3/v3_sxnet.c x509v3/v3_utl.c \
-  x509v3/v3err.c
+  x509v3/v3err.c \
+  engine/eng_err.c engine/eng_lib.c engine/eng_list.c engine/eng_init.c engine/eng_ctrl.c \
+  engine/eng_table.c engine/eng_pkey.c engine/eng_fat.c engine/eng_all.c \
+  engine/tb_rsa.c engine/tb_dsa.c engine/tb_ecdsa.c engine/tb_dh.c engine/tb_ecdh.c engine/tb_rand.c engine/tb_store.c \
+  engine/tb_cipher.c engine/tb_digest.c engine/tb_pkmeth.c engine/tb_asnmth.c \
+  engine/eng_openssl.c engine/eng_cnf.c engine/eng_dyn.c engine/eng_cryptodev.c \
+  engine/eng_rsax.c engine/eng_rdrand.c
+  
 CRYPTO_LOCAL_SRC_FILES := $(addprefix ../../openssl/crypto/,$(CRYPTO_CSOURCES))
 CRYPTO_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../openssl \
                     $(LOCAL_PATH)/../../openssl/include \

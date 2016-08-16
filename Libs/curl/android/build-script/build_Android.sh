@@ -34,7 +34,7 @@ fi
 
 #Configure OpenSSL
 cd $SSLPATH
-./Configure android no-asm no-shared no-cast no-idea no-camellia no-whirpool no-comp no-hw no-engine 
+./Configure android no-asm no-shared no-cast no-idea no-camellia no-whirpool no-comp no-hw
 EXITCODE=$?
 if [ $EXITCODE -ne 0 ]; then
 	echo "Error running the ssl configure program"
