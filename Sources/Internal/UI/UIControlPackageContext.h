@@ -16,7 +16,6 @@ protected:
     virtual ~UIControlPackageContext();
 
 public:
-
     void AddStyleSheet(const UIPriorityStyleSheet& styleSheet);
     void RemoveAllStyleSheets();
 
