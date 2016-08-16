@@ -1,21 +1,28 @@
-#ifndef __DEBUG_TOOLS__
-#define __DEBUG_TOOLS__
+#pragma once
+
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
 
 #include <QObject>
 
+class GlobalOperations;
 class DeveloperTools : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit DeveloperTools(QObject* parent = 0);
+    explicit DeveloperTools(QWidget* parent = 0);
 
 public slots:
 
     void OnDebugFunctionsGridCopy();
-    void OnDebugCreateTestSkinnedObject(); //creates
+    void OnDebugCreateTestSkinnedObject();
     void OnImageSplitterNormals();
     void OnReplaceTextureMipmap();
     void OnToggleLandscapeInstancing();
+
+private:
+    QWidget* GetParentWidget();
+
+private:
+    ActiveSceneHolder sceneHolder;
 };
-#endif /* defined(__DEBUG_TOOLS__) */

@@ -3,6 +3,8 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Sound/SoundSystem.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

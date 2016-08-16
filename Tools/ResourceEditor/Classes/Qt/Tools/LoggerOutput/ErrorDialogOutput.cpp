@@ -8,21 +8,12 @@
 
 #include "Settings/SettingsManager.h"
 
-
-#include <QApplication>
 #include <QMessageBox>
-#include <QTimer>
 
 namespace ErrorDialogDetail
 {
 static const DAVA::uint32 maxErrorsPerDialog = 6;
 static const DAVA::String errorDivideLine("--------------------\n");
-
-bool ShouldWaitForUI()
-{
-    //should wait the wait bar until refactoring of wait bar
-    return QtMainWindow::Instance()->IsWaitDialogOnScreen() || QtMainWindow::Instance()->ParticlesArePacking();
-}
 
 bool ShouldBeHiddenByUI()
 { //need be filled with context for special cases after Qa and Using
@@ -87,8 +78,9 @@ private:
     bool callstackPrinting = false;
 };
 
-ErrorDialogOutput::ErrorDialogOutput()
-    : QObject(nullptr)
+ErrorDialogOutput::ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations_, QObject* parent)
+    : QObject(parent)
+    , globalOperations(globalOperations_)
     , ignoreHelper(new IgnoreHelper())
 {
     connect(this, &ErrorDialogOutput::FireError, this, &ErrorDialogOutput::OnError, Qt::QueuedConnection);
@@ -122,7 +114,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
 
 void ErrorDialogOutput::ShowErrorDialog()
 {
-    if (ErrorDialogDetail::ShouldWaitForUI())
+    if (globalOperations->IsWaitDialogVisible())
     {
         ++firedErrorsCount;
         emit FireError();
@@ -165,7 +157,7 @@ void ErrorDialogOutput::ShowErrorDialog()
         errors.clear();
     }
 
-    QMessageBox::critical(QtMainWindow::Instance(), title.c_str(), errorMessage.c_str());
+    QMessageBox::critical(globalOperations->GetGlobalParentWidget(), title.c_str(), errorMessage.c_str());
 }
 
 void ErrorDialogOutput::OnError()
