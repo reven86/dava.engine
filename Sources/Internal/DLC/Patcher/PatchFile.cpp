@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "Logger/Logger.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
@@ -848,21 +849,71 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't allocate %d bytes for new data", curInfo.newSize);
                             }
                         }
-                        newFile->Release();
+                        if (!newFile->Flush())
+                        {
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't flush newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
+                        }
+                        if (0 != newFile->Release())
+                        {
+                            Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't release newFile. %s", tmpNewPath.GetAbsolutePathname().c_str());
+                        }
 
                         // if no errors - check for new file CRC
                         if (ret)
                         {
-                            uint32 actualCRC = CRC32::ForFile(tmpNewPath);
+                            size_t counter = 0;
+                            uint32 actualCRC = 0;
+                            uint32 actualSizeFromFile = 0;
+                            do
+                            {
+                                File* justWritten = File::Create(tmpNewPath, File::OPEN | File::READ);
+                                if (!justWritten)
+                                {
+                                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't open just written file: %s", tmpNewPath.GetAbsolutePathname().c_str());
+                                }
+                                actualSizeFromFile = justWritten->GetSize();
+                                Vector<char> content(actualSizeFromFile);
+                                uint32 bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
+                                if (bytesRead != curInfo.newSize)
+                                {
+                                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] size not match: %d != %d ", bytesRead, curInfo.newSize);
+                                    content.resize(curInfo.newSize);
+                                    bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
+                                    if (bytesRead != curInfo.newSize)
+                                    {
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] second try size not match: %d != %d ", bytesRead, curInfo.newSize);
+                                    }
+                                }
+
+                                actualCRC = CRC32::ForBuffer(content.data(), static_cast<uint32>(content.size()));
+                                if (counter > 0)
+                                {
+                                    if (curInfo.newCRC != actualCRC)
+                                    {
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected."
+                                                                         " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
+                                                            tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC, actualSizeFromFile, curInfo.newSize);
+                                    }
+                                    Thread::Sleep(500);
+                                }
+                                justWritten->Release();
+                            } while (++counter < 10 && curInfo.newCRC != actualCRC);
+
                             if (curInfo.newCRC != actualCRC)
                             {
                                 lastErrorDetails.actual.path = tmpNewPath;
                                 lastErrorDetails.expected.path = tmpNewPath;
                                 lastErrorDetails.actual.crc = actualCRC;
                                 lastErrorDetails.expected.crc = curInfo.newCRC;
+                                lastErrorDetails.actual.size = actualSizeFromFile;
+                                lastErrorDetails.expected.size = curInfo.newSize;
                                 lastError = ERROR_NEW_CRC;
                                 ret = false;
-                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected. %s", tmpNewPath.GetAbsolutePathname().c_str());
+
+                                Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected."
+                                                                 " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
+                                                    tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC, actualSizeFromFile, curInfo.newSize);
+                                DVASSERT_MSG(false, "check log now!");
                             }
                         }
 

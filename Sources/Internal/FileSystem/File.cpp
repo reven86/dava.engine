@@ -129,9 +129,15 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
             return nullptr;
 #endif
         }
-        fseek(file, 0, SEEK_END);
+        if (0 != fseek(file, 0, SEEK_END))
+        {
+            Logger::Error("fseek end error");
+        }
         size = static_cast<uint32>(ftell(file));
-        fseek(file, 0, SEEK_SET);
+        if (0 != fseek(file, 0, SEEK_SET))
+        {
+            Logger::Error("fseek set error");
+        }
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {

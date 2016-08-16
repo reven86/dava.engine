@@ -15,10 +15,10 @@ class RemoteServerWidget : public QWidget
 
 public:
     explicit RemoteServerWidget(QWidget* parent = nullptr);
-    explicit RemoteServerWidget(const ServerData& newServer, QWidget* parent = nullptr);
+    explicit RemoteServerWidget(const RemoteServerParams& newServer, QWidget* parent = nullptr);
     ~RemoteServerWidget() override;
 
-    ServerData GetServerData() const;
+    RemoteServerParams GetServerData() const;
 
     bool IsCorrectData();
 

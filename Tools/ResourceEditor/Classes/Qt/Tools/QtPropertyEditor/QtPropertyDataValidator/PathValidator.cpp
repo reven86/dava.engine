@@ -2,10 +2,8 @@
 #include <QMessageBox>
 
 PathValidator::PathValidator(const QStringList& value)
-    :
-    RegExpValidator("")
-    ,
-    referencePathList(value)
+    : RegExpValidator("")
+    , referencePathList(value)
 {
     QString regExpr("^$|");
     foreach (QString path, referencePathList)
