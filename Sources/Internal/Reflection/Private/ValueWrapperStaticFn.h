@@ -1,5 +1,5 @@
 #pragma once
-#include "Reflection/ReflectionWrappers.h"
+#include "Reflection/Public/Wrappers.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -29,7 +29,7 @@ public:
         return Type::Instance<GetT>();
     }
 
-    Any GetValue(const ReflectedObject& object) const override
+    Any GetValue(const ReflectedObject& ptr) const override
     {
         using UnrefGetT = typename std::remove_reference<GetT>::type;
 
@@ -39,7 +39,7 @@ public:
         return ret;
     }
 
-    bool SetValue(const ReflectedObject& object, const Any& value) const override
+    bool SetValue(const ReflectedObject& ptr, const Any& value) const override
     {
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
@@ -69,17 +69,17 @@ protected:
     Setter setter = nullptr;
 
 private:
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::false_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::false_type /* is_pointer */, std::false_type /* is_reference */) const
     {
         return ReflectedObject();
     }
 
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
     {
         return ReflectedObject((*getter)());
     }
 
-    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
+    inline ReflectedObject GetValueObjectImpl(const ReflectedObject& ptr, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
     {
         GetT v = (*getter)();
         return ReflectedObject(&v);

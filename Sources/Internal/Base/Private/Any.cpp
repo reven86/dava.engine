@@ -1,89 +1,64 @@
 #include "Base/Any.h"
 
-#include "Utils/StringFormat.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
-UnorderedMap<const Type*, Any::AnyOP> Any::operations = {
-    AnyDetails::DefaultOP<void*>(),
-    AnyDetails::DefaultOP<bool>(),
-    AnyDetails::DefaultOP<DAVA::int8>(),
-    AnyDetails::DefaultOP<DAVA::uint8>(),
-    AnyDetails::DefaultOP<DAVA::float32>(),
-    AnyDetails::DefaultOP<DAVA::float64>(),
-    AnyDetails::DefaultOP<DAVA::int16>(),
-    AnyDetails::DefaultOP<DAVA::uint16>(),
-    AnyDetails::DefaultOP<DAVA::int32>(),
-    AnyDetails::DefaultOP<DAVA::uint32>(),
-    AnyDetails::DefaultOP<DAVA::int64>(),
-    AnyDetails::DefaultOP<DAVA::uint64>(),
-    AnyDetails::DefaultOP<DAVA::String>()
-};
+std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap;
 
-Any::Any(Any&& any)
-{
-    storage = std::move(any.storage);
-    type = any.type;
-    any.type = nullptr;
-}
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
+#endif
 
-bool Any::IsEmpty() const
+/*
+Any::Any()
 {
-    return (nullptr == type);
-}
+    if (nullptr == anyOPsMap && nullptr == castOPsMap)
+    {
+        anyOPsMap.reset(new AnyOPsMap());
+        castOPsMap.reset(new CastOPsMap());
 
-void Any::Clear()
-{
-    storage.Clear();
-    type = nullptr;
+        RegisterDefaultOPs<void*>();
+        RegisterDefaultOPs<bool>();
+        RegisterDefaultOPs<DAVA::int8>();
+        RegisterDefaultOPs<DAVA::uint8>();
+        RegisterDefaultOPs<DAVA::float32>();
+        RegisterDefaultOPs<DAVA::float64>();
+        RegisterDefaultOPs<DAVA::int16>();
+        RegisterDefaultOPs<DAVA::uint16>();
+        RegisterDefaultOPs<DAVA::int32>();
+        RegisterDefaultOPs<DAVA::uint32>();
+        RegisterDefaultOPs<DAVA::int64>();
+        RegisterDefaultOPs<DAVA::uint64>();
+        RegisterDefaultOPs<DAVA::String>();
+    }
 }
-
-const Type* Any::GetType() const
-{
-    return type;
-}
+*/
 
 void Any::LoadValue(const Type* type_, void* data)
 {
-    auto op = operations.find(type_);
-
-    if (op == operations.end() || nullptr == op->second.load)
+    if (anyOPsMap->count(type_) == 0 || anyOPsMap->at(type_).load == nullptr)
     {
-        throw Exception(Exception::BadOperation, Format("Couldn't load value of type \"%s\" into Any. Load operation wasn't registered", type_->GetName()));
+        throw Exception(Exception::BadOperation, "Load operation wasn't registered");
     }
 
+    const AnyOPs& ops = anyOPsMap->at(type_);
+    (*ops.load)(anyStorage, data);
     type = type_;
-    op->second.load(storage, data);
 }
 
-void Any::SaveValue(void* data, size_t size) const
+void Any::StoreValue(void* data, size_t size) const
 {
-    assert(type != nullptr);
+    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).store == nullptr)
+    {
+        throw Exception(Exception::BadOperation, "Save operation wasn't registered");
+    }
+
     if (type->GetSize() < size)
     {
-        throw Exception(Exception::BadSize, Format("Couldn't set value with size %d into Any with type \"%s\"", size, type->GetName()));
+        throw Exception(Exception::BadSize, "Type size mismatch while saving value into Any");
     }
 
-    auto op = operations.find(type);
-
-    if (op == operations.end() || nullptr == op->second.save)
-        throw Exception(Exception::BadOperation, Format("Couldn't set value into Any with type \"%s\". Store operation wasn't registered", type->GetName()));
-
-    op->second.save(storage, data);
-}
-
-Any& Any::operator=(Any&& any)
-{
-    if (this != &any)
-    {
-        type = any.type;
-        storage = std::move(any.storage);
-        any.type = nullptr;
-    }
-
-    return *this;
+    const AnyOPs& ops = anyOPsMap->at(type);
+    (*ops.store)(anyStorage, data);
 }
 
 bool Any::operator==(const Any& any) const
@@ -97,25 +72,13 @@ bool Any::operator==(const Any& any) const
         return true;
     }
 
-    UnorderedMap<const Type*, Any::AnyOP>::const_iterator op;
-    if (type->IsPointer())
+    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).compare == nullptr)
     {
-        op = operations.find(Type::Instance<void*>());
-    }
-    else
-    {
-        op = operations.find(type);
+        throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
     }
 
-    if (op == operations.end() || nullptr == op->second.compare)
-        throw Exception(Exception::BadOperation, Format("Couldn't compare values of type \"%s\". Compare operation wasn't registered", type->GetName()));
-
-    return op->second.compare(storage.GetData(), any.storage.GetData());
-}
-
-bool Any::operator!=(const Any& any) const
-{
-    return !operator==(any);
+    const AnyOPs& ops = anyOPsMap->operator[](type);
+    return (*ops.compare)(anyStorage.GetData(), any.anyStorage.GetData());
 }
 
 Any::Exception::Exception(ErrorCode code, const std::string& message)
@@ -131,5 +94,3 @@ Any::Exception::Exception(ErrorCode code, const char* message)
 }
 
 } // namespace DAVA
-
-#endif

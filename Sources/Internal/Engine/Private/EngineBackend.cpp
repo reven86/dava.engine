@@ -44,6 +44,7 @@
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
+#include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -139,6 +140,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     //  - JobManager
     //  - DownloadManager
     //  - NetCore
+    //  - PackManager
     // Other subsystems are always created
     CreateSubsystems(modules);
 
@@ -594,6 +596,13 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
                 context->soundSystem = new SoundSystem(engine);
             }
         }
+        else if (m == "PackManager")
+        {
+            if (context->packManager == nullptr)
+            {
+                context->packManager = new PackManager;
+            }
+        }
     }
 
     if (!IsConsoleMode())
@@ -645,6 +654,8 @@ void EngineBackend::DestroySubsystems()
         context->downloadManager->Release();
     if (context->soundSystem != nullptr)
         context->soundSystem->Release();
+    if (context->packManager != nullptr)
+        delete context->packManager;
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown

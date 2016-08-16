@@ -11,12 +11,15 @@ class ResourceEditorLauncher : public QObject
 {
     Q_OBJECT
 
+public:
+    ~ResourceEditorLauncher();
+
 public slots:
     void Launch();
     void OnProjectOpened(const QString&);
 
 public:
-    ~ResourceEditorLauncher();
+    Q_SIGNAL void LaunchFinished();
 };
 
 inline void ResourceEditorLauncher::Launch()
@@ -43,9 +46,7 @@ inline void ResourceEditorLauncher::OnProjectOpened(const QString&)
     DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
     DAVA::Texture::SetDefaultGPU(family);
 
-    DVASSERT(QtMainWindow::Instance() != nullptr);
-    QtMainWindow::Instance()->SetupTitle();
-    QtMainWindow::Instance()->OnSceneNew();
+    emit LaunchFinished();
 }
 
 #endif // __RESOURCEEDITOR_LAUNCHER_H__

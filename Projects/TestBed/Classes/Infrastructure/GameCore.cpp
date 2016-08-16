@@ -12,6 +12,7 @@
 #include "Tests/MultilineTest.h"
 #include "Tests/StaticTextTest.h"
 #include "Tests/StaticWebViewTest.h"
+#include "Tests/MicroWebBrowserTest.h"
 #include "Tests/UIMovieTest.h"
 #include "Tests/FontTest.h"
 #include "Tests/WebViewTest.h"
@@ -253,6 +254,7 @@ void GameCore::RegisterTests()
     new MultilineTest(this);
     new StaticTextTest(this);
     new StaticWebViewTest(this);
+    new MicroWebBrowserTest(this);
     new UIMovieTest(this);
     new FontTest(this);
     new WebViewTest(this);

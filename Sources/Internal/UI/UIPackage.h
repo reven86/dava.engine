@@ -44,6 +44,12 @@ public:
 
     RefPtr<UIPackage> Clone() const;
 
+    Vector<UIControl*>::const_iterator begin() const;
+    Vector<UIControl*>::const_iterator end() const;
+
+    Vector<UIControl*>::iterator begin();
+    Vector<UIControl*>::iterator end();
+
 private:
     Vector<UIControl*> controls;
 

@@ -20,7 +20,7 @@ protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
 protected:
-    DAVA::WideString text;
+    DAVA::String text;
 };
 
 #endif // __UI_EDITOR_LOCALIZED_TEXT_VALUE_PROPERTY__

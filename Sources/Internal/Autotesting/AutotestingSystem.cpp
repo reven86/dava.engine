@@ -401,7 +401,7 @@ void AutotestingSystem::MakeScreenShot()
         viewport.x = viewport.y = 0;
         viewport.width = size.dx;
         viewport.height = size.dy;
-        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, viewport);
+        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, false, viewport);
     }
     else
     {

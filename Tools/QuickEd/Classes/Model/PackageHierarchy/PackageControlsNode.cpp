@@ -120,3 +120,23 @@ ControlNode* PackageControlsNode::FindControlNodeByName(const DAVA::String& name
     }
     return NULL;
 }
+
+DAVA::Vector<ControlNode*>::const_iterator PackageControlsNode::begin() const
+{
+    return nodes.begin();
+}
+
+DAVA::Vector<ControlNode*>::const_iterator PackageControlsNode::end() const
+{
+    return nodes.end();
+}
+
+DAVA::Vector<ControlNode*>::iterator PackageControlsNode::begin()
+{
+    return nodes.begin();
+}
+
+DAVA::Vector<ControlNode*>::iterator PackageControlsNode::end()
+{
+    return nodes.end();
+}

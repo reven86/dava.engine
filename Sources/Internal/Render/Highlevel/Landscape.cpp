@@ -22,6 +22,7 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Concurrency/LockGuard.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"

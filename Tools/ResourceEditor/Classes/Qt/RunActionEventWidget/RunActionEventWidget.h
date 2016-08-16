@@ -36,6 +36,7 @@ private slots:
     void OnTypeChanged();
     void OnInvoke();
     void sceneActivated(SceneEditor2* scene);
+    void sceneDeactivated(SceneEditor2* scene);
     void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
 };
 

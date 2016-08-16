@@ -29,6 +29,7 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
+class PackManager;
 class AssetsManager;
 
 namespace Net
@@ -65,6 +66,7 @@ public:
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;
 
+    PackManager* packManager = nullptr;
     AssetsManager* assetsManager = nullptr;
 };
 
