@@ -12,7 +12,7 @@ class QVBoxLayout;
 
 class RemoteServerWidget;
 class ApplicationSettings;
-struct ServerData;
+struct RemoteServerParams;
 
 namespace Ui
 {
@@ -47,6 +47,7 @@ private slots:
     void OnNumberOfFilesChanged(int);
     void OnAutoSaveTimeoutChanged(int);
     void OnPortChanged(int);
+    void OnHttpPortChanged(int);
     void OnAutoStartToggled(bool);
     void OnSystemStartupToggled(bool);
     void OnRestartToggled(bool);
@@ -67,7 +68,7 @@ private slots:
 private:
     void CreateTrayMenu();
 
-    void AddRemoteServer(const ServerData& newServer);
+    void AddRemoteServer(const RemoteServerParams& newServer);
     void RemoveServers();
 
     void ShowAdvancedSettings(bool show);
