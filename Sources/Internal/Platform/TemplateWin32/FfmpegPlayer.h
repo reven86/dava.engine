@@ -13,6 +13,7 @@
 #include "Sound/FMODUtils.h"
 #include "fmod.h"
 #include "Concurrency/ConditionVariable.h"
+#include "Concurrency/Mutex.h"
 
 namespace AV
 {

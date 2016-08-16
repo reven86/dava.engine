@@ -3,6 +3,7 @@ package com.dava.framework;
 import com.dava.engine.DavaActivity;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -279,16 +280,29 @@ public class JNIDeviceInfo {
     {
         if (IsPrimaryExternalStoragePresent())
         {
-            String path = Environment.getExternalStorageDirectory().getPath();
-            path += "/";
-            
-            StorageCapacity st = getCapacityAndFreeSpace(path);
-
-            boolean isRemovable = Environment.isExternalStorageRemovable();
-            boolean isEmulated = Environment.isExternalStorageEmulated();
-            boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
-
-            return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
+			Context ctx = JNIActivity.GetActivity().getApplicationContext();
+			// start from KitKat(4.4) you can write to this external path
+			// without permission, but you need permission to get
+			// capacity info
+			File f = ctx.getExternalFilesDir(null);
+			if (f != null)
+			{
+				String path = f.getPath();
+				path += "/";
+				
+				try
+				{
+					StorageCapacity st = getCapacityAndFreeSpace(path);
+					boolean isRemovable = Environment.isExternalStorageRemovable();
+					boolean isEmulated = Environment.isExternalStorageEmulated();
+	            	boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
+	
+	            	return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
+				} catch (RuntimeException ex)
+				{
+					Log.e(TAG, "no permission to get capacity and free space(READ_EXTERNAL_STORAGE): " + ex.toString());
+				}
+			}
         }
 
         return new StorageInfo("", false, false, false, -1, -1);
