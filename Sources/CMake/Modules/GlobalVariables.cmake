@@ -112,7 +112,7 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 if ( WINDOWS_UAP )
     #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
     #libs paths
