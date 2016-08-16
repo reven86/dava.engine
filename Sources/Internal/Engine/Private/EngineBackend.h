@@ -12,6 +12,7 @@
 
 namespace DAVA
 {
+class KeyedArchive;
 namespace Private
 {
 class EngineBackend final

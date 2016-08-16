@@ -11,6 +11,7 @@
 
 namespace DAVA
 {
+class KeyedArchive;
 class Engine final
 {
 public:
