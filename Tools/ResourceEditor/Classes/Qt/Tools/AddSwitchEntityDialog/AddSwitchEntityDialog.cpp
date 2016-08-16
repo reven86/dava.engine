@@ -1,4 +1,3 @@
-#include <QLabel>
 #include "AddSwitchEntityDialog.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
@@ -12,6 +11,7 @@
 #include "Project/ProjectManager.h"
 
 #include "ui_BaseAddEntityDialog.h"
+#include <QLabel>
 
 AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
     : BaseAddEntityDialog(parent, QDialogButtonBox::Ok | QDialogButtonBox::Cancel)
@@ -20,7 +20,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog(QWidget* parent)
     setAttribute(Qt::WA_DeleteOnClose, true);
     DAVA::FilePath defaultPath(ProjectManager::Instance()->GetDataSourcePath());
 
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneHolder.GetScene();
     if (scene)
     {
         DAVA::FilePath scenePath = scene->GetScenePath();
@@ -78,8 +78,8 @@ void AddSwitchEntityDialog::GetPathEntities(DAVA::Vector<DAVA::Entity*>& entitie
 
 void AddSwitchEntityDialog::accept()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    if (NULL == scene)
+    SceneEditor2* scene = sceneHolder.GetScene();
+    if (scene == nullptr)
     {
         CleanupPathWidgets();
         return;
@@ -149,4 +149,8 @@ void AddSwitchEntityDialog::reject()
 {
     CleanupPathWidgets();
     BaseAddEntityDialog::reject();
+}
+
+void AddSwitchEntityDialog::FillPropertyEditorWithContent()
+{
 }

@@ -29,7 +29,7 @@ void ServerNetProxy::Disconnect()
 
 void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packetData, size_t length)
 {
-    if (nullptr == delegate)
+    if (nullptr == listener)
     { // do not need to process data in case of nullptr delegate
         return;
     }
@@ -48,37 +48,37 @@ void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packet
             case PACKET_ADD_REQUEST:
             {
                 AddRequestPacket* p = static_cast<AddRequestPacket*>(packet.get());
-                delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
+                listener->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
                 return;
             }
             case PACKET_GET_REQUEST:
             {
                 GetRequestPacket* p = static_cast<GetRequestPacket*>(packet.get());
-                delegate->OnRequestedFromCache(channel, p->key);
+                listener->OnRequestedFromCache(channel, p->key);
                 return;
             }
             case PACKET_REMOVE_REQUEST:
             {
                 RemoveRequestPacket* p = static_cast<RemoveRequestPacket*>(packet.get());
-                delegate->OnRemoveFromCache(channel, p->key);
+                listener->OnRemoveFromCache(channel, p->key);
                 return;
             }
             case PACKET_CLEAR_REQUEST:
             {
                 ClearRequestPacket* p = static_cast<ClearRequestPacket*>(packet.get());
-                delegate->OnClearCache(channel);
+                listener->OnClearCache(channel);
                 return;
             }
             case PACKET_WARMING_UP_REQUEST:
             {
                 WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet.get());
-                delegate->OnWarmingUp(channel, p->key);
+                listener->OnWarmingUp(channel, p->key);
                 return;
             }
             case PACKET_STATUS_REQUEST:
             {
                 StatusRequestPacket* p = static_cast<StatusRequestPacket*>(packet.get());
-                delegate->OnStatusRequested(channel);
+                listener->OnStatusRequested(channel);
                 return;
             }
             default:
@@ -102,9 +102,9 @@ void ServerNetProxy::OnPacketSent(Net::IChannel* channel, const void* buffer, si
 
 void ServerNetProxy::OnChannelClosed(Net::IChannel* channel, const char8* message)
 {
-    if (delegate)
+    if (listener)
     {
-        delegate->OnChannelClosed(channel, message);
+        listener->OnChannelClosed(channel, message);
     }
 }
 
