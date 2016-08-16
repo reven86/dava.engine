@@ -41,5 +41,4 @@ inline bool Command::IsClean() const
 {
     return false;
 }
-
 }
