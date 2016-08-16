@@ -9,19 +9,19 @@ namespace tarc
 template<typename T>
 bool DataContext::HasData() const
 {
-    return HasData(DAVA::Type::Instance<T>());
+    return HasData(DAVA::ReflectedType::Get<T>());
 }
 
 template<typename T>
 void DataContext::DeleteData()
 {
-    DeleteData(DAVA::Type::Instance<T>());
+    DeleteData(DAVA::ReflectedType::Get<T>());
 }
 
 template<typename T>
 T& DataContext::GetData() const
 {
-    return static_cast<T&>(GetData(DAVA::Type::Instance<T>()));
+    return static_cast<T&>(GetData(DAVA::ReflectedType::Get<T>()));
 }
 
 }

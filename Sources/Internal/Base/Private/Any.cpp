@@ -8,13 +8,12 @@ std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap;
 std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
 #endif
 
-/*
 Any::Any()
 {
-    if (nullptr == anyOPsMap && nullptr == castOPsMap)
+    if (nullptr == anyOPsMap /*&& nullptr == castOPsMap*/)
     {
         anyOPsMap.reset(new AnyOPsMap());
-        castOPsMap.reset(new CastOPsMap());
+        //castOPsMap.reset(new CastOPsMap());
 
         RegisterDefaultOPs<void*>();
         RegisterDefaultOPs<bool>();
@@ -31,7 +30,6 @@ Any::Any()
         RegisterDefaultOPs<DAVA::String>();
     }
 }
-*/
 
 void Any::LoadValue(const Type* type_, void* data)
 {
@@ -72,12 +70,18 @@ bool Any::operator==(const Any& any) const
         return true;
     }
 
-    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).compare == nullptr)
+    const Type* combarableType = type;
+    if (type->IsPointer())
+    {
+        combarableType = Type::Instance<void*>();
+    }
+
+    if (anyOPsMap->count(combarableType) == 0 || anyOPsMap->at(combarableType).compare == nullptr)
     {
         throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
     }
 
-    const AnyOPs& ops = anyOPsMap->operator[](type);
+    const AnyOPs& ops = anyOPsMap->operator[](combarableType);
     return (*ops.compare)(anyStorage.GetData(), any.anyStorage.GetData());
 }
 

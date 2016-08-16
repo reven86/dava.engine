@@ -1,5 +1,8 @@
 #include "DataProcessing/DataWrapper.h"
 
+#include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+
 namespace tarc
 {
 
@@ -12,7 +15,7 @@ struct DataWrapper::Impl
     DAVA::Set<DataListener*> listeners;
 };
 
-DataWrapper::DataWrapper(const DAVA::Type* type)
+DataWrapper::DataWrapper(const DAVA::ReflectedType* type)
     : DataWrapper(DAVA::Bind(&DataWrapper::GetDataDefault, std::placeholders::_1, type))
 {
 }
@@ -94,15 +97,14 @@ void DataWrapper::Sync(bool notifyListeners)
     if (HasData())
     {
         DAVA::Reflection reflection = GetData();
-        const DAVA::StructureWrapper* wrapper = reflection.GetStructure();
-        DAVA::Ref::FieldsList fields = wrapper->GetFields(reflection.GetValueObject());
+        DAVA::Vector<DAVA::Reflection::Field> fields = reflection.GetFields();
 
         if (impl->cachedValues.size() != fields.size())
         {
             impl->cachedValues.clear();
-            for (const DAVA::Ref::Field& field : fields)
+            for (const DAVA::Reflection::Field& field : fields)
             {
-                impl->cachedValues.push_back(field.valueRef.GetValue());
+                impl->cachedValues.push_back(field.ref.GetValue());
             }
             NotifyListeners(notifyListeners);
         }
@@ -121,8 +123,8 @@ void DataWrapper::Sync(bool notifyListeners)
 
             for (size_t i = 0; i < fields.size(); ++i)
             {
-                const DAVA::Ref::Field& field = fields[i];
-                DAVA::Any newValue = field.valueRef.GetValue();
+                const DAVA::Reflection::Field& field = fields[i];
+                DAVA::Any newValue = field.ref.GetValue();
                 if (impl->cachedValues[i] != newValue)
                 {
                     impl->cachedValues[i] = newValue;
@@ -162,14 +164,14 @@ DAVA::Reflection DataWrapper::GetData() const
     return impl->dataAccessor(*impl->activeContext);
 }
 
-DAVA::Reflection DataWrapper::GetDataDefault(const DataContext& context, const DAVA::Type* type)
+DAVA::Reflection DataWrapper::GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type)
 {
     if (!context.HasData(type))
     {
         return DAVA::Reflection();
     }
 
-    return DAVA::Reflection::Reflect(&context.GetData(type));
+    return DAVA::Reflection::Create(&context.GetData(type)).ref;
 }
 
 DataListener::~DataListener()

@@ -129,7 +129,7 @@ bool Core::HasActiveContext() const
     return activeContext != nullptr;
 }
 
-DataWrapper Core::CreateWrapper(const DAVA::Type* type)
+DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
 {
     DataWrapper wrapper(type);
     wrapper.SetContext(activeContext);

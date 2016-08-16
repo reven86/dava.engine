@@ -46,7 +46,7 @@ public:
 
 private:
     friend class QtReflected;
-    DAVA::UnorderedMap<const DAVA::Type*, QMetaObject*> metaObjects;
+    DAVA::UnorderedMap<const DAVA::ReflectedType*, QMetaObject*> metaObjects;
 };
 
 }

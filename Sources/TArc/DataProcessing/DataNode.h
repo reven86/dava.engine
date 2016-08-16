@@ -1,22 +1,18 @@
 #pragma once
 
 #include "Functional/Signal.h"
-#include "Reflection/Reflection.h"
-
-#define IMPLEMENT_TYPE(className) \
-    const DAVA::Type* GetType() const override { return DAVA::Type::Instance<className>(); }
+#include "Reflection/Public/ReflectedBase.h"
+#include "Reflection/Registrator.h"
 
 namespace tarc
 {
 
-class DataNode : public DAVA::VirtualReflection
+class DataNode : public DAVA::ReflectedBase
 {
-    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION
+    DAVA_VIRTUAL_REFLECTION(DataNode) {}
+
 public:
-    virtual const DAVA::Type* GetType() const
-    {
-        return DAVA::Type::Instance<DataNode>();
-    }
+    virtual ~DataNode() = default;
 };
 
 }

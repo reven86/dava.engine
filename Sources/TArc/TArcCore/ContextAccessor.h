@@ -23,7 +23,7 @@ public:
     virtual DataContext& GetActiveContext() = 0;
     virtual bool HasActiveContext() const = 0;
 
-    virtual DataWrapper CreateWrapper(const DAVA::Type* type) = 0;
+    virtual DataWrapper CreateWrapper(const DAVA::ReflectedType* type) = 0;
     virtual DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) = 0;
 
     virtual DAVA::EngineContext& GetEngine() = 0;

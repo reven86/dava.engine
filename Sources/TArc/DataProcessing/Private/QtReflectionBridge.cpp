@@ -1,5 +1,8 @@
 #include "QtReflectionBridge.h"
 #include "Base/Any.h"
+#include "Debug/DVAssert.h"
+
+#include "Reflection/Public/ReflectedType.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
@@ -46,11 +49,10 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
         if (wrapper.HasData())
         {
             DAVA::Reflection reflection = wrapper.GetData();
-            const DAVA::StructureWrapper* structWrapper = reflection.GetStructure();
-            DAVA::Ref::FieldsList fields = structWrapper->GetFields(reflection.GetValueObject());
-            const DAVA::Ref::Field& field = fields[id];
+            DAVA::Vector<DAVA::Reflection::Field> fields = reflection.GetFields();
+            const DAVA::Reflection::Field& field = fields[id];
             QVariant* value = reinterpret_cast<QVariant*>(argv[0]);
-            DAVA::Any davaValue = field.valueRef.GetValue();
+            DAVA::Any davaValue = field.ref.GetValue();
             if (c == QMetaObject::ReadProperty)
             {
                 if (davaValue.CanGet<QFileSystemModel*>())
@@ -68,7 +70,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
 
                 if (newValue != davaValue)
                 {
-                    field.valueRef.SetValue(newValue);
+                    field.ref.SetValue(newValue);
                     wrapper.Sync(false);
                 }
             }
@@ -129,30 +131,40 @@ void QtReflected::CreateMetaObject()
     DVASSERT(reflectionBridge != nullptr);
     DVASSERT(wrapper.HasData());
     DAVA::Reflection reflectionData = wrapper.GetData();
-    const DAVA::StructureWrapper* structWrapper = reflectionData.GetStructure();
-    DAVA::Ref::FieldsList fields = structWrapper->GetFields(reflectionData.GetValueObject());
+
+    // TODO how to get Real Value Type???
+    const DAVA::ReflectedType* type = DAVA::ReflectedType::GetByPointer(reflectionData.GetValueObject().GetPtr<tarc::DataNode>());
+
+    SCOPE_EXIT
+    {
+        metaObjectCreated.Emit();
+    };
+
+    auto iter = reflectionBridge->metaObjects.find(type);
+    if (iter != reflectionBridge->metaObjects.end())
+    {
+        qtMetaObject = iter->second;
+        return;
+    }
 
     QMetaObjectBuilder builder;
 
-    // TODO with new reflection
-    builder.setClassName(reflectionData.GetValueType()->GetName());
+    builder.setClassName(type->GetPermanentName().c_str());
     builder.setSuperClass(&QObject::staticMetaObject);
-    DAVA::Set<DAVA::String> signalNames;
-    for (const DAVA::Ref::Field& f : fields)
+
+    DAVA::Vector<DAVA::Reflection::Field> fields = reflectionData.GetFields();
+    for (const DAVA::Reflection::Field& f : fields)
     {
         QByteArray propertyName = QByteArray(f.key.Cast<DAVA::String>().c_str());
         QMetaPropertyBuilder propertybuilder = builder.addProperty(propertyName, "QVariant");
-        propertybuilder.setWritable(!f.valueRef.IsReadonly());
+        propertybuilder.setWritable(!f.ref.IsReadonly());
 
         QByteArray notifySignal = propertyName + "Changed";
-        signalNames.insert(notifySignal.toStdString());
         propertybuilder.setNotifySignal(builder.addSignal(notifySignal));
     }
     qtMetaObject = builder.toMetaObject();
 
-    // TODO
-    //reflectionBridge->metaObjects.emplace();
-    metaObjectCreated.Emit();
+    reflectionBridge->metaObjects.emplace(type, qtMetaObject);
 }
 
 void QtReflected::FirePropertySignal(const DAVA::String& propertyName)

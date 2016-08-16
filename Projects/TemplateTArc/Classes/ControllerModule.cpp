@@ -24,7 +24,7 @@ void TemplateControllerModule::PostInit()
     tarc::ContextManager& manager = GetContextManager();
     contextID = manager.CreateContext();
     manager.ActivateContext(contextID);
-    wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
+    wrapper = GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<SharedData>());
     wrapper.AddListener(this);
 
     tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));

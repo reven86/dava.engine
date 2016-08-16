@@ -33,8 +33,7 @@ void PlatformCore::Init()
 void PlatformCore::Run()
 {
     Vector<char*> qtCommandLine = engineBackend->GetCommandLineAsArgv();
-    int qtArgc = qtCommandLine.size();
-    ;
+    int qtArgc = static_cast<int>(qtCommandLine.size());
 
     QApplication app(qtArgc, qtCommandLine.data());
 

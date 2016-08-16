@@ -1,6 +1,8 @@
 #include "DataProcessing/DataContext.h"
 
 #include "Reflection/Reflection.h"
+#include "Utils/StringFormat.h"
+#include "Debug/DVAssert.h"
 
 namespace tarc
 {
@@ -17,29 +19,28 @@ DataContext::~DataContext()
 
 void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
 {
-    //DAVA::Reflection reflect = DAVA::Reflection::Reflect(node.get());
-    const DAVA::Type* type = node->GetType();
+    const DAVA::ReflectedType* type = DAVA::ReflectedType::GetByPointer(node.get());
     DVASSERT(dataMap.count(type) == 0);
     dataMap.emplace(std::make_pair(type, node.release()));
 }
 
-bool DataContext::HasData(const DAVA::Type* type) const
+bool DataContext::HasData(const DAVA::ReflectedType* type) const
 {
     return dataMap.count(type) > 0;
 }
 
-DataNode& DataContext::GetData(const DAVA::Type* type) const
+DataNode& DataContext::GetData(const DAVA::ReflectedType* type) const
 {
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())
     {
-        throw std::runtime_error(DAVA::Format("Data with type %s doesn't exist", type->GetName()));
+        throw std::runtime_error(DAVA::Format("Data with type %s doesn't exist", type->GetPermanentName()));
     }
 
     return *iter->second;
 }
 
-void DataContext::DeleteData(const DAVA::Type* type)
+void DataContext::DeleteData(const DAVA::ReflectedType* type)
 {
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())

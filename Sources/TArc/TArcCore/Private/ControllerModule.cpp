@@ -1,4 +1,5 @@
 #include "TArcCore/ControllerModule.h"
+#include "Debug/DVAssert.h"
 
 namespace tarc
 {

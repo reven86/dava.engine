@@ -4,39 +4,40 @@
 #include "TArcCore/ContextAccessor.h"
 #include "WindowSubSystem/UI.h"
 
+#include "Reflection/Registrator.h"
 #include "Base/Type.h"
 
 #include <QListWidget>
 #include <QFileSystemModel>
 #include <QTimer>
 
-#include <thread>
-
 class FileSystemData : public tarc::DataNode
 {
-    DAVA_DECLARE_TYPE_INITIALIZER
-    DAVA_DECLARE_TYPE_VIRTUAL_REFLECTION;
-
 public:
     ~FileSystemData()
     {
         delete model;
     }
 
-    IMPLEMENT_TYPE(FileSystemData);
+    QFileSystemModel* GetModel() const
+    {
+        return model;
+    }
 
     QFileSystemModel* model = nullptr;
     DAVA::String sampleText;
-};
 
-DAVA_TYPE_INITIALIZER(FileSystemData)
-{
-    DAVA::ReflectionRegistrator<FileSystemData>::Begin()
-    .Base<DataNode>()
-    .Field("fileSystemModel", &FileSystemData::model)
-    .Field("sampleText", &FileSystemData::sampleText)
-    .End();
-}
+private:
+    DAVA_VIRTUAL_REFLECTION(FileSystemData, tarc::DataNode)
+    {
+        DAVA::ReflectionRegistrator<FileSystemData>::Begin()
+        // TODO check with s_zdanevich
+        //.Field("fileSystemModel", &FileSystemData::model)
+        .Field("fileSystemModel", &FileSystemData::GetModel, nullptr)
+        .Field("sampleText", &FileSystemData::sampleText)
+        .End();
+    }
+};
 
 void DataChangerModule::OnContextCreated(tarc::DataContext& context)
 {
@@ -57,7 +58,7 @@ void DataChangerModule::OnContextDeleted(tarc::DataContext& context)
 void DataChangerModule::PostInit()
 {
     tarc::UI& ui = GetUI();
-    wrapper = GetAccessor().CreateWrapper(DAVA::Type::Instance<SharedData>());
+    wrapper = GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<SharedData>());
     wrapper.AddListener(this);
 
     QListWidget* customerList = new QListWidget();
@@ -91,7 +92,12 @@ void DataChangerModule::PostInit()
     info.tabbed = false;
     info.title = "Library";
     ui.AddView(windowKey, tarc::PanelKey(info.title, info), "qrc:/Library.qml",
-               GetAccessor().CreateWrapper(DAVA::Type::Instance<FileSystemData>()));
+               GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<FileSystemData>()));
+
+    QTimer::singleShot(5000, [this]()
+                       {
+                           GetAccessor().GetActiveContext().GetData<FileSystemData>().sampleText = "new text";
+                       });
 }
 
 void DataChangerModule::OnDataChanged(const tarc::DataWrapper& dataWrapper, const DAVA::Set<DAVA::String>& fields)

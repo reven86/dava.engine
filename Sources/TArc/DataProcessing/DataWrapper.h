@@ -32,7 +32,7 @@ private:
     friend class Core;
     friend class QtReflected;
     template<typename T> friend class DataEditor;
-    DataWrapper(const DAVA::Type* type);
+    DataWrapper(const DAVA::ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
@@ -41,7 +41,7 @@ private:
     void NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields = DAVA::Set<DAVA::String>());
     DAVA::Reflection GetData() const;
 
-    static DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::Type* type);
+    static DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type);
 
 private:
     struct Impl;

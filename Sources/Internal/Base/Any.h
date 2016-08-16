@@ -64,7 +64,7 @@ public:
     template <typename T>
     using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
-    inline Any() = default;
+    /*inline*/ Any(); // = default;
     inline ~Any() = default;
 
     template <typename T>
