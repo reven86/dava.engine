@@ -280,29 +280,38 @@ public class JNIDeviceInfo {
     {
         if (IsPrimaryExternalStoragePresent())
         {
-			Context ctx = JNIActivity.GetActivity().getApplicationContext();
-			// start from KitKat(4.4) you can write to this external path
-			// without permission, but you need permission to get
-			// capacity info
-			File f = ctx.getExternalFilesDir(null);
-			if (f != null)
-			{
-				String path = f.getPath();
-				path += "/";
-				
-				try
-				{
-					StorageCapacity st = getCapacityAndFreeSpace(path);
-					boolean isRemovable = Environment.isExternalStorageRemovable();
-					boolean isEmulated = Environment.isExternalStorageEmulated();
-	            	boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
-	
-	            	return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
-				} catch (RuntimeException ex)
-				{
-					Log.e(TAG, "no permission to get capacity and free space(READ_EXTERNAL_STORAGE): " + ex.toString());
-				}
-			}
+            Context ctx = null;
+            if (JNIActivity.GetActivity() != null)
+            {
+                ctx = JNIActivity.GetActivity().getApplicationContext();
+            }
+            else
+            {
+                ctx = DavaActivity.instance().getApplicationContext();
+            }
+
+            // start from KitKat(4.4) you can write to this external path
+            // without permission, but you need permission to get
+            // capacity info
+            File f = ctx.getExternalFilesDir(null);
+            if (f != null)
+            {
+                String path = f.getPath();
+                path += "/";
+
+                try
+                {
+                    StorageCapacity st = getCapacityAndFreeSpace(path);
+                    boolean isRemovable = Environment.isExternalStorageRemovable();
+                    boolean isEmulated = Environment.isExternalStorageEmulated();
+                    boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
+
+                    return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
+                } catch (RuntimeException ex)
+                {
+                    Log.e(TAG, "no permission to get capacity and free space(READ_EXTERNAL_STORAGE): " + ex.toString());
+                }
+            }
         }
 
         return new StorageInfo("", false, false, false, -1, -1);
