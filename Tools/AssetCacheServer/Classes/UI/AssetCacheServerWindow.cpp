@@ -349,7 +349,7 @@ void AssetCacheServerWindow::OnServersAreaRangeChanged(int min, int max)
 
 void AssetCacheServerWindow::OnAddServerClicked()
 {
-    AddCustomServer(RemoteServerParams(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
+    AddCustomServer(RemoteServerParams(DEFAULT_REMOTE_IP, false));
     customServerManuallyAdded = true;
     VerifyChanges();
 }
@@ -388,7 +388,6 @@ void AssetCacheServerWindow::OnSharedServerChecked(bool checked)
         ClearAllChecks();
         serverWidget->SetChecked(true);
     }
-
     VerifyChanges();
 }
 
@@ -490,7 +489,7 @@ void AssetCacheServerWindow::SelectedRemoteSetText()
     }
     case EnabledRemote::CUSTOM_SERVER:
     {
-        ui->selectedRemoteLineEdit->setText(DAVA::Format("%s:%u", enabledRemote.customServer->ip.c_str(), enabledRemote.customServer->port).c_str());
+        ui->selectedRemoteLineEdit->setText(enabledRemote.customServer->ip.c_str());
         break;
     }
     case EnabledRemote::NONE:

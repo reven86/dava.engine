@@ -3,9 +3,8 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 
-RemoteServerParams::RemoteServerParams(DAVA::String _ip, DAVA::uint16 _port, bool _enabled)
+RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
     : ip(_ip)
-    , port(_port)
     , enabled(_enabled)
 {
 }
@@ -22,16 +21,7 @@ bool RemoteServerParams::IsEmpty() const
 
 bool RemoteServerParams::operator==(const RemoteServerParams& right) const
 {
-    return (ip == right.ip) && (port == right.port);
-}
-
-bool RemoteServerParams::operator<(const RemoteServerParams& right) const
-{
-    if (ip == right.ip)
-    {
-        return port < right.port;
-    }
-    return ip < right.ip;
+    return (ip == right.ip);
 }
 
 const DAVA::String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
@@ -93,8 +83,6 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetFloat64("FolderSize", cacheSizeGb);
     archive->SetUInt32("NumberOfFiles", filesCount);
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
-    archive->SetUInt32("Port", listenPort);
-    archive->SetUInt32("HttpPort", listenHttpPort);
     archive->SetBool("AutoStart", autoStart);
     archive->SetBool("SystemStartup", launchOnSystemStartup);
     archive->SetBool("Restart", restartOnCrash);
@@ -106,7 +94,6 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     for (auto& pool : customServers)
     {
         archive->SetString(DAVA::Format("Server_%u_ip", index), pool.ip);
-        archive->SetUInt32(DAVA::Format("Server_%u_port", index), pool.port);
         archive->SetBool(DAVA::Format("Server_%u_enabled", index), pool.enabled);
         ++index;
     }
@@ -133,7 +120,6 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
             archive->SetUInt32(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), server.serverID);
             archive->SetString(DAVA::Format("Pool_%u_Server_%u_name", poolIndex, serverIndex), server.serverName);
             archive->SetString(DAVA::Format("Pool_%u_Server_%u_ip", poolIndex, serverIndex), server.remoteParams.ip);
-            archive->SetUInt32(DAVA::Format("Pool_%u_Server_%u_port", poolIndex, serverIndex), server.remoteParams.port);
             archive->SetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex), server.remoteParams.enabled);
             ++serverIndex;
         }
@@ -152,8 +138,6 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
     filesCount = archive->GetUInt32("NumberOfFiles", DEFAULT_FILES_COUNT);
     autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
-    listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
-    listenHttpPort = archive->GetUInt32("HttpPort", DEFAULT_HTTP_PORT);
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
     launchOnSystemStartup = archive->GetBool("SystemStartup", DEFAULT_LAUNCH_ON_SYSTEM_STARTUP);
     restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);
@@ -162,9 +146,8 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     for (DAVA::uint32 poolIndex = 0; poolIndex < count; ++poolIndex)
     {
         RemoteServerParams sd;
-        sd.ip = archive->GetString(DAVA::Format("Server_%d_ip", poolIndex));
-        sd.port = archive->GetUInt32(DAVA::Format("Server_%d_port", poolIndex));
-        sd.enabled = archive->GetBool(DAVA::Format("Server_%d_enabled", poolIndex), false);
+        sd.ip = archive->GetString(DAVA::Format("Server_%u_ip", poolIndex));
+        sd.enabled = archive->GetBool(DAVA::Format("Server_%u_enabled", poolIndex), false);
 
         customServers.push_back(sd);
     }
@@ -190,7 +173,6 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
             server.poolID = poolID;
             server.serverName = archive->GetString(DAVA::Format("Pool_%u_Server_%u_name", poolIndex, serverIndex));
             server.remoteParams.ip = archive->GetString(DAVA::Format("Pool_%u_Server_%u_ip", poolIndex, serverIndex));
-            server.remoteParams.port = archive->GetUInt32(DAVA::Format("Pool_%u_Server_%u_port", poolIndex, serverIndex));
             server.remoteParams.enabled = archive->GetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex));
         }
     }
@@ -374,7 +356,6 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
             updatedServer.poolID = server.poolID;
             updatedServer.serverName = server.name;
             updatedServer.remoteParams.ip = server.ip;
-            updatedServer.remoteParams.port = server.port;
         }
         else
         {

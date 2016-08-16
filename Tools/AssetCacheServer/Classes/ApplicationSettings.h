@@ -13,16 +13,14 @@ class KeyedArchive;
 struct RemoteServerParams
 {
     RemoteServerParams() = default;
-    RemoteServerParams(DAVA::String _ip, DAVA::uint16 _port, bool _enabled);
+    RemoteServerParams(DAVA::String _ip, bool _enabled);
 
     void SetEmpty();
     bool IsEmpty() const;
 
     bool operator==(const RemoteServerParams& right) const;
-    bool operator<(const RemoteServerParams& right) const;
 
     DAVA::String ip = "";
-    DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
     bool enabled = false;
 };
 

@@ -15,7 +15,6 @@ CustomServerWidget::CustomServerWidget(QWidget* parent)
             this, &CustomServerWidget::RemoveLater);
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
             this, &CustomServerWidget::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
@@ -24,8 +23,6 @@ CustomServerWidget::CustomServerWidget(const RemoteServerParams& newServer, QWid
 {
     ui->enabledCheckBox->setChecked(newServer.enabled);
     ui->ipLineEdit->setText(newServer.ip.c_str());
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(true);
 }
 
 CustomServerWidget::~CustomServerWidget()
@@ -35,7 +32,7 @@ CustomServerWidget::~CustomServerWidget()
 
 RemoteServerParams CustomServerWidget::GetServerData() const
 {
-    return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
+    return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->enabledCheckBox->isChecked());
 }
 
 bool CustomServerWidget::IsCorrectData()

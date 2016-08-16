@@ -103,7 +103,7 @@ bool ServerCore::ConnectRemote()
 
     if (!currentRemoteServer.IsEmpty())
     {
-        bool created = clientProxy.Connect(currentRemoteServer.ip, currentRemoteServer.port);
+        bool created = clientProxy.Connect(currentRemoteServer.ip, DAVA::AssetCache::ASSET_SERVER_PORT);
         if (created)
         {
             connectTimer->start();

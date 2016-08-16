@@ -20,7 +20,6 @@ SharedServerWidget::SharedServerWidget(const SharedServer& server, QWidget* pare
     ui->enabledCheckBox->setChecked(server.remoteParams.enabled);
     ui->nameLineEdit->setText(server.serverName.c_str());
     ui->ipLineEdit->setText(server.remoteParams.ip.c_str());
-    ui->portSpinBox->setValue(server.remoteParams.port);
     poolID = server.poolID;
     serverID = server.serverID;
 }
