@@ -986,8 +986,26 @@ bool FileSystem::CompareBinaryFiles(const FilePath& filePath1, const FilePath& f
     return res;
 }
 
+// deprecated method
+bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
+{
+    uint64 fullSize = 0;
+    if (GetFileSize(path, fullSize))
+    {
+        if (fullSize > std::numeric_limits<uint32>::max())
+        {
+            throw std::runtime_error("size of file: more 4Gb use 64 bit version");
+        }
+        size = static_cast<uint32>(fullSize);
+        return true;
+    }
+    return false;
+}
+
 bool FileSystem::GetFileSize(const FilePath& path, uint64& size)
 {
+    // TODO we can implement it much faster with posix or winapi and
+    // android AssetsManager
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if (file)
     {

@@ -259,6 +259,8 @@ public:
     */
     bool CompareBinaryFiles(const FilePath& filePath1, const FilePath& filePath2);
 
+    DAVA_DEPRECATED(bool GetFileSize(const FilePath&, uint32&));
+
     bool GetFileSize(const FilePath& path, uint64& size);
 
     /**
