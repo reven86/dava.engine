@@ -301,11 +301,6 @@
 #ifndef PNG_H
 #define PNG_H
 
-#if defined __ANDROID__
-// temporal include guard for android libpng
-#error "============== android libpng: headers from incorrect version"
-#endif
-
 /* This is not the place to learn how to use libpng. The file libpng-manual.txt
  * describes how to use libpng, and the file example.c summarizes it
  * with some code on which to build.  This file is useful for looking
