@@ -1,5 +1,5 @@
 
-struct
+vertex_in
 VP_Input
 {
     [vertex]   float3  pos     : SV_POSITION;
@@ -8,7 +8,7 @@ VP_Input
     [instance] float2  uv2     : SV_TEXCOORD1;
 };
 
-struct
+vertex_out
 VP_Output
 {
     float4  pos : SV_POSITION;
@@ -22,16 +22,6 @@ VP_Output
 [unique] property float2    Prop_F2;
 [unique] property float     Prop_F1;
 
-/*
-cbuffer test_t : register(b3) { float4 test[4]; }; 
-
-static float4   _f4 = test[0];
-static float3   _f3 = test[1].xyz;
-static float2   _f2 = test[1].xy;
-static float    _f1 = test[1].w;
-static float    _mm = float4x4( test[0], test[1], test[2], test[3] );
-uniform float4x4   _World;
-*/
 
 VP_Output
 main( VP_Input input )

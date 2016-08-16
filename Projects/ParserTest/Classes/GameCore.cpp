@@ -15,9 +15,9 @@
     #include "FileSystem/DynamicMemoryFile.h"
 
     #include "M4/Engine.h"
-    #include "M4/GLSLGenerator.h"
     #include "M4/GLESGenerator.h"
     #include "M4/HLSLGenerator.h"
+    #include "M4/MSLGenerator.h"
     #include "M4/HLSLParser.h"
     #include "M4/HLSLTree.h"
 
@@ -735,6 +735,8 @@ _ProcessProperties(M4::HLSLTree* ast)
         prop_decl[0].prev_statement->nextStatement = cbuf_decl[0];
         cbuf_decl[cbuf_decl.size() - 1]->nextStatement = prop_decl[0].decl;
 
+        #define DO_FLOAT4_CAST 1
+
         DVASSERT(property.size() == prop_decl.size());
         for (unsigned i = 0; i != property.size(); ++i)
         {
@@ -756,9 +758,18 @@ _ProcessProperties(M4::HLSLTree* ast)
 
                     arr_access->array = arr;
                     arr_access->index = idx;
+                    
+                    #if DO_FLOAT4_CAST
+                    M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                    cast_expr->expression = arr_access;
+                    cast_expr->type.baseType = M4::HLSLBaseType_Float4;
 
+                    prop_decl[i].decl->assignment = cast_expr;
+                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #else
                     prop_decl[i].decl->assignment = arr_access;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #endif
                 }
                 break;
 
@@ -801,8 +812,18 @@ _ProcessProperties(M4::HLSLTree* ast)
                     arr_access->array = arr;
                     arr_access->index = idx;
 
+                    #if DO_FLOAT4_CAST
+                    M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                    cast_expr->expression = arr_access;
+                    cast_expr->type.baseType = M4::HLSLBaseType_Float4;
+                    member_access->object = cast_expr;
+
                     prop_decl[i].decl->assignment = member_access;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #else
+                    prop_decl[i].decl->assignment = member_access;
+                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #endif
                 }
                 break;
 
@@ -810,6 +831,7 @@ _ProcessProperties(M4::HLSLTree* ast)
                 {
                     M4::HLSLConstructorExpression* ctor = ast->AddNode<M4::HLSLConstructorExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
                     M4::HLSLArrayAccess* arr_access[4];
+                    M4::HLSLCastingExpression* cast_expr[4];
 
                     ctor->type.baseType = M4::HLSLBaseType_Float4x4;
 
@@ -831,12 +853,25 @@ _ProcessProperties(M4::HLSLTree* ast)
                         arr_access[k]->index = idx;
                     }
 
+                    #if DO_FLOAT4_CAST
+                    for (unsigned k = 0; k != 4; ++k)
+                    {
+                        cast_expr[k] = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                        cast_expr[k]->expression = arr_access[k];
+                        cast_expr[k]->type.baseType = M4::HLSLBaseType_Float4;
+                    }
+
+                    ctor->argument = cast_expr[0];
+                    for (unsigned k = 0; k != 4 - 1; ++k)
+                        cast_expr[k]->nextExpression = cast_expr[k + 1];
+                    #else
                     ctor->argument = arr_access[0];
                     for (unsigned k = 0; k != 4 - 1; ++k)
                         arr_access[k]->nextExpression = arr_access[k + 1];
+                    #endif
 
                     prop_decl[i].decl->assignment = ctor;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static;
+                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
                 }
                 break;
             }
@@ -1216,15 +1251,17 @@ GameCore::_test_parser()
     }
 
     M4::HLSLGenerator hlsl_gen(&M4_Allocator);
-    M4::GLSLGenerator glsl_gen(&M4_Allocator);
     M4::GLESGenerator gles_gen(&M4_Allocator);
+    M4::MSLGenerator msl_gen(&M4_Allocator);
 
     #if SHADER_TYPE == SHADER_VERTEX
     M4::HLSLGenerator::Target hlsl_target = M4::HLSLGenerator::Target_VertexShader;
     M4::GLESGenerator::Target gles_target = M4::GLESGenerator::Target_VertexShader;
+    M4::MSLGenerator::Target msl_target = M4::MSLGenerator::Target_VertexShader;
     #else
     M4::HLSLGenerator::Target hlsl_target = M4::HLSLGenerator::Target_PixelShader;
     M4::GLESGenerator::Target gles_target = M4::GLESGenerator::Target_FragmentShader;
+    M4::MSLGenerator::Target msl_target = M4::MSLGenerator::Target_PixelShader;
     #endif
 
     if (hlsl_gen.Generate(&tree, hlsl_target, "main", false))
@@ -1238,6 +1275,7 @@ GameCore::_test_parser()
         M4::Log_Error("HLSL-gen error\n");
     }
 
+    /*
     if (gles_gen.Generate(&tree, gles_target, "main"))
     {
         puts(gles_gen.GetResult());
@@ -1247,6 +1285,18 @@ GameCore::_test_parser()
     else
     {
         M4::Log_Error("GLSL-gen error\n");
+    }
+*/
+
+    if (msl_gen.Generate(&tree, msl_target, "main"))
+    {
+        puts(msl_gen.GetResult());
+        ::OutputDebugStringA("\n\n---- Metal\n");
+        ::OutputDebugStringA(msl_gen.GetResult());
+    }
+    else
+    {
+        M4::Log_Error("MSL-gen error\n");
     }
 }
 

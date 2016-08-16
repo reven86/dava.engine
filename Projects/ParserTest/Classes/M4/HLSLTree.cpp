@@ -239,7 +239,7 @@ HLSLPipeline* HLSLTree::FindPipeline(const char* name)
     return NULL;
 }
 
-HLSLBuffer* HLSLTree::FindBuffer(const char* name)
+HLSLBuffer* HLSLTree::FindBuffer(const char* name) const
 {
     HLSLStatement* statement = m_root->statement;
     while (statement != NULL)

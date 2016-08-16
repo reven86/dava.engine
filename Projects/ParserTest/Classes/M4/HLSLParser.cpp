@@ -1165,7 +1165,35 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
 
     bool doesNotExpectSemicolon = false;
 
+    bool is_struct = false;
+    StructUsage struct_usage = struct_Generic;
+
     if (Accept(HLSLToken_Struct))
+    {
+        is_struct = true;
+    }
+    else if (Accept(HLSLToken_VertexIn))
+    {
+        is_struct = true;
+        struct_usage = struct_VertexIn;
+    }
+    else if (Accept(HLSLToken_VertexOut))
+    {
+        is_struct = true;
+        struct_usage = struct_VertexOut;
+    }
+    else if (Accept(HLSLToken_FragmentIn))
+    {
+        is_struct = true;
+        struct_usage = struct_FragmentIn;
+    }
+    else if (Accept(HLSLToken_FragmentOut))
+    {
+        is_struct = true;
+        struct_usage = struct_FragmentOut;
+    }
+
+    if (is_struct)
     {
         // Struct declaration.
 
@@ -1187,6 +1215,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
 
         HLSLStruct* structure = m_tree->AddNode<HLSLStruct>(fileName, line);
         structure->name = structName;
+        structure->usage = struct_usage;
 
         m_userTypes.PushBack(structure);
 

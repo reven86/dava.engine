@@ -175,6 +175,16 @@ enum HLSLAttributeType
     HLSLAttributeType_Custom
 };
 
+enum StructUsage
+{
+    struct_Generic,
+
+    struct_VertexIn,
+    struct_VertexOut,
+    struct_FragmentIn,
+    struct_FragmentOut
+};
+
 struct HLSLNode;
 struct HLSLRoot;
 struct HLSLStatement;
@@ -292,6 +302,7 @@ struct HLSLStruct : public HLSLStatement
         field = NULL;
     }
     const char* name;
+    StructUsage usage;
     HLSLStructField* field; // First field in the structure.
 };
 
@@ -739,7 +750,7 @@ public:
     HLSLPipeline* FindFirstPipeline();
     HLSLPipeline* FindNextPipeline(HLSLPipeline* current);
     HLSLPipeline* FindPipeline(const char* name);
-    HLSLBuffer* FindBuffer(const char* name);
+    HLSLBuffer* FindBuffer(const char* name) const;
 
     bool GetExpressionValue(HLSLExpression* expression, int& value);
     //bool GetExpressionValue(HLSLExpression * expression, float & value);

@@ -1,11 +1,11 @@
 
-struct
+fragment_in
 FP_Input
 {
     float2  uv : SV_TEXCOORD0;
 };
 
-struct
+fragment_out
 FP_Output
 {
     float4  color : SV_COLOR;
