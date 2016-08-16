@@ -230,7 +230,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls_)
+void HUDSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
 {
     rootControls = rootControls_;
     UpdatePlacedOnScreenStatus();

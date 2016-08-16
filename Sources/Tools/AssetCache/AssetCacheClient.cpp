@@ -411,4 +411,14 @@ bool AssetCacheClient::IsConnected() const
     return client.ChannelIsOpened();
 }
 
+AssetCacheClient::ConnectionParams::ConnectionParams()
+{
+    PreferencesStorage::Instance()->RegisterPreferences(this);
+}
+
+AssetCacheClient::ConnectionParams::~ConnectionParams()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
 } //END of DAVA

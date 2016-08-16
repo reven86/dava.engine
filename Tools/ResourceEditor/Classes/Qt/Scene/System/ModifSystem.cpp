@@ -114,10 +114,6 @@ bool EntityModificationSystem::InCloneDoneState() const
     return (cloneState == CLONE_DONE);
 }
 
-void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
-{
-}
-
 void EntityModificationSystem::Input(DAVA::UIEvent* event)
 {
     if (IsLocked() || (collisionSystem == nullptr))
@@ -136,7 +132,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
     if (!inModifState)
     {
         // can we start modification???
-        if (ModifCanStartByMouse(selectedEntities))
+        if (ModifCanStartByMouse(transformableSelection))
         {
             SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
 
@@ -154,7 +150,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
                     }
 
                     // set entities to be modified
-                    BeginModification(selectedEntities);
+                    BeginModification(transformableSelection);
 
                     // init some values, needed for modifications
                     modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
@@ -1093,18 +1089,18 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
 
 void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
-    DAVA::float32 scaleValue = 1.0f;
+    DAVA::float32 axisScaleValue = 1.0f;
 
     switch (axis)
     {
     case ST_AXIS_X:
-        scaleValue = values.x;
+        axisScaleValue = values.x;
         break;
     case ST_AXIS_Y:
-        scaleValue = values.y;
+        axisScaleValue = values.y;
         break;
     case ST_AXIS_Z:
-        scaleValue = values.z;
+        axisScaleValue = values.z;
         break;
     default:
         DVASSERT_MSG(0, "Scaling must be uniform, unable to scale via several axis");
@@ -1116,6 +1112,8 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
     for (const Selectable& item : selection.GetContent())
     {
+        DAVA::float32 scaleValue = axisScaleValue;
+
         DAVA::Matrix4 origMatrix = item.GetLocalTransform();
 
         DAVA::Vector3 pos, scale, rotate;
@@ -1143,4 +1141,38 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
     }
 
     sceneEditor->EndBatch();
+}
+
+void EntityModificationSystem::UpdateTransformableSelection() const
+{
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    SceneSelectionSystem* selectionSystem = sc->selectionSystem;
+    if (selectionSystem == nullptr)
+    {
+        return;
+    }
+
+    const SelectableGroup& selection = selectionSystem->GetSelection();
+
+    if (selection != currentSelection)
+    {
+        currentSelection = selection;
+
+        transformableSelection.Clear();
+        for (const Selectable& item : currentSelection.GetContent())
+        {
+            if (item.SupportsTransformType(transformType))
+            {
+                transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
+            }
+        }
+
+        transformableSelection.RebuildIntegralBoundingBox();
+    }
+}
+
+const SelectableGroup& EntityModificationSystem::GetTransformableSelection() const
+{
+    UpdateTransformableSelection();
+    return transformableSelection;
 }

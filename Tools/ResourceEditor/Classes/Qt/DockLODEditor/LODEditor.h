@@ -13,6 +13,7 @@ namespace Ui
 class LODEditor;
 }
 
+class GlobalOperations;
 class SceneEditor2;
 class SelectableGroup;
 class Command2;
@@ -28,6 +29,8 @@ class LODEditor : public QWidget, private EditorLODSystemUIDelegate, EditorStati
 public:
     explicit LODEditor(QWidget* parent = nullptr);
     ~LODEditor() override;
+
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 private slots:
 
@@ -90,4 +93,6 @@ private:
     DAVA::Vector<LODDistanceWidget*> distanceWidgets;
 
     LazyUpdater* panelsUpdater = nullptr;
+    SceneEditor2* activeScene = nullptr;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };

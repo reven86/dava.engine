@@ -21,6 +21,12 @@ public:
     bool IsInsertingStylesSupported() const override;
     bool CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) const override;
 
+    DAVA::Vector<StyleSheetNode*>::const_iterator begin() const;
+    DAVA::Vector<StyleSheetNode*>::const_iterator end() const;
+
+    DAVA::Vector<StyleSheetNode*>::iterator begin();
+    DAVA::Vector<StyleSheetNode*>::iterator end();
+
 private:
     DAVA::Vector<StyleSheetNode*> styleSheets;
 };

@@ -173,13 +173,9 @@ int TextureConvertor::Reconvert(DAVA::Scene* scene, eTextureConvertMode convertM
 
 void TextureConvertor::WaitConvertedAll(QWidget* parent)
 {
+    DVASSERT(parent != nullptr);
     if (convertJobQueueSize > 0)
     {
-        if (nullptr == parent)
-        {
-            parent = QtMainWindow::Instance();
-        }
-
         waitDialog = new QtWaitDialog(parent);
         bool hasCancel = false;
 
