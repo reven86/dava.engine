@@ -40,16 +40,16 @@ void PackManagerTest::LoadResources()
         gpuArchitecture = "adreno";
         break;
     case GPU_DX11:
-        gpuArchitecture = "origin";
+        gpuArchitecture = "dx11";
         break;
     case GPU_MALI:
         gpuArchitecture = "mali";
         break;
     case GPU_POWERVR_IOS:
-        gpuArchitecture = "PowerVR_iOS";
+        gpuArchitecture = "pvr_ios";
         break;
     case GPU_POWERVR_ANDROID:
-        gpuArchitecture = "PowerVR_Android";
+        gpuArchitecture = "pvr_android";
         break;
     case GPU_TEGRA:
         gpuArchitecture = "tegra";
@@ -63,7 +63,7 @@ void PackManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"maps_pack_italy");
+    packInput->SetText(L"allpacks");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -75,7 +75,7 @@ void PackManagerTest::LoadResources()
 
     packNextInput = new UITextField(Rect(5, 40, 400, 20));
     packNextInput->SetFont(font);
-    packNextInput->SetText(L"other_maps_pack");
+    packNextInput->SetText(L"pack2");
     packNextInput->SetFontSize(14);
     packNextInput->SetDebugDraw(true);
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -297,6 +297,8 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     {
         return;
     }
+    // do every time full reinitialization
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
 
     packNameLoading->SetText(L"done: start init");
 
