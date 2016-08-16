@@ -169,10 +169,9 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     public class DavaModifier
     {
         public static final int NONE = 0;
-        public static final int CAPS_LOCK_DOWN = 1 << 0;
-        public static final int SHIFT_DOWN = 1 << 1;
-        public static final int CONTROL_DOWN = 1 << 2;
-        public static final int ALT_DOWN = 1 << 3;
+        public static final int SHIFT_DOWN = 1 << 0;
+        public static final int CONTROL_DOWN = 1 << 1;
+        public static final int ALT_DOWN = 1 << 2;
     }
 
     private int ConvertJavaModifierToDava(int javaModifier)
@@ -180,19 +179,13 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
       int davaModifier = 0;
 
-      int modifier = android.view.KeyEvent.META_CAPS_LOCK_ON;
-      if ((modifier & javaModifier) == modifier)
-      {
-          davaModifier |= DavaModifier.CAPS_LOCK_DOWN;
-      }
-
-        modifier = android.view.KeyEvent.META_SHIFT_ON;
+      int modifier = android.view.KeyEvent.META_SHIFT_ON;
       if ((modifier & javaModifier) == modifier)
       {
           davaModifier |= DavaModifier.SHIFT_DOWN;
       }
 
-         modifier = android.view.KeyEvent.META_CTRL_ON;
+      modifier = android.view.KeyEvent.META_CTRL_ON;
       if ((modifier & javaModifier) == modifier)
       {
           davaModifier |= DavaModifier.CONTROL_DOWN;

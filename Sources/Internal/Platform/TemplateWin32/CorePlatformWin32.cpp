@@ -876,10 +876,6 @@ uint32 GetKeyboardModifiers()
 
     if (GetKeyboardState(keys))
     {
-        if ((keys[VK_CAPITAL] << 7))
-        {
-            result |= UIEvent::Modifier::CAPS_LOCK_DOWN;
-        }
         if ((keys[VK_LSHIFT] >> 7) || (keys[VK_RSHIFT] >> 7))
         {
             result |= UIEvent::Modifier::SHIFT_DOWN;

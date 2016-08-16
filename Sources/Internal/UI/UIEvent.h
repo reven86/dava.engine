@@ -82,11 +82,10 @@ public:
     enum Modifier
     {
         NONE = 0, // Used to denote no flags explicitly
-        CAPS_LOCK_DOWN = 1 << 0,
-        SHIFT_DOWN = 1 << 1,
-        CONTROL_DOWN = 1 << 2,
-        ALT_DOWN = 1 << 3,
-        COMMAND_DOWN = 1 << 4, // Command on OS X
+        SHIFT_DOWN = 1 << 0,
+        CONTROL_DOWN = 1 << 1,
+        ALT_DOWN = 1 << 2,
+        COMMAND_DOWN = 1 << 3, // Command on OS X
 
         LAST = COMMAND_DOWN
     };

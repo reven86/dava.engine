@@ -586,12 +586,6 @@ uint32 WinUAPXamlApp::GetKeyboardModifier()
     uint32 currentFlag = 0;
     CoreWindow ^ coreWind = Windows::UI::Core::CoreWindow::GetForCurrentThread();
     CoreVirtualKeyStates keyState;
-    // only for capslock, using Locked state
-    keyState = coreWind->GetKeyState(VirtualKey::CapitalLock);
-    if (keyState == CoreVirtualKeyStates::Locked)
-    {
-        currentFlag |= UIEvent::Modifier::CAPS_LOCK_DOWN;
-    }
     // for other cases using down state
     keyState = coreWind->GetKeyState(VirtualKey::Shift) & CoreVirtualKeyStates::Down;
     if (keyState == CoreVirtualKeyStates::Down)

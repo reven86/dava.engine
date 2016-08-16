@@ -536,10 +536,6 @@ static int32 oldModifersFlags = 0;
 uint32 ConvertNSModifiersToUIEvent(long nsModifiers)
 {
     uint32 resModifiers = 0;
-    if ((nsModifiers & NSAlphaShiftKeyMask) == NSAlphaShiftKeyMask)
-    {
-        resModifiers |= UIEvent::Modifier::CAPS_LOCK_DOWN;
-    }
     if ((nsModifiers & NSShiftKeyMask) == NSShiftKeyMask)
     {
         resModifiers |= UIEvent::Modifier::SHIFT_DOWN;
