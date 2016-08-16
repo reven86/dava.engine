@@ -132,7 +132,7 @@ if ( WINDOWS_UAP )
     
 else ()
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include" )
 
 endif()
 
