@@ -45,6 +45,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
     connect(ui->run, SIGNAL(clicked()), SLOT(OnInvoke()));
     connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
+    connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
 
     const DAVA::ActionComponent::Action::eEvent eventType = static_cast<DAVA::ActionComponent::Action::eEvent>(SettingsManager::Instance()->GetValue(settingsType).AsUInt32());
     ui->eventType->setCurrentIndex(editorIdMap[eventType]);
@@ -67,14 +68,13 @@ void RunActionEventWidget::OnTypeChanged()
 void RunActionEventWidget::OnInvoke()
 {
     const uint eventTypeId = ui->eventType->itemData(ui->eventType->currentIndex()).toUInt();
-    SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-    if (editor == NULL)
+    if (scene == nullptr)
         return;
 
     const DAVA::uint32 switchIndex = ui->switchIndex->value();
     const DAVA::FastName name(ui->name->currentText().toStdString().c_str());
 
-    const SelectableGroup& selection = editor->selectionSystem->GetSelection();
+    const SelectableGroup& selection = scene->selectionSystem->GetSelection();
     for (auto entity : selection.ObjectsOfType<DAVA::Entity>())
     {
         DAVA::ActionComponent* component = static_cast<DAVA::ActionComponent*>(entity->GetComponent(DAVA::Component::ACTION_COMPONENT));
@@ -115,7 +115,13 @@ void RunActionEventWidget::OnInvoke()
 void RunActionEventWidget::sceneActivated(SceneEditor2* scene_)
 {
     scene = scene_;
-    sceneSelectionChanged(scene, NULL, NULL);
+    sceneSelectionChanged(scene, nullptr, nullptr);
+}
+
+void RunActionEventWidget::sceneDeactivated(SceneEditor2* scene)
+{
+    scene = nullptr;
+    sceneSelectionChanged(scene, nullptr, nullptr);
 }
 
 void RunActionEventWidget::sceneSelectionChanged(SceneEditor2* scene_, const SelectableGroup* selected, const SelectableGroup* deselected)
