@@ -28,9 +28,6 @@ public:
     */
     virtual bool IsClean() const;
 
-    //re implement pure virtual function Undo for commands which can not make Undo itself
-    void Undo() override;
-
 private:
     const String description;
 };
@@ -45,7 +42,4 @@ inline bool Command::IsClean() const
     return false;
 }
 
-inline void Command::Undo()
-{
-}
 }

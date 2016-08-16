@@ -129,7 +129,7 @@ private:
 
     QtPropertyToolButton* CreateButton(QtPropertyData* data, const QIcon& icon, const QString& tooltip);
 
-    QString GetDefaultFilePath();
+    QString GetDefaultFilePath(bool withScenePath = true);
 
     void AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root,
                              std::unique_ptr<QtPropertyData>& curEntityData, bool isFirstInList);

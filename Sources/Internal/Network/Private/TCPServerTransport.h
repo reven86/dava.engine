@@ -14,7 +14,7 @@ class IOLoop;
 class TCPServerTransport : public IServerTransport
 {
 public:
-    TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout);
+    TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeoutMs);
     virtual ~TCPServerTransport();
 
     // IServerTransport

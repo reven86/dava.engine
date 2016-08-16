@@ -127,11 +127,11 @@ void CommandStack::UpdateCleanState()
         SetClean(true);
         return;
     }
-    int begin = std::min(cleanIndex, currentIndex);
-    int end = std::max(cleanIndex, currentIndex);
+    int32 begin = std::min(cleanIndex, currentIndex);
+    int32 end = std::max(cleanIndex, currentIndex);
     DVASSERT(end > begin);
     bool containsModifiedCommands = false;
-    for (int index = begin; index != end && !containsModifiedCommands; ++index)
+    for (int32 index = begin; index != end && !containsModifiedCommands; ++index)
     {
         //we need to look only next commands after
         const std::unique_ptr<Command>& command = commands.at(index + 1);
