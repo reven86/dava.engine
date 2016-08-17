@@ -146,6 +146,36 @@ elseif ( ANDROID )
 
 endif()
 
+# Openssl includes
+set ( DAVA_OPENSSL_ARCH "." )
+if ( WINDOWS_UAP )
+    set ( DAVA_OPENSSL_PLATFORM "uwp" )
+    
+elseif ( WIN32 )
+    set ( DAVA_OPENSSL_PLATFORM "win32" )
+    if ( X64_MODE )
+        set ( DAVA_OPENSSL_ARCH "x64" )
+    else ()
+        set ( DAVA_OPENSSL_ARCH "x86" )
+    endif ()
+    
+elseif ( ANDROID )
+    set ( DAVA_OPENSSL_PLATFORM "android" )
+
+elseif ( MACOS )
+    set ( DAVA_OPENSSL_PLATFORM "mac" )
+    
+elseif ( IOS )
+    set ( DAVA_OPENSSL_PLATFORM "ios" )
+    
+else ()
+    message ( FATAL_ERROR "Unknown platform" )
+    
+endif ()
+
+set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
+                                    "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/${DAVA_OPENSSL_PLATFORM}/${DAVA_OPENSSL_ARCH}" )
+
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
