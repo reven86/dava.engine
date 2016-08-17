@@ -100,6 +100,8 @@ private:
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
     QActionGroup* backgroundActions = nullptr;
 
+    QAction* findInFilesAction = nullptr;
+
 public:
     INTROSPECTION(MainWindow,
                   PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)

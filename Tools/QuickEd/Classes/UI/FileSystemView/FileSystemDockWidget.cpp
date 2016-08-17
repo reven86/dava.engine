@@ -106,7 +106,7 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
 
 void FileSystemDockWidget::FindInFiles()
 {
-    QString filePath = FindFileInPackageDialog::GetFilePath();
+    QString filePath = FindFileInPackageDialog::GetFilePath(model->rootPath(), parentWidget());
     QFileInfo fileInfo(filePath);
     if (fileInfo.isFile() && fileInfo.suffix() == FileSystemModel::GetYamlExtensionString())
     {
