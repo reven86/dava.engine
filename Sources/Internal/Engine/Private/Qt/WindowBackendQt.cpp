@@ -180,13 +180,10 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
     };
 
     qtEventListener = new QtEventListener(triggered, destroyed, engine->GetNativeService()->GetApplication());
-
-    //engine->GetEngine()->beforeTerminate.Connect(DAVA::MakeFunction(this, &WindowBackend::OnBeforeTerminate));
 }
 
 WindowBackend::~WindowBackend()
 {
-    delete contextBinder;
     delete renderWidget;
 }
 
@@ -269,7 +266,7 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
-    contextBinder = new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext());
+    contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engine->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->devicePixelRatioF();
