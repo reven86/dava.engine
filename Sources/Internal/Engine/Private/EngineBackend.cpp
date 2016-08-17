@@ -223,7 +223,6 @@ void EngineBackend::RunConsole()
 
 void EngineBackend::OnGameLoopStarted()
 {
-    DoEvents();
     engine->gameLoopStarted.Emit();
 }
 

@@ -29,6 +29,7 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
+    void Update();
     RenderWidget* GetRenderWidget();
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -63,7 +64,7 @@ private:
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 
-    void OnBeforeTerminate();
+    //void OnBeforeTerminate();
 
     uint32 ConvertButtons(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
@@ -77,10 +78,15 @@ private:
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
     RenderWidget* renderWidget = nullptr;
-    bool creationFinished = false;
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;
+
+    class OGLContextBinder;
+    friend void AcqureContext();
+    friend void ReleaseContext();
+
+    OGLContextBinder* contextBinder;
 };
 
 inline void* WindowBackend::GetHandle() const

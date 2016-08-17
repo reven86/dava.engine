@@ -5,7 +5,7 @@
 
 #include "Engine/Public/Engine.h"
 #include "Engine/Public/Window.h"
-#include "Engine/Public/WindowNativeService.h"
+#include "Engine/Public/NativeService.h"
 #include "Functional/Function.h"
 
 #include "Debug/DVAssert.h"
@@ -63,7 +63,6 @@ void Core::OnLoopStarted()
     {
         module->PostInit();
     }
-
     uiManager->InitializationFinished();
 }
 
@@ -226,7 +225,7 @@ void Core::ActivateContext(DataContext* context)
 
 DAVA::RenderWidget* Core::GetRenderWidget() const
 {
-    return engine.PrimaryWindow()->GetNativeService()->GetRenderWidget();
+    return engine.GetNativeService()->GetRenderWidget();
 }
 
 }

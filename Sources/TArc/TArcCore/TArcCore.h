@@ -42,8 +42,8 @@ private:
     void AddModule(ClientModule* module);
     void SetControllerModule(ControllerModule* module);
 
-    void OnFrame();
     void OnLoopStarted();
+    void OnFrame();
     void OnLoopStopped();
 
     // Inherited via ContextAccessor

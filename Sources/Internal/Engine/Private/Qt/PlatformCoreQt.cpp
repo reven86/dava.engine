@@ -41,22 +41,10 @@ void PlatformCore::Run()
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
                          DVASSERT(windowBackend != nullptr);
-                         RenderWidget* widget = windowBackend->GetRenderWidget();
-                         DVASSERT(widget);
-                         QQuickWindow* window = widget->quickWindow();
-                         DVASSERT(window);
-                         if (window->isVisible())
-                         {
-                             window->update();
-                         }
+                         windowBackend->Update();
                      });
 
-    windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 180.0f, 180.0f);
-    if (windowBackend == nullptr)
-    {
-        return;
-    }
-
+    windowBackend = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
     engineBackend->OnGameLoopStarted();
     timer.start(16.0);
 
@@ -74,21 +62,14 @@ void PlatformCore::Quit()
     DVASSERT(false);
 }
 
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
-{
-    WindowBackend* backend = new WindowBackend(engineBackend, w);
-    if (!backend->Create(width, height))
-    {
-        delete backend;
-        backend = nullptr;
-    }
-
-    return backend;
-}
-
 QApplication* PlatformCore::GetApplication()
 {
     return qApp;
+}
+
+RenderWidget* PlatformCore::GetRenderWidget()
+{
+    return windowBackend->GetRenderWidget();
 }
 
 } // namespace Private
