@@ -46,7 +46,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
     }
 
-    bool connectCalled = client.Connect(connectionParams.ip, connectionParams.port);
+    bool connectCalled = client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
     if (!connectCalled)
     {
         isActive = false;
@@ -409,6 +409,16 @@ void AssetCacheClient::OnClientProxyStateChanged()
 bool AssetCacheClient::IsConnected() const
 {
     return client.ChannelIsOpened();
+}
+
+AssetCacheClient::ConnectionParams::ConnectionParams()
+{
+    PreferencesStorage::Instance()->RegisterPreferences(this);
+}
+
+AssetCacheClient::ConnectionParams::~ConnectionParams()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 } //END of DAVA

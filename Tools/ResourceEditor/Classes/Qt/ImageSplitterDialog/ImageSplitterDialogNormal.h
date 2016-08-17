@@ -1,6 +1,6 @@
-#ifndef __IMAGESPLITTER_DIALOG_NORMAL_H__
-#define __IMAGESPLITTER_DIALOG_NORMAL_H__
+#pragma once
 
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
 #include "Render/Image/Image.h"
 
 #include <QDialog>
@@ -43,6 +43,5 @@ private:
 private:
     QScopedPointer<Ui::ImageSplitterNormal> ui;
     DAVA::Array<ImageArea*, CHANNELS_COUNT> imageArreas;
+    ActiveSceneHolder sceneHolder;
 };
-
-#endif // __IMAGESPLITTER_DIALOG_NORMAL_H__

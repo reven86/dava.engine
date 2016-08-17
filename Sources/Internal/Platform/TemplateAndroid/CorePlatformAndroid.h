@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 #define __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAEngine.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -111,4 +113,5 @@ private:
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)
+#endif // !__DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_CORE_PLATFORM_ANDROID_H__

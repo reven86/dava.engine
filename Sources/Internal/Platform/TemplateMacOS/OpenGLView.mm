@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
@@ -556,3 +558,5 @@ uint32 ConvertNSModifiersToUIEvent(long nsModifiers)
 }
 
 @end
+
+#endif // !__DAVAENGINE_COREV2__

@@ -4,8 +4,8 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest()
-    : BaseScreen("PackManagerTest")
+PackManagerTest::PackManagerTest(GameCore* g)
+    : BaseScreen(g, "PackManagerTest")
 {
 }
 
@@ -209,6 +209,7 @@ void PackManagerTest::OnRequestChange(const DAVA::PackManager::IRequest& request
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
@@ -250,6 +251,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
+#endif
 }
 
 void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)

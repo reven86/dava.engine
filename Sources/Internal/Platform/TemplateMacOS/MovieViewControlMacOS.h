@@ -1,12 +1,16 @@
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_MACOS_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_MACOS_H__
+#pragma once
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
+
 #include "UI/IMovieViewControl.h"
 #include "Functional/SignalBase.h"
 
 namespace DAVA
 {
+class Window;
 // Movie View Control - MacOS implementation.
 class MovieViewControl : public IMovieViewControl
 {
@@ -36,12 +40,23 @@ public:
     bool IsPlaying() const override;
 
 private:
+#if defined(__DAVAENGINE_COREV2__)
+    void OnWindowVisibilityChanged(Window& w, bool visible);
+    size_t windowVisibilityChangedConnection = 0;
+#else
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;
+#endif
+
+private:
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
 
     // Pointer to MacOS video player helper.
     void* moviePlayerHelper;
 };
-};
+} // namespace DAVA
 
-#endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_MACOS_H__) */
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_MACOS__

@@ -63,8 +63,8 @@ public:
     }
 };
 
-StaticWebViewTest::StaticWebViewTest()
-    : BaseScreen("StaticWebViewTest")
+StaticWebViewTest::StaticWebViewTest(GameCore* g)
+    : BaseScreen(g, "StaticWebViewTest")
 {
 }
 

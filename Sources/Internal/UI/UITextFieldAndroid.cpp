@@ -6,6 +6,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/FocusHelpers.h"
 #include "Utils/UTF8Utils.h"
+#include "Concurrency/LockGuard.h"
 
 using namespace DAVA;
 

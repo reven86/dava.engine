@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -302,10 +304,10 @@ void CoreWin32Platform::ClearMouseButtons()
     e.modifiers = GetKeyboardModifiers();
 
     for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-         mouseButton < static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+         mouseButton <= static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
          mouseButton += 1)
     {
-        if (mouseButtonState[mouseButton])
+        if (mouseButtonState[mouseButton - 1])
         {
             e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
 
@@ -529,11 +531,10 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     if (mouseButtonState.any())
     {
         for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::LEFT);
-             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::EXTENDED2);
+             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::NUM_BUTTONS);
              ++buttonIndex)
         {
-            unsigned bitIndex = buttonIndex - 1;
-            if (mouseButtonState[bitIndex])
+            if (mouseButtonState[buttonIndex - 1])
             {
                 e.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
                 e.phase = UIEvent::Phase::DRAG;
@@ -1185,3 +1186,4 @@ void ShowRunningApplication()
 
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // !__DAVAENGINE_COREV2__
