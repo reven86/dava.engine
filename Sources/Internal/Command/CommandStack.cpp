@@ -67,13 +67,15 @@ void CommandStack::EndBatch()
     if (batchesStack.size() == 1)
     {
         CommandBatch* rootBatchPtr = static_cast<CommandBatch*>(rootBatch.get());
-        if (!rootBatchPtr->IsEmpty())
+        if (rootBatchPtr->IsEmpty())
         {
-            ExecInternal(std::move(rootBatch), false);
+            rootBatch.reset();
         }
         else
         {
-            rootBatch.reset();
+            //we need to release rootBatch before we will do something
+            std::unique_ptr<Command> rootBatchCopy(std::move(rootBatch)); //do not remove this code!
+            ExecInternal(std::move(rootBatchCopy), false);
         }
     }
     if (!batchesStack.empty())
