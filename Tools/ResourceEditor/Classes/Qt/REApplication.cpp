@@ -90,6 +90,13 @@ REApplication::~REApplication() = default;
 
 int REApplication::Run()
 {
+    setOrganizationName("DAVA");
+    setApplicationName("Resource Editor");
+
+    const char* settingsPath = "ResourceEditorSettings.archive";
+    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
     DAVA::QtLayer qtLayer;
 
 #ifdef __DAVAENGINE_BEAST__
@@ -126,18 +133,6 @@ int REApplication::Run()
     return 0;
 }
 
-void REApplication::OnPostLoadPlugins()
-{
-    qApp->setOrganizationName("DAVA");
-    qApp->setApplicationName("Resource Editor");
-
-    const char* settingsPath = "ResourceEditorSettings.archive";
-    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-
-    Themes::InitFromQApplication();
-}
-
 void REApplication::RunWindow()
 {
 #ifdef Q_OS_MAC
@@ -145,6 +140,7 @@ void REApplication::RunWindow()
     REAppDetails::FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
+    Themes::InitFromQApplication();
 
     ToolsAssetGuard::Instance()->Init();
 

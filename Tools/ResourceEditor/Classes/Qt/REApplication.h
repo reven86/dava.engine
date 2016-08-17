@@ -13,10 +13,6 @@ public:
 
     int Run();
 
-protected:
-    void GetPluginsForLoad(DAVA::Vector<DAVA::WideString>& names) const;
-    void OnPostLoadPlugins();
-
 private:
     void RunWindow();
     void RunConsole();
