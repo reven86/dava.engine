@@ -592,6 +592,11 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
         if (auto self = self_weak.lock())
             OnLostFocus();
     });
+    auto layoutUpdated = ref new Windows::Foundation::EventHandler<Platform::Object ^>([this, self_weak](Platform::Object ^, Platform::Object ^ ) {
+        if (auto self = self_weak.lock())
+            OnLayoutUpdated();
+    });
+    nativeControl->LayoutUpdated += layoutUpdated;
     nativeControl->KeyDown += keyDown;
     nativeControl->GotFocus += gotFocus;
     nativeControl->LostFocus += lostFocus;
@@ -843,6 +848,15 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         SetNativeText(textToRestore);
         SetNativeCaretPosition(savedCaretPosition);
         ignoreTextChange = true;
+    }
+}
+
+void PrivateTextFieldWinUAP::OnLayoutUpdated()
+{
+    // unfortunately, in win10, control cannot immediately change state, need re-create sprite from preview data
+    if (!IsMultiline() && !HasFocus())
+    {
+        RenderToTexture(false);
     }
 }
 
