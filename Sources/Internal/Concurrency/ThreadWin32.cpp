@@ -119,7 +119,12 @@ Thread::Id Thread::GetCurrentId()
     return ::GetCurrentThreadId();
 }
 
-bool DAVA::Thread::BindToProcessor(unsigned proc_n)
+uint64 Thread::GetCurrentIdAsUInt64()
+{
+    return static_cast<uint64>(GetCurrentId());
+}
+
+bool Thread::BindToProcessor(unsigned proc_n)
 {
     bool success = false;
 

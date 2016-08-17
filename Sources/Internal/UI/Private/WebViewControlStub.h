@@ -1,4 +1,7 @@
 #pragma once
+
+#include "Base/BaseTypes.h"
+
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
 #include "UI/IWebViewControl.h"
