@@ -46,6 +46,7 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     propertiesModel = new PropertiesModel(treeView);
     treeView->setModel(propertiesModel);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
+    connect(propertiesModel, &PropertiesModel::ComponentAdded, this, &PropertiesWidget::OnComponentAdded);
 
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 
@@ -267,6 +268,13 @@ void PropertiesWidget::OnExpanded(const QModelIndex& index)
 void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 {
     itemsState[GetPathFromIndex(index)] = false;
+}
+
+void PropertiesWidget::OnComponentAdded(const QModelIndex& index)
+{
+    treeView->expand(index);
+    treeView->selectionModel()->select(index, QItemSelectionModel::Select);
+    treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
 }
 
 void PropertiesWidget::UpdateModel(PackageBaseNode* node)

@@ -46,6 +46,9 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
+signals:
+    void ComponentAdded(const QModelIndex& index);
+
 protected:
     void UpdateAllChangedProperties();
 

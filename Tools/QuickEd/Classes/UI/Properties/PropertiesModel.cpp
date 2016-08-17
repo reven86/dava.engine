@@ -320,6 +320,8 @@ void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, Compone
 void PropertiesModel::ComponentPropertiesWasAdded(RootProperty* root, ComponentPropertiesSection* section, int index)
 {
     endInsertRows();
+    QModelIndex modelIndex = indexByProperty(root->GetProperty(index), 0);
+    emit ComponentAdded(modelIndex);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty* root, ComponentPropertiesSection* section, int index)
