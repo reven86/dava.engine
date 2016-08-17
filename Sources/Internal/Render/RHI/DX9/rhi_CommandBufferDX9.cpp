@@ -904,7 +904,6 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
         SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(frame.sync);
         s->is_signaled = true;
         s->is_used = true;
-        Logger::Debug(" *** frame _DX9_RejectFrame sync %x **", frame.sync);
     }
     for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
     {
@@ -944,8 +943,11 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
 {
 }
 
-static void
-_DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
+void _DX9_UpdateSyncObjects(int frameN)
+{
+}
+
+static void _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {
     StatSet::ResetAll();
 
@@ -976,7 +978,6 @@ _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 
     if (frame.sync != InvalidHandle)
     {
-        Logger::Debug(" *** frame _DX9_ExecuteQueuedCommands sync %x **", frame.sync);
         SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(frame.sync);
         sync->frame = frame_n;
         sync->is_signaled = false;
@@ -1075,6 +1076,13 @@ void _DX9_ResetBlock()
     TextureDX9::ReCreateAll();
     VertexBufferDX9::ReCreateAll();
     IndexBufferDX9::ReCreateAll();
+
+    // update sync-objects, as pre-reset state is not actual anymore, also resolve constant reset causing already executed frame being never synced
+    for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
+    {
+        if (s->is_used)
+            s->is_signaled = true;
+    }
 }
 
 static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)

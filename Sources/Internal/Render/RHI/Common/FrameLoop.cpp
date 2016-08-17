@@ -43,13 +43,6 @@ void ProcessFrame()
 {
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 
-    /*if (!renderContextReady) //no render context - just reject frames and do nothing;
-    {
-        RejectFrames();
-        return;
-    }*/
-
-    currFrameNumber++;
     bool presentResult = false;
     if (NeedRestoreResources())
     {
@@ -62,7 +55,7 @@ void ProcessFrame()
         CommonImpl::Frame currFrame = std::move(frames.front());
         frames.erase(frames.begin());
         frameSync.Unlock();
-        currFrame.frameNumber = currFrameNumber;
+        currFrame.frameNumber = currFrameNumber++;
         DispatchPlatform::ExecuteFrame(std::move(currFrame));
 
         frameSync.Lock();

@@ -1521,9 +1521,20 @@ bool _GLES2_PresentBuffer()
 void _GLES2_ResetBlock()
 {        
 #if defined(__DAVAENGINE_ANDROID__)
+    TextureGLES2::ReleaseAll();
+    VertexBufferGLES2::ReleaseAll();
+    IndexBufferGLES2::ReleaseAll();
+
     TextureGLES2::ReCreateAll();
     VertexBufferGLES2::ReCreateAll();
     IndexBufferGLES2::ReCreateAll();
+
+    // update sync-objects, as pre-reset state is not actual anymore, also resolve constant reset causing already executed frame being never synced
+    for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
+    {
+        if (s->is_used)
+            s->is_signaled = true;
+    }
 #endif
 }
 

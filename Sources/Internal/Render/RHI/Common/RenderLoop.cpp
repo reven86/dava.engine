@@ -37,7 +37,6 @@ void Present(Handle syncHandle) // called from main thread
     TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 
     bool res = FrameLoop::FinishFrame(syncHandle);
-    //Logger::Debug(" *** frame finished sync %x **", syncHandle);
     if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
     {
         Logger::Debug(" *** empty frame finished **");
