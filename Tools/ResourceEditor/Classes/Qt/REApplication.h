@@ -8,7 +8,7 @@ class QtMainWindow;
 class REApplication : public QApplication
 {
 public:
-    REApplication(int argc, char** argv);
+    REApplication(int& argc, char** argv);
     ~REApplication();
 
     int Run();

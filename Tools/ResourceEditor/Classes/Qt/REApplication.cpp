@@ -66,7 +66,7 @@ void FixOSXFonts()
 }
 }
 
-REApplication::REApplication(int argc, char** argv)
+REApplication::REApplication(int& argc, char** argv)
     : QApplication(argc, argv)
 {
 #if defined(__DAVAENGINE_MACOS__)
@@ -119,6 +119,7 @@ int REApplication::Run()
     }
     else
     {
+        DAVA::Logger::Error("Wrong command line. Exit on start.");
         return 1; //wrong commandLine
     }
 
