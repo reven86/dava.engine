@@ -871,7 +871,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 {
                                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't open just written file: %s", tmpNewPath.GetAbsolutePathname().c_str());
                                 }
-                                actualSizeFromFile = justWritten->GetSize();
+                                actualSizeFromFile = static_cast<uint32>(justWritten->GetSize());
                                 Vector<char> content(actualSizeFromFile);
                                 uint32 bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
                                 if (bytesRead != curInfo.newSize)
