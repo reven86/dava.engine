@@ -16,7 +16,7 @@ tupState:AddPacks {
     },
     {
         name = "pack1",
-        is_base = true,
+        -- is_base = true, -- is_base - only for local pack, not in superpack
         compression = "none",
         rules = {
             { "^$",  ".*" }
