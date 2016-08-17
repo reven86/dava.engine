@@ -98,7 +98,7 @@ void PackManagerTest::LoadResources()
     loadNext->SetStateFont(0xFF, font);
     loadNext->SetStateFontColor(0xFF, Color::White);
     loadNext->SetStateText(0xFF, L"next loading");
-    loadNext->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartNextPackClicked));
+    loadNext->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartNextPackClicked));
     AddControl(loadNext);
 
     startServerButton = new UIButton(Rect(420, 70, 100, 20));
@@ -106,7 +106,7 @@ void PackManagerTest::LoadResources()
     startServerButton->SetStateFont(0xFF, font);
     startServerButton->SetStateFontColor(0xFF, Color::White);
     startServerButton->SetStateText(0xFF, L"start server");
-    startServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    startServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
     AddControl(startServerButton);
 
     stopServerButton = new UIButton(Rect(420, 100, 100, 20));
@@ -114,16 +114,16 @@ void PackManagerTest::LoadResources()
     stopServerButton->SetStateFont(0xFF, font);
     stopServerButton->SetStateFontColor(0xFF, Color::White);
     stopServerButton->SetStateText(0xFF, L"stop server");
-    stopServerButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    stopServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
     AddControl(stopServerButton);
 
-    packNameLoading = new UIStaticText(Rect(5, 300, 500, 20));
+    packNameLoading = new UIStaticText(Rect(5, 530, 500, 200));
     packNameLoading->SetFont(font);
     packNameLoading->SetTextColor(Color::White);
     packNameLoading->SetMultiline(true);
     packNameLoading->SetText(L"loading: ");
     packNameLoading->SetDebugDraw(true);
-    packNameLoading->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    packNameLoading->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(packNameLoading);
 
     redControl = new UIControl(Rect(5, 360, 500, 10));
@@ -399,13 +399,17 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
-#endif
 }
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     IPackManager& pm = Core::Instance()->GetPackManager();
     WideString packName = packNextInput->GetText();
+
+    pm.packStateChanged.DisconnectAll();
+
+    pm.packStateChanged.Connect(this, &PackManagerTest::OnPackStateChange);
+    pm.requestProgressChanged.Connect(this, &PackManagerTest::OnRequestChange);
 
     try
     {
