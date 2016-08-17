@@ -63,14 +63,17 @@ std::unique_ptr<CommandBatch> CommandStack::CreateCommmandBatch(const String& na
 void CommandStack::EndBatch()
 {
     DVASSERT(rootBatch && "CommandStack::EndMacro called without BeginMacro");
+    //release rootBatch and exec commands if exists
     if (batchesStack.size() == 1)
     {
         CommandBatch* rootBatchPtr = static_cast<CommandBatch*>(rootBatch.get());
         if (!rootBatchPtr->IsEmpty())
         {
-            //we need to release rootBatch before we will do something
-            std::unique_ptr<Command> rootBatchCopy(std::move(rootBatch));
-            ExecInternal(std::move(rootBatchCopy), false);
+            ExecInternal(std::move(rootBatch), false);
+        }
+        else
+        {
+            rootBatch.reset();
         }
     }
     if (!batchesStack.empty())
