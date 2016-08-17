@@ -10,6 +10,8 @@
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
+#include "Engine/Private/EnginePrivateFwd.h"
+
 #define FRAME_SKIP 5
 
 /**
@@ -295,7 +297,11 @@ private:
     bool CheckTimeAndPosition(UIEvent* newEvent);
     int32 CalculatedTapCount(UIEvent* newEvent);
 
+#if defined(__DAVAENGINE_COREV2__)
+    friend class Private::EngineBackend;
+#else
     friend void Core::CreateSingletons();
+#endif
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;

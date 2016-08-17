@@ -2,13 +2,18 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "UI/UIControlSystem.h"
 #include "UI/UITextFieldiPhone.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/NSStringUtils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/UTF8Utils.h"
 
-#include <algorithm>
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Public/Window.h"
+#else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
+#endif
 
 @implementation UITextFieldHolder
 
@@ -17,12 +22,15 @@
     if (self = [super init])
     {
         isKeyboardHidden = true;
+#if defined(__DAVAENGINE_COREV2__)
+        window = nullptr;
+#else
         DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-
         DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
 
         self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx / divider, physicalScreenSize.dy / divider);
         self.center = CGPointMake(physicalScreenSize.dx / 2.f / divider, physicalScreenSize.dy / 2.f / divider);
+#endif
 
         self.userInteractionEnabled = TRUE;
         textInputAllowed = YES;
@@ -52,6 +60,19 @@
     return self;
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+- (void)attachWindow:(DAVA::Window*)w
+{
+    window = w;
+
+    DAVA::float32 divider = window->GetScaleX();
+    DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+    self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx / divider, physicalScreenSize.dy / divider);
+    self.center = CGPointMake(physicalScreenSize.dx / 2.f / divider, physicalScreenSize.dy / 2.f / divider);
+}
+#endif
+
 - (void)setTextField:(DAVA::UITextField*)tf
 {
     cppTextField = tf;
@@ -59,12 +80,9 @@
     {
         DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
         DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-        CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x)
-                                       ,
-                                       (physicalRect.y + physicalOffset.y)
-                                       ,
-                                       physicalRect.dx
-                                       ,
+        CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x),
+                                       (physicalRect.y + physicalOffset.y),
+                                       physicalRect.dx,
                                        physicalRect.dy);
 
         textCtrl.frame = nativeRect;

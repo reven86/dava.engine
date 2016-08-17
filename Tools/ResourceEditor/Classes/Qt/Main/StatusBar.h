@@ -39,6 +39,7 @@ private:
     QLabel* fpsCounter = nullptr;
     QLabel* sceneGeometry = nullptr;
     QLabel* selectionBoxSize = nullptr;
+    SceneEditor2* activeScene = nullptr;
 
     DAVA::uint64 lastTimeMS = 0;
 };

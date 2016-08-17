@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef __DAVAENGINE_HELPER_APP_DELEGATE_H__
 #define __DAVAENGINE_HELPER_APP_DELEGATE_H__
 
@@ -27,3 +29,4 @@ enum
 
 #endif //__DAVAENGINE_IPHONE__
 #endif //__DAVAENGINE_HELPER_APP_DELEGATE_H__
+#endif // !__DAVAENGINE_COREV2__

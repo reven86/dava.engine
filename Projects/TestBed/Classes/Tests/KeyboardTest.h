@@ -3,10 +3,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+class GameCore;
 class KeyboardTest : public BaseScreen
 {
 public:
-    KeyboardTest();
+    KeyboardTest(GameCore* g);
 
 protected:
     void LoadResources() override;

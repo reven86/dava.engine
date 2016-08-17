@@ -10,13 +10,14 @@ using namespace DAVA;
 
 class MyWebViewDelegate;
 
+class GameCore;
 class StaticWebViewTest : public BaseScreen
 {
 protected:
     ~StaticWebViewTest(){};
 
 public:
-    StaticWebViewTest();
+    StaticWebViewTest(GameCore* g);
 
     void LoadResources() override;
     void UnloadResources() override;

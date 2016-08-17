@@ -396,3 +396,23 @@ void ControlNode::RemoveControlFromInstances(ControlNode* control)
     if (it != instances.end())
         instances.erase(it);
 }
+
+DAVA::Vector<ControlNode*>::const_iterator ControlNode::begin() const
+{
+    return nodes.begin();
+}
+
+DAVA::Vector<ControlNode*>::const_iterator ControlNode::end() const
+{
+    return nodes.end();
+}
+
+DAVA::Vector<ControlNode*>::iterator ControlNode::begin()
+{
+    return nodes.begin();
+}
+
+DAVA::Vector<ControlNode*>::iterator ControlNode::end()
+{
+    return nodes.end();
+}

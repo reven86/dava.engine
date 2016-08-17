@@ -1,3 +1,4 @@
+#if !defined(__DAVAENGINE_COREV2__)
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
@@ -189,3 +190,5 @@ void ApplicationCore::OnFocusReceived()
     // Default implementation is empty.
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

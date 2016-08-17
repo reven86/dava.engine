@@ -7,10 +7,11 @@
 
 using namespace DAVA;
 
+class GameCore;
 class FullscreenTest : public BaseScreen
 {
 public:
-    FullscreenTest();
+    FullscreenTest(GameCore* g);
 
 protected:
     void LoadResources() override;

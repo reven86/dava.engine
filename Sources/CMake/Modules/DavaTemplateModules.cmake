@@ -248,11 +248,11 @@ macro( setup_main_module )
 
         #"INCLUDES_DIR"
         load_property( PROPERTY_LIST INCLUDES )
-        if( INCLUDES )
-            include_directories( "${INCLUDES}" )  
-        endif()
         if( INCLUDES_${DAVA_PLATFORM_CURENT} )
             include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
+        endif()        
+        if( INCLUDES )
+            include_directories( "${INCLUDES}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
@@ -298,14 +298,14 @@ macro( setup_main_module )
                 add_definitions( ${DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}} )
             endif()
 
-            if( INCLUDES_PRIVATE )
-                include_directories( ${INCLUDES_PRIVATE} ) 
-            endif() 
 
             if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
             endif() 
 
+            if( INCLUDES_PRIVATE )
+                include_directories( ${INCLUDES_PRIVATE} ) 
+            endif() 
 
             if( WIN32 )
                 grab_libs(LIST_SHARED_LIBRARIES_DEBUG   "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}"   EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)
@@ -329,14 +329,18 @@ macro( setup_main_module )
 
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
                 target_link_libraries  ( ${NAME_MODULE} optimized ${FILE} )
-            endforeach () 
+            endforeach ()
+
+            if (QT5_FOUND)
+                link_with_qt5(${PROJECT_NAME})
+            endif()
 
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
-            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )     
-            reset_property( INCLUDES_PRIVATE )            
-            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )            
+            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )
+            reset_property( INCLUDES_PRIVATE )
+            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )

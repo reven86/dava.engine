@@ -104,6 +104,8 @@ DAVA_ROOT := $(LOCAL_PATH)
 # set path for includes
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
+# Temporal include path override for android libpng
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include/android
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
@@ -318,6 +320,10 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
