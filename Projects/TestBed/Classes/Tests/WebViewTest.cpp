@@ -10,8 +10,8 @@ L"Some test text"
 L"</body>"
 L"</html>";
 
-WebViewTest::WebViewTest()
-    : BaseScreen("WebViewTest")
+WebViewTest::WebViewTest(GameCore* g)
+    : BaseScreen(g, "WebViewTest")
     , webView(nullptr)
     , bgStubPanel(nullptr)
     , updateWait(false)
