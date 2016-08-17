@@ -4,6 +4,18 @@
 # set local path for lib
 LOCAL_PATH := $(call my-dir)
 
+# Hack for right order of .so linking
+# c++_shared must be linked before all other shared libs, so add it manually
+ifeq ($(APP_STL), c++_shared)
+# Yet another hack - we don't need gcc lib, so unset variable with option -lgcc
+TARGET_LIBGCC := 
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := cxx-shared-prebuild
+LOCAL_SRC_FILES := $(NDK_ROOT)/sources/cxx-stl/llvm-libc++/$(LLVM_VERSION)/libs/$(TARGET_ARCH_ABI)/libc++_shared.so
+include $(PREBUILT_SHARED_LIBRARY)
+endif
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
 LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
@@ -238,17 +250,21 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 DV_LOCAL_EXPORT_LDFLAGS := -fuse-ld=bfd
 
 # set included libraries
-DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
+DV_LOCAL_STATIC_LIBRARIES := libc++abi
 DV_LOCAL_STATIC_LIBRARIES += liblz4
-DV_LOCAL_STATIC_LIBRARIES += libc++abi
+
+ifeq ($(APP_STL), c++_shared)
+DV_LOCAL_SHARED_LIBRARIES += cxx-shared-prebuild
+endif
+
+DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
+DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
 DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
-
-DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
 DV_LOCAL_STATIC_LIBRARIES += xml
 DV_LOCAL_STATIC_LIBRARIES += png
