@@ -1,17 +1,51 @@
-#ifndef __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
-#define __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
+#pragma once
 
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
 namespace DAVA
 {
+#if defined(__DAVAENGINE_COREV2__)
+class Window;
+#else
 class CorePlatformWinUAP;
+#endif
 class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>
 {
+    struct MovieViewProperties
+    {
+        enum
+        {
+            ACTION_PLAY,
+            ACTION_PAUSE,
+            ACTION_RESUME,
+            ACTION_STOP,
+        };
+
+        void ClearChangedFlags();
+
+        Rect rect;
+        Rect rectInWindowSpace;
+        bool visible = false;
+        bool playing = false;
+        bool canPlay = false;
+        int32 action = ACTION_STOP;
+        ::Windows::Storage::Streams::IRandomAccessStream ^ stream = nullptr;
+        ::Windows::UI::Xaml::Media::Stretch scaling = ::Windows::UI::Xaml::Media::Stretch::None;
+
+        bool createNew : 1;
+
+        bool anyPropertyChanged : 1;
+        bool rectChanged : 1;
+        bool visibleChanged : 1;
+        bool streamChanged : 1;
+        bool actionChanged : 1;
+    };
+
 public:
     PrivateMovieViewWinUAP();
     ~PrivateMovieViewWinUAP();
@@ -35,12 +69,21 @@ public:
 
     bool IsPlaying();
 
+    void Update();
+
 private:
+    void ProcessProperties(const MovieViewProperties& props);
+    void ApplyChangedProperties(const MovieViewProperties& props);
+
     void InstallEventHandlers();
-    void PositionMovieView(const Rect& rectInVirtualCoordinates);
 
     Windows::Storage::Streams::IRandomAccessStream ^ CreateStreamFromFilePath(const FilePath& path) const;
-    void OpenMovieFromStream(Windows::Storage::Streams::IRandomAccessStream ^ stream, const OpenMovieParams& params);
+
+    void SetNativeVisible(bool visible);
+    void SetNativePositionAndSize(const Rect& rect);
+
+    Rect VirtualToWindow(const Rect& srcRect) const;
+    void TellPlayingStatus(bool playing);
 
 private: // MediaElement event handlers
     void OnMediaOpened();
@@ -48,26 +91,25 @@ private: // MediaElement event handlers
     void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args);
 
 private:
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#else
     CorePlatformWinUAP* core;
-    Windows::UI::Xaml::Controls::MediaElement ^ nativeMovieView = nullptr;
-    bool visible = true;
+#endif
+    Windows::UI::Xaml::Controls::MediaElement ^ nativeControl = nullptr;
+    bool playAfterLoaded = false; // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
     bool movieLoaded = false; // Movie has been successfully loaded and decoded
-    bool playRequest = false; // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
-    bool moviePlaying = false; // Movie is playing now
+
+    MovieViewProperties properties;
 };
 
 //////////////////////////////////////////////////////////////////////////
 inline bool PrivateMovieViewWinUAP::IsPlaying()
 {
-    // It seems that framework is client of game but not vice versa
-    // Game does not take into account that video playback can take some time after Play() has been called
-    // So assume movie is playing under following conditions:
-    //  - movie is really playing
-    //  - game has called Play() method
-    return moviePlaying || playRequest;
+    return properties.playing;
 }
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__

@@ -3,6 +3,7 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
@@ -12,6 +13,7 @@
 #include "Sound/FMODUtils.h"
 #include "fmod.h"
 #include "Concurrency/ConditionVariable.h"
+#include "Concurrency/Mutex.h"
 
 namespace AV
 {
@@ -35,6 +37,7 @@ extern "C"
 
 namespace DAVA
 {
+class Thread;
 class FfmpegPlayer : public SoundStreamDelegate
 {
 public:
@@ -198,4 +201,5 @@ private:
 };
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

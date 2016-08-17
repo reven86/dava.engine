@@ -145,5 +145,9 @@ if ( ANDROID_USE_LOCAL_RESOURCES )
     list( APPEND DEFINITIONS -DUSE_LOCAL_RESOURCES )
 endif()
 
+if (DAVA_PLATFORM_QT)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+endif()
+
 setup_main_module()
 

@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidLayer.h"
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -80,3 +82,5 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEn
     env->ReleaseStringUTFChars(jResult, utf8Data);
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

@@ -305,9 +305,13 @@ String AutotestingSystemLua::GetDeviceName()
 
 bool AutotestingSystemLua::IsPhoneScreen()
 {
+#if !defined(__DAVAENGINE_COREV2__)
     float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
     float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
     return std::sqrt(xInch * xInch + yInch * yInch) <= 6.5f;
+#else
+    return false;
+#endif
 }
 
 String AutotestingSystemLua::GetTestParameter(const String& parameter)

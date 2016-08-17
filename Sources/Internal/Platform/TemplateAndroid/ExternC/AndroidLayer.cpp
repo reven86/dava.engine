@@ -1,7 +1,23 @@
-#ifndef _ANDROID_LAYER_
-#define _ANDROID_LAYER_
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
-#include "AndroidLayer.h"
+#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Engine/Private/Android/AndroidBridge.h"
+
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    return Private::AndroidBridge::GetJavaVM();
+}
+
+} // namespace JNI
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Logger/Logger.h"
@@ -120,6 +136,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     }
 
     androidDelegate = new AndroidDelegate(vm);
+
+    DAVA::JNI::JavaClass::Initialize();
 
     DAVA::AndroidCrashReport::Init(env);
     LOGI("finished JNI_OnLoad");
@@ -489,4 +507,5 @@ void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject clas
 
 // END OF JNISurfaceView
 
-#endif //#ifndef _ANDROID_LAYER_
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

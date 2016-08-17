@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "BacktraceCorkscrewImpl.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 namespace DAVA
@@ -159,3 +161,5 @@ void BacktraceCorkscrewImpl::PrintableBacktrace(Function<void(pointer_size, cons
     LOGE("libCorkscrew not supported for printing any usefull stack trace");
 }
 } /* namespace DAVA */
+
+#endif // !__DAVAENGINE_COREV2__

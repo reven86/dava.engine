@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -972,3 +974,5 @@ PackManager& Core::GetPackManager()
 }
 
 } // namespace DAVA
+
+#endif //!__DAVAENGINE_COREV2__

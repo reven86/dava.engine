@@ -590,10 +590,14 @@ public:
 class JavaClass
 {
 public:
+    static void Initialize();
+
+    JavaClass() = default;
     JavaClass(const String& className);
     JavaClass(const JavaClass& copy);
     ~JavaClass();
 
+    JavaClass& operator=(const JavaClass& other);
     inline operator jclass() const;
 
     template <class Ret>
@@ -639,11 +643,13 @@ public:
     Function<Ret(P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
 
 private:
-    void FindJavaClass(String name);
+    void FindJavaClass();
 
-private:
-    jclass javaClass;
+    jclass javaClass = nullptr;
     String name;
+
+    static jobject classLoader;
+    static jmethodID jmethod_ClassLoader_findClass;
 };
 
 inline JavaClass::operator jclass() const

@@ -80,7 +80,11 @@ DAVA_TESTCLASS (PackManagerTest)
         dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
         gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
 
+#if defined(__DAVAENGINE_COREV2__)
+        PackManager packManager;
+#else
         PackManager& packManager = Core::Instance()->GetPackManager();
+#endif
 
         FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
 

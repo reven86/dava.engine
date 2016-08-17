@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#pragma once
 
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
@@ -37,11 +37,13 @@ public:
     // Whether the movie is being played?
     bool IsPlaying() const override;
 
+    void Update() override;
+
 private:
     std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;
 };
 
 } // namespace DAVA
 
+#endif // !DISABLE_NATIVE_MOVIEVIEW
 #endif // __DAVAENGINE_WIN_UAP__
-#endif // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__

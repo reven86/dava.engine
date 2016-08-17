@@ -8,10 +8,15 @@
 #import <UIKit/UIKit.h>
 #import "UI/UITextField.h"
 
+#include "Engine/EngineModule.h"
+
 @interface UITextFieldHolder : UIView<UITextFieldDelegate, UITextViewDelegate>
 {
     NSString* cachedText;
     BOOL isKeyboardHidden;
+#if defined(__DAVAENGINE_COREV2__)
+    DAVA::Window* window;
+#endif
 @public
     // hold single line text field if user switch to multiline mode
     // otherwise nullptr
@@ -27,6 +32,9 @@
 
 - (void)setTextField:(DAVA::UITextField*)tf;
 - (id)init;
+#if defined(__DAVAENGINE_COREV2__)
+- (void)attachWindow:(DAVA::Window*)w;
+#endif
 - (void)dealloc;
 - (BOOL)textFieldShouldReturn:(UITextField*)textField;
 - (BOOL)textField:(UITextField*)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString*)string;

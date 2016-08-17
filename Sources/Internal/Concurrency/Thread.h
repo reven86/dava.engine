@@ -158,6 +158,12 @@ public:
     static Id GetCurrentId();
 
     /**
+     \brief 
+     \returns returns current thread identifier as integer
+    */
+    static uint64 GetCurrentIdAsUInt64();
+
+    /**
      \returns returns Id of Thread Object.
      */
     inline Id GetId() const;

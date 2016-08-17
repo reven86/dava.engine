@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidLayer.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
@@ -122,3 +124,5 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldUpdateTextu
     }
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__
