@@ -595,8 +595,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
 
 uint32 WinUAPXamlApp::GetKeyboardModifier()
 {
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::UI::Core::CoreVirtualKeyStates;
+    using ::Windows::System::VirtualKey;
     uint32 currentFlag = 0;
-    CoreWindow ^ coreWind = Windows::UI::Core::CoreWindow::GetForCurrentThread();
+    CoreWindow ^ coreWind = CoreWindow::GetForCurrentThread();
     CoreVirtualKeyStates keyState;
     // for other cases using down state
     keyState = coreWind->GetKeyState(VirtualKey::Shift) & CoreVirtualKeyStates::Down;
@@ -619,7 +622,7 @@ uint32 WinUAPXamlApp::GetKeyboardModifier()
     return currentFlag;
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args)
 {
     using ::Windows::UI::Input::PointerPoint;
     using ::Windows::Devices::Input::PointerDeviceType;
