@@ -28,6 +28,9 @@ public:
 signals:
     void OpenPackageFile(const QString& path);
 
+public slots:
+    void FindInFiles();
+
 private slots:
     void onDoubleClicked(const QModelIndex& index);
     void setFilterFixedString(const QString& filterStr);
@@ -55,6 +58,8 @@ private:
     QAction* renameAction = nullptr;
     QAction* openFileAction = nullptr;
     QPoint menuInvokePos = QPoint(-1, -1);
+
+    bool isAvailable = false;
 };
 
 #endif // __QUICKED_FILE_SYSTEM_DIALOG_H__

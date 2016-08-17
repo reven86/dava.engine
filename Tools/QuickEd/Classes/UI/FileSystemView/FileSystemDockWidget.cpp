@@ -4,6 +4,10 @@
 #include "FileSystemDockWidget.h"
 #include "ValidatedTextInputDialog.h"
 #include "FileSystemModel.h"
+#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/Utils/Utils.h"
+#include "Project/Project.h"
+#include "UI/FileSystemView/FindFileInPackageDialog.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QMenu>
@@ -15,10 +19,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
-
-#include "QtTools/FileDialog/FileDialog.h"
-#include "QtTools/Utils/Utils.h"
-#include "Project/Project.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -89,6 +89,7 @@ FileSystemDockWidget::~FileSystemDockWidget() = default;
 
 void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
+    isAvailable = !path.isEmpty();
     if (path.isEmpty())
     {
         ui->treeView->hideColumn(0);
@@ -100,6 +101,16 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
         ui->treeView->setRootIndex(index);
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
+    }
+}
+
+void FileSystemDockWidget::FindInFiles()
+{
+    QString filePath = FindFileInPackageDialog::GetFilePath();
+    QFileInfo fileInfo(filePath);
+    if (fileInfo.isFile() && fileInfo.suffix() == FileSystemModel::GetYamlExtensionString())
+    {
+        emit OpenPackageFile(filePath);
     }
 }
 
