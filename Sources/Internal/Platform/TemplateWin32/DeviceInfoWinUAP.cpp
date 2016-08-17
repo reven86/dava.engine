@@ -11,6 +11,7 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
