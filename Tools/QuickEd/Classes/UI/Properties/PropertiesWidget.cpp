@@ -88,8 +88,16 @@ void PropertiesWidget::OnAddComponent(QAction* action)
     DVASSERT(nullptr != commandExecutor);
     if (nullptr != commandExecutor)
     {
+        const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
+
         uint32 componentType = action->data().toUInt();
-        if (componentType < UIComponent::COMPONENT_COUNT)
+        ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
+        if (componentSection != nullptr)
+        {
+            QModelIndex index = propertiesModel->indexByProperty(componentSection);
+            OnComponentAdded(index);
+        }
+        else if (componentType < UIComponent::COMPONENT_COUNT)
         {
             commandExecutor->AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
         }
@@ -273,7 +281,7 @@ void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 void PropertiesWidget::OnComponentAdded(const QModelIndex& index)
 {
     treeView->expand(index);
-    treeView->selectionModel()->select(index, QItemSelectionModel::Select);
+    treeView->setCurrentIndex(index);
     treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
 }
 

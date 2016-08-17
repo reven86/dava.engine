@@ -287,6 +287,11 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
+const AbstractProperty* PropertiesModel::GetRootProperty() const
+{
+    return rootProperty;
+}
+
 void PropertiesModel::UpdateAllChangedProperties()
 {
     for (auto property : changedProperties)
@@ -416,13 +421,13 @@ void PropertiesModel::ResetProperty(AbstractProperty* property)
     }
 }
 
-QModelIndex PropertiesModel::indexByProperty(AbstractProperty* property, int column)
+QModelIndex PropertiesModel::indexByProperty(const AbstractProperty* property, int column)
 {
     AbstractProperty* parent = property->GetParent();
     if (parent == nullptr)
         return QModelIndex();
 
-    return createIndex(parent->GetIndex(property), column, property);
+    return createIndex(parent->GetIndex(property), column, static_cast<void*>(const_cast<AbstractProperty*>(property)));
 }
 
 QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
