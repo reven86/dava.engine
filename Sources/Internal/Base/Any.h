@@ -39,6 +39,11 @@ public:
         {
             return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.from);
         }
+
+        bool operator==(const CastOPKey& key) const
+        {
+            return from == key.from && to == key.to;
+        }
     };
 
     using CastOP = void (*)(const void* from, void* to);

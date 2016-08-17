@@ -7,8 +7,78 @@
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
 
+Q_DECLARE_METATYPE(DAVA::char16);
+
 namespace tarc
 {
+
+namespace ReflBridgeDetails
+{
+
+template<typename T>
+DAVA::Any ToAny(const QVariant& v)
+{
+    DAVA::Any ret;
+    ret.Set(v.value<T>());
+    return ret;
+}
+
+DAVA::Any QStringToAny(const QVariant& v)
+{
+    return DAVA::Any(v.toString().toStdString());
+}
+
+template<typename T>
+QVariant ToVariant(const DAVA::Any& v)
+{
+    return QVariant::fromValue(v.Get<T>());
+}
+
+QVariant StringToVariant(const DAVA::Any& v)
+{
+    return QVariant::fromValue(QString::fromStdString(v.Get<DAVA::String>()));
+}
+
+
+template<typename T>
+void FillConverter(DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA::Any&)> & anyToVar,
+                   DAVA::UnorderedMap<int, DAVA::Any(*)(const QVariant&)> & varToAny)
+{
+    anyToVar.emplace(DAVA::Type::Instance<T>(), &ToVariant<T>);
+    varToAny.emplace(qMetaTypeId<T>(), &ToAny<T>);
+}
+
+}
+
+#define FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
+    F(void*, ATV, VTA) \
+    F(bool, ATV, VTA) \
+    F(DAVA::int8, ATV, VTA) \
+    F(DAVA::uint8, ATV, VTA) \
+    F(DAVA::int16, ATV, VTA) \
+    F(DAVA::uint16, ATV, VTA) \
+    F(DAVA::int32, ATV, VTA) \
+    F(DAVA::uint32, ATV, VTA) \
+    F(DAVA::int64, ATV, VTA) \
+    F(DAVA::uint64, ATV, VTA) \
+    F(DAVA::char8, ATV, VTA) \
+    F(DAVA::char16, ATV, VTA) \
+    F(DAVA::float32, ATV, VTA) \
+    F(DAVA::float64, ATV, VTA)
+
+#define FOR_ALL_QT_SPECIFIC_TYPES(F, ATV, VTA) \
+    F(QFileSystemModel*, ATV, VTA)
+
+#define FOR_ALL_STATIC_TYPES(F, ATV, VTA) \
+    FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
+    FOR_ALL_QT_SPECIFIC_TYPES(F, ATV, VTA)
+
+#define FILL_CONVERTERS_FOR_TYPE(T, ATV, VTA) \
+    ReflBridgeDetails::FillConverter<T>(ATV, VTA);
+
+#define FILL_CONVEERTES_FOR_CUSTOM_TYPE(ATV, VTA, ANY_TYPE, VAR_TYPE)\
+    ATV.emplace(DAVA::Type::Instance<DAVA::##ANY_TYPE>(), &ReflBridgeDetails::##ANY_TYPE##ToVariant); \
+    VTA.emplace(qMetaTypeId<VAR_TYPE>(), &ReflBridgeDetails::##VAR_TYPE##ToAny);
 
 QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper wrapper_, QObject* parent)
     : QObject(parent)
@@ -55,18 +125,28 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
             DAVA::Any davaValue = field.ref.GetValue();
             if (c == QMetaObject::ReadProperty)
             {
-                if (davaValue.CanGet<QFileSystemModel*>())
-                    *value = QVariant::fromValue(davaValue.Get<QFileSystemModel*>());
+                auto iter = reflectionBridge->anyToQVariant.find(davaValue.GetType());
+                if (iter == reflectionBridge->anyToQVariant.end())
+                {
+                    DVASSERT_MSG(false, DAVA::Format("Converted (Any->QVariant) has not been registered for type : %s", davaValue.GetType()->GetName()));
+                }
                 else
-                    *value = QVariant::fromValue(QString::fromStdString(davaValue.Get<DAVA::String>()));
+                {
+                    *value = iter->second(davaValue);
+                }
             }
             else
             {
                 DAVA::Any newValue;
-                if (value->canConvert<QFileSystemModel*>())
-                    newValue = DAVA::Any(value->value<QFileSystemModel*>());
+                auto iter = reflectionBridge->qvariantToAny.find(value->userType());
+                if (iter == reflectionBridge->qvariantToAny.end())
+                {
+                    DVASSERT_MSG(false, DAVA::Format("Converted (QVariant->Any) has not been registered for userType : %d", value->userType()));
+                }
                 else
-                    newValue = DAVA::Any(value->value<QString>().toStdString());
+                {
+                    newValue = iter->second(*value);
+                }
 
                 if (newValue != davaValue)
                 {
@@ -181,6 +261,12 @@ void QtReflected::FirePropertySignal(int signalId)
         void* argv[] = { nullptr };
         qtMetaObject->activate(this, signalId, argv);
     }
+}
+
+QtReflectionBridge::QtReflectionBridge()
+{
+    FOR_ALL_STATIC_TYPES(FILL_CONVERTERS_FOR_TYPE, anyToQVariant, qvariantToAny);
+    FILL_CONVEERTES_FOR_CUSTOM_TYPE(anyToQVariant, qvariantToAny, String, QString);
 }
 
 QtReflectionBridge::~QtReflectionBridge()
