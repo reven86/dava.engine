@@ -85,7 +85,11 @@ DAVA_TESTCLASS (PackManagerTest)
 
         IPackManager& packManager = Core::Instance()->GetPackManager();
 
-        FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
+#if defined(__DAVAENGINE_COREV2__)
+        PackManager packManager;
+#else
+        PackManager& packManager = Core::Instance()->GetPackManager();
+        FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");#endif
 
         dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
 

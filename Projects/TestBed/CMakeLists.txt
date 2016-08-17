@@ -7,13 +7,31 @@ if( NOT DAVA_MEGASOLUTION )
     #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+if (DAVA_COREV2)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+    # Uncomment to use local resources for android
+    # add_definitions(-DUSE_LOCAL_RESOURCES)
+endif()
+
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-set ( DAVA_COMPONENTS "Sound" )
-if ( WIN32 AND NOT WIN_UAP )
+set ( DAVA_COMPONENTS "Sound")
+if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
+
+if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
+    set (DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
+    add_definitions(-D__DAVAENGINE_QT__)
+    if ( MACOS )
+        add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+        add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+        add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    endif()
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+    set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
+endif()
 
 find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
@@ -58,6 +76,11 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+if (DAVA_COREV2)
+    if (WIN32)
+        set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
+    endif()
+endif()
 
 convert_graphics()
 

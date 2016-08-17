@@ -3,8 +3,8 @@
 
 using namespace DAVA;
 
-UIBackgroundTest::UIBackgroundTest()
-    : BaseScreen("UIBackgroundTest")
+UIBackgroundTest::UIBackgroundTest(GameCore* g)
+    : BaseScreen(g, "UIBackgroundTest")
 {
 }
 

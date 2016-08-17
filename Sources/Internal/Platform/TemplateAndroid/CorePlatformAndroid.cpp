@@ -1,5 +1,8 @@
 #include "Base/Platform.h"
 
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #if defined(__DAVAENGINE_ANDROID__)
 
 extern void FrameworkDidLaunched();
@@ -366,3 +369,4 @@ int32 CorePlatformAndroid::GetViewHeight() const
 }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)
+#endif // !__DAVAENGINE_COREV2__

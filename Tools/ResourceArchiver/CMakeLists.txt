@@ -2,7 +2,14 @@ cmake_minimum_required (VERSION 3.0)
 
 project      ( ResourceArchiver )
 
-set( NO_CEF                 true)
+if (DAVA_COREV2)
+    add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+    add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+    add_definitions(-DCONSOLE)
+    add_definitions(-D_CONSOLE)
+endif()
  
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 set          ( NO_CEF true)

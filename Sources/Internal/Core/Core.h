@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_CORE_H__
 #define __DAVAENGINE_CORE_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/Singleton.h"
@@ -292,4 +294,5 @@ inline bool Core::IsActive()
 }
 };
 
+#endif // !__DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_CORE_H__

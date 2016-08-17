@@ -6,10 +6,11 @@
 
 using namespace DAVA;
 
+class GameCore;
 class MicroWebBrowserTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
-    MicroWebBrowserTest();
+    MicroWebBrowserTest(GameCore* g);
 
     void LoadResources() override;
     void UnloadResources() override;

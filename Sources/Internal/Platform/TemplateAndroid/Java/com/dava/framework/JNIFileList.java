@@ -1,5 +1,7 @@
 package com.dava.framework;
 
+import com.dava.engine.DavaActivity;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +38,15 @@ public class JNIFileList {
 				}
 			}
 		} else {
-			AssetManager assetManager = JNIActivity.GetActivity().getAssets();
+            AssetManager assetManager;
+            if (JNIActivity.GetActivity() != null)
+            {
+                assetManager = JNIActivity.GetActivity().getAssets();
+            }
+            else
+            {
+                assetManager = DavaActivity.instance().getAssets();
+            }
 			try {
 				if (path.length() > 0 && path.charAt(path.length() - 1) == '/') {
 					path = path.substring(0, path.length() - 1);
