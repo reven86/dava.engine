@@ -169,6 +169,7 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette darkPalette;
+
     darkPalette.setColor(QPalette::Window, darkWindowColor);
     darkPalette.setColor(QPalette::WindowText, darkTextColor);
 
@@ -186,6 +187,8 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Button, darkWindowColor);
     darkPalette.setColor(QPalette::ButtonText, darkTextColor);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkDisabledTextColor);
+
+    darkPalette.setColor(QPalette::Light, darkWindowColor);
 
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(0x2A, 0x82, 0xDA));
