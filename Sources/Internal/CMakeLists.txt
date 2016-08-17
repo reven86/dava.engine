@@ -142,5 +142,9 @@ if( DENY_RUN_MULTIPLE_APP_INSTANCES )
     list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
 endif()
 
+if (DAVA_PLATFORM_QT)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+endif()
+
 setup_main_module()
 

@@ -1,4 +1,7 @@
-#include "MovieViewControlAndroid.h"
+#include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 namespace DAVA
 {
@@ -140,3 +143,6 @@ bool MovieViewControl::IsPlaying() const
     return jniMovieViewControl.IsPlaying();
 }
 }
+
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif //__DAVAENGINE_ANDROID__

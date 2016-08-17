@@ -10,6 +10,8 @@ const int32 HEIGHT = 768;
 
 void FrameworkDidLaunched()
 {
+#if defined(__DAVAENGINE_COREV2__)
+#else
     int32 screenWidth = 0;
     int32 screenHeight = 0;
 
@@ -76,6 +78,7 @@ void FrameworkDidLaunched()
     GameCore* core = new GameCore();
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
+#endif //__DAVAENGINE_COREV2__
 }
 
 void FrameworkWillTerminate()

@@ -7,6 +7,7 @@
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Render/Renderer.h"
 #include <unistd.h>
 
 namespace DAVA
@@ -164,10 +165,12 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
+#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
     screenInfo.scale = 1;
+#endif
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
