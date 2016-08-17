@@ -7,7 +7,7 @@ using namespace DAVA::Debug;
 
 DAVA_TESTCLASS (DebugTest)
 {
-    DAVA_TEST(StackTraceTest)
+    DAVA_TEST (StackTraceTest)
     {
         // just check that we don't crash
         Vector<StackFrame> stackTrace = GetBacktrace();
