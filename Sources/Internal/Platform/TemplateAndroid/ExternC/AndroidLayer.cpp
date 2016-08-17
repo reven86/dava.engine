@@ -121,6 +121,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
     androidDelegate = new AndroidDelegate(vm);
 
+    DAVA::JNI::JavaClass::Initialize();
+
     DAVA::AndroidCrashReport::Init(env);
     LOGI("finished JNI_OnLoad");
 
