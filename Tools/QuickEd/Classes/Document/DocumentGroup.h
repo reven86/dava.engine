@@ -17,6 +17,8 @@ class DocumentGroup : public QObject
     Q_OBJECT
     Q_PROPERTY(bool canSave READ CanSave NOTIFY CanSaveChanged)
     Q_PROPERTY(bool canClose READ CanClose NOTIFY CanCloseChanged)
+    Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
+    Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
     explicit DocumentGroup(QObject* parent = nullptr);
     ~DocumentGroup();
@@ -26,6 +28,9 @@ public:
 
     bool CanSave() const;
     bool CanClose() const;
+
+    QString GetUndoText() const;
+    QString GetRedoText() const;
 
     void AttachUndoAction(QAction* action) const;
     void AttachRedoAction(QAction* action) const;
@@ -45,6 +50,8 @@ signals:
     void CanCloseChanged(bool canClose);
     void CanUndoChanged(bool canUndo);
     void CanRedoChanged(bool canRedo);
+    void UndoTextChanged(const QString& undoText);
+    void RedoTextChanged(const QString& redoText);
 
 public slots:
     void AddDocument(const QString& path);

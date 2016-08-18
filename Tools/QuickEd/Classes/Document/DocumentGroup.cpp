@@ -27,6 +27,8 @@ DocumentGroup::DocumentGroup(QObject* parent)
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
     commandStackGroup->canUndoChanged.Connect(this, &DocumentGroup::CanUndoChanged);
     commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
+    commandStackGroup->undoTextChanged.Connect([this](const DAVA::String& text) { emit UndoTextChanged(QString::fromStdString(text)); });
+    commandStackGroup->redoTextChanged.Connect([this](const DAVA::String& text) { emit RedoTextChanged(QString::fromStdString(text)); });
 }
 
 DocumentGroup::~DocumentGroup() = default;
@@ -55,9 +57,24 @@ bool DocumentGroup::CanClose() const
     return active != nullptr;
 }
 
+QString DocumentGroup::GetUndoText() const
+{
+    return QString::fromStdString(commandStackGroup->GetUndoText());
+}
+
+QString DocumentGroup::GetRedoText() const
+{
+    return QString::fromStdString(commandStackGroup->GetRedoText());
+}
+
 void DocumentGroup::AttachUndoAction(QAction* undoAction) const
 {
     undoAction->setEnabled(commandStackGroup->CanUndo());
+    connect(this, &DocumentGroup::UndoTextChanged, [undoAction](const QString& text) {
+        QString actionText = text.isEmpty() ? "Undo" : "Undo: " + text;
+        undoAction->setText(actionText);
+        undoAction->setToolTip(actionText);
+    });
     connect(this, &DocumentGroup::CanUndoChanged, undoAction, &QAction::setEnabled);
     connect(undoAction, &QAction::triggered, this, &DocumentGroup::Undo);
 }
@@ -65,6 +82,11 @@ void DocumentGroup::AttachUndoAction(QAction* undoAction) const
 void DocumentGroup::AttachRedoAction(QAction* redoAction) const
 {
     redoAction->setEnabled(commandStackGroup->CanRedo());
+    connect(this, &DocumentGroup::RedoTextChanged, [redoAction](const QString& text) {
+        QString actionText = text.isEmpty() ? "Redo" : "Redo: " + text;
+        redoAction->setText(actionText);
+        redoAction->setToolTip(actionText);
+    });
     connect(this, &DocumentGroup::CanRedoChanged, redoAction, &QAction::setEnabled);
     connect(redoAction, &QAction::triggered, this, &DocumentGroup::Redo);
 }

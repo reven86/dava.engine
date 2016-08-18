@@ -27,6 +27,8 @@ void CommandStackGroup::SetActiveStack(DAVA::CommandStack* commandStack)
         activeStack->cleanChanged.Disconnect(this);
         activeStack->canRedoChanged.Disconnect(this);
         activeStack->canUndoChanged.Disconnect(this);
+        activeStack->undoTextChanged.Disconnect(this);
+        activeStack->redoTextChanged.Disconnect(this);
     }
     activeStack = commandStack;
     if (commandStack != nullptr)
@@ -35,10 +37,14 @@ void CommandStackGroup::SetActiveStack(DAVA::CommandStack* commandStack)
         activeStack->cleanChanged.Connect(&cleanChanged, &DAVA::Signal<bool>::Emit);
         activeStack->canRedoChanged.Connect(&canRedoChanged, &DAVA::Signal<bool>::Emit);
         activeStack->canUndoChanged.Connect(&canUndoChanged, &DAVA::Signal<bool>::Emit);
+        activeStack->undoTextChanged.Connect(&undoTextChanged, &DAVA::Signal<const DAVA::String&>::Emit);
+        activeStack->redoTextChanged.Connect(&redoTextChanged, &DAVA::Signal<const DAVA::String&>::Emit);
     }
     cleanChanged.Emit(IsClean());
     canRedoChanged.Emit(CanRedo());
     canUndoChanged.Emit(CanUndo());
+    undoTextChanged.Emit(GetUndoText());
+    redoTextChanged.Emit(GetRedoText());
 }
 
 void CommandStackGroup::Undo()
@@ -72,4 +78,14 @@ bool CommandStackGroup::CanUndo() const
 bool CommandStackGroup::CanRedo() const
 {
     return activeStack != nullptr ? activeStack->CanRedo() : false;
+}
+
+DAVA::String CommandStackGroup::GetUndoText() const
+{
+    return activeStack != nullptr ? activeStack->GetUndoText() : DAVA::String();
+}
+
+DAVA::String CommandStackGroup::GetRedoText() const
+{
+    return activeStack != nullptr ? activeStack->GetRedoText() : DAVA::String();
 }

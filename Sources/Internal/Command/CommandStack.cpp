@@ -125,6 +125,24 @@ bool CommandStack::CanRedo() const
     return currentIndex < (static_cast<int32>(commands.size()) - 1);
 }
 
+DAVA::String CommandStack::GetUndoText() const
+{
+    if (CanUndo())
+    {
+        return commands.at(currentIndex)->GetDescription();
+    }
+    return DAVA::String();
+}
+
+DAVA::String CommandStack::GetRedoText() const
+{
+    if (CanRedo())
+    {
+        return commands.at(currentIndex + 1)->GetDescription();
+    }
+    return DAVA::String();
+}
+
 void CommandStack::UpdateCleanState()
 {
     if (cleanIndex == currentIndex)
@@ -155,7 +173,8 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
     UpdateCleanState();
     SetCanUndo(CanUndo());
     SetCanRedo(CanRedo());
-
+    undoTextChanged.Emit(GetUndoText());
+    redoTextChanged.Emit(GetRedoText());
     currentIndexChanged.Emit(currentIndex, oldIndex);
 }
 

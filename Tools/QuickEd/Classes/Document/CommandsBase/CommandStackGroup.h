@@ -23,9 +23,15 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
+    DAVA::String GetUndoText() const;
+    DAVA::String GetRedoText() const;
+
     DAVA::Signal<bool> cleanChanged;
     DAVA::Signal<bool> canUndoChanged;
     DAVA::Signal<bool> canRedoChanged;
+
+    DAVA::Signal<const DAVA::String&> undoTextChanged;
+    DAVA::Signal<const DAVA::String&> redoTextChanged;
 
 private:
     DAVA::CommandStack* activeStack = nullptr;

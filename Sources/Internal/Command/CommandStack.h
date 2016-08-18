@@ -26,10 +26,15 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
+    DAVA::String GetUndoText() const;
+    DAVA::String GetRedoText() const;
+
     Signal<bool> cleanChanged;
     Signal<bool> canUndoChanged;
     Signal<bool> canRedoChanged;
     Signal<int32, int32> currentIndexChanged;
+    Signal<const DAVA::String&> undoTextChanged;
+    Signal<const DAVA::String&> redoTextChanged;
 
 protected:
     virtual std::unique_ptr<CommandBatch> CreateCommmandBatch(const String& name, uint32 commandsCount) const;
