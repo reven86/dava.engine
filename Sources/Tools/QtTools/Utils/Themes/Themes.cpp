@@ -145,6 +145,8 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::ButtonText, lightTextColor.lighter(130));
     lightPalette.setColor(QPalette::Disabled, QPalette::ButtonText, lightDisabledTextColor);
 
+    lightPalette.setColor(QPalette::Light, lightWindowColor);
+
     lightPalette.setColor(QPalette::BrightText, Qt::red);
     lightPalette.setColor(QPalette::Link, Qt::blue);
     lightPalette.setColor(QPalette::Disabled, QPalette::Light, lightWindowColor);
