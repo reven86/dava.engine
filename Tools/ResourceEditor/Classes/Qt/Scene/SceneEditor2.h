@@ -136,7 +136,7 @@ public:
     // checks whether the scene changed since the last save
     bool IsLoaded() const;
     bool IsChanged() const;
-    void SetChanged();
+    void SetChanged(bool changed);
 
     // enable/disable drawing custom HUD
     void SetHUDVisible(bool visible);

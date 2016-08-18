@@ -24,6 +24,20 @@ void RECommandStack::Clear()
     SetCurrentIndex(EMPTY_INDEX);
 }
 
+void RECommandStack::SetClean(bool clean)
+{
+    if (clean)
+    {
+        //call public "SetClean" implementation
+        CommandStack::SetClean();
+    }
+    else
+    {
+        //call private "SetClean" implementation, which only set "clean" flag to false
+        CommandStack::SetClean(false);
+    }
+}
+
 void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
 {
     for (DAVA::int32 index = static_cast<DAVA::int32>(commands.size() - 1); index >= 0; --index)

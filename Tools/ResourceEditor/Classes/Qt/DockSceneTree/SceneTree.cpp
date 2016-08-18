@@ -74,7 +74,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
     scene->Exec(commandCreator(yamlPath));
     if (askFileName)
     {
-        scene->SetChanged();
+        scene->SetChanged(true);
     }
 }
 }
@@ -124,7 +124,7 @@ protected:
 
     void MarkStructureChanged()
     {
-        GetScene()->SetChanged();
+        GetScene()->SetChanged(true);
         isStructureChanged = true;
     }
 
