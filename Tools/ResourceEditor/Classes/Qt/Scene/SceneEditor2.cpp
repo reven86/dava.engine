@@ -318,6 +318,16 @@ bool SceneEditor2::CanRedo() const
     return commandStack->CanRedo();
 }
 
+DAVA::String SceneEditor2::GetUndoText() const
+{
+    return commandStack->GetUndoText();
+}
+
+DAVA::String SceneEditor2::GetRedoText() const
+{
+    return commandStack->GetRedoText();
+}
+
 void SceneEditor2::Undo()
 {
     commandStack->Undo();
@@ -510,6 +520,16 @@ void SceneEditor2::EditorCommandNotify::CanUndoChanged(bool canUndo)
 void SceneEditor2::EditorCommandNotify::CanRedoChanged(bool canRedo)
 {
     SceneSignals::Instance()->CanRedoStateChanged(canRedo);
+}
+
+void SceneEditor2::EditorCommandNotify::UndoTextChanged(const DAVA::String& undoText)
+{
+    SceneSignals::Instance()->UndoTextChanged(undoText);
+}
+
+void SceneEditor2::EditorCommandNotify::RedoTextChanged(const DAVA::String& redoText)
+{
+    SceneSignals::Instance()->RedoTextChanged(redoText);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const

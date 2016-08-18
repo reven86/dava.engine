@@ -117,6 +117,9 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
+    DAVA::String GetUndoText() const;
+    DAVA::String GetRedoText() const;
+
     void Undo();
     void Redo();
 
@@ -213,6 +216,8 @@ private:
         void CleanChanged(bool clean) override;
         void CanUndoChanged(bool canUndo) override;
         void CanRedoChanged(bool canRedo) override;
+        void UndoTextChanged(const DAVA::String& undoText) override;
+        void RedoTextChanged(const DAVA::String& redoText) override;
 
     private:
         SceneEditor2* editor = nullptr;

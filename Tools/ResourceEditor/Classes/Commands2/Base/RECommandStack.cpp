@@ -9,6 +9,8 @@ RECommandStack::RECommandStack()
 {
     canRedoChanged.Connect(this, &RECommandStack::CanRedoChanged);
     canUndoChanged.Connect(this, &RECommandStack::CanUndoChanged);
+    undoTextChanged.Connect(this, &RECommandStack::UndoTextChanged);
+    redoTextChanged.Connect(this, &RECommandStack::RedoTextChanged);
     cleanChanged.Connect(this, &RECommandStack::EmitCleanChanged);
     currentIndexChanged.Connect(this, &RECommandStack::CurrentIndexChanged);
 }

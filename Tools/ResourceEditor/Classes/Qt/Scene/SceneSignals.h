@@ -29,6 +29,8 @@ signals:
 
     void CanUndoStateChanged(bool canUndo);
     void CanRedoStateChanged(bool canRedo);
+    void UndoTextChanged(const DAVA::String& text);
+    void RedoTextChanged(const DAVA::String& text);
     void UndoRedoStateChanged(SceneEditor2* scene);
     void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);

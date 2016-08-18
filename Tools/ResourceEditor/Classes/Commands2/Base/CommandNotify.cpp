@@ -12,6 +12,14 @@ void CommandNotify::CanRedoChanged(bool /*canRedo*/)
 {
 }
 
+void CommandNotify::UndoTextChanged(const DAVA::String& undoText)
+{
+}
+
+void CommandNotify::RedoTextChanged(const DAVA::String& redoText)
+{
+}
+
 CommandNotifyProvider::~CommandNotifyProvider()
 {
     SafeRelease(curNotify);
@@ -55,5 +63,21 @@ void CommandNotifyProvider::CanRedoChanged(bool canRedo)
     if (nullptr != curNotify)
     {
         curNotify->CanRedoChanged(canRedo);
+    }
+}
+
+void CommandNotifyProvider::UndoTextChanged(const DAVA::String& undoText)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->UndoTextChanged(undoText);
+    }
+}
+
+void CommandNotifyProvider::RedoTextChanged(const DAVA::String& redoText)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->RedoTextChanged(redoText);
     }
 }

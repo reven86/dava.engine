@@ -11,6 +11,8 @@ public:
     virtual void CleanChanged(bool clean);
     virtual void CanUndoChanged(bool canUndo);
     virtual void CanRedoChanged(bool canRedo);
+    virtual void UndoTextChanged(const DAVA::String& undoText);
+    virtual void RedoTextChanged(const DAVA::String& redoText);
 };
 
 class CommandNotifyProvider
@@ -25,6 +27,8 @@ public:
     void EmitCleanChanged(bool clean);
     void CanUndoChanged(bool canUndo);
     void CanRedoChanged(bool canRedo);
+    void UndoTextChanged(const DAVA::String& undoText);
+    void RedoTextChanged(const DAVA::String& redoText);
 
 protected:
     CommandNotify* curNotify = nullptr;

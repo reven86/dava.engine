@@ -245,6 +245,9 @@ private slots:
     void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
 
+    void UpdateUndoActionText(const DAVA::String& text);
+    void UpdateRedoActionText(const DAVA::String& text);
+
 private:
     std::unique_ptr<Ui::MainWindow> ui;
     QtWaitDialog* waitDialog;

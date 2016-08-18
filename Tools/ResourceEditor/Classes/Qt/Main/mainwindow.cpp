@@ -661,6 +661,8 @@ void QtMainWindow::SetupToolBars()
 {
     QObject::connect(SceneSignals::Instance(), &SceneSignals::CanUndoStateChanged, ui->actionUndo, &QAction::setEnabled);
     connect(SceneSignals::Instance(), &SceneSignals::CanRedoStateChanged, ui->actionRedo, &QAction::setEnabled);
+    connect(SceneSignals::Instance(), &SceneSignals::UndoTextChanged, this, &QtMainWindow::UpdateUndoActionText);
+    connect(SceneSignals::Instance(), &SceneSignals::RedoTextChanged, this, &QtMainWindow::UpdateRedoActionText);
     QAction* actionMainToolBar = ui->mainToolBar->toggleViewAction();
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
@@ -1092,6 +1094,9 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
     }
     ui->actionUndo->setEnabled(scene->CanUndo());
     ui->actionRedo->setEnabled(scene->CanRedo());
+
+    UpdateUndoActionText(scene->GetUndoText());
+    UpdateRedoActionText(scene->GetRedoText());
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2* scene)
@@ -3410,4 +3415,18 @@ void QtMainWindow::ForEachScene(const DAVA::Function<void(SceneEditor2*)>& funct
         DVASSERT(sceneEditor);
         functor(sceneEditor);
     }
+}
+
+void QtMainWindow::UpdateUndoActionText(const DAVA::String& text)
+{
+    QString actionText = text.empty() ? "Undo" : "Undo: " + QString::fromStdString(text);
+    ui->actionUndo->setText(actionText);
+    ui->actionUndo->setToolTip(actionText);
+}
+
+void QtMainWindow::UpdateRedoActionText(const DAVA::String& text)
+{
+    QString actionText = text.empty() ? "Redo" : "Redo: " + QString::fromStdString(text);
+    ui->actionRedo->setText(actionText);
+    ui->actionRedo->setToolTip(actionText);
 }
