@@ -78,9 +78,9 @@ protected:
 class Scene : public Entity, Observer
 {
 protected:
-    virtual ~Scene();
 
 public:
+    virtual ~Scene();
     enum
     {
         SCENE_SYSTEM_TRANSFORM_FLAG = 1 << 0,

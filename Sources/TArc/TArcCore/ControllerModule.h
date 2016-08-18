@@ -9,6 +9,7 @@ namespace tarc
 class ControllerModule : public ClientModule
 {
 protected:
+    virtual void OnRenderSystemInitialized(DAVA::Window& w) = 0;
     ContextManager& GetContextManager();
 
 private:

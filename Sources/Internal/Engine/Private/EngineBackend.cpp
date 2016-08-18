@@ -377,6 +377,7 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
 {
     e.window->EventHandler(e);
+    DoEvents();
     engine->windowCreated.Emit(*e.window);
 }
 

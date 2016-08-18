@@ -43,6 +43,7 @@ private:
     void SetControllerModule(ControllerModule* module);
 
     void OnLoopStarted();
+    void OnWindowCreated(DAVA::Window& w);
     void OnFrame();
     void OnLoopStopped();
 

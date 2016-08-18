@@ -1,5 +1,5 @@
-#include "ControllerModule.h"
-#include "DataChangerModule.h"
+#include "SceneViewModule.h"
+#include "LibraryModule.h"
 
 #include "TArcCore/TArcCore.h"
 
@@ -29,8 +29,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     DAVA::Engine e;
     tarc::Core core(e);
-    core.CreateControllerModule<TemplateControllerModule>();
-    core.CreateModule<DataChangerModule>();
+    core.CreateModule<LibraryModule>();
+    core.CreateControllerModule<SceneViewModule>();
 
     e.SetOptions(appOptions);
     e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);

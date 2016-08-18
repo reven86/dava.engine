@@ -9,6 +9,8 @@
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
+#include <QQuickWindow>
+#include <QQuickItem>
 #include <QOpenGLContext>
 
 namespace DAVA
@@ -19,7 +21,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::WheelFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(QSize(width, height));
     setResizeMode(QQuickWidget::SizeViewToRootObject);
@@ -28,6 +30,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget()
@@ -51,6 +54,15 @@ void RenderWidget::OnFrame()
     }
 
     widgetDelegate->OnFrame();
+}
+
+void RenderWidget::OnActiveFocusItemChanged()
+{
+    QQuickItem* item = quickWindow()->activeFocusItem();
+    if (item != nullptr)
+    {
+        item->installEventFilter(this);
+    }
 }
 
 void RenderWidget::resizeEvent(QResizeEvent* e)
@@ -128,7 +140,7 @@ void RenderWidget::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::eventFilter(QObject* object, QEvent* e)
 {
-    if (object == quickWindow() && keyEventRecursiveGuard == false)
+    if ((object == quickWindow() || object == quickWindow()->activeFocusItem()) && keyEventRecursiveGuard == false)
     {
         keyEventRecursiveGuard = true;
         SCOPE_EXIT

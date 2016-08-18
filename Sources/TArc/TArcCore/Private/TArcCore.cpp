@@ -19,6 +19,7 @@ Core::Core(DAVA::Engine& engine_)
     engine.beginFrame.Connect(DAVA::MakeFunction(this, &Core::OnFrame));
     engine.gameLoopStarted.Connect(DAVA::MakeFunction(this, &Core::OnLoopStarted));
     engine.gameLoopStopped.Connect(DAVA::MakeFunction(this, &Core::OnLoopStopped));
+    engine.windowCreated.Connect(DAVA::MakeFunction(this, &Core::OnWindowCreated));
 }
 
 Core::~Core()
@@ -38,6 +39,11 @@ void Core::SetControllerModule(ControllerModule* module)
     DVASSERT(controllerModule == nullptr);
     controllerModule = module;
     modules.push_back(module);
+}
+
+void Core::OnWindowCreated(DAVA::Window& w)
+{
+    controllerModule->OnRenderSystemInitialized(w);
 }
 
 void Core::OnFrame()
