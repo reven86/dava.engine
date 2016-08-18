@@ -2,7 +2,6 @@
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <Objbase.h>
-#include <AtlConv.h>
 
 #if defined(__DAVAENGINE_WIN32__)
 #include <ShellAPI.h>
@@ -14,18 +13,27 @@ namespace DAVA
 {
 String GenerateGUID()
 {
-    //create new GUID
+    // Create new GUID
+    //
     GUID guid;
     if (FAILED(CoCreateGuid(&guid)))
         return "";
 
-    //get string representation of GUID
-    Array<OLECHAR, 64> guidString{};
-    ::StringFromGUID2(guid, guidString.data(), static_cast<int>(guidString.size()));
+    // Get string representation of GUID
+    //
+    Array<OLECHAR, 64> guidStringRaw{};
+    ::StringFromGUID2(guid, guidStringRaw.data(), static_cast<int>(guidStringRaw.size()));
 
-    //convert to normal string
-    USES_CONVERSION;
-    return OLE2CA(guidString.data());
+    // Convert to normal string
+    // OLECHAR's type is wchar if OLE2ANSI is not defined, otherwise its type is char
+    //
+
+#ifndef OLE2ANSI
+    WideString guidWideStr(guidStringRaw.data());
+    return WStringToString(guidWideStr);
+#else
+    return String(guidStringRaw.data());
+#endif
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
