@@ -11,6 +11,7 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
+class GlobalOperations;
 class LazyUpdater;
 class SceneTree : public QTreeView
 {
@@ -19,6 +20,8 @@ class SceneTree : public QTreeView
 public:
     explicit SceneTree(QWidget* parent = 0);
     ~SceneTree();
+
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected:
     void dropEvent(QDropEvent* event) override;
@@ -75,6 +78,7 @@ private:
     SceneTreeDelegate* treeDelegate = nullptr;
     LazyUpdater* treeUpdater = nullptr;
     bool isInSync = false;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
 
 #endif // __QT_SCENE_TREE_H__

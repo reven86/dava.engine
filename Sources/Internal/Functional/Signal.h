@@ -1,37 +1,50 @@
-#ifndef __DAVA_SIGNAL_H__
-#define __DAVA_SIGNAL_H__
+#pragma once
+
+// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
 
 #include "Base/BaseTypes.h"
-#include "Concurrency/Mutex.h"
-#include "Concurrency/LockGuard.h"
-#include "Concurrency/Thread.h"
-#include "Concurrency/Atomic.h"
 #include "Functional/Function.h"
 #include "Functional/SignalBase.h"
 
-// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
+#ifdef ENABLE_MULTITHREADED_SIGNALS
+#include "Concurrency/Mutex.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/LockGuard.h"
+#endif
 
 namespace DAVA
 {
 namespace Sig11
 {
+
+#ifdef ENABLE_MULTITHREADED_SIGNALS
+
+template <typename T>
+using LockGuard = DAVA::LockGuard<T>;
+
+#else
+
 struct DummyMutex
 {
-    void Lock()
+};
+
+template <typename T>
+struct DummyLockGuard
+{
+    DummyLockGuard(const T&)
     {
-    }
-    void Unlock()
-    {
-    }
-    bool TryLock()
-    {
-        return true;
     }
 };
 
 struct DymmyThreadID
 {
 };
+
+template <typename T>
+using LockGuard = DummyLockGuard<T>;
+
+#endif
 
 template <typename MutexType, typename ThreadIDType, typename... Args>
 class SignalImpl : public SignalBase
@@ -51,27 +64,27 @@ public:
     template <typename Fn>
     SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
         return AddConnection(nullptr, Func(fn), tid);
     }
 
     template <typename Obj, typename Cls>
     SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
     template <typename Obj, typename Cls>
     SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
     void Disconnect(SigConnectionID id)
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
 
         auto it = connections.find(id);
         if (it != connections.end())
@@ -90,7 +103,7 @@ public:
     {
         if (nullptr != obj)
         {
-            LockGuard<MutexType> guard(mutex);
+            Sig11::LockGuard<MutexType> guard(mutex);
 
             auto it = connections.begin();
             auto end = connections.end();
@@ -112,7 +125,7 @@ public:
 
     void DisconnectAll()
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
 
         for (auto&& con : connections)
         {
@@ -128,7 +141,7 @@ public:
 
     void Track(SigConnectionID id, TrackedObject* obj)
     {
-        LockGuard<MutexType> guard(mutex);
+        Sig11::LockGuard<MutexType> guard(mutex);
 
         auto it = connections.find(id);
         if (it != connections.end())
@@ -268,7 +281,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
     {
         Thread::Id thisTid = Thread::GetCurrentId();
 
-        LockGuard<Mutex> guard(Base::mutex);
+        Sig11::LockGuard<Mutex> guard(Base::mutex);
         for (auto&& con : Base::connections)
         {
             if (!con.second.blocked)
@@ -294,5 +307,3 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 #endif
 
 } // namespace DAVA
-
-#endif // __DAVA_SIGNAL_H__

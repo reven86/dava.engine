@@ -170,6 +170,7 @@ private: // Event handlers
     void OnGotFocus();
     void OnLostFocus();
     void OnTextChanged();
+    void OnLayoutUpdated();
 
     // TextBox specific events
     void OnSelectionChanged();

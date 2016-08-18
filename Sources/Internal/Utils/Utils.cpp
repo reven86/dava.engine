@@ -31,16 +31,26 @@ WideString WcharToWString(const wchar_t* s)
     return temp;
 }
 
-void Split(const String& inputString, const String& delims, Vector<String>& tokens, bool skipDuplicated /* = false*/, bool addEmptyTokens /* = false*/)
+void Split(const String& inputString, const String& delims, Vector<String>& tokens, bool skipDuplicated /* = false*/, bool addEmptyTokens /* = false*/, bool integralDelim /* = false*/)
 {
     std::string::size_type pos, lastPos = 0;
     bool needAddToken = true;
     bool exit = false;
     String token = "";
+    size_t delimLen = (integralDelim ? delims.size() : 1);
+
     while (true)
     {
         needAddToken = false;
-        pos = inputString.find_first_of(delims, lastPos);
+        if (integralDelim)
+        {
+            pos = inputString.find(delims, lastPos);
+        }
+        else
+        {
+            pos = inputString.find_first_of(delims, lastPos);
+        }
+
         if (pos == std::string::npos)
         {
             pos = inputString.length();
@@ -65,7 +75,8 @@ void Split(const String& inputString, const String& delims, Vector<String>& toke
             tokens.push_back(token);
         if (exit)
             break;
-        lastPos = pos + 1;
+
+        lastPos = pos + delimLen;
     }
 }
 

@@ -52,6 +52,7 @@
 #endif
 
 #include "UI/UIEvent.h"
+#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {

@@ -10,19 +10,17 @@ namespace DAVA
 class KeyedArchive;
 };
 
-struct ServerData
+struct RemoteServerParams
 {
-    ServerData() = default;
-    ServerData(DAVA::String _ip, DAVA::uint16 _port, bool _enabled);
+    RemoteServerParams() = default;
+    RemoteServerParams(DAVA::String _ip, bool _enabled);
 
     bool IsEmpty() const;
     bool EquivalentTo(const DAVA::Net::Endpoint& right) const;
 
-    bool operator==(const ServerData& right) const;
-    bool operator<(const ServerData& right) const;
+    bool operator==(const RemoteServerParams& right) const;
 
     DAVA::String ip = "";
-    DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
     bool enabled = false;
 };
 
@@ -36,12 +34,13 @@ class ApplicationSettings : public QObject
 private:
     static const DAVA::String DEFAULT_FOLDER;
     static const DAVA::float64 DEFAULT_CACHE_SIZE_GB;
-    static const DAVA::uint32 DEFAULT_FILES_COUNT = 5;
-    static const DAVA::uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
-    static const DAVA::uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
-    static const bool DEFAULT_AUTO_START = true;
-    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
-    static const bool DEFAULT_RESTART_ON_CRASH = false;
+    static const DAVA::uint32 DEFAULT_FILES_COUNT;
+    static const DAVA::uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    static const DAVA::uint16 DEFAULT_PORT;
+    static const DAVA::uint16 DEFAULT_HTTP_PORT;
+    static const bool DEFAULT_AUTO_START;
+    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
+    static const bool DEFAULT_RESTART_ON_CRASH;
 
 public:
     void Save() const;
@@ -64,6 +63,9 @@ public:
     const DAVA::uint16 GetPort() const;
     void SetPort(const DAVA::uint16 port);
 
+    const DAVA::uint16 GetHttpPort() const;
+    void SetHttpPort(const DAVA::uint16 port);
+
     const bool IsAutoStart() const;
     void SetAutoStart(bool);
 
@@ -73,12 +75,12 @@ public:
     const bool IsRestartOnCrash() const;
     void SetRestartOnCrash(bool);
 
-    const DAVA::List<ServerData>& GetServers() const;
+    const DAVA::List<RemoteServerParams>& GetServers() const;
     void ResetServers();
-    void AddServer(const ServerData& server);
-    void RemoveServer(const ServerData& server);
+    void AddServer(const RemoteServerParams& server);
+    void RemoveServer(const RemoteServerParams& server);
 
-    ServerData GetCurrentServer() const;
+    RemoteServerParams GetCurrentServer() const;
 
 signals:
     void SettingsUpdated(const ApplicationSettings* settings) const;
@@ -93,10 +95,11 @@ public:
     DAVA::uint32 filesCount = DEFAULT_FILES_COUNT;
     DAVA::uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
     DAVA::uint16 listenPort = DEFAULT_PORT;
+    DAVA::uint16 listenHttpPort = DEFAULT_HTTP_PORT;
     bool autoStart = DEFAULT_AUTO_START;
     bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
     bool restartOnCrash = DEFAULT_RESTART_ON_CRASH;
-    DAVA::List<ServerData> remoteServers;
+    DAVA::List<RemoteServerParams> remoteServers;
 
     bool isFirstLaunch = true;
 };
