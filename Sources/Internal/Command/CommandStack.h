@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Command/Command.h"
+#include "Command/CommandBatch.h"
 #include "Functional/Signal.h"
 
 namespace DAVA
 {
-class CommandBatch;
-
 class CommandStack
 {
 public:
@@ -32,7 +31,7 @@ public:
     Signal<int32, int32> currentIndexChanged;
 
 protected:
-    virtual std::unique_ptr<CommandBatch> CreateCommmandBatch(const String& name, uint32 commandsCount) const;
+    virtual CommandBatch* CreateCommmandBatch(const String& name, uint32 commandsCount) const;
 
     void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand);
 
@@ -46,10 +45,8 @@ protected:
 
     Vector<std::unique_ptr<Command>> commands;
 
-    //this stack is created to hold nested batches hierarchy
-    Stack<CommandBatch*> batchesStack;
-    //root command batch which created when "BeginBatch" is called first time
-    std::unique_ptr<Command> rootBatch;
+    std::unique_ptr<CommandBatch> commandBatch;
+    uint32 requestedBatchCount = 0;
 
     //members to remember stack state and do not emit extra signals
     bool isClean = true;

@@ -18,7 +18,7 @@ public:
     bool IsUncleanCommandExists(DAVA::uint32 commandId) const;
 
 private:
-    std::unique_ptr<DAVA::CommandBatch> CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const override;
+    DAVA::CommandBatch* CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const override;
 
     void RemoveCommand(DAVA::uint32 index);
     void CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex);
