@@ -40,7 +40,6 @@ include_directories   ( "Classes/Infrastructure" )
 
 if( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
-
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.entitlements )
@@ -55,6 +54,10 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+
+if (MACOS)
+    set( APP_DATA  ${APP_DATA} "scripts")
+endif()
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed-Info.plist )
 
