@@ -6,6 +6,8 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 
+using namespace DAVA;
+
 DAVA_TESTCLASS (OpenSSLTest)
 {
     char* password = "Hello Dava Engine!";
