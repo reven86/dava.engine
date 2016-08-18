@@ -157,6 +157,11 @@ QString FileSystemDockWidget::GetPathByCurrentPos()
     else
     {
         path = model->filePath(index);
+        QFileInfo fileInfo(path);
+        if (fileInfo.isFile())
+        {
+            path = fileInfo.absolutePath();
+        }
     }
     return path + "/";
 }
