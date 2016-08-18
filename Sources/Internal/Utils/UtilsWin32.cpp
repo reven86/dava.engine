@@ -24,11 +24,11 @@ String GenerateGUID()
     Array<OLECHAR, 64> guidStringRaw{};
     ::StringFromGUID2(guid, guidStringRaw.data(), static_cast<int>(guidStringRaw.size()));
 
+    
+#ifndef OLE2ANSI
     // Convert to normal string
     // OLECHAR's type is wchar if OLE2ANSI is not defined, otherwise its type is char
     //
-
-#ifndef OLE2ANSI
     WideString guidWideStr(guidStringRaw.data());
     return WStringToString(guidWideStr);
 #else
