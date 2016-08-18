@@ -92,7 +92,7 @@ void PropertiesWidget::OnAddComponent(QAction* action)
 
         uint32 componentType = action->data().toUInt();
         ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
-        if (componentSection != nullptr)
+        if (componentSection != nullptr && !UIComponent::IsMultiple(componentType))
         {
             QModelIndex index = propertiesModel->indexByProperty(componentSection);
             OnComponentAdded(index);
@@ -282,7 +282,13 @@ void PropertiesWidget::OnComponentAdded(const QModelIndex& index)
 {
     treeView->expand(index);
     treeView->setCurrentIndex(index);
-    treeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+    int rowCount = propertiesModel->rowCount(index);
+    if (rowCount > 0)
+    {
+        QModelIndex lastChildIndex = index.child(rowCount - 1, 0);
+        treeView->scrollTo(lastChildIndex, QAbstractItemView::EnsureVisible);
+    }
+    treeView->scrollTo(index, QAbstractItemView::EnsureVisible);
 }
 
 void PropertiesWidget::UpdateModel(PackageBaseNode* node)
