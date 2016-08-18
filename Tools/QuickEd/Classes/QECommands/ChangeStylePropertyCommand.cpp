@@ -5,7 +5,7 @@
 #include "Model/ControlProperties/AbstractProperty.h"
 
 ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* prop, const DAVA::VariantType& newVal)
-    : DAVA::Command(DAVA::String("change ") + property->GetName().c_str())
+    : DAVA::Command(DAVA::String("change ") + prop->GetName().c_str())
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
     , property(SafeRetain(prop))
