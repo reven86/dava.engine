@@ -3,6 +3,8 @@
 
 #include <sstream>
 #include "Base/Type.h"
+#include "Base/BaseTypes.h"
+
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 

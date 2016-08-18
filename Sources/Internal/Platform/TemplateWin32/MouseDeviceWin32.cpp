@@ -5,11 +5,17 @@
 #include "Platform/TemplateWin32/MouseDeviceWin32.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 void MouseDeviceWin32::SetCursorInCenter()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    HWND hWnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->GetNativeHandle());
+#else
     HWND hWnd = static_cast<HWND>(DAVA::Core::Instance()->GetNativeView());
+#endif
     RECT wndRect;
     ::GetWindowRect(hWnd, &wndRect);
     int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
@@ -25,7 +31,11 @@ bool MouseDeviceWin32::SkipEvents(const UIEvent* event)
 
 bool MouseDeviceWin32::SetSystemCursorVisibility(bool show)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    HWND wnd = static_cast<HWND>(Engine::Instance()->PrimaryWindow()->GetNativeHandle());
+#else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
+#endif
     if (show)
     {
         HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);

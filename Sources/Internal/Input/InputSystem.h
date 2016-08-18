@@ -27,7 +27,11 @@ public:
         INPUT_DEVICE_JOYSTICK = 1 << 2
     };
 
+#if defined(__DAVAENGINE_COREV2__)
+    friend class Private::EngineBackend;
+#else
     friend void Core::CreateSingletons();
+#endif
 
 protected:
     ~InputSystem();

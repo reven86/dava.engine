@@ -10,6 +10,10 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+if (DAVA_COREV2)
+    add_definitions(-D__DAVAENGINE_COREV2__)
+endif()
+
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 add_definitions(-DLOCALIZATION_DEBUG)
 
@@ -71,6 +75,11 @@ if ( WINDOWS_UAP )
 endif ()
 
 setup_main_executable()
+if (DAVA_COREV2)
+    if (WIN32)
+        set_property(TARGET UnitTests APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
+    endif()
+endif()
 
 convert_graphics()
 

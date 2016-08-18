@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidDelegate.h"
 #include "Logger/Logger.h"
 
@@ -37,3 +39,5 @@ bool AndroidDelegate::DownloadHttpFile(const DAVA::String& url, const DAVA::Stri
     }
     return retValue;
 }
+
+#endif // !__DAVAENGINE_COREV2__

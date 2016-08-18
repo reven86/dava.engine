@@ -4,10 +4,11 @@
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
+class GameCore;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest();
+    PackManagerTest(GameCore* g);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
