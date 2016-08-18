@@ -1,5 +1,105 @@
+#if !defined(DISABLE_NATIVE_WEBVIEW)
+
+#include "UI/Private/Android/WebViewControlAndroid.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "UI/Private/Android/WebViewControlAndroidImpl.h"
+
+namespace DAVA
+{
+WebViewControl::WebViewControl(Window& w, UIWebView& uiWebView)
+    : impl(new WebViewControlImpl(w, uiWebView))
+{
+}
+
+WebViewControl::~WebViewControl()
+{
+    impl->OwnerAtPremortem();
+    impl->Release();
+}
+
+void WebViewControl::Initialize(const Rect& rect)
+{
+    impl->Initialize(rect);
+}
+
+void WebViewControl::OpenURL(const String& url)
+{
+    impl->OpenURL(url);
+}
+
+void WebViewControl::LoadHtmlString(const WideString& htmlString)
+{
+    impl->LoadHtmlString(htmlString);
+}
+
+void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
+{
+    impl->OpenFromBuffer(htmlString, basePath);
+}
+
+void WebViewControl::ExecuteJScript(const String& jsScript)
+{
+    impl->ExecuteJScript(jsScript);
+}
+
+void WebViewControl::SetRect(const Rect& rect)
+{
+    impl->SetRect(rect);
+}
+
+void WebViewControl::SetVisible(bool visible, bool /*hierarchic*/)
+{
+    impl->SetVisible(visible);
+}
+
+void WebViewControl::SetBackgroundTransparency(bool enabled)
+{
+    impl->SetBackgroundTransparency(enabled);
+}
+
+void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* /*webView*/)
+{
+    impl->SetDelegate(webViewDelegate);
+}
+
+void WebViewControl::SetRenderToTexture(bool enabled)
+{
+    impl->SetRenderToTexture(enabled);
+}
+
+bool WebViewControl::IsRenderToTexture() const
+{
+    return impl->IsRenderToTexture();
+}
+
+void WebViewControl::Update()
+{
+    impl->Update();
+}
+
+void WebViewControl::DeleteCookies(const String& url)
+{
+    WebViewControlImpl::DeleteCookies(url);
+}
+
+String WebViewControl::GetCookie(const String& url, const String& name) const
+{
+    return WebViewControlImpl::GetCookie(url, name);
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& url) const
+{
+    return WebViewControlImpl::GetCookies(url);
+}
+
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
+
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_ANDROID__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -371,4 +471,6 @@ void WebViewControl::WillDraw()
 
 } //namespace DAVA
 
-#endif //defined(__DAVAENGINE_ANDROID__) && !defined(DISABLE_NATIVE_WEBVIEW)
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__
+#endif // !DISABLE_NATIVE_WEBVIEW

@@ -53,6 +53,7 @@ private:
 
     void OnResume();
     void OnPause();
+    void SurfaceCreated(JNIEnv* env, jobject jsurfaceViewX);
     void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
     void SurfaceDestroyed();
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);

@@ -98,6 +98,10 @@ void WindowBackend::OnPause()
     window->PostVisibilityChanged(false);
 }
 
+void WindowBackend::SurfaceCreated(JNIEnv* env, jobject jsurfaceViewX)
+{
+}
+
 void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height)
 {
     {

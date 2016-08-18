@@ -1,8 +1,64 @@
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_H__
+#pragma once
+
+#if !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__) && !defined(DISABLE_NATIVE_WEBVIEW)
+
+#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "UI/IWebViewControl.h"
+#include "Engine/Private/EnginePrivateFwd.h"
+
+namespace DAVA
+{
+class FilePath;
+class WebViewControlImpl;
+
+class WebViewControl : public IWebViewControl
+{
+public:
+    WebViewControl(Window& w, UIWebView& uiWebView);
+    ~WebViewControl() override;
+
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
+
+    // Open the URL requested.
+    void OpenURL(const String& url) override;
+    // Load html page from string
+    void LoadHtmlString(const WideString& htmlString) override;
+    void OpenFromBuffer(const String& htmlString, const FilePath& basePath) override;
+    // Execute javascript string in webview
+    void ExecuteJScript(const String& jsScript) override;
+
+    // Delete all cookies associated with target URL
+    void DeleteCookies(const String& url) override;
+    // Get cookie for specific domain and name
+    String GetCookie(const String& url, const String& name) const override;
+    // Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& url) const override;
+
+    // Size/pos/visibility changes.
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool visible, bool hierarchic) override;
+    void SetBackgroundTransparency(bool enabled) override;
+
+    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
+
+    void SetRenderToTexture(bool enabled) override;
+    bool IsRenderToTexture() const override;
+
+    void Update() override;
+
+private:
+    // TODO: RefPtr
+    WebViewControlImpl* impl = nullptr;
+};
+
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
 
 #include "UI/IWebViewControl.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -115,8 +171,8 @@ private:
     Function<jboolean(jint)> isRenderToTexture;
     Function<void(jint)> willDraw;
 };
-};
+}
 
-#endif //#if defined(__DAVAENGINE_ANDROID__) && !defined(DISABLE_NATIVE_WEBVIEW)
-
-#endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_MACOS_H__) */
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__
+#endif // !DISABLE_NATIVE_WEBVIEW

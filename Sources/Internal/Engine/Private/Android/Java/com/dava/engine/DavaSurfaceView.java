@@ -18,6 +18,7 @@ public final class DavaSurfaceView extends SurfaceView
     
     public static native void nativeSurfaceViewOnResume(long windowBackendPointer);
     public static native void nativeSurfaceViewOnPause(long windowBackendPointer);
+    public static native void nativeSurfaceViewOnSurfaceCreated(long windowBackendPointer, DavaSurfaceView surfaceView);
     public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
@@ -33,6 +34,13 @@ public final class DavaSurfaceView extends SurfaceView
         setFocusableInTouchMode(true);
         requestFocus();
         setOnTouchListener(this);
+    }
+
+    public DavaWebView createWebView(long backendPointer)
+    {
+        Log.d(DavaActivity.LOG_TAG, "DavaSurface.createWebView");
+        DavaWebView object = new DavaWebView(this, backendPointer);
+        return object;
     }
     
     public void handleResume()
@@ -54,6 +62,7 @@ public final class DavaSurfaceView extends SurfaceView
     public void surfaceCreated(SurfaceHolder holder)
     {
         Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
+        nativeSurfaceViewOnSurfaceCreated(windowBackendPointer, this);
     }
     
     @Override

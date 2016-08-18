@@ -489,6 +489,7 @@ void Window::HandlePendingSizeChanging()
     {
         virtualCoordSystem->SetInputScreenAreaSize(w, h);
         virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
+        virtualCoordSystem->SetVirtualScreenSize(physW, physH);
         virtualCoordSystem->UnregisterAllAvailableResourceSizes();
         virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
         virtualCoordSystem->ScreenSizeChanged();

@@ -2,6 +2,8 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "Engine/Public/Engine.h"
+
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
 #elif defined(ENABLE_CEF_WEBVIEW)
@@ -24,7 +26,11 @@ namespace DAVA
 {
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
+#if defined(__DAVAENGINE_COREV2__) && defined(__DAVAENGINE_ANDROID__)
+    , webViewControl(new WebViewControl(*Engine::Instance()->PrimaryWindow(), *this))
+#else
     , webViewControl(new WebViewControl(*this))
+#endif
     , isNativeControlVisible(false)
 {
     Rect newRect = GetAbsoluteRect();

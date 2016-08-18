@@ -47,6 +47,11 @@ public final class DavaActivity extends Activity
         return activitySingleton;
     }
 
+    public static DavaCommandHandler commandHandler()
+    {
+        return activitySingleton.commandHandler;
+    }
+
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");

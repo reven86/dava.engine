@@ -86,6 +86,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnP
     androidBridge->SurfaceViewOnPause(wbackend);
 }
 
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceCreated(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject jsurfaceView)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    androidBridge->SurfaceViewOnSurfaceCreated(wbackend, env, jsurfaceView);
+}
+
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
 {
     using DAVA::Private::WindowBackend;
@@ -195,6 +202,11 @@ void AndroidBridge::SurfaceViewOnResume(WindowBackend* wbackend)
 void AndroidBridge::SurfaceViewOnPause(WindowBackend* wbackend)
 {
     wbackend->OnPause();
+}
+
+void AndroidBridge::SurfaceViewOnSurfaceCreated(WindowBackend* wbackend, JNIEnv* env, jobject jsurfaceView)
+{
+    wbackend->SurfaceCreated(env, jsurfaceView);
 }
 
 void AndroidBridge::SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height)
