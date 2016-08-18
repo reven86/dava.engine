@@ -17,7 +17,7 @@ public:
     void InitializationFinished();
 
     void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) override;
-    void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper data) override;
+    void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) override;
     void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
 
     void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) override;
@@ -26,7 +26,7 @@ public:
     std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) override;
 
 private:
-    QWidget* LoadView(const QString& name, const QString& resourceName, DataWrapper data);
+    QWidget* LoadView(const QString& name, const QString& resourceName, DataWrapper&& data);
 
 private:
     struct Impl;

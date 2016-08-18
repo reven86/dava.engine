@@ -6,6 +6,20 @@
 namespace tarc
 {
 
+namespace DataWrapperDetail
+{
+DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type)
+{
+    DAVA::Reflection ret;
+    if (context.HasData(type))
+    {
+        ret = DAVA::Reflection::Create(&context.GetData(type)).ref;
+    }
+
+    return ret;
+}
+}
+
 struct DataWrapper::Impl
 {
     DataContext* activeContext = nullptr;
@@ -16,7 +30,7 @@ struct DataWrapper::Impl
 };
 
 DataWrapper::DataWrapper(const DAVA::ReflectedType* type)
-    : DataWrapper(DAVA::Bind(&DataWrapper::GetDataDefault, std::placeholders::_1, type))
+    : DataWrapper(DAVA::Bind(&DataWrapperDetail::GetDataDefault, std::placeholders::_1, type))
 {
 }
 
@@ -162,16 +176,6 @@ DAVA::Reflection DataWrapper::GetData() const
 {
     DVASSERT(HasData());
     return impl->dataAccessor(*impl->activeContext);
-}
-
-DAVA::Reflection DataWrapper::GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type)
-{
-    if (!context.HasData(type))
-    {
-        return DAVA::Reflection();
-    }
-
-    return DAVA::Reflection::Create(&context.GetData(type)).ref;
 }
 
 DataListener::~DataListener()

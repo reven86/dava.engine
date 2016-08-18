@@ -18,8 +18,8 @@ set ( DAVA_PLATFORM_QT 1 )
 set ( DAVA_COMPONENTS "Sound" "TArc")
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 
+find_package(DavaFramework REQUIRED "${DAVA_COMPONENTS}")
 find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
-find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
 
 set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 

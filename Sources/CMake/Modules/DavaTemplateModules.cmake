@@ -44,7 +44,10 @@ STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
 #
 FIND_SYSTEM_LIBRARY                   
-FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
+#
+FIND_PACKAGE
+FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -148,7 +151,12 @@ macro( setup_main_module )
                     list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
                 endif()
             endif()
-        endforeach()        
+        endforeach()
+
+        #"FIND PACKAGE"
+        foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+            find_package( ${NAME} )
+        endforeach()
 
         #"ERASE FILES"
         foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )

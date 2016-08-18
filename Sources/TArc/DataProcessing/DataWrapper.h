@@ -41,15 +41,13 @@ private:
     void NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields = DAVA::Set<DAVA::String>());
     DAVA::Reflection GetData() const;
 
-    static DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type);
-
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;
 };
     
 template<typename T>
-class DataEditor
+class DataEditor final
 {
 public:
     DataEditor(DataWrapper& holder, DAVA::Reflection reflection);
@@ -65,7 +63,7 @@ public:
     
 private:
     DAVA::Reflection reflection;
-    T* dataPtr;
+    T* dataPtr = nullptr;
     DataWrapper holder;
 };
 

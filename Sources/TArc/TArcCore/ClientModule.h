@@ -9,9 +9,10 @@ class ContextAccessor;
 
 class ClientModule
 {
-protected:
+public:
     virtual ~ClientModule() {}
 
+protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
 

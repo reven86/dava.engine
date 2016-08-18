@@ -22,10 +22,8 @@ public:
 
 private:
     friend class QtReflectionBridge;
+    QtReflected(QtReflectionBridge* reflectionBridge, DataWrapper&& wrapper, QObject* parent);
 
-    QtReflected(QtReflectionBridge* reflectionBridge, DataWrapper wrapper, QObject* parent);
-
-private:
     void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
     void CreateMetaObject();
 
@@ -42,7 +40,7 @@ class QtReflectionBridge final: public QObject
 {
 public:
     ~QtReflectionBridge();
-    QtReflected* CreateQtReflected(DataWrapper wrapper, QObject* parent);
+    QtReflected* CreateQtReflected(DataWrapper&& wrapper, QObject* parent);
 
 private:
     friend class QtReflected;

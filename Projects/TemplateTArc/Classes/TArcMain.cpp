@@ -29,7 +29,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     DAVA::Engine e;
     tarc::Core core(e);
-    core.CreateControllerModule<TemplateControllerModule>();
+    core.CreateModule<TemplateControllerModule>();
     core.CreateModule<DataChangerModule>();
 
     e.SetOptions(appOptions);

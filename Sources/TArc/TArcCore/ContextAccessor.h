@@ -26,7 +26,7 @@ public:
     virtual DataWrapper CreateWrapper(const DAVA::ReflectedType* type) = 0;
     virtual DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) = 0;
 
-    virtual DAVA::EngineContext& GetEngine() = 0;
+    virtual DAVA::EngineContext& GetEngineContext() = 0;
 };
 
 }

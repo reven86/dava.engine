@@ -20,6 +20,7 @@ UI& ClientModule::GetUI()
 void ClientModule::Init(ContextAccessor* contextAccessor_, UI* ui_)
 {
     DVASSERT(contextAccessor == nullptr);
+    DVASSERT(ui == nullptr);
     contextAccessor = contextAccessor_;
     ui = ui_;
 }
