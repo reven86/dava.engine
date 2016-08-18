@@ -118,7 +118,7 @@ void TextFieldStbImpl::SetText(const WideString& newText)
         UITextFieldDelegate* delegate = control->GetDelegate();
         if (delegate)
         {
-            delegate->TextFieldOnTextChanged(control, text, prevText);
+            delegate->TextFieldOnTextChanged(control, text, prevText, UITextFieldDelegate::eReason::CODE);
         }
 
         staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
@@ -735,15 +735,15 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
 #if ENABLE_CLIPBOARD
         else if (currentInput->key == Key::KEY_X && isCtrl)
         {
-            textChanged = CutToClipboard(); // Can modify text
+            textChanged = CutToClipboardInternal(); // Can modify text
         }
         else if (currentInput->key == Key::KEY_C && isCtrl)
         {
-            CopyToClipboard();
+            CopyToClipboardInternal();
         }
         else if (currentInput->key == Key::KEY_V && isCtrl)
         {
-            textChanged = PasteFromClipboard(); // Can modify text
+            textChanged = PasteFromClipboardInternal(); // Can modify text
         }
 #endif
     }
@@ -803,7 +803,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         UITextFieldDelegate* delegate = control->GetDelegate();
         if (delegate)
         {
-            delegate->TextFieldOnTextChanged(control, text, prevText);
+            delegate->TextFieldOnTextChanged(control, text, prevText, UITextFieldDelegate::eReason::USER);
         }
 
         staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
@@ -820,7 +820,7 @@ void TextFieldStbImpl::SelectAll()
     stb->SetCursorPosition(GetTextLength());
 }
 
-bool TextFieldStbImpl::CutToClipboard()
+bool TextFieldStbImpl::CutToClipboardInternal()
 {
 #if ENABLE_CLIPBOARD
     uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
@@ -830,23 +830,14 @@ bool TextFieldStbImpl::CutToClipboard()
         WideString selectedText = text.substr(selStart, selEnd - selStart);
         if (Clipboard().SetText(selectedText))
         {
-            WideString prevText(text);
-            if (stb->Cut())
-            {
-                UITextFieldDelegate* delegate = control->GetDelegate();
-                if (delegate)
-                {
-                    delegate->TextFieldOnTextChanged(control, text, prevText);
-                }
-                return true;
-            }
+            return stb->Cut();
         }
     }
 #endif
     return false;
 }
 
-bool TextFieldStbImpl::CopyToClipboard()
+bool TextFieldStbImpl::CopyToClipboardInternal()
 {
 #if ENABLE_CLIPBOARD
     uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
@@ -860,7 +851,7 @@ bool TextFieldStbImpl::CopyToClipboard()
     return false;
 }
 
-bool TextFieldStbImpl::PasteFromClipboard()
+bool TextFieldStbImpl::PasteFromClipboardInternal()
 {
 #if ENABLE_CLIPBOARD
     Font* font = control->GetFont();
@@ -883,16 +874,7 @@ bool TextFieldStbImpl::PasteFromClipboard()
 
             if (!clipText.empty())
             {
-                WideString prevText(text);
-                if (stb->Paste(clipText))
-                {
-                    UITextFieldDelegate* delegate = control->GetDelegate();
-                    if (delegate)
-                    {
-                        delegate->TextFieldOnTextChanged(control, text, prevText);
-                    }
-                    return true;
-                }
+                return stb->Paste(clipText);
             }
         }
     }
