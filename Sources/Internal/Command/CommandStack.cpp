@@ -17,13 +17,15 @@ void CommandStack::Exec(std::unique_ptr<Command>&& command)
 
 void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand)
 {
-    if (rootBatch)
+    if (commandBatch)
     {
         DVASSERT(isSingleCommand == true);
-        batchesStack.top()->AddAndRedo(std::move(command));
+        commandBatch->AddAndRedo(std::move(command));
     }
     else
     {
+        DVASSERT(requestedBatchCount == 0);
+
         if (currentIndex != commands.size() - 1)
         {
             commands.erase(commands.begin() + currentIndex + 1, commands.end());
@@ -40,47 +42,40 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
 
 void CommandStack::BeginBatch(const String& name, uint32 commandsCount)
 {
-    std::unique_ptr<CommandBatch> newCommandBatch(CreateCommmandBatch(name, commandsCount));
-    CommandBatch* newCommandBatchPtr = static_cast<CommandBatch*>(newCommandBatch.get());
-    if (rootBatch == nullptr)
-    { //we call BeginMacro first time
-        DVASSERT(batchesStack.empty());
-        rootBatch = std::move(newCommandBatch);
-        batchesStack.push(newCommandBatchPtr);
+    if (requestedBatchCount == 0)
+    {
+        DVASSERT(!commandBatch);
+        commandBatch.reset(CreateCommmandBatch(name, commandsCount));
     }
-    else
-    { //we already create one or more batches
-        batchesStack.top()->Add(std::move(newCommandBatch));
-        batchesStack.push(newCommandBatchPtr);
-    }
+    DVASSERT(commandBatch);
+
+    ++requestedBatchCount;
 }
 
-std::unique_ptr<CommandBatch> CommandStack::CreateCommmandBatch(const String& name, uint32 commandsCount) const
+CommandBatch* CommandStack::CreateCommmandBatch(const String& name, uint32 commandsCount) const
 {
-    return std::unique_ptr<CommandBatch>(new CommandBatch(name, commandsCount));
+    return new CommandBatch(name, commandsCount);
 }
 
 void CommandStack::EndBatch()
 {
-    DVASSERT(rootBatch && "CommandStack::EndMacro called without BeginMacro");
-    //release rootBatch and exec commands if exists
-    if (batchesStack.size() == 1)
+    DVASSERT_MSG(commandBatch, "CommandStack::EndMacro called without BeginMacro");
+    DVASSERT_MSG(requestedBatchCount != 0, "CommandStack::EndMacro called without BeginMacro");
+
+    --requestedBatchCount;
+    if (requestedBatchCount == 0)
     {
-        CommandBatch* rootBatchPtr = static_cast<CommandBatch*>(rootBatch.get());
-        if (rootBatchPtr->IsEmpty())
+        CommandBatch* commandBatchPtr = static_cast<CommandBatch*>(commandBatch.get());
+        if (commandBatchPtr->IsEmpty())
         {
-            rootBatch.reset();
+            commandBatch.reset();
         }
         else
         {
             //we need to release rootBatch before we will do something
-            std::unique_ptr<Command> rootBatchCopy(std::move(rootBatch)); //do not remove this code!
-            ExecInternal(std::move(rootBatchCopy), false);
+            std::unique_ptr<CommandBatch> commandBatchCopy(std::move(commandBatch)); //do not remove this code!
+            ExecInternal(std::move(commandBatchCopy), false);
         }
-    }
-    if (!batchesStack.empty())
-    {
-        batchesStack.pop();
     }
 }
 

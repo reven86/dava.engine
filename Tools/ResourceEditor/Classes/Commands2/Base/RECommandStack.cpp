@@ -71,9 +71,9 @@ bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
     return false;
 }
 
-std::unique_ptr<DAVA::CommandBatch> RECommandStack::CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const
+DAVA::CommandBatch* RECommandStack::CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const
 {
-    return std::unique_ptr<DAVA::CommandBatch>(new RECommandBatch(name, commandsCount));
+    return new RECommandBatch(name, commandsCount);
 }
 
 void RECommandStack::RemoveCommand(DAVA::uint32 index)
@@ -92,9 +92,10 @@ void RECommandStack::RemoveCommand(DAVA::uint32 index)
 
 void RECommandStack::CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex)
 {
-    if ((newIndex >= 0) && (newIndex < static_cast<DAVA::int32>(commands.size())))
+    if ((newIndex >= 0 || oldIndex >= 0) && (newIndex < static_cast<DAVA::int32>(commands.size())))
     {
-        DAVA::Command* cmd = commands[newIndex].get();
+        DAVA::int32 commandIndex = DAVA::Max(newIndex, oldIndex);
+        DAVA::Command* cmd = commands[commandIndex].get();
 
         RECommandNotificationObject notification;
         if (DAVA::IsCommandBatch(cmd))
