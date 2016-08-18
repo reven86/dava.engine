@@ -119,7 +119,6 @@ void TilemaskEditorPanel::InitUI()
     SetWidgetsState(false);
     BlockAllSignals(true);
 
-    comboBrushImage->setMinimumHeight(44);
     labelBrushImageDesc->setText(ResourceEditor::TILEMASK_EDITOR_BRUSH_IMAGE_CAPTION.c_str());
     labelBrushImageDesc->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
     labelTileTextureDesc->setText(ResourceEditor::TILEMASK_EDITOR_TILE_TEXTURE_CAPTION.c_str());
