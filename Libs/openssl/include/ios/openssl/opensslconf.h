@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 /* OpenSSL was configured with the following options: */
-#ifndef OPENSSL_SYSNAME_MACOSX
-# define OPENSSL_SYSNAME_MACOSX
+#ifndef OPENSSL_SYSNAME_iOS
+# define OPENSSL_SYSNAME_iOS
 #endif
 #ifndef OPENSSL_DOING_MAKEDEPEND
 
@@ -16,9 +16,6 @@ extern "C" {
 #endif
 #ifndef OPENSSL_NO_GMP
 # define OPENSSL_NO_GMP
-#endif
-#ifndef OPENSSL_NO_GOST
-# define OPENSSL_NO_GOST
 #endif
 #ifndef OPENSSL_NO_JPAKE
 # define OPENSSL_NO_JPAKE
@@ -71,9 +68,6 @@ extern "C" {
 # if defined(OPENSSL_NO_GMP) && !defined(NO_GMP)
 #  define NO_GMP
 # endif
-# if defined(OPENSSL_NO_GOST) && !defined(NO_GOST)
-#  define NO_GOST
-# endif
 # if defined(OPENSSL_NO_JPAKE) && !defined(NO_JPAKE)
 #  define NO_JPAKE
 # endif
@@ -105,8 +99,6 @@ extern "C" {
 #  define NO_WEAK_SSL_CIPHERS
 # endif
 #endif
-
-#define OPENSSL_CPUID_OBJ
 
 /* crypto/opensslconf.h.in */
 
@@ -147,7 +139,7 @@ extern "C" {
  * - Intel P6 because partial register stalls are very expensive;
  * - elder Alpha because it lacks byte load/store instructions;
  */
-#define RC4_INT unsigned int
+#define RC4_INT unsigned char
 #endif
 #if !defined(RC4_CHUNK)
 /*
