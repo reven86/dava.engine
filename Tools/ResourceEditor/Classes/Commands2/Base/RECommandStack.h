@@ -22,7 +22,7 @@ private:
     DAVA::CommandBatch* CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const override;
 
     void RemoveCommand(DAVA::uint32 index);
-    void CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex);
+    void OnCommandExecuted(const DAVA::Command* cmd, bool redo);
     void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand) override;
 
     using CommandStack::SetClean;

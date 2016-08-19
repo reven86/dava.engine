@@ -31,9 +31,9 @@ public:
     Signal<bool> cleanChanged;
     Signal<bool> canUndoChanged;
     Signal<bool> canRedoChanged;
-    Signal<int32, int32> currentIndexChanged;
     Signal<const DAVA::String&> undoTextChanged;
     Signal<const DAVA::String&> redoTextChanged;
+    Signal<const DAVA::Command*, bool /*redo*/> commandExecuted;
 
 protected:
     virtual CommandBatch* CreateCommmandBatch(const String& name, uint32 commandsCount) const;

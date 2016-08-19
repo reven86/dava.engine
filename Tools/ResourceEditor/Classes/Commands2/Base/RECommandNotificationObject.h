@@ -14,7 +14,7 @@ public:
     bool MatchCommandID(DAVA::uint32 commandID) const;
     bool MatchCommandIDs(const DAVA::Vector<DAVA::uint32>& commandIDVector) const;
 
-    RECommand* command = nullptr;
-    RECommandBatch* batch = nullptr;
+    const RECommand* command = nullptr;
+    const RECommandBatch* batch = nullptr;
     bool redo = true;
 };
