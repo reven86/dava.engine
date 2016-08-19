@@ -77,9 +77,9 @@ WideString ToWideString(const jstring jniString);
 jstring ToJNIString(const DAVA::WideString& string);
 
 #define DeclareTypeString(str)\
-	operator const char*() const {return value.c_str();}\
-	operator String() const {return value;}\
-	const String value = str;\
+    operator const char*() const {return value.c_str();}\
+    operator String() const {return value;}\
+    const String value = str;\
     const String rvalue = str;
 
 #define DeclareTypeStringWithRet(str, rstr)\

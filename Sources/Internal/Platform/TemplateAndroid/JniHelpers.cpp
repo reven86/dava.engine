@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Private/Android/AndroidBridge.h"
+#include "Engine/Public/Android/JNIBridge.h"
 #else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #endif
@@ -20,11 +20,9 @@ namespace DAVA
 {
 namespace JNI
 {
+#if !defined(__DAVAENGINE_COREV2__)
 JNIEnv* GetEnv()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::GetEnv();
-#else
     JNIEnv* env;
     JavaVM* vm = GetJVM();
 
@@ -34,14 +32,10 @@ JNIEnv* GetEnv()
     }
     DVASSERT(nullptr != env);
     return env;
-#endif
 }
 
 void AttachCurrentThreadToJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::AttachCurrentThreadToJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
@@ -53,14 +47,10 @@ void AttachCurrentThreadToJVM()
         if (vm->AttachCurrentThread(&env, NULL) != 0)
             Logger::Error("runtime_error(Could not attach current thread to JNI)");
     }
-#endif
 }
 
 void DetachCurrentThreadFromJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::DetachCurrentThreadFromJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
@@ -71,8 +61,8 @@ void DetachCurrentThreadFromJVM()
         if (0 != vm->DetachCurrentThread())
             Logger::Error("runtime_error(Could not detach current thread from JNI)");
     }
-#endif
 }
+#endif // !__DAVAENGINE_COREV2__
 
 Rect V2I(const Rect& srcRect)
 {
@@ -82,7 +72,7 @@ Rect V2I(const Rect& srcRect)
 DAVA::String ToString(const jstring jniString)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToString(jniString);
+    return JavaStringToString(jniString);
 #else
     DAVA::String result;
 
@@ -119,7 +109,7 @@ DAVA::String ToString(const jstring jniString)
 DAVA::WideString ToWideString(const jstring jniString)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToWideString(jniString);
+    return JavaStringToWideString(jniString);
 #else
     DAVA::String utf8 = ToString(jniString);
     return DAVA::UTF8Utils::EncodeToWideString(utf8);
@@ -129,7 +119,7 @@ DAVA::WideString ToWideString(const jstring jniString)
 jstring ToJNIString(const DAVA::WideString& string)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::WideStringToJavaString(string);
+    return WideStringToJavaString(string);
 #else
     JNIEnv* env = GetEnv();
     DVASSERT(env);
@@ -202,7 +192,11 @@ JavaClass::JavaClass(const String& className)
 {
     DVASSERT(!className.empty());
     name = className;
+#if defined(__DAVAENGINE_COREV2__)
+    javaClass = LoadJavaClass(name.c_str());
+#else
     FindJavaClass();
+#endif
 }
 
 JavaClass::JavaClass(const JavaClass& copy)
