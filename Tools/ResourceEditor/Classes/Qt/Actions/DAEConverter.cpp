@@ -7,7 +7,6 @@
 
 namespace DAEConverter
 {
-
 bool Convert(const DAVA::FilePath& daePath)
 {
     if (DAVA::FileSystem::Instance()->Exists(daePath) && daePath.IsEqualToExtension(".dae"))
@@ -33,5 +32,4 @@ bool Convert(const DAVA::FilePath& daePath)
 
     return false;
 }
-
 }

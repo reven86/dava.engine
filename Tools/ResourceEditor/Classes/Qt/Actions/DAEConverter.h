@@ -4,6 +4,5 @@
 
 namespace DAEConverter
 {
-    bool Convert(const DAVA::FilePath& path);
+bool Convert(const DAVA::FilePath& path);
 }
-
