@@ -57,6 +57,9 @@ BINARY_WIN32_DIR_RELWITHDEB
 BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
+#
+EXCLUDE_FROM_ALL
+#
 )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
@@ -92,17 +95,19 @@ macro( setup_main_module )
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
 
-    list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1)
-        set( INIT true )
-    else()
-        if( NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
-            if ( ${_index} GREATER -1)
+    if (NOT EXCLUDE_FROM_ALL)
+        list (FIND DAVA_COMPONENTS "ALL" _index)
+        if ( ${_index} GREATER -1)
+            set( INIT true )
+        else()
+            if( NAME_MODULE )
+                list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+                if ( ${_index} GREATER -1)
+                    set( INIT true )
+                endif()
+            else()
                 set( INIT true )
             endif()
-        else()
-            set( INIT true )
         endif()
     endif()
 

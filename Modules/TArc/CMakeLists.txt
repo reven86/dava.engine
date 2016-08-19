@@ -7,6 +7,7 @@ set(CPP_FILES_RECURSE *.cpp)
 
 set(INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/Sources")
 set(FIND_PACKAGE QT5)
+set(EXCLUDE_FROM_ALL 1)
 
 include_directories(${DAVA_INCLUDE_DIR})
 

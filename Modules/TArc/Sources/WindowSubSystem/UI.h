@@ -74,7 +74,7 @@ private:
 
 struct WaitDialogParams
 {
-    QString message = QStringLiteral("Please wait, while current operation will be finished");
+    QString message = QStringLiteral("Please wait, until current operation will be finished");
     DAVA::uint32 min = 0; // if min and max value equal 0, than progress bar will be infinite
     DAVA::uint32 max = 0;
     bool needProgressBar = true;
