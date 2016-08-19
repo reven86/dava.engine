@@ -131,7 +131,7 @@ static void gles2_CommandBuffer_Begin(Handle cmdBuf)
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     cb->Begin();
-    CommandGLES2_Begin* cmd = cb->allocCmd<CommandGLES2_Begin>();
+    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Begin();
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_BEGIN);
@@ -144,7 +144,7 @@ static void gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_End* cmd = cb->allocCmd<CommandGLES2_End>();
+    SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
     cb->End();
 #else
@@ -158,7 +158,7 @@ static void gles2_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint3
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetPipelineState* cmd = cb->allocCmd<CommandGLES2_SetPipelineState>();
+    SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
     cmd->vdecl = uint16(vdecl);
     cmd->ps = ps;
 #else
@@ -172,7 +172,7 @@ static void gles2_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetCullMode* cmd = cb->allocCmd<CommandGLES2_SetCullMode>();
+    SWCommand_SetCullMode* cmd = cb->allocCmd<SWCommand_SetCullMode>();
     cmd->mode = mode;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_CULL_MODE, mode);
@@ -185,7 +185,7 @@ void gles2_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetScissorRect* cmd = cb->allocCmd<CommandGLES2_SetScissorRect>();
+    SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
     cmd->x = rect.x;
     cmd->y = rect.y;
     cmd->width = rect.width;
@@ -201,7 +201,7 @@ static void gles2_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetViewport* cmd = cb->allocCmd<CommandGLES2_SetViewport>();
+    SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
     cmd->x = uint16(vp.x);
     cmd->y = uint16(vp.y);
     cmd->width = uint16(vp.width);
@@ -217,7 +217,7 @@ static void gles2_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetFillMode* cmd = cb->allocCmd<CommandGLES2_SetFillMode>();
+    SWCommand_SetFillMode* cmd = cb->allocCmd<SWCommand_SetFillMode>();
     cmd->mode = mode;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_FILLMODE, mode);
@@ -230,7 +230,7 @@ static void gles2_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 s
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetVertexData* cmd = cb->allocCmd<CommandGLES2_SetVertexData>();
+    SWCommand_SetVertexData* cmd = cb->allocCmd<SWCommand_SetVertexData>();
     cmd->vb = vb;
     cmd->streamIndex = uint16(streamIndex);
 #else
@@ -248,7 +248,7 @@ static void gles2_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIn
     {
 #if RHI_GLES2__USE_CMDBUF_PACKING
         CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-        CommandGLES2_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetVertexProgConstBuffer>();
+        SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
         cmd->buffer = buffer;
         cmd->bufIndex = bufIndex;
         cmd->inst = ConstBufferGLES2::Instance(buffer);
@@ -267,7 +267,7 @@ gles2_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
     {
 #if RHI_GLES2__USE_CMDBUF_PACKING
         CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-        CommandGLES2_SetVertexTexture* cmd = cb->allocCmd<CommandGLES2_SetVertexTexture>();
+        SWCommand_SetVertexTexture* cmd = cb->allocCmd<SWCommand_SetVertexTexture>();
         cmd->unitIndex = unitIndex;
         cmd->tex = tex;
 #else
@@ -283,7 +283,7 @@ gles2_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetIndices* cmd = cb->allocCmd<CommandGLES2_SetIndices>();
+    SWCommand_SetIndices* cmd = cb->allocCmd<SWCommand_SetIndices>();
     cmd->ib = ib;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_INDICES, ib);
@@ -297,7 +297,7 @@ gles2_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetQueryIndex* cmd = cb->allocCmd<CommandGLES2_SetQueryIndex>();
+    SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_QUERY_INDEX, objectIndex);
@@ -311,7 +311,7 @@ gles2_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetQueryBuffer* cmd = cb->allocCmd<CommandGLES2_SetQueryBuffer>();
+    SWCommand_SetQueryBuffer* cmd = cb->allocCmd<SWCommand_SetQueryBuffer>();
     cmd->queryBuf = queryBuf;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_QUERY_BUFFER, queryBuf);
@@ -330,7 +330,7 @@ gles2_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     {
 #if RHI_GLES2__USE_CMDBUF_PACKING
         CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-        CommandGLES2_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandGLES2_SetFragmentProgConstBuffer>();
+        SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
         cmd->bufIndex = bufIndex;
         cmd->buffer = buffer;
         cmd->inst = ConstBufferGLES2::Instance(buffer);
@@ -349,7 +349,7 @@ gles2_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
     {
 #if RHI_GLES2__USE_CMDBUF_PACKING
         CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-        CommandGLES2_SetFragmentTexture* cmd = cb->allocCmd<CommandGLES2_SetFragmentTexture>();
+        SWCommand_SetFragmentTexture* cmd = cb->allocCmd<SWCommand_SetFragmentTexture>();
         cmd->unitIndex = unitIndex;
         cmd->tex = tex;
 #else
@@ -365,7 +365,7 @@ gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 {
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetDepthStencilState* cmd = cb->allocCmd<CommandGLES2_SetDepthStencilState>();
+    SWCommand_SetDepthStencilState* cmd = cb->allocCmd<SWCommand_SetDepthStencilState>();
     cmd->depthStencilState = depthStencilState;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_DEPTHSTENCIL_STATE, depthStencilState);
@@ -380,7 +380,7 @@ gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 // NOTE: expected to be called BEFORE SetFragmentTexture
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_SetSamplerState* cmd = cb->allocCmd<CommandGLES2_SetSamplerState>();
+    SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
 #else
     CommandBufferPoolGLES2::Get(cmdBuf)->Command(CMD_SET_SAMPLER_STATE, samplerState);
@@ -425,7 +425,7 @@ gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_DrawPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawPrimitive>();
+    SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
     cmd->mode = mode;
     cmd->vertexCount = v_cnt;
 #else
@@ -438,14 +438,14 @@ gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
 static void
 gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex)
 {
-    unsigned v_cnt = 0;
-    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+    unsigned i_cnt = 0;
+    int mode = _GLES2_GetDrawMode(type, count, &i_cnt);
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawIndexedPrimitive>();
+    SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
     cmd->mode = mode;
-    cmd->vertexCount = v_cnt;
+    cmd->indexCount = i_cnt;
     cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
 #else
@@ -463,7 +463,7 @@ gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedPrimitive>();
+    SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
     cmd->mode = mode;
     cmd->vertexCount = v_cnt;
     cmd->instanceCount = instCount;
@@ -483,9 +483,9 @@ gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    CommandGLES2_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandGLES2_DrawInstancedIndexedPrimitive>();
+    SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
     cmd->mode = mode;
-    cmd->vertexCount = v_cnt;
+    cmd->indexCount = v_cnt;
     cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
     cmd->instanceCount = instCount;
@@ -517,7 +517,7 @@ gles2_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
     txt[len + 1] = '\0';
 
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    CommandGLES2_SetMarker* cmd = cb->allocCmd<CommandGLES2_SetMarker>();
+    SWCommand_SetMarker* cmd = cb->allocCmd<SWCommand_SetMarker>();
     cmd->text = text;
 #else
     cb->Command(CMD_SET_MARKER, (uint64)(txt));
@@ -646,7 +646,7 @@ void CommandBufferGLES2_t::Execute()
 #endif
     {
 #if RHI_GLES2__USE_CMDBUF_PACKING
-        const CommandGLES2* cmd = reinterpret_cast<const CommandGLES2*>(c);
+        const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
         switch (cmd->type)
 #else
         const uint64 cmd = *c;
@@ -732,7 +732,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_END:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            sync = (static_cast<const CommandGLES2_End*>(cmd))->syncObject;
+            sync = (static_cast<const SWCommand_End*>(cmd))->syncObject;
             #else
             sync = Handle(arg[0]);
             c += 1;
@@ -767,8 +767,8 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_VERTEX_DATA:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle vb = (static_cast<const CommandGLES2_SetVertexData*>(cmd))->vb;
-            unsigned stream_i = (static_cast<const CommandGLES2_SetVertexData*>(cmd))->streamIndex;
+            Handle vb = (static_cast<const SWCommand_SetVertexData*>(cmd))->vb;
+            unsigned stream_i = (static_cast<const SWCommand_SetVertexData*>(cmd))->streamIndex;
             #else
             Handle vb = (Handle)(arg[0]);
             unsigned stream_i = uint32(arg[1]);
@@ -793,7 +793,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_INDICES:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle ib = (static_cast<const CommandGLES2_SetIndices*>(cmd))->ib;
+            Handle ib = (static_cast<const SWCommand_SetIndices*>(cmd))->ib;
             #else
             Handle ib = (Handle)(arg[0]);
             c += 1;
@@ -812,7 +812,7 @@ void CommandBufferGLES2_t::Execute()
         {
             DVASSERT(cur_query_buf == InvalidHandle);
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            cur_query_buf = (static_cast<const CommandGLES2_SetQueryBuffer*>(cmd))->queryBuf;
+            cur_query_buf = (static_cast<const SWCommand_SetQueryBuffer*>(cmd))->queryBuf;
             #else
             cur_query_buf = (Handle)(arg[0]);
             c += 1;
@@ -824,7 +824,7 @@ void CommandBufferGLES2_t::Execute()
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
             if (cur_query_buf != InvalidHandle)
-                QueryBufferGLES2::SetQueryIndex(cur_query_buf, (static_cast<const CommandGLES2_SetQueryIndex*>(cmd))->objectIndex);
+                QueryBufferGLES2::SetQueryIndex(cur_query_buf, (static_cast<const SWCommand_SetQueryIndex*>(cmd))->objectIndex);
             #else
             if (cur_query_buf != InvalidHandle)
                 QueryBufferGLES2::SetQueryIndex(cur_query_buf, uint32(arg[0]));
@@ -836,8 +836,8 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_PIPELINE_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle ps = (static_cast<const CommandGLES2_SetPipelineState*>(cmd))->ps;
-            uint32 vdecl = (static_cast<const CommandGLES2_SetPipelineState*>(cmd))->vdecl;
+            Handle ps = (static_cast<const SWCommand_SetPipelineState*>(cmd))->ps;
+            uint32 vdecl = (static_cast<const SWCommand_SetPipelineState*>(cmd))->vdecl;
             #else
             Handle ps = (Handle)arg[0];
             uint32 vdecl = (uint32)(arg[1]);
@@ -869,7 +869,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_CULL_MODE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            CullMode mode = CullMode((static_cast<const CommandGLES2_SetCullMode*>(cmd))->mode);
+            CullMode mode = CullMode((static_cast<const SWCommand_SetCullMode*>(cmd))->mode);
             #else
             CullMode mode = CullMode(arg[0]);
             c += 1;
@@ -899,10 +899,10 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_SCISSOR_RECT:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            GLint x = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->x;
-            GLint y = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->y;
-            GLsizei w = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->width;
-            GLsizei h = (static_cast<const CommandGLES2_SetScissorRect*>(cmd))->height;
+            GLint x = (static_cast<const SWCommand_SetScissorRect*>(cmd))->x;
+            GLint y = (static_cast<const SWCommand_SetScissorRect*>(cmd))->y;
+            GLsizei w = (static_cast<const SWCommand_SetScissorRect*>(cmd))->width;
+            GLsizei h = (static_cast<const SWCommand_SetScissorRect*>(cmd))->height;
             #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
@@ -929,10 +929,10 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_VIEWPORT:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            GLint x = (static_cast<const CommandGLES2_SetViewport*>(cmd))->x;
-            GLint y = (static_cast<const CommandGLES2_SetViewport*>(cmd))->y;
-            GLsizei w = (static_cast<const CommandGLES2_SetViewport*>(cmd))->width;
-            GLsizei h = (static_cast<const CommandGLES2_SetViewport*>(cmd))->height;
+            GLint x = (static_cast<const SWCommand_SetViewport*>(cmd))->x;
+            GLint y = (static_cast<const SWCommand_SetViewport*>(cmd))->y;
+            GLsizei w = (static_cast<const SWCommand_SetViewport*>(cmd))->width;
+            GLsizei h = (static_cast<const SWCommand_SetViewport*>(cmd))->height;
             #else
             GLint x = GLint(arg[0]);
             GLint y = GLint(arg[1]);
@@ -958,7 +958,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_FILLMODE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            FillMode mode = FillMode((static_cast<const CommandGLES2_SetFillMode*>(cmd))->mode);
+            FillMode mode = FillMode((static_cast<const SWCommand_SetFillMode*>(cmd))->mode);
             #else
             FillMode mode = FillMode(arg[0]);
             c += 1;
@@ -973,7 +973,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_DEPTHSTENCIL_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle state = (static_cast<const CommandGLES2_SetDepthStencilState*>(cmd))->depthStencilState;
+            Handle state = (static_cast<const SWCommand_SetDepthStencilState*>(cmd))->depthStencilState;
             #else
             Handle state = (Handle)(arg[0]);
             c += 1;
@@ -986,7 +986,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_SAMPLER_STATE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle state = (static_cast<const CommandGLES2_SetSamplerState*>(cmd))->samplerState;
+            Handle state = (static_cast<const SWCommand_SetSamplerState*>(cmd))->samplerState;
             #else
             Handle state = (Handle)(arg[0]);
             c += 1;
@@ -1001,9 +1001,9 @@ void CommandBufferGLES2_t::Execute()
         {
 //++stcb_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned buf_i = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->bufIndex;
-            const void* inst = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->inst;
-            Handle buf = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->buffer;
+            unsigned buf_i = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buffer;
             #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
@@ -1020,9 +1020,9 @@ void CommandBufferGLES2_t::Execute()
         {
 //++stcb_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned buf_i = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->bufIndex;
-            const void* inst = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->inst;
-            Handle buf = (static_cast<const CommandGLES2_SetVertexProgConstBuffer*>(cmd))->buffer;
+            unsigned buf_i = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->bufIndex;
+            const void* inst = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->inst;
+            Handle buf = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buffer;
             #else
             unsigned buf_i = (unsigned)(arg[0]);
             const void* inst = (const void*)arg[2];
@@ -1039,8 +1039,8 @@ void CommandBufferGLES2_t::Execute()
         {
 //++sttx_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle tex = (static_cast<const CommandGLES2_SetFragmentTexture*>(cmd))->tex;
-            unsigned unit_i = (static_cast<const CommandGLES2_SetFragmentTexture*>(cmd))->unitIndex;
+            Handle tex = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->unitIndex;
             #else
             Handle tex = (Handle)(arg[1]);
             unsigned unit_i = unsigned(arg[0]);
@@ -1056,8 +1056,8 @@ void CommandBufferGLES2_t::Execute()
         {
 //++sttx_cnt;
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            Handle tex = (static_cast<const CommandGLES2_SetVertexTexture*>(cmd))->tex;
-            unsigned unit_i = (static_cast<const CommandGLES2_SetVertexTexture*>(cmd))->unitIndex;
+            Handle tex = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->unitIndex;
             #else
             Handle tex = (Handle)(arg[1]);
             unsigned unit_i = unsigned(arg[0]);
@@ -1074,8 +1074,8 @@ void CommandBufferGLES2_t::Execute()
 //++dip_cnt;
 //{SCOPED_NAMED_TIMING("gl.DP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned v_cnt = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->vertexCount;
-            int mode = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->mode;
+            unsigned v_cnt = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->mode;
             #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
@@ -1130,10 +1130,10 @@ void CommandBufferGLES2_t::Execute()
 //++dip_cnt;
 //{SCOPED_NAMED_TIMING("gl.DIP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned v_cnt = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->vertexCount;
-            int mode = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->mode;
-            uint32 firstVertex = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->firstVertex;
-            uint32 startIndex = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->startIndex;
+            unsigned v_cnt = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->indexCount;
+            int mode = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->mode;
+            uint32 firstVertex = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->firstVertex;
+            uint32 startIndex = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->startIndex;
             #else
             unsigned v_cnt = unsigned(arg[1]);
             int mode = int(arg[0]);
@@ -1198,9 +1198,9 @@ void CommandBufferGLES2_t::Execute()
         case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->vertexCount;
-            int mode = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->mode;
-            unsigned instCount = (static_cast<const CommandGLES2_DrawInstancedPrimitive*>(cmd))->instanceCount;
+            unsigned v_cnt = (static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->vertexCount;
+            int mode = (static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->mode;
+            unsigned instCount = (static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->instanceCount;
             #else
             unsigned v_cnt = unsigned(arg[2]);
             int mode = int(arg[0]);
@@ -1265,12 +1265,12 @@ void CommandBufferGLES2_t::Execute()
         case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            unsigned v_cnt = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->vertexCount;
-            int mode = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->mode;
-            unsigned instCount = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->instanceCount;
-            uint32 firstVertex = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->firstVertex;
-            uint32 startIndex = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->startIndex;
-            uint32 baseInst = (static_cast<const CommandGLES2_DrawInstancedIndexedPrimitive*>(cmd))->baseInstance;
+            unsigned v_cnt = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->indexCount;
+            int mode = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->mode;
+            unsigned instCount = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->instanceCount;
+            uint32 firstVertex = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->firstVertex;
+            uint32 startIndex = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->startIndex;
+            uint32 baseInst = (static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd))->baseInstance;
             #else
             unsigned v_cnt = unsigned(arg[2]);
             int mode = int(arg[0]);
@@ -1351,7 +1351,7 @@ void CommandBufferGLES2_t::Execute()
         case CMD_SET_MARKER:
         {
             #if RHI_GLES2__USE_CMDBUF_PACKING
-            const char* text = (static_cast<const CommandGLES2_SetMarker*>(cmd))->text;
+            const char* text = (static_cast<const SWCommand_SetMarker*>(cmd))->text;
             #else
             const char* text = (const char*)(arg[0]);
             c += 1;

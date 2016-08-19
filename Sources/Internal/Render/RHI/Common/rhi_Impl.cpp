@@ -115,14 +115,23 @@ void Initialize(Api api, const InitParam& param)
 
     default:
     {
-        // error 'unsupported' here
+        DVASSERT_MSG(false, "Unsupported rendering api");
     }
     }
 
+    //temporary here to support legacy - later read all this from config, and assert on unsupported values
+    DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
+    int32 bindToProcessor = -1;
     uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
     if (api == RHI_METAL)
         renderTreadFrameCount = 0; //no render thread for metal yet
-    RenderLoop::InitializeRenderLoop(renderTreadFrameCount);
+    if (api == RHI_DX11)
+    {
+        bindToProcessor = 1;
+        priority = DAVA::Thread::PRIORITY_HIGH;
+    }
+
+    RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
 }
 
 void Reset(const ResetParam& param)

@@ -131,7 +131,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
     Logger::Info("[RHI] render-thread finished");
 }
 
-void InitializeRenderLoop(uint32 frameCount)
+void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority priority, int32 bindToProcessor)
 {
     renderThreadFrameCount = frameCount;
     DVASSERT(DispatchPlatform::InitContext);
@@ -145,7 +145,9 @@ void InitializeRenderLoop(uint32 frameCount)
         renderThread = DAVA::Thread::Create(DAVA::Message(&RenderFunc));
         renderThread->SetName("RHI.RENDER_THREAD");
         renderThread->Start();
-        //        renderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH); //think - may be threading priority should be somehow configurable
+        if (bindToProcessor != -1)
+            renderThread->BindToProcessor(bindToProcessor);
+        renderThread->SetPriority(priority);
         renderThredStartedSync.Wait();
     }
     else

@@ -1,19 +1,22 @@
 #include "../Common/rhi_Pool.h"
-    #include "_dx11.h"
-    #include "rhi_DX11.h"
+#include "_dx11.h"
+#include "rhi_DX11.h"
 
-	#include "../rhi_Type.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
+#include "../rhi_Type.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+
+#include "Core/Core.h"
+#include "Debug/Profiler.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "../Common/SoftwareCommandBuffer.h"
+
 using DAVA::Logger;
-    #include "Core/Core.h"
-    #include "Debug/Profiler.h"
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
-    #include "Concurrency/AutoResetEvent.h"
 
 #define LUMIA_1020_DEPTHBUF_WORKAROUND 1
 
@@ -29,234 +32,7 @@ extern void _InitDX11();
 
 namespace rhi
 {
-//==============================================================================
-
-#if !RHI_DX11__USE_DEFERRED_CONTEXTS
-enum CommandDX11Type
-{
-    DX11__BEGIN,
-    DX11__END,
-
-    DX11__SET_VERTEX_DATA,
-    DX11__SET_INDICES,
-    DX11__SET_QUERY_BUFFER,
-    DX11__SET_QUERY_INDEX,
-    DX11__ISSUE_TIMESTAMP_QUERY,
-
-    DX11__SET_PIPELINE_STATE,
-    DX11__SET_CULL_MODE,
-    DX11__SET_SCISSOR_RECT,
-    DX11__SET_VIEWPORT,
-    DX11__SET_FILLMODE,
-    DX11__SET_VERTEX_PROG_CONST_BUFFER,
-    DX11__SET_FRAGMENT_PROG_CONST_BUFFER,
-    DX11__SET_FRAGMENT_TEXTURE,
-    DX11__SET_VERTEX_TEXTURE,
-
-    DX11__SET_DEPTHSTENCIL_STATE,
-    DX11__SET_SAMPLER_STATE,
-
-    DX11__DRAW_PRIMITIVE,
-    DX11__DRAW_INDEXED_PRIMITIVE,
-    DX11__DRAW_INSTANCED_PRIMITIVE,
-    DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE,
-
-    DX11__DEBUG_MARKER,
-
-    DX11__NOP
-};
-
-struct
-CommandDX11
-{
-    uint8 type;
-    uint8 size;
-
-    CommandDX11(uint8 t, uint8 sz)
-        : type(t)
-        , size(sz)
-    {
-    }
-};
-
-template <class T, CommandDX11Type t>
-struct
-CommandDX11Impl
-: public CommandDX11
-{
-    CommandDX11Impl()
-        : CommandDX11(t, sizeof(T))
-    {
-    }
-};
-
-struct
-CommandDX11_Begin : public CommandDX11Impl<CommandDX11_Begin, DX11__BEGIN>
-{
-};
-
-struct
-CommandDX11_End : public CommandDX11Impl<CommandDX11_End, DX11__END>
-{
-    Handle syncObject;
-};
-
-struct
-CommandDX11_SetVertexData : public CommandDX11Impl<CommandDX11_SetVertexData, DX11__SET_VERTEX_DATA>
-{
-    uint16 streamIndex;
-    Handle vb;
-};
-
-struct
-CommandDX11_SetIndices : public CommandDX11Impl<CommandDX11_SetIndices, DX11__SET_INDICES>
-{
-    Handle ib;
-};
-
-struct
-CommandDX11_SetQueryBuffer : public CommandDX11Impl<CommandDX11_SetQueryBuffer, DX11__SET_QUERY_BUFFER>
-{
-    Handle queryBuf;
-};
-
-struct
-CommandDX11_SetQueryIndex : public CommandDX11Impl<CommandDX11_SetQueryIndex, DX11__SET_QUERY_INDEX>
-{
-    uint32 objectIndex;
-};
-
-struct
-CommandDX11_SetPipelineState : public CommandDX11Impl<CommandDX11_SetPipelineState, DX11__SET_PIPELINE_STATE>
-{
-    Handle ps;
-    uint32 vdeclUID;
-};
-
-struct
-CommandDX11_SetDepthStencilState : public CommandDX11Impl<CommandDX11_SetDepthStencilState, DX11__SET_DEPTHSTENCIL_STATE>
-{
-    Handle depthStencilState;
-};
-
-struct
-CommandDX11_SetSamplerState : public CommandDX11Impl<CommandDX11_SetSamplerState, DX11__SET_SAMPLER_STATE>
-{
-    Handle samplerState;
-};
-
-struct
-CommandDX11_SetCullMode : public CommandDX11Impl<CommandDX11_SetCullMode, DX11__SET_CULL_MODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandDX11_SetScissorRect : public CommandDX11Impl<CommandDX11_SetScissorRect, DX11__SET_SCISSOR_RECT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandDX11_SetViewport : public CommandDX11Impl<CommandDX11_SetViewport, DX11__SET_VIEWPORT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandDX11_SetFillMode : public CommandDX11Impl<CommandDX11_SetFillMode, DX11__SET_FILLMODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandDX11_SetVertexProgConstBuffer : public CommandDX11Impl<CommandDX11_SetVertexProgConstBuffer, DX11__SET_VERTEX_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    const void* inst;
-};
-
-struct
-CommandDX11_SetFragmentProgConstBuffer : public CommandDX11Impl<CommandDX11_SetFragmentProgConstBuffer, DX11__SET_FRAGMENT_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    const void* inst;
-};
-
-struct
-CommandDX11_SetFragmentTexture : public CommandDX11Impl<CommandDX11_SetFragmentTexture, DX11__SET_FRAGMENT_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandDX11_SetVertexTexture : public CommandDX11Impl<CommandDX11_SetVertexTexture, DX11__SET_VERTEX_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandDX11_DrawPrimitive : public CommandDX11Impl<CommandDX11_DrawPrimitive, DX11__DRAW_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 vertexCount;
-    uint32 baseVertex;
-};
-
-struct
-CommandDX11_DrawIndexedPrimitive : public CommandDX11Impl<CommandDX11_DrawIndexedPrimitive, DX11__DRAW_INDEXED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-};
-
-struct
-CommandDX11_DrawInstancedPrimitive : public CommandDX11Impl<CommandDX11_DrawInstancedPrimitive, DX11__DRAW_INSTANCED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 instCount;
-};
-
-struct
-CommandDX11_DrawInstancedIndexedPrimitive : public CommandDX11Impl<CommandDX11_DrawInstancedIndexedPrimitive, DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE>
-{
-    uint8 topo;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-    uint32 instCount;
-    uint32 baseInst;
-};
-
-struct
-CommandDX11_SetMarker : public CommandDX11Impl<CommandDX11_SetMarker, DX11__DEBUG_MARKER>
-{
-};
-
-struct
-CommandDX11_IssueTimestamptQuery : public CommandDX11Impl<CommandDX11_IssueTimestamptQuery, DX11__SET_QUERY_BUFFER>
-{
-    Handle querySet;
-    uint32 timestampIndex;
-};
-
-
-#endif
-
-//==============================================================================
-
-struct
-RasterizerParamDX11
+struct RasterizerParamDX11
 {
     uint32 cullMode : 3;
     uint32 scissorEnabled : 1;
@@ -276,9 +52,11 @@ RasterizerStateDX11
 };
 
 //==============================================================================
-
-class
-CommandBufferDX11_t
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+class CommandBufferDX11_t
+#else
+class CommandBufferDX11_t : public SoftwareCommandBuffer
+#endif
 {
 public:
     CommandBufferDX11_t();
@@ -321,23 +99,6 @@ public:
 
     ID3D11Buffer* vertexConstBuffer[MAX_CONST_BUFFER_COUNT];
     ID3D11Buffer* fragmentConstBuffer[MAX_CONST_BUFFER_COUNT];
-#else
-    template <class T>
-    T* allocCmd()
-    {
-        if (curUsedSize + sizeof(T) >= cmdDataSize)
-        {
-            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
-            cmdData = (uint8*)::realloc(cmdData, cmdDataSize);
-        }
-
-        uint8* p = cmdData + curUsedSize;
-        curUsedSize += sizeof(T);
-        return new ((T*)p) T();
-    }
-    uint8* cmdData;
-    uint32 cmdDataSize;
-    uint32 curUsedSize;
 #endif
 
     Handle sync;
@@ -582,7 +343,7 @@ dx11_CommandBuffer_Begin(Handle cmdBuf)
     cb->Begin(context);
 #else
     cb->curUsedSize = 0;
-    CommandDX11_Begin* cmd = cb->allocCmd<CommandDX11_Begin>();
+    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
 #endif
 }
 
@@ -601,7 +362,7 @@ dx11_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     cb->sync = syncObject;
     cb->isComplete = true;
 #else
-    CommandDX11_End* cmd = cb->allocCmd<CommandDX11_End>();
+    SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
 #endif
 }
@@ -628,9 +389,9 @@ dx11_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdeclUID)
         StatSet::IncStat(stat_SET_PS, 1);
     }
 #else
-    CommandDX11_SetPipelineState* cmd = cb->allocCmd<CommandDX11_SetPipelineState>();
+    SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
     cmd->ps = ps;
-    cmd->vdeclUID = vdeclUID;
+    cmd->vdecl = vdeclUID;
 #endif
 }
 
@@ -645,7 +406,7 @@ dx11_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
     cb->rs_param.cullMode = mode;
     cb->cur_rs = nullptr;
 #else
-    CommandDX11_SetCullMode* cmd = cb->allocCmd<CommandDX11_SetCullMode>();
+    SWCommand_SetCullMode* cmd = cb->allocCmd<SWCommand_SetCullMode>();
     cmd->mode = mode;
 #endif
 }
@@ -676,11 +437,11 @@ void dx11_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
         cb->cur_rs = nullptr;
     }
 #else
-    CommandDX11_SetScissorRect* cmd = cb->allocCmd<CommandDX11_SetScissorRect>();
+    SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
 #endif
 }
 
@@ -714,11 +475,11 @@ dx11_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
         cb->context->RSSetViewports(1, &(cb->def_viewport));
     }
 #else
-    CommandDX11_SetViewport* cmd = cb->allocCmd<CommandDX11_SetViewport>();
+    SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
 #endif
 }
 
@@ -732,7 +493,7 @@ dx11_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     cb->rs_param.wireframe = (mode == FILLMODE_WIREFRAME);
 #else
-    CommandDX11_SetFillMode* cmd = cb->allocCmd<CommandDX11_SetFillMode>();
+    SWCommand_SetFillMode* cmd = cb->allocCmd<SWCommand_SetFillMode>();
     cmd->mode = mode;
 #endif
 }
@@ -749,7 +510,7 @@ dx11_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
     if (!cb->cur_vb_stride[streamIndex])
         cb->cur_vb_stride[streamIndex] = PipelineStateDX11::VertexLayoutStride(cb->cur_pipelinestate, streamIndex);
 #else
-    CommandDX11_SetVertexData* cmd = cb->allocCmd<CommandDX11_SetVertexData>();
+    SWCommand_SetVertexData* cmd = cb->allocCmd<SWCommand_SetVertexData>();
     cmd->vb = vb;
     cmd->streamIndex = streamIndex;
 #endif
@@ -765,7 +526,7 @@ dx11_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle b
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::SetToRHI(buffer, cb->context, cb->vertexConstBuffer);
 #else
-    CommandDX11_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandDX11_SetVertexProgConstBuffer>();
+    SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst = ConstBufferDX11::Instance(buffer);
@@ -783,7 +544,7 @@ dx11_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
     TextureDX11::SetToRHIVertex(tex, unitIndex, cb->context);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandDX11_SetVertexTexture* cmd = cb->allocCmd<CommandDX11_SetVertexTexture>();
+    SWCommand_SetVertexTexture* cmd = cb->allocCmd<SWCommand_SetVertexTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -799,7 +560,7 @@ dx11_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     IndexBufferDX11::SetToRHI(ib, 0, cb->context);
 #else
-    CommandDX11_SetIndices* cmd = cb->allocCmd<CommandDX11_SetIndices>();
+    SWCommand_SetIndices* cmd = cb->allocCmd<SWCommand_SetIndices>();
     cmd->ib = ib;
 #endif
 }
@@ -815,7 +576,7 @@ dx11_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
     if (cb->cur_query_buf != InvalidHandle)
         QueryBufferDX11::SetQueryIndex(cb->cur_query_buf, objectIndex, cb->context);
 #else
-    CommandDX11_SetQueryIndex* cmd = cb->allocCmd<CommandDX11_SetQueryIndex>();
+    SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
 #endif
 }
@@ -831,7 +592,7 @@ dx11_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     cb->cur_query_buf = queryBuf;
 #else
-    CommandDX11_SetQueryBuffer* cmd = cb->allocCmd<CommandDX11_SetQueryBuffer>();
+    SWCommand_SetQueryBuffer* cmd = cb->allocCmd<SWCommand_SetQueryBuffer>();
     cmd->queryBuf = queryBuf;
 #endif
 }
@@ -843,7 +604,7 @@ dx11_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 times
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     PerfQuerySetDX11::IssueTimestampQuery(pqset, timestampIndex, cb->context);
 #else
-    CommandDX11_IssueTimestamptQuery* cmd = cb->allocCmd<CommandDX11_IssueTimestamptQuery>();
+    SWCommand_IssueTimestamptQuery* cmd = cb->allocCmd<SWCommand_IssueTimestamptQuery>();
     cmd->querySet = pqset;
     cmd->timestampIndex = timestampIndex;
 #endif
@@ -859,7 +620,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::SetToRHI(buffer, cb->context, cb->fragmentConstBuffer);
 #else
-    CommandDX11_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandDX11_SetFragmentProgConstBuffer>();
+    SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst = ConstBufferDX11::Instance(buffer);
@@ -877,7 +638,7 @@ dx11_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle te
     TextureDX11::SetToRHIFragment(tex, unitIndex, cb->context);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandDX11_SetFragmentTexture* cmd = cb->allocCmd<CommandDX11_SetFragmentTexture>();
+    SWCommand_SetFragmentTexture* cmd = cb->allocCmd<SWCommand_SetFragmentTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -893,7 +654,7 @@ dx11_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DepthStencilStateDX11::SetToRHI(depthStencilState, cb->context);
 #else
-    CommandDX11_SetDepthStencilState* cmd = cb->allocCmd<CommandDX11_SetDepthStencilState>();
+    SWCommand_SetDepthStencilState* cmd = cb->allocCmd<SWCommand_SetDepthStencilState>();
     cmd->depthStencilState = depthStencilState;
 #endif
 }
@@ -909,7 +670,7 @@ dx11_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
     SamplerStateDX11::SetToRHI(samplerState, cb->context);
     StatSet::IncStat(stat_SET_SS, 1);
 #else
-    CommandDX11_SetSamplerState* cmd = cb->allocCmd<CommandDX11_SetSamplerState>();
+    SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
 #endif
 }
@@ -934,12 +695,11 @@ dx11_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawPrimitive* cmd = cb->allocCmd<CommandDX11_DrawPrimitive>();
+    SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
     cb->_ApplyTopology(type, count, &vertexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = 0;
+    cmd->mode = cb->cur_topo;
+    cmd->vertexCount = vertexCount;    
 #endif
 }
 
@@ -962,12 +722,11 @@ dx11_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint3
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawIndexedPrimitive>();
+    SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
     cb->_ApplyTopology(type, count, &indexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = firstVertex;
+    cmd->mode = cb->cur_topo;
+    cmd->firstVertex = firstVertex;
     cmd->indexCount = indexCount;
     cmd->startIndex = startIndex;
 #endif
@@ -993,13 +752,12 @@ dx11_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uin
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawInstancedPrimitive>();
+    SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
     cb->_ApplyTopology(type, count, &vertexCount);
 
-    cmd->topo = cb->cur_topo;
-    cmd->instCount = instCount;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = 0;
+    cmd->mode = cb->cur_topo;
+    cmd->instanceCount = instCount;
+    cmd->vertexCount = vertexCount;    
 #endif
 }
 
@@ -1022,16 +780,15 @@ dx11_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType ty
 
     StatSet::IncStat(stat_DIP, 1);
 #else
-    CommandDX11_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandDX11_DrawInstancedIndexedPrimitive>();
+    SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
     cb->_ApplyTopology(type, count, &indexCount);
 
-    cmd->topo = cb->cur_topo;
+    cmd->mode = cb->cur_topo;
     cmd->indexCount = indexCount;
-    cmd->instCount = instCount;
-    cmd->vertexCount = vertexCount;
-    cmd->baseVertex = firstVertex;
-    cmd->instCount = instCount;
-    cmd->baseInst = baseInstance;
+    cmd->instanceCount = instCount;
+    cmd->firstVertex = firstVertex;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInstance;
 #endif
 }
 
@@ -1544,10 +1301,6 @@ CommandBufferDX11_t::CommandBufferDX11_t()
     : context(nullptr)
     , contextAnnotation(nullptr)
     , commandList(nullptr)
-#else
-    : cmdData(nullptr)
-    , cmdDataSize(0)
-    , curUsedSize(0)
 #endif
 {
 }
@@ -1723,27 +1476,27 @@ void CommandBufferDX11_t::Execute()
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const CommandDX11* cmd = (const CommandDX11*)c;
+        const SWCommand* cmd = (const SWCommand*)c;
 
-        switch (CommandDX11Type(cmd->type))
+        switch (SoftwareCommandType(cmd->type))
         {
-        case DX11__BEGIN:
+        case CMD_BEGIN:
         {
             Reset();
             Begin(_D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__END:
+        case CMD_END:
         {
-            sync = ((CommandDX11_End*)cmd)->syncObject;
+            sync = ((SWCommand_End*)cmd)->syncObject;
         }
         break;
 
-        case DX11__SET_VERTEX_DATA:
+        case CMD_SET_VERTEX_DATA:
         {
-            Handle vb = ((CommandDX11_SetVertexData*)cmd)->vb;
-            unsigned stream_i = ((CommandDX11_SetVertexData*)cmd)->streamIndex;
+            Handle vb = ((SWCommand_SetVertexData*)cmd)->vb;
+            unsigned stream_i = ((SWCommand_SetVertexData*)cmd)->streamIndex;
 
             cur_vb[stream_i] = vb;
             if (!cur_vb_stride[stream_i])
@@ -1751,39 +1504,39 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_INDICES:
+        case CMD_SET_INDICES:
         {
-            Handle ib = ((CommandDX11_SetIndices*)cmd)->ib;
+            Handle ib = ((SWCommand_SetIndices*)cmd)->ib;
             IndexBufferDX11::SetToRHI(ib, 0, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_QUERY_BUFFER:
+        case CMD_SET_QUERY_BUFFER:
         {
-            cur_query_buf = ((CommandDX11_SetQueryBuffer*)cmd)->queryBuf;
+            cur_query_buf = ((SWCommand_SetQueryBuffer*)cmd)->queryBuf;
         }
         break;
 
-        case DX11__SET_QUERY_INDEX:
+        case CMD_SET_QUERY_INDEX:
         {
             if (cur_query_buf != InvalidHandle)
-                QueryBufferDX11::SetQueryIndex(cur_query_buf, ((CommandDX11_SetQueryIndex*)cmd)->objectIndex, context);
+                QueryBufferDX11::SetQueryIndex(cur_query_buf, ((SWCommand_SetQueryIndex*)cmd)->objectIndex, context);
         }
         break;
 
-        case DX11__ISSUE_TIMESTAMP_QUERY:
+        case CMD_ISSUE_TIMESTAMP_QUERY:
         {
-            Handle hset = ((CommandDX11_IssueTimestamptQuery*)cmd)->querySet;
-            uint32 timestampIndex = ((CommandDX11_IssueTimestamptQuery*)cmd)->timestampIndex;
+            Handle hset = ((SWCommand_IssueTimestamptQuery*)cmd)->querySet;
+            uint32 timestampIndex = ((SWCommand_IssueTimestamptQuery*)cmd)->timestampIndex;
 
             PerfQuerySetDX11::IssueTimestampQuery(hset, timestampIndex, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_PIPELINE_STATE:
+        case CMD_SET_PIPELINE_STATE:
         {
-            Handle ps = ((CommandDX11_SetPipelineState*)cmd)->ps;
-            Handle vdeclUID = ((CommandDX11_SetPipelineState*)cmd)->vdeclUID;
+            Handle ps = ((SWCommand_SetPipelineState*)cmd)->ps;
+            Handle vdeclUID = ((SWCommand_SetPipelineState*)cmd)->vdecl;
             const VertexLayout* vdecl = (vdeclUID == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vdeclUID);
 
             cur_pipelinestate = ps;
@@ -1795,19 +1548,19 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_CULL_MODE:
+        case CMD_SET_CULL_MODE:
         {
-            rs_param.cullMode = CullMode(((CommandDX11_SetCullMode*)cmd)->mode);
+            rs_param.cullMode = CullMode(((SWCommand_SetCullMode*)cmd)->mode);
             cur_rs = nullptr;
         }
         break;
 
-        case DX11__SET_SCISSOR_RECT:
+        case CMD_SET_SCISSOR_RECT:
         {
-            int x = ((CommandDX11_SetScissorRect*)cmd)->x;
-            int y = ((CommandDX11_SetScissorRect*)cmd)->y;
-            int w = ((CommandDX11_SetScissorRect*)cmd)->w;
-            int h = ((CommandDX11_SetScissorRect*)cmd)->h;
+            int x = ((SWCommand_SetScissorRect*)cmd)->x;
+            int y = ((SWCommand_SetScissorRect*)cmd)->y;
+            int w = ((SWCommand_SetScissorRect*)cmd)->width;
+            int h = ((SWCommand_SetScissorRect*)cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -1826,12 +1579,12 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_VIEWPORT:
+        case CMD_SET_VIEWPORT:
         {
-            int x = ((CommandDX11_SetViewport*)cmd)->x;
-            int y = ((CommandDX11_SetViewport*)cmd)->y;
-            int w = ((CommandDX11_SetViewport*)cmd)->w;
-            int h = ((CommandDX11_SetViewport*)cmd)->h;
+            int x = ((SWCommand_SetViewport*)cmd)->x;
+            int y = ((SWCommand_SetViewport*)cmd)->y;
+            int w = ((SWCommand_SetViewport*)cmd)->width;
+            int h = ((SWCommand_SetViewport*)cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -1853,63 +1606,62 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__SET_FILLMODE:
+        case CMD_SET_FILLMODE:
         {
-            rs_param.wireframe = FillMode(((CommandDX11_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME;
+            rs_param.wireframe = FillMode(((SWCommand_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME;
         }
         break;
 
-        case DX11__SET_VERTEX_PROG_CONST_BUFFER:
+        case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandDX11_SetVertexProgConstBuffer*)cmd)->buffer;
-            const void* inst = ((CommandDX11_SetVertexProgConstBuffer*)cmd)->inst;
+            Handle buffer = ((SWCommand_SetVertexProgConstBuffer*)cmd)->buffer;
+            const void* inst = ((SWCommand_SetVertexProgConstBuffer*)cmd)->inst;
 
             ConstBufferDX11::SetToRHI(buffer, inst);
         }
         break;
 
-        case DX11__SET_FRAGMENT_PROG_CONST_BUFFER:
+        case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandDX11_SetFragmentProgConstBuffer*)cmd)->buffer;
-            const void* inst = ((CommandDX11_SetFragmentProgConstBuffer*)cmd)->inst;
+            Handle buffer = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->buffer;
+            const void* inst = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->inst;
 
             ConstBufferDX11::SetToRHI(buffer, inst);
         }
         break;
 
-        case DX11__SET_FRAGMENT_TEXTURE:
+        case CMD_SET_FRAGMENT_TEXTURE:
         {
-            Handle tex = ((CommandDX11_SetFragmentTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandDX11_SetFragmentTexture*)cmd)->unitIndex;
+            Handle tex = ((SWCommand_SetFragmentTexture*)cmd)->tex;
+            unsigned unitIndex = ((SWCommand_SetFragmentTexture*)cmd)->unitIndex;
             TextureDX11::SetToRHIFragment(tex, unitIndex, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_VERTEX_TEXTURE:
+        case CMD_SET_VERTEX_TEXTURE:
         {
-            Handle tex = ((CommandDX11_SetVertexTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandDX11_SetVertexTexture*)cmd)->unitIndex;
+            Handle tex = ((SWCommand_SetVertexTexture*)cmd)->tex;
+            unsigned unitIndex = ((SWCommand_SetVertexTexture*)cmd)->unitIndex;
             TextureDX11::SetToRHIVertex(tex, unitIndex, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_DEPTHSTENCIL_STATE:
+        case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateDX11::SetToRHI(((CommandDX11_SetDepthStencilState*)cmd)->depthStencilState, _D3D11_ImmediateContext);
+            DepthStencilStateDX11::SetToRHI(((SWCommand_SetDepthStencilState*)cmd)->depthStencilState, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__SET_SAMPLER_STATE:
+        case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateDX11::SetToRHI(((CommandDX11_SetSamplerState*)cmd)->samplerState, _D3D11_ImmediateContext);
+            SamplerStateDX11::SetToRHI(((SWCommand_SetSamplerState*)cmd)->samplerState, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_PRIMITIVE:
+        case CMD_DRAW_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawPrimitive*)cmd)->baseVertex;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawPrimitive*)cmd)->mode);
+            unsigned vertexCount = ((SWCommand_DrawPrimitive*)cmd)->vertexCount;
 
             if (topo != cur_topo)
             {
@@ -1929,20 +1681,19 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->Draw(vertexCount, baseVertex);
+            _D3D11_ImmediateContext->Draw(vertexCount, 0);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::EndQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawIndexedPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawIndexedPrimitive*)cmd)->baseVertex;
-            unsigned indexCount = ((CommandDX11_DrawIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((CommandDX11_DrawIndexedPrimitive*)cmd)->startIndex;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawIndexedPrimitive*)cmd)->mode);
+            unsigned baseVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->firstVertex;
+            unsigned indexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->indexCount;
+            unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
 
             if (topo != cur_topo)
             {
@@ -1969,12 +1720,11 @@ void CommandBufferDX11_t::Execute()
         }
         break;
 
-        case DX11__DRAW_INSTANCED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawInstancedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawInstancedPrimitive*)cmd)->baseVertex;
-            unsigned instCount = ((CommandDX11_DrawInstancedPrimitive*)cmd)->instCount;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawPrimitive*)cmd)->mode);
+            unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
+            unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instanceCount;
 
             if (topo != cur_topo)
             {
@@ -1994,22 +1744,21 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->DrawInstanced(vertexCount, instCount, baseVertex, 0);
+            _D3D11_ImmediateContext->DrawInstanced(vertexCount, instCount, 0, 0);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::EndQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
 
-        case DX11__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->topo);
-            unsigned vertexCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->baseVertex;
-            unsigned indexCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
-            unsigned instCount = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->instCount;
-            unsigned baseInst = ((CommandDX11_DrawInstancedIndexedPrimitive*)cmd)->baseInst;
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->mode);
+            unsigned vertexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
+            unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
+            unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
+            unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instanceCount;
+            unsigned baseInst = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseInstance;
 
             if (topo != cur_topo)
             {
@@ -2029,7 +1778,7 @@ void CommandBufferDX11_t::Execute()
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
 
-            _D3D11_ImmediateContext->DrawIndexedInstanced(indexCount, instCount, startIndex, baseVertex, baseInst);
+            _D3D11_ImmediateContext->DrawIndexedInstanced(indexCount, instCount, startIndex, 0, baseInst);
 
             if (cur_query_i != DAVA::InvalidIndex)
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
@@ -2037,7 +1786,7 @@ void CommandBufferDX11_t::Execute()
         break;
         }
 
-        if (cmd->type == DX11__END)
+        if (cmd->type == CMD_END)
             break;
         c += cmd->size;
     }

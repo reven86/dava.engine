@@ -13,6 +13,7 @@ enum SoftwareCommandType
     CMD_SET_INDICES = 12,
     CMD_SET_QUERY_BUFFER = 13,
     CMD_SET_QUERY_INDEX = 14,
+    CMD_ISSUE_TIMESTAMP_QUERY = 17,
 
     CMD_SET_PIPELINE_STATE = 21,
     CMD_SET_DEPTHSTENCIL_STATE = 22,
@@ -47,12 +48,12 @@ enum SoftwareCommandType
 #define DV_ATTR_PACKED 
 #endif
 
-struct CommandGLES2
+struct SWCommand
 {
     uint8 type;
     uint8 size;
 
-    CommandGLES2(uint8 t, uint8 sz)
+    SWCommand(uint8 t, uint8 sz)
         : type(t)
         , size(sz)
     {
@@ -60,66 +61,72 @@ struct CommandGLES2
 } DV_ATTR_PACKED;
 
 template <class T, SoftwareCommandType t>
-struct CommandGLES2Impl : public CommandGLES2
+struct SWCommandImpl : public SWCommand
 {
-    CommandGLES2Impl()
-        : CommandGLES2(t, sizeof(T))
+    SWCommandImpl()
+        : SWCommand(t, sizeof(T))
     {
     }
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_Begin : public CommandGLES2Impl<CommandGLES2_Begin, CMD_BEGIN>
+struct SWCommand_Begin : public SWCommandImpl<SWCommand_Begin, CMD_BEGIN>
 {
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_End : public CommandGLES2Impl<CommandGLES2_End, CMD_END>
+struct SWCommand_End : public SWCommandImpl<SWCommand_End, CMD_END>
 {
     Handle syncObject;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetVertexData : public CommandGLES2Impl<CommandGLES2_SetVertexData, CMD_SET_VERTEX_DATA>
+struct SWCommand_SetVertexData : public SWCommandImpl<SWCommand_SetVertexData, CMD_SET_VERTEX_DATA>
 {
     uint16 streamIndex;
     Handle vb;
 } /*DV_ATTR_PACKED*/;
 
-struct CommandGLES2_SetIndices : public CommandGLES2Impl<CommandGLES2_SetIndices, CMD_SET_INDICES>
+struct SWCommand_SetIndices : public SWCommandImpl<SWCommand_SetIndices, CMD_SET_INDICES>
 {
     Handle ib;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetQueryBuffer : public CommandGLES2Impl<CommandGLES2_SetQueryBuffer, CMD_SET_QUERY_BUFFER>
+struct SWCommand_SetQueryBuffer : public SWCommandImpl<SWCommand_SetQueryBuffer, CMD_SET_QUERY_BUFFER>
 {
     Handle queryBuf;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetQueryIndex : public CommandGLES2Impl<CommandGLES2_SetQueryIndex, CMD_SET_QUERY_INDEX>
+struct SWCommand_SetQueryIndex : public SWCommandImpl<SWCommand_SetQueryIndex, CMD_SET_QUERY_INDEX>
 {
     uint32 objectIndex;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetPipelineState : public CommandGLES2Impl<CommandGLES2_SetPipelineState, CMD_SET_PIPELINE_STATE>
+struct SWCommand_IssueTimestamptQuery : public SWCommandImpl<SWCommand_IssueTimestamptQuery, CMD_ISSUE_TIMESTAMP_QUERY>
+{
+    Handle querySet;
+    uint32 timestampIndex;
+} DV_ATTR_PACKED;
+
+struct SWCommand_SetPipelineState : public SWCommandImpl<SWCommand_SetPipelineState, CMD_SET_PIPELINE_STATE>
 {
     uint32 vdecl;
     uint32 ps;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetDepthStencilState : public CommandGLES2Impl<CommandGLES2_SetDepthStencilState, CMD_SET_DEPTHSTENCIL_STATE>
+struct SWCommand_SetDepthStencilState : public SWCommandImpl<SWCommand_SetDepthStencilState, CMD_SET_DEPTHSTENCIL_STATE>
 {
     Handle depthStencilState;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetSamplerState : public CommandGLES2Impl<CommandGLES2_SetSamplerState, CMD_SET_SAMPLER_STATE>
+struct SWCommand_SetSamplerState : public SWCommandImpl<SWCommand_SetSamplerState, CMD_SET_SAMPLER_STATE>
 {
     Handle samplerState;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetCullMode : public CommandGLES2Impl<CommandGLES2_SetCullMode, CMD_SET_CULL_MODE>
+struct SWCommand_SetCullMode : public SWCommandImpl<SWCommand_SetCullMode, CMD_SET_CULL_MODE>
 {
     uint8 mode;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetScissorRect : public CommandGLES2Impl<CommandGLES2_SetScissorRect, CMD_SET_SCISSOR_RECT>
+struct SWCommand_SetScissorRect : public SWCommandImpl<SWCommand_SetScissorRect, CMD_SET_SCISSOR_RECT>
 {
     uint16 x;
     uint16 y;
@@ -127,7 +134,7 @@ struct CommandGLES2_SetScissorRect : public CommandGLES2Impl<CommandGLES2_SetSci
     uint16 height;
 } /*DV_ATTR_PACKED*/;
 
-struct CommandGLES2_SetViewport : public CommandGLES2Impl<CommandGLES2_SetViewport, CMD_SET_VIEWPORT>
+struct SWCommand_SetViewport : public SWCommandImpl<SWCommand_SetViewport, CMD_SET_VIEWPORT>
 {
     uint16 x;
     uint16 y;
@@ -135,44 +142,44 @@ struct CommandGLES2_SetViewport : public CommandGLES2Impl<CommandGLES2_SetViewpo
     uint16 height;
 } /*DV_ATTR_PACKED*/;
 
-struct CommandGLES2_SetFillMode : public CommandGLES2Impl<CommandGLES2_SetFillMode, CMD_SET_FILLMODE>
+struct SWCommand_SetFillMode : public SWCommandImpl<SWCommand_SetFillMode, CMD_SET_FILLMODE>
 {
     uint8 mode;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetVertexProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetVertexProgConstBuffer, CMD_SET_VERTEX_PROG_CONST_BUFFER>
+struct SWCommand_SetVertexProgConstBuffer : public SWCommandImpl<SWCommand_SetVertexProgConstBuffer, CMD_SET_VERTEX_PROG_CONST_BUFFER>
 {
     uint8 bufIndex;
     Handle buffer;
     const void* inst;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetFragmentProgConstBuffer : public CommandGLES2Impl<CommandGLES2_SetFragmentProgConstBuffer, CMD_SET_FRAGMENT_PROG_CONST_BUFFER>
+struct SWCommand_SetFragmentProgConstBuffer : public SWCommandImpl<SWCommand_SetFragmentProgConstBuffer, CMD_SET_FRAGMENT_PROG_CONST_BUFFER>
 {
     uint8 bufIndex;
     Handle buffer;
     const void* inst;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetVertexTexture : public CommandGLES2Impl<CommandGLES2_SetVertexTexture, CMD_SET_VERTEX_TEXTURE>
+struct SWCommand_SetVertexTexture : public SWCommandImpl<SWCommand_SetVertexTexture, CMD_SET_VERTEX_TEXTURE>
 {
     uint8 unitIndex;
     Handle tex;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetFragmentTexture : public CommandGLES2Impl<CommandGLES2_SetFragmentTexture, CMD_SET_FRAGMENT_TEXTURE>
+struct SWCommand_SetFragmentTexture : public SWCommandImpl<SWCommand_SetFragmentTexture, CMD_SET_FRAGMENT_TEXTURE>
 {
     uint8 unitIndex;
     Handle tex;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_DrawPrimitive : public CommandGLES2Impl<CommandGLES2_DrawPrimitive, CMD_DRAW_PRIMITIVE>
+struct SWCommand_DrawPrimitive : public SWCommandImpl<SWCommand_DrawPrimitive, CMD_DRAW_PRIMITIVE>
 {
     uint8 mode;
     uint32 vertexCount;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_DrawInstancedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedPrimitive, CMD_DRAW_INSTANCED_PRIMITIVE>
+struct SWCommand_DrawInstancedPrimitive : public SWCommandImpl<SWCommand_DrawInstancedPrimitive, CMD_DRAW_INSTANCED_PRIMITIVE>
 {
     uint8 mode;
     uint32 vertexCount;
@@ -180,25 +187,25 @@ struct CommandGLES2_DrawInstancedPrimitive : public CommandGLES2Impl<CommandGLES
     uint16 baseInstance;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_DrawIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawIndexedPrimitive, CMD_DRAW_INDEXED_PRIMITIVE>
+struct SWCommand_DrawIndexedPrimitive : public SWCommandImpl<SWCommand_DrawIndexedPrimitive, CMD_DRAW_INDEXED_PRIMITIVE>
 {
     uint8 mode;
-    uint32 vertexCount;
+    uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_DrawInstancedIndexedPrimitive : public CommandGLES2Impl<CommandGLES2_DrawInstancedIndexedPrimitive, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE>
+struct SWCommand_DrawInstancedIndexedPrimitive : public SWCommandImpl<SWCommand_DrawInstancedIndexedPrimitive, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE>
 {
     uint8 mode;
-    uint32 vertexCount;
+    uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
     uint16 instanceCount;
     uint16 baseInstance;
 } DV_ATTR_PACKED;
 
-struct CommandGLES2_SetMarker : public CommandGLES2Impl<CommandGLES2_SetMarker, CMD_SET_MARKER>
+struct SWCommand_SetMarker : public SWCommandImpl<SWCommand_SetMarker, CMD_SET_MARKER>
 {
     const char* text;
 };
