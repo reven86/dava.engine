@@ -1147,7 +1147,7 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& po
                         if (nullptr != resultAction)
                         {
                             globalMaterial->SetPropertyValue(propertyName, material->GetLocalPropValue(propertyName));
-                            activeScene->SetChanged(true);
+                            activeScene->SetChanged();
                         }
                     }
                 }
@@ -1213,7 +1213,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
                 UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
                 materialContext.ResolveMaterialBindings();
-                activeScene->SetChanged(true);
+                activeScene->SetChanged();
             }
             else
             {

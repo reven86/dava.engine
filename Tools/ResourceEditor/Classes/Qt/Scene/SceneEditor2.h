@@ -39,7 +39,6 @@
 
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"
-#include "Commands2/Base/CommandAction.h"
 
 class RECommandNotificationObject;
 class SceneCameraSystem;
@@ -136,7 +135,7 @@ public:
     // checks whether the scene changed since the last save
     bool IsLoaded() const;
     bool IsChanged() const;
-    void SetChanged(bool changed);
+    void SetChanged();
 
     // enable/disable drawing custom HUD
     void SetHUDVisible(bool visible);

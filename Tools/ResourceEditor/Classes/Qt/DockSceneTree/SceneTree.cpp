@@ -28,7 +28,6 @@
 
 // commands
 #include "Commands2/ParticleEditorCommands.h"
-#include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
@@ -36,6 +35,8 @@
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
+
+#include "Actions/SaveEntityAsAction.h"
 
 namespace SceneTreeDetails
 {
@@ -74,7 +75,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
     scene->Exec(commandCreator(yamlPath));
     if (askFileName)
     {
-        scene->SetChanged(true);
+        scene->SetChanged();
     }
 }
 }
@@ -124,7 +125,7 @@ protected:
 
     void MarkStructureChanged()
     {
-        GetScene()->SetChanged(true);
+        GetScene()->SetChanged();
         isStructureChanged = true;
     }
 
@@ -352,7 +353,8 @@ private:
         QString filePath = FileDialog::getSaveFileName(nullptr, QStringLiteral("Save scene file"), baseDir, QStringLiteral("DAVA SceneV2 (*.sc2)"));
         if (!filePath.isEmpty())
         {
-            scene->Exec(std::unique_ptr<DAVA::Command>(new SaveEntityAsAction(&selection, filePath.toStdString())));
+            SaveEntityAsAction saver(&selection, filePath.toStdString());
+            saver.Run();
         }
     }
 

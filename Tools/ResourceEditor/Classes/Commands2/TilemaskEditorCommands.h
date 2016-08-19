@@ -2,7 +2,6 @@
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
 #include "Commands2/Base/RECommand.h"
-#include "Commands2/Base/CommandAction.h"
 
 #include "Base/FastName.h"
 #include "Math/Color.h"

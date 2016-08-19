@@ -1,7 +1,5 @@
-#ifndef __BEAST_ACTION_H__
-#define __BEAST_ACTION_H__
+#pragma once
 
-#include "Commands2/Base/CommandAction.h"
 #include "Beast/BeastProxy.h"
 
 #if defined(__DAVAENGINE_BEAST__)
@@ -10,13 +8,13 @@ class SceneEditor2;
 class BeastManager;
 class QtWaitDialog;
 
-class BeastAction : public CommandAction
+class BeastRunner final
 {
 public:
-    BeastAction(SceneEditor2* scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog);
-    ~BeastAction();
+    BeastRunner(SceneEditor2* scene, const DAVA::FilePath& outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog);
+    ~BeastRunner();
 
-    void Redo() override;
+    void Run();
 
 private:
     void Start();
@@ -36,5 +34,3 @@ private:
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
-
-#endif // #ifndef __BEAST_ACTION_H__

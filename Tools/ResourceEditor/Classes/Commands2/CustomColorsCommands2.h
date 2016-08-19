@@ -2,7 +2,6 @@
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 
 #include "Commands2/Base/RECommand.h"
-#include "Commands2/Base/CommandAction.h"
 
 #include "DAVAEngine.h"
 #include "Main/Request.h"

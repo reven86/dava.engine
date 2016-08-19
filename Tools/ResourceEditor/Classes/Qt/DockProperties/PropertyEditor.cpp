@@ -936,7 +936,7 @@ void PropertyEditor::ActionEditComponent()
 
         if (editor.IsModified())
         {
-            curScene->SetChanged(true);
+            curScene->SetChanged();
         }
     }
 }

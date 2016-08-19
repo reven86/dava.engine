@@ -5,7 +5,6 @@
 
 #include "Commands2/Base/RECommand.h"
 #include "Math/Rect.h"
-#include "Commands2/Base/CommandAction.h"
 
 namespace DAVA
 {
