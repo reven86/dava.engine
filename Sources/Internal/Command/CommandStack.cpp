@@ -37,6 +37,8 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
         }
         commands.push_back(std::move(command));
         SetCurrentIndex(currentIndex + 1);
+        //invoke it after SetCurrentIndex to discard logic problems, when client code trying to get IsClean, CanUndo or CanRedo after got commandExecuted
+        commandExecuted.Emit(commands.back().get(), true);
     }
 }
 
@@ -97,6 +99,8 @@ void CommandStack::Undo()
     {
         commands.at(currentIndex)->Undo();
         SetCurrentIndex(currentIndex - 1);
+        //invoke it after SetCurrentIndex to discard logic problems, when client code trying to get IsClean, CanUndo or CanRedo after got commandExecuted
+        commandExecuted.Emit(commands.at(currentIndex + 1).get(), false);
     }
 }
 
@@ -107,6 +111,8 @@ void CommandStack::Redo()
     {
         commands.at(currentIndex + 1)->Redo();
         SetCurrentIndex(currentIndex + 1);
+        //invoke it after SetCurrentIndex to discard logic problems, when client code trying to get IsClean, CanUndo or CanRedo after got commandExecuted
+        commandExecuted.Emit(commands.at(currentIndex).get(), true);
     }
 }
 
@@ -162,7 +168,6 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
 {
     if (currentIndex != currentIndex_)
     {
-        int32 oldIndex = currentIndex;
         currentIndex = currentIndex_;
 
         UpdateCleanState();
@@ -170,7 +175,6 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
         SetCanRedo(CanRedo());
         undoTextChanged.Emit(GetUndoText());
         redoTextChanged.Emit(GetRedoText());
-        currentIndexChanged.Emit(currentIndex, oldIndex);
     }
 }
 

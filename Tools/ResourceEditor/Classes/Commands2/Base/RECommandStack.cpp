@@ -12,7 +12,7 @@ RECommandStack::RECommandStack()
     undoTextChanged.Connect(this, &RECommandStack::UndoTextChanged);
     redoTextChanged.Connect(this, &RECommandStack::RedoTextChanged);
     cleanChanged.Connect(this, &RECommandStack::EmitCleanChanged);
-    currentIndexChanged.Connect(this, &RECommandStack::CurrentIndexChanged);
+    commandExecuted.Connect(this, &RECommandStack::OnCommandExecuted);
 }
 
 RECommandStack::~RECommandStack() = default;
@@ -97,29 +97,19 @@ void RECommandStack::RemoveCommand(DAVA::uint32 index)
     }
 }
 
-void RECommandStack::CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex)
+void RECommandStack::OnCommandExecuted(const DAVA::Command* command, bool redo)
 {
-    if ((newIndex >= 0 || oldIndex >= 0) && (newIndex < static_cast<DAVA::int32>(commands.size())))
+    RECommandNotificationObject notification;
+    if (DAVA::IsCommandBatch(command))
     {
-        DAVA::int32 commandIndex = DAVA::Max(newIndex, oldIndex);
-        DAVA::Command* cmd = commands[commandIndex].get();
-
-        RECommandNotificationObject notification;
-        if (DAVA::IsCommandBatch(cmd))
-        {
-            notification.batch = static_cast<RECommandBatch*>(cmd);
-        }
-        else
-        {
-            notification.command = static_cast<RECommand*>(cmd);
-        }
-        notification.redo = (newIndex > oldIndex);
-        EmitNotify(notification);
+        notification.batch = static_cast<const RECommandBatch*>(command);
     }
-    else if (currentIndex != EMPTY_INDEX)
+    else
     {
-        DVASSERT_MSG(false, DAVA::Format("Commands changed to wrong index(%d)", newIndex).c_str());
+        notification.command = static_cast<const RECommand*>(command);
     }
+    notification.redo = redo;
+    EmitNotify(notification);
 }
 
 void RECommandStack::ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool isSingleCommand)
