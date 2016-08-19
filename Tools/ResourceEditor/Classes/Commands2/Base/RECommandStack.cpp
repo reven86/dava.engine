@@ -121,7 +121,7 @@ void RECommandStack::ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool
         commandCopy->Redo();
         if (!commandCopy->IsClean())
         {
-            RECommandStack::SetClean(false);
+            SetChanged();
         }
     }
     else

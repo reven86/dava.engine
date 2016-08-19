@@ -29,6 +29,11 @@ public:
         return isStart;
     };
 
+    bool IsClean() const override
+    {
+        return true;
+    }
+
 protected:
     DAVA::Entity* effectEntity;
     bool isStart = false;
@@ -41,6 +46,11 @@ public:
 
     DAVA::Entity* GetEntity() const;
     void Redo() override;
+
+    bool IsClean() const override
+    {
+        return true;
+    }
 
 protected:
     DAVA::Entity* effectEntity = nullptr;

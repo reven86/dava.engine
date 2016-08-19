@@ -39,7 +39,6 @@
 
 #include "Commands2/Base/CommandNotify.h"
 #include "Commands2/RECommandIDs.h"
-#include "Commands2/Base/CommandAction.h"
 
 class RECommandNotificationObject;
 class SceneCameraSystem;

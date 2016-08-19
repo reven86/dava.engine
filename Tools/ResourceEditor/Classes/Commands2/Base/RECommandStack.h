@@ -24,5 +24,5 @@ private:
     void RemoveCommand(DAVA::uint32 index);
 
     void OnCommandExecuted(const DAVA::Command* cmd, bool redo);
-    void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand) override;
+    void ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool isSingleCommand) override;
 };
