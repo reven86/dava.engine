@@ -91,7 +91,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 #endif
     ProcessControl(control, 0, styleSheetListChanged);
 #if STYLESHEET_STATS
-    frameTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
+    statsTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
 #endif
 }
 

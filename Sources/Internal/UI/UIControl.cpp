@@ -1561,6 +1561,7 @@ void UIControl::SystemVisible()
 
     ChangeViewState(eViewState::VISIBLE);
 
+    SetStyleSheetDirty();
     UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
