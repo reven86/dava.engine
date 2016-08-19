@@ -12,7 +12,7 @@
 namespace tarc
 {
 
-namespace WaitDialogDetails
+namespace WaitDialogDetail
 {
 
 Qt::ConnectionType GetConnectionType()
@@ -46,8 +46,8 @@ WaitDialog::~WaitDialog()
 {
     if (dlg != nullptr)
     {
-        QMetaObject::invokeMethod(dlg.data(), "close", WaitDialogDetails::GetConnectionType());
-        QMetaObject::invokeMethod(dlg.data(), "deleteLater", WaitDialogDetails::GetConnectionType());
+        QMetaObject::invokeMethod(dlg.data(), "close", WaitDialogDetail::GetConnectionType());
+        QMetaObject::invokeMethod(dlg.data(), "deleteLater", WaitDialogDetail::GetConnectionType());
     }
 }
 
@@ -65,7 +65,7 @@ void WaitDialog::SetMessage(const QString& msg)
 {
     if (dlg != nullptr)
     {
-        QMetaObject::invokeMethod(label.data(), "setText", WaitDialogDetails::GetConnectionType(), Q_ARG(QString, msg));
+        QMetaObject::invokeMethod(label.data(), "setText", WaitDialogDetail::GetConnectionType(), Q_ARG(QString, msg));
     }
 }
 
@@ -73,7 +73,7 @@ void WaitDialog::SetRange(DAVA::uint32 min, DAVA::uint32 max)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {
-        QMetaObject::invokeMethod(progressBar.data(), "setRange", WaitDialogDetails::GetConnectionType(),
+        QMetaObject::invokeMethod(progressBar.data(), "setRange", WaitDialogDetail::GetConnectionType(),
                                   Q_ARG(int, min), Q_ARG(int, max));
     }
 }
@@ -82,13 +82,13 @@ void WaitDialog::SetProgressValue(DAVA::uint32 progress)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {
-        QMetaObject::invokeMethod(progressBar.data(), "setValue", WaitDialogDetails::GetConnectionType(), Q_ARG(int, progress));
+        QMetaObject::invokeMethod(progressBar.data(), "setValue", WaitDialogDetail::GetConnectionType(), Q_ARG(int, progress));
     }
 }
 
 void WaitDialog::Update()
 {
-    if (WaitDialogDetails::GetConnectionType() == Qt::DirectConnection)
+    if (WaitDialogDetail::GetConnectionType() == Qt::DirectConnection)
     {
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     }

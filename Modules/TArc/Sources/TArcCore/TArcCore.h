@@ -28,19 +28,15 @@ public:
     template<typename T>
     void CreateModule()
     {
+        static_assert(std::is_base_of<tarc::ClientModule, T>::value ||
+                      std::is_base_of<tarc::ControllerModule, T>::value,
+                      "Module should be Derived from tarc::ControllerModule or tarc::ClientModule");
         AddModule(new T());
-    }
-
-    template<typename T>
-    void CreateControllerModule()
-    {
-        static_assert(std::is_base_of<tarc::ControllerModule, T>::value, "Controller modules should be Derived from tarc::ControllerModule");
-        SetControllerModule(new T());
     }
 
 private:
     void AddModule(ClientModule* module);
-    void SetControllerModule(ControllerModule* module);
+    void AddModule(ControllerModule* module);
 
     void OnLoopStarted();
     void OnWindowCreated(DAVA::Window& w);
@@ -54,7 +50,7 @@ private:
     bool HasActiveContext() const override;
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type) override;
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override;
-    DAVA::EngineContext& GetEngine() override;
+    DAVA::EngineContext& GetEngineContext() override;
 
     // Inherited via ContextManager
     DataContext::ContextID CreateContext() override;
@@ -70,7 +66,7 @@ private:
     DAVA::Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
 
-    DAVA::Vector<ClientModule*> modules;
+    DAVA::Vector<std::unique_ptr<ClientModule>> modules;
     ControllerModule* controllerModule = nullptr;
 
     DAVA::Vector<DataWrapper> wrappers;

@@ -64,8 +64,6 @@ private:
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 
-    //void OnBeforeTerminate();
-
     uint32 ConvertButtons(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
     uint32 ConvertQtKeyToSystemScanCode(int key);
@@ -86,7 +84,7 @@ private:
     friend void AcqureContext();
     friend void ReleaseContext();
 
-    OGLContextBinder* contextBinder;
+    std::unique_ptr<OGLContextBinder> contextBinder;
 };
 
 inline void* WindowBackend::GetHandle() const

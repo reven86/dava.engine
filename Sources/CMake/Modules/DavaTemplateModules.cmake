@@ -44,7 +44,10 @@ STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
 #
 FIND_SYSTEM_LIBRARY                   
-FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
+#
+FIND_PACKAGE
+FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -54,6 +57,9 @@ BINARY_WIN32_DIR_RELWITHDEB
 BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
+#
+EXCLUDE_FROM_ALL
+#
 )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
@@ -89,17 +95,19 @@ macro( setup_main_module )
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
 
-    list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1)
-        set( INIT true )
-    else()
-        if( NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
-            if ( ${_index} GREATER -1)
+    if (NOT EXCLUDE_FROM_ALL)
+        list (FIND DAVA_COMPONENTS "ALL" _index)
+        if ( ${_index} GREATER -1)
+            set( INIT true )
+        else()
+            if( NAME_MODULE )
+                list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+                if ( ${_index} GREATER -1)
+                    set( INIT true )
+                endif()
+            else()
                 set( INIT true )
             endif()
-        else()
-            set( INIT true )
         endif()
     endif()
 
@@ -148,7 +156,12 @@ macro( setup_main_module )
                     list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
                 endif()
             endif()
-        endforeach()        
+        endforeach()
+
+        #"FIND PACKAGE"
+        foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+            find_package( ${NAME} )
+        endforeach()
 
         #"ERASE FILES"
         foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )

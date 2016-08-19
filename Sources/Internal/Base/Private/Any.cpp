@@ -70,18 +70,18 @@ bool Any::operator==(const Any& any) const
         return true;
     }
 
-    const Type* combarableType = type;
+    const Type* comparableType = type;
     if (type->IsPointer())
     {
-        combarableType = Type::Instance<void*>();
+        comparableType = Type::Instance<void*>();
     }
 
-    if (anyOPsMap->count(combarableType) == 0 || anyOPsMap->at(combarableType).compare == nullptr)
+    if (anyOPsMap->count(comparableType) == 0 || anyOPsMap->at(comparableType).compare == nullptr)
     {
         throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
     }
 
-    const AnyOPs& ops = anyOPsMap->operator[](combarableType);
+    const AnyOPs& ops = anyOPsMap->operator[](comparableType);
     return (*ops.compare)(anyStorage.GetData(), any.anyStorage.GetData());
 }
 

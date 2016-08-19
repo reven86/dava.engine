@@ -30,7 +30,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     DAVA::Engine e;
     tarc::Core core(e);
     core.CreateModule<LibraryModule>();
-    core.CreateControllerModule<SceneViewModule>();
+    core.CreateModule<SceneViewModule>();
 
     e.SetOptions(appOptions);
     e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);

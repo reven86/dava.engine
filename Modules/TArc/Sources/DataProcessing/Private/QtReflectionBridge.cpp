@@ -80,10 +80,10 @@ void FillConverter(DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA:
     ATV.emplace(DAVA::Type::Instance<DAVA::##ANY_TYPE>(), &ReflBridgeDetails::##ANY_TYPE##ToVariant); \
     VTA.emplace(qMetaTypeId<VAR_TYPE>(), &ReflBridgeDetails::##VAR_TYPE##ToAny);
 
-QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper wrapper_, QObject* parent)
+QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wrapper_, QObject* parent)
     : QObject(parent)
     , reflectionBridge(reflectionBridge_)
-    , wrapper(wrapper_)
+    , wrapper(std::move(wrapper_))
 {
     DVASSERT(parent != nullptr);
 }
@@ -256,11 +256,9 @@ void QtReflected::FirePropertySignal(const DAVA::String& propertyName)
 
 void QtReflected::FirePropertySignal(int signalId)
 {
-    if (signalId != -1)
-    {
-        void* argv[] = { nullptr };
-        qtMetaObject->activate(this, signalId, argv);
-    }
+    DVASSERT(signalId != -1);
+    void* argv[] = { nullptr };
+    qtMetaObject->activate(this, signalId, argv);
 }
 
 QtReflectionBridge::QtReflectionBridge()
@@ -277,9 +275,9 @@ QtReflectionBridge::~QtReflectionBridge()
     }
 }
 
-QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper wrapper, QObject* parent)
+QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper&& wrapper, QObject* parent)
 {
-    return new QtReflected(this, wrapper, parent);
+    return new QtReflected(this, std::move(wrapper), parent);
 }
 
 }

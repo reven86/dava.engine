@@ -12,6 +12,7 @@ ContextManager& ControllerModule::GetContextManager()
 
 void ControllerModule::SetContextManager(ContextManager* contextManager_)
 {
+    DVASSERT(contextManager == nullptr);
     contextManager = contextManager_;
 }
 

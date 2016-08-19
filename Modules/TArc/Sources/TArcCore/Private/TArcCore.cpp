@@ -31,14 +31,14 @@ Core::~Core()
 
 void Core::AddModule(ClientModule* module)
 {
-    modules.push_back(module);
+    modules.emplace_back(module);
 }
 
-void Core::SetControllerModule(ControllerModule* module)
+void Core::AddModule(ControllerModule* module)
 {
     DVASSERT(controllerModule == nullptr);
     controllerModule = module;
-    modules.push_back(module);
+    AddModule(static_cast<ClientModule*>(module));
 }
 
 void Core::OnWindowCreated(DAVA::Window& w)
@@ -60,12 +60,12 @@ void Core::OnLoopStarted()
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
     controllerModule->SetContextManager(this);
 
-    for (ClientModule* module : modules)
+    for (std::unique_ptr<ClientModule>& module : modules)
     {
         module->Init(this, uiManager.get());
     }
 
-    for (ClientModule* module : modules)
+    for (std::unique_ptr<ClientModule>& module : modules)
     {
         module->PostInit();
     }
@@ -78,19 +78,13 @@ void Core::OnLoopStopped()
     controllerModule = nullptr;
     for (std::unique_ptr<DataContext>& context : contexts)
     {
-        for (ClientModule* module : modules)
+        for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->OnContextDeleted(*context);
         }
     }
 
     contexts.clear();
-
-    for (ClientModule* module : modules)
-    {
-        delete module;
-    }
-
     modules.clear();
     wrappers.clear();
     uiManager.reset();
@@ -150,7 +144,7 @@ DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor)
     return wrapper;
 }
 
-DAVA::EngineContext& Core::GetEngine()
+DAVA::EngineContext& Core::GetEngineContext()
 {
     DAVA::EngineContext* engineContext = engine.GetContext();
     DVASSERT(engineContext);
@@ -161,7 +155,7 @@ DataContext::ContextID Core::CreateContext()
 {
     contexts.push_back(std::make_unique<DataContext>());
     DataContext& context = *contexts.back();
-    for (ClientModule* module : modules)
+    for (std::unique_ptr<ClientModule>& module : modules)
     {
         module->OnContextCreated(context);
     }
@@ -181,12 +175,12 @@ void Core::DeleteContext(DataContext::ContextID contextID)
         throw std::runtime_error(DAVA::Format("DeleteContext failed for contextID : %d", contextID));
     }
 
-    for (ClientModule* module : modules)
+    for (std::unique_ptr<ClientModule>& module : modules)
     {
         module->OnContextDeleted(**iter);
     }
 
-    if (activeContext->GetID() == contextID)
+    if (activeContext != nullptr && activeContext->GetID() == contextID)
     {
         ActivateContext(nullptr);
     }
@@ -196,7 +190,7 @@ void Core::DeleteContext(DataContext::ContextID contextID)
 
 void Core::ActivateContext(DataContext::ContextID contextID)
 {
-    if (activeContext->GetID() == contextID)
+    if (activeContext != nullptr && activeContext->GetID() == contextID)
     {
         return;
     }

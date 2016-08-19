@@ -5,7 +5,7 @@
 namespace tarc
 {
 
-WindowKey::WindowKey(DAVA::FastName appID_)
+WindowKey::WindowKey(const DAVA::FastName& appID_)
     : appID(appID_)
 {
 }

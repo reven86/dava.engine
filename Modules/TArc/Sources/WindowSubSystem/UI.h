@@ -16,7 +16,7 @@ namespace tarc
 class WindowKey
 {
 public:
-    WindowKey(DAVA::FastName appID);
+    WindowKey(const DAVA::FastName& appID);
     const DAVA::FastName& GetAppID() const;
 
 private:
@@ -74,7 +74,7 @@ private:
 
 struct WaitDialogParams
 {
-    QString message = QStringLiteral("Please wait, while current operation will be finished");
+    QString message = QStringLiteral("Please wait, until current operation will be finished");
     DAVA::uint32 min = 0; // if min and max value equal 0, than progress bar will be infinite
     DAVA::uint32 max = 0;
     bool needProgressBar = true;
@@ -100,7 +100,7 @@ public:
     virtual ~UI() {}
 
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
-    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper data) = 0;
+    virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
 
     virtual void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) = 0;

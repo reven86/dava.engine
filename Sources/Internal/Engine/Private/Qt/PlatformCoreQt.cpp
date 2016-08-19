@@ -17,7 +17,6 @@ namespace DAVA
 {
 namespace Private
 {
-
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , nativeService(new NativeService(this))

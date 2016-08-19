@@ -21,7 +21,7 @@
 namespace tarc
 {
 
-namespace UIManagerDetails
+namespace UIManagerDetail
 {
 struct MainWindowInfo
 {
@@ -167,7 +167,7 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
 struct UIManager::Impl
 {
     DAVA::Array<DAVA::Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
-    DAVA::UnorderedMap<DAVA::FastName, UIManagerDetails::MainWindowInfo> windows;
+    DAVA::UnorderedMap<DAVA::FastName, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
     bool initializationFinished = false;
@@ -180,7 +180,7 @@ struct UIManager::Impl
         }
     }
 
-    UIManagerDetails::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
+    UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
     {
         const DAVA::FastName& appID = windowKey.GetAppID();
         auto iter = windows.find(appID);
@@ -188,7 +188,7 @@ struct UIManager::Impl
         {
             QMainWindow* window = new QMainWindow();
             window->setObjectName(appID.c_str());
-            UIManagerDetails::MainWindowInfo info;
+            UIManagerDetail::MainWindowInfo info;
             info.window = window;
             auto emplacePair = windows.emplace(appID, info);
             DVASSERT(emplacePair.second == true);
@@ -202,8 +202,8 @@ struct UIManager::Impl
 UIManager::UIManager()
     : impl(new Impl())
 {
-    impl->addFunctions[PanelKey::DockPanel] = DAVA::MakeFunction(&UIManagerDetails::AddDockPanel);
-    impl->addFunctions[PanelKey::CentralPanel] = DAVA::MakeFunction(&UIManagerDetails::AddCentralPanel);
+    impl->addFunctions[PanelKey::DockPanel] = DAVA::MakeFunction(&UIManagerDetail::AddDockPanel);
+    impl->addFunctions[PanelKey::CentralPanel] = DAVA::MakeFunction(&UIManagerDetail::AddCentralPanel);
 
     impl->qmlEngine.reset(new QQmlEngine());
     impl->qmlEngine->addImportPath("qrc:/");
@@ -240,39 +240,39 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
     }
 }
 
-void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper data)
+void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data)
 {
-    AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, data));
+    AddView(windowKey, panelKey, LoadView(panelKey.GetViewName(), resourceName, std::move(data)));
 }
 
 void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
-    UIManagerDetails::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     for (const QUrl& url : placement.urls)
     {
         QString scheme = url.scheme();
         if (scheme == menuScheme)
         {
-            UIManagerDetails::AddMenuPoint(url, action, windowInfo);
+            UIManagerDetail::AddMenuPoint(url, action, windowInfo);
         }
         else if (scheme == toolbarScheme)
         {
-            UIManagerDetails::AddToolbarPoint(url, action, windowInfo);
+            UIManagerDetail::AddToolbarPoint(url, action, windowInfo);
         }
         else if (scheme == statusbarScheme)
         {
-            UIManagerDetails::AddStatusbarPoint(url, action, windowInfo);
+            UIManagerDetail::AddStatusbarPoint(url, action, windowInfo);
         }
     }
 }
 
-QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper data)
+QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper&& data)
 {
     QPointer<QQuickWidget> view = new QQuickWidget(impl->qmlEngine.get(), nullptr);
     view->setObjectName(name);
     view->setResizeMode(QQuickWidget::SizeRootObjectToView);
 
-    QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(data, view);
+    QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(std::move(data), view);
     qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
     {
         if (qtReflected != nullptr && view != nullptr)
@@ -282,10 +282,10 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
 
             if (view->status() != QQuickWidget::Ready)
             {
-                DAVA::Logger::Warning("!!! QML %s has not been loaded !!!", resourceName);
+                DAVA::Logger::Error("!!! QML %s has not been loaded !!!", resourceName);
                 foreach(QQmlError error, view->errors())
                 {
-                    DAVA::Logger::Warning("Error : %s", error.toString().toStdString().c_str());
+                    DAVA::Logger::Error("Error : %s", error.toString().toStdString().c_str());
                 }
             }
         }
@@ -309,7 +309,7 @@ void UIManager::ClearMessage(const WindowKey& windowKey)
 
 std::unique_ptr<tarc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
 {
-    UIManagerDetails::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
     dlg->Show();
     return std::move(dlg);
