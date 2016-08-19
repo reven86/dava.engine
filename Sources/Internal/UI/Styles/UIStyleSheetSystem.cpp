@@ -84,18 +84,18 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 {
 }
 
-void UIStyleSheetSystem::ProcessControl(UIControl* control)
+void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
 {
 #if STYLESHEET_STATS
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteUs();
 #endif
-    ProcessControl(control, 0);
+    ProcessControl(control, 0, styleSheetListChanged);
 #if STYLESHEET_STATS
     frameTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
 #endif
 }
 
-void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty /* = 0*/)
+void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged)
 {
     UIControlPackageContext* packageContext = control->GetPackageContext();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
@@ -105,7 +105,8 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
         distanceFromDirty = 0;
     }
 
-    if (packageContext && distanceFromDirty < packageContext->GetMaxStyleSheetHierarchyDepth())
+    if (packageContext
+        && (styleSheetListChanged || distanceFromDirty < packageContext->GetMaxStyleSheetHierarchyDepth()))
     {
 #if STYLESHEET_STATS
         ++statsProcessedControls;
@@ -174,7 +175,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
 
     for (UIControl* child : control->GetChildren())
     {
-        ProcessControl(child, distanceFromDirty + 1);
+        ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged);
     }
 }
 

@@ -18,7 +18,7 @@ public:
     UIStyleSheetSystem();
     ~UIStyleSheetSystem();
 
-    void ProcessControl(UIControl* control);
+    void ProcessControl(UIControl* control, bool styleSheetListChanged = false);
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
     bool HasGlobalClass(const FastName& clazz) const;
@@ -30,7 +30,7 @@ public:
     void DumpStats();
 
 private:
-    void ProcessControl(UIControl* control, int32 distanceFromDirty);
+    void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);
