@@ -107,11 +107,13 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
 void FileSystemDockWidget::FindInFiles()
 {
     QString filePath = FindFileInPackageDialog::GetFilePath(model->rootPath(), parentWidget());
-    QFileInfo fileInfo(filePath);
-    if (fileInfo.isFile() && fileInfo.suffix() == FileSystemModel::GetYamlExtensionString())
+    if (filePath.isEmpty())
     {
-        emit OpenPackageFile(filePath);
+        return;
     }
+    QFileInfo fileInfo(filePath);
+    DVASSERT(fileInfo.isFile() && fileInfo.suffix() == "yaml")
+    emit OpenPackageFile(filePath);
 }
 
 //refresh actions by menu invoke pos
