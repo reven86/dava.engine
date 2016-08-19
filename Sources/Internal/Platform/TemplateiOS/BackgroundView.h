@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef __DAVAENGINE_BACKGROUND_VIEW_H__
 #define __DAVAENGINE_BACKGROUND_VIEW_H__
 
@@ -21,3 +23,4 @@
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
 #endif //__DAVAENGINE_BACKGROUND_VIEW_H__
+#endif // !__DAVAENGINE_COREV2__

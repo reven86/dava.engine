@@ -171,12 +171,10 @@ while continue_process_stdout:
         sys.stdout.flush()
 
 
-if sys.platform == "darwin":
-
-    print '\nStart coverage analysis -->\n'
+if sys.platform == "darwin" and start_on_ios == False:
     pathScriptDir        = os.path.dirname(os.path.realpath(__file__))
     pathCoverageDir      = os.path.realpath( os.path.join(pathScriptDir, '../../../RepoTools/coverage') )
-    pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_html_report.py' )   
+    pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_report.py' )   
     pathBuild            = os.path.realpath( os.path.join( os.getcwd(), '../' ) )
     pathExecut           = os.path.realpath( os.path.join( os.getcwd(), '{0}.app'.format( PRJ_NAME_BASE ) ) )
     pathReportOut        = os.path.join( pathBuild, 'Coverage')    
@@ -186,7 +184,7 @@ if sys.platform == "darwin":
                 '--pathExecut', pathExecut,                   
                 '--pathReportOut', pathReportOut,
                 '--buildConfig', 'Release',
-                '--notRunExecutable', 'true'
+                '--teamcityMode', 'true'
                  ]
 
     subprocess.call(params)

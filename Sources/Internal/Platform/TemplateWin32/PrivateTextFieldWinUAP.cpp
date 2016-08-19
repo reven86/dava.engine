@@ -18,26 +18,15 @@
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/EngineModule.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#endif
 
 #include <ppltasks.h>
-
-using namespace Windows::System;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
-using namespace Windows::UI::Core;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Input;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
-using namespace Windows::UI::ViewManagement;
-using namespace Windows::Storage;
-using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
-using namespace concurrency;
 
 namespace DAVA
 {
@@ -199,8 +188,15 @@ void PrivateTextFieldWinUAP::TextFieldProperties::ClearChangedFlags()
     fontSizeChanged = false;
 }
 
+Windows::UI::Xaml::Style ^ PrivateTextFieldWinUAP::customTextBoxStyle = nullptr;
+Windows::UI::Xaml::Style ^ PrivateTextFieldWinUAP::customPasswordBoxStyle = nullptr;
+
 PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
+#if defined(__DAVAENGINE_COREV2__)
+    : window(Engine::Instance()->PrimaryWindow())
+#else
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+#endif
     , uiTextField(uiTextField_)
     , properties()
 {
@@ -210,16 +206,29 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
 
 PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 {
+    using ::Windows::Foundation::EventRegistrationToken;
+    using ::Windows::UI::Xaml::UIElement;
+    using ::Windows::UI::ViewManagement::InputPane;
+
     if (nativeControl != nullptr)
     {
         UIElement ^ p = nativeControlHolder;
         EventRegistrationToken tokenHiding = tokenKeyboardHiding;
         EventRegistrationToken tokenShowing = tokenKeyboardShowing;
+#if defined(__DAVAENGINE_COREV2__)
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice, tokenHiding, tokenShowing]() {
+            InputPane::GetForCurrentView()->Showing -= tokenHiding;
+            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
+            nservice->RemoveXamlControl(p);
+        });
+#else
         core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
             InputPane::GetForCurrentView()->Showing -= tokenHiding;
             InputPane::GetForCurrentView()->Hiding -= tokenShowing;
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
+#endif
         nativeControlHolder = nullptr;
         nativeControl = nullptr;
         nativeText = nullptr;
@@ -244,12 +253,21 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
         if (!isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->RunAsyncOnUIThread([this, self]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
+#else
             core->RunOnUIThread([this, self]() {
                 if (nativeControl != nullptr)
                 {
                     SetNativeVisible(false);
                 }
             });
+#endif
         }
     }
 }
@@ -305,9 +323,15 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
 
         auto self{ shared_from_this() };
         TextFieldProperties props(properties);
+#if defined(__DAVAENGINE_COREV2__)
+        window->RunAsyncOnUIThread([this, self, props] {
+            ProcessProperties(props);
+        });
+#else
         core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
         });
+#endif
 
         properties.createNew = false;
         properties.focusChanged = false;
@@ -367,7 +391,11 @@ void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
 
 void PrivateTextFieldWinUAP::SetFontSize(float32 virtualFontSize)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
     const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
     float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
     fontSize /= scaleFactor;
 
@@ -457,18 +485,47 @@ void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 
 void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
 {
+    using ::Windows::UI::Colors;
+    using ::Windows::UI::Xaml::Thickness;
+    using ::Windows::UI::Xaml::Visibility;
+    using ::Windows::UI::Xaml::Media::SolidColorBrush;
+    using ::Windows::UI::Xaml::Controls::TextBox;
+    using ::Windows::UI::Xaml::Controls::PasswordBox;
+    using ::Windows::UI::Xaml::Controls::Border;
+    using ::Windows::UI::Xaml::Input::KeyboardNavigationMode;
+
+    if (customTextBoxStyle == nullptr)
+    {
+        // Load custom textbox and password styles that allow transparent background when control has focus
+        using ::Windows::UI::Xaml::Markup::XamlReader;
+        using ::Windows::UI::Xaml::ResourceDictionary;
+        using ::Windows::UI::Xaml::Style;
+        ResourceDictionary ^ dict = static_cast<ResourceDictionary ^>(XamlReader::Load(xamlTextBoxStyles));
+
+        customTextBoxStyle = static_cast<Style ^>(dict->Lookup(ref new Platform::String(L"dava_custom_textbox")));
+        customPasswordBoxStyle = static_cast<Style ^>(dict->Lookup(ref new Platform::String(L"dava_custom_passwordbox")));
+    }
+
     if (textControl)
     {
         nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
+#if defined(__DAVAENGINE_COREV2__)
+        nativeText->Style = customTextBoxStyle;
+#else
         core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
+#endif
         InstallTextEventHandlers();
     }
     else
     {
         nativePassword = ref new PasswordBox();
         nativeControl = nativePassword;
+#if defined(__DAVAENGINE_COREV2__)
+        nativePassword->Style = customPasswordBoxStyle;
+#else
         core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
+#endif
         InstallPasswordEventHandlers();
     }
     InstallCommonEventHandlers();
@@ -494,12 +551,20 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControlHolder->MinWidth = 0.0;
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->AddXamlControl(nativeControlHolder);
+#else
     core->XamlApplication()->AddUIElement(nativeControlHolder);
+#endif
 }
 
 void PrivateTextFieldWinUAP::DeleteNativeControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->RemoveXamlControl(nativeControlHolder);
+#else
     core->XamlApplication()->RemoveUIElement(nativeControlHolder);
+#endif
     nativeControl = nullptr;
     nativeText = nullptr;
     nativePassword = nullptr;
@@ -508,7 +573,11 @@ void PrivateTextFieldWinUAP::DeleteNativeControl()
 
 void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
 {
-    using Platform::Object;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
+    using ::Windows::UI::Xaml::Input::KeyEventHandler;
+    using ::Windows::UI::Xaml::Input::KeyRoutedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyDown = ref new KeyEventHandler([this, self_weak](Object ^, KeyRoutedEventArgs ^ args) {
@@ -523,6 +592,11 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
         if (auto self = self_weak.lock())
             OnLostFocus();
     });
+    auto layoutUpdated = ref new Windows::Foundation::EventHandler<Platform::Object ^>([this, self_weak](Platform::Object ^, Platform::Object ^ ) {
+        if (auto self = self_weak.lock())
+            OnLayoutUpdated();
+    });
+    nativeControl->LayoutUpdated += layoutUpdated;
     nativeControl->KeyDown += keyDown;
     nativeControl->GotFocus += gotFocus;
     nativeControl->LostFocus += lostFocus;
@@ -530,7 +604,11 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallTextEventHandlers()
 {
-    using Platform::Object;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
+    using ::Windows::UI::Xaml::Controls::TextChangedEventHandler;
+    using ::Windows::UI::Xaml::Controls::TextChangedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ ) {
@@ -547,7 +625,9 @@ void PrivateTextFieldWinUAP::InstallTextEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
 {
-    using namespace Platform;
+    using ::Platform::Object;
+    using ::Windows::UI::Xaml::RoutedEventHandler;
+    using ::Windows::UI::Xaml::RoutedEventArgs;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ ) {
@@ -559,6 +639,10 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
 
 void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
 {
+    using ::Windows::Foundation::TypedEventHandler;
+    using ::Windows::UI::ViewManagement::InputPane;
+    using ::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs;
+
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
         if (auto self = self_weak.lock())
@@ -572,8 +656,10 @@ void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
     tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
-void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args)
 {
+    using ::Windows::System::VirtualKey;
+
     savedCaretPosition = GetNativeCaretPosition();
 
     switch (args->Key)
@@ -587,11 +673,17 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
     case VirtualKey::Escape:
     {
         auto self{ shared_from_this() };
-        core->RunOnMainThread([this, self]()
-                              {
-                                  if (textFieldDelegate != nullptr)
-                                      textFieldDelegate->TextFieldShouldCancel(uiTextField);
-                              });
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->TextFieldShouldCancel(uiTextField);
+        });
+#else
+        core->RunOnMainThread([this, self]() {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->TextFieldShouldCancel(uiTextField);
+        });
+#endif
     }
     break;
     case VirtualKey::Enter:
@@ -600,10 +692,17 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
         if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
         {
             auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+            window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
+            });
+#else
             core->RunOnMainThread([this, self]() {
                 if (textFieldDelegate != nullptr)
                     textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
+#endif
         }
         break;
     default:
@@ -613,7 +712,13 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
+    using ::Windows::UI::ViewManagement::InputPane;
+
+#if defined(__DAVAENGINE_COREV2__)
+// TODO: core->XamlApplication()->CaptureTextBox(nativeControl);
+#else
     core->XamlApplication()->CaptureTextBox(nativeControl);
+#endif
 
     SetNativeCaretPosition(GetNativeText()->Length());
 
@@ -626,7 +731,11 @@ void PrivateTextFieldWinUAP::OnGotFocus()
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAsyncOnMainThread([this, self, multiline, keyboardRect]() {
+#else
     core->RunOnMainThread([this, self, multiline, keyboardRect]() {
+#endif
         if (uiTextField != nullptr)
         {
             if (!multiline)
@@ -667,7 +776,11 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     }
 
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+#else
     core->RunOnMainThread([this, self]() {
+#endif
         if (uiTextField != nullptr)
         {
             uiTextField->OnKeyboardHidden();
@@ -699,7 +812,11 @@ void PrivateTextFieldWinUAP::OnTextChanged()
 
     bool textAccepted = true;
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetEngine()->RunAndWaitOnMainThread([this, self, &newText, &textAccepted, &textToRestore]() {
+#else
     core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
+#endif
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
         if (programmaticTextChange && targetAlive && newText != lastProgrammaticText)
         {
@@ -734,13 +851,24 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnLayoutUpdated()
+{
+    // unfortunately, in win10, control cannot immediately change state, need re-create sprite from preview data
+    if (!IsMultiline() && !HasFocus())
+    {
+        RenderToTexture(false);
+    }
+}
+
+void PrivateTextFieldWinUAP::OnKeyboardHiding(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
     args->EnsuredFocusedElementInView = true;
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs ^ args)
+void PrivateTextFieldWinUAP::OnKeyboardShowing(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
+    using ::Windows::UI::ViewManagement::InputPane;
+
     // Tell keyboard that application will position native controls by itself
     args->EnsuredFocusedElementInView = true;
 
@@ -751,7 +879,11 @@ void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs ^ ar
         DAVA::Rect keyboardRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
 
         auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetEngine()->RunAsyncOnMainThread([this, self, keyboardRect]() {
+#else
         core->RunOnMainThread([this, self, keyboardRect]() {
+#endif
             if (textFieldDelegate != nullptr)
             {
                 Rect rect = WindowToVirtual(keyboardRect);
@@ -790,9 +922,13 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
     if (props.focusChanged)
     {
         if (props.focus)
-            nativeControl->Focus(FocusState::Pointer);
+            nativeControl->Focus(::Windows::UI::Xaml::FocusState::Pointer);
         else if (HasFocus())
+#if defined(__DAVAENGINE_COREV2__)
+            window->GetNativeService()->UnfocusXamlControl();
+#else
             core->XamlApplication()->UnfocusUIElement();
+#endif
     }
 
     if (!IsMultiline() && !HasFocus())
@@ -869,11 +1005,17 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
     }
     nativeControlHolder->Width = std::max(0.0f, rect.dx);
     nativeControlHolder->Height = std::max(0.0f, rect.dy);
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->PositionXamlControl(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+#else
     core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+#endif
 }
 
 void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
 {
+    using ::Windows::UI::Xaml::Visibility;
+
     // Single line native text field is always rendered to texture and placed offscreen
     // Multiline native text field is always onscreen according to visibiliy flag
     if (IsMultiline())
@@ -894,6 +1036,8 @@ void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
 
 void PrivateTextFieldWinUAP::SetNativeMultiline(bool multiline)
 {
+    using ::Windows::UI::Xaml::TextWrapping;
+
     if (!IsPassword())
     {
         nativeText->AcceptsReturn = multiline;
@@ -935,6 +1079,8 @@ void PrivateTextFieldWinUAP::SetNativeFontSize(float32 fontSize)
 
 void PrivateTextFieldWinUAP::SetNativeTextColor(const Color& textColor)
 {
+    using ::Windows::UI::Xaml::Media::SolidColorBrush;
+
     Windows::UI::Color nativeColor;
     nativeColor.R = static_cast<unsigned char>(textColor.r * 255.0f);
     nativeColor.G = static_cast<unsigned char>(textColor.g * 255.0f);
@@ -945,6 +1091,9 @@ void PrivateTextFieldWinUAP::SetNativeTextColor(const Color& textColor)
 
 void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool textRtlAlignment)
 {
+    using ::Windows::UI::Xaml::TextAlignment;
+    using ::Windows::UI::Xaml::VerticalAlignment;
+
     // As far as I understood RTL text alignment affects only text alignment inside control rect
     // If RTL text alignment flag is set then invert text alignment from left to right and vice versa
     if (textRtlAlignment)
@@ -985,6 +1134,10 @@ void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool te
 
 void PrivateTextFieldWinUAP::SetNativeKeyboardType(int32 type)
 {
+    using ::Windows::UI::Xaml::Input::InputScope;
+    using ::Windows::UI::Xaml::Input::InputScopeName;
+    using ::Windows::UI::Xaml::Input::InputScopeNameValue;
+
     InputScopeNameValue nativeValue = InputScopeNameValue::Default;
     if (!IsPassword())
     {
@@ -1034,6 +1187,8 @@ void PrivateTextFieldWinUAP::SetNativeSpellChecking(bool enabled)
 
 bool PrivateTextFieldWinUAP::HasFocus() const
 {
+    using ::Windows::UI::Xaml::FocusState;
+
     return FocusState::Unfocused != nativeControl->FocusState;
 }
 
@@ -1065,8 +1220,12 @@ Rect PrivateTextFieldWinUAP::VirtualToWindow(const Rect& srcRect) const
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
     rect += coordSystem->GetPhysicalDrawOffset();
 
-    // 2. map physical to window
+// 2. map physical to window
+#if defined(__DAVAENGINE_COREV2__)
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
     const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
     rect.x /= scaleFactor;
     rect.y /= scaleFactor;
     rect.dx /= scaleFactor;
@@ -1079,8 +1238,13 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
     Rect rect = srcRect;
+#if defined(__DAVAENGINE_COREV2__)
+    // 1. map window to physical
+    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+#else
     // 1. map window to physical
     const float32 scaleFactor = core->GetScreenScaleFactor();
+#endif
     rect.x *= scaleFactor;
     rect.y *= scaleFactor;
     rect.dx *= scaleFactor;
@@ -1094,6 +1258,12 @@ Rect PrivateTextFieldWinUAP::WindowToVirtual(const Rect& srcRect) const
 
 void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 {
+    using ::concurrency::create_task;
+    using ::concurrency::task;
+    using ::Windows::Storage::Streams::DataReader;
+    using ::Windows::Storage::Streams::IBuffer;
+    using ::Windows::UI::Xaml::Media::Imaging::RenderTargetBitmap;
+
     auto self{ shared_from_this() };
     RenderTargetBitmap ^ renderTarget = ref new RenderTargetBitmap;
 
@@ -1112,7 +1282,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
         }
 
         RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
+#if defined(__DAVAENGINE_COREV2__)
+        window->GetEngine()->RunAsyncOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
+#else
         core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
+#endif
             if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
@@ -1124,7 +1298,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             }
             if (moveOffScreenOnCompletion)
             {
+#if defined(__DAVAENGINE_COREV2__)
+                window->RunAsyncOnUIThread([this, self]() {
+#else
                 core->RunOnUIThread([this, self]() {
+#endif
                     waitRenderToTextureComplete = false;
                     if (!HasFocus())
                     { // Do not hide control if it has gained focus while rendering to texture
@@ -1148,6 +1326,99 @@ Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, in
     ImageConvert::SwapRedBlueChannels(imgSrc);
     return Sprite::CreateFromImage(imgSrc, true, false);
 }
+
+Platform::String ^ PrivateTextFieldWinUAP::xamlTextBoxStyles = LR"(
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="dava_custom_textbox" TargetType="TextBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                                    Grid.Row="1"
+                                    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                    Margin="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    IsTabStop="False"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    ZoomMode="Disabled" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="dava_custom_passwordbox" TargetType="PasswordBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                            Grid.Row="1"
+                                  HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                  VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                  IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                  IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                  Margin="{TemplateBinding BorderThickness}"
+                                  Padding="{TemplateBinding Padding}"
+                                  IsTabStop="False"
+                                  ZoomMode="Disabled"
+                                  AutomationProperties.AccessibilityView="Raw"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
+)";
 
 } // namespace DAVA
 

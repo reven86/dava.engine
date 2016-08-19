@@ -214,6 +214,12 @@ static void gles_check_GL_extensions()
         if (_GLES2_IsSeamlessCubmapSupported)
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
+        if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
+        {
+            float32 value = 0.0f;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
+            _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
+        }
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));

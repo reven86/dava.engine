@@ -1,8 +1,6 @@
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_MAC_OS_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_MAC_OS_H__
+#pragma once
 
 #include "UI/UITextField.h"
-#include <memory>
 
 namespace DAVA
 {
@@ -64,5 +62,3 @@ private:
     ObjCWrapper& objcWrapper;
 };
 } // end namespace DAVA
-
-#endif // __DAVAENGINE_UI_TEXT_FIELD_MAC_OS_H__

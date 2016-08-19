@@ -1,38 +1,52 @@
 #pragma once
-#define DAVAENGINE_ANY__H
 
 #include <typeindex>
 #include <string>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
+#include "BaseTypes.h"
 #include "Type.h"
-#include "AutoStorage.h"
-#include "Base/BaseTypes.h"
+#include "Private/AutoStorage.h"
+
+// #define ANY_EXPERIMENTAL_CAST_IMPL
 
 namespace DAVA
 {
-class Any
+class Any final
 {
 public:
-    using Storage = AutoStorage<>;
-    using CompareOP = bool (*)(const void*, const void*);
-    using LoadOP = void (*)(Storage&, const void* src);
-    using SaveOP = void (*)(const Storage&, void* dst);
+    using AnyStorage = AutoStorage<>;
 
-    template <typename T>
-    using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
+    using LoadOP = void (*)(AnyStorage&, const void* src);
+    using StoreOP = void (*)(const AnyStorage&, void* dst);
+    using CompareOP = bool (*)(const void* a, const void* b);
 
-    struct AnyOP
+    struct AnyOPs
     {
         CompareOP compare = nullptr;
         LoadOP load = nullptr;
-        SaveOP save = nullptr;
+        StoreOP store = nullptr;
     };
 
-    class Exception : public std::runtime_error
+    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
+
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+    struct CastOPKey
     {
-    public:
+        const Type* from;
+        const Type* to;
+
+        size_t operator()(const CastOPKey& key) const
+        {
+            return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.from);
+        }
+    };
+
+    using CastOP = void (*)(const void* from, void* to);
+    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKey>;
+#endif
+
+    struct Exception : public std::runtime_error
+    {
         enum ErrorCode
         {
             BadGet,
@@ -47,14 +61,17 @@ public:
         ErrorCode errorCode;
     };
 
-    Any() = default;
-    ~Any() = default;
+    template <typename T>
+    using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
-    Any(Any&&);
-    Any(const Any&) = default;
+    inline Any() = default;
+    inline ~Any() = default;
 
     template <typename T>
     Any(T&& value, NotAny<T> = true);
+
+    Any(Any&&);
+    Any(const Any&) = default;
 
     void Swap(Any&);
 
@@ -82,7 +99,7 @@ public:
     T Cast() const;
 
     void LoadValue(const Type* type, void* data);
-    void SaveValue(void* data, size_t size) const;
+    void StoreValue(void* data, size_t size) const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
@@ -91,20 +108,32 @@ public:
     bool operator!=(const Any&) const;
 
     template <typename T>
-    static void RegisterOP();
+    static void RegisterDefaultOPs();
 
     template <typename T>
-    static void RegisterCustomOP(const AnyOP& ops);
+    static void RegisterOPs(AnyOPs&& ops);
+
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+    template <typename From, typename To>
+    static void RegisterCastOP(CastOP& castOP);
+#endif
 
 private:
     const Type* type = nullptr;
-    Storage storage;
+    AnyStorage anyStorage;
 
-    static UnorderedMap<const Type*, AnyOP> operations;
+    static std::unique_ptr<AnyOPsMap> anyOPsMap;
+
+#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+    static std::unique_ptr<CastOPsMap> castOPsMap;
+#endif
 };
 
 } // namespace DAVA
 
-#include "Private/Any_impl.h"
+#define __Dava_Any__
+#include "Base/Private/Any_impl.h"
 
-#endif
+// TODO
+// ...
+// #include "Base/Private/AnyCast_impl.h"

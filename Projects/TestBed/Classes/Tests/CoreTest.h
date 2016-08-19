@@ -2,12 +2,19 @@
 #define __CORETEST_TEST_H__
 
 #include <DAVAEngine.h>
+
 #include "Infrastructure/BaseScreen.h"
 
+namespace DAVA
+{
+class Engine;
+}
+
+class GameCore;
 class CoreTest : public BaseScreen
 {
 public:
-    CoreTest();
+    CoreTest(GameCore* g);
 
 protected:
     void LoadResources() override;
@@ -15,6 +22,9 @@ protected:
 
 private:
     void Quit(BaseObject* obj, void* data, void* callerData);
+
+private:
+    DAVA::Engine* engine = nullptr;
 };
 
 #endif //__CORETEST_TEST_H__

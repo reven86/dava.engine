@@ -17,7 +17,8 @@
 namespace DAVA
 {
 AutotestingSystem::AutotestingSystem()
-    : startTimeMS(0)
+    : luaSystem(nullptr)
+    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -52,7 +53,6 @@ AutotestingSystem::AutotestingSystem()
     , multiplayerName("")
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
-    , luaSystem(nullptr)
 {
     new AutotestingDB();
 }
@@ -321,7 +321,9 @@ void AutotestingSystem::Update(float32 timeElapsed)
                 AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
             }
             JobManager::Instance()->WaitWorkerJobs();
+#if !defined(__DAVAENGINE_COREV2__)
             Core::Instance()->Quit();
+#endif
         }
         return;
     }
@@ -377,7 +379,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
+#if !defined(__DAVAENGINE_COREV2__)
     Core::Instance()->Quit();
+#endif
 }
 
 void AutotestingSystem::MakeScreenShot()
@@ -397,7 +401,7 @@ void AutotestingSystem::MakeScreenShot()
         viewport.x = viewport.y = 0;
         viewport.width = size.dx;
         viewport.height = size.dy;
-        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, viewport);
+        UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(currentScreen, screenShotTexture, MakeFunction(this, &AutotestingSystem::OnScreenShot), true, false, viewport);
     }
     else
     {

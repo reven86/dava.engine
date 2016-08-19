@@ -198,7 +198,7 @@ void metal_Initialize(const InitParam& param)
     int ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
-    ConstBufferMetal::InitializeRingBuffer(ringBufferSize);
+    ConstBufferMetal::InitializeRingBuffer(ringBufferSize * 2); //TODO: 2 is for release 3.1 only, in 3.2 we will decrease this in game configuration and set corresponding multiplier here (supposed 3)
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
@@ -250,6 +250,7 @@ void metal_Initialize(const InitParam& param)
     _metal_DeviceCaps.isUpperLeftRTOrigin = true;
     _metal_DeviceCaps.isCenterPixelMapping = false;
     _metal_DeviceCaps.isInstancingSupported = true;
+    _metal_DeviceCaps.maxAnisotropy = 16;
 }
 
 } // namespace rhi
