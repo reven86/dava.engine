@@ -108,7 +108,7 @@ bool FindFileInPackageDialog::eventFilter(QObject* obj, QEvent* event)
             }
             return true;
         }
-        else if (keyEvent->key() == Qt::Key_Tab)
+        else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
         {
             accept();
         }
