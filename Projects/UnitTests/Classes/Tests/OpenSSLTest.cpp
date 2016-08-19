@@ -10,7 +10,7 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (OpenSSLTest)
 {
-    char* password = "Hello Dava Engine!";
+    String password = "Hello Dava Engine!";
     Vector<double> data;
     Vector<unsigned char> encryptedData;
 
@@ -48,12 +48,23 @@ DAVA_TESTCLASS (OpenSSLTest)
     {
         FILE* privateKey = fopen(GetPrivateKeyFilePath().c_str(), "wb");
         FILE* publicKey = fopen(GetPublicKeyFilePath().c_str(), "wb");
-        TEST_VERIFY(privateKey != nullptr && publicKey != nullptr);
         SCOPE_EXIT
         {
-            fclose(privateKey);
-            fclose(publicKey);
+            if (privateKey != nullptr)
+            {
+                fclose(privateKey);
+            }
+            if (publicKey != nullptr)
+            {
+                fclose(publicKey);
+            }
         };
+        
+        if (privateKey == nullptr || publicKey == nullptr)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, "Cannot create key files");
+            return;
+        }
 
         const unsigned keyBits = 1024;
         RSA* rsa = RSA_generate_key(keyBits, RSA_F4, nullptr, nullptr);
@@ -63,7 +74,8 @@ DAVA_TESTCLASS (OpenSSLTest)
             RSA_free(rsa);
         };
 
-        int res = PEM_write_RSAPrivateKey(privateKey, rsa, cipher, nullptr, 0, nullptr, password);
+        char* pwdData = const_cast<char*>(password.c_str());
+        int res = PEM_write_RSAPrivateKey(privateKey, rsa, cipher, nullptr, 0, nullptr, pwdData);
         TEST_VERIFY(res == 1);
 
         res = PEM_write_RSAPublicKey(publicKey, rsa);
@@ -74,12 +86,23 @@ DAVA_TESTCLASS (OpenSSLTest)
     {
         FILE* publicKeyFile = fopen(GetPublicKeyFilePath().c_str(), "rb");
         RSA* publicKey = PEM_read_RSAPublicKey(publicKeyFile, nullptr, nullptr, nullptr);
-        TEST_VERIFY(publicKeyFile != nullptr && publicKey != nullptr);
         SCOPE_EXIT
         {
-            RSA_free(publicKey);
-            fclose(publicKeyFile);
+            if (publicKey != nullptr)
+            {
+                RSA_free(publicKey);
+            }
+            if (publicKeyFile != nullptr)
+            {
+                fclose(publicKeyFile);
+            }
         };
+        
+        if (publicKeyFile == nullptr || publicKey == nullptr)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, "Cannot open or read public key file");
+            return;
+        }
 
         OpenSSL_add_all_algorithms();
         int allDataLen = static_cast<int>(data.size() * sizeof(decltype(data)::value_type));
@@ -103,13 +126,25 @@ DAVA_TESTCLASS (OpenSSLTest)
     {
         OpenSSL_add_all_algorithms();
         FILE* privateKeyFile = fopen(GetPrivateKeyFilePath().c_str(), "rb");
-        RSA* privateKey = PEM_read_RSAPrivateKey(privateKeyFile, nullptr, nullptr, password);
-        TEST_VERIFY(privateKeyFile != nullptr && privateKey != nullptr);
+        char* pwdData = const_cast<char*>(password.c_str());
+        RSA* privateKey = PEM_read_RSAPrivateKey(privateKeyFile, nullptr, nullptr, pwdData);
         SCOPE_EXIT
         {
-            RSA_free(privateKey);
-            fclose(privateKeyFile);
+            if (privateKey != nullptr)
+            {
+                RSA_free(privateKey);
+            }
+            if (privateKeyFile != nullptr)
+            {
+                fclose(privateKeyFile);
+            }
         };
+        
+        if (privateKeyFile == nullptr || privateKey == nullptr)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, "Cannot open or read private key file");
+            return;
+        }
 
         int keySize = RSA_size(privateKey);
         Vector<unsigned char> decryptedData;
