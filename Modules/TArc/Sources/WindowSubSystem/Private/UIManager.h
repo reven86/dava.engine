@@ -22,6 +22,9 @@ public:
 
     void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) override;
     void ClearMessage(const WindowKey& windowKey) override;
+    ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) override;
+
+    QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params) override;
 
     std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) override;
 

@@ -90,7 +90,9 @@ QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wr
 
 const QMetaObject* QtReflected::metaObject() const
 {
-    DVASSERT(qtMetaObject != nullptr);
+    if (qtMetaObject == nullptr)
+        return &QObject::staticMetaObject;
+
     return qtMetaObject;
 }
 

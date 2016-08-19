@@ -16,6 +16,9 @@
 #include <QStatusBar>
 #include <QToolButton>
 
+#include <QFileDialog>
+#include <QMessageBox>
+
 #include <QQuickWidget>
 
 namespace tarc
@@ -23,6 +26,53 @@ namespace tarc
 
 namespace UIManagerDetail
 {
+
+static DAVA::Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
+{
+    std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
+    std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
+    std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
+    std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
+    std::make_pair(QMessageBox::YesToAll, ModalMessageParams::YesToAll),
+    std::make_pair(QMessageBox::No, ModalMessageParams::No),
+    std::make_pair(QMessageBox::NoToAll, ModalMessageParams::NoToAll),
+    std::make_pair(QMessageBox::Discard, ModalMessageParams::Discard),
+    std::make_pair(QMessageBox::Apply, ModalMessageParams::Apply),
+    std::make_pair(QMessageBox::Save, ModalMessageParams::Save),
+    std::make_pair(QMessageBox::SaveAll, ModalMessageParams::SaveAll),
+    std::make_pair(QMessageBox::Abort, ModalMessageParams::Abort),
+    std::make_pair(QMessageBox::Retry, ModalMessageParams::Retry),
+    std::make_pair(QMessageBox::Ignore, ModalMessageParams::Ignore),
+    std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
+};
+
+QMessageBox::StandardButtons Convert(const ModalMessageParams::Buttons& buttons)
+{
+    using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
+    QMessageBox::StandardButtons ret;
+    for (const ButtonNode& node: buttonsConvertor)
+    {
+        if (buttons.testFlag(node.second))
+        {
+            ret |= node.first;
+        }
+    }
+
+    return ret;
+}
+
+ModalMessageParams::Button Convert(const QMessageBox::StandardButton& button)
+{
+    using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
+    auto iter = std::find_if(buttonsConvertor.begin(), buttonsConvertor.end(), [button](const ButtonNode& node)
+    {
+        return node.first == button;
+    });
+
+    DVASSERT(iter != buttonsConvertor.end());
+    return iter->second;
+}
+
 struct MainWindowInfo
 {
     QMainWindow* window = nullptr;
@@ -313,6 +363,22 @@ std::unique_ptr<tarc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& win
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
     dlg->Show();
     return std::move(dlg);
+}
+
+QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
+{
+    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+
+    return QFileDialog::getOpenFileName(windowInfo.window, params.title, params.dir, params.filters);
+}
+
+ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params)
+{
+    using namespace UIManagerDetail;
+    MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+
+    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message, Convert(params.buttons));
+    return Convert(resultButton);
 }
 
 }

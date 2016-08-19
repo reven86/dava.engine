@@ -23,7 +23,7 @@ Qt::ConnectionType GetConnectionType()
 }
 
 WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
-    : dlg(new QDialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint))
+    : dlg(new QDialog(parent, Qt::WindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint)))
 {
     label = new QLabel(params.message, dlg.data());
     label->setAlignment(Qt::AlignCenter);

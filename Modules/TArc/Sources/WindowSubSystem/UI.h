@@ -7,6 +7,8 @@
 
 #include <Qt>
 #include <QUrl>
+#include <QString>
+#include <QFlags>
 
 class QWidget;
 class QAction;
@@ -91,6 +93,43 @@ public:
     virtual void Update() = 0;
 };
 
+struct FileDialogParams
+{
+    QString title;
+    QString dir;
+    QString filters;
+};
+
+struct ModalMessageParams
+{
+    enum Button
+    {
+        Ok,
+        Cancel,
+        Close,
+        Yes,
+        YesToAll,
+        No,
+        NoToAll,
+        Discard,
+        Apply,
+        Save,
+        SaveAll,
+        Abort,
+        Retry,
+        Ignore,
+        Reset
+    };
+
+    Q_DECLARE_FLAGS(Buttons, Button);
+
+    QString title;
+    QString message;
+    Buttons buttons = Ok | Cancel;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
+
 class UI
 {
 public:
@@ -105,6 +144,9 @@ public:
 
     virtual void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) = 0;
     virtual void ClearMessage(const WindowKey& windowKey) = 0;
+    virtual ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) = 0;
+
+    virtual QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
 };

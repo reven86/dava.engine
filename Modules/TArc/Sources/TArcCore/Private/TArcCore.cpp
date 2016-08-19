@@ -2,6 +2,7 @@
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
 #include "WindowSubSystem/Private/UIManager.h"
+#include "TArcUtils/AssertGuard.h"
 
 #include "Engine/Public/Engine.h"
 #include "Engine/Public/Window.h"
@@ -9,6 +10,8 @@
 #include "Functional/Function.h"
 
 #include "Debug/DVAssert.h"
+
+#include <QApplication>
 
 namespace tarc
 {
@@ -56,6 +59,9 @@ void Core::OnFrame()
 
 void Core::OnLoopStarted()
 {
+    ToolsAssetGuard::Instance()->Init();
+    engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
+
     uiManager.reset(new UIManager());
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
     controllerModule->SetContextManager(this);
