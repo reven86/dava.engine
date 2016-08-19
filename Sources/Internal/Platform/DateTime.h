@@ -103,6 +103,12 @@ public:
     int32 GetSecond() const;
 
     /**
+	 \brief Returns millisecond of current DateTime.
+	 \returns millisecond.
+	 */
+    int32 GetMillisecond() const;
+
+    /**
 	 \brief Set time zone offset in seconds for current DateTime.
 	 \param[in] input time zone offset.
 	 */
@@ -185,7 +191,8 @@ private:
 
     tm localTime = tm();
     Timestamp innerTime = 0;
-    int32 timeZoneOffset = 0; // offset in seconds
+    int32 innerMilliseconds = 0; // Stored separately since time_t and tm do not support milliseconds. Can only be obtained from parsing ISO8601 date for now. Cannot be affected by time zone offset
+    int32 timeZoneOffset = 0; // Offset in seconds
 };
 
 int32 DateTime::GetTimeZoneOffset() const

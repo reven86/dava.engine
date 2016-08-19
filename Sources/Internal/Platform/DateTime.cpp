@@ -123,6 +123,11 @@ int32 DateTime::GetSecond() const
     return localTime.tm_sec;
 }
 
+int32 DateTime::GetMillisecond() const
+{
+    return innerMilliseconds;
+}
+
 void DateTime::SetTimeZoneOffset(int32 value)
 {
     timeZoneOffset = value;
@@ -162,8 +167,10 @@ void DateTime::LocalTimeThreadSafe(tm* resultLocalTime, const time_t* unixTimest
 bool DateTime::ParseISO8601Date(const DAVA::String& src)
 {
     // 1969-07-21T02:56:15Z
+    // 1969-07-21T02:56:15.1Z
     // 1969-07-20T21:56:15-05:00
-    if (src.length() < (strlen("1969-07-21T02:56:15Z")))
+    int const minLengthWithoutMilliseconds = strlen("1969-07-21T02:56:15Z");
+    if (src.length() < minLengthWithoutMilliseconds)
     {
         return false;
     }
@@ -210,6 +217,8 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     }
 
     /// time
+    int milliseconds = 0;
+    int32 firstTimeZoneSymbolIndex;
     {
         const DAVA::String hr = src.substr(11, 2);
         if (!IsNumber(hr))
@@ -246,21 +255,72 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         {
             return false;
         }
+
+        // Parsing milliseconds (if specified)
+        //
+
+        char const separator = src[19];
+
+        // Can be both . or ,
+        //
+        if (separator == '.' || separator == ',')
+        {
+            // Count milliseconds fraction length
+            //
+            int currentSymbolIndex = 20;
+            char currentSymbol;
+            while (currentSymbolIndex < src.length() && isdigit(currentSymbol = src[currentSymbolIndex]))
+            {
+                ++currentSymbolIndex;
+            }
+
+            int const millisecondsSubstringLength = currentSymbolIndex - 20;
+            if (millisecondsSubstringLength > 0)
+            {
+                DAVA::String const millisecondsSubstring = src.substr(20, millisecondsSubstringLength);
+                int const millisecondsFractional = atoi(millisecondsSubstring.c_str());
+
+                // Convert fraction to int (from 0 to 999)
+                // Does the same as round(millisecondsFractional / pow(10, millisecondsSubstringLength) * 1000)
+                milliseconds = round(millisecondsFractional * pow(10, 3 - millisecondsSubstringLength));
+
+                DVASSERT(milliseconds >= 0 && milliseconds < 1000);
+
+                // Now when we know how many symbols milliseconds take, rough-check again if string is valid
+                // For cases when milliseconds were specified but time zone wasn't specified at all
+                //
+                if (src.length() < minLengthWithoutMilliseconds + (millisecondsSubstringLength + 1))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Treat as an error if separator exists but no fraction specified
+                return false;
+            }
+
+            firstTimeZoneSymbolIndex = currentSymbolIndex;
+        }
+        else
+        {
+            firstTimeZoneSymbolIndex = 19;
+        }
     }
     /// time zone
     {
         int32 timeZone = 0;
-        if (src[19] == 'Z')
+        if (src[firstTimeZoneSymbolIndex] == 'Z')
         {
             timeZone = 0;
         }
         else
         {
-            if (src[19] == '-')
+            if (src[firstTimeZoneSymbolIndex] == '-')
             {
                 timeZone = -1;
             }
-            else if (src[19] == '+')
+            else if (src[firstTimeZoneSymbolIndex] == '+')
             {
                 timeZone = 1;
             }
@@ -269,7 +329,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
                 return false;
             }
 
-            const DAVA::String hr = src.substr(20, 2);
+            const DAVA::String hr = src.substr(firstTimeZoneSymbolIndex + 1, 2);
             if (!IsNumber(hr))
             {
                 return false;
@@ -281,7 +341,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
                 return false;
             }
 
-            const DAVA::String mn = src.substr(23, 2);
+            const DAVA::String mn = src.substr(firstTimeZoneSymbolIndex + 4, 2);
             if (!IsNumber(mn))
             {
                 return false;
@@ -297,6 +357,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
     }
     innerTime = InternalTimeGm(&parseTime) - timeZoneOffset;
+    innerMilliseconds = milliseconds;
     UpdateLocalTimeStructure();
     return true;
 }
