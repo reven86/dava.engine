@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
 #define __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAEngine.h"
 
 namespace DAVA
@@ -19,4 +21,5 @@ public:
 };
 };
 
+#endif // !__DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_CORE_MAC_OS_PLATFORM_BASE_H__

@@ -8,6 +8,8 @@ namespace DAVA
 class UITextField;
 }
 
+class GameCore;
+
 class TextDelegate1;
 class TextDelegate2;
 class TextDelegateMulti;
@@ -15,7 +17,7 @@ class TextDelegateMulti;
 class MultilineTest : public BaseScreen, public DAVA::UITextFieldDelegate
 {
 public:
-    MultilineTest();
+    MultilineTest(GameCore* g);
 
     void LoadResources() override;
     void UnloadResources() override;

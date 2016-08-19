@@ -17,8 +17,6 @@ set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared
                                     $ENV{DXSDK_DIR}/include 
                                     ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
 
-# temporal include override for android libpng
-set( INCLUDES_ANDROID               ${DAVA_THIRD_PARTY_ROOT_PATH}/include/android )
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 
@@ -140,6 +138,10 @@ endif()
 
 if( DENY_RUN_MULTIPLE_APP_INSTANCES )
     list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
+endif()
+
+if (DAVA_PLATFORM_QT)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
 endif()
 
 setup_main_module()

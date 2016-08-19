@@ -3,6 +3,7 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 #include "UI/UIControl.h"
@@ -200,4 +201,5 @@ private:
 };
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

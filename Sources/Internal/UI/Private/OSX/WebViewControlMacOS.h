@@ -1,7 +1,7 @@
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_MACOS_H__
 
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #include "UI/IWebViewControl.h"
@@ -9,6 +9,7 @@
 
 namespace DAVA
 {
+class Window;
 class UIWebView;
 
 // Web View Control - MacOS version.
@@ -40,10 +41,7 @@ public:
     void SetBackgroundTransparency(bool enabled) override;
 
     void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override
-    {
-        return isRenderToTexture;
-    }
+    bool IsRenderToTexture() const override;
 
     void SetImageCache(void* ptr);
     void* GetImageCache() const;
@@ -53,25 +51,32 @@ public:
 private:
     void SetNativeVisible(bool visible);
 
+#if defined(__DAVAENGINE_COREV2__)
+    void OnWindowVisibilityChanged(Window& w, bool visible);
+    size_t windowVisibilityChangedConnection = 0;
+#else
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;
+#endif
 
-    //A pointer to MacOS WebView.
-    void* webViewPtr;
-
-    // A pointer to the WebView delegate.
-    void* webViewDelegatePtr;
-
-    void* webViewPolicyDelegatePtr;
-    // A pointer to NSBitmapImageRep cached image of web view to texture
-    void* webImageCachePtr;
-
+private:
     UIWebView& uiWebViewControl;
+    
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
+    struct WebViewObjCBridge;
+    WebViewObjCBridge* bridge = nullptr;
 
-    bool isRenderToTexture;
-    bool isVisible;
+    bool isRenderToTexture = false;
+    bool isVisible = true;
 };
-};
+
+inline bool WebViewControl::IsRenderToTexture() const
+{
+    return isRenderToTexture;
+}
+}
 
 #endif //defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 

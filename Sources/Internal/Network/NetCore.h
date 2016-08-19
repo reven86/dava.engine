@@ -14,6 +14,7 @@
 
 namespace DAVA
 {
+class Engine;
 namespace Net
 {
 class NetConfig;
@@ -39,7 +40,13 @@ public:
     };
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    NetCore(Engine* e);
+    Engine* engine = nullptr;
+    size_t sigUpdateId = 0;
+#else
     NetCore();
+#endif
     ~NetCore();
 
     IOLoop* Loop()
@@ -66,7 +73,11 @@ public:
     size_t ControllersCount() const;
 
     int32 Run();
+#if defined(__DAVAENGINE_COREV2__)
+    void Poll(float32 frameDelta = 0.0f);
+#else
     int32 Poll();
+#endif
     void Finish(bool runOutLoop = false);
 
     bool TryDiscoverDevice(const Endpoint& endpoint);
@@ -142,10 +153,17 @@ inline int32 NetCore::Run()
     return loop.Run(IOLoop::RUN_DEFAULT);
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+inline void NetCore::Poll(float32 /*frameDelta*/)
+{
+    loop.Run(IOLoop::RUN_NOWAIT);
+}
+#else
 inline int32 NetCore::Poll()
 {
     return loop.Run(IOLoop::RUN_NOWAIT);
 }
+#endif
 
 inline bool NetCore::IsNetworkEnabled()
 {

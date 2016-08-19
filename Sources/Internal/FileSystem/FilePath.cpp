@@ -213,8 +213,8 @@ FilePath::FilePath(const FilePath& path)
 }
 
 FilePath::FilePath(FilePath&& path)
-    : pathType(path.pathType)
-    , absolutePathname(std::move(path.absolutePathname))
+    : absolutePathname(std::move(path.absolutePathname))
+    , pathType(path.pathType)
 {
     path.pathType = PATH_EMPTY;
 }
