@@ -136,7 +136,7 @@ void RECommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSin
     if (IsCommandAction(command.get()))
     {
         //get ownership of the given command;
-        std::unique_ptr<Command> commandCopy(command);
+        std::unique_ptr<Command> commandCopy(std::move(command));
         commandCopy->Redo();
         if (!commandCopy->IsClean())
         {
@@ -145,6 +145,6 @@ void RECommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSin
     }
     else
     {
-        CommandStack::ExecInternal(command, isSingleCommand);
+        CommandStack::ExecInternal(std::move(command), isSingleCommand);
     }
 }
