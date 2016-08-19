@@ -51,15 +51,16 @@
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/AddComponentCommand.h"
-#include "Commands2/BeastAction.h"
 #include "Commands2/ConvertPathCommands.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/EntityAddCommand.h"
 #include "Commands2/HeightmapEditorCommands2.h"
-#include "Commands2/PaintHeightDeltaAction.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
+
+#include "Beast/BeastRunner.h"
+
 
 #include "SceneProcessing/SceneProcessor.h"
 
@@ -2347,7 +2348,7 @@ void QtMainWindow::OnBeastAndSave()
     }
 
     RunBeast(dlg.GetPath(), dlg.GetMode());
-    scene->SetChanged(true);
+    scene->SetChanged();
     SaveScene(scene);
 
     scene->ClearAllCommands();
@@ -2362,7 +2363,9 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
         return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(std::unique_ptr<DAVA::Command>(new BeastAction(scene, path, mode, beastWaitDialog)));
+
+    BeastRunner beast(scene, path, mode, beastWaitDialog);
+    beast.Run();
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {

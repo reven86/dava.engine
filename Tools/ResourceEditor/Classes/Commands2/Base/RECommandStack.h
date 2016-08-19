@@ -11,7 +11,7 @@ public:
     ~RECommandStack() override;
 
     void Clear();
-    void SetClean(bool clean);
+    void SetChanged();
     void RemoveCommands(DAVA::uint32 commandId);
 
     void Activate();
@@ -23,7 +23,5 @@ private:
 
     void RemoveCommand(DAVA::uint32 index);
     void CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex);
-    void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand) override;
-
-    using CommandStack::SetClean;
+    void ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool isSingleCommand) override;
 };

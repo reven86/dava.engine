@@ -10,7 +10,7 @@
 #include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
 
-#include "Commands2/DAEConvertAction.h"
+#include "Actions/DAEConverter.h"
 
 #include "QtTools/Utils/Utils.h"
 
@@ -389,10 +389,7 @@ void LibraryWidget::OnConvertDae()
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
     WaitDialogGuard guard(globalOperations, "DAE to SC2 conversion", fileInfo.absoluteFilePath().toStdString());
-
-    DAEConvertAction* daeCmd = new DAEConvertAction(fileInfo.absoluteFilePath().toStdString());
-    daeCmd->Redo();
-    delete daeCmd;
+    DAEConverter::Convert(fileInfo.absoluteFilePath().toStdString());
 }
 
 void LibraryWidget::OnRevealAtFolder()

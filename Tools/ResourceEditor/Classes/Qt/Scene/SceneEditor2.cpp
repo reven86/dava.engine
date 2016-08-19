@@ -208,7 +208,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack->SetClean(true);
+        commandStack->SetClean();
     }
 
     if (needToRestoreTilemask)
@@ -397,9 +397,9 @@ bool SceneEditor2::IsChanged() const
     return ((!commandStack->IsClean()) || wasChanged);
 }
 
-void SceneEditor2::SetChanged(bool changed)
+void SceneEditor2::SetChanged()
 {
-    commandStack->SetClean(!changed);
+    commandStack->SetChanged();
 }
 
 void SceneEditor2::Update(float timeElapsed)

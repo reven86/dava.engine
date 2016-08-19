@@ -24,18 +24,9 @@ void RECommandStack::Clear()
     SetCurrentIndex(EMPTY_INDEX);
 }
 
-void RECommandStack::SetClean(bool clean)
+void RECommandStack::SetChanged()
 {
-    if (clean)
-    {
-        //call public "SetClean" implementation
-        CommandStack::SetClean();
-    }
-    else
-    {
-        //call private "SetClean" implementation, which only set "clean" flag to false
-        CommandStack::SetClean(false);
-    }
+    CommandStack::SetClean(false);
 }
 
 void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
@@ -131,12 +122,12 @@ void RECommandStack::CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIn
     }
 }
 
-void RECommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand)
+void RECommandStack::ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool isSingleCommand)
 {
     if (IsCommandAction(command.get()))
     {
         //get ownership of the given command;
-        std::unique_ptr<Command> commandCopy(std::move(command));
+        std::unique_ptr<DAVA::Command> commandCopy(std::move(command));
         commandCopy->Redo();
         if (!commandCopy->IsClean())
         {

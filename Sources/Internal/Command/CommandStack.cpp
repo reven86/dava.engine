@@ -160,17 +160,18 @@ void CommandStack::UpdateCleanState()
 
 void CommandStack::SetCurrentIndex(int32 currentIndex_)
 {
-    DVASSERT(currentIndex != currentIndex_);
+    if (currentIndex != currentIndex_)
+    {
+        int32 oldIndex = currentIndex;
+        currentIndex = currentIndex_;
 
-    int32 oldIndex = currentIndex;
-    currentIndex = currentIndex_;
-
-    UpdateCleanState();
-    SetCanUndo(CanUndo());
-    SetCanRedo(CanRedo());
-    undoTextChanged.Emit(GetUndoText());
-    redoTextChanged.Emit(GetRedoText());
-    currentIndexChanged.Emit(currentIndex, oldIndex);
+        UpdateCleanState();
+        SetCanUndo(CanUndo());
+        SetCanRedo(CanRedo());
+        undoTextChanged.Emit(GetUndoText());
+        redoTextChanged.Emit(GetRedoText());
+        currentIndexChanged.Emit(currentIndex, oldIndex);
+    }
 }
 
 void CommandStack::SetClean(bool isClean_)

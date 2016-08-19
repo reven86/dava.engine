@@ -1,9 +1,9 @@
-#include "BeastAction.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Main/mainwindow.h"
+#include "BeastRunner.h"
+#include "Scene/SceneEditor2.h"
+#include "Main/mainwindow.h"
 #include "Beast/BeastProxy.h"
 #include "Beast/LightmapsPacker.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Settings/SettingsManager.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
 #include "DAVAEngine.h"
@@ -14,12 +14,9 @@
 
 using namespace DAVA;
 
-#include "SceneParser.h"
-
 //Beast
-BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)
-    : CommandAction(CMDID_BEAST, "Beast")
-    , workingScene(scene)
+BeastRunner::BeastRunner(SceneEditor2* scene, const DAVA::FilePath& _outputPath, BeastProxy::eBeastMode mode, QtWaitDialog* _waitDialog)
+    : workingScene(scene)
     , waitDialog(_waitDialog)
     , outputPath(_outputPath)
     , beastMode(mode)
@@ -29,12 +26,12 @@ BeastAction::BeastAction(SceneEditor2* scene, const DAVA::FilePath& _outputPath,
     BeastProxy::Instance()->SetMode(beastManager, mode);
 }
 
-BeastAction::~BeastAction()
+BeastRunner::~BeastRunner()
 {
     BeastProxy::Instance()->SafeDeleteManager(&beastManager);
 }
 
-void BeastAction::Redo()
+void BeastRunner::Run()
 {
     bool cancelledManually = false;
 
@@ -82,7 +79,7 @@ void BeastAction::Redo()
     }
 }
 
-void BeastAction::Start()
+void BeastRunner::Start()
 {
     startTime = SystemTimer::Instance()->AbsoluteMS();
 
@@ -97,13 +94,13 @@ void BeastAction::Start()
     BeastProxy::Instance()->Run(beastManager, workingScene);
 }
 
-bool BeastAction::Process()
+bool BeastRunner::Process()
 {
     BeastProxy::Instance()->Update(beastManager);
     return BeastProxy::Instance()->IsJobDone(beastManager);
 }
 
-void BeastAction::Finish(bool canceled)
+void BeastRunner::Finish(bool canceled)
 {
     if (!canceled && beastMode == BeastProxy::MODE_LIGHTMAPS)
     {
@@ -117,7 +114,7 @@ void BeastAction::Finish(bool canceled)
     }
 }
 
-void BeastAction::PackLightmaps()
+void BeastRunner::PackLightmaps()
 {
     FilePath scenePath = workingScene->GetScenePath();
     FilePath inputDir = GetLightmapDirectoryPath();
@@ -139,7 +136,7 @@ void BeastAction::PackLightmaps()
     FileSystem::Instance()->DeleteDirectory(scenePath.GetDirectory() + "$process/");
 }
 
-DAVA::FilePath BeastAction::GetLightmapDirectoryPath()
+DAVA::FilePath BeastRunner::GetLightmapDirectoryPath()
 {
     DAVA::FilePath ret;
     if (NULL != workingScene)
