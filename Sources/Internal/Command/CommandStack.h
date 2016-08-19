@@ -38,7 +38,7 @@ public:
 protected:
     virtual CommandBatch* CreateCommmandBatch(const String& name, uint32 commandsCount) const;
 
-    void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand);
+    virtual void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand);
 
     void UpdateCleanState();
     void SetCurrentIndex(int32 currentIndex);

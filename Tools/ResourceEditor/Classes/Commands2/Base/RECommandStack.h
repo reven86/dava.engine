@@ -23,6 +23,7 @@ private:
 
     void RemoveCommand(DAVA::uint32 index);
     void CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIndex);
+    void ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand) override;
 
     using CommandStack::SetClean;
 };

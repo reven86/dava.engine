@@ -130,3 +130,21 @@ void RECommandStack::CurrentIndexChanged(DAVA::int32 newIndex, DAVA::int32 oldIn
         DVASSERT_MSG(false, DAVA::Format("Commands changed to wrong index(%d)", newIndex).c_str());
     }
 }
+
+void RECommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingleCommand)
+{
+    if (IsCommandAction(command.get()))
+    {
+        //get ownership of the given command;
+        std::unique_ptr<Command> commandCopy(command);
+        commandCopy->Redo();
+        if (!commandCopy->IsClean())
+        {
+            RECommandStack::SetClean(false);
+        }
+    }
+    else
+    {
+        CommandStack::ExecInternal(command, isSingleCommand);
+    }
+}
