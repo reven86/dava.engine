@@ -59,7 +59,7 @@ DAVA_TESTCLASS (OpenSSLTest)
                 fclose(publicKey);
             }
         };
-        
+
         if (privateKey == nullptr || publicKey == nullptr)
         {
             TEST_VERIFY_WITH_MESSAGE(false, "Cannot create key files");
@@ -97,7 +97,7 @@ DAVA_TESTCLASS (OpenSSLTest)
                 fclose(publicKeyFile);
             }
         };
-        
+
         if (publicKeyFile == nullptr || publicKey == nullptr)
         {
             TEST_VERIFY_WITH_MESSAGE(false, "Cannot open or read public key file");
@@ -139,7 +139,7 @@ DAVA_TESTCLASS (OpenSSLTest)
                 fclose(privateKeyFile);
             }
         };
-        
+
         if (privateKeyFile == nullptr || privateKey == nullptr)
         {
             TEST_VERIFY_WITH_MESSAGE(false, "Cannot open or read private key file");
