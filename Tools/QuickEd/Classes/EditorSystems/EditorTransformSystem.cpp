@@ -139,7 +139,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         currentHash = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+        if (activeControlNode != nullptr)
         {
             systemsManager->TransformStateChanged.Emit(true);
         }
@@ -163,7 +163,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
             ClampAngle();
         }
         systemsManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+        if (activeControlNode != nullptr)
         {
             systemsManager->TransformStateChanged.Emit(false);
         }
