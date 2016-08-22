@@ -95,7 +95,7 @@ void Log_ErrorArgList(const char* format, va_list args)
 
     _vsnprintf(buf, sizeof(buf), format, args);
 #if defined(__DAVAENGINE_WIN32__)
-    -::OutputDebugStringA(buf);
+    ::OutputDebugStringA(buf);
 #else
     puts(buf);
 #endif
