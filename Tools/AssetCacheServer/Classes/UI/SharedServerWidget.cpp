@@ -1,5 +1,4 @@
 #include "SharedServerWidget.h"
-#include "ui_SharedServerWidget.h"
 
 #include <QValidator>
 

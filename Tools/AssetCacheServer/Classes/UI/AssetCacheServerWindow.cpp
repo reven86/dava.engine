@@ -511,7 +511,7 @@ void AssetCacheServerWindow::DisplayCurrentRemoteServer()
     }
     default:
     {
-        DVASSERT_MSG(false, DAVA::Format("Unexpected remote type: %u", enabledRemote.type));
+        DVASSERT_MSG(false, DAVA::Format("Unexpected remote type: %u", enabledRemote.type).c_str());
     }
     }
 }

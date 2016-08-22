@@ -2,11 +2,7 @@
 
 #include <QWidget>
 #include "ApplicationSettings.h"
-
-namespace Ui
-{
-class SharedServerWidget;
-}
+#include "ui_SharedServerWidget.h"
 
 class SharedServerWidget : public QWidget
 {

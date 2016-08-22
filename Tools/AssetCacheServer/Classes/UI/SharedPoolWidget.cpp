@@ -1,5 +1,4 @@
 #include "UI/SharedPoolWidget.h"
-#include "ui_SharedPoolWidget.h"
 
 #include <QValidator>
 

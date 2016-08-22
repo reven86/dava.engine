@@ -2,11 +2,7 @@
 
 #include <QWidget>
 #include "ApplicationSettings.h"
-
-namespace Ui
-{
-class SharedPoolWidget;
-}
+#include "ui_SharedPoolWidget.h"
 
 class SharedPoolWidget : public QWidget
 {

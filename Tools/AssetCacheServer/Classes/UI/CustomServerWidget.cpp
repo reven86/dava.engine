@@ -1,5 +1,4 @@
 #include "CustomServerWidget.h"
-#include "ui_CustomServerWidget.h"
 
 #include <QValidator>
 
