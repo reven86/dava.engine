@@ -757,9 +757,13 @@ void PackManagerImpl::MountDownloadedPacks()
     initState = InitState::Ready;
 }
 
-void PackManagerImpl::MountPackWithDependencies(IPackManager::Pack& pack, FilePath path)
+void PackManagerImpl::MountPackWithDependencies(IPackManager::Pack& pack, const FilePath& path)
 {
     FileSystem* fs = FileSystem::Instance();
+    // first check all dependencies already mounted and mount if not
+    // 1. collect dependencies
+    // 2. check every dependencie
+    // 3. mount pack
     fs->Mount(path, "Data/");
     pack.state = Pack::Status::Mounted;
 }
