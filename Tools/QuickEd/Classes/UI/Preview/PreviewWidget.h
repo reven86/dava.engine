@@ -91,6 +91,8 @@ private:
     bool ProcessDragMoveEvent(QDropEvent* event);
     void OnDragLeaveEvent(QDragLeaveEvent* event);
     void OnDropEvent(QDropEvent* event);
+    void OnKeyPressed(QKeyEvent* event);
+    void OnKeyReleased(QKeyEvent* event);
 
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
@@ -99,6 +101,8 @@ private:
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
     void NotifySelectionChanged();
+    bool CanDragScreen() const;
+    void UpdateDragScreenState();
 
     QPoint lastMousePos;
     QCursor lastCursor;
@@ -122,6 +126,13 @@ private:
 
     SelectedNodes tmpSelected; //for continuousUpdater
     SelectedNodes tmpDeselected; //for continuousUpdater
+
+    bool inDragScreenState = false;
+
+    //helper members to store space button and left mouse buttons states
+    bool isSpacePressed = false;
+    bool isMouseLeftButtonPressed = false;
+    bool isMouseMidButtonPressed = false;
 };
 
 inline DavaGLWidget* PreviewWidget::GetGLWidget() const

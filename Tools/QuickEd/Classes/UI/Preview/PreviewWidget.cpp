@@ -395,10 +395,10 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             break;
         case QEvent::MouseMove:
             OnMoveEvent(static_cast<QMouseEvent*>(event));
-            break;
+            return CanDragScreen();
         case QEvent::MouseButtonPress:
             OnPressEvent(static_cast<QMouseEvent*>(event));
-            break;
+            return CanDragScreen();
         case QEvent::MouseButtonRelease:
             OnReleaseEvent(static_cast<QMouseEvent*>(event));
             break;
@@ -413,6 +413,12 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         case QEvent::Drop:
             OnDropEvent(static_cast<QDropEvent*>(event));
             davaGLWidget->GetGLView()->requestActivate();
+            break;
+        case QEvent::KeyPress:
+            OnKeyPressed(static_cast<QKeyEvent*>(event));
+            break;
+        case QEvent::KeyRelease:
+            OnKeyReleased(static_cast<QKeyEvent*>(event));
             break;
         default:
             break;
@@ -513,27 +519,43 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnPressEvent(QMouseEvent* event)
 {
-    if (event->button() & Qt::MiddleButton)
+    Qt::MouseButtons buttons = event->buttons();
+    if (buttons & Qt::LeftButton)
     {
-        lastCursor = davaGLWidget->GetCursor();
-        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        isMouseLeftButtonPressed = true;
+    }
+    if (buttons & Qt::MidButton)
+    {
+        isMouseMidButtonPressed = true;
+    }
+
+    UpdateDragScreenState();
+    if (CanDragScreen())
+    {
         lastMousePos = event->pos();
     }
 }
 
 void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
 {
-    if (event->button() & Qt::MiddleButton)
+    Qt::MouseButtons buttons = event->buttons();
+    if ((buttons & Qt::LeftButton) == false)
     {
-        davaGLWidget->SetCursor(lastCursor);
+        isMouseLeftButtonPressed = false;
     }
+    if ((buttons & Qt::MidButton) == false)
+    {
+        isMouseMidButtonPressed = false;
+    }
+
+    UpdateDragScreenState();
 }
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
-    if (event->buttons() & Qt::MiddleButton)
+    if (CanDragScreen())
     {
         QPoint delta(event->pos() - lastMousePos);
         lastMousePos = event->pos();
@@ -653,6 +675,24 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
     }
 }
 
+void PreviewWidget::OnKeyPressed(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Space)
+    {
+        isSpacePressed = true;
+        UpdateDragScreenState();
+    }
+}
+
+void PreviewWidget::OnKeyReleased(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Space)
+    {
+        isSpacePressed = false;
+        UpdateDragScreenState();
+    }
+}
+
 qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
 {
     qreal scale = scrollAreaController->GetScale();
@@ -712,6 +752,30 @@ void PreviewWidget::NotifySelectionChanged()
     }
     tmpSelected.clear();
     tmpDeselected.clear();
+}
+
+bool PreviewWidget::CanDragScreen() const
+{
+    return inDragScreenState;
+}
+
+void PreviewWidget::UpdateDragScreenState()
+{
+    bool inDragScreenState_ = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    if (inDragScreenState == inDragScreenState_)
+    {
+        return;
+    }
+    inDragScreenState = inDragScreenState_;
+    if (inDragScreenState)
+    {
+        lastCursor = davaGLWidget->GetCursor();
+        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+    }
+    else
+    {
+        davaGLWidget->SetCursor(lastCursor);
+    }
 }
 
 qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
