@@ -1,4 +1,4 @@
-#include "Engine/Public/Android/JNIBridge.h"
+#include "Engine/Android/JNIBridge.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -8,10 +8,18 @@
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
 
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
 namespace DAVA
 {
 namespace JNI
 {
+// TODO: del V2I
+Rect V2I(const Rect& rect)
+{
+    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(rect);
+}
+
 JNIEnv* GetEnv()
 {
     JNIEnv* env = Private::AndroidBridge::GetEnv();
@@ -43,11 +51,14 @@ bool CheckJavaException(JNIEnv* env, bool throwJniException)
         env->ExceptionClear();
 
         String exceptionText = GetJavaExceptionText(env, e);
-        // Use native android logging mechanism as DAVA::Logger may not be constructed yet
-        ANDROID_LOG_ERROR("[java exception] %s", exceptionText.c_str());
         if (throwJniException)
         {
             throw Exception(exceptionText);
+        }
+        else
+        {
+            // Use native android logging mechanism as DAVA::Logger may not be constructed yet
+            ANDROID_LOG_ERROR("[java exception] %s", exceptionText.c_str());
         }
         return true;
     }
@@ -59,7 +70,7 @@ String GetJavaExceptionText(JNIEnv* env, jthrowable e)
     return Private::AndroidBridge::toString(env, e);
 }
 
-jclass LoadJavaClass(const char8* className, JNIEnv* env)
+jclass LoadJavaClass(const char8* className, bool throwJniException, JNIEnv* env)
 {
     if (env == nullptr)
     {
@@ -68,7 +79,7 @@ jclass LoadJavaClass(const char8* className, JNIEnv* env)
 
     if (env != nullptr)
     {
-        return Private::AndroidBridge::LoadJavaClass(env, className, false);
+        return Private::AndroidBridge::LoadJavaClass(env, className, throwJniException);
     }
     return nullptr;
 }

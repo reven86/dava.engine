@@ -5,7 +5,7 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {

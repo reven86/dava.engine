@@ -37,7 +37,7 @@ JavaVM* GetJVM()
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include <dirent.h>
 
 #include "Render/Renderer.h"

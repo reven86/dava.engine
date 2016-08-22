@@ -1,16 +1,18 @@
-#ifndef __JNI_HELPERS_H__
-#define __JNI_HELPERS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
 #include "Functional/Function.h"
 #include "Math/Rect.h"
 
-#define DAVA_JNI_EXCEPTION_CHECK \
-{\
+#define DAVA_JNI_EXCEPTION_CHECK() \
+do {\
     JNIEnv* env = JNI::GetEnv();\
     jthrowable e = env->ExceptionOccurred();\
     if (nullptr != e)\
@@ -27,7 +29,7 @@
         env->ReleaseStringUTFChars(estring, utf);\
         DVASSERT_MSG(false, error.c_str());\
     }\
-}
+} while (0)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wclass-varargs"
@@ -77,9 +79,9 @@ WideString ToWideString(const jstring jniString);
 jstring ToJNIString(const DAVA::WideString& string);
 
 #define DeclareTypeString(str)\
-    operator const char*() const {return value.c_str();}\
-    operator String() const {return value;}\
-    const String value = str;\
+	operator const char*() const {return value.c_str();}\
+	operator String() const {return value;}\
+	const String value = str;\
     const String rvalue = str;
 
 #define DeclareTypeStringWithRet(str, rstr)\
@@ -238,14 +240,14 @@ struct JniCall<void>
     inline static void Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         GetEnv()->CallVoidMethod(javaObject, javaMethod, std::forward<Parameters>(params)...);
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
     }
 
     template <class... Parameters>
     inline static void CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, std::forward<Parameters>(params)...);
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
     }
 };
 
@@ -256,7 +258,7 @@ struct JniCall<jint>
     inline static jint Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jint r = (jint)(GetEnv()->CallIntMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -264,7 +266,7 @@ struct JniCall<jint>
     inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jint r = (jint)(GetEnv()->CallStaticIntMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -276,7 +278,7 @@ struct JniCall<jintArray>
     inline static jintArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jintArray r = (jintArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -285,7 +287,7 @@ struct JniCall<jintArray>
     {
         jintArray r = (jintArray)(GetEnv()->CallStaticObjectMethod(javaClass,
                                                                    javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -297,7 +299,7 @@ struct JniCall<jfloat>
     inline static jfloat Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jfloat r = (jfloat)(GetEnv()->CallFloatMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -305,7 +307,7 @@ struct JniCall<jfloat>
     inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jfloat r = (jfloat)(GetEnv()->CallStaticFloatMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -317,7 +319,7 @@ struct JniCall<jfloatArray>
     inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jfloatArray r = (jfloatArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -325,7 +327,7 @@ struct JniCall<jfloatArray>
     inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jfloatArray r = (jfloatArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -337,7 +339,7 @@ struct JniCall<jdouble>
     inline static jdouble Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jdouble r = (jdouble)(GetEnv()->CallDoubleMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -345,7 +347,7 @@ struct JniCall<jdouble>
     inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jdouble r = (jdouble)(GetEnv()->CallStaticDoubleMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -357,7 +359,7 @@ struct JniCall<jdoubleArray>
     inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jdoubleArray r = (jdoubleArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -365,7 +367,7 @@ struct JniCall<jdoubleArray>
     inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jdoubleArray r = (jdoubleArray)(GetEnv()->CallObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -377,7 +379,7 @@ struct JniCall<jlong>
     inline static jlong Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jlong r = (jlong)(GetEnv()->CallLongMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -385,7 +387,7 @@ struct JniCall<jlong>
     inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jlong r = (jlong)(GetEnv()->CallStaticLongMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -397,7 +399,7 @@ struct JniCall<jlongArray>
     inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jlongArray r = (jlongArray)GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...);
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -405,7 +407,7 @@ struct JniCall<jlongArray>
     inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jlongArray r = (jlongArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -417,7 +419,7 @@ struct JniCall<jboolean>
     inline static jboolean Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jboolean r = (jboolean)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -425,7 +427,7 @@ struct JniCall<jboolean>
     inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jboolean r = (jboolean)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -437,7 +439,7 @@ struct JniCall<jbooleanArray>
     inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jbooleanArray r = (jbooleanArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -445,7 +447,7 @@ struct JniCall<jbooleanArray>
     inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jbooleanArray r = (jbooleanArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -457,7 +459,7 @@ struct JniCall<jobject>
     inline static jobject Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jobject r = (jobject)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -465,7 +467,7 @@ struct JniCall<jobject>
     inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jobject r = (jobject)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -477,7 +479,7 @@ struct JniCall<jobjectArray>
     inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jobjectArray r = (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -485,7 +487,7 @@ struct JniCall<jobjectArray>
     inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jobjectArray r = (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -497,7 +499,7 @@ struct JniCall<jstring>
     inline static jstring Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jstring r = (jstring)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -505,7 +507,7 @@ struct JniCall<jstring>
     inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jstring r = (jstring)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -517,7 +519,7 @@ struct JniCall<jstringArray>
     inline static jstringArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jobjectArray r = (jobjectArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -525,7 +527,7 @@ struct JniCall<jstringArray>
     inline static jstringArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jobjectArray r = (jobjectArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -537,7 +539,7 @@ struct JniCall<jbyte>
     inline static jbyte Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jbyte r = (jbyte)(GetEnv()->CallBooleanMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -545,7 +547,7 @@ struct JniCall<jbyte>
     inline static jbyte CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jbyte r = (jbyte)(GetEnv()->CallStaticBooleanMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -557,7 +559,7 @@ struct JniCall<jbyteArray>
     inline static jbyteArray Call(jobject javaObject, jmethodID javaMethod, Parameters... params)
     {
         jbyteArray r = (jbyteArray)(GetEnv()->CallObjectMethod(javaObject, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 
@@ -565,7 +567,7 @@ struct JniCall<jbyteArray>
     inline static jbyteArray CallStatic(jclass javaClass, jmethodID javaMethod, Parameters... params)
     {
         jbyteArray r = (jbyteArray)(GetEnv()->CallStaticObjectMethod(javaClass, javaMethod, std::forward<Parameters>(params)...));
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         return r;
     }
 };
@@ -664,7 +666,7 @@ Function<Ret(jobject)> JavaClass::GetMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret>::Call, _1, javaMethod);
 }
 
@@ -674,7 +676,7 @@ Function<Ret(void)> JavaClass::GetStaticMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret>::CallStatic, javaClass, javaMethod);
 }
 
@@ -684,7 +686,7 @@ Function<Ret(jobject, P1)> JavaClass::GetMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1>::Call, _1, javaMethod, _2);
 }
 
@@ -694,7 +696,7 @@ Function<Ret(P1)> JavaClass::GetStaticMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1>::CallStatic, javaClass, javaMethod, _1);
 }
 
@@ -704,7 +706,7 @@ Function<Ret(jobject, P1, P2)> JavaClass::GetMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2>::Call, _1, javaMethod, _2, _3);
 }
 
@@ -714,7 +716,7 @@ Function<Ret(P1, P2)> JavaClass::GetStaticMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2>::CallStatic, javaClass, javaMethod,
                 _1, _2);
 }
@@ -725,7 +727,7 @@ Function<Ret(jobject, P1, P2, P3)> JavaClass::GetMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3>::Call, _1, javaMethod, _2, _3,
                 _4);
 }
@@ -736,7 +738,7 @@ Function<Ret(P1, P2, P3)> JavaClass::GetStaticMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3>::CallStatic, javaClass,
                 javaMethod, _1, _2, _3);
 }
@@ -747,7 +749,7 @@ Function<Ret(jobject, P1, P2, P3, P4)> JavaClass::GetMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4>::Call, _1, javaMethod, _2,
                 _3, _4, _5);
 }
@@ -758,7 +760,7 @@ Function<Ret(P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name) const
     String parametersString = SignatureString::FromTypes<Ret, P1, P2, P3, P4>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4>::CallStatic, javaClass,
                 javaMethod, _1, _2, _3, _4);
 }
@@ -771,7 +773,7 @@ String name) const
     SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::Call, _1, javaMethod,
                 _2, _3, _4, _5, _6);
 }
@@ -783,7 +785,7 @@ Function<Ret(P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
     SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass,
                 javaMethod, _1, _2, _3, _4, _5);
 }
@@ -795,7 +797,7 @@ Function<Ret(jobject, P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name)
     SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
                                                  parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::Call, _1,
                 javaMethod, _1, _2, _3, _4, _5, _6);
 }
@@ -806,7 +808,7 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
     SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
                                                        parametersString.c_str());
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
     return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass,
                 javaMethod, _1, _2, _3, _4, _5, _6);
 }
@@ -816,6 +818,5 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 
 #pragma clang diagnostic pop
 
-#endif
-
-#endif
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__
