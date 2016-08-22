@@ -181,7 +181,12 @@ void PreviewWidget::CreateActions()
     davaGLWidget->addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
-    deleteAction->setShortcut(QKeySequence::Delete);
+#if defined Q_OS_WIN
+    deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+#elif defined Q_OS_MAC
+    deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
+
     deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
     davaGLWidget->addAction(deleteAction);

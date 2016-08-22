@@ -210,6 +210,9 @@ void PackageWidget::CreateActions()
     copyAction = CreateAction(tr("Copy"), &PackageWidget::OnCopy, QKeySequence::Copy);
     pasteAction = CreateAction(tr("Paste"), &PackageWidget::OnPaste, QKeySequence::Paste);
     delAction = CreateAction(tr("Delete"), &PackageWidget::OnDelete, QKeySequence::Delete);
+#if defined Q_OS_MAC
+    delAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
 
     renameAction = CreateAction(tr("Rename"), &PackageWidget::OnRename);
 
