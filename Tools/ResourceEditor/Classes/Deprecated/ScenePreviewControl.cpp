@@ -12,6 +12,8 @@ ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
 {
     SetInputEnabled(true, true);
     SetBasePriority(-100);
+
+    SetClearRequested(false);
 }
 
 ScenePreviewControl::~ScenePreviewControl()
@@ -20,11 +22,6 @@ ScenePreviewControl::~ScenePreviewControl()
 
     SafeRelease(editorScene);
     rotationSystem = nullptr;
-}
-
-void ScenePreviewControl::Input(DAVA::UIEvent* event)
-{
-    UI3DView::Input(event);
 }
 
 void ScenePreviewControl::RecreateScene()

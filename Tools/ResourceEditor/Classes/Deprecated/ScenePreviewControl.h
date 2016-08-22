@@ -1,5 +1,4 @@
-#ifndef __SCENE_PREVIEW_CONTROL_H__
-#define __SCENE_PREVIEW_CONTROL_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
@@ -15,10 +14,9 @@ public:
 
 public:
     ScenePreviewControl(const DAVA::Rect& rect);
-    virtual ~ScenePreviewControl();
+    ~ScenePreviewControl() override;
 
-    virtual void Input(DAVA::UIEvent* touch);
-    virtual void Update(DAVA::float32 timeElapsed);
+    void Update(DAVA::float32 timeElapsed) override;
 
     DAVA::int32 OpenScene(const DAVA::FilePath& pathToFile);
     void ReleaseScene();
@@ -36,4 +34,3 @@ private:
     bool needSetCamera = false;
 };
 
-#endif // __SCENE_PREVIEW_CONTROL_H__
