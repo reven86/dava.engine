@@ -477,25 +477,15 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     {
         return;
     }
-//QWheelEvent::source to distinguish wheel and touchpad is implemented only in Qt 5.5
-#ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-#endif //Q_OS_WIN
-    {
-#ifdef Q_OS_WIN
-        QPoint delta = event->angleDelta();
-#else //Q_OS_MAC
-        QPoint delta = event->pixelDelta();
-#endif //Q_OS_WIN
-        //scroll view up and down
-        static const qreal wheelDelta = 0.002f;
-        QPoint position = scrollAreaController->GetPosition();
-        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
-                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
-        scrollAreaController->SetPosition(position - additionalPos);
-    }
-#ifdef Q_OS_WIN
-    else
+    bool shouldZoom = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)
+#if defined(Q_OS_WIN)
+    ;
+#elif defined(Q_OS_MAC)
+    && event->source() == Qt::MouseEventNotSynthesized;
+#else
+#error "wrong platform"
+#endif //platform
+    if (shouldZoom)
     {
         //resize view
         int tickSize = 120;
@@ -508,7 +498,20 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         QPoint pos = event->pos();
         scrollAreaController->AdjustScale(scale, pos);
     }
-#endif //Q_OS_WIN
+    else
+    {
+#if defined(Q_OS_WIN)
+        QPoint delta = event->angleDelta();
+#else //Q_OS_MAC
+        QPoint delta = event->pixelDelta();
+#endif //platform
+        //scroll view up and down
+        static const qreal wheelDelta = 0.002f;
+        QPoint position = scrollAreaController->GetPosition();
+        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+        scrollAreaController->SetPosition(position - additionalPos);
+    }
 }
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
