@@ -98,7 +98,7 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
-
+    void MountPackWithDependencies(IPackManager::Pack& pack, FilePath path);
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
     String superPackUrl;

@@ -757,6 +757,13 @@ void PackManagerImpl::MountDownloadedPacks()
     initState = InitState::Ready;
 }
 
+void PackManagerImpl::MountPackWithDependencies(IPackManager::Pack& pack, FilePath path)
+{
+    FileSystem* fs = FileSystem::Instance();
+    fs->Mount(path, "Data/");
+    pack.state = Pack::Status::Mounted;
+}
+
 const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
     if (requestManager)
@@ -771,8 +778,7 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
             {
                 try
                 {
-                    fs->Mount(path, "Data/");
-                    pack.state = Pack::Status::Mounted;
+                    MountPackWithDependencies(pack, path);
                 }
                 catch (std::exception& ex)
                 {
