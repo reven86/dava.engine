@@ -10,6 +10,11 @@ namespace DAVA
 class File;
 }
 
+namespace sl
+{
+class HLSLTree;
+}
+
 namespace rhi
 {
 using DAVA::uint32;
@@ -76,7 +81,7 @@ public:
     bool Load(DAVA::File* in);
     bool Save(DAVA::File* out) const;
 
-    const char* SourceCode() const;
+    bool GetSourceCode(Api targetApi, std::string* code) const;
     const ShaderPropList& Properties() const;
     const ShaderSamplerList& Samplers() const;
     const VertexLayout& ShaderVertexLayout() const;
@@ -90,7 +95,8 @@ public:
 
 private:
     void _Reset();
-    void _AppendLine(const char* line, size_t lineLen);
+    //    void _AppendLine(const char* line, size_t lineLen);
+    void _ProcessMetaData(sl::HLSLTree* ast);
 
     struct
     buf_t
@@ -103,12 +109,13 @@ private:
     };
 
     std::string fileName;
+    sl::HLSLTree* ast;
 
     ProgType type;
-    std::string code;
+    //-    std::string code;
     uint32 codeLineCount;
-    VertexLayout vdecl;
-    std::vector<ShaderProp> prop;
+    VertexLayout vertexLayout;
+    std::vector<ShaderProp> property;
     std::vector<buf_t> buf;
     std::vector<ShaderSampler> sampler;
     BlendState blending;

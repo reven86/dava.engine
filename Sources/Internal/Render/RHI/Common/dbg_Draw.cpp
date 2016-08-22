@@ -21,6 +21,33 @@ using DAVA::Vector3;
 //==============================================================================
 
 static const char* vp__dbg_ptc =
+"vertex_in\n"
+"{\n"
+"    float3 pos   : POSITION;\n"
+"    float2 uv    : TEXCOORD;\n"
+//"    uint4 color  : COLOR;\n"
+"    float4 color  : COLOR;\n"
+"};\n"
+"vertex_out\n"
+"{\n"
+"    float4 pos   : SV_POSITION;\n"
+"    float2 uv    : TEXCOORD;\n"
+"    float4 color : COLOR;\n"
+"};\n"
+"\n"
+"[unique][dynamic] property float4x4   XForm;\n"
+"\n"
+"vertex_out\n"
+"vp_main( vertex_in input )\n"
+"{\n"
+"    vertex_out output;\n"
+//"   output.pos   = mul( XForm, float4(input.pos,1.0) );\n"
+"   output.pos   = mul( float4(input.pos,1.0), XForm );\n"
+"   output.uv    = input.uv;\n"
+"   output.color = input.color;"
+"    return output;\n"
+"}\n";
+/*
 "VPROG_IN_BEGIN\n"
 "    VPROG_IN_POSITION\n"
 "    VPROG_IN_TEXCOORD\n"
@@ -46,8 +73,29 @@ static const char* vp__dbg_ptc =
 "    VP_OUT(color)       = in_color;\n"
 "\n"
 "VPROG_END\n";
-
+*/
 static const char* fp__dbg_ptc =
+"fragment_in\n"
+"{\n"
+"    float2 uv    : TEXCOORD;\n"
+"    float4 color : COLOR;\n"
+"};\n"
+"fragment_out\n"
+"{\n"
+"    float4 color : SV_TARGET;\n"
+"};\n"
+"\n"
+"uniform sampler2D Image;\n"
+"\n"
+"fragment_out\n"
+"fp_main( fragment_in input )\n"
+"{\n"
+"    fragment_out output;\n"
+"    float4       image = tex2D( Image, input.uv );"
+"    output.color = image * input.color;\n"
+"    return output;\n"
+"}\n";
+/*
 "FPROG_IN_BEGIN\n"
 "    FPROG_IN_TEXCOORD0(texcoord,2)\n"
 "    FPROG_IN_COLOR0(color,4)\n"
@@ -67,8 +115,31 @@ static const char* fp__dbg_ptc =
 "\n"
 "FPROG_END\n"
 "BLEND_MODE(alpha)\n";
+*/
 
 static const char* vp__dbg_pc =
+"vertex_in\n"
+"{\n"
+"    float3 pos   : POSITION;\n"
+"    uint4 color  : COLOR;\n"
+"};\n"
+"vertex_out\n"
+"{\n"
+"    float4 pos   : SV_POSITION;\n"
+"    float4 color : COLOR;\n"
+"};\n"
+"\n"
+"[unique][dynamic] property float4x4   XForm;\n"
+"\n"
+"vertex_out\n"
+"vp_main( vertex_in input )\n"
+"{\n"
+"    vertex_out output;\n"
+"    output.pos   = mul( XForm, float4(input.pos, 1.0) );\n"
+"    output.color = input.color;"
+"    return output;\n"
+"}\n";
+/*
 "VPROG_IN_BEGIN\n"
 "    VPROG_IN_POSITION\n"
 "    VPROG_IN_COLOR\n"
@@ -90,8 +161,28 @@ static const char* vp__dbg_pc =
 "    VP_OUT(color)       = in_color;\n"
 "\n"
 "VPROG_END\n";
+*/
 
 static const char* fp__dbg_pc =
+"fragment_in\n"
+"{\n"
+"    float4 color : COLOR;\n"
+"};\n"
+"fragment_out\n"
+"{\n"
+"    float4 color : SV_TARGET;\n"
+"};\n"
+"\n"
+"uniform sampler2D Image;\n"
+"\n"
+"fragment_out\n"
+"fp_main( fragment_in input )\n"
+"{\n"
+"    fragment_out output;\n"
+"    output.color = input.color;\n"
+"    return output;\n"
+"}\n";
+/*
 "FPROG_IN_BEGIN\n"
 "    FPROG_IN_COLOR0(color,4)\n"
 "FPROG_IN_END\n"
@@ -108,6 +199,7 @@ static const char* fp__dbg_pc =
 "\n"
 "FPROG_END\n"
 "BLEND_MODE(alpha)\n";
+*/
 
 namespace DAVA
 {
@@ -431,6 +523,7 @@ DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
             0.0f, 2.0f / dd->_wnd_h, 0.0f, 1.0f,
             0.0f, 0.0f, -(0.0f) / (0.0f - 1.0f), 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f);
+            ortho.Transpose();
 
             batch.vertexStreamCount = 1;
             batch.vertexStream[0] = _vb[_cur_vb_i];
@@ -858,6 +951,7 @@ void DbgDraw::_init()
 
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
+    std::string bin;
 
     if (vp_ptc.Construct(rhi::PROG_VERTEX, vp__dbg_ptc) && fp_ptc.Construct(rhi::PROG_FRAGMENT, fp__dbg_ptc))
     {
@@ -878,8 +972,12 @@ void DbgDraw::_init()
         s_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_NEAREST;
         s_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode());
+        vp_ptc.GetSourceCode(rhi::HostApi(), &bin);
+        DAVA::Logger::Info("\n\n--shader  \"%s\"", ps_desc.vprogUid.c_str());
+        DAVA::Logger::Info(bin.c_str());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, bin.c_str(), bin.length());
+        fp_ptc.GetSourceCode(rhi::HostApi(), &bin);
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, bin.c_str(), bin.length());
 
         _ptc_pipeline_state = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(_ptc_pipeline_state, 1, &_ptc_const);
@@ -902,8 +1000,10 @@ void DbgDraw::_init()
         desc.fprogUid = FastName("fp.pc");
         ///        desc.blend_state.blend_mode = fp_pc.blending();
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, vp_pc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, fp_pc.SourceCode());
+        vp_pc.GetSourceCode(rhi::HostApi(), &bin);
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, bin.c_str(), bin.length());
+        fp_pc.GetSourceCode(rhi::HostApi(), &bin);
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, bin.c_str(), bin.length());
 
         _pc_pipeline_state = rhi::AcquireRenderPipelineState(desc);
         rhi::CreateVertexConstBuffers(_pc_pipeline_state, 1, &_pc_const);

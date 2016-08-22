@@ -120,7 +120,7 @@ _mcpp__fprintf(OUTDEST dst, const char* format, ...)
 
 void PreProcessText(const char* text, std::string* result)
 {
-    START_NAMED_TIMING("preproc.mcpp");
+    //    START_NAMED_TIMING("preproc.mcpp");
     const char* argv[] =
     {
       "<mcpp>", // we just need first arg
@@ -140,14 +140,14 @@ void PreProcessText(const char* text, std::string* result)
         mcpp__shutdown();
     }
     _PreprocessedText = nullptr;
-    STOP_NAMED_TIMING("preproc.mcpp");
+    //    STOP_NAMED_TIMING("preproc.mcpp");
 }
 
 //------------------------------------------------------------------------------
 
 void PreProcessText(const char* text, const char** arg, unsigned argCount, std::string* result)
 {
-    START_NAMED_TIMING("preproc.mcpp");
+    //    START_NAMED_TIMING("preproc.mcpp");
     if (text)
     {
         const char* argv[128];
@@ -177,7 +177,7 @@ void PreProcessText(const char* text, const char** arg, unsigned argCount, std::
     {
         *result = "";
     }
-    STOP_NAMED_TIMING("preproc.mcpp");
+    //    STOP_NAMED_TIMING("preproc.mcpp");
 }
 
 //------------------------------------------------------------------------------

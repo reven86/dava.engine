@@ -1,6 +1,8 @@
 #include "MCPP/mcpp_lib.h"
 
+    
     #include "../rhi_ShaderCache.h"
+    #include "../rhi_ShaderSource.h"
 
 namespace rhi
 {
@@ -1136,6 +1138,18 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
 void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)
 {
+    ShaderSource src;
+
+    if (src.Construct(progType, srcText))
+    {
+        std::string code;
+
+        src.GetSourceCode(targetApi, &code);
+        UpdateProgBinary(targetApi, progType, uid, code.c_str(), code.length());
+        DAVA::Logger::Info("\n\n--shader  \"%s\"", uid.c_str());
+        DAVA::Logger::Info(code.c_str());
+    }
+    /*
     std::string txt;
     std::vector<uint8>* bin = nullptr;
 
@@ -1161,6 +1175,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     bin->clear();
     bin->insert(bin->begin(), reinterpret_cast<const uint8*>(&(txt[0])), reinterpret_cast<const uint8*>(&(txt[txt.length() - 1]) + 1));
     bin->push_back(0);
+*/
 }
 
 //------------------------------------------------------------------------------

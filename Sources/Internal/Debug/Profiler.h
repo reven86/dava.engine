@@ -7,7 +7,7 @@ using DAVA::uint64;
     #include <Base/Hash.h>
 
 #if !defined PROFILER_ENABLED
-    #define PROFILER_ENABLED 0
+    #define PROFILER_ENABLED 1
 #endif
     #define TRACER_ENABLED 0
 

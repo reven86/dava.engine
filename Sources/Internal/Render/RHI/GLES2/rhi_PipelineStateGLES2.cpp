@@ -568,8 +568,8 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
                 char info[1024];
 
                 GL_CALL(glGetProgramInfoLog(gl_prog, countof(info), 0, info));
-                Trace("prog-link failed:\n");
-                Trace(info);
+                Logger::Error("prog-link failed:\n");
+                Logger::Error(info);
             }
         }
 
