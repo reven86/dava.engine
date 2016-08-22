@@ -24,7 +24,8 @@ const char* GLESGenerator::s_reservedWord[] =
   "fract"
 };
 
-static const char* GetTypeName(const HLSLType& type)
+const char*
+GLESGenerator::GetTypeName(const HLSLType& type)
 {
     switch (type.baseType)
     {
@@ -107,7 +108,7 @@ static const char* GetBuiltInSemantic(const char* semantic)
     return NULL;
 }
 
-static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
+int GLESGenerator::GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
 {
     HLSLExpression* argument = functionCall->argument;
     int numArguments = 0;
@@ -158,6 +159,11 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
     bool usesTex3Dlod = m_tree->GetContainsString("tex3Dlod");
     bool usestexCUBEbias = m_tree->GetContainsString("texCUBEbias");
     bool usesSinCos = m_tree->GetContainsString("sincos");
+
+
+    #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    m_writer.WriteLine(0, "precision highp float;");
+    #endif
 
     ChooseUniqueName("matrix_row", m_matrixRowFunction, sizeof(m_matrixRowFunction));
     ChooseUniqueName("clip", m_clipFunction, sizeof(m_clipFunction));

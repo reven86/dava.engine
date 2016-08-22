@@ -1280,7 +1280,8 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 char sem[128];
 
                 strcpy(sem, field->semantic);
-                strupr(sem);
+                for (char* s = sem; *s; ++s)
+                    *s = toupper(*s);
 
                 for (unsigned i = 0; i != countof(semantic); ++i)
                 {

@@ -6,7 +6,8 @@
 
 namespace sl
 {
-static const char* GetTypeName(const HLSLType& type)
+const char*
+HLSLGenerator::GetTypeName(const HLSLType& type)
 {
     switch (type.baseType)
     {
@@ -74,7 +75,7 @@ static const char* GetTypeName(const HLSLType& type)
     return "?";
 }
 
-static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
+int HLSLGenerator::GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
 {
     HLSLExpression* argument = functionCall->argument;
     int numArguments = 0;

@@ -14,8 +14,14 @@ CodeWriter::CodeWriter(std::string* buf)
     m_currentLine = 1;
     m_currentFileName = NULL;
     m_spacesPerIndent = 4;
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    m_writeLines = false;
+    m_writeFileNames = false;
+#else
     m_writeLines = true;
     m_writeFileNames = true;
+#endif
 }
 
 void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)

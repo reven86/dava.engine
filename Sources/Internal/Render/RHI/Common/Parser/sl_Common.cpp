@@ -94,8 +94,11 @@ void Log_ErrorArgList(const char* format, va_list args)
     char buf[4 * 1024];
 
     _vsnprintf(buf, sizeof(buf), format, args);
-    ::OutputDebugStringA(buf);
-    //    Log::print_valist(format, args);
+#if defined(__DAVAENGINE_WIN32__)
+    -::OutputDebugStringA(buf);
+#else
+    puts(buf);
+#endif
 }
 
 StringPool::StringPool(Allocator* allocator)

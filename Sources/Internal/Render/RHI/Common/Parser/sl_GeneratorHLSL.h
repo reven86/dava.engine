@@ -27,6 +27,9 @@ public:
     const char* GetResult() const;
 
 private:
+    static const char* GetTypeName(const HLSLType& type);
+    static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments);
+
     void OutputExpressionList(HLSLExpression* expression);
     void OutputExpression(HLSLExpression* expression);
     void OutputArguments(HLSLArgument* argument);
