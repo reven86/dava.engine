@@ -5,7 +5,7 @@
 namespace tarc
 {
 
-QUrl tarc::CreateMenuPoint(const QString& path)
+QUrl CreateMenuPoint(const QString& path)
 {
     QUrl url;
     url.setPath(path);

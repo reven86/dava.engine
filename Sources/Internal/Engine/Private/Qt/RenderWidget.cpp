@@ -21,7 +21,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::WheelFocus);
+    setFocusPolicy(Qt::NoFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(QSize(width, height));
     setResizeMode(QQuickWidget::SizeViewToRootObject);

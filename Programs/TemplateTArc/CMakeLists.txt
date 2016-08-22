@@ -40,11 +40,10 @@ set(ADDED_SRC ${RCC_APP_SRCS})
 
 define_source (SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} "Resources")
 
-set( APP_DATA                       ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
+set(APP_DATA    ${CMAKE_CURRENT_LIST_DIR}/Data)
+set(MACOS_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist)
 
 setup_main_executable()
-convert_graphics()
 
 if (WIN32)
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")

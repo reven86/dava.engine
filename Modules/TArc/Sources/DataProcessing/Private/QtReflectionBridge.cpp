@@ -76,9 +76,9 @@ void FillConverter(DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA:
 #define FILL_CONVERTERS_FOR_TYPE(T, ATV, VTA) \
     ReflBridgeDetails::FillConverter<T>(ATV, VTA);
 
-#define FILL_CONVEERTES_FOR_CUSTOM_TYPE(ATV, VTA, ANY_TYPE, VAR_TYPE)\
-    ATV.emplace(DAVA::Type::Instance<DAVA::##ANY_TYPE>(), &ReflBridgeDetails::##ANY_TYPE##ToVariant); \
-    VTA.emplace(qMetaTypeId<VAR_TYPE>(), &ReflBridgeDetails::##VAR_TYPE##ToAny);
+#define FILL_CONVERTES_FOR_CUSTOM_TYPE(ATV, VTA, ANY_TYPE, VAR_TYPE)\
+    ATV.emplace(DAVA::Type::Instance<DAVA::ANY_TYPE>(), &ReflBridgeDetails::ANY_TYPE##ToVariant); \
+    VTA.emplace(qMetaTypeId<VAR_TYPE>(), &ReflBridgeDetails::VAR_TYPE##ToAny);
 
 QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wrapper_, QObject* parent)
     : QObject(parent)
@@ -130,7 +130,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
                 auto iter = reflectionBridge->anyToQVariant.find(davaValue.GetType());
                 if (iter == reflectionBridge->anyToQVariant.end())
                 {
-                    DVASSERT_MSG(false, DAVA::Format("Converted (Any->QVariant) has not been registered for type : %s", davaValue.GetType()->GetName()));
+                    DVASSERT_MSG(false, DAVA::Format("Converted (Any->QVariant) has not been registered for type : %s", davaValue.GetType()->GetName()).c_str());
                 }
                 else
                 {
@@ -143,7 +143,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
                 auto iter = reflectionBridge->qvariantToAny.find(value->userType());
                 if (iter == reflectionBridge->qvariantToAny.end())
                 {
-                    DVASSERT_MSG(false, DAVA::Format("Converted (QVariant->Any) has not been registered for userType : %d", value->userType()));
+                    DVASSERT_MSG(false, DAVA::Format("Converted (QVariant->Any) has not been registered for userType : %d", value->userType()).c_str());
                 }
                 else
                 {
@@ -160,6 +160,8 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
 
         id -= propertyCount;
     }
+    break;
+    default:
     break;
     }
 
@@ -266,7 +268,7 @@ void QtReflected::FirePropertySignal(int signalId)
 QtReflectionBridge::QtReflectionBridge()
 {
     FOR_ALL_STATIC_TYPES(FILL_CONVERTERS_FOR_TYPE, anyToQVariant, qvariantToAny);
-    FILL_CONVEERTES_FOR_CUSTOM_TYPE(anyToQVariant, qvariantToAny, String, QString);
+    FILL_CONVERTES_FOR_CUSTOM_TYPE(anyToQVariant, qvariantToAny, String, QString);
 }
 
 QtReflectionBridge::~QtReflectionBridge()

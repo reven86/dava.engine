@@ -3,6 +3,9 @@
 #include "DataProcessing/DataWrapper.h"
 #endif
 
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
+
 namespace tarc
 {
 

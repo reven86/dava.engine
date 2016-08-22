@@ -140,10 +140,10 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     if (windowInfo.menuBar == nullptr)
     {
         windowInfo.menuBar = new QMenuBar();
-        windowInfo.window->setMenuBar(windowInfo.menuBar);
-        windowInfo.menuBar->setObjectName("menu");
         windowInfo.menuBar->setNativeMenuBar(true);
+        windowInfo.menuBar->setObjectName("menu");
         windowInfo.menuBar->setVisible(true);
+        windowInfo.window->setMenuBar(windowInfo.menuBar);
     }
 
     QStringList path = url.path().split("/");
@@ -152,7 +152,7 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
     if (topLevelMenu == nullptr)
     {
-        topLevelMenu = windowInfo.menuBar->addMenu(topLevelTitle);
+        topLevelMenu = new QMenu(topLevelTitle);
         topLevelMenu->setObjectName(topLevelTitle);
         windowInfo.menuBar->addMenu(topLevelMenu);
     }
@@ -237,6 +237,7 @@ struct UIManager::Impl
         if (iter == windows.end())
         {
             QMainWindow* window = new QMainWindow();
+            window->setWindowTitle(appID.c_str());
             window->setObjectName(appID.c_str());
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
@@ -332,7 +333,7 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
 
             if (view->status() != QQuickWidget::Ready)
             {
-                DAVA::Logger::Error("!!! QML %s has not been loaded !!!", resourceName);
+                DAVA::Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
                 foreach(QQmlError error, view->errors())
                 {
                     DAVA::Logger::Error("Error : %s", error.toString().toStdString().c_str());
@@ -357,7 +358,7 @@ void UIManager::ClearMessage(const WindowKey& windowKey)
     impl->FindOrCreateWindow(windowKey).window->statusBar()->clearMessage();
 }
 
-std::unique_ptr<tarc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
+std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);

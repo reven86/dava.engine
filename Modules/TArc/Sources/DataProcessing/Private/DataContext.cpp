@@ -34,7 +34,7 @@ DataNode& DataContext::GetData(const DAVA::ReflectedType* type) const
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())
     {
-        throw std::runtime_error(DAVA::Format("Data with type %s doesn't exist", type->GetPermanentName()));
+        throw std::runtime_error(DAVA::Format("Data with type %s doesn't exist", type->GetPermanentName().c_str()));
     }
 
     return *iter->second;

@@ -125,7 +125,7 @@ struct ModalMessageParams
 
     QString title;
     QString message;
-    Buttons buttons = Ok | Cancel;
+    Buttons buttons = Buttons(Ok | Cancel);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
