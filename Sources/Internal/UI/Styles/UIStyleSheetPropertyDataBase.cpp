@@ -155,6 +155,8 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
             propertyNameToIndexMap[legacyNameIt->second] = propertyIndex;
         }
     }
+
+    visiblePropertyIndex = GetStyleSheetPropertyIndex(FastName("visible"));
 }
 
 UIStyleSheetPropertyDataBase::~UIStyleSheetPropertyDataBase()

@@ -62,8 +62,8 @@ static const ButtonInfo multilineButtonsInfo[] = {
     { L"By symbols", UIStaticText::MULTILINE_ENABLED_BY_SYMBOL, Rect(670, 280, 100, 20) },
 };
 
-StaticTextTest::StaticTextTest()
-    : BaseScreen("TextAlignTest")
+StaticTextTest::StaticTextTest(GameCore* g)
+    : BaseScreen(g, "TextAlignTest")
 {
 }
 

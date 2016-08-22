@@ -23,6 +23,11 @@ void CommandLineTool::SetOkCode(int code)
     codeOk = code;
 }
 
+bool CommandLineTool::ParseOptions(const DAVA::Vector<DAVA::String>& cmdline)
+{
+    return options.Parse(cmdline);
+}
+
 bool CommandLineTool::ParseOptions(uint32 argc, char* argv[])
 {
     return options.Parse(argc, argv);

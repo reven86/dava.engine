@@ -254,7 +254,11 @@ public:
 
             if (!iter->second.blocked)
             {
-                iter->second.fn(args...);
+                // Make functor copy and call its copy:
+                //  when connected lambda with captured variables disconnects from signal while signal is emitting
+                //  compiler destroys lambda and its captured variables
+                auto fn = iter->second.fn;
+                fn(args...);
             }
 
             iter = next;

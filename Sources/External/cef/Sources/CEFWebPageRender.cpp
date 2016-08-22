@@ -5,6 +5,8 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 struct CEFColor
@@ -26,7 +28,29 @@ struct CEFColor
 
 CEFWebPageRender::CEFWebPageRender()
     : contentBackground(new UIControlBackground)
+#if defined(__DAVAENGINE_COREV2__)
+    , window(Engine::Instance()->PrimaryWindow())
+#endif
 {
+#if defined(__DAVAENGINE_COREV2__)
+    auto focusChanged = [this](Window&, bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    auto windowDestroyed = [this](Window& w) -> void {
+        if (&w == window)
+        {
+            window->focusChanged.Disconnect(focusConnection);
+            window->destroyed.Disconnect(windowDestroyedConnection);
+            window = nullptr;
+        }
+    };
+    windowDestroyedConnection = window->destroyed.Connect(windowDestroyed);
+    focusConnection = window->focusChanged.Connect(focusChanged);
+#else
     auto focusChanged = [this](bool isFocused) -> void
     {
         if (!isFocused)
@@ -35,6 +59,7 @@ CEFWebPageRender::CEFWebPageRender()
         }
     };
     focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+#endif
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
@@ -46,7 +71,15 @@ CEFWebPageRender::CEFWebPageRender()
 
 CEFWebPageRender::~CEFWebPageRender()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if (window != nullptr)
+    {
+        window->focusChanged.Disconnect(focusConnection);
+        window->destroyed.Disconnect(windowDestroyedConnection);
+    }
+#else
     Core::Instance()->focusChanged.Disconnect(focusConnection);
+#endif
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
 
@@ -234,9 +267,12 @@ CefCursorHandle CEFWebPageRender::GetDefaultCursor()
 
 void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 {
+#if defined(__DAVAENGINE_COREV2__)
+#else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     SetClassLongPtr(wnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
     ::SetCursor(cursor);
+#endif
 }
 
 #endif

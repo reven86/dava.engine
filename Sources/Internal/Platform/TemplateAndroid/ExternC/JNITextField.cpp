@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidLayer.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
@@ -121,3 +123,5 @@ void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
     }
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

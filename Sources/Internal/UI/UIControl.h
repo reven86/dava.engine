@@ -1259,6 +1259,7 @@ public:
     bool IsStyleSheetInitialized() const;
     void SetStyleSheetInitialized();
 
+    bool IsStyleSheetDirty() const;
     void SetStyleSheetDirty();
     void ResetStyleSheetDirty();
 

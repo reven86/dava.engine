@@ -3,6 +3,8 @@
 
 #include "Base/BaseObject.h"
 
+#include "Engine/Private/EnginePrivateFwd.h"
+
 /**
     \defgroup inputsystem    Input System
 */
@@ -158,6 +160,7 @@ private:
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
     friend class QtLayer;
+    friend class Window;
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif

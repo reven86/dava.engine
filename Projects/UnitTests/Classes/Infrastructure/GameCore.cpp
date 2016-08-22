@@ -1,8 +1,9 @@
+#include "Engine/EngineModule.h"
 #include "Base/BaseTypes.h"
-#include "UI/UIScreenManager.h"
-#include "CommandLine/CommandLineParser.h"
-#include "Utils/Utils.h"
 #include "UnitTests/UnitTests.h"
+#include "CommandLine/CommandLineParser.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Utils/Utils.h"
 
 #include "Infrastructure/GameCore.h"
 
@@ -10,8 +11,6 @@
 #include "Network/NetConfig.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #endif
-
-const DAVA::String TestCoverageFileName = "UnitTests.cover";
 
 using namespace DAVA;
 
@@ -24,7 +23,93 @@ String disableTheseTestClasses = "";
 
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
+
+const String TestCoverageFileName = "UnitTests.cover";
 }
+
+#if defined(__DAVAENGINE_COREV2__)
+
+int GameMain(Vector<String> cmdline)
+{
+    KeyedArchive* appOptions = new KeyedArchive();
+    appOptions->SetString("title", "UnitTests");
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
+#if defined(__DAVAENGINE_QT__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_MACOS__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_IPHONE__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_WIN32__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+#elif defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+    Vector<String> modules = {
+        "JobManager",
+        "NetCore",
+        "LocalizationSystem",
+        "SoundSystem",
+        "DownloadManager",
+    };
+
+    Engine e;
+    e.SetOptions(appOptions);
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules);
+
+    GameCore g(e);
+    e.Run();
+    return 0;
+}
+
+GameCore::GameCore(DAVA::Engine& e)
+    : engine(e)
+{
+    engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
+    engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.update.Connect(this, &GameCore::Update);
+}
+
+void GameCore::Update(float32 timeElapsed)
+{
+    ProcessTests(timeElapsed);
+}
+
+#else // __DAVAENGINE_COREV2__
+
+void GameCore::OnSuspend()
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    ApplicationCore::OnSuspend();
+#endif
+}
+
+void GameCore::OnResume()
+{
+    ApplicationCore::OnResume();
+}
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+void GameCore::OnForeground()
+{
+    ApplicationCore::OnForeground();
+}
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
+void GameCore::Update(float32 timeElapsed)
+{
+    ProcessTests(timeElapsed);
+    ApplicationCore::Update(timeElapsed);
+}
+
+#endif // !__DAVAENGINE_COREV2__
 
 void GameCore::ProcessCommandLine()
 {
@@ -78,7 +163,11 @@ void GameCore::OnAppStarted()
     if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
         Logger::Error("%s", "There are no test classes");
+#if defined(__DAVAENGINE_COREV2__)
+        engine.Quit();
+#else
         Core::Instance()->Quit();
+#endif
     }
     else
     {
@@ -100,31 +189,6 @@ void GameCore::OnAppFinished()
 #if defined(__DAVAENGINE_WIN_UAP__)
     UnInitNetwork();
 #endif
-}
-
-void GameCore::OnSuspend()
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
-}
-
-void GameCore::OnResume()
-{
-    ApplicationCore::OnResume();
-}
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-void GameCore::OnForeground()
-{
-    ApplicationCore::OnForeground();
-}
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
-void GameCore::Update(float32 timeElapsed)
-{
-    ProcessTests(timeElapsed);
-    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::OnError()
@@ -190,7 +254,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
                 Logger::Info("        %s", s.c_str());
             }
         }
-        
+
 #if defined(TEST_COVERAGE)
         RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
         DVASSERT(coverageFile);
@@ -198,7 +262,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
         auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
 
         toJson("{ \n    \"ProjectFolders\": \"" + DAVA::String(DAVA_FOLDERS) + "\",\n");
-        
+
 #if defined(DAVA_UNITY_FOLDER)
         toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
 #endif
@@ -220,7 +284,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
 
         toJson("     }\n");
         toJson("}\n");
-        
+
 #endif // TEST_COVERAGE
 
         FinishTests();
@@ -231,7 +295,11 @@ void GameCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
+#if defined(__DAVAENGINE_COREV2__)
+    engine.Quit();
+#else
     Core::Instance()->Quit();
+#endif
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -274,8 +342,6 @@ void GameCore::UnInitNetwork()
     Net::NetCore::Instance()->DestroyControllerBlocked(netController);
 }
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-
 GameCore::LogFlusher::LogFlusher(Net::NetLogger* logger)
     : netLogger(logger)
 {
@@ -299,7 +365,4 @@ void GameCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
 {
     FlushLogs();
 }
-
-#endif
-
-#endif
+#endif // __DAVAENGINE_WIN_UAP__
