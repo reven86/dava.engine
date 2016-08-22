@@ -282,7 +282,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
                 // Convert fraction to int (from 0 to 999)
                 // Does the same as round(millisecondsFractional / pow(10, millisecondsSubstringLength) * 1000)
-                milliseconds = (int)round(millisecondsFractional * pow(10, 3 - millisecondsSubstringLength));
+                milliseconds = static_cast<int>(round(millisecondsFractional * pow(10, 3 - static_cast<int>(millisecondsSubstringLength))));
 
                 DVASSERT(milliseconds >= 0 && milliseconds < 1000);
 
