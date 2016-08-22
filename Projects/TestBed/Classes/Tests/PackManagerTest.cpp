@@ -447,7 +447,7 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
                 Logger::Debug("DATA_DIR: %s", FilePath("~res:/").GetAbsolutePathname().c_str());
                 Logger::Debug("COMMAND: %s", macExec.c_str());
             }
-#else
+#elif defined(__DAVAENGINE_WIN32__)
             std::system("python scripts/start_local_http_server.py");
 #endif
         }
@@ -461,7 +461,7 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
             std::system(cdAndPyCommand.c_str());
             String closeTerminalCommand = "osascript -e 'tell application \"Terminal\" to quit'";
             std::system(closeTerminalCommand.c_str());
-#else
+#elif defined(__DAVAENGINE_WIN32__)
             std::system("python scripts/stop_local_http_server.py");
 #endif
         }
