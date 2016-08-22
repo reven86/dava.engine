@@ -24,12 +24,11 @@ DAVA_TESTCLASS (DateTimeTest)
             DateTime date = DateTime::Now();
 
             // Parsing without milliseconds
-            //
+
             TEST_VERIFY(date.ParseISO8601Date("1970-01-01T05:00:00-03:00"));
             TEST_VERIFY(FormatDateTime(date) == "1970-00-01 05:00:00-10800");
 
             // Parsing with milliseconds
-            //
 
             // Separator exists, but no fraction
             TEST_VERIFY(!date.ParseISO8601Date("2016-06-01T17:05:03.-03:00"));
@@ -39,7 +38,6 @@ DAVA_TESTCLASS (DateTimeTest)
             TEST_VERIFY(!date.ParseISO8601Date("2016-06-01T17:05:03.05"));
 
             // Different fractions
-            //
 
             TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03.0-03:00"));
             TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03-10800");

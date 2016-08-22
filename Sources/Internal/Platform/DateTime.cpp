@@ -257,16 +257,14 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
 
         // Parsing milliseconds (if specified)
-        //
 
         char const separator = src[19];
 
         // Can be both . or ,
-        //
         if (separator == '.' || separator == ',')
         {
             // Count milliseconds fraction length
-            //
+
             size_t currentSymbolIndex = 20;
             char currentSymbol;
             while (currentSymbolIndex < src.length() && isdigit(currentSymbol = src[currentSymbolIndex]))
@@ -288,7 +286,6 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
                 // Now when we know how many symbols milliseconds take, rough-check again if string is valid
                 // For cases when milliseconds were specified but time zone wasn't specified at all
-                //
                 if (src.length() < minLengthWithoutMilliseconds + (millisecondsSubstringLength + 1))
                 {
                     return false;
