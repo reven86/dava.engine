@@ -14,7 +14,6 @@
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
-class PreviewWidget;
 
 class LocalizationEditorDialog;
 class Document;

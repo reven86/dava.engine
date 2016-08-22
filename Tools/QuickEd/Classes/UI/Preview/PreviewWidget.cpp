@@ -296,6 +296,24 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
+void PreviewWidget::OnIncrementScale()
+{
+    int currentIndex = scaleCombo->currentIndex();
+    if (currentIndex < scaleCombo->count() - 1)
+    {
+        scaleCombo->setCurrentIndex(currentIndex + 1);
+    }
+}
+
+void PreviewWidget::OnDecrementScale()
+{
+    int currentIndex = scaleCombo->currentIndex();
+    if (currentIndex > 0)
+    {
+        scaleCombo->setCurrentIndex(currentIndex - 1);
+    }
+}
+
 void PreviewWidget::ApplyPosChanges()
 {
     QPoint viewPos = canvasPos + rootControlPos;
