@@ -848,6 +848,23 @@ function ClickSystemBack()
     autotestingSystem:ClickSystemBack()
 end
 
+-- Left Mouse Click
+function LeftMouseClickDownPosition(pos)
+    local position = Vector.Vector2(pos.x, pos.y)
+    autotestingSystem:LeftMouseClickDown(position)
+end
+
+function LeftMouseClickUp()
+    autotestingSystem:LeftMouseClickUp()
+end
+
+function LeftMouseClickPosition(position, waitTime)
+    Wait(waitTime)
+    LeftMouseClickDownPosition(position)
+    Wait(waitTime)
+    LeftMouseClickUp()
+end
+
 -- Move touch actions
 function TouchMovePosition(pos, touchId)
     local position = Vector.Vector2(pos.x, pos.y)

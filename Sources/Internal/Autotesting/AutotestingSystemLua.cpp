@@ -754,6 +754,32 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     ProcessInput(touchUp);
 }
 
+void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
+{
+    UIEvent clickDown;
+    clickDown.phase = UIEvent::Phase::BEGAN;
+    clickDown.mouseButton = UIEvent::MouseButton::LEFT;
+    clickDown.device = UIEvent::Device::MOUSE;
+    clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickDown.point = point;
+    ProcessInput(clickDown);
+}
+
+void AutotestingSystemLua::LeftMouseClickUp()
+{
+    UIEvent clickUp;
+    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
+    {
+        AutotestingSystem::Instance()->OnError("ClickAction::LeftMouseClickUp click down not found");
+    }
+    clickUp.phase = UIEvent::Phase::ENDED;
+    clickUp.mouseButton = UIEvent::MouseButton::LEFT;
+    clickUp.device = UIEvent::Device::MOUSE;
+    clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    ProcessInput(clickUp);
+}
+
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
