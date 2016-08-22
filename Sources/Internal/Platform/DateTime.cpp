@@ -169,7 +169,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     // 1969-07-21T02:56:15Z
     // 1969-07-21T02:56:15.1Z
     // 1969-07-20T21:56:15-05:00
-    int const minLengthWithoutMilliseconds = strlen("1969-07-21T02:56:15Z");
+    size_t const minLengthWithoutMilliseconds = strlen("1969-07-21T02:56:15Z");
     if (src.length() < minLengthWithoutMilliseconds)
     {
         return false;
@@ -218,7 +218,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
     /// time
     int milliseconds = 0;
-    int32 firstTimeZoneSymbolIndex;
+    size_t firstTimeZoneSymbolIndex;
     {
         const DAVA::String hr = src.substr(11, 2);
         if (!IsNumber(hr))
@@ -267,14 +267,14 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         {
             // Count milliseconds fraction length
             //
-            int currentSymbolIndex = 20;
+            size_t currentSymbolIndex = 20;
             char currentSymbol;
             while (currentSymbolIndex < src.length() && isdigit(currentSymbol = src[currentSymbolIndex]))
             {
                 ++currentSymbolIndex;
             }
 
-            int const millisecondsSubstringLength = currentSymbolIndex - 20;
+            size_t const millisecondsSubstringLength = currentSymbolIndex - 20;
             if (millisecondsSubstringLength > 0)
             {
                 DAVA::String const millisecondsSubstring = src.substr(20, millisecondsSubstringLength);
@@ -282,7 +282,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
                 // Convert fraction to int (from 0 to 999)
                 // Does the same as round(millisecondsFractional / pow(10, millisecondsSubstringLength) * 1000)
-                milliseconds = round(millisecondsFractional * pow(10, 3 - millisecondsSubstringLength));
+                milliseconds = (int)round(millisecondsFractional * pow(10, 3 - millisecondsSubstringLength));
 
                 DVASSERT(milliseconds >= 0 && milliseconds < 1000);
 
