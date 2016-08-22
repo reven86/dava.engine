@@ -55,7 +55,7 @@ define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
-if (MACOS)
+if (MACOS or WIN32)
     set( APP_DATA  ${APP_DATA} "scripts")
 endif()
 
