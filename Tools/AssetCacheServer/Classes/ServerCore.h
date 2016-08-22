@@ -51,6 +51,9 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
+    void InitiateShareRequest(PoolID poolID, const DAVA::String& serverName);
+    void InitiateUnshareRequest();
+
     void SetApplicationPath(const DAVA::String& path);
 
     void ClearStorage();
@@ -70,12 +73,16 @@ public:
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
     void StorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) const;
-
-public slots:
-    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void ServerShared();
+    void ServerUnshared();
+    void SharedDataUpdated();
 
 private slots:
-    void OnTimerUpdate();
+    void OnServerShared(PoolID poolID, ServerID serverID, const DAVA::String& serverName);
+    void OnServerUnshared();
+    void OnSharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
+    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void OnRefreshTimer();
     void OnConnectTimeout();
     void OnReattemptTimer();
     void OnSharedDataUpdateTimer();

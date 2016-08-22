@@ -24,14 +24,10 @@ SharedServerWidget::SharedServerWidget(const SharedServer& server, QWidget* pare
     serverID = server.serverID;
 }
 
-SharedServerWidget::~SharedServerWidget()
+void SharedServerWidget::Update(const SharedServer& updatedData)
 {
-    delete ui;
-}
-
-void SharedServerWidget::OnParametersChanged()
-{
-    emit ParametersChanged();
+    ui->nameLineEdit->setText(updatedData.serverName.c_str());
+    ui->ipLineEdit->setText(updatedData.remoteParams.ip.c_str());
 }
 
 void SharedServerWidget::OnChecked(int val)

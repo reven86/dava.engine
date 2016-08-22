@@ -15,7 +15,8 @@ class SharedPoolWidget : public QWidget
 public:
     explicit SharedPoolWidget(QWidget* parent = nullptr);
     explicit SharedPoolWidget(const SharedPool& pool, QWidget* parent = nullptr);
-    ~SharedPoolWidget() override;
+
+    void Update(const SharedPool& pool);
 
     PoolID GetPoolID() const;
 
@@ -31,7 +32,7 @@ private slots:
 
 private:
     PoolID poolID = 0;
-    Ui::SharedPoolWidget* ui;
+    std::unique_ptr<Ui::SharedPoolWidget> ui;
 };
 
 inline PoolID SharedPoolWidget::GetPoolID() const

@@ -21,7 +21,7 @@ ServerCore::ServerCore()
     serverLogics.Init(&serverProxy, serverName, &clientProxy, &dataBase);
 
     updateTimer = new QTimer(this);
-    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::OnTimerUpdate);
+    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::OnRefreshTimer);
 
     connectTimer = new QTimer(this);
     connectTimer->setInterval(CONNECT_TIMEOUT_SEC * 1000);
@@ -38,9 +38,9 @@ ServerCore::ServerCore()
     sharedDataUpdateTimer->setSingleShot(false);
     sharedDataUpdateTimer->start();
     QObject::connect(sharedDataUpdateTimer, &QTimer::timeout, this, &ServerCore::OnSharedDataUpdateTimer);
-    QObject::connect(&sharedDataRequester, &SharedDataRequester::SharedDataReceived, &settings, &ApplicationSettings::UpdateSharedPools);
-    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerShared, &settings, &ApplicationSettings::SetOwnID);
-    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerUnshared, &settings, &ApplicationSettings::ResetOwnID);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::SharedDataReceived, this, &ServerCore::OnSharedDataReceived);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerShared, this, &ServerCore::OnServerShared);
+    QObject::connect(&sharedDataRequester, &SharedDataRequester::ServerUnshared, this, &ServerCore::OnServerUnshared);
 
     settings.Load();
 
@@ -173,7 +173,7 @@ void ServerCore::ResetRemotesList()
     remoteServerIndex = -1;
 }
 
-void ServerCore::OnTimerUpdate()
+void ServerCore::OnRefreshTimer()
 {
     serverLogics.Update();
 
@@ -304,6 +304,42 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
         emit ServerStateChanged(this);
         return;
     }
+}
+
+void ServerCore::InitiateShareRequest(PoolID poolID, const DAVA::String& serverName)
+{
+    SharedServerParams serverParams;
+    serverParams.poolID = poolID;
+    serverParams.name = serverName;
+    serverParams.port = settings.GetPort();
+    sharedDataRequester.AddSharedServer(serverParams, appPath);
+}
+
+void ServerCore::InitiateUnshareRequest()
+{
+    sharedDataRequester.RemoveSharedServer(settings.GetOwnID());
+}
+
+void ServerCore::OnServerShared(PoolID poolID, ServerID serverID, const DAVA::String& serverName)
+{
+    settings.SetOwnPoolID(poolID);
+    settings.SetOwnID(serverID);
+    settings.SetOwnName(serverName);
+    settings.SetSharedForOthers(true);
+    emit ServerShared();
+}
+
+void ServerCore::OnServerUnshared()
+{
+    settings.SetOwnID(0);
+    settings.SetSharedForOthers(false);
+    emit ServerUnshared();
+}
+
+void ServerCore::OnSharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers)
+{
+    settings.UpdateSharedPools(pools, servers);
+    emit SharedDataUpdated();
 }
 
 void ServerCore::ClearStorage()

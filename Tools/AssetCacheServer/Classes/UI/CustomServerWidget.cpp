@@ -14,7 +14,7 @@ CustomServerWidget::CustomServerWidget(QWidget* parent)
     connect(ui->removeServerButton, &QPushButton::clicked,
             this, &CustomServerWidget::RemoveLater);
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &CustomServerWidget::OnParametersChanged);
+            this, &CustomServerWidget::ParametersChanged);
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
@@ -25,24 +25,9 @@ CustomServerWidget::CustomServerWidget(const RemoteServerParams& newServer, QWid
     ui->ipLineEdit->setText(newServer.ip.c_str());
 }
 
-CustomServerWidget::~CustomServerWidget()
-{
-    delete ui;
-}
-
 RemoteServerParams CustomServerWidget::GetServerData() const
 {
     return RemoteServerParams(ui->ipLineEdit->text().toStdString(), ui->enabledCheckBox->isChecked());
-}
-
-bool CustomServerWidget::IsCorrectData()
-{
-    return true;
-}
-
-void CustomServerWidget::OnParametersChanged()
-{
-    emit ParametersChanged();
 }
 
 void CustomServerWidget::OnChecked(int val)

@@ -3,6 +3,7 @@
 #include <memory>
 #include <QMainWindow>
 #include <QSystemTrayIcon>
+#include <QLabel>
 
 #include "ServerCore.h"
 
@@ -48,17 +49,17 @@ private slots:
     void OnAutoStartToggled(bool);
     void OnSystemStartupToggled(bool);
     void OnRestartToggled(bool);
-    void OnServerNameTextChanged();
-    void OnPoolChanged(int);
 
     void OnServersAreaRangeChanged(int, int);
-    void OnAddServerClicked();
-    void OnCustomServerRemoved();
-    void OnRemoteServerEdited();
+    void OnCustomServerToAdd();
+    void OnCustomServerToRemove();
+    void OnCustomServerEdited();
     void OnCustomServerChecked(bool);
     void OnSharedPoolChecked(bool);
     void OnSharedServerChecked(bool);
 
+    void OnShareButtonClicked();
+    void OnUnshareButtonClicked();
     void OnClearButtonClicked();
     void OnApplyButtonClicked();
     void OnCloseButtonClicked();
@@ -79,11 +80,37 @@ private:
         PoolID poolID = 0;
         ServerID serverID = 0;
 
+        union CheckedWidget
+        {
+            SharedPoolWidget* poolWidget = nullptr;
+            SharedServerWidget* serverWidget;
+            CustomServerWidget* customServerWidget;
+        } widget;
+
         CheckedRemote() = default;
-        CheckedRemote(const SharedPoolWidget* w);
-        CheckedRemote(const SharedServerWidget* w);
-        CheckedRemote(const CustomServerWidget* w);
+        CheckedRemote(SharedPoolWidget* w);
+        CheckedRemote(SharedServerWidget* w);
+        CheckedRemote(CustomServerWidget* w);
     };
+
+    struct SharedServerContainer
+    {
+        bool existsInUpdate = false;
+        QVBoxLayout* poolLayout = nullptr;
+        SharedServerWidget* serverWidget = nullptr;
+    };
+
+    using ServerContainersMap = DAVA::Map<ServerID, SharedServerContainer>;
+
+    struct SharedPoolContainer
+    {
+        bool existsInUpdate = false;
+        SharedPoolWidget* poolWidget = nullptr;
+        ServerContainersMap serverContainers;
+        QVBoxLayout* poolLayout = nullptr;
+    };
+
+    using PoolContainersMap = DAVA::Map<PoolID, SharedPoolContainer>;
 
 private:
     void CreateTrayMenu();
@@ -93,20 +120,26 @@ private:
     void LoadSettings();
     void SaveSettings();
 
-    void ReconstructServersList();
-    void ReconstructSharedServersList();
-    void ReconstructCustomServersList();
+    void ConstructSharedPoolsList();
+    void ConstructCustomServersList();
+    void UpdateSharedPoolsList();
 
-    void RemoveSharedServers();
-    void AddSharedPool(const SharedPool& pool);
+    void ConstructSharedPoolsCombo();
+    void UpdateSharedPoolsCombo();
 
-    void RemoveCustomServers();
+    void SetVisibilityForShareControls();
+
+    SharedPoolContainer& AddPoolContainer(const SharedPool& pool);
+    SharedServerContainer& AddServerContainer(SharedPoolContainer& poolContainer, const SharedServer& server);
+    void RemovePoolContainer(PoolContainersMap::iterator iter);
+    void RemoveServerContainer(SharedPoolContainer& poolContainer, ServerContainersMap::iterator iter);
+
     void AddCustomServer(const RemoteServerParams& newServer);
 
-    void ClearAllChecks();
-    CheckedRemote GetCheckedRemote() const;
+    void ClearPreviousCheck();
+    CheckedRemote GetCheckedRemote();
 
-    void SelectedRemoteSetText();
+    void DisplayCurrentRemoteServer();
 
     void SetupLaunchOnStartup(bool toLaunchOnStartup, bool toRestartOnCrash);
 
@@ -122,7 +155,7 @@ private:
     void ChangeSettingsState(SettingsState newState);
 
 private:
-    Ui::AssetCacheServerWidget* ui = nullptr;
+    std::unique_ptr<Ui::AssetCacheServerWidget> ui;
     QAction* startAction = nullptr;
     QAction* stopAction = nullptr;
     QSystemTrayIcon* trayIcon = nullptr;
@@ -132,14 +165,13 @@ private:
     std::unique_ptr<QIcon> redGrayTrayIcon;
 
     QVBoxLayout* customServersLayout = nullptr;
-    QVBoxLayout* sharedServersLayout = nullptr;
+    QVBoxLayout* sharedPoolsLayout = nullptr;
     QVBoxLayout* serversLayout = nullptr;
 
     bool customServerManuallyAdded = false;
 
     DAVA::List<CustomServerWidget*> customServersWidgets;
-    DAVA::List<SharedPoolWidget*> sharedPoolsWidgets;
-    DAVA::List<SharedServerWidget*> sharedServersWidgets;
+    PoolContainersMap poolContainers;
     DAVA::Vector<PoolID> comboBoxIDs;
 
     ServerCore& serverCore;

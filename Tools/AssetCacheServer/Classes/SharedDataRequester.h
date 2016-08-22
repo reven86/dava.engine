@@ -18,12 +18,12 @@ public:
     explicit SharedDataRequester(QWidget* parent = 0);
 
     void RequestSharedData(ServerID serverID);
-    void AddSharedServer(SharedServerParams& serverParams);
+    void AddSharedServer(SharedServerParams serverParams, const DAVA::String& appPath);
     void RemoveSharedServer(ServerID serverID);
 
 signals:
     void SharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
-    void ServerShared(ServerID serverID);
+    void ServerShared(PoolID poolID, ServerID serverID, const DAVA::String& serverName);
     void ServerUnshared();
 
 private slots:
@@ -39,6 +39,8 @@ private:
     QNetworkReply* shareRequest = nullptr;
     QNetworkReply* unshareRequest = nullptr;
 
-    ServerID ownID = 0;
+    ServerID getRequestOwnID = 0;
+    SharedServerParams shareRequestParams;
+
     DAVA::List<SharedPoolParams> pools;
 };

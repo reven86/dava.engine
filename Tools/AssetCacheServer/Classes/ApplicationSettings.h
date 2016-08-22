@@ -159,9 +159,6 @@ public:
     void SetOwnName(DAVA::String);
     const DAVA::String& GetOwnName() const;
 
-    void SetShareEnabled(bool);
-    bool IsSharedEnabled() const;
-
     void UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
     const DAVA::Map<PoolID, SharedPool>& GetSharedPools() const;
     void EnableSharedPool(PoolID poolID);

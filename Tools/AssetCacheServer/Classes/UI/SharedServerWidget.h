@@ -15,29 +15,26 @@ class SharedServerWidget : public QWidget
 public:
     explicit SharedServerWidget(QWidget* parent = nullptr);
     explicit SharedServerWidget(const SharedServer& newServer, QWidget* parent = nullptr);
-    ~SharedServerWidget() override;
+
+    void Update(const SharedServer& updatedData);
 
     ServerID GetServerID() const;
     PoolID GetPoolID() const;
-
-    bool IsCorrectData();
 
     bool IsChecked() const;
     void SetChecked(bool checked);
 
 signals:
     void ServerChecked(bool checked);
-    void ParametersChanged();
     void RemoveLater();
 
 private slots:
-    void OnParametersChanged();
     void OnChecked(int val);
 
 private:
     PoolID poolID = 0;
     ServerID serverID = 0;
-    Ui::SharedServerWidget* ui;
+    std::unique_ptr<Ui::SharedServerWidget> ui;
 };
 
 inline PoolID SharedServerWidget::GetPoolID() const

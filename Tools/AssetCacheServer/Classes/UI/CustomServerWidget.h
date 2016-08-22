@@ -15,11 +15,8 @@ class CustomServerWidget : public QWidget
 public:
     explicit CustomServerWidget(QWidget* parent = nullptr);
     explicit CustomServerWidget(const RemoteServerParams& newServer, QWidget* parent = nullptr);
-    ~CustomServerWidget() override;
 
     RemoteServerParams GetServerData() const;
-
-    bool IsCorrectData();
 
     bool IsChecked() const;
     void SetChecked(bool checked);
@@ -30,9 +27,8 @@ signals:
     void RemoveLater();
 
 private slots:
-    void OnParametersChanged();
     void OnChecked(int val);
 
 private:
-    Ui::CustomServerWidget* ui;
+    std::unique_ptr<Ui::CustomServerWidget> ui;
 };

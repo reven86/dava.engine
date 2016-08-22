@@ -126,6 +126,11 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
 
         ++poolIndex;
     }
+
+    archive->SetBool("SharedForOthers", sharedForOthers);
+    archive->SetUInt32("OwnPoolID", ownPoolID);
+    archive->SetUInt32("OwnID", ownID);
+    archive->SetString("OwnName", ownName);
 }
 
 void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
@@ -176,6 +181,11 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
             server.remoteParams.enabled = archive->GetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex));
         }
     }
+
+    sharedForOthers = archive->GetBool("SharedForOthers", DEFAULT_SHARED_FOR_OTHERS);
+    ownPoolID = archive->GetUInt32("OwnPoolID", 0);
+    ownID = archive->GetUInt32("OwnID", 0);
+    ownName = archive->GetString("OwnName");
 }
 
 const DAVA::FilePath& ApplicationSettings::GetFolder() const
@@ -337,7 +347,6 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
 {
     DAVA::Map<PoolID, SharedPool> updatedPools;
 
-    updatedPools[0];
     for (const SharedPoolParams& pool : pools)
     {
         SharedPool& updatedPool = updatedPools[pool.poolID];
@@ -349,18 +358,24 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
     for (const SharedServerParams& server : servers)
     {
         auto poolIter = updatedPools.find(server.poolID);
-        if (poolIter != updatedPools.end())
+        if (poolIter == updatedPools.end())
         {
-            SharedServer& updatedServer = poolIter->second.servers[server.serverID];
-            updatedServer.serverID = server.serverID;
-            updatedServer.poolID = server.poolID;
-            updatedServer.serverName = server.name;
-            updatedServer.remoteParams.ip = server.ip;
+            if (server.poolID == 0)
+            {
+                poolIter = updatedPools.insert(std::make_pair(0, SharedPool())).first;
+            }
+            else
+            {
+                DAVA::Logger::Error("Can't find pool with id %u referenced by server id %u", server.poolID, server.serverID);
+                continue;
+            }
         }
-        else
-        {
-            DAVA::Logger::Error("Can't find pool with id %u referenced by server id %u", server.poolID, server.serverID);
-        }
+
+        SharedServer& updatedServer = poolIter->second.servers[server.serverID];
+        updatedServer.serverID = server.serverID;
+        updatedServer.poolID = server.poolID;
+        updatedServer.serverName = server.name;
+        updatedServer.remoteParams.ip = server.ip;
     }
 
     EnabledRemote currentEnabledRemote = GetEnabledRemote();
@@ -386,11 +401,6 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
                 server.remoteParams.enabled = true;
             }
         }
-    }
-
-    if (updatedPools[0].servers.empty())
-    {
-        updatedPools.erase(0);
     }
 
     sharedPools.swap(updatedPools);

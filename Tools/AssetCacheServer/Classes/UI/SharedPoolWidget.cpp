@@ -20,9 +20,10 @@ SharedPoolWidget::SharedPoolWidget(const SharedPool& pool, QWidget* parent)
     poolID = pool.poolID;
 }
 
-SharedPoolWidget::~SharedPoolWidget()
+void SharedPoolWidget::Update(const SharedPool& pool)
 {
-    delete ui;
+    ui->nameLineEdit->setText(pool.poolName.c_str());
+    ui->descriptionLabel->setText(pool.poolDescription.c_str());
 }
 
 void SharedPoolWidget::OnChecked(int val)
