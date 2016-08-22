@@ -84,16 +84,41 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 {
 }
 
-void UIStyleSheetSystem::ProcessControl(UIControl* control)
+void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
+{
+#if STYLESHEET_STATS
+    uint64 startTime = SystemTimer::Instance()->GetAbsoluteUs();
+#endif
+    ProcessControl(control, 0, styleSheetListChanged);
+#if STYLESHEET_STATS
+    statsTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
+#endif
+}
+
+void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged)
 {
     UIControlPackageContext* packageContext = control->GetPackageContext();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
-    if (packageContext)
+    if (control->IsStyleSheetDirty())
     {
+        distanceFromDirty = 0;
+    }
+
+    if (packageContext
+        && (styleSheetListChanged || distanceFromDirty < packageContext->GetMaxStyleSheetHierarchyDepth()))
+    {
+#if STYLESHEET_STATS
+        ++statsProcessedControls;
+#endif
+
         UIStyleSheetPropertySet cascadeProperties;
         const UIStyleSheetPropertySet localControlProperties = control->GetLocalPropertySet();
         const Vector<UIPriorityStyleSheet>& styleSheets = packageContext->GetSortedStyleSheets();
+        
+#if STYLESHEET_STATS
+        statsStyleSheetCount += styleSheets.size();
+#endif
 
         Array<const UIStyleSheetProperty*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources = {};
 
@@ -150,7 +175,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
 
     for (UIControl* child : control->GetChildren())
     {
-        ProcessControl(child);
+        ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged);
     }
 }
 
@@ -184,8 +209,28 @@ void UIStyleSheetSystem::ClearGlobalClasses()
     globalClasses.RemoveAllClasses();
 }
 
+void UIStyleSheetSystem::ClearStats()
+{
+    statsTime = 0;
+    statsProcessedControls = 0;
+    statsMatches = 0;
+    statsStyleSheetCount = 0;
+}
+
+void UIStyleSheetSystem::DumpStats()
+{
+    if (statsProcessedControls > 0)
+    {
+        Logger::Debug("%s %i %f %i %f", __FUNCTION__, statsProcessedControls, statsTime / 1000000.0f, statsMatches, (float)statsStyleSheetCount / statsProcessedControls);
+    }
+}
+
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
+#if STYLESHEET_STATS
+    ++statsMatches;
+#endif
+
     const UIControl* currentControl = control;
 
     auto endIter = styleSheet->GetSelectorChain().rend();

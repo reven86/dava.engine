@@ -969,8 +969,11 @@ retry:
             stb_textedit_delete_selection(str, state);
          else {
             int n = STB_TEXTEDIT_STRINGLEN(str);
-            if (state->cursor < n)
-               stb_textedit_delete(str, state, state->cursor, 1);
+            if (state->cursor < n) {
+                stb_textedit_delete(str, state, state->cursor, 1);
+            } else {
+                break; // Content wasn't changed
+            }
          }
          state->has_preferred_x = 0;
          ret = 1; // Content was changed
@@ -985,6 +988,8 @@ retry:
             if (state->cursor > 0) {
                stb_textedit_delete(str, state, state->cursor-1, 1);
                --state->cursor;
+            } else {
+                break; // Content wasn't changed
             }
          }
          state->has_preferred_x = 0;
