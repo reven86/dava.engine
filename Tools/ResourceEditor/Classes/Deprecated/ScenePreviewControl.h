@@ -33,4 +33,3 @@ private:
     DAVA::FilePath currentScenePath;
     bool needSetCamera = false;
 };
-
