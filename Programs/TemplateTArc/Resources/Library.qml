@@ -24,6 +24,10 @@ Rectangle
                 width: 100
             }
             model: context.fileSystemModel
+            onDoubleClicked:
+            {
+                context.openScene(index);
+            }
         }
     }
 }

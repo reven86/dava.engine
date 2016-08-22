@@ -17,6 +17,7 @@ public:
 
     virtual void ForEachContext(const DAVA::Function<void(DataContext&)>& functor) = 0;
 
+    virtual DataContext& GetGlobalContext() = 0;
     // throw std::runtime_error if context with contextID doesn't exist
     virtual DataContext& GetContext(DataContext::ContextID contextId) = 0;
     // throw std::runtime_error if there is no active context

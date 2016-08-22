@@ -30,8 +30,8 @@ public:
 
     void OpenScene(QModelIndex index)
     {
-        int x = 0;
-        x++;
+        DAVA::String path = model->filePath(index).toStdString();
+        // TODO call action OpenScene(path)
     }
 
 private:
@@ -39,8 +39,6 @@ private:
     DAVA_VIRTUAL_REFLECTION(FileSystemData, tarc::DataNode)
     {
         DAVA::ReflectionRegistrator<FileSystemData>::Begin()
-        // TODO check with s_zdanevich
-        //.Field("fileSystemModel", &FileSystemData::model)
         .Field("fileSystemModel", &FileSystemData::GetModel, nullptr)
         .Method("openScene", &FileSystemData::OpenScene)
         .End();
@@ -49,21 +47,23 @@ private:
 
 void LibraryModule::OnContextCreated(tarc::DataContext& context)
 {
+}
+
+void LibraryModule::OnContextDeleted(tarc::DataContext& context)
+{
+}
+
+void LibraryModule::PostInit()
+{
     QFileSystemModel* model = new QFileSystemModel();
     model->setNameFilters(QStringList() << "*.sc2");
     model->setNameFilterDisables(false);
     model->setRootPath(QDir::rootPath());
 
-    context.CreateData(std::make_unique<FileSystemData>(model));
-}
+    tarc::DataContext& globalContext = GetAccessor().GetGlobalContext();
 
-void LibraryModule::OnContextDeleted(tarc::DataContext& context)
-{
-    context.DeleteData<FileSystemData>();
-}
+    globalContext.CreateData(std::make_unique<FileSystemData>(model));
 
-void LibraryModule::PostInit()
-{
     tarc::UI& ui = GetUI();
 
     tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));

@@ -45,6 +45,7 @@ private:
 
     // Inherited via ContextAccessor
     void ForEachContext(const DAVA::Function<void(DataContext&)>& functor) override;
+    DataContext& GetGlobalContext() override;
     DataContext& GetContext(DataContext::ContextID contextID) override;
     DataContext& GetActiveContext() override;
     bool HasActiveContext() const override;
@@ -63,6 +64,7 @@ private:
 private:
     DAVA::Engine& engine;
 
+    std::unique_ptr<DataContext> globalContext;
     DAVA::Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
 

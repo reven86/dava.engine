@@ -15,6 +15,7 @@ class DataContext
 {
 public:
     DataContext() = default;
+    DataContext(DataContext* parentContext);
     ~DataContext();
 
     void CreateData(std::unique_ptr<DataNode>&& node);
@@ -42,6 +43,7 @@ public:
     static const ContextID Empty = 0;
 
 private:
+    DataContext* parentContext = nullptr;
     DAVA::UnorderedMap<const DAVA::ReflectedType*, DataNode*> dataMap;
 };
 

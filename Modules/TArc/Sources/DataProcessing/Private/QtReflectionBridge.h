@@ -29,6 +29,7 @@ private:
 
     void FirePropertySignal(const DAVA::String& propertyName);
     void FirePropertySignal(int signalId);
+    void CallMethod(int id, void** argv);
 
 private:
     QPointer<QtReflectionBridge> reflectionBridge;
@@ -44,6 +45,8 @@ public:
     QtReflected* CreateQtReflected(DataWrapper&& wrapper, QObject* parent);
 
 private:
+    QVariant Convert(const DAVA::Any& value);
+    DAVA::Any Convert(const QVariant& value);
     friend class QtReflected;
     DAVA::UnorderedMap<const DAVA::ReflectedType*, QMetaObject*> metaObjects;
 

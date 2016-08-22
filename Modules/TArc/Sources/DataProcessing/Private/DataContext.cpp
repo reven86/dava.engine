@@ -7,6 +7,11 @@
 namespace tarc
 {
 
+DataContext::DataContext(DataContext* parentContext_)
+    : parentContext(parentContext_)
+{
+}
+
 DataContext::~DataContext()
 {
     for (auto& data : dataMap)
@@ -26,7 +31,13 @@ void DataContext::CreateData(std::unique_ptr<DataNode>&& node)
 
 bool DataContext::HasData(const DAVA::ReflectedType* type) const
 {
-    return dataMap.count(type) > 0;
+    bool result = dataMap.count(type) > 0;
+    if (result == false && parentContext != nullptr)
+    {
+        result = parentContext->HasData(type);
+    }
+
+    return result;
 }
 
 DataNode& DataContext::GetData(const DAVA::ReflectedType* type) const
@@ -34,6 +45,10 @@ DataNode& DataContext::GetData(const DAVA::ReflectedType* type) const
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())
     {
+        if (parentContext != nullptr)
+        {
+            return parentContext->GetData(type);
+        }
         throw std::runtime_error(DAVA::Format("Data with type %s doesn't exist", type->GetPermanentName().c_str()));
     }
 
@@ -45,6 +60,11 @@ void DataContext::DeleteData(const DAVA::ReflectedType* type)
     auto iter = dataMap.find(type);
     if (iter == dataMap.end())
     {
+        if (parentContext != nullptr)
+        {
+            parentContext->DeleteData(type);
+        }
+
         return;
     }
 

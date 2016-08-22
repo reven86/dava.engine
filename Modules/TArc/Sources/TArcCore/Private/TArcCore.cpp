@@ -18,6 +18,7 @@ namespace tarc
 
 Core::Core(DAVA::Engine& engine_)
     : engine(engine_)
+    , globalContext(new DataContext())
 {
     engine.beginFrame.Connect(DAVA::MakeFunction(this, &Core::OnFrame));
     engine.gameLoopStarted.Connect(DAVA::MakeFunction(this, &Core::OnLoopStarted));
@@ -94,6 +95,7 @@ void Core::OnLoopStopped()
     modules.clear();
     wrappers.clear();
     uiManager.reset();
+    globalContext.reset();
 }
 
 void Core::ForEachContext(const DAVA::Function<void(DataContext&)>& functor)
@@ -102,6 +104,11 @@ void Core::ForEachContext(const DAVA::Function<void(DataContext&)>& functor)
     {
         functor(*context);
     }
+}
+
+DataContext& Core::GetGlobalContext()
+{
+    return *globalContext;
 }
 
 DataContext& Core::GetContext(DataContext::ContextID contextID)
@@ -137,7 +144,7 @@ bool Core::HasActiveContext() const
 DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
 {
     DataWrapper wrapper(type);
-    wrapper.SetContext(activeContext);
+    wrapper.SetContext(activeContext != nullptr ? activeContext :globalContext.get());
     wrappers.push_back(wrapper);
     return wrapper;
 }
@@ -145,7 +152,7 @@ DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
 DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor)
 {
     DataWrapper wrapper(accessor);
-    wrapper.SetContext(activeContext);
+    wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
     wrappers.push_back(wrapper);
     return wrapper;
 }
@@ -159,7 +166,7 @@ DAVA::EngineContext& Core::GetEngineContext()
 
 DataContext::ContextID Core::CreateContext()
 {
-    contexts.push_back(std::make_unique<DataContext>());
+    contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
     DataContext& context = *contexts.back();
     for (std::unique_ptr<ClientModule>& module : modules)
     {
@@ -225,7 +232,7 @@ void Core::ActivateContext(DataContext* context)
     activeContext = context;
     for (DataWrapper& wrapper : wrappers)
     {
-        wrapper.SetContext(activeContext);
+        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
     }
 }
 

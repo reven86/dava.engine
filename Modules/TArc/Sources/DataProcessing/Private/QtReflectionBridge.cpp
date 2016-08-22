@@ -67,7 +67,8 @@ void FillConverter(DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA:
     F(DAVA::float64, ATV, VTA)
 
 #define FOR_ALL_QT_SPECIFIC_TYPES(F, ATV, VTA) \
-    F(QFileSystemModel*, ATV, VTA)
+    F(QFileSystemModel*, ATV, VTA) \
+    F(QModelIndex, ATV, VTA)
 
 #define FOR_ALL_STATIC_TYPES(F, ATV, VTA) \
     FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
@@ -109,9 +110,9 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
     {
     case QMetaObject::InvokeMetaMethod:
     {
-        /*callMethod(id, argv);
-        int methodCount = data_->metaObject_.methodCount() - data_->metaObject_.methodOffset();
-        id -= methodCount;*/
+        CallMethod(id, argv);
+        int methodCount = qtMetaObject->methodCount() - qtMetaObject->methodOffset();
+        id -= methodCount;
         break;
     }
     case QMetaObject::ReadProperty:
@@ -127,29 +128,11 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
             DAVA::Any davaValue = field.ref.GetValue();
             if (c == QMetaObject::ReadProperty)
             {
-                auto iter = reflectionBridge->anyToQVariant.find(davaValue.GetType());
-                if (iter == reflectionBridge->anyToQVariant.end())
-                {
-                    DVASSERT_MSG(false, DAVA::Format("Converted (Any->QVariant) has not been registered for type : %s", davaValue.GetType()->GetName()).c_str());
-                }
-                else
-                {
-                    *value = iter->second(davaValue);
-                }
+                *value = reflectionBridge->Convert(davaValue);
             }
             else
             {
-                DAVA::Any newValue;
-                auto iter = reflectionBridge->qvariantToAny.find(value->userType());
-                if (iter == reflectionBridge->qvariantToAny.end())
-                {
-                    DVASSERT_MSG(false, DAVA::Format("Converted (QVariant->Any) has not been registered for userType : %d", value->userType()).c_str());
-                }
-                else
-                {
-                    newValue = iter->second(*value);
-                }
-
+                DAVA::Any newValue = reflectionBridge->Convert(*value);
                 if (newValue != davaValue)
                 {
                     field.ref.SetValue(newValue);
@@ -216,8 +199,7 @@ void QtReflected::CreateMetaObject()
     DVASSERT(wrapper.HasData());
     DAVA::Reflection reflectionData = wrapper.GetData();
 
-    // TODO how to get Real Value Type???
-    const DAVA::ReflectedType* type = DAVA::ReflectedType::GetByPointer(reflectionData.GetValueObject().GetPtr<tarc::DataNode>());
+    const DAVA::ReflectedType* type = reflectionData.GetObjectType();
 
     SCOPE_EXIT
     {
@@ -246,6 +228,35 @@ void QtReflected::CreateMetaObject()
         QByteArray notifySignal = propertyName + "Changed";
         propertybuilder.setNotifySignal(builder.addSignal(notifySignal));
     }
+
+    DAVA::Vector<DAVA::Reflection::Method> methods = reflectionData.GetMethods();
+    for (const DAVA::Reflection::Method& method : methods)
+    {
+        DAVA::String signature = method.key + "(";
+        const DAVA::AnyFn::InvokeParams& params = method.fn.GetInvokeParams();
+        size_t paramsCount = params.argsType.size();
+        for (size_t i = 0; i < paramsCount; ++i)
+        {
+            if (i == paramsCount - 1)
+            {
+                signature += "QVariant";
+            }
+            else
+            {
+                signature += "QVariant,";
+            }
+        }
+        signature += ")";
+
+        DAVA::String retValue = "QVariant";
+        if (params.retType == DAVA::Type::Instance<void>())
+        {
+            retValue = "void";
+        }
+
+        builder.addMethod(signature.c_str(), retValue.c_str());
+    }
+
     qtMetaObject = builder.toMetaObject();
 
     reflectionBridge->metaObjects.emplace(type, qtMetaObject);
@@ -265,6 +276,85 @@ void QtReflected::FirePropertySignal(int signalId)
     qtMetaObject->activate(this, signalId, argv);
 }
 
+void QtReflected::CallMethod(int id, void** argv)
+{
+    int propertyCount = qtMetaObject->propertyCount() - qtMetaObject->propertyOffset();
+
+    // Qt store "PropertyChanged signals" as methods at the start of table.
+    // argument "id" can be translated to qt table by this operation "id + qtMetaObject->methodOffset()"
+    // So to calculate method index in our table we deduct property count from id,
+    // because on every property we created signal.
+    int methodIndexToCall = id - propertyCount;
+
+    DAVA::Reflection reflectedData = wrapper.GetData();
+    DAVA::Vector<DAVA::Reflection::Method> methods = reflectedData.GetMethods();
+    DVASSERT(methodIndexToCall < methods.size());
+    DAVA::Reflection::Method method = methods[methodIndexToCall];
+    const DAVA::AnyFn::InvokeParams& args = method.fn.GetInvokeParams();
+
+    QVariant* qtResult = reinterpret_cast<QVariant*>(argv[0]);
+    // first element in argv is pointer on return value
+    size_t firstArgumentIndex = 1;
+    size_t argumentsCount = args.argsType.size() + 1;
+
+    DAVA::Vector<DAVA::Any> davaArguments;
+    davaArguments.reserve(args.argsType.size());
+
+    for (size_t i = firstArgumentIndex; i < argumentsCount; ++i)
+    {
+        davaArguments.push_back(reflectionBridge->Convert(*reinterpret_cast<QVariant*>(argv[i])));
+    }
+
+    DAVA::Any davaResult;
+    switch (davaArguments.size())
+    {
+    case 0:
+        davaResult = method.fn.Invoke();
+        break;
+    case 1:
+        davaResult = method.fn.Invoke(davaArguments[0]);
+        break;
+    case 2:
+        davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1]);
+        break;
+    case 3:
+        davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2]);
+        break;
+    case 4:
+        davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3]);
+        break;
+    case 5:
+        davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+                                      davaArguments[4]);
+        break;
+    case 6:
+        davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+                                      davaArguments[4], davaArguments[5]);
+        break;
+    //case 7:
+    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+    //                                  davaArguments[4], davaArguments[5], davaArguments[6]);
+    //    break;
+    //case 8:
+    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+    //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7]);
+    //    break;
+    //case 9:
+    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+    //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7],
+    //                                  davaArguments[8]);
+        break;
+    default:
+        DVASSERT_MSG(false, "Qt Reflection bridge support only 9 arguments in methods");
+        break;
+    }
+    
+    if (qtResult)
+    {
+        *qtResult = reflectionBridge->Convert(davaResult);
+    }
+}
+
 QtReflectionBridge::QtReflectionBridge()
 {
     FOR_ALL_STATIC_TYPES(FILL_CONVERTERS_FOR_TYPE, anyToQVariant, qvariantToAny);
@@ -282,6 +372,30 @@ QtReflectionBridge::~QtReflectionBridge()
 QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper&& wrapper, QObject* parent)
 {
     return new QtReflected(this, std::move(wrapper), parent);
+}
+
+QVariant QtReflectionBridge::Convert(const DAVA::Any& value)
+{
+    auto iter = anyToQVariant.find(value.GetType());
+    if (iter == anyToQVariant.end())
+    {
+        DVASSERT_MSG(false, DAVA::Format("Converted (Any->QVariant) has not been registered for type : %s", value.GetType()->GetName()).c_str());
+        return QVariant();
+    }
+
+    return iter->second(value);
+}
+
+DAVA::Any QtReflectionBridge::Convert(const QVariant& value)
+{
+    auto iter = qvariantToAny.find(value.userType());
+    if (iter == qvariantToAny.end())
+    {
+        DVASSERT_MSG(false, DAVA::Format("Converted (QVariant->Any) has not been registered for userType : %d", value.userType()).c_str());
+        return DAVA::Any();
+    }
+
+    return iter->second(value);
 }
 
 }
