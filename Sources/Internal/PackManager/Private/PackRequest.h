@@ -64,7 +64,6 @@ public:
 
 private:
     void ClearSuperpackData();
-    void CollectDownloadableDependency(const String& packName, Vector<IPackManager::Pack*>& dependency);
     void SetErrorStatusAndFireSignal(SubRequest& subRequest, IPackManager::Pack& currentPack);
 
     void AskFooter();

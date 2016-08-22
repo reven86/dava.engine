@@ -80,9 +80,10 @@ public:
         return hints;
     }
 
+    static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
+
 private:
     void ContinueInitialization();
-
     void FirstTimeInit();
     void InitStarting();
     void InitializePacks();
@@ -98,7 +99,8 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
-    void MountPackWithDependencies(IPackManager::Pack& pack, const FilePath& path);
+    void MountPackWithDependencies(Pack& pack, const FilePath& path);
+
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
     String superPackUrl;

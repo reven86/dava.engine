@@ -757,15 +757,60 @@ void PackManagerImpl::MountDownloadedPacks()
     initState = InitState::Ready;
 }
 
-void PackManagerImpl::MountPackWithDependencies(IPackManager::Pack& pack, const FilePath& path)
+void PackManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path)
 {
     FileSystem* fs = FileSystem::Instance();
     // first check all dependencies already mounted and mount if not
     // 1. collect dependencies
-    // 2. check every dependencie
-    // 3. mount pack
+    Vector<Pack*> dependencies;
+    dependencies.reserve(64);
+    CollectDownloadableDependency(*this, pack.name, dependencies);
+    // 2. check every dependency
+    Vector<Pack*> notMounted;
+    notMounted.reserve(dependencies.size());
+    for (Pack* packItem : dependencies)
+    {
+        if (packItem->state != Pack::Status::Mounted)
+        {
+            notMounted.push_back(packItem);
+        }
+    }
+    // 3. mount packs
+    const FilePath packsDir = path.GetDirectory();
+    for (Pack* packItem : notMounted)
+    {
+        try
+        {
+            const FilePath packPath = packsDir.GetStringValue() + packItem->name + RequestManager::packPostfix;
+            fs->Mount(packPath, "Data/");
+            packItem->state = Pack::Status::Mounted;
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("can't mount dependent pack: %s cause: %s", packItem->name.c_str(), ex.what());
+            throw;
+        }
+    }
     fs->Mount(path, "Data/");
     pack.state = Pack::Status::Mounted;
+}
+
+void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency)
+{
+    const Pack& packState = pm.FindPack(packName);
+    for (const String& dependName : packState.dependency)
+    {
+        Pack& dependPack = pm.GetPack(dependName);
+        if (dependPack.state != Pack::Status::Mounted)
+        {
+            if (find(begin(dependency), end(dependency), &dependPack) == end(dependency))
+            {
+                dependency.push_back(&dependPack);
+            }
+
+            CollectDownloadableDependency(pm, dependName, dependency);
+        }
+    }
 }
 
 const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)

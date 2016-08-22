@@ -745,7 +745,7 @@ if( DEPLOY )
                 get_filename_component( DIR_NAME ${APP_DATA_DIR_ITEM} NAME )
 
                 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/${DIR_NAME}
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${DIR_NAME}  ${DEPLOY_DIR}/${DIR_NAME}
                 )
             endforeach(APP_DATA_DIR_ITEM)
 

@@ -14,9 +14,9 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, IPackManager::Pack& pack
 {
     DVASSERT(packManagerImpl != nullptr);
     DVASSERT(rootPack != nullptr);
-    // find all dependenciec
+    // find all dependencies
     // put it all into vector and put final pack into vector too
-    CollectDownloadableDependency(rootPack->name, dependencyList);
+    PackManagerImpl::CollectDownloadableDependency(*packManagerImpl, rootPack->name, dependencyList);
 
     dependencies.reserve(dependencyList.size() + 1);
 
@@ -43,24 +43,6 @@ PackRequest::PackRequest(PackManagerImpl& packManager_, IPackManager::Pack& pack
                   {
                       totalAllPacksSize += request.pack->totalSizeFromDB;
                   });
-}
-
-void PackRequest::CollectDownloadableDependency(const String& packName, Vector<IPackManager::Pack*>& dependency)
-{
-    const IPackManager::Pack& packState = packManagerImpl->FindPack(packName);
-    for (const String& dependName : packState.dependency)
-    {
-        IPackManager::Pack& dependPack = packManagerImpl->GetPack(dependName);
-        if (dependPack.state != IPackManager::Pack::Status::Mounted)
-        {
-            if (find(begin(dependency), end(dependency), &dependPack) == end(dependency))
-            {
-                dependency.push_back(&dependPack);
-            }
-
-            CollectDownloadableDependency(dependName, dependency);
-        }
-    }
 }
 
 void PackRequest::AskFooter()
