@@ -263,24 +263,23 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         // Can be both . or ,
         if (separator == '.' || separator == ',')
         {
-            // Count milliseconds fraction length
+            // Count milliseconds length and multiplier
 
             size_t currentSymbolIndex = 20;
-            char currentSymbol;
-            while (currentSymbolIndex < src.length() && isdigit(currentSymbol = src[currentSymbolIndex]))
+            float mul = 1.0;
+            while (currentSymbolIndex < src.length() && isdigit(src[currentSymbolIndex]))
             {
                 ++currentSymbolIndex;
+                mul *= 0.1f;
             }
 
             size_t const millisecondsSubstringLength = currentSymbolIndex - 20;
             if (millisecondsSubstringLength > 0)
             {
-                DAVA::String const millisecondsSubstring = src.substr(20, millisecondsSubstringLength);
-                int const millisecondsFractional = atoi(millisecondsSubstring.c_str());
+                int const millisecondsFractional = atoi(src.substr(20, millisecondsSubstringLength).c_str());
 
                 // Convert fraction to int (from 0 to 999)
-                // Does the same as round(millisecondsFractional / pow(10, millisecondsSubstringLength) * 1000)
-                milliseconds = static_cast<int>(round(millisecondsFractional * pow(10, 3 - static_cast<int>(millisecondsSubstringLength))));
+                milliseconds = static_cast<int>(round(millisecondsFractional * mul * 1000));
 
                 DVASSERT(milliseconds >= 0 && milliseconds < 1000);
 
