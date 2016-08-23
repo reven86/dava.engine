@@ -453,7 +453,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
         return;
     }
 
-    if (node->GetParent()->GetControl() != nullptr && inTransformState)
+    if (inTransformState)
     {
         transformedNodes.insert(node);
     }
