@@ -279,7 +279,8 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
                 const int millisecondsFractional = std::atoi(millisecondsSubstring.c_str());
 
                 // Convert fraction to int (from 0 to 999)
-                milliseconds = static_cast<int>(std::round(millisecondsFractional * mul * 1000));
+                // Android NDK might not have std::round, so use global namespace
+                milliseconds = static_cast<int>(::round(millisecondsFractional * mul * 1000));
 
                 DVASSERT(milliseconds >= 0 && milliseconds < 1000);
 
