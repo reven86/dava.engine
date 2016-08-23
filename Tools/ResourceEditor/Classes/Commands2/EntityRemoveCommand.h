@@ -1,17 +1,22 @@
 #ifndef __ENTITY_REMOVE_COMMAND_H__
 #define __ENTITY_REMOVE_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityRemoveCommand : public Command2
+namespace DAVA
+{
+class Entity;
+}
+
+class EntityRemoveCommand : public RECommand
 {
 public:
     EntityRemoveCommand(DAVA::Entity* entity);
     ~EntityRemoveCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::Entity* entity;
     DAVA::Entity* before;

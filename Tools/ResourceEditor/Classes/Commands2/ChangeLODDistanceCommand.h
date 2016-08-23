@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class ChangeLODDistanceCommand : public Command2
+class ChangeLODDistanceCommand : public RECommand
 {
 public:
     ChangeLODDistanceCommand(DAVA::LodComponent* lod, DAVA::int32 lodLayer, DAVA::float32 distance);
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
 protected:
     DAVA::LodComponent* lodComponent;

@@ -1,11 +1,13 @@
 #pragma once
 #include "Functional/Signal.h"
-#include "Base/Singleton.h"
+#include "Base/StaticSingleton.h"
 
 namespace DAVA
 {
 class InspMember;
+class VariantType;
 }
+
 class AbstractAction;
 
 class ActionsStorage : public DAVA::TrackedObject, public DAVA::StaticSingleton<ActionsStorage>

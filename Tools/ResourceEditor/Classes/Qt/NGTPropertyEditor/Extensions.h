@@ -1,7 +1,8 @@
+#if 0
 #pragma once
 
-#include "Commands2/Base/Command2.h"
 #include "Functional/Signal.h"
+#include "Command/Command.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
 #include <core_data_model/reflection/property_model_extensions.hpp>
@@ -71,7 +72,7 @@ public:
     {
     public:
         virtual void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) = 0;
-        virtual void Exec(Command2::Pointer&& command) = 0;
+        virtual void Exec(std::unique_ptr<DAVA::Command>&& command) = 0;
         virtual void EndBatch() = 0;
     };
 
@@ -94,3 +95,4 @@ private:
     Delegate& delegateObj;
     wgt::Depends<wgt::IDefinitionManager> defManagerHolder;
 };
+#endif //0

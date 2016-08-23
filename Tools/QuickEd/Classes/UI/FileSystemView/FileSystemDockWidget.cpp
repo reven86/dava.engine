@@ -149,7 +149,7 @@ bool FileSystemDockWidget::CanDelete(const QModelIndex& index) const
     return true;
 }
 
-QString FileSystemDockWidget::GetPathByCurrentPos()
+QString FileSystemDockWidget::GetPathByCurrentPos(ePathType pathType)
 {
     QModelIndex index = ui->treeView->indexAt(menuInvokePos);
     QString path;
@@ -160,6 +160,14 @@ QString FileSystemDockWidget::GetPathByCurrentPos()
     else
     {
         path = model->filePath(index);
+        if (pathType == DirPath)
+        {
+            QFileInfo fileInfo(path);
+            if (fileInfo.isFile())
+            {
+                path = fileInfo.absolutePath();
+            }
+        }
     }
     return path + "/";
 }
@@ -188,7 +196,7 @@ void FileSystemDockWidget::onNewFolder()
     dialog.setLabelText("Enter new folder name:");
     dialog.SetWarningMessage("This folder already exists");
 
-    auto path = GetPathByCurrentPos();
+    auto path = GetPathByCurrentPos(DirPath);
     auto validateFunction = [path](const QString& text) {
         return !QFileInfo::exists(path + text);
     };
@@ -223,7 +231,7 @@ void FileSystemDockWidget::onNewFolder()
 
 void FileSystemDockWidget::onNewFile()
 {
-    auto path = GetPathByCurrentPos();
+    auto path = GetPathByCurrentPos(DirPath);
     QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, "*" + FileSystemModel::GetYamlExtensionString());
     if (strFile.isEmpty())
     {
@@ -274,7 +282,7 @@ void FileSystemDockWidget::onDeleteFile()
 
 void FileSystemDockWidget::OnShowInExplorer()
 {
-    auto pathIn = GetPathByCurrentPos();
+    auto pathIn = GetPathByCurrentPos(AnyPath);
     ShowFileInExplorer(pathIn);
 }
 

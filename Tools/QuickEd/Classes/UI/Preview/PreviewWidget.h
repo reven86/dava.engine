@@ -95,13 +95,14 @@ private:
     void OnDropEvent(QDropEvent* event);
     void OnKeyPressed(QKeyEvent* event);
     void OnKeyReleased(QKeyEvent* event);
+    void OnTransformStateChanged(bool inTransformState);
+    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     qreal GetScaleFromWheelEvent(int ticksCount) const;
     qreal GetNextScale(qreal currentScale, int ticksCount) const;
     qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
 
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash);
     void NotifySelectionChanged();
     bool CanDragScreen() const;
     void UpdateDragScreenState();

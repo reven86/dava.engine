@@ -16,7 +16,7 @@
 
 #include "Model/YamlPackageSerializer.h"
 #include "EditorCore.h"
-#include "Document.h"
+#include "Document/Document.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
