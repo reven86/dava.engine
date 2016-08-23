@@ -298,7 +298,8 @@ void GameCore::SetupCube()
     "    vertex_out output;\n"
     "\n"
     "    float4 wpos = mul( float4(input.pos.x,input.pos.y,input.pos.z,1.0), World );\n"
-    "    float  i    = dot( float3(0,0,-1), normalize(mul(float3(input.normal),(float3x3)World)) );\n"
+    //    "    float  i    = dot( float3(0,0,-1), normalize(mul(float3(input.normal),(float3x3)World)) );\n"
+    "    float  i    = dot( float3(0,0,-1), normalize(mul( float4(input.normal.x,input.normal.y,input.normal.z,0.0), World).xyz) );\n"
     "\n"
     "    output.pos    = mul( wpos, ViewProjection );\n"
     "    output.uv     = input.uv;\n"
@@ -648,8 +649,8 @@ void GameCore::OnAppStarted()
     //    SetupTank();
     //SetupRT();
 
-    perfQuerySet = rhi::CreatePerfQuerySet(16);
-    perfQuerySetFired = false;
+    //    perfQuerySet = rhi::CreatePerfQuerySet(16);
+    //    perfQuerySetFired = false;
 
     //    sceneRenderTest.reset(new SceneRenderTestV3());
 

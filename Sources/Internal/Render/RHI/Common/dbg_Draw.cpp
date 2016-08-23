@@ -121,7 +121,8 @@ static const char* vp__dbg_pc =
 "vertex_in\n"
 "{\n"
 "    float3 pos   : POSITION;\n"
-"    uint4 color  : COLOR;\n"
+//"    uint4 color  : COLOR;\n"
+"    float4 color : COLOR;\n"
 "};\n"
 "vertex_out\n"
 "{\n"
@@ -136,7 +137,7 @@ static const char* vp__dbg_pc =
 "{\n"
 "    vertex_out output;\n"
 "    output.pos   = mul( XForm, float4(input.pos, 1.0) );\n"
-"    output.color = input.color;"
+"    output.color = float4(input.color);"
 "    return output;\n"
 "}\n";
 /*

@@ -21,6 +21,7 @@ using DAVA::LockGuard;
     #include "Parser/sl_Tree.h"
     #include "Parser/sl_GeneratorHLSL.h"
     #include "Parser/sl_GeneratorGLES.h"
+    #include "Parser/sl_GeneratorMSL.h"
 
     #define RHI__USE_STD_REGEX 0
     #define RHI__OPTIMIZED_REGEX 1
@@ -1791,6 +1792,7 @@ ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
     static sl::Allocator alloc;
     static sl::HLSLGenerator hlsl_gen(&alloc);
     static sl::GLESGenerator gles_gen(&alloc);
+    static sl::MSLGenerator mtl_gen(&alloc);
     const char* main = (type == PROG_VERTEX) ? "vp_main" : "fp_main";
 
     switch (targetApi)
@@ -1808,6 +1810,14 @@ ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
         sl::GLESGenerator::Target target = (type == PROG_VERTEX) ? sl::GLESGenerator::Target_VertexShader : sl::GLESGenerator::Target_FragmentShader;
 
         success = gles_gen.Generate(ast, target, main, code);
+    }
+    break;
+
+    case RHI_METAL:
+    {
+        sl::MSLGenerator::Target target = (type == PROG_VERTEX) ? sl::MSLGenerator::Target_VertexShader : sl::MSLGenerator::Target_PixelShader;
+
+        success = mtl_gen.Generate(ast, target, main, code);
     }
     break;
     }

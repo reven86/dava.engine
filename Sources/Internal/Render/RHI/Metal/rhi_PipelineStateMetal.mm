@@ -491,7 +491,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str());
         Logger::Error("  %s", (vp_err != nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>");
-        //Logger::Info( vp_src.UTF8String );
+        Logger::Info(vp_src.UTF8String);
     }
 
     if (vp_err != nil)
@@ -518,6 +518,7 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str());
         Logger::Error("  %s", (fp_err != nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>");
+        Logger::Info(fp_src.UTF8String);
     }
 
     if (fp_err != nil)

@@ -765,7 +765,7 @@ HLSLBaseType _binaryOpTypeLookup[HLSLBaseType_NumericCount][HLSLBaseType_Numeric
 // Priority of the ? : operator.
 const int _conditionalOpPriority = 1;
 
-static const char* GetTypeName(const HLSLType& type)
+const char* GetTypeName(const HLSLType& type)
 {
     if (type.baseType == HLSLBaseType_UserDefined)
     {
