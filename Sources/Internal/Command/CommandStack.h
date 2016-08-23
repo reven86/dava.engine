@@ -54,12 +54,17 @@ protected:
     uint32 requestedBatchCount = 0;
 
     //members to remember stack state and do not emit extra signals
-    bool isClean = true;
-    bool canUndo = false;
-    bool canRedo = false;
-
     void SetClean(bool isClean);
     void SetCanUndo(bool canUndo);
     void SetCanRedo(bool canRedo);
+
+    void SetUndoText(const DAVA::String& undoText);
+    void SetRedoText(const DAVA::String& redoText);
+
+    bool isClean = true;
+    bool canUndo = false;
+    bool canRedo = false;
+    DAVA::String undoText;
+    DAVA::String redoText;
 };
 }

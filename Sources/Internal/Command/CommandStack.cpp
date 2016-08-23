@@ -173,8 +173,8 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
         UpdateCleanState();
         SetCanUndo(CanUndo());
         SetCanRedo(CanRedo());
-        undoTextChanged.Emit(GetUndoText());
-        redoTextChanged.Emit(GetRedoText());
+        SetUndoText(GetUndoText());
+        SetRedoText(GetRedoText());
     }
 }
 
@@ -202,6 +202,24 @@ void CommandStack::SetCanRedo(bool canRedo_)
     {
         canRedo = canRedo_;
         canRedoChanged.Emit(canRedo);
+    }
+}
+
+void CommandStack::SetUndoText(const DAVA::String& undoText_)
+{
+    if (undoText_ != undoText)
+    {
+        undoText = undoText_;
+        undoTextChanged.Emit(undoText);
+    }
+}
+
+void CommandStack::SetRedoText(const DAVA::String& redoText_)
+{
+    if (redoText_ != redoText)
+    {
+        redoText = redoText_;
+        redoTextChanged.Emit(redoText);
     }
 }
 }
