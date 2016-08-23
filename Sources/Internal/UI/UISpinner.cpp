@@ -354,4 +354,14 @@ void UISpinner::SetupInternalControls()
     newPivotPoint.x = content->size.dx;
     nextContent->SetPivotPoint(newPivotPoint);
 }
+
+void UISpinner::OnVisible()
+{
+    UIControlSystem::Instance()->update.Connect(this, &UISpinner::Update);
+}
+
+void UISpinner::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+}
 }

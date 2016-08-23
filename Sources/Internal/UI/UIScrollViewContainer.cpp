@@ -95,6 +95,16 @@ int32 UIScrollViewContainer::GetTouchTreshold()
     return touchTreshold;
 }
 
+void UIScrollViewContainer::OnVisible()
+{
+    UIControlSystem::Instance()->update.Connect(this, &UIScrollViewContainer::Update);
+}
+
+void UIScrollViewContainer::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+}
+
 void UIScrollViewContainer::Input(UIEvent* currentTouch)
 {
     if (UIEvent::Phase::WHEEL == currentTouch->phase)

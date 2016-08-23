@@ -8,7 +8,7 @@ namespace DAVA
 {
 class ScrollHelper;
 
-class UIScrollViewContainer : public UIControl
+class UIScrollViewContainer : public UIControl, public TrackedObject
 {
 protected:
     virtual ~UIScrollViewContainer();
@@ -20,7 +20,7 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
 public:
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void Input(UIEvent* currentTouch) override;
     void InputCancelled(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override;
@@ -35,6 +35,9 @@ public:
     int32 GetTouchTreshold();
 
 protected:
+    void OnVisible() override;
+    void OnInvisible() override;
+
     enum
     {
         STATE_NONE = 0,

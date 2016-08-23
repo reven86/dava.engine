@@ -99,12 +99,14 @@ void UIWebView::OnVisible()
 {
     UIControl::OnVisible();
     UpdateNativeControlVisible(true);
+    UIControlSystem::Instance()->update.Connect(this, &UIWebView::Update);
 }
 
 void UIWebView::OnInvisible()
 {
     UIControl::OnInvisible();
     UpdateNativeControlVisible(false);
+    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void UIWebView::OnActive()
@@ -235,7 +237,6 @@ void UIWebView::Input(UIEvent* currentInput)
 void UIWebView::Update(float32 timeElapsed)
 {
     webViewControl->Update();
-    UIControl::Update(timeElapsed);
 }
 
 } // namespace DAVA

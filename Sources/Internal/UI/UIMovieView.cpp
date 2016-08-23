@@ -113,7 +113,6 @@ void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 
 void UIMovieView::Update(float32 timeElapsed)
 {
-    UIControl::Update(timeElapsed);
     movieViewControl->Update();
 }
 
@@ -121,12 +120,14 @@ void UIMovieView::OnVisible()
 {
     UIControl::OnVisible();
     movieViewControl->SetVisible(true);
+    UIControlSystem::Instance()->update.Connect(this, &UIMovieView::Update);
 }
 
 void UIMovieView::OnInvisible()
 {
     UIControl::OnInvisible();
     movieViewControl->SetVisible(false);
+    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void UIMovieView::OnActive()

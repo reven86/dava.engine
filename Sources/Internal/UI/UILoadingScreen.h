@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-class UILoadingScreen : public UIScreen
+class UILoadingScreen : public UIScreen, public TrackedObject
 {
 public:
     UILoadingScreen() = default;
@@ -14,7 +14,7 @@ public:
 
     virtual void SetScreenToLoad(int32 screenId);
 
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void OnActive() override;
     void OnInactive() override;
 

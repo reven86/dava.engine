@@ -79,10 +79,14 @@ void NotificationScreen::LoadResources()
     AddControl(hideNotificationProgress);
 
     SafeRelease(font);
+
+    UIControlSystem::Instance()->update.Connect(this, &NotificationScreen::Update);
 }
 
 void NotificationScreen::UnloadResources()
 {
+    UIControlSystem::Instance()->update.Disconnect(this);
+
     BaseScreen::UnloadResources();
 
     RemoveAllControls();
@@ -93,8 +97,6 @@ void NotificationScreen::UnloadResources()
 
 void NotificationScreen::Update(float32 timeElapsed)
 {
-    BaseScreen::Update(timeElapsed);
-
     if (nullptr == notificationProgress)
         return;
 

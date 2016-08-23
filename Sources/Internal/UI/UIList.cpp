@@ -455,6 +455,16 @@ void UIList::Update(float32 timeElapsed)
     }
 }
 
+void UIList::OnVisible()
+{
+    UIControlSystem::Instance()->update.Connect(this, &UIList::Update);
+}
+
+void UIList::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+}
+
 void UIList::Input(UIEvent* currentInput)
 {
     if (lockTouch && currentInput->touchId != mainTouch)

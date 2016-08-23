@@ -83,8 +83,6 @@ void UIScreenTransition::EndTransition()
 
 void UIScreenTransition::Update(float32 timeElapsed)
 {
-    UIScreen::Update(timeElapsed);
-
     currentTime += timeElapsed;
     normalizedTime = interpolationFunc(currentTime / duration);
     if (currentTime >= duration)
@@ -111,6 +109,16 @@ void UIScreenTransition::Draw(const UIGeometricData& geometricData)
 
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }
+}
+
+void UIScreenTransition::OnVisible()
+{
+    UIControlSystem::Instance()->update.Connect(this, &UIScreenTransition::Update);
+}
+
+void UIScreenTransition::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)

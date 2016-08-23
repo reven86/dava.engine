@@ -42,10 +42,14 @@ void UIMovieTest::LoadResources()
     SafeRelease(font);
 
     BaseScreen::LoadResources();
+
+    UIControlSystem::Instance()->update.Connect(this, &UIMovieTest::Update);
 }
 
 void UIMovieTest::UnloadResources()
 {
+    UIControlSystem::Instance()->update.Disconnect(this);
+
     RemoveAllControls();
 
     SafeRelease(movieView);
@@ -73,7 +77,6 @@ void UIMovieTest::OnActive()
 void UIMovieTest::Update(float32 timeElapsed)
 {
     UpdatePlayerStateText();
-    BaseScreen::Update(timeElapsed);
 }
 
 void UIMovieTest::UpdatePlayerStateText()

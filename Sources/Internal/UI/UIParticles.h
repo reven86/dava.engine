@@ -9,7 +9,7 @@ class ParticleEffectComponent;
 class ParticleEffectSystem;
 class Camera;
 
-class UIParticles : public UIControl
+class UIParticles : public UIControl, public TrackedObject
 {
 protected:
     virtual ~UIParticles();
@@ -17,7 +17,7 @@ protected:
 public:
     UIParticles(const Rect& rect = Rect());
 
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void OnActive() override;
@@ -48,6 +48,9 @@ public:
     void SetExtertnalValue(const String& name, float32 value);
 
 protected:
+    void OnVisible() override;
+    void OnInvisible() override;
+
     void LoadEffect(const FilePath& path);
     void UnloadEffect();
 

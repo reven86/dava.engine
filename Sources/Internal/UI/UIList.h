@@ -141,7 +141,7 @@ private:
     }
     \endcode
  */
-class UIList : public UIControl, public UIScrollBarDelegate
+class UIList : public UIControl, public UIScrollBarDelegate, public TrackedObject
 {
 public:
     static const int32 maximumElementsCount = 100000;
@@ -211,8 +211,10 @@ protected:
 
     void FullRefresh();
 
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
 
+    void OnVisible() override;
+    void OnInvisible() override;
     void Input(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
 

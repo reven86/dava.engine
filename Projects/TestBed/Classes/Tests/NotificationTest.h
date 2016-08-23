@@ -6,7 +6,7 @@
 using namespace DAVA;
 
 class GameCore;
-class NotificationScreen : public BaseScreen
+class NotificationScreen : public BaseScreen, public TrackedObject
 {
 public:
     NotificationScreen(GameCore* g);
@@ -20,7 +20,7 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void UpdateNotification();

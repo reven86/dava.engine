@@ -42,10 +42,14 @@ void WebViewTest::LoadResources()
     visibleBtn->SetDebugDraw(true);
     visibleBtn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &WebViewTest::OnVisibleClick));
     AddControl(visibleBtn);
+
+    UIControlSystem::Instance()->update.Connect(this, &WebViewTest::Update);
 }
 
 void WebViewTest::UnloadResources()
 {
+    UIControlSystem::Instance()->update.Disconnect(this);
+
     BaseScreen::UnloadResources();
 
     SafeRelease(webView);
@@ -60,8 +64,6 @@ void WebViewTest::Update(float32 delta)
         Thread::Sleep(500);
         updateWait = false;
     }
-
-    BaseScreen::Update(delta);
 }
 
 void WebViewTest::OnVisibleClick(BaseObject* sender, void* data, void* callerData)

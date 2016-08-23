@@ -289,6 +289,8 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
 
+    Signal<float32> update;
+
 private:
     void ProcessScreenLogic();
 

@@ -7,7 +7,7 @@
 using namespace DAVA;
 
 class GameCore;
-class WebViewTest : public BaseScreen
+class WebViewTest : public BaseScreen, public TrackedObject
 {
 public:
     WebViewTest(GameCore* g);
@@ -15,7 +15,7 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    void Update(float32 delta) override;
+    void Update(float32 delta);
 
 private:
     UIWebView* webView;

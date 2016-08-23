@@ -1026,13 +1026,6 @@ public:
      */
     virtual void InputCancelled(UIEvent* currentInput);
     /**
-     \brief Calls on every frame with frame delata time parameter.
-        Should be overriden to implement perframe functionality.
-        Default realization is empty.
-     \param[in] timeElapsed Current frame time delta.
-     */
-    virtual void Update(float32 timeElapsed);
-    /**
      \brief Calls on every frame to draw control.
         Can be overriden to implement custom draw functionality.
         Default realization is drawing UIControlBackground with requested parameters.
@@ -1158,7 +1151,6 @@ protected:
     bool multiInput : 1;
 
     // Enable align options
-    bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
     bool styleSheetDirty : 1;

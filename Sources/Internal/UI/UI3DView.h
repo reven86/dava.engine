@@ -12,7 +12,7 @@ namespace DAVA
  */
 
 class Scene;
-class UI3DView : public UIControl
+class UI3DView : public UIControl, public TrackedObject
 {
 public:
     UI3DView(const Rect& rect = Rect());
@@ -30,7 +30,7 @@ public:
     }
 
     void AddControl(UIControl* control) override;
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void SetSize(const Vector2& newSize) override;

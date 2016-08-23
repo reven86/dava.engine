@@ -196,6 +196,7 @@ void UI3DView::PrepareFrameBuffer()
 
 void UI3DView::OnVisible()
 {
+    UIControlSystem::Instance()->update.Connect(this, &UI3DView::Update);
     if (!registeredInUIControlSystem)
     {
         registeredInUIControlSystem = true;
@@ -205,6 +206,7 @@ void UI3DView::OnVisible()
 
 void UI3DView::OnInvisible()
 {
+    UIControlSystem::Instance()->update.Disconnect(this);
     if (registeredInUIControlSystem)
     {
         registeredInUIControlSystem = false;

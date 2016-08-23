@@ -236,6 +236,16 @@ void UIParticles::SetExtertnalValue(const String& name, float32 value)
         effect->SetExtertnalValue(name, value);
 }
 
+void UIParticles::OnVisible()
+{
+    UIControlSystem::Instance()->update.Connect(this, &UIParticles::Update);
+}
+
+void UIParticles::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+}
+
 void UIParticles::LoadEffect(const FilePath& path)
 {
     ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());

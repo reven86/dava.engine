@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-class UIScreenTransition : public UIScreen
+class UIScreenTransition : public UIScreen, public TrackedObject
 {
 public:
     UIScreenTransition();
@@ -15,8 +15,11 @@ protected:
     ~UIScreenTransition() override;
 
 public:
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
+
+    void OnVisible() override;
+    void OnInvisible() override;
 
     virtual void SetSourceScreen(UIControl* prevScreen, bool updateScreen = true);
     virtual void SetDestinationScreen(UIControl* nextScreen, bool updateScreen = true);

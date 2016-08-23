@@ -244,6 +244,8 @@ void DlcTest::LoadResources()
 
     SafeRelease(font);
     SafeRelease(fontSmall);
+
+    UIControlSystem::Instance()->update.Connect(this, &DlcTest::Update);
 }
 
 void DlcTest::UpdateInfoStr()
@@ -268,6 +270,8 @@ void DlcTest::UpdateInfoStr()
 
 void DlcTest::UnloadResources()
 {
+    UIControlSystem::Instance()->update.Disconnect(this);
+
     BaseScreen::UnloadResources();
 
     options->SaveToYamlFile(optionsPath);
@@ -289,8 +293,6 @@ void DlcTest::OnActive()
 
 void DlcTest::Update(float32 timeElapsed)
 {
-    BaseScreen::Update(timeElapsed);
-
     lastUpdateTime += timeElapsed;
     if (lastUpdateTime > 0.05f)
     {

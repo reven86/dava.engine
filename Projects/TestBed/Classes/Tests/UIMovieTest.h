@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 class GameCore;
-class UIMovieTest : public BaseScreen
+class UIMovieTest : public BaseScreen, public TrackedObject
 {
 protected:
     virtual ~UIMovieTest() = default;
@@ -20,7 +20,7 @@ public:
     void UnloadResources() override;
 
     void OnActive() override;
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
 
 private:
     void UpdatePlayerStateText();

@@ -739,7 +739,6 @@ void UIControl::AddControl(UIControl* control)
     control->Retain();
     control->RemoveFromParent();
 
-    control->isUpdated = false;
     control->SetParent(this);
     children.push_back(control);
 
@@ -1017,13 +1016,6 @@ bool UIControl::IsVisible() const
 void UIControl::SystemUpdate(float32 timeElapsed)
 {
     UIControlSystem::Instance()->updateCounter++;
-    Update(timeElapsed);
-    isUpdated = true;
-    List<UIControl*>::iterator it = children.begin();
-    for (; it != children.end(); ++it)
-    {
-        (*it)->isUpdated = false;
-    }
 
     if ((IsVisible() || styledProperties.test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
         && (styleSheetDirty || (prevControlState != controlState)))
@@ -1049,21 +1041,18 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         }
     }
 
-    it = children.begin();
+    auto it = children.begin();
     isIteratorCorrupted = false;
     while (it != children.end())
     {
         RefPtr<UIControl> child;
         child = *it;
-        if (!child->isUpdated)
+        child->SystemUpdate(timeElapsed);
+        if (isIteratorCorrupted)
         {
-            child->SystemUpdate(timeElapsed);
-            if (isIteratorCorrupted)
-            {
-                it = children.begin();
-                isIteratorCorrupted = false;
-                continue;
-            }
+            it = children.begin();
+            isIteratorCorrupted = false;
+            continue;
         }
         ++it;
     }
@@ -1425,7 +1414,6 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 bool UIControl::SystemInput(UIEvent* currentInput)
 {
     UIControlSystem::Instance()->inputCounter++;
-    isUpdated = true;
 
     if (!GetVisibilityFlag())
         return false;
@@ -1441,33 +1429,26 @@ bool UIControl::SystemInput(UIEvent* currentInput)
             }
         }
 
-        std::for_each(begin(children), end(children), [](UIControl* c) {
-            c->isUpdated = false;
-        });
-
         List<UIControl*>::reverse_iterator it = children.rbegin();
         List<UIControl*>::reverse_iterator itEnd = children.rend();
         while (it != itEnd)
         {
             isIteratorCorrupted = false;
             UIControl* current = *it;
-            if (!current->isUpdated)
+            current->Retain();
+            if (current->inputProcessorsCount > 0)
             {
-                current->Retain();
-                if (current->inputProcessorsCount > 0)
+                if (current->SystemInput(currentInput))
                 {
-                    if (current->SystemInput(currentInput))
-                    {
-                        current->Release();
-                        return true;
-                    }
+                    current->Release();
+                    return true;
                 }
-                current->Release();
-                if (isIteratorCorrupted)
-                {
-                    it = children.rbegin();
-                    continue;
-                }
+            }
+            current->Release();
+            if (isIteratorCorrupted)
+            {
+                it = children.rbegin();
+                continue;
             }
             ++it;
         }
@@ -1535,10 +1516,6 @@ void UIControl::Input(UIEvent* currentInput)
 }
 
 void UIControl::InputCancelled(UIEvent* currentInput)
-{
-}
-
-void UIControl::Update(float32 timeElapsed)
 {
 }
 

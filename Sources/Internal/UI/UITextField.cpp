@@ -616,12 +616,14 @@ void UITextField::OnVisible()
 {
     UIControl::OnVisible();
     textFieldImpl->SetVisible(visible);
+    UIControlSystem::Instance()->update.Connect(this, &UITextField::Update);
 }
 
 void UITextField::OnInvisible()
 {
     UIControl::OnInvisible();
     textFieldImpl->SetVisible(false);
+    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 String UITextField::GetFontPresetName() const

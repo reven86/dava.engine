@@ -9,7 +9,7 @@
 namespace DAVA
 {
 // The purpose of UIMovieView class is to display movies.
-class UIMovieView : public UIControl
+class UIMovieView : public UIControl, public TrackedObject
 {
 public:
     UIMovieView(const Rect& rect = Rect());
@@ -27,7 +27,7 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
     void Draw(const UIGeometricData& parentGeometricData) override;
-    void Update(float32 timeElapsed) override;
+    void Update(float32 timeElapsed);
 
     void OnVisible() override;
     void OnInvisible() override;

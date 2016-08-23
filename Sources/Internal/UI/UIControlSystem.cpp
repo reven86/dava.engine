@@ -314,6 +314,8 @@ void UIControlSystem::Update()
             currentScreen->SystemUpdate(timeElapsed);
         }
 
+        update.Emit(timeElapsed);
+
         popupContainer->SystemUpdate(timeElapsed);
     }
 

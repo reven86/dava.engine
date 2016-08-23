@@ -34,6 +34,8 @@ void AssertTest::LoadResources()
     }
 
     countdownText = static_cast<DAVA::UIStaticText*>(dialog->FindByName("Countdown"));
+
+    DAVA::UIControlSystem::Instance()->update.Connect(this, &AssertTest::Update);
 }
 
 void AssertTest::UnloadResources()
@@ -41,6 +43,8 @@ void AssertTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     countdownText.Set(nullptr);
+
+    DAVA::UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void AssertTest::Update(DAVA::float32 timeElapsed)
