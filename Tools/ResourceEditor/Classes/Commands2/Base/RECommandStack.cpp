@@ -11,7 +11,7 @@ RECommandStack::RECommandStack()
     canUndoChanged.Connect(this, &RECommandStack::CanUndoChanged);
     undoTextChanged.Connect(this, &RECommandStack::UndoTextChanged);
     redoTextChanged.Connect(this, &RECommandStack::RedoTextChanged);
-    cleanChanged.Connect(this, &RECommandStack::EmitCleanChanged);
+    cleanChanged.Connect(this, &CommandNotifyProvider::EmitCleanChanged);
     commandExecuted.Connect(this, &RECommandStack::OnCommandExecuted);
 }
 
@@ -26,7 +26,7 @@ void RECommandStack::Clear()
 
 void RECommandStack::SetChanged()
 {
-    CommandStack::SetClean(false);
+    CommandStack::EmitCleanChanged(false);
 }
 
 void RECommandStack::RemoveCommands(DAVA::uint32 commandId)

@@ -148,7 +148,7 @@ void CommandStack::UpdateCleanState()
 {
     if (cleanIndex == currentIndex)
     {
-        SetClean(true);
+        EmitCleanChanged(true);
         return;
     }
     int32 begin = std::min(cleanIndex, currentIndex);
@@ -161,7 +161,7 @@ void CommandStack::UpdateCleanState()
         const std::unique_ptr<Command>& command = commands.at(index + 1);
         containsModifiedCommands |= (command->IsClean() == false);
     }
-    SetClean(!containsModifiedCommands);
+    EmitCleanChanged(!containsModifiedCommands);
 }
 
 void CommandStack::SetCurrentIndex(int32 currentIndex_)
@@ -171,14 +171,14 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
         currentIndex = currentIndex_;
 
         UpdateCleanState();
-        SetCanUndo(CanUndo());
-        SetCanRedo(CanRedo());
-        SetUndoText(GetUndoText());
-        SetRedoText(GetRedoText());
+        EmitCanUndoChanged(CanUndo());
+        EmitCanRedoChanged(CanRedo());
+        EmitUndoTextChanged(GetUndoText());
+        EmitRedoTextChanged(GetRedoText());
     }
 }
 
-void CommandStack::SetClean(bool isClean_)
+void CommandStack::EmitCleanChanged(bool isClean_)
 {
     if (isClean != isClean_)
     {
@@ -187,7 +187,7 @@ void CommandStack::SetClean(bool isClean_)
     }
 }
 
-void CommandStack::SetCanUndo(bool canUndo_)
+void CommandStack::EmitCanUndoChanged(bool canUndo_)
 {
     if (canUndo != canUndo_)
     {
@@ -196,7 +196,7 @@ void CommandStack::SetCanUndo(bool canUndo_)
     }
 }
 
-void CommandStack::SetCanRedo(bool canRedo_)
+void CommandStack::EmitCanRedoChanged(bool canRedo_)
 {
     if (canRedo != canRedo_)
     {
@@ -205,7 +205,7 @@ void CommandStack::SetCanRedo(bool canRedo_)
     }
 }
 
-void CommandStack::SetUndoText(const DAVA::String& undoText_)
+void CommandStack::EmitUndoTextChanged(const DAVA::String& undoText_)
 {
     if (undoText_ != undoText)
     {
@@ -214,7 +214,7 @@ void CommandStack::SetUndoText(const DAVA::String& undoText_)
     }
 }
 
-void CommandStack::SetRedoText(const DAVA::String& redoText_)
+void CommandStack::EmitRedoTextChanged(const DAVA::String& redoText_)
 {
     if (redoText_ != redoText)
     {
