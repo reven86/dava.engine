@@ -46,6 +46,7 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     propertiesModel = new PropertiesModel(treeView);
     treeView->setModel(propertiesModel);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
+    connect(propertiesModel, &PropertiesModel::ComponentAdded, this, &PropertiesWidget::OnComponentAdded);
 
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
 
@@ -87,8 +88,16 @@ void PropertiesWidget::OnAddComponent(QAction* action)
     DVASSERT(nullptr != commandExecutor);
     if (nullptr != commandExecutor)
     {
+        const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
+
         uint32 componentType = action->data().toUInt();
-        if (componentType < UIComponent::COMPONENT_COUNT)
+        ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
+        if (componentSection != nullptr && !UIComponent::IsMultiple(componentType))
+        {
+            QModelIndex index = propertiesModel->indexByProperty(componentSection);
+            OnComponentAdded(index);
+        }
+        else if (componentType < UIComponent::COMPONENT_COUNT)
         {
             commandExecutor->AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
         }
@@ -267,6 +276,19 @@ void PropertiesWidget::OnExpanded(const QModelIndex& index)
 void PropertiesWidget::OnCollapsed(const QModelIndex& index)
 {
     itemsState[GetPathFromIndex(index)] = false;
+}
+
+void PropertiesWidget::OnComponentAdded(const QModelIndex& index)
+{
+    treeView->expand(index);
+    treeView->setCurrentIndex(index);
+    int rowCount = propertiesModel->rowCount(index);
+    if (rowCount > 0)
+    {
+        QModelIndex lastChildIndex = index.child(rowCount - 1, 0);
+        treeView->scrollTo(lastChildIndex, QAbstractItemView::EnsureVisible);
+    }
+    treeView->scrollTo(index, QAbstractItemView::EnsureVisible);
 }
 
 void PropertiesWidget::UpdateModel(PackageBaseNode* node)
