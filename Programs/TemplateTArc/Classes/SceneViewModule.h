@@ -10,15 +10,15 @@
 
 #include "Base/BaseTypes.h"
 
-class SceneViewModule : public tarc::ControllerModule
+class SceneViewModule : public DAVA::TArc::ControllerModule
 {
 public:
     SceneViewModule();
 
 protected:
     void OnRenderSystemInitialized(DAVA::Window& w) override;
-    void OnContextCreated(tarc::DataContext& context) override;
-    void OnContextDeleted(tarc::DataContext& context) override;
+    void OnContextCreated(DAVA::TArc::DataContext& context) override;
+    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
 private:
@@ -34,5 +34,5 @@ private:
     DAVA::ScopedPtr<DAVA::UIScreen> uiScreen = DAVA::ScopedPtr<DAVA::UIScreen>(nullptr);
     QtConnections connections;
 
-    tarc::WindowKey windowKey;
+    DAVA::TArc::WindowKey windowKey;
 };

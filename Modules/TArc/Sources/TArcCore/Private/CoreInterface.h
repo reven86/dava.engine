@@ -7,15 +7,12 @@
 namespace DAVA
 {
 class AnyFn;
-}
-
-namespace tarc
+namespace TArc
 {
-
 class CoreInterface: public ContextAccessor, public ContextManager, public OperationInvoker
 {
 public:
     virtual void RegisterOperation(int operationID, DAVA::AnyFn&& fn) = 0;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

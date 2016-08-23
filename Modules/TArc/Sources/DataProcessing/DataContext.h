@@ -8,9 +8,10 @@
 
 #include "DataNode.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class DataContext
 {
 public:
@@ -46,7 +47,7 @@ private:
     DataContext* parentContext = nullptr;
     DAVA::UnorderedMap<const DAVA::ReflectedType*, DataNode*> dataMap;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA
 
 #include "DataProcessing/Private/DataContext_impl.h"

@@ -9,11 +9,9 @@
 namespace DAVA
 {
 class Engine;
-}
 
-namespace tarc
+namespace TArc
 {
-
 class ClientModule;
 class ControllerModule;
 class UIManager;
@@ -27,8 +25,8 @@ public:
     template<typename T>
     void CreateModule()
     {
-        static_assert(std::is_base_of<tarc::ClientModule, T>::value ||
-                      std::is_base_of<tarc::ControllerModule, T>::value,
+        static_assert(std::is_base_of<TArc::ClientModule, T>::value ||
+                      std::is_base_of<TArc::ControllerModule, T>::value,
                       "Module should be Derived from tarc::ControllerModule or tarc::ClientModule");
         AddModule(new T());
     }
@@ -111,4 +109,5 @@ void Core::InvokeImpl(int operationId, const Args&... args)
     }
 }
 
-}
+} // namespace TArc
+} // namespace DAVA

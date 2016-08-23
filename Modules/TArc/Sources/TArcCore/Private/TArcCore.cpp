@@ -13,9 +13,10 @@
 
 #include <QApplication>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 Core::Core(DAVA::Engine& engine_)
     : engine(engine_)
     , globalContext(new DataContext())
@@ -297,4 +298,5 @@ DAVA::AnyFn Core::FindOperation(int operationId)
     return operation;
 }
 
-}
+} // namespace TArc
+} // namespace DAVA

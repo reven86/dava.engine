@@ -11,7 +11,7 @@
 #include <QFileSystemModel>
 #include <QTimer>
 
-class FileSystemData : public tarc::DataNode
+class FileSystemData : public DAVA::TArc::DataNode
 {
 public:
     FileSystemData(LibraryModule* self_, QFileSystemModel* model_)
@@ -39,7 +39,7 @@ public:
 private:
     LibraryModule* self = nullptr;
     QFileSystemModel* model = nullptr;
-    DAVA_VIRTUAL_REFLECTION(FileSystemData, tarc::DataNode)
+    DAVA_VIRTUAL_REFLECTION(FileSystemData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<FileSystemData>::Begin()
         .Field("fileSystemModel", &FileSystemData::GetModel, nullptr)
@@ -48,11 +48,11 @@ private:
     }
 };
 
-void LibraryModule::OnContextCreated(tarc::DataContext& context)
+void LibraryModule::OnContextCreated(DAVA::TArc::DataContext& context)
 {
 }
 
-void LibraryModule::OnContextDeleted(tarc::DataContext& context)
+void LibraryModule::OnContextDeleted(DAVA::TArc::DataContext& context)
 {
 }
 
@@ -63,18 +63,18 @@ void LibraryModule::PostInit()
     model->setNameFilterDisables(false);
     model->setRootPath(QDir::rootPath());
 
-    tarc::DataContext& globalContext = GetAccessor().GetGlobalContext();
+    DAVA::TArc::DataContext& globalContext = GetAccessor().GetGlobalContext();
 
     globalContext.CreateData(std::make_unique<FileSystemData>(this, model));
 
-    tarc::UI& ui = GetUI();
+    DAVA::TArc::UI& ui = GetUI();
 
-    tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
+    DAVA::TArc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
 
-    tarc::DockPanelInfo info;
+    DAVA::TArc::DockPanelInfo info;
     info.area = Qt::LeftDockWidgetArea;
     info.tabbed = false;
     info.title = "Library";
-    ui.AddView(windowKey, tarc::PanelKey(info.title, info), "qrc:/Library.qml",
+    ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), "qrc:/Library.qml",
                GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<FileSystemData>()));
 }

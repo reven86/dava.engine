@@ -8,13 +8,12 @@
 #include <QFileSystemModel>
 
 Q_DECLARE_METATYPE(DAVA::char16);
-
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 namespace ReflBridgeDetails
 {
-
 template<typename T>
 DAVA::Any ToAny(const QVariant& v)
 {
@@ -47,8 +46,7 @@ void FillConverter(DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA:
     anyToVar.emplace(DAVA::Type::Instance<T>(), &ToVariant<T>);
     varToAny.emplace(qMetaTypeId<T>(), &ToAny<T>);
 }
-
-}
+} // namespace ReflBridgeDetails
 
 #define FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
     F(void*, ATV, VTA) \
@@ -398,4 +396,5 @@ DAVA::Any QtReflectionBridge::Convert(const QVariant& value)
     return iter->second(value);
 }
 
-}
+} // namespace TArc
+} // namespace DAVA

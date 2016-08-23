@@ -7,9 +7,10 @@
 
 #include "Functional/Function.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class ContextAccessor
 {
 public:
@@ -29,5 +30,5 @@ public:
 
     virtual DAVA::EngineContext& GetEngineContext() = 0;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

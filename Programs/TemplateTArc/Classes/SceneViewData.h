@@ -3,7 +3,7 @@
 #include "Scene3D/Scene.h"
 #include "DataProcessing/DataNode.h"
 
-class SceneViewData : public tarc::DataNode
+class SceneViewData : public DAVA::TArc::DataNode
 {
 public:
     void SetScene(DAVA::Scene* scene);

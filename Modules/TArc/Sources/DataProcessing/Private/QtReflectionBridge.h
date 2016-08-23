@@ -1,15 +1,17 @@
 #pragma once
 
 #include "DataProcessing/DataWrapper.h"
+#include "DataProcessing/DataListener.h"
 #include "Functional/Signal.h"
 #include "Base/BaseTypes.h"
 
 #include <QObject>
 #include <QPointer>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class QtReflectionBridge;
 class QtReflected final: public QObject, private DataListener
 {
@@ -53,5 +55,5 @@ private:
     DAVA::UnorderedMap<const DAVA::Type*, QVariant(*)(const DAVA::Any&)> anyToQVariant;
     DAVA::UnorderedMap<int, DAVA::Any(*)(const QVariant&)> qvariantToAny;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

@@ -21,9 +21,10 @@
 
 #include <QQuickWidget>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 namespace UIManagerDetail
 {
 
@@ -211,8 +212,7 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
         statusBar->addWidget(widget, stretchFactor);
     }
 }
-
-}
+} // namespace UIManagerDetail
 
 struct UIManager::Impl
 {
@@ -382,4 +382,5 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     return Convert(resultButton);
 }
 
-}
+} // namespace TArc
+} // namespace DAVA

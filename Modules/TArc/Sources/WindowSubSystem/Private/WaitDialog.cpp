@@ -9,18 +9,17 @@
 #include <QThread>
 #include <QMetaObject>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 namespace WaitDialogDetail
 {
-
 Qt::ConnectionType GetConnectionType()
 {
     return (qApp->thread() == QThread::currentThread()) ? Qt::DirectConnection : Qt::QueuedConnection;
 }
-
-}
+} // namespace WaitDialogDetail
 
 WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
     : dlg(new QDialog(parent, Qt::WindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint)))
@@ -93,5 +92,5 @@ void WaitDialog::Update()
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     }
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

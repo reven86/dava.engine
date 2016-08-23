@@ -12,9 +12,10 @@
 
 class QWidget;
 class QAction;
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class WindowKey
 {
 public:
@@ -150,5 +151,5 @@ public:
 
     virtual std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) = 0;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

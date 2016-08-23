@@ -2,13 +2,14 @@
 #include "TArcCore/Private/CoreInterface.h"
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 ContextManager& ControllerModule::GetContextManager()
 {
     DVASSERT(coreInterface != nullptr);
     return *coreInterface;
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

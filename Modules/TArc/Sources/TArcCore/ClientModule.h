@@ -2,9 +2,10 @@
 
 #include "TArcCore/Private/CoreInterface.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class UI;
 class DataContext;
 class ContextAccessor;
@@ -60,4 +61,5 @@ inline void ClientModule::InvokeOperation(int operationId, const Args&... args)
     coreInterface->Invoke(operationId, args...);
 }
 
-}
+} // namespace TArc
+} // namespace DAVA

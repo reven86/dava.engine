@@ -3,9 +3,10 @@
 
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 ContextAccessor& ClientModule::GetAccessor()
 {
     DVASSERT(coreInterface != nullptr);
@@ -25,5 +26,5 @@ void ClientModule::Init(CoreInterface* coreInterface_, UI* ui_)
     coreInterface = coreInterface_;
     ui = ui_;
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

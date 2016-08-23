@@ -2,14 +2,12 @@
 
 #include "TArcCore/ClientModule.h"
 
+
 namespace DAVA
 {
 class Window;
-}
-
-namespace tarc
+namespace TArc
 {
-
 class ContextManager;
 class ControllerModule : public ClientModule
 {
@@ -19,5 +17,5 @@ protected:
 
     friend class Core;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

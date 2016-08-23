@@ -4,9 +4,10 @@
 
 #include "Engine/Public/Qt/RenderWidget.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class ContextManager
 {
 public:
@@ -17,5 +18,5 @@ public:
     virtual void ActivateContext(DataContext::ContextID contextID) = 0;
     virtual DAVA::RenderWidget* GetRenderWidget() const = 0;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

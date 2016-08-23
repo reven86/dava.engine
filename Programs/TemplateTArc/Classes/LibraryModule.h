@@ -5,11 +5,11 @@
 
 #include "Base/BaseTypes.h"
 
-class LibraryModule : public tarc::ClientModule
+class LibraryModule : public DAVA::TArc::ClientModule
 {
 protected:
-    void OnContextCreated(tarc::DataContext& context) override;
-    void OnContextDeleted(tarc::DataContext& context) override;
+    void OnContextCreated(DAVA::TArc::DataContext& context) override;
+    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
     friend class FileSystemData;

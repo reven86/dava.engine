@@ -1,11 +1,13 @@
 #include "DataProcessing/DataWrapper.h"
+#include "DataProcessing/DataListener.h"
 
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 namespace DataWrapperDetail
 {
 DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type)
@@ -177,15 +179,5 @@ DAVA::Reflection DataWrapper::GetData() const
     DVASSERT(HasData());
     return impl->dataAccessor(*impl->activeContext);
 }
-
-DataListener::~DataListener()
-{
-    holder.RemoveListener(this);
-}
-
-void DataListener::InitListener(const DataWrapper& wrapper)
-{
-    holder = wrapper;
-}
-
-}
+} // namespace TArc
+} // namespace DAVA

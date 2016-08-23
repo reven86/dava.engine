@@ -29,12 +29,12 @@ void SceneViewModule::OnRenderSystemInitialized(DAVA::Window& w)
     w.sizeScaleChanged.Connect(DAVA::MakeFunction(this, &SceneViewModule::OnWindowResized));
 }
 
-void SceneViewModule::OnContextCreated(tarc::DataContext& context)
+void SceneViewModule::OnContextCreated(DAVA::TArc::DataContext& context)
 {
     context.CreateData(std::make_unique<SceneViewData>());
 }
 
-void SceneViewModule::OnContextDeleted(tarc::DataContext& context)
+void SceneViewModule::OnContextDeleted(DAVA::TArc::DataContext& context)
 {
 }
 
@@ -54,9 +54,9 @@ void SceneViewModule::OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA
 
 void SceneViewModule::SetupRenderWidget()
 {
-    tarc::UI& ui = GetUI();
-    tarc::CentralPanelInfo info;
-    ui.AddView(windowKey, tarc::PanelKey("RenderWidget", info), GetContextManager().GetRenderWidget());
+    DAVA::TArc::UI& ui = GetUI();
+    DAVA::TArc::CentralPanelInfo info;
+    ui.AddView(windowKey, DAVA::TArc::PanelKey("RenderWidget", info), GetContextManager().GetRenderWidget());
 
     ui3dView.reset(new DAVA::UI3DView(DAVA::Rect(0, 0, 0, 0)));
     ui3dView->SetInputEnabled(true, true);
@@ -73,9 +73,9 @@ void SceneViewModule::SetupRenderWidget()
 
 void SceneViewModule::SetupActions()
 {
-    tarc::UI& ui = GetUI();
-    tarc::ActionPlacementInfo info(tarc::CreateMenuPoint("File"));
-    info.AddPlacementPoint(tarc::CreateToolbarPoint("FileToolbar"));
+    DAVA::TArc::UI& ui = GetUI();
+    DAVA::TArc::ActionPlacementInfo info(DAVA::TArc::CreateMenuPoint("File"));
+    info.AddPlacementPoint(DAVA::TArc::CreateToolbarPoint("FileToolbar"));
 
     QAction* action = new QAction(QIcon(":/icons/openscene.png"), "Open", nullptr);
     action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
@@ -90,19 +90,19 @@ void SceneViewModule::SetupActions()
 
 void SceneViewModule::OpenScene()
 {
-    tarc::UI& ui = GetUI();
-    tarc::ContextAccessor& accessor = GetAccessor();
+    DAVA::TArc::UI& ui = GetUI();
+    DAVA::TArc::ContextAccessor& accessor = GetAccessor();
     if (accessor.HasActiveContext())
     {
-        tarc::ModalMessageParams params;
+        DAVA::TArc::ModalMessageParams params;
         params.title = "Error";
         params.message = "Scene already opened.";
-        params.buttons = tarc::ModalMessageParams::Ok;
+        params.buttons = DAVA::TArc::ModalMessageParams::Ok;
         ui.ShowModalMessage(windowKey, params);
         return;
     }
 
-    tarc::FileDialogParams params;
+    DAVA::TArc::FileDialogParams params;
     params.title = QString("Open Scene");
     params.filters = QString("DAVA Scene (*.sc2)");
     QString path = GetUI().GetOpenFileName(windowKey);
@@ -118,19 +118,19 @@ void SceneViewModule::OpenScene(const DAVA::String& scenePath)
     DVASSERT(ui3dView);
     DVASSERT(uiScreen);
 
-    tarc::UI& ui = GetUI();
-    tarc::ContextAccessor& accessor = GetAccessor();
+    DAVA::TArc::UI& ui = GetUI();
+    DAVA::TArc::ContextAccessor& accessor = GetAccessor();
 
-    tarc::ContextManager& manager = GetContextManager();
-    tarc::DataContext::ContextID id = manager.CreateContext();
+    DAVA::TArc::ContextManager& manager = GetContextManager();
+    DAVA::TArc::DataContext::ContextID id = manager.CreateContext();
     manager.ActivateContext(id);
 
     SceneViewData& data = accessor.GetActiveContext().GetData<SceneViewData>();
 
-    tarc::WaitDialogParams waitDialogParams;
+    DAVA::TArc::WaitDialogParams waitDialogParams;
     waitDialogParams.needProgressBar = false;
     waitDialogParams.message = QString("Opening scene: %1").arg(scenePath.c_str());
-    std::unique_ptr<tarc::WaitHandle> wiatHandle = ui.ShowWaitDialog(windowKey, waitDialogParams);
+    std::unique_ptr<DAVA::TArc::WaitHandle> wiatHandle = ui.ShowWaitDialog(windowKey, waitDialogParams);
 
     DAVA::Texture::SetDefaultGPU(DAVA::GPU_ORIGIN);
     DAVA::ScopedPtr<DAVA::Scene> scene(new DAVA::Scene());
