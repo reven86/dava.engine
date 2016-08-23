@@ -9,6 +9,7 @@
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
