@@ -95,6 +95,9 @@ public:
     void TouchMove(const Vector2& point, int32 touchId);
     void TouchUp(int32 touchId);
 
+    void LeftMouseClickDown(const Vector2& point);
+    void LeftMouseClickUp(const Vector2& point);
+
     void ScrollToControl(const String& path) const;
 
     // Keyboard action
