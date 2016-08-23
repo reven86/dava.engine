@@ -21,7 +21,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::StrongFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(QSize(width, height));
     setResizeMode(QQuickWidget::SizeViewToRootObject);
@@ -140,16 +140,17 @@ void RenderWidget::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::eventFilter(QObject* object, QEvent* e)
 {
-    if ((object == quickWindow() || object == quickWindow()->activeFocusItem()) && keyEventRecursiveGuard == false)
+    QEvent::Type t = e->type();
+    if ((t == QEvent::KeyPress || t == QEvent::KeyRelease) && keyEventRecursiveGuard == false)
     {
-        keyEventRecursiveGuard = true;
-        SCOPE_EXIT
+        QQuickItem* focusObject = quickWindow()->activeFocusItem();
+        if (object == quickWindow() || object == focusObject)
         {
-            keyEventRecursiveGuard = false;
-        };
-        QEvent::Type t = e->type();
-        if (t == QEvent::KeyPress || t == QEvent::KeyRelease)
-        {
+            keyEventRecursiveGuard = true;
+            SCOPE_EXIT
+            {
+                keyEventRecursiveGuard = false;
+            };
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
             if (t == QEvent::KeyPress)
             {

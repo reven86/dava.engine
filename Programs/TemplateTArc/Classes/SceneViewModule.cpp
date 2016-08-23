@@ -43,7 +43,7 @@ void SceneViewModule::PostInit()
     SetupRenderWidget();
     SetupActions();
 
-    RegisterOperation(SceneViewOperations::OpenScene, this, &SceneViewModule::OpenSceneImpl);
+    RegisterOperation<void, SceneViewModule, const DAVA::String&>(SceneViewOperations::OpenScene, this, &SceneViewModule::OpenScene);
 }
 
 void SceneViewModule::OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
@@ -78,6 +78,7 @@ void SceneViewModule::SetupActions()
     info.AddPlacementPoint(tarc::CreateToolbarPoint("FileToolbar"));
 
     QAction* action = new QAction(QIcon(":/icons/openscene.png"), "Open", nullptr);
+    action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
 
     connections.AddConnection(action, &QAction::triggered, [this]()
     {
@@ -107,12 +108,12 @@ void SceneViewModule::OpenScene()
     QString path = GetUI().GetOpenFileName(windowKey);
     if (!path.isEmpty())
     {
-        OpenSceneImpl(path.toStdString());
+        OpenScene(path.toStdString());
     }
 
 }
 
-void SceneViewModule::OpenSceneImpl(const DAVA::String& scenePath)
+void SceneViewModule::OpenScene(const DAVA::String& scenePath)
 {
     DVASSERT(ui3dView);
     DVASSERT(uiScreen);
