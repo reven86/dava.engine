@@ -10,6 +10,15 @@ SharedDataRequester::SharedDataRequester(QWidget* parent)
 {
 }
 
+QNetworkReply* SharedDataRequester::DeleteLater(QNetworkReply*& replyForDeletion)
+{
+    QNetworkReply* reply = replyForDeletion;
+    replyForDeletion->deleteLater();
+    replyForDeletion = nullptr;
+
+    return reply;
+}
+
 void SharedDataRequester::RequestSharedData(ServerID ownID)
 {
     //DAVA::Logger::Debug("Requesting shared data");
@@ -17,8 +26,7 @@ void SharedDataRequester::RequestSharedData(ServerID ownID)
     if (getPoolsRequest)
     {
         getPoolsRequest->abort();
-        getPoolsRequest->deleteLater();
-        getPoolsRequest = nullptr;
+        DeleteLater(getPoolsRequest);
     }
 
     pools.clear();
@@ -26,8 +34,7 @@ void SharedDataRequester::RequestSharedData(ServerID ownID)
     if (getServersRequest)
     {
         getServersRequest->abort();
-        getServersRequest->deleteLater();
-        getServersRequest = nullptr;
+        DeleteLater(getServersRequest);
     }
 
     static const QNetworkRequest GET_POOLS_REQUEST = QNetworkRequest(QUrl(QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=getPools")));
@@ -42,9 +49,7 @@ void SharedDataRequester::OnGetPoolsFinished()
     DVASSERT(getPoolsRequest != nullptr);
     DVASSERT(getServersRequest == nullptr);
 
-    QNetworkReply* reply = getPoolsRequest;
-    getPoolsRequest->deleteLater();
-    getPoolsRequest = nullptr;
+    QNetworkReply* reply = DeleteLater(getPoolsRequest);
 
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError)
@@ -67,9 +72,7 @@ void SharedDataRequester::OnGetServersFinished()
 {
     DVASSERT(getServersRequest != nullptr);
 
-    QNetworkReply* reply = getServersRequest;
-    getServersRequest->deleteLater();
-    getServersRequest = nullptr;
+    QNetworkReply* reply = DeleteLater(getServersRequest);
 
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError)
@@ -90,14 +93,13 @@ void SharedDataRequester::AddSharedServer(SharedServerParams serverParams, const
     if (shareRequest)
     {
         shareRequest->abort();
-        shareRequest->deleteLater();
-        shareRequest = nullptr;
+        DeleteLater(shareRequest);
     }
 
 #if defined(__DAVAENGINE_WINDOWS__)
-    static DAVA::uint32 osKey = 1;
+    static DAVA::uint32 osKey = 1; // 1 for win, 2 for mac (see DF-11326)
 #else
-    static DAVA::uint32 osKey = 1;
+    static DAVA::uint32 osKey = 2;
 #endif
 
     QString url = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=share&port=%1&name=%2&poolKey=%3&instPath=%4&os=%5")
@@ -115,9 +117,7 @@ void SharedDataRequester::OnAddServerFinished()
 {
     DVASSERT(shareRequest != nullptr);
 
-    QNetworkReply* reply = shareRequest;
-    shareRequest->deleteLater();
-    shareRequest = nullptr;
+    QNetworkReply* reply = DeleteLater(shareRequest);
 
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError)
@@ -139,8 +139,7 @@ void SharedDataRequester::RemoveSharedServer(ServerID serverID)
     if (unshareRequest)
     {
         unshareRequest->abort();
-        unshareRequest->deleteLater();
-        unshareRequest = nullptr;
+        DeleteLater(unshareRequest);
     }
 
     QString s = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=unshare&key=%u").arg(serverID);
@@ -153,9 +152,7 @@ void SharedDataRequester::OnRemoveServerFinished()
 {
     DVASSERT(unshareRequest != nullptr);
 
-    QNetworkReply* reply = unshareRequest;
-    unshareRequest->deleteLater();
-    unshareRequest = nullptr;
+    QNetworkReply* reply = DeleteLater(unshareRequest);
 
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError)

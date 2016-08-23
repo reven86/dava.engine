@@ -518,46 +518,29 @@ void AssetCacheServerWindow::DisplayCurrentRemoteServer()
 
 void AssetCacheServerWindow::ConstructSharedPoolsList()
 {
+    for (auto poolContainerIter = poolContainers.begin(); poolContainerIter != poolContainers.end();)
+    {
+        auto deletedPoolIter = poolContainerIter++;
+        RemovePoolContainer(deletedPoolIter);
+    }
+
     const DAVA::Map<PoolID, SharedPool>& pools = serverCore.Settings().GetSharedPools();
-    comboBoxIDs.reserve(pools.size());
 
     for (auto& poolEntry : pools)
     {
         const SharedPool& pool = poolEntry.second;
         AddPoolContainer(pool);
-
-        ui->poolComboBox->addItem(pool.poolID == 0 ? "none" : pool.poolName.c_str());
-        comboBoxIDs.push_back(pool.poolID);
-    }
-}
-
-void AssetCacheServerWindow::ConstructSharedPoolsCombo()
-{
-    PoolID initialID = serverCore.Settings().GetOwnPoolID();
-
-    const DAVA::Map<PoolID, SharedPool>& pools = serverCore.Settings().GetSharedPools();
-    comboBoxIDs.reserve(pools.size());
-
-    for (auto& poolEntry : pools)
-    {
-        const SharedPool& pool = poolEntry.second;
-
-        ui->poolComboBox->addItem(pool.poolID == 0 ? "none" : pool.poolName.c_str());
-        comboBoxIDs.push_back(pool.poolID);
-
-        if (pool.poolID == initialID)
-        {
-            ui->poolComboBox->setCurrentIndex(static_cast<int>(comboBoxIDs.size()) - 1);
-        }
     }
 }
 
 void AssetCacheServerWindow::UpdateSharedPoolsCombo()
 {
-    PoolID currentID = 0;
-    if (!comboBoxIDs.empty())
+    int currentIndex = ui->poolComboBox->currentIndex();
+    PoolID currentID = serverCore.Settings().GetOwnPoolID();
+    if (currentIndex > -1)
     {
-        currentID = comboBoxIDs[ui->poolComboBox->currentIndex()];
+        DVASSERT(currentIndex < comboBoxIDs.size());
+        currentID = comboBoxIDs[currentIndex];
     }
 
     ui->poolComboBox->clear();
@@ -653,7 +636,10 @@ void AssetCacheServerWindow::UpdateSharedPoolsList()
 
 AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolContainer(const SharedPool& pool)
 {
-    SharedPoolContainer& poolContainer = poolContainers[pool.poolID];
+    auto insertResult = poolContainers.insert(std::make_pair(pool.poolID, SharedPoolContainer()));
+    DVASSERT_MSG(insertResult.second == true, DAVA::Format("Container with pool ID %u is already inserted", pool.poolID).c_str());
+    SharedPoolContainer& poolContainer = insertResult.first->second;
+
     poolContainer.poolLayout = new QVBoxLayout();
     QVBoxLayout* poolLayout = poolContainer.poolLayout;
     sharedPoolsLayout->addLayout(poolLayout);
@@ -685,7 +671,9 @@ AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolCont
 
 AssetCacheServerWindow::SharedServerContainer& AssetCacheServerWindow::AddServerContainer(SharedPoolContainer& poolContainer, const SharedServer& server)
 {
-    SharedServerContainer& serverContainer = poolContainer.serverContainers[server.serverID];
+    auto insertResult = poolContainer.serverContainers.insert(std::make_pair(server.serverID, SharedServerContainer()));
+    DVASSERT_MSG(insertResult.second == true, DAVA::Format("Container with server ID %u is already inserted", server.serverID).c_str());
+    SharedServerContainer& serverContainer = insertResult.first->second;
 
     serverContainer.serverWidget = new SharedServerWidget(server);
     connect(serverContainer.serverWidget, SIGNAL(ServerChecked(bool)), this, SLOT(OnSharedServerChecked(bool)));
@@ -849,7 +837,7 @@ void AssetCacheServerWindow::LoadSettings()
 
     DisplayCurrentRemoteServer();
 
-    ConstructSharedPoolsCombo();
+    UpdateSharedPoolsCombo();
     ui->serverNameEdit->setText(serverCore.Settings().GetOwnName().c_str());
     SetVisibilityForShareControls();
 

@@ -33,6 +33,9 @@ private slots:
     void OnRemoveServerFinished();
 
 private:
+    QNetworkReply* DeleteLater(QNetworkReply*& replyForDeletion);
+
+private:
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkReply* getPoolsRequest = nullptr;
     QNetworkReply* getServersRequest = nullptr;
