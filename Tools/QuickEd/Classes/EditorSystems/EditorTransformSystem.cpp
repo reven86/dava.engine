@@ -1,6 +1,5 @@
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Platform/SystemTimer.h"
 
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -77,9 +76,22 @@ struct EditorTransformSystem::MagnetLine
     Vector2::eAxis axis;
 };
 
-namespace EditorTransformSystem_local
+namespace EditorTransformSystemDetail
 {
 const float32 TRANSFORM_EPSILON = 0.0005f;
+
+struct ChangePropertyAction
+{
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
+        : node(node_)
+        , property(property_)
+        , value(value_)
+    {
+    }
+    ControlNode* node = nullptr;
+    AbstractProperty* property = nullptr;
+    DAVA::VariantType value;
+};
 }
 
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
@@ -136,13 +148,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
-        currentHash = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
+        systemsManager->TransformStateChanged.Emit(true);
+        inTransformState = true;
         extraDelta.SetZero();
         prevPos = currentInput->point;
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
-        {
-            systemsManager->TransformStateChanged.Emit(true);
-        }
         return false;
     }
     case UIEvent::Phase::DRAG:
@@ -163,9 +172,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
             ClampAngle();
         }
         systemsManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        if (activeControlNode != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+        if (inTransformState)
         {
             systemsManager->TransformStateChanged.Emit(false);
+            inTransformState = false;
         }
         return false;
     default:
@@ -214,7 +224,6 @@ bool EditorTransformSystem::ProcessKey(Key key)
         }
         if (!deltaPos.IsZero())
         {
-            currentHash = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
             MoveAllSelectedControls(deltaPos, false);
             return true;
         }
@@ -264,7 +273,7 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
-    Vector<ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
     ControlNode* activeNode = activeControlNode;
@@ -318,9 +327,9 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
-    if (!propertiesToChange.empty())
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
     systemsManager->MagnetLinesChanged.Emit(magnets);
 }
@@ -384,7 +393,7 @@ void EditorTransformSystem::ExtractMatchedLines(Vector<MagnetLineInfo>& magnets,
     const UIGeometricData* parentGD = &parent->GetGeometricData();
     for (const MagnetLine& line : magnetLines)
     {
-        if (fabs(line.interval) < EditorTransformSystem_local::TRANSFORM_EPSILON)
+        if (fabs(line.interval) < EditorTransformSystemDetail::TRANSFORM_EPSILON)
         {
             const Vector2::eAxis oppositeAxis = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
 
@@ -541,7 +550,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     deltaPosition *= control->GetScale();
     deltaPosition = ::Rotate(deltaPosition, control->GetAngle());
 
-    Vector<ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
 
     if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
@@ -552,7 +561,10 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     Vector2 finalSize(originalSize + adjustedSize);
     propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
-    systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    {
+        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+    }
 }
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -690,7 +702,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
 
 void EditorTransformSystem::MovePivot(Vector2 delta)
 {
-    Vector<ChangePropertyAction> propertiesToChange;
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
@@ -700,7 +712,10 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    {
+        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+    }
 }
 
 namespace
@@ -808,9 +823,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    Vector<ChangePropertyAction> propertiesToChange;
-    propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
-    systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+    systemsManager->PropertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
     return true;
 }
 
@@ -826,8 +839,8 @@ float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, floa
             nearestTargetAngle += step * (finalAngle >= 0.0f ? 1 : -1);
         }
         //disable rotate backwards if we move cursor forward
-        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + EditorTransformSystem_local::TRANSFORM_EPSILON)
-            || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - EditorTransformSystem_local::TRANSFORM_EPSILON))
+        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + EditorTransformSystemDetail::TRANSFORM_EPSILON)
+            || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - EditorTransformSystemDetail::TRANSFORM_EPSILON))
         {
             extraDelta.dx = deltaAngle;
             return originalAngle;
@@ -921,12 +934,10 @@ void EditorTransformSystem::ClampAngle()
     float32 angle = angleProperty->GetValue().AsFloat();
     if (fabs(angle) > 360)
     {
-        angle += angle > 0.0f ? EditorTransformSystem_local::TRANSFORM_EPSILON : -EditorTransformSystem_local::TRANSFORM_EPSILON;
+        angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    Vector<ChangePropertyAction> propertiesToChange;
-    propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(angle));
-    systemsManager->PropertiesChanged.Emit(propertiesToChange, currentHash);
+    systemsManager->PropertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
 }
 
 bool EditorTransformSystem::IsShiftPressed() const

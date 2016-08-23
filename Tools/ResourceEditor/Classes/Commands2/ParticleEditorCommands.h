@@ -2,6 +2,7 @@
 #define __PARTICLE_EDITOR_COMMANDS_H__
 
 #include <DAVAEngine.h>
+#include "Commands2/Base/RECommand.h"
 #include "Commands2/Base/CommandAction.h"
 
 class CommandAddParticleEmitter : public CommandAction
@@ -20,13 +21,18 @@ class CommandStartStopParticleEffect : public CommandAction
 public:
     CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart);
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     void Redo() override;
 
     bool GetStarted() const
     {
         return isStart;
     };
+
+    bool IsClean() const override
+    {
+        return true;
+    }
 
 protected:
     DAVA::Entity* effectEntity;
@@ -38,8 +44,13 @@ class CommandRestartParticleEffect : public CommandAction
 public:
     CommandRestartParticleEffect(DAVA::Entity* effect);
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     void Redo() override;
+
+    bool IsClean() const override
+    {
+        return true;
+    }
 
 protected:
     DAVA::Entity* effectEntity = nullptr;
@@ -80,7 +91,7 @@ protected:
     DAVA::ParticleLayer* selectedLayer = nullptr;
 };
 
-class CommandRemoveParticleEmitter : public Command2
+class CommandRemoveParticleEmitter : public RECommand
 {
 public:
     CommandRemoveParticleEmitter(DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitterInstance* emitter);
@@ -89,7 +100,6 @@ public:
     void Redo() override;
     void Undo() override;
 
-    DAVA::Entity* GetEntity() const override;
     DAVA::ParticleEffectComponent* GetEffect() const;
     DAVA::ParticleEmitterInstance* GetEmitterInstance() const
     {
@@ -100,11 +110,6 @@ protected:
     DAVA::ParticleEffectComponent* selectedEffect = nullptr;
     DAVA::ParticleEmitterInstance* instance = nullptr;
 };
-
-inline DAVA::Entity* CommandRemoveParticleEmitter::GetEntity() const
-{
-    return nullptr;
-}
 
 inline DAVA::ParticleEffectComponent* CommandRemoveParticleEmitter::GetEffect() const
 {
@@ -201,7 +206,7 @@ protected:
 class CommandUpdateParticleLayerBase : public CommandAction
 {
 public:
-    CommandUpdateParticleLayerBase(CommandID cmdID)
+    CommandUpdateParticleLayerBase(DAVA::uint32 cmdID)
         : CommandAction(cmdID)
     {
     }

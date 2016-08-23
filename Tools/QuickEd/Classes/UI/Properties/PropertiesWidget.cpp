@@ -9,6 +9,7 @@
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
@@ -18,7 +19,7 @@
 #include "PropertiesModel.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
 
-#include "Document.h"
+#include "Document/Document.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"

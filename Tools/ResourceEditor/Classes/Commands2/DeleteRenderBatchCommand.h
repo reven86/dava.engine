@@ -1,21 +1,21 @@
 #ifndef __DELETE_RENDER_BATCH_COMMAND_H__
 #define __DELETE_RENDER_BATCH_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 
-class DeleteRenderBatchCommand : public Command2
+class DeleteRenderBatchCommand : public RECommand
 {
 public:
     DeleteRenderBatchCommand(DAVA::Entity* entity, DAVA::RenderObject* renderObject, DAVA::uint32 renderBatchIndex);
     virtual ~DeleteRenderBatchCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::RenderBatch* GetRenderBatch() const;
 
