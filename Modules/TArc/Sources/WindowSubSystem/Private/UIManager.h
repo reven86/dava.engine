@@ -5,9 +5,10 @@
 #include "WindowSubSystem/UI.h"
 
 class QMainWindow;
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class UIManager final: public UI
 {
 public:
@@ -32,5 +33,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

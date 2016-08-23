@@ -11,7 +11,7 @@
 #include <QFileSystemModel>
 #include <QTimer>
 
-class FileSystemData : public tarc::DataNode
+class FileSystemData : public DAVA::TArc::DataNode
 {
 public:
     ~FileSystemData()
@@ -28,7 +28,7 @@ public:
     DAVA::String sampleText;
 
 private:
-    DAVA_VIRTUAL_REFLECTION(FileSystemData, tarc::DataNode)
+    DAVA_VIRTUAL_REFLECTION(FileSystemData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<FileSystemData>::Begin()
         // TODO check with s_zdanevich
@@ -39,7 +39,7 @@ private:
     }
 };
 
-void DataChangerModule::OnContextCreated(tarc::DataContext& context)
+void DataChangerModule::OnContextCreated(DAVA::TArc::DataContext& context)
 {
     std::unique_ptr<FileSystemData> data = std::make_unique<FileSystemData>();
     data->model = new QFileSystemModel();
@@ -51,13 +51,13 @@ void DataChangerModule::OnContextCreated(tarc::DataContext& context)
     context.CreateData(std::move(data));
 }
 
-void DataChangerModule::OnContextDeleted(tarc::DataContext& context)
+void DataChangerModule::OnContextDeleted(DAVA::TArc::DataContext& context)
 {
 }
 
 void DataChangerModule::PostInit()
 {
-    tarc::UI& ui = GetUI();
+    DAVA::TArc::UI& ui = GetUI();
     wrapper = GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<SharedData>());
     wrapper.AddListener(this);
 
@@ -70,11 +70,11 @@ void DataChangerModule::PostInit()
                            << "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston"
                            << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
-    tarc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
+    DAVA::TArc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
 
-    tarc::DockPanelInfo info;
+    DAVA::TArc::DockPanelInfo info;
     info.title = "Customers";
-    ui.AddView(windowKey, tarc::PanelKey(info.title, info), customerList);
+    ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), customerList);
 
     QListWidget* paragraphs = new QListWidget();
     paragraphs->addItems(QStringList()
@@ -86,12 +86,12 @@ void DataChangerModule::PostInit()
                          << "Sally Hobart, Tiroli Tea, 67 Long River, Fedula");
 
     info.title = "Paragraphs";
-    ui.AddView(windowKey, tarc::PanelKey(info.title, info), paragraphs);
+    ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), paragraphs);
 
     info.area = Qt::LeftDockWidgetArea;
     info.tabbed = false;
     info.title = "Library";
-    ui.AddView(windowKey, tarc::PanelKey(info.title, info), "qrc:/Library.qml",
+    ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), "qrc:/Library.qml",
                GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<FileSystemData>()));
 
     QTimer::singleShot(5000, [this]()
@@ -100,11 +100,11 @@ void DataChangerModule::PostInit()
                        });
 }
 
-void DataChangerModule::OnDataChanged(const tarc::DataWrapper& dataWrapper, const DAVA::Set<DAVA::String>& fields)
+void DataChangerModule::OnDataChanged(const DAVA::TArc::DataWrapper& dataWrapper, const DAVA::Set<DAVA::String>& fields)
 {
     if (wrapper.HasData())
     {
-        tarc::DataEditor<SharedData> editor = wrapper.CreateEditor<SharedData>();
+        DAVA::TArc::DataEditor<SharedData> editor = wrapper.CreateEditor<SharedData>();
         DAVA::Logger::Info("Changer %d", editor->GetValue());
         editor->SetValue(editor->GetValue() + 1);
     }

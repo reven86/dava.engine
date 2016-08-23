@@ -3,9 +3,10 @@
 #include "DataProcessing/DataContext.h"
 #endif
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 template<typename T>
 bool DataContext::HasData() const
 {
@@ -23,5 +24,5 @@ T& DataContext::GetData() const
 {
     return static_cast<T&>(GetData(DAVA::ReflectedType::Get<T>()));
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

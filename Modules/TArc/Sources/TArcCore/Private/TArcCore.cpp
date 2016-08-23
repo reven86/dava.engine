@@ -10,9 +10,10 @@
 
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 Core::Core(DAVA::Engine& engine_)
     : engine(engine_)
 {
@@ -221,5 +222,5 @@ DAVA::RenderWidget* Core::GetRenderWidget() const
 {
     return engine.GetNativeService()->GetRenderWidget();
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

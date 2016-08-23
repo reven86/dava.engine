@@ -4,9 +4,10 @@
 #include "Utils/StringFormat.h"
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 DataContext::~DataContext()
 {
     for (auto& data : dataMap)
@@ -56,5 +57,5 @@ DataContext::ContextID DataContext::GetID() const
 {
     return reinterpret_cast<ContextID>(this);
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

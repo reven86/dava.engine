@@ -1,8 +1,9 @@
 #pragma once
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class UI;
 class DataContext;
 class ContextAccessor;
@@ -29,5 +30,5 @@ private:
     ContextAccessor* contextAccessor = nullptr;
     UI* ui = nullptr;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

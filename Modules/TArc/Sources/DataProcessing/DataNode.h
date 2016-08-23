@@ -4,9 +4,10 @@
 #include "Reflection/Public/ReflectedBase.h"
 #include "Reflection/Registrator.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class DataNode : public DAVA::ReflectedBase
 {
     DAVA_VIRTUAL_REFLECTION(DataNode) {}
@@ -14,5 +15,5 @@ class DataNode : public DAVA::ReflectedBase
 public:
     virtual ~DataNode() = default;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

@@ -4,9 +4,10 @@
 #include "Reflection/Reflection.h"
 #include "DataContext.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 template<typename T> class DataEditor;
 class DataListener;
 class DataWrapper
@@ -45,7 +46,7 @@ private:
     struct Impl;
     std::shared_ptr<Impl> impl;
 };
-    
+
 template<typename T>
 class DataEditor final
 {
@@ -66,21 +67,7 @@ private:
     T* dataPtr = nullptr;
     DataWrapper holder;
 };
-
-class DataListener
-{
-public:
-    virtual ~DataListener();
-    virtual void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) = 0;
-
-private:
-    friend class DataWrapper;
-    void InitListener(const DataWrapper& wrapper);
-
-private:
-    DataWrapper holder;
-};
-
-}
+} // namespace TArc
+} // namespace DAVA
 
 #include "DataProcessing/Private/DataWrapper_impl.h"

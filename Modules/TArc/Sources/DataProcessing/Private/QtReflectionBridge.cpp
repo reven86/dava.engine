@@ -7,9 +7,10 @@
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 QtReflected::QtReflected(QtReflectionBridge* reflectionBridge_, DataWrapper&& wrapper_, QObject* parent)
     : QObject(parent)
     , reflectionBridge(reflectionBridge_)
@@ -133,7 +134,7 @@ void QtReflected::CreateMetaObject()
     DAVA::Reflection reflectionData = wrapper.GetData();
 
     // TODO how to get Real Value Type???
-    const DAVA::ReflectedType* type = DAVA::ReflectedType::GetByPointer(reflectionData.GetValueObject().GetPtr<tarc::DataNode>());
+    const DAVA::ReflectedType* type = DAVA::ReflectedType::GetByPointer(reflectionData.GetValueObject().GetPtr<TArc::DataNode>());
 
     SCOPE_EXIT
     {
@@ -193,5 +194,5 @@ QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper&& wrapper, QObjec
 {
     return new QtReflected(this, std::move(wrapper), parent);
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

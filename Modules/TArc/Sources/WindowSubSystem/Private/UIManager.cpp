@@ -18,9 +18,10 @@
 
 #include <QQuickWidget>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 namespace UIManagerDetail
 {
 struct MainWindowInfo
@@ -161,8 +162,7 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
         statusBar->addWidget(widget, stretchFactor);
     }
 }
-
-}
+} // namespace UIManagerDetail
 
 struct UIManager::Impl
 {
@@ -307,12 +307,12 @@ void UIManager::ClearMessage(const WindowKey& windowKey)
     impl->FindOrCreateWindow(windowKey).window->statusBar()->clearMessage();
 }
 
-std::unique_ptr<tarc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
+std::unique_ptr<TArc::WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
     dlg->Show();
     return std::move(dlg);
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

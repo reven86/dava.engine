@@ -2,9 +2,10 @@
 
 #include <QUrl>
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 WindowKey::WindowKey(const DAVA::FastName& appID_)
     : appID(appID_)
 {
@@ -56,5 +57,5 @@ void ActionPlacementInfo::AddPlacementPoint(const QUrl& url)
 {
     urls.emplace_back(url);
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

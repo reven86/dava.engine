@@ -3,19 +3,20 @@
 #include "TArcCore/ControllerModule.h"
 #include "DataProcessing/DataContext.h"
 #include "DataProcessing/DataWrapper.h"
+#include "DataProcessing/DataListener.h"
 
 #include "Base/BaseTypes.h"
 
-class TemplateControllerModule : public tarc::ControllerModule, public tarc::DataListener
+class TemplateControllerModule : public DAVA::TArc::ControllerModule, public DAVA::TArc::DataListener
 {
 protected:
-    void OnContextCreated(tarc::DataContext& context) override;
-    void OnContextDeleted(tarc::DataContext& context) override;
+    void OnContextCreated(DAVA::TArc::DataContext& context) override;
+    void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
-    void OnDataChanged(const tarc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
 
 private:
-    tarc::DataWrapper wrapper;
-    tarc::DataContext::ContextID contextID;
+    DAVA::TArc::DataWrapper wrapper;
+    DAVA::TArc::DataContext::ContextID contextID;
 };

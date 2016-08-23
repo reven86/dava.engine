@@ -8,9 +8,10 @@
 class QDialog;
 class QProgressBar;
 class QLabel;
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class WaitDialog: public WaitHandle
 {
 public:
@@ -28,5 +29,5 @@ private:
     QPointer<QProgressBar> progressBar;
     QPointer<QLabel> label;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

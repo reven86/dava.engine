@@ -4,7 +4,7 @@
 
 #include "Reflection/Registrator.h"
 
-class SharedData : public tarc::DataNode
+class SharedData : public DAVA::TArc::DataNode
 {
 public:
     SharedData()
@@ -23,7 +23,7 @@ public:
 private:
     int sharedInt = 0;
 
-    DAVA_VIRTUAL_REFLECTION(SharedData, tarc::DataNode)
+    DAVA_VIRTUAL_REFLECTION(SharedData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SharedData>::Begin()
         .Field("sharedInt", &SharedData::sharedInt)

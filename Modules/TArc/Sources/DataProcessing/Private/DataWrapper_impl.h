@@ -3,9 +3,10 @@
 #include "DataProcessing/DataWrapper.h"
 #endif
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 template<typename T>
 DataEditor<T>::DataEditor(DataWrapper& holder_, DAVA::Reflection reflection_)
     : reflection(reflection_)
@@ -69,5 +70,5 @@ DataEditor<T> DataWrapper::CreateEditor()
 
     throw std::runtime_error(DAVA::Format("Somebody tried to create editor for data that doesn't exist. T = %s", DAVA::Type::Instance<T>()->GetName()));
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

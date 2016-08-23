@@ -1,9 +1,10 @@
 #include "TArcCore/ControllerModule.h"
 #include "Debug/DVAssert.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 ContextManager& ControllerModule::GetContextManager()
 {
     DVASSERT(contextManager != nullptr);
@@ -15,5 +16,5 @@ void ControllerModule::SetContextManager(ContextManager* contextManager_)
     DVASSERT(contextManager == nullptr);
     contextManager = contextManager_;
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

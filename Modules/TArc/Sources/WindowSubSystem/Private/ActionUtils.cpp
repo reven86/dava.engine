@@ -2,10 +2,11 @@
 
 #include <QAction>
 
-namespace tarc
+namespace DAVA
 {
-
-QUrl tarc::CreateMenuPoint(const QString& path)
+namespace TArc
+{
+QUrl TArc::CreateMenuPoint(const QString& path)
 {
     QUrl url;
     url.setPath(path);
@@ -41,5 +42,5 @@ void AttachWidgetToAction(QAction* action, QWidget* widget)
 {
     action->setData(QVariant::fromValue(widget));
 }
-
-}
+} // namespace TArc
+} // namespace DAVA

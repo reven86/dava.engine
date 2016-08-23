@@ -3,9 +3,10 @@
 #include "TArcCore/ClientModule.h"
 #include "TArcCore/ContextManager.h"
 
-namespace tarc
+namespace DAVA
 {
-
+namespace TArc
+{
 class ControllerModule : public ClientModule
 {
 protected:
@@ -18,5 +19,5 @@ private:
     friend class Core;
     ContextManager* contextManager = nullptr;
 };
-
-}
+} // namespace TArc
+} // namespace DAVA

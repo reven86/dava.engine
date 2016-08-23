@@ -7,7 +7,9 @@
 
 class QAction;
 class QWidget;
-namespace tarc
+namespace DAVA
+{
+namespace TArc
 {
 static const QString menuScheme = QStringLiteral("menu");
 static const QString toolbarScheme = QStringLiteral("toolbar");
@@ -20,5 +22,5 @@ QUrl CreateToolbarPoint(const QString& toolbarName);
 QUrl CreateStatusbarPoint(bool isPermanent, DAVA::uint32 stretchFactor = 0);
 
 void AttachWidgetToAction(QAction* action, QWidget* widget);
-
-}
+} // namespace TArc
+} // namespace DAVA
