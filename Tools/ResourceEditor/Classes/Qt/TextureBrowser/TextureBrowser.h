@@ -52,7 +52,7 @@ public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
     void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
 private:
     Ui::TextureBrowser* ui;
@@ -71,7 +71,7 @@ private:
     QMap<QString, int> textureListSortModes;
     QMap<int, DAVA::eGPUFamily> tabIndexToViewMode;
 
-    SceneEditor2* curScene;
+    SceneEditor2* curScene = nullptr;
     DAVA::eGPUFamily curTextureView;
 
     DAVA::Texture* curTexture;

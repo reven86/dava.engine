@@ -1,3 +1,4 @@
+#if 0
 #include "Extensions.h"
 
 #include "Classes/Qt/Main/mainwindow.h"
@@ -6,7 +7,6 @@
 #include "NgtTools/Reflection/NGTCollectionsImpl.h"
 #include "NgtTools/Common/GlobalContext.h"
 
-#include "Commands2/Actions/ShowMaterialAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/KeyedArchiveCommand.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
@@ -321,7 +321,7 @@ void EntityInjectDataExtension::RemoveComponent(const wgt::RefPropertyItem* item
         DAVA::Component* component = wgt::reflectedCast<DAVA::Component>(handle.data(), handle.type(), defManager);
         DVASSERT(component != nullptr);
 
-        delegateObj.Exec(Command2::Create<RemoveComponentCommand>(component->GetEntity(), component));
+        delegateObj.Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(component->GetEntity(), component)));
     }
     delegateObj.EndBatch();
 }
@@ -345,7 +345,7 @@ void EntityInjectDataExtension::RemoveRenderBatch(const wgt::RefPropertyItem* it
     DVASSERT(batchIndex != static_cast<DAVA::uint32>(-1));
 
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, renderObject);
-    delegateObj.Exec(Command2::Create<DeleteRenderBatchCommand>(entity, renderObject, batchIndex));
+    delegateObj.Exec(std::unique_ptr<DAVA::Command>(new DeleteRenderBatchCommand(entity, renderObject, batchIndex)));
 }
 
 void EntityInjectDataExtension::ConvertBatchToShadow(const wgt::RefPropertyItem* item)
@@ -354,14 +354,14 @@ void EntityInjectDataExtension::ConvertBatchToShadow(const wgt::RefPropertyItem*
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
     DAVA::Entity* entity = ExtensionsDetails::FindEntityWithRenderObject(item, batch->GetRenderObject());
 
-    delegateObj.Exec(Command2::Create<ConvertToShadowCommand>(entity, batch));
+    delegateObj.Exec(std::unique_ptr<DAVA::Command>(new ConvertToShadowCommand(entity, batch)));
 }
 
 void EntityInjectDataExtension::RebuildTangentSpace(const wgt::RefPropertyItem* item)
 {
     INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
     DAVA::RenderBatch* batch = ExtensionsDetails::ExtractRenderBatch(item, defManager);
-    delegateObj.Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
+    delegateObj.Exec(std::unique_ptr<DAVA::Command>(new RebuildTangentSpaceCommand(batch, true)));
 }
 
 void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
@@ -374,14 +374,14 @@ void EntityInjectDataExtension::OpenMaterials(const wgt::RefPropertyItem* item)
 
     DAVA::NMaterial* material = wgt::reflectedCast<DAVA::NMaterial>(handle.data(), handle.type(), defManager);
     DVASSERT(material != nullptr);
-    delegateObj.Exec(Command2::Create<ShowMaterialAction>(material));
+//    delegateObj.Exec(std::unique_ptr<DAVA::Command>(new ShowMaterialAction(material)));
 }
 
 void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* item)
 {
     INTERFACE_REQUEST(wgt::IDefinitionManager, defManager, defManagerHolder, void());
 
-    AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
+    /*AddCustomPropertyWidget* w = new AddCustomPropertyWidget(DAVA::VariantType::TYPE_STRING, QtMainWindow::Instance());
     w->ValueReady.Connect([this, item, &defManager](const DAVA::String& name, const DAVA::VariantType& value)
                           {
                               const std::vector<std::shared_ptr<const wgt::PropertyNode>>& objects = item->getObjects();
@@ -396,14 +396,14 @@ void EntityInjectDataExtension::AddCustomProperty(const wgt::RefPropertyItem* it
                                       NGTLayer::NGTKeyedArchiveImpl* archImpl = dynamic_cast<NGTLayer::NGTKeyedArchiveImpl*>(impl.get());
                                       DVASSERT(archImpl != nullptr);
                                       DAVA::KeyedArchive* archive = archImpl->GetArchive();
-                                      delegateObj.Exec(Command2::Create<KeyedArchiveAddValueCommand>(archive, name, value));
+                                      delegateObj.Exec(std::unique_ptr<DAVA::Command>(new KeyedArchiveAddValueCommand(archive, name, value)));
                                   }
                               }
 
                               delegateObj.EndBatch();
                           });
     w->show();
-    w->move(300, 300);
+    w->move(300, 300);*/
 }
 
 AddCustomPropertyWidget::AddCustomPropertyWidget(int defaultType, QWidget* parent /* = NULL */)
@@ -553,3 +553,5 @@ void AddCustomPropertyWidget::PreSetSelected(int index)
         valueWidget->setEnabled(true);
     }
 }
+
+#endif 0

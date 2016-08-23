@@ -30,6 +30,6 @@ protected:
 };
 }
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#endif // __DAVAENGINE_ANDROID__
 
 #endif // __JNI_EXTENSIONS_H__

@@ -1,6 +1,8 @@
 #ifndef BACKTRACECORKSCREWIMPL_H_
 #define BACKTRACECORKSCREWIMPL_H_
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "BacktraceInterface.h"
 #include "libcorkscrew_stab.h"
 namespace DAVA
@@ -61,4 +63,6 @@ protected:
 };
 
 } /* namespace DAVA */
+
+#endif // !__DAVAENGINE_COREV2__
 #endif /* BACKTRACECORKSCREWIMPL_H_ */

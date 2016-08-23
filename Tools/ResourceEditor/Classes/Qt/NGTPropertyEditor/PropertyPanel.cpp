@@ -1,3 +1,4 @@
+#if 0
 #include "PropertyPanel.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
@@ -145,28 +146,17 @@ void PropertyPanel::UpdateModel()
 
 void PropertyPanel::BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount)
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->BeginBatch(name, commandCount);
 }
 
-void PropertyPanel::Exec(Command2::Pointer&& command)
+void PropertyPanel::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->Exec(std::move(command));
 }
 
 void PropertyPanel::EndBatch()
 {
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-    DVASSERT(scene != nullptr);
-
-    scene->EndBatch();
 }
 
 void PropertyPanel::onLoaded(wgt::IView* view)
 {
 }
+#endif 0

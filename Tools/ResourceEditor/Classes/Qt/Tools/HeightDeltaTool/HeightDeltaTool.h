@@ -1,7 +1,7 @@
-#ifndef __HEIGHTMAPPATH_TOOL_H__
-#define __HEIGHTMAPPATH_TOOL_H__
+#pragma once
 
 #include "DAVAEngine.h"
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
 
 #include <QWidget>
 #include <QScopedPointer>
@@ -29,7 +29,5 @@ private:
 
     QScopedPointer<Ui::HeightDeltaTool> ui;
     QString outputFilePath;
+    ActiveSceneHolder sceneholder;
 };
-
-
-#endif // __HEIGHTMAPPATH_TOOL_H__

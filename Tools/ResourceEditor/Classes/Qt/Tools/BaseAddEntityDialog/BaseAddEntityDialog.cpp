@@ -38,7 +38,7 @@ BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent, QDialogButtonBox::Stan
 
     ui->buttonBox->setStandardButtons(buttons);
 
-    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
+    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const DAVA::Command*, bool)));
 }
 
 BaseAddEntityDialog::~BaseAddEntityDialog()
@@ -180,17 +180,18 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 
 void BaseAddEntityDialog::OnItemEdited(const QModelIndex& index)
 {
-    SceneEditor2* curScene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* curScene = sceneHolder.GetScene();
+    if (curScene == nullptr)
+    {
+        return;
+    }
 
     QtPropertyData* data = propEditor->GetProperty(index);
-    Command2::Pointer command = data->CreateLastCommand();
-    if (command && nullptr != curScene)
-    {
-        curScene->Exec(std::move(command));
-    }
+    std::unique_ptr<DAVA::Command> command = data->CreateLastCommand();
+    curScene->Exec(std::move(command));
 }
 
-void BaseAddEntityDialog::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void BaseAddEntityDialog::CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo)
 {
     if (propEditor)
     {

@@ -3,10 +3,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+class GameCore;
 class StaticTextTest : public BaseScreen
 {
 public:
-    StaticTextTest();
+    StaticTextTest(GameCore* g);
 
     void LoadResources() override;
     void UnloadResources() override;

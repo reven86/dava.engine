@@ -864,7 +864,7 @@ void DLC::StepPatchFinish()
     default:
         if (!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
         {
-            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch.");
+            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch. patching error: %d", dlcContext.patchingError);
             PostError(DE_PATCH_ERROR_FULL);
         }
         else
@@ -891,6 +891,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
     PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);
+    patchReader.SetLogsFilePath(logsFilePath);
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;

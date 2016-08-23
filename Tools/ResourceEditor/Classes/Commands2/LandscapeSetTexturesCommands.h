@@ -3,8 +3,9 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "Math/AABBox3.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 namespace DAVA
 {
@@ -14,7 +15,7 @@ class Landscape;
 
 class LandscapeProxy;
 
-class LandscapeSetHeightMapCommand : public Command2
+class LandscapeSetHeightMapCommand : public RECommand
 {
 public:
     LandscapeSetHeightMapCommand(DAVA::Entity* landscapeEntity,
@@ -26,7 +27,7 @@ public:
     void Undo() override;
     void Redo() override;
 
-    DAVA::Entity* GetEntity() const override
+    DAVA::Entity* GetEntity() const
     {
         return landscapeEntity;
     }

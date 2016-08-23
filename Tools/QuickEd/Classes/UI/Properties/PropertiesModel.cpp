@@ -1,12 +1,11 @@
 #include "PropertiesModel.h"
 
-#include "Platform/SystemTimer.h"
 #include "QtTools/Utils/Utils.h"
 
 #include <QFont>
 #include <QVector2D>
 #include <QVector4D>
-#include "Document.h"
+#include "Document/Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -17,7 +16,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
-#include "UI/Commands/ChangePropertyValueCommand.h"
+#include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/UIControl.h"
@@ -287,6 +286,11 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
+const AbstractProperty* PropertiesModel::GetRootProperty() const
+{
+    return rootProperty;
+}
+
 void PropertiesModel::UpdateAllChangedProperties()
 {
     for (auto property : changedProperties)
@@ -320,6 +324,8 @@ void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty* root, Compone
 void PropertiesModel::ComponentPropertiesWasAdded(RootProperty* root, ComponentPropertiesSection* section, int index)
 {
     endInsertRows();
+    QModelIndex modelIndex = indexByProperty(root->GetProperty(index), 0);
+    emit ComponentAdded(modelIndex);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty* root, ComponentPropertiesSection* section, int index)
@@ -384,8 +390,7 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantTy
     {
         if (nullptr != controlNode)
         {
-            size_type usCount = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
-            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
+            commandExecutor->ChangeProperty(controlNode, property, value);
         }
         else if (styleSheet)
         {
@@ -414,13 +419,13 @@ void PropertiesModel::ResetProperty(AbstractProperty* property)
     }
 }
 
-QModelIndex PropertiesModel::indexByProperty(AbstractProperty* property, int column)
+QModelIndex PropertiesModel::indexByProperty(const AbstractProperty* property, int column)
 {
     AbstractProperty* parent = property->GetParent();
     if (parent == nullptr)
         return QModelIndex();
 
-    return createIndex(parent->GetIndex(property), column, property);
+    return createIndex(parent->GetIndex(property), column, static_cast<void*>(const_cast<AbstractProperty*>(property)));
 }
 
 QString PropertiesModel::makeQVariant(const AbstractProperty* property) const

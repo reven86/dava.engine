@@ -3,10 +3,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+class GameCore;
 class InputTest : public BaseScreen
 {
 public:
-    InputTest();
+    InputTest(GameCore* g);
 
 protected:
     void LoadResources() override;

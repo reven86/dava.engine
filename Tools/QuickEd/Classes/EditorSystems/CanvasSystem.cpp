@@ -47,8 +47,6 @@ public:
                          PROPERTY("backgroundColor2", "Preview Widget/Background color 2", GetBackgroundColor2, SetBackgroundColor2, I_VIEW | I_EDIT | I_SAVE | I_PREFERENCE)
                          PROPERTY("backgroundColorIndex", "Preview Widget/Background color index", GetBackgroundColorIndex, SetBackgroundColorIndex, I_SAVE | I_PREFERENCE)
                          )
-
-    REGISTER_PREFERENCES(ColorControl)
 };
 
 REGISTER_PREFERENCES_ON_START(ColorControl,
@@ -102,11 +100,12 @@ void GridControl::Draw(const UIGeometricData& geometricData)
 ColorControl::ColorControl()
 {
     background->SetDrawType(UIControlBackground::DRAW_FILL);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 ColorControl::~ColorControl()
 {
-    PreferencesStorage::Instance()->UnregisterPreferences(this); // TODO: fix REGISTER_PREFERENCES for unregistring preferences
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 Color ColorControl::GetBackgroundColor0() const
@@ -454,7 +453,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
         return;
     }
 
-    if (inTransformState)
+    if (node->GetParent()->GetControl() != nullptr && inTransformState)
     {
         transformedNodes.insert(node);
     }
@@ -518,7 +517,7 @@ void CanvasSystem::LayoutCanvas()
     float32 totalHeight = 0.0f;
     const int spacing = 5;
     const List<UIControl*>& children = controlsCanvas->GetChildren();
-    int childrenCount = children.size();
+    size_t childrenCount = children.size();
     if (childrenCount > 1)
     {
         totalHeight += spacing * (childrenCount - 1);

@@ -48,4 +48,6 @@ String DemangleSymbol(const char8* symbol);
 } // namespace Debug
 } // namespace DAVA
 
+// clang-format on
+
 #endif // __DAVAENGINE_BACKTRACE_H__

@@ -3,8 +3,8 @@
 
 using namespace DAVA;
 
-InputTest::InputTest()
-    : BaseScreen("InputTest")
+InputTest::InputTest(GameCore* g)
+    : BaseScreen(g, "InputTest")
 {
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &InputTest::OnInputChanged);
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_KEYBOARD_TYPE).Connect(this, &InputTest::OnInputChanged);

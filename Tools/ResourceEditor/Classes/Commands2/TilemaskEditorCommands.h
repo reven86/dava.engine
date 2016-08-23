@@ -1,8 +1,7 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 
-#include "Commands2/Base/Command2.h"
-#include "Commands2/Base/CommandAction.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Base/FastName.h"
 #include "Math/Color.h"
@@ -18,7 +17,7 @@ class Image;
 class Texture;
 }
 
-class ModifyTilemaskCommand : public Command2
+class ModifyTilemaskCommand : public RECommand
 {
 public:
     ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const DAVA::Rect& updatedRect);
@@ -26,7 +25,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
 protected:
     DAVA::Image* undoImageMask = nullptr;
@@ -37,7 +35,7 @@ protected:
     void ApplyImageToTexture(DAVA::Image* image, DAVA::Texture* dstTex);
 };
 
-class SetTileColorCommand : public Command2
+class SetTileColorCommand : public RECommand
 {
 public:
     SetTileColorCommand(LandscapeProxy* landscapeProxy, const DAVA::FastName& level, const DAVA::Color& color);
@@ -45,7 +43,6 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
 protected:
     const DAVA::FastName& level;

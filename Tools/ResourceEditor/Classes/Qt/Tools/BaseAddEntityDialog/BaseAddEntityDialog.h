@@ -1,14 +1,16 @@
 #ifndef __RESOURCEEDITORQT__BASEADDENTITYDIALOG__
 #define __RESOURCEEDITORQT__BASEADDENTITYDIALOG__
 
-#include <QDialog.h>
 #include "DAVAEngine.h"
 #include "Scene3D/Entity.h"
-#include <QDialogButtonBox>
 
-#include "Scene/SceneEditor2.h"
-#include "Tools/QtPropertyEditor/QtPropertyEditor.h"
-#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/ActiveSceneHolder.h"
+#include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyEditor.h"
+#include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
+
+#include <QDialog.h>
+#include <QDialogButtonBox>
 
 namespace Ui
 {
@@ -39,7 +41,7 @@ public:
 
 protected slots:
     virtual void OnItemEdited(const QModelIndex&);
-    virtual void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    virtual void CommandExecuted(SceneEditor2* scene, const DAVA::Command* command, bool redo);
 
 protected:
     virtual void FillPropertyEditorWithContent() = 0;
@@ -62,6 +64,7 @@ protected:
     Ui::BaseAddEntityDialog* ui;
 
     DAVA::Map<QWidget*, QWidget*> additionalWidgetMap;
+    ActiveSceneHolder sceneHolder;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__BASEADDENTITYDIALOG__) */

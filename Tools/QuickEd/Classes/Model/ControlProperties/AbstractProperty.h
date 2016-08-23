@@ -53,7 +53,7 @@ public:
 
     virtual DAVA::uint32 GetCount() const = 0;
     virtual AbstractProperty* GetProperty(DAVA::int32 index) const = 0;
-    virtual DAVA::int32 GetIndex(AbstractProperty* property) const;
+    virtual DAVA::int32 GetIndex(const AbstractProperty* property) const;
 
     virtual void Refresh(DAVA::int32 refreshFlags);
     virtual AbstractProperty* FindPropertyByPrototype(AbstractProperty* prototype);

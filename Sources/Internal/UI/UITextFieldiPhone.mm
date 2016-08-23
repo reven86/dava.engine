@@ -9,11 +9,17 @@
 #include "Platform/TemplateiOS/UITextFieldHolder.h"
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Utils/NSStringUtils.h"
+#include "Utils/UTF8Utils.h"
 
-#include "UI/Private/iOS/WebViewControliOS.h"
-
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/EngineModule.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
+#include "UI/Private/iOS/WebViewControliOS.h"
+#endif
 
 namespace
 {
@@ -22,21 +28,72 @@ const int MOVE_TO_OFFSCREEN_STEP = 20000;
 
 namespace DAVA
 {
+struct TextFieldPlatformImpl::TextFieldObjcBridge final
+{
+    UITextFieldHolder* textFieldHolder = nullptr;
+};
+
+#if defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
-    : davaTextField(*tf)
-    , renderToTexture(false)
+    : window(Engine::Instance()->PrimaryWindow())
+    , bridge(new TextFieldObjcBridge)
+    , davaTextField(*tf)
+{
+    DVASSERT(isSingleLine);
+
+    WindowNativeService* nativeService = window->GetNativeService();
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->GetUIViewFromPool("UITextFieldHolder"));
+    [bridge->textFieldHolder attachWindow:window];
+
+    DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
+
+    [bridge->textFieldHolder setTextField:&davaTextField];
+    [bridge->textFieldHolder dropCachedText];
+
+    prevRect = tf->GetRect();
+    if (renderToTexture)
+    {
+        UpdateNativeRect(prevRect, MOVE_TO_OFFSCREEN_STEP);
+    }
+    else
+    {
+        UpdateNativeRect(prevRect, 0);
+    }
+}
+
+TextFieldPlatformImpl::~TextFieldPlatformImpl()
+{
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
+    [textFieldHolder setTextField:(DAVA::UITextField*)nil];
+
+    if (!isSingleLine)
+    {
+        textFieldHolder->textField.userInteractionEnabled = NO;
+        // destroy UITextView and restore textField back
+        [textFieldHolder->textCtrl removeFromSuperview];
+
+        textFieldHolder->textCtrl = textFieldHolder->textField;
+        [textFieldHolder addSubview:textFieldHolder->textCtrl];
+    }
+
+    WindowNativeService* nativeService = window->GetNativeService();
+    nativeService->ReturnUIViewToPool(textFieldHolder);
+}
+#else // defined(__DAVAENGINE_COREV2__)
+TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
+    : bridge(new TextFieldObjcBridge)
+    , davaTextField(*tf)
 {
     DVASSERT(isSingleLine);
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
-    UITextFieldHolder* textFieldHolder = [backgroundView CreateTextField];
+    bridge->textFieldHolder = [backgroundView CreateTextField];
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     DVASSERT(textFieldHolder->textCtrl != nullptr);
 
     [textFieldHolder setTextField:&davaTextField];
     [textFieldHolder dropCachedText];
-
-    objcClassPtr = textFieldHolder;
 
     prevRect = tf->GetRect();
     if (renderToTexture)
@@ -50,7 +107,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 }
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     [textFieldHolder setTextField:(DAVA::UITextField*)nil];
 
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
@@ -67,12 +124,12 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
     }
 
     [backgroundView ReleaseTextField:textFieldHolder];
-    objcClassPtr = 0;
 }
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
     UIView* view = textFieldHolder->textCtrl;
     UILabel* label = static_cast<UILabel*>(view);
@@ -86,13 +143,18 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 
     isNeedToUpdateTexture = true;
 }
+
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+#if defined(__DAVAENGINE_COREV2__)
+    float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
+    scaledSize /= window->GetScaleX();
+#else
     float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
     scaledSize /= Core::Instance()->GetScreenScaleFactor();
+#endif
 
-    UIView* view = textFieldHolder->textCtrl;
+    UIView* view = bridge->textFieldHolder->textCtrl;
     UIFont* font = [UIFont systemFontOfSize:scaledSize];
     [view setValue:font forKey:@"font"];
 
@@ -101,7 +163,7 @@ void TextFieldPlatformImpl::SetFontSize(float size)
 
 void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIView* view = textFieldHolder->textCtrl;
     if (isSingleLine)
     {
@@ -152,7 +214,7 @@ void TextFieldPlatformImpl::SetTextAlign(DAVA::int32 align)
 
 DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
 
     DAVA::int32 retValue = 0;
     UIView* view = textFieldHolder->textCtrl;
@@ -200,15 +262,13 @@ DAVA::int32 TextFieldPlatformImpl::GetTextAlign()
 
 void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-    [textFieldHolder setUseRtlAlign:useRtlAlign];
+    [bridge->textFieldHolder setUseRtlAlign:useRtlAlign];
     isNeedToUpdateTexture = true;
 }
 
 bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-    return textFieldHolder->useRtlAlign == YES;
+    return bridge->textFieldHolder->useRtlAlign == YES;
 }
 
 void TextFieldPlatformImpl::OpenKeyboard()
@@ -252,7 +312,7 @@ void TextFieldPlatformImpl::OpenKeyboard()
                                     nil,
                                     CFNotificationSuspensionBehaviorDeliverImmediately);
 
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     textFieldHolder->textCtrl.userInteractionEnabled = YES;
     [textFieldHolder->textCtrl becomeFirstResponder];
 }
@@ -265,7 +325,7 @@ void TextFieldPlatformImpl::CloseKeyboard()
                                        (__bridge CFStringRef)UIKeyboardDidChangeFrameNotification,
                                        nil);
 
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     if (isSingleLine)
     {
         textFieldHolder->textCtrl.userInteractionEnabled = NO;
@@ -275,7 +335,7 @@ void TextFieldPlatformImpl::CloseKeyboard()
 
 void TextFieldPlatformImpl::ShowField()
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
 
     DVASSERT([textFieldHolder superview] != nil);
     [textFieldHolder setHidden:NO];
@@ -299,7 +359,7 @@ void TextFieldPlatformImpl::ShowField()
 
 void TextFieldPlatformImpl::HideField()
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     [textFieldHolder setHidden:YES];
 
     // Detach from "keyboard shown/keyboard hidden" notifications.
@@ -311,11 +371,13 @@ void TextFieldPlatformImpl::HideField()
 
 void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffset)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-
-    DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-    DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
-    DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+#if defined(__DAVAENGINE_COREV2__)
+    float32 divider = window->GetScaleX();
+#else
+    float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
+#endif
+    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
+    Vector2 physicalOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x) / divider, (physicalRect.y + physicalOffset.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
 
     nativeRect = CGRectIntegral(nativeRect);
@@ -325,7 +387,7 @@ void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffse
     nativeRect.size.width = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.width);
     nativeRect.size.height = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.height);
 
-    textFieldHolder->textCtrl.frame = nativeRect;
+    bridge->textFieldHolder->textCtrl.frame = nativeRect;
 }
 
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
@@ -335,7 +397,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 
 void TextFieldPlatformImpl::SetText(const WideString& string)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
 
     NSString* text = [[[NSString alloc] initWithBytes:(char*)string.data()
                                                length:string.size() * sizeof(wchar_t)
@@ -368,9 +430,7 @@ void TextFieldPlatformImpl::SetText(const WideString& string)
 
 void TextFieldPlatformImpl::GetText(WideString& string) const
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-
-    UIView* view = textFieldHolder->textCtrl;
+    UIView* view = bridge->textFieldHolder->textCtrl;
     NSString* textInField = [view valueForKey:@"text"];
 
     DVASSERT(nullptr != textInField);
@@ -379,26 +439,24 @@ void TextFieldPlatformImpl::GetText(WideString& string) const
     DVASSERT_MSG(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
     if (nullptr != cstr)
     {
-        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+        UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
     }
 }
 
 void TextFieldPlatformImpl::SetIsPassword(bool isPassword)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-    [textFieldHolder setIsPassword:isPassword];
+    [bridge->textFieldHolder setIsPassword:isPassword];
     isNeedToUpdateTexture = true;
 }
 
 void TextFieldPlatformImpl::SetInputEnabled(bool value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-    [textFieldHolder setTextInputAllowed:value];
+    [bridge->textFieldHolder setTextInputAllowed:value];
 }
 
 void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIView* view = textFieldHolder->textCtrl;
 
     UITextAutocapitalizationType type_ = [textFieldHolder convertAutoCapitalizationType:
@@ -417,7 +475,7 @@ void TextFieldPlatformImpl::SetAutoCapitalizationType(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
 
     UIView* view = textFieldHolder->textCtrl;
     UITextAutocorrectionType type_ = [textFieldHolder convertAutoCorrectionType:
@@ -437,7 +495,7 @@ void TextFieldPlatformImpl::SetAutoCorrectionType(DAVA::int32 value)
 void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
 {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UITextSpellCheckingType type_ = [textFieldHolder convertSpellCheckingType:
                                                      (DAVA::UITextField::eSpellCheckingType)value];
 
@@ -457,7 +515,7 @@ void TextFieldPlatformImpl::SetSpellCheckingType(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIView* view = textFieldHolder->textCtrl;
     UIKeyboardAppearance type_ = [textFieldHolder convertKeyboardAppearanceType:
                                                   (DAVA::UITextField::eKeyboardAppearanceType)value];
@@ -475,7 +533,7 @@ void TextFieldPlatformImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIView* view = textFieldHolder->textCtrl;
     UIKeyboardType type_ = [textFieldHolder convertKeyboardType:
                                             (DAVA::UITextField::eKeyboardType)value];
@@ -493,7 +551,7 @@ void TextFieldPlatformImpl::SetKeyboardType(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     UIReturnKeyType type_ = [textFieldHolder convertReturnKeyType:
                                              (DAVA::UITextField::eReturnKeyType)value];
     UIView* view = textFieldHolder->textCtrl;
@@ -511,7 +569,7 @@ void TextFieldPlatformImpl::SetReturnKeyType(DAVA::int32 value)
 
 void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     BOOL type_ = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
     UIView* view = textFieldHolder->textCtrl;
     if (isSingleLine)
@@ -528,7 +586,7 @@ void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 
 uint32 TextFieldPlatformImpl::GetCursorPos()
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     if (!textFieldHolder)
     {
         return 0;
@@ -553,7 +611,7 @@ uint32 TextFieldPlatformImpl::GetCursorPos()
 
 void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     if (!textFieldHolder)
     {
         return;
@@ -589,14 +647,12 @@ void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 
 void TextFieldPlatformImpl::SetVisible(bool value)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-
-    [textFieldHolder setHidden:value == false];
+    [bridge->textFieldHolder setHidden:value == false];
 }
 
 void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 {
-    UITextFieldHolder* textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     if (textFieldHolder)
     {
         UIView* view = textFieldHolder->textCtrl;
@@ -610,15 +666,34 @@ void TextFieldPlatformImpl::SetMaxLength(int maxLength)
 
 void TextFieldPlatformImpl::UpdateStaticTexture()
 {
-    UITextFieldHolder* textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
-    DVASSERT(textFieldHolder);
-
-    ::UIView* textView = textFieldHolder->textCtrl;
-    DVASSERT(textView);
+    ::UIView* textView = bridge->textFieldHolder->textCtrl;
+    DVASSERT(textView != nullptr);
     NSString* text = [textView valueForKey:@"text"];
 
     if (renderToTexture && deltaMoveControl != 0 && text.length > 0)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(textView);
+        if (nativeImage != nullptr)
+        {
+            RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+            if (image != nullptr)
+            {
+                RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));
+                if (texture != nullptr)
+                {
+                    uint32 width = image->GetWidth();
+                    uint32 height = image->GetHeight();
+                    Rect rect = davaTextField.GetRect();
+                    RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
+                    if (sprite != nullptr)
+                    {
+                        davaTextField.GetBackground()->SetSprite(sprite.Get(), 0);
+                    }
+                }
+            }
+        }
+#else
         void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textView);
         ::UIImage* image = static_cast<::UIImage*>(imgPtr);
         if (nullptr != image) // can't render to empty rect so skip
@@ -626,6 +701,7 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
             // set backgroud image into davaTextField control
             WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
         }
+#endif
         isNeedToUpdateTexture = false;
     }
     else
@@ -637,7 +713,7 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
 
 void TextFieldPlatformImpl::SetMultiline(bool multiline)
 {
-    UITextFieldHolder* textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
+    UITextFieldHolder* textFieldHolder = bridge->textFieldHolder;
     DVASSERT(textFieldHolder);
 
     if (isSingleLine && multiline)
@@ -667,12 +743,14 @@ void TextFieldPlatformImpl::SetMultiline(bool multiline)
         //See http://stackoverflow.com/questions/746670/how-to-lose-margin-padding-in-uitextview
         textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
 
+#if defined(__DAVAENGINE_COREV2__)
+
+#else
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
         [backgroundView PrepareView:textFieldHolder->textCtrl];
-
+#endif
         [textFieldHolder addSubview:textView];
-
         textFieldHolder->textCtrl = textView;
 
         textView.textColor = color;

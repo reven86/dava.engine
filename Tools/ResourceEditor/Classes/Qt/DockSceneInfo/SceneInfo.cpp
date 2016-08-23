@@ -1,28 +1,26 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
-
-#include "Main/QtUtils.h"
-
-#include "Render/TextureDescriptor.h"
+#include "Qt/Project/ProjectManager.h"
+#include "Qt/Main/QtUtils.h"
+#include "Qt/Scene/SceneSignals.h"
+#include "Qt/Scene/SceneEditor2.h"
+#include "Qt/Scene/SceneHelper.h"
+#include "Qt/Scene/System/EditorStatisticsSystem.h"
+#include "Qt/Scene/System/EditorVegetationSystem.h"
 
 #include "ImageTools/ImageTools.h"
 
-#include "Scene/SceneSignals.h"
-#include "Scene/SceneEditor2.h"
-#include "Scene/SceneHelper.h"
-#include "Scene/System/EditorStatisticsSystem.h"
-#include "Scene/System/EditorVegetationSystem.h"
-#include "Main/mainwindow.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
+#include "Render/TextureDescriptor.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
 
-#include "Render/Material/NMaterialNames.h"
-
-#include "Scene3D/Components/ComponentHelpers.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 using namespace DAVA;
 
@@ -38,6 +36,7 @@ SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     connect(signalDispatcher, &SceneSignals::SelectionChanged, this, &SceneInfo::SceneSelectionChanged);
     connect(signalDispatcher, &SceneSignals::CommandExecuted, this, &SceneInfo::OnCommmandExecuted);
     connect(signalDispatcher, &SceneSignals::ThemeChanged, this, &SceneInfo::OnThemeChanged);
+    connect(signalDispatcher, &SceneSignals::QualityChanged, this, &SceneInfo::OnQualityChanged);
 
     // MainWindow actions
     posSaver.Attach(this, "DockSceneInfo");
@@ -592,19 +591,17 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     RefreshSpeedTreeInfoSelection();
 }
 
-void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const Command2* command, bool /*isRedo*/)
+void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    switch (command->GetId())
+    static const DAVA::Vector<DAVA::uint32> commandIDs =
     {
-    case CMDID_MATERIAL_CHANGE_CURRENT_CONFIG:
-    case CMDID_MATERIAL_CREATE_CONFIG:
-    case CMDID_MATERIAL_REMOVE_TEXTURE:
-    case CMDID_INSP_MEMBER_MODIFY:
-    case CMDID_INSP_DYNAMIC_MODIFY:
+      CMDID_MATERIAL_CHANGE_CURRENT_CONFIG, CMDID_MATERIAL_CREATE_CONFIG,
+      CMDID_MATERIAL_REMOVE_TEXTURE, CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY
+    };
+
+    if (commandNotification.MatchCommandIDs(commandIDs))
+    {
         RefreshAllData(scene);
-        break;
-    default:
-        break;
     }
 }
 
@@ -971,14 +968,8 @@ void SceneInfo::RefreshLayersSection()
 
 EditorStatisticsSystem* SceneInfo::GetCurrentEditorStatisticsSystem() const
 {
-    if (QtMainWindow::Instance() != nullptr)
-    {
-        SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
-        if (scene != nullptr)
-        {
-            return scene->editorStatisticsSystem;
-        }
-    }
+    if (activeScene == nullptr)
+        return nullptr;
 
-    return nullptr;
+    return activeScene->editorStatisticsSystem;
 }

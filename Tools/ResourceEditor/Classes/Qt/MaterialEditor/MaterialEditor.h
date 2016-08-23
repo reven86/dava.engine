@@ -19,6 +19,7 @@ class MaterialEditor;
 
 class QtPropertyDataInspDynamic;
 
+class RECommandNotificationObject;
 class LazyUpdater;
 class MaterialEditor : public QDialog, public DAVA::Singleton<MaterialEditor>
 {
@@ -37,7 +38,7 @@ public:
 public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
-    void commandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void commandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void materialSelected(const QItemSelection& selected, const QItemSelection& deselected);
 
     void OnQualityChanged();
@@ -97,6 +98,8 @@ private:
     void initTemplates();
     void setTemplatePlaceholder(const QString& text);
 
+    void UpdateContent(SceneEditor2* scene);
+
     void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
                                DAVA::SerializationContext* context) const;
     void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
@@ -124,6 +127,7 @@ private:
     class PropertiesBuilder;
 
     Ui::MaterialEditor* ui = nullptr;
+    SceneEditor2* activeScene = nullptr;
 
     QtPosSaver posSaver;
     QList<DAVA::NMaterial*> curMaterials;

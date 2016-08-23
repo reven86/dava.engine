@@ -6,7 +6,7 @@
 #include "Main/QtUtils.h"
 
 ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy_, const DAVA::Rect& updatedRect_)
-    : Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
+    : RECommand(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
     , landscapeProxy(SafeRetain(landscapeProxy_))
 {
     updatedRect = DAVA::Rect(std::floor(updatedRect_.x), std::floor(updatedRect_.y), std::ceil(updatedRect_.dx), std::ceil(updatedRect_.dy));
@@ -48,11 +48,6 @@ void ModifyTilemaskCommand::Redo()
     mask->InsertImage(redoImageMask, updatedRect.GetPosition(), r);
 }
 
-DAVA::Entity* ModifyTilemaskCommand::GetEntity() const
-{
-    return nullptr;
-}
-
 void ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image* image, DAVA::Texture* dstTex)
 {
     DAVA::ScopedPtr<DAVA::Texture> fboTexture(DAVA::Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), image->GetWidth(), image->GetHeight(), false));
@@ -72,7 +67,7 @@ void ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image* image, DAVA::Textur
 }
 
 SetTileColorCommand::SetTileColorCommand(LandscapeProxy* landscapeProxy_, const DAVA::FastName& level_, const DAVA::Color& color_)
-    : Command2(CMDID_SET_TILE_COLOR, "Set tile color")
+    : RECommand(CMDID_SET_TILE_COLOR, "Set tile color")
     , level(level_)
     , redoColor(color_)
     , landscapeProxy(SafeRetain(landscapeProxy_))
@@ -93,9 +88,4 @@ void SetTileColorCommand::Undo()
 void SetTileColorCommand::Redo()
 {
     landscapeProxy->SetLandscapeTileColor(level, redoColor);
-}
-
-DAVA::Entity* SetTileColorCommand::GetEntity() const
-{
-    return nullptr;
 }
