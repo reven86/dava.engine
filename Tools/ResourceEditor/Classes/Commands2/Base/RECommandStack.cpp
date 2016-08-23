@@ -117,9 +117,11 @@ void RECommandStack::ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool
     if (IsCommandAction(command.get()))
     {
         //get ownership of the given command;
-        std::unique_ptr<DAVA::Command> commandCopy(std::move(command));
-        commandCopy->Redo();
-        if (!commandCopy->IsClean())
+        std::unique_ptr<DAVA::Command> commandAction(std::move(command));
+        commandAction->Redo();
+        OnCommandExecuted(commandAction.get(), true);
+
+        if (!commandAction->IsClean())
         {
             SetChanged();
         }
