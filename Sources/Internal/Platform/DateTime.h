@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_DATE_TIME_H__
-#define __DAVAENGINE_DATE_TIME_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
@@ -243,5 +242,3 @@ int32 DateTime::DaysFrom1jan(int32 year, int32 month, int32 day) const
     return days[rowNumberToSelect][month] + day - 1;
 }
 };
-
-#endif

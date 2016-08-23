@@ -1,12 +1,11 @@
 #include "Platform/DateTime.h"
-#include <stdlib.h>
+#include <cstdlib>
+#include <cctype>
 #include <algorithm>
 
 #ifdef __DAVAENGINE_WINDOWS__
 #include <time.h>
 #endif
-
-
 
 #define SKIP_WHITESPACE while (*s == ' ' || *s == '\t') s++;
 #define SKIP_NON_WHITESPACE while (*s != ' ' && *s != '\t' && *s != '\0') s++;
@@ -169,7 +168,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     // 1969-07-21T02:56:15Z
     // 1969-07-21T02:56:15.1Z
     // 1969-07-20T21:56:15-05:00
-    size_t const minLengthWithoutMilliseconds = strlen("1969-07-21T02:56:15Z");
+    size_t const minLengthWithoutMilliseconds = std::strlen("1969-07-21T02:56:15Z");
     if (src.length() < minLengthWithoutMilliseconds)
     {
         return false;
@@ -185,7 +184,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_year = atoi(yr.c_str()) - 1900;
+        parseTime.tm_year = std::atoi(yr.c_str()) - 1900;
         if (parseTime.tm_year < 0)
         {
             return false;
@@ -197,7 +196,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_mon = atoi(mon.c_str()) - 1;
+        parseTime.tm_mon = std::atoi(mon.c_str()) - 1;
         if (parseTime.tm_mon < 0 || parseTime.tm_mon > 11)
         {
             return false;
@@ -209,7 +208,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_mday = atoi(dy.c_str());
+        parseTime.tm_mday = std::atoi(dy.c_str());
         if (parseTime.tm_mday < 1 || parseTime.tm_mday > 31)
         {
             return false;
@@ -226,7 +225,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_hour = atoi(hr.c_str());
+        parseTime.tm_hour = std::atoi(hr.c_str());
         if (parseTime.tm_hour < 0 || parseTime.tm_hour > 23)
         {
             return false;
@@ -238,7 +237,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_min = atoi(mn.c_str());
+        parseTime.tm_min = std::atoi(mn.c_str());
         if (parseTime.tm_min < 0 || parseTime.tm_min > 59)
         {
             return false;
@@ -250,7 +249,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             return false;
         }
 
-        parseTime.tm_sec = atoi(sc.c_str());
+        parseTime.tm_sec = std::atoi(sc.c_str());
         if (parseTime.tm_sec < 0 || parseTime.tm_sec > 59)
         {
             return false;
@@ -258,7 +257,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
         // Parsing milliseconds (if specified)
 
-        char const separator = src[19];
+        const char separator = src[19];
 
         // Can be both . or ,
         if (separator == '.' || separator == ',')
@@ -267,19 +266,20 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 
             size_t currentSymbolIndex = 20;
             float mul = 1.0;
-            while (currentSymbolIndex < src.length() && isdigit(src[currentSymbolIndex]))
+            while (currentSymbolIndex < src.length() && std::isdigit(src[currentSymbolIndex]))
             {
                 ++currentSymbolIndex;
                 mul *= 0.1f;
             }
 
-            size_t const millisecondsSubstringLength = currentSymbolIndex - 20;
+            const size_t millisecondsSubstringLength = currentSymbolIndex - 20;
             if (millisecondsSubstringLength > 0)
             {
-                int const millisecondsFractional = atoi(src.substr(20, millisecondsSubstringLength).c_str());
+                const DAVA::String millisecondsSubstring = src.substr(20, millisecondsSubstringLength);
+                const int millisecondsFractional = std::atoi(millisecondsSubstring.c_str());
 
                 // Convert fraction to int (from 0 to 999)
-                milliseconds = static_cast<int>(round(millisecondsFractional * mul * 1000));
+                milliseconds = static_cast<int>(std::round(millisecondsFractional * mul * 1000));
 
                 DVASSERT(milliseconds >= 0 && milliseconds < 1000);
 
@@ -331,7 +331,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
                 return false;
             }
 
-            int32 tzHour = atoi(hr.c_str());
+            int32 tzHour = std::atoi(hr.c_str());
             if (tzHour < 0 || tzHour > 23)
             {
                 return false;
@@ -343,7 +343,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
                 return false;
             }
 
-            int32 tzMinute = atoi(mn.c_str());
+            int32 tzMinute = std::atoi(mn.c_str());
             if (tzMinute < 0 || tzMinute > 59)
             {
                 return false;
@@ -419,7 +419,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 
     char str[200], *s;
     s = &str[0];
-    strncpy(str, str1, 199);
+    std::strncpy(str, str1, 199);
     str[199] = '\0';
 
     // Convert to lowercase.
@@ -427,7 +427,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     int32 i = 0;
     while (str[i] != '\0')
     {
-        str[i] = tolower(str[i]);
+        str[i] = std::tolower(str[i]);
         i++;
     }
 
@@ -436,7 +436,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 
     for (j = 0; j < 7; j++)
     {
-        if (strncmp(s, days[j], 3) == 0)
+        if (std::strncmp(s, days[j], 3) == 0)
         {
             break;
         }
@@ -460,7 +460,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     int32 month;
     int32 year;
 
-    if (sscanf(s, "%d%19s%d", &day, monthStr, &year) != 3)
+    if (std::sscanf(s, "%d%19s%d", &day, monthStr, &year) != 3)
         return false;
     SKIP_NON_WHITESPACE
     SKIP_WHITESPACE
@@ -471,7 +471,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 
     for (j = 0; j < 12; j++)
     {
-        if (strncmp(monthStr, months[j], 3) == 0)
+        if (std::strncmp(monthStr, months[j], 3) == 0)
         {
             break;
         }
@@ -496,7 +496,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 
     int32 hour, minute, seconds;
 
-    if (sscanf(s, "%d:%d:%d", &hour, &minute, &seconds) != 3)
+    if (std::sscanf(s, "%d:%d:%d", &hour, &minute, &seconds) != 3)
     {
         return false;
     }
@@ -506,9 +506,9 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     if (*s == '+')
         s++;
     char zoneStr[20] = { 0 };
-    if (sscanf(s, "%19s", zoneStr) != 1)
+    if (std::sscanf(s, "%19s", zoneStr) != 1)
     {
-        strcpy(zoneStr, "GMT");
+        std::strcpy(zoneStr, "GMT");
     }
 
     if (zoneStr[0] == '-' ||
@@ -516,69 +516,69 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     {
         // Do nothing.
     }
-    else if (strcmp(zoneStr, "ut") == 0)
+    else if (std::strcmp(zoneStr, "ut") == 0)
     {
-        strcpy(zoneStr, "0000");
+        std::strcpy(zoneStr, "0000");
     }
-    else if (strcmp(zoneStr, "gmt") == 0)
+    else if (std::strcmp(zoneStr, "gmt") == 0)
     {
-        strcpy(zoneStr, "0000");
+        std::strcpy(zoneStr, "0000");
     }
-    else if (strcmp(zoneStr, "est") == 0)
+    else if (std::strcmp(zoneStr, "est") == 0)
     {
-        strcpy(zoneStr, "-0500");
+        std::strcpy(zoneStr, "-0500");
     }
-    else if (strcmp(zoneStr, "edt") == 0)
+    else if (std::strcmp(zoneStr, "edt") == 0)
     {
-        strcpy(zoneStr, "-0400");
+        std::strcpy(zoneStr, "-0400");
     }
-    else if (strcmp(zoneStr, "cst") == 0)
+    else if (std::strcmp(zoneStr, "cst") == 0)
     {
-        strcpy(zoneStr, "-0600");
+        std::strcpy(zoneStr, "-0600");
     }
-    else if (strcmp(zoneStr, "cdt") == 0)
+    else if (std::strcmp(zoneStr, "cdt") == 0)
     {
-        strcpy(zoneStr, "-0500");
+        std::strcpy(zoneStr, "-0500");
     }
-    else if (strcmp(zoneStr, "mst") == 0)
+    else if (std::strcmp(zoneStr, "mst") == 0)
     {
-        strcpy(zoneStr, "-0700");
+        std::strcpy(zoneStr, "-0700");
     }
-    else if (strcmp(zoneStr, "mdt") == 0)
+    else if (std::strcmp(zoneStr, "mdt") == 0)
     {
-        strcpy(zoneStr, "-0600");
+        std::strcpy(zoneStr, "-0600");
     }
-    else if (strcmp(zoneStr, "pst") == 0)
+    else if (std::strcmp(zoneStr, "pst") == 0)
     {
-        strcpy(zoneStr, "-0800");
+        std::strcpy(zoneStr, "-0800");
     }
-    else if (strcmp(zoneStr, "pdt") == 0)
+    else if (std::strcmp(zoneStr, "pdt") == 0)
     {
-        strcpy(zoneStr, "-0700");
+        std::strcpy(zoneStr, "-0700");
     }
-    else if (strcmp(zoneStr, "a") == 0)
+    else if (std::strcmp(zoneStr, "a") == 0)
     {
-        strcpy(zoneStr, "-0100");
+        std::strcpy(zoneStr, "-0100");
     }
-    else if (strcmp(zoneStr, "z") == 0)
+    else if (std::strcmp(zoneStr, "z") == 0)
     {
-        strcpy(zoneStr, "0000");
+        std::strcpy(zoneStr, "0000");
     }
-    else if (strcmp(zoneStr, "m") == 0)
+    else if (std::strcmp(zoneStr, "m") == 0)
     {
-        strcpy(zoneStr, "-1200");
+        std::strcpy(zoneStr, "-1200");
     }
-    else if (strcmp(zoneStr, "n") == 0)
+    else if (std::strcmp(zoneStr, "n") == 0)
     {
-        strcpy(zoneStr, "0100");
+        std::strcpy(zoneStr, "0100");
     }
-    else if (strcmp(zoneStr, "y") == 0)
+    else if (std::strcmp(zoneStr, "y") == 0)
     {
-        strcpy(zoneStr, "1200");
+        std::strcpy(zoneStr, "1200");
     }
     else
     {
-        strcpy(zoneStr, "0000");
+        std::strcpy(zoneStr, "0000");
     }
 
     // Convert zoneStr from (-)hhmm to minutes.
@@ -590,7 +590,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
         sign = -1;
         s++;
     }
-    if (sscanf(s, "%02d%02d", &hh, &mm) != 2)
+    if (std::sscanf(s, "%02d%02d", &hh, &mm) != 2)
     {
         return false;
     }
@@ -641,6 +641,6 @@ Timestamp DateTime::InternalTimeGm(tm* t) const
 bool DateTime::IsNumber(const String& s) const
 {
     //http://stackoverflow.com/questions/8888748/how-to-check-if-given-c-string-or-char-contains-only-digits
-    return std::all_of(s.begin(), s.end(), ::isdigit);
+    return std::all_of(s.begin(), s.end(), std::isdigit);
 }
 };
