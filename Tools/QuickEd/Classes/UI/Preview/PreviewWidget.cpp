@@ -15,7 +15,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
 
-#include "Document.h"
+#include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/CanvasSystem.h"
@@ -331,7 +331,8 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    systemsManager->PropertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
+    systemsManager->TransformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
@@ -653,6 +654,30 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
     }
 }
 
+void PreviewWidget::OnTransformStateChanged(bool inTransformState)
+{
+    if (document == nullptr)
+    {
+        return;
+    }
+    QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+    if (inTransformState)
+    {
+        executor->BeginMacro("transformations");
+    }
+    else
+    {
+        executor->EndMacro();
+    }
+}
+
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue)
+{
+    DVASSERT(!document.isNull());
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
+    commandExecutor->ChangeProperty(node, property, newValue);
+}
+
 qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
 {
     qreal scale = scrollAreaController->GetScale();
@@ -695,13 +720,6 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
     }
     selectionContainer.MergeSelection(selected, deselected);
     continuousUpdater->Update();
-}
-
-void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
-{
-    DVASSERT(!document.isNull());
-    auto commandExecutor = document->GetCommandExecutor();
-    commandExecutor->ChangeProperty(propertyActions, hash);
 }
 
 void PreviewWidget::NotifySelectionChanged()

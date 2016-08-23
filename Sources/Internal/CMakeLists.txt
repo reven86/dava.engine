@@ -17,8 +17,6 @@ set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared
                                     $ENV{DXSDK_DIR}/include 
                                     ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
 
-# temporal include override for android libpng
-set( INCLUDES_ANDROID               ${DAVA_THIRD_PARTY_ROOT_PATH}/include/android )
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 

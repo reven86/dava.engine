@@ -164,8 +164,6 @@ void HeightmapEditorPanel::InitUI()
     labelHeightDesc->setText(ResourceEditor::HEIGHTMAP_EDITOR_LABEL_DROPPER_HEIGHT.c_str());
     labelHeightDesc->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
-    comboBrushImage->setMinimumHeight(44);
-
     radioCopyPaste->setText(ResourceEditor::HEIGHTMAP_EDITOR_RADIO_COPY_PASTE.c_str());
     radioAbsDrop->setText(ResourceEditor::HEIGHTMAP_EDITOR_RADIO_ABS_DROP.c_str());
     radioAbsolute->setText(ResourceEditor::HEIGHTMAP_EDITOR_RADIO_ABSOLUTE.c_str());

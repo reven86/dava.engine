@@ -16,16 +16,17 @@ protected:
     virtual ~UIControlPackageContext();
 
 public:
-    UIControlPackageContext();
-
     void AddStyleSheet(const UIPriorityStyleSheet& styleSheet);
     void RemoveAllStyleSheets();
 
     const Vector<UIPriorityStyleSheet>& GetSortedStyleSheets();
 
+    int32 GetMaxStyleSheetHierarchyDepth() const;
+
 private:
     Vector<UIPriorityStyleSheet> styleSheets;
-    bool styleSheetsSorted;
+    bool styleSheetsSorted = false;
+    int32 maxStyleSheetHierarchyDepth = 0;
 };
 };
 

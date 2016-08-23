@@ -7,6 +7,7 @@ namespace DAVA
 class InspMember;
 class VariantType;
 }
+
 class AbstractAction;
 
 class ActionsStorage : public DAVA::TrackedObject, public DAVA::StaticSingleton<ActionsStorage>

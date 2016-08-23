@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class CopyLastLODToLod0Command : public Command2
+class CopyLastLODToLod0Command : public RECommand
 {
 public:
     //TODO: remove after lod editing implementation
@@ -12,7 +12,7 @@ public:
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::LodComponent* lodComponent;
     DAVA::Vector<DAVA::RenderBatch*> newBatches;

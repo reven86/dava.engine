@@ -116,8 +116,6 @@ DAVA_ROOT := $(LOCAL_PATH)
 # set path for includes
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
-# Temporal include path override for android libpng
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include/android
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include

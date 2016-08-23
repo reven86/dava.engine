@@ -1,7 +1,7 @@
 #include "Scene/System/EditorLightSystem.h"
 #include "Qt/Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneSignals.h"
-#include "Commands2/CommandID.h"
+#include "Commands2/RECommandIDs.h"
 #include "StringConstants.h"
 #include "Constants.h"
 

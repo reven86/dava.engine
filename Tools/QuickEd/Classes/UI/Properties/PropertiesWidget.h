@@ -35,6 +35,7 @@ public slots:
 private slots:
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
+    void OnComponentAdded(const QModelIndex& index);
 
 private:
     QAction* CreateAddComponentAction();

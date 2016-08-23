@@ -1,9 +1,10 @@
 #include "CopyLastLODCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 using namespace DAVA;
 
 CopyLastLODToLod0Command::CopyLastLODToLod0Command(DAVA::LodComponent* component)
-    : Command2(CMDID_LOD_COPY_LAST_LOD, "Copy last LOD to lod0")
+    : RECommand(CMDID_LOD_COPY_LAST_LOD, "Copy last LOD to lod0")
     , lodComponent(component)
 {
     RenderObject* ro = GetRenderObject(GetEntity());
