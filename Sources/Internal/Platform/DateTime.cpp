@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #ifdef __DAVAENGINE_WINDOWS__
-#include <time.h>
+#include <ctime>
 #endif
 
 #define SKIP_WHITESPACE while (*s == ' ' || *s == '\t') s++;
@@ -641,6 +641,6 @@ Timestamp DateTime::InternalTimeGm(tm* t) const
 bool DateTime::IsNumber(const String& s) const
 {
     //http://stackoverflow.com/questions/8888748/how-to-check-if-given-c-string-or-char-contains-only-digits
-    return std::all_of(s.begin(), s.end(), std::isdigit);
+    return std::all_of(s.begin(), s.end(), static_cast<int (*)(int)>(std::isdigit));
 }
 };
