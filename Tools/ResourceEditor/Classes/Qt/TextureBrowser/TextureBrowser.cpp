@@ -5,10 +5,12 @@
 #include "Qt/TextureBrowser/TextureCache.h"
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Scene/SceneHelper.h"
-#include "Qt/CubemapEditor/CubemapUtils.h"
 
-#include "Classes/Constants.h"
+#include "Scene/SceneHelper.h"
+#include "CubemapEditor/CubemapUtils.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Constants.h"
+
 #include "ui_texturebrowser.h"
 
 #include "Render/PixelFormatDescriptor.h"
@@ -1064,15 +1066,15 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     }
 }
 
-void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    if (curScene != scene || command == nullptr)
+    if (curScene != scene)
     {
         return;
     }
 
-    static DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
-    if (command->MatchCommandIDs(commandIds))
+    static const DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    if (commandNotification.MatchCommandIDs(commandIds))
     {
         Update();
     }

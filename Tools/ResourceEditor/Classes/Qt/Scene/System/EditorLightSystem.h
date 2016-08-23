@@ -3,7 +3,6 @@
 
 #include "DAVAEngine.h"
 
-class Command2;
 class EditorLightSystem final : public DAVA::SceneSystem
 {
     friend class SceneEditor2;

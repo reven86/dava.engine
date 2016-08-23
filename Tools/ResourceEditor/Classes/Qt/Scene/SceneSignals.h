@@ -9,7 +9,7 @@
 #include "Scene3D/Entity.h"
 
 class SceneEditor2;
-
+class RECommandNotificationObject;
 class SceneSignals : public QObject, public DAVA::StaticSingleton<SceneSignals>
 {
     Q_OBJECT
@@ -27,8 +27,12 @@ signals:
     void Activated(SceneEditor2* scene);
     void Deactivated(SceneEditor2* scene);
 
+    void CanUndoStateChanged(bool canUndo);
+    void CanRedoStateChanged(bool canRedo);
+    void UndoTextChanged(const DAVA::String& text);
+    void RedoTextChanged(const DAVA::String& text);
     void UndoRedoStateChanged(SceneEditor2* scene);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
     void ModifyStatusChanged(SceneEditor2* scene, bool modified);
 
@@ -98,15 +102,11 @@ public:
         emit Deactivated(scene);
     }
 
-    void EmitUndoRedoStateChanged(SceneEditor2* scene)
+    void EmitCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
     {
-        emit UndoRedoStateChanged(scene);
-    }
-
-    void EmitCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
-    {
-        emit CommandExecuted(scene, command, redo);
+        emit CommandExecuted(scene, commandNotification);
     };
+
     void EmitStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     {
         emit StructureChanged(scene, parent);

@@ -44,7 +44,12 @@ private:
     void RefreshActions();
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
-    QString GetPathByCurrentPos();
+    enum ePathType
+    {
+        AnyPath,
+        DirPath
+    };
+    QString GetPathByCurrentPos(ePathType pathType);
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
     QFileSystemModel* model = nullptr;
