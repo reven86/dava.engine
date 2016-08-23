@@ -222,6 +222,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
+        using namespace DAVA;
         ScopedPtr<File> file(File::Create(plist, File::CREATE | File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
