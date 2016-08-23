@@ -68,7 +68,7 @@ void WaitDialog::SetMessage(const QString& msg)
     }
 }
 
-void WaitDialog::SetRange(DAVA::uint32 min, DAVA::uint32 max)
+void WaitDialog::SetRange(uint32 min, uint32 max)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {
@@ -77,7 +77,7 @@ void WaitDialog::SetRange(DAVA::uint32 min, DAVA::uint32 max)
     }
 }
 
-void WaitDialog::SetProgressValue(DAVA::uint32 progress)
+void WaitDialog::SetProgressValue(uint32 progress)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {

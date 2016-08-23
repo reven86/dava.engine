@@ -32,7 +32,7 @@ private:
 private:
     DAVA::ScopedPtr<DAVA::UI3DView> ui3dView = DAVA::ScopedPtr<DAVA::UI3DView>(nullptr);
     DAVA::ScopedPtr<DAVA::UIScreen> uiScreen = DAVA::ScopedPtr<DAVA::UIScreen>(nullptr);
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
 
     DAVA::TArc::WindowKey windowKey;
 };

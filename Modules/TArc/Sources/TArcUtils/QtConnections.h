@@ -1,11 +1,14 @@
-#ifndef __QTTOOLS_QTCONNECTIONS_H__
-#define __QTTOOLS_QTCONNECTIONS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 #include <QMetaObject>
 #include <QPointer>
 
+namespace DAVA
+{
+namespace TArc
+{
 class QtConnections
 {
 public:
@@ -26,7 +29,7 @@ public:
     }
 
 private:
-    DAVA::Vector<QMetaObject::Connection> connections;
+    Vector<QMetaObject::Connection> connections;
 };
-
-#endif // __QTTOOLS_QTCONNECTIONS_H__
+} // namespace TArc
+} // namespace DAVA

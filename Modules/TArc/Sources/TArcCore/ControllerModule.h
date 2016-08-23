@@ -12,7 +12,7 @@ class ContextManager;
 class ControllerModule : public ClientModule
 {
 protected:
-    virtual void OnRenderSystemInitialized(DAVA::Window& w) = 0;
+    virtual void OnRenderSystemInitialized(Window& w) = 0;
     ContextManager& GetContextManager();
 
     friend class Core;

@@ -7,6 +7,10 @@
 #include <QAbstractEventDispatcher>
 #include <QWidget>
 
+namespace DAVA
+{
+namespace TArc
+{
 class ToolsAssetGuard::EventFilter final : public QObject
 {
 public:
@@ -51,21 +55,23 @@ public:
 
 void ToolsAssetGuard::Init()
 {
-    DAVA::DVAssertMessage::SetShowInnerOverride([](DAVA::DVAssertMessage::eModalType type, const DAVA::char8* message)
+    DVAssertMessage::SetShowInnerOverride([](DVAssertMessage::eModalType type, const char8* message)
                                                 {
                                                     return ToolsAssetGuard::Instance()->InnerShow(type, message);
                                                 });
 }
 
-bool ToolsAssetGuard::InnerShow(DAVA::DVAssertMessage::eModalType modalType, const DAVA::char8* message)
+bool ToolsAssetGuard::InnerShow(DVAssertMessage::eModalType modalType, const char8* message)
 {
-    DAVA::LockGuard<DAVA::Mutex> mutexGuard(mutex);
+    LockGuard<Mutex> mutexGuard(mutex);
 
     std::unique_ptr<EventFilter> filter;
-    if (DAVA::Thread::IsMainThread())
+    if (Thread::IsMainThread())
     {
         filter.reset(new EventFilter());
     }
 
-    return DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
+    return DVAssertMessage::InnerShow(DVAssertMessage::ALWAYS_MODAL, message);
 }
+} // namespace TArc
+} // namespace DAVA

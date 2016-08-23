@@ -21,7 +21,7 @@ public:
     void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) override;
     void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
 
-    void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) override;
+    void ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration = 0) override;
     void ClearMessage(const WindowKey& windowKey) override;
     ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) override;
 

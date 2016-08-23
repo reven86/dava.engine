@@ -28,7 +28,7 @@ namespace TArc
 namespace UIManagerDetail
 {
 
-static DAVA::Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
+static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
     std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
     std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
@@ -216,8 +216,8 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
 
 struct UIManager::Impl
 {
-    DAVA::Array<DAVA::Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
-    DAVA::UnorderedMap<DAVA::FastName, UIManagerDetail::MainWindowInfo> windows;
+    Array<Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
+    UnorderedMap<FastName, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
     bool initializationFinished = false;
@@ -232,7 +232,7 @@ struct UIManager::Impl
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
     {
-        const DAVA::FastName& appID = windowKey.GetAppID();
+        const FastName& appID = windowKey.GetAppID();
         auto iter = windows.find(appID);
         if (iter == windows.end())
         {
@@ -253,8 +253,8 @@ struct UIManager::Impl
 UIManager::UIManager()
     : impl(new Impl())
 {
-    impl->addFunctions[PanelKey::DockPanel] = DAVA::MakeFunction(&UIManagerDetail::AddDockPanel);
-    impl->addFunctions[PanelKey::CentralPanel] = DAVA::MakeFunction(&UIManagerDetail::AddCentralPanel);
+    impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
+    impl->addFunctions[PanelKey::CentralPanel] = MakeFunction(&UIManagerDetail::AddCentralPanel);
 
     impl->qmlEngine.reset(new QQmlEngine());
     impl->qmlEngine->addImportPath("qrc:/");
@@ -333,10 +333,10 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
 
             if (view->status() != QQuickWidget::Ready)
             {
-                DAVA::Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
+                Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
                 foreach(QQmlError error, view->errors())
                 {
-                    DAVA::Logger::Error("Error : %s", error.toString().toStdString().c_str());
+                    Logger::Error("Error : %s", error.toString().toStdString().c_str());
                 }
             }
         }
@@ -348,7 +348,7 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
     return view;
 }
 
-void UIManager::ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration)
+void UIManager::ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration)
 {
     impl->FindOrCreateWindow(windowKey).window->statusBar()->showMessage(message, duration);
 }

@@ -6,14 +6,20 @@
 #include "Debug/DVAssertMessage.h"
 #include "Base/StaticSingleton.h"
 
-class ToolsAssetGuard : public QObject, public DAVA::StaticSingleton<ToolsAssetGuard>
+namespace DAVA
+{
+namespace TArc
+{
+class ToolsAssetGuard : public QObject, public StaticSingleton<ToolsAssetGuard>
 {
     Q_OBJECT
 public:
     void Init();
-    bool InnerShow(DAVA::DVAssertMessage::eModalType modalType, const DAVA::char8* message);
+    bool InnerShow(DVAssertMessage::eModalType modalType, const char8* message);
 
 private:
     class EventFilter;
-    DAVA::Mutex mutex;
+    Mutex mutex;
 };
+} // namespace TArc
+} // namespace DAVA

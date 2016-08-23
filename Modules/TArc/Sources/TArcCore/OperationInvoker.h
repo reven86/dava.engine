@@ -10,12 +10,12 @@ class OperationInvoker
 {
 public:
     virtual void Invoke(int operationId) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5) = 0;
-    virtual void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5, const DAVA::Any& a6) = 0;
+    virtual void Invoke(int operationId, const Any& a) = 0;
+    virtual void Invoke(int operationId, const Any& a1, const Any& a2) = 0;
+    virtual void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) = 0;
+    virtual void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) = 0;
+    virtual void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) = 0;
+    virtual void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) = 0;
 };
 } // namespace TArc
 } // namespace DAVA

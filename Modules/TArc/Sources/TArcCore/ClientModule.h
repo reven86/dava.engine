@@ -46,13 +46,13 @@ private:
 template <typename Ret, typename Cls, typename... Args>
 inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...) const)
 {
-    coreInterface->RegisterOperation(operationID, DAVA::AnyFn(fn).BindThis(object));
+    coreInterface->RegisterOperation(operationID, AnyFn(fn).BindThis(object));
 }
 
 template <typename Ret, typename Cls, typename... Args>
 inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...))
 {
-    coreInterface->RegisterOperation(operationID, DAVA::AnyFn(fn).BindThis(object));
+    coreInterface->RegisterOperation(operationID, AnyFn(fn).BindThis(object));
 }
 
 template <typename... Args>

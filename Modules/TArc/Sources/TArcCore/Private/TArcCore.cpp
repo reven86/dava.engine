@@ -17,14 +17,14 @@ namespace DAVA
 {
 namespace TArc
 {
-Core::Core(DAVA::Engine& engine_)
+Core::Core(Engine& engine_)
     : engine(engine_)
     , globalContext(new DataContext())
 {
-    engine.beginFrame.Connect(DAVA::MakeFunction(this, &Core::OnFrame));
-    engine.gameLoopStarted.Connect(DAVA::MakeFunction(this, &Core::OnLoopStarted));
-    engine.gameLoopStopped.Connect(DAVA::MakeFunction(this, &Core::OnLoopStopped));
-    engine.windowCreated.Connect(DAVA::MakeFunction(this, &Core::OnWindowCreated));
+    engine.beginFrame.Connect(MakeFunction(this, &Core::OnFrame));
+    engine.gameLoopStarted.Connect(MakeFunction(this, &Core::OnLoopStarted));
+    engine.gameLoopStopped.Connect(MakeFunction(this, &Core::OnLoopStopped));
+    engine.windowCreated.Connect(MakeFunction(this, &Core::OnWindowCreated));
 }
 
 Core::~Core()
@@ -46,7 +46,7 @@ void Core::AddModule(ControllerModule* module)
     AddModule(static_cast<ClientModule*>(module));
 }
 
-void Core::OnWindowCreated(DAVA::Window& w)
+void Core::OnWindowCreated(Window& w)
 {
     controllerModule->OnRenderSystemInitialized(w);
 }
@@ -98,7 +98,7 @@ void Core::OnLoopStopped()
     globalContext.reset();
 }
 
-void Core::ForEachContext(const DAVA::Function<void(DataContext&)>& functor)
+void Core::ForEachContext(const Function<void(DataContext&)>& functor)
 {
     for (std::unique_ptr<DataContext>& context : contexts)
     {
@@ -120,7 +120,7 @@ DataContext& Core::GetContext(DataContext::ContextID contextID)
 
     if (iter == contexts.end())
     {
-        throw std::runtime_error(DAVA::Format("There is no context with contextID %d at the moment", contextID));
+        throw std::runtime_error(Format("There is no context with contextID %d at the moment", contextID));
     }
 
     return **iter;
@@ -141,7 +141,7 @@ bool Core::HasActiveContext() const
     return activeContext != nullptr;
 }
 
-DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+DataWrapper Core::CreateWrapper(const ReflectedType* type)
 {
     DataWrapper wrapper(type);
     wrapper.SetContext(activeContext != nullptr ? activeContext :globalContext.get());
@@ -157,9 +157,9 @@ DataWrapper Core::CreateWrapper(const DataWrapper::DataAccessor& accessor)
     return wrapper;
 }
 
-DAVA::EngineContext& Core::GetEngineContext()
+EngineContext& Core::GetEngineContext()
 {
-    DAVA::EngineContext* engineContext = engine.GetContext();
+    EngineContext* engineContext = engine.GetContext();
     DVASSERT(engineContext);
     return *engineContext;
 }
@@ -185,7 +185,7 @@ void Core::DeleteContext(DataContext::ContextID contextID)
 
     if (iter == contexts.end())
     {
-        throw std::runtime_error(DAVA::Format("DeleteContext failed for contextID : %d", contextID));
+        throw std::runtime_error(Format("DeleteContext failed for contextID : %d", contextID));
     }
 
     for (std::unique_ptr<ClientModule>& module : modules)
@@ -221,7 +221,7 @@ void Core::ActivateContext(DataContext::ContextID contextID)
 
     if (iter == contexts.end())
     {
-        throw std::runtime_error(DAVA::Format("ActivateContext failed for contextID : %d", contextID));
+        throw std::runtime_error(Format("ActivateContext failed for contextID : %d", contextID));
     }
 
     ActivateContext((*iter).get());
@@ -236,17 +236,17 @@ void Core::ActivateContext(DataContext* context)
     }
 }
 
-DAVA::RenderWidget* Core::GetRenderWidget() const
+RenderWidget* Core::GetRenderWidget() const
 {
     return engine.GetNativeService()->GetRenderWidget();
 }
 
-void Core::RegisterOperation(int operationID, DAVA::AnyFn&& fn)
+void Core::RegisterOperation(int operationID, AnyFn&& fn)
 {
     auto iter = globalOperations.find(operationID);
     if (iter != globalOperations.end())
     {
-        DAVA::Logger::Error("Global operation with ID %d, has already been registered", operationID);
+        Logger::Error("Global operation with ID %d, has already been registered", operationID);
     }
 
     globalOperations.emplace(operationID, fn);
@@ -257,38 +257,38 @@ void Core::Invoke(int operationId)
     InvokeImpl(operationId);
 }
 
-void Core::Invoke(int operationId, const DAVA::Any& a)
+void Core::Invoke(int operationId, const Any& a)
 {
     InvokeImpl(operationId, a);
 }
-void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2)
+void Core::Invoke(int operationId, const Any& a1, const Any& a2)
 {
     InvokeImpl(operationId, a1, a2);
 }
 
-void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3)
+void Core::Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3)
 {
     InvokeImpl(operationId, a1, a2, a3);
 }
 
-void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4)
+void Core::Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4)
 {
     InvokeImpl(operationId, a1, a2, a3, a4);
 }
 
-void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5)
+void Core::Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5)
 {
     InvokeImpl(operationId, a1, a2, a3, a4, a5);
 }
 
-void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5, const DAVA::Any& a6)
+void Core::Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6)
 {
     InvokeImpl(operationId, a1, a2, a3, a4, a5, a6);
 }
 
-DAVA::AnyFn Core::FindOperation(int operationId)
+AnyFn Core::FindOperation(int operationId)
 {
-    DAVA::AnyFn operation;
+    AnyFn operation;
     auto iter = globalOperations.find(operationId);
     if (iter != globalOperations.end())
     {

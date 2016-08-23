@@ -19,7 +19,7 @@ class UIManager;
 class Core final : private CoreInterface
 {
 public:
-    Core(DAVA::Engine& engine_);
+    Core(Engine& engine_);
     ~Core();
 
     template<typename T>
@@ -36,19 +36,19 @@ private:
     void AddModule(ControllerModule* module);
 
     void OnLoopStarted();
-    void OnWindowCreated(DAVA::Window& w);
+    void OnWindowCreated(Window& w);
     void OnFrame();
     void OnLoopStopped();
 
     // Inherited via ContextAccessor
-    void ForEachContext(const DAVA::Function<void(DataContext&)>& functor) override;
+    void ForEachContext(const Function<void(DataContext&)>& functor) override;
     DataContext& GetGlobalContext() override;
     DataContext& GetContext(DataContext::ContextID contextID) override;
     DataContext& GetActiveContext() override;
     bool HasActiveContext() const override;
-    DataWrapper CreateWrapper(const DAVA::ReflectedType* type) override;
+    DataWrapper CreateWrapper(const ReflectedType* type) override;
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override;
-    DAVA::EngineContext& GetEngineContext() override;
+    EngineContext& GetEngineContext() override;
 
     // Inherited via ContextManager
     DataContext::ContextID CreateContext() override;
@@ -56,35 +56,35 @@ private:
     void ActivateContext(DataContext::ContextID contextID) override;
 
     void ActivateContext(DataContext* context);
-    DAVA::RenderWidget* GetRenderWidget() const;
+    RenderWidget* GetRenderWidget() const;
 
-    void RegisterOperation(int operationID, DAVA::AnyFn&& fn) override;
+    void RegisterOperation(int operationID, AnyFn&& fn) override;
     void Invoke(int operationId) override;
-    void Invoke(int operationId, const DAVA::Any& a) override;
-    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2) override;
-    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3) override;
-    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4) override;
-    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5) override;
-    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5, const DAVA::Any& a6) override;
+    void Invoke(int operationId, const Any& a) override;
+    void Invoke(int operationId, const Any& a1, const Any& a2) override;
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override;
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override;
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override;
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override;
 
     template<typename... Args>
     void InvokeImpl(int operationId, const Args&... args);
 
     /////////// Local methods ///////////////
-    DAVA::AnyFn FindOperation(int operationId);
+    AnyFn FindOperation(int operationId);
 
 private:
-    DAVA::Engine& engine;
+    Engine& engine;
 
     std::unique_ptr<DataContext> globalContext;
-    DAVA::Vector<std::unique_ptr<DataContext>> contexts;
+    Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
 
-    DAVA::Vector<std::unique_ptr<ClientModule>> modules;
+    Vector<std::unique_ptr<ClientModule>> modules;
     ControllerModule* controllerModule = nullptr;
 
-    DAVA::Vector<DataWrapper> wrappers;
-    DAVA::UnorderedMap<int, DAVA::AnyFn> globalOperations;
+    Vector<DataWrapper> wrappers;
+    UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
 };
@@ -92,10 +92,10 @@ private:
 template<typename... Args>
 void Core::InvokeImpl(int operationId, const Args&... args)
 {
-    DAVA::AnyFn fn = FindOperation(operationId);
+    AnyFn fn = FindOperation(operationId);
     if (!fn.IsValid())
     {
-        DAVA::Logger::Error("Operation with ID %d has not been registered yet", operationId);
+        Logger::Error("Operation with ID %d has not been registered yet", operationId);
         return;
     }
 
@@ -103,9 +103,9 @@ void Core::InvokeImpl(int operationId, const Args&... args)
     {
         fn.Invoke(args...);
     }
-    catch (const DAVA::AnyFn::Exception& e)
+    catch (const AnyFn::Exception& e)
     {
-        DAVA::Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
+        Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
     }
 }
 
