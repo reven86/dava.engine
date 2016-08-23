@@ -46,7 +46,6 @@ set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FO
 set( WIN32_RESOURCES     ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
 
 setup_main_executable()
-convert_graphics()
 
 if (WIN32)
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
