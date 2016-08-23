@@ -1,5 +1,25 @@
 #include "Commands2/Base/CommandNotify.h"
 
+void CommandNotify::CleanChanged(bool /*clean*/)
+{
+}
+
+void CommandNotify::CanUndoChanged(bool /*canUndo*/)
+{
+}
+
+void CommandNotify::CanRedoChanged(bool /*canRedo*/)
+{
+}
+
+void CommandNotify::UndoTextChanged(const DAVA::String& undoText)
+{
+}
+
+void CommandNotify::RedoTextChanged(const DAVA::String& redoText)
+{
+}
+
 CommandNotifyProvider::~CommandNotifyProvider()
 {
     SafeRelease(curNotify);
@@ -14,11 +34,11 @@ void CommandNotifyProvider::SetNotify(CommandNotify* notify)
     }
 }
 
-void CommandNotifyProvider::EmitNotify(const Command2* command, bool redo)
+void CommandNotifyProvider::EmitNotify(const RECommandNotificationObject& commandNotification)
 {
     if (nullptr != curNotify)
     {
-        curNotify->Notify(command, redo);
+        curNotify->Notify(commandNotification);
     }
 }
 
@@ -30,10 +50,34 @@ void CommandNotifyProvider::EmitCleanChanged(bool clean)
     }
 }
 
-void CommandNotifyProvider::EmitUndoRedoStateChanged()
+void CommandNotifyProvider::CanUndoChanged(bool canUndo)
 {
     if (nullptr != curNotify)
     {
-        curNotify->UndoRedoStateChanged();
+        curNotify->CanUndoChanged(canUndo);
+    }
+}
+
+void CommandNotifyProvider::CanRedoChanged(bool canRedo)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->CanRedoChanged(canRedo);
+    }
+}
+
+void CommandNotifyProvider::UndoTextChanged(const DAVA::String& undoText)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->UndoTextChanged(undoText);
+    }
+}
+
+void CommandNotifyProvider::RedoTextChanged(const DAVA::String& redoText)
+{
+    if (nullptr != curNotify)
+    {
+        curNotify->RedoTextChanged(redoText);
     }
 }

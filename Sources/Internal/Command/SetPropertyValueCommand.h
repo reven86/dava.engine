@@ -1,20 +1,18 @@
-#ifndef __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__
-#define __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__
+#pragma once
 
-#include "ICommand.h"
-#include "ObjectHandle.h"
+#include "Command/Command.h"
+#include "Command/ObjectHandle.h"
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
 {
 class InspMember;
 
-class SetPropertyValueCommand : public ICommand
+class SetPropertyValueCommand : public Command
 {
 public:
     SetPropertyValueCommand(const ObjectHandle& object, const InspMember* property, VariantType newValue);
 
-    void Execute() override;
     void Redo() override;
     void Undo() override;
 
@@ -25,5 +23,3 @@ private:
     VariantType oldValue;
 };
 }
-
-#endif // __DAVAFRAMEWORK_SETPROPERTYVALUECOMMAND_H__

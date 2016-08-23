@@ -13,7 +13,6 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 include               ( CMake-common )
-include               ( NGTMacro )
 
 if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
@@ -25,15 +24,12 @@ if (DEPLOY)
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
 
-configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
-
 add_definitions       ( 
 -DDISABLE_NATIVE_WEBVIEW 
 -DDISABLE_NATIVE_TEXTFIELD 
 -DQT_QML_DEBUG_NO_WARNING
 )
 
-find_package          ( NgtTools      REQUIRED )
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
@@ -66,19 +62,17 @@ file                          ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources             ( RCC_APP_SRCS  ${RCC_LIST} )
 
 file                          ( GLOB QML_LIST "DataQt/*.qml")
-file                          ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 
 set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
 define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
- 
+
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
+set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST})
 set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
-set( LIBRARIES                  NgtTools)
 
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )

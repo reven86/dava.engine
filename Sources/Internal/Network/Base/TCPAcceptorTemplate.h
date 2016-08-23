@@ -7,6 +7,7 @@
 
 #include "Network/Base/Endpoint.h"
 #include "Network/Base/IOLoop.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
