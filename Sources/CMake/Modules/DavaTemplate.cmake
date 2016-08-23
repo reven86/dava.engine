@@ -741,7 +741,7 @@ if( DEPLOY )
 
     if( WIN32 )
         if( APP_DATA )
-            foreach( APP_DATA_DIR_ITEM $APP_DATA)
+            foreach( APP_DATA_DIR_ITEM ${APP_DATA})
                 get_filename_component( DIR_NAME ${APP_DATA_DIR_ITEM} NAME )
 
                 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
