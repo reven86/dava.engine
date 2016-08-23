@@ -1,7 +1,6 @@
 #pragma once
 
-#include "TArcCore/ContextAccessor.h"
-#include "TArcCore/ContextManager.h"
+#include "TArcCore/Private/CoreInterface.h"
 
 #include "Base/BaseTypes.h"
 
@@ -19,7 +18,7 @@ class ClientModule;
 class ControllerModule;
 class UIManager;
 
-class Core final : private ContextAccessor, private ContextManager
+class Core final : private CoreInterface
 {
 public:
     Core(DAVA::Engine& engine_);
@@ -61,6 +60,21 @@ private:
     void ActivateContext(DataContext* context);
     DAVA::RenderWidget* GetRenderWidget() const;
 
+    void RegisterOperation(int operationID, DAVA::AnyFn&& fn) override;
+    void Invoke(int operationId) override;
+    void Invoke(int operationId, const DAVA::Any& a) override;
+    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2) override;
+    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3) override;
+    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4) override;
+    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5) override;
+    void Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5, const DAVA::Any& a6) override;
+
+    template<typename... Args>
+    void InvokeImpl(int operationId, const Args&... args);
+
+    /////////// Local methods ///////////////
+    DAVA::AnyFn FindOperation(int operationId);
+
 private:
     DAVA::Engine& engine;
 
@@ -72,8 +86,29 @@ private:
     ControllerModule* controllerModule = nullptr;
 
     DAVA::Vector<DataWrapper> wrappers;
+    DAVA::UnorderedMap<int, DAVA::AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
 };
+
+template<typename... Args>
+void Core::InvokeImpl(int operationId, const Args&... args)
+{
+    DAVA::AnyFn fn = FindOperation(operationId);
+    if (!fn.IsValid())
+    {
+        DAVA::Logger::Error("Operation with ID %d has not been registered yet", operationId);
+        return;
+    }
+
+    try
+    {
+        fn.Invoke(args...);
+    }
+    catch (const DAVA::AnyFn::Exception& e)
+    {
+        DAVA::Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
+    }
+}
 
 }

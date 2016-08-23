@@ -1,4 +1,5 @@
 #include "LibraryModule.h"
+#include "SceneViewOperations.h"
 
 #include "TArcCore/ContextAccessor.h"
 #include "WindowSubSystem/UI.h"
@@ -13,8 +14,9 @@
 class FileSystemData : public tarc::DataNode
 {
 public:
-    FileSystemData(QFileSystemModel* model_)
-        : model(model_)
+    FileSystemData(LibraryModule* self_, QFileSystemModel* model_)
+        : self(self_)
+        , model(model_)
     {
     }
 
@@ -31,10 +33,11 @@ public:
     void OpenScene(QModelIndex index)
     {
         DAVA::String path = model->filePath(index).toStdString();
-        // TODO call action OpenScene(path)
+        self->InvokeOperation(SceneViewOperations::OpenScene, path);
     }
 
 private:
+    LibraryModule* self = nullptr;
     QFileSystemModel* model = nullptr;
     DAVA_VIRTUAL_REFLECTION(FileSystemData, tarc::DataNode)
     {
@@ -62,7 +65,7 @@ void LibraryModule::PostInit()
 
     tarc::DataContext& globalContext = GetAccessor().GetGlobalContext();
 
-    globalContext.CreateData(std::make_unique<FileSystemData>(model));
+    globalContext.CreateData(std::make_unique<FileSystemData>(this, model));
 
     tarc::UI& ui = GetUI();
 

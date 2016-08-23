@@ -34,5 +34,6 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     e.SetOptions(appOptions);
     e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+
     return e.Run();
 }

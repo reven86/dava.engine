@@ -1,9 +1,11 @@
 #include "SceneViewModule.h"
 #include "SceneViewData.h"
+#include "SceneViewOperations.h"
 
 #include "WindowSubSystem/UI.h"
 #include "WindowSubSystem/ActionUtils.h"
 #include "TArcCore/ContextAccessor.h"
+#include "TArcCore/ContextManager.h"
 
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
@@ -40,6 +42,8 @@ void SceneViewModule::PostInit()
 {
     SetupRenderWidget();
     SetupActions();
+
+    RegisterOperation(SceneViewOperations::OpenScene, this, &SceneViewModule::OpenSceneImpl);
 }
 
 void SceneViewModule::OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
@@ -103,12 +107,12 @@ void SceneViewModule::OpenScene()
     QString path = GetUI().GetOpenFileName(windowKey);
     if (!path.isEmpty())
     {
-        OpenScene(path.toStdString());
+        OpenSceneImpl(path.toStdString());
     }
 
 }
 
-void SceneViewModule::OpenScene(const DAVA::String& scenePath)
+void SceneViewModule::OpenSceneImpl(const DAVA::String& scenePath)
 {
     DVASSERT(ui3dView);
     DVASSERT(uiScreen);

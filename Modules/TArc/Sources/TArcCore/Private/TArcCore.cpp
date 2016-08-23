@@ -65,7 +65,6 @@ void Core::OnLoopStarted()
 
     uiManager.reset(new UIManager());
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
-    controllerModule->SetContextManager(this);
 
     for (std::unique_ptr<ClientModule>& module : modules)
     {
@@ -239,6 +238,63 @@ void Core::ActivateContext(DataContext* context)
 DAVA::RenderWidget* Core::GetRenderWidget() const
 {
     return engine.GetNativeService()->GetRenderWidget();
+}
+
+void Core::RegisterOperation(int operationID, DAVA::AnyFn&& fn)
+{
+    auto iter = globalOperations.find(operationID);
+    if (iter != globalOperations.end())
+    {
+        DAVA::Logger::Error("Global operation with ID %d, has already been registered", operationID);
+    }
+
+    globalOperations.emplace(operationID, fn);
+}
+
+void Core::Invoke(int operationId)
+{
+    InvokeImpl(operationId);
+}
+
+void Core::Invoke(int operationId, const DAVA::Any& a)
+{
+    InvokeImpl(operationId, a);
+}
+void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2)
+{
+    InvokeImpl(operationId, a1, a2);
+}
+
+void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3)
+{
+    InvokeImpl(operationId, a1, a2, a3);
+}
+
+void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4)
+{
+    InvokeImpl(operationId, a1, a2, a3, a4);
+}
+
+void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5)
+{
+    InvokeImpl(operationId, a1, a2, a3, a4, a5);
+}
+
+void Core::Invoke(int operationId, const DAVA::Any& a1, const DAVA::Any& a2, const DAVA::Any& a3, const DAVA::Any& a4, const DAVA::Any& a5, const DAVA::Any& a6)
+{
+    InvokeImpl(operationId, a1, a2, a3, a4, a5, a6);
+}
+
+DAVA::AnyFn Core::FindOperation(int operationId)
+{
+    DAVA::AnyFn operation;
+    auto iter = globalOperations.find(operationId);
+    if (iter != globalOperations.end())
+    {
+        operation = iter->second;
+    }
+
+    return operation;
 }
 
 }

@@ -27,7 +27,7 @@ private:
     void OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
 
     void OpenScene();
-    void OpenScene(const DAVA::String& scenePath);
+    void OpenSceneImpl(const DAVA::String& scenePath);
 
 private:
     DAVA::ScopedPtr<DAVA::UI3DView> ui3dView = DAVA::ScopedPtr<DAVA::UI3DView>(nullptr);

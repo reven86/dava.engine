@@ -82,6 +82,7 @@ inline bool Any::operator!=(const Any& any) const
 template <typename T>
 bool Any::CanGet() const
 {
+    using U = AnyStorage::StorableType<T>;
     if (type->IsPointer())
     {
         using P = typename std::remove_pointer<T>::type;
@@ -94,7 +95,7 @@ bool Any::CanGet() const
         }
         else
         {
-            const Type* ptype = Type::Instance<typename std::decay<P>::type>();
+            const Type* ptype = Type::Instance<U>();
 
             if (type->Deref()->IsDerivedFrom(ptype))
             {
@@ -103,7 +104,7 @@ bool Any::CanGet() const
         }
     }
 
-    return (type == Type::Instance<T>());
+    return (type == Type::Instance<U>());
 }
 
 template <typename T>

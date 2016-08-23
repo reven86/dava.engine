@@ -11,4 +11,6 @@ protected:
     void OnContextCreated(tarc::DataContext& context) override;
     void OnContextDeleted(tarc::DataContext& context) override;
     void PostInit() override;
+
+    friend class FileSystemData;
 };

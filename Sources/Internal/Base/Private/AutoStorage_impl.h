@@ -139,10 +139,11 @@ template <size_t Count>
 template <typename T>
 inline const T& AutoStorage<Count>::GetAuto() const
 {
+    using U = StorableType<T>;
     assert(StorageType::Empty != type);
 
-    auto tp = std::integral_constant<bool, IsSimpleType<T>::value>();
-    return GetAutoImpl<T>(tp);
+    auto tp = std::integral_constant<bool, IsSimpleType<U>::value>();
+    return GetAutoImpl<U>(tp);
 }
 
 template <size_t Count>
