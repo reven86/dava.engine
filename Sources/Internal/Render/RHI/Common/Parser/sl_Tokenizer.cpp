@@ -73,6 +73,7 @@ static const char* _reservedWords[] =
   "sampler_state",
   "technique",
   "pass",
+  "blending"
 };
 
 static bool GetIsSymbol(char c)

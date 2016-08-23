@@ -1552,6 +1552,68 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
+    sl::HLSLBlend* blend = ast->GetRoot()->blend;
+
+    if (blend)
+    {
+        blending.rtBlend[0].blendEnabled = !(blend->src_op == sl::BLENDOP_ONE && blend->dst_op == sl::BLENDOP_ZERO);
+
+        switch (blend->src_op)
+        {
+        case sl::BLENDOP_ZERO:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_ZERO;
+            ;
+            break;
+        case sl::BLENDOP_ONE:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_ONE;
+            ;
+            break;
+        case sl::BLENDOP_SRC_ALPHA:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_SRC_ALPHA;
+            ;
+            break;
+        case sl::BLENDOP_INV_SRC_ALPHA:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_INV_SRC_ALPHA;
+            ;
+            break;
+        case sl::BLENDOP_SRC_COLOR:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_SRC_COLOR;
+            ;
+            break;
+        case sl::BLENDOP_DST_COLOR:
+            blending.rtBlend[0].colorSrc = rhi::BLENDOP_DST_COLOR;
+            ;
+            break;
+        }
+        switch (blend->dst_op)
+        {
+        case sl::BLENDOP_ZERO:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_ZERO;
+            ;
+            break;
+        case sl::BLENDOP_ONE:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_ONE;
+            ;
+            break;
+        case sl::BLENDOP_SRC_ALPHA:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_SRC_ALPHA;
+            ;
+            break;
+        case sl::BLENDOP_INV_SRC_ALPHA:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_INV_SRC_ALPHA;
+            ;
+            break;
+        case sl::BLENDOP_SRC_COLOR:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_SRC_COLOR;
+            ;
+            break;
+        case sl::BLENDOP_DST_COLOR:
+            blending.rtBlend[0].colorDst = rhi::BLENDOP_DST_COLOR;
+            ;
+            break;
+        }
+    }
+
     Logger::Info("\n--- ShaderSource");
     Logger::Info("buffers (%u) :", buf.size());
     for (unsigned i = 0; i != buf.size(); ++i)

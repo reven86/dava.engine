@@ -1484,6 +1484,85 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
     {
         doesNotExpectSemicolon = true;
     }
+    else if (Accept(HLSLToken_Blending))
+    {
+        if (!Expect('{'))
+        {
+            return false;
+        }
+
+        BlendOp src = BLENDOP_ONE;
+        BlendOp dst = BLENDOP_ZERO;
+
+        if (Accept("src"))
+        {
+            if (Accept('='))
+            {
+                const char* op;
+
+                if (AcceptIdentifier(op))
+                {
+                    if (stricmp(op, "zero") == 0)
+                        src = BLENDOP_ZERO;
+                    else if (stricmp(op, "one") == 0)
+                        src = BLENDOP_ONE;
+                    else if (stricmp(op, "src_alpha") == 0)
+                        src = BLENDOP_SRC_ALPHA;
+                    else if (stricmp(op, "inv_src_alpha") == 0)
+                        src = BLENDOP_INV_SRC_ALPHA;
+                    else if (stricmp(op, "src_color") == 0)
+                        src = BLENDOP_SRC_COLOR;
+                    else
+                        Log_Error("unsupported src blend-op \"%s\"", op);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (Accept("dst"))
+        {
+            if (Accept('='))
+            {
+                const char* op;
+
+                if (AcceptIdentifier(op))
+                {
+                    if (stricmp(op, "zero") == 0)
+                        dst = BLENDOP_ZERO;
+                    else if (stricmp(op, "one") == 0)
+                        dst = BLENDOP_ONE;
+                    else if (stricmp(op, "src_alpha") == 0)
+                        dst = BLENDOP_SRC_ALPHA;
+                    else if (stricmp(op, "inv_src_alpha") == 0)
+                        dst = BLENDOP_INV_SRC_ALPHA;
+                    else if (stricmp(op, "src_color") == 0)
+                        dst = BLENDOP_SRC_COLOR;
+                    else
+                        Log_Error("unsupported dst blend-op \"%s\"", op);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (!Expect('}'))
+        {
+            return false;
+        }
+
+        HLSLBlend* blend = m_tree->AddNode<HLSLBlend>(fileName, line);
+
+        blend->src_op = src;
+        blend->dst_op = dst;
+
+        m_tree->GetRoot()->blend = blend;
+        doesNotExpectSemicolon = true;
+    }
 
     if (statement != NULL)
     {

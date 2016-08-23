@@ -42,6 +42,7 @@ enum HLSLNodeType
     HLSLNodeType_Attribute,
     HLSLNodeType_Pipeline,
     HLSLNodeType_Stage,
+    HLSLNodeType_Blend
 };
 
 enum HLSLBaseType
@@ -203,6 +204,7 @@ struct HLSLConstructorExpression;
 struct HLSLFunctionCall;
 struct HLSLArrayAccess;
 struct HLSLAttribute;
+struct HLSLBlend;
 
 struct HLSLType
 {
@@ -240,8 +242,10 @@ struct HLSLRoot : public HLSLNode
     HLSLRoot()
     {
         statement = NULL;
+        blend = NULL;
     }
     HLSLStatement* statement; // First statement.
+    HLSLBlend* blend;
 };
 
 struct HLSLStatement : public HLSLNode
@@ -711,6 +715,28 @@ struct HLSLStage : public HLSLStatement
     HLSLDeclaration* outputs;
 };
 
+enum BlendOp
+{
+    BLENDOP_ZERO,
+    BLENDOP_ONE,
+    BLENDOP_SRC_ALPHA,
+    BLENDOP_INV_SRC_ALPHA,
+    BLENDOP_SRC_COLOR,
+    BLENDOP_DST_COLOR
+};
+
+struct HLSLBlend : public HLSLNode
+{
+    static const HLSLNodeType s_type = HLSLNodeType_Blend;
+
+    BlendOp src_op;
+    BlendOp dst_op;
+    HLSLBlend()
+        : src_op(BLENDOP_ONE)
+        , dst_op(BLENDOP_ZERO)
+    {
+    }
+};
 /**
  * Abstract syntax tree for parsed HLSL code.
  */

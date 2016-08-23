@@ -71,6 +71,7 @@ enum HLSLToken
     HLSLToken_SamplerState,
     HLSLToken_Technique,
     HLSLToken_Pass,
+    HLSLToken_Blending,
 
     // Multi-character symbols.
     HLSLToken_LessEqual,

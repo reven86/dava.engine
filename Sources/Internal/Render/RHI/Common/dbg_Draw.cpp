@@ -94,7 +94,9 @@ static const char* fp__dbg_ptc =
 "    float4       image = tex2D( Image, input.uv );"
 "    output.color = image * input.color;\n"
 "    return output;\n"
-"}\n";
+"}\n"
+"blending { src=src_alpha dst=inv_src_alpha }\n"
+;
 /*
 "FPROG_IN_BEGIN\n"
 "    FPROG_IN_TEXCOORD0(texcoord,2)\n"
