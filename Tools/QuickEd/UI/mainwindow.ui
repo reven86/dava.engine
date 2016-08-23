@@ -95,6 +95,7 @@
     </property>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
+    <addaction name="actionActualZoom"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -506,6 +507,17 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="actionActualZoom">
+   <property name="text">
+    <string>Actual zoom</string>
+   </property>
+   <property name="toolTip">
+    <string>set screen zoom to 100%</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>

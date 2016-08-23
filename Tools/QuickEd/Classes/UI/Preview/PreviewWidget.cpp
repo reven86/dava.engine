@@ -92,7 +92,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //100%
+    SetActualScale();
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -317,6 +317,11 @@ void PreviewWidget::OnDecrementScale()
     {
         scaleCombo->setCurrentIndex(currentIndex - 1);
     }
+}
+
+void PreviewWidget::SetActualScale()
+{
+    scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //1.00f is a 100% scale
 }
 
 void PreviewWidget::ApplyPosChanges()

@@ -223,6 +223,7 @@ void MainWindow::InitMenu()
 
     connect(actionZoomOut, &QAction::triggered, previewWidget, &PreviewWidget::OnDecrementScale);
     connect(actionZoomIn, &QAction::triggered, previewWidget, &PreviewWidget::OnIncrementScale);
+    connect(actionActualZoom, &QAction::triggered, previewWidget, &PreviewWidget::SetActualScale);
 
 // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)

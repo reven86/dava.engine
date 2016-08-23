@@ -60,6 +60,7 @@ public slots:
     void OnEmulationModeChanged(bool emulationMode);
     void OnIncrementScale();
     void OnDecrementScale();
+    void SetActualScale();
 
 private slots:
     void OnScaleChanged(qreal scale);
