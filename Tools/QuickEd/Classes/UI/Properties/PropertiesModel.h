@@ -46,6 +46,12 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
+    const AbstractProperty* GetRootProperty() const;
+    QModelIndex indexByProperty(const AbstractProperty* property, int column = 0);
+
+signals:
+    void ComponentAdded(const QModelIndex& index);
+
 protected:
     void UpdateAllChangedProperties();
 
@@ -74,7 +80,6 @@ protected:
     virtual void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
     virtual void ResetProperty(AbstractProperty* property);
 
-    QModelIndex indexByProperty(AbstractProperty* property, int column = 0);
     QString makeQVariant(const AbstractProperty* property) const;
     void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
