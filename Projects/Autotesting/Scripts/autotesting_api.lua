@@ -854,15 +854,16 @@ function LeftMouseClickDownPosition(pos)
     autotestingSystem:LeftMouseClickDown(position)
 end
 
-function LeftMouseClickUp()
-    autotestingSystem:LeftMouseClickUp()
+function LeftMouseClickUp(pos)
+    local position = Vector.Vector2(pos.x, pos.y)
+    autotestingSystem:LeftMouseClickUp(position)
 end
 
 function LeftMouseClickPosition(position, waitTime)
     Wait(waitTime)
     LeftMouseClickDownPosition(position)
     Wait(waitTime)
-    LeftMouseClickUp()
+    LeftMouseClickUp(position)
 end
 
 function LeftMouseClickControl(name, waitTime)

@@ -766,7 +766,7 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
     ProcessInput(clickDown);
 }
 
-void AutotestingSystemLua::LeftMouseClickUp()
+void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
 {
     UIEvent clickUp;
     if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
@@ -777,6 +777,8 @@ void AutotestingSystemLua::LeftMouseClickUp()
     clickUp.mouseButton = UIEvent::MouseButton::LEFT;
     clickUp.device = UIEvent::Device::MOUSE;
     clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickUp.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickUp.point = point;
     ProcessInput(clickUp);
 }
 

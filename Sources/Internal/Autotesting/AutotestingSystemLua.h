@@ -96,7 +96,7 @@ public:
     void TouchUp(int32 touchId);
 
     void LeftMouseClickDown(const Vector2& point);
-    void LeftMouseClickUp();
+    void LeftMouseClickUp(const Vector2& point);
 
     void ScrollToControl(const String& path) const;
 
