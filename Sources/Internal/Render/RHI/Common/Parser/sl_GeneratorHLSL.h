@@ -59,7 +59,6 @@ private:
     Mode m_mode;
     const char* m_entryName;
     Target m_target;
-    bool m_legacy;
     bool m_isInsideBuffer;
     /*
     char m_textureSampler2DStruct[64];

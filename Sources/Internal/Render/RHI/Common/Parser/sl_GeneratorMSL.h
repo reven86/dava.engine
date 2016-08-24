@@ -51,7 +51,6 @@ private:
     const HLSLTree* m_tree;
     const char* m_entryName;
     Target m_target;
-    bool m_legacy;
     bool m_isInsideBuffer;
 
     struct
@@ -63,34 +62,6 @@ private:
     };
     std::vector<tex_t> _tex;
 
-    /*
-    char m_textureSampler2DStruct[64];
-    char m_textureSampler2DCtor[64];
-    char m_textureSampler2DShadowStruct[64];
-    char m_textureSampler2DShadowCtor[64];
-    char m_textureSampler3DStruct[64];
-    char m_textureSampler3DCtor[64];
-    char m_textureSamplerCubeStruct[64];
-    char m_textureSamplerCubeCtor[64];
-    char m_tex2DFunction[64];
-    char m_tex2DProjFunction[64];
-    char m_tex2DLodFunction[64];
-    char m_tex2DBiasFunction[64];
-    char m_tex2DGradFunction[64];
-    char m_tex2DGatherFunction[64];
-    char m_tex2DSizeFunction[64];
-    char m_tex2DCmpFunction[64];
-    char m_tex2DMSFetchFunction[64];
-    char m_tex2DMSSizeFunction[64];
-    char m_tex3DFunction[64];
-    char m_tex3DLodFunction[64];
-    char m_tex3DBiasFunction[64];
-    char m_tex3DSizeFunction[64];
-    char m_texCubeFunction[64];
-    char m_texCubeLodFunction[64];
-    char m_texCubeBiasFunction[64];
-    char m_texCubeSizeFunction[64];
-*/
 };
 
 } // namespace sl
