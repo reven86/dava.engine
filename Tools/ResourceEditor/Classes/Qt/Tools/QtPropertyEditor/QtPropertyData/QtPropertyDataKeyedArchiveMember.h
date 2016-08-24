@@ -22,7 +22,7 @@ protected:
     virtual bool UpdateValueInternal();
     virtual bool EditorDoneInternal(QWidget* editor);
 
-    Command2::Pointer CreateLastCommand() const override;
+    std::unique_ptr<DAVA::Command> CreateLastCommand() const override;
 
 private:
     void CheckAndFillPresetValues();

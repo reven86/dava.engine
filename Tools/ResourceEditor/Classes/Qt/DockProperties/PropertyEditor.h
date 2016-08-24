@@ -13,6 +13,7 @@ class MainWindow;
 
 class GlobalOperations;
 class LazyUpdater;
+class RECommandNotificationObject;
 struct PropEditorUserData : public QtPropertyData::UserData
 {
     enum PropertyType : DAVA::uint32
@@ -71,7 +72,7 @@ public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
     void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void ActionEditComponent();
     void ActionEditMaterial();
@@ -128,7 +129,7 @@ private:
 
     QtPropertyToolButton* CreateButton(QtPropertyData* data, const QIcon& icon, const QString& tooltip);
 
-    QString GetDefaultFilePath();
+    QString GetDefaultFilePath(bool withScenePath = true);
 
     void AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root,
                              std::unique_ptr<QtPropertyData>& curEntityData, bool isFirstInList);

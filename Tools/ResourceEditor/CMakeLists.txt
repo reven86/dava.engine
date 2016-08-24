@@ -14,7 +14,6 @@ set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}" )
 
 include ( CMake-common )
-include ( NGTMacro )
 include ( CopyDataMacro )
 
 if (DEPLOY)
@@ -26,8 +25,6 @@ if (DEPLOY)
     endif()
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
-
-configure_ngt(${PROJECT_NAME} ${TOOL_OUTPUT_DIR})
 
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
@@ -42,9 +39,6 @@ if (UVR_DEV)
     add_definitions (-DNEW_PROPERTY_PANEL )
 endif()
 
-# Ngt tool sshould be found before DavaFramework to force specific for NGT defines 
-# into DavaFramework project
-find_package( NgtTools REQUIRED )
 find_package( QT5 REQUIRED)
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools  REQUIRED )
@@ -98,7 +92,6 @@ file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 file              ( GLOB QML_LIST "DataQt/*.qml")
-file              ( GLOB_RECURSE  NGT_METAINFO_LIST "Classes/*.mpp")
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)
@@ -136,8 +129,8 @@ define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sou
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
-set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} ${NGT_METAINFO_LIST})
-set( LIBRARIES            ${BEAST_LIB} NgtTools)
+set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} )
+set( LIBRARIES            ${BEAST_LIB} )
 set( LIBRARIES_RELEASE    ${THIRD_PARTY_LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${THIRD_PARTY_LIB_DEBUG}   )
 

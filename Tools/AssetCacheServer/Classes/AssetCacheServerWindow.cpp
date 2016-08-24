@@ -30,10 +30,12 @@
 #include <QXmlStreamReader>
 #endif
 
+using namespace DAVA;
+
 namespace
 {
-const DAVA::String DEFAULT_REMOTE_IP = DAVA::AssetCache::GetLocalHost();
-const DAVA::uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+const String DEFAULT_REMOTE_IP = AssetCache::GetLocalHost();
+const uint16 DEFAULT_REMOTE_PORT = AssetCache::ASSET_SERVER_PORT;
 }
 
 AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent)
@@ -60,7 +62,6 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
     connect(ui->autoSaveTimeoutSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnAutoSaveTimeoutChanged(int)));
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnAutoStartToggled(bool)));
     connect(ui->restartCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRestartToggled(bool)));
     connect(ui->advancedLabel, &QLabel::linkActivated, this, &AssetCacheServerWindow::OnAdvancedLinkActivated);
@@ -87,7 +88,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 
     OnServerStateChanged(&serverCore);
 
-    DAVA::uint64 occupied, overall;
+    uint64 occupied, overall;
     serverCore.GetStorageSpaceUsage(occupied, overall);
     UpdateUsageProgressbar(occupied, overall);
 }
@@ -178,8 +179,8 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
     
 #elif defined(__DAVAENGINE_MACOS__)
 
-    FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
-    FileSystem::Instance()->DeleteFile(plist);
+    DAVA::FilePath plist("~/Library/LaunchAgents/AssetCacheServer.plist");
+    DAVA::FileSystem::Instance()->DeleteFile(plist);
 
     if (toLaunchOnStartup)
     {
@@ -223,7 +224,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
-        ScopedPtr<File> file(File::PureCreate(plist, File::CREATE | File::WRITE));
+        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::PureCreate(plist, DAVA::File::CREATE | DAVA::File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
     }
@@ -291,6 +292,11 @@ void AssetCacheServerWindow::OnPortChanged(int)
     VerifyData();
 }
 
+void AssetCacheServerWindow::OnHttpPortChanged(int)
+{
+    VerifyData();
+}
+
 void AssetCacheServerWindow::OnAutoStartToggled(bool)
 {
     VerifyData();
@@ -324,10 +330,6 @@ void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
     ui->autoSaveLabel2->setVisible(show);
     ui->autoSaveTimeoutSpinBox->setVisible(show);
 
-    ui->portLabel->setVisible(show);
-    ui->portLabel2->setVisible(show);
-    ui->portSpinBox->setVisible(show);
-
     ui->autoStartLabel->setVisible(show);
     ui->autoStartLabel2->setVisible(show);
     ui->autoStartCheckBox->setVisible(show);
@@ -352,7 +354,7 @@ void AssetCacheServerWindow::ShowAdvancedSettings(bool show)
 
 void AssetCacheServerWindow::OnAddServerClicked()
 {
-    AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
+    AddRemoteServer(RemoteServerParams(DEFAULT_REMOTE_IP, false));
     VerifyData();
 }
 
@@ -404,7 +406,7 @@ void AssetCacheServerWindow::OnStopAction()
     serverCore.Stop();
 }
 
-void AssetCacheServerWindow::AddRemoteServer(const ServerData& newServer)
+void AssetCacheServerWindow::AddRemoteServer(const RemoteServerParams& newServer)
 {
     RemoteServerWidget* server = new RemoteServerWidget(newServer, this);
     remoteServers.push_back(server);
@@ -475,7 +477,6 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetCacheSizeGb(ui->cacheSizeSpinBox->value());
     serverCore.Settings().SetFilesCount(ui->numberOfFilesSpinBox->value());
     serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
-    serverCore.Settings().SetPort(ui->portSpinBox->value());
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
     serverCore.Settings().SetLaunchOnSystemStartup(ui->systemStartupCheckBox->isChecked());
     serverCore.Settings().SetRestartOnCrash(ui->restartCheckBox->isChecked());
@@ -498,7 +499,6 @@ void AssetCacheServerWindow::LoadSettings()
     ui->cacheSizeSpinBox->setValue(serverCore.Settings().GetCacheSizeGb());
     ui->numberOfFilesSpinBox->setValue(serverCore.Settings().GetFilesCount());
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
-    ui->portSpinBox->setValue(serverCore.Settings().GetPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
     ui->systemStartupCheckBox->setChecked(serverCore.Settings().IsLaunchOnSystemStartup());
     ui->restartCheckBox->setEnabled(serverCore.Settings().IsLaunchOnSystemStartup());
@@ -566,9 +566,9 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
     }
 }
 
-void AssetCacheServerWindow::UpdateUsageProgressbar(DAVA::uint64 occupied, DAVA::uint64 overall)
+void AssetCacheServerWindow::UpdateUsageProgressbar(uint64 occupied, uint64 overall)
 {
-    float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
+    DAVA::float64 p = overall ? (100. / static_cast<DAVA::float64>(overall)) : 0;
     int val = static_cast<int>(p * static_cast<DAVA::float64>(occupied));
     ui->occupiedSizeBar->setRange(0, 100);
     ui->occupiedSizeBar->setValue(val);

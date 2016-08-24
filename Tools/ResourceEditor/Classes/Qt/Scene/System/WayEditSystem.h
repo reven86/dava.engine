@@ -4,7 +4,6 @@
 #include "Scene/SelectableGroup.h"
 #include "Scene/SceneTypes.h"
 
-#include "Commands2/Base/Command2.h"
 #include "SystemDelegates.h"
 
 // framework
@@ -21,6 +20,7 @@
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/ModifSystem.h"
 
+class RECommandNotificationObject;
 class SceneEditor2;
 
 class WayEditSystem : public DAVA::SceneSystem,
@@ -51,7 +51,7 @@ public:
 protected:
     void Draw();
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
 

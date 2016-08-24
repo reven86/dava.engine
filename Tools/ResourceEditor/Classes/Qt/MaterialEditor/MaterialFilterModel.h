@@ -11,7 +11,6 @@ class QMimeData;
 class QStandardItem;
 class SceneEditor2;
 class MaterialItem;
-class Command2;
 class SelectableGroup;
 class MaterialModel;
 

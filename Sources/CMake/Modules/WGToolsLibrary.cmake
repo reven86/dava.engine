@@ -1,3 +1,0 @@
-ADD_DEFINITIONS(
-	-D_LIB
-)

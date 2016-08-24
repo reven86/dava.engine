@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 #define __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAEngine.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -54,11 +56,11 @@ public:
     void OnCreateActivity();
     void OnDestroyActivity();
 
-    void KeyUp(int32 keyCode);
-    void KeyDown(int32 keyCode);
+    void KeyUp(int32 keyCode, uint32 modifiers);
+    void KeyDown(int32 keyCode, uint32 modifiers);
 
     void OnInput(Vector<UIEvent>& allInputs);
-    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode);
+    void OnGamepadElement(int32 elementKey, float32 value, bool isKeycode, uint32 modifiers);
 
     void OnGamepadAvailable(bool isAvailable);
     void OnGamepadTriggersAvailable(bool isAvailable);
@@ -111,4 +113,5 @@ private:
 };
 };
 #endif // #if defined(__DAVAENGINE_ANDROID__)
+#endif // !__DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_CORE_PLATFORM_ANDROID_H__

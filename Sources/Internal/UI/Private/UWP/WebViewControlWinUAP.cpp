@@ -7,12 +7,6 @@
 #include "UI/Private/UWP/WebViewControlWinUAP.h"
 #include "UI/Private/UWP/PrivateWebViewWinUAP.h"
 
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::Web;
-using namespace Windows::Web::Http;
-using namespace Windows::Web::Http::Filters;
-
 namespace DAVA
 {
 WebViewControl::WebViewControl(UIWebView& uiWebView)
@@ -91,6 +85,11 @@ void WebViewControl::Update()
 
 void WebViewControl::DeleteCookies(const String& url)
 {
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
     Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieManager ^ cookieManager = httpObj.CookieManager;
@@ -107,6 +106,11 @@ void WebViewControl::DeleteCookies(const String& url)
 
 String WebViewControl::GetCookie(const String& url, const String& name) const
 {
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
     String result;
 
     Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
@@ -130,6 +134,11 @@ String WebViewControl::GetCookie(const String& url, const String& name) const
 
 Map<String, String> WebViewControl::GetCookies(const String& url) const
 {
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
     Map<String, String> result;
 
     Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));

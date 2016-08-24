@@ -6,11 +6,15 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
+
+#include "Engine/EngineModule.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -30,7 +34,11 @@
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Private/Android/AndroidBridge.h"
+#else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#endif
 #include <unistd.h>
 #endif //PLATFORMS
 
@@ -202,6 +210,18 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
         }
     }
     int result = FileAPI::RenameFile(fromFile.c_str(), toFile.c_str());
+    if (0 != result && EXDEV == errno)
+    {
+        result = CopyFile(existingFile, newFile);
+        if (result)
+        {
+            result = DeleteFile(existingFile);
+            if (result)
+            {
+                result = 0;
+            }
+        }
+    }
     bool error = (0 != result);
     if (error)
     {
@@ -390,8 +410,14 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
+
+#if defined(__DAVAENGINE_COREV2__)
+    const String& str = Engine::Instance()->GetCommandLine().at(0);
+#else
     const String& str = Core::Instance()->GetCommandLine().at(0);
+#endif
     currentExecuteDirectory = FilePath(str).GetDirectory();
+
 #endif //PLATFORMS
 
     return currentExecuteDirectory.MakeDirectoryPathname();
@@ -667,7 +693,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
     //take local folder as user documents folder
-    using namespace Windows::Storage;
+    using ::Windows::Storage::ApplicationData;
+
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath::FromNativeString(roamingFolder).MakeDirectoryPathname();
 
@@ -707,14 +734,22 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetInternalStoragePathname();
+#endif
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
+#else
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     return core->GetExternalStoragePathname();
+#endif
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

@@ -3,19 +3,20 @@
 
 #include "Base/BaseTypes.h"
 
-#include "Commands2/Base/Command2.h"
-#include "Commands2/Base/CommandAction.h"
+#include "Commands2/Base/RECommand.h"
+#include "Math/Rect.h"
 
 namespace DAVA
 {
 class Heightmap;
+class Entity;
 }
 
 class HeightmapProxy;
 class LandscapeProxy;
 class SceneEditor2;
 
-class ModifyHeightmapCommand : public Command2
+class ModifyHeightmapCommand : public RECommand
 {
 public:
     ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);
@@ -24,7 +25,6 @@ public:
 private:
     void Redo() override;
     void Undo() override;
-    DAVA::Entity* GetEntity() const override;
 
     DAVA::uint16* GetHeightmapRegion(DAVA::Heightmap* heightmap);
     void ApplyHeightmapRegion(DAVA::uint16* region);

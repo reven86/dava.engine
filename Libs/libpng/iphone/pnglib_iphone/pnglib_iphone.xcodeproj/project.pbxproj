@@ -393,14 +393,15 @@
 		5C36CAA214520B8A00298B51 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD_32_BIT)",
-					arm64,
-					armv7s,
-				);
+				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/pnglib_iphone.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					"PNG_ARM_NEON_OPT=0",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/pnglib_iphone-fkfmjulmmzdocbdntwfiojnnzjla/Build/Products/Release-iphonesimulator\"",
@@ -415,14 +416,11 @@
 		5C36CAA314520B8A00298B51 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD_32_BIT)",
-					arm64,
-					armv7s,
-				);
+				ARCHS = "$(ARCHS_STANDARD)";
 				DSTROOT = /tmp/pnglib_iphone.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "PNG_ARM_NEON_OPT=0";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/pnglib_iphone-fkfmjulmmzdocbdntwfiojnnzjla/Build/Products/Release-iphonesimulator\"",

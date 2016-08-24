@@ -7,6 +7,8 @@
 
 using namespace DAVA;
 
+class GameCore;
+
 struct DLCCrashTest
 {
     uint64 cancelTimeout;
@@ -30,7 +32,7 @@ struct DLCCrashTest
 class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
-    DlcTest();
+    DlcTest(GameCore* g);
 
 protected:
     ~DlcTest() = default;

@@ -1,6 +1,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Logger/Logger.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"

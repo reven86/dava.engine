@@ -5,7 +5,6 @@
 #include <QPushButton>
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
 
 #include "DockProperties/PropertyEditor.h"
 #include "MaterialEditor/MaterialEditor.h"
@@ -20,7 +19,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -29,6 +28,10 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/RebuildTangentSpaceCommand.h"
+#include "Commands2/ParticleEditorCommands.h"
+#include "Commands2/SoundComponentEditCommands.h"
+#include "Commands2/ConvertPathCommands.h"
+
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -58,10 +61,10 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
 
     if (connectToSceneSignals)
     {
-        QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2*)), this, SLOT(sceneActivated(SceneEditor2*)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2*)), this, SLOT(sceneDeactivated(SceneEditor2*)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2*, const Command2*, bool)));
-        QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(sceneSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
+        QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &PropertyEditor::sceneActivated);
+        QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &PropertyEditor::sceneDeactivated);
+        QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &PropertyEditor::CommandExecuted);
+        QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &PropertyEditor::sceneSelectionChanged);
         QObject::connect(SceneSignals::Instance(), &SceneSignals::ThemeChanged, this, &PropertyEditor::ResetProperties);
     }
     posSaver.Attach(this, "DocPropetyEditor");
@@ -477,6 +480,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                     variantData->SetValidator(new PathValidator(pathList));
                     break;
                 case PathDescriptor::PATH_SCENE:
+                    pathList.append(GetDefaultFilePath(false));
                     variantData->SetValidator(new ScenePathValidator(pathList));
                     break;
 
@@ -725,55 +729,87 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     SetEntities(selected);
 }
 
-void PropertyEditor::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+template <typename T>
+bool IsCurNodesContainsEntityFromCommand(const DAVA::Command* command, const SelectableGroup& curNodes)
 {
-    if (command == nullptr)
+    static_assert(std::is_base_of<DAVA::Command, T>::value, "it work only with commands, derived from DAVA::Command");
+    const T* derivedCommand = static_cast<const T*>(command);
+    DAVA::Entity* entity = derivedCommand->GetEntity();
+    if ((entity == nullptr) || curNodes.ContainsObject(entity))
+    {
+        return true;
+    }
+    return false;
+}
+
+void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
+{
+    if (commandNotification.IsEmpty())
     {
         return;
     }
 
-    static const DAVA::Vector<DAVA::int32> idsForUpdate =
-    { {
-    CMDID_COMPONENT_ADD,
-    CMDID_COMPONENT_REMOVE,
-    CMDID_CONVERT_TO_SHADOW,
-    CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML,
-    CMDID_SOUND_ADD_EVENT,
-    CMDID_SOUND_REMOVE_EVENT,
-    CMDID_DELETE_RENDER_BATCH,
-    CMDID_CLONE_LAST_BATCH,
-    CMDID_EXPAND_PATH,
-    CMDID_COLLAPSE_PATH,
-    } };
-
-    auto ShouldResetPanel = [this](const Command2* cmd) {
-        if (std::count(idsForUpdate.begin(), idsForUpdate.end(), cmd->GetId()) > 0)
+    std::function<bool(const RECommand*)> shouldResetPanel;
+    shouldResetPanel = [this, &shouldResetPanel](const RECommand* cmd)
+    {
+        const DAVA::uint32 cmdID = cmd->GetID();
+        if (cmdID == CMDID_COMPONENT_ADD)
         {
-            DAVA::Entity* entity = cmd->GetEntity();
-            if ((entity == nullptr) || curNodes.ContainsObject(entity))
-                return true;
+            return IsCurNodesContainsEntityFromCommand<AddComponentCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_COMPONENT_REMOVE)
+        {
+            return IsCurNodesContainsEntityFromCommand<RemoveComponentCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CONVERT_TO_SHADOW)
+        {
+            return IsCurNodesContainsEntityFromCommand<ConvertToShadowCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
+        {
+            return true; //there is no "GetEntity" for this command
+        }
+        else if (cmdID == CMDID_SOUND_ADD_EVENT)
+        {
+            return IsCurNodesContainsEntityFromCommand<AddSoundEventCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_SOUND_REMOVE_EVENT)
+        {
+            return IsCurNodesContainsEntityFromCommand<RemoveSoundEventCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_DELETE_RENDER_BATCH)
+        {
+            return IsCurNodesContainsEntityFromCommand<DeleteRenderBatchCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CLONE_LAST_BATCH)
+        {
+            return true; //there is no "GetEntity" for this command
+        }
+        else if (cmdID == CMDID_EXPAND_PATH)
+        {
+            return IsCurNodesContainsEntityFromCommand<ExpandPathCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_COLLAPSE_PATH)
+        {
+            return IsCurNodesContainsEntityFromCommand<CollapsePathCommand>(cmd, curNodes);
         }
         return false;
     };
 
-    bool resetPropertyPanel = false;
-
-    DAVA::int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    bool shouldReset = false;
+    if (commandNotification.batch != nullptr)
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        const DAVA::uint32 count = batch->Size();
-        for (DAVA::uint32 i = 0; !resetPropertyPanel && i < count; ++i)
+        for (DAVA::uint32 i = 0, count = commandNotification.batch->Size(); i < count && !shouldReset; ++i)
         {
-            resetPropertyPanel = ShouldResetPanel(batch->GetCommand(i));
+            shouldReset = shouldResetPanel(commandNotification.batch->GetCommand(i));
         }
     }
     else
     {
-        resetPropertyPanel = ShouldResetPanel(command);
+        shouldReset = shouldResetPanel(commandNotification.command);
     }
 
-    if (resetPropertyPanel)
+    if (shouldReset)
     {
         propertiesUpdater->Update();
     }
@@ -900,7 +936,7 @@ void PropertyEditor::ActionEditComponent()
 
         if (editor.IsModified())
         {
-            curScene->SetChanged(true);
+            curScene->SetChanged();
         }
     }
 }
@@ -935,14 +971,14 @@ void PropertyEditor::ConvertToShadow()
 
     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(data->object);
     curScene->BeginBatch("ConvertToShadow batch", 1);
-    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+    curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToShadowCommand(findEntityFn(batch), batch)));
     data->ForeachMergedItem([&findEntityFn, curScene](QtPropertyData* item)
                             {
                                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
                                 if (dynamicData != nullptr)
                                 {
                                     DAVA::RenderBatch* batch = reinterpret_cast<DAVA::RenderBatch*>(dynamicData->object);
-                                    curScene->Exec(Command2::Create<ConvertToShadowCommand>(findEntityFn(batch), batch));
+                                    curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToShadowCommand(findEntityFn(batch), batch)));
                                 }
                                 return true;
                             });
@@ -959,7 +995,7 @@ void PropertyEditor::RebuildTangentSpace()
         if (nullptr != data && nullptr != curScene)
         {
             DAVA::RenderBatch* batch = static_cast<DAVA::RenderBatch*>(data->object);
-            curScene->Exec(Command2::Create<RebuildTangentSpaceCommand>(batch, true));
+            curScene->Exec(std::unique_ptr<DAVA::Command>(new RebuildTangentSpaceCommand(batch, true)));
         }
     }
 }
@@ -996,7 +1032,7 @@ void PropertyEditor::DeleteRenderBatch()
                     DAVA::RenderBatch* b = ro->GetRenderBatch(i);
                     if (b == batch)
                     {
-                        curScene->Exec(Command2::Create<DeleteRenderBatchCommand>(node, batch->GetRenderObject(), i));
+                        curScene->Exec(std::unique_ptr<DAVA::Command>(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i)));
                         break;
                     }
                 }
@@ -1337,7 +1373,7 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
             SceneEditor2* curScene = sceneHolder.GetScene();
             if (curScene && renderObject)
             {
-                curScene->Exec(Command2::Create<CloneLastBatchCommand>(renderObject));
+                curScene->Exec(std::unique_ptr<DAVA::Command>(new CloneLastBatchCommand(renderObject)));
             }
         }
     }
@@ -1353,7 +1389,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component::eType type)
     for (auto entity : curNodes.ObjectsOfType<DAVA::Entity>())
     {
         auto c = DAVA::Component::CreateByType(type);
-        curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
+        curScene->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, c)));
     }
     curScene->EndBatch();
 }
@@ -1372,7 +1408,7 @@ void PropertyEditor::OnAddComponent(DAVA::Component* component)
         if (entity->GetComponentCount(component->GetType()) == 0)
         {
             DAVA::Component* c = component->Clone(entity);
-            curScene->Exec(Command2::Create<AddComponentCommand>(entity, c));
+            curScene->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, c)));
         }
     }
 
@@ -1422,7 +1458,7 @@ void PropertyEditor::OnAddPathComponent()
         if ((entity->GetComponentCount(DAVA::Component::PATH_COMPONENT) == 0) && (entity->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) == 0))
         {
             DAVA::PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
-            curScene->Exec(Command2::Create<AddComponentCommand>(entity, pathComponent));
+            curScene->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, pathComponent)));
         }
     }
 
@@ -1470,7 +1506,7 @@ void PropertyEditor::OnRemoveComponent()
 
             DAVA::Component* component = static_cast<DAVA::Component*>(data->object);
             PropEditorUserData* userData = GetUserData(data);
-            curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
+            curScene->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(userData->entity, component)));
 
             data->ForeachMergedItem([&curScene, this](QtPropertyData* item) {
                 QtPropertyDataIntrospection* dynamicData = dynamic_cast<QtPropertyDataIntrospection*>(item);
@@ -1478,7 +1514,7 @@ void PropertyEditor::OnRemoveComponent()
                 {
                     DAVA::Component* component = static_cast<DAVA::Component*>(dynamicData->object);
                     PropEditorUserData* userData = GetUserData(dynamicData);
-                    curScene->Exec(Command2::Create<RemoveComponentCommand>(userData->entity, component));
+                    curScene->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(userData->entity, component)));
                 }
 
                 return true;
@@ -1501,7 +1537,7 @@ void PropertyEditor::OnTriggerWaveComponent()
     }
 }
 
-QString PropertyEditor::GetDefaultFilePath()
+QString PropertyEditor::GetDefaultFilePath(bool withScenePath /*= true*/)
 {
     QString defaultPath = ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
     DAVA::FilePath dataSourcePath = ProjectManager::Instance()->GetDataSourcePath();
@@ -1509,8 +1545,9 @@ QString PropertyEditor::GetDefaultFilePath()
     {
         defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
     }
+
     SceneEditor2* editor = sceneHolder.GetScene();
-    if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()))
+    if (nullptr != editor && DAVA::FileSystem::Instance()->Exists(editor->GetScenePath()) && withScenePath)
     {
         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
         if (DAVA::String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))

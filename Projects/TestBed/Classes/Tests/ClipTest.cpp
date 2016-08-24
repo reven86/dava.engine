@@ -2,8 +2,8 @@
 
 using namespace DAVA;
 
-ClipTest::ClipTest()
-    : BaseScreen("ClipTest")
+ClipTest::ClipTest(GameCore* g)
+    : BaseScreen(g, "ClipTest")
 {
 }
 
