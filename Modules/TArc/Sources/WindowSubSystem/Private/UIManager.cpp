@@ -80,7 +80,103 @@ struct MainWindowInfo
     QMenuBar* menuBar = nullptr;
 };
 
-void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement, QAction* action);
+
+void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    if (windowInfo.menuBar == nullptr)
+    {
+        windowInfo.menuBar = new QMenuBar();
+        windowInfo.menuBar->setNativeMenuBar(true);
+        windowInfo.menuBar->setObjectName("menu");
+        windowInfo.menuBar->setVisible(true);
+        windowInfo.window->setMenuBar(windowInfo.menuBar);
+    }
+
+    QStringList path = url.path().split("/");
+    DVASSERT(!path.isEmpty());
+    QString topLevelTitle = path.front();
+    QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
+    if (topLevelMenu == nullptr)
+    {
+        topLevelMenu = new QMenu(topLevelTitle);
+        topLevelMenu->setObjectName(topLevelTitle);
+        windowInfo.menuBar->addMenu(topLevelMenu);
+    }
+
+    QMenu* currentLevelMenu = topLevelMenu;
+    for (int i = 1; i < path.size(); ++i)
+    {
+        QString currentLevelTittle = path[i];
+        QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
+        if (menu == nullptr)
+        {
+            menu = new QMenu(currentLevelTittle, currentLevelMenu);
+            menu->setObjectName(currentLevelTittle);
+            currentLevelMenu->addMenu(menu);
+        }
+        currentLevelMenu = menu;
+    }
+
+    currentLevelMenu->addAction(action);
+}
+
+void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    QString toolbarName = url.path();
+    QToolBar* toolbar = windowInfo.window->findChild<QToolBar*>(toolbarName);
+    if (toolbar == nullptr)
+    {
+        toolbar = new QToolBar(toolbarName, windowInfo.window);
+        toolbar->setObjectName(toolbarName);
+        windowInfo.window->addToolBar(toolbar);
+    }
+
+    toolbar->addAction(action);
+}
+
+void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
+{
+    bool isPermanent = url.path() == permanentStatusbarAction;
+    int stretchFactor = url.fragment().toInt();
+    QWidget* widget = action->data().value<QWidget*>();
+    if (widget == nullptr)
+    {
+        QToolButton* toolButton = new QToolButton();
+        toolButton->setDefaultAction(action);
+        widget = toolButton;
+    }
+
+    //action->setParent(widget);
+    QStatusBar* statusBar = windowInfo.window->statusBar();
+    if (isPermanent)
+    {
+        statusBar->addPermanentWidget(widget, stretchFactor);
+    }
+    else
+    {
+        statusBar->addWidget(widget, stretchFactor);
+    }
+}
+
+void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement, QAction* action)
+{
+    for (const QUrl& url : placement.GetUrls())
+    {
+        QString scheme = url.scheme();
+        if (scheme == menuScheme)
+        {
+            AddMenuPoint(url, action, windowInfo);
+        }
+        else if (scheme == toolbarScheme)
+        {
+            AddToolbarPoint(url, action, windowInfo);
+        }
+        else if (scheme == statusbarScheme)
+        {
+            AddStatusbarPoint(url, action, windowInfo);
+        }
+    }
+}
 
 QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo &mainWindowInfo, QMainWindow *mainWindow)
 {
@@ -88,18 +184,12 @@ QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo
 
     QDockWidget *dockWidget = new QDockWidget(text, mainWindow);
 
-    QAction *dockWidgetAction = new QAction(text, dockWidget);
+    QAction *dockWidgetAction = dockWidget->toggleViewAction();
     dockWidgetAction->setCheckable(true);
     QObject::connect(dockWidgetAction, &QAction::toggled, dockWidget, &QDockWidget::setVisible);
     QObject::connect(dockWidget, &QDockWidget::visibilityChanged, dockWidgetAction, &QAction::setChecked);
 
-    QString actionPath = dockPanelInfo.dockActionPath;
-    if (actionPath.isEmpty())
-    {
-        //default placement for dock action
-        actionPath = "View/Dock";
-    }
-    ActionPlacementInfo placement(CreateMenuPoint(actionPath));
+    const ActionPlacementInfo &placement = dockPanelInfo.actionPlacementInfo;
 
     AddAction(mainWindowInfo, placement, dockWidgetAction);
 
@@ -165,108 +255,11 @@ void AddCentralPanel(const PanelKey& key, const MainWindowInfo &mainWindowInfo, 
 
     tabWidget->addTab(widget, widget->objectName());
 }
-
-void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
-{
-    if (windowInfo.menuBar == nullptr)
-    {
-        windowInfo.menuBar = new QMenuBar();
-        windowInfo.menuBar->setNativeMenuBar(true);
-        windowInfo.menuBar->setObjectName("menu");
-        windowInfo.menuBar->setVisible(true);
-        windowInfo.window->setMenuBar(windowInfo.menuBar);
-    }
-
-    QStringList pathes = url.path().split("/");
-    DVASSERT(!pathes.isEmpty());
-    QString topLevelTitle = pathes.front();
-    QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
-    if (topLevelMenu == nullptr)
-    {
-        topLevelMenu = new QMenu(topLevelTitle);
-        topLevelMenu->setObjectName(topLevelTitle);
-        windowInfo.menuBar->addMenu(topLevelMenu);
-    }
-
-    QMenu* currentLevelMenu = topLevelMenu;
-    for (int i = 1; i < pathes.size(); ++i)
-    {
-        QString currentLevelTittle = pathes[i];
-        QMenu* menu = currentLevelMenu->findChild<QMenu*>(currentLevelTittle);
-        if (menu == nullptr)
-        {
-            menu = new QMenu(currentLevelTittle, currentLevelMenu);
-            menu->setObjectName(currentLevelTittle);
-            currentLevelMenu->addMenu(menu);
-        }
-        currentLevelMenu = menu;
-    }
-
-    currentLevelMenu->addAction(action);
-}
-
-void AddToolbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
-{
-    QString toolbarName = url.path();
-    QToolBar* toolbar = windowInfo.window->findChild<QToolBar*>(toolbarName);
-    if (toolbar == nullptr)
-    {
-        toolbar = new QToolBar(toolbarName, windowInfo.window);
-        toolbar->setObjectName(toolbarName);
-        windowInfo.window->addToolBar(toolbar);
-    }
-
-    toolbar->addAction(action);
-}
-
-void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
-{
-    bool isPermanent = url.path() == permanentStatusbarAction;
-    int stretchFactor = url.fragment().toInt();
-    QWidget* widget = action->data().value<QWidget*>();
-    if (widget == nullptr)
-    {
-        QToolButton* toolButton= new QToolButton();
-        toolButton->setDefaultAction(action);
-        widget = toolButton;
-    }
-
-    //action->setParent(widget);
-    QStatusBar* statusBar = windowInfo.window->statusBar();
-    if (isPermanent)
-    {
-        statusBar->addPermanentWidget(widget, stretchFactor);
-    }
-    else
-    {
-        statusBar->addWidget(widget, stretchFactor);
-    }
-}
-
-void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement, QAction* action)
-{
-    for (const QUrl& url : placement.urls)
-    {
-        QString scheme = url.scheme();
-        if (scheme == menuScheme)
-        {
-            AddMenuPoint(url, action, windowInfo);
-        }
-        else if (scheme == toolbarScheme)
-        {
-            AddToolbarPoint(url, action, windowInfo);
-        }
-        else if (scheme == statusbarScheme)
-        {
-            AddStatusbarPoint(url, action, windowInfo);
-        }
-    }
-}
 } // namespace UIManagerDetail
 
 struct UIManager::Impl
 {
-    Array<Function<void(const PanelKey&, UIManagerDetail::MainWindowInfo &, QWidget*)>, PanelKey::TypesCount> addFunctions;
+    Array<Function<void(const PanelKey&, UIManagerDetail::MainWindowInfo&, QWidget*)>, PanelKey::TypesCount> addFunctions;
     UnorderedMap<FastName, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;

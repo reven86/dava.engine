@@ -26,13 +26,27 @@ private:
     FastName appID;
 };
 
+class ActionPlacementInfo
+{
+public:
+    ActionPlacementInfo() = default;
+    ActionPlacementInfo(const QUrl& url);
+
+    void AddPlacementPoint(const QUrl& url);
+    const Vector<QUrl> &GetUrls() const;
+private:
+    Vector<QUrl> urls;
+};
+
 struct DockPanelInfo
 {
-    Qt::DockWidgetArea area = Qt::RightDockWidgetArea;
+    DockPanelInfo(const QString &title = QString(), const ActionPlacementInfo& placementInfo = ActionPlacementInfo(),
+        bool tabbed = true, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
     QString title;
     //path where action for change dock visibility will be placed
-    QString dockActionPath;
+    ActionPlacementInfo actionPlacementInfo;
     bool tabbed = true;
+    Qt::DockWidgetArea area = Qt::RightDockWidgetArea;
 };
 
 struct CentralPanelInfo
@@ -62,16 +76,6 @@ private:
     QString viewName;
     Type type;
     Any info;
-};
-
-struct ActionPlacementInfo
-{
-    ActionPlacementInfo() = default;
-    ActionPlacementInfo(const QUrl& url);
-
-    void AddPlacementPoint(const QUrl& url);
-
-    Vector<QUrl> urls;
 };
 
 struct WaitDialogParams
