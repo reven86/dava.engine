@@ -234,9 +234,10 @@ bool RenderPass::BeginRenderPass()
     if (localConfig.samples > 1)
     {
         ValidateMultisampledTextures(localConfig);
+
         localConfig.colorBuffer[0].resolveTexture = localConfig.colorBuffer[0].texture;
         localConfig.colorBuffer[0].texture = multisampledTexture->handle;
-
+        localConfig.depthStencilBuffer.resolveTexture = localConfig.depthStencilBuffer.texture;
         localConfig.depthStencilBuffer.texture = multisampledTexture->handleDepthStencil;
     }
 

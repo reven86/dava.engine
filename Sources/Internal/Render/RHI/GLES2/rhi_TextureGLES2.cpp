@@ -910,7 +910,7 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
 
     GLuint sourceFBO = from->fbo.front().frameBuffer;
     GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFBO));
-    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
     GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sourceFBO));
 

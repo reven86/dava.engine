@@ -1207,11 +1207,23 @@ void CommandBufferGLES2_t::Execute()
             if (isLastInPass)
             {
                 if (cur_query_buf != InvalidHandle)
+                {
                     QueryBufferGLES2::QueryComplete(cur_query_buf);
+                }
 
                 if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
                 {
                     TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[0].texture, passCfg.colorBuffer[0].resolveTexture);
+                }
+
+                if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].texture, passCfg.colorBuffer[1].resolveTexture);
+                }
+
+                if (passCfg.depthStencilBuffer.storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureGLES2::ResolveMultisampling(passCfg.depthStencilBuffer.texture, passCfg.depthStencilBuffer.resolveTexture);
                 }
 
 #if defined(__DAVAENGINE_IPHONE__)

@@ -257,13 +257,13 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 
-#if 0
+#if 1
 #define GL_CALL(expr) \
 { \
     expr; \
-    int err = glGetError(); \
-    if (err != GL_NO_ERROR) \
-        Logger::Error("gl", "FAILED  %s (%i)\n", #expr, err); \
+    GLint err = glGetError(); \
+    if (err != GL_NO_ERROR) { \
+        DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); DVASSERT(0); } \
 }
 
 #else
@@ -323,3 +323,4 @@ extern bool _GLES2_UseUserProvidedIndices;
 extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);
+const char* glErrorToString(GLint error);
