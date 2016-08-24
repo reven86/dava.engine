@@ -42,6 +42,16 @@ void ControlsFactory::CustomizeButton(DAVA::UIButton* btn, const DAVA::WideStrin
     btn->SetStateText(DAVA::UIControl::STATE_NORMAL, buttonText);
     btn->SetStateText(DAVA::UIControl::STATE_SELECTED, buttonText);
 
+    btn->SetStateFontColor(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::Color(1.0f, 1.0f, 1.0f, 0.85f));
+    btn->SetStateFontColor(DAVA::UIControl::STATE_DISABLED, DAVA::Color(1.0f, 1.0f, 1.0f, 0.5f));
+    btn->SetStateFontColor(DAVA::UIControl::STATE_NORMAL, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    btn->SetStateFontColor(DAVA::UIControl::STATE_SELECTED, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
+
+    btn->SetStateTextColorInheritType(DAVA::UIControl::STATE_PRESSED_INSIDE, UIControlBackground::COLOR_IGNORE_PARENT);
+    btn->SetStateTextColorInheritType(DAVA::UIControl::STATE_DISABLED, UIControlBackground::COLOR_IGNORE_PARENT);
+    btn->SetStateTextColorInheritType(DAVA::UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
+    btn->SetStateTextColorInheritType(DAVA::UIControl::STATE_SELECTED, UIControlBackground::COLOR_IGNORE_PARENT);
+
     AddBorder(btn);
 }
 

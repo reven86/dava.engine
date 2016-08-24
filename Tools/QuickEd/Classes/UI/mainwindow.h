@@ -49,6 +49,7 @@ signals:
     void GlobalStyleClassesChanged(const QString& classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanged(bool emulationMode);
+    bool CanClose();
 
 public slots:
     void OnDocumentChanged(Document* document);
@@ -79,6 +80,7 @@ private:
 
     bool IsPixelized() const;
     void SetPixelized(bool pixelized);
+    void closeEvent(QCloseEvent* event) override;
 
     DAVA::String GetState() const;
     void SetState(const DAVA::String& array);

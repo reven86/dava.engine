@@ -1,12 +1,12 @@
 #include "DeleteLODCommand.h"
 #include "DeleteRenderBatchCommand.h"
-
+#include "Commands2/RECommandIDs.h"
 
 #include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
 DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex)
-    : Command2(CMDID_LOD_DELETE, "Delete LOD")
+    : RECommand(CMDID_LOD_DELETE, "Delete LOD")
     , lodComponent(lod)
     , deletedLodIndex(lodIndex)
     , requestedSwitchIndex(switchIndex)
@@ -46,7 +46,7 @@ void DeleteLODCommand::Redo()
 {
     for (DeleteRenderBatchCommand* command : deletedBatches)
     {
-        RedoInternalCommand(command);
+        command->Redo();
     }
 
     //update indexes
@@ -93,7 +93,7 @@ void DeleteLODCommand::Undo()
     count = (DAVA::uint32)deletedBatches.size();
     for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        UndoInternalCommand(deletedBatches[i]);
+        deletedBatches[i]->Undo();
     }
 }
 
