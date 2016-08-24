@@ -4,8 +4,9 @@
 # set local path for lib
 LOCAL_PATH := $(call my-dir)
 
-# Hack for right order of .so linking
+# HACK for right order of .so linking
 # c++_shared must be linked before all other shared libs, so add it manually
+# if we don't do it, linker can take symbols from wrong shared lib (unwind_backtrace from fmod, for example)
 ifeq ($(APP_STL), c++_shared)
 # Yet another hack - we don't need gcc lib, so unset variable with option -lgcc
 TARGET_LIBGCC := 
