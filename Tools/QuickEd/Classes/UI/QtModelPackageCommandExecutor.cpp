@@ -280,8 +280,11 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vec
     nodesToCopy.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
-            nodesToCopy.push_back(node);
+        ControlNode* copy = node->Clone();
+        if (node->CanCopy() && dest->CanInsertControl(copy, destIndex))
+            nodesToCopy.push_back(copy);
+        else
+            SafeRelease(copy);
     }
     Vector<ControlNode*> copiedNodes;
     copiedNodes.reserve(nodesToCopy.size());
@@ -290,14 +293,14 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vec
         BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
 
         int index = destIndex;
-        for (ControlNode* node : nodesToCopy)
+        for (ControlNode* copy : nodesToCopy)
         {
-            ControlNode* copy = node->Clone();
             copiedNodes.push_back(copy);
             InsertControlImpl(copy, dest, index);
             SafeRelease(copy);
             index++;
         }
+        nodesToCopy.clear();
 
         EndMacro();
     }
