@@ -408,8 +408,8 @@ enum LoadAction
 enum StoreAction
 {
     STOREACTION_NONE = 0,
-    STOREACTION_STORE = 1
-    //    STOREACTION_RESOLVE    = 2
+    STOREACTION_STORE = 1,
+    STOREACTION_RESOLVE = 2
 };
 
 namespace VertexBuffer
@@ -469,11 +469,12 @@ namespace Texture
 struct
 Descriptor
 {
-    TextureType type;
-    uint32 width;
-    uint32 height;
-    TextureFormat format;
-    uint32 levelCount;
+    TextureType type = TEXTURE_TYPE_2D;
+    uint32 width = 0;
+    uint32 height = 0;
+    TextureFormat format = TEXTURE_FORMAT_R8G8B8A8;
+    uint32 levelCount = 1;
+    uint32 samples = 1;
     void* initialData[128]; // it must be writable!
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
@@ -482,11 +483,9 @@ Descriptor
     uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
-        : type(TEXTURE_TYPE_2D)
-        , width(w)
+        : width(w)
         , height(h)
         , format(fmt)
-        , levelCount(1)
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
@@ -495,13 +494,9 @@ Descriptor
     {
         memset(initialData, 0, sizeof(initialData));
     }
+
     Descriptor()
-        : type(TEXTURE_TYPE_2D)
-        , width(0)
-        , height(0)
-        , format(TEXTURE_FORMAT_R8G8B8A8)
-        , levelCount(1)
-        , isRenderTarget(false)
+        : isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
         , cpuAccessRead(false)
@@ -751,19 +746,15 @@ RenderPassConfig
     struct
     ColorBuffer
     {
-        Handle texture;
-        TextureFace textureFace;
-        uint32 textureLevel;
-        LoadAction loadAction;
-        StoreAction storeAction;
+        Handle texture = InvalidHandle;
+        Handle resolveTexture = InvalidHandle;
+        TextureFace textureFace = TEXTURE_FACE_POSITIVE_X;
+        uint32 textureLevel = 0;
+        LoadAction loadAction = LOADACTION_CLEAR;
+        StoreAction storeAction = STOREACTION_NONE;
         float clearColor[4];
 
         ColorBuffer()
-            : texture(InvalidHandle)
-            , textureFace(TEXTURE_FACE_NEGATIVE_X)
-            , textureLevel(0)
-            , loadAction(LOADACTION_CLEAR)
-            , storeAction(STOREACTION_NONE)
         {
             clearColor[0] = 0;
             clearColor[1] = 0;
@@ -775,41 +766,24 @@ RenderPassConfig
     struct
     DepthStencilBuffer
     {
-        Handle texture;
-        LoadAction loadAction;
-        StoreAction storeAction;
-        float clearDepth;
-        uint32 clearStencil;
-
-        DepthStencilBuffer()
-            : texture(DefaultDepthBuffer)
-            , loadAction(LOADACTION_CLEAR)
-            , storeAction(STOREACTION_NONE)
-            , clearDepth(1.0f)
-            , clearStencil(0)
-        {
-        }
+        Handle texture = DefaultDepthBuffer;
+        Handle resolveTexture = InvalidHandle;
+        LoadAction loadAction = LOADACTION_CLEAR;
+        StoreAction storeAction = STOREACTION_NONE;
+        float clearDepth = 1.0f;
+        uint32 clearStencil = 0;
     };
 
     ColorBuffer colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer depthStencilBuffer;
 
-    Handle queryBuffer;
-    uint32 PerfQueryIndex0;
-    uint32 PerfQueryIndex1;
     Viewport viewport;
-
-    int priority;
-    uint32 invertCulling : 1;
-
-    RenderPassConfig()
-        : queryBuffer(InvalidHandle)
-        , PerfQueryIndex0(DAVA::InvalidIndex)
-        , PerfQueryIndex1(DAVA::InvalidIndex)
-        , priority(0)
-        , invertCulling(0)
-    {
-    }
+    Handle queryBuffer = InvalidHandle;
+    uint32 PerfQueryIndex0 = DAVA::InvalidIndex;
+    uint32 PerfQueryIndex1 = DAVA::InvalidIndex;
+    uint32 priority = 0;
+    uint32 invertCulling = 0;
+    uint32 samples = 1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

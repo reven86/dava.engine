@@ -912,6 +912,24 @@ void gles2_Initialize(const InitParam& param)
 
 } // namespace rhi
 
+#define CASE_TO_STRING(x) case x: return #x;
+const char* glErrorToString(GLint error)
+{
+    switch (error)
+    {
+        CASE_TO_STRING(GL_NO_ERROR)
+        CASE_TO_STRING(GL_INVALID_ENUM)
+        CASE_TO_STRING(GL_INVALID_VALUE)
+        CASE_TO_STRING(GL_INVALID_OPERATION)
+        CASE_TO_STRING(GL_INVALID_FRAMEBUFFER_OPERATION)
+        CASE_TO_STRING(GL_OUT_OF_MEMORY)
+
+    default:
+        return "Unknown OpenGL error";
+    };
+}
+#undef CASE_TO_STRING
+
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed)
 {
     using namespace rhi;

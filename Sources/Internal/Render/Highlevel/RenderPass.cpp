@@ -195,9 +195,30 @@ void RenderPass::ProcessVisibilityQuery()
 }
 #endif
 
+void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& config)
+{
+    Size2i rtSize(config.viewport.width - config.viewport.x, config.viewport.height - config.viewport.y);
+
+    if ((multisampledTexture == nullptr) || (multisampledTexture->width != rtSize.dx) || (multisampledTexture->height != rtSize.dy))
+    {
+        SafeRelease(multisampledTexture);
+
+        Texture::FBODescriptor desc;
+        desc.width = rtSize.dx;
+        desc.height = rtSize.dy;
+        desc.format = PixelFormat::FORMAT_RGBA8888;
+        desc.needDepth = true;
+        desc.needPixelReadback = false;
+        desc.ensurePowerOf2 = false;
+        desc.samples = config.samples;
+        multisampledTexture = Texture::CreateFBO(desc);
+    }
+}
+
 bool RenderPass::BeginRenderPass()
 {
     bool success = false;
+
 #if __DAVAENGINE_RENDERSTATS__
     ProcessVisibilityQuery();
     rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
@@ -205,7 +226,18 @@ bool RenderPass::BeginRenderPass()
     queryBuffers.push_back(qBuffer);
 #endif
 
-    renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::RenderPassConfig localConfig = passConfig;
+
+    if (localConfig.samples > 1)
+    {
+        ValidateMultisampledTextures(localConfig);
+        localConfig.colorBuffer[0].resolveTexture = localConfig.colorBuffer[0].texture;
+        localConfig.colorBuffer[0].texture = multisampledTexture->handle;
+
+        localConfig.depthStencilBuffer.texture = multisampledTexture->handleDepthStencil;
+    }
+
+    renderPass = rhi::AllocateRenderPass(localConfig, 1, &packetList);
     if (renderPass != rhi::InvalidHandle)
     {
         rhi::BeginRenderPass(renderPass);
@@ -246,6 +278,8 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName& name)
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_DEBUG_DRAW_ID, RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW));
 
     passConfig.priority = PRIORITY_MAIN_3D;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
+    passConfig.samples = 4;
 }
 
 void MainForwardRenderPass::InitReflectionRefraction()

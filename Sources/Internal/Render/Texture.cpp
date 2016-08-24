@@ -880,6 +880,7 @@ Texture* Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+    descriptor.samples = fboDesc.samples;
     if (fboDesc.needPixelReadback)
     {
         descriptor.cpuAccessRead = true;

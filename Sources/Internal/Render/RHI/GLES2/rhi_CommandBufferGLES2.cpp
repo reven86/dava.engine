@@ -1209,6 +1209,11 @@ void CommandBufferGLES2_t::Execute()
                 if (cur_query_buf != InvalidHandle)
                     QueryBufferGLES2::QueryComplete(cur_query_buf);
 
+                if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[0].texture, passCfg.colorBuffer[0].resolveTexture);
+                }
+
 #if defined(__DAVAENGINE_IPHONE__)
                 if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) //defualt framebuffer is discard once after frame
                 {
@@ -2612,7 +2617,19 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::RENDERBUFFER_STORAGE:
         {
-            GL_CALL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
+            GLenum target = static_cast<GLenum>(arg[0]);
+            GLenum internalFormat = static_cast<GLenum>(arg[1]);
+            GLsizei width = static_cast<GLenum>(arg[2]);
+            GLsizei height = static_cast<GLenum>(arg[3]);
+            GLuint samples = static_cast<GLsizei>(arg[4]);
+            if (samples > 1)
+            {
+                GL_CALL(glRenderbufferStorageMultisample(target, samples, internalFormat, width, height));
+            }
+            else
+            {
+                GL_CALL(glRenderbufferStorage(target, internalFormat, width, height));
+            }
             cmd->status = err;
         }
         break;

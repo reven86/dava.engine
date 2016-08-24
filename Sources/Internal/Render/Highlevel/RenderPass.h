@@ -47,12 +47,16 @@ protected:
     bool BeginRenderPass();
     void EndRenderPass();
 
+    void ValidateMultisampledTextures(const rhi::RenderPassConfig& forConfig);
+
     Vector<RenderLayer*> renderLayers;
     std::array<RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT> layersBatchArrays;
     Vector<RenderObject*> visibilityArray;
 
-    rhi::HPacketList packetList;
-    rhi::HRenderPass renderPass;
+    rhi::HPacketList packetList = static_cast<rhi::HPacketList>(rhi::InvalidHandle);
+    rhi::HRenderPass renderPass = static_cast<rhi::HRenderPass>(rhi::InvalidHandle);
+
+    Texture* multisampledTexture = nullptr;
 
 #ifdef __DAVAENGINE_RENDERSTATS__
 
@@ -74,6 +78,7 @@ inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 {
     return passConfig;
 }
+
 inline void RenderPass::SetViewport(const Rect& _viewport)
 {
     viewport = _viewport;
@@ -112,6 +117,7 @@ protected:
     Camera *passMainCamera, *passDrawCamera;
     float32 waterLevel;
 };
+
 class WaterReflectionRenderPass : public WaterPrePass
 {
 public:
