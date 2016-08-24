@@ -381,6 +381,7 @@ static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
+    DVASSERT(passConf.depthStencilBuffer.storeAction != rhi::STOREACTION_RESOLVE);
 
     Handle handle = RenderPassPoolGLES2::Alloc();
     RenderPassGLES2_t* pass = RenderPassPoolGLES2::Get(handle);
@@ -1219,11 +1220,6 @@ void CommandBufferGLES2_t::Execute()
                 if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
                 {
                     TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].texture, passCfg.colorBuffer[1].resolveTexture);
-                }
-
-                if (passCfg.depthStencilBuffer.storeAction == rhi::STOREACTION_RESOLVE)
-                {
-                    TextureGLES2::ResolveMultisampling(passCfg.depthStencilBuffer.texture, passCfg.depthStencilBuffer.resolveTexture);
                 }
 
 #if defined(__DAVAENGINE_IPHONE__)
