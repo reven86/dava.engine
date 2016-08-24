@@ -235,6 +235,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         width = desc.width;
         height = desc.height;
         format = desc.format;
+        samples = desc.samples;
         isCubeMap = desc.type == TEXTURE_TYPE_CUBE;
         isRenderTarget = desc.isRenderTarget;
         isRenderBuffer = is_render_buffer;
