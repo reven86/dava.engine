@@ -71,7 +71,7 @@ inline void AutoStorage<Count>::Clear()
 {
     if (StorageType::Shared == type)
     {
-        ClearShared();
+        SharedPtr()->reset();
     }
 
     type = StorageType::Empty;
@@ -123,26 +123,32 @@ template <size_t Count>
 template <typename T>
 inline const T& AutoStorage<Count>::GetSimple() const
 {
+    using U = StorableType<T>;
+
     assert(StorageType::Simple == type);
-    return *(reinterpret_cast<const T*>(const_cast<void* const*>(storage.data())));
+    return *(reinterpret_cast<const U*>(const_cast<void* const*>(storage.data())));
 }
 
 template <size_t Count>
 template <typename T>
 const T& AutoStorage<Count>::GetShared() const
 {
+    using U = StorableType<T>;
+
     assert(StorageType::Shared == type);
-    return *(static_cast<const T*>(SharedPtr()->get()));
+    return *(static_cast<const U*>(SharedPtr()->get()));
 }
 
 template <size_t Count>
 template <typename T>
 inline const T& AutoStorage<Count>::GetAuto() const
 {
+    using U = StorableType<T>;
+
     assert(StorageType::Empty != type);
 
-    auto tp = std::integral_constant<bool, IsSimpleType<T>::value>();
-    return GetAutoImpl<T>(tp);
+    auto tp = std::integral_constant<bool, IsSimpleType<U>::value>();
+    return GetAutoImpl<U>(tp);
 }
 
 template <size_t Count>
@@ -160,7 +166,7 @@ inline void AutoStorage<Count>::DoCopy(const AutoStorage& value)
 
     if (StorageType::Shared == type)
     {
-        CopyShared(value);
+        new (storage.data()) SharedT(*value.SharedPtr());
     }
     else
     {
@@ -180,18 +186,6 @@ template <size_t Count>
 inline typename AutoStorage<Count>::SharedT* AutoStorage<Count>::SharedPtr() const
 {
     return reinterpret_cast<SharedT*>(const_cast<void**>(storage.data()));
-}
-
-template <size_t Count>
-void AutoStorage<Count>::ClearShared()
-{
-    SharedPtr()->reset();
-}
-
-template <size_t Count>
-void AutoStorage<Count>::CopyShared(const AutoStorage& value)
-{
-    new (storage.data()) SharedT(*value.SharedPtr());
 }
 
 template <size_t Count>

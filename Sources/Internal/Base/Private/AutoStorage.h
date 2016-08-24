@@ -105,9 +105,6 @@ private:
     void DoCopy(const AutoStorage& value);
     void DoMove(AutoStorage&& value);
 
-    void ClearShared();
-    void CopyShared(const AutoStorage& value);
-
     template <typename T>
     void SetAutoImpl(T&& value, std::true_type);
 

@@ -5,6 +5,7 @@
 #endif
 
 #include <atomic>
+#include <functional>
 
 namespace DAVA
 {
@@ -33,11 +34,6 @@ inline bool Type::IsReference() const
     return isReference;
 }
 
-inline bool Type::IsDerivedFrom(const Type* type) const
-{
-    return (baseTypes.count(type) > 0);
-}
-
 inline const Type* Type::Decay() const
 {
     return decayType;
@@ -53,12 +49,12 @@ inline const Type* Type::Pointer() const
     return pointerType;
 }
 
-inline const UnorderedMap<const Type*, Type::CastToBaseOP>& Type::GetBaseTypes() const
+inline const Type::InheritanceMap& Type::BaseTypes() const
 {
     return baseTypes;
 }
 
-inline const UnorderedSet<const Type*> Type::GetDerivedTypes() const
+inline const Type::InheritanceMap& Type::DerivedTypes() const
 {
     return derivedTypes;
 }
@@ -77,6 +73,12 @@ struct TypeSize<void>
     static const size_t size = 0;
 };
 
+template <>
+struct TypeSize<const void>
+{
+    static const size_t size = 0;
+};
+
 template <typename T>
 const Type* GetTypeIfTrue(std::false_type)
 {
@@ -89,12 +91,12 @@ const Type* GetTypeIfTrue(std::true_type)
     return Type::Instance<T>();
 }
 
-template <typename D, typename B>
-void* CastToBase(void* p)
+template <typename From, typename To>
+void* CastFromTo(void* p)
 {
-    D* derived = static_cast<D*>(p);
-    B* base = static_cast<B*>(derived);
-    return base;
+    From* from = static_cast<From*>(p);
+    To* to = static_cast<To*>(from);
+    return to;
 }
 
 template <typename T>
@@ -115,8 +117,8 @@ void Type::Init(Type** ptype)
 
     *ptype = &type;
 
-    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
     using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
+    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
     using PointerT = std::add_pointer_t<std::decay_t<T>>;
 
     static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
@@ -160,8 +162,28 @@ void Type::RegisterBases()
 {
     const Type* type = Type::Instance<T>();
 
-    bool basesUnpack[] = { false, type->baseTypes.insert(std::make_pair(Type::Instance<Bases>(), &TypeDetail::CastToBase<T, Bases>)).second... };
-    bool derivedUnpack[] = { false, Type::Instance<Bases>()->derivedTypes.insert(type).second... };
+    bool basesUnpack[] = { false, Type::AddBaseType<T, Bases>()... };
+    bool derivedUnpack[] = { false, Type::AddDerivedType<Bases, T>()... };
+}
+
+template <typename T, typename B>
+bool Type::AddBaseType()
+{
+    const Type* type = Type::Instance<T>();
+    const Type* base = Type::Instance<B>();
+    type->baseTypes.emplace(base, &TypeDetail::CastFromTo<T, B>);
+
+    return true;
+}
+
+template <typename T, typename D>
+bool Type::AddDerivedType()
+{
+    const Type* type = Type::Instance<T>();
+    const Type* derived = Type::Instance<D>();
+    type->derivedTypes.emplace(derived, &TypeDetail::CastFromTo<T, D>);
+
+    return true;
 }
 
 } // namespace DAVA

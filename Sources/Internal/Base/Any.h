@@ -19,6 +19,7 @@ public:
     using LoadOP = void (*)(AnyStorage&, const void* src);
     using StoreOP = void (*)(const AnyStorage&, void* dst);
     using CompareOP = bool (*)(const void* a, const void* b);
+    using CastOP = void* (*)(const void* from);
 
     struct AnyOPs
     {
@@ -41,7 +42,6 @@ public:
         }
     };
 
-    using CastOP = void (*)(const void* from, void* to);
     using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKey>;
 #endif
 
@@ -121,6 +121,21 @@ public:
 private:
     const Type* type = nullptr;
     AnyStorage anyStorage;
+
+    template <typename T>
+    const T& GetImpl() const;
+
+    template <typename T>
+    bool CanCastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    bool CanCastImpl(std::false_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::false_type isPointer) const;
 
     static std::unique_ptr<AnyOPsMap> anyOPsMap;
 

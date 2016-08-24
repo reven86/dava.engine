@@ -82,39 +82,91 @@ inline bool Any::operator!=(const Any& any) const
 template <typename T>
 bool Any::CanGet() const
 {
-    if (type->IsPointer())
+    using U = AnyStorage::StorableType<T>;
+
+    if (type == Type::Instance<U>())
     {
-        using P = typename std::remove_pointer<T>::type;
+        return true;
+    }
+    else if (type->IsPointer() && std::is_pointer<U>::value)
+    {
+        static const bool isVoidPtr = std::is_void<std::remove_pointer_t<U>>::value;
 
-        static const bool is_void_ptr = std::is_pointer<T>::value && std::is_void<P>::value;
-
-        if (is_void_ptr)
+        // pointers can be get as void*
+        if (isVoidPtr)
         {
             return true;
         }
-        else
-        {
-            const Type* ptype = Type::Instance<typename std::decay<P>::type>();
 
-            if (type->Deref()->IsDerivedFrom(ptype))
-            {
-                return true;
-            }
+        const Type* utype = Type::Instance<U>();
+
+        // for any utype, that is "const T*"
+        // utype->Decay() will return "T*"
+        if (type == utype->Decay())
+        {
+            // if type is "T*" and ttype is "const T*"
+            // we should allow cast from "T*" into "const T*"
+            return true;
         }
     }
 
-    return (type == Type::Instance<T>());
+    return false;
+}
+
+template <typename T>
+const T& Any::Get() const
+{
+    if (CanGet<T>())
+        return GetImpl<T>();
+
+    throw Exception(Exception::BadGet, "Value can't be get as requested T");
+}
+
+template <typename T>
+inline const T& Any::Get(const T& defaultValue) const
+{
+    return CanGet<T>() ? GetImpl() : defaultValue;
+}
+
+template <typename T>
+inline const T& Any::GetImpl() const
+{
+    return anyStorage.GetAuto<T>();
+}
+
+template <typename T>
+void Any::Set(T&& value, NotAny<T>)
+{
+    using U = AnyStorage::StorableType<T>;
+
+    type = Type::Instance<U>();
+    anyStorage.SetAuto(std::forward<T>(value));
 }
 
 template <typename T>
 bool Any::CanCast() const
 {
-    if (CanGet<T>())
-        return true;
+    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer;
+    return CanGet<T>() || CanCastImpl<T>(isPointer);
+}
+
+template <typename T>
+inline bool Any::CanCastImpl(std::true_type isPointer) const
+{
+    using P = std::remove_cv_t<std::remove_pointer_t<T>>;
+    const Type* ptype = Type::Instance<P>();
+
+    return TypeCast::CanCast(type->Deref(), ptype);
+}
+
+template <typename T>
+inline bool Any::CanCastImpl(std::false_type isPointer) const
+{
+    using U = AnyStorage::StorableType<T>;
 
 #ifdef ANY_EXPERIMENTAL_CAST_IMPL
-    CastOPKey castOPKey{ type, Type::Instance<T>() };
-    return (castOPsMap->count(castOPKey) > 0);
+    CastOPKey castOPKey{ type, Type::Instance<U>() };
+    return castOPsMap->count(castOPKey);
 #else
     return false;
 #endif
@@ -123,9 +175,34 @@ bool Any::CanCast() const
 template <typename T>
 T Any::Cast() const
 {
-    if (CanGet<T>())
-        return anyStorage.GetAuto<T>();
+    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer;
 
+    if (CanGet<T>())
+        return GetImpl<T>();
+
+    return CastImpl<T>(isPointer);
+}
+
+template <typename T>
+inline T Any::CastImpl(std::true_type isPointer) const
+{
+    using P = std::remove_cv_t<std::remove_pointer_t<T>>;
+    const Type* ptype = Type::Instance<P>();
+
+    void* inPtr = GetImpl<void*>();
+    void* outPtr = nullptr;
+
+    if (TypeCast::Cast(type->Deref(), inPtr, ptype, &outPtr))
+    {
+        return static_cast<T>(outPtr);
+    }
+
+    throw Exception(Exception::BadCast, "Pointer value can't be casted into requested T");
+}
+
+template <typename T>
+inline T Any::CastImpl(std::false_type isPointer) const
+{
 #ifdef ANY_EXPERIMENTAL_CAST_IMPL
     CastOPKey castOPKey{ type, Type::Instance<T>() };
 
@@ -144,29 +221,6 @@ T Any::Cast() const
 #else
     throw Exception(Exception::BadCast, "Value can't be casted into requested T");
 #endif
-}
-
-template <typename T>
-void Any::Set(T&& value, NotAny<T>)
-{
-    using U = AnyStorage::StorableType<T>;
-
-    type = Type::Instance<U>();
-    anyStorage.SetAuto(std::forward<T>(value));
-}
-
-template <typename T>
-const T& Any::Get() const
-{
-    if (!CanGet<T>())
-        throw Exception(Exception::BadGet, "Value can't be get as requested T");
-    return anyStorage.GetAuto<T>();
-}
-
-template <typename T>
-inline const T& Any::Get(const T& defaultValue) const
-{
-    return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
 }
 
 template <typename T>

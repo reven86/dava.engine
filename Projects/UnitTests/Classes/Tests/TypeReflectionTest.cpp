@@ -10,6 +10,21 @@
 
 using namespace DAVA;
 
+class StructPtr
+{
+public:
+    StructPtr() = default;
+    StructPtr(const StructPtr&) = delete;
+    int sss = 555;
+
+    DAVA_REFLECTION(StructPtr)
+    {
+        ReflectionRegistrator<StructPtr>::Begin()
+        .Field("sss", &StructPtr::sss)
+        .End();
+    }
+};
+
 struct SimpleStruct
 {
     SimpleStruct()
@@ -169,6 +184,7 @@ protected:
     SimpleStruct* simpleNull = nullptr;
     std::vector<std::string> strVec;
     std::vector<SimpleStruct*> simVec;
+    StructPtr* sptr = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
     {
@@ -191,6 +207,7 @@ protected:
         .Field("intVec", &TestBaseClass::intVec)
         .Field("strVec", &TestBaseClass::strVec)
         .Field("simVec", &TestBaseClass::simVec)
+        .Field("sptr", &TestBaseClass::sptr)
         .Field("GetStaticIntFn", &TestBaseClass::GetStaticIntFn, nullptr)
         .Field("GetStaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
         .Field("GetStaticCustomRefFn", &TestBaseClass::GetStaticCustomRefFn, nullptr)
@@ -238,6 +255,8 @@ TestBaseClass::TestBaseClass()
     strVec.push_back("!!!!!111");
 
     simple = &sss;
+
+    //sptr = new StructPtr();
 }
 
 DAVA_TESTCLASS (TypeReflection)
@@ -247,7 +266,10 @@ DAVA_TESTCLASS (TypeReflection)
         TestBaseClass t;
         Reflection t_ref = Reflection::Create(&t).ref;
 
-        t_ref.Dump(std::cout);
+        std::ostringstream dumpOutput;
+        t_ref.Dump(dumpOutput);
+
+        Logger::Info("%s", dumpOutput.str().c_str());
     }
 
     DAVA_TEST (CtorDtorTest)
