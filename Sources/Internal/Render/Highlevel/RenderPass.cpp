@@ -41,7 +41,10 @@ RenderPass::~RenderPass()
 {
     ClearLayersArrays();
     for (RenderLayer* layer : renderLayers)
+    {
         SafeDelete(layer);
+    }
+    SafeRelease(multisampledTexture);
 }
 
 void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer)
