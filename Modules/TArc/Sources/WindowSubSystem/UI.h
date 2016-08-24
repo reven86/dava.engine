@@ -40,8 +40,7 @@ private:
 
 struct DockPanelInfo
 {
-    DockPanelInfo(const QString &title = QString(), const ActionPlacementInfo& placementInfo = ActionPlacementInfo(),
-        bool tabbed = true, Qt::DockWidgetArea area = Qt::RightDockWidgetArea);
+    DockPanelInfo();
     QString title;
     //path where action for change dock visibility will be placed
     ActionPlacementInfo actionPlacementInfo;

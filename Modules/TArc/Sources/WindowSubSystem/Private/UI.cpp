@@ -16,17 +16,9 @@ const FastName& WindowKey::GetAppID() const
     return appID;
 }
 
-DockPanelInfo::DockPanelInfo(const QString &title_ /*= QString()*/, const ActionPlacementInfo& placementInfo_ /*= ActionPlacementInfo()*/,
-    bool tabbed_ /*= true*/, Qt::DockWidgetArea area_ /*= Qt::RightDockWidgetArea*/)
-    : title(title_)
-    , actionPlacementInfo(placementInfo_)
-    , tabbed(tabbed_)
-    , area(area_)
+DockPanelInfo::DockPanelInfo()
+    : actionPlacementInfo(DAVA::TArc::CreateMenuPoint("View/Dock"))
 {
-    if (actionPlacementInfo.GetUrls().empty())
-    {
-        actionPlacementInfo = DAVA::TArc::CreateMenuPoint("View/Dock");
-    }
 }
 
 PanelKey::PanelKey(const QString& viewName_, const DockPanelInfo& info_)
