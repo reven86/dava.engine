@@ -9,7 +9,6 @@
 class GlobalOperations;
 class ErrorDialogOutput final : public DAVA::LoggerOutput
 {
-
 public:
     ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations);
 
