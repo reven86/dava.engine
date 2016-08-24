@@ -1257,9 +1257,11 @@ public:
 
     void SetLayoutDirty();
     void ResetLayoutDirty();
+    bool IsLayoutDirty();
 
     void SetLayoutPositionDirty();
     void ResetLayoutPositionDirty();
+    bool IsLayoutPositionDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
@@ -1464,6 +1466,16 @@ float32 UIControl::GetWheelSensitivity() const
 void UIControl::SetWheelSensitivity(float32 newSens)
 {
     wheelSensitivity = newSens;
+}
+
+bool DAVA::UIControl::IsLayoutDirty()
+{
+    return layoutDirty;
+}
+
+bool DAVA::UIControl::IsLayoutPositionDirty()
+{
+    return layoutPositionDirty;
 }
 };
 

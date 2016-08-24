@@ -79,6 +79,16 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     layoutData.clear();
 }
 
+void UILayoutSystem::Update(UIControl* root)
+{
+    if (!dirty)
+        return;
+
+    ProcessControl(root);
+
+    dirty = false;
+}
+
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
     UIControl* result = control;
@@ -201,6 +211,28 @@ void UILayoutSystem::ApplyPositions()
     for (ControlLayoutData& data : layoutData)
     {
         data.ApplyOnlyPositionLayoutToControl();
+    }
+}
+void UILayoutSystem::ProcessControl(UIControl* control)
+{
+    if (control->IsLayoutDirty())
+    {
+        if (IsAutoupdatesEnabled())
+        {
+            ApplyLayout(control, true);
+        }
+    }
+    else if (control->IsLayoutPositionDirty())
+    {
+        if (IsAutoupdatesEnabled() && control->GetParent() != nullptr)
+        {
+            ApplyLayoutNonRecursive(control->GetParent());
+        }
+    }
+
+    for (UIControl* child : control->GetChildren())
+    {
+        ProcessControl(child);
     }
 }
 }

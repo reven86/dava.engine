@@ -1024,23 +1024,6 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         prevControlState = controlState;
     }
 
-    if (layoutDirty)
-    {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled())
-        {
-            layoutSystem->ApplyLayout(this, true);
-        }
-    }
-    else if (layoutPositionDirty)
-    {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
-        {
-            layoutSystem->ApplyLayoutNonRecursive(parent);
-        }
-    }
-
     auto it = children.begin();
     isIteratorCorrupted = false;
     while (it != children.end())
@@ -2421,6 +2404,7 @@ void UIControl::ResetStyleSheetDirty()
 void UIControl::SetLayoutDirty()
 {
     layoutDirty = true;
+    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
 }
 
 void UIControl::ResetLayoutDirty()
@@ -2432,6 +2416,7 @@ void UIControl::ResetLayoutDirty()
 void UIControl::SetLayoutPositionDirty()
 {
     layoutPositionDirty = true;
+    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
 }
 
 void UIControl::ResetLayoutPositionDirty()

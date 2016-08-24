@@ -26,6 +26,10 @@ public:
     void ApplyLayout(UIControl* control, bool considerDenendenceOnChildren = false);
     void ApplyLayoutNonRecursive(UIControl* control);
 
+    void Update(UIControl* root);
+    void SetDirty();
+    void ResetDirty();
+
 private:
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
 
@@ -39,11 +43,24 @@ private:
     void ApplySizesAndPositions();
     void ApplyPositions();
 
+    void ProcessControl(UIControl* control);
+
 private:
     bool isRtl = false;
     bool autoupdatesEnabled = true;
+    bool dirty = false;
     Vector<ControlLayoutData> layoutData;
 };
+
+void DAVA::UILayoutSystem::SetDirty()
+{
+    dirty = true;
+}
+
+inline void DAVA::UILayoutSystem::ResetDirty()
+{
+    dirty = false;
+}
 }
 
 
