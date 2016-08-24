@@ -128,55 +128,31 @@ HLSLGenerator::HLSLGenerator(Allocator* allocator)
 // - Look at the function being generated.
 // - Return semantic, semantics associated to fields of the return structure, or output arguments, or fields of structures associated to output arguments -> output semantic replacement.
 // - Semantics associated input arguments or fields of the input arguments -> input semantic replacement.
-static const char* TranslateSemantic(const char* semantic, bool output, HLSLGenerator::Target target)
+const char*
+HLSLGenerator::TranslateSemantic(const char* semantic, bool output, HLSLGenerator::Target target) const
 {
     const char* sem = nullptr;
 
     if (target == HLSLGenerator::Target_VertexShader)
     {
         if (!stricmp(semantic, "SV_Position"))
-            sem = (output) ? "SV_POSITION" : "POSITION";
+            sem = (output && m_mode == MODE_DX11) ? "SV_POSITION" : "POSITION";
         else if (!stricmp(semantic, "SV_Normal"))
             sem = "NORMAL";
     }
     else if (target == HLSLGenerator::Target_PixelShader)
     {
         if (!stricmp(semantic, "SV_Target"))
-            sem = "SV_TARGET0";
+            sem = (m_mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
         else if (!stricmp(semantic, "SV_Target0"))
-            sem = "SV_TARGET0";
+            sem = (m_mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
         else if (!stricmp(semantic, "SV_Target1"))
-            sem = "SV_TARGET1";
+            sem = (m_mode == MODE_DX11) ? "SV_TARGET1" : "COLOR1";
         else if (!stricmp(semantic, "SV_Target2"))
-            sem = "SV_TARGET2";
+            sem = (m_mode == MODE_DX11) ? "SV_TARGET2" : "COLOR2";
         else if (!stricmp(semantic, "SV_Target3"))
-            sem = "SV_TARGET3";
+            sem = (m_mode == MODE_DX11) ? "SV_TARGET3" : "COLOR3";
     }
-
-    if (!stricmp(semantic, "SV_Texcoord"))
-        sem = "TEXCOORD0";
-    else if (!stricmp(semantic, "SV_Texcoord0"))
-        sem = "TEXCOORD0";
-    else if (!stricmp(semantic, "SV_Texcoord1"))
-        sem = "TEXCOORD1";
-    else if (!stricmp(semantic, "SV_Texcoord2"))
-        sem = "TEXCOORD2";
-    else if (!stricmp(semantic, "SV_Texcoord3"))
-        sem = "TEXCOORD3";
-    else if (!stricmp(semantic, "SV_Texcoord4"))
-        sem = "TEXCOORD4";
-    else if (!stricmp(semantic, "SV_Texcoord5"))
-        sem = "TEXCOORD5";
-    else if (!stricmp(semantic, "SV_Texcoord6"))
-        sem = "TEXCOORD6";
-    else if (!stricmp(semantic, "SV_Texcoord7"))
-        sem = "TEXCOORD7";
-    else if (!stricmp(semantic, "SV_Color"))
-        sem = "COLOR0";
-    else if (!stricmp(semantic, "SV_Color0"))
-        sem = "COLOR0";
-    else if (!stricmp(semantic, "SV_Color1"))
-        sem = "COLOR1";
 
     return sem;
     /*
@@ -217,9 +193,10 @@ static const char* TranslateSemantic(const char* semantic, bool output, HLSLGene
 */
 }
 
-bool HLSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName, std::string* code)
+bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const char* entryName, std::string* code)
 {
     m_tree = tree;
+    m_mode = mode;
     m_entryName = entryName;
     m_target = target;
     m_legacy = false;
@@ -584,9 +561,23 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
 */
         if (IsSamplerType(identifierExpression->expressionType) && identifierExpression->global)
         {
-            if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
+            if (m_mode == MODE_DX11)
             {
-                m_writer.Write("%s_texture.Sample( %s_sampler ", name, name);
+                if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
+                {
+                    m_writer.Write("%s_texture.Sample( %s_sampler ", name, name);
+                }
+            }
+            else if (m_mode == MODE_DX9)
+            {
+                if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
+                {
+                    m_writer.Write("tex2D( %s", name);
+                }
+                else if (identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
+                {
+                    m_writer.Write("texCUBE( %s", name);
+                }
             }
         }
         else
@@ -975,36 +966,43 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
             HLSLDeclaration* field = buffer->field;
 
-            if (!m_legacy)
+            if (m_mode == MODE_DX11)
             {
-                m_writer.BeginLine(indent, buffer->fileName, buffer->line);
-                m_writer.Write("cbuffer %s", buffer->name);
-                if (buffer->registerName != NULL)
+                if (!m_legacy)
                 {
-                    m_writer.Write(" : register(%s)", buffer->registerName);
+                    m_writer.BeginLine(indent, buffer->fileName, buffer->line);
+                    m_writer.Write("cbuffer %s", buffer->name);
+                    if (buffer->registerName != NULL)
+                    {
+                        m_writer.Write(" : register(%s)", buffer->registerName);
+                    }
+                    m_writer.EndLine(" {");
                 }
-                m_writer.EndLine(" {");
-            }
 
-            m_isInsideBuffer = true;
+                m_isInsideBuffer = true;
 
-            while (field != NULL)
-            {
-                if (!field->hidden)
+                while (field != NULL)
                 {
-                    m_writer.BeginLine(indent + 1, field->fileName, field->line);
-                    OutputDeclaration(field->type, field->name, /*semantic=*/NULL, /*registerName*/ field->registerName, field->assignment);
-                    m_writer.Write(";");
-                    m_writer.EndLine();
+                    if (!field->hidden)
+                    {
+                        m_writer.BeginLine(indent + 1, field->fileName, field->line);
+                        OutputDeclaration(field->type, field->name, /*semantic=*/NULL, /*registerName*/ field->registerName, field->assignment);
+                        m_writer.Write(";");
+                        m_writer.EndLine();
+                    }
+                    field = (HLSLDeclaration*)field->nextStatement;
                 }
-                field = (HLSLDeclaration*)field->nextStatement;
+
+                m_isInsideBuffer = false;
+
+                if (!m_legacy)
+                {
+                    m_writer.WriteLine(indent, "};");
+                }
             }
-
-            m_isInsideBuffer = false;
-
-            if (!m_legacy)
+            else if (m_mode == MODE_DX9)
             {
-                m_writer.WriteLine(indent, "};");
+                m_writer.WriteLine(indent, "uniform float4 %s[%u];", field->name, buffer->registerCount);
             }
         }
         else if (statement->nodeType == HLSLNodeType_Function)
@@ -1142,55 +1140,77 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             sscanf(declaration->registerName, "s%d", &reg);
         }
 
-        const char* textureType = NULL;
-        const char* samplerType = "SamplerState";
-        // @@ Handle generic sampler type.
+        if (m_mode == MODE_DX11)
+        {
+            const char* textureType = NULL;
+            const char* samplerType = "SamplerState";
+            // @@ Handle generic sampler type.
 
-        if (declaration->type.baseType == HLSLBaseType_Sampler2D)
-        {
-            textureType = "Texture2D";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler3D)
-        {
-            textureType = "Texture3D";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
-        {
-            textureType = "TextureCube";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler2DShadow)
-        {
-            textureType = "Texture2D";
-            samplerType = "SamplerComparisonState";
-        }
-        else if (declaration->type.baseType == HLSLBaseType_Sampler2DMS)
-        {
-            textureType = "Texture2DMS<float4>"; // @@ Is template argument required?
-            samplerType = NULL;
-        }
-
-        if (samplerType != NULL)
-        {
-            if (reg != -1)
+            if (declaration->type.baseType == HLSLBaseType_Sampler2D)
             {
-                m_writer.Write("%s %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->name, reg, samplerType, declaration->name, reg);
+                textureType = "Texture2D";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_Sampler3D)
+            {
+                textureType = "Texture3D";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
+            {
+                textureType = "TextureCube";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_Sampler2DShadow)
+            {
+                textureType = "Texture2D";
+                samplerType = "SamplerComparisonState";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_Sampler2DMS)
+            {
+                textureType = "Texture2DMS<float4>"; // @@ Is template argument required?
+                samplerType = NULL;
+            }
+
+            if (samplerType != NULL)
+            {
+                if (reg != -1)
+                {
+                    m_writer.Write("%s %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->name, reg, samplerType, declaration->name, reg);
+                }
+                else
+                {
+                    m_writer.Write("%s %s_texture; %s %s_sampler", textureType, declaration->name, samplerType, declaration->name);
+                }
             }
             else
             {
-                m_writer.Write("%s %s_texture; %s %s_sampler", textureType, declaration->name, samplerType, declaration->name);
+                if (reg != -1)
+                {
+                    m_writer.Write("%s %s : register(t%d)", textureType, declaration->name, reg);
+                }
+                else
+                {
+                    m_writer.Write("%s %s", textureType, declaration->name);
+                }
             }
         }
-        else
+        else if (m_mode == MODE_DX9)
         {
+            const char* ttype = NULL;
+
+            if (declaration->type.baseType == HLSLBaseType_Sampler2D)
+            {
+                ttype = "sampler2D";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
+            {
+                ttype = "samplerCUBE";
+            }
+
+            DVASSERT(ttype);
+            m_writer.Write("%s %s", ttype, declaration->name);
             if (reg != -1)
-            {
-                m_writer.Write("%s %s : register(t%d)", textureType, declaration->name, reg);
-            }
-            else
-            {
-                m_writer.Write("%s %s", textureType, declaration->name);
-            }
+                m_writer.Write(" : TEXUNIT%i", reg);
         }
+
         return;
     }
 

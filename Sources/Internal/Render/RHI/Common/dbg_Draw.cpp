@@ -976,8 +976,6 @@ void DbgDraw::_init()
         s_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
 
         vp_ptc.GetSourceCode(rhi::HostApi(), &bin);
-        DAVA::Logger::Info("\n\n--shader  \"%s\"", ps_desc.vprogUid.c_str());
-        DAVA::Logger::Info(bin.c_str());
         rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, bin.c_str(), bin.length());
         fp_ptc.GetSourceCode(rhi::HostApi(), &bin);
         rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, bin.c_str(), bin.length());

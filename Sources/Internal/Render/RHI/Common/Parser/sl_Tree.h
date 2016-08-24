@@ -341,6 +341,7 @@ struct HLSLBuffer : public HLSLStatement
     }
     const char* name;
     const char* registerName;
+    unsigned registerCount;
     HLSLDeclaration* field;
 };
 

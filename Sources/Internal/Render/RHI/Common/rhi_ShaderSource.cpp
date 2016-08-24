@@ -1325,7 +1325,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
-#if 1
     if (prop_decl.size())
     {
         std::vector<sl::HLSLBuffer*> cbuf_decl;
@@ -1356,6 +1355,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             cbuf->field = decl;
             cbuf->name = ast->AddString(buf_type_name);
             cbuf->registerName = ast->AddString(buf_reg_name);
+            cbuf->registerCount = buf[i].regCount;
 
             cbuf_decl[i] = cbuf;
         }
@@ -1508,7 +1508,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             }
         }
     }
-#endif
 
 #if 1
     Logger::Info("properties (%u) :", property.size());
@@ -1863,7 +1862,15 @@ ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
     {
         sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
 
-        success = hlsl_gen.Generate(ast, target, main, code);
+        success = hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX11, target, main, code);
+    }
+    break;
+
+    case RHI_DX9:
+    {
+        sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+
+        success = hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, code);
     }
     break;
 

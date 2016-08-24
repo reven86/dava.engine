@@ -15,6 +15,12 @@ struct HLSLStruct;
 class HLSLGenerator
 {
 public:
+    enum Mode
+    {
+        MODE_DX11,
+        MODE_DX9
+    };
+
     enum Target
     {
         Target_VertexShader,
@@ -23,12 +29,14 @@ public:
 
     explicit HLSLGenerator(Allocator* allocator);
 
-    bool Generate(HLSLTree* tree, Target target, const char* entryName, std::string* code);
+    bool Generate(HLSLTree* tree, Mode mode, Target target, const char* entryName, std::string* code);
     const char* GetResult() const;
 
 private:
     static const char* GetTypeName(const HLSLType& type);
     static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments);
+
+    const char* TranslateSemantic(const char* semantic, bool output, HLSLGenerator::Target target) const;
 
     void OutputExpressionList(HLSLExpression* expression);
     void OutputExpression(HLSLExpression* expression);
@@ -48,6 +56,7 @@ private:
     CodeWriter m_writer;
 
     const HLSLTree* m_tree;
+    Mode m_mode;
     const char* m_entryName;
     Target m_target;
     bool m_legacy;
