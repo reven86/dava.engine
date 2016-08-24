@@ -370,7 +370,6 @@ static std::vector<FrameGLES2> _GLES2_Frame;
 static bool _GLES2_FrameStarted = false;
 static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
-//static DAVA::Mutex              _FrameSync;
 
 static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
 static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
@@ -400,7 +399,7 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         cb->passCfg = passConf;
         cb->isFirstInPass = i == 0;
         cb->isLastInPass = i == cmdBufCount - 1;
-        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
+        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].targetTexture == InvalidHandle;
 
         pass->cmdBuf[i] = h;
         cmdBuf[i] = h;
@@ -1145,28 +1144,45 @@ void CommandBufferGLES2_t::Execute()
                 def_viewport[0] = 0;
                 def_viewport[1] = 0;
 
-                if (passCfg.colorBuffer[0].texture != InvalidHandle)
-                {
-                    Size2i sz = TextureGLES2::Size(passCfg.colorBuffer[0].texture);
+                const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
+                Handle targetColorTexture = color0.targetTexture;
+                Handle targetDepthTexture = passCfg.depthStencilBuffer.targetTexture;
 
-                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, passCfg.colorBuffer[0].textureFace, passCfg.colorBuffer[0].textureLevel);
+                if (targetColorTexture != InvalidHandle)
+                {
+                    if (passCfg.samples > 1)
+                    {
+                        DVASSERT(color0.multisampleTexture != InvalidHandle);
+                        targetColorTexture = color0.multisampleTexture;
+                        targetDepthTexture = passCfg.depthStencilBuffer.multisampleTexture;
+                    }
+
+                    TextureGLES2::SetAsRenderTarget(targetColorTexture, targetDepthTexture, color0.textureFace, color0.textureLevel);
+
+                    Size2i sz = TextureGLES2::Size(targetColorTexture);
                     def_viewport[2] = sz.dx;
                     def_viewport[3] = sz.dy;
                 }
                 else
                 {
-                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+                    if (passCfg.samples > 1)
+                    {
+                        DVASSERT(color0.multisampleTexture != InvalidHandle);
+                        TextureGLES2::SetAsRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureFace, color0.textureLevel);
+                    }
+                    else if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
                         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
+
+                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
                 }
 
-                if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
+                if (color0.loadAction == LOADACTION_CLEAR)
                 {
-                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                    GL_CALL(glClearColor(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]));
                     flags |= GL_COLOR_BUFFER_BIT;
                 }
 
@@ -1214,12 +1230,12 @@ void CommandBufferGLES2_t::Execute()
 
                 if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
                 {
-                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[0].texture, passCfg.colorBuffer[0].resolveTexture);
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].targetTexture);
                 }
 
                 if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
                 {
-                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].texture, passCfg.colorBuffer[1].resolveTexture);
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].targetTexture);
                 }
 
 #if defined(__DAVAENGINE_IPHONE__)

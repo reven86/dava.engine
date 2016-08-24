@@ -717,14 +717,14 @@ void RenderHelper::CreateClearPass(rhi::HTexture colorBuffer, rhi::HTexture dept
 {
     rhi::RenderPassConfig clearPassConfig;
     clearPassConfig.priority = passPriority;
-    clearPassConfig.colorBuffer[0].texture = colorBuffer;
+    clearPassConfig.colorBuffer[0].targetTexture = colorBuffer;
     clearPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
     clearPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
     clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
     clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
     clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    clearPassConfig.depthStencilBuffer.texture = depthBuffer;
+    clearPassConfig.depthStencilBuffer.targetTexture = depthBuffer;
     clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_STORE;
     clearPassConfig.viewport = viewport;

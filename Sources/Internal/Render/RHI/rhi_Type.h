@@ -740,14 +740,12 @@ Viewport
 ////////////////////////////////////////////////////////////////////////////////
 // render-target state
 
-struct
-RenderPassConfig
+struct RenderPassConfig
 {
-    struct
-    ColorBuffer
+    struct ColorBuffer
     {
-        Handle texture = InvalidHandle;
-        Handle resolveTexture = InvalidHandle;
+        Handle targetTexture = InvalidHandle; // renamed to avoid confusion and reduce errors now
+        Handle multisampleTexture = InvalidHandle;
         TextureFace textureFace = TEXTURE_FACE_POSITIVE_X;
         uint32 textureLevel = 0;
         LoadAction loadAction = LOADACTION_CLEAR;
@@ -766,8 +764,8 @@ RenderPassConfig
     struct
     DepthStencilBuffer
     {
-        Handle texture = DefaultDepthBuffer;
-        Handle resolveTexture = InvalidHandle;
+        Handle targetTexture = DefaultDepthBuffer; // renamed to avoid confusion and reduce errors now
+        Handle multisampleTexture = InvalidHandle;
         LoadAction loadAction = LOADACTION_CLEAR;
         StoreAction storeAction = STOREACTION_NONE;
         float clearDepth = 1.0f;

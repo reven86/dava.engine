@@ -904,20 +904,30 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
 {
     DVASSERT(fromHandle != rhi::InvalidHandle);
     TextureGLES2_t* from = TextureGLES2Pool::Get(fromHandle);
+    TextureGLES2_t* to = toHandle == rhi::InvalidHandle ? nullptr : TextureGLES2Pool::Get(toHandle);
 
-    bool isDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) | (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
-    GLbitfield mask = isDepthFormat ? GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+    GLuint targetBuffer = _GLES2_Default_FrameBuffer;
 
-    DVASSERT(!isDepthFormat);
+    bool fromHasDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) || (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
+    DVASSERT(!fromHasDepthFormat)
     DVASSERT(!from->fbo.empty());
 
-    DVASSERT(toHandle == rhi::InvalidHandle);
-    // TODO : allow to resolve to other texture
+    if (to != nullptr)
+    {
+        bool toHasDepthFormat = (to->format == TextureFormat::TEXTURE_FORMAT_D16) || (to->format == TextureFormat::TEXTURE_FORMAT_D24S8);
+        DVASSERT(!toHasDepthFormat);
+        if (to->fbo.empty())
+        {
+            // force create framebuffer object
+            SetAsRenderTarget(toHandle, InvalidHandle, TextureFace::TEXTURE_FACE_POSITIVE_X, 0);
+        }
+        targetBuffer = to->fbo.front().frameBuffer;
+    }
 
     _GLES2_Binded_FrameBuffer = from->fbo.front().frameBuffer;
     GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
-    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
-    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, mask, GL_NEAREST));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
+    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
 }
 

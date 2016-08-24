@@ -2057,14 +2057,14 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
 
-    if (passCfg.colorBuffer[0].texture != rhi::InvalidHandle && passCfg.colorBuffer[0].texture != rhi::DefaultDepthBuffer)
+    if (passCfg.colorBuffer[0].targetTexture != rhi::InvalidHandle && passCfg.colorBuffer[0].targetTexture != rhi::DefaultDepthBuffer)
     {
-        Size2i sz = TextureDX11::Size(passCfg.colorBuffer[0].texture);
+        Size2i sz = TextureDX11::Size(passCfg.colorBuffer[0].targetTexture);
 
         def_viewport.Width = float(sz.dx);
         def_viewport.Height = float(sz.dy);
 
-        TextureDX11::SetRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, passCfg.colorBuffer[0].textureLevel, passCfg.colorBuffer[0].textureFace, context);
+        TextureDX11::SetRenderTarget(passCfg.colorBuffer[0].targetTexture, passCfg.depthStencilBuffer.targetTexture, passCfg.colorBuffer[0].textureLevel, passCfg.colorBuffer[0].textureFace, context);
     }
     else
     {
@@ -2082,7 +2082,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
         {
             if (i == 0)
             {
-                if (passCfg.colorBuffer[0].texture == rhi::InvalidHandle)
+                if (passCfg.colorBuffer[0].targetTexture == rhi::InvalidHandle)
                 {
                     D3D11_TEXTURE2D_DESC desc;
 

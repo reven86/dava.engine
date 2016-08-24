@@ -708,20 +708,20 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
-                if (passCfg.colorBuffer[0].texture != rhi::InvalidHandle)
+                if (passCfg.colorBuffer[0].targetTexture != rhi::InvalidHandle)
                 {
                     DVASSERT(!_D3D9_BackBuf);
                     _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
-                    TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[0].texture);
+                    TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[0].targetTexture);
                 }
 
-                if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != DefaultDepthBuffer)
+                if (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle && passCfg.depthStencilBuffer.targetTexture != DefaultDepthBuffer)
                 {
                     DVASSERT(!_D3D9_DepthBuf);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
-                    if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
-                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.texture);
+                    if (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle)
+                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.targetTexture);
                 }
 
                 // update default viewport

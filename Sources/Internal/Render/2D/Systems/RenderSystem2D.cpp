@@ -140,11 +140,11 @@ void RenderSystem2D::BeginFrame()
 
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
-    renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
+    renderPass2DConfig.colorBuffer[0].targetTexture = mainTargetDescriptor.colorAttachment;
     renderPass2DConfig.colorBuffer[0].loadAction = mainTargetDescriptor.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     Memcpy(renderPass2DConfig.colorBuffer[0].clearColor, mainTargetDescriptor.clearColor.color, sizeof(Color));
-    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment ? mainTargetDescriptor.depthAttachment : rhi::DefaultDepthBuffer;
+    renderPass2DConfig.depthStencilBuffer.targetTexture = mainTargetDescriptor.depthAttachment ? mainTargetDescriptor.depthAttachment : rhi::DefaultDepthBuffer;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
@@ -231,14 +231,14 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     UpdateVirtualToPhysicalMatrix(desc.transformVirtualToPhysical);
 
     rhi::RenderPassConfig renderTargetPassConfig;
-    renderTargetPassConfig.colorBuffer[0].texture = desc.colorAttachment;
+    renderTargetPassConfig.colorBuffer[0].targetTexture = desc.colorAttachment;
     renderTargetPassConfig.colorBuffer[0].clearColor[0] = desc.clearColor.r;
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
-    renderTargetPassConfig.depthStencilBuffer.texture = desc.depthAttachment;
+    renderTargetPassConfig.depthStencilBuffer.targetTexture = desc.depthAttachment;
     renderTargetPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderTargetPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderTargetPassConfig.priority = desc.priority;

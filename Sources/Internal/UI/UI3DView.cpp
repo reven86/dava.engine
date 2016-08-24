@@ -88,10 +88,10 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
 
         rhi::RenderPassConfig& config = scene->GetMainPassConfig();
         config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
-        config.colorBuffer[0].texture = frameBuffer->handle;
+        config.colorBuffer[0].targetTexture = frameBuffer->handle;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
+        config.depthStencilBuffer.targetTexture = frameBuffer->handleDepthStencil;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     }
@@ -100,13 +100,14 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         if (currentTarget.transformVirtualToPhysical)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
-        config.colorBuffer[0].texture = currentTarget.colorAttachment;
-        config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.priority = currentTarget.priority + basePriority;
+        config.colorBuffer[0].targetTexture = currentTarget.colorAttachment;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+        config.colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
+        config.depthStencilBuffer.targetTexture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+        config.samples = 8;
     }
 
     scene->SetMainPassViewport(viewportRc);
