@@ -11,6 +11,7 @@
 
 static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
+class RECommandNotificationObject;
 class SceneEditor2;
 class PathSystem : public DAVA::SceneSystem, public EntityModificationSystemDelegate
 {
@@ -44,7 +45,7 @@ protected:
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3& start, const DAVA::Vector3& finish, const DAVA::Color& color);
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     DAVA::FastName GeneratePathName() const;
     const DAVA::Color& GetNextPathColor() const;

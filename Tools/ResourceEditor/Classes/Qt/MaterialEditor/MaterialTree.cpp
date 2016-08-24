@@ -5,8 +5,9 @@
 #include "MaterialEditor/MaterialAssignSystem.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-#include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/Base/CommandBatch.h"
+#include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Entity/Component.h"
 
 #include <QDragMoveEvent>
@@ -24,9 +25,9 @@ MaterialTree::MaterialTree(QWidget* parent /* = 0 */)
 
     QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
 
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2*, const Command2*, bool)), this, SLOT(OnCommandExecuted(SceneEditor2*, const Command2*, bool)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2*, DAVA::Entity*)), this, SLOT(OnStructureChanged(SceneEditor2*, DAVA::Entity*)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)), this, SLOT(OnSelectionChanged(SceneEditor2*, const SelectableGroup*, const SelectableGroup*)));
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &MaterialTree::OnCommandExecuted);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &MaterialTree::OnStructureChanged);
+    QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &MaterialTree::OnSelectionChanged);
 
     header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
@@ -197,53 +198,35 @@ void MaterialTree::GetDropParams(const QPoint& pos, QModelIndex& index, int& row
     }
 }
 
-void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void MaterialTree::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    if (command == nullptr)
-    {
-        return;
-    }
-
     if (treeModel->GetScene() == scene)
     {
-        if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
+        if (commandNotification.MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
         {
             treeModel->invalidate();
         }
-        else if (command->MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
-                                            CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
+        else if (commandNotification.MatchCommandIDs({ CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_MATERIAL_SWITCH_PARENT,
+                                                       CMDID_MATERIAL_REMOVE_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD }))
         {
             Update();
         }
-        else if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+        else
         {
-            auto ProcessRemoveCommand = [this](const Command2* command, bool redo)
+            auto processRemoveCommand = [this](const RECommand* command, bool redo)
             {
-                const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
-                DVASSERT(removeCommand->GetComponent() != nullptr);
-                if (removeCommand->GetComponent()->GetType() == DAVA::Component::RENDER_COMPONENT)
+                if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
                 {
-                    Update();
+                    const RemoveComponentCommand* removeCommand = static_cast<const RemoveComponentCommand*>(command);
+                    DVASSERT(removeCommand->GetComponent() != nullptr);
+                    if (removeCommand->GetComponent()->GetType() == DAVA::Component::RENDER_COMPONENT)
+                    {
+                        Update();
+                    }
                 }
             };
 
-            if (command->GetId() == CMDID_BATCH)
-            {
-                const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-                const DAVA::uint32 count = batch->Size();
-                for (DAVA::uint32 i = 0; i < count; ++i)
-                {
-                    const Command2* cmd = batch->GetCommand(i);
-                    if (cmd->GetId() == CMDID_COMPONENT_REMOVE)
-                    {
-                        ProcessRemoveCommand(cmd, redo);
-                    }
-                }
-            }
-            else
-            {
-                ProcessRemoveCommand(command, redo);
-            }
+            commandNotification.ExecuteForAllCommands(processRemoveCommand);
         }
     }
 }

@@ -1,9 +1,15 @@
 #ifndef __ADD_COMPONENT_COMMAND_H__
 #define __ADD_COMPONENT_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class AddComponentCommand : public Command2
+namespace DAVA
+{
+class Entity;
+class Component;
+}
+
+class AddComponentCommand : public RECommand
 {
 public:
     AddComponentCommand(DAVA::Entity* entity, DAVA::Component* component);
@@ -12,7 +18,7 @@ public:
     void Undo() override;
     void Redo() override;
 
-    DAVA::Entity* GetEntity() const override;
+    DAVA::Entity* GetEntity() const;
     const DAVA::Component* GetComponent() const;
 
 private:

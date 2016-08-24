@@ -1,12 +1,11 @@
 #include "PropertiesModel.h"
 
-#include "Platform/SystemTimer.h"
 #include "QtTools/Utils/Utils.h"
 
 #include <QFont>
 #include <QVector2D>
 #include <QVector4D>
-#include "Document.h"
+#include "Document/Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -17,7 +16,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
-#include "UI/Commands/ChangePropertyValueCommand.h"
+#include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "UI/UIControl.h"
@@ -391,8 +390,7 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantTy
     {
         if (nullptr != controlNode)
         {
-            size_type usCount = static_cast<size_type>(SystemTimer::Instance()->GetAbsoluteUs());
-            commandExecutor->ChangeProperty(controlNode, property, value, usCount);
+            commandExecutor->ChangeProperty(controlNode, property, value);
         }
         else if (styleSheet)
         {
