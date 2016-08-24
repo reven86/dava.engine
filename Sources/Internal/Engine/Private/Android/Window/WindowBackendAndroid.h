@@ -6,12 +6,12 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 #include "Functional/Function.h"
 
-#include <jni.h>
 #include <android/native_window_jni.h>
 
 namespace rhi
@@ -45,6 +45,8 @@ public:
 
     void TriggerPlatformEvents();
 
+    jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
+
 private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
@@ -53,16 +55,22 @@ private:
 
     void OnResume();
     void OnPause();
-    void SurfaceCreated(JNIEnv* env, jobject jsurfaceViewX);
+    void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
     void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
     void SurfaceDestroyed();
+    void ProcessProperties();
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);
 
 private:
+    jobject surfaceView = nullptr;
     ANativeWindow* androidWindow = nullptr;
     EngineBackend* engine = nullptr;
     MainDispatcher* dispatcher = nullptr;
     Window* window = nullptr;
+
+    std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
+    Function<void(jobject)> triggerPlatformEvents;
+    Function<jobject(jobject, jstring, jlong)> createNativeControl;
 
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;

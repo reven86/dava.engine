@@ -15,6 +15,11 @@ WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
 {
 }
 
+jobject WindowNativeService::CreateNativeControl(const char8* controlClassName, void* backendPointer)
+{
+    return windowBackend->CreateNativeControl(controlClassName, backendPointer);
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__

@@ -7,8 +7,12 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Base/BaseObject.h"
+#include "Functional/Function.h"
+
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Android/JNIBridge.h"
+
+#include "UI/IWebViewControl.h"
 
 namespace DAVA
 {
@@ -17,15 +21,11 @@ class FilePath;
 class UIWebView;
 class IUIWebViewDelegate;
 
-class WebViewControlImpl : public BaseObject
+class WebViewControlImpl
 {
 public:
     WebViewControlImpl(Window& w, UIWebView& uiWebView);
-    ~WebViewControlImpl() override;
-
-    // WebViewControl should invoke it in its destructor to tell this class instance
-    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void OwnerAtPremortem();
+    ~WebViewControlImpl();
 
     void Initialize(const Rect& rect);
 
@@ -45,14 +45,40 @@ public:
 
     void Update();
 
-    static void DeleteCookies(const String& url);
-    static String GetCookie(const String& url, const String& name);
-    static Map<String, String> GetCookies(const String& url);
+    void DeleteCookies(const String& url);
+    String GetCookie(const String& url, const String& name);
+    Map<String, String> GetCookies(const String& url);
+
+    jint nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisRedirectedByMouseClick);
+    void nativeOnPageLoaded(JNIEnv* env);
+    void nativeOnExecuteJavaScript(JNIEnv* env, jstring jresult);
+
+private:
+    IUIWebViewDelegate::eAction OnUrlChanged(const String& url, bool isRedirectedByMouseClick);
+    void OnPageLoaded();
+    void OnExecuteJavaScript(const String& result);
 
 private:
     Window& window;
     UIWebView* uiWebView = nullptr;
     IUIWebViewDelegate* uiWebViewDelegate = nullptr;
+    jobject javaWebView = nullptr;
+
+    std::unique_ptr<JNI::JavaClass> webViewJavaClass;
+    Function<void(jobject)> release;
+    Function<void(jobject, jstring)> openURL;
+    Function<void(jobject, jstring)> loadHtmlString;
+    Function<void(jobject, jstring, jstring)> openFromBuffer;
+    Function<void(jobject, jstring)> executeJScript;
+    Function<void(jobject, jfloat, jfloat, jfloat, jfloat)> setRect;
+    Function<void(jobject, jboolean)> setVisible;
+    Function<void(jobject, jboolean)> setBackgroundTransparency;
+    Function<void(jobject, jboolean)> setRenderToTexture;
+    Function<jboolean(jobject)> isRenderToTexture;
+    Function<void(jobject)> update;
+    Function<void(jstring)> deleteCookies;
+    Function<jstring(jstring, jstring)> getCookie;
+    Function<jstringArray(jstring)> getCookies;
 };
 
 } // namespace DAVA

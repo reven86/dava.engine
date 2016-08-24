@@ -1,11 +1,25 @@
 package com.dava.engine;
 
+import android.view.View;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.graphics.Color;
 import android.webkit.WebView;
 import android.webkit.CookieManager;
+import android.util.Log;
+
+// Duplicates enum IUIWebViewDelegate::eAction declared in UI/IWebViewControl.h
+class eAction
+{
+    static final int PROCESS_IN_WEBVIEW = 0;
+    static final int PROCESS_IN_SYSTEM_BROWSER = 1;
+    static final int NO_PROCESS = 2;
+};
 
 public final class DavaWebView
 {
@@ -18,12 +32,9 @@ public final class DavaWebView
     // Properties that reflect WebView current properties
     private WebViewProperties curProperties = new WebViewProperties();
 
-    //private boolean renderToTexture = false;
-    //private boolean visible = false;                   // Native control initially is invisible
-    //private float x;
-    //private float y;
-    //private float width;
-    //private float height;
+    public static native int nativeOnUrlChanged(long backendPointer, String url, boolean isRedirectedByMouseClick);
+    public static native void nativeOnPageLoaded(long backendPointer);
+    public static native void nativeOnExecuteJavaScript(long backendPointer, String result);
 
     private final class eNavigateTo
     {
@@ -97,6 +108,22 @@ public final class DavaWebView
         CustomWebView(Context context)
         {
             super(context);
+            setOnTouchListener(new View.OnTouchListener() {
+                @Override public boolean onTouch(View v, MotionEvent event)
+                {
+                    switch (event.getAction())
+                    {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_UP:
+                        if (!v.hasFocus())
+                        {
+                            v.requestFocus();
+                        }
+                        break;
+                    }
+                    return false;
+                }
+            });
         }
 
         // Override onKeyPreIme to pass hardware back key to upper-level receiver
@@ -124,10 +151,23 @@ public final class DavaWebView
         webviewBackendPointer = backendPointer;
         surfaceView = view;
 
-        //DavaWebViewClient webViewClient = new DavaWebViewClient();
-        //nativeWebView = new CustomWebView(context);
-        //nativeWebView.setWebViewClient(webViewClient);
-        //nativeWebView.setWebChromeClient(new InternalWebClient(id));
+        properties.createNew = true;
+        properties.anyPropertyChanged = true;
+    }
+
+    void release()
+    {
+        DavaActivity.commandHandler().post(new Runnable() {
+            @Override public void run()
+            {
+                if (nativeWebView != null)
+                {
+                    webviewBackendPointer = 0;
+                    surfaceView.removeControl(nativeWebView);
+                    nativeWebView = null;
+                }
+            }
+        });
     }
 
     void openURL(String url)
@@ -187,11 +227,14 @@ public final class DavaWebView
                 DavaActivity.commandHandler().post(new Runnable() {
                     @Override public void run()
                     {
-                        setNativePositionAndSize(curProperties.x,
-                                                 curProperties.y,
-                                                 curProperties.width,
-                                                 curProperties.height,
-                                                 true);
+                        if (nativeWebView != null)
+                        {
+                            setNativePositionAndSize(curProperties.x,
+                                                    curProperties.y,
+                                                    curProperties.width,
+                                                    curProperties.height,
+                                                    true);
+                        }
                     }
                 });
             }
@@ -227,9 +270,13 @@ public final class DavaWebView
     {
         if (properties.createNew || properties.anyPropertyChanged)
         {
-            WebViewProperties props = new WebViewProperties(properties);
-            // TODO: apply properties on ui thread
-            //processProperties(props);
+            final WebViewProperties props = new WebViewProperties(properties);
+            DavaActivity.commandHandler().post(new Runnable() {
+                @Override public void run()
+                {
+                    processProperties(props);
+                }
+            });
             properties.clearChangedFlags();
         }
     }
@@ -243,10 +290,6 @@ public final class DavaWebView
         if (props.anyPropertyChanged)
         {
             applyChangedProperties(props);
-            //if (renderToTexture && (props.rectChanged || props.backgroundTransparencyChanged || props.renderToTextureChanged))
-            //{
-            //    RenderToTexture();
-            //}
         }
     }
 
@@ -261,7 +304,10 @@ public final class DavaWebView
         nativeWebView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
         nativeWebView.setDrawingCacheEnabled(true);
 
-        //nativeWebView.setWebChromeClient(new InternalWebClient(id));
+        nativeWebView.setWebViewClient(new DavaWebViewClient(this));
+        nativeWebView.setWebChromeClient(new DavaWebViewChromeClient(this));
+
+        surfaceView.addControl(nativeWebView);
     }
 
     void applyChangedProperties(WebViewProperties props)
@@ -328,13 +374,7 @@ public final class DavaWebView
             xOffset = x + width + 10000.0f;
             yOffset = y + height + 10000.0f;
         }
-
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)nativeWebView.getLayoutParams();
-        params.leftMargin = (int)xOffset;
-        params.topMargin = (int)yOffset;
-        params.width = Math.max(0, (int)width);
-        params.height = Math.max(0, (int)height);
-        nativeWebView.setLayoutParams(params);
+        surfaceView.positionControl(nativeWebView, x - xOffset, y - yOffset, width, height);
     }
 
     void setNativeBackgroundTransparency(boolean enabled)
@@ -342,7 +382,7 @@ public final class DavaWebView
         nativeWebView.setBackgroundColor(enabled ? Color.TRANSPARENT : Color.WHITE);
     }
 
-    public static void DeleteCookies(String url)
+    public static void deleteCookies(String url)
     {
         CookieManager cookieManager = CookieManager.getInstance();
         if (cookieManager.hasCookies())
@@ -360,7 +400,7 @@ public final class DavaWebView
         }
     }
 
-    public static String GetCookie(String url, String name)
+    public static String getCookie(String url, String name)
     {
         CookieManager cookieManager = CookieManager.getInstance();
         if (cookieManager.hasCookies())
@@ -378,7 +418,7 @@ public final class DavaWebView
         return "";
     }
 
-    public static String[] GetCookies(final String url)
+    public static String[] getCookies(String url)
     {
         CookieManager cookieManager = CookieManager.getInstance();
         String[] cookies = cookieManager.getCookie(url).split(";");
@@ -387,11 +427,44 @@ public final class DavaWebView
 
     public void onPageFinished(String url)
     {
-
+        if (webviewBackendPointer != 0)
+        {
+            nativeOnPageLoaded(webviewBackendPointer);
+        }
     }
 
     public boolean shouldOverrideUrlLoading(String url, boolean isRedirectedByMouseClick)
     {
+        if (webviewBackendPointer != 0)
+        {
+            int action = nativeOnUrlChanged(webviewBackendPointer, url, isRedirectedByMouseClick);
+            switch (action)
+            {
+            case eAction.PROCESS_IN_WEBVIEW:
+                return false;
+            case eAction.PROCESS_IN_SYSTEM_BROWSER:
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                DavaActivity.instance().startActivity(intent);
+                return true;
+            case eAction.NO_PROCESS:
+                return true;
+            default:
+                return true;
+            }
+        }
         return false;
+    }
+
+    public void onReceivedError(int errorCode, String description, String failingUrl)
+    {
+        Log.e(DavaActivity.LOG_TAG, String.format("DavaWebView.onReceivedError: error=%d url='%s' description=%s", errorCode, failingUrl, description));
+    }
+
+    public void onJsAlert(String url, String message)
+    {
+        if (webviewBackendPointer != 0)
+        {
+            nativeOnExecuteJavaScript(webviewBackendPointer, message);
+        }
     }
 }

@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Engine/Public/Android/JNIBridge.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
@@ -99,6 +99,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnS
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
     androidBridge->SurfaceViewOnSurfaceDestroyed(wbackend, env);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewProcessEvents(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    androidBridge->SurfaceViewOnProcessProperties(wbackend);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
@@ -268,6 +275,11 @@ void AndroidBridge::SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv*
 void AndroidBridge::SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env)
 {
     wbackend->SurfaceDestroyed();
+}
+
+void AndroidBridge::SurfaceViewOnProcessProperties(WindowBackend* wbackend)
+{
+    wbackend->ProcessProperties();
 }
 
 void AndroidBridge::SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y)

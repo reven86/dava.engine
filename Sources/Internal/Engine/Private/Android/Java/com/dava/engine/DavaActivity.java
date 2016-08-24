@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.content.res.Configuration;
 import android.util.Log;
 
@@ -71,7 +71,7 @@ public final class DavaActivity extends Activity
         long primaryWindowBackendPointer = nativeOnCreate();
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         
-        layout = new RelativeLayout(this);
+        layout = new FrameLayout(this);
         layout.addView(primarySurfaceView);
         setContentView(layout);
     }

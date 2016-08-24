@@ -32,6 +32,8 @@ public:
     void LinkToCurrentThread();
     uint64 GetLinkedThread() const;
 
+    bool HasEvents() const;
+
     void PostEvent(const T& e);
     void SendEvent(const T& e);
     void ProcessEvents();
@@ -51,7 +53,7 @@ private:
     using EventType = EventWrapper;
 
 private:
-    Mutex mutex; // Mutex to guard event queue
+    mutable Mutex mutex; // Mutex to guard event queue
     Vector<EventType> eventQueue;
     Function<void(const T&)> eventHandler;
 
@@ -84,6 +86,13 @@ template <typename T>
 uint64 Dispatcher<T>::GetLinkedThread() const
 {
     return linkedThreadId;
+}
+
+template <typename T>
+bool Dispatcher<T>::HasEvents() const
+{
+    LockGuard<Mutex> lock(mutex);
+    return !eventQueue.empty();
 }
 
 template <typename T>

@@ -8,7 +8,10 @@ import android.view.InputDevice;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.util.Log;
+import java.lang.reflect.Constructor;
 
 public final class DavaSurfaceView extends SurfaceView
                                    implements SurfaceHolder.Callback,
@@ -21,6 +24,7 @@ public final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnSurfaceCreated(long windowBackendPointer, DavaSurfaceView surfaceView);
     public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
+    public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
     
     public DavaSurfaceView(Context context, long windowBackendPtr)
@@ -36,11 +40,48 @@ public final class DavaSurfaceView extends SurfaceView
         setOnTouchListener(this);
     }
 
-    public DavaWebView createWebView(long backendPointer)
+    public Object createNativeControl(String className, long backendPointer)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaSurface.createWebView");
-        DavaWebView object = new DavaWebView(this, backendPointer);
-        return object;
+        try {
+            Class<?> clazz = Class.forName(className);
+            Constructor<?> ctor = clazz.getConstructor(DavaSurfaceView.class, Long.TYPE);
+            return ctor.newInstance(this, backendPointer);
+        } catch (Throwable e) {
+            Log.e(DavaActivity.LOG_TAG, String.format("DavaSurfaceView.createNativeControl '%s' failed: %s", className, e.toString()));
+            return null;
+        }
+    }
+
+    public void addControl(View control)
+    {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(new FrameLayout.MarginLayoutParams(0, 0));
+        control.setLayoutParams(params);
+        ((ViewGroup)getParent()).addView(control);
+    }
+
+    public void positionControl(View control, float x, float y, float w, float h)
+    {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)control.getLayoutParams();
+        params.leftMargin = (int)x;
+        params.topMargin = (int)y;
+        params.width = (int)w;
+        params.height = (int)h;
+        control.setLayoutParams(params);
+    }
+
+    public void removeControl(View control)
+    {
+        ((ViewGroup)getParent()).removeView(control);
+    }
+
+    public void triggerPlatformEvents()
+    {
+        DavaActivity.commandHandler().sendTriggerProcessEvents(this);
+    }
+
+    public void processEvents()
+    {
+        nativeSurfaceViewProcessEvents(windowBackendPointer);
     }
     
     public void handleResume()

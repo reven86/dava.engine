@@ -19,7 +19,6 @@ class WebViewControl : public IWebViewControl
 {
 public:
     WebViewControl(Window& w, UIWebView& uiWebView);
-    ~WebViewControl() override;
 
     // Initialize the control.
     void Initialize(const Rect& rect) override;
@@ -52,8 +51,7 @@ public:
     void Update() override;
 
 private:
-    // TODO: RefPtr
-    WebViewControlImpl* impl = nullptr;
+    std::unique_ptr<WebViewControlImpl> impl;
 };
 
 } // namespace DAVA
@@ -61,7 +59,7 @@ private:
 #else // __DAVAENGINE_COREV2__
 
 #include "UI/IWebViewControl.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {

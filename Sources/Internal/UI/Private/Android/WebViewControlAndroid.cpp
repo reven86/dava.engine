@@ -14,12 +14,6 @@ WebViewControl::WebViewControl(Window& w, UIWebView& uiWebView)
 {
 }
 
-WebViewControl::~WebViewControl()
-{
-    impl->OwnerAtPremortem();
-    impl->Release();
-}
-
 void WebViewControl::Initialize(const Rect& rect)
 {
     impl->Initialize(rect);
@@ -82,17 +76,17 @@ void WebViewControl::Update()
 
 void WebViewControl::DeleteCookies(const String& url)
 {
-    WebViewControlImpl::DeleteCookies(url);
+    impl->DeleteCookies(url);
 }
 
 String WebViewControl::GetCookie(const String& url, const String& name) const
 {
-    return WebViewControlImpl::GetCookie(url, name);
+    return impl->GetCookie(url, name);
 }
 
 Map<String, String> WebViewControl::GetCookies(const String& url) const
 {
-    return WebViewControlImpl::GetCookies(url);
+    return impl->GetCookies(url);
 }
 
 } // namespace DAVA
@@ -105,7 +99,6 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "UI/Private/Android/WebViewControlAndroid.h"
 
 #include "Render/Texture.h"

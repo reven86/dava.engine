@@ -59,6 +59,7 @@ struct AndroidBridge final
     void SurfaceViewOnSurfaceCreated(WindowBackend* wbackend, JNIEnv* env, jobject jsurfaceView);
     void SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height);
     void SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env);
+    void SurfaceViewOnProcessProperties(WindowBackend* wbackend);
     void SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y);
 
     JavaVM* javaVM = nullptr;

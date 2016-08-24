@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -13,6 +14,8 @@ namespace DAVA
 class WindowNativeService final
 {
 public:
+    jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
+
 private:
     WindowNativeService(Private::WindowBackend* wbackend);
 
