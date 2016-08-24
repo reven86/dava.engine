@@ -10,7 +10,7 @@
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Public/Window.h"
+#include "Engine/Window.h"
 #else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
 #endif

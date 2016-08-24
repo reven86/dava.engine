@@ -1,4 +1,4 @@
-#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "Engine/Qt/NativeServiceQt.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 

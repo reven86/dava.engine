@@ -6,7 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Functional/Function.h"

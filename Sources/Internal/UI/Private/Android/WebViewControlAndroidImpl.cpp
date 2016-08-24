@@ -9,9 +9,9 @@
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
 
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/Window.h"
-#include "Engine/Public/Android/WindowNativeServiceAndroid.h"
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
+#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {

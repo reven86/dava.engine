@@ -2,17 +2,17 @@
 
 // Select right header for NativeService class depending on platfrom
 #if defined(__DAVAENGINE_QT__)
-#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "Engine/Qt/NativeServiceQt.h"
 #elif defined(__DAVAENGINE_WIN32__)
-#include "Engine/Public/Win32/NativeServiceWin32.h"
+#include "Engine/Win32/NativeServiceWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Engine/Public/UWP/NativeServiceUWP.h"
+#include "Engine/UWP/NativeServiceUWP.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Engine/Public/OsX/NativeServiceOsX.h"
+#include "Engine/OsX/NativeServiceOsX.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "Engine/Public/iOS/NativeServiceiOS.h"
+#include "Engine/iOS/NativeServiceiOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Engine/Public/Android/NativeServiceAndroid.h"
+#include "Engine/Android/NativeServiceAndroid.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

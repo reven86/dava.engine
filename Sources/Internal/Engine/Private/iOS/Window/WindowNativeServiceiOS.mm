@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/iOS/WindowNativeServiceiOS.h"
+#include "Engine/iOS/WindowNativeServiceiOS.h"
 
 #include "Base/BaseTypes.h"
 

@@ -5,8 +5,8 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
-#include "Engine/Public/EngineTypes.h"
-#include "Engine/Public/EngineContext.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/EngineContext.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA

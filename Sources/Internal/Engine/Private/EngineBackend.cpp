@@ -1,9 +1,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
-#include "Engine/Public/EngineContext.h"
-#include "Engine/Public/Window.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
