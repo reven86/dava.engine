@@ -282,8 +282,6 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName& name)
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_DEBUG_DRAW_ID, RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW));
 
     passConfig.priority = PRIORITY_MAIN_3D;
-    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
-    passConfig.samples = 4;
 }
 
 void MainForwardRenderPass::InitReflectionRefraction()
