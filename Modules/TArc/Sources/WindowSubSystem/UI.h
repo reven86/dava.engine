@@ -30,6 +30,8 @@ struct DockPanelInfo
 {
     Qt::DockWidgetArea area = Qt::RightDockWidgetArea;
     QString title;
+    //path where action for change dock visibility will be placed
+    QString dockActionPath;
     bool tabbed = true;
 };
 
@@ -62,16 +64,13 @@ private:
     Any info;
 };
 
-class ActionPlacementInfo
+struct ActionPlacementInfo
 {
-public:
     ActionPlacementInfo() = default;
     ActionPlacementInfo(const QUrl& url);
 
     void AddPlacementPoint(const QUrl& url);
 
-private:
-    friend class UIManager;
     Vector<QUrl> urls;
 };
 
