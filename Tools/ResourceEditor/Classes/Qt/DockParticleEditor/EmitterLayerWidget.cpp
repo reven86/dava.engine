@@ -637,7 +637,7 @@ void EmitterLayerWidget::OnValueChanged()
     bool superemitterStatusChanged = (layer->type == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES) != (propLayerType == DAVA::ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 
     SceneEditor2* activeScene = GetActiveScene();
-    auto updateLayerCmd = Command2::Create<CommandUpdateParticleLayer>(GetEmitterInstance(activeScene), layer);
+    std::unique_ptr<CommandUpdateParticleLayer> updateLayerCmd(new CommandUpdateParticleLayer(GetEmitterInstance(activeScene), layer));
     updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
                          propLayerType,
                          degradeStrategy,
@@ -705,7 +705,7 @@ void EmitterLayerWidget::OnLayerMaterialValueChanged()
     const DAVA::FilePath spritePath(spritePathLabel->text().toStdString());
 
     DVASSERT(GetActiveScene() != nullptr);
-    GetActiveScene()->Exec(Command2::Create<CommandChangeLayerMaterialProperties>(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked()));
+    GetActiveScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandChangeLayerMaterialProperties(layer, spritePath, blending, fogCheckBox->isChecked(), frameBlendingCheckBox->isChecked())));
 
     UpdateLayerSprite();
 
@@ -724,7 +724,7 @@ void EmitterLayerWidget::OnLodsChanged()
         lods[i] = layerLodsCheckBox[i]->isChecked();
     }
 
-    GetActiveScene()->Exec(Command2::Create<CommandUpdateParticleLayerLods>(layer, lods));
+    GetActiveScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandUpdateParticleLayerLods(layer, lods)));
     GetActiveScene()->MarkAsChanged();
     emit ValueChanged();
 }

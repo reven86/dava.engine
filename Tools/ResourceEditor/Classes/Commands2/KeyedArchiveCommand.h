@@ -1,61 +1,52 @@
 #ifndef __KEYEDARCHIVE_COMMAND_H__
 #define __KEYEDARCHIVE_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
+#include "FileSystem/VariantType.h"
 
-class KeyedArchiveAddValueCommand : public Command2
+namespace DAVA
+{
+class KeyedArchive;
+}
+
+class KeyedArchiveAddValueCommand : public RECommand
 {
 public:
     KeyedArchiveAddValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);
     ~KeyedArchiveAddValueCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    }
-
-    DAVA::KeyedArchive* archive;
+    DAVA::KeyedArchive* archive = nullptr;
     DAVA::String key;
     DAVA::VariantType val;
 };
 
-class KeyeadArchiveRemValueCommand : public Command2
+class KeyeadArchiveRemValueCommand : public RECommand
 {
 public:
     KeyeadArchiveRemValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
     ~KeyeadArchiveRemValueCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    }
-
-    DAVA::KeyedArchive* archive;
+    DAVA::KeyedArchive* archive = nullptr;
     DAVA::String key;
     DAVA::VariantType val;
 };
 
-class KeyeadArchiveSetValueCommand : public Command2
+class KeyeadArchiveSetValueCommand : public RECommand
 {
 public:
     KeyeadArchiveSetValueCommand(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::VariantType& _val);
     ~KeyeadArchiveSetValueCommand();
 
-    virtual void Undo();
-    virtual void Redo();
+    void Undo() override;
+    void Redo() override;
 
-    virtual DAVA::Entity* GetEntity() const
-    {
-        return NULL;
-    }
-
-    DAVA::KeyedArchive* archive;
+    DAVA::KeyedArchive* archive = nullptr;
     DAVA::String key;
     DAVA::VariantType oldVal;
     DAVA::VariantType newVal;

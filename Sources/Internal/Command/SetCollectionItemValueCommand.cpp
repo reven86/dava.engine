@@ -59,7 +59,8 @@ private:
 
 SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle& object_, const InspColl* collection_,
                                                              const VariantType& key_, const VariantType& newValue_)
-    : object(object_)
+    : Command()
+    , object(object_)
     , collection(collection_)
     , key(key_)
     , newValue(newValue_)
@@ -75,13 +76,9 @@ SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle&
         newValue = VariantType::Convert(newValue, itemType);
         DVASSERT(newValue.Meta() == itemType);
     }
-}
 
-void SetCollectionItemValueCommand::Execute()
-{
     CollectionIteratorHelper iterHelper(object, collection, key);
     oldValue = VariantType::LoadData(collection->ItemData(iterHelper.GetIterator()), collection->ItemType());
-    SetValue(iterHelper, newValue);
 }
 
 void SetCollectionItemValueCommand::Redo()

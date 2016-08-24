@@ -7,6 +7,11 @@
 #include "Entity/SceneSystem.h"
 #include "Render/2D/GraphicFont.h"
 
+namespace DAVA
+{
+class NMaterial;
+}
+
 class TextDrawSystem : public DAVA::SceneSystem
 {
 public:

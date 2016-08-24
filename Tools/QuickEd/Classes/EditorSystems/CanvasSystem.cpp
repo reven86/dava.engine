@@ -453,7 +453,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
         return;
     }
 
-    if (inTransformState)
+    if (node->GetParent()->GetControl() != nullptr && inTransformState)
     {
         transformedNodes.insert(node);
     }
@@ -517,7 +517,7 @@ void CanvasSystem::LayoutCanvas()
     float32 totalHeight = 0.0f;
     const int spacing = 5;
     const List<UIControl*>& children = controlsCanvas->GetChildren();
-    int childrenCount = children.size();
+    size_t childrenCount = children.size();
     if (childrenCount > 1)
     {
         totalHeight += spacing * (childrenCount - 1);
