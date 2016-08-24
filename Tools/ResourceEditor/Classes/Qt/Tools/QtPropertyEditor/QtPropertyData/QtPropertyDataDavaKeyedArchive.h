@@ -19,14 +19,14 @@ public:
     ~QtPropertyDataDavaKeyedArcive() override;
 
     const DAVA::MetaInfo* MetaInfo() const override;
-    Command2::Pointer CreateLastCommand() const override;
+    std::unique_ptr<DAVA::Command> CreateLastCommand() const override;
 
     void FinishTreeCreation() override;
 
     DAVA::KeyedArchive* archive;
 
 protected:
-    mutable Command2* lastCommand;
+    mutable RECommand* lastCommand;
     int lastAddedType;
 
     QtConnections connections;

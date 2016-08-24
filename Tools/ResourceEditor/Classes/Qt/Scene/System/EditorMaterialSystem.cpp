@@ -2,8 +2,7 @@
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Commands2/Base/Command2.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteLODCommand.h"
@@ -11,6 +10,7 @@
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/RECommandIDs.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
@@ -232,23 +232,11 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial* material)
     UpdateFlags(material, LIGHTVIEW_AMBIENT, DAVA::NMaterialFlagName::FLAG_VIEWAMBIENT);
 }
 
-void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
+void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
-    const DAVA::int32 commandID = command->GetId();
-    if (commandID == CMDID_BATCH)
+    auto processSingleCommand = [this](const RECommand* command, bool redo)
     {
-        const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-        if (batch->MatchCommandIDs({ CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY }))
-        {
-            const DAVA::uint32 count = batch->Size();
-            for (DAVA::uint32 i = 0; i < count; ++i)
-            {
-                ProcessCommand(batch->GetCommand(i), redo);
-            }
-        }
-    }
-    else
-    {
+        const DAVA::uint32 commandID = command->GetID();
         switch (commandID)
         {
         case CMDID_LOD_DELETE:
@@ -269,7 +257,6 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
                     AddMaterial(batch->GetMaterial(), MaterialMapping(lodCommand->GetEntity(), batch));
                 }
             }
-
             break;
         }
         case CMDID_LOD_CREATE_PLANE:
@@ -353,6 +340,16 @@ void EditorMaterialSystem::ProcessCommand(const Command2* command, bool redo)
         default:
             break;
         }
+    };
+
+    static const DAVA::Vector<DAVA::uint32> commandIDs =
+    {
+      CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY
+    };
+
+    if (commandNotification.MatchCommandIDs(commandIDs))
+    {
+        commandNotification.ExecuteForAllCommands(processSingleCommand);
     }
 }
 

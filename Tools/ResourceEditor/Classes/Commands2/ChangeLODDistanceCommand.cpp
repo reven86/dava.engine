@@ -1,9 +1,10 @@
 #include "ChangeLODDistanceCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 using namespace DAVA;
 
 ChangeLODDistanceCommand::ChangeLODDistanceCommand(DAVA::LodComponent* lod, DAVA::int32 lodLayer, DAVA::float32 distance)
-    : Command2(CMDID_LOD_DISTANCE_CHANGE, "Change LOD Distance")
+    : RECommand(CMDID_LOD_DISTANCE_CHANGE, "Change LOD Distance")
     , lodComponent(lod)
     , layer(lodLayer)
     , newDistance(distance)
