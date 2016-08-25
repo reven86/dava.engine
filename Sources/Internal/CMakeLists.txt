@@ -38,7 +38,8 @@ set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics
                                     AssetsLibrary
                                     SystemConfiguration
                                     MediaPlayer 
-                                    ZLIB )
+                                    ZLIB
+                                    CoreTelephony )
 
 set( FIND_SYSTEM_LIBRARY_MACOS      Cocoa
                                     GLUT
