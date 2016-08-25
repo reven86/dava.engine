@@ -77,7 +77,6 @@ VPROG_OUT_END
 
 
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
-property float globalTime : dynamic,instance : ;
 
 #if SHADING == SHADING_PERPIXEL
 property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
@@ -85,6 +84,12 @@ property float4x4 worldViewMatrix : dynamic,instance : ;
     #if REAL_REFLECTION && SPECULAR
         property float4 lightPosition0 : dynamic,instance : ;        
     #endif
+#endif
+
+property float globalTime : dynamic,instance : ;
+
+#if REAL_REFLECTION
+property float projectionFlip : dynamic,instance : ;
 #endif
 
 #if SHADING == SHADING_PERVERTEX 
@@ -128,7 +133,7 @@ VPROG_BEGIN
                 VP_OUT(uv1) = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
             #endif
         #else
-            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+            VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.y-inTexCoord0.x) * normal1Scale + normal1ShiftPerSecond * globalTime;
         #endif
         
         #if (SHADING == SHADING_PERVERTEX)
@@ -141,7 +146,7 @@ VPROG_BEGIN
     float3  inNormal    = VP_IN_NORMAL;
     
     #if (SHADING == SHADING_PERVERTEX)
-		float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
+        float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
         float3 viewDirectionInWorldSpace = world_position - cameraPosition;
         float3 normalDirectionInWorldSpace = normalize(mul(float4(inNormal, 0), worldInvTransposeMatrix).xyz);
         VP_OUT(reflectionDirectionInWorldSpace) = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
@@ -160,11 +165,12 @@ VPROG_BEGIN
         v.x = dot (eyeCoordsPosition, t);
         v.y = dot (eyeCoordsPosition, b);
         v.z = dot (eyeCoordsPosition, n);
-        VP_OUT(cameraToPointInTangentSpace) = v;                
+        VP_OUT(cameraToPointInTangentSpace) = half3(v);                
 
         #if REAL_REFLECTION
             VP_OUT(eyeDist) = eyeCoordsPosition;
             VP_OUT(normalizedFragPos) = resPosition;                
+            VP_OUT(normalizedFragPos).y *= projectionFlip; 
             #if SPECULAR
                 float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
                 v.x = dot (toLightDir, t);
@@ -173,38 +179,38 @@ VPROG_BEGIN
                 VP_OUT(varLightVec) = v;       
             #endif
         #else
-            VP_OUT(tbnToWorld0) = inTangent;
-            VP_OUT(tbnToWorld1) = cross(inNormal, inTangent);
-            VP_OUT(tbnToWorld2) = inNormal;            
+            VP_OUT(tbnToWorld0) = half3(inTangent);
+            VP_OUT(tbnToWorld1) = half3(cross(inNormal,inTangent));
+            VP_OUT(tbnToWorld2) = half3(inNormal);            
         #endif       
     #endif
 
-	#if VERTEX_FOG
-	
-	    #if (SHADING == SHADING_PERVERTEX)
+    #if VERTEX_FOG
+    
+        #if (SHADING == SHADING_PERVERTEX)
             float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
         #endif
-	
-		#define FOG_view_position eyeCoordsPosition
-		
-	#if FOG_ATMOSPHERE
-		float3 tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-		#define FOG_to_light_dir tolight_dir
-	#endif
-		
-	#if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-		#if (SHADING == SHADING_PERPIXEL)
-			float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
-		#endif
-		#define FOG_world_position world_position
-	#endif
+    
+        #define FOG_view_position eyeCoordsPosition
+        
+    #if FOG_ATMOSPHERE
+        float3 tolight_dir = float4(lightPosition0).xyz - eyeCoordsPosition * float4(lightPosition0).w;
+        #define FOG_to_light_dir tolight_dir
+    #endif
+        
+    #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
+        #if (SHADING == SHADING_PERPIXEL)
+            float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
+        #endif
+        #define FOG_world_position world_position
+    #endif
 
-		#define FOG_eye_position cameraPosition
+        #define FOG_eye_position cameraPosition
 
-		#include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
-		
-		VP_OUT(varFog) = FOG_result;
-		
-	#endif
+        #include "vp-fog-math.cgh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
+        
+        VP_OUT(varFog) = FOG_result;
+        
+    #endif
     
 VPROG_END

@@ -47,6 +47,7 @@ macro ( init_project )
 	endif()
    
 	set          ( DAVA_DISABLE_AUTOTESTS true )
+
 	find_package ( DavaTools     REQUIRED )
 
 	set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp

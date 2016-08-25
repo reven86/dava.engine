@@ -5,8 +5,8 @@
 
 namespace DAVA
 {
-ZipArchive::ZipArchive(const FilePath& fileName)
-    : zipFile(fileName)
+ZipArchive::ZipArchive(RefPtr<File>& file_, const FilePath& fileName)
+    : zipFile(file_, fileName)
 {
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();
@@ -39,7 +39,7 @@ ZipArchive::ZipArchive(const FilePath& fileName)
 
     std::stable_sort(begin(fileInfos), end(fileInfos), [](const ResourceArchive::FileInfo& left, const ResourceArchive::FileInfo& right)
                      {
-                         return std::strcmp(left.relativeFilePath.c_str(), right.relativeFilePath.c_str()) < 0;
+                         return left.relativeFilePath < right.relativeFilePath;
                      });
 }
 
@@ -55,7 +55,7 @@ const ResourceArchive::FileInfo* ZipArchive::GetFileInfo(const String& relativeF
                                    return left.relativeFilePath < fileNameParam;
                                });
 
-    if (it != end(fileInfos))
+    if (it != end(fileInfos) && it->relativeFilePath == relativeFilePath)
     {
         return &(*it);
     }

@@ -12,14 +12,12 @@ namespace Ui
 class QtWaitDialog;
 }
 
-class QtWaitDialog
-: public QWidget
+class QtWaitDialog : public QWidget
 {
     Q_OBJECT
 
 public:
     QtWaitDialog(QWidget* parent = 0);
-    ~QtWaitDialog();
 
     void Exec(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel);
     void Show(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel);
@@ -37,6 +35,7 @@ public:
 
 signals:
     void canceled();
+    void closed();
 
 protected slots:
     void CancelPressed();
@@ -48,8 +47,8 @@ private:
     void Setup(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel);
     Ui::QtWaitDialog* ui;
 
-    bool wasCanceled;
-    bool isRunnedFromExec;
+    bool wasCanceled = false;
+    bool isRunnedFromExec = false;
     QEventLoop loop;
 };
 
