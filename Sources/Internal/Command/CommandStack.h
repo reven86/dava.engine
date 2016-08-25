@@ -25,15 +25,15 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
-    DAVA::String GetUndoText() const;
-    DAVA::String GetRedoText() const;
+    const Command* GetUndoCommand() const;
+    const Command* GetRedoCommand() const;
 
     Signal<bool> cleanChanged;
     Signal<bool> canUndoChanged;
     Signal<bool> canRedoChanged;
-    Signal<const DAVA::String&> undoTextChanged;
-    Signal<const DAVA::String&> redoTextChanged;
-    Signal<const DAVA::Command*, bool /*redo*/> commandExecuted;
+    Signal<const Command*> undoCommandChanged;
+    Signal<const Command*> redoCommandChanged;
+    Signal<const Command*, bool /*redo*/> commandExecuted;
 
 protected:
     virtual CommandBatch* CreateCommmandBatch(const String& name, uint32 commandsCount) const;
@@ -58,13 +58,8 @@ protected:
     void EmitCanUndoChanged(bool canUndo);
     void EmitCanRedoChanged(bool canRedo);
 
-    void EmitUndoTextChanged(const DAVA::String& undoText);
-    void EmitRedoTextChanged(const DAVA::String& redoText);
-
     bool isClean = true;
     bool canUndo = false;
     bool canRedo = false;
-    DAVA::String undoText;
-    DAVA::String redoText;
 };
 }
