@@ -89,7 +89,7 @@ CRYPTO_CSOURCES := \
   rand/randfile.c rc2/rc2_cbc.c rc2/rc2_ecb.c rc2/rc2_skey.c rc2/rc2cfb64.c \
   rc2/rc2ofb64.c rc4/rc4_enc.c rc4/rc4_skey.c rc4/rc4_utl.c ripemd/rmd_dgst.c \
   ripemd/rmd_one.c rsa/rsa_ameth.c rsa/rsa_asn1.c rsa/rsa_chk.c rsa/rsa_crpt.c\
-  rsa/rsa_eay.c rsa/rsa_err.c rsa/rsa_gen.c rsa/rsa_lib.c rsa/rsa_none.c \
+  rsa/rsa_depr.c rsa/rsa_eay.c rsa/rsa_err.c rsa/rsa_gen.c rsa/rsa_lib.c rsa/rsa_none.c \
   rsa/rsa_null.c rsa/rsa_oaep.c rsa/rsa_pk1.c rsa/rsa_pmeth.c rsa/rsa_prn.c \
   rsa/rsa_pss.c rsa/rsa_saos.c rsa/rsa_sign.c rsa/rsa_ssl.c rsa/rsa_x931.c \
   sha/sha1_one.c sha/sha1dgst.c sha/sha256.c sha/sha512.c sha/sha_dgst.c \
