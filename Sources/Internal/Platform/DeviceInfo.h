@@ -1,4 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO__
+﻿#ifndef __FRAMEWORK__DEVICEINFO__
 #define __FRAMEWORK__DEVICEINFO__
 
 #include "Base/BaseTypes.h"
@@ -143,6 +143,7 @@ public:
     static int32 GetCpuCount();
     static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
+    static String GetCarrierName();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
@@ -152,6 +153,7 @@ public:
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
     static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
+    static Signal<String> сarrierNameChanged;
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

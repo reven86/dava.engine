@@ -1,4 +1,4 @@
-#include "Platform/DeviceInfo.h"
+﻿#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
     #include "Platform/TemplateiOS/DeviceInfoiOS.h"
@@ -132,6 +132,11 @@ bool DeviceInfo::IsTouchPresented()
     return GetPrivateImpl()->IsTouchPresented();
 }
 
+String DeviceInfo::GetCarrierName()
+{
+    return GetPrivateImpl()->GetCarrierName();
+}
+
 bool DeviceInfo::IsHIDConnected(eHIDType type)
 {
     return GetPrivateImpl()->IsHIDConnected(type);
@@ -141,5 +146,7 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
 {
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
+
+Signal<String> DeviceInfo::сarrierNameChanged;
 
 } // namespace DAVA

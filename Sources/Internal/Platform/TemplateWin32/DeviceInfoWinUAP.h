@@ -1,4 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
+﻿#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
 #define __FRAMEWORK__DEVICEINFO_WINUAP__
 
 #include "Base/Platform.h"
@@ -35,6 +35,7 @@ public:
     void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 private:
     enum NativeHIDType
@@ -94,6 +95,14 @@ private:
     String uDID;
     WideString deviceName;
     int32 zBufferSize = 24;
+
+    void OnCarrierLineAdded(::Windows::ApplicationModel::Calls::PhoneLineWatcherEventArgs ^ args);
+    void OnCarrierLineChange(::Windows::ApplicationModel::Calls::PhoneLine ^ line);
+    void InitCarrierLinesAsync();
+    ::Windows::ApplicationModel::Calls::PhoneCallStore ^ phoneCallStore;
+    ::Windows::ApplicationModel::Calls::PhoneLineWatcher ^ watcher;
+    Map<Platform::Guid, ::Windows::ApplicationModel::Calls::PhoneLine ^> phoneLines;
+    Platform::String ^ сarrierName;
 };
 };
 
