@@ -2087,9 +2087,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     }
     else
     {
-        ID3D11RenderTargetView* renderTarget = _D3D11_RenderTargetView;
-        ID3D11DepthStencilView* depthStencil = _D3D11_DepthStencilView;
-        context->OMSetRenderTargets(1, &renderTarget, depthStencil);
+        context->OMSetRenderTargets(1, &_D3D11_RenderTargetView, _D3D11_DepthStencilView);
     }
 
     ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
