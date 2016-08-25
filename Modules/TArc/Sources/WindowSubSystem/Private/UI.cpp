@@ -17,7 +17,7 @@ const FastName& WindowKey::GetAppID() const
 }
 
 DockPanelInfo::DockPanelInfo()
-    : actionPlacementInfo(DAVA::TArc::CreateMenuPoint("View/Dock"))
+    : actionPlacementInfo(CreateMenuPoint("View/Dock"))
 {
 }
 
