@@ -16,6 +16,11 @@ const FastName& WindowKey::GetAppID() const
     return appID;
 }
 
+DockPanelInfo::DockPanelInfo()
+    : actionPlacementInfo(CreateMenuPoint("View/Dock"))
+{
+}
+
 PanelKey::PanelKey(const QString& viewName_, const DockPanelInfo& info_)
     : PanelKey(DockPanel, viewName_, info_)
 {
@@ -56,6 +61,11 @@ ActionPlacementInfo::ActionPlacementInfo(const QUrl& url)
 void ActionPlacementInfo::AddPlacementPoint(const QUrl& url)
 {
     urls.emplace_back(url);
+}
+
+const Vector<QUrl>& ActionPlacementInfo::GetUrls() const
+{
+    return urls;
 }
 } // namespace TArc
 } // namespace DAVA

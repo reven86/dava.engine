@@ -80,61 +80,6 @@ struct MainWindowInfo
     QMenuBar* menuBar = nullptr;
 };
 
-void AddDockPanel(const PanelKey& key, QWidget* widget, QMainWindow* mainWindow)
-{
-    DVASSERT(key.GetType() == PanelKey::DockPanel);
-    const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
-    QDockWidget* newDockWidget = new QDockWidget(info.title, mainWindow);
-    newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-    newDockWidget->setWidget(widget);
-
-    if (info.tabbed == true)
-    {
-        QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
-        QDockWidget* dockToTabbify = nullptr;
-        foreach(QDockWidget* dock, dockWidgets)
-        {
-            if (mainWindow->dockWidgetArea(dock) == info.area)
-            {
-                dockToTabbify = dock;
-                break;
-            }
-        }
-
-        if (dockToTabbify != nullptr)
-        {
-            mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
-        }
-        else
-        {
-            mainWindow->addDockWidget(info.area, newDockWidget);
-        }
-    }
-    else
-    {
-        mainWindow->addDockWidget(info.area, newDockWidget);
-    }
-}
-
-void AddCentralPanel(const PanelKey& key, QWidget* widget, QMainWindow* mainWindow)
-{
-    QWidget* centralWidget = mainWindow->centralWidget();
-    if (centralWidget == nullptr)
-    {
-        mainWindow->setCentralWidget(widget);
-        return;
-    }
-
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(centralWidget);
-    if (tabWidget == nullptr)
-    {
-        tabWidget = new QTabWidget(mainWindow);
-        tabWidget->addTab(centralWidget, centralWidget->objectName());
-        mainWindow->setCentralWidget(tabWidget);
-    }
-
-    tabWidget->addTab(widget, widget->objectName());
-}
 
 void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
 {
@@ -196,7 +141,7 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
     QWidget* widget = action->data().value<QWidget*>();
     if (widget == nullptr)
     {
-        QToolButton* toolButton= new QToolButton();
+        QToolButton* toolButton = new QToolButton();
         toolButton->setDefaultAction(action);
         widget = toolButton;
     }
@@ -212,11 +157,109 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
         statusBar->addWidget(widget, stretchFactor);
     }
 }
+
+void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement, QAction* action)
+{
+    for (const QUrl& url : placement.GetUrls())
+    {
+        QString scheme = url.scheme();
+        if (scheme == menuScheme)
+        {
+            AddMenuPoint(url, action, windowInfo);
+        }
+        else if (scheme == toolbarScheme)
+        {
+            AddToolbarPoint(url, action, windowInfo);
+        }
+        else if (scheme == statusbarScheme)
+        {
+            AddStatusbarPoint(url, action, windowInfo);
+        }
+    }
+}
+
+QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo &mainWindowInfo, QMainWindow *mainWindow)
+{
+    const QString &text = dockPanelInfo.title;
+
+    QDockWidget *dockWidget = new QDockWidget(text, mainWindow);
+
+    QAction *dockWidgetAction = dockWidget->toggleViewAction();
+    dockWidgetAction->setCheckable(true);
+    QObject::connect(dockWidgetAction, &QAction::toggled, dockWidget, &QDockWidget::setVisible);
+    QObject::connect(dockWidget, &QDockWidget::visibilityChanged, dockWidgetAction, &QAction::setChecked);
+
+    const ActionPlacementInfo &placement = dockPanelInfo.actionPlacementInfo;
+
+    AddAction(mainWindowInfo, placement, dockWidgetAction);
+
+    return dockWidget;
+}
+
+void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* widget)
+{
+    DVASSERT(key.GetType() == PanelKey::DockPanel);
+    const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
+    QMainWindow *mainWindow = mainWindowInfo.window;
+    DVASSERT(mainWindow != nullptr);
+    QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
+    newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+    newDockWidget->setWidget(widget);
+
+    if (info.tabbed == true)
+    {
+        QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
+        QDockWidget* dockToTabbify = nullptr;
+        foreach(QDockWidget* dock, dockWidgets)
+        {
+            if (mainWindow->dockWidgetArea(dock) == info.area)
+            {
+                dockToTabbify = dock;
+                break;
+            }
+        }
+
+        if (dockToTabbify != nullptr)
+        {
+            mainWindow->tabifyDockWidget(dockToTabbify, newDockWidget);
+        }
+        else
+        {
+            mainWindow->addDockWidget(info.area, newDockWidget);
+        }
+    }
+    else
+    {
+        mainWindow->addDockWidget(info.area, newDockWidget);
+    }
+}
+
+void AddCentralPanel(const PanelKey& key, const MainWindowInfo &mainWindowInfo, QWidget* widget)
+{
+    QMainWindow *mainWindow = mainWindowInfo.window;
+    DVASSERT(mainWindow != nullptr);
+    QWidget* centralWidget = mainWindow->centralWidget();
+    if (centralWidget == nullptr)
+    {
+        mainWindow->setCentralWidget(widget);
+        return;
+    }
+
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(centralWidget);
+    if (tabWidget == nullptr)
+    {
+        tabWidget = new QTabWidget(mainWindow);
+        tabWidget->addTab(centralWidget, centralWidget->objectName());
+        mainWindow->setCentralWidget(tabWidget);
+    }
+
+    tabWidget->addTab(widget, widget->objectName());
+}
 } // namespace UIManagerDetail
 
 struct UIManager::Impl
 {
-    Array<Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
+    Array<Function<void(const PanelKey&, UIManagerDetail::MainWindowInfo&, QWidget*)>, PanelKey::TypesCount> addFunctions;
     UnorderedMap<FastName, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
@@ -275,16 +318,17 @@ void UIManager::InitializationFinished()
 void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
     DVASSERT(widget != nullptr);
-    
+    UIManagerDetail::MainWindowInfo& mainWindowInfo = impl->FindOrCreateWindow(windowKey);
+
     widget->setObjectName(panelKey.GetViewName());
-    QMainWindow* window = impl->FindOrCreateWindow(windowKey).window;
-    DVASSERT(window != nullptr);
 
     PanelKey::Type type = panelKey.GetType();
     DVASSERT(impl->addFunctions[type] != nullptr);
     
-    impl->addFunctions[type](panelKey, widget, window);
+    impl->addFunctions[type](panelKey, mainWindowInfo, widget);
 
+    QMainWindow* window = mainWindowInfo.window;
+    DVASSERT(window != nullptr);
     if (!window->isVisible() && impl->initializationFinished)
     {
         window->show();
@@ -299,22 +343,7 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, co
 void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
-    for (const QUrl& url : placement.urls)
-    {
-        QString scheme = url.scheme();
-        if (scheme == menuScheme)
-        {
-            UIManagerDetail::AddMenuPoint(url, action, windowInfo);
-        }
-        else if (scheme == toolbarScheme)
-        {
-            UIManagerDetail::AddToolbarPoint(url, action, windowInfo);
-        }
-        else if (scheme == statusbarScheme)
-        {
-            UIManagerDetail::AddStatusbarPoint(url, action, windowInfo);
-        }
-    }
+    UIManagerDetail::AddAction(windowInfo, placement, action);
 }
 
 QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, DataWrapper&& data)

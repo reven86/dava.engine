@@ -3,6 +3,7 @@
 
 #include "TArcCore/ContextAccessor.h"
 #include "WindowSubSystem/UI.h"
+#include "WindowSubSystem/ActionUtils.h"
 
 #include "Reflection/Registrator.h"
 #include "Base/Type.h"
@@ -72,9 +73,10 @@ void LibraryModule::PostInit()
     DAVA::TArc::WindowKey windowKey(DAVA::FastName("TemplateTArc"));
 
     DAVA::TArc::DockPanelInfo info;
-    info.area = Qt::LeftDockWidgetArea;
-    info.tabbed = false;
     info.title = "Library";
+    info.tabbed = false;
+    info.area = Qt::LeftDockWidgetArea;
+
     ui.AddView(windowKey, DAVA::TArc::PanelKey(info.title, info), "qrc:/Library.qml",
                GetAccessor().CreateWrapper(DAVA::ReflectedType::Get<FileSystemData>()));
 }
