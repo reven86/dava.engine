@@ -5,6 +5,16 @@
 
 namespace DAVA
 {
+inline bool Any::CastOPKey::operator==(const Any::CastOPKey& key) const
+{
+    return from == key.from && to == key.to;
+}
+
+inline size_t Any::CastOPKeyHasher::operator()(const DAVA::Any::CastOPKey& key) const
+{
+    return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.to);
+}
+
 namespace AnyDetails
 {
 template <typename T>
@@ -30,8 +40,14 @@ void DefaultStoreOP(const Any::AnyStorage& storage, void* dst)
     *data = storage.GetAuto<T>();
 }
 
+template <typename From, typename To>
+Any DefaultCastOP(const Any& from)
+{
+    return Any(static_cast<To>(from.Get<From>()));
+}
+
 template <typename T>
-Any::AnyOPsMap::value_type GetDefaultOPs()
+std::pair<const Type*, Any::AnyOPs> MakeDefaultOPs()
 {
     Any::AnyOPs ops;
     ops.load = &DefaultLoadOP<T>;
@@ -173,14 +189,15 @@ inline bool Any::CanCastImpl(std::true_type isPointer) const
 template <typename T>
 inline bool Any::CanCastImpl(std::false_type isPointer) const
 {
-    using U = AnyStorage::StorableType<T>;
+    using U = AnyStorage::StorableType<std::remove_cv_t<T>>;
 
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-    CastOPKey castOPKey{ type, Type::Instance<U>() };
-    return castOPsMap->count(castOPKey);
-#else
+    auto it = castOPsMap->find(CastOPKey{ type, Type::Instance<T>() });
+    if (it != castOPsMap->end())
+    {
+        return true;
+    }
+
     return false;
-#endif
 }
 
 template <typename T>
@@ -213,30 +230,25 @@ inline T Any::CastImpl(std::true_type isPointer) const
 template <typename T>
 inline T Any::CastImpl(std::false_type isPointer) const
 {
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-    CastOPKey castOPKey{ type, Type::Instance<T>() };
+    using U = AnyStorage::StorableType<std::remove_cv_t<T>>;
 
-    auto it = castOPsMap->find(castOPKey);
-    if (it == castOPsMap->end())
+    auto it = castOPsMap->find(CastOPKey{ type, Type::Instance<T>() });
+    if (it != castOPsMap->end())
     {
-        throw Exception(Exception::BadCast, "Value can't be casted into requested T");
+        CastOP op = it->second;
+        if (nullptr != op)
+        {
+            return op(*this).Get<T>();
+        }
     }
 
-    T ret;
-    CastOP castOP = it->second;
-
-    castOP(anyStorage.GetData(), &ret);
-
-    return ret;
-#else
     throw Exception(Exception::BadCast, "Value can't be casted into requested T");
-#endif
 }
 
 template <typename T>
 void Any::RegisterDefaultOPs()
 {
-    anyOPsMap->emplace(AnyDetails::GetDefaultOPs<T>());
+    anyOPsMap->emplace(AnyDetails::MakeDefaultOPs<T>());
 }
 
 template <typename T>
@@ -245,21 +257,22 @@ void Any::RegisterOPs(AnyOPs&& ops)
     anyOPsMap->emplace(std::make_pair(Type::Instance<T>(), std::move(ops)));
 }
 
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-
-template <typename From, typename To>
-static void Any::RegisterCastOP(CastOP& castOP)
+template <typename T1, typename T2>
+static void Any::RegisterDefaultCastOP()
 {
-    if (nullptr == castOPsMap)
-    {
-        castOPsMap.reset(new CastOPsMap());
-    }
-
-    const Type* fromType = Type::Instance<From>();
-    const Type* toType = Type::Instance<To>();
-    castOPsMap->operator[](CastOPKey{ fromType, toType }) = castOP;
+    const Type* t1 = Type::Instance<T1>();
+    const Type* t2 = Type::Instance<T2>();
+    castOPsMap->operator[](CastOPKey{ t1, t2 }) = &AnyDetails::DefaultCastOP<T1, T2>;
+    castOPsMap->operator[](CastOPKey{ t2, t1 }) = &AnyDetails::DefaultCastOP<T2, T1>;
 }
 
-#endif
+template <typename T1, typename T2>
+static void Any::RegisterCastOP(CastOP& castT1T2, CastOP& castT2T1)
+{
+    const Type* t1 = Type::Instance<T1>();
+    const Type* t2 = Type::Instance<T2>();
+    castOPsMap->operator[](CastOPKey{ t1, t2 }) = castT1T2;
+    castOPsMap->operator[](CastOPKey{ t2, t1 }) = castT2T1;
+}
 
 } // namespace DAVA

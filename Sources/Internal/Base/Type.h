@@ -11,8 +11,8 @@ namespace DAVA
 class Type
 {
 public:
-    using CastOP = void* (*)(void*);
-    using InheritanceMap = UnorderedMap<const Type*, CastOP>;
+    using InheritanceCastOP = void* (*)(void*);
+    using InheritanceMap = UnorderedMap<const Type*, InheritanceCastOP>;
 
     Type(Type&&) = delete;
     Type(const Type&) = delete;

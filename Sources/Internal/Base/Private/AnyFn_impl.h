@@ -20,6 +20,10 @@ struct Invoker
     virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
 
     virtual AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void*) const = 0;
+
+    virtual ~Invoker()
+    {
+    }
 };
 
 template <typename Fn, typename Ret, typename... Args>

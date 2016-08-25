@@ -3,10 +3,7 @@
 namespace DAVA
 {
 std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap = std::make_unique<Any::AnyOPsMap>();
-
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
-#endif
+std::unique_ptr<Any::CastOPsMap> Any::castOPsMap = std::make_unique<Any::CastOPsMap>();
 
 void Any::LoadValue(const Type* type_, void* data)
 {

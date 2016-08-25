@@ -17,6 +17,11 @@ public:
     StructPtr(const StructPtr&) = delete;
     int sss = 555;
 
+    void Release()
+    {
+        delete this;
+    }
+
 protected:
     ~StructPtr() = default;
 
@@ -98,6 +103,7 @@ public:
 
     TestBaseClass();
     TestBaseClass(int baseInt_, int s_a, int s_b);
+    ~TestBaseClass();
 
     static int staticInt;
     static const int staticIntConst;
@@ -258,8 +264,12 @@ TestBaseClass::TestBaseClass()
     strVec.push_back("!!!!!111");
 
     simple = &sss;
+    sptr = new StructPtr();
+}
 
-    //sptr = new StructPtr();
+TestBaseClass::~TestBaseClass()
+{
+    sptr->Release();
 }
 
 DAVA_TESTCLASS (TypeReflection)

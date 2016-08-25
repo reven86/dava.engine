@@ -16,7 +16,7 @@ public:
         const Type* type;
         const ReflectedType* refType;
 
-        Type::CastOP castToBaseOP;
+        Type::InheritanceCastOP castToBaseOP;
         ReflectedObject GetBaseObject(const ReflectedObject& obj) const;
     };
 

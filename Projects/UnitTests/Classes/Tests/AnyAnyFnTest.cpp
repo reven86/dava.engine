@@ -135,6 +135,23 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(value == a.Get<const T&>());
     }
 
+    template <typename T1, typename T2>
+    void DoAnyCastTest()
+    {
+        Any::RegisterDefaultCastOP<T1, T2>();
+
+        int v = 123;
+        T1 t1 = static_cast<T1>(v);
+
+        Any a(t1);
+        T2 t2 = a.Cast<T2>();
+
+        Any b(t2);
+        T1 t3 = a.Cast<T1>();
+
+        TEST_VERIFY(t3 == t1);
+    }
+
     DAVA_TEST (AutoStorageTest)
     {
         int32 v = 10203040;
@@ -333,6 +350,78 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         {
             TEST_VERIFY(anyExp.errorCode == Any::Exception::BadSize);
         }
+    }
+
+    DAVA_TEST (AnyDefaultCastTest)
+    {
+        DoAnyCastTest<int8, int16>();
+        DoAnyCastTest<int8, int32>();
+        DoAnyCastTest<int8, int64>();
+        DoAnyCastTest<int8, uint8>();
+        DoAnyCastTest<int8, uint16>();
+        DoAnyCastTest<int8, uint32>();
+        DoAnyCastTest<int8, uint64>();
+        DoAnyCastTest<int8, float32>();
+        DoAnyCastTest<int8, float64>();
+        DoAnyCastTest<int8, size_t>();
+
+        DoAnyCastTest<int16, int32>();
+        DoAnyCastTest<int16, int64>();
+        DoAnyCastTest<int16, uint8>();
+        DoAnyCastTest<int16, uint16>();
+        DoAnyCastTest<int16, uint32>();
+        DoAnyCastTest<int16, uint64>();
+        DoAnyCastTest<int16, float32>();
+        DoAnyCastTest<int16, float64>();
+        DoAnyCastTest<int16, size_t>();
+
+        DoAnyCastTest<int32, int64>();
+        DoAnyCastTest<int32, uint8>();
+        DoAnyCastTest<int32, uint16>();
+        DoAnyCastTest<int32, uint32>();
+        DoAnyCastTest<int32, uint64>();
+        DoAnyCastTest<int32, float32>();
+        DoAnyCastTest<int32, float64>();
+        DoAnyCastTest<int32, size_t>();
+
+        DoAnyCastTest<int64, uint8>();
+        DoAnyCastTest<int64, uint16>();
+        DoAnyCastTest<int64, uint32>();
+        DoAnyCastTest<int64, uint64>();
+        DoAnyCastTest<int64, float32>();
+        DoAnyCastTest<int64, float64>();
+        DoAnyCastTest<int64, size_t>();
+
+        DoAnyCastTest<uint8, uint16>();
+        DoAnyCastTest<uint8, uint32>();
+        DoAnyCastTest<uint8, uint64>();
+        DoAnyCastTest<uint8, float32>();
+        DoAnyCastTest<uint8, float64>();
+        DoAnyCastTest<uint8, size_t>();
+
+        DoAnyCastTest<uint16, uint32>();
+        DoAnyCastTest<uint16, uint64>();
+        DoAnyCastTest<uint16, float32>();
+        DoAnyCastTest<uint16, float64>();
+        DoAnyCastTest<uint16, size_t>();
+
+        DoAnyCastTest<uint32, uint64>();
+        DoAnyCastTest<uint32, float32>();
+        DoAnyCastTest<uint32, float64>();
+        DoAnyCastTest<uint32, size_t>();
+
+        DoAnyCastTest<uint64, float32>();
+        DoAnyCastTest<uint64, float64>();
+        DoAnyCastTest<uint64, size_t>();
+
+        DoAnyCastTest<float32, float64>();
+        DoAnyCastTest<float32, size_t>();
+
+        DoAnyCastTest<float64, size_t>();
+    }
+
+    DAVA_TEST (AnCastTest)
+    {
     }
 
     DAVA_TEST (AnyFnTest)
