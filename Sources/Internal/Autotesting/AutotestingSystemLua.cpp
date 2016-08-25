@@ -785,15 +785,13 @@ void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
 void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y)
 {
     UIEvent wheel;
-    UIEvent::WheelDelta wheelDelta;
-    wheelDelta.x = x;
-    wheelDelta.y = y;
+    wheel.wheelDelta.x = x;
+    wheel.wheelDelta.y = y;
     wheel.phase = UIEvent::Phase::WHEEL;
     wheel.device = UIEvent::Device::MOUSE;
     wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
     wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
     wheel.point = point;
-    wheel.wheelDelta = wheelDelta;
     ProcessInput(wheel);
 }
 
