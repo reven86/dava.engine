@@ -421,6 +421,11 @@ bool NeedRestore(Handle tex)
 {
     return (*_Impl.impl_Texture_NeedRestore)(tex);
 }
+
+TextureFormat GetFormat(Handle tex)
+{
+    return (*_Impl.impl_Texture_GetFormat)(tex);
+}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

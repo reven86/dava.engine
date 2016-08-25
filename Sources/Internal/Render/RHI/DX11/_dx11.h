@@ -32,6 +32,7 @@ const char* D3D11ErrorText(HRESULT hr);
     if (FAILED(hr)) \
     { \
         DAVA::Logger::Error("D3D11Error at %s: %d\n%s", __FILE__, __LINE__, D3D11ErrorText(hr)); \
+		DVASSERT(0); \
     } 
 #else
 #define CHECK_HR(hr) hr
@@ -49,7 +50,6 @@ void UninitializeRenderThreadDX11();
 extern ID3D11Device* _D3D11_Device;
 extern IDXGISwapChain* _D3D11_SwapChain;
 extern ID3D11Texture2D* _D3D11_SwapChainBuffer;
-extern ID3D11Texture2D* _D3D11_SwapChainBufferCopy;
 extern ID3D11RenderTargetView* _D3D11_RenderTargetView;
 extern ID3D11Texture2D* _D3D11_DepthStencilBuffer;
 extern ID3D11DepthStencilView* _D3D11_DepthStencilView;

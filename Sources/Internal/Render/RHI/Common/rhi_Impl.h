@@ -62,6 +62,7 @@ Dispatch
     void (*impl_Texture_Unmap)(Handle);
     void (*impl_Texture_Update)(Handle, const void*, uint32, TextureFace);
     bool (*impl_Texture_NeedRestore)(Handle);
+    TextureFormat (*impl_Texture_GetFormat)(Handle);
 
     Handle (*impl_PipelineState_Create)(const PipelineState::Descriptor&);
     void (*impl_PipelineState_Delete)(Handle);

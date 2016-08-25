@@ -113,4 +113,17 @@ Size2i PixelFormatDescriptor::GetPixelFormatBlockSize(PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).blockSize;
 }
+
+PixelFormat PixelFormatDescriptor::GetPixelFormatForTextureFormat(rhi::TextureFormat format)
+{
+    for (const auto& pd : pixelDescriptors)
+    {
+        if (pd.second.format == format)
+        {
+            return pd.first;
+        }
+    }
+
+    return PixelFormat::FORMAT_INVALID;
+}
 }

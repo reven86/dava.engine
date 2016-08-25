@@ -465,12 +465,16 @@ dx9_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 
 //------------------------------------------------------------------------------
 
-static bool
-dx9_Texture_NeedRestore(Handle tex)
+bool dx9_Texture_NeedRestore(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
-
     return self->NeedRestore();
+}
+
+TextureFormat dx9_Texture_GetFormat(Handle tex)
+{
+    TextureDX9_t* self = TextureDX9Pool::Get(tex);
+    return self->CreationDesc().format;
 }
 
 //==============================================================================
@@ -490,6 +494,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &dx9_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx9_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &dx9_Texture_NeedRestore;
+    dispatch->impl_Texture_GetFormat = &dx9_Texture_GetFormat;
 }
 
 void SetToRHI(Handle tex, unsigned unit_i)

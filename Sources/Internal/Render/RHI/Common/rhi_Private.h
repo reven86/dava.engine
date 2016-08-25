@@ -87,6 +87,8 @@ void Unmap(Handle tex);
 void Update(Handle tex, const void* data, uint32 level, TextureFace face = TEXTURE_FACE_NEGATIVE_X);
 
 bool NeedRestore(Handle tex);
+
+TextureFormat GetFormat(Handle);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

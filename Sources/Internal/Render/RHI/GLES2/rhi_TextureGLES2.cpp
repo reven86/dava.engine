@@ -588,12 +588,16 @@ void gles2_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
 
 //------------------------------------------------------------------------------
 
-static bool
-gles2_Texture_NeedRestore(Handle tex)
+bool gles2_Texture_NeedRestore(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-
     return self->NeedRestore();
+}
+
+TextureFormat gles2_Texture_GetFormat(Handle tex)
+{
+    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
+    return self->CreationDesc().format;
 }
 
 //==============================================================================
@@ -752,6 +756,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &gles2_Texture_Unmap;
     dispatch->impl_Texture_Update = &gles2_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &gles2_Texture_NeedRestore;
+    dispatch->impl_Texture_GetFormat = &gles2_Texture_GetFormat;
 }
 
 void InvalidateCache()

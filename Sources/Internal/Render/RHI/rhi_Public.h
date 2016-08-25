@@ -261,6 +261,8 @@ void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace fac
 
 bool NeedRestoreTexture(HTexture tex);
 
+TextureFormat GetTextureFormat(HTexture tex);
+
 struct
 TextureSetDescriptor
 {

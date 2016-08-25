@@ -427,6 +427,11 @@ bool NeedRestoreTexture(HTexture tex)
     return Texture::NeedRestore(tex);
 }
 
+TextureFormat GetTextureFormat(HTexture tex)
+{
+    return Texture::GetFormat(tex);
+}
+
 //------------------------------------------------------------------------------
 
 HTextureSet

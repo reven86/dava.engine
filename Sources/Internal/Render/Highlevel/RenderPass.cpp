@@ -206,10 +206,21 @@ void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& confi
     {
         SafeRelease(multisampledTexture);
 
+        PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID;
+        if (config.colorBuffer[0].targetTexture == rhi::InvalidHandle)
+        {
+            pixelFormat = PixelFormat::FORMAT_RGBA8888; // TODO : Get back buffer format
+        }
+        else
+        {
+            rhi::TextureFormat fmt = rhi::GetTextureFormat(static_cast<rhi::HTexture>(config.colorBuffer[0].targetTexture));
+            pixelFormat = PixelFormatDescriptor::GetPixelFormatForTextureFormat(fmt);
+        }
+
         Texture::FBODescriptor desc;
         desc.width = rtSize.dx;
         desc.height = rtSize.dy;
-        desc.format = PixelFormat::FORMAT_RGBA8888;
+        desc.format = pixelFormat;
         desc.needDepth = true;
         desc.needPixelReadback = false;
         desc.ensurePowerOf2 = false;
