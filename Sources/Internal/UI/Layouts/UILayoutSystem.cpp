@@ -81,12 +81,9 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
 void UILayoutSystem::Update(UIControl* root)
 {
-    if (!dirty)
+    if (!dirty || !root)
         return;
-
-    ProcessControl(root);
-
-    dirty = false;
+    UpdateControl(root);
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
@@ -213,8 +210,13 @@ void UILayoutSystem::ApplyPositions()
         data.ApplyOnlyPositionLayoutToControl();
     }
 }
-void UILayoutSystem::ProcessControl(UIControl* control)
+void UILayoutSystem::UpdateControl(UIControl* control)
 {
+    if (!control->IsVisible())
+    {
+        return;
+    }
+
     if (control->IsLayoutDirty())
     {
         if (IsAutoupdatesEnabled())
@@ -232,7 +234,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
 
     for (UIControl* child : control->GetChildren())
     {
-        ProcessControl(child);
+        UpdateControl(child);
     }
 }
 }

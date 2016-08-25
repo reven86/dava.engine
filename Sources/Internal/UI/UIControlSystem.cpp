@@ -307,16 +307,22 @@ void UIControlSystem::Update()
     {
         if (currentScreenTransition)
         {
-            currentScreenTransition->SystemUpdate(timeElapsed);
+            styleSheetSystem->Update(currentScreenTransition.Get());
+            layoutSystem->Update(currentScreenTransition.Get());
         }
         else if (currentScreen)
         {
-            currentScreen->SystemUpdate(timeElapsed);
+            styleSheetSystem->Update(currentScreen.Get());
+            layoutSystem->Update(currentScreen.Get());
         }
 
         update.Emit(timeElapsed);
 
-        popupContainer->SystemUpdate(timeElapsed);
+        styleSheetSystem->Update(popupContainer.Get());
+        layoutSystem->Update(popupContainer.Get());
+
+        styleSheetSystem->ResetDirty();
+        layoutSystem->ResetDirty();
     }
 
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();

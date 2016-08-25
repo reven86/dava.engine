@@ -225,6 +225,27 @@ void UIStyleSheetSystem::DumpStats()
     }
 }
 
+void UIStyleSheetSystem::Update(UIControl* root)
+{
+    if (!dirty || !root)
+        return;
+    UpdateControl(root);
+}
+
+void UIStyleSheetSystem::UpdateControl(UIControl* control)
+{
+    if ((control->IsVisible() || control->GetStyledPropertySet().test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
+        && control->IsStyleSheetDirty())
+    {
+        ProcessControl(control);
+    }
+
+    for (UIControl* child : control->GetChildren())
+    {
+        UpdateControl(child);
+    }
+}
+
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
 #if STYLESHEET_STATS

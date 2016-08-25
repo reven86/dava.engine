@@ -29,8 +29,13 @@ public:
     void ClearStats();
     void DumpStats();
 
+    void Update(UIControl* root);
+    void SetDirty();
+    void ResetDirty();
+
 private:
     void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged);
+    void UpdateControl(UIControl* root);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);
@@ -44,7 +49,18 @@ private:
     int32 statsProcessedControls = 0;
     int32 statsMatches = 0;
     int32 statsStyleSheetCount = 0;
+    bool dirty = false;
 };
+
+inline void UIStyleSheetSystem::SetDirty()
+{
+    dirty = true;
+}
+
+inline void UIStyleSheetSystem::ResetDirty()
+{
+    dirty = false;
+}
 };
 
 #endif

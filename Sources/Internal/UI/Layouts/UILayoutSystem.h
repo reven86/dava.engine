@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -43,7 +42,7 @@ private:
     void ApplySizesAndPositions();
     void ApplyPositions();
 
-    void ProcessControl(UIControl* control);
+    void UpdateControl(UIControl* control);
 
 private:
     bool isRtl = false;
@@ -52,16 +51,13 @@ private:
     Vector<ControlLayoutData> layoutData;
 };
 
-void DAVA::UILayoutSystem::SetDirty()
+inline void UILayoutSystem::SetDirty()
 {
     dirty = true;
 }
 
-inline void DAVA::UILayoutSystem::ResetDirty()
+inline void UILayoutSystem::ResetDirty()
 {
     dirty = false;
 }
 }
-
-
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__

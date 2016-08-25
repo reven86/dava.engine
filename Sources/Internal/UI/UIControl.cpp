@@ -1013,34 +1013,6 @@ bool UIControl::IsVisible() const
     return (viewState == eViewState::VISIBLE);
 }
 
-void UIControl::SystemUpdate(float32 timeElapsed)
-{
-    UIControlSystem::Instance()->updateCounter++;
-
-    if ((IsVisible() || styledProperties.test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
-        && (styleSheetDirty || (prevControlState != controlState)))
-    {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
-        prevControlState = controlState;
-    }
-
-    auto it = children.begin();
-    isIteratorCorrupted = false;
-    while (it != children.end())
-    {
-        RefPtr<UIControl> child;
-        child = *it;
-        child->SystemUpdate(timeElapsed);
-        if (isIteratorCorrupted)
-        {
-            it = children.begin();
-            isIteratorCorrupted = false;
-            continue;
-        }
-        ++it;
-    }
-}
-
 void UIControl::SystemDraw(const UIGeometricData& geometricData)
 {
     if (!GetVisibilityFlag())
@@ -2394,6 +2366,7 @@ void UIControl::SetStyleSheetInitialized()
 void UIControl::SetStyleSheetDirty()
 {
     styleSheetDirty = true;
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetDirty();
 }
 
 void UIControl::ResetStyleSheetDirty()

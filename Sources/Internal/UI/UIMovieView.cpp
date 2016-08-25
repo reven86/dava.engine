@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 
 #include "UI/UIMovieView.h"
+#include "UI/UIControlSystem.h"
 
 #if defined(DISABLE_NATIVE_MOVIEVIEW)
 // Use stub movie control

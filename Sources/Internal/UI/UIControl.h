@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UI_CONTROL_H__
-#define __DAVAENGINE_UI_CONTROL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
@@ -168,9 +167,6 @@ private:
                 calls OnInactive() for the control and then calls SystemInactive() for all control children.
 
         Every frame:
-
-            -SystemUpdate() is calls. SystemUpdate() calls Updadte() for the control then calls SystemUpdate()
-                for the all control children.
 
             -SystemDraw() is calls. SystemDraw() calculates current control geometric data. Transmit information
                 about the parent color to the control background. Sets clip if requested. Calls Draw().
@@ -942,12 +938,6 @@ public:
 
 public:
     /**
-     \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
-     \param[in] timeElapsed Current frame time delta.
-     */
-    virtual void SystemUpdate(float32 timeElapsed);
-    /**
      \brief Calls on every frame to process controls drawing.
         Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
         And at the end DrawAfterChilds() called for current control.
@@ -1257,11 +1247,11 @@ public:
 
     void SetLayoutDirty();
     void ResetLayoutDirty();
-    bool IsLayoutDirty();
+    bool IsLayoutDirty() const;
 
     void SetLayoutPositionDirty();
     void ResetLayoutPositionDirty();
-    bool IsLayoutPositionDirty();
+    bool IsLayoutPositionDirty() const;
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
@@ -1468,16 +1458,13 @@ void UIControl::SetWheelSensitivity(float32 newSens)
     wheelSensitivity = newSens;
 }
 
-bool DAVA::UIControl::IsLayoutDirty()
+inline bool UIControl::IsLayoutDirty() const
 {
     return layoutDirty;
 }
 
-bool DAVA::UIControl::IsLayoutPositionDirty()
+inline bool UIControl::IsLayoutPositionDirty() const
 {
     return layoutPositionDirty;
 }
 };
-
-
-#endif

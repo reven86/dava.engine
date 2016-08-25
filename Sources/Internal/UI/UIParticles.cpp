@@ -4,6 +4,7 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
