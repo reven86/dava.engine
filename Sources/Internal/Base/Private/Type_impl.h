@@ -5,7 +5,6 @@
 #endif
 
 #include <atomic>
-#include <functional>
 
 namespace DAVA
 {
