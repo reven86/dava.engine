@@ -214,13 +214,19 @@ void AddStatusbarPoint(const QUrl& url, QAction* action, MainWindowInfo& windowI
 }
 } // namespace UIManagerDetail
 
-struct UIManager::Impl
+struct UIManager::Impl : public QObject
 {
+    UIManager::Delegate* managerDelegate = nullptr;
     Array<Function<void(const PanelKey&, QWidget*, QMainWindow*)>, PanelKey::TypesCount> addFunctions;
-    UnorderedMap<FastName, UIManagerDetail::MainWindowInfo> windows;
+    UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
     bool initializationFinished = false;
+
+    Impl(UIManager::Delegate* delegate)
+        : managerDelegate(delegate)
+    {
+    }
 
     ~Impl()
     {
@@ -232,26 +238,58 @@ struct UIManager::Impl
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
     {
-        const FastName& appID = windowKey.GetAppID();
-        auto iter = windows.find(appID);
+        auto iter = windows.find(windowKey);
         if (iter == windows.end())
         {
             QMainWindow* window = new QMainWindow();
-            window->setWindowTitle(appID.c_str());
-            window->setObjectName(appID.c_str());
+            window->installEventFilter(this);
+
+            FastName appId = windowKey.GetAppID();
+            window->setWindowTitle(appId.c_str());
+            window->setObjectName(appId.c_str());
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
-            auto emplacePair = windows.emplace(appID, info);
+            auto emplacePair = windows.emplace(windowKey, info);
             DVASSERT(emplacePair.second == true);
             iter = emplacePair.first;
         }
 
         return iter->second;
     }
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* e)
+    {
+        if (e->type() == QEvent::Close)
+        {
+            QMainWindow* window = qobject_cast<QMainWindow*>(obj);
+            DVASSERT(window);
+
+            auto iter = std::find_if(windows.begin(), windows.end(), [window](const std::pair<WindowKey, UIManagerDetail::MainWindowInfo>& w)
+            {
+                return window == w.second.window;
+            });
+            DVASSERT(iter != windows.end());
+
+            if (managerDelegate->WindowCloseRequested(iter->first))
+            {
+                iter->second.window->deleteLater();
+                managerDelegate->WindowClosed(iter->first);
+                windows.erase(iter);
+            }
+            else
+            {
+                e->ignore();
+            }
+            return true;
+        }
+
+        return false;
+    }
 };
 
-UIManager::UIManager()
-    : impl(new Impl())
+UIManager::UIManager(Delegate* delegate)
+    : impl(new Impl(delegate))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
     impl->addFunctions[PanelKey::CentralPanel] = MakeFunction(&UIManagerDetail::AddCentralPanel);

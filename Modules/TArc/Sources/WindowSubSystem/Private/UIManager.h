@@ -12,7 +12,13 @@ namespace TArc
 class UIManager final: public UI
 {
 public:
-    UIManager();
+    class Delegate
+    {
+    public:
+        virtual bool WindowCloseRequested(const WindowKey& key) = 0;
+        virtual void WindowClosed(const WindowKey& key) = 0;
+    };
+    UIManager(Delegate* delegate);
     ~UIManager();
 
     void InitializationFinished();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArcCore/Private/CoreInterface.h"
+#include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
 
@@ -14,9 +15,8 @@ namespace TArc
 {
 class ClientModule;
 class ControllerModule;
-class UIManager;
 
-class Core final : private CoreInterface
+class Core final : private CoreInterface, private UIManager::Delegate
 {
 public:
     Core(Engine& engine_);
@@ -58,6 +58,7 @@ private:
     void ActivateContext(DataContext* context);
     RenderWidget* GetRenderWidget() const;
 
+    // Inherited via OperationInvoker
     void RegisterOperation(int operationID, AnyFn&& fn) override;
     void Invoke(int operationId) override;
     void Invoke(int operationId, const Any& a) override;
@@ -69,6 +70,10 @@ private:
 
     template<typename... Args>
     void InvokeImpl(int operationId, const Args&... args);
+
+    // Inherited via UIManager::Delegate
+    bool WindowCloseRequested(const WindowKey& key) override;
+    void WindowClosed(const WindowKey& key) override;
 
     /////////// Local methods ///////////////
     AnyFn FindOperation(int operationId);

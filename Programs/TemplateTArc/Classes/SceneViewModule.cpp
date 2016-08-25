@@ -184,3 +184,16 @@ void SceneViewModule::OpenScene(const DAVA::String& scenePath)
 
     ui.ShowMessage(windowKey, QString("Opened Scene : %1").arg(scenePath.c_str()));
 }
+
+bool SceneViewModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+{
+    return key != windowKey;
+}
+
+void SceneViewModule::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
+{
+}
+
+void SceneViewModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
+{
+}

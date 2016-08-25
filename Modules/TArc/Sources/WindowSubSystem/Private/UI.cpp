@@ -2,6 +2,8 @@
 
 #include <QUrl>
 
+#include <cstdlib>
+
 namespace DAVA
 {
 namespace TArc
@@ -14,6 +16,16 @@ WindowKey::WindowKey(const FastName& appID_)
 const FastName& WindowKey::GetAppID() const
 {
     return appID;
+}
+
+bool WindowKey::operator==(const WindowKey& other) const
+{
+    return appID == other.appID;
+}
+
+bool WindowKey::operator!=(const WindowKey& other) const
+{
+    return !(*this == other);
 }
 
 PanelKey::PanelKey(const QString& viewName_, const DockPanelInfo& info_)
