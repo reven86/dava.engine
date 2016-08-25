@@ -537,12 +537,13 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
     if (requested == AssetCache::Error::NO_ERRORS)
     {
+        Logger::Info("%s - retrieved from cache", inputPath.GetAbsolutePathname().c_str());
         retrievedData.ExportToFolder(outputPath);
         return true;
     }
     else
     {
-        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
+        Logger::Info("%s - can't retrieve from cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
     }
 
     return false;
@@ -584,7 +585,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
+            Logger::Info("%s - can't add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
         }
     }
     else
