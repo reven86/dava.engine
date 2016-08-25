@@ -265,8 +265,8 @@ if( DAVA_FOUND )
 
     endif()
 
-    if ( NOT DAVA_COREV2)
-        if( QT5_FOUND)
+    if ( NOT DAVA_COREV2 )
+        if( QT5_FOUND )
             if( WIN32 )
                 set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/Qt5 ${DAVA_PLATFORM_SRC}/Qt5/Win32 )
                 list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.cpp )
