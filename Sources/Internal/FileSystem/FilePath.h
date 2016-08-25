@@ -243,6 +243,8 @@ public:
         */
     inline ePathType GetType() const;
 
+    bool StartsWith(const FilePath& basePath);
+
     static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
     static bool ContainPath(const FilePath& basePath, const String& partPath);
     static bool ContainPath(const FilePath& basePath, const char8* partPath);
@@ -256,6 +258,8 @@ public:
     DAVA_DEPRECATED(bool Exists() const);
 
     int32 Compare(const FilePath& right) const;
+
+    static bool IsAbsolutePathname(const String& pathname);
 
 protected:
     void Initialize(const String& pathname);
@@ -275,8 +279,6 @@ protected:
 
     static String GetSystemPathname(const String& pathname, const ePathType pType);
     String GetFrameworkPathForPrefix(const String& typePrefix, const ePathType pType) const;
-
-    static bool IsAbsolutePathname(const String& pathname);
 
     static ePathType GetPathType(const String& pathname);
 
