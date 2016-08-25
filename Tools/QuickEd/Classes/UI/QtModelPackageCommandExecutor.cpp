@@ -276,15 +276,13 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::InsertInstances(const DAVA::
 
 Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
-    Vector<ControlNode*> nodesToCopy;
+    Vector<RefPtr<ControlNode>> nodesToCopy;
     nodesToCopy.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        ControlNode* copy = node->Clone();
-        if (node->CanCopy() && dest->CanInsertControl(copy, destIndex))
+        RefPtr<ControlNode> copy(node->Clone());
+        if (node->CanCopy() && dest->CanInsertControl(copy.Get(), destIndex))
             nodesToCopy.push_back(copy);
-        else
-            SafeRelease(copy);
     }
     Vector<ControlNode*> copiedNodes;
     copiedNodes.reserve(nodesToCopy.size());
@@ -292,12 +290,11 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vec
     {
         BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
 
-        int index = destIndex;
-        for (ControlNode* copy : nodesToCopy)
+        int32 index = destIndex;
+        for (RefPtr<ControlNode> copy : nodesToCopy)
         {
-            copiedNodes.push_back(copy);
-            InsertControlImpl(copy, dest, index);
-            SafeRelease(copy);
+            copiedNodes.push_back(copy.Get());
+            InsertControlImpl(copy.Get(), dest, index);
             index++;
         }
         nodesToCopy.clear();

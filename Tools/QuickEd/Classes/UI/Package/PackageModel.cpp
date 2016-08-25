@@ -399,12 +399,12 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
 
     for (ControlNode* controlNode : controlNodesForCopy)
     {
-        PackageBaseNode* p = controlNode->GetParent();
-        while (p != nullptr && std::find(controlNodesForCopy.begin(), controlNodesForCopy.end(), p) == controlNodesForCopy.end())
+        PackageBaseNode* parent = controlNode->GetParent();
+        while (parent != nullptr && std::find(controlNodesForCopy.begin(), controlNodesForCopy.end(), parent) == controlNodesForCopy.end())
         {
-            p = p->GetParent();
+            parent = parent->GetParent();
         }
-        if (p == nullptr)
+        if (parent == nullptr)
         {
             mimeData->AddControl(controlNode);
         }
