@@ -60,7 +60,7 @@ private:
     QAction* showInSystemExplorerAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* openFileAction = nullptr;
-    QAction* copyFWPathToFileAction = nullptr;
+    QAction* copyInternalPathToFileAction = nullptr;
     QPoint menuInvokePos = QPoint(-1, -1);
 };
 

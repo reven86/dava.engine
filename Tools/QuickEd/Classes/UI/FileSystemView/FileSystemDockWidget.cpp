@@ -77,8 +77,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     openFileAction->setShortcutContext(Qt::WidgetShortcut);
     connect(openFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnOpenFile);
 
-    copyFWPathToFileAction = new QAction(tr("Copy Internal Path"), this);
-    connect(copyFWPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
+    copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
+    connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
@@ -86,7 +86,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     ui->treeView->addAction(showInSystemExplorerAction);
     ui->treeView->addAction(renameAction);
     ui->treeView->addAction(openFileAction);
-    ui->treeView->addAction(copyFWPathToFileAction);
+    ui->treeView->addAction(copyInternalPathToFileAction);
     installEventFilter(this);
     RefreshActions();
 }
@@ -112,8 +112,9 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
 //refresh actions by menu invoke pos
 void FileSystemDockWidget::RefreshActions()
 {
-    bool canCreateFile = !ui->treeView->isColumnHidden(0);
-    bool canCreateDir = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
+    bool isProjectOpened = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
+    bool canCreateFile = isProjectOpened;
+    bool canCreateDir = isProjectOpened;
     bool canShow = false;
     bool canRename = false;
     const QModelIndex& index = ui->treeView->indexAt(menuInvokePos);
@@ -125,6 +126,7 @@ void FileSystemDockWidget::RefreshActions()
         canShow = true;
         canRename = true;
     }
+    copyInternalPathToFileAction->setEnabled(isProjectOpened);
     UpdateActionsWithShortcutsState(QModelIndexList() << index);
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
@@ -309,8 +311,8 @@ void FileSystemDockWidget::OnOpenFile()
 
 void FileSystemDockWidget::OnCopyInternalPathToFile()
 {
-    const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
-    for (auto index : indexes)
+    const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    for (const QModelIndex& index : indexes)
     {
         if (!model->isDir(index))
         {

@@ -562,17 +562,14 @@ void PackageWidget::OnCopyControlPath()
     for (ControlNode* controlNode : controlNodes)
     {
         PackageControlsNode* root = controlNode->GetPackage()->GetPackageControlsNode();
-        QString path = "";
+        QString path;
         for (PackageBaseNode* node = controlNode; node != root; node = node->GetParent())
         {
-            if (path.isEmpty())
+            if (!path.isEmpty())
             {
-                path = QString::fromStdString(node->GetName());
+                path.prepend("/");
             }
-            else
-            {
-                path = QString::fromStdString(node->GetName()) + "/" + path;
-            }
+            path.prepend(QString::fromStdString(node->GetName()));
         }
         str += path;
         str += "\n";
