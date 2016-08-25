@@ -552,7 +552,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
 
-    if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
+    if (activeControlNode->GetParent() != nullptr)
     {
         Vector2 originalPosition = positionProperty->GetValue().AsVector2();
         propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));

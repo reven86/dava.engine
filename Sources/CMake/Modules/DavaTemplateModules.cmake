@@ -79,13 +79,33 @@ macro ( load_external_modules EXTERNAL_MODULES )
     endforeach()
 endmacro()
 #
+macro( reset_MAIN_MODULE_VALUES )
+    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+                                         QT_DEPLOY_LIST_VALUE 
+                                         QT_LINKAGE_LIST 
+                                         QT_LINKAGE_LIST_VALUE 
+                                         DEPENDENT_LIST )
+        set( ${VALUE} )
+        set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
+    endforeach()
+endmacro()
+#
 macro( setup_main_module )
-
     if( NOT MODULE_TYPE )
         set( MODULE_TYPE INLINE )
     endif()
 
+    set( ORIGINAL_NAME_MODULE ${NAME_MODULE} )
+
     if( NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+        get_property( MODULES_ARRAY GLOBAL PROPERTY MODULES_ARRAY )
+        list (FIND MODULES_ARRAY ${NAME_MODULE} _index)
+        if ( JOIN_PROJECT_NAME OR ${_index} GREATER -1)
+            set( NAME_MODULE ${NAME_MODULE}_${PROJECT_NAME} )
+        endif() 
+        list( APPEND MODULES_ARRAY ${NAME_MODULE} )
+        set_property( GLOBAL PROPERTY MODULES_ARRAY "${MODULES_ARRAY}" )
+
         project ( ${NAME_MODULE} )
         include ( CMake-common )
     endif()
@@ -99,8 +119,8 @@ macro( setup_main_module )
     if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
         set( INIT true )
     else()
-        if( NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+        if( ORIGINAL_NAME_MODULE )
+            list (FIND DAVA_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
             if ( ${_index} GREATER -1)
                 set( INIT true )
             endif()
@@ -108,6 +128,7 @@ macro( setup_main_module )
             set( INIT true )
         endif()
     endif()
+
 
     if ( INIT )
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
@@ -279,7 +300,7 @@ macro( setup_main_module )
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
+                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
@@ -366,6 +387,9 @@ macro( setup_main_module )
             endif()
 
         endif()
+
+        set_property( GLOBAL PROPERTY MODULES_NAME "${NAME_MODULE}" )
+
     endif()
 
 endmacro ()

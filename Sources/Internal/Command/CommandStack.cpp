@@ -126,22 +126,22 @@ bool CommandStack::CanRedo() const
     return currentIndex < (static_cast<int32>(commands.size()) - 1);
 }
 
-DAVA::String CommandStack::GetUndoText() const
+const Command* CommandStack::GetUndoCommand() const
 {
     if (CanUndo())
     {
-        return commands.at(currentIndex)->GetDescription();
+        return commands.at(currentIndex).get();
     }
-    return DAVA::String();
+    return nullptr;
 }
 
-DAVA::String CommandStack::GetRedoText() const
+const Command* CommandStack::GetRedoCommand() const
 {
     if (CanRedo())
     {
-        return commands.at(currentIndex + 1)->GetDescription();
+        return commands.at(currentIndex + 1).get();
     }
-    return DAVA::String();
+    return nullptr;
 }
 
 void CommandStack::UpdateCleanState()
@@ -173,8 +173,8 @@ void CommandStack::SetCurrentIndex(int32 currentIndex_)
         UpdateCleanState();
         EmitCanUndoChanged(CanUndo());
         EmitCanRedoChanged(CanRedo());
-        EmitUndoTextChanged(GetUndoText());
-        EmitRedoTextChanged(GetRedoText());
+        undoCommandChanged.Emit(GetUndoCommand());
+        redoCommandChanged.Emit(GetRedoCommand());
     }
 }
 
@@ -202,24 +202,6 @@ void CommandStack::EmitCanRedoChanged(bool canRedo_)
     {
         canRedo = canRedo_;
         canRedoChanged.Emit(canRedo);
-    }
-}
-
-void CommandStack::EmitUndoTextChanged(const DAVA::String& undoText_)
-{
-    if (undoText_ != undoText)
-    {
-        undoText = undoText_;
-        undoTextChanged.Emit(undoText);
-    }
-}
-
-void CommandStack::EmitRedoTextChanged(const DAVA::String& redoText_)
-{
-    if (redoText_ != redoText)
-    {
-        redoText = redoText_;
-        redoTextChanged.Emit(redoText);
     }
 }
 }

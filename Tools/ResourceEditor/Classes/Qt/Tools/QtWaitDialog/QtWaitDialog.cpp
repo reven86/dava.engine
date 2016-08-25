@@ -5,8 +5,6 @@
 QtWaitDialog::QtWaitDialog(QWidget* parent)
     : QWidget(parent, Qt::Window | Qt::CustomizeWindowHint)
     , ui(new Ui::QtWaitDialog)
-    , wasCanceled(false)
-    , isRunnedFromExec(false)
 {
     setFixedSize(400, 150);
     setWindowModality(Qt::WindowModal);
@@ -19,10 +17,6 @@ QtWaitDialog::QtWaitDialog(QWidget* parent)
 
     connect(ui->waitButton, SIGNAL(pressed()), this, SLOT(CancelPressed()));
     connect(this, SIGNAL(canceled()), this, SLOT(WaitCanceled()));
-}
-
-QtWaitDialog::~QtWaitDialog()
-{
 }
 
 void QtWaitDialog::Exec(const QString& title, const QString& message, bool hasWaitbar, bool hasCancel)
@@ -58,6 +52,8 @@ void QtWaitDialog::Reset()
 
     close();
     setCursor(Qt::ArrowCursor);
+
+    emit closed();
 }
 
 void QtWaitDialog::SetMessage(const QString& message)
