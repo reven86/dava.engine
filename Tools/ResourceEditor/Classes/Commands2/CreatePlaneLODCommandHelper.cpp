@@ -255,11 +255,11 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     ScopedPtr<Scene> tempScene(new Scene());
 
     rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
-    renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
+    renderPassConfig.colorBuffer[0].targetTexture = request->targetTexture->handle;
     renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
     renderPassConfig.priority = PRIORITY_SERVICE_3D;
     renderPassConfig.viewport = viewport;
-    renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
+    renderPassConfig.depthStencilBuffer.targetTexture = request->depthTexture;
     memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();

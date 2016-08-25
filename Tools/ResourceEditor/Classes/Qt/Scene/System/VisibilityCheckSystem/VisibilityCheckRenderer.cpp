@@ -114,8 +114,8 @@ void VisibilityCheckRenderer::SetDelegate(VisibilityCheckRendererDelegate* de)
 
 void VisibilityCheckRenderer::RenderToCubemapFromPoint(DAVA::RenderSystem* renderSystem, const DAVA::Vector3& point, DAVA::Texture* cubemapTarget)
 {
-    renderTargetConfig.colorBuffer[0].texture = cubemapTarget->handle;
-    renderTargetConfig.depthStencilBuffer.texture = cubemapTarget->handleDepthStencil;
+    renderTargetConfig.colorBuffer[0].targetTexture = cubemapTarget->handle;
+    renderTargetConfig.depthStencilBuffer.targetTexture = cubemapTarget->handleDepthStencil;
     renderTargetConfig.viewport.width = cubemapTarget->GetWidth();
     renderTargetConfig.viewport.height = cubemapTarget->GetHeight();
 
@@ -219,8 +219,8 @@ void VisibilityCheckRenderer::PreRenderScene(DAVA::RenderSystem* renderSystem, D
 
     prerenderMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    prerenderConfig.colorBuffer[0].texture = renderTarget->handle;
-    prerenderConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+    prerenderConfig.colorBuffer[0].targetTexture = renderTarget->handle;
+    prerenderConfig.depthStencilBuffer.targetTexture = renderTarget->handleDepthStencil;
     RenderPassScope pass(prerenderConfig);
     for (auto batch : renderBatches)
     {
@@ -279,8 +279,8 @@ void VisibilityCheckRenderer::RenderVisibilityToTexture(DAVA::RenderSystem* rend
 
     DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
     fromCamera->SetupDynamicParameters(false, nullptr);
-    visibilityConfig.colorBuffer[0].texture = renderTarget->handle;
-    visibilityConfig.depthStencilBuffer.texture = renderTarget->handleDepthStencil;
+    visibilityConfig.colorBuffer[0].targetTexture = renderTarget->handle;
+    visibilityConfig.depthStencilBuffer.targetTexture = renderTarget->handleDepthStencil;
 
     RenderPassScope pass(visibilityConfig);
     for (auto batch : renderBatches)
@@ -374,13 +374,13 @@ void VisibilityCheckRenderer::FixFrame(DAVA::RenderSystem* renderSystem, DAVA::C
     rs2d->EndRenderTargetPass();
 
     reprojectionTexture = DAVA::Texture::CreateFBO(w, h, DAVA::PixelFormat::FORMAT_RGBA8888, true, rhi::TextureType::TEXTURE_TYPE_2D, false);
-    reprojectionConfig.colorBuffer[0].texture = reprojectionTexture->handle;
-    reprojectionConfig.depthStencilBuffer.texture = reprojectionTexture->handleDepthStencil;
+    reprojectionConfig.colorBuffer[0].targetTexture = reprojectionTexture->handle;
+    reprojectionConfig.depthStencilBuffer.targetTexture = reprojectionTexture->handleDepthStencil;
 
     distanceRenderTarget = DAVA::Texture::CreateFBO(w, h, TEXTURE_FORMAT, true, rhi::TEXTURE_TYPE_2D, false);
     distanceRenderTarget->SetMinMagFilter(rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureFilter::TEXFILTER_NEAREST, rhi::TextureMipFilter::TEXMIPFILTER_NONE);
-    distanceMapConfig.colorBuffer[0].texture = distanceRenderTarget->handle;
-    distanceMapConfig.depthStencilBuffer.texture = distanceRenderTarget->handleDepthStencil;
+    distanceMapConfig.colorBuffer[0].targetTexture = distanceRenderTarget->handle;
+    distanceMapConfig.depthStencilBuffer.targetTexture = distanceRenderTarget->handleDepthStencil;
 
     RenderToDistanceMapFromCamera(renderSystem, fromCamera);
 
