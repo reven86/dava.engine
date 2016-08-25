@@ -291,7 +291,7 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vec
         BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
 
         int32 index = destIndex;
-        for (RefPtr<ControlNode> copy : nodesToCopy)
+        for (const RefPtr<ControlNode>& copy : nodesToCopy)
         {
             copiedNodes.push_back(copy.Get());
             InsertControlImpl(copy.Get(), dest, index);
