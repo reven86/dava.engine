@@ -1,4 +1,6 @@
 #include "Platform/TemplateWin32/FfmpegPlayer.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)

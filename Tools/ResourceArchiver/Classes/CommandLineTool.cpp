@@ -35,7 +35,7 @@ bool CommandLineTool::ParseOptions(uint32 argc, char* argv[])
 
 void CommandLineTool::PrintUsage() const
 {
-    Logger::Info("%s", options.GetUsageString().c_str());
+    Logger::Warning("%s", options.GetUsageString().c_str());
 }
 
 String CommandLineTool::GetUsageString() const

@@ -4,8 +4,6 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 
-#include <fstream>
-
 //     +---------------+       +-------------------+
 //     |ResourceArchive+-------+ResourceArchiveImpl|
 //     +---------------+       +-------------------+
@@ -23,36 +21,55 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
 {
     const String& fileName = archiveName.GetAbsolutePathname();
 
-    ScopedPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
+    RefPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
     if (!f)
     {
         throw std::runtime_error("can't open resource archive: " + fileName);
     }
-    Array<char8, 4> firstBytes;
-    uint32 count = f->Read(firstBytes.data(), static_cast<uint32>(firstBytes.size()));
-    if (count != firstBytes.size())
+
+    Array<char8, 4> lastFourBytes;
+
+    uint64 fSize = f->GetSize();
+    if (fSize < 4)
+    {
+        throw std::runtime_error("file not dvpk and not zip archive: " + fileName);
+    }
+
+    if (!f->Seek(fSize - 4, File::SEEK_FROM_START))
+    {
+        throw std::runtime_error("can't seek to last 4 bytes DVPK marker");
+    }
+
+    uint32 count = f->Read(lastFourBytes.data(), static_cast<uint32>(lastFourBytes.size()));
+
+    if (count != lastFourBytes.size())
     {
         throw std::runtime_error("can't read from resource archive: " + fileName);
     }
 
-    f.reset();
-
-    if (PackFormat::FileMarker == firstBytes)
+    if (PackFormat::FileMarker == lastFourBytes)
     {
-        impl.reset(new PackArchive(fileName));
+        impl.reset(new PackArchive(f, fileName));
     }
     else
     {
-        impl.reset(new ZipArchive(fileName));
+        impl.reset(new ZipArchive(f, fileName));
     }
 }
 
 ResourceArchive::~ResourceArchive() = default;
 
-ResourceArchive::FileInfo::FileInfo(const char8* relativePath_, uint32 originalSize_, uint32 compressedSize_, Compressor::Type compressionType_)
+ResourceArchive::FileInfo::FileInfo(const char8* relativePath_,
+                                    uint32 originalSize_,
+                                    uint32 originalCrc32_,
+                                    uint32 compressedSize_,
+                                    uint32 compressedCrc32_,
+                                    Compressor::Type compressionType_)
     : relativeFilePath(relativePath_)
     , originalSize(originalSize_)
+    , originalCrc32(originalCrc32_)
     , compressedSize(compressedSize_)
+    , compressedCrc32(compressedCrc32_)
     , compressionType(compressionType_)
 {
 }

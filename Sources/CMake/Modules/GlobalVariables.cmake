@@ -103,9 +103,11 @@ if ( ANDROID )
     
 endif ()
 
-set( DAVA_TOOLS_DIR                     "${DAVA_ROOT_DIR}/Sources/Tools" )
-set( DAVA_ENGINE_DIR                    "${DAVA_ROOT_DIR}/Sources/Internal" )
-set( DAVA_EXTERNAL_DIR                  "${DAVA_ROOT_DIR}/Sources/External" )
+set( DAVA_MODULES_DIR               "${DAVA_ROOT_DIR}/Modules")
+set( DAVA_SOURCES_DIR               "${DAVA_ROOT_DIR}/Sources")
+set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Tools" )
+set( DAVA_ENGINE_DIR                    "${DAVA_SOURCES_DIR}/Internal" )
+set( DAVA_EXTERNAL_DIR                  "${DAVA_SOURCES_DIR}/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
 set( DAVA_THIRD_PARTY_ROOT_PATH         "${DAVA_ROOT_DIR}/Libs" )
 set( DAVA_CONFIGURE_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
@@ -125,7 +127,7 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 if ( WINDOWS_UAP )
     #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
     #libs paths
@@ -143,11 +145,51 @@ if ( WINDOWS_UAP )
     set ( WINDOWS_UAP_MOBILE_EXT_SDK_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     set ( WINDOWS_UAP_IOT_EXT_SDK_VERSION    ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
     
-else ()
+elseif ( WIN32 )
+    if ( X64_MODE )
+        set ( INC_ARCH "x64" )
+    else ()
+        set ( INC_ARCH "x86" )
+    endif ()
+    
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/win32/${INC_ARCH}" )
+                                        
+elseif ( ANDROID )
+    set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/android" )
 
 endif()
+
+# Openssl includes
+set ( DAVA_OPENSSL_ARCH "." )
+if ( WINDOWS_UAP )
+    set ( DAVA_OPENSSL_PLATFORM "uwp" )
+    
+elseif ( WIN32 )
+    set ( DAVA_OPENSSL_PLATFORM "win32" )
+    if ( X64_MODE )
+        set ( DAVA_OPENSSL_ARCH "x64" )
+    else ()
+        set ( DAVA_OPENSSL_ARCH "x86" )
+    endif ()
+    
+elseif ( ANDROID )
+    set ( DAVA_OPENSSL_PLATFORM "android" )
+
+elseif ( MACOS )
+    set ( DAVA_OPENSSL_PLATFORM "mac" )
+    
+elseif ( IOS )
+    set ( DAVA_OPENSSL_PLATFORM "ios" )
+    
+else ()
+    message ( FATAL_ERROR "Unknown platform" )
+    
+endif ()
+
+set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
+                                    "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/${DAVA_OPENSSL_PLATFORM}/${DAVA_OPENSSL_ARCH}" )
 
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
