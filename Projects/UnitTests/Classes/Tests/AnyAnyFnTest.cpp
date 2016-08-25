@@ -3,6 +3,8 @@
 #include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
 
+namespace DAVA
+{
 DAVA_TESTCLASS (AnyAnyFnTest)
 {
     struct A
@@ -259,6 +261,19 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(A::E2::E2_2 == a.Get<A::E2>());
     }
 
+    DAVA_TEST (AnyLoadStore)
+    {
+        Any a;
+        int v1 = 10;
+        int v2;
+
+        a.LoadValue(Type::Instance<int>(), &v1);
+        TEST_VERIFY(a.Get<int>() == v1);
+
+        a.StoreValue(&v2, sizeof(v2));
+        TEST_VERIFY(v1 == v2);
+    }
+
     DAVA_TEST (AnyFnTest)
     {
         A a;
@@ -317,8 +332,10 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         res = fn.Invoke(Any(op1), Any(op3));
         TEST_VERIFY(a.TestFn(op1, op3) == res.Get<Vector3>());
 
-        fn = std::move(AnyFn(&A::TestFnConst));
+        fn = AnyFn(&A::TestFnConst);
         res = fn.Invoke(Any(&a), Any(op2), Any(op3));
         TEST_VERIFY(a.TestFnConst(op2, op3) == res.Get<Vector3>());
     }
 };
+
+} // namespace DAVA

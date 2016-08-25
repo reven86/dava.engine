@@ -2,6 +2,8 @@
 
 #include "Base/Type.h"
 
+namespace DAVA
+{
 bool TypeCast::CanDownCast(const Type* from, const Type* to)
 {
     auto it = from->BaseTypes().find(to);
@@ -109,3 +111,5 @@ bool TypeCast::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr
 
     return false;
 }
+
+} // namespace DAVA

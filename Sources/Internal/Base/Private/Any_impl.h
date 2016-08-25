@@ -125,7 +125,7 @@ const T& Any::Get() const
 template <typename T>
 inline const T& Any::Get(const T& defaultValue) const
 {
-    return CanGet<T>() ? GetImpl() : defaultValue;
+    return CanGet<T>() ? GetImpl<T>() : defaultValue;
 }
 
 template <typename T>
@@ -146,7 +146,7 @@ void Any::Set(T&& value, NotAny<T>)
 template <typename T>
 bool Any::CanCast() const
 {
-    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer;
+    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer{};
     return CanGet<T>() || CanCastImpl<T>(isPointer);
 }
 
@@ -175,8 +175,7 @@ inline bool Any::CanCastImpl(std::false_type isPointer) const
 template <typename T>
 T Any::Cast() const
 {
-    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer;
-
+    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer{};
     if (CanGet<T>())
         return GetImpl<T>();
 
