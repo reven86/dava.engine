@@ -117,6 +117,7 @@ void FileSystemDockWidget::RefreshActions()
     bool canCreateDir = isProjectOpened;
     bool canShow = false;
     bool canRename = false;
+    bool canCopyInternalPath = false;
     const QModelIndex& index = ui->treeView->indexAt(menuInvokePos);
 
     if (index.isValid())
@@ -125,8 +126,9 @@ void FileSystemDockWidget::RefreshActions()
         canCreateDir = isDir;
         canShow = true;
         canRename = true;
+        canCopyInternalPath = true;
     }
-    copyInternalPathToFileAction->setEnabled(isProjectOpened);
+    copyInternalPathToFileAction->setEnabled(canCopyInternalPath);
     UpdateActionsWithShortcutsState(QModelIndexList() << index);
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
@@ -314,15 +316,12 @@ void FileSystemDockWidget::OnCopyInternalPathToFile()
     const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
     for (const QModelIndex& index : indexes)
     {
-        if (!model->isDir(index))
-        {
-            DAVA::FilePath path = model->filePath(index).toStdString();
+        DAVA::FilePath path = model->filePath(index).toStdString();
 
-            QClipboard* clipboard = QApplication::clipboard();
-            QMimeData* data = new QMimeData();
-            data->setText(QString::fromStdString(path.GetFrameworkPath()));
-            clipboard->setMimeData(data);
-        }
+        QClipboard* clipboard = QApplication::clipboard();
+        QMimeData* data = new QMimeData();
+        data->setText(QString::fromStdString(path.GetFrameworkPath()));
+        clipboard->setMimeData(data);
     }
 }
 
