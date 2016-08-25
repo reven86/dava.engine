@@ -1,7 +1,7 @@
 #ifndef __PARTICLE_LAYER_COMMANDS_H__
 #define __PARTICLE_LAYER_COMMANDS_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "Render/RenderBase.h"
 
 namespace DAVA
@@ -10,14 +10,13 @@ struct ParticleLayer;
 class FilePath;
 }
 
-class CommandChangeLayerMaterialProperties : public Command2
+class CommandChangeLayerMaterialProperties : public RECommand
 {
 public:
     CommandChangeLayerMaterialProperties(DAVA::ParticleLayer* layer, const DAVA::FilePath& spritePath, DAVA::eBlending blending, bool enableFog, bool enableBlending);
 
     void Undo() override;
     void Redo() override;
-    DAVA::Entity* GetEntity() const override;
 
     DAVA::ParticleLayer* GetLayer() const;
 

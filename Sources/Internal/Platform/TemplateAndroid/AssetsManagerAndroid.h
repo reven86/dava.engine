@@ -1,39 +1,26 @@
-#ifndef __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__
-#define __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-class zip;
+#include "FileSystem/ResourceArchive.h"
 
 namespace DAVA
 {
-class AssetsManager : public Singleton<AssetsManager>
+class ZipArchive;
+
+class AssetsManagerAndroid : public Singleton<AssetsManagerAndroid>
 {
 public:
-    AssetsManager();
-    virtual ~AssetsManager();
+    explicit AssetsManagerAndroid(const String& packageName);
+    virtual ~AssetsManagerAndroid();
 
-    void Init(const String& packageName);
-
-    const String& GetPackageName() const
-    {
-        return packageName;
-    };
-    zip* GetApplicationPackage() const
-    {
-        return applicationPackage;
-    };
+    bool HasDirectory(const String& relativeDirName) const;
+    bool HasFile(const String& relativeFilePath) const;
+    bool LoadFile(const String& relativeFilePath, Vector<uint8>& output) const;
+    bool ListDirectory(const String& relativeDirName, Vector<ResourceArchive::FileInfo>&) const;
 
 private:
     String packageName;
-
-    zip* applicationPackage;
+    std::unique_ptr<ZipArchive> apk;
 };
 };
-
-#endif // #if defined(__DAVAENGINE_ANDROID__)
-
-#endif // __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__

@@ -9,7 +9,6 @@
 
 #include "Render/UniqueStateSet.h"
 
-class Command2;
 class DebugDrawSystem : public DAVA::SceneSystem
 {
     friend class SceneEditor2;
