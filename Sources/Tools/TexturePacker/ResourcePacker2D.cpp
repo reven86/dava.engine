@@ -537,7 +537,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
     AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
     if (requested == AssetCache::Error::NO_ERRORS)
     {
-        Logger::Info("%s - retrieved from cache", inputPath.GetAbsolutePathname().c_str());
+        Logger::Info("%s - retrieved from cache", inputPath.GetStringValue().c_str());
         retrievedData.ExportToFolder(outputPath);
         return true;
     }
