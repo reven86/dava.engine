@@ -49,6 +49,7 @@ private slots:
     void OnFilterTextChanged(const QString&);
     void OnRename();
     void OnAddStyle();
+    void OnCopyControlPath();
     void OnMoveUp();
     void OnMoveDown();
     void OnMoveLeft();
@@ -87,6 +88,7 @@ private:
     QAction* delAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
+    QAction* copyControlPathAction = nullptr;
 
     QAction* moveUpAction = nullptr;
     QAction* moveDownAction = nullptr;

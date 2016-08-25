@@ -6,6 +6,8 @@
 #include "FileSystemModel.h"
 
 #include "ui_FileSystemDockWidget.h"
+#include <QClipboard>
+#include <QMimeData>
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -75,12 +77,16 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     openFileAction->setShortcutContext(Qt::WidgetShortcut);
     connect(openFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnOpenFile);
 
+    copyFWPathToFileAction = new QAction(tr("Copy Internal Path"), this);
+    connect(copyFWPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
+
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
     ui->treeView->addAction(showInSystemExplorerAction);
     ui->treeView->addAction(renameAction);
     ui->treeView->addAction(openFileAction);
+    ui->treeView->addAction(copyFWPathToFileAction);
     installEventFilter(this);
     RefreshActions();
 }
@@ -297,6 +303,23 @@ void FileSystemDockWidget::OnOpenFile()
         if (!model->isDir(index))
         {
             emit OpenPackageFile(model->filePath(index));
+        }
+    }
+}
+
+void FileSystemDockWidget::OnCopyInternalPathToFile()
+{
+    const auto& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    for (auto index : indexes)
+    {
+        if (!model->isDir(index))
+        {
+            DAVA::FilePath path = model->filePath(index).toStdString();
+
+            QClipboard* clipboard = QApplication::clipboard();
+            QMimeData* data = new QMimeData();
+            data->setText(QString::fromStdString(path.GetFrameworkPath()));
+            clipboard->setMimeData(data);
         }
     }
 }
