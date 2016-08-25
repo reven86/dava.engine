@@ -174,7 +174,7 @@ inline const void* AutoStorage<Count>::GetData() const
 {
     assert(StorageType::Empty != type);
 
-    return (StorageType::Simple == type) ? storage.data() : GetShared<void*>();
+    return (StorageType::Simple == type) ? storage.data() : static_cast<const void*>(SharedPtr()->get());
 }
 
 template <size_t Count>

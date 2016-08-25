@@ -90,7 +90,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
     }
     lua_close(luaState);
     luaState = nullptr;
-    
+
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     destroy_mspace(memorySpace);
     free(memoryPool);
@@ -849,9 +849,9 @@ bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
         Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", luaFilePath.GetAbsolutePathname().c_str());
         return false;
     }
-    char* data = new char[file->GetSize()];
-    file->Read(data, file->GetSize());
-    uint32 fileSize = file->GetSize();
+    char* data = new char[static_cast<size_t>(file->GetSize())];
+    file->Read(data, static_cast<uint32>(file->GetSize()));
+    uint32 fileSize = static_cast<uint32>(file->GetSize());
     file->Release();
     bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
     delete[] data;

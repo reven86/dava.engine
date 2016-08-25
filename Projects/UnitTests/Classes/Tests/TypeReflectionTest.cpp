@@ -17,6 +17,9 @@ public:
     StructPtr(const StructPtr&) = delete;
     int sss = 555;
 
+protected:
+    ~StructPtr() = default;
+
     DAVA_REFLECTION(StructPtr)
     {
         ReflectionRegistrator<StructPtr>::Begin()

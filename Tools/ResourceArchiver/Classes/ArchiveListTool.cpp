@@ -13,7 +13,7 @@ const DAVA::String Out = "-out";
 }
 
 ArchiveListTool::ArchiveListTool()
-    : CommandLineTool("-list")
+    : CommandLineTool("list")
 {
     options.AddOption(OptionNames::Out, VariantType(String("")), "if specified, program output will be copied to this file");
     options.AddArgument("packfile");
