@@ -19,7 +19,7 @@ bool CachePacket::SendTo(Net::IChannel* channel)
     DVASSERT(true == insertRes.second && "packet is already inserted");
 
     uint32 packetId = 0;
-    channel->Send(serializationBuffer->GetData(), serializationBuffer->GetSize(), 0, &packetId);
+    channel->Send(serializationBuffer->GetData(), static_cast<size_t>(serializationBuffer->GetSize()), 0, &packetId);
     return (packetId != 0);
 }
 

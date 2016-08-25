@@ -11,10 +11,12 @@
 class QApplication;
 namespace DAVA
 {
+class RenderWidget;
 class NativeService final
 {
 public:
     QApplication* GetApplication();
+    RenderWidget* GetRenderWidget();
 
 private:
     NativeService(Private::PlatformCore* c);

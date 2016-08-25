@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_STRING_UTILS__
-#define __DAVAENGINE_STRING_UTILS__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include <cctype>
@@ -179,7 +178,14 @@ inline bool IsWhitespace(char8 t)
 {
     return (std::isspace(t) != 0);
 }
-}
-}
 
-#endif
+inline bool StartsWith(const String& str, const String& substr)
+{
+    if (str.length() < substr.length())
+    {
+        return false;
+    }
+    return (str.compare(0, substr.size(), substr) == 0);
+}
+} // end namespace StringUtils
+} // end namespace DAVA

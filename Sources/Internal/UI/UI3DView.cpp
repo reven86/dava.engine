@@ -102,7 +102,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
 
         config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].targetTexture = currentTarget.colorAttachment;
-        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+        config.colorBuffer[0].loadAction = colorLoadAction;
         config.colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
         config.depthStencilBuffer.targetTexture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -116,6 +116,23 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     if (drawToFrameBuffer)
     {
         RenderSystem2D::Instance()->DrawTexture(frameBuffer, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, geometricData.GetUnrotatedRect(), Rect(Vector2(), fbTexSize));
+    }
+}
+
+bool UI3DView::IsClearRequested() const
+{
+    return colorLoadAction == rhi::LOADACTION_CLEAR;
+}
+
+void UI3DView::SetClearRequested(bool requested)
+{
+    if (requested)
+    {
+        colorLoadAction = rhi::LOADACTION_CLEAR;
+    }
+    else
+    {
+        colorLoadAction = rhi::LOADACTION_LOAD;
     }
 }
 

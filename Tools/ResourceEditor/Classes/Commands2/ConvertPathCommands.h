@@ -2,7 +2,7 @@
 #define __CONVERT_PATH_COMMANDS_H__
 
 #include "FileSystem/KeyedArchive.h"
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
@@ -12,15 +12,15 @@
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
 
-class ExpandPathCommand : public Command2
+class ExpandPathCommand : public RECommand
 {
 public:
     ExpandPathCommand(DAVA::PathComponent* _pathComponent);
     ~ExpandPathCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
 protected:
     typedef DAVA::Map<DAVA::PathComponent::Waypoint*, DAVA::Entity*> MapWaypoint2Entity;
@@ -31,15 +31,15 @@ protected:
     DAVA::Vector<EntityAddCommand*> entityAddCommands;
 };
 
-class CollapsePathCommand : public Command2
+class CollapsePathCommand : public RECommand
 {
 public:
     CollapsePathCommand(DAVA::PathComponent* _pathComponent);
     ~CollapsePathCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
 protected:
     DAVA::PathComponent::Waypoint* CreateWaypoint(DAVA::Entity* entity);

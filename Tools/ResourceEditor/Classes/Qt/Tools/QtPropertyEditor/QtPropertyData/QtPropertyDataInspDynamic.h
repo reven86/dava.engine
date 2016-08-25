@@ -17,7 +17,7 @@ public:
     int InspFlags() const;
 
     const DAVA::MetaInfo* MetaInfo() const override;
-    Command2::Pointer CreateLastCommand() const override;
+    std::unique_ptr<DAVA::Command> CreateLastCommand() const override;
 
     DAVA::InspInfoDynamic* GetDynamicInfo() const
     {

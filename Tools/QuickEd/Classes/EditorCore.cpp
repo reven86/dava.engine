@@ -1,11 +1,12 @@
 #include "UI/mainwindow.h"
-#include "DocumentGroup.h"
-#include "Document.h"
+#include "Document/DocumentGroup.h"
+#include "Document/Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Utils/Utils.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
@@ -26,9 +27,12 @@ EditorCore::EditorCore(QObject* parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
+    ConnectApplicationFocus();
+
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
     mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
