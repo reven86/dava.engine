@@ -258,7 +258,7 @@ void Any::RegisterOPs(AnyOPs&& ops)
 }
 
 template <typename T1, typename T2>
-static void Any::RegisterDefaultCastOP()
+void Any::RegisterDefaultCastOP()
 {
     const Type* t1 = Type::Instance<T1>();
     const Type* t2 = Type::Instance<T2>();
@@ -267,7 +267,7 @@ static void Any::RegisterDefaultCastOP()
 }
 
 template <typename T1, typename T2>
-static void Any::RegisterCastOP(CastOP& castT1T2, CastOP& castT2T1)
+void Any::RegisterCastOP(CastOP& castT1T2, CastOP& castT2T1)
 {
     const Type* t1 = Type::Instance<T1>();
     const Type* t2 = Type::Instance<T2>();
