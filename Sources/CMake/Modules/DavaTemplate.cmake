@@ -805,6 +805,8 @@ if( DEPLOY )
 
 endif()
 
+reset_MAIN_MODULE_VALUES()
+
 endmacro ()
 
 macro( DEPLOY_SCRIPT )
