@@ -61,6 +61,8 @@ public:
     template <typename T>
     void SetAuto(T&& value);
 
+    void SetData(const void*, size_t size);
+
     template <typename T>
     const T& GetSimple() const;
 

@@ -261,17 +261,78 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(A::E2::E2_2 == a.Get<A::E2>());
     }
 
-    DAVA_TEST (AnyLoadStore)
+    DAVA_TEST (AnyLoadStoreCompare)
     {
-        Any a;
-        int v1 = 10;
+        int v1 = 11223344;
         int v2;
 
+        int* iptr1 = &v1;
+        int* iptr2 = nullptr;
+
+        Any a;
         a.LoadValue(Type::Instance<int>(), &v1);
         TEST_VERIFY(a.Get<int>() == v1);
 
         a.StoreValue(&v2, sizeof(v2));
         TEST_VERIFY(v1 == v2);
+
+        Any b(v1);
+        Any s(String("str"));
+        TEST_VERIFY(a == b);
+        TEST_VERIFY(a != s);
+
+        a.Set(&v1);
+        b.Set(&v2);
+        TEST_VERIFY(a != b);
+
+        a.LoadValue(Type::Instance<int*>(), &iptr1);
+        a.StoreValue(&iptr2, sizeof(iptr2));
+        TEST_VERIFY(iptr1 == iptr2);
+
+        Vector3 vec3(1.1f, 2.2f, 3.3f);
+        Vector3 vec3_1;
+
+        try
+        {
+            a.LoadValue(Type::Instance<Vector3>(), &vec3);
+            TEST_VERIFY(false && "Load should be done for unregistred non-fundamental types");
+        }
+        catch (const Any::Exception& anyExp)
+        {
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+        }
+
+        a.Set(vec3);
+        b.Set(vec3);
+
+        try
+        {
+            a.StoreValue(&vec3_1, sizeof(vec3_1));
+            TEST_VERIFY(false && "Store should be done for unregistred non-fundamental types");
+        }
+        catch (const Any::Exception& anyExp)
+        {
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+        }
+
+        // now register default operations
+        Any::RegisterDefaultOPs<Vector3>();
+
+        a.LoadValue(Type::Instance<Vector3>(), &vec3);
+        TEST_VERIFY(a.Get<Vector3>() == vec3);
+
+        a.StoreValue(&vec3_1, sizeof(vec3_1));
+        TEST_VERIFY(vec3_1 == vec3);
+
+        try
+        {
+            a.StoreValue(&vec3_1, sizeof(vec3_1) / 2);
+            TEST_VERIFY(false && "Store should be done if destenation size is smaller then source type require");
+        }
+        catch (const Any::Exception& anyExp)
+        {
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadSize);
+        }
     }
 
     DAVA_TEST (AnyFnTest)

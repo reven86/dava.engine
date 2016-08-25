@@ -30,6 +30,17 @@ void DefaultStoreOP(const Any::AnyStorage& storage, void* dst)
     *data = storage.GetAuto<T>();
 }
 
+template <typename T>
+Any::AnyOPsMap::value_type GetDefaultOPs()
+{
+    Any::AnyOPs ops;
+    ops.load = &DefaultLoadOP<T>;
+    ops.store = &DefaultStoreOP<T>;
+    ops.compare = &DefaultCompareOP<T>;
+
+    return std::make_pair(Type::Instance<T>(), std::move(ops));
+}
+
 } // namespace AnyDetails
 
 template <typename T>
@@ -225,29 +236,13 @@ inline T Any::CastImpl(std::false_type isPointer) const
 template <typename T>
 void Any::RegisterDefaultOPs()
 {
-    if (nullptr == anyOPsMap)
-    {
-        anyOPsMap.reset(new AnyOPsMap());
-    }
-
-    Any::AnyOPs ops;
-    ops.compare = &AnyDetails::DefaultCompareOP<T>;
-    ops.load = &AnyDetails::DefaultLoadOP<T>;
-    ops.store = &AnyDetails::DefaultStoreOP<T>;
-
-    anyOPsMap->emplace(std::make_pair(Type::Instance<T>(), std::move(ops)));
+    anyOPsMap->emplace(AnyDetails::GetDefaultOPs<T>());
 }
 
 template <typename T>
 void Any::RegisterOPs(AnyOPs&& ops)
 {
-    if (nullptr == anyOPsMap)
-    {
-        anyOPsMap.reset(new AnyOPsMap());
-    }
-
-    const Type* type = Type::Instance<T>();
-    anyOPsMap->operator[](type) = std::move(ops);
+    anyOPsMap->emplace(std::make_pair(Type::Instance<T>(), std::move(ops)));
 }
 
 #ifdef ANY_EXPERIMENTAL_CAST_IMPL

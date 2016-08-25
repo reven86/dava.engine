@@ -24,6 +24,7 @@ public:
     bool IsConst() const;
     bool IsPointer() const;
     bool IsReference() const;
+    bool IsFundamental() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -45,6 +46,7 @@ protected:
     bool isConst = false;
     bool isPointer = false;
     bool isReference = false;
+    bool isFundamental = false;
 
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;

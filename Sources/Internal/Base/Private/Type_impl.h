@@ -34,6 +34,11 @@ inline bool Type::IsReference() const
     return isReference;
 }
 
+inline bool Type::IsFundamental() const
+{
+    return isFundamental;
+}
+
 inline const Type* Type::Decay() const
 {
     return decayType;
@@ -131,6 +136,7 @@ void Type::Init(Type** ptype)
     type.isConst = std::is_const<T>::value;
     type.isPointer = std::is_pointer<T>::value;
     type.isReference = std::is_reference<T>::value;
+    type.isFundamental = std::is_fundamental<T>::value;
 
     auto condDeref = std::integral_constant<bool, needDeref>();
     type.derefType = TypeDetail::GetTypeIfTrue<DerefT>(condDeref);

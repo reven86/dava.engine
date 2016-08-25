@@ -120,6 +120,24 @@ inline void AutoStorage<Count>::SetAuto(T&& value)
 }
 
 template <size_t Count>
+inline void AutoStorage<Count>::SetData(const void* data, size_t size)
+{
+    Clear();
+
+    if (size <= sizeof(StorageT))
+    {
+        type = AutoStorage::StorageType::Simple;
+        std::memcpy(storage.data(), data, size);
+    }
+    else
+    {
+        type = AutoStorage::StorageType::Shared;
+        char* arr = new char[size];
+        new (storage.data()) SharedT(arr, [](char* p) { delete[] p; });
+    }
+}
+
+template <size_t Count>
 template <typename T>
 inline const T& AutoStorage<Count>::GetSimple() const
 {
