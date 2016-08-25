@@ -369,8 +369,8 @@ def main():
 
     cov = CoverageReport( options )
 
-    #if options.teamcityMode == 'true' :
-    cov.generate_report_html()
+    if options.teamcityMode == 'true' :
+        cov.generate_report_html()
     cov.generate_report_coverage()
 
 
