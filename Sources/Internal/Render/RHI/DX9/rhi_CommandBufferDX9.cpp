@@ -217,6 +217,7 @@ static Handle
 dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
+    DVASSERT(passDesc.depthStencilBuffer.storeAction != rhi::STOREACTION_RESOLVE);
 
     Handle handle = RenderPassPoolDX9::Alloc();
     RenderPassDX9_t* pass = RenderPassPoolDX9::Get(handle);
@@ -708,43 +709,51 @@ void CommandBufferDX9_t::Execute()
         {
             if (isFirstInPass)
             {
-                if (passCfg.colorBuffer[0].targetTexture != rhi::InvalidHandle)
+                const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
+                if ((color0.targetTexture != rhi::InvalidHandle) || (passCfg.samples > 1))
                 {
-                    DVASSERT(!_D3D9_BackBuf);
+                    DVASSERT(_D3D9_BackBuf == nullptr);
                     _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
-                    TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[0].targetTexture);
+
+                    Handle targetTexture = color0.targetTexture;
+                    if (passCfg.samples > 1)
+                    {
+                        DVASSERT(color0.multisampleTexture != InvalidHandle);
+                        targetTexture = color0.multisampleTexture;
+                    }
+                    TextureDX9::SetAsRenderTarget(targetTexture);
                 }
 
-                if (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle && passCfg.depthStencilBuffer.targetTexture != DefaultDepthBuffer)
+                bool renderToDepth = (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle) && (passCfg.depthStencilBuffer.targetTexture != DefaultDepthBuffer);
+                if (renderToDepth || (passCfg.samples > 1))
                 {
-                    DVASSERT(!_D3D9_DepthBuf);
+                    DVASSERT(_D3D9_DepthBuf == nullptr);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
-                    if (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle)
-                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.targetTexture);
+                    Handle targetDepthStencil = passCfg.depthStencilBuffer.targetTexture;
+                    if (passCfg.samples > 1)
+                    {
+                        DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
+                        targetDepthStencil = passCfg.depthStencilBuffer.multisampleTexture;
+                    }
+                    TextureDX9::SetAsDepthStencil(targetDepthStencil);
                 }
 
-                // update default viewport
+                IDirect3DSurface9* rt = nullptr;
+                _D3D9_Device->GetRenderTarget(0, &rt);
+                if (rt != nullptr)
                 {
-                    IDirect3DSurface9* rt = NULL;
-
-                    _D3D9_Device->GetRenderTarget(0, &rt);
-                    if (rt)
+                    D3DSURFACE_DESC desc = {};
+                    if (SUCCEEDED(rt->GetDesc(&desc)))
                     {
-                        D3DSURFACE_DESC desc;
-
-                        if (SUCCEEDED(rt->GetDesc(&desc)))
-                        {
-                            def_viewport.X = 0;
-                            def_viewport.Y = 0;
-                            def_viewport.Width = desc.Width;
-                            def_viewport.Height = desc.Height;
-                            def_viewport.MinZ = 0.0f;
-                            def_viewport.MaxZ = 1.0f;
-                        }
-
-                        rt->Release();
+                        def_viewport.X = 0;
+                        def_viewport.Y = 0;
+                        def_viewport.Width = desc.Width;
+                        def_viewport.Height = desc.Height;
+                        def_viewport.MinZ = 0.0f;
+                        def_viewport.MaxZ = 1.0f;
                     }
+                    rt->Release();
                 }
 
                 bool clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
@@ -780,9 +789,22 @@ void CommandBufferDX9_t::Execute()
             if (isLastInPass)
             {
                 if (cur_query_buf != InvalidHandle)
+                {
                     QueryBufferDX9::QueryComplete(cur_query_buf);
+                }
 
                 DX9_CALL(_D3D9_Device->EndScene(), "EndScene");
+
+                if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].targetTexture);
+                }
+
+                if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].targetTexture);
+                }
+
                 if (_D3D9_BackBuf)
                 {
                     DX9_CALL(_D3D9_Device->SetRenderTarget(0, _D3D9_BackBuf), "SetRenderTarget");
@@ -1807,6 +1829,24 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         {
             IUnknown* ptr = *(IUnknown**)(arg[0]);
             cmd->retval = ptr->Release();
+        }
+        break;
+
+        case DX9Command::CREARE_RENDER_TARGET:
+        {
+            DX9_CALL(_D3D9_Device->CreateRenderTarget((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
+                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                      (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
+                     "CreateRenderTarget");
+        }
+        break;
+
+        case DX9Command::CREARE_DEPTHSTENCIL_SURFACE:
+        {
+            DX9_CALL(_D3D9_Device->CreateDepthStencilSurface((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
+                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                             (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
+                     "CreateDepthStencilSurface");
         }
         break;
 

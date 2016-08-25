@@ -77,6 +77,7 @@ void SetAsDepthStencil(Handle tex);
 void ReleaseAll();
 void ReCreateAll();
 void LogUnrestoredBacktraces();
+void ResolveMultisampling(Handle from, Handle to);
 unsigned NeedRestoreCount();
 }
 
@@ -110,6 +111,7 @@ void SetupDispatch(Dispatch* dispatch);
     if (FAILED(hr)) \
     { \
         Logger::Error("%s failed (%08X):\n%s\n", name, hr, D3D9ErrorText(hr)); \
+		DVASSERT(0); \
     } \
 }
 
@@ -153,6 +155,9 @@ DX9Command
 
         READ_TEXTURE_LEVEL,
         READ_CUBETEXTURE_LEVEL,
+
+        CREARE_RENDER_TARGET,
+        CREARE_DEPTHSTENCIL_SURFACE,
     };
 
     Func func;
