@@ -782,6 +782,19 @@ void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
     ProcessInput(clickUp);
 }
 
+void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y)
+{
+    UIEvent wheel;
+    wheel.wheelDelta.x = x;
+    wheel.wheelDelta.y = y;
+    wheel.phase = UIEvent::Phase::WHEEL;
+    wheel.device = UIEvent::Device::MOUSE;
+    wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.point = point;
+    ProcessInput(wheel);
+}
+
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
