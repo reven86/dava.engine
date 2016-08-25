@@ -31,7 +31,7 @@ using namespace DAVA;
 
 namespace
 {
-QString ScaleStringFromReal(qreal scale)
+QString ScaleStringFromReal(float scale)
 {
     return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
@@ -115,7 +115,7 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
-float PreviewWidget::GetScale() const
+float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.
     QString curTextValue = scaleCombo->currentText();
@@ -124,7 +124,7 @@ float PreviewWidget::GetScale() const
     bool ok;
     float scaleValue = curTextValue.toFloat(&ok);
     DVASSERT_MSG(ok, "can not parse text to float");
-    return scaleValue;
+    return scaleValue / 100.0f;
 }
 
 ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
@@ -303,25 +303,53 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 
 void PreviewWidget::OnIncrementScale()
 {
-    int currentIndex = scaleCombo->currentIndex();
-    if (currentIndex < scaleCombo->count() - 1)
+    int nextIndex = -1;
+    float actualScale = GetScaleFromComboboxText();
+    if (actualScale >= percentages.last())
     {
-        scaleCombo->setCurrentIndex(currentIndex + 1);
+        return;
     }
+    if (percentages.contains(actualScale))
+    {
+        int currentIndex = scaleCombo->currentIndex();
+        DVASSERT(currentIndex < scaleCombo->count() - 1);
+        nextIndex = currentIndex + 1;
+    }
+    else
+    {
+        QList<float>::iterator iter = std::upper_bound(percentages.begin(), percentages.end(), actualScale);
+        nextIndex = std::distance(percentages.begin(), iter);
+    }
+    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
+    scrollAreaController->SetScale(percentages.at(nextIndex));
 }
 
 void PreviewWidget::OnDecrementScale()
 {
-    int currentIndex = scaleCombo->currentIndex();
-    if (currentIndex > 0)
+    int nextIndex = -1;
+    float actualScale = GetScaleFromComboboxText();
+    if (actualScale <= percentages.first())
     {
-        scaleCombo->setCurrentIndex(currentIndex - 1);
+        return;
     }
+    if (percentages.contains(actualScale))
+    {
+        int currentIndex = scaleCombo->currentIndex();
+        DVASSERT(currentIndex > 0);
+        nextIndex = currentIndex - 1;
+    }
+    else
+    {
+        QList<float>::iterator iter = std::lower_bound(percentages.begin(), percentages.end(), actualScale);
+        nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
+    }
+    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
+    scrollAreaController->SetScale(percentages.at(nextIndex));
 }
 
 void PreviewWidget::SetActualScale()
 {
-    scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //1.00f is a 100% scale
+    scrollAreaController->SetScale(1.0f); //1.0f is a 100% scale
 }
 
 void PreviewWidget::ApplyPosChanges()
@@ -366,9 +394,17 @@ void PreviewWidget::OnGLInitialized()
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
 }
 
-void PreviewWidget::OnScaleChanged(qreal scale)
+void PreviewWidget::OnScaleChanged(float scale)
 {
+    bool wasBlocked = scaleCombo->blockSignals(true);
+    int scaleIndex = percentages.indexOf(scale);
+    if (scaleIndex != -1)
+    {
+        scaleCombo->setCurrentIndex(scaleIndex);
+    }
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
+    scaleCombo->blockSignals(wasBlocked);
+
     rulerController->SetScale(scale);
     DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
     if (systemsManager)
@@ -386,8 +422,8 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 
 void PreviewWidget::OnScaleByComboText()
 {
-    float scale = GetScale();
-    scrollAreaController->SetScale(scale / 100.0f);
+    float scale = GetScaleFromComboboxText();
+    scrollAreaController->SetScale(scale);
 }
 
 void PreviewWidget::OnGLWidgetResized(int width, int height)
@@ -505,7 +541,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         {
             return;
         }
-        qreal scale = GetScaleFromWheelEvent(ticksCount);
+        float scale = GetScaleFromWheelEvent(ticksCount);
         QPoint pos = event->pos();
         scrollAreaController->AdjustScale(scale, pos);
     }
@@ -517,7 +553,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         QPoint delta = event->pixelDelta();
 #endif //platform
         //scroll view up and down
-        static const qreal wheelDelta = 0.002f;
+        static const float wheelDelta = 0.002f;
         QPoint position = scrollAreaController->GetPosition();
         QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
                              (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
@@ -531,9 +567,9 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     {
         return;
     }
-    const qreal normalScale = 1.0f;
-    const qreal expandedScale = 1.5f;
-    qreal scale = scrollAreaController->GetScale();
+    const float normalScale = 1.0f;
+    const float expandedScale = 1.5f;
+    float scale = scrollAreaController->GetScale();
     QPoint pos = event->pos();
     switch (event->gestureType())
     {
@@ -749,9 +785,9 @@ void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* prope
     commandExecutor->ChangeProperty(node, property, newValue);
 }
 
-qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
+float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
 {
-    qreal scale = scrollAreaController->GetScale();
+    float scale = scrollAreaController->GetScale();
     if (ticksCount > 0)
     {
         scale = GetNextScale(scale, ticksCount);
@@ -763,7 +799,7 @@ qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
     return scale;
 }
 
-qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
+float PreviewWidget::GetNextScale(float currentScale, int ticksCount) const
 {
     auto iter = std::upper_bound(percentages.begin(), percentages.end(), currentScale);
     if (iter == percentages.end())
@@ -827,7 +863,7 @@ void PreviewWidget::UpdateDragScreenState()
     }
 }
 
-qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
+float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
 {
     auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
     if (iter == percentages.end())

@@ -36,7 +36,6 @@ public:
     ~PreviewWidget();
     DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
-    float GetScale() const;
     RulerController* GetRulerController();
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
@@ -63,7 +62,7 @@ public slots:
     void SetActualScale();
 
 private slots:
-    void OnScaleChanged(qreal scale);
+    void OnScaleChanged(float scale);
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
@@ -99,21 +98,22 @@ private:
     void OnTransformStateChanged(bool inTransformState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
-    qreal GetScaleFromWheelEvent(int ticksCount) const;
-    qreal GetNextScale(qreal currentScale, int ticksCount) const;
-    qreal GetPreviousScale(qreal currentScale, int ticksCount) const;
+    float GetScaleFromWheelEvent(int ticksCount) const;
+    float GetNextScale(float currentScale, int ticksCount) const;
+    float GetPreviousScale(float currentScale, int ticksCount) const;
 
     void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void NotifySelectionChanged();
     bool CanDragScreen() const;
     void UpdateDragScreenState();
+    float GetScaleFromComboboxText() const;
 
     QPoint lastMousePos;
     QCursor lastCursor;
     QPointer<Document> document;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
-    QList<qreal> percentages;
+    QList<float> percentages;
 
     SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
