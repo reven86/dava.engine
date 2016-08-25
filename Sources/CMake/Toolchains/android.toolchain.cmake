@@ -191,6 +191,16 @@ include               ( GlobalVariables )
 
 find_package( PythonInterp   )
 
+# force stl features as default
+if ( NOT ANDROID_STL_FORCE_FEATURES )
+ set ( ANDROID_STL_FORCE_FEATURES true )
+endif ()
+
+# c++shared stl as default
+if ( NOT ANDROID_STL )
+ set ( ANDROID_STL c++_shared )
+endif ()
+    
 if( NOT ANDROID_TOOLCHAIN_NAME )
  if( ANDROID_ABI STREQUAL "x86" )
   set ( ANDROID_TOOLCHAIN_NAME x86-clang3.7 )
@@ -199,10 +209,6 @@ if( NOT ANDROID_TOOLCHAIN_NAME )
  else()
   set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.7 )
  endif()
-endif()
-
-if( NOT ANDROID_STL )
- set ( ANDROID_STL "c++_shared" )
 endif()
 
 if( DEFINED CMAKE_CROSSCOMPILING )
