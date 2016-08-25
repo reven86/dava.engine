@@ -2,8 +2,6 @@
 
 #include <QUrl>
 
-#include <cstdlib>
-
 namespace DAVA
 {
 namespace TArc
@@ -26,6 +24,11 @@ bool WindowKey::operator==(const WindowKey& other) const
 bool WindowKey::operator!=(const WindowKey& other) const
 {
     return !(*this == other);
+}
+
+DockPanelInfo::DockPanelInfo()
+    : actionPlacementInfo(CreateMenuPoint("View/Dock"))
+{
 }
 
 PanelKey::PanelKey(const QString& viewName_, const DockPanelInfo& info_)
@@ -68,6 +71,11 @@ ActionPlacementInfo::ActionPlacementInfo(const QUrl& url)
 void ActionPlacementInfo::AddPlacementPoint(const QUrl& url)
 {
     urls.emplace_back(url);
+}
+
+const Vector<QUrl>& ActionPlacementInfo::GetUrls() const
+{
+    return urls;
 }
 } // namespace TArc
 } // namespace DAVA

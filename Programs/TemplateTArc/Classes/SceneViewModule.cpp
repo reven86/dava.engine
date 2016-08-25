@@ -73,7 +73,6 @@ void SceneViewModule::SetupRenderWidget()
 
 void SceneViewModule::SetupActions()
 {
-    DAVA::TArc::UI& ui = GetUI();
     DAVA::TArc::ActionPlacementInfo info(DAVA::TArc::CreateMenuPoint("File"));
     info.AddPlacementPoint(DAVA::TArc::CreateToolbarPoint("FileToolbar"));
 
@@ -84,7 +83,8 @@ void SceneViewModule::SetupActions()
     {
         OpenScene();
     });
-    
+
+    DAVA::TArc::UI& ui = GetUI();
     ui.AddAction(windowKey, info, action);
 }
 
