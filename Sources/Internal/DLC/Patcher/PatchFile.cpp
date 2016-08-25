@@ -248,7 +248,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
             File* origFile = File::Create(origPath, File::OPEN | File::READ);
             if (nullptr != origFile)
             {
-                uint32 origSize = origFile->GetSize();
+                uint32 origSize = static_cast<uint32>(origFile->GetSize());
                 origData = new char8[origSize];
                 origFile->Read(origData, origSize);
 
@@ -260,7 +260,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
             File* newFile = File::Create(newPath, File::OPEN | File::READ);
             if (nullptr != newFile)
             {
-                uint32 newSize = newFile->GetSize();
+                uint32 newSize = static_cast<uint32>(newFile->GetSize());
                 newData = new char8[newSize];
                 newFile->Read(newData, newSize);
 
@@ -325,7 +325,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
                 patchFile->Write(davaPatchSignature, davaPatchSignatureSize);
 
                 // remember pos were patch size should be written
-                patchSizePos = patchFile->GetPos();
+                patchSizePos = static_cast<uint32>(patchFile->GetPos());
 
                 // write zero patch size. it should be re-writted later
                 patchFile->Write(&patchSize);
@@ -347,7 +347,7 @@ bool PatchFileWriter::SingleWrite(const FilePath& origBase, const FilePath& orig
                 }
 
                 // calculate patch size (without signature and patchSize fields)
-                patchSize = patchFile->GetPos() - patchSizePos - sizeof(patchSize);
+                patchSize = static_cast<uint32>(patchFile->GetPos()) - patchSizePos - sizeof(patchSize);
                 if (ret && patchSize > 0)
                 {
                     // seek to pos, where zero patch size was written
@@ -421,7 +421,7 @@ PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose, bool enab
     if (nullptr != patchFile)
     {
         char8 signature[davaPatchSignatureSize];
-        uint32 patchFileSize = patchFile->GetSize();
+        uint32 patchFileSize = static_cast<uint32>(patchFile->GetSize());
 
         while (true)
         {
@@ -461,7 +461,7 @@ PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose, bool enab
             }
 
             // remember current file pos
-            uint32 curPos = patchFile->GetPos();
+            uint32 curPos = static_cast<uint32>(patchFile->GetPos());
 
             // check if next patch position isn't out of file size
             if ((curPos + patchSize) > patchFileSize)
@@ -582,7 +582,7 @@ bool PatchFileReader::DoRead()
             int32 patchPos = patchPositions[curPatchIndex];
             if (patchFile->Seek(patchPos, File::SEEK_FROM_START) && curInfo.Read(patchFile))
             {
-                curBSDiffPos = patchFile->GetPos();
+                curBSDiffPos = static_cast<uint32>(patchFile->GetPos());
                 ret = true;
             }
             else
@@ -705,7 +705,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                 if (nullptr != checkFile)
                 {
                     uint32 checkCRC = CRC32::ForFile(newPath);
-                    uint32 checkSize = checkFile->GetSize();
+                    uint32 checkSize = static_cast<uint32>(checkFile->GetSize());
                     SafeRelease(checkFile);
 
                     // file exists, so check it size and CRC
@@ -731,7 +731,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                 }
                 else
                 {
-                    uint32 origSize = origFile->GetSize();
+                    uint32 origSize = static_cast<uint32>(origFile->GetSize());
                     origData = new (std::nothrow) char8[origSize];
 
                     if (nullptr != origData)
@@ -828,7 +828,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                         lastErrorDetails.expected.path = tmpNewPath;
                                         lastErrorDetails.expected.size = curInfo.newSize;
                                         lastErrorDetails.actual.path = "";
-                                        lastErrorDetails.actual.size = newFile->GetSize();
+                                        lastErrorDetails.actual.size = static_cast<uint32>(newFile->GetSize());
                                         lastError = ERROR_NEW_WRITE;
                                         ret = false;
                                         Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] Can't write data to file %s", newFile->GetFilename().GetAbsolutePathname().c_str());
@@ -871,7 +871,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 {
                                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't open just written file: %s", tmpNewPath.GetAbsolutePathname().c_str());
                                 }
-                                actualSizeFromFile = justWritten->GetSize();
+                                actualSizeFromFile = static_cast<uint32>(justWritten->GetSize());
                                 Vector<char> content(actualSizeFromFile);
                                 uint32 bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
                                 if (bytesRead != curInfo.newSize)

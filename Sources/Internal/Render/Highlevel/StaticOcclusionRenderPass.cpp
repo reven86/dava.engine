@@ -225,7 +225,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     auto pos = occlusionCamera->GetPosition();
     auto dir = occlusionCamera->GetDirection();
     auto folder = DAVA::Format("~doc:/occlusion/block-%03d", blockIndex);
-    FileSystem::Instance()->CreateDirectoryW(FilePath(folder), true);
+    FileSystem::Instance()->CreateDirectory(FilePath(folder), true);
     auto fileName = DAVA::Format("/[%d,%d,%d] from (%d,%d,%d).png",
                                  int32(dir.x), int32(dir.y), int32(dir.z), int32(pos.x), int32(pos.y), int32(pos.z));
     renderPassFileNames.insert({ syncObj, folder + fileName });

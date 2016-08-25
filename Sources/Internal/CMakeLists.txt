@@ -9,6 +9,7 @@ set( NAME_MODULE DavaFramework )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+set( EXTERNAL_MODULES           ${DAVA_MODULES_DIR}/TArc )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -17,8 +18,6 @@ set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared
                                     $ENV{DXSDK_DIR}/include 
                                     ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
 
-# temporal include override for android libpng
-set( INCLUDES_ANDROID               ${DAVA_THIRD_PARTY_ROOT_PATH}/include/android )
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 

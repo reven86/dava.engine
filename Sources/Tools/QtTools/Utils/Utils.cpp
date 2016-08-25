@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QProcess>
 #include <QDir>
+#include <QApplication>
 
 // Truncate the file extension.
 QString TruncateFileExtension(const QString& fileName, const QString& extension)
@@ -87,4 +88,28 @@ void ShowFileInExplorer(const QString& path)
     args << "/select," << QDir::toNativeSeparators(path);
     QProcess::startDetached("explorer", args);
 #endif //
+}
+
+void ConnectApplicationFocus()
+{
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
+    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
+                     {
+                         DAVA::Core* core = DAVA::Core::Instance();
+                         if (core == nullptr)
+                         {
+                             return;
+                         }
+                         if (state == Qt::ApplicationActive)
+                         {
+                             core->FocusReceived();
+                         }
+                         else
+                         {
+                             core->FocusLost();
+                         }
+                     });
 }

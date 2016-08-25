@@ -884,7 +884,7 @@ bool VariantType::Write(File* fp) const
     {
         DynamicMemoryFile* pF = DynamicMemoryFile::Create(File::WRITE | File::APPEND);
         (static_cast<const KeyedArchive*>(pointerValue))->Save(pF);
-        uint32 len = pF->GetSize();
+        uint32 len = static_cast<uint32>(pF->GetSize());
         written = fp->Write(&len, 4);
         if (written != 4)
         {

@@ -1,7 +1,8 @@
 #include "Commands2/SoundComponentEditCommands.h"
+#include "Commands2/RECommandIDs.h"
 
 AddSoundEventCommand::AddSoundEventCommand(DAVA::Entity* _entity, DAVA::SoundEvent* _event)
-    : Command2(CMDID_SOUND_ADD_EVENT, "Add Sound Event")
+    : RECommand(CMDID_SOUND_ADD_EVENT, "Add Sound Event")
 {
     DVASSERT(_entity);
     DVASSERT(_event);
@@ -37,7 +38,7 @@ DAVA::Entity* AddSoundEventCommand::GetEntity() const
 }
 
 RemoveSoundEventCommand::RemoveSoundEventCommand(DAVA::Entity* _entity, DAVA::SoundEvent* _event)
-    : Command2(CMDID_SOUND_REMOVE_EVENT, "Remove Sound Event")
+    : RECommand(CMDID_SOUND_REMOVE_EVENT, "Remove Sound Event")
 {
     DVASSERT(_entity);
     DVASSERT(_event);
@@ -73,7 +74,7 @@ DAVA::Entity* RemoveSoundEventCommand::GetEntity() const
 }
 
 SetSoundEventFlagsCommand::SetSoundEventFlagsCommand(DAVA::Entity* _entity, DAVA::uint32 eventIndex, DAVA::uint32 flags)
-    : Command2(CMDID_SOUND_REMOVE_EVENT, "Set Sound Event Flags")
+    : RECommand(CMDID_SOUND_REMOVE_EVENT, "Set Sound Event Flags")
     ,
     index(eventIndex)
     ,

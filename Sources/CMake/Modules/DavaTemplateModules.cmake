@@ -44,7 +44,10 @@ STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
 #
 FIND_SYSTEM_LIBRARY                   
-FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
+#
+FIND_PACKAGE
+FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -54,6 +57,9 @@ BINARY_WIN32_DIR_RELWITHDEB
 BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
+#
+EXCLUDE_FROM_ALL
+#
 )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
@@ -90,7 +96,7 @@ macro( setup_main_module )
     get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
 
     list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1)
+    if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
         set( INIT true )
     else()
         if( NAME_MODULE )
@@ -148,7 +154,12 @@ macro( setup_main_module )
                     list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
                 endif()
             endif()
-        endforeach()        
+        endforeach()
+
+        #"FIND PACKAGE"
+        foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+            find_package( ${NAME} )
+        endforeach()
 
         #"ERASE FILES"
         foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )
@@ -196,6 +207,8 @@ macro( setup_main_module )
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
                      )
+
+
         list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
         list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
@@ -248,11 +261,11 @@ macro( setup_main_module )
 
         #"INCLUDES_DIR"
         load_property( PROPERTY_LIST INCLUDES )
-        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
-            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
-        endif()        
         if( INCLUDES )
             include_directories( "${INCLUDES}" )  
+        endif()
+        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
+            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
@@ -290,6 +303,12 @@ macro( setup_main_module )
 
             endif()
 
+            file_tree_check( "${CMAKE_CURRENT_LIST_DIR}" )
+
+            if( TARGET_FILE_TREE_FOUND )
+                add_dependencies(  ${NAME_MODULE} FILE_TREE_${NAME_MODULE} )
+            endif()
+
             if( DEFINITIONS_PRIVATE )
                 add_definitions( ${DEFINITIONS_PRIVATE} )
             endif()
@@ -298,14 +317,14 @@ macro( setup_main_module )
                 add_definitions( ${DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}} )
             endif()
 
+            if( INCLUDES_PRIVATE )
+                include_directories( ${INCLUDES_PRIVATE} ) 
+            endif() 
 
             if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
             endif() 
 
-            if( INCLUDES_PRIVATE )
-                include_directories( ${INCLUDES_PRIVATE} ) 
-            endif() 
 
             if( WIN32 )
                 grab_libs(LIST_SHARED_LIBRARIES_DEBUG   "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}"   EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)

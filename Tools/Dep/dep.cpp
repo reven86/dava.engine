@@ -1,14 +1,21 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <set>
 #include <vector>
 #include <cstdint>
+#include <sstream>
+#include <list>
+#include <algorithm>
+#include "tinydir.h"
 
 #ifdef _MSC_VER
-#include <direct.h>
-#else
-#include <unistd.h>
+#include <filesystem>
+namespace fs = std::tr2::sys;
 #endif
 
 static const uint32_t crc32_tab[256] =
@@ -79,284 +86,524 @@ static const uint32_t crc32_tab[256] =
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
+void echo_command(int argc, const char** argv, std::streambuf* coutbuf)
+{
+    if (argc <= 2)
+    {
+        throw std::runtime_error("nothing to echo");
+    }
+
+    std::string aprefix;
+    std::string rprefix;
+    std::ofstream output;
+    std::set<std::string> files;
+
+    // collect all files and options
+    for (int i = 2; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-ap" && (i + 1) < argc)
+        {
+            ++i;
+            aprefix = argv[i];
+        }
+        else if (arg == "-rp" && (i + 1) < argc)
+        {
+            ++i;
+            rprefix = argv[i];
+        }
+        else if (arg == "-o" && (i + 1) < argc)
+        {
+            ++i;
+            std::string output_name = argv[i];
+            output.open(output_name);
+            if (!output)
+            {
+                std::string err = std::strerror(errno);
+                throw std::runtime_error("can't open output file: " + output_name + " cause: " + err);
+            }
+        }
+        else
+        {
+            files.insert(arg);
+        }
+    }
+
+    if (output.is_open())
+    {
+        std::cout.rdbuf(output.rdbuf());
+    }
+    else
+    {
+        // write to console
+    }
+
+    // process files
+    for (auto& path : files)
+    {
+        std::ifstream file(path);
+        if (file)
+        {
+            std::string name = path;
+
+            // should remove prefix?
+            if (!rprefix.empty())
+            {
+                std::string::size_type pos = name.find(rprefix);
+                if (0 == pos)
+                {
+                    name.erase(0, rprefix.size());
+                }
+            }
+
+            std::cout << aprefix << name << '\n';
+        }
+    }
+
+    if (output.is_open())
+    {
+        output.flush();
+        std::cout.rdbuf(coutbuf);
+        output.close();
+    }
+}
+
+// Wildcard matching algorithms
+// http://xoomer.virgilio.it/acantato/dev/wildcard/wildmatch.html
+// Non recursive final version
+bool szWildMatch8(const char* pat, const char* str)
+{
+    const char* s;
+    const char* p;
+    bool star = false;
+
+loopStart:
+    for (s = str, p = pat; *s; ++s, ++p)
+    {
+        switch (*p)
+        {
+        case '?':
+            if (*s == '.')
+                goto starCheck;
+            break;
+        case '*':
+            star = true;
+            str = s, pat = p;
+            if (!*++pat)
+                return true;
+            goto loopStart;
+        default:
+            if (*s != *p)
+                goto starCheck;
+            break;
+        }
+    }
+    if (*p == '*')
+        ++p;
+    return (!*p);
+
+starCheck:
+    if (!star)
+        return false;
+    str++;
+    goto loopStart;
+}
+
+void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
+{
+    if (argc <= 2)
+    {
+        throw std::runtime_error("nothing to echo");
+    }
+
+    std::ofstream output;
+    std::set<std::string> patterns;
+
+    // collect all files and options
+    for (int i = 2; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-o" && (i + 1) < argc)
+        {
+            ++i;
+            std::string output_name = argv[i];
+            output.open(output_name);
+            if (!output)
+            {
+                std::string err = std::strerror(errno);
+                throw std::runtime_error("can't open output file: " + output_name + " cause: " + err);
+            }
+        }
+        else if (arg == "--")
+        {
+            // don't parse args after --
+            break;
+        }
+        else
+        {
+            patterns.insert(arg);
+        }
+    }
+
+    if (output.is_open())
+    {
+        std::cout.rdbuf(output.rdbuf());
+    }
+    else
+    {
+        // write to console
+    }
+
+    std::list<std::string> files;
+
+    for (auto& pat : patterns)
+    {
+        if ((pat.find('?') != std::string::npos) || (pat.find('*') != std::string::npos))
+        {
+            std::string directory = "./";
+            std::string mask = pat;
+
+            size_t d = pat.find_last_of("\\/");
+            if (d != std::string::npos)
+            {
+                directory = mask.substr(0, d);
+                mask = mask.substr(d + 1);
+            }
+
+            tinydir_dir tiny_dir;
+            tinydir_open(&tiny_dir, directory.c_str());
+
+            while (tiny_dir.has_next)
+            {
+                tinydir_file tiny_file;
+                tinydir_readfile(&tiny_dir, &tiny_file);
+
+                if (!tiny_file.is_dir)
+                {
+                    if (szWildMatch8(mask.c_str(), tiny_file.name))
+                    {
+                        files.push_back(tiny_file.path);
+                    }
+                }
+
+                tinydir_next(&tiny_dir);
+            }
+        }
+        else
+        {
+            files.push_back(pat);
+        }
+    }
+
+    for (auto& path : files)
+    {
+        std::ifstream file;
+
+        file.open(path, std::ios::ate);
+        if (file)
+        {
+            if (file.tellg() > 0)
+            {
+                file.seekg(0, std::ios::beg);
+                std::cout << file.rdbuf();
+            }
+
+            file.close();
+        }
+    }
+
+    if (output.is_open())
+    {
+        output.flush();
+        std::cout.rdbuf(coutbuf);
+        output.close();
+    }
+}
+
+uint32_t calculate_crc32(const std::vector<char>& buff, std::streamsize sz)
+{
+    uint32_t crc32 = 0xffffffff;
+    for (auto i = 0u; i < sz; i++)
+    {
+        crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ buff[i]) & 0xff];
+    }
+    crc32 ^= 0xffffffff;
+    return crc32;
+}
+
+std::string calculate_crc32(std::ifstream& file)
+{
+    using namespace std;
+
+    streamsize file_size = file.tellg();
+    vector<char> buff(static_cast<size_t>(file_size));
+
+    file.seekg(0, ios::beg);
+    file.read(buff.data(), buff.size());
+    streamsize sz = file.gcount();
+    if (sz != file_size)
+    {
+        throw runtime_error("can't read file in memory");
+    }
+
+    uint32_t crc32 = calculate_crc32(buff, sz);
+
+    std::stringstream ss;
+    ss << uppercase << hex << crc32;
+
+    return ss.str();
+}
+
+void create_hash_file(int argc, const char** argv, std::streambuf* coutbuf)
+{
+    using namespace std;
+    if (argc <= 2)
+    {
+        throw runtime_error("no filename");
+    }
+
+    ofstream output;
+    string path;
+    ifstream file;
+
+    for (int i = 2; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg == "-o" && (i + 1) < argc)
+        {
+            i++;
+            output.open(argv[i]);
+        }
+        else
+        {
+            if (path.empty())
+            {
+                path = arg;
+            }
+        }
+    }
+
+    if (output.is_open())
+    {
+        cout.rdbuf(output.rdbuf());
+    }
+
+    file.open(path, ios::binary | ios::ate);
+    if (file)
+    {
+        cout << calculate_crc32(file) << '\n';
+    }
+    else
+    {
+        throw runtime_error("can't open file to calculate hash: " + path);
+    }
+
+    if (output.is_open())
+    {
+        cout.rdbuf(coutbuf);
+        output.close();
+    }
+}
+
+void generate_sql(int argc, const char** argv, std::streambuf* coutbuf)
+{
+    using namespace std;
+    if (argc <= 3)
+    {
+        throw std::runtime_error("no params");
+    }
+
+    vector<string> packs;
+    string listpath;
+    string packpath;
+    bool is_gpu = false;
+    ofstream output;
+
+    for (int i = 2; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg == "-l" && (i + 1) < argc)
+        {
+            ++i;
+            listpath = argv[i];
+        }
+        else if (arg == "-o" && (i + 1) < argc)
+        {
+            ++i;
+            output.open(argv[i]);
+        }
+        else if (arg == "-g" && (i + 1) < argc)
+        {
+            ++i;
+            string next_arg = argv[i];
+            is_gpu = (next_arg == "true");
+        }
+        else
+        {
+            if (packpath.empty())
+            {
+                packpath = arg;
+            }
+            else
+            {
+                packs.push_back(arg);
+            }
+        }
+    }
+
+    if (output.is_open())
+    {
+        cout.rdbuf(output.rdbuf());
+    }
+
+    if (packs.size() > 0)
+    {
+        string pack = packs[0];
+
+        cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL, dependency TEXT NOT NULL);" << '\n';
+        cout << "CREATE TABLE IF NOT EXISTS files (path TEXT PRIMARY KEY, pack TEXT NOT NULL, hash TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
+
+        if (listpath.empty())
+        {
+            listpath = pack + ".list";
+        }
+
+        ifstream packfile(packpath, ios::ate | ios::binary);
+
+        streamsize size = packfile.tellg();
+        if (size == -1)
+        {
+            throw runtime_error("can't open file: " + packpath);
+        }
+
+        string hash = calculate_crc32(packfile);
+
+        stringstream dependency;
+        for (size_t i = 1; i < packs.size(); ++i)
+        {
+            const string& pack_name = packs[i];
+            if (pack_name.find(' ') != string::npos)
+            {
+                throw runtime_error("pack name with SPACE char: " + pack_name);
+            }
+            dependency << pack_name << ' ';
+        }
+
+        cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "', '" << size << "', '" << dependency.str() << "');" << '\n';
+
+        ifstream listfile(listpath);
+        if (listfile)
+        {
+            string fileName;
+            while (getline(listfile, fileName))
+            {
+                ifstream file(fileName, ios::binary | ios::ate);
+                if (!file)
+                {
+                    throw runtime_error("can't open file to calculate hash: " + fileName);
+                }
+                vector<char> file_content(static_cast<size_t>(file.tellg()));
+                file.seekg(0, ios::beg);
+                file.read(file_content.data(), file_content.size());
+                uint32_t file_hash = calculate_crc32(file_content, file_content.size());
+                cout << "INSERT INTO files VALUES('" << fileName << "', '" << pack << "', '" << hex << file_hash << "');" << '\n';
+            }
+
+            listfile.close();
+        }
+    }
+
+    if (output.is_open())
+    {
+        cout.rdbuf(coutbuf);
+        output.close();
+    }
+}
+
+void print_help()
+{
+    std::cerr << '\n'
+              << "Usage: dep <command> [<args>]" << '\n'
+              << '\n'
+              << "Commands:" << '\n'
+              << "    echo [options] [<file>...] - Try to open each file and if success prints it name" << '\n'
+              << "        -ap <prefix>           - add prefix to printed name" << '\n'
+              << "        -rp <prefix>           - remove prefix from printed name" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
+              << "    merge [<file_wildcard>...] - Try to open files that are matched wildcard and if success prints it content" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
+              << "    hash <file> - Calculate CRC32 for file" << '\n'
+              << "        -o <output>            - print into output file" << '\n'
+              << '\n'
+              << "    sql [options] <packpath> <packname> [dependencies...]" << '\n'
+              << "        -l <file>           - read file for pack content" << '\n'
+              << "        -o <output>         - print into output file" << '\n'
+              << "        -g {true|false}     - is gpu pack(default false)" << '\n';
+}
+
 int main(int argc, const char* argv[])
 {
     using namespace std;
 
-    bool cmdok = false;
+    streambuf* coutbuf = cout.rdbuf();
 
-    if (argc > 1)
+    try
     {
-        const string cmd = argv[1];
-
-        streambuf* coutbuf = cout.rdbuf();
-
-        if (cmd == "help" || cmd == "--help")
+        if (argc > 1)
         {
-            cmdok = true;
-            cout << '\n';
-            cout << "Usage: dep <command> [<args>]" << '\n';
-            cout << '\n';
-            cout << "Commands:" << '\n';
-            cout << "    echo [options] [<file>...] - Try to open each file and if success prints it name" << '\n';
-            cout << "        -p <prefix>            - add prefix to printed name" << '\n';
-            cout << "        -o <output>            - print into output file" << '\n';
-            cout << '\n';
-            cout << "    hash <file> - Calculate CRC32 for file" << '\n';
-            cout << "        -o <output>            - print into output file" << '\n';
-            cout << '\n';
-            cout << "    sql [options] <packname> [dependencies...]" << '\n';
-            cout << "        -l <file>           - read file for pack content" << '\n';
-            cout << "        -h <file>           - read file for pack hash" << '\n';
-            cout << "        -o <output>         - print into output file" << '\n';
-            cout << "        -g {true|false}     - is gpu pack(default false)" << '\n';
-        }
-        else if (cmd == "echo")
-        {
-            cmdok = true;
-            if (argc > 2)
+            const string cmd = argv[1];
+
+            if (cmd == "help" || cmd == "--help")
             {
-                string prefix;
-                ofstream output;
-                set<string> files;
-
-                // collect all files and options
-                for (int i = 2; i < argc; ++i)
-                {
-                    string arg = argv[i];
-                    if (arg == "-p" && (i + 1) < argc)
-                    {
-                        ++i;
-                        prefix = argv[i];
-                        prefix.append("/");
-                    }
-                    if (arg == "-o" && (i + 1) < argc)
-                    {
-                        ++i;
-                        output.open(argv[i]);
-                    }
-                    else
-                    {
-                        files.insert(arg);
-                    }
-                }
-
-                if (output.is_open())
-                {
-                    cout.rdbuf(output.rdbuf());
-                }
-
-                // process files
-                for (auto& path : files)
-                {
-                    ifstream file(path);
-                    if (file)
-                    {
-                        cout << prefix << path << '\n';
-                        file.close();
-                    }
-                }
-
-                if (output.is_open())
-                {
-                    cout.rdbuf(coutbuf);
-                    output.close();
-                }
+                print_help();
+            }
+            else if (cmd == "echo")
+            {
+                echo_command(argc, argv, coutbuf);
+            }
+            else if (cmd == "merge")
+            {
+                merge_command(argc, argv, coutbuf);
+            }
+            else if (cmd == "hash")
+            {
+                create_hash_file(argc, argv, coutbuf);
+            }
+            else if (cmd == "sql")
+            {
+                generate_sql(argc, argv, coutbuf);
+            }
+            else
+            {
+                throw std::runtime_error("unknown command: " + cmd);
             }
         }
-        else if (cmd == "hash")
+        else
         {
-            ofstream output;
-            uint32_t crc32 = 0xffffffff;
-
-            cmdok = true;
-            if (argc > 2)
-            {
-                string path;
-                ifstream file;
-
-                for (int i = 2; i < argc; ++i)
-                {
-                    string arg = argv[i];
-                    if (arg == "-o" && (i + 1) < argc)
-                    {
-                        i++;
-                        output.open(argv[i]);
-                    }
-                    else
-                    {
-                        if (path.empty())
-                        {
-                            path = arg;
-                        }
-                    }
-                }
-
-                if (output.is_open())
-                {
-                    cout.rdbuf(output.rdbuf());
-                }
-
-                file.open(path, ios::binary);
-                if (file)
-                {
-                    char buff[2048];
-                    for (;;)
-                    {
-                        file.read(buff, sizeof(buff));
-                        streamsize sz = file.gcount();
-                        if (sz > 0)
-                        {
-                            for (int i = 0; i < sz; i++)
-                            {
-                                crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ buff[i]) & 0xff];
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    crc32 ^= 0xffffffff;
-                    file.close();
-                }
-            }
-
-            cout << uppercase << hex << crc32 << '\n';
-
-            if (output.is_open())
-            {
-                cout.rdbuf(coutbuf);
-                output.close();
-            }
-        }
-        else if (cmd == "sql")
-        {
-            cmdok = true;
-            if (argc > 2)
-            {
-                vector<string> packs;
-                string listpath;
-                string hashpath;
-                bool is_gpu = false;
-                ofstream output;
-
-                for (int i = 2; i < argc; ++i)
-                {
-                    string arg = argv[i];
-                    if (arg == "-l" && (i + 1) < argc)
-                    {
-                        ++i;
-                        listpath = argv[i];
-                    }
-                    else if (arg == "-h" && (i + 1) < argc)
-                    {
-                        ++i;
-                        hashpath = argv[i];
-                    }
-                    else if (arg == "-o" && (i + 1) < argc)
-                    {
-                        ++i;
-                        output.open(argv[i]);
-                    }
-                    else if (arg == "-g" && (i + 1) < argc)
-                    {
-                        ++i;
-                        string next_arg = argv[i];
-                        is_gpu = (next_arg == "true");
-                    }
-                    else
-                    {
-                        packs.push_back(arg);
-                    }
-                }
-
-                if (output.is_open())
-                {
-                    cout.rdbuf(output.rdbuf());
-                }
-
-                if (packs.size() > 0)
-                {
-                    string pack = packs[0];
-
-                    cout << "CREATE TABLE IF NOT EXISTS packs (name TEXT PRIMARY KEY NOT NULL, hash TEXT NOT NULL, is_gpu INTEGER NOT NULL, size INTEGER NOT NULL);" << '\n';
-                    cout << "CREATE TABLE IF NOT EXISTS dependency (key INTEGER PRIMARY KEY, pack TEXT NOT NULL, depends TEXT NOT NULL, FOREIGN KEY(depends) REFERENCES packs(name));" << '\n';
-                    cout << "CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, pack TEXT NOT NULL, FOREIGN KEY(pack) REFERENCES packs(name));" << '\n';
-
-                    if (hashpath.empty())
-                    {
-                        hashpath = pack + ".hash";
-                    }
-
-                    if (listpath.empty())
-                    {
-                        listpath = pack + ".list";
-                    }
-
-                    string hash;
-                    ifstream hashfile(hashpath);
-                    if (hashfile)
-                    {
-                        getline(hashfile, hash);
-                        hashfile.close();
-                    }
-
-                    string packfile = hashpath;
-                    packfile.replace(packfile.find(".hash"), 5, ".pack");
-
-                    streamsize size = ifstream(packfile, ios_base::ate | ios_base::binary).tellg();
-                    if (size == -1)
-                    {
-                        cerr << "can't open file: " << packfile << '\n';
-                        char cwd[512] = { 0 };
-                        getcwd(cwd, sizeof(cwd));
-                        cerr << "cwd: " << cwd << '\n';
-                        cerr << "params: " << '\n';
-                        for (int i = 0; i < argc; ++i)
-                        {
-                            cerr << argv[i] << ' ';
-                        }
-                        exit(EXIT_FAILURE);
-                    }
-
-                    cout << "INSERT INTO packs VALUES('" << pack << "', '" << hash << "', '" << is_gpu << "', '" << size << "');" << '\n';
-
-                    for (size_t i = 1; i < packs.size(); ++i)
-                    {
-                        cout << "INSERT INTO dependency VALUES(NULL, '" << pack << "', '" << packs[i] << "');" << '\n';
-                    }
-
-                    ifstream listfile(listpath);
-                    if (listfile)
-                    {
-                        string fileName;
-                        while (getline(listfile, fileName))
-                        {
-                            cout << "INSERT INTO files VALUES('" << fileName << "', '" << pack << "');" << '\n';
-                        }
-
-                        listfile.close();
-                    }
-                }
-
-                if (output.is_open())
-                {
-                    cout.rdbuf(coutbuf);
-                    output.close();
-                }
-            }
+            throw runtime_error("no command");
         }
     }
-
-    int ret = 0;
-    if (!cmdok)
+    catch (exception& ex)
     {
-        ret = 1;
-        cerr << "Error: unknown command" << '\n';
-        cout << "Use --help for help" << '\n';
+        cerr << ex.what() << '\n';
+        cerr << "input params:\n";
+        for (int i = 0; i < argc; ++i)
+        {
+            cerr << argv[i] << ' ';
+        }
+        cerr << '\n';
+#ifdef _MSC_VER
+        cerr << "current pwd: " << fs::current_path<fs::path>() << '\n';
+#endif
+        cerr << "Use --help for help" << '\n';
+
+        return EXIT_FAILURE;
     }
 
-    return ret;
+    // restore initial buffer (in any case)
+    std::cout.rdbuf(coutbuf);
+
+    return EXIT_SUCCESS;
 }

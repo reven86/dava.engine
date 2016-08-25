@@ -6,7 +6,7 @@
 
 ModifyCustomColorsCommand::ModifyCustomColorsCommand(DAVA::Image* originalImage, DAVA::Image* currentImage, CustomColorsProxy* customColorsProxy_,
                                                      const DAVA::Rect& updatedRect_, bool shouldClear)
-    : Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
+    : RECommand(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
     , shouldClearTexture(shouldClear)
 {
     const DAVA::Vector2 topLeft(floorf(updatedRect_.x), floorf(updatedRect_.y));
@@ -60,9 +60,4 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image* image, bool disableBlend
     DAVA::RenderSystem2D::Instance()->EndRenderTargetPass();
 
     customColorsProxy->UpdateRect(updatedRect);
-}
-
-DAVA::Entity* ModifyCustomColorsCommand::GetEntity() const
-{
-    return nullptr;
 }

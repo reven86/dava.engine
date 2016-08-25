@@ -1,7 +1,8 @@
 #include "CloneLastBatchCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 CloneLastBatchCommand::CloneLastBatchCommand(DAVA::RenderObject* ro)
-    : Command2(CMDID_CLONE_LAST_BATCH, "Clone Last Batch")
+    : RECommand(CMDID_CLONE_LAST_BATCH, "Clone Last Batch")
 {
     DVASSERT(ro);
     renderObject = SafeRetain(ro);
@@ -73,9 +74,4 @@ void CloneLastBatchCommand::Undo()
             renderObject->RemoveRenderBatch(i);
         }
     }
-}
-
-DAVA::Entity* CloneLastBatchCommand::GetEntity() const
-{
-    return NULL;
 }

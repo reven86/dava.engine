@@ -11,12 +11,12 @@ class PacksDBData;
 class PacksDB final
 {
 public:
-    PacksDB(const FilePath& filePath);
+    PacksDB(const FilePath& filePath, bool dbInMemory);
     ~PacksDB();
 
     const String& FindPack(const FilePath& relativeFilePath) const;
 
-    void InitializePacks(Vector<PackManager::Pack>& out) const;
+    void InitializePacks(Vector<IPackManager::Pack>& out) const;
 
 private:
     std::unique_ptr<PacksDBData> data;
