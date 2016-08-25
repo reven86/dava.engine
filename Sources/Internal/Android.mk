@@ -238,8 +238,10 @@ DV_LOCAL_CFLAGS += -D__DAVAENGINE_PROFILE__
 endif
 endif
 
+DV_LOCAL_CFLAGS += -fno-standalone-debug
+
 # set exported build flags
-DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
+DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS) -fno-standalone-debug
 
 # set exported used libs
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
