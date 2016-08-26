@@ -11,6 +11,7 @@
 class QApplication;
 namespace DAVA
 {
+class RenderWidget;
 namespace Private
 {
 class PlatformCore final
@@ -28,9 +29,7 @@ public:
 
     QApplication* GetApplication();
     NativeService* GetNativeService();
-
-private:
-    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
+    RenderWidget* GetRenderWidget();
 
 private:
     EngineBackend* engineBackend = nullptr;

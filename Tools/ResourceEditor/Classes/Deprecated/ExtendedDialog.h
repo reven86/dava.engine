@@ -11,7 +11,7 @@ protected:
 
 public:
     ExtendedDialog();
-    virtual void Show();
+    void Show();
     virtual void Close();
 
     virtual void OnActive();
@@ -23,7 +23,7 @@ protected:
     virtual void UpdateSize();
 
     virtual const DAVA::Rect GetDialogRect() const;
-    DraggableDialog* draggableDialog;
+    DraggableDialog* draggableDialog = nullptr;
 
 private:
     bool isShown = false;
