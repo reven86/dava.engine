@@ -43,9 +43,6 @@ struct InitParam;
 
 DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
 
-void InitializeRenderThreadDX11(uint32 frameCount);
-void UninitializeRenderThreadDX11();
-
 extern ID3D11Device* _D3D11_Device;
 extern IDXGISwapChain* _D3D11_SwapChain;
 extern ID3D11Texture2D* _D3D11_SwapChainBuffer;

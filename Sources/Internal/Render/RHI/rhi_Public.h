@@ -25,7 +25,6 @@ InitParam
     uint32 threadedRenderEnabled : 1;
     uint32 vsyncEnabled : 1;
     uint32 threadedRenderFrameCount;
-    DAVA::Mutex* FrameCommandExecutionSync;
 
     uint32 maxIndexBufferCount;
     uint32 maxVertexBufferCount;
@@ -55,7 +54,6 @@ InitParam
         , threadedRenderEnabled(false)
         , vsyncEnabled(true)
         , threadedRenderFrameCount(2)
-        , FrameCommandExecutionSync(nullptr)
         , maxIndexBufferCount(0)
         , maxVertexBufferCount(0)
         , maxConstBufferCount(0)

@@ -521,6 +521,9 @@ void gles2_Initialize(const InitParam& param)
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
+
+    if (param.threadedRenderEnabled)
+        DispatchPlatform::ReleaseContext();
 }
 
 } // namespace rhi

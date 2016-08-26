@@ -1530,7 +1530,7 @@ void SetupDispatch(Dispatch* dispatch)
     DispatchPlatform::RejectFrame = _DX9_RejectFrame;
     DispatchPlatform::PresntBuffer = _DX9_PresentBuffer;
     DispatchPlatform::ResetBlock = _DX9_ResetBlock;
-    DispatchPlatform::InvalidateFrameCache = _DX9_InvalidateFrameCache;
+    DispatchPlatform::BeginFrame = _DX9_InvalidateFrameCache;
 }
 }
 

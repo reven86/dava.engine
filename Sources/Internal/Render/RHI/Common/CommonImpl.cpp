@@ -11,7 +11,8 @@ void (*Suspend)() = nullptr;
 
 void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command) = nullptr; //called from render thread
 
-void (*InvalidateFrameCache)() = nullptr;
+void (*BeginFrame)() = nullptr;
+void (*FinishFrame)() = nullptr;
 void (*ExecuteFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
 void (*RejectFrame)(CommonImpl::Frame&&) = nullptr; //should also handle command buffer sync here
 

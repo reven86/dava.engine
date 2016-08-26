@@ -1,16 +1,17 @@
 #include "rhi_DX11.h"
-    #include "../Common/rhi_Impl.h"
+#include "../Common/rhi_Impl.h"
     
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Core/Core.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
-    #include "_dx11.h"
-    #include "../rhi_Type.h"
-    #include "../Common/dbg_StatSet.h"
+#include "_dx11.h"
+#include "../rhi_Type.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include <vector>
+#include <vector>
+#include "../Common/CommonImpl.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 	#include "uap_dx11.h"
@@ -106,18 +107,16 @@ _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Uninitialize()
+static void dx11_Uninitialize()
 {
     QueryBufferDX11::ReleaseQueryPool();
-    UninitializeRenderThreadDX11();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Reset(const ResetParam& param)
+static void dx11_Reset(const ResetParam& param)
 {
+    //TODO: Schedule reset on render thread
     if (_DX11_InitParam.fullScreen != param.fullScreen)
     {
     }
@@ -133,11 +132,11 @@ dx11_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_SuspendRendering()
+static void dx11_SuspendRendering()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    CommandBufferDX11::DiscardAll();
+    //HACK, if seen on review please tell me
+    //CommandBufferDX11::DiscardAll();
 
     IDXGIDevice3* dxgiDevice3 = NULL;
 
@@ -153,32 +152,16 @@ dx11_SuspendRendering()
 #endif
 }
 
-//------------------------------------------------------------------------------
-
-static void
-dx11_ResumeRendering()
+#if !defined(__DAVAENGINE_WIN_UAP__)
+void InitDeviceAndSwapChain()
 {
-}
-
-//------------------------------------------------------------------------------
-
-void _InitDX11()
-{
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-    init_device_and_swapchain_uap(_DX11_InitParam.window);
-    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
-    get_device_description(_DeviceCapsDX11.deviceDescription);
-
-#else
-
     HRESULT hr;
     DWORD flags = 0;
-    #if RHI_DX11__FORCE_9X_PROFILE
+#if RHI_DX11__FORCE_9X_PROFILE
     D3D_FEATURE_LEVEL feature[] = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
-    #else
+#else
     D3D_FEATURE_LEVEL feature[] = { /*D3D_FEATURE_LEVEL_11_1, */ D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-    #endif
+#endif
     DXGI_SWAP_CHAIN_DESC swapchain_desc = { 0 };
     IDXGIAdapter* defAdapter = NULL;
 
@@ -233,10 +216,10 @@ void _InitDX11()
     }
 
 
-    #if 0
+#if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
-    #endif
+#endif
 
     swapchain_desc.BufferDesc.Width = _DX11_InitParam.width;
     swapchain_desc.BufferDesc.Height = _DX11_InitParam.height;
@@ -322,12 +305,42 @@ void _InitDX11()
         hr = _D3D11_Device->CreateTexture2D(&ds_desc, 0, &_D3D11_DepthStencilBuffer);
         hr = _D3D11_Device->CreateDepthStencilView(_D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView);
     }
-
+}
 #endif
+
+void InitCaps()
+{
+    _DeviceCapsDX11.is32BitIndicesSupported = true;
+    _DeviceCapsDX11.isFramebufferFetchSupported = true;
+    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
+    _DeviceCapsDX11.isUpperLeftRTOrigin = true;
+    _DeviceCapsDX11.isZeroBaseClipRange = true;
+    _DeviceCapsDX11.isCenterPixelMapping = false;
+    _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    _DeviceCapsDX11.maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
+}
+
+//------------------------------------------------------------------------------
+
+void dx11_InitContext()
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    init_device_and_swapchain_uap(_DX11_InitParam.window);
+    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
+    get_device_description(_DeviceCapsDX11.deviceDescription);
+#else
+    InitDeviceAndSwapChain();    
+#endif
+
+    InitCaps();
 
     #if !RHI_DX11__USE_DEFERRED_CONTEXTS
     ConstBufferDX11::InitializeRingBuffer(_DX11_InitParam.shaderConstRingBufferSize);
     #endif
+}
+
+void dx11_CheckSurface()
+{
 }
 
 //------------------------------------------------------------------------------
@@ -335,7 +348,6 @@ void _InitDX11()
 void dx11_Initialize(const InitParam& param)
 {
     _DX11_InitParam = param;
-    InitializeRenderThreadDX11((param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0);
 
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
@@ -355,6 +367,10 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
+
+    DispatchPlatform::InitContext = &dx11_InitContext;
+    DispatchPlatform::CheckSurface = &dx11_CheckSurface;
+    DispatchPlatform::Suspend = &dx11_SuspendRendering;
 
     SetDispatchTable(DispatchDX11);
 
@@ -379,15 +395,6 @@ void dx11_Initialize(const InitParam& param)
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
-
-    _DeviceCapsDX11.is32BitIndicesSupported = true;
-    _DeviceCapsDX11.isFramebufferFetchSupported = true;
-    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
-    _DeviceCapsDX11.isUpperLeftRTOrigin = true;
-    _DeviceCapsDX11.isZeroBaseClipRange = true;
-    _DeviceCapsDX11.isCenterPixelMapping = false;
-    _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
-    _DeviceCapsDX11.maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 }
 
 //==============================================================================

@@ -569,7 +569,7 @@ namespace RenderPass
 Handle Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     Handle res = (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
-    FrameLoop::AddPass(res, passDesc.priority);
+    FrameLoop::AddPass(res);
     return res;
 }
 

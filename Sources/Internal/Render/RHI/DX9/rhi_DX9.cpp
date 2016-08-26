@@ -80,8 +80,7 @@ dx9_TextureFormatSupported(TextureFormat format)
 
 //------------------------------------------------------------------------------
 
-static bool
-_IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
+static bool IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -111,16 +110,14 @@ _IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_Uninitialize()
+static void dx9_Uninitialize()
 {
     QueryBufferDX9::ReleaseQueryPool();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_Reset(const ResetParam& param)
+static void dx9_Reset(const ResetParam& param)
 {
     UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
     bool paramsChanged = false;
@@ -146,8 +143,7 @@ dx9_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static bool
-dx9_NeedRestoreResources()
+static bool dx9_NeedRestoreResources()
 {
     uint32 pendingTextures = TextureDX9::NeedRestoreCount();
     uint32 pendingVertexBuffers = VertexBufferDX9::NeedRestoreCount();
@@ -204,7 +200,7 @@ void dx9_InitContext()
 
                 if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
                 {
-                    if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
+                    if (IsValidIntelCardDX9(info.VendorId, info.DeviceId))
                     {
                         vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
                     }
@@ -223,7 +219,7 @@ void dx9_InitContext()
         {
             Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
 
-            if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
+            if (IsValidIntelCardDX9(info.VendorId, info.DeviceId))
                 vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
         }
 
@@ -347,12 +343,6 @@ void dx9_InitContext()
     }
 }
 
-void dx9_AcquireContext()
-{
-}
-void dx9_ReleaseContext()
-{
-}
 void dx9_CheckSurface()
 {
 }
@@ -385,8 +375,6 @@ void dx9_Initialize(const InitParam& param)
     SetDispatchTable(DispatchDX9);
 
     DispatchPlatform::InitContext = &dx9_InitContext;
-    DispatchPlatform::AcquireContext = &dx9_AcquireContext;
-    DispatchPlatform::ReleaseContext = &dx9_ReleaseContext;
     DispatchPlatform::CheckSurface = &dx9_CheckSurface;
 
     if (param.maxVertexBufferCount)

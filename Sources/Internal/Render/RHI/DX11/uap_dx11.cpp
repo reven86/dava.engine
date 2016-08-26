@@ -50,8 +50,6 @@ void SetBackBufferSize(const Windows::Foundation::Size& backbufferSize, const Wi
 void SetCurrentOrientation(Windows::Graphics::Display::DisplayOrientations currentOrientation);
 void ValidateDevice();
 void HandleDeviceLost();
-void Trim();
-void Present();
 
 // Constants used to calculate screen rotations.
 namespace ScreenRotation
@@ -353,9 +351,6 @@ void CreateDeviceResources()
 
 void CreateWindowSizeDependentResources()
 {
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Lock();
-
     // Prevent zero size DirectX content from being created.
     m_backbufferSize.Width = std::max(m_backbufferSize.Width, 1.f);
     m_backbufferSize.Height = std::max(m_backbufferSize.Height, 1.f);
@@ -551,9 +546,6 @@ void CreateWindowSizeDependentResources()
     m_d3dRenderTargetSize.Height);
 
     m_d3dContext->RSSetViewports(1, &m_screenViewport);
-
-    if (_DX11_InitParam.FrameCommandExecutionSync)
-        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
 }
 
 // This method is called when the XAML control is created (or re-created).
@@ -660,47 +652,7 @@ void HandleDeviceLost()
     //     }
 }
 
-// Call this method when the app suspends. It provides a hint to the driver that the app
-// is entering an idle state and that temporary buffers can be reclaimed for use by other apps.
-void Trim()
-{
-#if 0
-    ComPtr<IDXGIDevice3> dxgiDevice;
-    m_d3dDevice.As(&dxgiDevice);
 
-    dxgiDevice->Trim();
-#endif
-}
-
-// Present the contents of the swap chain to the screen.
-void Present()
-{
-#if 0
-    // The first argument instructs DXGI to block until VSync, putting the application
-    // to sleep until the next VSync. This ensures we don't waste any cycles rendering
-    // frames that will never be displayed to the screen.
-    HRESULT hr = m_swapChain->Present(1, 0);
-
-    // Discard the contents of the render target.
-    // This is a valid operation only when the existing contents will be entirely
-    // overwritten. If dirty or scroll rects are used, this call should be removed.
-    m_d3dContext->DiscardView(m_d3dRenderTargetView.Get());
-
-    // Discard the contents of the depth stencil.
-    m_d3dContext->DiscardView(m_d3dDepthStencilView.Get());
-
-    // If the device was removed either by a disconnection or a driver upgrade, we 
-    // must recreate all device resources.
-    if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
-    {
-        HandleDeviceLost();
-    }
-    else
-    {
-        ThrowIfFailed(hr);
-    }
-#endif
-}
 
 void init_device_and_swapchain_uap(void* panel)
 {
@@ -731,7 +683,8 @@ void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
     SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));
 
-    rhi::CommandBufferDX11::DiscardAll();
+    //HACK, if seen on review please tell me
+    //rhi::CommandBufferDX11::DiscardAll();
     rhi::ConstBufferDX11::InvalidateAll();
     CreateWindowSizeDependentResources();
 

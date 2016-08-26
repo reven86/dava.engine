@@ -1,22 +1,22 @@
 #pragma once
 
-    #include "../rhi_Type.h"
+#include "../rhi_Type.h"
 
-    #if !defined(WIN32_LEAN_AND_MEAN)
-        #define WIN32_LEAN_AND_MEAN
-    #endif    
-    #include <windows.h>
+#if !defined(WIN32_LEAN_AND_MEAN)
+    #define WIN32_LEAN_AND_MEAN
+#endif    
+#include <windows.h>
 
-    #pragma warning(disable : 7 9 193 271 304 791)
-    #include <d3d9.h>
-
-const char* D3D9ErrorText(HRESULT hr);
+#pragma warning(disable : 7 9 193 271 304 791)
+#include <d3d9.h>
 
 namespace rhi
 {
 struct InitParam;
 
 D3DFORMAT DX9_TextureFormat(TextureFormat format);
+
+const char* D3D9ErrorText(HRESULT hr);
 
 void AcquireDevice();
 void ScheduleDeviceReset();

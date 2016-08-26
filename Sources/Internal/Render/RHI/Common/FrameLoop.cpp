@@ -12,13 +12,7 @@ static uint32 currFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
 static uint32 frameCount = 0;
 static DAVA::Spinlock frameSync;
-
 static bool frameStarted = false;
-static bool renderContextReady = false;
-static bool resetPending = false;
-
-static uint32 framesWithRestoreAttempt = 0;
-const uint32 maxFramesWithRestoreAttempt = 15;
 
 void RejectFrames()
 {
@@ -91,7 +85,7 @@ bool FinishFrame(Handle sync)
     }
     frameStarted = false;
     frameSync.Unlock();
-
+    DispatchPlatform::FinishFrame();
     return frame_cnt != 0;
 }
 
@@ -106,11 +100,11 @@ bool FrameReady()
 uint32 FramesCount()
 {
     frameSync.Lock();
-    uint32 frame_cnt = frameCount; // <uint32>(frames.size());
+    uint32 frame_cnt = frameCount;
     frameSync.Unlock();
     return frame_cnt;
 }
-void AddPass(Handle pass, uint32 priority)
+void AddPass(Handle pass)
 {
     frameSync.Lock();
     if (!frameStarted)
@@ -118,9 +112,10 @@ void AddPass(Handle pass, uint32 priority)
         frames.push_back(CommonImpl::Frame());
         frameCount++;
         frameStarted = true;
-        DispatchPlatform::InvalidateFrameCache();
+        DispatchPlatform::BeginFrame();
     }
     frames.back().pass.push_back(pass);
+    //frames.back().perfQuerySet = PerfQuerySet::Current();
     frameSync.Unlock();
 }
 }

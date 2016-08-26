@@ -111,8 +111,7 @@ RingBuffer::Alloc(unsigned cnt, unsigned align)
 
 //------------------------------------------------------------------------------
 
-inline void
-RingBuffer::Reset()
+inline void RingBuffer::Reset()
 {
     if (memUsed > size / 2)
         DAVA::Logger::Warning("const-buffer high-watermark passed (%u of %u used)", memUsed, size);

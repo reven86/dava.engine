@@ -13,7 +13,7 @@ struct Dispatch
     //    void    (*impl_Initialize)();
     void (*impl_Reset)(const ResetParam&);
     void (*impl_Uninitialize)();
-    void (*impl_Present)(Handle);
+    void (*impl_Present)(Handle); //TODO: delete
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
     bool (*impl_TextureFormatSupported)(TextureFormat);

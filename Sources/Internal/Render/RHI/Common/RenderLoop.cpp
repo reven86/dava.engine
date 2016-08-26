@@ -135,13 +135,9 @@ void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority prior
 {
     renderThreadFrameCount = frameCount;
     DVASSERT(DispatchPlatform::InitContext);
-    DVASSERT(DispatchPlatform::AcquireContext);
-    DVASSERT(DispatchPlatform::ReleaseContext);
 
-    if (renderThreadFrameCount) //?ASSERT
+    if (renderThreadFrameCount)
     {
-        DispatchPlatform::ReleaseContext();
-
         renderThread = DAVA::Thread::Create(DAVA::Message(&RenderFunc));
         renderThread->SetName("RHI.RENDER_THREAD");
         renderThread->Start();
