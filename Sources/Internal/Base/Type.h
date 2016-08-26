@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-class Type
+class Type final
 {
 public:
     using InheritanceCastOP = void* (*)(void*);
@@ -39,7 +39,7 @@ public:
     template <typename T, typename... Bases>
     static void RegisterBases();
 
-protected:
+private:
     size_t size = 0;
     const char* name = nullptr;
 

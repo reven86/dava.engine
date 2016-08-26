@@ -8,8 +8,6 @@
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
 
-using namespace DAVA;
-
 class StructPtr
 {
 public:
@@ -27,7 +25,7 @@ protected:
 
     DAVA_REFLECTION(StructPtr)
     {
-        ReflectionRegistrator<StructPtr>::Begin()
+        DAVA::ReflectionRegistrator<StructPtr>::Begin()
         .Field("sss", &StructPtr::sss)
         .End();
     }
@@ -49,7 +47,7 @@ struct SimpleStruct
 
     DAVA_REFLECTION(SimpleStruct)
     {
-        ReflectionRegistrator<SimpleStruct>::Begin()
+        DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
         .End();
@@ -63,7 +61,7 @@ public:
 
     DAVA_VIRTUAL_REFLECTION(BaseBase)
     {
-        ReflectionRegistrator<BaseBase>::Begin()
+        DAVA::ReflectionRegistrator<BaseBase>::Begin()
         .Field("basebase", &BaseBase::basebase)
         .End();
     }
@@ -197,7 +195,7 @@ protected:
 
     DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
     {
-        ReflectionRegistrator<TestBaseClass>::Begin()
+        DAVA::ReflectionRegistrator<TestBaseClass>::Begin()
         .Constructor()
         .Constructor<int, int, int>()
         .Destructor()
@@ -232,7 +230,7 @@ protected:
         .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
         .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
         .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
-        .Field("Lambda", Function<int()>([]() { return 1088; }), nullptr)
+        .Field("Lambda", DAVA::Function<int()>([]() { return 1088; }), nullptr)
         .End();
     }
 };
@@ -277,17 +275,17 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (DumpTest)
     {
         TestBaseClass t;
-        Reflection t_ref = Reflection::Create(&t).ref;
+        DAVA::Reflection t_ref = DAVA::Reflection::Create(&t).ref;
 
         std::ostringstream dumpOutput;
         t_ref.Dump(dumpOutput);
 
-        Logger::Info("%s", dumpOutput.str().c_str());
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
 
     DAVA_TEST (CtorDtorTest)
     {
-        const ReflectedType* rtype = ReflectedType::Get<TestBaseClass>();
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<TestBaseClass>();
         if (nullptr != rtype)
         {
             // TODO:
