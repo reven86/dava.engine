@@ -36,13 +36,13 @@
 #include "MemoryManager/MemoryProfiler.h"
 #endif
 
-using namespace DAVA;
-using namespace DAVA::Net;
-
 #if defined(__DAVAENGINE_COREV2__)
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
+    using namespace DAVA;
+    using namespace Net;
+
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetString("title", "TestBed");
     appOptions->SetInt32("fullscreen", 0);
@@ -76,9 +76,10 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "LocalizationSystem",
         "SoundSystem",
         "DownloadManager",
+        "PackManager"
     };
 
-    DAVA::Engine e;
+    Engine e;
     e.SetOptions(appOptions);
     e.Init(runmode, modules);
 
