@@ -559,8 +559,9 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 bool FileSystem::IsHidden(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    auto attr = GetFileAttributes(StringToWString(pathToCheck.GetStringValue()).c_str());
-    return ((attr & FILE_ATTRIBUTE_HIDDEN) != 0);
+    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+    BOOL areAttributesGot = GetFileAttributesEx(StringToWString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
+    return (areAttributesGot == TRUE && (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0);
 #else
     String name = pathToCheck.IsDirectoryPathname() ? pathToCheck.GetLastDirectoryName() : pathToCheck.GetFilename();
     return (!name.empty() && name.front() == '.');
