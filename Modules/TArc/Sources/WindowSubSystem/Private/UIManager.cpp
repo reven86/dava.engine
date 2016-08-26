@@ -185,9 +185,6 @@ QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo
     QDockWidget *dockWidget = new QDockWidget(text, mainWindow);
 
     QAction *dockWidgetAction = dockWidget->toggleViewAction();
-    dockWidgetAction->setCheckable(true);
-    QObject::connect(dockWidgetAction, &QAction::toggled, dockWidget, &QDockWidget::setVisible);
-    QObject::connect(dockWidget, &QDockWidget::visibilityChanged, dockWidgetAction, &QAction::setChecked);
 
     const ActionPlacementInfo &placement = dockPanelInfo.actionPlacementInfo;
 
