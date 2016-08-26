@@ -1,6 +1,10 @@
 #include "FileSystem/File.h"
 
-#include "../Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Public/Engine.h"
+#endif
+
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -52,7 +56,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         // now with PackManager we can improve perfomance by lookup pack name
         // from DB with all files, then check if such pack mounted and from
         // mountedPackIndex find by name archive with file or skip to next step
+#ifdef __DAVAENGINE_COREV2__
+        IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
         IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
         Vector<uint8> contentAndSize;
 
         if (pm.IsGpuPacksInitialized())

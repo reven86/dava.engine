@@ -107,7 +107,6 @@ private:
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
-private:
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;

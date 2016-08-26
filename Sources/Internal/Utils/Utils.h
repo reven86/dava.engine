@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UTILS_H__
-#define __DAVAENGINE_UTILS_H__
+#pragma once
 
 /**
 	\defgroup utils Utilities
@@ -8,6 +7,7 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 #include "Render/RenderBase.h"
+#include "Utils/UTF8Utils.h"
 #include <sstream>
 
 #ifdef __DAVAENGINE_WIN_UAP__
@@ -18,12 +18,12 @@ namespace DAVA
 {
 int read_handler(void* ext, unsigned char* buffer, size_t size, size_t* length);
 
-WideString WcharToWString(const wchar_t* s);
+DAVA_DEPRECATED(WideString WcharToWString(const wchar_t* s));
 
 bool IsDrawThread();
 
-inline WideString StringToWString(const String& s);
-inline String WStringToString(const WideString& s);
+DAVA_DEPRECATED(inline WideString StringToWString(const String& s));
+DAVA_DEPRECATED(inline String WStringToString(const WideString& s));
 
 WideString GetDeviceName();
 
@@ -45,9 +45,9 @@ void Swap(T& v1, T& v2);
 
 /**
  \brief Function to compare strings case-insensitive
- \param[in] ext1 - first string 
- \param[in] ext2 - second string 
- \param[out] result of comparision 
+ \param[in] ext1 - first string
+ \param[in] ext2 - second string
+ \param[out] result of comparision
  */
 int32 CompareCaseInsensitive(const String& str1, const String& str2);
 
@@ -55,9 +55,7 @@ int32 CompareCaseInsensitive(const String& str1, const String& str2);
 
 inline WideString StringToWString(const String& s)
 {
-    WideString temp(s.length(), L' ');
-    std::copy(s.begin(), s.end(), temp.begin());
-    return temp;
+    return UTF8Utils::EncodeToWideString(s);
 }
 
 inline void StringReplace(String& repString, const String& needle, const String& s)
@@ -72,12 +70,7 @@ inline void StringReplace(String& repString, const String& needle, const String&
 
 inline String WStringToString(const WideString& s)
 {
-    size_t len = s.length();
-    String temp(len, ' ');
-    //std::copy(s.begin(), s.end(), temp.begin());
-    for (size_t i = 0; i < len; ++i)
-        temp[i] = static_cast<char>(s[i]);
-    return temp;
+    return UTF8Utils::EncodeToUTF8(s);
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -163,7 +156,7 @@ protected:
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
 uint64 EglGetCurrentContext();
-	
+
 #endif
 
 // Open the URL in external browser.
@@ -182,5 +175,3 @@ T WaitAsync(Windows::Foundation::IAsyncOperation<T> ^ async_operation)
 Vector<String> GetCommandLineArgs();
 #endif // __DAVAENGINE_WIN32__
 };
-
-#endif // __DAVAENGINE_UTILS_H__

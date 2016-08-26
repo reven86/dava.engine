@@ -347,6 +347,7 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
 void GameCore::InitNetwork()
 {
+    using namespace Net;
     auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
         if (!loggerInUse)
         {
@@ -389,6 +390,7 @@ void GameCore::InitNetwork()
 
 size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
 {
+    using namespace Net;
     if (true == peerDescr.NetworkInterfaces().empty())
     {
         peerDescr.SetNetworkInterfaces(NetCore::Instance()->InstalledInterfaces());

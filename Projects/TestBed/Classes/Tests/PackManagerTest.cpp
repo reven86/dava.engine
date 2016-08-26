@@ -1,4 +1,9 @@
 #include "Tests/PackManagerTest.h"
+
+#ifdef __DAVAENGINE_COREV2__
+#include <Engine/Public/Engine.h>
+#endif
+
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
@@ -295,7 +300,11 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     if (pm.IsRequestingEnabled())
     {
@@ -326,13 +335,21 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     packNameLoading->SetText(L"done: start sync");
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     pm.InitRemotePacks(urlToServerSuperpack);
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
@@ -351,7 +368,11 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     std::stringstream ss;
 
@@ -376,7 +397,11 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     if (pm.GetInitState() < IPackManager::InitState::MountingReadOnlyPacks)
     {
@@ -403,7 +428,11 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();
