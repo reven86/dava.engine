@@ -312,6 +312,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Base/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
@@ -337,6 +338,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
