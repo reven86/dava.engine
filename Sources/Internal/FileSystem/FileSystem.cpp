@@ -13,7 +13,6 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
-#include "Utils/StringUtils.h"
 
 #include "Engine/EngineModule.h"
 
@@ -560,12 +559,11 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 bool FileSystem::IsHidden(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    auto attr = GetFileAttributesA(pathToCheck.GetStringValue().c_str());
+    auto attr = GetFileAttributesW(StringToWString(pathToCheck.GetStringValue()).c_str());
     return ((attr & FILE_ATTRIBUTE_HIDDEN) != 0);
 #else
     String name = pathToCheck.IsDirectoryPathname() ? pathToCheck.GetLastDirectoryName() : pathToCheck.GetFilename();
-    static String dot = ".";
-    return StringUtils::StartsWith(name, dot);
+    return (!name.empty() && name.front() == '.');
 #endif
 }
 
