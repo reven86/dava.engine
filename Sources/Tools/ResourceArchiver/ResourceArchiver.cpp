@@ -249,6 +249,11 @@ bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool a
             sourcePath = baseDir + source;
         }
 
+        if (!addHiddenFiles && FileSystem::Instance()->IsHidden(sourcePath))
+        {
+            continue;
+        }
+
         String archivePath;
         if (sourcePath.StartsWith(baseDir))
         {
