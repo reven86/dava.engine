@@ -11,8 +11,9 @@
 
 #include "Render/Renderer.h"
 #include "Render/Texture.h"
-
 #include "Render/Image/ImageSystem.h"
+#include "Render/PixelFormatDescriptor.h"
+
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
@@ -200,32 +201,34 @@ void RenderPass::ProcessVisibilityQuery()
 
 void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& config)
 {
-    Size2i rtSize(config.viewport.width - config.viewport.x, config.viewport.height - config.viewport.y);
+    rhi::Texture::Descriptor targetDesc;
 
-    if ((multisampledTexture == nullptr) || (multisampledTexture->width != rtSize.dx) || (multisampledTexture->height != rtSize.dy))
+    if (config.colorBuffer[0].targetTexture == rhi::InvalidHandle)
+    {
+        targetDesc = rhi::GetBackBufferDescriptor();
+    }
+    else
+    {
+        targetDesc = rhi::GetTextureDescriptor(static_cast<rhi::HTexture>(config.colorBuffer[0].targetTexture));
+    }
+
+    bool invalidDescription =
+    (multisampledDescription.width != targetDesc.width) ||
+    (multisampledDescription.height != targetDesc.height) ||
+    (multisampledDescription.samples != config.samples);
+
+    if (invalidDescription || (multisampledTexture == nullptr))
     {
         SafeRelease(multisampledTexture);
 
-        PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID;
-        if (config.colorBuffer[0].targetTexture == rhi::InvalidHandle)
-        {
-            pixelFormat = PixelFormat::FORMAT_RGBA8888; // TODO : Get back buffer format
-        }
-        else
-        {
-            rhi::TextureFormat fmt = rhi::GetTextureFormat(static_cast<rhi::HTexture>(config.colorBuffer[0].targetTexture));
-            pixelFormat = PixelFormatDescriptor::GetPixelFormatForTextureFormat(fmt);
-        }
-
-        Texture::FBODescriptor desc;
-        desc.width = rtSize.dx;
-        desc.height = rtSize.dy;
-        desc.format = pixelFormat;
-        desc.needDepth = true;
-        desc.needPixelReadback = false;
-        desc.ensurePowerOf2 = false;
-        desc.samples = config.samples;
-        multisampledTexture = Texture::CreateFBO(desc);
+        multisampledDescription.width = targetDesc.width;
+        multisampledDescription.height = targetDesc.height;
+        multisampledDescription.format = PixelFormatDescriptor::GetPixelFormatForTextureFormat(targetDesc.format);
+        multisampledDescription.needDepth = true;
+        multisampledDescription.needPixelReadback = false;
+        multisampledDescription.ensurePowerOf2 = false;
+        multisampledDescription.samples = config.samples;
+        multisampledTexture = Texture::CreateFBO(multisampledDescription);
     }
 }
 
@@ -297,21 +300,19 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass = new WaterReflectionRenderPass(PASS_REFLECTION_REFRACTION);
     reflectionPass->GetPassConfig().colorBuffer[0].targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
     reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
+    reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     reflectionPass->GetPassConfig().depthStencilBuffer.targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    reflectionPass->GetPassConfig().samples = 8;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
 
     refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
+    refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     refractionPass->GetPassConfig().depthStencilBuffer.targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    refractionPass->GetPassConfig().samples = 8;
     refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
 }
 

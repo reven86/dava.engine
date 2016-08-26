@@ -5,6 +5,8 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "Scene3D/Systems/QualitySettingsSystem.h"
+
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -86,7 +88,6 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
 
         PrepareFrameBuffer();
 
-        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
         config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
         config.colorBuffer[0].targetTexture = frameBuffer->handle;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -100,14 +101,16 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         if (currentTarget.transformVirtualToPhysical)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
+        const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+        config.samples = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->samples : 1;
+
         config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].targetTexture = currentTarget.colorAttachment;
         config.colorBuffer[0].loadAction = colorLoadAction;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_RESOLVE;
+        config.colorBuffer[0].storeAction = (config.samples > 1) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
         config.depthStencilBuffer.targetTexture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
         config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-        config.samples = 8;
     }
 
     scene->SetMainPassViewport(viewportRc);

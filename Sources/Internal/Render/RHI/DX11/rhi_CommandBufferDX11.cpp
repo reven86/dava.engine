@@ -1705,12 +1705,6 @@ void CommandBufferDX11_t::Execute()
 
     _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
 
-    if (passCfg.samples > 1)
-    {
-        TextureDX11::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture,
-                                          passCfg.colorBuffer[0].targetTexture, _D3D11_ImmediateContext);
-    }
-
     #if LUMIA_1020_DEPTHBUF_WORKAROUND
     {
         static int isLumia1020 = -1;
@@ -1722,6 +1716,12 @@ void CommandBufferDX11_t::Execute()
             _D3D11_ImmediateContext->Flush();
     }
     #endif
+
+    if (isLastInPass && (passCfg.samples > 1))
+    {
+        TextureDX11::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture,
+                                          passCfg.colorBuffer[0].targetTexture, _D3D11_ImmediateContext);
+    }
 
     commandList->Release();
     commandList = nullptr;

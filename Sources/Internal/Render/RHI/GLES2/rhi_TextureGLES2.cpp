@@ -594,10 +594,10 @@ bool gles2_Texture_NeedRestore(Handle tex)
     return self->NeedRestore();
 }
 
-TextureFormat gles2_Texture_GetFormat(Handle tex)
+Texture::Descriptor gles2_Texture_GetDescriptor(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    return self->CreationDesc().format;
+    return self->CreationDesc();
 }
 
 //==============================================================================
@@ -756,7 +756,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &gles2_Texture_Unmap;
     dispatch->impl_Texture_Update = &gles2_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &gles2_Texture_NeedRestore;
-    dispatch->impl_Texture_GetFormat = &gles2_Texture_GetFormat;
+    dispatch->impl_Texture_GetDescriptor = &gles2_Texture_GetDescriptor;
 }
 
 void InvalidateCache()
@@ -933,12 +933,12 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
     _GLES2_Binded_FrameBuffer = from->fbo.front().frameBuffer;
     GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
-    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height,
+                              0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
 }
 
-Size2i
-Size(Handle tex)
+Size2i Size(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
 

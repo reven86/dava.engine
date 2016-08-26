@@ -56,6 +56,7 @@ protected:
     rhi::HPacketList packetList = static_cast<rhi::HPacketList>(rhi::InvalidHandle);
     rhi::HRenderPass renderPass = static_cast<rhi::HRenderPass>(rhi::InvalidHandle);
 
+    Texture::FBODescriptor multisampledDescription;
     Texture* multisampledTexture = nullptr;
 
 #ifdef __DAVAENGINE_RENDERSTATS__

@@ -133,6 +133,8 @@ Api HostApi();
 bool TextureFormatSupported(TextureFormat format);
 const RenderDeviceCaps& DeviceCaps();
 
+Texture::Descriptor GetBackBufferDescriptor();
+
 void SuspendRendering();
 void ResumeRendering();
 
@@ -261,7 +263,7 @@ void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace fac
 
 bool NeedRestoreTexture(HTexture tex);
 
-TextureFormat GetTextureFormat(HTexture tex);
+Texture::Descriptor GetTextureDescriptor(HTexture tex);
 
 struct
 TextureSetDescriptor

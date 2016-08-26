@@ -167,14 +167,50 @@ void QualitySettingsSystem::Load(const FilePath& path)
                             (maxNode != nullptr) && (maxNode->GetType() == YamlNode::TYPE_STRING))
                         {
                             ANQ anq;
-
                             anq.name = FastName(name->AsString().c_str());
                             anq.quality.weight = i;
                             anq.quality.maxAnisotropy = maxNode->AsUInt32();
-
                             anisotropyQualities.push_back(anq);
-
                             if (anq.name == defAnQualityName)
+                            {
+                                curAnisotropyQuality = i;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // msaa
+            const YamlNode* msaaNode = rootNode->Get("msaa");
+            if (msaaNode != nullptr)
+            {
+                const YamlNode* defltAn = msaaNode->Get("default");
+                const YamlNode* qualitiesNode = msaaNode->Get("qualities");
+
+                if (qualitiesNode != nullptr)
+                {
+                    FastName defaultName;
+                    if (defltAn != nullptr && defltAn->GetType() == YamlNode::TYPE_STRING)
+                    {
+                        defaultName = FastName(defltAn->AsString().c_str());
+                    }
+
+                    anisotropyQualities.reserve(qualitiesNode->GetCount());
+                    for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                    {
+                        const YamlNode* qualityNode = qualitiesNode->Get(i);
+                        const YamlNode* name = qualityNode->Get("quality");
+                        const YamlNode* maxNode = qualityNode->Get("samples");
+
+                        if ((name != nullptr) && (name->GetType() == YamlNode::TYPE_STRING) &&
+                            (maxNode != nullptr) && (maxNode->GetType() == YamlNode::TYPE_STRING))
+                        {
+                            MSAAQ q;
+                            q.name = FastName(name->AsString().c_str());
+                            q.quality.weight = i;
+                            q.quality.samples = maxNode->AsUInt32();
+                            msaaQualities.push_back(q);
+                            if (q.name == defaultName)
                             {
                                 curAnisotropyQuality = i;
                             }
@@ -402,6 +438,61 @@ const AnisotropyQuality* QualitySettingsSystem::GetAnisotropyQuality(const FastN
         if (anisotropyQualities[i].name == name)
         {
             ret = &anisotropyQualities[i].quality;
+            break;
+        }
+    }
+
+    return ret;
+}
+
+/*
+ * MSAA
+ */
+size_t QualitySettingsSystem::GetMSAAQualityCount() const
+{
+    return msaaQualities.size();
+}
+
+FastName QualitySettingsSystem::GetMSAAQualityName(size_t index) const
+{
+    FastName ret;
+
+    if (index < msaaQualities.size())
+    {
+        ret = msaaQualities[index].name;
+    }
+
+    return ret;
+}
+
+FastName QualitySettingsSystem::GetCurMSAAQuality() const
+{
+    return GetMSAAQualityName(curMSAAQuality);
+}
+
+void QualitySettingsSystem::SetCurMSAAQuality(const FastName& name)
+{
+    for (size_t i = 0; i < msaaQualities.size(); ++i)
+    {
+        if (msaaQualities[i].name == name)
+        {
+            curMSAAQuality = static_cast<int32>(i);
+            return;
+        }
+    }
+
+    DVASSERT(0 && "No such quality");
+}
+
+const MSAAQuality* QualitySettingsSystem::GetMSAAQuality(const FastName& name) const
+{
+    const MSAAQuality* ret = nullptr;
+
+    for (size_t i = 0; i < msaaQualities.size(); ++i)
+    {
+        if (msaaQualities[i].name == name)
+        {
+            ret = &msaaQualities[i].quality;
             break;
         }
     }

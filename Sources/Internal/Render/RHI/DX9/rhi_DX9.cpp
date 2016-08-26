@@ -52,6 +52,24 @@ dx9_DeviceCaps()
     return _DeviceCapsDX9;
 }
 
+Texture::Descriptor dx9_GetBackbufferDescriptor()
+{
+    D3DSURFACE_DESC desc = {};
+    IDirect3DSurface9* rt0 = nullptr;
+    _D3D9_Device->GetRenderTarget(0, &rt0);
+
+    DVASSERT(rt0 != nullptr);
+    rt0->GetDesc(&desc);
+
+    Texture::Descriptor result;
+    result.width = desc.Width;
+    result.height = desc.Height;
+    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
+    result.isRenderTarget = 1;
+    // TODO : fill rest of the fields and get proper format from desc
+    return result;
+}
+
 //------------------------------------------------------------------------------
 
 static bool
@@ -367,6 +385,7 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
     DispatchDX9.impl_DeviceCaps = &dx9_DeviceCaps;
+    DispatchDX9.impl_GetBackbufferDescriptor = &dx9_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchDX9);
 

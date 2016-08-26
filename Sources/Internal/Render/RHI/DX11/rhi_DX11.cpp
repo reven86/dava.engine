@@ -115,19 +115,18 @@ dx11_Uninitialize()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Reset(const ResetParam& param)
+static void dx11_Reset(const ResetParam& param)
 {
     if (_DX11_InitParam.fullScreen != param.fullScreen)
     {
     }
     else
     {
-#if defined(__DAVAENGINE_WIN_UAP__)
+	#if defined(__DAVAENGINE_WIN_UAP__)
         resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
-#else
-//Not implemented
-#endif
+	#else
+// TODO : implement resize
+	#endif
     }
 }
 
@@ -158,6 +157,20 @@ dx11_SuspendRendering()
 static void
 dx11_ResumeRendering()
 {
+}
+
+Texture::Descriptor dx11_GetBackbufferDescriptor()
+{
+    D3D11_TEXTURE2D_DESC desc = {};
+    _D3D11_SwapChainBuffer->GetDesc(&desc);
+
+    Texture::Descriptor result;
+    result.width = static_cast<uint32>(desc.Width);
+    result.height = static_cast<uint32>(desc.Height);
+    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
+    result.isRenderTarget = true;
+    // TODO : fill rest of the fields / get proper format
+    return result;
 }
 
 //------------------------------------------------------------------------------
@@ -357,6 +370,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
+    DispatchDX11.impl_GetBackbufferDescriptor = &dx11_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchDX11);
 

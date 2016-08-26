@@ -79,6 +79,28 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
                 }
             }
         }
+
+        if (DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount() > 0)
+        {
+            QLabel* labAn = new QLabel("Multisampling:", texturesGroup);
+            texturesLayout->addWidget(labAn, 2, 0);
+
+            QComboBox* comboAn = new QComboBox(texturesGroup);
+            comboAn->setObjectName("MSAACombo");
+            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnAnQualitySelect(int)));
+            texturesLayout->addWidget(comboAn, 2, 1);
+
+            DAVA::FastName curQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount(); ++i)
+            {
+                DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityName(i);
+                comboAn->addItem(qualityName.c_str());
+                if (qualityName == curQuality)
+                {
+                    comboAn->setCurrentIndex(comboAn->count() - 1);
+                }
+            }
+        }
     }
 
     // materials quality
@@ -345,10 +367,21 @@ void QualitySwitcher::ApplySettings()
             }
         }
 
+        combo = findChild<QComboBox*>("MSAACombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newQuality(combo->currentText().toLatin1());
+            if (newQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality())
+            {
+                materialSettingsChanged = true;
+                DAVA::QualitySettingsSystem::Instance()->SetCurMSAAQuality(newQuality);
+            }
+        }
+
         for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
             DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
-            QComboBox* combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
+            combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
             if (nullptr != combo)
             {
                 DAVA::FastName newMaQuality(combo->currentText().toLatin1());

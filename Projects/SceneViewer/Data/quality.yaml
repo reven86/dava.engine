@@ -27,12 +27,43 @@ textures:
    normalmap: 4
    minsize: 64
   
+msaa:
+ default: "4x"
+ qualities:
+  - 
+   quality: "4x"
+   samples: 4
+  - 
+   quality: "2x"
+   samples: 2
+  -
+   quality: "OFF"
+   samples: 1
+
+anisotropy:
+ default: "HIGHEST"
+ qualities:
+  - 
+   quality: "HIGHEST"
+   max: 16
+  - 
+   quality: "HIGH"
+   max: 8
+  -
+   quality: "MEDIUM"
+   max: 4
+  -
+   quality: "LOW"
+   max: 2
+  -
+   quality: "DISABLED"
+   max: 1
 
 materials:
  -
   group: "Water"
   quality: ["ULTRA_HIGH", "HIGH", "LOW"]
-  default: "LOW"
+  default: "ULTRA_HIGH"
 
  -
   group: "Static object"
@@ -42,12 +73,12 @@ materials:
  -
   group: "Landscape"
   quality: ["HIGH", "MEDIUM", "LOW"]
-  default: "MEDIUM"
+  default: "HIGH"
 
  -
   group: "Particle"
   quality: ["HIGH", "LOW"]
-  default: "LOW"
+  default: "HIGH"
 
  -
   group: "Tank"
@@ -70,7 +101,7 @@ materials:
   default: "HIGH"
 
 sounds:
- default: "LOW"
+ default: "HIGH"
  qualities:
   - 
    quality: "HIGH"

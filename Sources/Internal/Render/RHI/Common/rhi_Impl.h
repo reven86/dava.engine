@@ -24,6 +24,7 @@ Dispatch
     void (*impl_InvalidateCache)();
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
+    Texture::Descriptor (*impl_GetBackbufferDescriptor)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
     void (*impl_VertexBuffer_Delete)(Handle);
@@ -62,7 +63,7 @@ Dispatch
     void (*impl_Texture_Unmap)(Handle);
     void (*impl_Texture_Update)(Handle, const void*, uint32, TextureFace);
     bool (*impl_Texture_NeedRestore)(Handle);
-    TextureFormat (*impl_Texture_GetFormat)(Handle);
+    Texture::Descriptor (*impl_Texture_GetDescriptor)(Handle);
 
     Handle (*impl_PipelineState_Create)(const PipelineState::Descriptor&);
     void (*impl_PipelineState_Delete)(Handle);
