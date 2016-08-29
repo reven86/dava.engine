@@ -8,6 +8,8 @@
 
 //==============================================================================
 
+const static uint32 TIME_COUNTERS_COUNT = 2048;
+
 static inline uint64 CurTimeUs()
 {
     return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
@@ -33,7 +35,7 @@ struct TimeCounter
     Thread::Id tid = 0;
 };
 
-using CounterArray = RingArray<TimeCounter, 1024>;
+using CounterArray = RingArray<TimeCounter, TIME_COUNTERS_COUNT>;
 
 static CounterArray counters;
 static bool profilerStarted = false;
@@ -76,6 +78,15 @@ int32 MakeSnapshot()
 {
     snapshots.push_back(counters);
     return int32(snapshots.size() - 1);
+}
+
+void DeleteSnapshot(int32 snapshot)
+{
+    if (snapshot != NO_SNAPSHOT_ID)
+    {
+        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()))
+        snapshots.erase(snapshots.begin() + snapshot);
+    }
 }
 
 void DeleteSnapshots()
@@ -145,7 +156,7 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 sn
     CounterArray* array = &counters;
     if (snapshot != NO_SNAPSHOT_ID)
     {
-        DVASSERT(snapshot < int32(snapshots.size()));
+        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
         array = &snapshots[snapshot];
     }
 
@@ -177,7 +188,7 @@ void DumpJSON(File* file, int32 snapshot)
     CounterArray* array = &counters;
     if (snapshot != NO_SNAPSHOT_ID)
     {
-        DVASSERT(snapshot < int32(snapshots.size()));
+        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
         array = &snapshots[snapshot];
     }
 

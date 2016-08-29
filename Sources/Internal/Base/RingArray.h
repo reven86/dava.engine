@@ -18,6 +18,13 @@ public:
         mask = a.mask;
         head = a.head.load();
     }
+    RingArray& operator=(const RingArray& a)
+    {
+        memcpy(elements.data(), a.elements.data(), elements.size() * sizeof(T));
+        mask = a.mask;
+        head = a.head.load();
+        return (*this);
+    }
 
     class iterator;
     class reverse_iterator;

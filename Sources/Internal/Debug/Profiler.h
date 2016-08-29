@@ -21,6 +21,7 @@ void Stop();
 uint64 GetLastCounterTime(const char* counterName);
 
 int32 MakeSnapshot();
+void DeleteSnapshot(int32 snapshot);
 void DeleteSnapshots();
 
 void DumpJSON(File* file, int32 snapshot = NO_SNAPSHOT_ID);
