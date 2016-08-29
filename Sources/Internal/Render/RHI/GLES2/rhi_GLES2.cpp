@@ -937,6 +937,22 @@ const char* glErrorToString(GLint error)
 }
 #undef CASE_TO_STRING
 
+GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat)
+{
+    switch (rhiFormat)
+    {
+    case rhi::TEXTURE_FORMAT_R8G8B8A8:
+        return GL_RGBA8;
+            
+    case rhi::TEXTURE_FORMAT_R5G6B5:
+        return GL_RGB565;
+            
+    default:
+        DVASSERT_MSG(0, "Unsupported or unknown render target format specified");
+        return 0;
+    }
+}
+
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed)
 {
     using namespace rhi;

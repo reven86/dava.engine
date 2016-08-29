@@ -1238,23 +1238,14 @@ void CommandBufferGLES2_t::Execute()
                     TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].targetTexture);
                 }
 
-#if defined(__DAVAENGINE_IPHONE__)
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) //defualt framebuffer is discard once after frame
+            #if defined(__DAVAENGINE_IPHONE__)
+                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) // defualt framebuffer is discard once after frame
                 {
-                    GLenum discards[3];
-                    int32 discardsCount = 0;
-                    if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
-                        discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
-                    if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
-                    {
-                        discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
-                        discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
-                    }
-
-                    if (discardsCount != 0)
-                        GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+                    bool discardColor = (passCfg.colorBuffer[0].storeAction != STOREACTION_STORE);
+                    bool discardDepthStencil = (passCfg.depthStencilBuffer.storeAction != STOREACTION_STORE);
+                    ios_gl_discard_framebuffer(discardColor, discardDepthStencil);
                 }
-#endif
+            #endif
             }
         }
         break;

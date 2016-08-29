@@ -129,11 +129,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         DVASSERT(desc.isRenderTarget); // do not support plain multisampled textures
         DVASSERT(desc.type == rhi::TextureType::TEXTURE_TYPE_2D); // do not support cube maps now
 
-        GLint int_fmt = 0;
-        GLint fmt = 0;
-        GLenum type = 0;
-        bool compressed = false;
-        GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
+        GLint int_fmt = GetGLRenderTargetFormat(desc.format);
 
         GLCommand gen = { GLCommand::GEN_RENDERBUFFERS, { 1, reinterpret_cast<uint64>(glObjects) } };
         ExecGL(&gen, 1, force_immediate);
@@ -933,8 +929,15 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
     _GLES2_Binded_FrameBuffer = from->fbo.front().frameBuffer;
     GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
+#if defined(__DAVAENGINE_IPHONE__)
+    ios_gl_resolve_multisampling(0, 0, from->width, from->height,
+                                 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#elif defined(__DAVAENGINE_ANDROID__)
+    // TODO : resolve on android
+#else
     GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height,
                               0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+#endif
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
 }
 

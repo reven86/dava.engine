@@ -691,7 +691,7 @@ CommandBufferMetal_t::Execute()
 bool
 RenderPassMetal_t::Initialize()
 {
-    bool need_drawable = cfg.colorBuffer[0].texture == InvalidHandle;
+    bool need_drawable = cfg.colorBuffer[0].targetTexture == InvalidHandle;
 
     if (need_drawable && !_Metal_Frame.back().drawable)
     {
@@ -723,10 +723,10 @@ RenderPassMetal_t::Initialize()
 
     desc = [MTLRenderPassDescriptor renderPassDescriptor];
 
-    if (cfg.colorBuffer[0].texture == InvalidHandle)
+    if (cfg.colorBuffer[0].targetTexture == InvalidHandle)
         desc.colorAttachments[0].texture = _Metal_Frame.back().drawable.texture;
     else
-        TextureMetal::SetAsRenderTarget(cfg.colorBuffer[0].texture, desc);
+        TextureMetal::SetAsRenderTarget(cfg.colorBuffer[0].targetTexture, desc);
 
     switch (cfg.colorBuffer[0].loadAction)
     {
@@ -743,15 +743,15 @@ RenderPassMetal_t::Initialize()
     desc.colorAttachments[0].storeAction = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor = MTLClearColorMake(cfg.colorBuffer[0].clearColor[0], cfg.colorBuffer[0].clearColor[1], cfg.colorBuffer[0].clearColor[2], cfg.colorBuffer[0].clearColor[3]);
 
-    if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
+    if (cfg.depthStencilBuffer.targetTexture == rhi::DefaultDepthBuffer)
     {
         desc.depthAttachment.texture = _Metal_DefDepthBuf;
         desc.stencilAttachment.texture = _Metal_DefStencilBuf;
         ds_used = true;
     }
-    else if (cfg.depthStencilBuffer.texture != rhi::InvalidHandle)
+    else if (cfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle)
     {
-        TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.texture, desc);
+        TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.targetTexture, desc);
         ds_used = true;
     }
 
@@ -771,7 +771,7 @@ RenderPassMetal_t::Initialize()
         desc.visibilityResultBuffer = QueryBufferMetal::GetBuffer(cfg.queryBuffer);
     }
 
-    do_present = cfg.colorBuffer[0].texture == InvalidHandle;
+    do_present = cfg.colorBuffer[0].targetTexture == InvalidHandle;
 
     id<MTLCommandBuffer> pbuf = nil;
 
@@ -1047,7 +1047,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         Handle cb_h = CommandBufferPool::Alloc();
         CommandBufferMetal_t* cb = CommandBufferPool::Get(cb_h);
 
-        cb->ds_used = passConf.depthStencilBuffer.texture != rhi::InvalidHandle;
+        cb->ds_used = passConf.depthStencilBuffer.targetTexture != rhi::InvalidHandle;
 
         pass->cmdBuf[i] = cb_h;
         cmdBuf[i] = cb_h;

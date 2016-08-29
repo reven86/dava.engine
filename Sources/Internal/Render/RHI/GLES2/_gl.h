@@ -25,9 +25,10 @@
 
 #elif defined(__DAVAENGINE_IPHONE__)
 
-    #include <OpenGLES/ES2/gl.h>
+    #include <OpenGLES/ES3/gl.h>
+    #include <OpenGLES/ES3/glext.h>
     #include <OpenGLES/ES2/glext.h>
-    
+
     #define GetGLErrorString(code) "<unknown>"
 
     #include "ios_gl.h"
@@ -249,6 +250,22 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_RGB16F 0x881B
 #endif
 
+#if !defined(GL_RGBA8)
+    #if defined(GL_RGBA8_OES)
+        #define GL_RGBA8 GL_RGBA8_OES
+    #else
+        #define GL_RGBA GL_RGBA
+    #endif
+#endif
+
+#if !defined(GL_READ_FRAMEBUFFER)
+    #define GL_READ_FRAMEBUFFER 0x8CA8
+#endif
+
+#if !defined(GL_DRAW_FRAMEBUFFER)
+    #define GL_DRAW_FRAMEBUFFER 0x8CA9
+#endif
+
 #if !defined(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 #endif
@@ -323,4 +340,6 @@ extern bool _GLES2_UseUserProvidedIndices;
 extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);
+GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat);
+
 const char* glErrorToString(GLint error);
