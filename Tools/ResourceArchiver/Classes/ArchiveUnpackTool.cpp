@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 ArchiveUnpackTool::ArchiveUnpackTool()
-    : CommandLineTool("-unpack")
+    : CommandLineTool("unpack")
 {
     options.AddArgument("packfile");
     options.AddArgument("directory");

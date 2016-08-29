@@ -124,6 +124,7 @@ void SceneTabWidget::InitDAVAUI()
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
+    dava3DView->SetName(DAVA::FastName("Scene Tab 3D View"));
 
     davaUIScreen = new DAVA::UIScreen();
 
@@ -300,7 +301,18 @@ void SceneTabWidget::SetCurrentTab(int index)
 
         if (NULL != curScene)
         {
-            davaUIScreen->AddControl(dava3DView);
+            if (dava3DView->GetParent() == nullptr)
+            {
+                const DAVA::List<DAVA::UIControl*>& children = davaUIScreen->GetChildren();
+                if (children.empty())
+                {
+                    davaUIScreen->AddControl(dava3DView);
+                }
+                else
+                {
+                    davaUIScreen->InsertChildBelow(dava3DView, children.front());
+                }
+            }
 
             dava3DView->SetScene(curScene);
             curScene->SetViewportRect(dava3DView->GetRect());

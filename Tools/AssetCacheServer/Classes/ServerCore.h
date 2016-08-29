@@ -20,7 +20,7 @@ class ServerCore : public QObject,
 {
     Q_OBJECT
 
-    static const DAVA::uint32 UPDATE_INTERVAL_MS = 1;
+    static const DAVA::uint32 UPDATE_INTERVAL_MS = 16;
     static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
     static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
     static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 3; // 5 * 60;

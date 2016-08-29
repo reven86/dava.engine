@@ -72,8 +72,8 @@ void CreateDAVA()
 #endif //PLATFORMS
 
     new DAVA::Logger();
-    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_INFO);
     DAVA::Logger::Instance()->EnableConsoleMode();
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
 
     new DAVA::JobManager();
     new DAVA::FileSystem();

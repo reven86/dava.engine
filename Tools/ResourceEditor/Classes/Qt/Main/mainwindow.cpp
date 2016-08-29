@@ -112,6 +112,7 @@ public:
     GlobalOperationsProxy(GlobalOperations* globalOperations_)
         : globalOperations(globalOperations_)
     {
+        globalOperations->waitDialogClosed.Connect(&waitDialogClosed, &DAVA::Signal<>::Emit);
     }
 
     void Reset()
@@ -137,7 +138,7 @@ public:
         globalOperations->ShowWaitDialog(tittle, message, min, max);
     }
 
-    bool IsWaitDialogVisible() const
+    bool IsWaitDialogVisible() const override
     {
         CHECK_GLOBAL_OPERATIONS(false);
         return globalOperations->IsWaitDialogVisible();
@@ -149,7 +150,7 @@ public:
         globalOperations->HideWaitDialog();
     }
 
-    void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor)
+    void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override
     {
         CHECK_GLOBAL_OPERATIONS(void());
         globalOperations->ForEachScene(functor);
@@ -180,7 +181,7 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
     spritesPacker = std::make_unique<SpritesPackerModule>(globalOperations);
 
-    errorLoggerOutput = new ErrorDialogOutput(globalOperations, this);
+    errorLoggerOutput = new ErrorDialogOutput(globalOperations);
     DAVA::Logger::AddCustomOutput(errorLoggerOutput);
 
     new LandscapeEditorShortcutManager(this);
@@ -218,6 +219,8 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     new FMODSoundBrowser(this);
 
     waitDialog = new QtWaitDialog(this);
+    connect(waitDialog, &QtWaitDialog::closed, [this]() { waitDialogClosed.Emit(); });
+
     beastWaitDialog = new QtWaitDialog(this);
 
     connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString&)), this, SLOT(ProjectOpened(const QString&)));
@@ -260,7 +263,8 @@ QtMainWindow::~QtMainWindow()
     propertyPanel.reset();
 #endif
 
-    DAVA::Logger::RemoveCustomOutput(errorLoggerOutput);
+    errorLoggerOutput->Disable();
+    errorLoggerOutput = nullptr; // will be deleted by DAVA::Logger;
 
     LogWidget* logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     QByteArray dataToSave = logWidget->Serialize();

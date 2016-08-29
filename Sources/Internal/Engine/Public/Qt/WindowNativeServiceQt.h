@@ -14,9 +14,6 @@ class RenderWidget;
 
 class WindowNativeService final
 {
-public:
-    RenderWidget* GetRenderWidget();
-
 private:
     WindowNativeService(Private::WindowBackend* wbackend);
 

@@ -262,7 +262,7 @@ DAVA::float32 FTFont::GetDescendScale() const
 Mutex FTInternalFont::drawStringMutex;
 
 /**
- /brief Wrap around FT_MulFix, because this function is written in assembler and 
+ /brief Wrap around FT_MulFix, because this function is written in assembler and
         during optimization beside her badly generated machine code.
         ALWAYS USE THIS FUNCTION INSTEAD FT_MulFix!
  */
@@ -299,7 +299,7 @@ FTInternalFont::FTInternalFont(const FilePath& path)
 
     Memset(&streamFont, 0, sizeof(FT_StreamRec));
     streamFont.descriptor.pointer = static_cast<void*>(fontFile);
-    streamFont.size = fontFile->GetSize();
+    streamFont.size = static_cast<uint32>(fontFile->GetSize());
     streamFont.read = &StreamLoad;
     streamFont.close = &StreamClose;
 
