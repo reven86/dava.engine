@@ -549,18 +549,27 @@ void AssetCacheServerWindow::UpdateSharedPoolsCombo()
     const DAVA::Map<PoolID, SharedPool>& pools = serverCore.Settings().GetSharedPools();
     comboBoxIDs.reserve(pools.size());
 
-    for (auto& poolEntry : pools)
+    auto addPool = [&](PoolID poolID, const char* poolName)
     {
-        const SharedPool& pool = poolEntry.second;
+        ui->poolComboBox->addItem(poolID == 0 ? "none" : poolName);
+        comboBoxIDs.push_back(poolID);
 
-        ui->poolComboBox->addItem(pool.poolID == 0 ? "none" : pool.poolName.c_str());
-        comboBoxIDs.push_back(pool.poolID);
-
-        if (pool.poolID == currentID)
+        if (poolID == currentID)
         {
             ui->poolComboBox->setCurrentIndex(static_cast<int>(comboBoxIDs.size()) - 1);
         }
+    };
+
+    for (auto& poolEntry : pools)
+    {
+        const SharedPool& pool = poolEntry.second;
+        if (pool.poolID != 0)
+        {
+            addPool(pool.poolID, pool.poolName.c_str());
+        }
     }
+
+    addPool(0, "none");
 }
 
 void AssetCacheServerWindow::UpdateSharedPoolsList()

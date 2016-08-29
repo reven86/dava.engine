@@ -44,8 +44,16 @@ DAVA::List<SharedPoolParams> ParsePoolsReply(const QByteArray& data)
         }
         QJsonObject poolObject = val.toObject();
 
+        bool convertOk = false;
+        qulonglong poolID = poolObject["key"].toString().toULongLong(&convertOk);
+        if (!convertOk)
+        {
+            DAVA::Logger::Error("Can't convert %s to qulonglong", poolObject["key"].toString().toStdString().c_str());
+            return DAVA::List<SharedPoolParams>();
+        }
+
         SharedPoolParams pool;
-        pool.poolID = poolObject["key"].toString().toInt();
+        pool.poolID = static_cast<PoolID>(poolID);
         pool.name = poolObject["name"].toString().toStdString();
         pool.description = poolObject["description"].toString().toStdString();
         pools.push_back(std::move(pool));
@@ -90,9 +98,23 @@ DAVA::List<SharedServerParams> ParseServersReply(const QByteArray& data)
         }
         QJsonObject poolObject = val.toObject();
 
+        bool convertOk = false;
+        qulonglong serverID = poolObject["key"].toString().toULongLong(&convertOk);
+        if (!convertOk)
+        {
+            DAVA::Logger::Error("Can't convert %s to qulonglong", poolObject["key"].toString().toStdString().c_str());
+            return DAVA::List<SharedServerParams>();
+        }
+        qulonglong poolID = poolObject["poolKey"].toString().toULongLong(&convertOk);
+        if (!convertOk)
+        {
+            DAVA::Logger::Error("Can't convert %s to qulonglong", poolObject["poolKey"].toString().toStdString().c_str());
+            return DAVA::List<SharedServerParams>();
+        }
+
         SharedServerParams server;
-        server.serverID = poolObject["key"].toString().toInt();
-        server.poolID = poolObject["poolKey"].toString().toInt();
+        server.serverID = static_cast<ServerID>(serverID);
+        server.poolID = static_cast<PoolID>(poolID);
         server.name = poolObject["name"].toString().toStdString();
         server.ip = poolObject["ip"].toString().toStdString();
         server.port = poolObject["port"].toInt();
@@ -111,7 +133,17 @@ ServerID ParseAddReply(const QByteArray& data)
         DAVA::Logger::Error("Not a valid JSON document '%s'", data.data());
         return 0;
     }
+
     QJsonObject rootObj = document.object();
-    return rootObj["key"].toString().toInt();
+
+    bool convertOk = false;
+    qulonglong serverID = rootObj["key"].toString().toULongLong(&convertOk);
+    if (!convertOk)
+    {
+        DAVA::Logger::Error("Can't convert %s to qulonglong", rootObj["key"].toString().toStdString().c_str());
+        return 0;
+    }
+
+    return static_cast<ServerID>(serverID);
 }
 }

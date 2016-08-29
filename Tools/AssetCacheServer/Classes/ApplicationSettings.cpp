@@ -105,7 +105,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     for (auto& poolEntry : sharedPools)
     {
         const SharedPool& pool = poolEntry.second;
-        archive->SetUInt32(DAVA::Format("Pool_%u_ID", poolIndex), pool.poolID);
+        archive->SetUInt64(DAVA::Format("Pool_%u_ID", poolIndex), pool.poolID);
         archive->SetString(DAVA::Format("Pool_%u_name", poolIndex), pool.poolName);
         archive->SetString(DAVA::Format("Pool_%u_description", poolIndex), pool.poolDescription);
         archive->SetBool(DAVA::Format("Pool_%u_enabled", poolIndex), pool.enabled);
@@ -117,7 +117,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
         for (auto& serverEntry : pool.servers)
         {
             const SharedServer& server = serverEntry.second;
-            archive->SetUInt32(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), server.serverID);
+            archive->SetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), server.serverID);
             archive->SetString(DAVA::Format("Pool_%u_Server_%u_name", poolIndex, serverIndex), server.serverName);
             archive->SetString(DAVA::Format("Pool_%u_Server_%u_ip", poolIndex, serverIndex), server.remoteParams.ip);
             archive->SetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex), server.remoteParams.enabled);
@@ -128,8 +128,8 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     }
 
     archive->SetBool("SharedForOthers", sharedForOthers);
-    archive->SetUInt32("OwnPoolID", ownPoolID);
-    archive->SetUInt32("OwnID", ownID);
+    archive->SetUInt64("OwnPoolID", ownPoolID);
+    archive->SetUInt64("OwnID", ownID);
     archive->SetString("OwnName", ownName);
 }
 
@@ -161,7 +161,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 
     for (DAVA::uint32 poolIndex = 0; poolIndex < poolsSize; ++poolIndex)
     {
-        DAVA::uint32 poolID = archive->GetUInt32(DAVA::Format("Pool_%u_ID", poolIndex));
+        PoolID poolID = archive->GetUInt64(DAVA::Format("Pool_%u_ID", poolIndex));
         SharedPool& pool = sharedPools[poolID];
         pool.poolID = poolID;
         pool.poolName = archive->GetString(DAVA::Format("Pool_%u_name", poolIndex));
@@ -172,7 +172,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 
         for (DAVA::uint32 serverIndex = 0; serverIndex < serversSize; ++serverIndex)
         {
-            DAVA::uint32 serverID = archive->GetUInt32(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex));
+            ServerID serverID = archive->GetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex));
             SharedServer& server = pool.servers[serverID];
             server.serverID = serverID;
             server.poolID = poolID;
@@ -183,8 +183,8 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     }
 
     sharedForOthers = archive->GetBool("SharedForOthers", DEFAULT_SHARED_FOR_OTHERS);
-    ownPoolID = archive->GetUInt32("OwnPoolID", 0);
-    ownID = archive->GetUInt32("OwnID", 0);
+    ownPoolID = archive->GetUInt64("OwnPoolID", 0);
+    ownID = archive->GetUInt64("OwnID", 0);
     ownName = archive->GetString("OwnName");
 }
 

@@ -142,7 +142,7 @@ void SharedDataRequester::RemoveSharedServer(ServerID serverID)
         DeleteLater(unshareRequest);
     }
 
-    QString s = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=unshare&key=%u").arg(serverID);
+    QString s = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=unshare&key=%1").arg(serverID);
     //DAVA::Logger::Debug("Sending request: %s", s.toStdString().c_str());
     unshareRequest = networkManager->get(QNetworkRequest(QUrl(s)));
     connect(unshareRequest, &QNetworkReply::finished, this, &SharedDataRequester::OnRemoveServerFinished);

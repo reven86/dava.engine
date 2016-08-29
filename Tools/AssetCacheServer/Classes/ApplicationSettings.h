@@ -24,8 +24,8 @@ struct RemoteServerParams
     bool enabled = false;
 };
 
-using ServerID = DAVA::uint32;
-using PoolID = DAVA::uint32;
+using ServerID = DAVA::uint64;
+using PoolID = DAVA::uint64;
 
 struct SharedPoolParams
 {
