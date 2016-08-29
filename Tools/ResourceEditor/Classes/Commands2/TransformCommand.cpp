@@ -1,9 +1,9 @@
 #include "Commands2/TransformCommand.h"
-
+#include "Commands2/RECommandIDs.h"
 #include "Scene3D/Entity.h"
 
 TransformCommand::TransformCommand(Selectable object_, const DAVA::Matrix4& origTransform_, const DAVA::Matrix4& newTransform_)
-    : Command2(CMDID_TRANSFORM, "Transform")
+    : RECommand(CMDID_TRANSFORM, "Transform")
     , object(object_)
     , undoTransform(origTransform_)
     , redoTransform(newTransform_)

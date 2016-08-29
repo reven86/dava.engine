@@ -25,6 +25,9 @@
 #include "Debug/Profiler.h"
 #include "Concurrency/LockGuard.h"
 
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
 #endif

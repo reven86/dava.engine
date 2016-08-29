@@ -1,18 +1,18 @@
 #ifndef __CONVERT_TO_SHADOW_COMMAND_H__
 #define __CONVERT_TO_SHADOW_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "DAVAEngine.h"
 
-class ConvertToShadowCommand : public Command2
+class ConvertToShadowCommand : public RECommand
 {
 public:
     ConvertToShadowCommand(DAVA::Entity* entity, DAVA::RenderBatch* batch);
     ~ConvertToShadowCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     static bool CanConvertBatchToShadow(DAVA::RenderBatch* renderBatch);
 

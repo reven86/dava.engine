@@ -54,7 +54,7 @@ public slots:
     void OnValueChanged();
     void OnEmitterYamlPathChanged(const QString& newPath);
     void OnEmitterPositionChanged();
-    void OnCommand(SceneEditor2* scene, const Command2* command, bool redo);
+    void OnCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
 protected:
     void UpdateProperties();

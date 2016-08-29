@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -38,7 +40,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -60,6 +61,8 @@
 #include "Debug/Profiler.h"
 
 #include "Core.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include <PackManager/Private/PackManagerImpl.h>
 
 namespace DAVA
 {
@@ -237,10 +240,6 @@ void Core::CreateSingletons()
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    new AssetsManager();
-#endif
-
 #if defined __DAVAENGINE_IPHONE__
 // not used
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -254,7 +253,7 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManager());
+    packManager.reset(new PackManagerImpl());
 
     new LocalNotificationController();
 
@@ -340,8 +339,8 @@ void Core::ReleaseSingletons()
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    AssetsManager::Instance()->Release();
+#ifdef __DAVAENGINE_ANDROID__
+    AssetsManagerAndroid::Instance()->Release();
 #endif
 
     SystemTimer::Instance()->Release();
@@ -896,10 +895,12 @@ Vector2 Core::GetWindowMinimumSize() const
     return Vector2();
 }
 
-PackManager& Core::GetPackManager()
+IPackManager& Core::GetPackManager()
 {
     DVASSERT(packManager);
     return *packManager;
 }
 
 } // namespace DAVA
+
+#endif //!__DAVAENGINE_COREV2__

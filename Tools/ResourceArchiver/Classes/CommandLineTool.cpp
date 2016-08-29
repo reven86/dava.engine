@@ -23,6 +23,11 @@ void CommandLineTool::SetOkCode(int code)
     codeOk = code;
 }
 
+bool CommandLineTool::ParseOptions(const DAVA::Vector<DAVA::String>& cmdline)
+{
+    return options.Parse(cmdline);
+}
+
 bool CommandLineTool::ParseOptions(uint32 argc, char* argv[])
 {
     return options.Parse(argc, argv);
@@ -30,7 +35,7 @@ bool CommandLineTool::ParseOptions(uint32 argc, char* argv[])
 
 void CommandLineTool::PrintUsage() const
 {
-    Logger::Info("%s", options.GetUsageString().c_str());
+    Logger::Warning("%s", options.GetUsageString().c_str());
 }
 
 String CommandLineTool::GetUsageString() const

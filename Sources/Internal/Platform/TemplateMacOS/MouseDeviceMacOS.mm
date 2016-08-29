@@ -63,7 +63,11 @@ bool MouseDeviceMacOS::SkipEvents(const UIEvent* event)
 
 void MouseDeviceMacOS::MovePointerToWindowCenter()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    NSRect windowRect;
+#else
     NSRect windowRect = [[static_cast<NSView*>(Core::Instance()->GetNativeView()) window] frame];
+#endif
     NSRect screenRect = [[NSScreen mainScreen] frame];
 
     // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates

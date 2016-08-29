@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
 #define __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAEngine.h"
 #include "Platform/TemplateMacOS/CoreMacOSPlatformBase.h"
 #include "Functional/Signal.h"
@@ -25,3 +27,4 @@ private:
 };
 
 #endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
+#endif // !__DAVAENGINE_COREV2__

@@ -1011,7 +1011,7 @@ ImageInfo DDSReaderImpl::GetImageInfo()
             headersSize += sizeof(dds::DDS_HEADER_DXT10);
         }
 
-        info.dataSize = file->GetSize() - headersSize;
+        info.dataSize = static_cast<uint32>(file->GetSize()) - headersSize;
         info.mipmapsCount = Max(mainHeader.mipMapCount, 1u); // for dds, image without multiple mipmaps has mipcount = 0, for us - it's 1
         info.faceCount = faceCount;
     }
@@ -1034,7 +1034,7 @@ bool DDSReaderImpl::AddCRC()
         return false;
     }
 
-    const uint32 fileSize = file->GetSize();
+    const uint32 fileSize = static_cast<uint32>(file->GetSize());
     Vector<char8> fileBuffer(fileSize);
 
     file->Seek(0, File::SEEK_FROM_START);

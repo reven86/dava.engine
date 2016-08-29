@@ -44,7 +44,10 @@ STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}           
 #
 FIND_SYSTEM_LIBRARY                   
-FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}        
+FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
+#
+FIND_PACKAGE
+FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -54,6 +57,9 @@ BINARY_WIN32_DIR_RELWITHDEB
 BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
+#
+EXCLUDE_FROM_ALL
+#
 )
 #
 macro ( load_external_modules EXTERNAL_MODULES )
@@ -73,13 +79,33 @@ macro ( load_external_modules EXTERNAL_MODULES )
     endforeach()
 endmacro()
 #
+macro( reset_MAIN_MODULE_VALUES )
+    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+                                         QT_DEPLOY_LIST_VALUE 
+                                         QT_LINKAGE_LIST 
+                                         QT_LINKAGE_LIST_VALUE 
+                                         DEPENDENT_LIST )
+        set( ${VALUE} )
+        set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
+    endforeach()
+endmacro()
+#
 macro( setup_main_module )
-
     if( NOT MODULE_TYPE )
         set( MODULE_TYPE INLINE )
     endif()
 
+    set( ORIGINAL_NAME_MODULE ${NAME_MODULE} )
+
     if( NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+        get_property( MODULES_ARRAY GLOBAL PROPERTY MODULES_ARRAY )
+        list (FIND MODULES_ARRAY ${NAME_MODULE} _index)
+        if ( JOIN_PROJECT_NAME OR ${_index} GREATER -1)
+            set( NAME_MODULE ${NAME_MODULE}_${PROJECT_NAME} )
+        endif() 
+        list( APPEND MODULES_ARRAY ${NAME_MODULE} )
+        set_property( GLOBAL PROPERTY MODULES_ARRAY "${MODULES_ARRAY}" )
+
         project ( ${NAME_MODULE} )
         include ( CMake-common )
     endif()
@@ -90,11 +116,11 @@ macro( setup_main_module )
     get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
 
     list (FIND DAVA_COMPONENTS "ALL" _index)
-    if ( ${_index} GREATER -1)
+    if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
         set( INIT true )
     else()
-        if( NAME_MODULE )
-            list (FIND DAVA_COMPONENTS ${NAME_MODULE} _index)
+        if( ORIGINAL_NAME_MODULE )
+            list (FIND DAVA_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
             if ( ${_index} GREATER -1)
                 set( INIT true )
             endif()
@@ -102,6 +128,7 @@ macro( setup_main_module )
             set( INIT true )
         endif()
     endif()
+
 
     if ( INIT )
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
@@ -148,7 +175,12 @@ macro( setup_main_module )
                     list ( APPEND STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} ${${NAME}_LIBRARY} )
                 endif()
             endif()
-        endforeach()        
+        endforeach()
+
+        #"FIND PACKAGE"
+        foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+            find_package( ${NAME} )
+        endforeach()
 
         #"ERASE FILES"
         foreach( PLATFORM  ${DAVA_PLATFORM_LIST} )
@@ -196,6 +228,8 @@ macro( setup_main_module )
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
                      )
+
+
         list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
         list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
@@ -248,11 +282,11 @@ macro( setup_main_module )
 
         #"INCLUDES_DIR"
         load_property( PROPERTY_LIST INCLUDES )
-        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
-            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
-        endif()        
         if( INCLUDES )
             include_directories( "${INCLUDES}" )  
+        endif()
+        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
+            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
@@ -266,7 +300,7 @@ macro( setup_main_module )
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
-                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )            
+                append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
             elseif( ${MODULE_TYPE} STREQUAL "DYNAMIC" )
                 add_library( ${NAME_MODULE} SHARED  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 load_property( PROPERTY_LIST TARGET_MODULES_LIST )
@@ -290,6 +324,12 @@ macro( setup_main_module )
 
             endif()
 
+            file_tree_check( "${CMAKE_CURRENT_LIST_DIR}" )
+
+            if( TARGET_FILE_TREE_FOUND )
+                add_dependencies(  ${NAME_MODULE} FILE_TREE_${NAME_MODULE} )
+            endif()
+
             if( DEFINITIONS_PRIVATE )
                 add_definitions( ${DEFINITIONS_PRIVATE} )
             endif()
@@ -298,13 +338,12 @@ macro( setup_main_module )
                 add_definitions( ${DEFINITIONS_PRIVATE_${DAVA_PLATFORM_CURENT}} )
             endif()
 
+            if( INCLUDES_PRIVATE )
+                include_directories( ${INCLUDES_PRIVATE} ) 
+            endif() 
 
             if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
-            endif() 
-
-            if( INCLUDES_PRIVATE )
-                include_directories( ${INCLUDES_PRIVATE} ) 
             endif() 
 
 
@@ -330,20 +369,27 @@ macro( setup_main_module )
 
             foreach ( FILE ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
                 target_link_libraries  ( ${NAME_MODULE} optimized ${FILE} )
-            endforeach () 
+            endforeach ()
+
+            if (QT5_FOUND)
+                link_with_qt5(${PROJECT_NAME})
+            endif()
 
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
-            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )     
-            reset_property( INCLUDES_PRIVATE )            
-            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )            
+            reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )
+            reset_property( INCLUDES_PRIVATE )
+            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
             endif()
 
         endif()
+
+        set_property( GLOBAL PROPERTY MODULES_NAME "${NAME_MODULE}" )
+
     endif()
 
 endmacro ()

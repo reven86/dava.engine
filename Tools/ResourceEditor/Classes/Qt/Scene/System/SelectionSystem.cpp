@@ -2,6 +2,7 @@
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -499,11 +500,10 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
+void SceneSelectionSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
-    DVASSERT(command != nullptr);
-    static const DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };
-    if (command->MatchCommandIDs(commandIds))
+    static const DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };
+    if (commandNotification.MatchCommandIDs(commandIds))
     {
         invalidSelectionBoxes = true;
     }
