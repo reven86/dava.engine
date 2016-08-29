@@ -26,6 +26,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "LocalizationSystem",
         "SoundSystem",
         "DownloadManager",
+        "PackManager"
     };
     
     DAVA::Engine e;

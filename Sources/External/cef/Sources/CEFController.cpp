@@ -195,9 +195,9 @@ void CEFControllerImpl::CleanCache()
     size_t cacheSize = 0;
     for (const FilePath& path : cacheDirContent)
     {
-        uint32 size = 0;
+        uint64 size = 0;
         fs->GetFileSize(path, size);
-        cacheSize += size;
+        cacheSize += static_cast<size_t>(size);
 
         if (cacheSize > cacheSizeLimit)
         {

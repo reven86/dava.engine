@@ -89,7 +89,7 @@ private:
         \brief Convert HTTP code to Download error
         \param[in] code HTTP code
      */
-    DownloadError HttpCodeToDownloadError(uint32 code) const;
+    DownloadError HttpCodeToDownloadError(long code) const;
     /**
         \brief Create one of easy handles to download content. Returns a pointer to new created curl easy handle
         \param[in] part - pointer to download part which contains data for current download thread
@@ -151,7 +151,7 @@ private:
     CURLM* multiHandle;
     FilePath storePath;
     String downloadUrl;
-    int32 operationTimeout;
+    long operationTimeout; // curl use long (sizeof(long) == 8 on macos)
     RawTimer inactivityConnectionTimer;
     uint64 remoteFileSize;
     uint64 sizeToDownload;

@@ -9,7 +9,6 @@ namespace DAVA
 class Landscape;
 }
 
-class Command2;
 class VisibilityCheckSystem : public DAVA::SceneSystem, VisibilityCheckRendererDelegate
 {
 public:

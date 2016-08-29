@@ -175,6 +175,10 @@ void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement,
         {
             AddStatusbarPoint(url, action, windowInfo);
         }
+        else
+        {
+            DVASSERT(false);
+        }
     }
 }
 

@@ -2,7 +2,8 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyDataValidator.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
+
 QtPropertyData::ChildKey::ChildKey(const QtPropertyData* child_)
     : child(child_)
 {
@@ -802,10 +803,10 @@ void QtPropertyData::SetOWViewport(QWidget* viewport)
     }
 }
 
-Command2::Pointer QtPropertyData::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyData::CreateLastCommand() const
 {
     // can be re-implemented by sub-class
-    return Command2::CreateEmptyCommand();
+    return std::unique_ptr<DAVA::Command>();
 }
 
 QVariant QtPropertyData::GetValueInternal() const

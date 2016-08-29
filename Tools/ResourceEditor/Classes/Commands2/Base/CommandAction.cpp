@@ -1,15 +1,17 @@
 #include "Commands2/Base/CommandAction.h"
+#include "Debug/DVAssert.h"
 
-CommandAction::CommandAction(DAVA::int32 _id, const DAVA::String& _text)
-    : Command2(_id, _text)
+CommandAction::CommandAction(DAVA::uint32 id, const DAVA::String& text)
+    : RECommand(id, text)
 {
 }
 
 void CommandAction::Undo()
 {
+    DVASSERT(false);
 }
 
-DAVA::Entity* CommandAction::GetEntity() const
+bool IsCommandAction(const DAVA::Command* command)
 {
-    return nullptr;
+    return dynamic_cast<const CommandAction*>(command) != nullptr;
 }

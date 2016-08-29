@@ -565,7 +565,7 @@ public:
     {
         std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
         {
-            module->WindowClosed(key);
+            module->OnWindowClosed(key);
         });
     }
 

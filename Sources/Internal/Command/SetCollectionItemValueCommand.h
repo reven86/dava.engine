@@ -1,21 +1,20 @@
 #ifndef __DAVAFRAMEWORK_SETCOLLECTIONITEMVALUECOMMAND_H__
 #define __DAVAFRAMEWORK_SETCOLLECTIONITEMVALUECOMMAND_H__
 
-#include "ICommand.h"
-#include "ObjectHandle.h"
+#include "Command/Command.h"
+#include "Command/ObjectHandle.h"
 
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
 {
 class InspColl;
-class SetCollectionItemValueCommand : public ICommand
+class SetCollectionItemValueCommand : public Command
 {
 public:
     SetCollectionItemValueCommand(const ObjectHandle& object, const InspColl* collection,
                                   const VariantType& key, const VariantType& newValue);
 
-    void Execute() override;
     void Redo() override;
     void Undo() override;
 
