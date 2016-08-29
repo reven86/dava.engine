@@ -53,9 +53,9 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     {
         String relative = filename.GetRelativePathname("~res:/");
 
-        // now with PackManager we can improve perfomance by lookup pack name
-        // from DB with all files, then check if such pack mounted and from
-        // mountedPackIndex find by name archive with file or skip to next step
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
 #ifdef __DAVAENGINE_COREV2__
         IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
 #else
