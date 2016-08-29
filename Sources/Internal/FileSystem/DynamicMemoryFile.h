@@ -81,7 +81,7 @@ public:
     \brief Truncate a file to a specified length
     \param size A size, that file is going to be truncated to
     */
-    bool Truncate(int32 size) override;
+    bool Truncate(uint64 size) override;
 
 protected:
     uint64 currentPtr;
