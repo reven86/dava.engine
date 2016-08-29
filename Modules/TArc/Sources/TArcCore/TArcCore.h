@@ -15,104 +15,52 @@ namespace TArc
 {
 class ClientModule;
 class ControllerModule;
+class ConsoleModule;
 
-class Core final : private CoreInterface, private UIManager::Delegate
+class Core final
 {
 public:
     Core(Engine& engine_);
     ~Core();
 
-    template<typename T>
-    void CreateModule()
+    template<typename T, typename... Args>
+    void CreateModule(const Args&... args)
     {
-        static_assert(std::is_base_of<TArc::ClientModule, T>::value ||
-                      std::is_base_of<TArc::ControllerModule, T>::value,
-                      "Module should be Derived from tarc::ControllerModule or tarc::ClientModule");
-        AddModule(new T());
+        static_assert(std::is_base_of<ConsoleModule, T>::value ||
+                        std::is_base_of<ClientModule, T>::value ||
+                        std::is_base_of<ControllerModule, T>::value,
+                        "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+
+        bool isConsoleMode = IsConsoleMode();
+        bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
+        if (isConsoleMode == true && isConsoleModule == false)
+        {
+            DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
+            return;
+        }
+
+        if (isConsoleMode == false && isConsoleModule == true)
+        {
+            DVASSERT_MSG(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
+            return;
+        }
+
+        AddModule(new T(args...));
     }
 
 private:
+    bool IsConsoleMode() const;
+    void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);
 
-    void OnLoopStarted();
-    void OnWindowCreated(Window& w);
-    void OnFrame();
-    void OnLoopStopped();
-
-    // Inherited via ContextAccessor
-    void ForEachContext(const Function<void(DataContext&)>& functor) override;
-    DataContext& GetGlobalContext() override;
-    DataContext& GetContext(DataContext::ContextID contextID) override;
-    DataContext& GetActiveContext() override;
-    bool HasActiveContext() const override;
-    DataWrapper CreateWrapper(const ReflectedType* type) override;
-    DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override;
-    EngineContext& GetEngineContext() override;
-
-    // Inherited via ContextManager
-    DataContext::ContextID CreateContext() override;
-    void DeleteContext(DataContext::ContextID contextID) override;
-    void ActivateContext(DataContext::ContextID contextID) override;
-
-    void ActivateContext(DataContext* context);
-    RenderWidget* GetRenderWidget() const;
-
-    // Inherited via OperationInvoker
-    void RegisterOperation(int operationID, AnyFn&& fn) override;
-    void Invoke(int operationId) override;
-    void Invoke(int operationId, const Any& a) override;
-    void Invoke(int operationId, const Any& a1, const Any& a2) override;
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override;
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override;
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override;
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override;
-
-    template<typename... Args>
-    void InvokeImpl(int operationId, const Args&... args);
-
-    // Inherited via UIManager::Delegate
-    bool WindowCloseRequested(const WindowKey& key) override;
-    void WindowClosed(const WindowKey& key) override;
-
-    /////////// Local methods ///////////////
-    AnyFn FindOperation(int operationId);
-
 private:
-    Engine& engine;
+    class Impl;
+    class GuiImpl;
+    class ConsoleImpl;
 
-    std::unique_ptr<DataContext> globalContext;
-    Vector<std::unique_ptr<DataContext>> contexts;
-    DataContext* activeContext = nullptr;
-
-    Vector<std::unique_ptr<ClientModule>> modules;
-    ControllerModule* controllerModule = nullptr;
-
-    Vector<DataWrapper> wrappers;
-    UnorderedMap<int, AnyFn> globalOperations;
-
-    std::unique_ptr<UIManager> uiManager;
+    std::unique_ptr<Impl> impl;
 };
-
-template<typename... Args>
-void Core::InvokeImpl(int operationId, const Args&... args)
-{
-    AnyFn fn = FindOperation(operationId);
-    if (!fn.IsValid())
-    {
-        Logger::Error("Operation with ID %d has not been registered yet", operationId);
-        return;
-    }
-
-    try
-    {
-        fn.Invoke(args...);
-    }
-    catch (const AnyFn::Exception& e)
-    {
-        Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
-    }
-}
 
 } // namespace TArc
 } // namespace DAVA

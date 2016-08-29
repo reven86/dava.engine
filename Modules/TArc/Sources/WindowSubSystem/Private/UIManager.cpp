@@ -317,7 +317,7 @@ protected:
             if (managerDelegate->WindowCloseRequested(iter->first))
             {
                 iter->second.window->deleteLater();
-                managerDelegate->WindowClosed(iter->first);
+                managerDelegate->OnWindowClosed(iter->first);
                 windows.erase(iter);
             }
             else

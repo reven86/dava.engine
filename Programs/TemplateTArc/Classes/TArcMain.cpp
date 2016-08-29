@@ -1,5 +1,6 @@
 #include "SceneViewModule.h"
 #include "LibraryModule.h"
+#include "ConsoleCommandModule.h"
 
 #include "TArcCore/TArcCore.h"
 
@@ -26,13 +27,33 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "SoundSystem",
         "DownloadManager",
     };
-
+    
     DAVA::Engine e;
-    DAVA::TArc::Core core(e);
-    core.CreateModule<LibraryModule>();
-    core.CreateModule<SceneViewModule>();
-
     e.SetOptions(appOptions);
-    e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+
+    bool isConsoleMode = cmdline.size() > 1;
+    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE :DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+    DAVA::TArc::Core core(e);
+
+    if (!isConsoleMode)
+    {
+        core.CreateModule<LibraryModule>();
+        core.CreateModule<SceneViewModule>();
+    }
+    else
+    {
+        int argv = static_cast<int>(cmdline.size());
+        int currentArg = 1;
+        while (currentArg < argv)
+        {
+            if (cmdline[currentArg] == "staticocclusion")
+            {
+                ++currentArg;
+                DVASSERT(currentArg < argv);
+                core.CreateModule<ConsoleCommandModule>(cmdline[currentArg]);
+            }
+            ++currentArg;
+        }
+    }
     return e.Run();
 }
