@@ -50,7 +50,7 @@ inline const Type* Reflection::GetValueType() const
 
 inline ReflectedObject Reflection::GetValueObject() const
 {
-    return object;
+    return vw->GetValueObject(object);
 }
 
 inline Any Reflection::GetValue() const
