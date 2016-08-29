@@ -158,7 +158,7 @@ bool DynamicMemoryFile::Truncate(uint64 size)
     if (!(fileAttributes & File::WRITE))
         return false;
 
-    data.resize(size);
+    data.resize(size_t(size));
     currentPtr = Min(currentPtr, size);
     isEof = (currentPtr == size);
 
