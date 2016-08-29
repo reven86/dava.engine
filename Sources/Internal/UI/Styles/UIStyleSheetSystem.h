@@ -31,7 +31,7 @@ public:
 
     void Update(UIControl* root);
     void SetDirty();
-    void ResetDirty();
+    void CheckDirty();
 
 private:
     void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged);
@@ -50,6 +50,7 @@ private:
     int32 statsMatches = 0;
     int32 statsStyleSheetCount = 0;
     bool dirty = false;
+    bool needUpdate = false;
 };
 
 inline void UIStyleSheetSystem::SetDirty()
@@ -57,8 +58,9 @@ inline void UIStyleSheetSystem::SetDirty()
     dirty = true;
 }
 
-inline void UIStyleSheetSystem::ResetDirty()
+inline void UIStyleSheetSystem::CheckDirty()
 {
+    needUpdate = dirty;
     dirty = false;
 }
 };

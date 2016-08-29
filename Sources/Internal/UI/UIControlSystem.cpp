@@ -305,6 +305,11 @@ void UIControlSystem::Update()
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
+        update.Emit(timeElapsed);
+
+        styleSheetSystem->CheckDirty();
+        layoutSystem->CheckDirty();
+
         if (currentScreenTransition)
         {
             styleSheetSystem->Update(currentScreenTransition.Get());
@@ -316,13 +321,8 @@ void UIControlSystem::Update()
             layoutSystem->Update(currentScreen.Get());
         }
 
-        update.Emit(timeElapsed);
-
         styleSheetSystem->Update(popupContainer.Get());
         layoutSystem->Update(popupContainer.Get());
-
-        styleSheetSystem->ResetDirty();
-        layoutSystem->ResetDirty();
     }
 
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();

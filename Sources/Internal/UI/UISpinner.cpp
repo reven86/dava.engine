@@ -1,6 +1,7 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {

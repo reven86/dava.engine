@@ -27,7 +27,7 @@ public:
 
     void Update(UIControl* root);
     void SetDirty();
-    void ResetDirty();
+    void CheckDirty();
 
 private:
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
@@ -48,6 +48,7 @@ private:
     bool isRtl = false;
     bool autoupdatesEnabled = true;
     bool dirty = false;
+    bool needUpdate = false;
     Vector<ControlLayoutData> layoutData;
 };
 
@@ -56,8 +57,9 @@ inline void UILayoutSystem::SetDirty()
     dirty = true;
 }
 
-inline void UILayoutSystem::ResetDirty()
+inline void UILayoutSystem::CheckDirty()
 {
+    needUpdate = dirty;
     dirty = false;
 }
 }
