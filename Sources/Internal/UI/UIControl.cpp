@@ -1025,26 +1025,30 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         (*it)->isUpdated = false;
     }
 
-    if (styleSheetDirty || prevControlState != controlState)
+    if ((IsVisible() || styledProperties.test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
+        && (styleSheetDirty || (prevControlState != controlState)))
     {
         UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
         prevControlState = controlState;
     }
 
-    if (layoutDirty)
+    if (IsVisible())
     {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled())
+        if (layoutDirty)
         {
-            layoutSystem->ApplyLayout(this, true);
+            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+            if (layoutSystem->IsAutoupdatesEnabled())
+            {
+                layoutSystem->ApplyLayout(this, true);
+            }
         }
-    }
-    else if (layoutPositionDirty)
-    {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
+        else if (layoutPositionDirty)
         {
-            layoutSystem->ApplyLayoutNonRecursive(parent);
+            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+            if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
+            {
+                layoutSystem->ApplyLayoutNonRecursive(parent);
+            }
         }
     }
 
@@ -1560,6 +1564,7 @@ void UIControl::SystemVisible()
 
     ChangeViewState(eViewState::VISIBLE);
 
+    SetStyleSheetDirty();
     UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
@@ -2417,6 +2422,11 @@ void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet& set)
 bool UIControl::IsStyleSheetInitialized() const
 {
     return styleSheetInitialized;
+}
+
+bool UIControl::IsStyleSheetDirty() const
+{
+    return styleSheetDirty;
 }
 
 void UIControl::SetStyleSheetInitialized()

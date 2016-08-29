@@ -3,6 +3,8 @@
 #ifndef __DAVAENGINE_WINUAPFRAME_H__
 #define __DAVAENGINE_WINUAPFRAME_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -105,7 +107,7 @@ private:
     void OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher ^ sender, Windows::UI::Core::AcceleratorKeyEventArgs ^ keyEventArgs);
     void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
-    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
+    void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex, uint32 modifiers);
 
     void StartMainLoopThread(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
     void PreStartAppSettings();
@@ -127,6 +129,7 @@ private:
     void SendBackKeyEvents();
 
 private:
+    uint32 GetKeyboardModifier();
     Windows::UI::Xaml::Input::PointerRoutedEventArgs ^pressedEventArgs = nullptr;
 
     CorePlatformWinUAP* core = nullptr;
@@ -232,4 +235,5 @@ inline bool WinUAPXamlApp::IsPhoneApiDetected()
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_COREV2__
 #endif  // __DAVAENGINE_WINUAPFRAME_H__

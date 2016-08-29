@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Core/Core.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -22,3 +24,4 @@ int main(Platform::Array<Platform::String ^> ^ args)
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)
+#endif // !__DAVAENGINE_COREV2__

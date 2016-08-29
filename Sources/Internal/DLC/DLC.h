@@ -54,7 +54,7 @@ public:
     ~DLC();
 
     /**
-		\brief Starts DLC check-executing process, which will continue until the information from the remote server is received. 
+		\brief Starts DLC check-executing process, which will continue until the information from the remote server is received.
         DLC state machine will go into the READY state if update is required and there were no error, or in DONE state if no updates are required or there were some error.
     */
     void Check();
@@ -91,7 +91,7 @@ public:
     */
     int32 GetLastErrno() const;
 
-    /** 
+    /**
         \brief Return error details from patching process
     */
     PatchFileReader::PatchingErrorDetails GetLastErrorInfo() const;
@@ -111,6 +111,8 @@ public:
         \param[in] customLogFileName - output logs file name
     */
     void SetLogFileName(const FilePath& customLogFileName);
+
+    static String ToString(DownloadError e);
 
 protected:
     enum DLCEvent

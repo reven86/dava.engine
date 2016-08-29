@@ -392,7 +392,7 @@ std::unique_ptr<PVRFile> ReadFile(File* file, bool readMetaData /*= false*/, boo
 
     if (readData)
     {
-        uint32 compressedDataSize = file->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize);
+        uint32 compressedDataSize = static_cast<uint32>(file->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize));
         pvrFile->compressedData.resize(compressedDataSize);
         readSize = file->Read(pvrFile->compressedData.data(), compressedDataSize);
         if (readSize != compressedDataSize)

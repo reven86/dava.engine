@@ -2,146 +2,135 @@
 
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
+#include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/ResourceArchive.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
-struct PackPriorityComparator;
-
-class PackManagerImpl
+class PackManagerImpl : public IPackManager
 {
 public:
     PackManagerImpl() = default;
 
-    void Initialize(const FilePath& dbFile_,
-                    const FilePath& localPacksDir_,
-                    const FilePath& readOnlyPacksDir_,
-                    const String& packUrlCommon,
-                    const String& packUrlGpu,
-                    Signal<const PackManager::Pack&>& signal,
-                    Signal<const PackManager::Pack&>& signalDownload,
-                    Signal<const PackManager::IRequest&>& signal2);
+    void InitLocalCommonPacks(const FilePath& readOnlyPacksDir_,
+                              const FilePath& downloadPacksDir_,
+                              const Hints& hints_) override;
 
-    bool IsProcessingEnabled() const;
+    void InitLocalGpuPacks(const String& architecture_, const String& dbFileName) override;
 
-    void EnableProcessing();
+    bool IsGpuPacksInitialized() const override;
 
-    void DisableProcessing();
+    void InitRemotePacks(const String& urlToServerSuperpack) override;
 
-    void Update();
+    InitState GetInitState() const override;
 
-    const String& FindPack(const FilePath& relativePathInPack) const;
+    InitError GetInitError() const override;
 
-    const PackManager::Pack& RequestPack(const String& packName, float32 priority);
+    const String& GetInitErrorMessage() const override;
 
-    uint32 GetPackIndex(const String& packName);
+    bool CanRetryInit() const override;
 
-    PackManager::Pack& GetPack(const String& packName);
+    void RetryInit() override;
 
-    void MountDownloadedPacks(const FilePath&);
+    bool IsPausedInit() const override;
+
+    void PauseInit() override;
+
+    bool IsRequestingEnabled() const override;
+
+    void EnableRequesting() override;
+
+    void DisableRequesting() override;
+
+    void Update() override;
+
+    const String& FindPackName(const FilePath& relativePathInPack) const override;
+
+    const Pack& RequestPack(const String& packName) override;
+
+    const IRequest* FindRequest(const String& pack) const override;
+
+    void SetRequestOrder(const String& packName, float newPriority) override;
+
+    uint32 GetPackIndex(const String& packName) const;
+    Pack& GetPack(const String& packName);
+
+    const Pack& FindPack(const String& packName) const override;
+
+    void MountPacks(const Set<FilePath>& basePacks);
 
     void DeletePack(const String& packName);
 
-    const Vector<PackManager::Pack>& GetAllState() const;
+    uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
-    const FilePath& GetLocalPacksDir() const;
+    const Vector<Pack>& GetPacks() const override;
 
-    const String& GetRemotePacksURL(bool isGpu) const;
+    const FilePath& GetLocalPacksDirectory() const override;
 
-    Signal<const PackManager::Pack&>* onPackChange = nullptr;
-    Signal<const PackManager::Pack&>* packDownload = nullptr;
-    Signal<const PackManager::IRequest&>* onRequestChange = nullptr;
+    const String& GetSuperPackUrl() const;
+
+    const PackFormat::PackFile::FooterBlock& GetInitFooter() const
+    {
+        return initFooterOnServer;
+    }
+
+    const Hints& GetHints() const
+    {
+        return hints;
+    }
+
+    static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
 
 private:
-    FilePath dbFile;
+    void ContinueInitialization();
+    void FirstTimeInit();
+    void InitStarting();
+    void InitializePacks();
+    void MountCommonBasePacks();
+    void AskFooter();
+    void GetFooter();
+    void AskFileTable();
+    void GetFileTable();
+    void CompareLocalDBWitnRemoteHash();
+    void AskDB();
+    void GetDB();
+    void UnpackingDB();
+    void DeleteOldPacks();
+    void LoadPacksDataFromDB();
+    void MountDownloadedPacks();
+    void MountPackWithDependencies(Pack& pack, const FilePath& path);
+
     FilePath localPacksDir;
     FilePath readOnlyPacksDir;
-    String packsUrlCommon;
-    String packsUrlGpu;
+    String superPackUrl;
+    String architecture;
     bool isProcessingEnabled = false;
-    PackManager* packManager = nullptr;
     UnorderedMap<String, uint32> packsIndex;
-    Vector<PackManager::Pack> packs;
+    Vector<Pack> packs;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
+
+    FilePath dbZipInDoc;
+    FilePath dbZipInData;
+    FilePath dbInDoc;
+
+    String initLocalDBFileName;
+    String initErrorMsg;
+    InitState initState = InitState::FirstInit;
+    InitError initError = InitError::AllGood;
+    PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile usedPackFile; // current superpack info
+    Vector<uint8> buffer; // tmp buff
+    UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
+    Vector<ResourceArchive::FileInfo> initfilesInfo;
+    uint32 downloadTaskId = 0;
+    uint64 fullSizeServerData = 0;
+    bool initPaused = false;
+
+    List<FilePath> mountedCommonPacks;
+
+    Hints hints;
 };
-
-struct PackPriorityComparator
-{
-    bool operator()(const PackManager::Pack* lhs, const PackManager::Pack* rhs) const
-    {
-        return lhs->priority < rhs->priority;
-    }
-};
-
-inline bool PackManagerImpl::IsProcessingEnabled() const
-{
-    return isProcessingEnabled;
-}
-
-inline void PackManagerImpl::EnableProcessing()
-{
-    if (!isProcessingEnabled)
-    {
-        isProcessingEnabled = true;
-        requestManager->Start();
-    }
-}
-
-inline void PackManagerImpl::DisableProcessing()
-{
-    if (isProcessingEnabled)
-    {
-        isProcessingEnabled = false;
-        requestManager->Stop();
-    }
-}
-
-inline void PackManagerImpl::Update()
-{
-    if (isProcessingEnabled)
-    {
-        requestManager->Update();
-    }
-}
-
-inline const String& PackManagerImpl::FindPack(const FilePath& relativePathInPack) const
-{
-    return db->FindPack(relativePathInPack);
-}
-
-inline uint32 PackManagerImpl::GetPackIndex(const String& packName)
-{
-    auto it = packsIndex.find(packName);
-    if (it != end(packsIndex))
-    {
-        return it->second;
-    }
-    throw std::runtime_error("can't find pack with name: " + packName);
-}
-
-inline PackManager::Pack& PackManagerImpl::GetPack(const String& packName)
-{
-    uint32 index = GetPackIndex(packName);
-    return packs[index];
-}
-
-inline const Vector<PackManager::Pack>& PackManagerImpl::GetAllState() const
-{
-    return packs;
-}
-
-inline const FilePath& PackManagerImpl::GetLocalPacksDir() const
-{
-    return localPacksDir;
-}
-
-inline const String& PackManagerImpl::GetRemotePacksURL(bool isGpu) const
-{
-    if (isGpu)
-    {
-        return packsUrlGpu;
-    }
-    return packsUrlCommon;
-}
 
 } // end namespace DAVA

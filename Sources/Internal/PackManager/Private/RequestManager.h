@@ -25,14 +25,14 @@ public:
     void Pop();
 
     static const String packPostfix;
-    static const String hashPostfix;
     static const uint32 emptyZipArchiveHash = 0xD7CBC50E;
+    static const uint32 emptyLZ4HCArchiveCrc32 = 0xA4324938;
 
 private:
     void CheckRestartLoading();
 
     PackManagerImpl& packManager;
-    String currrentTopLoadingPack;
+    String currentTopLoadingPack;
     Vector<PackRequest> items;
 };
 } // end namespace DAVA

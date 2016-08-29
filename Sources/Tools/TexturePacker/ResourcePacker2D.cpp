@@ -14,6 +14,8 @@
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.4";
@@ -97,7 +99,11 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (Engine::Instance()->IsConsoleMode())
+#else
         if (Core::Instance()->IsConsoleMode())
+#endif
         {
             Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
         }
@@ -307,7 +313,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return (found != ignoredFileNames.end());
     };
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
@@ -376,7 +382,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 DefinitionFile::Collection definitionFileList;
                 definitionFileList.reserve(fileList->GetCount());
-                for (int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
+                for (uint32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
                     if (fileList->IsDirectory(fi))
                         continue;
@@ -452,7 +458,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
+#if defined(__DAVAENGINE_COREV2__)
+                if (Engine::Instance()->IsConsoleMode())
+#else
                 if (Core::Instance()->IsConsoleMode())
+#endif
                 {
                     Logger::Info("[%u files packed with flags: %s]", static_cast<uint32>(definitionFileList.size()), mergedFlags.c_str());
                 }
@@ -477,7 +487,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (fileList->IsDirectory(fi))
         {
@@ -553,7 +563,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     AssetCache::CachedItemValue value;
 
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
-    for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
@@ -583,7 +593,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     }
 
     return false;
-        
+
 #endif
 }
 

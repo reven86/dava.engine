@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "libcorkscrew_stab.h"
 #include <dlfcn.h>
 #include <unistd.h>
@@ -75,3 +77,5 @@ bool DynLoadLibcorkscrew()
     }
     return false;
 }
+
+#endif // !__DAVAENGINE_COREV2__

@@ -1,7 +1,7 @@
-#ifndef __ANDROID_LAYER_H__
-#define __ANDROID_LAYER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>
@@ -18,6 +18,4 @@
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "davaFrameworkLog", __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "davaFrameworkLog", __VA_ARGS__)
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-#endif //__ANDROID_LAYER_H__
+#endif // __DAVAENGINE_ANDROID__

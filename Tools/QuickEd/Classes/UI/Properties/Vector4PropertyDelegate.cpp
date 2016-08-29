@@ -56,6 +56,10 @@ bool Vector4PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
     DAVA::VariantType variantType;
 
     QStringList tokens = editor->text().split(";");
+    if (tokens.length() == 1) // try to split by space
+    {
+        tokens = editor->text().split(" ", QString::SkipEmptyParts);
+    }
 
     Vector4 val;
     int count = Min(tokens.size(), 4);

@@ -28,13 +28,15 @@
 
 // commands
 #include "Commands2/ParticleEditorCommands.h"
-#include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+
+#include "Actions/SaveEntityAsAction.h"
 
 namespace SceneTreeDetails
 {
@@ -44,7 +46,7 @@ QString GetParticlesConfigPath()
 }
 
 void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, DAVA::ParticleEmitter* emitter,
-                 bool askFileName, const QString& defaultName, const DAVA::Function<Command2::Pointer(const DAVA::FilePath&)>& commandCreator)
+                 bool askFileName, const QString& defaultName, const DAVA::Function<std::unique_ptr<DAVA::Command>(const DAVA::FilePath&)>& commandCreator)
 {
     askFileName |= emitter->configPath.IsEmpty();
 
@@ -73,7 +75,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
     scene->Exec(commandCreator(yamlPath));
     if (askFileName)
     {
-        scene->SetChanged(true);
+        scene->SetChanged();
     }
 }
 }
@@ -123,7 +125,7 @@ protected:
 
     void MarkStructureChanged()
     {
-        GetScene()->SetChanged(true);
+        GetScene()->SetChanged();
         isStructureChanged = true;
     }
 
@@ -144,7 +146,7 @@ protected:
 
     struct RemoveInfo
     {
-        RemoveInfo(Command2::Pointer&& command_, Selectable::Object* selectedObject_)
+        RemoveInfo(std::unique_ptr<DAVA::Command>&& command_, Selectable::Object* selectedObject_)
             : command(std::move(command_))
             , selectedObject(selectedObject_)
         {
@@ -156,7 +158,7 @@ protected:
         {
         }
 
-        Command2::Pointer command;
+        std::unique_ptr<DAVA::Command> command;
         Selectable::Object* selectedObject;
     };
 
@@ -164,7 +166,7 @@ protected:
     {
         SceneEditor2* sceneEditor = GetScene();
         SelectableGroup currentGroup = sceneEditor->selectionSystem->GetSelection();
-        DAVA::Vector<Command2::Pointer> commands;
+        DAVA::Vector<std::unique_ptr<DAVA::Command>> commands;
         commands.reserve(GetSelectedItemsCount());
         ForEachSelectedByType(type, [&commands, &currentGroup, callback](SceneTreeItem* item)
                               {
@@ -178,7 +180,7 @@ protected:
             sceneEditor->BeginBatch(text, static_cast<DAVA::uint32>(commands.size()));
             sceneEditor->selectionSystem->SetSelection(currentGroup);
             static_cast<SceneTree*>(GetParentWidget())->SyncSelectionToTree();
-            for (Command2::Pointer& command : commands)
+            for (std::unique_ptr<DAVA::Command>& command : commands)
             {
                 sceneEditor->Exec(std::move(command));
             }
@@ -351,7 +353,8 @@ private:
         QString filePath = FileDialog::getSaveFileName(nullptr, QStringLiteral("Save scene file"), baseDir, QStringLiteral("DAVA SceneV2 (*.sc2)"));
         if (!filePath.isEmpty())
         {
-            scene->Exec(Command2::Create<SaveEntityAsAction>(&selection, filePath.toStdString()));
+            SaveEntityAsAction saver(&selection, filePath.toStdString());
+            saver.Run();
         }
     }
 
@@ -460,7 +463,7 @@ private:
         DAVA::Entity* entity = entityItem->GetEntity();
         DVASSERT(DAVA::GetEffectComponent(entity) != nullptr);
 
-        GetScene()->Exec(Command2::Create<CommandAddParticleEmitter>(entity));
+        GetScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandAddParticleEmitter(entity)));
         MarkStructureChanged();
     }
 
@@ -486,7 +489,7 @@ private:
             DAVA::ParticleEmitterInstance* instance = effect->GetEmitterInstance(i);
             QString defName = effectName + "_" + QString::number(i + 1) + "_" + QString(instance->GetEmitter()->name.c_str()) + ".yaml";
             SceneTreeDetails::SaveEmitter(sceneEditor, effect, instance->GetEmitter(), forceAskFileName, defName, [&](const DAVA::FilePath& path) {
-                return Command2::Create<CommandSaveParticleEmitterToYaml>(effect, instance, path);
+                return std::unique_ptr<DAVA::Command>(new CommandSaveParticleEmitterToYaml(effect, instance, path));
             });
         }
     }
@@ -501,7 +504,7 @@ private:
             DAVA::ParticleEffectComponent* effect = DAVA::GetEffectComponent(entity);
             if (nullptr != effect)
             {
-                sceneEditor->Exec(Command2::Create<CMD>(entity, std::forward<Arg>(args)...));
+                sceneEditor->Exec(std::unique_ptr<CMD>(new CMD(entity, std::forward<Arg>(args)...)));
             }
         }
     }
@@ -579,7 +582,7 @@ protected:
 private:
     void CloneLayer()
     {
-        GetScene()->Exec(Command2::Create<CommandCloneParticleEmitterLayer>(layerItem->emitterInstance, layerItem->GetLayer()));
+        GetScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandCloneParticleEmitterLayer(layerItem->emitterInstance, layerItem->GetLayer())));
         MarkStructureChanged();
     }
 
@@ -589,13 +592,13 @@ private:
                              {
                                  SceneTreeItemParticleLayer* layerItem = static_cast<SceneTreeItemParticleLayer*>(item);
                                  DAVA::ParticleLayer* layer = layerItem->GetLayer();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterLayer>(layerItem->emitterInstance, layer), layer);
+                                 return RemoveInfo(std::unique_ptr<DAVA::Command>(new CommandRemoveParticleEmitterLayer(layerItem->emitterInstance, layer)), layer);
                              });
     }
 
     void AddForce()
     {
-        GetScene()->Exec(Command2::Create<CommandAddParticleEmitterForce>(layerItem->GetLayer()));
+        GetScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandAddParticleEmitterForce(layerItem->GetLayer())));
         MarkStructureChanged();
     }
 
@@ -627,7 +630,7 @@ private:
                              {
                                  SceneTreeItemParticleForce* forceItem = static_cast<SceneTreeItemParticleForce*>(item);
                                  DAVA::ParticleForce* force = forceItem->GetForce();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitterForce>(forceItem->layer, force), force);
+                                 return RemoveInfo(std::unique_ptr<DAVA::Command>(new CommandRemoveParticleEmitterForce(forceItem->layer, force)), force);
                              });
     }
 };
@@ -675,13 +678,13 @@ protected:
                              {
                                  SceneTreeItemParticleEmitter* emitterItem = static_cast<SceneTreeItemParticleEmitter*>(item);
                                  DAVA::ParticleEmitterInstance* emitterInstance = emitterItem->GetEmitterInstance();
-                                 return RemoveInfo(Command2::Create<CommandRemoveParticleEmitter>(emitterItem->effect, emitterInstance), emitterInstance);
+                                 return RemoveInfo(std::unique_ptr<DAVA::Command>(new CommandRemoveParticleEmitter(emitterItem->effect, emitterInstance)), emitterInstance);
                              });
     }
 
     void AddLayer()
     {
-        GetScene()->Exec(Command2::Create<CommandAddParticleEmitterLayer>(emitterItem->GetEmitterInstance()));
+        GetScene()->Exec(std::unique_ptr<DAVA::Command>(new CommandAddParticleEmitterLayer(emitterItem->GetEmitterInstance())));
         MarkStructureChanged();
     }
 
@@ -715,14 +718,14 @@ protected:
                                       DAVA::MakeFunction(this, &ParticleEmitterContextMenu::CreateSaveCommand));
     }
 
-    virtual Command2::Pointer CreateLoadCommand(const DAVA::String& path)
+    virtual std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::String& path)
     {
-        return Command2::Create<CommandLoadParticleEmitterFromYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
+        return std::unique_ptr<DAVA::Command>(new CommandLoadParticleEmitterFromYaml(emitterItem->effect, emitterItem->GetEmitterInstance(), path));
     }
 
-    virtual Command2::Pointer CreateSaveCommand(const DAVA::FilePath& path)
+    virtual std::unique_ptr<DAVA::Command> CreateSaveCommand(const DAVA::FilePath& path)
     {
-        return Command2::Create<CommandSaveParticleEmitterToYaml>(emitterItem->effect, emitterItem->GetEmitterInstance(), path);
+        return std::unique_ptr<DAVA::Command>(new CommandSaveParticleEmitterToYaml(emitterItem->effect, emitterItem->GetEmitterInstance(), path));
     }
 
 private:
@@ -751,16 +754,16 @@ protected:
         return false;
     }
 
-    Command2::Pointer CreateLoadCommand(const DAVA::String& path) override
+    std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::String& path) override
     {
         emitterItem->parent->innerEmitterPath = path;
-        return Command2::Create<CommandLoadInnerParticleEmitterFromYaml>(emitterItem->GetEmitterInstance(), path);
+        return std::unique_ptr<DAVA::Command>(new CommandLoadInnerParticleEmitterFromYaml(emitterItem->GetEmitterInstance(), path));
     }
 
-    Command2::Pointer CreateSaveCommand(const DAVA::FilePath& path) override
+    std::unique_ptr<DAVA::Command> CreateSaveCommand(const DAVA::FilePath& path) override
     {
         emitterItem->parent->innerEmitterPath = path;
-        return Command2::Create<CommandSaveInnerParticleEmitterToYaml>(emitterItem->GetEmitterInstance(), path);
+        return std::unique_ptr<DAVA::Command>(new CommandSaveInnerParticleEmitterToYaml(emitterItem->GetEmitterInstance(), path));
     }
 
 private:
@@ -986,9 +989,9 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
     }
 }
 
-void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void SceneTree::CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    static const DAVA::Vector<DAVA::int32> idsForUpdate =
+    static const DAVA::Vector<DAVA::uint32> idsForUpdate =
     { {
     CMDID_COMPONENT_ADD,
     CMDID_COMPONENT_REMOVE,
@@ -1010,7 +1013,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const Command2* command, bo
     CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
     } };
 
-    if (command->MatchCommandIDs(idsForUpdate))
+    if (commandNotification.MatchCommandIDs(idsForUpdate))
     {
         UpdateModel();
         treeUpdater->Update();

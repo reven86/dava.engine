@@ -8,6 +8,8 @@
 #include <QApplication>
 #include <QCryptographicHash>
 
+#include "Network/NetCore.h"
+
 void FrameworkWillTerminate()
 {
 }
@@ -30,6 +32,7 @@ int main(int argc, char* argv[])
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
         ServerCore server;
+        server.SetApplicationPath(QApplication::applicationFilePath().toStdString());
         AssetCacheServerWindow mainWindow(server);
 
         if (server.Settings().IsFirstLaunch())

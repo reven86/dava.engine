@@ -436,7 +436,7 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
 
 void PackageNode::RefreshStyles(ControlNode* node)
 {
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl());
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl(), true);
     for (int32 i = 0; i < node->GetCount(); i++)
     {
         RefreshStyles(node->Get(i));

@@ -12,6 +12,7 @@
 #include "FileSystem/YamlNode.h"
 #include "Debug/Stats.h"
 
+#include "Engine/EngineModule.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
@@ -60,8 +61,15 @@ static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
 Mutex SoundSystem::soundGroupsMutex;
 
+#if defined(__DAVAENGINE_COREV2__)
+SoundSystem::SoundSystem(Engine* e)
+    : engine(e)
+{
+    sigUpdateId = engine->update.Connect(this, &SoundSystem::Update);
+#else
 SoundSystem::SoundSystem()
 {
+#endif
     SetDebugMode(false);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -113,6 +121,10 @@ SoundSystem::SoundSystem()
 
 SoundSystem::~SoundSystem()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->update.Disconnect(sigUpdateId);
+#endif
+
     if (fmodEventSystem)
     {
         FMOD_VERIFY(fmodEventSystem->release());
@@ -170,7 +182,7 @@ SoundEvent* SoundSystem::CreateSoundEventByID(const FastName& eventName, const F
 SoundEvent* SoundSystem::CreateSoundEventFromFile(const FilePath& fileName, const FastName& groupName, uint32 flags /* = SOUND_EVENT_DEFAULT */, int32 priority /* = 128 */)
 {
     SoundEvent* event = nullptr;
-    
+
 #ifdef __DAVAENGINE_IPHONE__
     if ((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
     {
@@ -709,7 +721,7 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent* event)
 
     soundGroupsMutex.Unlock();
 }
-    
+
 #ifdef __DAVAENGINE_IPHONE__
 bool SoundSystem::IsSystemMusicPlaying()
 {
@@ -731,7 +743,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_OPENCALLBACK(const char* name, int unicode
     if (!file)
         return FMOD_ERR_FILE_NOTFOUND;
 
-    (*filesize) = file->GetSize();
+    (*filesize) = static_cast<uint32>(file->GetSize());
     (*handle) = file;
 
     return FMOD_OK;

@@ -9,6 +9,8 @@
 #include "Sound/SoundEvent.h"
 #include "Debug/Stats.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 SoundUpdateSystem::AutoTriggerSound::AutoTriggerSound(Entity* _owner, SoundEvent* _sound)
@@ -67,7 +69,11 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
 
     if (activeCamera)
     {
+#if defined(__DAVAENGINE_COREV2__)
+        SoundSystem* ss = Engine::Instance()->GetContext()->soundSystem;
+#else
         SoundSystem* ss = SoundSystem::Instance();
+#endif
         const Vector3& listenerPosition = activeCamera->GetPosition();
         ss->SetListenerPosition(listenerPosition);
         ss->SetListenerOrientation(activeCamera->GetDirection(), activeCamera->GetLeft());
