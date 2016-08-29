@@ -157,6 +157,7 @@ void SpritesPackerModule::DisconnectCacheClient()
     {
         DAVA::AssetCacheClient* disconnectingClient = cacheClient;
         cacheClient = nullptr;
+        spritesPacker->SetCacheClient(nullptr, "ResourceEditor.ReloadParticles");
 
         //we should destroy cache client on main thread
         DAVA::JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClientInternal, this, disconnectingClient));
