@@ -165,7 +165,7 @@ void EditorFontSystem::RefreshAvailableFontLocales()
     }
 
     FileList* fileList = new FileList(defaultFontsPath);
-    for (auto count = fileList->GetCount(), i = 0; i < count; ++i)
+    for (uint32 count = fileList->GetCount(), i = 0u; i < count; ++i)
     {
         if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
         {

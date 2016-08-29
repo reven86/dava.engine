@@ -14,63 +14,26 @@ namespace DAVA
 class Any final
 {
 public:
-    using AnyStorage = AutoStorage<>;
+    struct Exception;
 
+    using AnyStorage = AutoStorage<>;
     using LoadOP = void (*)(AnyStorage&, const void* src);
     using StoreOP = void (*)(const AnyStorage&, void* dst);
     using CompareOP = bool (*)(const void* a, const void* b);
+    using CastOP = Any (*)(const Any& from);
 
     struct AnyOPs
     {
-        CompareOP compare = nullptr;
         LoadOP load = nullptr;
         StoreOP store = nullptr;
-    };
-
-    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
-
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-    struct CastOPKey
-    {
-        const Type* from;
-        const Type* to;
-
-        size_t operator()(const CastOPKey& key) const
-        {
-            return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.from);
-        }
-
-        bool operator==(const CastOPKey& key) const
-        {
-            return from == key.from && to == key.to;
-        }
-    };
-
-    using CastOP = void (*)(const void* from, void* to);
-    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKey>;
-#endif
-
-    struct Exception : public std::runtime_error
-    {
-        enum ErrorCode
-        {
-            BadGet,
-            BadCast,
-            BadOperation,
-            BadSize
-        };
-
-        Exception(ErrorCode code, const std::string& message);
-        Exception(ErrorCode code, const char* message);
-
-        ErrorCode errorCode;
+        CompareOP compare = nullptr;
     };
 
     template <typename T>
     using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
-    Any();
-    inline ~Any() = default;
+    Any() = default;
+    ~Any() = default;
 
     template <typename T>
     Any(T&& value, NotAny<T> = true);
@@ -118,20 +81,65 @@ public:
     template <typename T>
     static void RegisterOPs(AnyOPs&& ops);
 
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-    template <typename From, typename To>
-    static void RegisterCastOP(CastOP& castOP);
-#endif
+    template <typename T1, typename T2>
+    static void RegisterDefaultCastOP();
+
+    template <typename T1, typename T2>
+    static void RegisterCastOP(CastOP&, CastOP&);
 
 private:
+    struct CastOPKey
+    {
+        const Type* from;
+        const Type* to;
+
+        bool operator==(const CastOPKey&) const;
+    };
+
+    struct CastOPKeyHasher
+    {
+        size_t operator()(const CastOPKey&) const;
+    };
+
+    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
+    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKeyHasher>;
+
     const Type* type = nullptr;
     AnyStorage anyStorage;
 
-    static std::unique_ptr<AnyOPsMap> anyOPsMap;
+    template <typename T>
+    const T& GetImpl() const;
 
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
+    template <typename T>
+    bool CanCastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    bool CanCastImpl(std::false_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::false_type isPointer) const;
+
+    static std::unique_ptr<AnyOPsMap> anyOPsMap;
     static std::unique_ptr<CastOPsMap> castOPsMap;
-#endif
+};
+
+struct Any::Exception : public std::runtime_error
+{
+    enum ErrorCode
+    {
+        BadGet,
+        BadCast,
+        BadOperation,
+        BadSize
+    };
+
+    Exception(ErrorCode code, const std::string& message);
+    Exception(ErrorCode code, const char* message);
+
+    ErrorCode errorCode;
 };
 
 } // namespace DAVA

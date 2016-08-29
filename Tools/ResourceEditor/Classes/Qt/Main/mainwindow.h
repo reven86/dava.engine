@@ -15,11 +15,7 @@
 #include <QDockWidget>
 #include <QPointer>
 
-namespace wgt
-{
-class IComponentContext;
-}
-
+class RECommandNotificationObject;
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
@@ -31,6 +27,7 @@ class PropertyPanel;
 #endif
 class DeviceListController;
 class SpritesPackerModule;
+class ErrorDialogOutput;
 class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
@@ -43,7 +40,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -201,7 +198,7 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-
+    void closeEvent(QCloseEvent* event);
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
@@ -234,8 +231,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
-    void SceneUndoRedoStateChanged(SceneEditor2* scene);
-    void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
@@ -249,6 +245,9 @@ private slots:
     void DebugColorPicker();
     void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
+
+    void UpdateUndoActionText(const DAVA::String& text);
+    void UpdateRedoActionText(const DAVA::String& text);
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;
@@ -270,7 +269,7 @@ private:
     void EnableProjectActions(bool enable);
     void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
-    void UpdateWayEditor(const Command2* command, bool redo);
+    void UpdateWayEditor(const RECommandNotificationObject& commandNotification);
 
     void LoadViewState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
@@ -298,13 +297,13 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    wgt::IComponentContext& ngtContext;
 #if defined(NEW_PROPERTY_PANEL)
+    wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::shared_ptr<GlobalOperations> globalOperations;
-    DAVA::LoggerOutput* errorLoggerOutput = nullptr;
+    ErrorDialogOutput* errorLoggerOutput = nullptr;
 
 private:
     struct EmitterDescriptor

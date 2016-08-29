@@ -24,7 +24,7 @@ void CEFDavaResourceHandler::GetResponseHeaders(CefRefPtr<CefResponse> response,
                                                 CefString& redirectUrl)
 {
     FileSystem* fs = FileSystem::Instance();
-    uint32 fileSize = 0;
+    uint64 fileSize = 0;
 
     if (!fs->Exists(davaPath))
     {

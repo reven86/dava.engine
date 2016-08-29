@@ -26,7 +26,7 @@
 #include <sys/sysctl.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
 #include <direct.h>
-#include <io.h> 
+#include <io.h>
 #include <Shlobj.h>
 #include <tchar.h>
 #include <process.h>
@@ -34,23 +34,27 @@
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Private/Android/AndroidBridge.h"
 #else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+
 #endif
 #include <unistd.h>
 #endif //PLATFORMS
 
 namespace DAVA
 {
+static Set<String> androidAssetsFiles;
+
 FileSystem::FileSystem()
 {
 }
 
 FileSystem::~FileSystem()
 {
-    resourceArchiveList.clear();
+    resArchiveMap.clear();
 
     // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
@@ -108,7 +112,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 
     if (IsDirectory(filePath))
         return DIRECTORY_EXISTS;
-    
+
 #ifdef __DAVAENGINE_WINDOWS__
     FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
     BOOL res = ::CreateDirectoryW(path.c_str(), 0);
@@ -148,6 +152,10 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
 
     File* srcFile = File::Create(existingFile, File::OPEN | File::READ);
     File* dstFile = File::Create(newFile, File::WRITE | File::CREATE);
+
+    Logger::Info("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
+                 newFile.GetStringValue().c_str(), srcFile, dstFile);
+
     if (srcFile && dstFile)
     {
         uint32 fileSize = srcFile->GetSize();
@@ -210,6 +218,18 @@ bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile,
         }
     }
     int result = FileAPI::RenameFile(fromFile.c_str(), toFile.c_str());
+    if (0 != result && EXDEV == errno)
+    {
+        result = CopyFile(existingFile, newFile);
+        if (result)
+        {
+            result = DeleteFile(existingFile);
+            if (result)
+            {
+                result = 0;
+            }
+        }
+    }
     bool error = (0 != result);
     if (error)
     {
@@ -259,8 +279,13 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
     DVASSERT(path.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(path.IsDirectoryPathname());
 
+    if (!IsDirectory(path))
+    {
+        return false;
+    }
+
     FileList* fileList = new FileList(path);
-    for (int i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {
@@ -304,7 +329,7 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
     uint32 fileCount = 0;
 
     FileList* fileList = new FileList(path);
-    for (int i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {
@@ -333,7 +358,7 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
     ScopedPtr<FileList> fileList(new FileList(path));
     Vector<FilePath> result;
 
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsNavigationDirectory(i))
         {
@@ -358,7 +383,7 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
 
 File* FileSystem::CreateFileForFrameworkPath(const FilePath& frameworkPath, uint32 attributes)
 {
-    return File::CreateFromSystemPath(frameworkPath, attributes);
+    return File::Create(frameworkPath, attributes);
 }
 
 const FilePath& FileSystem::GetCurrentWorkingDirectory()
@@ -414,7 +439,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 {
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
-    
+
 #if defined(__DAVAENGINE_WINDOWS__)
     FilePath::NativeStringType path = newWorkingDirectory.GetNativeAbsolutePathname();
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
@@ -430,8 +455,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
 
 bool FileSystem::IsFile(const FilePath& pathToCheck) const
 {
-    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
-        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES) // ~res:/
     {
         const String& str = pathToCheck.GetStringValue();
         auto start = str.find("~res:/");
@@ -441,11 +465,13 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             relative = str.substr(6);
         }
 
+        // TODO if packManager initialized we can use index to find pack with filePath
+
         if (!relative.empty())
         {
-            for (auto& archive : resourceArchiveList)
+            for (auto& pair : resArchiveMap)
             {
-                if (archive.archive->HasFile(relative))
+                if (pair.second.archive->HasFile(relative))
                 {
                     return true;
                 }
@@ -453,14 +479,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         }
     }
 
-#if defined(__DAVAENGINE_ANDROID__)
-    const String& path = pathToCheck.GetAbsolutePathname();
-    if (IsAPKPath(path))
-    {
-        return fileSet.find(path) != end(fileSet);
-    }
-#endif
-
+    // ~res:/ or c:/... or ~doc:/
     FilePath::NativeStringType nativePath = pathToCheck.GetNativeAbsolutePathname();
     FileAPI::Stat fileStat;
     int result = FileAPI::FileStat(nativePath.c_str(), &fileStat);
@@ -468,21 +487,29 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     {
         return (0 != (fileStat.st_mode & S_IFREG));
     }
-    else
+
+    switch (errno)
     {
-        switch (errno)
-        {
-        case ENOENT:
-            // file not found
-            break;
-        case EINVAL:
-            Logger::Error("Invalid parameter to stat.");
-            break;
-        default:
-            /* Should never be reached. */
-            Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
-        }
+    case ENOENT:
+        // file not found
+        break;
+    case EINVAL:
+        Logger::Error("Invalid parameter to stat.");
+        break;
+    default:
+        /* Should never be reached. */
+        Logger::Error("Unexpected error in stat: errno = (%d)", static_cast<int32>(errno));
     }
+
+#ifdef __DAVAENGINE_ANDROID__
+    // ~res:/ or Data/... or tips.yaml
+    auto assets = AssetsManagerAndroid::Instance();
+    const String& path = pathToCheck.GetAbsolutePathname();
+    if (assets->HasFile(path))
+    {
+        return true;
+    }
+#endif
 
     return false;
 }
@@ -493,21 +520,7 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     FilePath::NativeStringType path = pathToCheck.GetNativeAbsolutePathname();
     DWORD stats = GetFileAttributesW(path.c_str());
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
-#else //defined (__DAVAENGINE_WIN32__)
-#if defined(__DAVAENGINE_ANDROID__)
-
-    String path = pathToCheck.GetAbsolutePathname();
-    if (path.length() && path.at(path.length() - 1) == '/')
-    {
-        path.erase(path.begin() + path.length() - 1);
-    }
-
-    if (IsAPKPath(path))
-    {
-        return (dirSet.find(path) != dirSet.end());
-    }
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#else
 
     FileAPI::Stat s;
     FilePath::NativeStringType pathToCheckStr = pathToCheck.GetNativeAbsolutePathname();
@@ -515,8 +528,31 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     {
         return (0 != (s.st_mode & S_IFDIR));
     }
-#endif //#if defined (__DAVAENGINE_WIN32__)
 
+#if defined(__DAVAENGINE_ANDROID__)
+    // on android we need test directory in assets inside APK
+    if (FilePath::PATH_IN_RESOURCES == pathToCheck.GetType())
+    {
+        FilePath dirPath(pathToCheck);
+        if (dirPath.IsDirectoryPathname())
+        {
+            dirPath.MakeDirectoryPathname();
+        }
+
+        String strDir = dirPath.GetStringValue();
+        if (strDir.find("~res:/") == 0 && strDir.size() > 6)
+        {
+            strDir = strDir.substr(6);
+        }
+
+        auto assets = AssetsManagerAndroid::Instance();
+        if (assets->HasDirectory(strDir))
+        {
+            return true;
+        }
+    }
+#endif // __DAVAENGINE_ANDROID__
+#endif // __DAVAENGINE_WIN32__
     return false;
 }
 
@@ -751,11 +787,11 @@ String FileSystem::ReadFileContents(const FilePath& pathname)
     }
     else
     {
-        uint32 fileSize = fp->GetSize();
+        uint64 fileSize = fp->GetSize();
 
-        fileContents.resize(fileSize);
+        fileContents.resize(static_cast<size_t>(fileSize));
 
-        uint32 dataRead = fp->Read(&fileContents[0], fileSize);
+        uint32 dataRead = fp->Read(&fileContents[0], static_cast<uint32>(fileSize));
 
         if (dataRead != fileSize)
         {
@@ -766,7 +802,7 @@ String FileSystem::ReadFileContents(const FilePath& pathname)
     return fileContents;
 }
 
-uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
+uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint64& fileSize)
 {
     File* fp = File::Create(pathname, File::OPEN | File::READ);
     if (!fp)
@@ -775,8 +811,8 @@ uint8* FileSystem::ReadFileContents(const FilePath& pathname, uint32& fileSize)
         return 0;
     }
     fileSize = fp->GetSize();
-    uint8* bytes = new uint8[fileSize];
-    uint32 dataRead = fp->Read(bytes, fileSize);
+    uint8* bytes = new uint8[static_cast<size_t>(fileSize)];
+    uint32 dataRead = fp->Read(bytes, static_cast<uint32>(fileSize));
 
     if (dataRead != fileSize)
     {
@@ -797,7 +833,7 @@ bool FileSystem::ReadFileContents(const FilePath& pathname, Vector<uint8>& buffe
         return false;
     }
 
-    uint32 fileSize = fp->GetSize();
+    uint32 fileSize = static_cast<uint32>(fp->GetSize());
     buffer.resize(fileSize);
     uint32 dataRead = fp->Read(buffer.data(), fileSize);
 
@@ -814,20 +850,25 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
 {
     DVASSERT(!attachPath.empty());
 
-    ResourceArchiveItem item;
-    item.attachPath = attachPath;
-    item.archive.reset(new ResourceArchive(archiveName));
-    item.archiveFilePath = archiveName;
+    if (!IsMounted(archiveName))
+    {
+        ResourceArchiveItem item;
+        item.attachPath = attachPath;
+        item.archive.reset(new ResourceArchive(archiveName));
+        item.archiveFilePath = archiveName;
 
-    resourceArchiveList.push_back(std::move(item));
+        resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
+    }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
-    resourceArchiveList.remove_if([arhiveName](const ResourceArchiveItem& item) -> bool
-                                  {
-                                      return item.archiveFilePath == arhiveName;
-                                  });
+    resArchiveMap.erase(arhiveName.GetBasename());
+}
+
+bool FileSystem::IsMounted(const FilePath& archiveName) const
+{
+    return resArchiveMap.find(archiveName.GetBasename()) != end(resArchiveMap);
 }
 
 int32 FileSystem::Spawn(const String& command)
@@ -867,45 +908,10 @@ void FileSystem::MarkFolderAsNoMedia(const FilePath& folder)
 {
 #if defined(__DAVAENGINE_ANDROID__)
     // for android we create .nomedia file to say to the OS that this directory have no media content and exclude it from index
-    File* nomedia = FileSystem::Instance()->CreateFileForFrameworkPath(folder + ".nomedia", File::WRITE | File::CREATE);
+    File* nomedia = File::Create(folder + ".nomedia", File::WRITE | File::CREATE);
     SafeRelease(nomedia);
 #endif
 }
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-bool FileSystem::IsAPKPath(const String& path) const
-{
-    if (!path.empty() && path.c_str()[0] == '/')
-        return false;
-    return true;
-}
-
-void FileSystem::Init()
-{
-    YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
-
-    if (parser)
-    {
-        const YamlNode* node = parser->GetRootNode();
-        const YamlNode* dirList = node->Get("dirList");
-        if (dirList)
-        {
-            const Vector<YamlNode*> vec = dirList->AsVector();
-            for (uint32 i = 0; i < vec.size(); ++i)
-                dirSet.insert(vec[i]->AsString());
-        }
-        const YamlNode* fileList = node->Get("fileList");
-        if (fileList)
-        {
-            const Vector<YamlNode*> vec = fileList->AsVector();
-            for (uint32 i = 0; i < vec.size(); ++i)
-                fileSet.insert(vec[i]->AsString());
-        }
-    }
-    SafeRelease(parser);
-}
-#endif
 
 bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
 {
@@ -1016,8 +1022,26 @@ bool FileSystem::CompareBinaryFiles(const FilePath& filePath1, const FilePath& f
     return res;
 }
 
+// deprecated method
 bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
 {
+    uint64 fullSize = 0;
+    if (GetFileSize(path, fullSize))
+    {
+        if (fullSize > std::numeric_limits<uint32>::max())
+        {
+            throw std::runtime_error("size of file: more 4Gb use 64 bit version");
+        }
+        size = static_cast<uint32>(fullSize);
+        return true;
+    }
+    return false;
+}
+
+bool FileSystem::GetFileSize(const FilePath& path, uint64& size)
+{
+    // TODO we can implement it much faster with posix or winapi and
+    // android AssetsManager
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if (file)
     {
@@ -1053,7 +1077,7 @@ bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& 
 
     bool retCode = true;
     ScopedPtr<FileList> fileList(new FileList(src));
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
         {

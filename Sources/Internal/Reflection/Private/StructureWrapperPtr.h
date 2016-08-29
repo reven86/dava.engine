@@ -88,7 +88,7 @@ public:
     }
 
 protected:
-    ValueWrapperDefault<T> ptrVW;
+    ValueWrapperDefault<T*> ptrVW;
 
     const StructureWrapper* GetPtrStructureWrapper(const ReflectedObject& derefObj) const
     {

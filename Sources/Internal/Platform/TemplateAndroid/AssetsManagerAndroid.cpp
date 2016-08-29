@@ -1,37 +1,92 @@
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "Utils/Utils.h"
-#include "zip/zip.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
+#include "AssetsManagerAndroid.h"
+#include "FileSystem/FilePath.h"
+#include "FileSystem/File.h"
+#include "FileSystem/Private/ZipArchive.h"
+#include "Base/RefPtr.h"
 
 namespace DAVA
 {
-AssetsManager::AssetsManager()
-    : packageName("")
-    , applicationPackage(NULL)
+AssetsManagerAndroid::AssetsManagerAndroid(const String& apkFileName)
 {
-}
-
-AssetsManager::~AssetsManager()
-{
-    if (applicationPackage)
+    FilePath apkPath(apkFileName);
+    RefPtr<File> file(File::Create(apkPath, File::OPEN | File::READ));
+    if (!file)
     {
-        zip_close(applicationPackage);
-        applicationPackage = NULL;
+        throw std::runtime_error("[AssetsManager::Init] can't open: " + apkFileName);
     }
+
+    apk.reset(new ZipArchive(file, apkPath));
 }
 
-void AssetsManager::Init(const String& packageName)
+AssetsManagerAndroid::~AssetsManagerAndroid() = default;
+
+static const String assetsDirectory = "assets/Data/";
+
+bool AssetsManagerAndroid::HasDirectory(const String& relativeDirName) const
 {
-    DVASSERT_MSG(applicationPackage == NULL, "[AssetsManager::Init] Package should be initialized only once.");
-
-    applicationPackage = zip_open(packageName.c_str(), 0, NULL);
-    if (applicationPackage == NULL)
+    String nameInApk = assetsDirectory + relativeDirName;
+    const Vector<ResourceArchive::FileInfo>& files = apk->GetFilesInfo();
+    for (const ResourceArchive::FileInfo& info : files)
     {
-        DVASSERT_MSG(false, "[CorePlatformAndroid::InitApplicationPackage] Could not initialize application package.");
-        applicationPackage = NULL;
+        if (info.relativeFilePath.find(nameInApk) == 0)
+        {
+            return true;
+        }
     }
-}
+    return false;
 }
 
-#endif // #if defined(__DAVAENGINE_ANDROID__)
+bool AssetsManagerAndroid::HasFile(const String& relativeFilePath) const
+{
+    return apk->HasFile(assetsDirectory + relativeFilePath);
+}
+
+bool AssetsManagerAndroid::LoadFile(const String& relativeFilePath, Vector<uint8>& output) const
+{
+    return apk->LoadFile(assetsDirectory + relativeFilePath, output);
+}
+
+bool AssetsManagerAndroid::ListDirectory(const String& relativeDirName, Vector<ResourceArchive::FileInfo>& names) const
+{
+    names.clear();
+
+    Set<String> addedfilesAndDirs;
+    const Vector<ResourceArchive::FileInfo>& files = apk->GetFilesInfo();
+    for (const ResourceArchive::FileInfo& info : files)
+    {
+        String assetPath = assetsDirectory + relativeDirName;
+        if (info.relativeFilePath.find(assetPath) == 0)
+        {
+            size_t nextDirSlash = info.relativeFilePath.find('/', assetPath.size());
+            if (String::npos == nextDirSlash)
+            {
+                // add file
+                String relativeFilePath = "~res:/" + info.relativeFilePath.substr(assetsDirectory.size());
+                addedfilesAndDirs.insert(relativeFilePath);
+                ResourceArchive::FileInfo fi = info;
+                fi.relativeFilePath = relativeFilePath;
+                names.push_back(fi);
+            }
+            else
+            {
+                // add directory (without sub directories)
+                String dir = "~res:/" + info.relativeFilePath.substr(assetsDirectory.size(), nextDirSlash - assetsDirectory.size() + 1);
+                if (addedfilesAndDirs.find(dir) == end(addedfilesAndDirs))
+                {
+                    ResourceArchive::FileInfo fi = info;
+                    fi.relativeFilePath = dir;
+                    fi.compressedCrc32 = 0;
+                    fi.compressedSize = 0;
+                    fi.originalCrc32 = 0;
+                    fi.originalSize = 0;
+                    names.push_back(fi);
+                    addedfilesAndDirs.insert(dir);
+                }
+            }
+        }
+    }
+
+    return !names.empty();
+}
+
+} // DAVA namespace

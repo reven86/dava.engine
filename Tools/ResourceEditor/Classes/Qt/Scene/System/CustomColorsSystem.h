@@ -1,11 +1,10 @@
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 
+#include "Command/Command.h"
 #include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "Main/Request.h"
-
-#include "Commands2/Base/Command2.h"
 
 class CustomColorsSystem : public LandscapeEditorSystem
 {
@@ -54,7 +53,7 @@ private:
 
     void FinishEditing();
 
-    Command2::Pointer CreateSaveFileNameCommand(const DAVA::String& filePath);
+    std::unique_ptr<DAVA::Command> CreateSaveFileNameCommand(const DAVA::String& filePath);
 
 private:
     DAVA::Texture* toolImageTexture = nullptr;

@@ -1,18 +1,18 @@
 #ifndef __CREATE_PLANE_LOD_COOMAND_H__
 #define __CREATE_PLANE_LOD_COOMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 #include "CreatePlaneLODCommandHelper.h"
 #include "DAVAEngine.h"
 
-class CreatePlaneLODCommand : public Command2
+class CreatePlaneLODCommand : public RECommand
 {
 public:
     CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);
 
-    virtual void Undo() override;
-    virtual void Redo() override;
-    virtual DAVA::Entity* GetEntity() const override;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::RenderBatch* GetRenderBatch() const;
 

@@ -78,24 +78,18 @@ private:
     bool callstackPrinting = false;
 };
 
-ErrorDialogOutput::ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations_, QObject* parent)
-    : QObject(parent)
+ErrorDialogOutput::ErrorDialogOutput(const std::shared_ptr<GlobalOperations>& globalOperations_)
+    : ignoreHelper(new IgnoreHelper())
     , globalOperations(globalOperations_)
-    , ignoreHelper(new IgnoreHelper())
+    , isJobStarted(false)
+    , enabled(true)
 {
-    connect(this, &ErrorDialogOutput::FireError, this, &ErrorDialogOutput::OnError, Qt::QueuedConnection);
-
     errors.reserve(ErrorDialogDetail::maxErrorsPerDialog);
-}
-
-ErrorDialogOutput::~ErrorDialogOutput()
-{
-    disconnect(this, &ErrorDialogOutput::FireError, this, &ErrorDialogOutput::OnError);
 }
 
 void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    if (ignoreHelper->ShouldIgnoreMessage(ll, text))
+    if (!enabled || ignoreHelper->ShouldIgnoreMessage(ll, text))
     {
         return;
     }
@@ -108,20 +102,41 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
         }
     }
 
-    ++firedErrorsCount;
-    emit FireError();
+    if (isJobStarted == false)
+    {
+        DVASSERT(waitDialogConnectionId == 0);
+
+        isJobStarted = true;
+        DAVA::JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog), DAVA::JobManager::JOB_MAINLAZY);
+    }
 }
 
 void ErrorDialogOutput::ShowErrorDialog()
 {
+    DVASSERT(isJobStarted == true);
+
     if (globalOperations->IsWaitDialogVisible())
     {
-        ++firedErrorsCount;
-        emit FireError();
+        DVASSERT(waitDialogConnectionId == 0);
+        waitDialogConnectionId = globalOperations->waitDialogClosed.Connect(this, &ErrorDialogOutput::ShowErrorDialog);
         return;
     }
 
-    if (ErrorDialogDetail::ShouldBeHiddenByUI())
+    { // disconnect from
+        if (waitDialogConnectionId != 0)
+        {
+            globalOperations->waitDialogClosed.Disconnect(waitDialogConnectionId);
+            waitDialogConnectionId = 0;
+        }
+        isJobStarted = false;
+    }
+
+    ShowErrorDialogImpl();
+}
+
+void ErrorDialogOutput::ShowErrorDialogImpl()
+{
+    if (ErrorDialogDetail::ShouldBeHiddenByUI() || enabled == false)
     {
         DAVA::LockGuard<DAVA::Mutex> lock(errorsLocker);
         errors.clear();
@@ -160,11 +175,7 @@ void ErrorDialogOutput::ShowErrorDialog()
     QMessageBox::critical(globalOperations->GetGlobalParentWidget(), title.c_str(), errorMessage.c_str());
 }
 
-void ErrorDialogOutput::OnError()
+void ErrorDialogOutput::Disable()
 {
-    --firedErrorsCount;
-    if (firedErrorsCount == 0)
-    {
-        ShowErrorDialog();
-    }
+    enabled = false;
 }

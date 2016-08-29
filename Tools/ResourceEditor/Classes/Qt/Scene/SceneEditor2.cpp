@@ -3,7 +3,8 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Commands2/Base/CommandStack.h"
+#include "Commands2/Base/RECommandStack.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
@@ -37,7 +38,7 @@ const DAVA::FastName MATERIAL_FOR_REBIND = DAVA::FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , commandStack(new CommandStack())
+    , commandStack(new RECommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
@@ -207,7 +208,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack->SetClean(true);
+        commandStack->SetClean();
     }
 
     if (needToRestoreTilemask)
@@ -317,6 +318,26 @@ bool SceneEditor2::CanRedo() const
     return commandStack->CanRedo();
 }
 
+DAVA::String SceneEditor2::GetUndoText() const
+{
+    const DAVA::Command* undoCommand = commandStack->GetUndoCommand();
+    if (undoCommand != nullptr)
+    {
+        return undoCommand->GetDescription();
+    }
+    return DAVA::String();
+}
+
+DAVA::String SceneEditor2::GetRedoText() const
+{
+    const DAVA::Command* redoCommand = commandStack->GetRedoCommand();
+    if (redoCommand != nullptr)
+    {
+        return redoCommand->GetDescription();
+    }
+    return DAVA::String();
+}
+
 void SceneEditor2::Undo()
 {
     commandStack->Undo();
@@ -342,7 +363,7 @@ void SceneEditor2::ActivateCommandStack()
     commandStack->Activate();
 }
 
-void SceneEditor2::Exec(Command2::Pointer&& command)
+void SceneEditor2::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
     if (command)
     {
@@ -350,7 +371,7 @@ void SceneEditor2::Exec(Command2::Pointer&& command)
     }
 }
 
-void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
+void SceneEditor2::RemoveCommands(DAVA::uint32 commandId)
 {
     commandStack->RemoveCommands(commandId);
 }
@@ -360,7 +381,7 @@ void SceneEditor2::ClearAllCommands()
     commandStack->Clear();
 }
 
-const CommandStack* SceneEditor2::GetCommandStack() const
+const RECommandStack* SceneEditor2::GetCommandStack() const
 {
     return commandStack.get();
 }
@@ -386,9 +407,9 @@ bool SceneEditor2::IsChanged() const
     return ((!commandStack->IsClean()) || wasChanged);
 }
 
-void SceneEditor2::SetChanged(bool changed)
+void SceneEditor2::SetChanged()
 {
-    commandStack->SetClean(!changed);
+    commandStack->SetChanged();
 }
 
 void SceneEditor2::Update(float timeElapsed)
@@ -438,36 +459,33 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& commandNotification)
 {
-    if (command == nullptr)
+    if (commandNotification.IsEmpty())
     {
         return;
     }
 
     if (collisionSystem)
     {
-        collisionSystem->ProcessCommand(command, redo);
+        collisionSystem->ProcessCommand(commandNotification);
     }
-
     if (structureSystem)
     {
-        structureSystem->ProcessCommand(command, redo);
+        structureSystem->ProcessCommand(commandNotification);
     }
 
-    particlesSystem->ProcessCommand(command, redo);
-
-    materialSystem->ProcessCommand(command, redo);
+    particlesSystem->ProcessCommand(commandNotification);
+    materialSystem->ProcessCommand(commandNotification);
 
     if (landscapeEditorDrawSystem)
     {
-        landscapeEditorDrawSystem->ProcessCommand(command, redo);
+        landscapeEditorDrawSystem->ProcessCommand(commandNotification);
     }
 
-    pathSystem->ProcessCommand(command, redo);
-    wayEditSystem->ProcessCommand(command, redo);
-
-    editorLODSystem->ProcessCommand(command, redo);
+    pathSystem->ProcessCommand(commandNotification);
+    wayEditSystem->ProcessCommand(commandNotification);
+    editorLODSystem->ProcessCommand(commandNotification);
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)
@@ -487,12 +505,12 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const RECommandNotificationObject& commandNotification)
 {
     if (nullptr != editor)
     {
-        editor->EditorCommandProcess(command, redo);
-        SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
+        editor->EditorCommandProcess(commandNotification);
+        SceneSignals::Instance()->EmitCommandExecuted(editor, commandNotification);
     }
 }
 
@@ -504,9 +522,24 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
     }
 }
 
-void SceneEditor2::EditorCommandNotify::UndoRedoStateChanged()
+void SceneEditor2::EditorCommandNotify::CanUndoChanged(bool canUndo)
 {
-    SceneSignals::Instance()->EmitUndoRedoStateChanged(editor);
+    SceneSignals::Instance()->CanUndoStateChanged(canUndo);
+}
+
+void SceneEditor2::EditorCommandNotify::CanRedoChanged(bool canRedo)
+{
+    SceneSignals::Instance()->CanRedoStateChanged(canRedo);
+}
+
+void SceneEditor2::EditorCommandNotify::UndoTextChanged(const DAVA::String& undoText)
+{
+    SceneSignals::Instance()->UndoTextChanged(undoText);
+}
+
+void SceneEditor2::EditorCommandNotify::RedoTextChanged(const DAVA::String& redoText)
+{
+    SceneSignals::Instance()->RedoTextChanged(redoText);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const

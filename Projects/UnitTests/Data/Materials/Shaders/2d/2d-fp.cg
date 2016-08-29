@@ -33,9 +33,9 @@ FPROG_BEGIN
     float2 in_uv = FP_IN(uv);
 
 #if ALPHA8
-    min10float4 resColor = float4( 1.0, 1.0, 1.0, FP_A8(FP_TEXTURE2D( tex, in_uv )) );
+    min10float4 resColor = min10float4( 1.0, 1.0, 1.0, FP_A8(FP_TEXTURE2D( tex, in_uv )) );
 #else
-    min10float4 resColor = FP_TEXTURE2D( tex, in_uv );
+    min10float4 resColor = min10float4(FP_TEXTURE2D( tex, in_uv ));
 #endif
 
 #if (COLOR_OP == COLOR_MUL)
@@ -55,8 +55,8 @@ FPROG_BEGIN
 #endif //TEXTURED
 
 #if GRAYSCALE
-    min10float gray = dot(resColor.rgb, float3(0.3, 0.59, 0.11));
-    resColor.rgb = float3(gray , gray, gray);
+    min10float gray = dot( resColor.rgb, min10float3(0.3, 0.59, 0.11) );
+    resColor.rgb = min10float3(gray,gray,gray);
 #endif
 
 #if ALPHATEST
@@ -64,6 +64,6 @@ FPROG_BEGIN
     if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
 #endif
 
-    FP_OUT_COLOR = resColor;
+    FP_OUT_COLOR = float4(resColor);
 
 FPROG_END

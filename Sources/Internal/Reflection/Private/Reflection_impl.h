@@ -51,7 +51,7 @@ inline const Type* Reflection::GetValueType() const
 
 inline ReflectedObject Reflection::GetValueObject() const
 {
-    return object;
+    return vw->GetValueObject(object);
 }
 
 inline const DAVA::ReflectedType* Reflection::GetObjectType() const

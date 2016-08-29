@@ -1,6 +1,7 @@
 #include "QtTools/EditorPreferences/Actions/ActionsStorage.h"
 #include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/Actions/AbstractAction.h"
+#include "FileSystem/VariantType.h"
 
 ActionsStorage::ActionsStorage()
 {
