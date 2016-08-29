@@ -78,7 +78,6 @@ protected:
 class Scene : public Entity, Observer
 {
 protected:
-
 public:
     virtual ~Scene();
     enum

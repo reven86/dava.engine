@@ -2,6 +2,7 @@
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
 #include "TArcCore/ConsoleModule.h"
+#include "TArcCore/Private/MacOSUtils.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
@@ -148,7 +149,7 @@ public:
     }
 
 protected:
-    void ActivateContext(DataContext* context)
+    void ActivateContextImpl(DataContext* context)
     {
         activeContext = context;
         for (DataWrapper& wrapper : wrappers)
@@ -242,7 +243,7 @@ public:
 
         Texture::SetDefaultGPU(eGPUFamily::GPU_ORIGIN);
 
-        Impl::ActivateContext(globalContext.get());
+        ActivateContextImpl(globalContext.get());
         for (std::unique_ptr<ConsoleModule>& module : modules)
         {
             module->Init(this);
@@ -275,7 +276,7 @@ public:
     void OnLoopStopped() override
     {
         DVASSERT(modules.empty());
-        Impl::ActivateContext(nullptr);
+        ActivateContextImpl(nullptr);
 
         rhi::ResetParam rendererParams;
         rendererParams.window = nullptr;
@@ -328,6 +329,9 @@ public:
     GuiImpl(Engine& engine, Core* core)
         : Impl(engine, core)
     {
+#if defined(__DAVAENGINE_MACOS__)
+        MakeAppForeground();
+#endif
         DVASSERT(engine.IsConsoleMode() == false);
     }
 
@@ -375,7 +379,7 @@ public:
 
     void OnLoopStopped() override
     {
-        Impl::ActivateContext(nullptr);
+        ActivateContextImpl(nullptr);
         controllerModule = nullptr;
         for (std::unique_ptr<DataContext>& context : contexts)
         {
@@ -438,7 +442,7 @@ public:
 
         if (activeContext != nullptr && activeContext->GetID() == contextID)
         {
-            Impl::ActivateContext(nullptr);
+            ActivateContextImpl(nullptr);
         }
 
         contexts.erase(iter);
@@ -453,7 +457,7 @@ public:
 
         if (contextID == DataContext::Empty)
         {
-            Impl::ActivateContext(nullptr);
+            ActivateContextImpl(nullptr);
             return;
         }
 
@@ -467,7 +471,7 @@ public:
             throw std::runtime_error(Format("ActivateContext failed for contextID : %d", contextID));
         }
 
-        Impl::ActivateContext((*iter).get());
+        ActivateContextImpl((*iter).get());
     }
 
     RenderWidget* GetRenderWidget() const override
@@ -529,7 +533,7 @@ public:
         }
     }
 
-    bool WindowCloseRequested(const WindowKey& key)
+    bool WindowCloseRequested(const WindowKey& key) override
     {
         DVASSERT(controllerModule != nullptr);
         bool result = true;
@@ -557,7 +561,7 @@ public:
         return result;
     }
 
-    void OnWindowClosed(const WindowKey& key)
+    void OnWindowClosed(const WindowKey& key) override
     {
         std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
         {

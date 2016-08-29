@@ -312,19 +312,23 @@ protected:
             {
                 return window == w.second.window;
             });
-            DVASSERT(iter != windows.end());
-
-            if (managerDelegate->WindowCloseRequested(iter->first))
+            
+            // When user close application on MacOS by pressing Cmd+Q, Qt somewhy sends CloseEvent twice.
+            // So "iter == windows.end()" means that we have already got one CloseEvent for this window
+            if (iter != windows.end())
             {
-                iter->second.window->deleteLater();
-                managerDelegate->OnWindowClosed(iter->first);
-                windows.erase(iter);
+                if (managerDelegate->WindowCloseRequested(iter->first))
+                {
+                    iter->second.window->deleteLater();
+                    managerDelegate->OnWindowClosed(iter->first);
+                    windows.erase(iter);
+                }
+                else
+                {
+                    e->ignore();
+                }
+                return true;
             }
-            else
-            {
-                e->ignore();
-            }
-            return true;
         }
 
         return false;
