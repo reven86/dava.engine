@@ -21,14 +21,9 @@ public:
     {
     }
 
-    ~FileSystemData()
-    {
-        delete model;
-    }
-
     QFileSystemModel* GetModel() const
     {
-        return model;
+        return model.get();
     }
 
     void OpenScene(QModelIndex index)
@@ -39,7 +34,7 @@ public:
 
 private:
     LibraryModule* self = nullptr;
-    QFileSystemModel* model = nullptr;
+    std::unique_ptr<QFileSystemModel> model = nullptr;
     DAVA_VIRTUAL_REFLECTION(FileSystemData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<FileSystemData>::Begin()

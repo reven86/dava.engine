@@ -230,9 +230,10 @@ void Core::ActivateContext(DataContext::ContextID contextID)
 void Core::ActivateContext(DataContext* context)
 {
     activeContext = context;
+    DataContext* wrapperActiveContext = activeContext != nullptr ? activeContext : globalContext.get();
     for (DataWrapper& wrapper : wrappers)
     {
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
+        wrapper.SetContext(wrapperActiveContext);
     }
 }
 
@@ -330,7 +331,7 @@ void Core::WindowClosed(const WindowKey& key)
 {
     std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
     {
-        module->WindowClosed(key);
+        module->OnWindowClosed(key);
     });
 }
 

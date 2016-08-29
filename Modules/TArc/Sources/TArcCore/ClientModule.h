@@ -19,7 +19,7 @@ public:
 protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
-    virtual void WindowClosed(const WindowKey& key){}
+    virtual void OnWindowClosed(const WindowKey& key){}
 
     virtual void PostInit() = 0;
     ContextAccessor& GetAccessor();
