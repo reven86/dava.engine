@@ -30,6 +30,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -314,6 +315,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     }
 
     return list;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return JNI::ToString(getCarrierName());
 }
 }
 

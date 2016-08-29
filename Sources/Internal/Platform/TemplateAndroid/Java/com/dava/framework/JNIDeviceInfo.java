@@ -404,4 +404,13 @@ public class JNIDeviceInfo {
         infos.toArray(arr);
         return arr;
     }
+
+    public static String GetCarrierName()
+    {
+        if (JNIActivity.phoneServiceStateListener != null)
+        {
+            return JNIActivity.phoneServiceStateListener.GetCarrierName();
+        }
+        return "";
+    }
 }

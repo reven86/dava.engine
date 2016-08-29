@@ -124,6 +124,7 @@ void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullIni
     (void)screenInfo;
     (void)fullInit;
     GetPrivateImpl()->InitializeScreenInfo();
+    Logger::Info("!!!!!! GetCarrierName = %s", DeviceInfo::GetCarrierName().c_str());
 #endif
 }
 
@@ -147,6 +148,6 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-Signal<String> DeviceInfo::сarrierNameChanged;
+Signal<String> DeviceInfo::carrierNameChaged;
 
 } // namespace DAVA

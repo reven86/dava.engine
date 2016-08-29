@@ -153,7 +153,7 @@ public:
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
     static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
-    static Signal<String> сarrierNameChanged;
+    static Signal<String> carrierNameChaged;
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();
