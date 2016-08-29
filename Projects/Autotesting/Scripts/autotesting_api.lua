@@ -877,6 +877,24 @@ function LeftMouseClickControl(name, waitTime)
     return false
 end
 
+-- Mouse Wheel
+function MouseWheelPosition(position, deltaX, deltaY)
+    local pos = Vector.Vector2(position.x, position.y)
+    autotestingSystem:MouseWheel(pos, deltaX, deltaY)
+    Yield()
+end
+
+function MouseWheelControl(name, deltaX, deltaY, waitTime)
+    Log('Mouse wheel control: '.. name .. ', deltaX: ' .. tostring(deltaX) .. ', deltaY: ' .. tostring(deltaY))
+    local waitTime = waitTime or SMALL_TIMEOUT
+    if IsReady(name, waitTime) then
+        local center = GetCenter(name)
+        MouseWheelPosition(center, deltaX, deltaY)
+        return true
+    end
+    return false
+end
+
 -- Move touch actions
 function TouchMovePosition(pos, touchId)
     local position = Vector.Vector2(pos.x, pos.y)

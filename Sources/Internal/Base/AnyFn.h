@@ -41,7 +41,7 @@ public:
         ErrorCode errorCode;
     };
 
-    AnyFn() = default;
+    AnyFn();
 
     template <typename Fn>
     AnyFn(const Fn& fn);
@@ -63,7 +63,7 @@ public:
     template <typename... Args>
     Any Invoke(const Args&... args) const;
 
-    AnyFn BindThis(void* this_) const;
+    AnyFn BindThis(const void* this_) const;
 
 private:
     AnyFnStorage anyFnStorage;

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_DATE_TIME_H__
-#define __DAVAENGINE_DATE_TIME_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
@@ -103,6 +102,12 @@ public:
     int32 GetSecond() const;
 
     /**
+	 \brief Returns millisecond of current DateTime.
+	 \returns millisecond.
+	 */
+    int32 GetMillisecond() const;
+
+    /**
 	 \brief Set time zone offset in seconds for current DateTime.
 	 \param[in] input time zone offset.
 	 */
@@ -185,7 +190,8 @@ private:
 
     tm localTime = tm();
     Timestamp innerTime = 0;
-    int32 timeZoneOffset = 0; // offset in seconds
+    int32 innerMilliseconds = 0; // Stored separately since time_t and tm do not support milliseconds. Can only be obtained from parsing ISO8601 date for now. Cannot be affected by time zone offset
+    int32 timeZoneOffset = 0; // Offset in seconds
 };
 
 int32 DateTime::GetTimeZoneOffset() const
@@ -236,5 +242,3 @@ int32 DateTime::DaysFrom1jan(int32 year, int32 month, int32 day) const
     return days[rowNumberToSelect][month] + day - 1;
 }
 };
-
-#endif

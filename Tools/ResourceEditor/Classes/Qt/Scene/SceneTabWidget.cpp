@@ -303,7 +303,7 @@ void SceneTabWidget::SetCurrentTab(int index)
         {
             if (dava3DView->GetParent() == nullptr)
             {
-                const List<UIControl*>& children = davaUIScreen->GetChildren();
+                const DAVA::List<DAVA::UIControl*>& children = davaUIScreen->GetChildren();
                 if (children.empty())
                 {
                     davaUIScreen->AddControl(dava3DView);
