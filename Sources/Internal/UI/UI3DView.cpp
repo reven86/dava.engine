@@ -102,7 +102,14 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
 
         const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
-        config.samples = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->samples : 1;
+        if (currentMSAA.IsValid() && rhi::DeviceCaps().IsMultisamplingSupported())
+        {
+            config.samples = std::min(QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->samples, rhi::DeviceCaps().maxSamples);
+        }
+        else
+        {
+            config.samples = 1;
+        }
 
         config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].targetTexture = currentTarget.colorAttachment;
