@@ -123,7 +123,6 @@ RHI_IMPL_POOL(CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descr
 RHI_IMPL_POOL(RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-static bool _DX11_ResetPending = false;
 static bool _DX11_PerfQuerySetPending = false;
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -996,123 +995,60 @@ static void dx11_EndFrame()
 #endif
 }
 
-void dx11_ResetBlock()
+static void dx11_RejectFrame(CommonImpl::Frame&& frame)
 {
-    /*_DX11_FrameSync.Lock();
-    _DX11_ResetPending = true;
-    _DX11_FrameSync.Unlock();
-
-    _DX11_FrameSync.Lock();
-    #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    for (std::vector<FrameDX11>::iterator f = _DX11_Frame.begin(); f != _DX11_Frame.end();)
+    if (frame.sync != InvalidHandle)
     {
-    if (f->readyToExecute && f->sync != InvalidHandle)
-    {
-    SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(f->sync);
-    s->is_signaled = true;
-    s->is_used = true;
+        SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(frame.sync);
+        s->is_signaled = true;
+        s->is_used = true;
     }
 
-    for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
     {
-    RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
+        for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
+        {
+            CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
-    for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
-    {
-    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
+            if (cb->sync != InvalidHandle)
+            {
+                SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(cb->sync);
+                s->is_signaled = true;
+                s->is_used = true;
+            }
 
-    if (cb->sync != InvalidHandle)
-    {
-    SyncObjectDX11_t* s = SyncObjectPoolDX11::Get(cb->sync);
-    s->is_signaled = true;
-    s->is_used = true;
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+            if (cb->context)
+            {
+                if (!cb->isComplete)
+                {
+                    cb->context->ClearState();
+                    cb->context->FinishCommandList(FALSE, &(cb->commandList));
+                }
+
+                if (nullptr != cb->contextAnnotation)
+                {
+                    cb->contextAnnotation->Release();
+                    cb->contextAnnotation = nullptr;
+                }
+
+                cb->context->Release();
+                cb->context = nullptr;
+            }
+
+            if (cb->commandList)
+            {
+                cb->commandList->Release();
+                cb->commandList = nullptr;
+            }
+#endif
+
+            CommandBufferPoolDX11::Free(*b);
+        }
+        RenderPassPoolDX11::Free(*p);
     }
-
-    if (cb->context)
-    {
-    if (!cb->isComplete)
-    {
-    cb->context->ClearState();
-    cb->context->FinishCommandList(FALSE, &(cb->commandList));
-    }
-
-    if (nullptr != cb->contextAnnotation)
-    {
-    cb->contextAnnotation->Release();
-    cb->contextAnnotation = nullptr;
-    }
-
-    cb->context->Release();
-    cb->context = nullptr;
-    }
-
-    if (cb->commandList)
-    {
-    cb->commandList->Release();
-    cb->commandList = nullptr;
-    }
-
-    if (f->readyToExecute)
-    CommandBufferPoolDX11::Free(*b);
-    }
-
-    if (f->readyToExecute)
-    RenderPassPoolDX11::Free(*p);
-    }
-
-    if (f->readyToExecute)
-    {
-    if (f->cmdList)
-    {
-    f->cmdList->Release();
-    f->cmdList = nullptr;
-    }
-
-    f = _DX11_Frame.erase(f);
-    }
-    else
-    {
-    for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
-    {
-    RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
-
-    for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
-    {
-    CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
-
-    HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
-    CHECK_HR(hr)
-
-    DVASSERT(cb->context);
-    cb->Reset();
-    }
-    }
-
-    f->toBeDiscarded = true;
-    ++f;
-    }
-    }
-
-    {
-    ID3D11CommandList* cl = nullptr;
-
-    _D3D11_SecondaryContext->ClearState();
-    CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
-    cl->Release();
-    _D3D11_SecondaryContext->Release();
-
-    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
-    }
-    #endif
-    _DX11_ResetPending = false;
-    _DX11_FrameSync.Unlock();
-
-    ID3D11RenderTargetView* view[] = { nullptr };
-    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);    */
 }
-//------------------------------------------------------------------------------
-
-
 
 void CommandBufferDX11_t::Reset()
 {
@@ -1257,7 +1193,7 @@ void CommandBufferDX11_t::Execute()
         contextAnnotation = nullptr;
     }
 
-    _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);
+    _D3D11_ImmediateContext->ExecuteCommandList(commandList, FALSE);    
 	
     #if LUMIA_1020_DEPTHBUF_WORKAROUND
     {
@@ -1273,6 +1209,8 @@ void CommandBufferDX11_t::Execute()
 
     commandList->Release();
     commandList = nullptr;
+
+    
 #else
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
@@ -1700,9 +1638,8 @@ void SetupDispatch(Dispatch* dispatch)
 
     DispatchPlatform::ProcessImmediateCommand = &dx11_ExecImmediateCommand;
     DispatchPlatform::ExecuteFrame = &dx11_ExecuteQueuedCommands;
-    //DispatchPlatform::RejectFrame = &dx11_RejectFrame;
+    DispatchPlatform::RejectFrame = &dx11_RejectFrame;
     DispatchPlatform::PresntBuffer = &dx11_PresentBuffer;
-    DispatchPlatform::ResetBlock = &dx11_ResetBlock;
     DispatchPlatform::BeginFrame = &dx11_BeginFrame;
     DispatchPlatform::FinishFrame = &dx11_EndFrame;
 }

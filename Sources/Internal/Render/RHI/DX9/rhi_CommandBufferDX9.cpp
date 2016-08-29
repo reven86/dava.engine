@@ -33,8 +33,7 @@ const uint32 _DX9_MaxFramesWithRestoreAttempt = 15;
 
 //------------------------------------------------------------------------------
 
-static inline D3DPRIMITIVETYPE
-_DX9_PrimitiveType(PrimitiveType type)
+static inline D3DPRIMITIVETYPE _DX9_PrimitiveType(PrimitiveType type)
 {
     D3DPRIMITIVETYPE type9 = D3DPT_TRIANGLELIST;
 
@@ -58,8 +57,7 @@ _DX9_PrimitiveType(PrimitiveType type)
 
 //------------------------------------------------------------------------------
 
-static IDirect3DIndexBuffer9*
-_DX9_SequentialIB()
+static IDirect3DIndexBuffer9* _DX9_SequentialIB()
 {
     static IDirect3DIndexBuffer9* ib = NULL;
 
@@ -1077,7 +1075,7 @@ void _DX9_ResetBlock()
     VertexBufferDX9::ReCreateAll();
     IndexBufferDX9::ReCreateAll();
 
-    // update sync-objects, as pre-reset state is not actual anymore, also resolve constant reset causing already executed frame being never synced
+    // update sync-objects, as pre-reset state is not actual anymore, also resolves constant reset causing already executed frame being never synced
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used)

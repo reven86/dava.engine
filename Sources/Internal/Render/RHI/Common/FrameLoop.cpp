@@ -41,6 +41,7 @@ void ProcessFrame()
     if (NeedRestoreResources())
     {
         RejectFrames();
+        presentResult = true;
     }
     else
     {
@@ -57,11 +58,11 @@ void ProcessFrame()
         frameSync.Unlock();
 
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-    }
 
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
-    presentResult = DispatchPlatform::PresntBuffer();
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+        presentResult = DispatchPlatform::PresntBuffer();
+        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+    }
 
     if (!presentResult)
     {

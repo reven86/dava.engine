@@ -15,9 +15,10 @@ namespace RenderLoop
 {
 static DAVA::AutoResetEvent framePreparedEvent(false, 400);
 static DAVA::AutoResetEvent frameDoneEvent(false, 400);
+static DAVA::AutoResetEvent resetDoneEvent(false, 400);
 static DAVA::Thread* renderThread = nullptr;
 static uint32 renderThreadFrameCount = 0;
-static DAVA::Semaphore renderThredStartedSync(1);
+static DAVA::Semaphore renderThredStartedSync;
 
 static DAVA::Semaphore renderThreadSuspendSync;
 static std::atomic<bool> renderThreadSuspendSyncReached(false);
@@ -92,7 +93,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
         bool frameReady = false;
-        while (!frameReady)
+        while ((!frameReady) && (!resetPending))
         {
             //exit or suspend should leave frame loop
             if (renderThreadExitPending || renderThreadSuspended.load(std::memory_order_relaxed))
@@ -112,11 +113,11 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
         {
             do
             {
-                Logger::Debug(" *-***** reset **** ");
                 resetPending = false;
                 FrameLoop::RejectFrames();
                 DispatchPlatform::ResetBlock();
             } while (resetPending.load());
+            resetDoneEvent.Signal();
             frameDoneEvent.Signal();
         }
         else if (frameReady)
@@ -204,6 +205,7 @@ void UninitializeRenderLoop()
 
 void SetResetPending()
 {
+    Logger::Debug("ResetPending");
     if (renderThreadFrameCount == 0)
     {
         FrameLoop::RejectFrames();
@@ -213,6 +215,7 @@ void SetResetPending()
     {
         resetPending = true;
         framePreparedEvent.Signal();
+        resetDoneEvent.Wait();
     }
 }
 

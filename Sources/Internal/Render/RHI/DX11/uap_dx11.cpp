@@ -678,7 +678,7 @@ void init_device_and_swapchain_uap(void* panel)
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
 }
 
-void resize_swapchain(int32 width, int32 height, float32 scaleX, float32 scaleY)
+void resize_swapchain_uap(int32 width, int32 height, float32 scaleX, float32 scaleY)
 {
     SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));

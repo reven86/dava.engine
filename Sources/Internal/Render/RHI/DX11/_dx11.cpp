@@ -12,7 +12,6 @@ namespace rhi
 ID3D11Device* _D3D11_Device = nullptr;
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
-ID3D11Texture2D* _D3D11_SwapChainBufferCopy = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
 ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;

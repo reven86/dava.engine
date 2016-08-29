@@ -13,6 +13,8 @@ using DAVA::Logger;
 #include <vector>
 #include "../Common/CommonImpl.h"
 
+#include "Concurrency/LockGuard.h"
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 	#include "uap_dx11.h"
 #endif
@@ -24,6 +26,9 @@ namespace rhi
 static Dispatch DispatchDX11 = { 0 };
 
 static RenderDeviceCaps _DeviceCapsDX11 = {};
+
+static ResetParam resetParams;
+static DAVA::Mutex resetParamsSync;
 
 //------------------------------------------------------------------------------
 
@@ -112,22 +117,49 @@ static void dx11_Uninitialize()
     QueryBufferDX11::ReleaseQueryPool();
 }
 
-//------------------------------------------------------------------------------
+static void ResizeSwapchain()
+{
+    ConstBufferDX11::InvalidateAll();
+    //todo - not implemented yet
+}
+
+static void dx11_ResetBlock()
+{
+	
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    DAVA::LockGuard<Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
+#endif
+
+#if RHI_DX11__USE_DEFERRED_CONTEXTS
+    {
+        ID3D11CommandList* cl = nullptr;
+
+        _D3D11_SecondaryContext->ClearState();
+        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
+        cl->Release();
+        _D3D11_SecondaryContext->Release();
+
+        CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
+    }
+#endif
+    ID3D11RenderTargetView* view[] = { nullptr };
+    _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
+
+    resetParamsSync.Lock();
+#if defined(__DAVAENGINE_WIN_UAP__)
+    resize_swapchain_uap(resetParams.width, resetParams.height, resetParams.scaleX, resetParams.scaleY);
+#else
+    ResizeSwapchain();
+#endif
+    resetParamsSync.Unlock();
+}
 
 static void dx11_Reset(const ResetParam& param)
 {
-    //TODO: Schedule reset on render thread
-    if (_DX11_InitParam.fullScreen != param.fullScreen)
-    {
-    }
-    else
-    {
-#if defined(__DAVAENGINE_WIN_UAP__)
-        resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
-#else
-//Not implemented
-#endif
-    }
+    resetParamsSync.Lock();
+    resetParams = param;
+    resetParamsSync.Unlock();
+    RenderLoop::SetResetPending();
 }
 
 //------------------------------------------------------------------------------
@@ -371,6 +403,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchPlatform::InitContext = &dx11_InitContext;
     DispatchPlatform::CheckSurface = &dx11_CheckSurface;
     DispatchPlatform::Suspend = &dx11_SuspendRendering;
+    DispatchPlatform::ResetBlock = &dx11_ResetBlock;
 
     SetDispatchTable(DispatchDX11);
 
