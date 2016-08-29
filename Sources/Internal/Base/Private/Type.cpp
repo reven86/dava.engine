@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Base/Type.h"
 
 namespace DAVA
