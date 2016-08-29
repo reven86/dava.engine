@@ -38,6 +38,34 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
+void CheckDeviceInfoValid()
+{
+    using namespace DAVA;
+    DVASSERT(DeviceInfo::PLATFORM_UNKNOWN_VALUE != DeviceInfo::GetPlatform());
+    DVASSERT(DeviceInfo::GetPlatformString() != "Unknown");
+    DVASSERT(DeviceInfo::GetVersion() != "");
+    DVASSERT(DeviceInfo::GetManufacturer() != "" || true);
+    DVASSERT(DeviceInfo::GetModel() != "" || true);
+    DVASSERT(DeviceInfo::GetLocale() != "");
+    DVASSERT(DeviceInfo::GetRegion() != "");
+    DVASSERT(DeviceInfo::GetTimeZone() != "");
+    DVASSERT(DeviceInfo::GetUDID() != "");
+    DVASSERT(DeviceInfo::GetName() != L"");
+    DVASSERT(DeviceInfo::GetHTTPProxyHost() == "Not yet implemented");
+    DVASSERT(DeviceInfo::GetHTTPNonProxyHosts() == "Not yet implemented");
+    DVASSERT(DeviceInfo::GetHTTPProxyPort() == 0);
+    DVASSERT(DeviceInfo::GetScreenInfo().height > 0);
+    DVASSERT(DeviceInfo::GetScreenInfo().width > 0);
+    DVASSERT(DeviceInfo::GetScreenInfo().scale == 1);
+    DVASSERT(DeviceInfo::GetZBufferSize() == 24);
+    DVASSERT(DeviceInfo::GetGPUFamily() != GPU_INVALID);
+    DVASSERT(DeviceInfo::GetNetworkInfo().networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
+    DVASSERT(DeviceInfo::GetNetworkInfo().signalStrength >= 0 || true);
+    List<DeviceInfo::StorageInfo> storageInfo = DeviceInfo::GetStoragesList();
+    DVASSERT(storageInfo.empty());
+    DVASSERT(DeviceInfo::GetCpuCount() > 0);
+}
+
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
@@ -82,6 +110,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     Engine e;
     e.SetOptions(appOptions);
     e.Init(runmode, modules);
+
+    CheckDeviceInfoValid();
 
     GameCore game(&e);
     return e.Run();

@@ -1,5 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO__
-#define __FRAMEWORK__DEVICEINFO__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
@@ -157,4 +156,3 @@ private:
     static DeviceInfoPrivate* GetPrivateImpl();
 };
 };
-#endif /* defined(__FRAMEWORK__DEVICEINFO__) */
