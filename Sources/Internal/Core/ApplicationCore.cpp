@@ -33,7 +33,7 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    PROFILER_TIMING("Core::Update")
+    PROFILER_TIMING("ApplicationCore::Update")
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();

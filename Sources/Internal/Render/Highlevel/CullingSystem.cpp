@@ -50,8 +50,6 @@ void CullingSystem::SetCamera(Camera* _camera)
 
 void CullingSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("CullingSystem::Process")
-
     int32 objectsCulled = 0;
 
     //Frustum * frustum = camera->GetFrustum();

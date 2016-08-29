@@ -4,7 +4,7 @@
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
-#include "Utils/Utils.h"
+#include "Base/RingArray.h"
 
 //==============================================================================
 
@@ -18,13 +18,7 @@ static bool NameEquals(const char* name1, const char* name2)
     if (name1 == name2)
         return true;
 
-    std::size_t n1len = strlen(name1);
-    std::size_t n2len = strlen(name2);
-
-    if (n1len != n2len)
-        return false;
-
-    return memcmp(name1, name2, n1len) == 0;
+    return strcmp(name1, name2) == 0;
 }
 
 namespace DAVA
@@ -146,8 +140,10 @@ void DumpInternal(CounterArray::iterator begin, CounterArray& array, File* file)
 
 void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 snapshot)
 {
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+
     CounterArray* array = &counters;
-    if (snapshot != -1)
+    if (snapshot != NO_SNAPSHOT_ID)
     {
         DVASSERT(snapshot < int32(snapshots.size()));
         array = &snapshots[snapshot];
@@ -169,13 +165,17 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 sn
 
 void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32 snapshot)
 {
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+
     //TODO
 }
 
 void DumpJSON(File* file, int32 snapshot)
 {
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+
     CounterArray* array = &counters;
-    if (snapshot != -1)
+    if (snapshot != NO_SNAPSHOT_ID)
     {
         DVASSERT(snapshot < int32(snapshots.size()));
         array = &snapshots[snapshot];

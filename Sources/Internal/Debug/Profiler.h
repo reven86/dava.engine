@@ -13,6 +13,8 @@ class File;
 
 namespace Profiler
 {
+static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
+
 void Start();
 void Stop();
 
@@ -21,9 +23,9 @@ uint64 GetLastCounterTime(const char* counterName);
 int32 MakeSnapshot();
 void DeleteSnapshots();
 
-void DumpJSON(File* file, int32 snapshot = -1);
-void DumpLast(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = -1);
-void DumpAverage(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = -1);
+void DumpJSON(File* file, int32 snapshot = NO_SNAPSHOT_ID);
+void DumpLast(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = NO_SNAPSHOT_ID);
+void DumpAverage(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = NO_SNAPSHOT_ID);
 
 class ScopedCounter
 {
