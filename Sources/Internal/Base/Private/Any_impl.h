@@ -59,18 +59,21 @@ std::pair<const Type*, Any::AnyOPs> MakeDefaultOPs()
 
 } // namespace AnyDetails
 
+inline Any::Any(Any&& any)
+{
+    Set(std::move(any));
+}
+
 template <typename T>
 inline Any::Any(T&& value, NotAny<T>)
 {
     Set(std::forward<T>(value));
 }
 
-inline Any::Any(Any&& any)
+inline void Any::Swap(Any& any)
 {
-    anyStorage = std::move(any.anyStorage);
-    type = any.type;
-
-    any.type = nullptr;
+    std::swap(anyStorage, any.anyStorage);
+    std::swap(type, any.type);
 }
 
 inline bool Any::IsEmpty() const
@@ -111,7 +114,11 @@ bool Any::CanGet() const
 {
     using U = AnyStorage::StorableType<T>;
 
-    if (type == Type::Instance<U>())
+    if (nullptr == type)
+    {
+        return false;
+    }
+    else if (type == Type::Instance<U>())
     {
         return true;
     }
@@ -159,6 +166,19 @@ template <typename T>
 inline const T& Any::GetImpl() const
 {
     return anyStorage.GetAuto<T>();
+}
+
+inline void Any::Set(const Any& any)
+{
+    anyStorage = any.anyStorage;
+    type = any.type;
+}
+
+inline void Any::Set(Any&& any)
+{
+    anyStorage = std::move(any.anyStorage);
+    type = any.type;
+    any.type = nullptr;
 }
 
 template <typename T>

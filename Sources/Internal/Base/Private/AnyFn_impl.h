@@ -74,7 +74,7 @@ struct StaticAnyFnInvoker : Invoker
 
     AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
     {
-        throw AnyFn::Exception(AnyFn::Exception::BadBindThis, "this can't be binded to static function");
+        throw Any::Exception(Any::Exception::BadOperation, "This can't be binded to static function");
     }
 };
 
@@ -84,7 +84,7 @@ struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
     {
-        throw AnyFn::Exception(AnyFn::Exception::BadInvokeArguments, "Bad arguments");
+        throw Any::Exception(Any::Exception::BadOperation, "Bad arguments");
     }
 };
 
@@ -176,7 +176,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        throw AnyFn::Exception(AnyFn::Exception::BadInvokeArguments, "Bad arguments");
+        throw Any::Exception(Any::Exception::BadOperation, "Bad arguments");
     }
 };
 
@@ -301,18 +301,6 @@ void AnyFn::InvokeParams::Init()
     };
 
     bool unpack[] = { true, args_push_back(Type::Instance<Args>())... };
-}
-
-inline AnyFn::Exception::Exception(ErrorCode code, const std::string& message)
-    : runtime_error(message)
-    , errorCode(code)
-{
-}
-
-inline AnyFn::Exception::Exception(ErrorCode code, const char* message)
-    : runtime_error(message)
-    , errorCode(code)
-{
 }
 
 } // namespace DAVA

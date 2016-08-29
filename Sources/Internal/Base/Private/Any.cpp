@@ -71,9 +71,13 @@ void Any::StoreValue(void* data, size_t size) const
 
 bool Any::operator==(const Any& any) const
 {
-    if (any.type == nullptr)
+    if (type == nullptr && any.type == nullptr)
     {
-        return (type == nullptr);
+        return true;
+    }
+    else if (type == nullptr || any.type == nullptr)
+    {
+        return false;
     }
 
     if (any.type->IsPointer())

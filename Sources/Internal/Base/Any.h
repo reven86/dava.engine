@@ -34,14 +34,14 @@ public:
 
     Any() = default;
     ~Any() = default;
+    Any(const Any&) = default;
+
+    Any(Any&& any);
 
     template <typename T>
     Any(T&& value, NotAny<T> = true);
 
-    Any(Any&&);
-    Any(const Any&) = default;
-
-    void Swap(Any&);
+    void Swap(Any& any);
 
     bool IsEmpty() const;
     void Clear();
@@ -56,6 +56,9 @@ public:
 
     template <typename T>
     const T& Get(const T& defaultValue) const;
+
+    void Set(Any&& any);
+    void Set(const Any& any);
 
     template <typename T>
     void Set(T&& value, NotAny<T> = true);

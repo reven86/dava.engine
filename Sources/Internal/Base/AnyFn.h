@@ -27,20 +27,6 @@ public:
         void Init();
     };
 
-    struct Exception : public std::runtime_error
-    {
-        enum ErrorCode
-        {
-            BadInvokeArguments,
-            BadBindThis
-        };
-
-        Exception(ErrorCode code, const std::string& message);
-        Exception(ErrorCode code, const char* message);
-
-        ErrorCode errorCode;
-    };
-
     AnyFn();
 
     template <typename Fn>
