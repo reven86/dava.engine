@@ -215,7 +215,7 @@ void StructureWrapperClass::InitBaseClasses() const
 {
     if (!basesInitialized)
     {
-        auto bases_ = thisType->GetBaseTypes();
+        auto bases_ = thisType->BaseTypes();
 
         bases.reserve(bases_.size());
         for (auto bc : bases_)

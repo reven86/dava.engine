@@ -7,7 +7,28 @@
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
 
-using namespace DAVA;
+class StructPtr
+{
+public:
+    StructPtr() = default;
+    StructPtr(const StructPtr&) = delete;
+    int sss = 555;
+
+    void Release()
+    {
+        delete this;
+    }
+
+protected:
+    ~StructPtr() = default;
+
+    DAVA_REFLECTION(StructPtr)
+    {
+        DAVA::ReflectionRegistrator<StructPtr>::Begin()
+        .Field("sss", &StructPtr::sss)
+        .End();
+    }
+};
 
 struct SimpleStruct
 {
@@ -25,7 +46,7 @@ struct SimpleStruct
 
     DAVA_REFLECTION(SimpleStruct)
     {
-        ReflectionRegistrator<SimpleStruct>::Begin()
+        DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
         .End();
@@ -39,7 +60,7 @@ public:
 
     DAVA_VIRTUAL_REFLECTION(BaseBase)
     {
-        ReflectionRegistrator<BaseBase>::Begin()
+        DAVA::ReflectionRegistrator<BaseBase>::Begin()
         .Field("basebase", &BaseBase::basebase)
         .End();
     }
@@ -79,6 +100,7 @@ public:
 
     TestBaseClass();
     TestBaseClass(int baseInt_, int s_a, int s_b);
+    ~TestBaseClass();
 
     static int staticInt;
     static const int staticIntConst;
@@ -168,10 +190,11 @@ protected:
     SimpleStruct* simpleNull = nullptr;
     std::vector<std::string> strVec;
     std::vector<SimpleStruct*> simVec;
+    StructPtr* sptr = nullptr;
 
     DAVA_VIRTUAL_REFLECTION(TestBaseClass, BaseBase)
     {
-        ReflectionRegistrator<TestBaseClass>::Begin()
+        DAVA::ReflectionRegistrator<TestBaseClass>::Begin()
         .Constructor()
         .Constructor<int, int, int>()
         .Destructor()
@@ -190,6 +213,7 @@ protected:
         .Field("intVec", &TestBaseClass::intVec)
         .Field("strVec", &TestBaseClass::strVec)
         .Field("simVec", &TestBaseClass::simVec)
+        .Field("sptr", &TestBaseClass::sptr)
         .Field("GetStaticIntFn", &TestBaseClass::GetStaticIntFn, nullptr)
         .Field("GetStaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
         .Field("GetStaticCustomRefFn", &TestBaseClass::GetStaticCustomRefFn, nullptr)
@@ -205,7 +229,7 @@ protected:
         .Field("GetCustomPtrConstFn", &TestBaseClass::GetCustomPtrConstFn, nullptr)
         .Field("GetEnum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
         .Field("GetGetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
-        .Field("Lambda", Function<int()>([]() { return 1088; }), nullptr)
+        .Field("Lambda", DAVA::Function<int()>([]() { return 1088; }), nullptr)
         .End();
     }
 };
@@ -237,6 +261,12 @@ TestBaseClass::TestBaseClass()
     strVec.push_back("!!!!!111");
 
     simple = &sss;
+    sptr = new StructPtr();
+}
+
+TestBaseClass::~TestBaseClass()
+{
+    sptr->Release();
 }
 
 DAVA_TESTCLASS (TypeReflection)
@@ -244,14 +274,17 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (DumpTest)
     {
         TestBaseClass t;
-        Reflection t_ref = Reflection::Create(&t).ref;
+        DAVA::Reflection t_ref = DAVA::Reflection::Create(&t).ref;
 
-        t_ref.Dump(std::cout);
+        std::ostringstream dumpOutput;
+        t_ref.Dump(dumpOutput);
+
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
 
     DAVA_TEST (CtorDtorTest)
     {
-        const ReflectedType* rtype = ReflectedType::Get<TestBaseClass>();
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<TestBaseClass>();
         if (nullptr != rtype)
         {
             // TODO:
