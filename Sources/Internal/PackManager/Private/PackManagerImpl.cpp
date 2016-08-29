@@ -403,6 +403,30 @@ void PackManagerImpl::InitLocalGpuPacks(const String& architecture_, const Strin
     // now user can do requests for local packs
     requestManager.reset(new RequestManager(*this));
 
+    // now mount all downloaded packs
+    ScopedPtr<FileList> packFiles(new FileList(localPacksDir, false));
+    for (unsigned i = 0; i < packFiles->GetCount(); ++i)
+    {
+        if (packFiles->IsDirectory(i))
+        {
+            continue;
+        }
+        const FilePath& packPath = packFiles->GetPathname(i);
+        if (packPath.GetExtension() == RequestManager::packPostfix)
+        {
+            try
+            {
+                Pack& pack = GetPack(packPath.GetBasename());
+                fs->Mount(packPath, "Data/");
+                pack.state = Pack::Status::Mounted;
+            }
+            catch (std::exception& ex)
+            {
+                Logger::Error("can't auto mount pack on init: %s, cause: %s", packPath.GetAbsolutePathname().c_str(), ex.what());
+            }
+        }
+    }
+
     initState = InitState::GpuReadOnlyPacksReady;
 }
 

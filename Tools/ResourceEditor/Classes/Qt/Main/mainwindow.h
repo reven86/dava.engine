@@ -27,6 +27,7 @@ class PropertyPanel;
 #endif
 class DeviceListController;
 class SpritesPackerModule;
+class ErrorDialogOutput;
 class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
@@ -302,7 +303,7 @@ private:
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::shared_ptr<GlobalOperations> globalOperations;
-    DAVA::LoggerOutput* errorLoggerOutput = nullptr;
+    ErrorDialogOutput* errorLoggerOutput = nullptr;
 
 private:
     struct EmitterDescriptor

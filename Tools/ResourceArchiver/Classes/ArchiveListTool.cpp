@@ -36,13 +36,13 @@ int ArchiveListTool::ProcessInternal()
 {
     try
     {
+        ResourceArchive archive(packFilePath);
+
         ScopedPtr<File> outFile(nullptr);
         if (!outFilePath.IsEmpty())
         {
             outFile.reset(File::Create(outFilePath, File::CREATE | File::WRITE));
         }
-
-        ResourceArchive archive(packFilePath);
 
         String out = Format("Dumping contents of archive %s", packFilePath.GetFilename().c_str());
         Logger::Info("%s", out.c_str());

@@ -19,7 +19,7 @@
 #endif
 
 #include <sys/stat.h>
-#include <time.h>
+#include <ctime>
 
 namespace DAVA
 {
