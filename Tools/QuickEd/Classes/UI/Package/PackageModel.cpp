@@ -372,6 +372,7 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
 
     PackageMimeData* mimeData = new PackageMimeData();
 
+    Vector<ControlNode*> controlNodesForCopy;
     for (const QModelIndex& index : indices)
     {
         if (index.isValid())
@@ -382,7 +383,7 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
                 ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
                 if (nullptr != controlNode)
                 {
-                    mimeData->AddControl(controlNode);
+                    controlNodesForCopy.push_back(controlNode);
                 }
                 else
                 {
@@ -393,6 +394,19 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
                     }
                 }
             }
+        }
+    }
+
+    for (ControlNode* controlNode : controlNodesForCopy)
+    {
+        PackageBaseNode* parent = controlNode->GetParent();
+        while (parent != nullptr && std::find(controlNodesForCopy.begin(), controlNodesForCopy.end(), parent) == controlNodesForCopy.end())
+        {
+            parent = parent->GetParent();
+        }
+        if (parent == nullptr)
+        {
+            mimeData->AddControl(controlNode);
         }
     }
 
