@@ -2,11 +2,13 @@
 #include "Document/CommandsBase/CommandStackGroup.h"
 #include "Command/CommandStack.h"
 
+using namespace DAVA;
+
 CommandStackGroup::CommandStackGroup()
 {
 }
 
-void CommandStackGroup::RemoveStack(DAVA::CommandStack* stackToRemove)
+void CommandStackGroup::RemoveStack(CommandStack* stackToRemove)
 {
     if (activeStack == stackToRemove)
     {
@@ -15,36 +17,36 @@ void CommandStackGroup::RemoveStack(DAVA::CommandStack* stackToRemove)
     stacks.erase(stackToRemove);
 }
 
-void CommandStackGroup::AddStack(DAVA::CommandStack* stackToAdd)
+void CommandStackGroup::AddStack(CommandStack* stackToAdd)
 {
     stacks.insert(stackToAdd);
 }
 
-void CommandStackGroup::SetActiveStack(DAVA::CommandStack* commandStack)
+void CommandStackGroup::SetActiveStack(CommandStack* commandStack)
 {
     if (activeStack != nullptr)
     {
         activeStack->cleanChanged.Disconnect(this);
         activeStack->canRedoChanged.Disconnect(this);
         activeStack->canUndoChanged.Disconnect(this);
-        activeStack->undoTextChanged.Disconnect(this);
-        activeStack->redoTextChanged.Disconnect(this);
+        activeStack->undoCommandChanged.Disconnect(this);
+        activeStack->redoCommandChanged.Disconnect(this);
     }
     activeStack = commandStack;
     if (commandStack != nullptr)
     {
         DVASSERT(stacks.find(commandStack) != stacks.end());
-        activeStack->cleanChanged.Connect(&cleanChanged, &DAVA::Signal<bool>::Emit);
-        activeStack->canRedoChanged.Connect(&canRedoChanged, &DAVA::Signal<bool>::Emit);
-        activeStack->canUndoChanged.Connect(&canUndoChanged, &DAVA::Signal<bool>::Emit);
-        activeStack->undoTextChanged.Connect(&undoTextChanged, &DAVA::Signal<const DAVA::String&>::Emit);
-        activeStack->redoTextChanged.Connect(&redoTextChanged, &DAVA::Signal<const DAVA::String&>::Emit);
+        activeStack->cleanChanged.Connect(&cleanChanged, &Signal<bool>::Emit);
+        activeStack->canRedoChanged.Connect(&canRedoChanged, &Signal<bool>::Emit);
+        activeStack->canUndoChanged.Connect(&canUndoChanged, &Signal<bool>::Emit);
+        activeStack->undoCommandChanged.Connect(&undoCommandChanged, &Signal<const Command*>::Emit);
+        activeStack->redoCommandChanged.Connect(&redoCommandChanged, &Signal<const Command*>::Emit);
     }
     cleanChanged.Emit(IsClean());
     canRedoChanged.Emit(CanRedo());
     canUndoChanged.Emit(CanUndo());
-    undoTextChanged.Emit(GetUndoText());
-    redoTextChanged.Emit(GetRedoText());
+    undoCommandChanged.Emit(GetUndoCommand());
+    redoCommandChanged.Emit(GetRedoCommand());
 }
 
 void CommandStackGroup::Undo()
@@ -80,12 +82,12 @@ bool CommandStackGroup::CanRedo() const
     return activeStack != nullptr ? activeStack->CanRedo() : false;
 }
 
-DAVA::String CommandStackGroup::GetUndoText() const
+const Command* CommandStackGroup::GetUndoCommand() const
 {
-    return activeStack != nullptr ? activeStack->GetUndoText() : DAVA::String();
+    return activeStack != nullptr ? activeStack->GetUndoCommand() : nullptr;
 }
 
-DAVA::String CommandStackGroup::GetRedoText() const
+const Command* CommandStackGroup::GetRedoCommand() const
 {
-    return activeStack != nullptr ? activeStack->GetRedoText() : DAVA::String();
+    return activeStack != nullptr ? activeStack->GetRedoCommand() : nullptr;
 }

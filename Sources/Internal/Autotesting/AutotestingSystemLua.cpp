@@ -90,7 +90,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
     }
     lua_close(luaState);
     luaState = nullptr;
-    
+
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     destroy_mspace(memorySpace);
     free(memoryPool);
@@ -782,6 +782,19 @@ void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
     ProcessInput(clickUp);
 }
 
+void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y)
+{
+    UIEvent wheel;
+    wheel.wheelDelta.x = x;
+    wheel.wheelDelta.y = y;
+    wheel.phase = UIEvent::Phase::WHEEL;
+    wheel.device = UIEvent::Device::MOUSE;
+    wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.point = point;
+    ProcessInput(wheel);
+}
+
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
@@ -849,9 +862,9 @@ bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
         Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", luaFilePath.GetAbsolutePathname().c_str());
         return false;
     }
-    char* data = new char[file->GetSize()];
-    file->Read(data, file->GetSize());
-    uint32 fileSize = file->GetSize();
+    char* data = new char[static_cast<size_t>(file->GetSize())];
+    file->Read(data, static_cast<uint32>(file->GetSize()));
+    uint32 fileSize = static_cast<uint32>(file->GetSize());
     file->Release();
     bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
     delete[] data;

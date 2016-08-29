@@ -181,6 +181,13 @@ FilePath FilePath::FilepathInDocuments(const String& relativePathname)
     return FilepathInDocuments(relativePathname.c_str());
 }
 
+bool FilePath::StartsWith(const FilePath& basePath)
+{
+    DVASSERT(!basePath.IsEmpty());
+    String baseStr = basePath.GetAbsolutePathname();
+    return (GetAbsolutePathname().compare(0, baseStr.size(), baseStr) == 0);
+}
+
 bool FilePath::ContainPath(const FilePath& basePath, const FilePath& partPath)
 {
     return basePath.GetAbsolutePathname().find(partPath.GetAbsolutePathname()) != std::string::npos;
@@ -409,11 +416,7 @@ String FilePath::ResolveResourcesPath() const
                 return path.absolutePathname;
             }
         }
-        // if we can't find full path to file from any resource folder return relative path
-        // for example if we on android in APK path may contains "assets/Data"
-        // so we just add Data/ and inside c++ code append "assets/" in Java
-        // code don't add "assets/"
-        return "Data/" + relativePathname;
+        return relativePathname;
     }
 
     return absolutePathname;

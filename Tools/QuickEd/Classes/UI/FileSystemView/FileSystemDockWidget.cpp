@@ -53,9 +53,12 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
     newFileAction = new QAction(tr("Create file"), this);
     connect(newFileAction, &QAction::triggered, this, &FileSystemDockWidget::onNewFile);
-
     deleteAction = new QAction(tr("Delete"), this);
+#if defined Q_OS_WIN
     deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+#elif defined Q_OS_MAC
+    deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
     deleteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteAction, &QAction::triggered, this, &FileSystemDockWidget::onDeleteFile);
     

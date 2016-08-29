@@ -201,7 +201,7 @@ void TheoraPlayer::OpenFile(const FilePath& path)
 
     frameBuffer = new unsigned char[frameBufferW * frameBufferH * 4];
 
-    repeatFilePos = file->GetPos();
+    repeatFilePos = static_cast<uint32>(file->GetPos());
 
     frameTime = static_cast<float32>(theoraData->thInfo.fps_denominator) / static_cast<float32>(theoraData->thInfo.fps_numerator);
 

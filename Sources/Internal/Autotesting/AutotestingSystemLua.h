@@ -98,6 +98,8 @@ public:
     void LeftMouseClickDown(const Vector2& point);
     void LeftMouseClickUp(const Vector2& point);
 
+    void MouseWheel(const Vector2& point, float32 x, float32 y);
+
     void ScrollToControl(const String& path) const;
 
     // Keyboard action
