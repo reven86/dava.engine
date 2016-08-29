@@ -222,4 +222,37 @@ DX11_TextureFormat(TextureFormat format)
     return DXGI_FORMAT_UNKNOWN;
 }
 
+uint32 DX11_CheckMultisampleSupport(ID3D11Device* device)
+{
+    DXGI_FORMAT depthFormat = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
+    const DXGI_FORMAT formatsToCheck[] = { DXGI_FORMAT_B8G8R8A8_UNORM, depthFormat };
+
+    uint32 samples = 2;
+
+    for (uint32 s = 0; (samples <= 8); ++s, samples *= 2)
+    {
+        UINT numQualityLevels = 0;
+        for (uint32 f = 0; f < countof(formatsToCheck); ++f)
+        {
+            UINT formatSupport = 0;
+            HRESULT hr = device->CheckFormatSupport(formatsToCheck[f], &formatSupport);
+            if (formatSupport & D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
+            {
+                hr = device->CheckMultisampleQualityLevels(formatsToCheck[f], samples, &numQualityLevels);
+                if (FAILED(hr) || (numQualityLevels == 0))
+                {
+                    break;
+                }
+            }
+        }
+        if (numQualityLevels == 0)
+        {
+            DAVA::Logger::Info("DX11 max multisample samples: %u", samples);
+            break;
+        }
+    }
+
+    return samples / 2;
+}
+
 } // namespace rhi

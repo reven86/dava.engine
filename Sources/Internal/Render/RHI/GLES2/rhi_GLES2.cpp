@@ -57,7 +57,7 @@ namespace rhi
 //==============================================================================
 
 static bool _Inited = false;
-Dispatch DispatchGLES2 = { 0 };
+Dispatch DispatchGLES2 = {};
 
 static bool ATC_Supported = false;
 static bool PVRTC_Supported = false;
@@ -71,21 +71,12 @@ static bool Half_Supported = false;
 static bool RG_Supported = false;
 static bool Short_Int_Supported = false;
 
-static RenderDeviceCaps _GLES2_DeviceCaps = {};
-
 //------------------------------------------------------------------------------
 
 static Api
 gles2_HostApi()
 {
     return RHI_GLES2;
-}
-
-//------------------------------------------------------------------------------
-
-static const RenderDeviceCaps& gles2_DeviceCaps()
-{
-    return _GLES2_DeviceCaps;
 }
 
 //------------------------------------------------------------------------------
@@ -195,11 +186,10 @@ gles_check_GL_extensions()
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr || strstr(ext, "ARB_texture_float") != nullptr;
         RG_Supported = strstr(ext, "EXT_texture_rg") != nullptr || strstr(ext, "ARB_texture_rg") != nullptr;
 
-        _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
-        _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
-        _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
-
-        _GLES2_DeviceCaps.isInstancingSupported =
+        MutableDeviceCaps::Get().is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
+        MutableDeviceCaps::Get().isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
+        MutableDeviceCaps::Get().isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
+        MutableDeviceCaps::Get().isInstancingSupported =
         (strstr(ext, "GL_EXT_draw_instanced") || strstr(ext, "GL_ARB_draw_instanced") || strstr(ext, "GL_ARB_draw_elements_base_vertex")) &&
         (strstr(ext, "GL_EXT_instanced_arrays") || strstr(ext, "GL_ARB_instanced_arrays"));
 
@@ -217,7 +207,7 @@ gles_check_GL_extensions()
         {
             float32 value = 0.0f;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
-            _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
+            MutableDeviceCaps::Get().maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
     }
 
@@ -236,9 +226,9 @@ gles_check_GL_extensions()
         {
             if (majorVersion >= 3)
             {
-                _GLES2_DeviceCaps.is32BitIndicesSupported = true;
-                _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-                _GLES2_DeviceCaps.isInstancingSupported = true;
+                MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+                MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+                MutableDeviceCaps::Get().isInstancingSupported = true;
                 Short_Int_Supported = true;
             }
 #ifdef __DAVAENGINE_ANDROID__
@@ -258,10 +248,10 @@ gles_check_GL_extensions()
         }
         else
         {
-            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
-            _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
-            _GLES2_DeviceCaps.isFramebufferFetchSupported = false;
-            _GLES2_DeviceCaps.isInstancingSupported |= (majorVersion > 3) && (minorVersion > 3);
+            MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+            MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+            MutableDeviceCaps::Get().isFramebufferFetchSupported = false;
+            MutableDeviceCaps::Get().isInstancingSupported |= (majorVersion > 3) && (minorVersion > 3);
 
             if (majorVersion >= 3)
             {
@@ -279,7 +269,7 @@ gles_check_GL_extensions()
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
-        memcpy(_GLES2_DeviceCaps.deviceDescription, renderer, strlen(renderer));
+        memcpy(MutableDeviceCaps::Get().deviceDescription, renderer, strlen(renderer));
 
         if (strstr(renderer, "Mali"))
         {
@@ -545,7 +535,6 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
         DispatchGLES2.impl_HostApi = &gles2_HostApi;
         DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-        DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
         DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -598,7 +587,13 @@ void gles2_Initialize(const InitParam& param)
 
 #endif
         if (_GLES2_IsSeamlessCubmapSupported)
+        {
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        }
+
+        GLint maxSamples = 1;
+        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+        MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 
         if (wglSwapIntervalEXT != nullptr)
         {
@@ -697,7 +692,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-    DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -793,7 +787,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-    DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -889,7 +882,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
-    DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;

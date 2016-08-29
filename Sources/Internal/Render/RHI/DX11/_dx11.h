@@ -43,6 +43,7 @@ namespace rhi
 struct InitParam;
 
 DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
+uint32 DX11_CheckMultisampleSupport(ID3D11Device* device);
 
 void InitializeRenderThreadDX11(uint32 frameCount);
 void UninitializeRenderThreadDX11();

@@ -245,6 +245,8 @@ bool RenderPass::BeginRenderPass()
 
     if (passConfig.samples > 1)
     {
+        DVASSERT(passConfig.samples <= rhi::DeviceCaps().maxSamples);
+
         ValidateMultisampledTextures(passConfig);
         passConfig.colorBuffer[0].multisampleTexture = multisampledTexture->handle;
         passConfig.depthStencilBuffer.multisampleTexture = multisampledTexture->handleDepthStencil;

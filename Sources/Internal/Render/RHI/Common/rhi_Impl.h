@@ -23,7 +23,6 @@ Dispatch
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
 
-    const RenderDeviceCaps& (*impl_DeviceCaps)();
     Texture::Descriptor (*impl_GetBackbufferDescriptor)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
