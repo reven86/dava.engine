@@ -2,11 +2,16 @@
 #include "Base/AnyFn.h"
 #include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
+#include <numeric>
 
 namespace DAVA
 {
 DAVA_TESTCLASS (AnyAnyFnTest)
 {
+    struct Stub
+    {
+    };
+
     struct A
     {
         enum E1
@@ -36,6 +41,17 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         static int32 StaticTestFn(int32 a, int32 b)
         {
             return a + b;
+        }
+
+        template <typename R, typename... T>
+        R TestSum(const T&... args)
+        {
+            auto fn = [](const std::array<R, sizeof...(args)>& a) -> R
+            {
+                return std::accumulate(a.begin(), a.end(), R(0));
+            };
+
+            return fn({ args... });
         }
     };
 
@@ -133,6 +149,23 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(!a.IsEmpty());
         TEST_VERIFY(value == a.Get<T>());
         TEST_VERIFY(value == a.Get<const T&>());
+
+        a.Clear();
+        TEST_VERIFY(a.IsEmpty());
+        TEST_VERIFY(!a.CanGet<int>());
+        TEST_VERIFY(!a.CanGet<void*>());
+
+        TEST_VERIFY(123 == a.Get<int>(123));
+
+        try
+        {
+            a.Get<int>();
+            TEST_VERIFY(false && "Shouldn't be able to get int from empty Any");
+        }
+        catch (const Any::Exception& anyExp)
+        {
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadGet);
+        }
     }
 
     template <typename T1, typename T2>
@@ -150,6 +183,8 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         T1 t3 = a.Cast<T1>();
 
         TEST_VERIFY(t3 == t1);
+        TEST_VERIFY(!a.CanCast<Stub>());
+        TEST_VERIFY(!b.CanCast<Stub>());
     }
 
     DAVA_TEST (AutoStorageTest)
@@ -172,6 +207,24 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         DoAutoStorageSharedTest<void*>(nullptr);
         DoAutoStorageSharedTest<String*>(&s);
         DoAutoStorageSharedTest<const String*>(&s);
+    }
+
+    DAVA_TEST (AnyMove)
+    {
+        int32 v = 516273;
+        String s("516273");
+
+        Any a(v);
+        Any b(std::move(a));
+        TEST_VERIFY(a.IsEmpty());
+        TEST_VERIFY(!b.IsEmpty());
+        TEST_VERIFY(b.Get<decltype(v)>() == v);
+
+        a.Set(s);
+        b.Set(std::move(a));
+        TEST_VERIFY(a.IsEmpty());
+        TEST_VERIFY(!b.IsEmpty());
+        TEST_VERIFY(b.Get<decltype(s)>() == s);
     }
 
     DAVA_TEST (AnyTestSimple)
@@ -237,6 +290,12 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(baPtr == a.Cast<A*>());
         TEST_VERIFY(baPtr == a.Cast<const A*>());
 
+        TEST_VERIFY(!a.CanCast<Stub*>());
+        TEST_VERIFY(!a.CanCast<const Stub*>());
+        TEST_VERIFY(!a.CanCast<int>());
+        TEST_VERIFY(!a.CanCast<void>());
+        TEST_VERIFY(!a.CanCast<Stub>());
+
         // multiple inheritance
         a.Set(dPtr);
         TEST_VERIFY(a.CanCast<A*>());
@@ -286,26 +345,68 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         int* iptr1 = &v1;
         int* iptr2 = nullptr;
 
-        Any a;
-        a.LoadValue(Type::Instance<int>(), &v1);
-        TEST_VERIFY(a.Get<int>() == v1);
-
-        a.StoreValue(&v2, sizeof(v2));
-        TEST_VERIFY(v1 == v2);
-
+        // two values ==
+        Any a(v1);
         Any b(v1);
-        Any s(String("str"));
         TEST_VERIFY(a == b);
-        TEST_VERIFY(a != s);
 
+        Any a1(a);
+        Any b1(b);
+        TEST_VERIFY(a1 == b1);
+
+        // two values !=
+        a.Set(v1);
+        b.Set(String("str"));
+        TEST_VERIFY(a != b);
+
+        a1.Set(a);
+        b1.Set(b);
+        TEST_VERIFY(a1 != b1);
+
+        // two pointer !=
         a.Set(&v1);
         b.Set(&v2);
         TEST_VERIFY(a != b);
 
+        // pointer and value !=
+        a.Set(v1);
+        b.Set(&v2);
+        TEST_VERIFY(a != b);
+
+        // empty != value
+        a.Clear();
+        b.Set(v1);
+        TEST_VERIFY(a != b);
+
+        // empty != pointer
+        a.Clear();
+        b.Set(&v1);
+        TEST_VERIFY(a != b);
+
+        // empty != nullptr
+        a.Clear();
+        b.Set(nullptr);
+        TEST_VERIFY(a != b);
+
+        // two empties ==
+        a.Clear();
+        b.Clear();
+        TEST_VERIFY(a == b);
+
+        // load test
+        a.LoadValue(Type::Instance<int>(), &v1);
+        TEST_VERIFY(a.Get<int>() == v1);
+
+        // store test
+        a.StoreValue(&v2, sizeof(v2));
+        TEST_VERIFY(v1 == v2);
+
+        // load/store pointers
         a.LoadValue(Type::Instance<int*>(), &iptr1);
         a.StoreValue(&iptr2, sizeof(iptr2));
         TEST_VERIFY(iptr1 == iptr2);
 
+        // exceptions tests
         Vector3 vec3(1.1f, 2.2f, 3.3f);
         Vector3 vec3_1;
 
@@ -441,9 +542,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.Invoke();
             TEST_VERIFY(false && "Shouldn't be invoked with bad arguments");
         }
-        catch (const AnyFn::Exception& anyFnExp)
+        catch (const Any::Exception& anyExp)
         {
-            TEST_VERIFY(anyFnExp.errorCode == AnyFn::Exception::BadInvokeArguments);
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
         }
 
         try
@@ -451,9 +552,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.BindThis(&a);
             TEST_VERIFY(false && "This shouldn't be binded to static function");
         }
-        catch (const AnyFn::Exception& anyFnExp)
+        catch (const Any::Exception& anyExp)
         {
-            TEST_VERIFY(anyFnExp.errorCode == AnyFn::Exception::BadBindThis);
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
         }
 
         fn = AnyFn(&A::TestFn);
@@ -485,6 +586,55 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         fn = AnyFn(&A::TestFnConst);
         res = fn.Invoke(Any(&a), Any(op2), Any(op3));
         TEST_VERIFY(a.TestFnConst(op2, op3) == res.Get<Vector3>());
+    }
+
+    template <typename R, typename... T>
+    void DoAnyFnInvokeTest(const T&... args)
+    {
+        A a;
+        AnyFn fn(&A::TestSum<R, T...>);
+
+        auto& invokeParams = fn.GetInvokeParams();
+        TEST_VERIFY(invokeParams.retType == Type::Instance<R>());
+        TEST_VERIFY(invokeParams.argsType.at(0) == Type::Instance<A*>());
+        TEST_VERIFY(invokeParams.argsType.size() == (sizeof...(args) + 1));
+
+        Any res = fn.Invoke(&a, args...);
+        TEST_VERIFY(res.Get<R>() == a.TestSum<R>(args...));
+
+        try
+        {
+            fn.Invoke(nullptr, nullptr);
+            TEST_VERIFY(false && "AnyFn shouldn't invoke with bad arguments");
+        }
+        catch (const Any::Exception& anyExp)
+        {
+            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadGet || anyExp.errorCode == Any::Exception::BadOperation);
+        }
+
+        // now bind this, and test once again
+        fn = fn.BindThis(&a);
+        auto& invokeParams1 = fn.GetInvokeParams();
+        TEST_VERIFY(invokeParams1.retType == Type::Instance<R>());
+        TEST_VERIFY(invokeParams1.argsType.size() == sizeof...(args));
+
+        res = fn.Invoke(args...);
+        TEST_VERIFY(res.Get<R>() == a.TestSum<R>(args...));
+    }
+
+    DAVA_TEST (AnyFnInvokeTest)
+    {
+        DoAnyFnInvokeTest<int>(1);
+        DoAnyFnInvokeTest<int>(1, 2);
+        DoAnyFnInvokeTest<int>(1, 2, 3);
+        DoAnyFnInvokeTest<int>(1, 2, 3, 4);
+        DoAnyFnInvokeTest<int>(1, 2, 3, 4, 5);
+
+        DoAnyFnInvokeTest<float>(10.0f);
+        DoAnyFnInvokeTest<float>(10.0f, 0.2f);
+        DoAnyFnInvokeTest<float>(10.0f, 0.2f, 3.0f);
+        DoAnyFnInvokeTest<float>(10.0f, 0.2f, 3.0f, 0.04f);
+        DoAnyFnInvokeTest<float>(10.0f, 0.2f, 3.0f, 0.04f, 500.0f);
     }
 };
 
