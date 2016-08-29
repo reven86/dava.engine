@@ -51,3 +51,11 @@ void EditorVegetationSystem::GetActiveVegetation(DAVA::Vector<DAVA::VegetationRe
         }
     }
 }
+
+void EditorVegetationSystem::ReloadVegetation()
+{
+    for (DAVA::VegetationRenderObject* ro : vegetationObjects)
+    {
+        ro->Rebuild();
+    }
+}
