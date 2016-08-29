@@ -287,6 +287,10 @@ gles_check_GL_extensions()
             _GLES2_ValidateNeonCalleeSavedRegisters = true;
         }
     }
+    
+    GLint maxSamples = 1;
+    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+    MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 }
 
 //------------------------------------------------------------------------------
@@ -591,10 +595,6 @@ void gles2_Initialize(const InitParam& param)
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         }
 
-        GLint maxSamples = 1;
-        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-        MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
-
         if (wglSwapIntervalEXT != nullptr)
         {
             wglSwapIntervalEXT(param.vsyncEnabled ? 1 : 0);
@@ -696,6 +696,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -791,6 +792,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -886,6 +888,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 

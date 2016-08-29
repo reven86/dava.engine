@@ -81,7 +81,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     if ((desc.format == TEXTURE_FORMAT_D16) || (desc.format == TEXTURE_FORMAT_D24S8))
     {
         is_render_buffer = true;
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { (_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), reinterpret_cast<uint64>(glObjects) } };
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2),
+            reinterpret_cast<uint64>(glObjects) } };
 
         ExecGL(&cmd1, 1);
 
@@ -141,7 +142,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         GLCommand cmd[] =
         {
           { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
-          { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, int_fmt, desc.width, desc.height, desc.samples } },
+          { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, static_cast<uint64>(int_fmt), desc.width, desc.height, desc.samples } },
           { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
         };
 
@@ -397,7 +398,6 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         {
             DVASSERT(level == 0);
             DVASSERT(self->fbo.size())
-            GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
             GLCommand cmd[] =
             {
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo[0].frameBuffer } },
