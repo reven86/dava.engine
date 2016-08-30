@@ -232,14 +232,17 @@ void UILayoutSystem::UpdateControl(UIControl* control)
         }
     }
 
+    // TODO: For now game has many places where changes in layouts can
+    // change hierarchy of controls. In future client want fix this places,
+    // after that this code should be replaced by simple for-each.
     const List<UIControl*>& children = control->GetChildren();
     auto it = children.begin();
     auto endIt = children.end();
     while (it != endIt)
     {
-        control->ResetIteratorCorrupted();
+        control->isIteratorCorrupted = false;
         UpdateControl(*it);
-        if (control->IsIteratorCorrupted())
+        if (control->isIteratorCorrupted)
         {
             it = children.begin();
             continue;

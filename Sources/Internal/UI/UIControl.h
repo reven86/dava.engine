@@ -193,6 +193,9 @@ class UIControl : public AnimatedObject
     friend class UIInputSystem;
     friend class UIControlSystem;
 
+    // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
+    friend class UILayoutSystem;
+
 public:
     /**
      \enum Control state bits.
@@ -1030,9 +1033,6 @@ public:
      */
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
-    void ResetIteratorCorrupted();
-    bool IsIteratorCorrupted();
-
 protected:
     enum class eViewState : int32
     {
@@ -1470,15 +1470,5 @@ inline bool UIControl::IsLayoutDirty() const
 inline bool UIControl::IsLayoutPositionDirty() const
 {
     return layoutPositionDirty;
-}
-
-inline void UIControl::ResetIteratorCorrupted()
-{
-    isIteratorCorrupted = false;
-}
-
-inline bool UIControl::IsIteratorCorrupted()
-{
-    return isIteratorCorrupted;
 }
 };
