@@ -6,6 +6,8 @@ class QWidget;
 class GlobalOperations
 {
 public:
+    virtual ~GlobalOperations() = default;
+
     enum ID
     {
         OpenScene, // args - scenePath: DAVA::String
@@ -23,6 +25,8 @@ public:
     virtual void HideWaitDialog() = 0;
 
     virtual void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) = 0;
+
+    DAVA::Signal<> waitDialogClosed;
 };
 
 class WaitDialogGuard

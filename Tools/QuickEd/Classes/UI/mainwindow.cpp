@@ -221,6 +221,10 @@ void MainWindow::InitMenu()
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
+    connect(actionZoomOut, &QAction::triggered, previewWidget, &PreviewWidget::OnDecrementScale);
+    connect(actionZoomIn, &QAction::triggered, previewWidget, &PreviewWidget::OnIncrementScale);
+    connect(actionActualZoom, &QAction::triggered, previewWidget, &PreviewWidget::SetActualScale);
+
 // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
     QList<QKeySequence> shortcuts;
