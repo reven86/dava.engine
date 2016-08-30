@@ -49,6 +49,7 @@ UIControl::UIControl(const Rect& rect)
     , styleSheetInitialized(false)
     , layoutDirty(true)
     , layoutPositionDirty(true)
+    , isInputProcessed(false)
     , family(nullptr)
     , parentWithContext(nullptr)
 {
@@ -739,6 +740,7 @@ void UIControl::AddControl(UIControl* control)
     control->Retain();
     control->RemoveFromParent();
 
+    control->isInputProcessed = false;
     control->SetParent(this);
     children.push_back(control);
 
@@ -1369,6 +1371,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 bool UIControl::SystemInput(UIEvent* currentInput)
 {
     UIControlSystem::Instance()->inputCounter++;
+    isInputProcessed = true;
 
     if (!GetVisibilityFlag())
         return false;
@@ -1384,26 +1387,33 @@ bool UIControl::SystemInput(UIEvent* currentInput)
             }
         }
 
+        std::for_each(begin(children), end(children), [](UIControl* c) {
+            c->isInputProcessed = false;
+        });
+
         List<UIControl*>::reverse_iterator it = children.rbegin();
         List<UIControl*>::reverse_iterator itEnd = children.rend();
         while (it != itEnd)
         {
             isIteratorCorrupted = false;
             UIControl* current = *it;
-            current->Retain();
-            if (current->inputProcessorsCount > 0)
+            if (!current->isInputProcessed)
             {
-                if (current->SystemInput(currentInput))
+                current->Retain();
+                if (current->inputProcessorsCount > 0)
                 {
-                    current->Release();
-                    return true;
+                    if (current->SystemInput(currentInput))
+                    {
+                        current->Release();
+                        return true;
+                    }
                 }
-            }
-            current->Release();
-            if (isIteratorCorrupted)
-            {
-                it = children.rbegin();
-                continue;
+                current->Release();
+                if (isIteratorCorrupted)
+                {
+                    it = children.rbegin();
+                    continue;
+                }
             }
             ++it;
         }
