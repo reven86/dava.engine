@@ -291,6 +291,8 @@ public:
 
     Signal<float32> update;
 
+    void UpdateControl(UIControl* control);
+
 private:
     void ProcessScreenLogic();
 

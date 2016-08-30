@@ -232,9 +232,19 @@ void UILayoutSystem::UpdateControl(UIControl* control)
         }
     }
 
-    for (UIControl* child : control->GetChildren())
+    const List<UIControl*>& children = control->GetChildren();
+    auto it = children.begin();
+    auto endIt = children.end();
+    while (it != endIt)
     {
-        UpdateControl(child);
+        control->ResetIteratorCorrupted();
+        UpdateControl(*it);
+        if (control->IsIteratorCorrupted())
+        {
+            it = children.begin();
+            continue;
+        }
+        ++it;
     }
 }
 }

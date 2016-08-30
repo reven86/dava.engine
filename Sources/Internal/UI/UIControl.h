@@ -1030,6 +1030,9 @@ public:
      */
     virtual void DrawAfterChilds(const UIGeometricData& geometricData);
 
+    void ResetIteratorCorrupted();
+    bool IsIteratorCorrupted();
+
 protected:
     enum class eViewState : int32
     {
@@ -1467,5 +1470,15 @@ inline bool UIControl::IsLayoutDirty() const
 inline bool UIControl::IsLayoutPositionDirty() const
 {
     return layoutPositionDirty;
+}
+
+inline void UIControl::ResetIteratorCorrupted()
+{
+    isIteratorCorrupted = false;
+}
+
+inline bool UIControl::IsIteratorCorrupted()
+{
+    return isIteratorCorrupted;
 }
 };

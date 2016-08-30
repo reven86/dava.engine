@@ -179,6 +179,12 @@ void UIControlSystem::Reset()
     SetScreen(nullptr);
 }
 
+void UIControlSystem::UpdateControl(UIControl* control)
+{
+    styleSheetSystem->Update(control);
+    layoutSystem->Update(control);
+}
+
 void UIControlSystem::ProcessScreenLogic()
 {
     /*
@@ -312,17 +318,13 @@ void UIControlSystem::Update()
 
         if (currentScreenTransition)
         {
-            styleSheetSystem->Update(currentScreenTransition.Get());
-            layoutSystem->Update(currentScreenTransition.Get());
+            UpdateControl(currentScreenTransition.Get());
         }
         else if (currentScreen)
         {
-            styleSheetSystem->Update(currentScreen.Get());
-            layoutSystem->Update(currentScreen.Get());
+            UpdateControl(currentScreen.Get());
         }
-
-        styleSheetSystem->Update(popupContainer.Get());
-        layoutSystem->Update(popupContainer.Get());
+        UpdateControl(popupContainer.Get());
     }
 
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
