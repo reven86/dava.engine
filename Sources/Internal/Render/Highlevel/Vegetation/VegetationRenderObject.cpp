@@ -1364,4 +1364,23 @@ void VegetationRenderObject::BindDynamicParameters(Camera* camera)
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSize, pointer_size(&heightmapSize));
     }
 }
+
+void VegetationRenderObject::RebuildCustomGeometry()
+{
+    if (vegetationGeometry != nullptr)
+    {
+        ScopedPtr<KeyedArchive> props(new KeyedArchive());
+        props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
+
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
+    }
+}
+
+void VegetationRenderObject::Rebuild()
+{
+    RebuildCustomGeometry();
+
+    GenerateDensityMapFromTransparencyMask(lightmapTexturePath);
+    UpdateVegetationSetup();
+}
 };
