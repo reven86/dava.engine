@@ -4,6 +4,7 @@
 
 #include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
+#include "Utils/NsStringUtils.h"
 #include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
@@ -18,6 +19,16 @@ namespace DAVA
 {
 DeviceInfoPrivate::DeviceInfoPrivate()
 {
+    telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier* phoneCarrier = [telephonyNetworkInfo subscriberCellularProvider];
+    carrierName = [phoneCarrier carrierName];
+    if (carrierName == nil)
+    {
+        carrierName = @"";
+    }
+    telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
+        OnCarrierChange(carrier);
+    };
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -392,6 +403,21 @@ bool DeviceInfoPrivate::IsTouchPresented()
     //TODO: remove this empty realization and implement detection touch
     return true;
 }
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return StringFromNSString(carrierName);
 }
 
+void DeviceInfoPrivate::OnCarrierChange(CTCarrier* carrier)
+{
+    NSString* newCarrier = [carrier carrierName];
+    if (![newCarrier isEqualToString:carrierName])
+    {
+        carrierName = [carrier carrierName];
+        DeviceInfo::сarrierNameChanged.Emit(StringFromNSString(carrierName));
+        NSLog(@"Change Carrier = %@", carrier.carrierName);
+    }
+}
+}
 #endif
