@@ -416,7 +416,6 @@ void DeviceInfoPrivate::OnCarrierChange(CTCarrier* carrier)
     {
         carrierName = [carrier carrierName];
         DeviceInfo::сarrierNameChanged.Emit(StringFromNSString(carrierName));
-        NSLog(@"Change Carrier = %@", carrier.carrierName);
     }
 }
 }
