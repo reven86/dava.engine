@@ -13,6 +13,7 @@
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
+#include "Platform/DeviceInfo.h"
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
@@ -87,12 +88,39 @@ void PlatformCore::OnActivated()
     Logger::Debug("****** CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
 }
 
+static void InitScreenSizeInfo()
+{
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::UI::Xaml::Window;
+    using ::Windows::Graphics::Display::DisplayInformation;
+    using ::Windows::Graphics::Display::DisplayOrientations;
+
+    DeviceInfo::ScreenInfo screenInfo;
+
+    CoreWindow ^ coreWindow = Window::Current->CoreWindow;
+    DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
+    DisplayOrientations orientation = displayInfo->CurrentOrientation;
+
+    screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
+    screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
+    screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
+
+    if (DisplayOrientations::Portrait == orientation || DisplayOrientations::PortraitFlipped == orientation)
+    {
+        std::swap(screenInfo.width, screenInfo.height);
+    }
+
+    DeviceInfo::InitializeScreenInfo(screenInfo, false);
+}
+
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
-    WindowBackend* nativeWindow = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
-    nativeWindow->BindXamlWindow(xamlWindow);
+    InitScreenSizeInfo();
+
+    WindowBackend* backendWindow = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
+    backendWindow->BindXamlWindow(xamlWindow);
 }
 
 void PlatformCore::OnSuspending()

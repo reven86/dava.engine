@@ -62,7 +62,7 @@ void CheckDeviceInfoValid()
     DVASSERT(DeviceInfo::GetNetworkInfo().networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
     DVASSERT(DeviceInfo::GetNetworkInfo().signalStrength >= 0 || true);
     List<DeviceInfo::StorageInfo> storageInfo = DeviceInfo::GetStoragesList();
-    DVASSERT(storageInfo.empty());
+    DVASSERT(storageInfo.empty() || true);
     DVASSERT(DeviceInfo::GetCpuCount() > 0);
 }
 
