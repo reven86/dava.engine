@@ -16,7 +16,6 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/Image/Image.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"

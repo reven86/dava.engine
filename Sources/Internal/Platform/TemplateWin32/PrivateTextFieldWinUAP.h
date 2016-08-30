@@ -229,7 +229,7 @@ inline bool PrivateTextFieldWinUAP::GetTextUseRtlAlign() const
 
 inline void PrivateTextFieldWinUAP::SetRenderToTexture(bool /*value*/)
 {
-    // Do nothing as single line tex field always is painted into texture
+    // Do nothing as single line text field always is painted into texture
     // Multiline text field is never rendered to texture
 }
 

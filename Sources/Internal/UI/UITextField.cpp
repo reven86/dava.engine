@@ -5,8 +5,14 @@
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 
+#include "Engine/Engine.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+#include "UI/Private/Android/TextFieldControlAndroid.h"
+#else
 #include "UITextFieldAndroid.h"
+#endif
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
@@ -33,8 +39,12 @@ namespace DAVA
 {
 UITextField::UITextField(const Rect& rect)
     : UIControl(rect)
+#if defined(__DAVAENGINE_COREV2__) && defined(__DAVAENGINE_ANDROID__)
+    , textFieldImpl(new TextFieldPlatformImpl(*Engine::Instance()->PrimaryWindow(), *this))
+#else
+    , textFieldImpl(new TextFieldPlatformImpl(this))
+#endif
 {
-    textFieldImpl = new TextFieldPlatformImpl(this);
     textFieldImpl->SetVisible(false);
 
     SetupDefaults();
@@ -237,8 +247,10 @@ void UITextField::SetFontSize(float32 size)
 void UITextField::SetDelegate(UITextFieldDelegate* _delegate)
 {
     delegate = _delegate;
-#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
+#if !defined(DISABLE_NATIVE_TEXTFIELD)
+#if defined(__DAVAENGINE_WIN_UAP__) || (defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_COREV2__))
     textFieldImpl->SetDelegate(_delegate);
+#endif
 #endif
 }
 

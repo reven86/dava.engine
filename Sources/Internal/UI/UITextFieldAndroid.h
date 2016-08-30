@@ -1,10 +1,11 @@
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
+#pragma once
 
-#include "UI/UITextField.h"
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
+
+#include "UI/UITextField.h"
 #include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
@@ -152,7 +153,5 @@ private:
 };
 };
 
+#endif // !__DAVAENGINE_COREV2__
 #endif //__DAVAENGINE_ANDROID__
-
-
-#endif //__DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__

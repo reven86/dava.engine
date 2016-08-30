@@ -2,10 +2,10 @@ package com.dava.engine;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.content.res.Configuration;
 import android.util.Log;
 
 public final class DavaActivity extends Activity
@@ -19,7 +19,8 @@ public final class DavaActivity extends Activity
     protected boolean hasFocus = false;
     protected boolean exitCalledFromJava = false;
 
-    protected DavaCommandHandler commandHandler;
+    protected DavaCommandHandler commandHandler = new DavaCommandHandler();
+    protected DavaKeyboardState keyboardState = null;
     
     private DavaSurfaceView primarySurfaceView;
     private ViewGroup layout;
@@ -29,7 +30,7 @@ public final class DavaActivity extends Activity
         System.loadLibrary("gnustl_shared");
         System.loadLibrary("TestBed");
     }
-    
+
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
                                                      String appPath,
@@ -58,8 +59,7 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
-        commandHandler = new DavaCommandHandler();
-        
+
         Application app = getApplication();
         String externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
         String internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
@@ -137,6 +137,10 @@ public final class DavaActivity extends Activity
         hasFocus = hasWindowFocus;
         if (hasFocus)
         {
+            if (keyboardState == null)
+            {
+                keyboardState = new DavaKeyboardState();
+            }
             handleResume();
         }
     }

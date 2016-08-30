@@ -268,7 +268,7 @@ public final class DavaWebView
 
     void update()
     {
-        if (properties.createNew || properties.anyPropertyChanged)
+        if (properties.anyPropertyChanged)
         {
             final WebViewProperties props = new WebViewProperties(properties);
             DavaActivity.commandHandler().post(new Runnable() {
