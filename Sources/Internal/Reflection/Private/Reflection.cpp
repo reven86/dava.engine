@@ -265,7 +265,7 @@ void Reflection::DumpMethods(std::ostream& out) const
     Vector<Method> methods = GetMethods();
     for (auto& method : methods)
     {
-        const AnyFn::InvokeParams& params = method.fn.GetInvokeParams();
+        const AnyFn::Params& params = method.fn.GetInvokeParams();
 
         out << params.retType->GetName() << " ";
         out << method.key << "(";

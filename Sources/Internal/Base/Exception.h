@@ -1,52 +1,34 @@
-#ifndef __LOGENGINE_EXCEPTION_H__
-#define __LOGENGINE_EXCEPTION_H__
-
+#pragma once
+#include <stdexcept>
 #include "Base/BaseTypes.h"
+#include "Debug/Backtrace.h"
 
-namespace Log
+namespace DAVA
 {
-class Exception
-{
-public:
-    virtual ~Exception();
-    virtual const String& GetMessage()
-    {
-        return message;
-    };
-
-protected:
-    Exception(const String& _message)
-        : message(_message)
-    {
-    }
-    String message;
-};
-
-// fatal exceptions
-class FindFileException : public Exception
+class Exception : public std::runtime_error
 {
 public:
-    FindFileException()
-        : Exception("[*** FatalException] failed to find file\n")
+    Exception(const String& message, const char* file_, size_t line_)
+        : std::runtime_error(message)
+        , file(file_)
+        , line(line_)
+        , callstack(Debug::GetBacktrace())
     {
     }
-    ~FindFileException(){};
 
-private:
-};
-
-// fatal exceptions
-class MemoryAllocateException : public Exception
-{
-public:
-    MemoryAllocateException()
-        : Exception("[*** MemoryAllocateException] failed to allocate memory\n")
+    const char* what() const override
     {
+        // TODO:
+        // ...
+
+        return std::runtime_error::what();
     }
-    ~MemoryAllocateException(){};
 
-private:
-};
+    String file;
+    size_t line;
+    Vector<Debug::StackFrame> callstack;
 };
 
-#endif // __LOGENGINE_EXCEPTION_H__
+} // namespace DAVA
+
+#define DAVA_THROW(e, ...) throw e(__VA_ARGS__, __FILE__, __LINE__)

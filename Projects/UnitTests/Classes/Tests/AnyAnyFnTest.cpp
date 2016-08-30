@@ -162,9 +162,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.Get<int>();
             TEST_VERIFY(false && "Shouldn't be able to get int from empty Any");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadGet);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadGet);
         }
     }
 
@@ -251,9 +251,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.Get<String>();
             TEST_VERIFY(false && "Shouldn't be able to ge String");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadGet);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadGet);
         }
     }
 
@@ -318,9 +318,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.Cast<int>();
             TEST_VERIFY(false && "Shouldn't be able to cast to int");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadCast);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadCast);
         }
     }
 
@@ -415,9 +415,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.LoadValue(Type::Instance<Vector3>(), &vec3);
             TEST_VERIFY(false && "Load should be done for unregistred non-fundamental types");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadOperation);
         }
 
         a.Set(vec3);
@@ -428,9 +428,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.StoreValue(&vec3_1, sizeof(vec3_1));
             TEST_VERIFY(false && "Store should be done for unregistred non-fundamental types");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadOperation);
         }
 
         // now register default operations
@@ -447,9 +447,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.StoreValue(&vec3_1, sizeof(vec3_1) / 2);
             TEST_VERIFY(false && "Store should be done if destenation size is smaller then source type require");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadSize);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadSize);
         }
     }
 
@@ -542,9 +542,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.Invoke();
             TEST_VERIFY(false && "Shouldn't be invoked with bad arguments");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyFnException& anyFnExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+            TEST_VERIFY(anyFnExp.ecode == AnyFnException::BadArguments);
         }
 
         try
@@ -552,9 +552,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.BindThis(&a);
             TEST_VERIFY(false && "This shouldn't be binded to static function");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyFnException& anyFnExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadOperation);
+            TEST_VERIFY(anyFnExp.ecode == AnyFnException::BadBind);
         }
 
         fn = AnyFn(&A::TestFn);
@@ -607,9 +607,13 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.Invoke(nullptr, nullptr);
             TEST_VERIFY(false && "AnyFn shouldn't invoke with bad arguments");
         }
-        catch (const Any::Exception& anyExp)
+        catch (const AnyException& anyExp)
         {
-            TEST_VERIFY(anyExp.errorCode == Any::Exception::BadGet || anyExp.errorCode == Any::Exception::BadOperation);
+            TEST_VERIFY(anyExp.ecode == AnyException::BadGet);
+        }
+        catch (const AnyFnException& anyFnExp)
+        {
+            TEST_VERIFY(anyFnExp.ecode == AnyFnException::BadArguments);
         }
 
         // now bind this, and test once again

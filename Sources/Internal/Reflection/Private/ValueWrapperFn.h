@@ -1,6 +1,6 @@
 #pragma once
 #include "Functional/Function.h"
-#include "Reflection/Public/Wrappers.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {

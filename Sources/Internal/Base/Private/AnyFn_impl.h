@@ -74,7 +74,7 @@ struct StaticAnyFnInvoker : Invoker
 
     AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
     {
-        throw Any::Exception(Any::Exception::BadOperation, "This can't be binded to static function");
+        DAVA_THROW(AnyFnException, AnyFnException::BadBind, "This can't be binded to static function");
     }
 };
 
@@ -84,7 +84,7 @@ struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
     {
-        throw Any::Exception(Any::Exception::BadOperation, "Bad arguments");
+        DAVA_THROW(AnyFnException, AnyFnException::BadArguments, "Invoke arguments count or type mismatch");
     }
 };
 
@@ -176,7 +176,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        throw Any::Exception(Any::Exception::BadOperation, "Bad arguments");
+        DAVA_THROW(AnyFnException, AnyFnException::BadArguments, "Invoke arguments count or type mismatch");
     }
 };
 
@@ -213,9 +213,9 @@ struct FunctorTraits<Fn, Ret (Cls::*)(Args...) const>
 {
     using InvokerType = StaticAnyFnInvoker<Fn, Ret, Args...>;
 
-    static void InitInvokeParams(AnyFn::InvokeParams& params)
+    static void InitInvokeParams(AnyFn::Params& params)
     {
-        params.Init<Ret, Args...>();
+        params.Set<Ret, Args...>();
     }
 };
 
@@ -239,12 +239,13 @@ inline AnyFn::AnyFn(const Fn& fn)
 
 template <typename Ret, typename... Args>
 inline AnyFn::AnyFn(Ret (*fn)(Args...))
+    : invokeParams()
 {
     static AnyFnDetail::StaticAnyFnInvoker<Ret (*)(Args...), Ret, Args...> staticFnInvoker;
 
     anyFnStorage.SetAuto(fn);
     invoker = &staticFnInvoker;
-    invokeParams.Init<Ret, Args...>();
+    invokeParams.Set<Ret, Args...>();
 }
 
 template <typename Ret, typename Cls, typename... Args>
@@ -260,7 +261,7 @@ inline AnyFn::AnyFn(Ret (Cls::*fn)(Args...))
 
     anyFnStorage.SetAuto(fn);
     invoker = &classFnInvoker;
-    invokeParams.Init<Ret, Cls*, Args...>();
+    invokeParams.Set<Ret, Cls*, Args...>();
 }
 
 inline bool AnyFn::IsValid() const
@@ -273,7 +274,7 @@ inline bool AnyFn::IsStatic() const
     return invoker->IsStatic();
 }
 
-inline const AnyFn::InvokeParams& AnyFn::GetInvokeParams() const
+inline const AnyFn::Params& AnyFn::GetInvokeParams() const
 {
     return invokeParams;
 }
@@ -289,10 +290,21 @@ inline AnyFn AnyFn::BindThis(const void* this_) const
     return invoker->BindThis(anyFnStorage, this_);
 }
 
+inline AnyFn::Params::Params()
+    : retType(Type::Instance<void>())
+{
+}
+
 template <typename Ret, typename... Args>
-void AnyFn::InvokeParams::Init()
+AnyFn::Params& AnyFn::Params::Set()
 {
     retType = Type::Instance<Ret>();
+    return SetArgs<Args...>();
+}
+
+template <typename... Args>
+AnyFn::Params& AnyFn::Params::SetArgs()
+{
     argsType.reserve(sizeof...(Args));
 
     auto args_push_back = [this](const Type* t) {
@@ -301,6 +313,20 @@ void AnyFn::InvokeParams::Init()
     };
 
     bool unpack[] = { true, args_push_back(Type::Instance<Args>())... };
+
+    return *this;
+}
+
+template <typename Ret, typename... Args>
+inline AnyFn::Params AnyFn::Params::From()
+{
+    return Params().Set<Ret, Args...>();
+}
+
+template <typename... Args>
+inline AnyFn::Params AnyFn::Params::FromArgs()
+{
+    return Params().SetArgs<Args...>();
 }
 
 } // namespace DAVA

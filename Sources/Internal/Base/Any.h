@@ -3,19 +3,16 @@
 #include <typeindex>
 #include <string>
 
-#include "BaseTypes.h"
-#include "Type.h"
-#include "Private/AutoStorage.h"
-
-// #define ANY_EXPERIMENTAL_CAST_IMPL
+#include "Base/BaseTypes.h"
+#include "Base/Type.h"
+#include "Base/Exception.h"
+#include "Base/Private/AutoStorage.h"
 
 namespace DAVA
 {
 class Any final
 {
 public:
-    struct Exception;
-
     using AnyStorage = AutoStorage<>;
     using LoadOP = void (*)(AnyStorage&, const void* src);
     using StoreOP = void (*)(const AnyStorage&, void* dst);
@@ -129,7 +126,7 @@ private:
     static std::unique_ptr<CastOPsMap> castOPsMap;
 };
 
-struct Any::Exception : public std::runtime_error
+struct AnyException : public Exception
 {
     enum ErrorCode
     {
@@ -139,10 +136,13 @@ struct Any::Exception : public std::runtime_error
         BadSize
     };
 
-    Exception(ErrorCode code, const std::string& message);
-    Exception(ErrorCode code, const char* message);
+    ErrorCode ecode;
 
-    ErrorCode errorCode;
+    AnyException(ErrorCode ecode_, const String& message, const char* file_, size_t line_)
+        : Exception(message, file_, line_)
+        , ecode(ecode_)
+    {
+    }
 };
 
 } // namespace DAVA

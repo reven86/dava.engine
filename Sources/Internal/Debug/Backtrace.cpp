@@ -284,6 +284,8 @@ String BacktraceToString(size_t framesToCapture)
     return BacktraceToString(GetBacktrace(framesToCapture));
 }
 
+#if 0
+
 void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll)
 {
     Logger* logger = Logger::Instance();
@@ -302,6 +304,8 @@ void BacktraceToLog(size_t framesToCapture, Logger::eLogLevel ll)
 {
     BacktraceToLog(GetBacktrace(framesToCapture), ll);
 }
+
+#endif
 
 } // namespace Debug
 } // namespace DAVA

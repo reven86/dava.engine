@@ -45,9 +45,17 @@ struct SimpleStruct
     int a = -38;
     int b = 1024;
 
+    bool operator==(const SimpleStruct& s) const
+    {
+        return (a == s.a && b == s.b);
+    }
+
     DAVA_REFLECTION(SimpleStruct)
     {
         DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
+        .Constructor()
+        .Constructor<int, int>()
+        .Destructor()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
         .End();
@@ -285,19 +293,101 @@ DAVA_TESTCLASS (TypeReflection)
 
     DAVA_TEST (CtorDtorTest)
     {
-        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<TestBaseClass>();
+        using CtorDtorTestClass = SimpleStruct;
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<CtorDtorTestClass>();
+
+        TEST_VERIFY(nullptr != rtype);
         if (nullptr != rtype)
         {
-            // TODO:
-            // ...
-            /*
-            auto ctor = rtype->GetCtor();
-            auto dtor = rtype->GetDtor();
+            const DAVA::CtorWrapper* ctor1 = rtype->GetCtor();
+            const DAVA::CtorWrapper* ctor2 = rtype->GetCtor(DAVA::AnyFn::Params::FromArgs<int, int>());
+            const DAVA::DtorWrapper* dtor = rtype->GetDtor();
+            const DAVA::Type* testType = DAVA::Type::Instance<CtorDtorTestClass>();
 
-            Any a = ctor->Create();
+            TEST_VERIFY(nullptr != ctor1);
+            TEST_VERIFY(nullptr != ctor2);
+            TEST_VERIFY(nullptr != dtor);
+
+            DAVA::Any::RegisterDefaultOPs<SimpleStruct>();
+
+            DAVA::Any a = ctor1->Create(DAVA::CtorWrapper::Policy::ByValue);
+            DAVA::Any b = CtorDtorTestClass();
+            TEST_VERIFY(a == b);
+
+            a = ctor2->Create(DAVA::CtorWrapper::Policy::ByValue, 111, 222);
+            b.Set(CtorDtorTestClass(111, 222));
+            TEST_VERIFY(a == b);
+
+            TEST_VERIFY(a.GetType() == testType);
+
+            try
+            {
+                dtor->Destroy(std::move(a));
+                TEST_VERIFY(false && "Destroing object created by value shouldn't be able");
+            }
+            catch (const DAVA::Exception&)
+            {
+                TEST_VERIFY(!a.IsEmpty());
+                TEST_VERIFY(a.GetType() == testType);
+            }
+
+            a = ctor2->Create(DAVA::CtorWrapper::Policy::ByPointer, 111, 222);
+            TEST_VERIFY(*a.Get<CtorDtorTestClass*>() == b.Get<CtorDtorTestClass>());
+
             dtor->Destroy(std::move(a));
-            */
+            TEST_VERIFY(a.IsEmpty());
         }
+    }
+
+    template <typename T>
+    void DoValueSetGetTest(DAVA::Reflection & ref, DAVA::Function<T()> & realGetter, DAVA::Function<void(T)> & realSetter, const T& v1, const T& v2)
+    {
+        DAVA::Any a = ref.GetValue();
+        TEST_VERIFY(a.Get<T>() == realGetter());
+
+        if (!ref.IsReadonly())
+        {
+            realSetter(v1);
+            a = ref.GetValue();
+            TEST_VERIFY(a.Get<T>() == v1);
+
+            TEST_VERIFY(ref.SetValue(v2));
+            TEST_VERIFY(realGetter() == v2);
+        }
+        else
+        {
+            TEST_VERIFY(!ref.SetValue(v2));
+            TEST_VERIFY(realGetter() != v2);
+        }
+    }
+
+    DAVA_TEST (ValueSetGet)
+    {
+        TestBaseClass t;
+        DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
+
+        // static get/set
+        DAVA::Function<int()> realStaticGetter = []() { return TestBaseClass::staticInt; };
+        DAVA::Function<void(int)> realStaticSetter = [](int v) { TestBaseClass::staticInt = v; };
+        DoValueSetGetTest(r.GetField("staticInt").ref, realStaticGetter, realStaticSetter, 111, 222);
+
+        // static const get/set
+        DAVA::Function<int()> realStaticConstGetter = []() { return TestBaseClass::staticIntConst; };
+        DAVA::Function<void(int)> realStaticConstSetter = [](int v) {};
+        DoValueSetGetTest(r.GetField("staticIntConst").ref, realStaticConstGetter, realStaticConstSetter, 111, 222);
+
+        // class set/get
+        DAVA::Function<int()> realClassGetter = [&t]() { return t.basebase; };
+        DAVA::Function<void(int)> realClassSetter = [&t](int v) { t.basebase = v; };
+        DoValueSetGetTest(r.GetField("basebase").ref, realClassGetter, realClassSetter, 333, 444);
+    }
+
+    DAVA_TEST (ValueFnSetGet)
+    {
+    }
+
+    DAVA_TEST (ValueSetGetByPointer)
+    {
     }
 };
 

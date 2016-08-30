@@ -153,7 +153,7 @@ const T& Any::Get() const
     if (CanGet<T>())
         return GetImpl<T>();
 
-    throw Exception(Exception::BadGet, "Value can't be get as requested T");
+    DAVA_THROW(AnyException, AnyException::BadGet, "Value can't be get as requested T");
 }
 
 template <typename T>
@@ -244,7 +244,7 @@ inline T Any::CastImpl(std::true_type isPointer) const
         return static_cast<T>(outPtr);
     }
 
-    throw Exception(Exception::BadCast, "Pointer value can't be casted into requested T");
+    DAVA_THROW(AnyException, AnyException::BadCast, "Pointer value can't be casted into requested T");
 }
 
 template <typename T>
@@ -262,7 +262,7 @@ inline T Any::CastImpl(std::false_type isPointer) const
         }
     }
 
-    throw Exception(Exception::BadCast, "Value can't be casted into requested T");
+    DAVA_THROW(AnyException, AnyException::BadCast, "Value can't be casted into requested T");
 }
 
 template <typename T>

@@ -3,7 +3,6 @@
 
 // clang-format off
 #include "Base/BaseTypes.h"
-#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -33,12 +32,6 @@ DAVA_NOINLINE Vector<StackFrame> GetBacktrace(size_t framesToCapture = -1);
 //  2nd version internally gets backtrace and formats all items
 String BacktraceToString(const Vector<StackFrame>& backtrace, size_t nframes = -1);
 String BacktraceToString(size_t framesToCapture);
-
-// Prints backtrace to log using specified log level
-//  1st version uses already obtained backtrace
-//  2nd version internally gets backtrace and logs all items
-void BacktraceToLog(const Vector<StackFrame>& backtrace, Logger::eLogLevel ll = Logger::LEVEL_ERROR);
-void BacktraceToLog(size_t framesToCapture = -1, Logger::eLogLevel ll = Logger::LEVEL_ERROR);
 
 // Low level function to get stack frames and symbols
 DAVA_NOINLINE size_t GetStackFrames(void* frames[], size_t framesToCapture);

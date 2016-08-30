@@ -1,9 +1,9 @@
 #pragma once
 #include "Base/BaseTypes.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/Public/Wrappers.h"
-#include "Reflection/Public/ReflectedMeta.h"
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectedType.h"
 #include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA

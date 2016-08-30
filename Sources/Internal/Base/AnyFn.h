@@ -3,6 +3,7 @@
 #include <tuple>
 #include "Base/Type.h"
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 #include "Base/Any.h"
 #include "Base/Private/AutoStorage.h"
 
@@ -18,13 +19,25 @@ class AnyFn final
 public:
     using AnyFnStorage = AutoStorage<>;
 
-    struct InvokeParams
+    struct Params
     {
-        const Type* retType;
-        Vector<const Type*> argsType;
+        Params();
+        bool operator==(const Params&) const;
 
         template <typename Ret, typename... Args>
-        void Init();
+        Params& Set();
+
+        template <typename... Args>
+        Params& SetArgs();
+
+        template <typename Ret, typename... Args>
+        static Params From();
+
+        template <typename... Args>
+        static Params FromArgs();
+
+        const Type* retType;
+        Vector<const Type*> argsType;
     };
 
     AnyFn();
@@ -44,7 +57,7 @@ public:
     bool IsValid() const;
     bool IsStatic() const;
 
-    const InvokeParams& GetInvokeParams() const;
+    const Params& GetInvokeParams() const;
 
     template <typename... Args>
     Any Invoke(const Args&... args) const;
@@ -54,7 +67,24 @@ public:
 private:
     AnyFnStorage anyFnStorage;
     AnyFnDetail::Invoker* invoker;
-    InvokeParams invokeParams;
+    Params invokeParams;
+};
+
+struct AnyFnException : public Exception
+{
+    enum ErrorCode
+    {
+        BadBind,
+        BadArguments,
+    };
+
+    ErrorCode ecode;
+
+    AnyFnException(ErrorCode ecode_, const String& message, const char* file_, size_t line_)
+        : Exception(message, file_, line_)
+        , ecode(ecode_)
+    {
+    }
 };
 
 } // namespace DAVA

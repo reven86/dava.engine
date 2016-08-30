@@ -30,7 +30,7 @@ void Any::LoadValue(const Type* type_, void* data)
             }
         }
 
-        throw Exception(Exception::BadOperation, "Load operation wasn't registered");
+        DAVA_THROW(AnyException, AnyException::BadOperation, "Load operation wasn't registered");
     }
 }
 
@@ -40,7 +40,7 @@ void Any::StoreValue(void* data, size_t size) const
     {
         if (type->GetSize() > size)
         {
-            throw Exception(Exception::BadSize, "Type size mismatch while saving value from Any");
+            DAVA_THROW(AnyException, AnyException::BadSize, "Type size mismatch while saving value from Any");
         }
 
         if (type->IsPointer())
@@ -64,7 +64,7 @@ void Any::StoreValue(void* data, size_t size) const
                 }
             }
 
-            throw Exception(Exception::BadOperation, "Save operation wasn't registered");
+            DAVA_THROW(AnyException, AnyException::BadOperation, "Save operation wasn't registered");
         }
     }
 }
@@ -114,19 +114,7 @@ bool Any::operator==(const Any& any) const
         }
     }
 
-    throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
-}
-
-Any::Exception::Exception(ErrorCode code, const std::string& message)
-    : runtime_error(message)
-    , errorCode(code)
-{
-}
-
-Any::Exception::Exception(ErrorCode code, const char* message)
-    : runtime_error(message)
-    , errorCode(code)
-{
+    DAVA_THROW(AnyException, AnyException::BadOperation, "Compare operation wasn't registered");
 }
 
 } // namespace DAVA

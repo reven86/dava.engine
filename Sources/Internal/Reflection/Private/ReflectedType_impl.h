@@ -1,11 +1,11 @@
 #pragma once
 
 #ifndef __DAVA_ReflectedType__
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/ReflectedType.h"
 #endif
 
-#include "Reflection/Public/Wrappers.h"
-#include "Reflection/Public/ReflectedObject.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
@@ -142,6 +142,11 @@ inline const Type* ReflectedType::GetType() const
 inline const String& ReflectedType::GetPermanentName() const
 {
     return permanentName;
+}
+
+inline const String& ReflectedType::GetRttiName() const
+{
+    return rttiName;
 }
 
 } // namespace DAVA

@@ -2,8 +2,8 @@
 #ifndef __DAVAENGINE_ANDROID__
 
 #include "Reflection/Private/StructureWrapperClass.h"
-#include "Reflection/Public/ReflectedType.h"
-#include "Reflection/Public/ReflectedObject.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {

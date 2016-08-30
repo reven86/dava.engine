@@ -79,18 +79,24 @@ public:
 class CtorWrapper
 {
 public:
+    enum class Policy
+    {
+        ByValue,
+        ByPointer
+    };
+
     CtorWrapper() = default;
     CtorWrapper(const CtorWrapper&) = delete;
     virtual ~CtorWrapper() = default;
 
-    virtual const AnyFn::InvokeParams& GetInvokeParams() const = 0;
+    virtual const AnyFn::Params& GetInvokeParams() const = 0;
 
-    virtual Any Create() const = 0;
-    virtual Any Create(const Any&) const = 0;
-    virtual Any Create(const Any&, const Any&) const = 0;
-    virtual Any Create(const Any&, const Any&, const Any&) const = 0;
-    virtual Any Create(const Any&, const Any&, const Any&, const Any&) const = 0;
-    virtual Any Create(const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Create(Policy) const = 0;
+    virtual Any Create(Policy, const Any&) const = 0;
+    virtual Any Create(Policy, const Any&, const Any&) const = 0;
+    virtual Any Create(Policy, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Create(Policy, const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Create(Policy, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
 };
 
 template <typename T>

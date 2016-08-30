@@ -1,8 +1,8 @@
 #pragma once
-#define __DAVA_ReflectedType__
 
 #include <memory>
 #include "Base/Type.h"
+#include "Base/AnyFn.h"
 
 namespace DAVA
 {
@@ -22,8 +22,12 @@ public:
 
     const String& GetRttiName() const;
     const String& GetPermanentName() const;
-
     void SetPermanentName(const String&) const;
+
+    const CtorWrapper* GetCtor(const AnyFn::Params& params = AnyFn::Params()) const;
+    Vector<const CtorWrapper*> ReflectedType::GetCtors() const;
+
+    const DtorWrapper* GetDtor() const;
 
     // TODO:
     // move into private section

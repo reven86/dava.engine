@@ -41,6 +41,7 @@
 // Runtime assert
 #include "Debug/DVAssertMessage.h"
 #include "Debug/Backtrace.h"
+#include "Logger/Logger.h"
 
 #if defined(ENABLE_ASSERT_BREAK)
 
@@ -84,7 +85,11 @@ inline void DavaDebugBreak()
         "at %s:%d\n" \
         "======================end=assert=msg====", \
         assertType, expr, msg, file, line); \
-        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_ERROR); \
+        DAVA::Logger::Error( \
+        "==== callstack ====\n" \
+        "%s\n" \
+        "==== callstack end ====", \
+        DAVA::Debug::BacktraceToString(backtrace).c_str()); \
     }
 #define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
     {                                                                                          \
@@ -96,7 +101,11 @@ inline void DavaDebugBreak()
         "at %s:%d\n" \
         "======================end=assert=msg====", \
         assertType, expr, msg, file, line); \
-        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_WARNING); \
+        DAVA::Logger::Warning( \
+        "==== callstack ====\n" \
+        "%s\n" \
+        "==== callstack end ====", \
+        DAVA::Debug::BacktraceToString(backtrace).c_str()); \
     }
 #else //ENABLE_ASSERT_LOGGING
 #define LogErrorFunction(assertType, expr, msg, file, line)

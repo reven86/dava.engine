@@ -8,9 +8,9 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 
-#include "Public/ReflectedBase.h"
-#include "Public/ReflectedObject.h"
-#include "Public/ReflectedMeta.h"
+#include "Reflection/ReflectedBase.h"
+#include "Reflection/ReflectedObject.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
@@ -87,8 +87,8 @@ struct Reflection::Method
 
 #ifndef __DAVA_Reflection_Definition_Only__
 #define __DAVA_Reflection__
-#include "Reflection/Public/Wrappers.h"
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedType.h"
 #include "Reflection/Private/Reflection_impl.h"
 #include "Reflection/Private/StructureWrapperClass.h"
 #endif
