@@ -6,7 +6,6 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
-#include "Debug/Stats.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Debug/Profiler.h"
 

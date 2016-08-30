@@ -3,7 +3,6 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
 #include "Base/Radix/Radix.h"
-#include "Debug/Stats.h"
 
 namespace DAVA
 {

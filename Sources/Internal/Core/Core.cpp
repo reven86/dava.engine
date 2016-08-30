@@ -565,8 +565,6 @@ void Core::SystemProcessFrame()
     EGLuint64NV start = eglGetSystemTimeNV() / frequency;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
-    Stats::Instance()->BeginFrame();
-
 #if !defined(DAVA_NETWORK_DISABLE)
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
@@ -632,7 +630,7 @@ void Core::SystemProcessFrame()
 
         core->EndFrame();
     }
-    Stats::Instance()->EndFrame();
+
     globalFrameIndex++;
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__

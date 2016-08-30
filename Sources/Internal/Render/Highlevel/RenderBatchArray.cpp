@@ -1,5 +1,4 @@
 #include "Render/Highlevel/RenderBatchArray.h"
-#include "Debug/Stats.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderPass.h"
 

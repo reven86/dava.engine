@@ -1,4 +1,3 @@
-#include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
