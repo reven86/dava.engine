@@ -55,6 +55,7 @@ protected:
 uint64 TimeStampUs();
 bool NameEquals(const char* name1, const char* name2);
 CounterArray& GetCounterArray(int32 snapshot);
+void DumpLine(const char* buf, File* file);
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -131,12 +132,19 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 sn
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
 
+    DumpLine("================================================================", file);
+
     CounterArray& array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
+    TimeCounter* lastDumpedCounter = nullptr;
     for (; it != itEnd; it++)
     {
         if (it->endTime != 0 && NameEquals(counterName, it->name))
         {
+            if (lastDumpedCounter)
+                DumpLine(DAVA::Format("=== Non-tracked time [%llu us] ===", lastDumpedCounter->endTime - it->startTime).c_str(), file);
+            lastDumpedCounter = &(*it);
+
             CounterTreeNode* treeRoot = CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
             CounterTreeNode::DumpTree(treeRoot, 0, file, false);
             SafeDelete(treeRoot);
@@ -147,11 +155,16 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 sn
         if (counterCount == 0)
             break;
     }
+
+    DumpLine("================================================================", file);
 }
 
 void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+
+    DumpLine("================================================================", file);
+    DumpLine(DAVA::Format("=== Average time for %d counter(s):", counterCount).c_str(), file);
 
     CounterArray& array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
@@ -181,11 +194,14 @@ void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32
 
     CounterTreeNode::DumpTree(treeRoot, 0, file, true);
     CounterTreeNode::SafeDeleteTree(treeRoot);
+
+    DumpLine("================================================================", file);
 }
 
 void DumpJSON(File* file, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+    DVASSERT(file);
 
     CounterArray& array = GetCounterArray(snapshot);
 
@@ -340,15 +356,7 @@ void CounterTreeNode::DumpTree(const CounterTreeNode* node, int32 treeDepth, Fil
 {
     char strbuf[1024];
     Snprintf(strbuf, sizeof(strbuf), "%*s%s [%llu us | x%d]", treeDepth * 2, "", node->counterName, (average ? node->counterTime / node->count : node->counterTime), node->count);
-
-    if (file)
-    {
-        file->WriteLine(strbuf);
-    }
-    else
-    {
-        Logger::Info(strbuf);
-    }
+    DumpLine(strbuf, file);
 
     for (CounterTreeNode* c : node->childs)
         DumpTree(c, treeDepth + 1, file, average);
@@ -389,6 +397,18 @@ CounterArray& GetCounterArray(int32 snapshot)
     }
 
     return counters;
+}
+
+void DumpLine(const char* strbuf, File* file)
+{
+    if (file)
+    {
+        file->WriteLine(strbuf);
+    }
+    else
+    {
+        Logger::Info(strbuf);
+    }
 }
 
 } //ns Profiler
