@@ -44,6 +44,14 @@ struct CounterTreeNode
     static void SafeDeleteTree(CounterTreeNode*& node);
 
 protected:
+    CounterTreeNode(CounterTreeNode* _parent, const char* _name, uint64 _time, uint32 _count)
+        : counterTime(_time)
+        , counterName(_name)
+        , parent(_parent)
+        , count(_count)
+    {
+    }
+
     uint64 counterTime = 0;
     const char* counterName;
 
@@ -237,11 +245,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
     uint64 endTime = begin->endTime;
     Vector<uint64> nodeEndTime;
 
-    CounterTreeNode* node = new CounterTreeNode();
-    node->parent = nullptr;
-    node->counterName = begin->name;
-    node->counterTime = begin->endTime - begin->startTime;
-    node->count = 1;
+    CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->endTime - begin->startTime, 1);
     nodeEndTime.push_back(begin->endTime);
 
     CounterArray::iterator end = array.end();
@@ -283,13 +287,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
                 }
                 else
                 {
-                    CounterTreeNode* child = new CounterTreeNode();
-                    child->parent = node;
-                    child->counterName = c.name;
-                    child->counterTime = c.endTime - c.startTime;
-                    child->count = 1;
-
-                    node->childs.push_back(child);
+                    node->childs.push_back(new CounterTreeNode(node, c.name, c.endTime - c.startTime, 1));
                     node = node->childs.back();
 
                     nodeEndTime.push_back(c.endTime);
@@ -337,12 +335,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
 
 CounterTreeNode* CounterTreeNode::CopyTree(const CounterTreeNode* node)
 {
-    CounterTreeNode* nodeCopy = new CounterTreeNode();
-    nodeCopy->parent = nullptr;
-    nodeCopy->counterName = node->counterName;
-    nodeCopy->counterTime = node->counterTime;
-    nodeCopy->count = node->count;
-
+    CounterTreeNode* nodeCopy = new CounterTreeNode(nullptr, node->counterName, node->counterTime, node->count);
     for (CounterTreeNode* c : node->childs)
     {
         nodeCopy->childs.push_back(CopyTree(c));
