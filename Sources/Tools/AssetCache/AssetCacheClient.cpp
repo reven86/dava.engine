@@ -290,8 +290,11 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         auto DumpInfo = [](const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
         {
             const AssetCache::CachedItemValue::Description& description = value.GetDescription();
-            Logger::Info("[%s] %s - %s", description.creationDate.c_str(), description.machineName.c_str(), key.ToString().c_str());
-            Logger::FrameworkDebug("[AssetCacheClient::OnReceivedFromCache] addingChain(%s), receivingChain(%s), comment(%s)", description.addingChain.c_str(), description.receivingChain.c_str(), description.comment.c_str());
+            Logger::Info("Data got from cache. Generated %s on mashine %s (%s)",
+                         description.creationDate.c_str(),
+                         description.machineName.c_str(),
+                         description.comment.c_str());
+            Logger::Info("addingChain: %s, receivingChain: %s", description.addingChain.c_str(), description.receivingChain.c_str());
         };
 
         if (value.IsEmpty())

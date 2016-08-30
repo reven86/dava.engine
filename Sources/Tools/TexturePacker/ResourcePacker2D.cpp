@@ -46,6 +46,7 @@ void ResourcePacker2D::InitFolders(const FilePath& inputPath, const FilePath& ou
     inputGfxDirectory = inputPath;
     outputGfxDirectory = outputPath;
     rootDirectory = inputPath + "../";
+    dataSourceDirectory = inputPath + "../../";
 }
 
 void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
@@ -533,17 +534,25 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
+    String requestedDataRelativePath = "..." + inputPath.GetRelativePathname(dataSourceDirectory);
+
     AssetCache::CachedItemValue retrievedData;
-    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
-    if (requested == AssetCache::Error::NO_ERRORS)
+    AssetCache::Error requestError = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
+    if (requestError == AssetCache::Error::NO_ERRORS)
     {
-        Logger::Info("%s - retrieved from cache", inputPath.GetStringValue().c_str());
+        Logger::Info("%s - retrieved from cache", requestedDataRelativePath.c_str());
         retrievedData.ExportToFolder(outputPath);
         return true;
     }
     else
     {
-        Logger::Info("%s - can't retrieve from cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
+        String errorInfo = AssetCache::ErrorToString(requestError);
+        if (requestError == AssetCache::Error::OPERATION_TIMEOUT)
+        {
+            errorInfo.append(Format(" (%u ms)", cacheClient->GetTimeoutMs()));
+        }
+
+        Logger::Info("%s - can't retrieve from cache: %s", requestedDataRelativePath.c_str(), errorInfo.c_str());
     }
 
     return false;
@@ -572,25 +581,33 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
     }
 
+    String addedDataRelativePath = "..." + inputPath.GetRelativePathname(dataSourceDirectory);
+
     if (!value.IsEmpty())
     {
         value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::Error added = cacheClient->AddToCacheSynchronously(key, value);
-        if (added == AssetCache::Error::NO_ERRORS)
+        AssetCache::Error addError = cacheClient->AddToCacheSynchronously(key, value);
+        if (addError == AssetCache::Error::NO_ERRORS)
         {
-            Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
+            Logger::Info("%s - added to cache", addedDataRelativePath.c_str());
             return true;
         }
         else
         {
-            Logger::Info("%s - can't add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
+            String errorInfo = AssetCache::ErrorToString(addError);
+            if (addError == AssetCache::Error::OPERATION_TIMEOUT)
+            {
+                errorInfo.append(Format(" (%u ms)", cacheClient->GetTimeoutMs()));
+            }
+
+            Logger::Info("%s - can't add to cache: %s", addedDataRelativePath.c_str(), errorInfo.c_str());
         }
     }
     else
     {
-        Logger::Info("%s - empty folder", inputPath.GetAbsolutePathname().c_str());
+        Logger::Info("%s - empty folder", addedDataRelativePath.c_str());
     }
 
     return false;
