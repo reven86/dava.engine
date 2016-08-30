@@ -249,7 +249,7 @@ bool CollectFiles(const Vector<String>& sources, const FilePath& baseDir, bool a
             sourcePath = baseDir + source;
         }
 
-		if (false == FileSystem::Instance()->Exists(sourcePath))
+        if (false == FileSystem::Instance()->Exists(sourcePath))
         {
             Logger::Error("Source '%s' is not existing", sourcePath.GetAbsolutePathname().c_str());
             return false;
