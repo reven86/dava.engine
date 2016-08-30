@@ -17,18 +17,19 @@ class UITextField;
 class UITextFieldDelegate;
 
 class Color;
+class UIGeometricData;
 
-class TextFieldControlImpl final : public std::enable_shared_from_this<TextFieldControlImpl>
+class TextFieldPlatformImpl final : public std::enable_shared_from_this<TextFieldPlatformImpl>
 {
 public:
-    TextFieldControlImpl(Window& w, UITextField& uiTextField);
-    ~TextFieldControlImpl();
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField);
+    ~TextFieldPlatformImpl();
 
     void Initialize();
     void OwnerIsDying();
 
-    void SetVisible(bool visible);
-    void SetIsPassword(bool password);
+    void SetVisible(bool isVisible);
+    void SetIsPassword(bool isPassword);
     void SetMaxLength(int32 value);
 
     void OpenKeyboard();
@@ -45,13 +46,13 @@ public:
     void SetTextUseRtlAlign(bool useRtlAlign);
     bool GetTextUseRtlAlign() const;
 
-    void SetFontSize(float32 virtualFontSize);
+    void SetFontSize(float32 size);
 
     void SetDelegate(UITextFieldDelegate* textFieldDelegate);
 
-    void SetMultiline(bool enable);
+    void SetMultiline(bool value);
 
-    void SetInputEnabled(bool enable);
+    void SetInputEnabled(bool value);
 
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
@@ -66,6 +67,8 @@ public:
 
     uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
+
+    void SystemDraw(const UIGeometricData&);
 
     void nativeOnFocusChange(JNIEnv* env, jboolean hasFocus);
     void nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, jint w, jint h);
@@ -82,7 +85,7 @@ private:
     void OnTextChanged(const WideString& newText, bool programmaticTextChange);
 
 private:
-    Window& window;
+    Window* window = nullptr;
     UITextField* uiTextField = nullptr;
     UITextFieldDelegate* uiTextFieldDelegate = nullptr;
     jobject javaTextField = nullptr;
@@ -121,28 +124,32 @@ private:
     Function<void(jobject)> update;
 };
 
-inline void TextFieldControlImpl::SetRenderToTexture(bool /*value*/)
+inline void TextFieldPlatformImpl::SetRenderToTexture(bool /*value*/)
 {
     // Do nothing as single line text field always is painted into texture
     // Multiline text field is never rendered to texture
 }
 
-inline bool TextFieldControlImpl::IsRenderToTexture() const
+inline bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     return !multiline;
 }
 
-inline int32 TextFieldControlImpl::GetTextAlign() const
+inline int32 TextFieldPlatformImpl::GetTextAlign() const
 {
     return textAlign;
 }
 
-inline bool TextFieldControlImpl::GetTextUseRtlAlign() const
+inline bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
     return textRtlAlign;
 }
 
-} // namespace DAVA 
+inline void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
+{
+}
+
+} // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_ANDROID__

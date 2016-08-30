@@ -1,4 +1,4 @@
-#include "UI/Private/Android/TextFieldControlAndroidImpl.h"
+#include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -21,39 +21,39 @@ extern "C"
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     delete weak;
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnFocusChange(JNIEnv* env, jclass jclazz, jlong backendPointer, jboolean hasFocus)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnFocusChange(env, hasFocus);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardShown(JNIEnv* env, jclass jclazz, jlong backendPointer, jint x, jint y, jint w, jint h)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnKeyboardShown(env, x, y, w, h);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnEnterPressed(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnEnterPressed(env);
 }
 
 JNIEXPORT jboolean JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyPressed(JNIEnv* env, jclass jclazz, jlong backendPointer, jint replacementStart, jint replacementLength, jstring replaceWith)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         return backend->nativeOnKeyPressed(env, replacementStart, replacementLength, replaceWith);
     return JNI_TRUE;
@@ -61,16 +61,16 @@ JNIEXPORT jboolean JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyPressed
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnTextChanged(JNIEnv* env, jclass jclazz, jlong backendPointer, jstring newText, jboolean programmaticTextChange)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnTextChanged(env, newText, programmaticTextChange);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnTextureReady(JNIEnv* env, jclass jclazz, jlong backendPointer, jintArray pixels, jint w, jint h)
 {
-    using DAVA::TextFieldControlImpl;
-    std::weak_ptr<TextFieldControlImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldControlImpl>*>(static_cast<uintptr_t>(backendPointer));
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnTextureReady(env, pixels, w, h);
 }
@@ -78,15 +78,15 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnTextureReady(J
 
 namespace DAVA
 {
-TextFieldControlImpl::TextFieldControlImpl(Window& w, UITextField& uiTextField)
+TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
     : window(w)
-    , uiTextField(&uiTextField)
+    , uiTextField(uiTextField)
 {
 }
 
-TextFieldControlImpl::~TextFieldControlImpl() = default;
+TextFieldPlatformImpl::~TextFieldPlatformImpl() = default;
 
-void TextFieldControlImpl::Initialize()
+void TextFieldPlatformImpl::Initialize()
 {
     try
     {
@@ -123,8 +123,8 @@ void TextFieldControlImpl::Initialize()
         return;
     }
 
-    std::weak_ptr<TextFieldControlImpl>* selfWeakPtr = new std::weak_ptr<TextFieldControlImpl>(shared_from_this());
-    jobject obj = window.GetNativeService()->CreateNativeControl("com.dava.engine.DavaTextField", selfWeakPtr);
+    std::weak_ptr<TextFieldPlatformImpl>* selfWeakPtr = new std::weak_ptr<TextFieldPlatformImpl>(shared_from_this());
+    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaTextField", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -138,7 +138,7 @@ void TextFieldControlImpl::Initialize()
     }
 }
 
-void TextFieldControlImpl::OwnerIsDying()
+void TextFieldPlatformImpl::OwnerIsDying()
 {
     uiTextField = nullptr;
     uiTextFieldDelegate = nullptr;
@@ -150,7 +150,7 @@ void TextFieldControlImpl::OwnerIsDying()
     }
 }
 
-void TextFieldControlImpl::SetVisible(bool visible)
+void TextFieldPlatformImpl::SetVisible(bool visible)
 {
     if (javaTextField != nullptr)
     {
@@ -158,7 +158,7 @@ void TextFieldControlImpl::SetVisible(bool visible)
     }
 }
 
-void TextFieldControlImpl::SetIsPassword(bool password)
+void TextFieldPlatformImpl::SetIsPassword(bool password)
 {
     if (javaTextField != nullptr)
     {
@@ -166,7 +166,7 @@ void TextFieldControlImpl::SetIsPassword(bool password)
     }
 }
 
-void TextFieldControlImpl::SetMaxLength(int32 value)
+void TextFieldPlatformImpl::SetMaxLength(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -175,7 +175,7 @@ void TextFieldControlImpl::SetMaxLength(int32 value)
     }
 }
 
-void TextFieldControlImpl::OpenKeyboard()
+void TextFieldPlatformImpl::OpenKeyboard()
 {
     if (javaTextField != nullptr)
     {
@@ -183,7 +183,7 @@ void TextFieldControlImpl::OpenKeyboard()
     }
 }
 
-void TextFieldControlImpl::CloseKeyboard()
+void TextFieldPlatformImpl::CloseKeyboard()
 {
     if (javaTextField != nullptr)
     {
@@ -191,7 +191,7 @@ void TextFieldControlImpl::CloseKeyboard()
     }
 }
 
-void TextFieldControlImpl::UpdateRect(const Rect& rect)
+void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     if (javaTextField != nullptr)
     {
@@ -208,7 +208,7 @@ void TextFieldControlImpl::UpdateRect(const Rect& rect)
     }
 }
 
-void TextFieldControlImpl::SetText(const WideString& text)
+void TextFieldPlatformImpl::SetText(const WideString& text)
 {
     if (javaTextField != nullptr)
     {
@@ -234,12 +234,12 @@ void TextFieldControlImpl::SetText(const WideString& text)
     }
 }
 
-void TextFieldControlImpl::GetText(WideString& text) const
+void TextFieldPlatformImpl::GetText(WideString& text) const
 {
     text = curText;
 }
 
-void TextFieldControlImpl::SetTextColor(const Color& color)
+void TextFieldPlatformImpl::SetTextColor(const Color& color)
 {
     if (javaTextField != nullptr)
     {
@@ -251,7 +251,7 @@ void TextFieldControlImpl::SetTextColor(const Color& color)
     }
 }
 
-void TextFieldControlImpl::SetTextAlign(int32 align)
+void TextFieldPlatformImpl::SetTextAlign(int32 align)
 {
     if (javaTextField != nullptr)
     {
@@ -260,7 +260,7 @@ void TextFieldControlImpl::SetTextAlign(int32 align)
     }
 }
 
-void TextFieldControlImpl::SetTextUseRtlAlign(bool useRtlAlign)
+void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 {
     if (javaTextField != nullptr)
     {
@@ -269,7 +269,7 @@ void TextFieldControlImpl::SetTextUseRtlAlign(bool useRtlAlign)
     }
 }
 
-void TextFieldControlImpl::SetFontSize(float32 virtualFontSize)
+void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
     if (javaTextField != nullptr)
     {
@@ -279,12 +279,12 @@ void TextFieldControlImpl::SetFontSize(float32 virtualFontSize)
     }
 }
 
-void TextFieldControlImpl::SetDelegate(UITextFieldDelegate* textFieldDelegate)
+void TextFieldPlatformImpl::SetDelegate(UITextFieldDelegate* textFieldDelegate)
 {
     uiTextFieldDelegate = textFieldDelegate;
 }
 
-void TextFieldControlImpl::SetMultiline(bool enable)
+void TextFieldPlatformImpl::SetMultiline(bool enable)
 {
     if (javaTextField != nullptr)
     {
@@ -293,7 +293,7 @@ void TextFieldControlImpl::SetMultiline(bool enable)
     }
 }
 
-void TextFieldControlImpl::SetInputEnabled(bool enable)
+void TextFieldPlatformImpl::SetInputEnabled(bool enable)
 {
     if (javaTextField != nullptr)
     {
@@ -301,7 +301,7 @@ void TextFieldControlImpl::SetInputEnabled(bool enable)
     }
 }
 
-void TextFieldControlImpl::SetAutoCapitalizationType(int32 value)
+void TextFieldPlatformImpl::SetAutoCapitalizationType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -309,7 +309,7 @@ void TextFieldControlImpl::SetAutoCapitalizationType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetAutoCorrectionType(int32 value)
+void TextFieldPlatformImpl::SetAutoCorrectionType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -317,7 +317,7 @@ void TextFieldControlImpl::SetAutoCorrectionType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetSpellCheckingType(int32 value)
+void TextFieldPlatformImpl::SetSpellCheckingType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -325,7 +325,7 @@ void TextFieldControlImpl::SetSpellCheckingType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetKeyboardAppearanceType(int32 value)
+void TextFieldPlatformImpl::SetKeyboardAppearanceType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -333,7 +333,7 @@ void TextFieldControlImpl::SetKeyboardAppearanceType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetKeyboardType(int32 value)
+void TextFieldPlatformImpl::SetKeyboardType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -341,7 +341,7 @@ void TextFieldControlImpl::SetKeyboardType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetReturnKeyType(int32 value)
+void TextFieldPlatformImpl::SetReturnKeyType(int32 value)
 {
     if (javaTextField != nullptr)
     {
@@ -349,7 +349,7 @@ void TextFieldControlImpl::SetReturnKeyType(int32 value)
     }
 }
 
-void TextFieldControlImpl::SetEnableReturnKeyAutomatically(bool value)
+void TextFieldPlatformImpl::SetEnableReturnKeyAutomatically(bool value)
 {
     if (javaTextField != nullptr)
     {
@@ -357,7 +357,7 @@ void TextFieldControlImpl::SetEnableReturnKeyAutomatically(bool value)
     }
 }
 
-uint32 TextFieldControlImpl::GetCursorPos() const
+uint32 TextFieldPlatformImpl::GetCursorPos() const
 {
     if (javaTextField != nullptr)
     {
@@ -366,7 +366,7 @@ uint32 TextFieldControlImpl::GetCursorPos() const
     return 0;
 }
 
-void TextFieldControlImpl::SetCursorPos(uint32 pos)
+void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 {
     if (javaTextField != nullptr)
     {
@@ -374,14 +374,14 @@ void TextFieldControlImpl::SetCursorPos(uint32 pos)
     }
 }
 
-void TextFieldControlImpl::nativeOnFocusChange(JNIEnv* env, jboolean hasFocus)
+void TextFieldPlatformImpl::nativeOnFocusChange(JNIEnv* env, jboolean hasFocus)
 {
     Engine::Instance()->RunAsyncOnMainThread([this, hasFocus]() {
         OnFocusChanged(hasFocus == JNI_TRUE);
     });
 }
 
-void TextFieldControlImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, jint w, jint h)
+void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, jint w, jint h)
 {
     Rect keyboardRect(static_cast<float32>(x),
                       static_cast<float32>(y),
@@ -392,14 +392,14 @@ void TextFieldControlImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, ji
     });
 }
 
-void TextFieldControlImpl::nativeOnEnterPressed(JNIEnv* env)
+void TextFieldPlatformImpl::nativeOnEnterPressed(JNIEnv* env)
 {
     Engine::Instance()->RunAsyncOnMainThread([this]() {
         OnEnterPressed();
     });
 }
 
-jboolean TextFieldControlImpl::nativeOnKeyPressed(JNIEnv* env, jint replacementStart, jint replacementLength, jstring replaceWith)
+jboolean TextFieldPlatformImpl::nativeOnKeyPressed(JNIEnv* env, jint replacementStart, jint replacementLength, jstring replaceWith)
 {
     bool accept = true;
     WideString s = JNI::JavaStringToWideString(replaceWith, env);
@@ -409,7 +409,7 @@ jboolean TextFieldControlImpl::nativeOnKeyPressed(JNIEnv* env, jint replacementS
     return accept ? JNI_TRUE : JNI_FALSE;
 }
 
-void TextFieldControlImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange)
+void TextFieldPlatformImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange)
 {
     WideString s = JNI::JavaStringToWideString(newText, env);
     Engine::Instance()->RunAsyncOnMainThread([this, s, programmaticTextChange]() {
@@ -417,7 +417,7 @@ void TextFieldControlImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jbo
     });
 }
 
-void TextFieldControlImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, jint w, jint h)
+void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, jint w, jint h)
 {
     RefPtr<Sprite> sprite;
     if (pixels != nullptr)
@@ -440,7 +440,7 @@ void TextFieldControlImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, j
     });
 }
 
-void TextFieldControlImpl::OnFocusChanged(bool hasFocus)
+void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
 {
     if (uiTextField != nullptr)
     {
@@ -462,12 +462,12 @@ void TextFieldControlImpl::OnFocusChanged(bool hasFocus)
     }
 }
 
-void TextFieldControlImpl::OnKeyboardShown(const Rect& keyboardRect)
+void TextFieldPlatformImpl::OnKeyboardShown(const Rect& keyboardRect)
 {
     uiTextField->OnKeyboardShown(keyboardRect);
 }
 
-void TextFieldControlImpl::OnEnterPressed()
+void TextFieldPlatformImpl::OnEnterPressed()
 {
     if (uiTextFieldDelegate != nullptr)
     {
@@ -475,7 +475,7 @@ void TextFieldControlImpl::OnEnterPressed()
     }
 }
 
-bool TextFieldControlImpl::OnKeyPressed(int32 replacementStart, int32 replacementLength, WideString& replaceWith)
+bool TextFieldPlatformImpl::OnKeyPressed(int32 replacementStart, int32 replacementLength, WideString& replaceWith)
 {
     if (uiTextFieldDelegate != nullptr)
     {
@@ -484,7 +484,7 @@ bool TextFieldControlImpl::OnKeyPressed(int32 replacementStart, int32 replacemen
     return true;
 }
 
-void TextFieldControlImpl::OnTextChanged(const WideString& newText, bool programmaticTextChange)
+void TextFieldPlatformImpl::OnTextChanged(const WideString& newText, bool programmaticTextChange)
 {
     if (uiTextFieldDelegate != nullptr && newText != curText)
     {
