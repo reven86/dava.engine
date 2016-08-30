@@ -321,7 +321,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return UTF8Utils::EncodeToUTF8(сarrierName->Data());
+    return UTF8Utils::EncodeToUTF8(carrierName->Data());
 }
 
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
@@ -362,7 +362,7 @@ void DeviceInfoPrivate::InitCarrierLinesAsync()
             Platform::Guid defaultGuid = WaitAsync(phoneCallStore->GetDefaultLineAsync());
             PhoneLine ^ defaultLine = WaitAsync(PhoneLine::FromIdAsync(defaultGuid));
             // can't do it on main thread, main dispatcher not ready
-            сarrierName = defaultLine->NetworkName;
+            carrierName = defaultLine->NetworkName;
 
             auto lineAdded = ref new TypedEventHandler<PhoneLineWatcher ^, PhoneLineWatcherEventArgs ^>([this](PhoneLineWatcher ^, PhoneLineWatcherEventArgs ^ args) {
                 OnCarrierLineAdded(args);
@@ -411,10 +411,10 @@ void DeviceInfoPrivate::OnCarrierLineChange(::Windows::ApplicationModel::Calls::
         CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
         core->RunOnMainThread([=] {
             // must run on main thread
-            if (line->NetworkName != сarrierName)
+            if (line->NetworkName != carrierName)
             {
-                сarrierName = line->NetworkName;
-                DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(сarrierName->Data()));
+                carrierName = line->NetworkName;
+                DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(carrierName->Data()));
             }
         });
     }

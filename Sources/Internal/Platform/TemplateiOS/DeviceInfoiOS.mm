@@ -415,7 +415,7 @@ void DeviceInfoPrivate::OnCarrierChange(CTCarrier* carrier)
     if (![newCarrier isEqualToString:carrierName])
     {
         carrierName = [carrier carrierName];
-        DeviceInfo::сarrierNameChanged.Emit(StringFromNSString(carrierName));
+        DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
     }
 }
 }
