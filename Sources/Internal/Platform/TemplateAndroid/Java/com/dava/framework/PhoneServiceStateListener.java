@@ -11,33 +11,24 @@ import android.telephony.ServiceState;
 public class PhoneServiceStateListener extends PhoneStateListener {
     final static String TAG = "PhoneServiceStateListener";
 
-    private String carrierName;
+    private String carrierName = GetCarrierName();
     
-    @Override
-    public void onServiceStateChanged(ServiceState state) {
-		
-		Log.e(TAG, "!!!!!! onServiceStateChanged 1");
-        carrierName = GetCarrierName();
-		Log.e(TAG, "!!!!!! onServiceStateChanged 2");
-        super.onServiceStateChanged(state);
-		Log.e(TAG, "!!!!!! onServiceStateChanged 3");
-    }
+    private native void OnCarrierNameChanged(); 
 
     @Override
     public void onDataConnectionStateChanged(int state, int networkType) {
-		
-		Log.e(TAG, "!!!!!! onDataConnectionStateChanged 1");
-        carrierName = GetCarrierName();
-		Log.e(TAG, "!!!!!! onDataConnectionStateChanged 2");
+        String newCarrierName = GetCarrierName();
+        if (!newCarrierName.equals(carrierName))
+        {
+            carrierName = newCarrierName;
+            OnCarrierNameChanged();
+        }
         super.onDataConnectionStateChanged(state, networkType);
-		Log.e(TAG, "!!!!!! onDataConnectionStateChanged 3");
     }
 
-	public String GetCarrierName()
-	{
+    public String GetCarrierName()
+    {
         TelephonyManager manager;
-		String carrierName1;
-
         if (JNIActivity.GetActivity() != null)
         {
             manager = (TelephonyManager)JNIActivity.GetActivity().getSystemService(Context.TELEPHONY_SERVICE);
@@ -46,14 +37,6 @@ public class PhoneServiceStateListener extends PhoneStateListener {
         {
             manager = (TelephonyManager)DavaActivity.instance().getSystemService(Context.TELEPHONY_SERVICE);
         }
-       
-		carrierName1 = manager.getNetworkOperatorName();
-        Log.e(TAG, "!!!!!! manager.getNetworkOperatorName" + carrierName1);
-		carrierName1 = manager.getNetworkOperator();
-        Log.e(TAG, "!!!!!! manager.getNetworkOperator" + carrierName1);
-		carrierName1 = manager.getSimOperatorName();
-        Log.e(TAG, "!!!!!! manager.getSimOperatorName" + carrierName1);
-
-		return carrierName1;
-	}
+        return manager.getSimOperatorName();
+    }
 }
