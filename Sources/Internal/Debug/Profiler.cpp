@@ -9,7 +9,7 @@
 
 //==============================================================================
 
-const static uint32 TIME_COUNTERS_COUNT = 8192;
+const static uint32 TIME_COUNTERS_COUNT = 2048;
 
 namespace DAVA
 {
@@ -339,14 +339,7 @@ CounterTreeNode* CounterTreeNode::CopyTree(const CounterTreeNode* node)
 void CounterTreeNode::DumpTree(const CounterTreeNode* node, int32 treeDepth, File* file, bool average)
 {
     char strbuf[1024];
-    if (node->count == 1 || average)
-    {
-        Snprintf(strbuf, sizeof(strbuf), "%*s%s [%llu us | x%d]", treeDepth * 2, "", node->counterName, node->counterTime / node->count, node->count);
-    }
-    else
-    {
-        Snprintf(strbuf, sizeof(strbuf), "%*s%s [%llu us | x%d]", treeDepth * 2, "", node->counterName, node->counterTime, node->count);
-    }
+    Snprintf(strbuf, sizeof(strbuf), "%*s%s [%llu us | x%d]", treeDepth * 2, "", node->counterName, (average ? node->counterTime / node->count : node->counterTime), node->count);
 
     if (file)
     {

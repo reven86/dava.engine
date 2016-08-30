@@ -89,7 +89,7 @@ void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity* entity)
 
 void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("WaveSystem::Process");
+    PROFILER_TIMING("SpeedTreeUpdateSystem::Process");
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
