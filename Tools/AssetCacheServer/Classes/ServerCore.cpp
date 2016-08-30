@@ -331,7 +331,7 @@ void ServerCore::OnServerShared(PoolID poolID, ServerID serverID, const DAVA::St
 
 void ServerCore::OnServerUnshared()
 {
-    settings.SetOwnID(0);
+    settings.SetOwnID(NullServerID);
     settings.SetSharedForOthers(false);
     emit ServerUnshared();
 }

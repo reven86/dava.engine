@@ -241,7 +241,7 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
-        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::PureCreate(plist, DAVA::File::CREATE | DAVA::File::WRITE));
+        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(plist, DAVA::File::CREATE | DAVA::File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
     }
@@ -549,9 +549,9 @@ void AssetCacheServerWindow::UpdateSharedPoolsCombo()
     const DAVA::Map<PoolID, SharedPool>& pools = serverCore.Settings().GetSharedPools();
     comboBoxIDs.reserve(pools.size());
 
-    auto addPool = [&](PoolID poolID, const char* poolName)
+    auto addPoolIntoComboBox = [&](PoolID poolID, const char* poolName)
     {
-        ui->poolComboBox->addItem(poolID == 0 ? "none" : poolName);
+        ui->poolComboBox->addItem(poolName);
         comboBoxIDs.push_back(poolID);
 
         if (poolID == currentID)
@@ -563,13 +563,13 @@ void AssetCacheServerWindow::UpdateSharedPoolsCombo()
     for (auto& poolEntry : pools)
     {
         const SharedPool& pool = poolEntry.second;
-        if (pool.poolID != 0)
+        if (pool.poolID != NullPoolID)
         {
-            addPool(pool.poolID, pool.poolName.c_str());
+            addPoolIntoComboBox(pool.poolID, pool.poolName.c_str());
         }
     }
 
-    addPool(0, "none");
+    addPoolIntoComboBox(NullPoolID, "none");
 }
 
 void AssetCacheServerWindow::UpdateSharedPoolsList()
@@ -653,7 +653,7 @@ AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolCont
     QVBoxLayout* poolLayout = poolContainer.poolLayout;
     sharedPoolsLayout->addLayout(poolLayout);
 
-    if (pool.poolID == 0)
+    if (pool.poolID == NullPoolID)
     {
         poolLayout->addWidget(new QLabel("Shared servers without pools:"));
     }

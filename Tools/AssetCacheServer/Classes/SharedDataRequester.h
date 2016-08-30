@@ -42,7 +42,7 @@ private:
     QNetworkReply* shareRequest = nullptr;
     QNetworkReply* unshareRequest = nullptr;
 
-    ServerID getRequestOwnID = 0;
+    ServerID getRequestOwnID = NullServerID;
     SharedServerParams shareRequestParams;
 
     DAVA::List<SharedPoolParams> pools;

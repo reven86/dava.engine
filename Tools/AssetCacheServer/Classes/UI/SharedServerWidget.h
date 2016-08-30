@@ -28,8 +28,8 @@ private slots:
     void OnChecked(int val);
 
 private:
-    PoolID poolID = 0;
-    ServerID serverID = 0;
+    PoolID poolID = NullPoolID;
+    ServerID serverID = NullServerID;
     std::unique_ptr<Ui::SharedServerWidget> ui;
 };
 

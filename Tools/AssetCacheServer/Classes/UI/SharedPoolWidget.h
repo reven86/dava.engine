@@ -27,7 +27,7 @@ private slots:
     void OnChecked(int val);
 
 private:
-    PoolID poolID = 0;
+    PoolID poolID = NullPoolID;
     std::unique_ptr<Ui::SharedPoolWidget> ui;
 };
 

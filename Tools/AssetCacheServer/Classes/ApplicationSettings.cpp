@@ -161,7 +161,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 
     for (DAVA::uint32 poolIndex = 0; poolIndex < poolsSize; ++poolIndex)
     {
-        PoolID poolID = archive->GetUInt64(DAVA::Format("Pool_%u_ID", poolIndex));
+        PoolID poolID = archive->GetUInt64(DAVA::Format("Pool_%u_ID", poolIndex), NullPoolID);
         SharedPool& pool = sharedPools[poolID];
         pool.poolID = poolID;
         pool.poolName = archive->GetString(DAVA::Format("Pool_%u_name", poolIndex));
@@ -172,7 +172,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 
         for (DAVA::uint32 serverIndex = 0; serverIndex < serversSize; ++serverIndex)
         {
-            ServerID serverID = archive->GetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex));
+            ServerID serverID = archive->GetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), NullServerID);
             SharedServer& server = pool.servers[serverID];
             server.serverID = serverID;
             server.poolID = poolID;
@@ -183,8 +183,8 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     }
 
     sharedForOthers = archive->GetBool("SharedForOthers", DEFAULT_SHARED_FOR_OTHERS);
-    ownPoolID = archive->GetUInt64("OwnPoolID", 0);
-    ownID = archive->GetUInt64("OwnID", 0);
+    ownPoolID = archive->GetUInt64("OwnPoolID", NullPoolID);
+    ownID = archive->GetUInt64("OwnID", NullServerID);
     ownName = archive->GetString("OwnName");
 }
 
@@ -300,7 +300,7 @@ void ApplicationSettings::SetOwnID(ServerID val)
 
 void ApplicationSettings::ResetOwnID()
 {
-    ownID = 0;
+    ownID = NullServerID;
 }
 
 void ApplicationSettings::SetOwnPoolID(PoolID val)
@@ -360,9 +360,9 @@ void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& 
         auto poolIter = updatedPools.find(server.poolID);
         if (poolIter == updatedPools.end())
         {
-            if (server.poolID == 0)
+            if (server.poolID == NullPoolID)
             {
-                poolIter = updatedPools.insert(std::make_pair(0, SharedPool())).first;
+                poolIter = updatedPools.insert(std::make_pair(NullPoolID, SharedPool())).first;
             }
             else
             {

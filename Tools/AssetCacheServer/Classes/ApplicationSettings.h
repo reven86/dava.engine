@@ -27,6 +27,9 @@ struct RemoteServerParams
 using ServerID = DAVA::uint64;
 using PoolID = DAVA::uint64;
 
+const ServerID NullServerID = 0;
+const PoolID NullPoolID = 0;
+
 struct SharedPoolParams
 {
     PoolID poolID;
@@ -45,15 +48,15 @@ struct SharedServerParams
 
 struct SharedServer
 {
-    ServerID serverID = 0;
-    PoolID poolID = 0;
+    ServerID serverID = NullServerID;
+    PoolID poolID = NullPoolID;
     DAVA::String serverName;
     RemoteServerParams remoteParams;
 };
 
 struct SharedPool
 {
-    PoolID poolID = 0;
+    PoolID poolID = NullPoolID;
     DAVA::String poolName;
     DAVA::String poolDescription;
     bool enabled = false;

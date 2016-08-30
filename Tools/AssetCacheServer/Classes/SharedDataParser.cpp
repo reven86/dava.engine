@@ -131,7 +131,7 @@ ServerID ParseAddReply(const QByteArray& data)
     if (parseError.error != QJsonParseError::NoError)
     {
         DAVA::Logger::Error("Not a valid JSON document '%s'", data.data());
-        return 0;
+        return NullServerID;
     }
 
     QJsonObject rootObj = document.object();
@@ -141,7 +141,7 @@ ServerID ParseAddReply(const QByteArray& data)
     if (!convertOk)
     {
         DAVA::Logger::Error("Can't convert %s to qulonglong", rootObj["key"].toString().toStdString().c_str());
-        return 0;
+        return NullServerID;
     }
 
     return static_cast<ServerID>(serverID);

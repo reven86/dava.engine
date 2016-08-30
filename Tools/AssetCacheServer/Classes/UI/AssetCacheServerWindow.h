@@ -77,8 +77,8 @@ private:
             CUSTOM_SERVER,
             NONE
         } type = NONE;
-        PoolID poolID = 0;
-        ServerID serverID = 0;
+        PoolID poolID = NullPoolID;
+        ServerID serverID = NullServerID;
 
         union CheckedWidget
         {
