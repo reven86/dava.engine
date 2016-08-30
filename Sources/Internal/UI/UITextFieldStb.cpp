@@ -635,7 +635,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     if (!control->IsEditing())
         return;
 
-    bool textChanged = false;
+    bool textCanChanged = false;
     WideString prevText(text);
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
@@ -714,7 +714,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::DELETE)
         {
-            textChanged = stb->SendKey(StbTextEditBridge::KEY_DELETE); // Can modify text
+            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_DELETE); // Can modify text
         }
         else if (currentInput->key == Key::INSERT)
         {
@@ -722,11 +722,11 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else if (isCtrl && currentInput->key == Key::KEY_Y)
         {
-            textChanged = stb->SendKey(StbTextEditBridge::KEY_REDO); // Can modify text
+            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_REDO); // Can modify text
         }
         else if (isCtrl && currentInput->key == Key::KEY_Z)
         {
-            textChanged = stb->SendKey(StbTextEditBridge::KEY_UNDO); // Can modify text
+            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_UNDO); // Can modify text
         }
         else if (isCtrl && currentInput->key == Key::KEY_A)
         {
@@ -735,7 +735,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
 #if ENABLE_CLIPBOARD
         else if (currentInput->key == Key::KEY_X && isCtrl)
         {
-            textChanged = CutToClipboardInternal(); // Can modify text
+            textCanChanged = CutToClipboardInternal(); // Can modify text
         }
         else if (currentInput->key == Key::KEY_C && isCtrl)
         {
@@ -743,7 +743,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         }
         else if (currentInput->key == Key::KEY_V && isCtrl)
         {
-            textChanged = PasteFromClipboardInternal(); // Can modify text
+            textCanChanged = PasteFromClipboardInternal(); // Can modify text
         }
 #endif
     }
@@ -753,18 +753,18 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         // Send Enter if it allowed
         if ((currentInput->keyChar == '\r' || currentInput->keyChar == '\n') && control->IsMultiline())
         {
-            textChanged = stb->SendKey('\n'); // Can modify text
+            textCanChanged = stb->SendKey('\n'); // Can modify text
         }
         // Send backspace
         else if (currentInput->keyChar == '\b')
         {
-            textChanged = stb->SendKey(StbTextEditBridge::KEY_BACKSPACE); // Can modify text
+            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_BACKSPACE); // Can modify text
         }
 #if 0 // Disable TAB for input now
         // Send TAB
         else if (currentInput->keyChar == '\t')
         {
-            textChanged = stb->SendKey('\t'); // or SendKey(' '); // Can modify text
+            textCanChanged = stb->SendKey('\t'); // or SendKey(' '); // Can modify text
         }
 #endif
         // Send printable characters (include Font check)
@@ -772,7 +772,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
                  && (control->GetFont() != nullptr && control->GetFont()->IsCharAvaliable(static_cast<char16>(currentInput->keyChar)))
                  )
         {
-            textChanged = stb->SendKey(currentInput->keyChar); // Can modify text
+            textCanChanged = stb->SendKey(currentInput->keyChar); // Can modify text
         }
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
@@ -798,7 +798,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         stb->Drag(localPoint - staticTextOffset);
     }
 
-    if (textChanged)
+    if (textCanChanged && prevText != text)
     {
         UITextFieldDelegate* delegate = control->GetDelegate();
         if (delegate)

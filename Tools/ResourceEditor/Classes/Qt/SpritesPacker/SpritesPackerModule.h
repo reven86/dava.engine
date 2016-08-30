@@ -55,6 +55,8 @@ private:
     void CreateWaitDialog(const DAVA::FilePath& projectPath);
     void CloseWaitDialog();
 
+    void SetCacheClientForPacker();
+
 private:
     DAVA::AssetCacheClient* cacheClient = nullptr;
 
