@@ -56,7 +56,11 @@ bool Vector2PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
 
     DAVA::VariantType variantType;
 
-    QStringList tokens = editor->text().split(";");
+    QStringList tokens = editor->text().split("; ", QString::SkipEmptyParts);
+    if (tokens.length() == 1) // try to split by space
+    {
+        tokens = editor->text().split(" ", QString::SkipEmptyParts);
+    }
 
     Vector2 val;
     int count = Min(tokens.size(), 2);
