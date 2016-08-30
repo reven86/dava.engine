@@ -3,8 +3,9 @@
 #include "TArcCore/Private/CoreInterface.h"
 
 #include "Base/BaseTypes.h"
-
 #include <memory>
+
+#include "DataProcessing/PropertiesHolder.h"
 
 namespace DAVA
 {
@@ -87,6 +88,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
+    PropertiesHolder propertiesHolder;
 };
 
 template<typename... Args>

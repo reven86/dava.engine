@@ -1,7 +1,11 @@
 #include "WindowSubSystem/Private/UIManager.h"
+
+#include "Base/BaseTypes.h"
+
 #include "WindowSubSystem/ActionUtils.h"
 #include "WindowSubSystem/Private/WaitDialog.h"
 #include "DataProcessing/Private/QtReflectionBridge.h"
+#include "DataProcessing/PropertiesHolder.h"
 
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
@@ -229,6 +233,7 @@ void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* 
     {
         mainWindow->addDockWidget(info.area, newDockWidget);
     }
+    mainWindow->restoreDockWidget(newDockWidget);
 }
 
 void AddCentralPanel(const PanelKey& key, const MainWindowInfo &mainWindowInfo, QWidget* widget)
@@ -260,12 +265,25 @@ struct UIManager::Impl
     UnorderedMap<FastName, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
+    PropertiesHolder propertiesHolder;
     bool initializationFinished = false;
+
+    Impl(const PropertiesHolder &propertiesHolder_)
+        : propertiesHolder(propertiesHolder_)
+    {
+
+    }
 
     ~Impl()
     {
+        String geometryKey("geometry");
+        String stateKey("state");
         for (auto& window : windows)
         {
+            PropertiesHolder ph = propertiesHolder.SubHolder(window.first.c_str());
+            QMainWindow *mainWindow = window.second.window;
+            ph.Save(mainWindow->saveState(), stateKey);
+            ph.Save(mainWindow->saveGeometry(), geometryKey);
             delete window.second.window;
         }
     }
@@ -279,6 +297,7 @@ struct UIManager::Impl
             QMainWindow* window = new QMainWindow();
             window->setWindowTitle(appID.c_str());
             window->setObjectName(appID.c_str());
+
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
             auto emplacePair = windows.emplace(appID, info);
@@ -290,8 +309,8 @@ struct UIManager::Impl
     }
 };
 
-UIManager::UIManager()
-    : impl(new Impl())
+UIManager::UIManager(const PropertiesHolder &holder)
+    : impl(new Impl(holder))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
     impl->addFunctions[PanelKey::CentralPanel] = MakeFunction(&UIManagerDetail::AddCentralPanel);
@@ -395,8 +414,20 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
-
-    return QFileDialog::getOpenFileName(windowInfo.window, params.title, params.dir, params.filters);
+    
+    String dirKey("fileDialogDir");
+    QString dir = params.dir;
+    if (dir.isEmpty())
+    {
+        String loadedDir = impl->propertiesHolder.Load(dirKey).Get<String>(String());
+        if (!loadedDir.empty())
+        {
+            dir = QString::fromStdString(loadedDir);
+        }
+    }
+    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, params.dir, params.filters);
+    impl->propertiesHolder.Save(dirKey, filePath.toStdString());
+    return filePath;
 }
 
 ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params)

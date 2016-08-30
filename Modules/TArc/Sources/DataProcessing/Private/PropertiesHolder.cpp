@@ -1,6 +1,10 @@
-#include "TArcCore/PropertiesHolder.h"
-#include "Base/BaseTypes.h"
+#include "DataProcessing/PropertiesHolder.h"
 #include "Base/Any.h"
+
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJSonValue>
+#include <QJsonArray>
 
 namespace DAVA
 {
@@ -8,25 +12,78 @@ namespace TArc
 {
 struct PropertiesHolder::Impl
 {
-    //store all preferences to the file
-    void StoreToFile();
-    PropertiesHolder *parent = nullptr;
-    DAVA::Vector<PropertiesHolder*> childs;
-    DAVA::Map<String, Any> values;
+    Impl(const String &name_)
+        : name(name_)
+    {
+
+    }
+
+    Impl(const Impl &impl_, const String &name_)
+        : name(name_)
+    {
+
+    }
+
+    Impl(const Impl &&impl)
+    {
+        name = std::move(impl.name);
+    }
+    String name;
+    QJsonObject data;
+    QJSonValueRef valueRef;
 };
 
-PropertiesHolder::PropertiesHolder(const DAVA::String &projectName)
+PropertiesHolder::PropertiesHolder(const String &projectName)
+    : impl(new Impl(projectName))
 {
 
 }
 
-PropertiesHolder::PropertiesHolder(const PropertiesHolder &parent, &path)
+PropertiesHolder::PropertiesHolder(const PropertiesHolder &parent, const String &name)
+    : impl(new Impl(parent.impl.get(), name))
+{
+
+}
+
+PropertiesHolder::~PropertiesHolder() = default;
+
+PropertiesHolder::PropertiesHolder(const PropertiesHolder &holder)
+    : impl(holder.impl)
 {
 }
 
-void PropertiesHolder::Save(const Any &value, const DAVA::String &key);
+PropertiesHolder::PropertiesHolder(PropertiesHolder &&holder)
+    : impl(std::move(holder.impl))
+{
+}
 
-Any PropertiesHolder::Load(const DAVA::String &key) const;
+PropertiesHolder& PropertiesHolder::operator = (const PropertiesHolder &holder)
+{
+}
+
+PropertiesHolder& PropertiesHolder::operator = (PropertiesHolder &&holder)
+{
+}
+
+PropertiesHolder PropertiesHolder::SubHolder(const String &holderName) const
+{
+    return PropertiesHolder(*this, holderName);
+}
+
+void PropertiesHolder::Save(const Any &value, const String &key)
+{
 
 }
+
+Any PropertiesHolder::Load(const String &key, const Any& defaultValue) const
+{
+    return Any();
 }
+
+Any PropertiesHolder::Load(const String &key) const
+{
+    return Any();
+}
+
+} // namespace TArc
+} // namespace DAVA

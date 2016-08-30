@@ -9,10 +9,13 @@ namespace DAVA
 {
 namespace TArc
 {
+
+class PropertiesHolder;
+
 class UIManager final: public UI
 {
 public:
-    UIManager();
+    UIManager(const PropertiesHolder &holder);
     ~UIManager();
 
     void InitializationFinished();

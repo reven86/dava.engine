@@ -20,6 +20,7 @@ namespace TArc
 Core::Core(Engine& engine_)
     : engine(engine_)
     , globalContext(new DataContext())
+    , propertiesHolder("TArc properties")
 {
     engine.beginFrame.Connect(MakeFunction(this, &Core::OnFrame));
     engine.gameLoopStarted.Connect(MakeFunction(this, &Core::OnLoopStarted));
@@ -64,7 +65,7 @@ void Core::OnLoopStarted()
     ToolsAssetGuard::Instance()->Init();
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
 
-    uiManager.reset(new UIManager());
+    uiManager.reset(new UIManager(propertiesHolder.SubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
     for (std::unique_ptr<ClientModule>& module : modules)
