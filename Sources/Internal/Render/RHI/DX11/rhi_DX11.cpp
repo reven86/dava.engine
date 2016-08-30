@@ -119,7 +119,6 @@ static void dx11_Uninitialize()
 
 static void ResizeSwapchain()
 {
-    ConstBufferDX11::InvalidateAll();
     //todo - not implemented yet
 }
 
@@ -128,8 +127,7 @@ static void dx11_ResetBlock()
 	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DAVA::LockGuard<Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
-#endif
-
+#endif	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     {
         ID3D11CommandList* cl = nullptr;
@@ -141,7 +139,10 @@ static void dx11_ResetBlock()
 
         CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
     }
+#else
+    rhi::ConstBufferDX11::InvalidateAll();
 #endif
+
     ID3D11RenderTargetView* view[] = { nullptr };
     _D3D11_ImmediateContext->OMSetRenderTargets(1, view, nullptr);
 
@@ -168,7 +169,7 @@ static void dx11_SuspendRendering()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
     //HACK, if seen on review please tell me
-    //CommandBufferDX11::DiscardAll();
+    FrameLoop::RejectFrames();
 
     IDXGIDevice3* dxgiDevice3 = NULL;
 

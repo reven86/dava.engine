@@ -32,8 +32,7 @@ extern void (*Suspend)();
 
 extern void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
 
-extern void (*BeginFrame)(); //this functions are called from main thread
-extern void (*FinishFrame)();
+extern void (*FinishFrame)(); //this functions is called from main thread
 extern void (*ExecuteFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
 extern void (*RejectFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
 

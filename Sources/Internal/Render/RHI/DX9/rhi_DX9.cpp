@@ -119,9 +119,9 @@ static void dx9_Uninitialize()
 
 static void dx9_Reset(const ResetParam& param)
 {
-    UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
     bool paramsChanged = false;
     _DX9_ResetParamsMutex.Lock();
+    UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
     if (param.width != _DX9_PresentParam.BackBufferWidth
         || param.height != _DX9_PresentParam.BackBufferHeight
         || param.fullScreen != !_DX9_PresentParam.Windowed

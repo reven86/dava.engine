@@ -683,9 +683,6 @@ void resize_swapchain_uap(int32 width, int32 height, float32 scaleX, float32 sca
     SetBackBufferSize(Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height)),
                       Windows::Foundation::Size(scaleX, scaleY));
 
-    //HACK, if seen on review please tell me
-    //rhi::CommandBufferDX11::DiscardAll();
-    rhi::ConstBufferDX11::InvalidateAll();
     CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();

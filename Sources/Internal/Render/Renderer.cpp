@@ -35,10 +35,6 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!initialized);
 
-    //HACK - if see this in code review, please tell me.
-    params.width = 1920;
-    params.height = 1200;
-
     api = _api;
 
     rhi::Initialize(api, params);

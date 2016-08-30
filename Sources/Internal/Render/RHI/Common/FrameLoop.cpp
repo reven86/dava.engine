@@ -113,7 +113,6 @@ void AddPass(Handle pass)
         frames.push_back(CommonImpl::Frame());
         frameCount++;
         frameStarted = true;
-        DispatchPlatform::BeginFrame();
     }
     frames.back().pass.push_back(pass);
     //frames.back().perfQuerySet = PerfQuerySet::Current();

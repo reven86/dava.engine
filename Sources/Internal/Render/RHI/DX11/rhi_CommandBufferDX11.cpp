@@ -977,13 +977,6 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 
-static void dx11_BeginFrame()
-{
-    #if !RHI_DX11__USE_DEFERRED_CONTEXTS
-    ConstBufferDX11::InvalidateAllInstances();
-    #endif
-}
-
 static void dx11_EndFrame()
 {
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -992,6 +985,8 @@ static void dx11_EndFrame()
     pendingSecondaryCmdListSync.Lock();
     pendingSecondaryCmdLists.push_back(cmdList);
     pendingSecondaryCmdListSync.Unlock();
+#else
+    ConstBufferDX11::InvalidateAllInstances();
 #endif
 }
 
@@ -1640,7 +1635,6 @@ void SetupDispatch(Dispatch* dispatch)
     DispatchPlatform::ExecuteFrame = &dx11_ExecuteQueuedCommands;
     DispatchPlatform::RejectFrame = &dx11_RejectFrame;
     DispatchPlatform::PresntBuffer = &dx11_PresentBuffer;
-    DispatchPlatform::BeginFrame = &dx11_BeginFrame;
     DispatchPlatform::FinishFrame = &dx11_EndFrame;
 }
 
