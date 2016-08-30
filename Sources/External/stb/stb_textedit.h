@@ -695,11 +695,8 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
    // remove the undo since we didn't actually insert the characters
    if (state->undostate.undo_point)
       --state->undostate.undo_point;
-   return 0;
-#else // DAVA: Always return 1 because we can delete selected text and text will be changed
-   return 1; 
 #endif
-   
+   return 0;
 }
 
 // API key: process a keyboard input
