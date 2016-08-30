@@ -3,14 +3,14 @@
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Commands2/Base/CommandStack.h"
+#include "Commands2/Base/RECommandStack.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-#include "Tools/LoggerOutput/LoggerErrorHandler.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/DavaGLWidget/DavaRenderer.h"
 
@@ -27,6 +27,7 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/EditorStatisticsSystem.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 
 #include <QShortcut>
 
@@ -37,7 +38,7 @@ const DAVA::FastName MATERIAL_FOR_REBIND = DAVA::FastName("Global");
 
 SceneEditor2::SceneEditor2()
     : Scene()
-    , commandStack(new CommandStack())
+    , commandStack(new RECommandStack())
 {
     EditorCommandNotify* notify = new EditorCommandNotify(this);
     commandStack->SetNotify(notify);
@@ -65,13 +66,14 @@ SceneEditor2::SceneEditor2()
     AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
-    AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     selectionSystem = new SceneSelectionSystem(this);
     AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
     AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    landscapeEditorDrawSystem->EnableSystem();
 
     heightmapEditorSystem = new HeightmapEditorSystem(this);
     AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
@@ -130,9 +132,12 @@ SceneEditor2::SceneEditor2()
     visibilityCheckSystem = new VisibilityCheckSystem(this);
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    selectionSystem->AddSelectionDelegate(modifSystem);
-    selectionSystem->AddSelectionDelegate(hoodSystem);
-    selectionSystem->AddSelectionDelegate(wayEditSystem);
+    editorVegetationSystem = new EditorVegetationSystem(this);
+    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
+
+    selectionSystem->AddDelegate(modifSystem);
+    selectionSystem->AddDelegate(hoodSystem);
+    selectionSystem->AddDelegate(wayEditSystem);
 
     DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;
@@ -165,8 +170,8 @@ DAVA::SceneFileV2::eError SceneEditor2::LoadScene(const DAVA::FilePath& path)
         isLoaded = true;
     }
 
-    SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
+    SceneValidator::ExtractEmptyRenderObjects(this);
+    SceneValidator::Instance()->ValidateScene(this, path);
 
     SceneSignals::Instance()->EmitLoaded(this);
 
@@ -203,7 +208,7 @@ DAVA::SceneFileV2::eError SceneEditor2::SaveScene(const DAVA::FilePath& path, bo
 
         // mark current position in command stack as clean
         wasChanged = false;
-        commandStack->SetClean(true);
+        commandStack->SetClean();
     }
 
     if (needToRestoreTilemask)
@@ -245,8 +250,12 @@ void SceneEditor2::ExtractEditorEntities()
 
 void SceneEditor2::InjectEditorEntities()
 {
-    bool isSelectionEnabled = selectionSystem->IsSystemEnabled();
-    selectionSystem->EnableSystem(false);
+    bool isSelectionEnabled = false;
+    if (selectionSystem != nullptr)
+    {
+        isSelectionEnabled = selectionSystem->IsSystemEnabled();
+        selectionSystem->EnableSystem(false);
+    }
 
     for (DAVA::int32 i = static_cast<DAVA::int32>(editorEntities.size()) - 1; i >= 0; i--)
     {
@@ -255,7 +264,11 @@ void SceneEditor2::InjectEditorEntities()
     }
 
     editorEntities.clear();
-    selectionSystem->EnableSystem(isSelectionEnabled);
+
+    if (selectionSystem != nullptr)
+    {
+        selectionSystem->EnableSystem(isSelectionEnabled);
+    }
 }
 
 DAVA::SceneFileV2::eError SceneEditor2::SaveScene()
@@ -281,6 +294,7 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
 
         return (sceneExported && objectExported);
     }
+
     return false;
 }
 
@@ -302,6 +316,26 @@ bool SceneEditor2::CanUndo() const
 bool SceneEditor2::CanRedo() const
 {
     return commandStack->CanRedo();
+}
+
+DAVA::String SceneEditor2::GetUndoText() const
+{
+    const DAVA::Command* undoCommand = commandStack->GetUndoCommand();
+    if (undoCommand != nullptr)
+    {
+        return undoCommand->GetDescription();
+    }
+    return DAVA::String();
+}
+
+DAVA::String SceneEditor2::GetRedoText() const
+{
+    const DAVA::Command* redoCommand = commandStack->GetRedoCommand();
+    if (redoCommand != nullptr)
+    {
+        return redoCommand->GetDescription();
+    }
+    return DAVA::String();
 }
 
 void SceneEditor2::Undo()
@@ -329,7 +363,7 @@ void SceneEditor2::ActivateCommandStack()
     commandStack->Activate();
 }
 
-void SceneEditor2::Exec(Command2::Pointer&& command)
+void SceneEditor2::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
     if (command)
     {
@@ -337,7 +371,7 @@ void SceneEditor2::Exec(Command2::Pointer&& command)
     }
 }
 
-void SceneEditor2::RemoveCommands(DAVA::int32 commandId)
+void SceneEditor2::RemoveCommands(DAVA::uint32 commandId)
 {
     commandStack->RemoveCommands(commandId);
 }
@@ -347,7 +381,7 @@ void SceneEditor2::ClearAllCommands()
     commandStack->Clear();
 }
 
-const CommandStack* SceneEditor2::GetCommandStack() const
+const RECommandStack* SceneEditor2::GetCommandStack() const
 {
     return commandStack.get();
 }
@@ -373,19 +407,18 @@ bool SceneEditor2::IsChanged() const
     return ((!commandStack->IsClean()) || wasChanged);
 }
 
-void SceneEditor2::SetChanged(bool changed)
+void SceneEditor2::SetChanged()
 {
-    commandStack->SetClean(!changed);
+    commandStack->SetChanged();
 }
 
 void SceneEditor2::Update(float timeElapsed)
 {
     ++framesCount;
 
-    renderStats = DAVA::Renderer::GetRenderStats();
-    DAVA::Renderer::GetRenderStats().Reset();
-
     Scene::Update(timeElapsed);
+
+    renderStats = DAVA::Renderer::GetRenderStats();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect& newViewportRect)
@@ -426,36 +459,33 @@ void SceneEditor2::Draw()
     }
 }
 
-void SceneEditor2::EditorCommandProcess(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& commandNotification)
 {
-    if (command == nullptr)
+    if (commandNotification.IsEmpty())
     {
         return;
     }
 
     if (collisionSystem)
     {
-        collisionSystem->ProcessCommand(command, redo);
+        collisionSystem->ProcessCommand(commandNotification);
     }
-
     if (structureSystem)
     {
-        structureSystem->ProcessCommand(command, redo);
+        structureSystem->ProcessCommand(commandNotification);
     }
 
-    particlesSystem->ProcessCommand(command, redo);
-
-    materialSystem->ProcessCommand(command, redo);
+    particlesSystem->ProcessCommand(commandNotification);
+    materialSystem->ProcessCommand(commandNotification);
 
     if (landscapeEditorDrawSystem)
     {
-        landscapeEditorDrawSystem->ProcessCommand(command, redo);
+        landscapeEditorDrawSystem->ProcessCommand(commandNotification);
     }
 
-    pathSystem->ProcessCommand(command, redo);
-    wayEditSystem->ProcessCommand(command, redo);
-
-    editorLODSystem->ProcessCommand(command, redo);
+    pathSystem->ProcessCommand(commandNotification);
+    wayEditSystem->ProcessCommand(commandNotification);
+    editorLODSystem->ProcessCommand(commandNotification);
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)
@@ -475,12 +505,12 @@ SceneEditor2::EditorCommandNotify::EditorCommandNotify(SceneEditor2* _editor)
 {
 }
 
-void SceneEditor2::EditorCommandNotify::Notify(const Command2* command, bool redo)
+void SceneEditor2::EditorCommandNotify::Notify(const RECommandNotificationObject& commandNotification)
 {
     if (nullptr != editor)
     {
-        editor->EditorCommandProcess(command, redo);
-        SceneSignals::Instance()->EmitCommandExecuted(editor, command, redo);
+        editor->EditorCommandProcess(commandNotification);
+        SceneSignals::Instance()->EmitCommandExecuted(editor, commandNotification);
     }
 }
 
@@ -492,9 +522,24 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
     }
 }
 
-void SceneEditor2::EditorCommandNotify::UndoRedoStateChanged()
+void SceneEditor2::EditorCommandNotify::CanUndoChanged(bool canUndo)
 {
-    SceneSignals::Instance()->EmitUndoRedoStateChanged(editor);
+    SceneSignals::Instance()->CanUndoStateChanged(canUndo);
+}
+
+void SceneEditor2::EditorCommandNotify::CanRedoChanged(bool canRedo)
+{
+    SceneSignals::Instance()->CanRedoStateChanged(canRedo);
+}
+
+void SceneEditor2::EditorCommandNotify::UndoTextChanged(const DAVA::String& undoText)
+{
+    SceneSignals::Instance()->UndoTextChanged(undoText);
+}
+
+void SceneEditor2::EditorCommandNotify::RedoTextChanged(const DAVA::String& redoText)
+{
+    SceneSignals::Instance()->RedoTextChanged(redoText);
 }
 
 const DAVA::RenderStats& SceneEditor2::GetRenderStats() const
@@ -666,9 +711,8 @@ void SceneEditor2::RemoveSystems()
 {
     if (selectionSystem != nullptr)
     {
-        selectionSystem->RemoveSelectionDelegate(modifSystem);
-        selectionSystem->RemoveSelectionDelegate(hoodSystem);
-        selectionSystem->RemoveSelectionDelegate(wayEditSystem);
+        RemoveSystem(selectionSystem);
+        SafeDelete(selectionSystem);
     }
 
     if (editorLightSystem)
@@ -686,6 +730,7 @@ void SceneEditor2::RemoveSystems()
 
     if (landscapeEditorDrawSystem)
     {
+        landscapeEditorDrawSystem->DisableSystem();
         RemoveSystem(landscapeEditorDrawSystem);
         SafeDelete(landscapeEditorDrawSystem);
     }
@@ -741,6 +786,8 @@ void SceneEditor2::Deactivate()
 void SceneEditor2::EnableEditorSystems()
 {
     cameraSystem->EnableSystem();
+
+    collisionSystem->EnableSystem();
 
     // must be last to enable selection after all systems add their entities
     selectionSystem->EnableSystem(true);

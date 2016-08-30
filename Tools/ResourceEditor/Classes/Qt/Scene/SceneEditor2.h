@@ -8,6 +8,7 @@
 
 #include "Main/Request.h"
 #include "Settings/SettingsManager.h"
+#include "Command/Command.h"
 
 //TODO: move all includes to .cpp file
 #include "Scene/System/GridSystem.h"
@@ -36,14 +37,19 @@
 
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
+#include "Commands2/Base/CommandNotify.h"
+#include "Commands2/RECommandIDs.h"
+
+class RECommandNotificationObject;
 class SceneCameraSystem;
 class SceneCollisionSystem;
 class HoodSystem;
 class EditorLODSystem;
 class EditorStatisticsSystem;
+class EditorVegetationSystem;
 class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
-class CommandStack;
+class RECommandStack;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -65,36 +71,37 @@ public:
     ~SceneEditor2() override;
 
     // editor systems
-    SceneCameraSystem* cameraSystem;
-    SceneCollisionSystem* collisionSystem;
-    SceneGridSystem* gridSystem;
-    HoodSystem* hoodSystem;
-    SceneSelectionSystem* selectionSystem;
-    EntityModificationSystem* modifSystem;
-    LandscapeEditorDrawSystem* landscapeEditorDrawSystem;
-    HeightmapEditorSystem* heightmapEditorSystem;
-    TilemaskEditorSystem* tilemaskEditorSystem;
-    CustomColorsSystem* customColorsSystem;
-    RulerToolSystem* rulerToolSystem;
-    StructureSystem* structureSystem;
-    EditorParticlesSystem* particlesSystem;
-    EditorLightSystem* editorLightSystem;
-    TextDrawSystem* textDrawSystem;
-    DebugDrawSystem* debugDrawSystem;
-    BeastSystem* beastSystem;
-    OwnersSignatureSystem* ownersSignatureSystem;
-    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem;
-    EditorMaterialSystem* materialSystem;
+    SceneCameraSystem* cameraSystem = nullptr;
+    SceneCollisionSystem* collisionSystem = nullptr;
+    SceneGridSystem* gridSystem = nullptr;
+    HoodSystem* hoodSystem = nullptr;
+    SceneSelectionSystem* selectionSystem = nullptr;
+    EntityModificationSystem* modifSystem = nullptr;
+    LandscapeEditorDrawSystem* landscapeEditorDrawSystem = nullptr;
+    HeightmapEditorSystem* heightmapEditorSystem = nullptr;
+    TilemaskEditorSystem* tilemaskEditorSystem = nullptr;
+    CustomColorsSystem* customColorsSystem = nullptr;
+    RulerToolSystem* rulerToolSystem = nullptr;
+    StructureSystem* structureSystem = nullptr;
+    EditorParticlesSystem* particlesSystem = nullptr;
+    EditorLightSystem* editorLightSystem = nullptr;
+    TextDrawSystem* textDrawSystem = nullptr;
+    DebugDrawSystem* debugDrawSystem = nullptr;
+    BeastSystem* beastSystem = nullptr;
+    OwnersSignatureSystem* ownersSignatureSystem = nullptr;
+    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem = nullptr;
+    EditorMaterialSystem* materialSystem = nullptr;
     EditorLODSystem* editorLODSystem = nullptr;
     EditorStatisticsSystem* editorStatisticsSystem = nullptr;
     VisibilityCheckSystem* visibilityCheckSystem = nullptr;
+    EditorVegetationSystem* editorVegetationSystem = nullptr;
 
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
     DAVA::RotationControllerSystem* rotationSystem = nullptr;
     DAVA::SnapToLandscapeControllerSystem* snapToLandscapeSystem = nullptr;
 
-    WayEditSystem* wayEditSystem;
-    PathSystem* pathSystem;
+    WayEditSystem* wayEditSystem = nullptr;
+    PathSystem* pathSystem = nullptr;
 
     // save/load
     DAVA::SceneFileV2::eError LoadScene(const DAVA::FilePath& path) override;
@@ -109,6 +116,9 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
+    DAVA::String GetUndoText() const;
+    DAVA::String GetRedoText() const;
+
     void Undo();
     void Redo();
 
@@ -116,16 +126,16 @@ public:
     void EndBatch();
 
     void ActivateCommandStack();
-    void Exec(Command2::Pointer&& command);
-    void RemoveCommands(DAVA::int32 commandId);
+    void Exec(std::unique_ptr<DAVA::Command>&& command);
+    void RemoveCommands(DAVA::uint32 commandId);
 
     void ClearAllCommands();
-    const CommandStack* GetCommandStack() const;
+    const RECommandStack* GetCommandStack() const;
 
     // checks whether the scene changed since the last save
     bool IsLoaded() const;
     bool IsChanged() const;
-    void SetChanged(bool changed);
+    void SetChanged();
 
     // enable/disable drawing custom HUD
     void SetHUDVisible(bool visible);
@@ -174,12 +184,12 @@ protected:
     bool isHUDVisible = true;
 
     DAVA::FilePath curScenePath;
-    std::unique_ptr<CommandStack> commandStack;
+    std::unique_ptr<RECommandStack> commandStack;
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    void EditorCommandProcess(const Command2* command, bool redo);
+    void EditorCommandProcess(const RECommandNotificationObject& commandNotification);
 
     void Draw() override;
 
@@ -201,9 +211,12 @@ private:
     {
     public:
         EditorCommandNotify(SceneEditor2* _editor);
-        void Notify(const Command2* command, bool redo) override;
+        void Notify(const RECommandNotificationObject& commandNotification) override;
         void CleanChanged(bool clean) override;
-        void UndoRedoStateChanged() override;
+        void CanUndoChanged(bool canUndo) override;
+        void CanRedoChanged(bool canRedo) override;
+        void UndoTextChanged(const DAVA::String& undoText) override;
+        void RedoTextChanged(const DAVA::String& redoText) override;
 
     private:
         SceneEditor2* editor = nullptr;

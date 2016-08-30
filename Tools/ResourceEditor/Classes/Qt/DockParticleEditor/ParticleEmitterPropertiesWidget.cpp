@@ -1,5 +1,8 @@
 #include "ParticleEmitterPropertiesWidget.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/EntityAddCommand.h"
+#include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/TransformCommand.h"
 #include "Qt/Scene/SceneSignals.h"
@@ -160,40 +163,77 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
     auto newTransform = DAVA::Matrix4::MakeTranslation(position);
 
     Selectable wrapper(GetEmitterInstance(activeScene));
-    GetActiveScene()->Exec(Command2::Create<TransformCommand>(wrapper, wrapper.GetLocalTransform(), newTransform));
+    GetActiveScene()->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(wrapper, wrapper.GetLocalTransform(), newTransform)));
 
     Init(GetActiveScene(), GetEffect(activeScene), GetEmitterInstance(activeScene), false, false);
     emit ValueChanged();
 }
 
-void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const Command2* command, bool redo)
+namespace ParticleEmitterPropertiesWidgetDetail
+{
+bool HasInstance(const DAVA::Entity* entity, DAVA::ParticleEmitterInstance* instance)
+{
+    DAVA::ParticleEffectComponent* effect = static_cast<DAVA::ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
+    if (effect != nullptr)
+    {
+        for (DAVA::uint32 i = 0, e = effect->GetEmittersCount(); i < e; ++i)
+        {
+            if (effect->GetEmitterInstance(i) == instance)
+            {
+                return true;
+            }
+        }
+    }
+
+    DAVA::uint32 count = entity->GetChildrenCount();
+    for (DAVA::uint32 c = 0; c < count; ++c)
+    {
+        if (HasInstance(entity->GetChild(c), instance))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+}
+
+void ParticleEmitterPropertiesWidget::OnCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     if (blockSignals || (GetActiveScene() != scene))
         return;
 
-    auto tryRemoveSelectedEmitter = [this, scene](const Command2* inCommand) {
+    auto tryRemoveSelectedEmitter = [this, scene](const RECommand* inCommand, bool redo)
+    {
         if (inCommand->MatchCommandID(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE))
         {
-            auto cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
+            const CommandRemoveParticleEmitter* cmd = static_cast<const CommandRemoveParticleEmitter*>(inCommand);
             if (cmd->GetEmitterInstance() == GetEmitterInstance(scene))
+            {
+                SetObjectsForScene(scene, nullptr, nullptr);
+            }
+        }
+        else if (inCommand->MatchCommandID(CMDID_ENTITY_ADD) && !redo)
+        {
+            const EntityAddCommand* cmd = static_cast<const EntityAddCommand*>(inCommand);
+            const DAVA::Entity* entity = cmd->GetEntity();
+            if (entity != nullptr && ParticleEmitterPropertiesWidgetDetail::HasInstance(entity, GetEmitterInstance(scene)))
+            {
+                SetObjectsForScene(scene, nullptr, nullptr);
+            }
+        }
+        else if (inCommand->MatchCommandID(CMDID_ENTITY_REMOVE) && redo)
+        {
+            const EntityRemoveCommand* cmd = static_cast<const EntityRemoveCommand*>(inCommand);
+            const DAVA::Entity* entity = cmd->GetEntity();
+            if (entity != nullptr && ParticleEmitterPropertiesWidgetDetail::HasInstance(entity, GetEmitterInstance(scene)))
             {
                 SetObjectsForScene(scene, nullptr, nullptr);
             }
         }
     };
 
-    if (command->GetId() == CMDID_BATCH)
-    {
-        auto batch = static_cast<const CommandBatch*>(command);
-        for (DAVA::uint32 i = 0, e = batch->Size(); i < e; ++i)
-        {
-            tryRemoveSelectedEmitter(batch->GetCommand(i));
-        }
-    }
-    else
-    {
-        tryRemoveSelectedEmitter(command);
-    }
+    commandNotification.ExecuteForAllCommands(tryRemoveSelectedEmitter);
 
     if ((GetEmitterInstance(scene) != nullptr) && (GetEffect(scene) != nullptr))
     {
@@ -246,7 +286,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
     emitterAngle->GetValue(0, propAngle.GetPropsPtr());
     emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 
-    auto commandUpdateEmitter = Command2::Create<CommandUpdateEmitter>(instance);
+    std::unique_ptr<CommandUpdateEmitter> commandUpdateEmitter(new CommandUpdateEmitter(instance));
     commandUpdateEmitter->Init(DAVA::FastName(emitterNameLineEdit->text().toStdString().c_str()),
                                type,
                                emissionRange.GetPropLine(),
@@ -285,7 +325,9 @@ void ParticleEmitterPropertiesWidget::UpdateProperties()
     DVASSERT(activeScene != 0);
 
     DAVA::ParticleEffectComponent* effect = GetEffect(activeScene);
+    DVASSERT(effect != nullptr);
     DAVA::ParticleEmitter* emitter = GetEmitterInstance(activeScene)->GetEmitter();
+    DVASSERT(emitter != nullptr);
 
     emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
     shortEffectCheckBox->setChecked(emitter->shortEffect);

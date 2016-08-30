@@ -18,8 +18,8 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
-    virtual void SetSourceScreen(UIScreen* prevScreen);
-    virtual void SetDestinationScreen(UIScreen* nextScreen);
+    virtual void SetSourceScreen(UIControl* prevScreen, bool updateScreen = true);
+    virtual void SetDestinationScreen(UIControl* nextScreen, bool updateScreen = true);
     virtual void StartTransition();
     virtual void EndTransition();
 

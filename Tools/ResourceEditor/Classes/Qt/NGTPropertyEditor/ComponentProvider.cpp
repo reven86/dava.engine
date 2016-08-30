@@ -1,3 +1,4 @@
+#if 0
 #include "ComponentProvider.h"
 
 NGTLayer::ComponentProvider::ComponentProvider(wgt::IDefinitionManager& defMng)
@@ -14,3 +15,4 @@ const char* NGTLayer::ComponentProvider::componentId(const wgt::TypeId& typeId, 
 
     return nullptr;
 }
+#endif //0

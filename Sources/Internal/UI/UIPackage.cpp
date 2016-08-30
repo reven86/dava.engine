@@ -82,4 +82,24 @@ RefPtr<UIPackage> UIPackage::Clone() const
                    });
     return package;
 }
+
+Vector<UIControl*>::const_iterator UIPackage::begin() const
+{
+    return controls.begin();
+}
+
+Vector<UIControl*>::const_iterator UIPackage::end() const
+{
+    return controls.end();
+}
+
+Vector<UIControl*>::iterator UIPackage::begin()
+{
+    return controls.begin();
+}
+
+Vector<UIControl*>::iterator UIPackage::end()
+{
+    return controls.end();
+}
 }

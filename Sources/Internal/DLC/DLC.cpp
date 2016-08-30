@@ -864,7 +864,7 @@ void DLC::StepPatchFinish()
     default:
         if (!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
         {
-            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch.");
+            Logger::ErrorToFile(logsFilePath, "[DLC::StepPatchFinish] Can't apply full patch. patching error: %d", dlcContext.patchingError);
             PostError(DE_PATCH_ERROR_FULL);
         }
         else
@@ -891,6 +891,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
 {
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
     PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);
+    patchReader.SetLogsFilePath(logsFilePath);
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] PatchReader created");
     bool applySuccess = true;
     const PatchInfo* patchInfo = nullptr;
@@ -986,7 +987,7 @@ void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
         // if we don't do that - we have Empty Patch Error if patching was finished in background and application was closed
         // because in that case StepPatchFinish losts and at application restart DLC follows to patching state.
         File* patchFile = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
-        int32 patchSizeAfterPatching = patchFile->GetSize();
+        int32 patchSizeAfterPatching = static_cast<int32>(patchFile->GetSize());
         SafeRelease(patchFile);
 
         if (0 == patchSizeAfterPatching)
@@ -1077,4 +1078,52 @@ String DLC::MakePatchUrl(uint32 localVer, uint32 remoteVer)
 
     return ret;
 }
+
+String DLC::ToString(DownloadError e)
+{
+    String errorMsg;
+    switch (e)
+    {
+    case DLE_CANCELLED: // download was cancelled by our side
+        errorMsg = "DLE_CANCELLED";
+        break;
+    case DLE_COULDNT_RESUME: // seems server doesn't supports download resuming
+        errorMsg = "DLE_COULDNT_RESUME";
+        break;
+    case DLE_COULDNT_RESOLVE_HOST: // DNS request failed and we cannot to take IP from full qualified domain name
+        errorMsg = "DLE_COULDNT_RESOLVE_HOST";
+        break;
+    case DLE_COULDNT_CONNECT: // we cannot connect to given adress at given port
+        errorMsg = "DLE_COULDNT_CONNECT";
+        break;
+    case DLE_CONTENT_NOT_FOUND: // server replies that there is no requested content
+        errorMsg = "DLE_CONTENT_NOT_FOUND";
+        break;
+    case DLE_NO_RANGE_REQUEST: // Range requests is not supported. Use 1 thread without reconnects only.
+        errorMsg = "DLE_NO_RANGE_REQUEST";
+        break;
+    case DLE_COMMON_ERROR: // some common error which is rare and requires to debug the reason
+        errorMsg = "DLE_COMMON_ERROR";
+        break;
+    case DLE_INIT_ERROR: // any handles initialisation was unsuccessful
+        errorMsg = "DLE_INIT_ERROR";
+        break;
+    case DLE_FILE_ERROR: // file read and write errors
+        errorMsg = "DLE_FILE_ERROR";
+        break;
+    case DLE_UNKNOWN: // we cannot determine the error
+        errorMsg = "DLE_UNKNOWN";
+        break;
+    case DLE_NO_ERROR:
+    {
+        errorMsg = "DLE_NO_ERROR";
+        break;
+    }
+    default:
+        DVASSERT(false);
+        break;
+    } // end switch downloadError
+    return errorMsg;
 }
+
+} // end namespace DAVA

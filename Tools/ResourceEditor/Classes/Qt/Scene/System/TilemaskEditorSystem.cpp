@@ -108,7 +108,12 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
         return enablingError;
     }
 
-    drawSystem->GetLandscapeProxy()->UpdateTileMaskPathname();
+    drawSystem->UpdateTilemaskPathname();
+    bool inited = drawSystem->InitTilemaskImageCopy();
+    if (!inited)
+    {
+        return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_TILEMASK_TEXTURE_ABSENT;
+    }
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
@@ -123,8 +128,6 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
     SetBrushSize(curToolSize);
 
     InitSprites();
-
-    drawSystem->GetLandscapeProxy()->InitTilemaskImageCopy();
 
     DAVA::Texture* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE);
     DAVA::Texture* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_DESTINATION);
@@ -419,7 +422,7 @@ void TilemaskEditorSystem::SetTileColor(DAVA::int32 index, const DAVA::Color& co
     if (curColor != color)
     {
         SceneEditor2* scene = (SceneEditor2*)(GetScene());
-        scene->Exec(Command2::Create<SetTileColorCommand>(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color));
+        scene->Exec(std::unique_ptr<DAVA::Command>(new SetTileColorCommand(drawSystem->GetLandscapeProxy(), TILECOLOR_PARAM_NAMES[index], color)));
     }
 }
 
@@ -475,9 +478,13 @@ void TilemaskEditorSystem::Draw()
 
 void TilemaskEditorSystem::CreateUndoPoint()
 {
-    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-    DVASSERT(scene);
-    scene->Exec(Command2::Create<ModifyTilemaskCommand>(drawSystem->GetLandscapeProxy(), GetUpdatedRect()));
+    DAVA::Rect rect = GetUpdatedRect();
+    if (rect.dx > 0 && rect.dy > 0)
+    {
+        SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+        DVASSERT(scene);
+        scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyTilemaskCommand(drawSystem->GetLandscapeProxy(), rect)));
+    }
 }
 
 DAVA::int32 TilemaskEditorSystem::GetBrushSize()

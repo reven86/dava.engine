@@ -111,7 +111,15 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
     add_definitions ( -D_UNICODE )
     add_definitions ( -DUNICODE )
+    add_definitions ( -D_SCL_SECURE_NO_WARNINGS)
 endif  ()
+
+if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping" ) 
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+
+endif()
 
 if( NOT DISABLE_DEBUG )
     set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )

@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #ifndef __DAVAENGINE_NATIVE_VIEW_POOL_H__
 #define __DAVAENGINE_NATIVE_VIEW_POOL_H__
 
@@ -104,3 +106,4 @@ VIEW_TYPE* NativeViewPool<VIEW_TYPE>::GetOrCreateView()
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
 #endif //__DAVAENGINE_NATIVE_VIEW_POOL_H__
+#endif // !__DAVAENGINE_COREV2__

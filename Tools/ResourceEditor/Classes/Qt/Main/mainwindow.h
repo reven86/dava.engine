@@ -6,6 +6,7 @@
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/RecentMenuItems.h"
+#include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
 #include "DAVAEngine.h"
@@ -14,11 +15,7 @@
 #include <QDockWidget>
 #include <QPointer>
 
-namespace wgt
-{
-class IComponentContext;
-}
-
+class RECommandNotificationObject;
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
@@ -30,7 +27,8 @@ class PropertyPanel;
 #endif
 class DeviceListController;
 class SpritesPackerModule;
-class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
+class ErrorDialogOutput;
+class QtMainWindow : public QMainWindow, public GlobalOperations
 {
     Q_OBJECT
 
@@ -42,7 +40,7 @@ signals:
     void TexturesReloaded();
 
 public:
-    explicit QtMainWindow(wgt::IComponentContext& ngtContext, QWidget* parent = 0);
+    explicit QtMainWindow(QWidget* parent = 0);
     ~QtMainWindow();
 
     Ui::MainWindow* GetUI();
@@ -54,11 +52,11 @@ public:
     bool SaveSceneAs(SceneEditor2* scene);
 
     void SetGPUFormat(DAVA::eGPUFamily gpu);
-    DAVA::eGPUFamily GetGPUFormat();
 
     void WaitStart(const QString& title, const QString& message, int min = 0, int max = 100);
     void WaitSetMessage(const QString& messsage);
     void WaitSetValue(int value);
+    bool IsWaitDialogOnScreen() const;
     void WaitStop();
 
     void BeastWaitSetMessage(const QString& messsage);
@@ -67,6 +65,15 @@ public:
     void EnableGlobalTimeout(bool enable);
 
     bool CanBeClosed();
+
+    bool ParticlesArePacking() const;
+
+    void CallAction(ID id, DAVA::Any&& args) override;
+    QWidget* GetGlobalParentWidget() const override;
+    void ShowWaitDialog(const DAVA::String& tittle, const DAVA::String& message, DAVA::uint32 min = 0, DAVA::uint32 max = 100) override;
+    bool IsWaitDialogVisible() const override;
+    void HideWaitDialog() override;
+    void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
 
     // qt actions slots
 public slots:
@@ -117,7 +124,7 @@ public slots:
     void OnCenterPivotPoint();
     void OnZeroPivotPoint();
 
-    void OnMaterialEditor();
+    void OnMaterialEditor(DAVA::NMaterial* material = nullptr);
     void OnTextureBrowser();
     void OnSceneLightMode();
 
@@ -191,7 +198,8 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-
+    void closeEvent(QCloseEvent* event);
+    void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
     void SetupToolBars();
@@ -223,8 +231,7 @@ private slots:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
 
-    void SceneUndoRedoStateChanged(SceneEditor2* scene);
-    void SceneCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void SceneCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
     void SceneActivated(SceneEditor2* scene);
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
@@ -238,6 +245,9 @@ private slots:
     void DebugColorPicker();
     void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
+
+    void UpdateUndoActionText(const DAVA::String& text);
+    void UpdateRedoActionText(const DAVA::String& text);
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;
@@ -259,7 +269,7 @@ private:
     void EnableProjectActions(bool enable);
     void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
-    void UpdateWayEditor(const Command2* command, bool redo);
+    void UpdateWayEditor(const RECommandNotificationObject& commandNotification);
 
     void LoadViewState(SceneEditor2* scene);
     void LoadModificationState(SceneEditor2* scene);
@@ -287,11 +297,13 @@ private:
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
 
-    wgt::IComponentContext& ngtContext;
 #if defined(NEW_PROPERTY_PANEL)
+    wgt::IComponentContext& ngtContext;
     std::unique_ptr<PropertyPanel> propertyPanel;
 #endif
     std::unique_ptr<SpritesPackerModule> spritesPacker;
+    std::shared_ptr<GlobalOperations> globalOperations;
+    ErrorDialogOutput* errorLoggerOutput = nullptr;
 
 private:
     struct EmitterDescriptor

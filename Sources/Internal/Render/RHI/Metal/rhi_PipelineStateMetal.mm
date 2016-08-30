@@ -11,6 +11,8 @@ using DAVA::Logger;
 
     #include "_metal.h"
 
+    #define MTL_SHOW_SHADER_WARNINGS 0
+
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
 namespace rhi
@@ -95,6 +97,62 @@ _Metal_VertexAttribIndex(VertexSemantics s, uint32 i)
 
 //------------------------------------------------------------------------------
 
+static void
+DumpShaderText(const char* code, unsigned code_sz)
+{
+    char src[64 * 1024];
+    char* src_line[1024];
+    unsigned line_cnt = 0;
+
+    if (code_sz < sizeof(src))
+    {
+        memcpy(src, code, code_sz);
+        src[code_sz] = '\0';
+        memset(src_line, 0, sizeof(src_line));
+
+        src_line[line_cnt++] = src;
+        for (char* s = src; *s;)
+        {
+            if (*s == '\n')
+            {
+                *s = 0;
+                ++s;
+
+                while (*s && (/**s == '\n'  ||  */ *s == '\r'))
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if (!(*s))
+                    break;
+
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+            else if (*s == '\r')
+            {
+                *s = ' ';
+            }
+            else
+            {
+                ++s;
+            }
+        }
+
+        for (unsigned i = 0; i != line_cnt; ++i)
+        {
+            Logger::Info("%4u |  %s", 1 + i, src_line[i]);
+        }
+    }
+    else
+    {
+        Logger::Info(code);
+    }
+}
+
+//------------------------------------------------------------------------------
+
 class
 PipelineStateMetal_t
 {
@@ -136,7 +194,9 @@ public:
         bool SetConst(unsigned const_i, unsigned count, const float* cdata);
         bool SetConst(unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count);
 
+        unsigned Instance();
         void SetToRHI(unsigned bufIndex, id<MTLRenderCommandEncoder> ce) const;
+        void SetToRHI(unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce) const;
         void InvalidateInst();
 
     private:
@@ -190,7 +250,7 @@ public:
     FragmentProg fprog;
 
     id<MTLRenderPipelineState> state;
-    id<MTLRenderPipelineState> state_nodepth;
+    //    id<MTLRenderPipelineState> state_nodepth;
 
     VertexLayout layout;
     MTLRenderPipelineDescriptor* desc;
@@ -198,6 +258,7 @@ public:
     state_t
     {
         uint32 layoutUID;
+        MTLPixelFormat color_format;
         id<MTLRenderPipelineState> state;
         uint32 stride;
         uint32 ds_used : 1;
@@ -357,6 +418,8 @@ PipelineStateMetal_t::VertexProg::InstanceConstBuffer(unsigned bufIndex)
 
 bool PipelineStateMetal_t::ConstBuf::Construct(PipelineStateMetal_t::ConstBuf::ProgType ptype, unsigned buf_i, unsigned cnt)
 {
+    Destroy();
+
     type = ptype;
     index = buf_i;
     count = cnt;
@@ -379,7 +442,7 @@ void PipelineStateMetal_t::ConstBuf::Destroy()
 
     index = DAVA::InvalidIndex;
     count = 0;
-    inst = 0;
+    inst = nullptr;
     inst_offset = 0;
 }
 
@@ -447,6 +510,36 @@ void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, id<MTLRenderCom
 
 //------------------------------------------------------------------------------
 
+void PipelineStateMetal_t::ConstBuf::SetToRHI(unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce) const
+{
+    id<MTLBuffer> buf = DefaultConstRingBuffer.BufferUID();
+
+    if (type == PROG_VERTEX)
+        [ce setVertexBuffer:buf offset:instOffset atIndex:MAX_VERTEX_STREAM_COUNT + bufIndex]; // vprog-buf[0..MAX_VERTEX_STREAM_COUNT] assumed to be vdata
+    else
+        [ce setFragmentBuffer:buf offset:instOffset atIndex:bufIndex];
+}
+
+//------------------------------------------------------------------------------
+
+unsigned
+PipelineStateMetal_t::ConstBuf::Instance()
+{
+    if (!inst)
+    {
+        inst = DefaultConstRingBuffer.Alloc(count * 4 * sizeof(float), &inst_offset);
+        //        inst = (type == PROG_VERTEX)
+        //               ? VertexConstRingBuffer.Alloc( count*4*sizeof(float), &inst_offset )
+        //               : FragmentConstRingBuffer.Alloc( count*4*sizeof(float), &inst_offset );
+
+        memcpy(inst, data, count * 4 * sizeof(float));
+    }
+
+    return inst_offset;
+}
+
+//------------------------------------------------------------------------------
+
 void PipelineStateMetal_t::ConstBuf::InvalidateInst()
 {
     inst = nullptr;
@@ -458,7 +551,6 @@ static Handle
 metal_PipelineState_Create(const PipelineState::Descriptor& desc)
 {
     Handle handle = PipelineStateMetalPool::Alloc();
-    ;
     PipelineStateMetal_t* ps = PipelineStateMetalPool::Get(handle);
     static std::vector<uint8> vprog_bin;
     static std::vector<uint8> fprog_bin;
@@ -466,9 +558,9 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
     rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
 
-    Logger::Info("metal_PipelineState_Create");
-    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());
-    Logger::Info("  fprogUid= %s", desc.fprogUid.c_str());
+    //    Logger::Info("metal_PipelineState_Create");
+    //    Logger::Info("  vprogUid= %s", desc.vprogUid.c_str());
+    //    Logger::Info("  fprogUid= %s", desc.fprogUid.c_str());
 
     // compile vprog
 
@@ -492,10 +584,15 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str());
         Logger::Error("  %s", (vp_err != nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>");
         Logger::Info(vp_src.UTF8String);
+        DumpShaderText((const char*)(&vprog_bin[0]), vprog_bin.size());
     }
 
+    #if MTL_SHOW_SHADER_WARNINGS
     if (vp_err != nil)
         Logger::Warning("vprog warnings:\n %s ", vp_err.localizedDescription.UTF8String);
+    #endif
+    [vp_opt release];
+    [vp_lib release];
 
     // compile fprog
 
@@ -518,11 +615,14 @@ metal_PipelineState_Create(const PipelineState::Descriptor& desc)
     {
         Logger::Error("FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str());
         Logger::Error("  %s", (fp_err != nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>");
-        Logger::Info(fp_src.UTF8String);
     }
-
+    
+    #if MTL_SHOW_SHADER_WARNINGS
     if (fp_err != nil)
         Logger::Warning("fprog warnings:\n %s ", fp_err.localizedDescription.UTF8String);
+    #endif
+    [fp_opt release];
+    [fp_lib release];
 
     // create render-state
 
@@ -776,6 +876,12 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ConstBuffer_ConstCount = nullptr; //&metal_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete = &metal_ConstBuffer_Delete;
 }
+
+void
+ResetRingBuffer()
+{
+    DefaultConstRingBuffer.Reset();
+}
 }
 
 namespace PipelineStateMetal
@@ -797,36 +903,19 @@ VertexStreamCount(Handle ps)
 }
 
 uint32
-SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce)
+SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce)
 {
     uint32 stride = 0;
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
 
     DVASSERT(psm);
 
-    if (layoutUID == VertexLayout::InvalidUID)
+    if (layoutUID == VertexLayout::InvalidUID
+        && color_fmt == MTLPixelFormatBGRA8Unorm
+        && ds_used
+        )
     {
-        if (ds_used)
-        {
-            [ce setRenderPipelineState:psm->state];
-        }
-        else
-        {
-            if (psm->state_nodepth == nil)
-            {
-                MTLRenderPipelineDescriptor* rp_desc = [psm->desc copy];
-                MTLRenderPipelineReflection* ps_info = nil;
-                NSError* rs_err = nil;
-
-                rp_desc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
-
-                psm->state_nodepth = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionBufferTypeInfo reflection:&ps_info error:&rs_err];
-            }
-
-            [ce setRenderPipelineState:psm->state_nodepth];
-        }
-
+        [ce setRenderPipelineState:psm->state];
         stride = psm->layout.Stride();
     }
     else
@@ -836,7 +925,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
 
         for (unsigned i = 0; i != psm->altState.size(); ++i)
         {
-            if (psm->altState[i].layoutUID == layoutUID && psm->altState[i].ds_used == ds_used)
+            if (psm->altState[i].layoutUID == layoutUID && psm->altState[i].color_format == color_fmt && psm->altState[i].ds_used == ds_used)
             {
                 si = i;
                 do_add = false;
@@ -864,6 +953,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
             }
 
             rp_desc.colorAttachments[0] = psm->desc.colorAttachments[0];
+            rp_desc.colorAttachments[0].pixelFormat = color_fmt;
             rp_desc.sampleCount = 1;
             rp_desc.vertexFunction = psm->desc.vertexFunction;
             rp_desc.fragmentFunction = psm->desc.fragmentFunction;
@@ -902,6 +992,26 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                         }
                         break;
 
+                        case VDT_HALF:
+                        {
+                            switch (psm->layout.ElementDataCount(i))
+                            {
+                            case 1:
+                                //                                fmt = MTLVertexFormatHalf;
+                                break;
+                            case 2:
+                                fmt = MTLVertexFormatHalf2;
+                                break;
+                            case 3:
+                                fmt = MTLVertexFormatHalf3;
+                                break;
+                            case 4:
+                                fmt = MTLVertexFormatHalf4;
+                                break;
+                            }
+                        }
+                        break;
+
                         case VDT_UINT8:
                         case VDT_UINT8N:
                         {
@@ -933,7 +1043,16 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                         break;
                     }
                 }
-                DVASSERT(attr_set);
+
+                if (!attr_set)
+                {
+                    Logger::Error("vertex-layout mismatch");
+                    Logger::Info("pipeline-state layout:");
+                    psm->layout.Dump();
+                    Logger::Info("packet layout:");
+                    layout->Dump();
+                    DVASSERT(!"kaboom!");
+                }
             }
 
             for (unsigned s = 0; s != layout->StreamCount(); ++s)
@@ -945,6 +1064,7 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
 
             state.layoutUID = layoutUID;
             state.state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
+            state.color_format = color_fmt;
             state.ds_used = ds_used;
             state.stride = layout->Stride();
 
@@ -958,6 +1078,8 @@ SetToRHI(Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> 
                 if (rs_err != nil)
                     Logger::Error("failed to create alt-ps : %s", rs_err.localizedDescription.UTF8String);
             }
+
+            [rp_desc release];
         }
 
         DVASSERT(si != DAVA::InvalidIndex);
@@ -989,6 +1111,21 @@ void SetToRHI(Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce)
     PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
 
     cbuf->SetToRHI(bufIndex, ce);
+}
+
+void SetToRHI(Handle buf, unsigned bufIndex, unsigned instOffset, id<MTLRenderCommandEncoder> ce)
+{
+    PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
+
+    cbuf->SetToRHI(bufIndex, instOffset, ce);
+}
+
+unsigned
+Instance(Handle buf)
+{
+    PipelineStateMetal_t::ConstBuf* cbuf = ConstBufMetalPool::Get(buf);
+
+    return cbuf->Instance();
 }
 
 void InvalidateAllInstances()

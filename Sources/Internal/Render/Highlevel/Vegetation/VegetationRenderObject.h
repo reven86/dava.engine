@@ -52,7 +52,7 @@ struct VegetationMetrics
 
     uint32 renderBatchCount;
 
-    bool isValid;
+    bool isValid = false;
 };
 
 /**
@@ -143,7 +143,11 @@ public:
 
     static bool IsHardwareCapableToRenderVegetation();
 
+    void Rebuild();
+
 private:
+    void RebuildCustomGeometry();
+
     RenderBatch* CreateRenderBatch();
 
     bool IsValidGeometryData() const;
@@ -333,7 +337,7 @@ inline void VegetationRenderObject::SetHeightmap(Heightmap* _heightmap)
     if (heightmap != _heightmap)
     {
         SafeRelease(heightmap);
-        heightmap = (_heightmap->Data()) ? SafeRetain(_heightmap) : NULL;
+        heightmap = (_heightmap != nullptr && _heightmap->Data()) ? SafeRetain(_heightmap) : nullptr;
 
         if (heightmap)
         {
@@ -363,16 +367,7 @@ inline void VegetationRenderObject::SetHeightmapPath(const FilePath& path)
 inline void VegetationRenderObject::SetLightmap(const FilePath& filePath)
 {
     lightmapTexturePath = filePath;
-
-    if (vegetationGeometry != NULL)
-    {
-        KeyedArchive* props = new KeyedArchive();
-        props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
-
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
-
-        SafeRelease(props);
-    }
+    RebuildCustomGeometry();
 }
 
 inline const FilePath& VegetationRenderObject::GetLightmapPath() const

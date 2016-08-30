@@ -19,7 +19,7 @@ void LocalizedTextValueProperty::Refresh(DAVA::int32 refreshFlags)
     IntrospectionProperty::Refresh(refreshFlags);
 
     if (refreshFlags & REFRESH_LOCALIZATION)
-        member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+        member->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
 }
 
 VariantType LocalizedTextValueProperty::GetValue() const
@@ -29,6 +29,6 @@ VariantType LocalizedTextValueProperty::GetValue() const
 
 void LocalizedTextValueProperty::ApplyValue(const DAVA::VariantType& value)
 {
-    text = value.AsWideString();
-    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+    text = value.AsString();
+    member->SetValue(GetBaseObject(), VariantType(LocalizedUtf8String(text)));
 }

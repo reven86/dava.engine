@@ -20,6 +20,7 @@ class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     explicit EditorTransformSystem(EditorSystemsManager* parent);
+    ~EditorTransformSystem() override;
 
 private:
     enum eDirections
@@ -64,7 +65,9 @@ private:
     DAVA::Vector<MagnetLine> CreateMagnetPairs(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis);
     void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
     bool IsShiftPressed() const;
-    DAVA::size_type currentHash = 0;
+
+    bool inTransformState = false; //this system can not garantee mouse events order, so she need to remember it state
+
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
@@ -104,8 +107,6 @@ public:
                   MEMBER(angleSegment, "Control Transformations/Rotate section angle", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(shiftInverted, "Control Transformations/Invert shift button", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
-
-    REGISTER_PREFERENCES(EditorTransformSystem)
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

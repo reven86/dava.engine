@@ -98,11 +98,11 @@ CURL* CurlDownloader::CurlSimpleInit()
     /* init the curl session */
     CURL* curl_handle = curl_easy_init();
 
-    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
-    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11");
-    curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     return curl_handle;
 }
 
@@ -115,16 +115,18 @@ void CurlDownloader::SetupEasyHandle(CURL* handle, DownloadPart* part)
         char8 rangeStr[80];
         sprintf(rangeStr, "%lld-%lld", part->GetSeekPos(), part->GetSize() + part->GetSeekPos() - 1);
         curl_easy_setopt(handle, CURLOPT_RANGE, rangeStr);
-        curl_easy_setopt(handle, CURLOPT_NOBODY, 0);
+        curl_easy_setopt(handle, CURLOPT_NOBODY, 0L);
     }
     else
     {
         // we don't need to receive any data when it is unexpected
-        curl_easy_setopt(handle, CURLOPT_NOBODY, 1);
+        curl_easy_setopt(handle, CURLOPT_NOBODY, 1L);
     }
-    curl_easy_setopt(handle, CURLOPT_WRITEDATA, static_cast<void*>(part));
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, part);
 
-    curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, downloadSpeedLimit / downloadParts.size());
+    curl_off_t speed = downloadSpeedLimit / downloadParts.size();
+
+    curl_easy_setopt(handle, CURLOPT_MAX_RECV_SPEED_LARGE, speed);
 
     // set all timeouts
     SetTimeout(handle);
@@ -302,7 +304,7 @@ CURLMcode CurlDownloader::Perform()
             {
                 for (auto easyHandle : easyHandles)
                 {
-                    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+                    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1L);
                 }
                 inactivityConnectionTimer.Stop();
             }
@@ -653,8 +655,6 @@ DownloadError CurlDownloader::DownloadIntoBuffer(const String& url,
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize = fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount * fileChunkSize);
 
-    uint32 chunksInList = 0;
-
     void* writeTo = buffer;
     uint32 nwritten = 0;
 
@@ -708,7 +708,7 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
 {
     isRangeRequestSent = false;
     operationTimeout = timeout;
-    float64 sizeToDownload = 0.0;
+    float64 sizeToDownload = 0.0; // curl need double! do not change
     CURL* currentCurlHandle = CurlSimpleInit();
 
     if (!currentCurlHandle)
@@ -716,11 +716,11 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
         return DLE_INIT_ERROR;
     }
 
-    curl_easy_setopt(currentCurlHandle, CURLOPT_HEADER, 0);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_HEADER, 0L);
     curl_easy_setopt(currentCurlHandle, CURLOPT_URL, url.c_str());
 
     // Don't return the header (we'll use curl_getinfo();
-    curl_easy_setopt(currentCurlHandle, CURLOPT_NOBODY, 1);
+    curl_easy_setopt(currentCurlHandle, CURLOPT_NOBODY, 1L);
 
     // set all timeouts
     SetTimeout(currentCurlHandle);
@@ -729,7 +729,7 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
     curl_easy_getinfo(currentCurlHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
     if (0 > sizeToDownload)
     {
-        sizeToDownload = 0.;
+        sizeToDownload = 0;
     }
 
     DownloadError retError = ErrorForEasyHandle(currentCurlHandle, curlStatus);
@@ -787,7 +787,7 @@ DownloadError CurlDownloader::CurlmCodeToDownloadError(CURLMcode curlMultiCode) 
     }
 }
 
-DownloadError CurlDownloader::HttpCodeToDownloadError(uint32 code) const
+DownloadError CurlDownloader::HttpCodeToDownloadError(long code) const
 {
     HttpCodeClass code_class = static_cast<HttpCodeClass>(code / 100);
     switch (code_class)
@@ -810,7 +810,7 @@ void CurlDownloader::SetTimeout(CURL* easyHandle)
 {
     curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
     // we could set operation time limit which produce timeout if operation takes setted time.
-    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0);
+    curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0L);
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
 }
@@ -839,8 +839,8 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL* easyHandle, CURLcode stat
 {
     DownloadError retError;
 
-    uint32 httpCode;
-    curl_easy_getinfo(easyHandle, CURLINFO_HTTP_CODE, &httpCode);
+    long httpCode; // use long! sizeof(long) == 8 on macosx
+    curl_easy_getinfo(easyHandle, CURLINFO_RESPONSE_CODE, &httpCode);
 
     // to discuss. It is ideal to place it to DownloadManager because in that case we need to use same code inside each downloader.
 

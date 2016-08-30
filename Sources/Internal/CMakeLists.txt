@@ -1,14 +1,15 @@
-include ( CMake-common         )
-if( WIN32 AND NOT WINDOWS_UAP  )
+include ( CMake-common )
+if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
-include ( DavaLibs             )
+include ( DavaLibs )
 
-set( NAME_MODULE DavaFramework )
+set( NAME_MODULE ${DAVA_LIBRARY} )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+set( EXTERNAL_MODULES           ${DAVA_MODULES_DIR}/TArc )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -138,6 +139,10 @@ endif()
 
 if( DENY_RUN_MULTIPLE_APP_INSTANCES )
     list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
+endif()
+
+if (DAVA_PLATFORM_QT)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
 endif()
 
 setup_main_module()

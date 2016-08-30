@@ -5,6 +5,7 @@
 #include "Main/Request.h"
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
+#include "Classes/Qt/GlobalOperations.h"
 #include "Tools/QtLabelWithActions/QtLabelWithActions.h"
 #include "Tools/MimeData/MimeDataHelper2.h"
 #include "Deprecated/ScenePreviewDialog.h"
@@ -108,7 +109,14 @@ SceneTabWidget::~SceneTabWidget()
     }
     SafeRelease(previewDialog);
 
+    DVASSERT(GetTabCount() == 0);
+
     ReleaseDAVAUI();
+}
+
+void SceneTabWidget::Init(const std::shared_ptr<GlobalOperations>& globalOperations_)
+{
+    globalOperations = globalOperations_;
 }
 
 void SceneTabWidget::InitDAVAUI()
@@ -116,9 +124,9 @@ void SceneTabWidget::InitDAVAUI()
     dava3DView = new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0));
     dava3DView->SetInputEnabled(true, true);
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
+    dava3DView->SetName(DAVA::FastName("Scene Tab 3D View"));
 
     davaUIScreen = new DAVA::UIScreen();
-    davaUIScreen->AddControl(dava3DView);
 
     DAVA::UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
     DAVA::UIScreenManager::Instance()->SetScreen(davaUIScreenID);
@@ -126,12 +134,14 @@ void SceneTabWidget::InitDAVAUI()
 
 void SceneTabWidget::ReleaseDAVAUI()
 {
+    SafeRelease(dava3DView);
     SafeRelease(davaUIScreen);
 }
 
 int SceneTabWidget::OpenTab()
 {
-    QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
+    DVASSERT(globalOperations);
+    WaitDialogGuard guard(globalOperations, "Opening scene...", "Creating new scene.");
 
     DAVA::FilePath scenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
     scenePath.ReplaceExtension(".sc2");
@@ -160,7 +170,7 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath& scenePath)
         return -1;
     }
 
-    QtMainWindow::Instance()->WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
+    WaitDialogGuard guard(globalOperations, "Opening scene...", scenePath.GetAbsolutePathname());
 
     tabIndex = tabBar->addTab(scenePath.GetFilename().c_str());
     tabBar->setTabToolTip(tabIndex, scenePath.GetAbsolutePathname().c_str());
@@ -188,7 +198,6 @@ void SceneTabWidget::OpenTabInternal(const DAVA::FilePath scenePathname, int tab
     SetTabScene(tabIndex, scene);
     SetCurrentTab(tabIndex);
 
-    QtMainWindow::Instance()->WaitStop();
     updateTabBarVisibility();
 }
 
@@ -237,18 +246,26 @@ void SceneTabWidget::updateTabBarVisibility()
 
 bool SceneTabWidget::CloseTab(int index)
 {
-    Request request;
+    return CloseTabInternal(index, false);
+}
 
-    emit CloseTabRequest(index, &request);
+bool SceneTabWidget::CloseTabInternal(int index, bool silent)
+{
+    if (silent == false)
+    {
+        Request request;
+        emit CloseTabRequest(index, &request);
 
-    if (!request.IsAccepted())
-        return false;
+        if (!request.IsAccepted())
+            return false;
+    }
 
     SceneEditor2* scene = GetTabScene(index);
     if (index == tabBar->currentIndex())
     {
         curScene = NULL;
         dava3DView->SetScene(NULL);
+        davaUIScreen->RemoveControl(dava3DView);
         SceneSignals::Instance()->EmitDeactivated(scene);
     }
 
@@ -284,6 +301,19 @@ void SceneTabWidget::SetCurrentTab(int index)
 
         if (NULL != curScene)
         {
+            if (dava3DView->GetParent() == nullptr)
+            {
+                const DAVA::List<DAVA::UIControl*>& children = davaUIScreen->GetChildren();
+                if (children.empty())
+                {
+                    davaUIScreen->AddControl(dava3DView);
+                }
+                else
+                {
+                    davaUIScreen->InsertChildBelow(dava3DView, children.front());
+                }
+            }
+
             dava3DView->SetScene(curScene);
             curScene->SetViewportRect(dava3DView->GetRect());
 
@@ -346,7 +376,7 @@ void SceneTabWidget::TabBarDataDropped(const QMimeData* data)
         QString path = urls[i].toLocalFile();
         if (QFileInfo(path).suffix() == "sc2")
         {
-            QtMainWindow::Instance()->OpenScene(path);
+            globalOperations->CallAction(GlobalOperations::OpenScene, DAVA::Any(path.toStdString()));
         }
     }
 }
@@ -374,12 +404,11 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData* data)
                     }
                 }
 
-                QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
+                WaitDialogGuard guard(globalOperations, "Adding object to scene", path.toStdString());
                 if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
                 {
                     curScene->structureSystem->Add(path.toStdString(), pos);
                 }
-                QtMainWindow::Instance()->WaitStop();
             }
         }
     }
@@ -564,18 +593,32 @@ int SceneTabWidget::FindTab(const DAVA::FilePath& scenePath)
     return -1;
 }
 
-bool SceneTabWidget::CloseAllTabs()
+bool SceneTabWidget::CloseAllTabs(bool silent)
 {
+    bool areTabBarSignalsBlocked = false;
+    if (silent)
+    {
+        areTabBarSignalsBlocked = tabBar->blockSignals(true);
+    }
+
+    bool closed = true;
     DAVA::uint32 count = GetTabCount();
     while (count)
     {
-        if (!CloseTab(GetCurrentTab()))
+        if (!CloseTabInternal(GetCurrentTab(), silent))
         {
-            return false;
+            closed = false;
+            break;
         }
         count--;
     }
-    return true;
+
+    if (silent)
+    {
+        tabBar->blockSignals(areTabBarSignalsBlocked);
+    }
+
+    return closed;
 }
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)

@@ -899,7 +899,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
                     {
                         var_len += Snprintf(
                         var_def + var_len, sizeof(var_def) - var_len,
-                        "    #define %s  %cP_Buffer%u[%u]\n",
+                        "    #define %s  float4(%cP_Buffer%u[%u])\n",
                         p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
                     }
                     else

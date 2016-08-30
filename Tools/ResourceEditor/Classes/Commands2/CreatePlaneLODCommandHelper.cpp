@@ -5,6 +5,7 @@
 #include "Scene/SceneHelper.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/RenderCallbacks.h"
+#include "Scene3D/Lod/LodSystem.h"
 
 using namespace DAVA;
 
@@ -27,7 +28,6 @@ CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::Request
     result->fromLodLayer = fromLodLayer;
     result->textureSize = textureSize;
     result->texturePath = texturePath;
-    result->savedDistances = lodComponent->lodLayersArray;
 
     result->newLodIndex = GetLodLayersCount(lodComponent);
     DVASSERT(result->newLodIndex > 0);
@@ -82,6 +82,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
 
+    DVASSERT(request->targetTexture == nullptr);
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
     request->depthTexture = rhi::CreateTexture(descriptor);
     request->RegisterRenderCallback();
@@ -238,12 +239,9 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     }
     planePG->BuildBuffers();
 
-    Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
-
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
     material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
-    material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
@@ -287,7 +285,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     tempScene->SetCurrentCamera(camera);
     camera->SetupDynamicParameters(false);
 
-    GetLodComponent(clonedEnity)->SetForceLodLayer(fromLodLayer);
+    tempScene->lodSystem->SetForceLodLayer(GetLodComponent(clonedEnity), fromLodLayer);
     clonedEnity->SetVisible(true);
 
     tempScene->Update(1.0f / 60.0f);
@@ -351,6 +349,7 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 {
     completed = true;
 
+    DVASSERT(planeImage == nullptr);
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
 

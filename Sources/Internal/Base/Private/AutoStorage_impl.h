@@ -1,47 +1,41 @@
 #pragma once
 #ifndef DAVAENGINE_AUTO_STORAGE__H
 // include AutoStorage.h for help IDE parse types here.
-#include "Base/AutoStorage.h"
+#include "Base/Private/AutoStorage.h"
 #endif
 
 namespace DAVA
 {
 template <size_t Count>
-AutoStorage<Count>::AutoStorage()
+inline AutoStorage<Count>::AutoStorage()
 {
-    storage.fill(nullptr);
+    // storage.fill(nullptr);
 }
 
 template <size_t Count>
-AutoStorage<Count>::~AutoStorage()
+inline AutoStorage<Count>::~AutoStorage()
 {
-    if (!IsEmpty())
-    {
-        Clear();
-    }
+    Clear();
 }
 
 template <size_t Count>
-AutoStorage<Count>::AutoStorage(AutoStorage&& autoStorage)
+inline AutoStorage<Count>::AutoStorage(AutoStorage&& autoStorage)
 {
     DoMove(std::move(autoStorage));
 }
 
 template <size_t Count>
-AutoStorage<Count>::AutoStorage(const AutoStorage& autoStorage)
+inline AutoStorage<Count>::AutoStorage(const AutoStorage& autoStorage)
 {
     DoCopy(autoStorage);
 }
 
 template <size_t Count>
-AutoStorage<Count>& AutoStorage<Count>::operator=(const AutoStorage& value)
+inline AutoStorage<Count>& AutoStorage<Count>::operator=(const AutoStorage& value)
 {
     if (this != &value)
     {
-        if (!IsEmpty())
-        {
-            Clear();
-        }
+        Clear();
         DoCopy(value);
     }
 
@@ -49,14 +43,11 @@ AutoStorage<Count>& AutoStorage<Count>::operator=(const AutoStorage& value)
 }
 
 template <size_t Count>
-AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
+inline AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
 {
     if (this != &value)
     {
-        if (!IsEmpty())
-        {
-            Clear();
-        }
+        Clear();
         DoMove(std::move(value));
     }
 
@@ -64,19 +55,19 @@ AutoStorage<Count>& AutoStorage<Count>::operator=(AutoStorage&& value)
 }
 
 template <size_t Count>
-bool AutoStorage<Count>::IsEmpty() const
+inline bool AutoStorage<Count>::IsEmpty() const
 {
     return (StorageType::Empty == type);
 }
 
 template <size_t Count>
-bool AutoStorage<Count>::IsSimple() const
+inline bool AutoStorage<Count>::IsSimple() const
 {
     return (StorageType::Simple == type);
 }
 
 template <size_t Count>
-void AutoStorage<Count>::Clear()
+inline void AutoStorage<Count>::Clear()
 {
     if (StorageType::Shared == type)
     {
@@ -87,7 +78,7 @@ void AutoStorage<Count>::Clear()
 }
 
 template <size_t Count>
-void AutoStorage<Count>::Swap(AutoStorage& autoStorage)
+inline void AutoStorage<Count>::Swap(AutoStorage& autoStorage)
 {
     AutoStorage tmp(std::move(autoStorage));
     autoStorage = std::move(*this);
@@ -96,17 +87,13 @@ void AutoStorage<Count>::Swap(AutoStorage& autoStorage)
 
 template <size_t Count>
 template <typename T>
-void AutoStorage<Count>::SetSimple(T&& value)
+inline void AutoStorage<Count>::SetSimple(T&& value)
 {
     using U = StorableType<T>;
 
     static_assert(IsSimpleType<U>::value, "Type should be simple");
 
-    if (!IsEmpty())
-    {
-        Clear();
-    }
-
+    Clear();
     type = StorageType::Simple;
     new (storage.data()) U(std::forward<T>(value));
 }
@@ -117,18 +104,14 @@ void AutoStorage<Count>::SetShared(T&& value)
 {
     using U = StorableType<T>;
 
-    if (!IsEmpty())
-    {
-        Clear();
-    }
-
+    Clear();
     type = StorageType::Shared;
     new (storage.data()) SharedT(new U(std::forward<T>(value)));
 }
 
 template <size_t Count>
 template <typename T>
-void AutoStorage<Count>::SetAuto(T&& value)
+inline void AutoStorage<Count>::SetAuto(T&& value)
 {
     using U = StorableType<T>;
 
@@ -137,43 +120,61 @@ void AutoStorage<Count>::SetAuto(T&& value)
 }
 
 template <size_t Count>
-template <typename T>
-const T& AutoStorage<Count>::GetSimple() const
+inline void AutoStorage<Count>::SetData(const void* data, size_t size)
 {
+    Clear();
+
+    if (size <= sizeof(StorageT))
+    {
+        type = AutoStorage::StorageType::Simple;
+        std::memcpy(storage.data(), data, size);
+    }
+    else
+    {
+        type = AutoStorage::StorageType::Shared;
+        char* arr = new char[size];
+        new (storage.data()) SharedT(arr, [](char* p) { delete[] p; });
+    }
+}
+
+template <size_t Count>
+template <typename T>
+inline const T& AutoStorage<Count>::GetSimple() const
+{
+    using U = StorableType<T>;
+
     assert(StorageType::Simple == type);
-    return *(reinterpret_cast<const T*>(const_cast<void* const*>(storage.data())));
+    return *(reinterpret_cast<const U*>(const_cast<void* const*>(storage.data())));
 }
 
 template <size_t Count>
 template <typename T>
 const T& AutoStorage<Count>::GetShared() const
 {
+    using U = StorableType<T>;
+
     assert(StorageType::Shared == type);
-    return *(static_cast<const T*>(SharedPtr()->get()));
+    return *(static_cast<const U*>(SharedPtr()->get()));
 }
 
 template <size_t Count>
 template <typename T>
-const T& AutoStorage<Count>::GetAuto() const
+inline const T& AutoStorage<Count>::GetAuto() const
 {
+    using U = StorableType<T>;
+
     assert(StorageType::Empty != type);
 
-    auto tp = std::integral_constant<bool, IsSimpleType<T>::value>();
-    return GetAutoImpl<T>(tp);
+    auto tp = std::integral_constant<bool, IsSimpleType<U>::value>();
+    return GetAutoImpl<U>(tp);
 }
 
 template <size_t Count>
-const void* AutoStorage<Count>::GetData() const
+inline const void* AutoStorage<Count>::GetData() const
 {
     assert(StorageType::Empty != type);
 
-    return (StorageType::Simple == type) ? storage.data() : SharedPtr()->get();
-}
-
-template <size_t Count>
-inline typename AutoStorage<Count>::SharedT* AutoStorage<Count>::SharedPtr() const
-{
-    return reinterpret_cast<SharedT*>(const_cast<void**>(storage.data()));
+    return (StorageType::Simple == type) ? storage.data() : static_cast<const void*>(SharedPtr()->get());
 }
 
 template <size_t Count>
@@ -197,6 +198,12 @@ inline void AutoStorage<Count>::DoMove(AutoStorage&& value)
     type = value.type;
     storage = std::move(value.storage);
     value.type = StorageType::Empty;
+}
+
+template <size_t Count>
+inline typename AutoStorage<Count>::SharedT* AutoStorage<Count>::SharedPtr() const
+{
+    return reinterpret_cast<SharedT*>(const_cast<void**>(storage.data()));
 }
 
 template <size_t Count>

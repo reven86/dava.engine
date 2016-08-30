@@ -11,12 +11,10 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Render/GPUFamilyDescriptor.h"
-#include "AssetCache/AssetCache.h"
-#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
 
-#include "AssetCache/AssetCacheClient.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -101,7 +99,11 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (Engine::Instance()->IsConsoleMode())
+#else
         if (Core::Instance()->IsConsoleMode())
+#endif
         {
             Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
         }
@@ -311,7 +313,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return (found != ignoredFileNames.end());
     };
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
@@ -344,15 +346,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
             AssetCache::CacheItemKey cacheKey;
             if (IsUsingCache())
             {
-                ScopedPtr<File> md5File(File::Create(processDir + "dir.md5", File::OPEN | File::READ));
-                DVASSERT(md5File);
-                auto read = md5File->Read(cacheKey.data(), MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                MD5::MD5Digest digest;
 
-                md5File = File::Create(processDir + "params.md5", File::OPEN | File::READ);
-                DVASSERT(md5File);
-                read = md5File->Read(cacheKey.data() + MD5::MD5Digest::DIGEST_SIZE, MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                ReadMD5FromFile(processDir + "dir.md5", digest);
+                cacheKey.SetPrimaryKey(digest);
+
+                ReadMD5FromFile(processDir + "params.md5", digest);
+                cacheKey.SetSecondaryKey(digest);
             }
 
             bool needRepack = (false == GetFilesFromCache(cacheKey, inputPath, outputPath));
@@ -382,7 +382,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 DefinitionFile::Collection definitionFileList;
                 definitionFileList.reserve(fileList->GetCount());
-                for (int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
+                for (uint32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
                     if (fileList->IsDirectory(fi))
                         continue;
@@ -458,7 +458,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
+#if defined(__DAVAENGINE_COREV2__)
+                if (Engine::Instance()->IsConsoleMode())
+#else
                 if (Core::Instance()->IsConsoleMode())
+#endif
                 {
                     Logger::Info("[%u files packed with flags: %s]", static_cast<uint32>(definitionFileList.size()), mergedFlags.c_str());
                 }
@@ -483,7 +487,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (fileList->IsDirectory(fi))
         {
@@ -559,7 +563,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     AssetCache::CachedItemValue value;
 
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
-    for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
@@ -589,7 +593,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     }
 
     return false;
-        
+
 #endif
 }
 

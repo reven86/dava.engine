@@ -8,8 +8,9 @@
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
-#include "Commands2/Base/CommandBatch.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
+#include "Debug/DVAssert.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
@@ -397,7 +398,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 
     if (customColorsProxy == nullptr)
     {
-        customColorsProxy = new CustomColorsProxy(static_cast<DAVA::int32>(GetTextureSize(DAVA::Landscape::TEXTURE_COLOR)));
+        customColorsProxy = new CustomColorsProxy(DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE);
     }
 
     if (rulerToolProxy == nullptr)
@@ -447,6 +448,11 @@ void LandscapeEditorDrawSystem::ClampToHeightmap(DAVA::Rect& rect)
 
 void LandscapeEditorDrawSystem::AddEntity(DAVA::Entity* entity)
 {
+    if (systemEnabled == false)
+    {
+        return;
+    }
+
     DAVA::Landscape* landscape = GetLandscape(entity);
     if (landscape != NULL)
     {
@@ -458,7 +464,7 @@ void LandscapeEditorDrawSystem::AddEntity(DAVA::Entity* entity)
 
 void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 {
-    if (entity == landscapeNode)
+    if (entity == landscapeNode && systemEnabled)
     {
         SceneEditor2* sceneEditor = static_cast<SceneEditor2*>(GetScene());
 
@@ -474,10 +480,10 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity* entity)
 
         DeinitLandscape();
 
-        DAVA::Entity* entity = FindLandscapeEntity(sceneEditor);
-        if (entity != NULL)
+        DAVA::Entity* landEntity = FindLandscapeEntity(sceneEditor);
+        if (landEntity != nullptr && landEntity != entity)
         {
-            InitLandscape(entity, GetLandscape(entity));
+            InitLandscape(landEntity, GetLandscape(landEntity));
         }
     }
 }
@@ -627,13 +633,13 @@ DAVA::String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
     return ret;
 }
 
-void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool redo)
+void LandscapeEditorDrawSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
-    if (command->MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
     {
-        auto ProcessSingleCommand = [this](const Command2* command, bool redo) {
+        auto processSingleCommand = [this](const RECommand* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
             {
                 const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
@@ -659,22 +665,9 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2* command, bool red
                     UpdateTilemaskPathname();
                 }
             }
-
         };
 
-        if (command->GetId() == CMDID_BATCH)
-        {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-            const DAVA::uint32 count = batch->Size();
-            for (DAVA::uint32 i = 0; i < count; ++i)
-            {
-                ProcessSingleCommand(batch->GetCommand(i), redo);
-            }
-        }
-        else
-        {
-            ProcessSingleCommand(command, redo);
-        }
+        commandNotification.ExecuteForAllCommands(processSingleCommand);
     }
 }
 
@@ -685,10 +678,30 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
         auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_TILEMASK);
         if (nullptr != texture)
         {
-            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            DAVA::FilePath path = texture->GetDescriptor()->GetSourceTexturePathname();
+            if (path.GetType() == DAVA::FilePath::PATH_IN_FILESYSTEM)
+            {
+                sourceTilemaskPath = path;
+            }
             return true;
         }
     }
 
     return false;
+}
+
+bool LandscapeEditorDrawSystem::InitTilemaskImageCopy()
+{
+    DVASSERT(landscapeProxy != nullptr);
+    return landscapeProxy->InitTilemaskImageCopy(sourceTilemaskPath);
+}
+
+void LandscapeEditorDrawSystem::EnableSystem()
+{
+    systemEnabled = true;
+}
+
+void LandscapeEditorDrawSystem::DisableSystem()
+{
+    systemEnabled = false;
 }

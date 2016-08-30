@@ -22,7 +22,30 @@ void CommandLineApplication::AddTool(std::unique_ptr<CommandLineTool> tool)
     tools.emplace_back(std::move(tool));
 }
 
-int CommandLineApplication::Process(uint32 argc, char* argv[])
+int CommandLineApplication::Process(const DAVA::Vector<DAVA::String>& cmdline)
+{
+    if (helpOption.Parse(cmdline) == true)
+    {
+        PrintUsage();
+        return codeOk;
+    }
+    else
+    {
+        for (auto& tool : tools)
+        {
+            bool parsed = tool->ParseOptions(cmdline);
+            if (parsed)
+            {
+                return tool->Process();
+            }
+        }
+
+        PrintUsage();
+        return codeParseError;
+    }
+}
+
+int CommandLineApplication::Process(DAVA::uint32 argc, char* argv[])
 {
     if (helpOption.Parse(argc, argv) == true)
     {
@@ -64,5 +87,5 @@ void CommandLineApplication::PrintUsage()
         ss << std::endl;
     }
 
-    DAVA::Logger::Info("%s", ss.str().c_str());
+    DAVA::Logger::Warning("%s", ss.str().c_str());
 }

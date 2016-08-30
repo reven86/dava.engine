@@ -171,9 +171,6 @@ public class JNITextField {
         
         private volatile boolean isRenderToTexture = false;
         private boolean isSingleLine = true; // default in c++
-        // we have to make next field static because all TextField
-        // affected if we filtering and send data to c++ thread
-        private static volatile boolean isFilteringOnText = false;
         
         private int pixels[] = null;
         private int width = 0;
@@ -598,34 +595,9 @@ public class JNITextField {
         return lastSelectedInputType;
     }
     
-    private static class RunOnUIThreadAndWaitUntilDone{
-        Runnable task = null;
-        public RunOnUIThreadAndWaitUntilDone(Runnable task) {
-            this.task = task;
-        }
-
-        public void RunAndWait() {
-            FutureTask<Void> inTask = new FutureTask<Void>(task, null);
-            JNIActivity.GetActivity().runOnUiThread(inTask);
-            try {
-                if (JNIActivity.GetActivity().GetIsPausing())
-                {
-                    Log.e(TAG, "can't do task - activity is pausing");
-                    return;
-                }
-                // wait till done
-                inTask.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public static void Create(final int id, final float x, final float y,
             final float dx, final float dy) {
-        RunOnUIThreadAndWaitUntilDone task = new RunOnUIThreadAndWaitUntilDone(new Runnable() {
+    	JNIActivity.GetActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 JNIActivity activity = JNIActivity.GetActivity();
@@ -743,10 +715,8 @@ public class JNITextField {
                         });
 
                         try {
-                            TextField.isFilteringOnText = true;
                             JNIActivity.GetActivity().RunOnMainLoopThread(t);
                             String s = t.get();
-                            TextField.isFilteringOnText = false;
                             if (s.equals(origSource))
                             {
                                 result = null;
@@ -943,7 +913,6 @@ public class JNITextField {
                 textFields.put(id, text);
             }
         });
-        task.RunAndWait();
     }
 
     static void Destroy(final int id) {
@@ -1013,16 +982,7 @@ public class JNITextField {
                 text.setSelection(text.getText().length());
             }
         };
-        // Workaround semi-render to texture so if we can block current function
-        // to work synchronously - block it. If it have to return to c++ because
-        // of filtering on text - post event to prevent deadlock
-        if (TextField.isFilteringOnText)
-        {
-            JNIActivity.GetActivity().runOnUiThread(action);
-        } else {
-            RunOnUIThreadAndWaitUntilDone run = new RunOnUIThreadAndWaitUntilDone(action);
-            run.RunAndWait();
-        }
+        JNIActivity.GetActivity().runOnUiThread(action);
     }
 
     public static void SetTextColor(final int id, final float r, final float g,

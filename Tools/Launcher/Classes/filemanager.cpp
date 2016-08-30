@@ -261,7 +261,10 @@ QString GetApplicationDirectory(const QString& branchID, const QString& appID)
 
 QString GetBranchDirectory(const QString& branchID)
 {
-    QString path = GetBaseAppsDirectory() + branchID + "/";
+    QString dirName = branchID;
+    dirName.remove("/");
+    dirName.remove("\\");
+    QString path = GetBaseAppsDirectory() + dirName + "/";
     return path;
 }
 }

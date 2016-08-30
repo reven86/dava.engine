@@ -1,20 +1,21 @@
 #include "QtModelPackageCommandExecutor.h"
 
-#include "Document.h"
+#include "Document/Document.h"
+#include "Command/CommandStack.h"
 
-#include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Commands/InsertControlCommand.h"
-#include "UI/Commands/RemoveControlCommand.h"
-#include "UI/Commands/InsertImportedPackageCommand.h"
-#include "UI/Commands/RemoveImportedPackageCommand.h"
-#include "UI/Commands/AddComponentCommand.h"
-#include "UI/Commands/RemoveComponentCommand.h"
-#include "UI/Commands/AttachComponentPrototypeSectionCommand.h"
-#include "UI/Commands/InsertRemoveStyleCommand.h"
-#include "UI/Commands/AddRemoveStylePropertyCommand.h"
-#include "UI/Commands/AddRemoveStyleSelectorCommand.h"
+#include "QECommands//ChangePropertyValueCommand.h"
+#include "QECommands/InsertControlCommand.h"
+#include "QECommands/RemoveControlCommand.h"
+#include "QECommands/InsertImportedPackageCommand.h"
+#include "QECommands/RemoveImportedPackageCommand.h"
+#include "QECommands/AddComponentCommand.h"
+#include "QECommands/RemoveComponentCommand.h"
+#include "QECommands/AttachComponentPrototypeSectionCommand.h"
+#include "QECommands/InsertRemoveStyleCommand.h"
+#include "QECommands/AddRemoveStylePropertyCommand.h"
+#include "QECommands/AddRemoveStyleSelectorCommand.h"
 
-#include "UI/Commands/ChangeStylePropertyCommand.h"
+#include "QECommands/ChangeStylePropertyCommand.h"
 
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -128,35 +129,17 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
         BeginMacro("Remove Imported Packages");
         for (PackageNode* importedPackage : checkedPackages)
         {
-            PushCommand(new RemoveImportedPackageCommand(package, importedPackage));
+            ExecCommand(std::unique_ptr<Command>(new RemoveImportedPackageCommand(package, importedPackage)));
         }
         EndMacro();
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(const Vector<ChangePropertyAction>& propertyActions, size_t hash)
-{
-    Vector<ChangePropertyAction> propertiesToChange;
-    for (const auto& property : propertyActions)
-    {
-        if (!property.property->IsReadOnly())
-        {
-            propertiesToChange.emplace_back(property);
-        }
-    }
-    if (!propertiesToChange.empty())
-    {
-        QUndoCommand* command = new ChangePropertyValueCommand(packageNode, propertiesToChange, hash);
-        PushCommand(command);
-    }
-}
-
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value, size_t hash)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value)
 {
     if (!property->IsReadOnly())
     {
-        QUndoCommand* command = new ChangePropertyValueCommand(packageNode, node, property, value, hash);
-        PushCommand(command);
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, value)));
     }
 }
 
@@ -164,7 +147,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractPro
 {
     if (!property->IsReadOnly())
     {
-        PushCommand(new ChangePropertyValueCommand(packageNode, node, property));
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, VariantType())));
     }
 }
 
@@ -199,7 +182,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode* node, Abstrac
 {
     if (!property->IsReadOnly())
     {
-        PushCommand(new ChangeStylePropertyCommand(packageNode, node, property, value));
+        ExecCommand(std::unique_ptr<Command>(new ChangeStylePropertyCommand(packageNode, node, property, value)));
     }
 }
 
@@ -209,7 +192,7 @@ void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode* node, uint3
     {
         UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
         ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(prop));
-        PushCommand(new AddRemoveStylePropertyCommand(packageNode, node, property, true));
+        ExecCommand(std::unique_ptr<Command>(new AddRemoveStylePropertyCommand(packageNode, node, property, true)));
     }
 }
 
@@ -220,7 +203,7 @@ void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode* node, DA
         StyleSheetProperty* property = node->GetRootProperty()->FindPropertyByPropertyIndex(propertyIndex);
         if (property)
         {
-            PushCommand(new AddRemoveStylePropertyCommand(packageNode, node, property, false));
+            ExecCommand(std::unique_ptr<Command>(new AddRemoveStylePropertyCommand(packageNode, node, property, false)));
         }
     }
 }
@@ -231,7 +214,7 @@ void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode* node)
     {
         UIStyleSheetSelectorChain chain;
         ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain));
-        PushCommand(new AddRemoveStyleSelectorCommand(packageNode, node, property, true));
+        ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, true)));
     }
 }
 
@@ -241,7 +224,7 @@ void QtModelPackageCommandExecutor::RemoveStyleSelector(StyleSheetNode* node, DA
     {
         UIStyleSheetSelectorChain chain;
         StyleSheetSelectorProperty* property = node->GetRootProperty()->GetSelectorAtIndex(selectorIndex);
-        PushCommand(new AddRemoveStyleSelectorCommand(packageNode, node, property, false));
+        ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, false)));
     }
 }
 
@@ -293,12 +276,13 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::InsertInstances(const DAVA::
 
 Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*>& nodes, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
-    Vector<ControlNode*> nodesToCopy;
+    Vector<RefPtr<ControlNode>> nodesToCopy;
     nodesToCopy.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
-            nodesToCopy.push_back(node);
+        RefPtr<ControlNode> copy(node->Clone());
+        if (node->CanCopy() && dest->CanInsertControl(copy.Get(), destIndex))
+            nodesToCopy.push_back(copy);
     }
     Vector<ControlNode*> copiedNodes;
     copiedNodes.reserve(nodesToCopy.size());
@@ -306,15 +290,14 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::CopyControls(const DAVA::Vec
     {
         BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
 
-        int index = destIndex;
-        for (ControlNode* node : nodesToCopy)
+        int32 index = destIndex;
+        for (const RefPtr<ControlNode>& copy : nodesToCopy)
         {
-            ControlNode* copy = node->Clone();
-            copiedNodes.push_back(copy);
-            InsertControlImpl(copy, dest, index);
-            SafeRelease(copy);
+            copiedNodes.push_back(copy.Get());
+            InsertControlImpl(copy.Get(), dest, index);
             index++;
         }
+        nodesToCopy.clear();
 
         EndMacro();
     }
@@ -327,7 +310,7 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
     nodesToMove.reserve(nodes.size());
     for (ControlNode* node : nodes)
     {
-        if (node->CanRemove() && dest->CanInsertControl(node, destIndex))
+        if (node->CanMoveTo(dest, destIndex))
             nodesToMove.push_back(node);
     }
     Vector<ControlNode*> movedNodes;
@@ -346,14 +329,10 @@ Vector<ControlNode*> QtModelPackageCommandExecutor::MoveControls(const DAVA::Vec
                 if (src == dest && index > srcIndex)
                     index--;
 
-                node->Retain();
-                RemoveControlImpl(node);
-                if (IsNodeInHierarchy(dest))
+                if (MoveControlImpl(node, dest, index))
                 {
-                    InsertControlImpl(node, dest, index);
                     movedNodes.push_back(node);
                 }
-                node->Release();
 
                 index++;
             }
@@ -373,7 +352,7 @@ ResultList QtModelPackageCommandExecutor::InsertStyle(StyleSheetNode* styleSheet
     ResultList resultList;
     if (dest->CanInsertStyle(styleSheetNode, destIndex))
     {
-        PushCommand(new InsertRemoveStyleCommand(packageNode, styleSheetNode, dest, destIndex, true));
+        ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, styleSheetNode, dest, destIndex, true)));
     }
     else
     {
@@ -400,7 +379,7 @@ void QtModelPackageCommandExecutor::CopyStyles(const DAVA::Vector<StyleSheetNode
         for (StyleSheetNode* node : nodesToCopy)
         {
             StyleSheetNode* copy = node->Clone();
-            PushCommand(new InsertRemoveStyleCommand(packageNode, copy, dest, index, true));
+            ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, copy, dest, index, true)));
             SafeRelease(copy);
             index++;
         }
@@ -433,10 +412,10 @@ void QtModelPackageCommandExecutor::MoveStyles(const DAVA::Vector<StyleSheetNode
                     index--;
 
                 node->Retain();
-                PushCommand(new InsertRemoveStyleCommand(packageNode, node, src, srcIndex, false));
+                ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, node, src, srcIndex, false)));
                 if (IsNodeInHierarchy(dest))
                 {
-                    PushCommand(new InsertRemoveStyleCommand(packageNode, node, dest, index, true));
+                    ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, node, dest, index, true)));
                 }
                 node->Release();
 
@@ -493,7 +472,7 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*>& controls,
             if (src)
             {
                 int32 srcIndex = src->GetIndex(style);
-                PushCommand(new InsertRemoveStyleCommand(packageNode, style, src, srcIndex, false));
+                ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, style, src, srcIndex, false)));
             }
         }
         EndMacro();
@@ -596,7 +575,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
             for (StyleSheetNode* style : styles)
             {
                 createdNodes.push_back(style);
-                PushCommand(new InsertRemoveStyleCommand(packageNode, style, stylesDest, index, true));
+                ExecCommand(std::unique_ptr<Command>(new InsertRemoveStyleCommand(packageNode, style, stylesDest, index, true)));
                 index++;
             }
 
@@ -608,12 +587,12 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package)
 {
-    PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+    ExecCommand(std::unique_ptr<Command>(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount())));
 }
 
 void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode* control, ControlsContainerNode* dest, DAVA::int32 destIndex)
 {
-    PushCommand(new InsertControlCommand(packageNode, control, dest, destIndex));
+    ExecCommand(std::unique_ptr<Command>(new InsertControlCommand(packageNode, control, dest, destIndex)));
 
     ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
     if (destControl)
@@ -635,7 +614,7 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     {
         int32 srcIndex = src->GetIndex(node);
         node->Retain();
-        PushCommand(new RemoveControlCommand(packageNode, node, src, srcIndex));
+        ExecCommand(std::unique_ptr<Command>(new RemoveControlCommand(packageNode, node, src, srcIndex)));
 
         Vector<ControlNode*> instances = node->GetInstances();
         for (ControlNode* instance : instances)
@@ -649,6 +628,61 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     }
 }
 
+bool QtModelPackageCommandExecutor::MoveControlImpl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 destIndex)
+{
+    node->Retain();
+    ControlsContainerNode* src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
+    bool result = false;
+    if (src)
+    {
+        int32 srcIndex = src->GetIndex(node);
+        ExecCommand(std::unique_ptr<Command>(new RemoveControlCommand(packageNode, node, src, srcIndex)));
+
+        Vector<ControlNode*> instances = node->GetInstances();
+
+        if (IsNodeInHierarchy(dest))
+        {
+            ExecCommand(std::unique_ptr<Command>(new InsertControlCommand(packageNode, node, dest, destIndex)));
+
+            ControlNode* destControl = dynamic_cast<ControlNode*>(dest);
+            if (destControl)
+            {
+                for (ControlNode* destInstance : destControl->GetInstances())
+                {
+                    auto it = std::find_if(instances.begin(), instances.end(), [destInstance](const ControlNode* node) {
+                        return IsControlNodesHasSameParentControlNode(node, destInstance);
+                    });
+
+                    if (it != instances.end())
+                    {
+                        ControlNode* srcInstance = *it;
+                        instances.erase(it);
+                        MoveControlImpl(srcInstance, destInstance, destIndex);
+                    }
+                    else
+                    {
+                        ControlNode* copy = ControlNode::CreateFromPrototypeChild(node);
+                        InsertControlImpl(copy, destInstance, destIndex);
+                        SafeRelease(copy);
+                    }
+                }
+            }
+
+            result = true;
+        }
+
+        for (ControlNode* instance : instances)
+            RemoveControlImpl(instance);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+
+    node->Release();
+    return result;
+}
+
 void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, int32 typeIndex, int32 index, ComponentPropertiesSection* prototypeSection)
 {
     UIComponent::eType type = static_cast<UIComponent::eType>(typeIndex);
@@ -659,14 +693,14 @@ void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, int32 ty
         destSection = node->GetRootProperty()->FindComponentPropertiesSection(type, index);
         if (destSection)
         {
-            PushCommand(new AttachComponentPrototypeSectionCommand(packageNode, node, destSection, prototypeSection));
+            ExecCommand(std::unique_ptr<Command>(new AttachComponentPrototypeSectionCommand(packageNode, node, destSection, prototypeSection)));
         }
     }
 
     if (destSection == nullptr)
     {
         ComponentPropertiesSection* section = new ComponentPropertiesSection(node->GetControl(), type, index, prototypeSection, prototypeSection ? AbstractProperty::CT_INHERIT : AbstractProperty::CT_COPY);
-        PushCommand(new AddComponentCommand(packageNode, node, section));
+        ExecCommand(std::unique_ptr<Command>(new AddComponentCommand(packageNode, node, section)));
 
         for (ControlNode* instance : node->GetInstances())
             AddComponentImpl(instance, type, index, section);
@@ -677,7 +711,7 @@ void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, int32 ty
 
 void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section)
 {
-    PushCommand(new RemoveComponentCommand(packageNode, node, section));
+    ExecCommand(std::unique_ptr<Command>(new RemoveComponentCommand(packageNode, node, section)));
     Vector<ControlNode*> instances = node->GetInstances();
     for (ControlNode* instance : instances)
     {
@@ -699,22 +733,41 @@ bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode* nod
     return false;
 }
 
-void QtModelPackageCommandExecutor::PushCommand(QUndoCommand* cmd)
+bool QtModelPackageCommandExecutor::IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2)
 {
-    GetUndoStack()->push(cmd);
+    for (const PackageBaseNode* t1 = n1; t1 != nullptr; t1 = t1->GetParent())
+    {
+        if (t1->GetControl() != nullptr)
+        {
+            for (const PackageBaseNode* t2 = n2; t2 != nullptr; t2 = t2->GetParent())
+            {
+                if (t2 == t1)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void QtModelPackageCommandExecutor::ExecCommand(std::unique_ptr<DAVA::Command>&& cmd)
+{
+    GetCommandStack()->Exec(std::move(cmd));
 }
 
 void QtModelPackageCommandExecutor::BeginMacro(const QString& name)
 {
-    GetUndoStack()->beginMacro(name);
+    GetCommandStack()->BeginBatch(name.toUtf8().data());
 }
 
 void QtModelPackageCommandExecutor::EndMacro()
 {
-    GetUndoStack()->endMacro();
+    GetCommandStack()->EndBatch();
 }
 
-QUndoStack* QtModelPackageCommandExecutor::GetUndoStack() const
+DAVA::CommandStack* QtModelPackageCommandExecutor::GetCommandStack() const
 {
-    return document->GetUndoStack();
+    return document->GetCommandStack();
 }

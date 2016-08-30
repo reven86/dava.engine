@@ -11,8 +11,8 @@ class HeightmapProxy;
 class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class RulerToolProxy;
-class Command2;
 
+class RECommandNotificationObject;
 class LandscapeEditorDrawSystem : public DAVA::SceneSystem
 {
 public:
@@ -54,7 +54,7 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     DAVA::float32 GetTextureSize(const DAVA::FastName& level);
     DAVA::Vector3 GetLandscapeSize();
@@ -90,6 +90,12 @@ public:
 
     static DAVA::String GetDescriptionByError(eErrorType error);
 
+    bool UpdateTilemaskPathname();
+    bool InitTilemaskImageCopy();
+
+    void EnableSystem();
+    void DisableSystem();
+
 private:
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
@@ -99,9 +105,6 @@ private:
 
     eErrorType IsNotPassableTerrainCanBeEnabled();
 
-    bool UpdateTilemaskPathname();
-
-private:
     DAVA::Entity* landscapeNode = nullptr;
     DAVA::Landscape* baseLandscape = nullptr;
     LandscapeProxy* landscapeProxy = nullptr;
@@ -111,6 +114,8 @@ private:
     RulerToolProxy* rulerToolProxy = nullptr;
     DAVA::uint32 customDrawRequestCount = 0;
     DAVA::FilePath sourceTilemaskPath;
+
+    bool systemEnabled = false;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

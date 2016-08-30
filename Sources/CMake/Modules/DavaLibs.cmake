@@ -13,7 +13,7 @@ macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
 endmacro()
 
 
-set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_ios_release.a
+set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_ios.a
@@ -23,7 +23,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_ios.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_ios_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_ios.a
@@ -35,7 +35,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
 
 set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColladaS.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libPVRTexLib.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_macos_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_macos.a
@@ -46,7 +46,7 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpsd.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_macos_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_macos.a
@@ -58,23 +58,23 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_macos.a
                                     )
 
-set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libzip_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
-                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_android.a"
+set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libzip.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libicucommon.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a"
                                     "-lEGL"
                                     "-lGLESv1_CM"
                                     "-llog"

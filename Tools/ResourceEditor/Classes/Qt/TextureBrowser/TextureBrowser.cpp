@@ -1,20 +1,21 @@
-#include "TextureBrowser/TextureBrowser.h"
-#include "TextureBrowser/TextureListModel.h"
-#include "TextureBrowser/TextureListDelegate.h"
-#include "TextureBrowser/TextureConvertor.h"
-#include "TextureBrowser/TextureCache.h"
-#include "Main/QtUtils.h"
-#include "Main/mainwindow.h"
+#include "Qt/TextureBrowser/TextureBrowser.h"
+#include "Qt/TextureBrowser/TextureListModel.h"
+#include "Qt/TextureBrowser/TextureListDelegate.h"
+#include "Qt/TextureBrowser/TextureConvertor.h"
+#include "Qt/TextureBrowser/TextureCache.h"
+#include "Qt/Main/QtUtils.h"
+#include "Qt/Settings/SettingsManager.h"
+
+#include "Scene/SceneHelper.h"
+#include "CubemapEditor/CubemapUtils.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Constants.h"
+
+#include "ui_texturebrowser.h"
+
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/LibDdsHelper.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Scene/SceneHelper.h"
-#include "CubemapEditor/CubemapUtils.h"
-
-#include "Classes/Constants.h"
-
-#include "ui_texturebrowser.h"
 
 #include <QComboBox>
 #include <QAbstractItemModel>
@@ -105,7 +106,7 @@ void TextureBrowser::Close()
     hide();
 
     TextureConvertor::Instance()->CancelConvert();
-    TextureConvertor::Instance()->WaitConvertedAll();
+    TextureConvertor::Instance()->WaitConvertedAll(this);
 
     setScene(nullptr);
 
@@ -610,7 +611,7 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture* texture, const DAVA::Te
 {
     if (NULL != descriptor && NULL != texture)
     {
-        DAVA::eGPUFamily curEditorImageGPUForTextures = QtMainWindow::Instance()->GetGPUFormat();
+        DAVA::eGPUFamily curEditorImageGPUForTextures = Settings::GetGPUFormat();
 
         // reload only when editor view format is the same as given texture format
         // or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
@@ -931,7 +932,7 @@ void TextureBrowser::ConvertMultipleTextures(eTextureConvertMode convertMode)
         return;
     }
 
-    DAVA::Scene* activeScene = QtMainWindow::Instance()->GetCurrentScene();
+    DAVA::Scene* activeScene = curScene;
     if (NULL != activeScene)
     {
         QMessageBox msgBox(this);
@@ -1065,15 +1066,15 @@ void TextureBrowser::sceneSelectionChanged(SceneEditor2* scene, const Selectable
     }
 }
 
-void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo)
+void TextureBrowser::OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
-    if (curScene != scene || command == nullptr)
+    if (curScene != scene)
     {
         return;
     }
 
-    static DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
-    if (command->MatchCommandIDs(commandIds))
+    static const DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_ADD, CMDID_ENTITY_REMOVE, CMDID_INSP_DYNAMIC_MODIFY };
+    if (commandNotification.MatchCommandIDs(commandIds))
     {
         Update();
     }

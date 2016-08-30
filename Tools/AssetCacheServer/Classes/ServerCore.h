@@ -1,25 +1,27 @@
-#ifndef __SERVER_CORE_H__
-#define __SERVER_CORE_H__
+#pragma once
 
-#include "AssetCache/AssetCache.h"
+#include "AssetCache/ServerNetProxy.h"
 #include "AssetCache/ClientNetProxy.h"
+
+#include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
 
 #include <atomic>
-
 #include <QObject>
 
 class QTimer;
 
 class ServerCore : public QObject,
-                   public DAVA::AssetCache::ClientNetProxyListener
+                   public DAVA::AssetCache::ClientNetProxyListener,
+                   public CacheDBOwner,
+                   public AssetCacheHttpServerListener
 {
     Q_OBJECT
 
-    static const uint32 UPDATE_INTERVAL_MS = 1;
-    static const uint32 CONNECT_TIMEOUT_SEC = 1;
-    static const uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    static const DAVA::uint32 UPDATE_INTERVAL_MS = 16;
+    static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
+    static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
 
 public:
     enum class State
@@ -32,6 +34,7 @@ public:
         STARTED,
         STOPPED,
         CONNECTING,
+        VERIFYING,
         WAITING_REATTEMPT
     };
 
@@ -46,11 +49,25 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
+    void SetApplicationPath(const DAVA::String& path);
+
+    void ClearStorage();
+    void GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& overall) const;
+
     // ClientNetProxyListener
-    virtual void OnAssetClientStateChanged() override;
+    void OnClientProxyStateChanged() override;
+    void OnServerStatusReceived() override;
+    void OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType) override;
+
+    // CacheDBOwner
+    void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) override;
+
+    // AssetCacheHttpServerListener
+    void OnStatusRequested(ClientID clientId) override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
+    void StorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) const;
 
 public slots:
     void OnSettingsUpdated(const ApplicationSettings* settings);
@@ -65,12 +82,15 @@ private:
     void StopListening();
 
     bool ConnectRemote();
+    bool VerifyRemote();
     void DisconnectRemote();
+    void ReconnectRemoteLater();
 
 private:
-    DAVA::AssetCache::ServerNetProxy server;
-    DAVA::AssetCache::ClientNetProxy client;
-    DAVA::AssetCache::CacheDB dataBase;
+    AssetCacheHttpServer httpServer;
+    DAVA::AssetCache::ServerNetProxy serverProxy;
+    DAVA::AssetCache::ClientNetProxy clientProxy;
+    CacheDB dataBase;
 
     ServerLogics serverLogics;
     ApplicationSettings settings;
@@ -78,11 +98,13 @@ private:
     std::atomic<State> state;
     std::atomic<RemoteState> remoteState;
 
-    ServerData remoteServerData;
+    DAVA::String appPath;
+
+    RemoteServerParams remoteServerData;
 
     QTimer* updateTimer;
     QTimer* connectTimer;
-    QTimer* reattemptWaitTimer;
+    QTimer* reconnectWaitTimer;
 };
 
 inline ServerCore::State ServerCore::GetState() const
@@ -99,5 +121,3 @@ inline ApplicationSettings& ServerCore::Settings()
 {
     return settings;
 }
-
-#endif // __SERVER_CORE_H__

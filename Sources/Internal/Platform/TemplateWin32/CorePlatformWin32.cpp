@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -31,6 +33,7 @@ namespace DAVA
 const UINT MSG_ALREADY_RUNNING = ::RegisterWindowMessage(L"MSG_ALREADY_RUNNING");
 bool AlreadyRunning();
 void ShowRunningApplication();
+uint32 GetKeyboardModifiers();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
@@ -41,6 +44,7 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
         return 0;
     }
 #endif
+    SetProcessDPIAware();
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
@@ -297,12 +301,13 @@ void CoreWin32Platform::ClearMouseButtons()
     e.phase = UIEvent::Phase::ENDED;
     e.device = UIEvent::Device::MOUSE;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
+    e.modifiers = GetKeyboardModifiers();
 
     for (uint32 mouseButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-         mouseButton < static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+         mouseButton <= static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
          mouseButton += 1)
     {
-        if (mouseButtonState[mouseButton])
+        if (mouseButtonState[mouseButton - 1])
         {
             e.mouseButton = static_cast<UIEvent::MouseButton>(mouseButton);
 
@@ -521,15 +526,15 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = UIEvent::Device::MOUSE;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.modifiers = GetKeyboardModifiers();
 
     if (mouseButtonState.any())
     {
         for (unsigned buttonIndex = static_cast<unsigned>(UIEvent::MouseButton::LEFT);
-             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::EXTENDED2);
+             buttonIndex <= static_cast<unsigned>(UIEvent::MouseButton::NUM_BUTTONS);
              ++buttonIndex)
         {
-            unsigned bitIndex = buttonIndex - 1;
-            if (mouseButtonState[bitIndex])
+            if (mouseButtonState[buttonIndex - 1])
             {
                 e.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
                 e.phase = UIEvent::Phase::DRAG;
@@ -552,6 +557,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
     e.device = UIEvent::Device::MOUSE;
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.modifiers = GetKeyboardModifiers();
 
     KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
     if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
@@ -581,6 +587,7 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, UIEvent::MouseButton 
     e.phase = phase;
     e.mouseButton = button;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.modifiers = GetKeyboardModifiers();
 
     UIControlSystem::Instance()->OnInput(&e);
 
@@ -604,6 +611,7 @@ void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device devic
     newTouch.phase = phase;
     newTouch.device = deviceId;
     newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newTouch.modifiers = GetKeyboardModifiers();
 
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
@@ -861,6 +869,31 @@ bool CoreWin32Platform::ProcessMouseInputEvent(HWND hWnd, UINT message, WPARAM w
     return false;
 }
 
+uint32 GetKeyboardModifiers()
+{
+    uint32 result = 0;
+    static BYTE keys[256];
+    memset(keys, 0, sizeof(keys));
+
+    if (GetKeyboardState(keys))
+    {
+        if ((keys[VK_LSHIFT] >> 7) || (keys[VK_RSHIFT] >> 7))
+        {
+            result |= UIEvent::Modifier::SHIFT_DOWN;
+        }
+        if ((keys[VK_LCONTROL] >> 7) || (keys[VK_RCONTROL] >> 7))
+        {
+            result |= UIEvent::Modifier::CONTROL_DOWN;
+        }
+        if ((keys[VK_LMENU] >> 7) || (keys[VK_RMENU] >> 7))
+        {
+            result |= UIEvent::Modifier::ALT_DOWN;
+        }
+    }
+
+    return result;
+}
+
 LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     const UINT WM_ACTIVATE_POSTED = WM_USER + 12;
@@ -914,6 +947,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnKeyUnpressed(ev.key);
@@ -948,6 +982,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
 
@@ -969,6 +1004,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         }
         ev.device = UIEvent::Device::KEYBOARD;
         ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
     }
@@ -1150,3 +1186,4 @@ void ShowRunningApplication()
 
 } // namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
+#endif // !__DAVAENGINE_COREV2__

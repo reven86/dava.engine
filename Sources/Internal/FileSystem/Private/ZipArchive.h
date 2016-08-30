@@ -8,7 +8,7 @@ namespace DAVA
 class ZipArchive final : public ResourceArchiveImpl
 {
 public:
-    explicit ZipArchive(const FilePath& archiveName);
+    explicit ZipArchive(RefPtr<File>& file_, const FilePath& archiveName);
 
     const Vector<ResourceArchive::FileInfo>& GetFilesInfo() const override;
     const ResourceArchive::FileInfo* GetFileInfo(const String& relativeFilePath) const override;
@@ -20,5 +20,4 @@ private:
     Vector<ResourceArchive::FileInfo> fileInfos;
     Vector<String> fileNames;
 };
-
 } // end namespace DAVA

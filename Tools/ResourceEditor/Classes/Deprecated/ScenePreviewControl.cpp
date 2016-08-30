@@ -10,8 +10,12 @@
 ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     : UI3DView(rect)
 {
+    SetName(DAVA::FastName("Preview 3D View"));
+
     SetInputEnabled(true, true);
     SetBasePriority(-100);
+
+    SetClearRequested(false);
 }
 
 ScenePreviewControl::~ScenePreviewControl()
@@ -20,11 +24,6 @@ ScenePreviewControl::~ScenePreviewControl()
 
     SafeRelease(editorScene);
     rotationSystem = nullptr;
-}
-
-void ScenePreviewControl::Input(DAVA::UIEvent* event)
-{
-    UI3DView::Input(event);
 }
 
 void ScenePreviewControl::RecreateScene()
@@ -69,8 +68,7 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 
     CreateCamera();
 
-    DAVA::Set<DAVA::String> errorsLogToHideDialog;
-    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
+    SceneValidator::Instance()->ValidateScene(editorScene, pathToFile);
 
     return retError;
 }

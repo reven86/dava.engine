@@ -1,60 +1,45 @@
 #pragma once
-#define DAVAENGINE_ANY__H
 
 #include <typeindex>
 #include <string>
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
+#include "BaseTypes.h"
 #include "Type.h"
-#include "AutoStorage.h"
-#include "Base/BaseTypes.h"
+#include "Private/AutoStorage.h"
+
+// #define ANY_EXPERIMENTAL_CAST_IMPL
 
 namespace DAVA
 {
-class Any
+class Any final
 {
 public:
-    using Storage = AutoStorage<>;
-    using CompareOP = bool (*)(const void*, const void*);
-    using LoadOP = void (*)(Storage&, const void* src);
-    using SaveOP = void (*)(const Storage&, void* dst);
+    struct Exception;
+
+    using AnyStorage = AutoStorage<>;
+    using LoadOP = void (*)(AnyStorage&, const void* src);
+    using StoreOP = void (*)(const AnyStorage&, void* dst);
+    using CompareOP = bool (*)(const void* a, const void* b);
+    using CastOP = Any (*)(const Any& from);
+
+    struct AnyOPs
+    {
+        LoadOP load = nullptr;
+        StoreOP store = nullptr;
+        CompareOP compare = nullptr;
+    };
 
     template <typename T>
     using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
 
-    struct AnyOP
-    {
-        CompareOP compare = nullptr;
-        LoadOP load = nullptr;
-        SaveOP save = nullptr;
-    };
-
-    class Exception : public std::runtime_error
-    {
-    public:
-        enum ErrorCode
-        {
-            BadGet,
-            BadCast,
-            BadOperation,
-            BadSize
-        };
-
-        Exception(ErrorCode code, const std::string& message);
-        Exception(ErrorCode code, const char* message);
-
-        ErrorCode errorCode;
-    };
-
     Any() = default;
     ~Any() = default;
 
-    Any(Any&&);
-    Any(const Any&) = default;
-
     template <typename T>
     Any(T&& value, NotAny<T> = true);
+
+    Any(Any&&);
+    Any(const Any&) = default;
 
     void Swap(Any&);
 
@@ -82,7 +67,7 @@ public:
     T Cast() const;
 
     void LoadValue(const Type* type, void* data);
-    void SaveValue(void* data, size_t size) const;
+    void StoreValue(void* data, size_t size) const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
@@ -91,20 +76,77 @@ public:
     bool operator!=(const Any&) const;
 
     template <typename T>
-    static void RegisterOP();
+    static void RegisterDefaultOPs();
 
     template <typename T>
-    static void RegisterCustomOP(const AnyOP& ops);
+    static void RegisterOPs(AnyOPs&& ops);
+
+    template <typename T1, typename T2>
+    static void RegisterDefaultCastOP();
+
+    template <typename T1, typename T2>
+    static void RegisterCastOP(CastOP&, CastOP&);
 
 private:
-    const Type* type = nullptr;
-    Storage storage;
+    struct CastOPKey
+    {
+        const Type* from;
+        const Type* to;
 
-    static UnorderedMap<const Type*, AnyOP> operations;
+        bool operator==(const CastOPKey&) const;
+    };
+
+    struct CastOPKeyHasher
+    {
+        size_t operator()(const CastOPKey&) const;
+    };
+
+    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
+    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKeyHasher>;
+
+    const Type* type = nullptr;
+    AnyStorage anyStorage;
+
+    template <typename T>
+    const T& GetImpl() const;
+
+    template <typename T>
+    bool CanCastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    bool CanCastImpl(std::false_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::true_type isPointer) const;
+
+    template <typename T>
+    T CastImpl(std::false_type isPointer) const;
+
+    static std::unique_ptr<AnyOPsMap> anyOPsMap;
+    static std::unique_ptr<CastOPsMap> castOPsMap;
+};
+
+struct Any::Exception : public std::runtime_error
+{
+    enum ErrorCode
+    {
+        BadGet,
+        BadCast,
+        BadOperation,
+        BadSize
+    };
+
+    Exception(ErrorCode code, const std::string& message);
+    Exception(ErrorCode code, const char* message);
+
+    ErrorCode errorCode;
 };
 
 } // namespace DAVA
 
-#include "Private/Any_impl.h"
+#define __Dava_Any__
+#include "Base/Private/Any_impl.h"
 
-#endif
+// TODO
+// ...
+// #include "Base/Private/AnyCast_impl.h"

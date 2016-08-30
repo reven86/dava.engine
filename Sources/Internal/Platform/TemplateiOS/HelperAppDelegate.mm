@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
@@ -112,6 +114,7 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
     DVASSERT(DAVA::Core::Instance()->GetOptions()->IsKeyExists("renderer"));
     rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
+
     if (rhiRenderer == rhi::RHI_GLES2)
     {
         renderView = [renderViewController createGLView];
@@ -218,3 +221,4 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 @end
 #endif
+#endif // !__DAVAENGINE_COREV2__

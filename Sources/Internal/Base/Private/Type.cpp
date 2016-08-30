@@ -1,39 +1,113 @@
 #include "Base/Type.h"
-#include <cassert>
-
-#if !defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA
 {
-UnorderedMap<String, const Type*> Type::nameToTypeMap;
-
-const char* Type::GetPermanentName() const
+bool TypeCast::CanDownCast(const Type* from, const Type* to)
 {
-    return permanentName.c_str();
-}
-
-const Type* Type::Instance(const String& permanentName)
-{
-    const Type* ret = nullptr;
-
-    auto it = nameToTypeMap.find(permanentName);
-    if (it != nameToTypeMap.end())
+    auto it = from->BaseTypes().find(to);
+    if (it != from->BaseTypes().end())
     {
-        ret = it->second;
+        return true;
+    }
+    else
+    {
+        for (auto& base : from->BaseTypes())
+        {
+            if (CanDownCast(base.first, to))
+            {
+                return true;
+            }
+        }
     }
 
-    return ret;
+    return false;
 }
 
-void Type::RegisterPermanentName(const String& permanentName_) const
+bool TypeCast::CanUpCast(const Type* from, const Type* to)
 {
-    assert(permanentName.empty()); // already registered?
-    assert(0 == nameToTypeMap.count(permanentName_));
+    auto it = from->DerivedTypes().find(to);
+    if (it != from->DerivedTypes().end())
+    {
+        return true;
+    }
+    else
+    {
+        for (auto& derived : from->DerivedTypes())
+        {
+            if (CanUpCast(derived.first, to))
+            {
+                return true;
+            }
+        }
+    }
 
-    permanentName = permanentName_;
-    nameToTypeMap[permanentName] = this;
+    return false;
+}
+
+bool TypeCast::CanCast(const Type* from, const Type* to)
+{
+    return CanDownCast(from, to) || CanUpCast(from, to);
+}
+
+bool TypeCast::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+{
+    auto it = from->BaseTypes().find(to);
+    if (it != from->BaseTypes().end())
+    {
+        *outPtr = it->second(inPtr);
+        return true;
+    }
+    else
+    {
+        for (auto& base : from->BaseTypes())
+        {
+            void* baseInPtr = base.second(inPtr);
+            if (DownCast(base.first, baseInPtr, to, outPtr))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool TypeCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+{
+    auto it = from->DerivedTypes().find(to);
+    if (it != from->DerivedTypes().end())
+    {
+        *outPtr = it->second(inPtr);
+        return true;
+    }
+    else
+    {
+        for (auto& derived : from->DerivedTypes())
+        {
+            void* derivedInPtr = derived.second(inPtr);
+            if (UpCast(derived.first, derivedInPtr, to, outPtr))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool TypeCast::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+{
+    if (DownCast(from, inPtr, to, outPtr))
+    {
+        return true;
+    }
+
+    if (UpCast(from, inPtr, to, outPtr))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace DAVA
-
-#endif

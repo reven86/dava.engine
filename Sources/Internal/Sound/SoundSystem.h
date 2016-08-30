@@ -31,13 +31,20 @@ class FMODFileSoundEvent;
 class FMODSoundEvent;
 #endif
 
+class Engine;
 class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
     static Mutex soundGroupsMutex;
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    SoundSystem(Engine* e);
+    Engine* engine = nullptr;
+    size_t sigUpdateId = 0;
+#else
     SoundSystem();
+#endif
     ~SoundSystem();
 
     SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);

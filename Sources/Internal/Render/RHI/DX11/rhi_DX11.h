@@ -31,8 +31,11 @@ namespace QueryBufferDX11
 {
 void SetupDispatch(Dispatch* dispatch);
 
-void BeginQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
-void EndQuery(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
+void SetQueryIndex(Handle buf, uint32 objectIndex, ID3D11DeviceContext* context);
+void QueryComplete(Handle buf, ID3D11DeviceContext* context);
+bool QueryIsCompleted(Handle buf);
+
+void ReleaseQueryPool();
 }
 
 namespace PerfQuerySetDX11

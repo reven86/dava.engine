@@ -11,6 +11,8 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
+class RECommandNotificationObject;
+class GlobalOperations;
 class LazyUpdater;
 class SceneTree : public QTreeView
 {
@@ -18,6 +20,9 @@ class SceneTree : public QTreeView
 
 public:
     explicit SceneTree(QWidget* parent = 0);
+    ~SceneTree();
+
+    void Init(const std::shared_ptr<GlobalOperations>& globalOperations);
 
 protected:
     void dropEvent(QDropEvent* event) override;
@@ -36,7 +41,7 @@ private slots:
     void SceneDeactivated(SceneEditor2* scene);
     void SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
     void SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 
@@ -57,6 +62,7 @@ private:
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 
     void UpdateTree();
+    void UpdateModel();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
@@ -73,6 +79,7 @@ private:
     SceneTreeDelegate* treeDelegate = nullptr;
     LazyUpdater* treeUpdater = nullptr;
     bool isInSync = false;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
 
 #endif // __QT_SCENE_TREE_H__

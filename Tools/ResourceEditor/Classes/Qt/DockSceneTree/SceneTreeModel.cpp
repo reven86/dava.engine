@@ -72,7 +72,6 @@ void SceneTreeModel::SetSolid(const QModelIndex& index, bool solid)
     if (NULL != entity)
     {
         entity->SetSolid(solid);
-        SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
     }
 }
 
@@ -162,7 +161,7 @@ int SceneTreeModel::GetCustomFlags(const QModelIndex& index) const
                 DAVA::LodComponent* lodComp = GetLodComponent(emitter);
                 if (NULL != lodComp)
                 {
-                    if (!layer->IsLodActive(lodComp->currentLod))
+                    if (!layer->IsLodActive(lodComp->GetCurrentLod()))
                     {
                         ret |= CF_Invisible;
                     }
@@ -570,7 +569,7 @@ void SceneTreeModel::ItemChanged(QStandardItem* item)
             bool isLayerEnabled = (item->checkState() == Qt::Checked);
             SceneTreeItemParticleLayer* itemLayer = (SceneTreeItemParticleLayer*)treeItem;
 
-            curScene->Exec(Command2::Create<CommandUpdateParticleLayerEnabled>(itemLayer->GetLayer(), isLayerEnabled));
+            curScene->Exec(std::unique_ptr<DAVA::Command>(new CommandUpdateParticleLayerEnabled(itemLayer->GetLayer(), isLayerEnabled)));
             curScene->MarkAsChanged();
         }
     }

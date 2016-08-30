@@ -12,9 +12,10 @@
 #include <QAction>
 #include <QDir>
 
-SpritesPackerModule::SpritesPackerModule()
+SpritesPackerModule::SpritesPackerModule(const std::shared_ptr<GlobalOperations>& globalOperations_)
     : QObject(nullptr)
     , spritesPacker(new SpritesPacker())
+    , globalOperations(globalOperations_)
 {
     qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
@@ -97,38 +98,18 @@ void SpritesPackerModule::ProcessSilentPacking(bool clearDirs, bool forceRepack,
 
 void SpritesPackerModule::ShowPackerDialog()
 {
-    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), QtMainWindow::Instance());
+    DialogReloadSprites dialogReloadSprites(spritesPacker.get(), globalOperations->GetGlobalParentWidget());
     dialogReloadSprites.exec();
 }
 
 void SpritesPackerModule::CreateWaitDialog(const DAVA::FilePath& projectPath)
 {
-    DVASSERT(waitDialog == nullptr);
-
-    waitDialog = new QDialog(QtMainWindow::Instance(), Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
-    QLabel* label = new QLabel("Reloading Particles for " + QString::fromStdString(projectPath.GetAbsolutePathname()), waitDialog);
-    label->setAlignment(Qt::AlignCenter);
-    label->setWordWrap(true);
-
-    QVBoxLayout* layout = new QVBoxLayout(waitDialog);
-    layout->addWidget(label);
-    waitDialog->setLayout(layout);
-
-    waitDialog->setModal(true);
-    waitDialog->setFixedSize(300, 100);
-    waitDialog->show();
-    waitDialog->raise();
-    waitDialog->activateWindow();
+    globalOperations->ShowWaitDialog("Sprites Reloading", DAVA::String("Reloading Particles for ") + projectPath.GetAbsolutePathname());
 }
 
 void SpritesPackerModule::CloseWaitDialog()
 {
-    if (waitDialog != nullptr)
-    {
-        waitDialog->close();
-        delete waitDialog;
-        waitDialog = nullptr;
-    }
+    globalOperations->HideWaitDialog();
 }
 
 void SpritesPackerModule::ReloadObjects()
@@ -167,7 +148,7 @@ void SpritesPackerModule::ConnectCacheClient()
         }
     }
 
-    spritesPacker->SetCacheClient(cacheClient, "ResourceEditor.ReloadParticles");
+    SetCacheClientForPacker();
 }
 
 void SpritesPackerModule::DisconnectCacheClient()
@@ -176,10 +157,16 @@ void SpritesPackerModule::DisconnectCacheClient()
     {
         DAVA::AssetCacheClient* disconnectingClient = cacheClient;
         cacheClient = nullptr;
+        SetCacheClientForPacker();
 
         //we should destroy cache client on main thread
         DAVA::JobManager::Instance()->CreateMainJob(DAVA::Bind(&SpritesPackerModule::DisconnectCacheClientInternal, this, disconnectingClient));
     }
+}
+
+void SpritesPackerModule::SetCacheClientForPacker()
+{
+    spritesPacker->SetCacheClient(cacheClient, "ResourceEditor.ReloadParticles");
 }
 
 void SpritesPackerModule::DisconnectCacheClientInternal(DAVA::AssetCacheClient* cacheClientForDisconnect)

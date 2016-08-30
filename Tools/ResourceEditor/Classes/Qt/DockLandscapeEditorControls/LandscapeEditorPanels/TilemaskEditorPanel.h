@@ -3,10 +3,10 @@
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Commands2/Base/Command2.h"
 
 #include "Render/UniqueStateSet.h"
 
+class RECommandNotificationObject;
 class QComboBox;
 class QRadioButton;
 class SliderWidget;
@@ -52,7 +52,7 @@ private slots:
     void PrevTool();
     void NextTool();
 
-    void OnCommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void OnCommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
 protected:
     virtual bool GetEditorEnabled();

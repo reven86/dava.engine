@@ -198,16 +198,14 @@ static const char* _ShaderHeader_Metal =
 "float4 mul( float4x4 m, float4 v ) { return v*m; }\n"
 "float3 mul( float3 v, float3x3 m );\n"
 "float3 mul( float3 v, float3x3 m ) { return m*v; }\n"
+"#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
-"inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }\n"
-"inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
-"inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
-"inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
+"#define  frac(a) fract(a)\n"
 
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 "#define FP_A8(t) t.a\n"
 
-"#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n";
+"#define STEP(edge,x) step((edge), (x))\n";
 
 static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_BEGIN          struct VP_Input {\n"
@@ -279,6 +277,22 @@ static const char* _ShaderDefine_Metal =
 "    VPROG_IN_BUFFER_5 "
 "    VPROG_IN_BUFFER_6 "
 "    VPROG_IN_BUFFER_7 "
+"    VPROG_IN_TEXTURE_0 "
+"    VPROG_IN_TEXTURE_1 "
+"    VPROG_IN_TEXTURE_2 "
+"    VPROG_IN_TEXTURE_3 "
+"    VPROG_IN_TEXTURE_4 "
+"    VPROG_IN_TEXTURE_5 "
+"    VPROG_IN_TEXTURE_6 "
+"    VPROG_IN_TEXTURE_7 "
+"    VPROG_SAMPLER_0 "
+"    VPROG_SAMPLER_1 "
+"    VPROG_SAMPLER_2 "
+"    VPROG_SAMPLER_3 "
+"    VPROG_SAMPLER_4 "
+"    VPROG_SAMPLER_5 "
+"    VPROG_SAMPLER_6 "
+"    VPROG_SAMPLER_7 "
 ")"
 "{"
 "    VPROG_BUFFER_0 "
@@ -313,8 +327,6 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BINORMAL          (float3(IN.binormal))\n"
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (IN.blendindex)\n"
-
-"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) )\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
@@ -365,7 +377,7 @@ static const char* _ShaderDefine_Metal =
 "#define FP_TEXTURECUBE(unit,uv) fp_tex##unit.sample( fp_tex##unit##_sampler, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv )\n"
+"#define VP_TEXTURE2D(unit,uv,lod)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv, level(lod) )\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
 
@@ -422,7 +434,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
 "#define vec1                   float\n"
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if 0 //defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 "#define half                   mediump float\n"
 "#define half1                  mediump float\n"
 "#define half2                  mediump vec2\n"
@@ -444,6 +456,29 @@ static const char* _ShaderHeader_GLES2 =
 "#define min10float2            vec2\n"
 "#define min10float3            vec3\n"
 "#define min10float4            vec4\n"
+#endif
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+"#define i_half                 mediump float\n"
+"#define i_half1                mediump float\n"
+"#define i_half2                mediump vec2\n"
+"#define i_half3                mediump vec3\n"
+"#define i_half4                mediump vec4\n"
+"#define i_min10float           lowp float\n"
+"#define i_min10float1          lowp float\n"
+"#define i_min10float2          lowp vec2\n"
+"#define i_min10float3          lowp vec3\n"
+"#define i_min10float4          lowp vec4\n"
+#else
+"#define i_half                 float\n"
+"#define i_half1                float\n"
+"#define i_half2                vec2\n"
+"#define i_half3                vec3\n"
+"#define i_half4                vec4\n"
+"#define i_min10float           float\n"
+"#define i_min10float1          float\n"
+"#define i_min10float2          vec2\n"
+"#define i_min10float3          vec3\n"
+"#define i_min10float4          vec4\n"
 #endif
 //"vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
 //"vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
@@ -497,28 +532,28 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_TEXCOORD5(name,size)         varying vec##size var_##name;\n"
 "#define VPROG_OUT_TEXCOORD6(name,size)         varying vec##size var_##name;\n"
 "#define VPROG_OUT_TEXCOORD7(name,size)         varying vec##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD0_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD1_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD2_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD3_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD4_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD5_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD6_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD7_HALF(name,size)    varying half##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD0_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD1_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD2_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD3_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD4_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD5_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD6_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define VPROG_OUT_TEXCOORD7_LOW(name,size)     varying min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD0_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD1_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD2_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD3_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD4_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD5_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD6_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD7_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD0_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD1_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD2_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD3_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD4_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD5_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD6_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_TEXCOORD7_LOW(name,size)     varying i_min10float##size var_##name;\n"
 "#define VPROG_OUT_COLOR0(name,size)            varying vec##size var_##name;\n"
 "#define VPROG_OUT_COLOR1(name,size)            varying vec##size var_##name;\n"
-"#define VPROG_OUT_COLOR0_HALF(name,size)       varying half##size var_##name;\n"
-"#define VPROG_OUT_COLOR1_HALF(name,size)       varying half##size var_##name;\n"
-"#define VPROG_OUT_COLOR0_LOW(name,size)        varying min10float##size var_##name;\n"
-"#define VPROG_OUT_COLOR1_LOW(name,size)        varying min10float##size var_##name;\n"
+"#define VPROG_OUT_COLOR0_HALF(name,size)       varying i_half##size var_##name;\n"
+"#define VPROG_OUT_COLOR1_HALF(name,size)       varying i_half##size var_##name;\n"
+"#define VPROG_OUT_COLOR0_LOW(name,size)        varying i_min10float##size var_##name;\n"
+"#define VPROG_OUT_COLOR1_LOW(name,size)        varying i_min10float##size var_##name;\n"
 "#define VPROG_OUT_END           \n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
@@ -560,28 +595,28 @@ static const char* _ShaderDefine_GLES2 =
 "#define FPROG_IN_TEXCOORD5(name,size)         varying vec##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD6(name,size)         varying vec##size var_##name;\n"
 "#define FPROG_IN_TEXCOORD7(name,size)         varying vec##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD0_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD1_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD2_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD3_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD4_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD5_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD6_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD7_HALF(name,size)    varying half##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD0_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD1_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD2_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD3_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD4_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD5_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD6_LOW(name,size)     varying min10float##size var_##name;\n"
-"#define FPROG_IN_TEXCOORD7_LOW(name,size)     varying min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD0_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD1_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD2_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD3_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD4_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD5_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD6_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD7_HALF(name,size)    varying i_half##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD0_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD1_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD2_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD3_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD4_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD5_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD6_LOW(name,size)     varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_TEXCOORD7_LOW(name,size)     varying i_min10float##size var_##name;\n"
 "#define FPROG_IN_COLOR0(name,size)            varying float##size var_##name;\n"
 "#define FPROG_IN_COLOR1(name,size)            varying float##size var_##name;\n"
-"#define FPROG_IN_COLOR0_HALF(name,size)       varying half##size var_##name;\n"
-"#define FPROG_IN_COLOR1_HALF(name,size)       varying half##size var_##name;\n"
-"#define FPROG_IN_COLOR0_LOW(name,size)        varying min10float##size var_##name;\n"
-"#define FPROG_IN_COLOR1_LOW(name,size)        varying min10float##size var_##name;\n"
+"#define FPROG_IN_COLOR0_HALF(name,size)       varying i_half##size var_##name;\n"
+"#define FPROG_IN_COLOR1_HALF(name,size)       varying i_half##size var_##name;\n"
+"#define FPROG_IN_COLOR0_LOW(name,size)        varying i_min10float##size var_##name;\n"
+"#define FPROG_IN_COLOR1_LOW(name,size)        varying i_min10float##size var_##name;\n"
 "#define FPROG_IN_END            \n"
 
 "#define FPROG_OUT_BEGIN         \n"
@@ -997,6 +1032,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
         bool vp_buf_declared[16];
         bool fp_buf_declared[16];
         bool fp_tex_declared[16];
+        bool vp_tex_declared[16];
 
         for (unsigned i = 0; i != countof(vp_buf_declared); ++i)
             vp_buf_declared[i] = false;
@@ -1004,6 +1040,8 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             fp_buf_declared[i] = false;
         for (unsigned i = 0; i != countof(fp_tex_declared); ++i)
             fp_tex_declared[i] = false;
+        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
+            vp_tex_declared[i] = false;
 
         while ((decl = strstr(s, "DECL_FPROG_BUFFER")))
         {
@@ -1058,6 +1096,28 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
             {
                 src_len += sprintf(src + src_len, "#define FPROG_IN_TEXTURE_%i \n", i);
                 src_len += sprintf(src + src_len, "#define FPROG_SAMPLER_%i \n", i);
+            }
+        }
+
+        s = srcText;
+        while ((decl = strstr(s, "DECL_VP_SAMPLER2D")))
+        {
+            int i = 0;
+
+            sscanf(decl, "DECL_VP_SAMPLER2D(%i,", &i);
+
+            src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i  , texture2d<float> vp_tex%i [[ texture(%i) ]]\n", i, i, i);
+            src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i   , sampler vp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i);
+            vp_tex_declared[i] = true;
+
+            s += strlen("DECL_VP_SAMPLER2D");
+        }
+        for (unsigned i = 0; i != countof(vp_tex_declared); ++i)
+        {
+            if (!vp_tex_declared[i])
+            {
+                src_len += sprintf(src + src_len, "#define VPROG_IN_TEXTURE_%i \n", i);
+                src_len += sprintf(src + src_len, "#define VPROG_SAMPLER_%i \n", i);
             }
         }
 

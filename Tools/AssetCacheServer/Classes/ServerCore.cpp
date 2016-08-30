@@ -5,17 +5,20 @@
 #include <QTimer>
 
 ServerCore::ServerCore()
-    : state(State::STOPPED)
+    : httpServer(DAVA::Net::NetCore::Instance()->Loop())
+    , dataBase(*this)
+    , state(State::STOPPED)
     , remoteState(RemoteState::STOPPED)
 {
     QObject::connect(&settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
 
-    server.SetDelegate(&serverLogics);
-    client.AddListener(&serverLogics);
-    client.AddListener(this);
+    serverProxy.SetListener(&serverLogics);
+    clientProxy.AddListener(&serverLogics);
+    clientProxy.AddListener(this);
+    httpServer.SetListener(this);
 
     DAVA::String serverName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
-    serverLogics.Init(&server, serverName, &client, &dataBase);
+    serverLogics.Init(&serverProxy, serverName, &clientProxy, &dataBase);
 
     updateTimer = new QTimer(this);
     QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::OnTimerUpdate);
@@ -25,10 +28,10 @@ ServerCore::ServerCore()
     connectTimer->setSingleShot(true);
     QObject::connect(connectTimer, &QTimer::timeout, this, &ServerCore::OnConnectTimeout);
 
-    reattemptWaitTimer = new QTimer(this);
-    reattemptWaitTimer->setInterval(CONNECT_REATTEMPT_WAIT_SEC * 1000);
-    reattemptWaitTimer->setSingleShot(true);
-    QObject::connect(reattemptWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
+    reconnectWaitTimer = new QTimer(this);
+    reconnectWaitTimer->setInterval(CONNECT_REATTEMPT_WAIT_SEC * 1000);
+    reconnectWaitTimer->setSingleShot(true);
+    QObject::connect(reconnectWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
 
     settings.Load();
 }
@@ -71,14 +74,16 @@ void ServerCore::StartListening()
 {
     DVASSERT(state == State::STOPPED);
 
-    server.Listen(settings.GetPort());
+    serverProxy.Listen(settings.GetPort());
+    httpServer.Start(settings.GetHttpPort());
     state = State::STARTED;
 }
 
 void ServerCore::StopListening()
 {
     state = State::STOPPED;
-    server.Disconnect();
+    serverProxy.Disconnect();
+    httpServer.Stop();
 }
 
 bool ServerCore::ConnectRemote()
@@ -87,7 +92,7 @@ bool ServerCore::ConnectRemote()
 
     if (!remoteServerData.ip.empty())
     {
-        bool created = client.Connect(remoteServerData.ip, remoteServerData.port);
+        bool created = clientProxy.Connect(remoteServerData.ip, DAVA::AssetCache::ASSET_SERVER_PORT);
         if (created)
         {
             connectTimer->start();
@@ -99,12 +104,31 @@ bool ServerCore::ConnectRemote()
     return false;
 }
 
+bool ServerCore::VerifyRemote()
+{
+    if (clientProxy.RequestServerStatus())
+    {
+        connectTimer->start();
+        remoteState = RemoteState::VERIFYING;
+        return true;
+    }
+
+    return false;
+}
+
 void ServerCore::DisconnectRemote()
 {
     connectTimer->stop();
-    reattemptWaitTimer->stop();
+    reconnectWaitTimer->stop();
     remoteState = RemoteState::STOPPED;
-    client.Disconnect();
+    clientProxy.Disconnect();
+}
+
+void ServerCore::ReconnectRemoteLater()
+{
+    DisconnectRemote();
+    remoteState = RemoteState::WAITING_REATTEMPT;
+    reconnectWaitTimer->start();
 }
 
 void ServerCore::OnTimerUpdate()
@@ -120,10 +144,7 @@ void ServerCore::OnTimerUpdate()
 
 void ServerCore::OnConnectTimeout()
 {
-    DisconnectRemote();
-    remoteState = RemoteState::WAITING_REATTEMPT;
-    reattemptWaitTimer->start();
-
+    ReconnectRemoteLater();
     emit ServerStateChanged(this);
 }
 
@@ -133,23 +154,42 @@ void ServerCore::OnReattemptTimer()
     emit ServerStateChanged(this);
 }
 
-void ServerCore::OnAssetClientStateChanged()
+void ServerCore::OnClientProxyStateChanged()
 {
     DVASSERT(remoteState != RemoteState::STOPPED);
 
-    if (client.ChannelIsOpened())
+    if (clientProxy.ChannelIsOpened())
     {
+        DVASSERT(remoteState == RemoteState::CONNECTING);
         connectTimer->stop();
-        reattemptWaitTimer->stop();
-        remoteState = RemoteState::STARTED;
+        reconnectWaitTimer->stop();
+        VerifyRemote();
     }
     else
     {
         connectTimer->start();
-        reattemptWaitTimer->stop();
+        reconnectWaitTimer->stop();
         remoteState = RemoteState::CONNECTING;
     }
 
+    emit ServerStateChanged(this);
+}
+
+void ServerCore::OnServerStatusReceived()
+{
+    DVASSERT(remoteState == RemoteState::VERIFYING);
+
+    connectTimer->stop();
+    reconnectWaitTimer->stop();
+    remoteState = RemoteState::STARTED;
+
+    emit ServerStateChanged(this);
+}
+
+void ServerCore::OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType)
+{
+    DVASSERT(remoteState != RemoteState::STOPPED);
+    ReconnectRemoteLater();
     emit ServerStateChanged(this);
 }
 
@@ -168,7 +208,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
 
     if (state == State::STARTED)
     { // disconnect network if settings changed
-        if (server.GetListenPort() != settings.GetPort())
+        if (serverProxy.GetListenPort() != settings.GetPort() || httpServer.GetListenPort() != settings.GetHttpPort())
         {
             needServerRestart = true;
             StopListening();
@@ -209,4 +249,33 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
         emit ServerStateChanged(this);
         return;
     }
+}
+
+void ServerCore::ClearStorage()
+{
+    dataBase.ClearStorage();
+}
+
+void ServerCore::GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& overall) const
+{
+    occupied = dataBase.GetOccupiedSize();
+    overall = dataBase.GetStorageSize();
+}
+
+void ServerCore::OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall)
+{
+    emit StorageSizeChanged(occupied, overall);
+}
+
+void ServerCore::OnStatusRequested(ClientID clientId)
+{
+    AssetServerStatus status;
+    status.started = true;
+    status.assetServerPath = appPath;
+    httpServer.SendStatus(clientId, status);
+}
+
+void ServerCore::SetApplicationPath(const DAVA::String& path)
+{
+    appPath = path;
 }

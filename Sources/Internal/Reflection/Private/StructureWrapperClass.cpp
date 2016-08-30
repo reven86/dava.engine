@@ -1,35 +1,83 @@
-#include "Reflection/Private/StructureWrapperClass.h"
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_ANDROID__
 
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Reflection/Private/StructureWrapperClass.h"
+#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/Public/ReflectedObject.h"
 
 namespace DAVA
 {
-Ref::Field StructureWrapperClass::GetField(const ReflectedObject& object, const Any& key) const
+StructureWrapperClass::StructureWrapperClass(const Type* type)
+    : thisType(type)
 {
-    Ref::Field result;
+}
+
+bool StructureWrapperClass::HasFields(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    bool ret = !fields.empty();
+
+    if (!ret)
+    {
+        InitBaseClasses();
+
+        for (ClassBase& base : bases)
+        {
+            const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+            ret |= baseSW->HasFields(base.GetBaseObject(object), vw);
+
+            if (ret)
+            {
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
+Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
+{
+    Reflection::Field ret;
+
+    String name;
+
     if (key.CanGet<String>())
     {
-        const String& stringKey = key.Get<String>();
-        Vector<ClassField>::const_iterator fieldIter = std::find_if(fields.begin(), fields.end(), [&stringKey](const ClassField& classField)
-                                                                    {
-                                                                        return classField.name == stringKey;
-                                                                    });
+        name = key.Get<String>();
+    }
+    else if (key.CanGet<const char*>())
+    {
+        name = key.Get<const char*>();
+    }
 
-        if (fieldIter != fields.end())
+    if (!name.empty())
+    {
+        auto end = fields.end();
+        auto it = fields.begin();
+
+        for (; it != end; ++it)
         {
-            result.key = fieldIter->name;
-            result.valueRef = Reflection(object, fieldIter->vw.get(), fieldIter->db);
-        }
-        else
-        {
-            for (const BaseClass& base : bases)
+            if (it->first == name)
             {
-                const StructureWrapper* baseChildren = base.db->structureWrapper.get();
-                if (nullptr != baseChildren)
+                ret.key = key;
+                ret.ref = Reflection(vw->GetValueObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
+
+                break;
+            }
+        }
+
+        if (it == end)
+        {
+            InitBaseClasses();
+
+            for (ClassBase& base : bases)
+            {
+                if (nullptr != base.refType)
                 {
-                    result = baseChildren->GetField(base.castOP(object), key);
-                    /// how to check: is result valid and not empty???
-                    if (!result.key.IsEmpty())
+                    const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+
+                    ret = baseSW->GetField(base.GetBaseObject(object), vw, key);
+                    if (ret.ref.IsValid())
                     {
                         break;
                     }
@@ -38,36 +86,159 @@ Ref::Field StructureWrapperClass::GetField(const ReflectedObject& object, const 
         }
     }
 
-    return result;
+    return ret;
 }
 
-Ref::FieldsList StructureWrapperClass::GetFields(const ReflectedObject& object) const
+Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw) const
 {
-    Ref::FieldsList ret;
+    Vector<Reflection::Field> ret;
 
-    for (auto& base : bases)
+    InitBaseClasses();
+
+    for (auto& baseIt : bases)
     {
-        const StructureWrapper* baseChildren = base.db->structureWrapper.get();
-        if (nullptr != baseChildren)
+        const ReflectedType* baseRefType = baseIt.refType;
+        if (nullptr != baseRefType)
         {
-            ReflectedObject b_obj = base.castOP(object);
-            Ref::FieldsList b_ret = baseChildren->GetFields(b_obj);
+            const StructureWrapper* baseSW = baseRefType->structureWrapper.get();
+            auto baseFields = baseSW->GetFields(baseIt.GetBaseObject(object), vw);
 
-            ret.reserve(ret.size() + b_ret.size());
-            std::move(b_ret.begin(), b_ret.end(), std::inserter(ret, ret.end()));
+            std::move(baseFields.begin(), baseFields.end(), std::inserter(ret, ret.end()));
         }
     }
 
-    ret.reserve(ret.size() + fields.size());
-    for (auto& field : fields)
+    for (auto& it : fields)
     {
-        Ref::Field child;
-        child.key = field.name;
-        child.valueRef = Reflection(object, field.vw.get(), field.db);
-        ret.emplace_back(std::move(child));
+        Reflection::Field rf;
+
+        rf.key = it.first;
+        rf.ref = Reflection(vw->GetValueObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
+
+        ret.emplace_back(std::move(rf));
     }
 
     return ret;
+}
+
+bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    bool ret = !methods.empty();
+
+    if (!ret)
+    {
+        InitBaseClasses();
+
+        for (ClassBase& base : bases)
+        {
+            const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+            ret |= baseSW->HasMethods(base.GetBaseObject(object), vw);
+
+            if (ret)
+            {
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
+Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
+{
+    Reflection::Method ret;
+
+    if (key.CanCast<String>())
+    {
+        const String& name = key.Cast<String>();
+
+        auto end = methods.end();
+        auto it = methods.begin();
+
+        for (; it != end; ++it)
+        {
+            if (it->first == name)
+            {
+                ret = { it->first, it->second };
+                break;
+            }
+        }
+
+        if (it == end)
+        {
+            InitBaseClasses();
+
+            for (ClassBase& base : bases)
+            {
+                if (nullptr != base.refType)
+                {
+                    const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+
+                    ret = baseSW->GetMethod(base.GetBaseObject(object), vw, key);
+                    if (ret.fn.IsValid())
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    Vector<Reflection::Method> ret;
+
+    InitBaseClasses();
+
+    for (auto& baseIt : bases)
+    {
+        const ReflectedType* baseRefType = baseIt.refType;
+        if (nullptr != baseRefType)
+        {
+            const StructureWrapper* baseSW = baseRefType->structureWrapper.get();
+            auto baseMethods = baseSW->GetMethods(baseIt.GetBaseObject(object), vw);
+
+            std::move(baseMethods.begin(), baseMethods.end(), std::inserter(ret, ret.end()));
+        }
+    }
+
+    for (auto& it : methods)
+    {
+        ret.emplace_back(Reflection::Method{ it.first, it.second });
+    }
+
+    return ret;
+}
+
+void StructureWrapperClass::InitBaseClasses() const
+{
+    if (!basesInitialized)
+    {
+        auto bases_ = thisType->BaseTypes();
+
+        bases.reserve(bases_.size());
+        for (auto bc : bases_)
+        {
+            ClassBase classBase;
+            classBase.type = bc.first;
+            classBase.castToBaseOP = bc.second;
+            classBase.refType = ReflectedType::GetByType(bc.first);
+
+            bases.emplace_back(std::move(classBase));
+        }
+
+        basesInitialized = true;
+    }
+}
+
+ReflectedObject StructureWrapperClass::ClassBase::GetBaseObject(const ReflectedObject& object) const
+{
+    void* derVoidPtr = object.GetVoidPtr();
+    void* baseVoidPtr = (*castToBaseOP)(derVoidPtr);
+
+    return ReflectedObject(baseVoidPtr, type->Pointer());
 }
 
 } // namespace DAVA

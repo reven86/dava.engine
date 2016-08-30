@@ -1,7 +1,8 @@
 #include "Commands2/InspDynamicModifyCommand.h"
+#include "Commands2/RECommandIDs.h"
 
 InspDynamicModifyCommand::InspDynamicModifyCommand(DAVA::InspInfoDynamic* _dynamicInfo, const DAVA::InspInfoDynamic::DynamicData& _ddata, DAVA::FastName _key, const DAVA::VariantType& _newValue)
-    : Command2(CMDID_INSP_DYNAMIC_MODIFY, "Modify dynamic value")
+    : RECommand(CMDID_INSP_DYNAMIC_MODIFY, "Modify dynamic value")
     , dynamicInfo(_dynamicInfo)
     , key(_key)
     , ddata(_ddata)

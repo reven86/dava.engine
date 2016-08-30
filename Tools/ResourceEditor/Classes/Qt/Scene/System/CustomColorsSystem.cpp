@@ -50,7 +50,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(DAVA::Landscape::TEXTURE_COLOR);
+    landscapeSize = DAVA::Landscape::CUSTOM_COLOR_TEXTURE_SIZE;
 
     DAVA::FilePath filePath = GetCurrentSaveFileName();
     if (!filePath.IsEmpty())
@@ -275,13 +275,13 @@ void CustomColorsSystem::StoreOriginalState()
 void CustomColorsSystem::CreateUndoPoint()
 {
     DAVA::Rect updatedRect = GetUpdatedRect();
-    if (updatedRect.dx > 0 || updatedRect.dy > 0)
+    if (updatedRect.dx > 0 && updatedRect.dy > 0)
     {
         SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
         DVASSERT(scene);
 
         DAVA::ScopedPtr<DAVA::Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
-        scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false));
+        scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyCustomColorsCommand(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false)));
     }
 
     SafeRelease(originalImage);
@@ -333,7 +333,7 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             scene->BeginBatch("Load custom colors texture", 2);
             StoreSaveFileName(filePath);
-            scene->Exec(Command2::Create<ModifyCustomColorsCommand>(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect(), true));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyCustomColorsCommand(originalImage, image, drawSystem->GetCustomColorsProxy(), GetUpdatedRect(), true)));
             scene->EndBatch();
 
             SafeRelease(originalImage);
@@ -345,7 +345,6 @@ bool CustomColorsSystem::LoadTexture(const DAVA::FilePath& filePath, bool create
 
             DAVA::Texture* target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
-            auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             DAVA::RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.priority = DAVA::PRIORITY_SERVICE_2D;
             desc.colorAttachment = target->handle;
@@ -395,7 +394,7 @@ bool CustomColorsSystem::CouldApplyImage(DAVA::Image* image, const DAVA::String&
 
 void CustomColorsSystem::StoreSaveFileName(const DAVA::FilePath& filePath)
 {
-    Command2::Pointer command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
+    std::unique_ptr<DAVA::Command> command = CreateSaveFileNameCommand(GetRelativePathToProjectPath(filePath));
     if (command)
     {
         SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
@@ -403,7 +402,7 @@ void CustomColorsSystem::StoreSaveFileName(const DAVA::FilePath& filePath)
     }
 }
 
-Command2::Pointer CustomColorsSystem::CreateSaveFileNameCommand(const DAVA::String& filePath)
+std::unique_ptr<DAVA::Command> CustomColorsSystem::CreateSaveFileNameCommand(const DAVA::String& filePath)
 {
     DAVA::KeyedArchive* customProps = drawSystem->GetLandscapeCustomProperties();
     bool keyExists = customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
@@ -413,15 +412,15 @@ Command2::Pointer CustomColorsSystem::CreateSaveFileNameCommand(const DAVA::Stri
         DAVA::String curPath = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
         if (curPath != filePath)
         {
-            return Command2::Create<KeyeadArchiveSetValueCommand>(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, DAVA::VariantType(filePath));
+            return std::unique_ptr<KeyeadArchiveSetValueCommand>(new KeyeadArchiveSetValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, DAVA::VariantType(filePath)));
         }
     }
     else
     {
-        return Command2::Create<KeyedArchiveAddValueCommand>(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, DAVA::VariantType(filePath));
+        return std::unique_ptr<KeyedArchiveAddValueCommand>(new KeyedArchiveAddValueCommand(customProps, ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, DAVA::VariantType(filePath)));
     }
 
-    return Command2::CreateEmptyCommand();
+    return std::unique_ptr<DAVA::Command>();
 }
 
 DAVA::FilePath CustomColorsSystem::GetCurrentSaveFileName()

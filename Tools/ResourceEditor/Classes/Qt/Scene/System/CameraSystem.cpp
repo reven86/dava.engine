@@ -480,18 +480,21 @@ void SceneCameraSystem::MoveAnimate(DAVA::float32 timeElapsed)
 
 void SceneCameraSystem::UpdateDistanceToCamera()
 {
-    SceneEditor2* sc = (SceneEditor2*)GetScene();
+    distanceToCamera = 0.f;
 
-    DAVA::Vector3 center = sc->selectionSystem->GetSelection().GetIntegralBoundingBox().GetCenter();
-
-    const DAVA::Camera* cam = GetScene()->GetCurrentCamera();
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    const DAVA::Camera* cam = sc->GetCurrentCamera();
     if (cam)
     {
-        distanceToCamera = (cam->GetPosition() - center).Length();
-    }
-    else
-    {
-        distanceToCamera = 0.f;
+        const SelectableGroup& selection = sc->selectionSystem->GetSelection();
+        if (!selection.IsEmpty())
+        {
+            DAVA::AABBox3 bbox = sc->selectionSystem->GetTransformedBoundingBox(selection);
+            if (!bbox.IsEmpty())
+            {
+                distanceToCamera = ((cam->GetPosition() - bbox.GetCenter()).Length()) * cam->GetZoomFactor();
+            }
+        }
     }
 }
 
@@ -567,12 +570,12 @@ bool SceneCameraSystem::SnapEditorCameraToLandscape(bool snap)
             snapComponent = static_cast<DAVA::SnapToLandscapeControllerComponent*>(DAVA::Component::CreateByType(DAVA::Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
             snapComponent->SetHeightOnLandscape(height);
 
-            scene->Exec(Command2::Create<AddComponentCommand>(entity, snapComponent));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, snapComponent)));
         }
     }
     else if (snapComponent)
     {
-        scene->Exec(Command2::Create<RemoveComponentCommand>(entity, snapComponent));
+        scene->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(entity, snapComponent)));
     }
 
     return true;

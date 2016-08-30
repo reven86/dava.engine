@@ -1,119 +1,84 @@
 #pragma once
-#define DAVAENGINE_TYPE__H
 
 #include <memory>
 #include <typeindex>
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include <type_traits>
 
 #include "Base/BaseTypes.h"
 
-#define DAVA_DECLARE_TYPE_INITIALIZER \
-protected: \
-    template <typename T> \
-    friend struct DAVA::TypeDetails::TypeInitializerRunner; \
-    friend class DAVA::Type; \
-    static void __TypeInitializer();
-
-#define DAVA_TYPE_INITIALIZER(T) \
-    void T::__TypeInitializer()
-
-#define DAVA_TYPE_REGISTER(T) \
-    DAVA::Type::Instance<T>()->RegisterPermanentName(#T)
-
 namespace DAVA
 {
-class ReflectionDB;
-class Type
+class Type final
 {
-    friend class ReflectionDB;
-
 public:
+    using InheritanceCastOP = void* (*)(void*);
+    using InheritanceMap = UnorderedMap<const Type*, InheritanceCastOP>;
+
     Type(Type&&) = delete;
     Type(const Type&) = delete;
     Type& operator=(const Type&) = delete;
 
-    void RegisterPermanentName(const String& permanentName) const;
-
     size_t GetSize() const;
     const char* GetName() const;
-    const char* GetPermanentName() const;
 
     bool IsConst() const;
     bool IsPointer() const;
     bool IsReference() const;
-    bool IsDerivedFrom(const Type*) const;
+    bool IsFundamental() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
-    const ReflectionDB* GetReflectionDB() const;
+    const Type* Pointer() const;
+
+    const InheritanceMap& BaseTypes() const;
+    const InheritanceMap& DerivedTypes() const;
 
     template <typename T>
     static const Type* Instance();
 
-    static const Type* Instance(const String& permanentName);
+    template <typename T, typename... Bases>
+    static void RegisterBases();
 
-protected:
-    Type() = default;
-
-    template <typename T>
-    void Init();
-
-    const char* name = nullptr;
-    mutable String permanentName;
+private:
     size_t size = 0;
+    const char* name = nullptr;
 
     bool isConst = false;
     bool isPointer = false;
     bool isReference = false;
+    bool isFundamental = false;
 
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;
-    mutable ReflectionDB* reflectionDb = nullptr;
-    mutable UnorderedSet<const Type*> baseTypes;
+    const Type* pointerType = nullptr;
 
-    static UnorderedMap<String, const Type*> nameToTypeMap;
+    mutable InheritanceMap baseTypes;
+    mutable InheritanceMap derivedTypes;
+
+    Type() = default;
+
+    template <typename T>
+    static void Init(Type** ptype);
+
+    template <typename T, typename B>
+    static bool AddBaseType();
+
+    template <typename T, typename D>
+    static bool AddDerivedType();
 };
 
-inline size_t Type::GetSize() const
+struct TypeCast
 {
-    return size;
-}
-inline const char* Type::GetName() const
-{
-    return name;
-}
-inline bool Type::IsConst() const
-{
-    return isConst;
-}
-inline bool Type::IsPointer() const
-{
-    return isPointer;
-}
-inline bool Type::IsReference() const
-{
-    return isReference;
-}
-inline bool Type::IsDerivedFrom(const Type* type) const
-{
-    return (baseTypes.count(type) > 0);
-}
-inline const Type* Type::Decay() const
-{
-    return decayType;
-}
-inline const Type* Type::Deref() const
-{
-    return derefType;
-}
-inline const ReflectionDB* Type::GetReflectionDB() const
-{
-    return reflectionDb;
-}
+    static bool CanUpCast(const Type* from, const Type* to);
+    static bool CanDownCast(const Type* from, const Type* to);
+    static bool CanCast(const Type* from, const Type* to);
+
+    static bool UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
+    static bool DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
+    static bool Cast(const Type* from, void* inPtr, const Type* to, void** outPtr);
+};
 
 } // namespace DAVA
 
-#include "Private/Type_impl.h"
-
-#endif
+#define __Dava_Type__
+#include "Base/Private/Type_impl.h"

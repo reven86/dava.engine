@@ -5,8 +5,6 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (DateTimeTest)
 {
-    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
-
     DAVA_TEST (TestFunction)
     {
         TEST_VERIFY(FormatDateTime(DateTime(1970, 0, 1, 0, 0, 0, 0)) == "1970-00-01 00:00:00+0");
@@ -24,8 +22,40 @@ DAVA_TESTCLASS (DateTimeTest)
 
         { // Test ParseISO8601Date
             DateTime date = DateTime::Now();
+
+            // Parsing without milliseconds
+
             TEST_VERIFY(date.ParseISO8601Date("1970-01-01T05:00:00-03:00"));
             TEST_VERIFY(FormatDateTime(date) == "1970-00-01 05:00:00-10800");
+
+            // Parsing with milliseconds
+
+            // Separator exists, but no fraction
+            TEST_VERIFY(!date.ParseISO8601Date("2016-06-01T17:05:03.-03:00"));
+
+            // Milliseconds specified correctly, but time zone is missing
+            // Verify that string length checks are correct
+            TEST_VERIFY(!date.ParseISO8601Date("2016-06-01T17:05:03.05"));
+
+            // Different fractions
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03.0-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03-10800");
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03.00001-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03-10800");
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03,24-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03.240-10800");
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03.1-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03.100-10800");
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03,10175-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03.102-10800");
+
+            TEST_VERIFY(date.ParseISO8601Date("2016-06-01T17:05:03.0126-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "2016-05-01 17:05:03.013-10800");
         }
         { // Test ParseRFC822Date
             DateTime date = DateTime::Now();
@@ -103,9 +133,17 @@ DAVA_TESTCLASS (DateTimeTest)
         int32 hour = dt.GetHour();
         int32 minute = dt.GetMinute();
         int32 sec = dt.GetSecond();
+        int32 millisecond = dt.GetMillisecond();
         int32 tz = dt.GetTimeZoneOffset();
-        String result = Format("%04d-%02d-%02d %02d:%02d:%02d%+d", year, month, day, hour, minute, sec, tz);
-        return result;
+
+        if (millisecond > 0)
+        {
+            return Format("%04d-%02d-%02d %02d:%02d:%02d.%03d%+d", year, month, day, hour, minute, sec, millisecond, tz);
+        }
+        else
+        {
+            return Format("%04d-%02d-%02d %02d:%02d:%02d%+d", year, month, day, hour, minute, sec, tz);
+        }
     }
 }
 ;

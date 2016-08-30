@@ -20,7 +20,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
     editor->DisableToolsInstantly(disableFlags);
     if (editor->IsToolsEnabled(disableFlags))
     {
-        ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+        DAVA::Logger::Error(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS.c_str());
         return false;
     }
 
@@ -31,7 +31,7 @@ bool TryEnableWithFunctions(SceneEditor2* editor, DAVA::uint32 allowedTools,
     }
     else
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+        DAVA::Logger::Error(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError).c_str());
         return false;
     }
 
@@ -53,7 +53,7 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
         }
         else
         {
-            ShowErrorDialog(error);
+            DAVA::Logger::Error(error.c_str());
             return false;
         }
     }
@@ -68,7 +68,7 @@ bool TryDisableWithFunctions(SceneEditor2* editor, const DAVA::String& error,
 LandscapeToolsToggleCommand::LandscapeToolsToggleCommand(int identifier, SceneEditor2* _sceneEditor,
                                                          const DAVA::String& commandDescr, bool isEnabling,
                                                          DAVA::uint32 _allowedTools, DAVA::String _disablingError)
-    : Command2(identifier, commandDescr + ((isEnabling == true) ? "Enabled" : "Disabled"))
+    : RECommand(identifier, commandDescr + ((isEnabling == true) ? "Enabled" : "Disabled"))
     , sceneEditor(_sceneEditor)
     , disablingError(_disablingError)
     , allowedTools(_allowedTools)
@@ -182,7 +182,7 @@ void EnableCustomColorsCommand::OnEnabled()
     auto drawSystem = sceneEditor->landscapeEditorDrawSystem;
     if (drawSystem->GetCustomColorsProxy()->IsTextureLoaded() == false)
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
+        DAVA::Logger::Error(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT).c_str());
         drawSystem->GetCustomColorsProxy()->ResetLoadedState();
     }
 }

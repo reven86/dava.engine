@@ -55,7 +55,7 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
     String locale = GetDeviceLocale();
-    SetCurrentLocale(locale);    
+    SetCurrentLocale(locale);
 #else
     DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
@@ -171,7 +171,7 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
     if (!yamlFile)
         return NULL;
 
-    dataHolder->fileSize = yamlFile->GetSize();
+    dataHolder->fileSize = static_cast<uint32>(yamlFile->GetSize());
     dataHolder->data = new uint8[dataHolder->fileSize];
     dataHolder->dataOffset = 0;
     yamlFile->Read(dataHolder->data, dataHolder->fileSize);
@@ -179,8 +179,7 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
 
     yaml_parser_set_input(&parser, read_handler, dataHolder);
 
-    WideString key;
-    WideString value;
+    String utf8Key;
     bool isKey = true;
     StringFile* strFile = new StringFile();
 
@@ -203,16 +202,15 @@ LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const Strin
 
         case YAML_SCALAR_EVENT:
         {
-            const uint8* str = reinterpret_cast<const uint8*>(event.data.scalar.value);
-            size_t size = static_cast<size_t>(event.data.scalar.length);
+            const auto& scalar = event.data.scalar;
+            String utf8String(scalar.value, scalar.value + scalar.length);
             if (isKey)
             {
-                UTF8Utils::EncodeToWideString(str, size, key);
+                utf8Key = utf8String;
             }
             else
             {
-                UTF8Utils::EncodeToWideString(str, size, value);
-                strFile->strings[key] = value;
+                strFile->strings[utf8Key] = utf8String;
             }
 
             isKey = !isKey;
@@ -281,7 +279,7 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
     YamlNode* node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
     for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
     {
-        node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
+        node->Add(iter->first, iter->second);
     }
 
     bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node);
@@ -304,22 +302,22 @@ void LocalizationSystem::UnloadStringFile(const FilePath& fileName)
     DVASSERT(0 && "Method do not implemented");
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString& key) const
+String LocalizationSystem::GetLocalizedString(const String& utf8Key) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
         StringFile* file = *it;
 
-        auto res = file->strings.find(key);
+        auto res = file->strings.find(utf8Key);
         if (res != file->strings.end())
         {
             return res->second;
         }
     }
-    return key;
+    return utf8Key;
 }
 
-WideString LocalizationSystem::GetLocalizedString(const WideString& key, const String& langId) const
+String LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
@@ -327,33 +325,33 @@ WideString LocalizationSystem::GetLocalizedString(const WideString& key, const S
 
         if (file->langId.compare(langId) == 0)
         {
-            auto res = file->strings.find(key);
+            auto res = file->strings.find(utf8Key);
             if (res != file->strings.end())
             {
                 return res->second;
             }
         }
     }
-    return key;
+    return utf8Key;
 }
 
-void LocalizationSystem::SetLocalizedString(const WideString& key, const WideString& value)
+void LocalizationSystem::SetLocalizedString(const String& utf8Key, const String& utf8Value)
 {
     // Update in all files currently loaded.
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
         StringFile* file = *it;
-        file->strings[key] = value;
+        file->strings[utf8Key] = utf8Value;
     }
 }
 
-void LocalizationSystem::RemoveLocalizedString(const WideString& key)
+void LocalizationSystem::RemoveLocalizedString(const String& utf8Key)
 {
     // Update in all files currently loaded.
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
         StringFile* file = *it;
-        file->strings.erase(key);
+        file->strings.erase(utf8Key);
     }
 }
 
@@ -384,14 +382,14 @@ void LocalizationSystem::Cleanup()
     SafeDeleteArray(dataHolder->data);
 }
 
-bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const
+bool LocalizationSystem::GetStringsForCurrentLocale(Map<String, String>& utf8Strings) const
 {
     for (auto iter = stringsList.begin(); iter != stringsList.end();
          ++iter)
     {
         if ((*iter)->langId == GetCurrentLocale())
         {
-            strings = (*iter)->strings;
+            utf8Strings = (*iter)->strings;
             return true;
         }
     }
@@ -413,5 +411,15 @@ String LocalizationSystem::GetCountryCode() const
     }
 
     return "en_US";
+}
+
+WideString LocalizedString(const String& utf8Key)
+{
+    return UTF8Utils::EncodeToWideString(LocalizationSystem::Instance()->GetLocalizedString(utf8Key));
+}
+
+WideString LocalizedString(const WideString& key)
+{
+    return UTF8Utils::EncodeToWideString(LocalizationSystem::Instance()->GetLocalizedString(UTF8Utils::EncodeToUTF8(key)));
 }
 };

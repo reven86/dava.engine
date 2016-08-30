@@ -1,8 +1,13 @@
-#include "FfmpegPlayer.h"
+#include "Platform/TemplateWin32/FfmpegPlayer.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "Sound/SoundSystem.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -798,4 +803,5 @@ void FfmpegPlayer::Stop()
 }
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

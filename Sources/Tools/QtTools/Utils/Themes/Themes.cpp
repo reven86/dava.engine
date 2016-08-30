@@ -145,11 +145,13 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::ButtonText, lightTextColor.lighter(130));
     lightPalette.setColor(QPalette::Disabled, QPalette::ButtonText, lightDisabledTextColor);
 
+    lightPalette.setColor(QPalette::Light, lightWindowColor);
+
     lightPalette.setColor(QPalette::BrightText, Qt::red);
     lightPalette.setColor(QPalette::Link, Qt::blue);
     lightPalette.setColor(QPalette::Disabled, QPalette::Light, lightWindowColor);
 
-    lightPalette.setColor(QPalette::Highlight, QColor(0x43, 0x8B, 0xBF));
+    lightPalette.setColor(QPalette::Highlight, QColor(0x88, 0xBB, 0xFF));
     lightPalette.setColor(QPalette::Inactive, QPalette::Highlight, lightWindowColor.darker(120));
     lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, lightWindowColor.darker(120));
 
@@ -169,6 +171,7 @@ void SetupDarkTheme()
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette darkPalette;
+
     darkPalette.setColor(QPalette::Window, darkWindowColor);
     darkPalette.setColor(QPalette::WindowText, darkTextColor);
 
@@ -186,6 +189,8 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Button, darkWindowColor);
     darkPalette.setColor(QPalette::ButtonText, darkTextColor);
     darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkDisabledTextColor);
+
+    darkPalette.setColor(QPalette::Light, darkWindowColor);
 
     darkPalette.setColor(QPalette::BrightText, Qt::red);
     darkPalette.setColor(QPalette::Link, QColor(0x2A, 0x82, 0xDA));
@@ -258,4 +263,9 @@ QColor GetRulerWidgetBackgroungColor()
 {
     return GetCurrentTheme() == Light ? lightWindowColor : darkWindowColor;
 }
+
+QColor GetHighligtedItemTextColor()
+{
+    return GetCurrentTheme() == Light ? QColor(0x37, 0x63, 0xAD) : QColor(0x88, 0xBB, 0xFF);
+};
 };

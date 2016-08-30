@@ -2,7 +2,6 @@
 #define __SCENE_SELECTION_SYSTEM_H__
 
 #include "Scene/SceneTypes.h"
-#include "Commands2/Base/Command2.h"
 #include "Scene/SelectableGroup.h"
 
 #include "SystemDelegates.h"
@@ -15,10 +14,10 @@
 #include "Render/UniqueStateSet.h"
 #include "Render/RenderHelper.h"
 
+class RECommandNotificationObject;
 class SceneCollisionSystem;
 class HoodSystem;
 class EntityModificationSystem;
-class Command2;
 class SceneEditor2;
 
 enum SelectionSystemDrawMode
@@ -81,7 +80,7 @@ public:
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
     void Process(DAVA::float32 timeElapsed) override;
-    void ProcessCommand(const Command2* command, bool redo);
+    void ProcessCommand(const RECommandNotificationObject& commandNotification);
 
     void Input(DAVA::UIEvent* event) override;
 
@@ -97,8 +96,8 @@ public:
     void Draw();
     void CancelSelection();
 
-    void AddSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
-    void RemoveSelectionDelegate(SceneSelectionSystemDelegate* delegate_);
+    void AddDelegate(SceneSelectionSystemDelegate* delegate_);
+    void RemoveDelegate(SceneSelectionSystemDelegate* delegate_);
 
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;

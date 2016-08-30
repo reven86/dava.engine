@@ -35,8 +35,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
     { //calculate digest for scene file
         MD5::MD5Digest fileDigest;
         MD5::ForFile(scenePathname, fileDigest);
-
-        Memcpy(key.data(), fileDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);
+        key.SetPrimaryKey(fileDigest);
     }
 
     { //calculate digest for params
@@ -52,7 +51,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
         params += Format("Optimized: %u", optimize);
 
         MD5::ForData(reinterpret_cast<const uint8*>(params.data()), static_cast<uint32>(params.size()), sceneParamsDigest);
-        Memcpy(key.data() + MD5::MD5Digest::DIGEST_SIZE, sceneParamsDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);
+        key.SetSecondaryKey(sceneParamsDigest);
     }
 }
 
@@ -358,11 +357,11 @@ bool IsImageSizeValidForTextures(const DAVA::ImageInfo& info)
 
 namespace SceneExporterLocal
 {
-void CompressNotActualTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor)
+void CompressNotActualTexture(const DAVA::eGPUFamily gpu, DAVA::TextureConverter::eConvertQuality quality, DAVA::TextureDescriptor& descriptor, bool forceCompress)
 {
     DVASSERT(GPUFamilyDescriptor::IsGPUForDevice(gpu));
 
-    const bool needToConvert = !descriptor.IsCompressedTextureActual(gpu);
+    const bool needToConvert = forceCompress || !descriptor.IsCompressedTextureActual(gpu);
     if (needToConvert)
     {
         DAVA::Logger::Warning("Need recompress texture: %s", descriptor.GetSourceTexturePathname().GetAbsolutePathname().c_str());
@@ -467,7 +466,7 @@ bool SceneExporter::ExportTextures(DAVA::TextureDescriptor& descriptor)
 
                 if (exportFailed.count(gpu) == 0)
                 {
-                    SceneExporterLocal::CompressNotActualTexture(gpu, exportingParams.quality, descriptor);
+                    SceneExporterLocal::CompressNotActualTexture(gpu, exportingParams.quality, descriptor, exportingParams.forceCompressTextures);
                 }
             }
             else if (gpu != DAVA::eGPUFamily::GPU_ORIGIN)

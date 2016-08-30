@@ -93,7 +93,7 @@ void EntityModificationSystem::ResetTransform(const SelectableGroup& entities)
         sceneEditor->BeginBatch("Multiple transform", entities.GetSize());
         for (const Selectable& item : entities.GetContent())
         {
-            sceneEditor->Exec(Command2::Create<TransformCommand>(item, item.GetLocalTransform(), zeroTransform));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(item, item.GetLocalTransform(), zeroTransform)));
         }
         sceneEditor->EndBatch();
     }
@@ -114,10 +114,6 @@ bool EntityModificationSystem::InCloneDoneState() const
     return (cloneState == CLONE_DONE);
 }
 
-void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
-{
-}
-
 void EntityModificationSystem::Input(DAVA::UIEvent* event)
 {
     if (IsLocked() || (collisionSystem == nullptr))
@@ -136,7 +132,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
     if (!inModifState)
     {
         // can we start modification???
-        if (ModifCanStartByMouse(selectedEntities))
+        if (ModifCanStartByMouse(transformableSelection))
         {
             SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2*)GetScene(), &selectedEntities);
 
@@ -154,7 +150,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
                     }
 
                     // set entities to be modified
-                    BeginModification(selectedEntities);
+                    BeginModification(transformableSelection);
 
                     // init some values, needed for modifications
                     modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
@@ -459,7 +455,7 @@ void EntityModificationSystem::ApplyModification()
         sceneEditor->BeginBatch("Multiple transform", count);
         for (size_t i = 0; i < count; ++i)
         {
-            sceneEditor->Exec(Command2::Create<TransformCommand>(modifEntities[i].object, modifEntities[i].originalTransform, modifEntities[i].object.GetLocalTransform()));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(modifEntities[i].object, modifEntities[i].originalTransform, modifEntities[i].object.GetLocalTransform())));
         }
         sceneEditor->EndBatch();
     }
@@ -777,7 +773,7 @@ void EntityModificationSystem::CloneEnd()
                 cloneParent->RemoveNode(clonedEntities[i]);
 
                 // and add it once again with command
-                sceneEditor->Exec(Command2::Create<EntityAddCommand>(clonedEntities[i], cloneParent));
+                sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(clonedEntities[i], cloneParent)));
             }
 
             // make cloned entity selected
@@ -829,7 +825,7 @@ void EntityModificationSystem::LockTransform(const SelectableGroup& entities, bo
     sceneEditor->BeginBatch("Lock entities", count);
     for (DAVA::Entity* entity : entities.ObjectsOfType<DAVA::Entity>())
     {
-        sceneEditor->Exec(Command2::Create<EntityLockCommand>(entity, lock));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityLockCommand(entity, lock)));
     }
     sceneEditor->EndBatch();
 }
@@ -881,7 +877,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
             sceneEditor->BeginBatch(commandMessage, entityList.size());
 
             // bake render object
-            sceneEditor->Exec(Command2::Create<BakeGeometryCommand>(ro, bakeTransform));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new BakeGeometryCommand(ro, bakeTransform)));
 
             // inverse bake to be able to move object on same place
             // after it geometry was baked
@@ -896,7 +892,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                 DAVA::Entity* en = *it;
                 DAVA::Matrix4 origTransform = en->GetLocalTransform();
                 DAVA::Matrix4 newTransform = afterBakeTransform * origTransform;
-                sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(en), origTransform, newTransform));
+                sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(Selectable(en), origTransform, newTransform)));
 
                 // also modify childs transform to make them be at
                 // right position after parent entity changed
@@ -907,7 +903,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
                     DAVA::Matrix4 childOrigTransform = childEntity->GetLocalTransform();
                     DAVA::Matrix4 childNewTransform = childOrigTransform * bakeTransform;
 
-                    sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(childEntity), childOrigTransform, childNewTransform));
+                    sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(Selectable(childEntity), childOrigTransform, childNewTransform)));
                 }
             }
 
@@ -932,14 +928,14 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
         // transform parent entity
         DAVA::Matrix4 transform;
         transform.SetTranslationVector(newPivotPos - entity->GetLocalTransform().GetTranslationVector());
-        sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(Selectable(entity), entity->GetLocalTransform(), entity->GetLocalTransform() * transform)));
 
         // transform child entities with inversed parent transformation
         transform.Inverse();
         for (DAVA::uint32 i = 0; i < count; ++i)
         {
             DAVA::Entity* childEntity = entity->GetChild(i);
-            sceneEditor->Exec(Command2::Create<TransformCommand>(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(Selectable(childEntity), childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform)));
         }
 
         sceneEditor->EndBatch();
@@ -1033,7 +1029,7 @@ void EntityModificationSystem::ApplyMoveValues(ST_Axis axis, const SelectableGro
 
         DAVA::Matrix4 newMatrix = origMatrix;
         newMatrix.SetTranslationVector(newPos);
-        sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(item, origMatrix, newMatrix)));
     }
     sceneEditor->EndBatch();
 }
@@ -1084,7 +1080,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * rotationMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(item, origMatrix, newMatrix)));
         }
     }
 
@@ -1093,18 +1089,18 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
 
 void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGroup& selection, const DAVA::Vector3& values, bool absoluteTransform)
 {
-    DAVA::float32 scaleValue = 1.0f;
+    DAVA::float32 axisScaleValue = 1.0f;
 
     switch (axis)
     {
     case ST_AXIS_X:
-        scaleValue = values.x;
+        axisScaleValue = values.x;
         break;
     case ST_AXIS_Y:
-        scaleValue = values.y;
+        axisScaleValue = values.y;
         break;
     case ST_AXIS_Z:
-        scaleValue = values.z;
+        axisScaleValue = values.z;
         break;
     default:
         DVASSERT_MSG(0, "Scaling must be uniform, unable to scale via several axis");
@@ -1116,6 +1112,8 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
 
     for (const Selectable& item : selection.GetContent())
     {
+        DAVA::float32 scaleValue = axisScaleValue;
+
         DAVA::Matrix4 origMatrix = item.GetLocalTransform();
 
         DAVA::Vector3 pos, scale, rotate;
@@ -1138,9 +1136,43 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
             DAVA::Matrix4 newMatrix = origMatrix * moveToZeroPos * scaleMatrix * moveFromZeroPos;
             newMatrix.SetTranslationVector(origMatrix.GetTranslationVector());
 
-            sceneEditor->Exec(Command2::Create<TransformCommand>(item, origMatrix, newMatrix));
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new TransformCommand(item, origMatrix, newMatrix)));
         }
     }
 
     sceneEditor->EndBatch();
+}
+
+void EntityModificationSystem::UpdateTransformableSelection() const
+{
+    SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());
+    SceneSelectionSystem* selectionSystem = sc->selectionSystem;
+    if (selectionSystem == nullptr)
+    {
+        return;
+    }
+
+    const SelectableGroup& selection = selectionSystem->GetSelection();
+
+    if (selection != currentSelection)
+    {
+        currentSelection = selection;
+
+        transformableSelection.Clear();
+        for (const Selectable& item : currentSelection.GetContent())
+        {
+            if (item.SupportsTransformType(transformType))
+            {
+                transformableSelection.Add(item.GetContainedObject(), selectionSystem->GetUntransformedBoundingBox(item.GetContainedObject()));
+            }
+        }
+
+        transformableSelection.RebuildIntegralBoundingBox();
+    }
+}
+
+const SelectableGroup& EntityModificationSystem::GetTransformableSelection() const
+{
+    UpdateTransformableSelection();
+    return transformableSelection;
 }

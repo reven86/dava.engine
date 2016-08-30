@@ -4963,6 +4963,101 @@ fail:
 }
 
 
+static int _wrap_AutotestingSystemLua_LeftMouseClickDown(lua_State* L) {
+    int SWIG_arg = 0;
+    DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+    DAVA::Vector2 *arg2 = 0 ;
+    
+    SWIG_check_num_args("DAVA::AutotestingSystemLua::LeftMouseClickDown",2,2)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::LeftMouseClickDown",1,"DAVA::AutotestingSystemLua *");
+    if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::LeftMouseClickDown",2,"DAVA::Vector2 const &");
+        
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_LeftMouseClickDown",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    }
+    
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_LeftMouseClickDown",2,SWIGTYPE_p_DAVA__Vector2);
+    }
+    
+    (arg1)->LeftMouseClickDown((DAVA::Vector2 const &)*arg2);
+        
+    return SWIG_arg;
+        
+    if(0) SWIG_fail;
+        
+fail:
+    lua_error(L);
+    return SWIG_arg;
+}
+
+
+static int _wrap_AutotestingSystemLua_MouseWheel(lua_State* L) {
+    int SWIG_arg = 0;
+    DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+    DAVA::Vector2 *arg2 = 0 ;
+    DAVA::float32 arg3 ;
+    DAVA::float32 arg4 ;
+    
+    SWIG_check_num_args("DAVA::AutotestingSystemLua::MouseWheel",4,4)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MouseWheel",1,"DAVA::AutotestingSystemLua *");
+    if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MouseWheel",2,"DAVA::Vector2 const &");
+    if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MouseWheel",3,"DAVA::float32");
+    if(!lua_isnumber(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::MouseWheel",4,"DAVA::float32");
+    
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_MouseWheel",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    }
+
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_MouseWheel",2,SWIGTYPE_p_DAVA__Vector2);
+    }
+    
+    arg3 = (DAVA::float32)lua_tonumber(L, 3);
+    arg4 = (DAVA::float32)lua_tonumber(L, 4);
+    
+    (arg1)->MouseWheel((DAVA::Vector2 const &)*arg2, arg3, arg4);
+    
+    return SWIG_arg;
+    
+    if(0) SWIG_fail;
+    
+fail:
+    lua_error(L);
+    
+    return SWIG_arg;
+}
+    
+        
+static int _wrap_AutotestingSystemLua_LeftMouseClickUp(lua_State* L) {
+    int SWIG_arg = 0;
+    DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+    DAVA::Vector2 *arg2 = 0 ;
+    
+    SWIG_check_num_args("DAVA::AutotestingSystemLua::LeftMouseClickUp",2,2)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::LeftMouseClickUp",1,"DAVA::AutotestingSystemLua *");
+    if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::LeftMouseClickUp",2,"DAVA::Vector2 const &");
+        
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_LeftMouseClickUp",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    }
+
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__Vector2,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_LeftMouseClickUp",2,SWIGTYPE_p_DAVA__Vector2);
+    }
+
+    (arg1)->LeftMouseClickUp((DAVA::Vector2 const &)*arg2);
+        
+    return SWIG_arg;
+    
+    if(0) SWIG_fail;
+        
+fail:
+    lua_error(L);
+    return SWIG_arg;
+}
+    
+    
 static int _wrap_AutotestingSystemLua_OnTestFinished(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -5888,7 +5983,30 @@ fail:
   return SWIG_arg;
 }
 
-
+    
+static int _wrap_AutotestingSystemLua_ClickSystemBack(lua_State* L) {
+    int SWIG_arg = 0;
+    DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+        
+    SWIG_check_num_args("DAVA::AutotestingSystemLua::ClickSystemBack",1,1)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ClickSystemBack",1,"DAVA::AutotestingSystemLua *");
+        
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+        SWIG_fail_ptr("AutotestingSystemLua_ClickSystemBack",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    }
+        
+    (arg1)->ClickSystemBack();
+        
+    return SWIG_arg;
+        
+    if(0) SWIG_fail;
+        
+fail:
+    lua_error(L);
+    return SWIG_arg;
+}
+    
+    
 static int _wrap_AutotestingSystemLua_ProcessInput(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -6423,6 +6541,10 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "TouchUp", _wrap_AutotestingSystemLua_TouchUp},
     { "ScrollToControl", _wrap_AutotestingSystemLua_ScrollToControl},
     { "KeyPress", _wrap_AutotestingSystemLua_KeyPress},
+    { "ClickSystemBack", _wrap_AutotestingSystemLua_ClickSystemBack},
+    { "LeftMouseClickDown", _wrap_AutotestingSystemLua_LeftMouseClickDown},
+    { "LeftMouseClickUp", _wrap_AutotestingSystemLua_LeftMouseClickUp},
+    { "MouseWheel", _wrap_AutotestingSystemLua_MouseWheel},
     { "ProcessInput", _wrap_AutotestingSystemLua_ProcessInput},
     { "SetText", _wrap_AutotestingSystemLua_SetText},
     { "CheckText", _wrap_AutotestingSystemLua_CheckText},
