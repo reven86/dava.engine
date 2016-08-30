@@ -1,4 +1,4 @@
-﻿#include "Base/Platform.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -414,7 +414,7 @@ void DeviceInfoPrivate::OnCarrierLineChange(::Windows::ApplicationModel::Calls::
             if (line->NetworkName != сarrierName)
             {
                 сarrierName = line->NetworkName;
-                DeviceInfo::сarrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(сarrierName->Data()));
+                DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(сarrierName->Data()));
             }
         });
     }

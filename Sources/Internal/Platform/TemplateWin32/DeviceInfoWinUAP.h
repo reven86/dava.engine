@@ -1,4 +1,4 @@
-﻿#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
+#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
 #define __FRAMEWORK__DEVICEINFO_WINUAP__
 
 #include "Base/Platform.h"

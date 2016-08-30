@@ -6,11 +6,8 @@ import android.content.Context;
 import android.telephony.PhoneStateListener;
 import android.util.Log;
 import android.telephony.TelephonyManager;
-import android.telephony.ServiceState;
 
-public class PhoneServiceStateListener extends PhoneStateListener {
-    final static String TAG = "PhoneServiceStateListener";
-
+public class DataConnectionStateListener extends PhoneStateListener {
     private String carrierName = GetCarrierName();
     
     private native void OnCarrierNameChanged(); 

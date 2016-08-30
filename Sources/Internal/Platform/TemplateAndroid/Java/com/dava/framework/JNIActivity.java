@@ -73,7 +73,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     
     private static JNIActivity activity = null;
     protected static SignalStrengthListener signalStrengthListener = null;
-    protected static PhoneServiceStateListener phoneServiceStateListener = null;
+    protected static DataConnectionStateListener dataConnectionStateListener = null;
 
     public boolean GetIsPausing()
     {
@@ -156,14 +156,12 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
         if (tm != null) {
             signalStrengthListener = new SignalStrengthListener();
-            phoneServiceStateListener = new PhoneServiceStateListener();
+            dataConnectionStateListener = new DataConnectionStateListener();
             tm.listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);
-            tm.listen(phoneServiceStateListener, PhoneServiceStateListener.LISTEN_SERVICE_STATE);
-            tm.listen(phoneServiceStateListener, PhoneServiceStateListener.LISTEN_DATA_CONNECTION_STATE);
+            tm.listen(dataConnectionStateListener, DataConnectionStateListener.LISTEN_DATA_CONNECTION_STATE);
         } else {
             Log.d("", "no singalStrengthListner");
         }
-        Log.d("!!!!!", "!!!!! jni activ");
 
         JNIApplication.mainCPPThread = new Thread(new Runnable() 
         {

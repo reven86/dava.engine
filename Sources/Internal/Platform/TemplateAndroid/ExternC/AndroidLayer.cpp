@@ -79,7 +79,7 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestr
 
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
 //DeviceInfo
-JNIEXPORT void JNICALL Java_com_dava_framework_PhoneServiceStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis);
+JNIEXPORT void JNICALL Java_com_dava_framework_DataConnectionStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis);
 };
 
 namespace
@@ -487,9 +487,9 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
     }
 }
 
-void Java_com_dava_framework_PhoneServiceStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis)
+void Java_com_dava_framework_DataConnectionStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis)
 {
-    DAVA::DeviceInfo::carrierNameChaged.Emit(DAVA::DeviceInfo::GetCarrierName());
+    DAVA::DeviceInfo::carrierNameChanged.Emit(DAVA::DeviceInfo::GetCarrierName());
 }
 
 void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis)

@@ -1,4 +1,4 @@
-﻿#include "Platform/DeviceInfo.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
     #include "Platform/TemplateiOS/DeviceInfoiOS.h"
@@ -124,7 +124,6 @@ void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullIni
     (void)screenInfo;
     (void)fullInit;
     GetPrivateImpl()->InitializeScreenInfo();
-    Logger::Info("!!!!!! GetCarrierName = %s", DeviceInfo::GetCarrierName().c_str());
 #endif
 }
 
@@ -148,6 +147,6 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-Signal<String> DeviceInfo::carrierNameChaged;
+Signal<String> DeviceInfo::carrierNameChanged;
 
 } // namespace DAVA

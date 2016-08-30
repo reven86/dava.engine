@@ -407,9 +407,9 @@ public class JNIDeviceInfo {
 
     public static String GetCarrierName()
     {
-        if (JNIActivity.phoneServiceStateListener != null)
+        if (JNIActivity.dataConnectionStateListener != null)
         {
-            return JNIActivity.phoneServiceStateListener.GetCarrierName();
+            return JNIActivity.dataConnectionStateListener.GetCarrierName();
         }
         return "";
     }
