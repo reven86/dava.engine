@@ -560,7 +560,7 @@ bool FileSystem::IsHidden(const FilePath& pathToCheck) const
 {
 #if defined(__DAVAENGINE_WINDOWS__)
     WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-    BOOL areAttributesGot = GetFileAttributesEx(StringToWString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
+    BOOL areAttributesGot = GetFileAttributesExW(StringToWString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
     return (areAttributesGot == TRUE && (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0);
 #else
     String name = pathToCheck.IsDirectoryPathname() ? pathToCheck.GetLastDirectoryName() : pathToCheck.GetFilename();
