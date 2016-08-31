@@ -43,6 +43,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 24,
         EGL_STENCIL_SIZE, 8,
         EGL_NONE
@@ -54,6 +55,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 16,
         EGL_STENCIL_SIZE, 8,
         EGL_DEPTH_ENCODING_NV, EGL_DEPTH_ENCODING_NONLINEAR_NV,
@@ -66,6 +68,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 16,
         EGL_STENCIL_SIZE, 8,
         EGL_NONE

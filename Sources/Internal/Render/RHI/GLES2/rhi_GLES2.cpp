@@ -33,14 +33,12 @@ bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 
-#if defined(__DAVAENGINE_ANDROID__)
-
+#if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
 volatile GLCallRegisters gl_call_registers;
+#endif
 
-#elif defined(__DAVAENGINE_WIN32__)
-
+#if defined(__DAVAENGINE_WIN32__)
 HDC _GLES2_WindowDC = 0;
-
 #endif
 
 namespace rhi

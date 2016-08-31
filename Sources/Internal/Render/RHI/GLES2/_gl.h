@@ -317,22 +317,29 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
     #define GL_DEBUG_OUTPUT 0x92E0
 #endif
 
-#if 0
-#define GL_CALL(expr) \
-{ \
-    expr; \
-    GLint err = glGetError(); \
-    while (err != GL_NO_ERROR) { \
-        DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); err = glGetError(); } \
-}
-
-#else
-
 #if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
 
 extern volatile struct alignas(32) GLCallRegisters {
     DAVA::uint8 registers[64];
 } gl_call_registers;
+
+#endif
+
+#if 1
+#define GL_CALL(expr) \
+{ \
+    expr; \
+    GLint err = glGetError(); \
+    while (err != GL_NO_ERROR) \
+    { \
+        DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); \
+        err = glGetError(); \
+    } \
+}
+
+#else
+
+#if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
 
 #define GL_CALL(expr) \
 { \
