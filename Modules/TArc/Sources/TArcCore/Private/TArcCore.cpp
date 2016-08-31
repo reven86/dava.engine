@@ -24,7 +24,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class Core::Impl : public TrackedObject, public CoreInterface
+class Core::Impl : public CoreInterface
 {
 public:
     Impl(Engine& engine_, Core* core_)
@@ -601,10 +601,10 @@ Core::Core(Engine& engine)
         impl.reset(new GuiImpl(engine, this));
     }
 
-    engine.update.Connect(impl.get(), &Impl::OnFrame);
-    engine.gameLoopStarted.Connect(impl.get(), &Impl::OnLoopStarted);
-    engine.gameLoopStopped.Connect(impl.get(), &Impl::OnLoopStopped);
-    engine.windowCreated.Connect(impl.get(), &Impl::OnWindowCreated);
+    engine.update.Connect(this, &Core::OnFrame);
+    engine.gameLoopStarted.Connect(this, &Core::OnLoopStarted);
+    engine.gameLoopStopped.Connect(this, &Core::OnLoopStopped);
+    engine.windowCreated.Connect(this, &Core::OnWindowCreated);
 }
 
 Core::~Core() = default;
@@ -627,6 +627,30 @@ void Core::AddModule(ClientModule* module)
 void Core::AddModule(ControllerModule* module)
 {
     impl->AddModule(module);
+}
+
+void Core::OnLoopStarted()
+{
+    DVASSERT(impl);
+    impl->OnLoopStarted();
+}
+
+void Core::OnLoopStopped()
+{
+    DVASSERT(impl);
+    impl->OnLoopStopped();
+}
+
+void Core::OnFrame(float32 delta)
+{
+    DVASSERT(impl);
+    impl->OnFrame(delta);
+}
+
+void Core::OnWindowCreated(DAVA::Window& w)
+{
+    DVASSERT(impl);
+    impl->OnWindowCreated(w);
 }
 
 } // namespace TArc

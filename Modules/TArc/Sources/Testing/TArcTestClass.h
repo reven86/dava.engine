@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TArcCore/TArcCore.h"
+
 #include "UnitTests/TestClass.h"
 
 namespace DAVA
@@ -7,19 +9,20 @@ namespace DAVA
 namespace TArc
 {
 
-class Core;
 class TestClass: UnitTests::TestClass
 {
+    static const double testTimeLimit;
 public:
+    ~TestClass();
+
+    void SetUp(const String& testName) override;
     void Update(float32 timeElapsed, const String& testName) override;
     bool TestComplete(const String& testName) const override;
 
-    void Init(Core& core);
-
-    virtual void CreateTestedModules();
+    virtual void CreateTestedModules() {}
 
 private:
-    Core& core;
+    std::unique_ptr<Core> core;
 };
 
 } // namespace TArc

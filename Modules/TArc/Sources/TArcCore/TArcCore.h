@@ -4,6 +4,7 @@
 #include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
+#include "Functional/SignalBase.h"
 
 #include <memory>
 
@@ -17,7 +18,7 @@ class ClientModule;
 class ControllerModule;
 class ConsoleModule;
 
-class Core final
+class Core final : public TrackedObject
 {
 public:
     Core(Engine& engine);
@@ -53,6 +54,12 @@ private:
     void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);
+
+    friend class TestClass;
+    void OnLoopStarted();
+    void OnLoopStopped();
+    void OnFrame(float32 delta);
+    void OnWindowCreated(DAVA::Window& w);
 
 private:
     class Impl;

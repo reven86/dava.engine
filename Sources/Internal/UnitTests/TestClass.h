@@ -17,22 +17,6 @@ struct TestClassTypeKeeper
 
 class TestClass
 {
-    struct TestInfo
-    {
-        using Clock = std::chrono::high_resolution_clock;
-        using TimePoint = Clock::time_point;
-
-        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
-            : name(name_)
-            , testFunction(testFunction_)
-        {
-        }
-
-        TimePoint startTime;
-        String name;
-        void (*testFunction)(TestClass*);
-    };
-
 public:
     TestClass() = default;
     virtual ~TestClass() = default;
@@ -53,7 +37,23 @@ protected:
     String PrettifyTypeName(const String& name) const;
     String RemoveTestPostfix(const String& name) const;
 
-private:
+protected:
+    struct TestInfo
+    {
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = Clock::time_point;
+
+        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
+            : name(name_)
+            , testFunction(testFunction_)
+        {
+        }
+
+        TimePoint startTime;
+        String name;
+        void (*testFunction)(TestClass*);
+    };
+
     Vector<TestInfo> tests;
 };
 
