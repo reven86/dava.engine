@@ -16,14 +16,6 @@ public:
     {
     }
 
-    const char* what() const override
-    {
-        // TODO:
-        // ...
-
-        return std::runtime_error::what();
-    }
-
     String file;
     size_t line;
     Vector<Debug::StackFrame> callstack;

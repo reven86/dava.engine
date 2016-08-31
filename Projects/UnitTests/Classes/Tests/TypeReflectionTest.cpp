@@ -340,7 +340,7 @@ DAVA_TESTCLASS (TypeReflection)
     }
 
     template <typename T>
-    void DoValueSetGetTest(DAVA::Reflection & ref, DAVA::Function<T()> & realGetter, DAVA::Function<void(T)> & realSetter, const T& v1, const T& v2)
+    void DoValueSetGetTest(DAVA::Reflection ref, DAVA::Function<T()> & realGetter, DAVA::Function<void(T)> & realSetter, const T& v1, const T& v2)
     {
         DAVA::Any a = ref.GetValue();
         TEST_VERIFY(a.Get<T>() == realGetter());

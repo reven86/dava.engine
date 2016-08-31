@@ -25,7 +25,7 @@ public:
     void SetPermanentName(const String&) const;
 
     const CtorWrapper* GetCtor(const AnyFn::Params& params = AnyFn::Params()) const;
-    Vector<const CtorWrapper*> ReflectedType::GetCtors() const;
+    Vector<const CtorWrapper*> GetCtors() const;
 
     const DtorWrapper* GetDtor() const;
 
