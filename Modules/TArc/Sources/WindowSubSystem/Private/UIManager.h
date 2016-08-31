@@ -15,7 +15,7 @@ class PropertiesHolder;
 class UIManager final: public UI
 {
 public:
-    UIManager(const PropertiesHolder &holder);
+    UIManager(PropertiesHolder &&holder);
     ~UIManager();
 
     void InitializationFinished();

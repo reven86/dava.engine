@@ -13,24 +13,48 @@ namespace TArc
 struct PropertiesHolder::Impl
 {
     Impl(const String &name_)
-        : name(name_)
+        : name(QString::fromStdString(name_))
     {
-
+        //read document;
     }
 
-    Impl(const Impl &impl_, const String &name_)
-        : name(name_)
+    Impl(Impl *impl_, const String &name_)
+        : name(QString::fromStdString(name_))
+        , parent(impl_)
     {
-
+        jsonObject = parent->jsonObject[name].toObject();
     }
 
-    Impl(const Impl &&impl)
+    ~Impl()
     {
-        name = std::move(impl.name);
+        if (wasChanged)
+        {
+            //save to parent
+        }
     }
-    String name;
-    QJsonObject data;
-    QJSonValueRef valueRef;
+
+    void Save(const Any &value, const String &key)
+    {
+        wasChanged = true;
+        //to jsonValue
+    }
+
+    Any Load(const String &key, const Any& defaultValue)
+    {
+        auto iter = jsonObject.find(QString::fromStdString(key));
+        if (iter == jsonObject.end())
+        {
+            return defaultValue;
+        }
+        //from jsonValue
+    }
+
+private:
+    Impl *parent = nullptr;
+    QJsonObject jsonObject;
+    QString name;
+    bool wasChanged = false;
+    
 };
 
 PropertiesHolder::PropertiesHolder(const String &projectName)
@@ -39,30 +63,21 @@ PropertiesHolder::PropertiesHolder(const String &projectName)
 
 }
 
-PropertiesHolder::PropertiesHolder(const PropertiesHolder &parent, const String &name)
-    : impl(new Impl(parent.impl.get(), name))
-{
-
-}
-
 PropertiesHolder::~PropertiesHolder() = default;
 
-PropertiesHolder::PropertiesHolder(const PropertiesHolder &holder)
-    : impl(holder.impl)
-{
-}
 
 PropertiesHolder::PropertiesHolder(PropertiesHolder &&holder)
     : impl(std::move(holder.impl))
 {
 }
 
-PropertiesHolder& PropertiesHolder::operator = (const PropertiesHolder &holder)
-{
-}
-
 PropertiesHolder& PropertiesHolder::operator = (PropertiesHolder &&holder)
 {
+    if (this != &holder)
+    {
+        impl = std::move(holder.impl);
+    }
+    return *this;
 }
 
 PropertiesHolder PropertiesHolder::SubHolder(const String &holderName) const
@@ -70,19 +85,25 @@ PropertiesHolder PropertiesHolder::SubHolder(const String &holderName) const
     return PropertiesHolder(*this, holderName);
 }
 
-void PropertiesHolder::Save(const Any &value, const String &key)
+PropertiesHolder::PropertiesHolder(const PropertiesHolder &parent, const String &name)
+    : impl(new Impl(parent.impl.get(), name))
 {
 
+}
+
+void PropertiesHolder::Save(const Any &value, const String &key)
+{
+    impl->Save(value, key);
 }
 
 Any PropertiesHolder::Load(const String &key, const Any& defaultValue) const
 {
-    return Any();
+    return impl->Load(key, defaultValue);
 }
 
 Any PropertiesHolder::Load(const String &key) const
 {
-    return Any();
+    return impl->Load(key, Any());
 }
 
 } // namespace TArc

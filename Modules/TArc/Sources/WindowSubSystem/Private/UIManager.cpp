@@ -268,8 +268,8 @@ struct UIManager::Impl
     PropertiesHolder propertiesHolder;
     bool initializationFinished = false;
 
-    Impl(const PropertiesHolder &propertiesHolder_)
-        : propertiesHolder(propertiesHolder_)
+    Impl(PropertiesHolder &&givenPropertiesHolder)
+        : propertiesHolder(std::move(givenPropertiesHolder))
     {
 
     }
@@ -309,8 +309,8 @@ struct UIManager::Impl
     }
 };
 
-UIManager::UIManager(const PropertiesHolder &holder)
-    : impl(new Impl(holder))
+UIManager::UIManager(PropertiesHolder &&holder)
+    : impl(new Impl(std::move(holder)))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
     impl->addFunctions[PanelKey::CentralPanel] = MakeFunction(&UIManagerDetail::AddCentralPanel);
