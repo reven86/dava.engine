@@ -12,20 +12,6 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
-#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
-#define GL_RGBA32F GL_RGBA32F_ARB
-#endif
-#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_EXT)
-#define GL_RGBA32F GL_RGBA32F_EXT
-#endif
-
-#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_ARB)
-#define GL_RGBA16F GL_RGBA16F_ARB
-#endif
-#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_EXT)
-#define GL_RGBA16F GL_RGBA16F_EXT
-#endif
-
 GLuint _GLES2_Binded_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
@@ -40,6 +26,7 @@ GLuint _GLES2_LastSetVB = 0;
 GLuint _GLES2_LastSetTex0 = 0;
 GLenum _GLES2_LastSetTex0Target = GL_TEXTURE_2D;
 int _GLES2_LastActiveTexture = -1;
+bool _GLES2_IsDebugSupported = false;
 bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
@@ -167,8 +154,7 @@ gles2_TextureFormatSupported(TextureFormat format)
     return supported;
 }
 
-static void
-gles_check_GL_extensions()
+static void gles_check_GL_extensions()
 {
     const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 
@@ -199,10 +185,10 @@ gles_check_GL_extensions()
         _GLES2_IsGlDepth24Stencil8Supported = true;
 #endif
 
+        _GLES2_IsDebugSupported = strstr(ext, "GL_KHR_debug") != nullptr;
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
-
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
-
+        
         if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
         {
             float32 value = 0.0f;
@@ -214,6 +200,8 @@ gles_check_GL_extensions()
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
     if (!IsEmptyString(version))
     {
+        DAVA::Logger::Info("OpenGL version: %s", version);
+        
         int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
         if (dotChar && dotChar != version && *(dotChar + 1))
@@ -232,18 +220,33 @@ gles_check_GL_extensions()
                 Short_Int_Supported = true;
             }
 #ifdef __DAVAENGINE_ANDROID__
-            if (majorVersion >= 3)
-            {
-                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
-                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
-                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
-            }
-            else
-            {
+            if (glDrawElementsInstanced == nullptr)
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+            
+            if (glDrawArraysInstanced == nullptr)
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+            
+            if (glVertexAttribDivisor == nullptr)
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
-            }
+            
+            glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
+            if (glRenderbufferStorageMultisample == nullptr)
+                glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
+            
+            glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
+            if (glBlitFramebuffer == nullptr)
+                glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
+            
+            glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
+            if (glDebugMessageControl == nullptr)
+                glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
+            
+            glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
+            if (glDebugMessageCallback == nullptr)
+                glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
+            
+            DAVA::Logger::Info("glRenderbufferStorageMultisample = %p", glRenderbufferStorageMultisample);
+            DAVA::Logger::Info("glBlitFramebuffer = %p", glBlitFramebuffer);
 #endif
         }
         else
@@ -266,9 +269,15 @@ gles_check_GL_extensions()
         }
     }
 
+    GLint maxSamples = 1;
+    GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
+    DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
+    
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
+        DAVA::Logger::Info("OpenGL rendered: %s", renderer);
+        
         memcpy(MutableDeviceCaps::Get().deviceDescription, renderer, strlen(renderer));
 
         if (strstr(renderer, "Mali"))
@@ -285,65 +294,27 @@ gles_check_GL_extensions()
             //corrupt 'callee-saved' Neon registers (q4-q7).
             //So, we just restore it after any GL-call.
             _GLES2_ValidateNeonCalleeSavedRegisters = true;
+            DAVA::Logger::Info("_GLES2_ValidateNeonCalleeSavedRegisters = %d", (int)_GLES2_ValidateNeonCalleeSavedRegisters);
         }
     }
     
-    GLint maxSamples = 1;
-    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+#ifdef __DAVAENGINE_ANDROID__
+    
+#if 0 && defined(__DAVAENGINE_DEBUG__)
+    if (_GLES2_IsDebugSupported)
+    {
+        android_gl_enable_debug();
+    }
+#endif
+    // cancel multisampling support, if there methods are not initialized
+    if ((glRenderbufferStorageMultisample == nullptr) || (glBlitFramebuffer == nullptr))
+    {
+        maxSamples = 1;
+    }
+#endif
+    
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 }
-
-//------------------------------------------------------------------------------
-#if defined(__DAVAENGINE_WIN32__)
-
-static void GLAPIENTRY
-_OGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
-{
-    /*
-    const char* ssource     = "unknown";
-    const char* stype       = "unknown";
-    const char* sseverity   = "unknown";
-
-    switch( source )
-    {
-        case GL_DEBUG_SOURCE_API                : ssource = "API"; break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM      : ssource = "window system"; break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER    : ssource = "shader compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY        : ssource = "third party"; break;
-        case GL_DEBUG_SOURCE_APPLICATION        : ssource = "application"; break;
-        case GL_DEBUG_SOURCE_OTHER              : ssource = "other"; break;
-        default                                 : ssource= "unknown"; break;
-    }
-    
-    switch( type )
-    {
-        case GL_DEBUG_TYPE_ERROR                : stype = "error"; break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR  : stype = "deprecated behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR   : stype = "undefined behaviour"; break;
-        case GL_DEBUG_TYPE_PORTABILITY          : stype = "portabiliy"; break;
-        case GL_DEBUG_TYPE_PERFORMANCE          : stype = "performance"; break;
-        case GL_DEBUG_TYPE_OTHER                : stype = "other"; break;
-        default                                 : stype = "unknown"; break;
-    }
-    
-    switch( severity )
-    {
-        case GL_DEBUG_SEVERITY_HIGH             : sseverity = "high"; break;
-        case GL_DEBUG_SEVERITY_MEDIUM           : sseverity = "medium"; break;
-        case GL_DEBUG_SEVERITY_LOW              : sseverity = "low"; break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION     : sseverity = "notification"; break;
-        default                                 : sseverity = "unknown"; break;
-    }
-*/
-    if (type == GL_DEBUG_TYPE_PERFORMANCE)
-        Trace("[gl.warning] %s\n", message);
-    else if (type == GL_DEBUG_TYPE_ERROR)
-        Trace("[gl.error] %s\n", message);
-    //    else
-    //        Logger::Info( "[gl] %s\n", message );
-}
-
-#endif // defined(__DAVAENGINE_WIN32__)
 
 //------------------------------------------------------------------------------
 
@@ -584,12 +555,6 @@ void gles2_Initialize(const InitParam& param)
         Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));
         Logger::FrameworkDebug("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-#if 1
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-        glDebugMessageCallback(&_OGLErrorCallback, 0);
-
-#endif
         if (_GLES2_IsSeamlessCubmapSupported)
         {
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);

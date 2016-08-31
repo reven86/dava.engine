@@ -929,15 +929,14 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
     _GLES2_Binded_FrameBuffer = from->fbo.front().frameBuffer;
     GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
+    
 #if defined(__DAVAENGINE_IPHONE__)
-    ios_gl_resolve_multisampling(0, 0, from->width, from->height,
-                                 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    ios_gl_resolve_multisampling(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 #elif defined(__DAVAENGINE_ANDROID__)
-    // TODO : resolve on android
-#else
-    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height,
-                              0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+    DVASSERT(glBlitFramebuffer != nullptr);
 #endif
+    
+    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
 }
 

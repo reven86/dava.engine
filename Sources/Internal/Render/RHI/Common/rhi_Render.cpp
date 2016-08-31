@@ -427,6 +427,8 @@ bool NeedRestoreTexture(HTexture tex)
     return Texture::NeedRestore(tex);
 }
 
+//------------------------------------------------------------------------------
+
 Texture::Descriptor GetTextureDescriptor(HTexture tex)
 {
     return Texture::GetDescriptor(tex);

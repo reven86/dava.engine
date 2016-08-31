@@ -88,7 +88,7 @@ void Update(Handle tex, const void* data, uint32 level, TextureFace face = TEXTU
 
 bool NeedRestore(Handle tex);
 
-TextureFormat GetFormat(Handle);
+Descriptor GetDescriptor(Handle tex);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

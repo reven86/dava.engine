@@ -63,10 +63,21 @@
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
+typedef void(GL_APIENTRY* PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void(GL_APIENTRY* PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+
+// GL_KHR_debug
+typedef void(GL_APIENTRY* GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECONTROLKHRPROC)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
+typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECALLBACKKHRPROC)(GLDEBUGPROCKHR callback, const void *userParam);
 
 extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced;
 extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced;
 extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
+extern PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE glRenderbufferStorageMultisample;
+extern PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC glBlitFramebuffer;
+extern PFNGL_DEBUGMESSAGECONTROLKHRPROC glDebugMessageControl;
+extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
 #endif
 
@@ -202,6 +213,10 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_RG 0x8227
 #endif
 
+#ifndef GL_RGB565
+    #define GL_RGB565 0x8D62
+#endif
+
 #if !defined(GL_R8)
 #define GL_R8 0x8229
 #endif
@@ -234,20 +249,36 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_RG32F 0x8230
 #endif
 
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_ARB)
+    #define GL_RGBA32F GL_RGBA32F_ARB
+#endif
+
+#if !defined(GL_RGBA32F) && defined(GL_RGBA32F_EXT)
+    #define GL_RGBA32F GL_RGBA32F_EXT
+#endif
+
 #if !defined(GL_RGBA32F)
-#define GL_RGBA32F 0x8814
+    #define GL_RGBA32F 0x8814
 #endif
 
 #if !defined(GL_RGB32F)
 #define GL_RGB32F 0x8815
 #endif
 
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_ARB)
+    #define GL_RGBA16F GL_RGBA16F_ARB
+#endif
+
+#if !defined(GL_RGBA16F) && defined(GL_RGBA16F_EXT)
+    #define GL_RGBA16F GL_RGBA16F_EXT
+#endif
+
 #if !defined(GL_RGBA16F)
-#define GL_RGBA16F 0x881A
+    #define GL_RGBA16F 0x881A
 #endif
 
 #if !defined(GL_RGB16F)
-#define GL_RGB16F 0x881B
+    #define GL_RGB16F 0x881B
 #endif
 
 #if !defined(GL_RGBA8)
@@ -274,13 +305,25 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 
-#if 1
+#if !defined(GL_MAX_SAMPLES)
+#define GL_MAX_SAMPLES 0x8D57
+#endif
+
+#if !defined(GL_DEBUG_OUTPUT) && defined(GL_DEBUG_OUTPUT_KHR)
+    #define GL_DEBUG_OUTPUT GL_DEBUG_OUTPUT_KHR
+#endif
+
+#if !defined(GL_DEBUG_OUTPUT)
+    #define GL_DEBUG_OUTPUT 0x92E0
+#endif
+
+#if 0
 #define GL_CALL(expr) \
 { \
     expr; \
     GLint err = glGetError(); \
-    if (err != GL_NO_ERROR) { \
-        DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); DVASSERT(0); } \
+    while (err != GL_NO_ERROR) { \
+        DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); err = glGetError(); } \
 }
 
 #else
@@ -289,20 +332,12 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 extern volatile DAVA::uint8 pre_call_registers[64];
 
-#define GL_CALL(expr) \
-{ \
-	if (_GLES2_ValidateNeonCalleeSavedRegisters) \
-	{ \
-		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                         : "memory"); \
+#define GL_CALL(expr) { \
+	if (_GLES2_ValidateNeonCalleeSavedRegisters) { \
+		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) : "memory"); \
         expr; \
-        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                         : "q4", "q5", "q6", "q7"); \
-	} \
-	else \
-	{ \
-		expr; \
-	}\
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) : "q4", "q5", "q6", "q7"); \
+	} else { expr; } \
 }
 
 #else
@@ -334,6 +369,7 @@ extern int _GLES2_LastActiveTexture;
 extern HDC _GLES2_WindowDC;
 #endif
 
+extern bool _GLES2_IsDebugSupported;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
