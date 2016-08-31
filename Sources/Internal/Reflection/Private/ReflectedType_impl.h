@@ -6,6 +6,7 @@
 
 #include "Reflection/Wrappers.h"
 #include "Reflection/ReflectedObject.h"
+#include "Reflection/Private/CtorWrapperDefault.h"
 
 namespace DAVA
 {
@@ -73,6 +74,19 @@ public:
         RunImpl(std::integral_constant<bool, CheckType::value>());
     }
 };
+
+template <typename T>
+CtorWrapper* GetDefaultCtor(std::true_type hasDefault)
+{
+    return new CtorWrapperDefault<T>();
+}
+
+template <typename T>
+CtorWrapper* GetDefaultCtor(std::false_type hasDefault)
+{
+    return nullptr;
+}
+
 } // namespace ReflectionDetail
 
 template <typename T>
@@ -94,6 +108,15 @@ ReflectedType* ReflectedType::Edit()
         ret->rttiName = typeid(DecayT).name();
         ret->structureWrapper.reset(StructureWrapperCreator<T>::Create());
         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<T>::Create());
+
+        //         static const bool hasDefaultCtor = std::is_trivially_default_constructible<T>::value &&
+        //             (std::is_trivially_copy_constructible<T>::value || std::is_trivially_move_constructible<T>::value);
+        //
+        //         CtorWrapper* defaultCtor = ReflectionDetail::GetDefaultCtor<T>(std::integral_constant<bool, hasDefaultCtor>());
+        //         if (nullptr != defaultCtor)
+        //         {
+        //             ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
+        //         }
 
         typeToReflectedTypeMap[ret->type] = ret;
         rttiNameToReflectedTypeMap[ret->rttiName] = ret;

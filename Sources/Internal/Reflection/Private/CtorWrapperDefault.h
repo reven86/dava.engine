@@ -68,7 +68,8 @@ protected:
     template <typename... A>
     Any CreateByValue(A&&... args) const
     {
-        return Any(C(args.template Get<Args>()...));
+        C c(args.template Get<Args>()...);
+        return Any(std::move(c));
     }
 
     template <typename... A>
@@ -87,8 +88,6 @@ protected:
             return CreateByValue(std::forward<A>(args)...);
         case CtorWrapper::Policy::ByPointer:
             return CreateByPointer(std::forward<A>(args)...);
-        default:
-            assert(false && "Creation policy not handled");
         }
 
         return Any();
