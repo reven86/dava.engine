@@ -248,6 +248,11 @@ public:
     {
     }
 
+    int SumMethod(int a)
+    {
+        return baseInt + a;
+    }
+
     SimpleStruct* simple;
 
 protected:
@@ -299,6 +304,8 @@ protected:
         .Field("Enum", &TestBaseClass::GetEnum, &TestBaseClass::SetEnum)
         .Field("GetEnumAsInt", &TestBaseClass::GetEnumAsInt, &TestBaseClass::SetEnumRef)
         .Field("Lambda", DAVA::Function<int()>([]() { return 1088; }), nullptr)
+        .Method("SumMethod", &TestBaseClass::SumMethod)
+        // .Method("LaMethod", [](const TestBaseClass* t, int a, int b) { return (t->GetIntFnConst() + a - b); })
         .End();
     }
 };
@@ -361,8 +368,8 @@ DAVA_TESTCLASS (TypeReflection)
         TestBaseClass t;
         DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
 
-        TEST_VERIFY(r.HasMethods());
         TEST_VERIFY(r.HasFields());
+        TEST_VERIFY(r.HasMethods());
     }
 
     template <typename T, typename... Args>
