@@ -120,6 +120,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , cacheOy(src.cacheOy)
     , cacheSpriteOffset(src.cacheSpriteOffset)
     , cacheTextSize(src.cacheTextSize)
+    , cachePreferredSize(src.cachePreferredSize)
     , renderSize(src.renderSize)
     , multilineStrings(src.multilineStrings)
     , stringSizes(src.stringSizes)
@@ -352,11 +353,15 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
     if (!font)
         return Vector2();
 
-    Vector2 result;
+    if (cachePreferredSize.x != -1.0f && cachePreferredSize.y != -1.0f)
+    {
+        return cachePreferredSize;
+    }
+
     if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == 0)
     {
         CalculateCacheParamsIfNeed();
-        result = cacheTextSize;
+        cachePreferredSize = cacheTextSize;
     }
     else
     {
@@ -369,7 +374,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         fittingType = 0;
         CalculateCacheParams();
 
-        result = cacheTextSize;
+        cachePreferredSize = cacheTextSize;
         rectSize = oldSize;
 
         requestedSize = oldRequestedSize;
@@ -377,7 +382,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         CalculateCacheParams();
     }
 
-    return result;
+    return cachePreferredSize;
 }
 
 Sprite* TextBlock::GetSprite()
@@ -1047,15 +1052,5 @@ void TextBlock::CopyDataFrom(TextBlock* block)
     }
 
     SetText(block->GetText(), block->requestedSize);
-}
-
-DAVA::float32 TextBlock::GetFontSize()
-{
-    return renderSize;
-}
-
-void TextBlock::SetFontSize(float32 newSize)
-{
-    renderSize = newSize;
 }
 };

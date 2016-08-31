@@ -14,6 +14,7 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 #include "Concurrency/Thread.h"
+#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -35,6 +36,31 @@ void UILayoutSystem::SetRtl(bool rtl)
     isRtl = rtl;
 }
 
+void UILayoutSystem::ProcessControl(UIControl* control)
+{
+    if (!IsAutoupdatesEnabled())
+        return;
+
+    bool dirty = control->IsLayoutDirty();
+    bool orderDirty = control->IsLayoutOrderDirty();
+    bool positionDirty = control->IsLayoutPositionDirty();
+    control->ResetLayoutDirty();
+
+    if (dirty || orderDirty && LayoutAfterReorder(control))
+    {
+        ApplyLayout(control, true);
+    }
+    else if (positionDirty && LayoutAfterReposition(control))
+    {
+        ApplyLayoutNonRecursive(control);
+    }
+}
+
+void UILayoutSystem::ManualApplyLayout(UIControl* control)
+{
+    ApplyLayout(control, false);
+}
+
 bool UILayoutSystem::IsAutoupdatesEnabled() const
 {
     return autoupdatesEnabled;
@@ -47,6 +73,7 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 
 void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control;
@@ -63,13 +90,34 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
     ApplySizesAndPositions();
 
     layoutData.clear();
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
 }
 
 void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 {
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
 
-    CollectControls(control, false);
+    if (control->GetParent() == nullptr)
+    {
+        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
+        control->ResetLayoutPositionDirty();
+        return;
+    }
+
+    UIControl* container = control->GetParent();
+
+    //     static const uint64 mineComponents = UIComponent::ANCHOR_COMPONENT;
+    //     static const uint64 containerComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    //     if ((control->GetAvailableComponentFlags() & mineComponents) == 0 &&
+    //         (container->GetAvailableComponentFlags() & containerComponents) == 0)
+    //     {
+    //         control->ResetLayoutPositionDirty();
+    //         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "LayoutNR");
+    //         return;
+    //     }
+
+    CollectControls(container, false);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
@@ -77,6 +125,7 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     ApplyPositions();
 
     layoutData.clear();
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
@@ -101,6 +150,41 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
     }
 
     return result;
+}
+
+bool UILayoutSystem::LayoutAfterReorder(const UIControl* control) const
+{
+    static const uint64 sensitiveComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    if ((control->GetAvailableComponentFlags() & sensitiveComponents) != 0)
+    {
+        return true;
+    }
+
+    UISizePolicyComponent* policy = control->GetComponent<UISizePolicyComponent>();
+    if (policy)
+    {
+        return policy->IsDependsOnChildren(Vector2::AXIS_X) || policy->IsDependsOnChildren(Vector2::AXIS_Y);
+    }
+
+    return false;
+}
+
+bool UILayoutSystem::LayoutAfterReposition(const UIControl* control) const
+{
+    static const uint64 controlComponents = UIComponent::ANCHOR_COMPONENT;
+    if ((control->GetAvailableComponentFlags() & controlComponents) == 0)
+    {
+        return false;
+    }
+
+    const UIControl* parent = control->GetParent();
+    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    if (parent == nullptr || (parent->GetAvailableComponentFlags() & parentComponents) == 0)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
