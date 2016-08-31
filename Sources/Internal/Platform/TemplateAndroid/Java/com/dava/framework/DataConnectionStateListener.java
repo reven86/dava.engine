@@ -30,7 +30,7 @@ public class DataConnectionStateListener extends PhoneStateListener {
             }
             else
             {
-                // TODO: added callback in Core V2
+                // TODO: add callback in Core V2
                 OnCarrierNameChanged();
             }
         }

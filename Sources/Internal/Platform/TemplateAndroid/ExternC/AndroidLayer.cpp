@@ -489,7 +489,7 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
 
 void Java_com_dava_framework_DataConnectionStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis)
 {
-    // TODO: added callback in Core V2
+    // TODO: add callback in Core V2
     DAVA::DeviceInfo::carrierNameChanged.Emit(DAVA::DeviceInfo::GetCarrierName());
 }
 
