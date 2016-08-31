@@ -38,8 +38,8 @@ libsFolder = os.path.join(os.getcwd(), "..")
 runProcess("git clone https://github.com/google/googletest.git")
 
 os.chdir("googletest")
-copyFolder("googlemock\\include\\gmock", os.path.join(libsFolder, "Include\\gmock"))
-copyFolder("googletest\\include\\gtest", os.path.join(libsFolder, "Include\\gtest"))
+copyFolder("googlemock/include/gmock", os.path.join(libsFolder, "Include/gmock"))
+copyFolder("googletest/include/gtest", os.path.join(libsFolder, "Include/gtest"))
 
 makeDirAndGo("_build")
 
@@ -47,17 +47,30 @@ if (platform.system() == "Windows"):
     makeDirAndGo("x86")
     runProcess("cmake -G\"Visual Studio 12\" ../..")
     runProcess("cmake --build . --config Debug")
-    copyLib("googlemock\\Debug\\gmock.lib", os.path.join(libsFolder, "Win32\\x86\\Debug\\"))
+    copyLib("googlemock/Debug/gmock.lib", os.path.join(libsFolder, "Win32/x86/Debug/"))
     runProcess("cmake --build . --config Release")
-    copyLib("googlemock\\Release\\gmock.lib", os.path.join(libsFolder, "Win32\\x86\\Release\\"))
+    copyLib("googlemock/Release/gmock.lib", os.path.join(libsFolder, "Win32/x86/Release/"))
 
     os.chdir("..")
     makeDirAndGo("x64")
     runProcess("cmake -G\"Visual Studio 12 Win64\" ../..")
     runProcess("cmake --build . --config Debug")
-    copyLib("googlemock\\Debug\\gmock.lib", os.path.join(libsFolder, "Win32\\x64\\Debug\\"))
+    copyLib("googlemock/Debug/gmock.lib", os.path.join(libsFolder, "Win32/x64/Debug/"))
     runProcess("cmake --build . --config Release")
-    copyLib("googlemock\\Release\\gmock.lib", os.path.join(libsFolder, "Win32\\x64\\Release\\"))
+    copyLib("googlemock/Release/gmock.lib", os.path.join(libsFolder, "Win32/x64/Release/"))
+    os.chdir("../../..")
+elif (platform.system() == "Darwin"):
+    makeDirAndGo("Debug")
+    runProcess("cmake  ../..")
+    runProcess("cmake --build . --config Debug")
+    copyLib("googlemock/libgmock.a", os.path.join(libsFolder, "Mac/Debug/"))
+
+    os.chdir("..")
+    makeDirAndGo("Release")
+    runProcess("cmake  ../..")
+    runProcess("cmake --build . --config Release")
+    copyLib("googlemock/libgmock.a", os.path.join(libsFolder, "Mac/Release/"))
     os.chdir("../../..")
 
 shutil.rmtree("googletest", onerror=on_rm_error)
+

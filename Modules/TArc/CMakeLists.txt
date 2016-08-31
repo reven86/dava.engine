@@ -11,8 +11,8 @@ set(TArcLibsDir "${TArcRootDir}/Libs")
 
 set(INCLUDES "${TArcRootDir}/Sources" "${TArcLibsDir}/Include")
 
-set(STATIC_LIBRARIES_MACOS_RELEASE "${TArcLibsDir}/Mac/Release/gmock.a")
-set(STATIC_LIBRARIES_MACOS_DEBUG "${TArcLibsDir}/Mac/Debug/gmock.a")
+set(STATIC_LIBRARIES_MACOS_RELEASE "${TArcLibsDir}/Mac/Release/libgmock.a")
+set(STATIC_LIBRARIES_MACOS_DEBUG "${TArcLibsDir}/Mac/Debug/libgmock.a")
 
 set(STATIC_LIBRARIES_WIN32_RELEASE "${TArcLibsDir}/Win32/x86/Release/gmock.lib")
 set(STATIC_LIBRARIES_WIN32_DEBUG "${TArcLibsDir}/Win32/x86/Debug/gmock.lib")
