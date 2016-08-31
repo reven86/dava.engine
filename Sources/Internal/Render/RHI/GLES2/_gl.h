@@ -332,12 +332,20 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
 extern volatile DAVA::uint8 pre_call_registers[64];
 
-#define GL_CALL(expr) { \
-	if (_GLES2_ValidateNeonCalleeSavedRegisters) { \
-		asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) : "memory"); \
+#define GL_CALL(expr) \
+{ \
+    if (_GLES2_ValidateNeonCalleeSavedRegisters) \
+    { \
+        asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                     : "memory"); \
         expr; \
-        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) : "q4", "q5", "q6", "q7"); \
-	} else { expr; } \
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
+                     : "q4", "q5", "q6", "q7"); \
+    } \
+    else \
+    { \
+        expr; \
+    }\
 }
 
 #else
