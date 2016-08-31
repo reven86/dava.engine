@@ -41,6 +41,8 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     if (!IsAutoupdatesEnabled())
         return;
 
+    //TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
+
     bool dirty = control->IsLayoutDirty();
     bool orderDirty = control->IsLayoutOrderDirty();
     bool positionDirty = control->IsLayoutPositionDirty();
@@ -54,6 +56,8 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     {
         ApplyLayoutNonRecursive(control);
     }
+
+    //TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
 }
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
@@ -74,6 +78,8 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
+    const char* ctrlName = control->GetName().c_str() ? control->GetName().c_str() : "";
+    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control;
@@ -90,32 +96,16 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
     ApplySizesAndPositions();
 
     layoutData.clear();
+    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
 }
 
 void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 {
-    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
-
-    if (control->GetParent() == nullptr)
-    {
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
-        control->ResetLayoutPositionDirty();
-        return;
-    }
+    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control->GetParent();
-
-    //     static const uint64 mineComponents = UIComponent::ANCHOR_COMPONENT;
-    //     static const uint64 containerComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
-    //     if ((control->GetAvailableComponentFlags() & mineComponents) == 0 &&
-    //         (container->GetAvailableComponentFlags() & containerComponents) == 0)
-    //     {
-    //         control->ResetLayoutPositionDirty();
-    //         TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "LayoutNR");
-    //         return;
-    //     }
 
     CollectControls(container, false);
 
@@ -171,20 +161,32 @@ bool UILayoutSystem::LayoutAfterReorder(const UIControl* control) const
 
 bool UILayoutSystem::LayoutAfterReposition(const UIControl* control) const
 {
-    static const uint64 controlComponents = UIComponent::ANCHOR_COMPONENT;
-    if ((control->GetAvailableComponentFlags() & controlComponents) == 0)
-    {
-        return false;
-    }
-
     const UIControl* parent = control->GetParent();
-    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
-    if (parent == nullptr || (parent->GetAvailableComponentFlags() & parentComponents) == 0)
+    if (parent == nullptr)
     {
         return false;
     }
 
-    return true;
+    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) == 0)
+    {
+        return true;
+    }
+
+    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    if ((parent->GetAvailableComponentFlags() & parentComponents) == 0)
+    {
+        return true;
+    }
+
+    if ((control->GetAvailableComponentFlags() & UIComponent::SIZE_POLICY_COMPONENT) == 0)
+    {
+        UISizePolicyComponent* policy = control->GetComponent<UISizePolicyComponent>();
+        bool res = policy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT ||
+        policy->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT;
+        return res;
+    }
+
+    return false;
 }
 
 void UILayoutSystem::CollectControls(UIControl* control, bool recursive)

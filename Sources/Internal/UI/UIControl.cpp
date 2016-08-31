@@ -747,7 +747,7 @@ void UIControl::AddControl(UIControl* control)
     control->InvokeActive(viewState);
 
     isIteratorCorrupted = true;
-    SetLayoutOrderDirty();
+    SetLayoutDirty();
 }
 
 void UIControl::RemoveControl(UIControl* control)
@@ -768,7 +768,7 @@ void UIControl::RemoveControl(UIControl* control)
             children.erase(it);
             control->Release();
             isIteratorCorrupted = true;
-            SetLayoutOrderDirty();
+            SetLayoutDirty();
             return;
         }
     }
@@ -837,7 +837,7 @@ void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
             control->InvokeActive(viewState);
 
             isIteratorCorrupted = true;
-            SetLayoutOrderDirty();
+            SetLayoutDirty();
             return;
         }
     }
@@ -861,7 +861,7 @@ void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
             control->InvokeActive(viewState);
 
             isIteratorCorrupted = true;
-            SetLayoutOrderDirty();
+            SetLayoutDirty();
             return;
         }
     }
@@ -2464,7 +2464,7 @@ void UIControl::ResetLayoutPositionDirty()
 
 bool UIControl::IsLayoutOrderDirty() const
 {
-    return layoutPositionDirty;
+    return layoutOrderDirty;
 }
 
 void UIControl::SetLayoutOrderDirty()

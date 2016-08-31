@@ -66,6 +66,7 @@ TextBlock::TextBlock()
     , scale(1.f, 1.f)
     , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f, 0.f)
+    , cachePreferredSize(-1.f, -1.f)
     , renderSize(1.f)
     , cacheDx(0)
     , cacheDy(0)
@@ -353,7 +354,9 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
     if (!font)
         return Vector2();
 
-    if (cachePreferredSize.x != -1.0f && cachePreferredSize.y != -1.0f)
+    if (!NeedCalculateCacheParams() &&
+        cachePreferredSize.x != -1.0f &&
+        cachePreferredSize.y != -1.0f)
     {
         return cachePreferredSize;
     }
