@@ -23,7 +23,7 @@ class WebViewControl : public IWebViewControl,
 {
 public:
     WebViewControl(Window* w, UIWebView* uiWebView);
-    ~WebViewControl();
+    ~WebViewControl() override;
 
     // Initialize the control.
     void Initialize(const Rect& rect) override;
@@ -106,7 +106,7 @@ class WebViewControl : public IWebViewControl
     friend class JniWebView;
 
 public:
-    WebViewControl(UIWebView& uiWebView);
+    WebViewControl(UIWebView* uiWebView);
     virtual ~WebViewControl();
 
     // Initialize the control.

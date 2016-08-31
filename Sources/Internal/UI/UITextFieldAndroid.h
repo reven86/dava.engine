@@ -79,6 +79,16 @@ public:
     TextFieldPlatformImpl(UITextField* textField);
     virtual ~TextFieldPlatformImpl();
 
+    void Initialize()
+    {
+    }
+    void OwnerIsDying()
+    {
+    }
+    void SetDelegate(UITextFieldDelegate*)
+    {
+    }
+
     void OpenKeyboard();
     void CloseKeyboard();
     void GetText(WideString& string) const;

@@ -161,7 +161,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
     , uiTextField(uiTextField)
     , properties()
 #else
-TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField);
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , uiTextField(uiTextField)
     , properties()
@@ -169,7 +169,38 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField);
 {
 }
 
-TextFieldPlatformImpl::~TextFieldPlatformImpl() = default;
+TextFieldPlatformImpl::~TextFieldPlatformImpl()
+{
+    using ::Windows::Foundation::EventRegistrationToken;
+    using ::Windows::UI::Xaml::UIElement;
+    using ::Windows::UI::ViewManagement::InputPane;
+
+    if (nativeControl != nullptr)
+    {
+        UIElement ^ p = nativeControlHolder;
+        EventRegistrationToken tokenHiding = tokenKeyboardHiding;
+        EventRegistrationToken tokenShowing = tokenKeyboardShowing;
+
+#if defined(__DAVAENGINE_COREV2__)
+        WindowNativeService* nservice = window->GetNativeService();
+        window->RunAsyncOnUIThread([p, nservice, tokenHiding, tokenShowing]() {
+            InputPane::GetForCurrentView()->Showing -= tokenHiding;
+            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
+            nservice->RemoveXamlControl(p);
+        });
+#else
+        core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
+            InputPane::GetForCurrentView()->Showing -= tokenHiding;
+            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
+            static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
+        });
+#endif
+        nativeControlHolder = nullptr;
+        nativeControl = nullptr;
+        nativeText = nullptr;
+        nativePassword = nullptr;
+    }
+}
 
 void TextFieldPlatformImpl::Initialize()
 {
@@ -181,46 +212,6 @@ void TextFieldPlatformImpl::OwnerIsDying()
 {
     uiTextField = nullptr;
     textFieldDelegate = nullptr;
-
-    using ::Windows::Foundation::EventRegistrationToken;
-    using ::Windows::UI::Xaml::UIElement;
-    using ::Windows::UI::ViewManagement::InputPane;
-
-#if defined(__DAVAENGINE_COREV2__)
-    auto self{ shared_from_this() };
-    WindowNativeService* nservice = window->GetNativeService();
-    window->RunAsyncOnUIThread([this, self, nservice]() {
-        if (nativeControlHolder != nullptr)
-        {
-            InputPane::GetForCurrentView()->Showing -= tokenKeyboardHiding;
-            InputPane::GetForCurrentView()->Hiding -= tokenKeyboardShowing;
-            nservice->RemoveXamlControl(nativeControlHolder);
-
-            nativeControlHolder = nullptr;
-            nativeControl = nullptr;
-            nativeText = nullptr;
-            nativePassword = nullptr;
-        }
-    });
-#else
-    if (nativeControl != nullptr)
-    {
-        UIElement ^ p = nativeControlHolder;
-        EventRegistrationToken tokenHiding = tokenKeyboardHiding;
-        EventRegistrationToken tokenShowing = tokenKeyboardShowing;
-
-        core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
-            InputPane::GetForCurrentView()->Showing -= tokenHiding;
-            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
-            static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
-        });
-
-        nativeControlHolder = nullptr;
-        nativeControl = nullptr;
-        nativeText = nullptr;
-        nativePassword = nullptr;
-    }
-#endif
 }
 
 void TextFieldPlatformImpl::SetVisible(bool isVisible)
@@ -1285,6 +1276,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
                 core->RunOnUIThread([this, self]() {
 #endif
                     waitRenderToTextureComplete = false;
+                    Logger::Error("=================================== RenderToTexture: %p", nativeControl);
                     if (!HasFocus())
                     { // Do not hide control if it has gained focus while rendering to texture
                         SetNativePositionAndSize(rectInWindowSpace, true);

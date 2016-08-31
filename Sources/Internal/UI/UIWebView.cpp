@@ -27,7 +27,7 @@ UIWebView::UIWebView(const Rect& rect)
 #if defined(__DAVAENGINE_COREV2__)
     , webViewControl(std::make_shared<WebViewControl>(Engine::Instance()->PrimaryWindow(), this))
 #else
-    , webViewControl(std::make_shared<WebViewControl>(*this))
+    , webViewControl(std::make_shared<WebViewControl>(this))
 #endif
     , isNativeControlVisible(false)
 {

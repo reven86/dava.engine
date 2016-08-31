@@ -597,13 +597,13 @@ void JniWebView::OnExecuteJScript(int id, const String& result)
     }
 }
 
-WebViewControl::WebViewControl(UIWebView& uiWebView)
+WebViewControl::WebViewControl(UIWebView* uiWebView)
     :
     webViewId(-1)
     ,
     delegate(nullptr)
     ,
-    webView(uiWebView)
+    webView(*uiWebView)
 {
     webViewId = webViewIdCount++;
 }

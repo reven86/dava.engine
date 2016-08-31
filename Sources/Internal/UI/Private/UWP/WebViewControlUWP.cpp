@@ -1,6 +1,6 @@
-#include "UI/Private/UWP/PrivateWebViewWinUAP.h"
+#include "UI/Private/UWP/WebViewControlWinUAP.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include <ppltasks.h>
 #include <collection.h>
@@ -38,7 +38,7 @@ namespace DAVA
 /*
     UriResolver is intended for mapping resource paths in html source to local resource files
 
-    UriResolver is used in PrivateWebViewWinUAP's OpenFromBuffer method which allows to load
+    UriResolver is used in WebViewControl's OpenFromBuffer method which allows to load
     HTML string specifying location of resource files (css, images, etc).
 */
 private ref class UriResolver sealed : public ::Windows::Web::IUriToStreamResolver
@@ -100,9 +100,9 @@ UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath_)
         catch (Platform::COMException^ e)
         {
             Logger::Error("[WebView] failed to load file %s: %s (0x%08x)",
-                            RTStringToString(fileName).c_str(),
-                            RTStringToString(e->Message).c_str(),
-                            e->HResult);
+                          RTStringToString(fileName).c_str(),
+                          RTStringToString(e->Message).c_str(),
+                          e->HResult);
             return ref new InMemoryRandomAccessStream();
         }
     });
@@ -126,19 +126,7 @@ UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath_)
 // clang-format on
 //////////////////////////////////////////////////////////////////////////
 
-PrivateWebViewWinUAP::WebViewProperties::WebViewProperties()
-    : createNew(false)
-    , anyPropertyChanged(false)
-    , rectChanged(false)
-    , visibleChanged(false)
-    , renderToTextureChanged(false)
-    , backgroundTransparencyChanged(false)
-    , execJavaScript(false)
-    , navigateTo(WebViewProperties::NAVIGATE_NONE)
-{
-}
-
-void PrivateWebViewWinUAP::WebViewProperties::ClearChangedFlags()
+void WebViewControl::WebViewProperties::ClearChangedFlags()
 {
     createNew = false;
     anyPropertyChanged = false;
@@ -150,20 +138,25 @@ void PrivateWebViewWinUAP::WebViewProperties::ClearChangedFlags()
     navigateTo = WebViewProperties::NAVIGATE_NONE;
 }
 
-PrivateWebViewWinUAP::PrivateWebViewWinUAP(UIWebView* uiWebView_)
 #if defined(__DAVAENGINE_COREV2__)
-    : window(Engine::Instance()->PrimaryWindow())
-#else
-    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
-#endif
-    , uiWebView(uiWebView_)
+WebViewControl::WebViewControl(Window* w, UIWebView* uiWebView)
+    : window(w)
+    , uiWebView(uiWebView)
+    , properties()
 {
 }
+#else
+WebViewControl::WebViewControl(UIWebView* uiWebView)
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , uiWebView(uiWebView)
+    , properties()
+{
+}
+#endif
 
-PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
+WebViewControl::~WebViewControl()
 {
     using ::Windows::UI::Xaml::Controls::WebView;
-
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
@@ -182,13 +175,13 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     }
 }
 
-void PrivateWebViewWinUAP::OwnerAtPremortem()
+void WebViewControl::OwnerIsDying()
 {
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 }
 
-void PrivateWebViewWinUAP::Initialize(const Rect& rect)
+void WebViewControl::Initialize(const Rect& rect)
 {
     properties.createNew = true;
 
@@ -198,21 +191,21 @@ void PrivateWebViewWinUAP::Initialize(const Rect& rect)
     properties.anyPropertyChanged = true;
 }
 
-void PrivateWebViewWinUAP::OpenURL(const String& urlToOpen)
+void WebViewControl::OpenURL(const String& urlToOpen)
 {
     properties.urlOrHtml = urlToOpen;
     properties.navigateTo = WebViewProperties::NAVIGATE_OPEN_URL;
     properties.anyPropertyChanged = true;
 }
 
-void PrivateWebViewWinUAP::LoadHtmlString(const WideString& htmlString)
+void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
     properties.htmlString = htmlString;
     properties.navigateTo = WebViewProperties::NAVIGATE_LOAD_HTML;
     properties.anyPropertyChanged = true;
 }
 
-void PrivateWebViewWinUAP::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
+void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
 {
     properties.urlOrHtml = htmlString;
     properties.basePath = basePath;
@@ -220,14 +213,14 @@ void PrivateWebViewWinUAP::OpenFromBuffer(const String& htmlString, const FilePa
     properties.anyPropertyChanged = true;
 }
 
-void PrivateWebViewWinUAP::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
     properties.jsScript = scriptString;
     properties.execJavaScript = true;
     properties.anyPropertyChanged = true;
 }
 
-void PrivateWebViewWinUAP::SetRect(const Rect& rect)
+void WebViewControl::SetRect(const Rect& rect)
 {
     if (properties.rect != rect)
     {
@@ -238,7 +231,7 @@ void PrivateWebViewWinUAP::SetRect(const Rect& rect)
     }
 }
 
-void PrivateWebViewWinUAP::SetVisible(bool isVisible)
+void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
     if (properties.visible != isVisible)
     {
@@ -267,7 +260,7 @@ void PrivateWebViewWinUAP::SetVisible(bool isVisible)
     }
 }
 
-void PrivateWebViewWinUAP::SetBackgroundTransparency(bool enabled)
+void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
     if (properties.backgroundTransparency != enabled)
     {
@@ -277,12 +270,12 @@ void PrivateWebViewWinUAP::SetBackgroundTransparency(bool enabled)
     }
 }
 
-void PrivateWebViewWinUAP::SetDelegate(IUIWebViewDelegate* webViewDelegate_)
+void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate_, UIWebView* /*uiWebView*/)
 {
     webViewDelegate = webViewDelegate_;
 }
 
-void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
+void WebViewControl::SetRenderToTexture(bool value)
 {
     if (properties.renderToTexture != value)
     {
@@ -311,12 +304,12 @@ void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
     }
 }
 
-bool PrivateWebViewWinUAP::IsRenderToTexture() const
+bool WebViewControl::IsRenderToTexture() const
 {
     return properties.renderToTexture;
 }
 
-void PrivateWebViewWinUAP::Update()
+void WebViewControl::Update()
 {
     if (properties.createNew || properties.anyPropertyChanged)
     {
@@ -337,7 +330,7 @@ void PrivateWebViewWinUAP::Update()
     }
 }
 
-void PrivateWebViewWinUAP::CreateNativeControl()
+void WebViewControl::CreateNativeControl()
 {
     using ::Windows::UI::Xaml::Visibility;
     using ::Windows::UI::Xaml::Controls::WebView;
@@ -358,7 +351,7 @@ void PrivateWebViewWinUAP::CreateNativeControl()
     SetNativePositionAndSize(rectInWindowSpace, true); // After creation move native control offscreen
 }
 
-void PrivateWebViewWinUAP::InstallEventHandlers()
+void WebViewControl::InstallEventHandlers()
 {
     using ::Windows::Foundation::TypedEventHandler;
     using ::Windows::UI::Xaml::Controls::WebView;
@@ -366,7 +359,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     using ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs;
 
     // clang-format off
-    std::weak_ptr<PrivateWebViewWinUAP> self_weak(shared_from_this());
+    std::weak_ptr<WebViewControl> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
     auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this, self_weak](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
         if (auto self = self_weak.lock())
@@ -381,7 +374,7 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
+void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -415,7 +408,7 @@ void PrivateWebViewWinUAP::OnNavigationStarting(::Windows::UI::Xaml::Controls::W
     args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
-void PrivateWebViewWinUAP::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
+void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
     String url;
     if (args->Uri != nullptr)
@@ -455,7 +448,7 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(::Windows::UI::Xaml::Controls::
 #endif
 }
 
-void PrivateWebViewWinUAP::ProcessProperties(const WebViewProperties& props)
+void WebViewControl::ProcessProperties(const WebViewProperties& props)
 {
     rectInWindowSpace = props.rectInWindowSpace;
     if (props.createNew)
@@ -472,7 +465,7 @@ void PrivateWebViewWinUAP::ProcessProperties(const WebViewProperties& props)
     }
 }
 
-void PrivateWebViewWinUAP::ApplyChangedProperties(const WebViewProperties& props)
+void WebViewControl::ApplyChangedProperties(const WebViewProperties& props)
 {
     if (props.renderToTextureChanged)
         renderToTexture = props.renderToTexture;
@@ -489,7 +482,7 @@ void PrivateWebViewWinUAP::ApplyChangedProperties(const WebViewProperties& props
         NativeExecuteJavaScript(props.jsScript);
 }
 
-void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offScreen)
+void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
 {
     float32 xOffset = 0.0f;
     float32 yOffset = 0.0f;
@@ -508,13 +501,13 @@ void PrivateWebViewWinUAP::SetNativePositionAndSize(const Rect& rect, bool offSc
 #endif
 }
 
-void PrivateWebViewWinUAP::SetNativeBackgroundTransparency(bool enabled)
+void WebViewControl::SetNativeBackgroundTransparency(bool enabled)
 {
     using ::Windows::UI::Colors;
     nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : defaultBkgndColor;
 }
 
-void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
+void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
 {
     using ::Windows::Foundation::Uri;
 
@@ -544,7 +537,7 @@ void PrivateWebViewWinUAP::NativeNavigateTo(const WebViewProperties& props)
     // clang-format on
 }
 
-void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
+void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 {
     using ::concurrency::create_task;
     using ::concurrency::task;
@@ -587,7 +580,7 @@ void PrivateWebViewWinUAP::NativeExecuteJavaScript(const String& jsScript)
     // clang-format on
 }
 
-Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
+Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
@@ -609,7 +602,7 @@ Rect PrivateWebViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     return rect;
 }
 
-void PrivateWebViewWinUAP::RenderToTexture()
+void WebViewControl::RenderToTexture()
 {
     using ::concurrency::create_task;
     using ::concurrency::task;
@@ -669,7 +662,7 @@ void PrivateWebViewWinUAP::RenderToTexture()
     // clang-format on
 }
 
-Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
+Sprite* WebViewControl::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
 {
     /*
         imageData is in-memory BMP file and starts with BITMAPFILEHEADER struct
@@ -691,6 +684,78 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int3
     return Sprite::CreateFromImage(imgSrc, true, false);
 }
 
+void WebViewControl::DeleteCookies(const String& url)
+{
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieManager ^ cookieManager = httpObj.CookieManager;
+    HttpCookieCollection ^ cookies = cookieManager->GetCookies(uri);
+
+    IIterator<HttpCookie ^> ^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie ^ cookie = it->Current;
+        cookieManager->DeleteCookie(cookie);
+        it->MoveNext();
+    }
+}
+
+String WebViewControl::GetCookie(const String& url, const String& name) const
+{
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
+    String result;
+
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
+
+    Platform::String ^ cookieName = ref new Platform::String(StringToWString(name).c_str());
+    IIterator<HttpCookie ^> ^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie ^ cookie = it->Current;
+        if (cookie->Name == cookieName)
+        {
+            result = WStringToString(cookie->Value->Data());
+            break;
+        }
+        it->MoveNext();
+    }
+    return result;
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& url) const
+{
+    using ::Windows::Foundation::Uri;
+    using ::Windows::Foundation::Collections::IIterator;
+    using namespace ::Windows::Web::Http;
+    using namespace ::Windows::Web::Http::Filters;
+
+    Map<String, String> result;
+
+    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
+
+    IIterator<HttpCookie ^> ^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie ^ cookie = it->Current;
+        result.emplace(WStringToString(cookie->Name->Data()), WStringToString(cookie->Value->Data()));
+        it->MoveNext();
+    }
+    return result;
+}
+
 } // namespace DAVA
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // (__DAVAENGINE_WIN_UAP__) && !(DISABLE_NATIVE_WEBVIEW)

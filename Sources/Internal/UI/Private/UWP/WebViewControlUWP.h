@@ -1,24 +1,21 @@
-#pragma once
+#ifndef __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
+#define __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
-#include "Math/Rect.h"
-#include "FileSystem/FilePath.h"
+#include "UI/IWebViewControl.h"
 
 namespace DAVA
 {
-class UIWebView;
-class IUIWebViewDelegate;
 class Sprite;
-#if defined(__DAVAENGINE_COREV2__)
-class Window;
-#else
 class CorePlatformWinUAP;
-#endif
+class PrivateWebViewWinUAP;
 
-class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewWinUAP>
+// Web View Control for WinUAP
+class WebViewControl : public IWebViewControl,
+                       public std::enable_shared_from_this<WebViewControl>
 {
     struct WebViewProperties
     {
@@ -30,7 +27,6 @@ class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewW
             NAVIGATE_OPEN_BUFFER
         };
 
-        WebViewProperties();
         void ClearChangedFlags();
 
         Rect rect;
@@ -54,30 +50,43 @@ class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewW
     };
 
 public:
-    PrivateWebViewWinUAP(UIWebView* UIWebView);
-    ~PrivateWebViewWinUAP();
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
+    ~WebViewControl() override;
 
-    // WebViewControl should invoke it in its destructor to tell this class instance
-    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void OwnerAtPremortem();
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
+    void OwnerIsDying() override;
 
-    void Initialize(const Rect& rect);
+    // Open the URL requested.
+    void OpenURL(const String& url) override;
+    // Load html page from string
+    void LoadHtmlString(const WideString& htmlString) override;
+    void OpenFromBuffer(const String& htmlString, const FilePath& basePath) override;
+    // Execute javascript string in webview
+    void ExecuteJScript(const String& scriptString) override;
 
-    void OpenURL(const String& urlToOpen);
-    void LoadHtmlString(const WideString& htmlString);
-    void OpenFromBuffer(const String& string, const FilePath& basePath);
-    void ExecuteJScript(const String& scriptString);
+    // Delete all cookies associated with target URL
+    void DeleteCookies(const String& url) override;
+    // Get cookie for specific domain and name
+    String GetCookie(const String& url, const String& name) const override;
+    // Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& url) const override;
 
-    void SetRect(const Rect& rect);
-    void SetVisible(bool isVisible);
-    void SetBackgroundTransparency(bool enabled);
+    // Size/pos/visibility changes.
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
+    void SetBackgroundTransparency(bool enabled) override;
 
-    void SetDelegate(IUIWebViewDelegate* webViewDelegate);
+    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* uiWebView) override;
 
-    void SetRenderToTexture(bool value);
-    bool IsRenderToTexture() const;
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
 
-    void Update();
+    void Update() override;
 
 private:
     void CreateNativeControl();
@@ -122,4 +131,5 @@ private:
 
 } // namespace DAVA
 
-#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_WIN_UAP__ && !DISABLE_NATIVE_WEBVIEW
+#endif // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
