@@ -102,7 +102,7 @@ private:
     ::Windows::ApplicationModel::Calls::PhoneCallStore ^ phoneCallStore;
     ::Windows::ApplicationModel::Calls::PhoneLineWatcher ^ watcher;
     Map<Platform::Guid, ::Windows::ApplicationModel::Calls::PhoneLine ^> phoneLines;
-    Platform::String ^ carrierName;
+    Platform::String ^ carrierName = nullptr;
 };
 };
 

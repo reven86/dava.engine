@@ -87,6 +87,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         return activity;
     }
         
+    public static boolean HasPermission(String permission)
+    {
+        return activity.getPackageManager().checkPermission(activity.getPackageName(), permission) != PackageManager.PERMISSION_DENIED;
+    }
+
     /**
      * Get instance of {@link JNISurfaceView} without loading content view
      * @return instance of {@link JNISurfaceView} or null
@@ -156,12 +161,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         splashView = GetSplashView();
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-        int permissionCheck = JNIActivity.this.getPackageManager().checkPermission(JNIActivity.this.getPackageName(), permission.READ_PHONE_STATE);
-        if    (permissionCheck == PackageManager.PERMISSION_DENIED)
+        if (!HasPermission(permission.READ_PHONE_STATE))
         {
             Log.d("", "AndroidManifest.xml haven't READ_PHONE_STATE permission!");
         }
-        if ((tm != null) & (permissionCheck == PackageManager.PERMISSION_GRANTED)) {
+        if ((tm != null) & HasPermission(permission.READ_PHONE_STATE)) {
             signalStrengthListener = new SignalStrengthListener();
             dataConnectionStateListener = new DataConnectionStateListener();
             tm.listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);

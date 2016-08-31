@@ -18,13 +18,21 @@ public class DataConnectionStateListener extends PhoneStateListener {
         if (!newCarrierName.equals(carrierName))
         {
             carrierName = newCarrierName;
-            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() 
+            if (JNIActivity.GetActivity() != null)
             {
-                public void run()
+                JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() 
                 {
-                    OnCarrierNameChanged();
-                }
-            });
+                    public void run()
+                    {
+                        OnCarrierNameChanged();
+                    }
+                });
+            }
+            else
+            {
+                // TODO: added callback in Core V2
+                OnCarrierNameChanged();
+            }
         }
         super.onDataConnectionStateChanged(state, networkType);
     }

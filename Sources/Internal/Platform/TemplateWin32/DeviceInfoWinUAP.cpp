@@ -415,13 +415,9 @@ void DeviceInfoPrivate::OnCarrierLineChange(::Windows::ApplicationModel::Calls::
         CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
         core->RunOnMainThread([=] {
             // must run on main thread
-            if (line->NetworkName != carrierName)
+            if ((nullptr != line->NetworkName) && (line->NetworkName != carrierName))
             {
                 carrierName = line->NetworkName;
-                if (nullptr == carrierName)
-                {
-                    return;
-                }
                 DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(carrierName->Data()));
             }
         });
