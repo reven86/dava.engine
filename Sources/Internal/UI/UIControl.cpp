@@ -1032,23 +1032,20 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         prevControlState = controlState;
     }
 
-    if (IsVisible())
+    if (layoutDirty)
     {
-        if (layoutDirty)
+        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+        if (layoutSystem->IsAutoupdatesEnabled())
         {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled())
-            {
-                layoutSystem->ApplyLayout(this, true);
-            }
+            layoutSystem->ApplyLayout(this, true);
         }
-        else if (layoutPositionDirty)
+    }
+    else if (layoutPositionDirty)
+    {
+        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+        if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
         {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
-            {
-                layoutSystem->ApplyLayoutNonRecursive(parent);
-            }
+            layoutSystem->ApplyLayoutNonRecursive(parent);
         }
     }
 
