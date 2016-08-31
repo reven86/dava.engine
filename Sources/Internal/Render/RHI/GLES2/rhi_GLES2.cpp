@@ -188,7 +188,7 @@ static void gles_check_GL_extensions()
         _GLES2_IsDebugSupported = strstr(ext, "GL_KHR_debug") != nullptr;
         _GLES2_IsGlDepthNvNonLinearSupported = strstr(ext, "GL_DEPTH_COMPONENT16_NONLINEAR_NV") != nullptr;
         _GLES2_IsSeamlessCubmapSupported = strstr(ext, "GL_ARB_seamless_cube_map") != nullptr;
-        
+
         if (strstr(ext, "EXT_texture_filter_anisotropic") != nullptr)
         {
             float32 value = 0.0f;
@@ -201,7 +201,7 @@ static void gles_check_GL_extensions()
     if (!IsEmptyString(version))
     {
         DAVA::Logger::Info("OpenGL version: %s", version);
-        
+
         int majorVersion = 2, minorVersion = 0;
         const char* dotChar = strchr(version, '.');
         if (dotChar && dotChar != version && *(dotChar + 1))
@@ -222,29 +222,29 @@ static void gles_check_GL_extensions()
 #ifdef __DAVAENGINE_ANDROID__
             if (glDrawElementsInstanced == nullptr)
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
-            
+
             if (glDrawArraysInstanced == nullptr)
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
-            
+
             if (glVertexAttribDivisor == nullptr)
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
-            
+
             glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
             if (glRenderbufferStorageMultisample == nullptr)
                 glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
-            
+
             glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
             if (glBlitFramebuffer == nullptr)
                 glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
-            
+
             glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
             if (glDebugMessageControl == nullptr)
                 glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
-            
+
             glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
             if (glDebugMessageCallback == nullptr)
                 glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
-            
+
             DAVA::Logger::Info("glRenderbufferStorageMultisample = %p", glRenderbufferStorageMultisample);
             DAVA::Logger::Info("glBlitFramebuffer = %p", glBlitFramebuffer);
 #endif
@@ -272,12 +272,12 @@ static void gles_check_GL_extensions()
     GLint maxSamples = 1;
     GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
     DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
-    
+
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
         DAVA::Logger::Info("OpenGL rendered: %s", renderer);
-        
+
         memcpy(MutableDeviceCaps::Get().deviceDescription, renderer, strlen(renderer));
 
         if (strstr(renderer, "Mali"))
@@ -312,7 +312,7 @@ static void gles_check_GL_extensions()
         maxSamples = 1;
     }
 #endif
-    
+
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 }
 
@@ -908,10 +908,10 @@ GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat)
     {
     case rhi::TEXTURE_FORMAT_R8G8B8A8:
         return GL_RGBA8;
-            
+
     case rhi::TEXTURE_FORMAT_R5G6B5:
         return GL_RGB565;
-            
+
     default:
         DVASSERT_MSG(0, "Unsupported or unknown render target format specified");
         return 0;

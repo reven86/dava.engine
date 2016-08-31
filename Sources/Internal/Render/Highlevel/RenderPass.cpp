@@ -203,13 +203,13 @@ void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& confi
 {
     rhi::Texture::Descriptor targetDesc;
 
-    if (config.colorBuffer[0].targetTexture == rhi::InvalidHandle)
+    if (config.colorBuffer[0].texture == rhi::InvalidHandle)
     {
         targetDesc = rhi::GetBackBufferDescriptor();
     }
     else
     {
-        targetDesc = rhi::GetTextureDescriptor(static_cast<rhi::HTexture>(config.colorBuffer[0].targetTexture));
+        targetDesc = rhi::GetTextureDescriptor(static_cast<rhi::HTexture>(config.colorBuffer[0].texture));
     }
 
     bool invalidDescription =
@@ -300,19 +300,19 @@ void MainForwardRenderPass::InitReflectionRefraction()
     DVASSERT(!reflectionPass);
 
     reflectionPass = new WaterReflectionRenderPass(PASS_REFLECTION_REFRACTION);
-    reflectionPass->GetPassConfig().colorBuffer[0].targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
+    reflectionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION);
     reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    reflectionPass->GetPassConfig().depthStencilBuffer.targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
+    reflectionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
 
     refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
-    refractionPass->GetPassConfig().colorBuffer[0].targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
+    refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    refractionPass->GetPassConfig().depthStencilBuffer.targetTexture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
+    refractionPass->GetPassConfig().depthStencilBuffer.texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER);
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));

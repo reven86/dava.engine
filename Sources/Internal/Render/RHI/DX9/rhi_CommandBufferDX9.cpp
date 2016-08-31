@@ -161,38 +161,31 @@ public:
     int priority;
 };
 
-class
-CommandBufferDX9_t
+struct CommandBufferDX9_t
 {
-public:
-    CommandBufferDX9_t();
-    ~CommandBufferDX9_t();
-
     void Begin();
     void End();
     void Execute();
 
-    void Command(uint64 cmd);
-    void Command(uint64 cmd, uint64 arg1);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8);
+    template <class... Args>
+    void Command(Args... args)
+    {
+        uint64_t argumentsCount = sizeof...(args);
+        _cmd.reserve(_cmd.size() + argumentsCount);
+        _cmd.insert(_cmd.end(), { static_cast<uint64>(args)... });
+    }
 
-    static const uint64 EndCmd /* = 0xFFFFFFFF*/;
+    enum : uint64
+    {
+        EndCmd = 0xFFFFFFFF
+    };
 
     std::vector<uint64> _cmd;
-
     RenderPassConfig passCfg;
-    uint32 isFirstInPass : 1;
-    uint32 isLastInPass : 1;
-
-    RingBuffer* text;
-
-    Handle sync;
+    Handle sync = InvalidHandle;
+    RingBuffer* text = nullptr;
+    bool isFirstInPass = true;
+    bool isLastInPass = true;
 };
 
 struct
@@ -211,13 +204,11 @@ RHI_IMPL_POOL(CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descri
 RHI_IMPL_POOL(RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
-const uint64 CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
-
 static Handle
 dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
-    DVASSERT(passDesc.depthStencilBuffer.storeAction != rhi::STOREACTION_RESOLVE);
+    passDesc.Validate();
 
     Handle handle = RenderPassPoolDX9::Alloc();
     RenderPassDX9_t* pass = RenderPassPoolDX9::Get(handle);
@@ -225,7 +216,7 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
 
-    for (unsigned i = 0; i != cmdBufCount; ++i)
+    for (uint32 i = 0; i != cmdBufCount; ++i)
     {
         Handle h = CommandBufferPoolDX9::Alloc();
         CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(h);
@@ -516,20 +507,6 @@ dx9_SyncObject_IsSignaled(Handle obj)
     return signaled;
 }
 
-CommandBufferDX9_t::CommandBufferDX9_t()
-    : isFirstInPass(true)
-    , isLastInPass(true)
-    , text(nullptr)
-    , sync(InvalidHandle)
-{
-}
-
-//------------------------------------------------------------------------------
-
-CommandBufferDX9_t::~CommandBufferDX9_t()
-{
-}
-
 //------------------------------------------------------------------------------
 
 void CommandBufferDX9_t::Begin()
@@ -542,140 +519,6 @@ void CommandBufferDX9_t::Begin()
 void CommandBufferDX9_t::End()
 {
     _cmd.push_back(EndCmd);
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd)
-{
-    _cmd.push_back(cmd);
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1)
-{
-    _cmd.resize(_cmd.size() + 1 + 1);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 1);
-
-    b[0] = cmd;
-    b[1] = arg1;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2)
-{
-    _cmd.resize(_cmd.size() + 1 + 2);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 2);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3)
-{
-    _cmd.resize(_cmd.size() + 1 + 3);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 3);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4)
-{
-    _cmd.resize(_cmd.size() + 1 + 4);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 4);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-}
-
-//------------------------------------------------------------------------------
-
-void CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5)
-{
-    _cmd.resize(_cmd.size() + 1 + 5);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 5);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-}
-
-//------------------------------------------------------------------------------
-
-inline void
-CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6)
-{
-    _cmd.resize(_cmd.size() + 1 + 6);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 6);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-    b[6] = arg6;
-}
-
-//------------------------------------------------------------------------------
-
-inline void
-CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7)
-{
-    _cmd.resize(_cmd.size() + 1 + 7);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 7);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-    b[6] = arg6;
-    b[7] = arg7;
-}
-
-//------------------------------------------------------------------------------
-
-inline void
-CommandBufferDX9_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8)
-{
-    _cmd.resize(_cmd.size() + 1 + 8);
-
-    std::vector<uint64>::iterator b = _cmd.end() - (1 + 8);
-
-    b[0] = cmd;
-    b[1] = arg1;
-    b[2] = arg2;
-    b[3] = arg3;
-    b[4] = arg4;
-    b[5] = arg5;
-    b[6] = arg6;
-    b[7] = arg7;
-    b[8] = arg8;
 }
 
 //------------------------------------------------------------------------------
@@ -710,12 +553,12 @@ void CommandBufferDX9_t::Execute()
             if (isFirstInPass)
             {
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-                if ((color0.targetTexture != rhi::InvalidHandle) || (passCfg.samples > 1))
+                if ((color0.texture != rhi::InvalidHandle) || (passCfg.samples > 1))
                 {
                     DVASSERT(_D3D9_BackBuf == nullptr);
                     _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
 
-                    Handle targetTexture = color0.targetTexture;
+                    Handle targetTexture = color0.texture;
                     if (passCfg.samples > 1)
                     {
                         DVASSERT(color0.multisampleTexture != InvalidHandle);
@@ -724,13 +567,13 @@ void CommandBufferDX9_t::Execute()
                     TextureDX9::SetAsRenderTarget(targetTexture);
                 }
 
-                bool renderToDepth = (passCfg.depthStencilBuffer.targetTexture != rhi::InvalidHandle) && (passCfg.depthStencilBuffer.targetTexture != DefaultDepthBuffer);
+                bool renderToDepth = (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle) && (passCfg.depthStencilBuffer.texture != DefaultDepthBuffer);
                 if (renderToDepth || (passCfg.samples > 1))
                 {
                     DVASSERT(_D3D9_DepthBuf == nullptr);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
-                    Handle targetDepthStencil = passCfg.depthStencilBuffer.targetTexture;
+                    Handle targetDepthStencil = passCfg.depthStencilBuffer.texture;
                     if (passCfg.samples > 1)
                     {
                         DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
@@ -797,12 +640,12 @@ void CommandBufferDX9_t::Execute()
 
                 if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
                 {
-                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].targetTexture);
+                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].texture);
                 }
 
                 if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
                 {
-                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].targetTexture);
+                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].texture);
                 }
 
                 if (_D3D9_BackBuf)

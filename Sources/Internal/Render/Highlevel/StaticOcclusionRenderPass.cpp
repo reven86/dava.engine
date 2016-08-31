@@ -41,11 +41,11 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
     depthBuffer = rhi::CreateTexture(descriptor);
 
-    passConfig.colorBuffer[0].targetTexture = colorBuffer;
+    passConfig.colorBuffer[0].texture = colorBuffer;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
 
-    passConfig.depthStencilBuffer.targetTexture = depthBuffer;
+    passConfig.depthStencilBuffer.texture = depthBuffer;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 

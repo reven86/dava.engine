@@ -96,12 +96,12 @@ void ios_gl_reset(void* nativeLayer)
 void ios_gl_end_frame()
 {
     SCOPED_NAMED_TIMING("ios_GL_end_frame");
-    
+
     glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-    
+
     ios_gl_discard_framebuffer(false, true);
-    
+
     [(EAGLContext*)_GLES2_Context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
@@ -131,21 +131,21 @@ void ios_gl_resolve_multisampling(GLint srcX0, GLint srcY0, GLint srcX1, GLint s
 void ios_gl_discard_framebuffer(bool discardColor, bool discardDepthStencil)
 {
     DVASSERT(discardColor || discardDepthStencil);
-    
-    GLenum discards[3] = { };
+
+    GLenum discards[3] = {};
     GLsizei discardCount = 0;
-    
+
     if (discardColor)
     {
         discards[discardCount++] = GL_COLOR_ATTACHMENT0;
     }
-    
+
     if (discardDepthStencil)
     {
         discards[discardCount++] = GL_DEPTH_ATTACHMENT;
         discards[discardCount++] = GL_STENCIL_ATTACHMENT;
     }
-    
+
     if (renderingAPI == kEAGLRenderingAPIOpenGLES2)
     {
         GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardCount, discards));

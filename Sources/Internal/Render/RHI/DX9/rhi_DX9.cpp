@@ -44,16 +44,9 @@ dx9_HostApi()
 
 Texture::Descriptor dx9_GetBackbufferDescriptor()
 {
-    D3DSURFACE_DESC desc = {};
-    IDirect3DSurface9* rt0 = nullptr;
-    _D3D9_Device->GetRenderTarget(0, &rt0);
-
-    DVASSERT(rt0 != nullptr);
-    rt0->GetDesc(&desc);
-
     Texture::Descriptor result;
-    result.width = desc.Width;
-    result.height = desc.Height;
+    result.width = _DX9_PresentParam.BackBufferWidth;
+    result.height = _DX9_PresentParam.BackBufferHeight;
     result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
     result.isRenderTarget = 1;
     // TODO : fill rest of the fields and get proper format from desc
@@ -305,12 +298,8 @@ void _InitDX9()
 
         // TODO: check z-buf formats and create most suitable
 
-        D3DDEVTYPE device = D3DDEVTYPE_HAL;
-        UINT adapter = D3DADAPTER_DEFAULT;
-
         // check if specified display-mode supported
 
-        _D3D9_Adapter = adapter;
         ///        _DetectVideoModes();
         /*
         if( !_PresentParam.Windowed )
@@ -351,19 +340,14 @@ void _InitDX9()
 
         // create device
 
-        if (SUCCEEDED(hr = _D3D9->CreateDevice(adapter,
-                                               device,
-                                               wnd,
-                                               vertex_processing,
-                                               &_DX9_PresentParam,
-                                               &_D3D9_Device)))
+        if (SUCCEEDED(hr = _D3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device)))
         {
             if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
             {
                 Memcpy(MutableDeviceCaps::Get().deviceDescription, info.Description,
                        DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(info.Description) + 1));
 
-                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
+                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", D3DADAPTER_DEFAULT, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),
                              LOWORD(info.DriverVersion.HighPart),

@@ -67,9 +67,9 @@ typedef void(GL_APIENTRY* PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)(GLenum targ
 typedef void(GL_APIENTRY* PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 
 // GL_KHR_debug
-typedef void(GL_APIENTRY* GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
-typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECONTROLKHRPROC)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
-typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECALLBACKKHRPROC)(GLDEBUGPROCKHR callback, const void *userParam);
+typedef void(GL_APIENTRY* GLDEBUGPROCKHR)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECONTROLKHRPROC)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled);
+typedef void(GL_APIENTRY* PFNGL_DEBUGMESSAGECALLBACKKHRPROC)(GLDEBUGPROCKHR callback, const void* userParam);
 
 extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced;
 extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced;
@@ -337,10 +337,10 @@ extern volatile DAVA::uint8 pre_call_registers[64];
     if (_GLES2_ValidateNeonCalleeSavedRegisters) \
     { \
         asm volatile("vstmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                     : "memory"); \
+                         : "memory"); \
         expr; \
         asm volatile("vldmia %0, {q4-q7}" ::"r"(pre_call_registers) \
-                     : "q4", "q5", "q6", "q7"); \
+                         : "q4", "q5", "q6", "q7"); \
     } \
     else \
     { \

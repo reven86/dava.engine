@@ -208,7 +208,7 @@ static bool
 _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
 {
     tex->UpdateCreationDesc(texDesc);
-    
+
     bool success = true;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? MetalRenderableTextureFormat(texDesc.format) : MetalTextureFormat(texDesc.format);
 
@@ -236,7 +236,7 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
     {
         desc.textureType = (texDesc.samples > 1) ? MTLTextureType2DMultisample : MTLTextureType2D;
     }
-    
+
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
 
     [desc release];
@@ -625,7 +625,7 @@ metal_Texture_NeedRestore(Handle tex)
 
     return self->NeedRestore();
 }
-    
+
 //------------------------------------------------------------------------------
 
 Texture::Descriptor metal_Texture_GetDescriptor(Handle tex)
@@ -723,11 +723,11 @@ void SetAsResolveRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
     DVASSERT(!self->is_cubemap);
-    
+
     DVASSERT(self->uid);
     desc.colorAttachments[0].resolveTexture = self->uid;
 }
-    
+
 void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
@@ -739,11 +739,11 @@ void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 void SetAsResolveDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
-    
+
     desc.depthAttachment.resolveTexture = self->uid;
     desc.stencilAttachment.resolveTexture = self->uid2;
 }
-    
+
 unsigned
 NeedRestoreCount()
 {

@@ -479,6 +479,7 @@ static Handle
 dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
+    passDesc.Validate();
 
     Handle handle = RenderPassPoolDX11::Alloc();
     RenderPassDX11_t* pass = RenderPassPoolDX11::Get(handle);
@@ -1720,7 +1721,7 @@ void CommandBufferDX11_t::Execute()
     if (isLastInPass && (passCfg.samples > 1))
     {
         TextureDX11::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture,
-                                          passCfg.colorBuffer[0].targetTexture, _D3D11_ImmediateContext);
+                                          passCfg.colorBuffer[0].texture, _D3D11_ImmediateContext);
     }
 
     commandList->Release();
@@ -2063,10 +2064,10 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     def_viewport.MaxDepth = 1.0f;
 
     const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-    if ((color0.targetTexture != rhi::InvalidHandle) && (color0.targetTexture != rhi::DefaultDepthBuffer))
+    if ((color0.texture != rhi::InvalidHandle) && (color0.texture != rhi::DefaultDepthBuffer))
     {
-        Handle targetTexture = color0.targetTexture;
-        Handle targetDepth = passCfg.depthStencilBuffer.targetTexture;
+        Handle targetTexture = color0.texture;
+        Handle targetDepth = passCfg.depthStencilBuffer.texture;
         if (passCfg.samples > 1)
         {
             targetTexture = color0.multisampleTexture;
@@ -2074,7 +2075,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
         }
         TextureDX11::SetRenderTarget(targetTexture, targetDepth, color0.textureLevel, color0.textureFace, context);
 
-        Size2i sz = TextureDX11::Size(color0.targetTexture);
+        Size2i sz = TextureDX11::Size(color0.texture);
         def_viewport.Width = static_cast<float>(sz.dx);
         def_viewport.Height = static_cast<float>(sz.dy);
     }
@@ -2101,7 +2102,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
         {
             if (i == 0)
             {
-                if (passCfg.colorBuffer[0].targetTexture == rhi::InvalidHandle)
+                if (passCfg.colorBuffer[0].texture == rhi::InvalidHandle)
                 {
                     D3D11_TEXTURE2D_DESC desc;
 

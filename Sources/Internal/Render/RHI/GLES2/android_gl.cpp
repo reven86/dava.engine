@@ -34,8 +34,8 @@ static bool needRecreateSurface = false;
 
 const EGLint contextAttribs[] =
 {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
-    EGL_NONE
+  EGL_CONTEXT_CLIENT_VERSION, 2,
+  EGL_NONE
 };
 
 bool TryChoseConfig(EGLint* attribs)
@@ -43,26 +43,30 @@ bool TryChoseConfig(EGLint* attribs)
     EGLint numConfigs = 0;
     if (eglChooseConfig(_display, attribs, nullptr, 0, &numConfigs) == EGL_FALSE)
         return false;
-    
+
     DAVA::Logger::Info("Num configs: %d", numConfigs);
-    
+
     if (numConfigs == 0)
         return false;
-    
+
     DAVA::Vector<EGLConfig> configs(numConfigs);
     if (eglChooseConfig(_display, attribs, configs.data(), numConfigs, &numConfigs) == EGL_FALSE)
         return false;
-    
+
     for (EGLConfig config : configs)
     {
-        EGLint rgbs[4] = { };
-        if (eglGetConfigAttrib(_display, config, EGL_RED_SIZE, rgbs) == EGL_FALSE) return false;
-        if (eglGetConfigAttrib(_display, config, EGL_GREEN_SIZE, rgbs + 1) == EGL_FALSE) return false;
-        if (eglGetConfigAttrib(_display, config, EGL_BLUE_SIZE, rgbs + 2) == EGL_FALSE) return false;
-        if (eglGetConfigAttrib(_display, config, EGL_BUFFER_SIZE, rgbs + 3) == EGL_FALSE) return false;
-        
+        EGLint rgbs[4] = {};
+        if (eglGetConfigAttrib(_display, config, EGL_RED_SIZE, rgbs) == EGL_FALSE)
+            return false;
+        if (eglGetConfigAttrib(_display, config, EGL_GREEN_SIZE, rgbs + 1) == EGL_FALSE)
+            return false;
+        if (eglGetConfigAttrib(_display, config, EGL_BLUE_SIZE, rgbs + 2) == EGL_FALSE)
+            return false;
+        if (eglGetConfigAttrib(_display, config, EGL_BUFFER_SIZE, rgbs + 3) == EGL_FALSE)
+            return false;
+
         DAVA::Logger::Info("CONFIG: [%d, %d, %d] -> %d", rgbs[0], rgbs[1], rgbs[2], rgbs[3]);
-        
+
         if ((rgbs[0] == 8) && (rgbs[1] == 8) && (rgbs[2] == 8) && (rgbs[3] == 32))
         {
             DAVA::Logger::Info("Good config found.");
@@ -80,42 +84,42 @@ void android_gl_chose_config()
 {
     EGLint attribs[] =
     {
-        EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES3_BIT,
-        EGL_SURFACE_TYPE,       EGL_WINDOW_BIT,    
-        EGL_RED_SIZE,           8,                 
-        EGL_GREEN_SIZE,         8,                 
-        EGL_BLUE_SIZE,          8,                 
-        EGL_ALPHA_SIZE,         8,                 
-        EGL_BUFFER_SIZE,        32,                
-        EGL_STENCIL_SIZE,       8,                 
-        EGL_DEPTH_SIZE,         24,                
-        EGL_NONE,               EGL_NONE,
-        EGL_NONE
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+      EGL_RED_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_BLUE_SIZE, 8,
+      EGL_ALPHA_SIZE, 8,
+      EGL_BUFFER_SIZE, 32,
+      EGL_STENCIL_SIZE, 8,
+      EGL_DEPTH_SIZE, 24,
+      EGL_NONE, EGL_NONE,
+      EGL_NONE
     };
     TRY_CHOOSE_CONFIG // 24 bit + es3
-    
+
     DAVA::uint32 numAttribs = sizeof(attribs) / sizeof(attribs[0]);
-    
+
     attribs[1] = EGL_OPENGL_ES2_BIT;
-    TRY_CHOOSE_CONFIG  // 24 bit + es2
+    TRY_CHOOSE_CONFIG // 24 bit + es2
 
     attribs[1] = EGL_OPENGL_ES3_BIT;
-    attribs[numAttribs-4] = 16; // depth size
-    attribs[numAttribs-3] = EGL_DEPTH_ENCODING_NV;
-    attribs[numAttribs-2] = EGL_DEPTH_ENCODING_NONLINEAR_NV;
+    attribs[numAttribs - 4] = 16; // depth size
+    attribs[numAttribs - 3] = EGL_DEPTH_ENCODING_NV;
+    attribs[numAttribs - 2] = EGL_DEPTH_ENCODING_NONLINEAR_NV;
     TRY_CHOOSE_CONFIG // 16 bit + nv + es3
 
     attribs[1] = EGL_OPENGL_ES2_BIT;
     TRY_CHOOSE_CONFIG // 16 bit + nv + es2
 
     attribs[1] = EGL_OPENGL_ES3_BIT;
-    attribs[numAttribs-3] = EGL_NONE;
-    attribs[numAttribs-2] = EGL_NONE;
+    attribs[numAttribs - 3] = EGL_NONE;
+    attribs[numAttribs - 2] = EGL_NONE;
     TRY_CHOOSE_CONFIG // 16 bit + es3
 
     attribs[1] = EGL_OPENGL_ES2_BIT;
     TRY_CHOOSE_CONFIG // 16 bit + es2
-    
+
     DVASSERT_MSG(_config != nullptr, "Can't set GL configuration");
 }
 
@@ -124,20 +128,20 @@ void android_gl_init(void* _window)
     _nativeWindow = static_cast<ANativeWindow*>(_window);
 
     _display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    
+
     eglInitialize(_display, nullptr, nullptr);
     android_gl_chose_config();
-    
+
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
-    
+
     ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
     _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
     _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
     DVASSERT(_context != nullptr);
-    
+
     eglMakeCurrent(_display, _surface, _surface, _context);
-    
+
     _GLES2_Context = _context;
 }
 
@@ -216,9 +220,9 @@ void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id
 void android_gl_enable_debug()
 {
     DVASSERT(_GLES2_IsDebugSupported);
-    
+
     DAVA::Logger::Info("Enabling OpenGL debug...");
-    
+
     GL_CALL(glEnable(GL_DEBUG_OUTPUT));
     GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
     GL_CALL(glDebugMessageCallback(&android_gl_debug_callback, nullptr));

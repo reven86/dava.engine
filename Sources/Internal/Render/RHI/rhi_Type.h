@@ -744,7 +744,7 @@ struct RenderPassConfig
 {
     struct ColorBuffer
     {
-        Handle targetTexture = InvalidHandle; // renamed to avoid confusion and reduce errors now
+        Handle texture = InvalidHandle;
         Handle multisampleTexture = InvalidHandle;
         TextureFace textureFace = TEXTURE_FACE_POSITIVE_X;
         uint32 textureLevel = 0;
@@ -764,7 +764,7 @@ struct RenderPassConfig
     struct
     DepthStencilBuffer
     {
-        Handle targetTexture = DefaultDepthBuffer; // renamed to avoid confusion and reduce errors now
+        Handle texture = DefaultDepthBuffer;
         Handle multisampleTexture = InvalidHandle;
         LoadAction loadAction = LOADACTION_CLEAR;
         StoreAction storeAction = STOREACTION_NONE;
@@ -782,6 +782,23 @@ struct RenderPassConfig
     uint32 priority = 0;
     uint32 invertCulling = 0;
     uint32 samples = 1;
+
+    void Validate() const
+    {
+        DVASSERT(depthStencilBuffer.storeAction != STOREACTION_RESOLVE);
+
+        if (samples > 1)
+        {
+            DVASSERT(colorBuffer[0].storeAction == STOREACTION_RESOLVE);
+            DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
+        }
+
+        if (colorBuffer[0].storeAction == STOREACTION_RESOLVE)
+        {
+            DVASSERT(samples > 1);
+            DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
+        }
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
