@@ -140,7 +140,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap* heightmap, const DA
     ///////////////////////////////
 
     rhi::RenderPassConfig passConfig;
-    passConfig.colorBuffer[0].targetTexture = notPassableTexture->handle;
+    passConfig.colorBuffer[0].texture = notPassableTexture->handle;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     passConfig.priority = DAVA::PRIORITY_SERVICE_2D;

@@ -325,7 +325,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
     editorMaterial->SetTexture(TILEMASK_EDTIOR_TEXTURE_SOURCE, srcTexture);
 
     rhi::RenderPassConfig passConf;
-    passConf.colorBuffer[0].targetTexture = dstTexture->handle;
+    passConf.colorBuffer[0].texture = dstTexture->handle;
     passConf.priority = DAVA::PRIORITY_SERVICE_2D;
     passConf.viewport.width = dstTexture->GetWidth();
     passConf.viewport.height = dstTexture->GetHeight();

@@ -161,7 +161,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     thumbnailMaterial->BindParams(packet);
 
     rhi::RenderPassConfig passDesc = {};
-    passDesc.colorBuffer[0].targetTexture = texture->handle;
+    passDesc.colorBuffer[0].texture = texture->handle;
     passDesc.priority = PRIORITY_SERVICE_3D;
     passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
     passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
