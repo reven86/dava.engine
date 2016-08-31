@@ -3,6 +3,8 @@
 
 #include "Base/BaseTypes.h"
 
+#include <chrono>
+
 namespace DAVA
 {
 namespace UnitTests
@@ -17,11 +19,16 @@ class TestClass
 {
     struct TestInfo
     {
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = Clock::time_point;
+
         TestInfo(const char* name_, void (*testFunction_)(TestClass*))
             : name(name_)
             , testFunction(testFunction_)
         {
         }
+
+        TimePoint startTime;
         String name;
         void (*testFunction)(TestClass*);
     };

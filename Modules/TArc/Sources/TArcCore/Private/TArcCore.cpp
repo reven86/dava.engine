@@ -203,7 +203,6 @@ public:
             throw std::runtime_error("MakeCurrent for offscreen surface failed");
         }
 
-
         rhi::Api renderer = rhi::RHI_GLES2;
         rhi::InitParam rendererParams;
         rendererParams.threadedRenderFrameCount = 1;

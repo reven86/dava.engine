@@ -20,7 +20,7 @@ class ConsoleModule;
 class Core final
 {
 public:
-    Core(Engine& engine_);
+    Core(Engine& engine);
     ~Core();
 
     template<typename T, typename... Args>

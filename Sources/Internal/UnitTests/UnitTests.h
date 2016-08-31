@@ -132,6 +132,17 @@
     } testclass_##classname##_registrar_instance;                                                                                           \
     struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
+#define DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY(classname, base_classname, factory)                                                           \
+    struct classname;                                                                                                                       \
+    static struct testclass_##classname##_registrar                                                                                         \
+    {                                                                                                                                       \
+        testclass_##classname##_registrar()                                                                                                 \
+        {                                                                                                                                   \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new factory<classname>);                                   \
+        }                                                                                                                                   \
+    } testclass_##classname##_registrar_instance;                                                                                           \
+    struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
+
 #define DAVA_TEST(testname)                                                                                             \
     struct test_##testname##_registrar {                                                                            \
         test_##testname##_registrar(DAVA::UnitTests::TestClass* testClass)                                          \

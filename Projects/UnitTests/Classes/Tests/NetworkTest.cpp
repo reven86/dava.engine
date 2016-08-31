@@ -261,22 +261,24 @@ DAVA_TESTCLASS (NetworkTest)
     NetCore::TrackId serverId = NetCore::INVALID_TRACK_ID;
     NetCore::TrackId clientId = NetCore::INVALID_TRACK_ID;
 
-    void SetUp(const String& testName) override
+    void Update(float32 timeElapsed, const String& testName) override
     {
         if (testName == "TestEcho")
         {
-            NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
+            echoTestDone = echoServer.IsTestDone() && echoClient.IsTestDone();
+            if (echoTestDone)
+            {
+                TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesSent());
+                TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesDelivered());
 
-            NetConfig serverConfig(SERVER_ROLE);
-            serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
-            serverConfig.AddService(SERVICE_ECHO);
+                TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesSent());
+                TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesDelivered());
 
-            NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
-
-            // Server config must be recreated first due to restrictions of service management
-            serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
-            clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
+                TEST_VERIFY(echoServer.BytesRecieved() == echoClient.BytesRecieved());
+            }
         }
+
+        TestClass::Update(timeElapsed, testName);
     }
 
     void TearDown(const String& testName) override
@@ -292,6 +294,8 @@ DAVA_TESTCLASS (NetworkTest)
             serverId = NetCore::INVALID_TRACK_ID;
             clientId = NetCore::INVALID_TRACK_ID;
         }
+
+        TestClass::TearDown(testName);
     }
 
     bool TestComplete(const String& testName) const override
@@ -371,17 +375,17 @@ DAVA_TESTCLASS (NetworkTest)
 
     DAVA_TEST (TestEcho)
     {
-        echoTestDone = echoServer.IsTestDone() && echoClient.IsTestDone();
-        if (echoTestDone)
-        {
-            TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesSent());
-            TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesDelivered());
+        NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
 
-            TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesSent());
-            TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesDelivered());
+        NetConfig serverConfig(SERVER_ROLE);
+        serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
+        serverConfig.AddService(SERVICE_ECHO);
 
-            TEST_VERIFY(echoServer.BytesRecieved() == echoClient.BytesRecieved());
-        }
+        NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
+
+        // Server config must be recreated first due to restrictions of service management
+        serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
+        clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
     }
 
     IChannelListener* CreateEcho(uint32 serviceId, void* context)
