@@ -1564,6 +1564,41 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
         m_tree->GetRoot()->blend = blend;
         doesNotExpectSemicolon = true;
     }
+    else if (Accept(HLSLToken_ColorMask))
+    {
+        if (Accept('='))
+        {
+            const char* msk;
+            ColorMask mask;
+
+            if (AcceptIdentifier(msk))
+            {
+                HLSLColorMask* m = m_tree->AddNode<HLSLColorMask>(fileName, line);
+
+                if (stricmp(msk, "none") == 0)
+                    mask = COLORMASK_NONE;
+                else if (stricmp(msk, "all") == 0)
+                    mask = COLORMASK_ALL;
+                else if (stricmp(msk, "rgb") == 0)
+                    mask = COLORMASK_RGB;
+                else if (stricmp(msk, "a") == 0)
+                    mask = COLORMASK_A;
+                else
+                    Log_Error("unsupported color-mask \"%s\"", msk);
+
+                m->mask = mask;
+                m_tree->GetRoot()->color_mask = m;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     if (statement != NULL)
     {

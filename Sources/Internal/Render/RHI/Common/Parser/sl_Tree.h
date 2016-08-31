@@ -42,7 +42,8 @@ enum HLSLNodeType
     HLSLNodeType_Attribute,
     HLSLNodeType_Pipeline,
     HLSLNodeType_Stage,
-    HLSLNodeType_Blend
+    HLSLNodeType_Blend,
+    HLSLNodeType_ColorMask
 };
 
 enum HLSLBaseType
@@ -205,6 +206,7 @@ struct HLSLFunctionCall;
 struct HLSLArrayAccess;
 struct HLSLAttribute;
 struct HLSLBlend;
+struct HLSLColorMask;
 
 struct HLSLType
 {
@@ -243,9 +245,11 @@ struct HLSLRoot : public HLSLNode
     {
         statement = NULL;
         blend = NULL;
+        color_mask = NULL;
     }
     HLSLStatement* statement; // First statement.
     HLSLBlend* blend;
+    HLSLColorMask* color_mask;
 };
 
 struct HLSLStatement : public HLSLNode
@@ -738,6 +742,26 @@ struct HLSLBlend : public HLSLNode
     {
     }
 };
+
+enum ColorMask
+{
+    COLORMASK_NONE,
+    COLORMASK_RGB,
+    COLORMASK_A,
+    COLORMASK_ALL
+};
+
+struct HLSLColorMask : public HLSLNode
+{
+    static const HLSLNodeType s_type = HLSLNodeType_ColorMask;
+
+    ColorMask mask;
+    HLSLColorMask()
+        : mask(COLORMASK_ALL)
+    {
+    }
+};
+
 /**
  * Abstract syntax tree for parsed HLSL code.
  */

@@ -1545,47 +1545,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
-#if 0
-    Logger::Info("properties (%u) :", property.size());
-    for (std::vector<rhi::ShaderProp>::const_iterator p = property.begin(), p_end = property.end(); p != p_end; ++p)
-    {
-        if (p->type == rhi::ShaderProp::TYPE_FLOAT4 || p->type == rhi::ShaderProp::TYPE_FLOAT4X4)
-        {
-            if (p->arraySize == 1)
-            {
-                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", p->uid.c_str(), p->bufferindex, p->bufferReg, p->bufferRegCount);
-            }
-            else
-            {
-                char name[128];
-
-                Snprintf(name, sizeof(name) - 1, "%s[%u]", p->uid.c_str(), p->arraySize);
-                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", name, p->bufferindex, p->bufferReg, p->bufferRegCount);
-            }
-        }
-        else
-        {
-            const char* xyzw = "xyzw";
-
-            switch (p->type)
-            {
-            case rhi::ShaderProp::TYPE_FLOAT1:
-                Logger::Info("  %-16s    buf#%u  -  %u, %c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
-                break;
-
-            case rhi::ShaderProp::TYPE_FLOAT2:
-                Logger::Info("  %-16s    buf#%u  -  %u, %c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1]);
-                break;
-
-            case rhi::ShaderProp::TYPE_FLOAT3:
-                Logger::Info("  %-16s    buf#%u  -  %u, %c%c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1], xyzw[p->bufferRegCount + 2]);
-                break;
-
-            default:
-                break;
-            }
-        }
-    }
+    // get blending
 
     sl::HLSLBlend* blend = ast->GetRoot()->blend;
 
@@ -1646,6 +1606,71 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             blending.rtBlend[0].colorDst = rhi::BLENDOP_DST_COLOR;
             ;
             break;
+        }
+    }
+
+    // get color write-mask
+
+    sl::HLSLColorMask* mask = ast->GetRoot()->color_mask;
+
+    if (mask)
+    {
+        switch (mask->mask)
+        {
+        case sl::COLORMASK_NONE:
+            blending.rtBlend[0].writeMask = rhi::COLORMASK_NONE;
+            break;
+        case sl::COLORMASK_ALL:
+            blending.rtBlend[0].writeMask = rhi::COLORMASK_ALL;
+            break;
+        case sl::COLORMASK_RGB:
+            blending.rtBlend[0].writeMask = rhi::COLORMASK_R | rhi::COLORMASK_G | rhi::COLORMASK_B;
+            break;
+        case sl::COLORMASK_A:
+            blending.rtBlend[0].writeMask = rhi::COLORMASK_A;
+            break;
+        }
+    }
+
+#if 0
+    Logger::Info("properties (%u) :", property.size());
+    for (std::vector<rhi::ShaderProp>::const_iterator p = property.begin(), p_end = property.end(); p != p_end; ++p)
+    {
+        if (p->type == rhi::ShaderProp::TYPE_FLOAT4 || p->type == rhi::ShaderProp::TYPE_FLOAT4X4)
+        {
+            if (p->arraySize == 1)
+            {
+                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", p->uid.c_str(), p->bufferindex, p->bufferReg, p->bufferRegCount);
+            }
+            else
+            {
+                char name[128];
+
+                Snprintf(name, sizeof(name) - 1, "%s[%u]", p->uid.c_str(), p->arraySize);
+                Logger::Info("  %-16s    buf#%u  -  %u, %u x float4", name, p->bufferindex, p->bufferReg, p->bufferRegCount);
+            }
+        }
+        else
+        {
+            const char* xyzw = "xyzw";
+
+            switch (p->type)
+            {
+            case rhi::ShaderProp::TYPE_FLOAT1:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT2:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1]);
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT3:
+                Logger::Info("  %-16s    buf#%u  -  %u, %c%c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0], xyzw[p->bufferRegCount + 1], xyzw[p->bufferRegCount + 2]);
+                break;
+
+            default:
+                break;
+            }
         }
     }
 

@@ -72,6 +72,7 @@ enum HLSLToken
     HLSLToken_Technique,
     HLSLToken_Pass,
     HLSLToken_Blending,
+    HLSLToken_ColorMask,
 
     // Multi-character symbols.
     HLSLToken_LessEqual,
