@@ -36,14 +36,47 @@ struct SimpleStruct
     SimpleStruct()
     {
     }
+
+    SimpleStruct(int a_)
+        : a(a_)
+    {
+    }
+
     SimpleStruct(int a_, int b_)
         : a(a_)
         , b(b_)
     {
     }
 
+    SimpleStruct(int a_, int b_, int c_)
+        : a(a_)
+        , b(b_)
+        , c(c_)
+    {
+    }
+
+    SimpleStruct(int a_, int b_, int c_, int d_)
+        : a(a_)
+        , b(b_)
+        , c(c_)
+        , d(d_)
+    {
+    }
+
+    SimpleStruct(int a_, int b_, int c_, int d_, int e_)
+        : a(a_)
+        , b(b_)
+        , c(c_)
+        , d(d_)
+        , e(e_)
+    {
+    }
+
     int a = -38;
     int b = 1024;
+    int c = 1;
+    int d = 888;
+    int e = 54321;
 
     bool operator==(const SimpleStruct& s) const
     {
@@ -54,7 +87,11 @@ struct SimpleStruct
     {
         DAVA::ReflectionRegistrator<SimpleStruct>::Begin()
         .Constructor()
+        .Constructor<int>()
         .Constructor<int, int>()
+        .Constructor<int, int, int>()
+        .Constructor<int, int, int, int>()
+        .Constructor<int, int, int, int, int>()
         .Destructor()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
@@ -289,53 +326,90 @@ DAVA_TESTCLASS (TypeReflection)
         t_ref.Dump(dumpOutput);
 
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
+        dumpOutput.clear();
+        t_ref.DumpMethods(dumpOutput);
+
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+    }
+
+    template <typename T, typename... Args>
+    void DoCtorTest(Args... args)
+    {
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<T>();
+        const DAVA::CtorWrapper* ctor = rtype->GetCtor(DAVA::AnyFn::Params::FromArgs<Args...>());
+
+        TEST_VERIFY(nullptr != ctor);
+
+        if (nullptr != ctor)
+        {
+            DAVA::Any a = ctor->Create(DAVA::CtorWrapper::Policy::ByValue, args...);
+            DAVA::Any b = T(args...);
+            TEST_VERIFY(a == b);
+
+            a = ctor->Create(CtorWrapper::Policy::ByPointer, args...);
+            TEST_VERIFY(*a.Get<T*>() == b.Get<T>());
+        }
+
+        if (sizeof...(Args) != 0)
+        {
+            // false case, when arguments count doesn't match
+            DAVA::Any a = ctor->Create(CtorWrapper::Policy::ByValue);
+            TEST_VERIFY(a.IsEmpty());
+        }
     }
 
     DAVA_TEST (CtorDtorTest)
     {
-        using CtorDtorTestClass = SimpleStruct;
-        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<CtorDtorTestClass>();
+        DAVA::Any::RegisterDefaultOPs<SimpleStruct>();
+
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<SimpleStruct>();
 
         TEST_VERIFY(nullptr != rtype);
         if (nullptr != rtype)
         {
-            const DAVA::CtorWrapper* ctor1 = rtype->GetCtor();
-            const DAVA::CtorWrapper* ctor2 = rtype->GetCtor(DAVA::AnyFn::Params::FromArgs<int, int>());
+            auto ctors = rtype->GetCtors();
+            TEST_VERIFY(ctors.size() > 0);
+
+            for (auto& ctor : ctors)
+            {
+                TEST_VERIFY(ctor != nullptr);
+            }
+
+            DoCtorTest<SimpleStruct>();
+            DoCtorTest<SimpleStruct>(1);
+            DoCtorTest<SimpleStruct>(11, 22);
+            DoCtorTest<SimpleStruct>(111, 222, 333);
+            DoCtorTest<SimpleStruct>(1111, 2222, 3333, 4444);
+            DoCtorTest<SimpleStruct>(11111, 22222, 33333, 44444, 55555);
+
             const DAVA::DtorWrapper* dtor = rtype->GetDtor();
-            const DAVA::Type* testType = DAVA::Type::Instance<CtorDtorTestClass>();
 
-            TEST_VERIFY(nullptr != ctor1);
-            TEST_VERIFY(nullptr != ctor2);
             TEST_VERIFY(nullptr != dtor);
-
-            DAVA::Any::RegisterDefaultOPs<SimpleStruct>();
-
-            DAVA::Any a = ctor1->Create(DAVA::CtorWrapper::Policy::ByValue);
-            DAVA::Any b = CtorDtorTestClass();
-            TEST_VERIFY(a == b);
-
-            a = ctor2->Create(DAVA::CtorWrapper::Policy::ByValue, 111, 222);
-            b.Set(CtorDtorTestClass(111, 222));
-            TEST_VERIFY(a == b);
-
-            TEST_VERIFY(a.GetType() == testType);
-
-            try
+            if (nullptr != dtor)
             {
+                DAVA::Any a = SimpleStruct();
+
+                try
+                {
+                    dtor->Destroy(std::move(a));
+                    TEST_VERIFY(false && "Destroing object created by value shouldn't be able");
+                }
+                catch (const DAVA::Exception&)
+                {
+                    TEST_VERIFY(!a.IsEmpty());
+                    TEST_VERIFY(a.GetType() == DAVA::Type::Instance<SimpleStruct>());
+                }
+
+                a.Set(new SimpleStruct());
                 dtor->Destroy(std::move(a));
-                TEST_VERIFY(false && "Destroing object created by value shouldn't be able");
-            }
-            catch (const DAVA::Exception&)
-            {
-                TEST_VERIFY(!a.IsEmpty());
-                TEST_VERIFY(a.GetType() == testType);
-            }
+                TEST_VERIFY(a.IsEmpty());
 
-            a = ctor2->Create(DAVA::CtorWrapper::Policy::ByPointer, 111, 222);
-            TEST_VERIFY(*a.Get<CtorDtorTestClass*>() == b.Get<CtorDtorTestClass>());
-
-            dtor->Destroy(std::move(a));
-            TEST_VERIFY(a.IsEmpty());
+                DAVA::ReflectedObject obj(new SimpleStruct());
+                TEST_VERIFY(obj.IsValid());
+                dtor->Destroy(std::move(obj));
+                TEST_VERIFY(!obj.IsValid());
+            }
         }
     }
 

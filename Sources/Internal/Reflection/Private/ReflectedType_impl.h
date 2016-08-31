@@ -85,7 +85,7 @@ ReflectedType* ReflectedType::Create()
 template <typename T>
 ReflectedType* ReflectedType::Edit()
 {
-    using DecayT = std::decay_t<T>;
+    using DecayT = Type::DecayT<T>;
     ReflectedType* ret = Create<DecayT>();
 
     if (nullptr == ret->type)

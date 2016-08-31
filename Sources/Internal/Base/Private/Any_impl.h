@@ -200,10 +200,9 @@ bool Any::CanCast() const
 template <typename T>
 inline bool Any::CanCastImpl(std::true_type isPointer) const
 {
-    using P = std::remove_cv_t<std::remove_pointer_t<T>>;
-    const Type* ptype = Type::Instance<P>();
+    using P = Type::DecayT<T>;
 
-    return TypeCast::CanCast(type->Deref(), ptype);
+    return TypeCast::CanCast(type, Type::Instance<P>());
 }
 
 template <typename T>
@@ -233,13 +232,12 @@ T Any::Cast() const
 template <typename T>
 inline T Any::CastImpl(std::true_type isPointer) const
 {
-    using P = std::remove_cv_t<std::remove_pointer_t<T>>;
-    const Type* ptype = Type::Instance<P>();
+    using P = Type::DecayT<T>;
 
     void* inPtr = GetImpl<void*>();
     void* outPtr = nullptr;
 
-    if (TypeCast::Cast(type->Deref(), inPtr, ptype, &outPtr))
+    if (TypeCast::Cast(type, inPtr, Type::Instance<P>(), &outPtr))
     {
         return static_cast<T>(outPtr);
     }
