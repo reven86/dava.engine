@@ -305,7 +305,7 @@ static void gles_check_GL_extensions()
 #endif
     
     // allow multisampling only on NVIDIA Tegra GPU
-    // and if functions are loaded
+    // and if functions were loaded
     if (runningOnTegra && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
 #endif
     {
