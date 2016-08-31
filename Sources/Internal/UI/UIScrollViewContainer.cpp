@@ -97,12 +97,14 @@ int32 UIScrollViewContainer::GetTouchTreshold()
 
 void UIScrollViewContainer::OnVisible()
 {
+    UIControl::OnVisible();
     UIControlSystem::Instance()->update.Connect(this, &UIScrollViewContainer::Update);
 }
 
 void UIScrollViewContainer::OnInvisible()
 {
     UIControlSystem::Instance()->update.Disconnect(this);
+    UIControl::OnInvisible();
 }
 
 void UIScrollViewContainer::Input(UIEvent* currentTouch)

@@ -358,11 +358,13 @@ void UISpinner::SetupInternalControls()
 
 void UISpinner::OnVisible()
 {
+    UIControl::OnVisible();
     UIControlSystem::Instance()->update.Connect(this, &UISpinner::Update);
 }
 
 void UISpinner::OnInvisible()
 {
     UIControlSystem::Instance()->update.Disconnect(this);
+    UIControl::OnInvisible();
 }
 }

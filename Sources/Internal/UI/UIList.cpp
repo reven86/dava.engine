@@ -457,12 +457,14 @@ void UIList::Update(float32 timeElapsed)
 
 void UIList::OnVisible()
 {
+    UIControl::OnVisible();
     UIControlSystem::Instance()->update.Connect(this, &UIList::Update);
 }
 
 void UIList::OnInvisible()
 {
     UIControlSystem::Instance()->update.Disconnect(this);
+    UIControl::OnInvisible();
 }
 
 void UIList::Input(UIEvent* currentInput)

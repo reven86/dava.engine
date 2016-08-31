@@ -113,12 +113,14 @@ void UIScreenTransition::Draw(const UIGeometricData& geometricData)
 
 void UIScreenTransition::OnVisible()
 {
+    UIScreen::OnVisible();
     UIControlSystem::Instance()->update.Connect(this, &UIScreenTransition::Update);
 }
 
 void UIScreenTransition::OnInvisible()
 {
     UIControlSystem::Instance()->update.Disconnect(this);
+    UIScreen::OnInvisible();
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)

@@ -213,6 +213,7 @@ void UI3DView::PrepareFrameBuffer()
 
 void UI3DView::OnVisible()
 {
+    UIControl::OnVisible();
     UIControlSystem::Instance()->update.Connect(this, &UI3DView::Update);
     if (!registeredInUIControlSystem)
     {
@@ -229,5 +230,6 @@ void UI3DView::OnInvisible()
         registeredInUIControlSystem = false;
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
+    UIControl::OnInvisible();
 }
 }
