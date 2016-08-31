@@ -25,7 +25,7 @@ else()
 endif()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-standalone-debug" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
