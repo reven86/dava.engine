@@ -21,11 +21,10 @@ class Window;
 class CorePlatformWinUAP;
 #endif
 
-class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFieldWinUAP>
+class TextFieldPlatformImpl : public std::enable_shared_from_this<TextFieldPlatformImpl>
 {
     struct TextFieldProperties
     {
-        TextFieldProperties();
         void ClearChangedFlags();
 
         bool createNew : 1;
@@ -81,12 +80,15 @@ class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFi
     };
 
 public:
-    PrivateTextFieldWinUAP(UITextField* uiTextField);
-    ~PrivateTextFieldWinUAP();
+#if defined(__DAVAENGINE_COREV2__)
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField);
+#else
+    TextFieldPlatformImpl(UITextField* uiTextField);
+#endif
+    ~TextFieldPlatformImpl();
 
-    // UITextFieldWinUAP should invoke it in its destructor to tell this class instance
-    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void OwnerAtPremortem();
+    void Initialize();
+    void OwnerIsDying();
 
     void SetVisible(bool isVisible);
     void SetIsPassword(bool isPassword);
@@ -127,6 +129,8 @@ public:
 
     uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
+
+    void SystemDraw(const UIGeometricData&);
 
 private:
     void CreateNativeControl(bool textControl);
@@ -217,30 +221,34 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline int32 PrivateTextFieldWinUAP::GetTextAlign() const
+inline int32 TextFieldPlatformImpl::GetTextAlign() const
 {
     return properties.textAlignment;
 }
 
-inline bool PrivateTextFieldWinUAP::GetTextUseRtlAlign() const
+inline bool TextFieldPlatformImpl::GetTextUseRtlAlign() const
 {
     return properties.textRtlAlignment;
 }
 
-inline void PrivateTextFieldWinUAP::SetRenderToTexture(bool /*value*/)
+inline void TextFieldPlatformImpl::SetRenderToTexture(bool /*value*/)
 {
     // Do nothing as single line text field always is painted into texture
     // Multiline text field is never rendered to texture
 }
 
-inline bool PrivateTextFieldWinUAP::IsRenderToTexture() const
+inline bool TextFieldPlatformImpl::IsRenderToTexture() const
 {
     return !properties.multiline;
 }
 
-inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
+inline uint32 TextFieldPlatformImpl::GetCursorPos() const
 {
     return caretPosition;
+}
+
+inline void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
+{
 }
 
 } // namespace DAVA
