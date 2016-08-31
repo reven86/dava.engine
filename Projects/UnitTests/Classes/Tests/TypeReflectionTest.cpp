@@ -347,14 +347,14 @@ DAVA_TESTCLASS (TypeReflection)
             DAVA::Any b = T(args...);
             TEST_VERIFY(a == b);
 
-            a = ctor->Create(CtorWrapper::Policy::ByPointer, args...);
+            a = ctor->Create(DAVA::CtorWrapper::Policy::ByPointer, args...);
             TEST_VERIFY(*a.Get<T*>() == b.Get<T>());
         }
 
         if (sizeof...(Args) != 0)
         {
             // false case, when arguments count doesn't match
-            DAVA::Any a = ctor->Create(CtorWrapper::Policy::ByValue);
+            DAVA::Any a = ctor->Create(DAVA::CtorWrapper::Policy::ByValue);
             TEST_VERIFY(a.IsEmpty());
         }
     }
