@@ -325,7 +325,7 @@ extern volatile struct alignas(32) GLCallRegisters {
 
 #endif
 
-#if 1
+#if 0
 #define GL_CALL(expr) \
 { \
     expr; \
