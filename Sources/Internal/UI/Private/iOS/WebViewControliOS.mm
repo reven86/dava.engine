@@ -185,12 +185,16 @@ struct WebViewControl::WebViewObjcBridge final
     UISwipeGestureRecognizer* leftSwipeGesture = nullptr;
 };
 
-WebViewControl::WebViewControl(UIWebView& uiWeb)
-    : bridge(new WebViewObjcBridge)
 #if defined(__DAVAENGINE_COREV2__)
-    , window(Engine::Instance()->PrimaryWindow())
+WebViewControl::WebViewControl(Window* w, UIWebView* uiWebView)
+    : bridge(new WebViewObjcBridge)
+    , window(w)
+    , uiWebView(*uiWebView)
+#else
+WebViewControl::WebViewControl(UIWebView* uiWebView)
+    : bridge(new WebViewObjcBridge)
+    , uiWebView(*uiWebView)
 #endif
-    , uiWebView(uiWeb)
 {
 #if defined(__DAVAENGINE_COREV2__)
     WindowNativeService* nativeService = window->GetNativeService();
@@ -210,7 +214,7 @@ WebViewControl::WebViewControl(UIWebView& uiWeb)
     bridge->webViewDelegate = [[WebViewURLDelegate alloc] init];
 
     [bridge->nativeWebView setDelegate:bridge->webViewDelegate];
-    [bridge->webViewDelegate setDAVAUIWebView:&uiWebView];
+    [bridge->webViewDelegate setDAVAUIWebView:uiWebView];
     [bridge->webViewDelegate setDAVAWebViewControl:this];
 
     [bridge->nativeWebView becomeFirstResponder];

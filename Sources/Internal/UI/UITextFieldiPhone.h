@@ -11,8 +11,22 @@ class UITextField;
 class TextFieldPlatformImpl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    TextFieldPlatformImpl(Window* w, UITextField* uiTextField);
+#else
     TextFieldPlatformImpl(UITextField* tf);
+#endif
     virtual ~TextFieldPlatformImpl();
+
+    void Initialize()
+    {
+    }
+    void OwnerIsDying()
+    {
+    }
+    void SetDelegate(UITextFieldDelegate*)
+    {
+    }
 
     void OpenKeyboard();
     void CloseKeyboard();

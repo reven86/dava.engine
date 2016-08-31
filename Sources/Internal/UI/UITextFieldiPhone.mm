@@ -34,10 +34,10 @@ struct TextFieldPlatformImpl::TextFieldObjcBridge final
 };
 
 #if defined(__DAVAENGINE_COREV2__)
-TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
-    : window(Engine::Instance()->PrimaryWindow())
+TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
+    : window(w)
     , bridge(new TextFieldObjcBridge)
-    , davaTextField(*tf)
+    , davaTextField(*uiTextField)
 {
     DVASSERT(isSingleLine);
 
@@ -50,7 +50,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     [bridge->textFieldHolder setTextField:&davaTextField];
     [bridge->textFieldHolder dropCachedText];
 
-    prevRect = tf->GetRect();
+    prevRect = uiTextField->GetRect();
     if (renderToTexture)
     {
         UpdateNativeRect(prevRect, MOVE_TO_OFFSCREEN_STEP);

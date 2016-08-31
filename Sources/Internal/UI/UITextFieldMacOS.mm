@@ -1228,17 +1228,12 @@ public:
     IField* ctrl = nullptr;
 };
 
-TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* tf)
 #if defined(__DAVAENGINE_COREV2__)
-    : objcWrapper
-{
-    *(new ObjCWrapper(tf, Engine::Instance()->PrimaryWindow()))
-}
+TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
+    : objcWrapper(*(new ObjCWrapper(uiTextField, w)))
 #else
-    : objcWrapper
-{
-    *(new ObjCWrapper(tf))
-}
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
+    : objcWrapper(*(new ObjCWrapper(uiTextField)))
 #endif
 {
 }
