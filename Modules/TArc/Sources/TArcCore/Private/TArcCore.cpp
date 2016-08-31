@@ -248,6 +248,7 @@ void Core::RegisterOperation(int operationID, AnyFn&& fn)
     if (iter != globalOperations.end())
     {
         Logger::Error("Global operation with ID %d, has already been registered", operationID);
+        return;
     }
 
     globalOperations.emplace(operationID, fn);
