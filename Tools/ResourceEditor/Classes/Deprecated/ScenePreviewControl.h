@@ -16,13 +16,16 @@ public:
     ScenePreviewControl(const DAVA::Rect& rect);
     ~ScenePreviewControl() override;
 
-    void Update(DAVA::float32 timeElapsed) override;
-
     DAVA::int32 OpenScene(const DAVA::FilePath& pathToFile);
     void ReleaseScene();
     void RecreateScene();
 
+protected:
+    void OnVisible() override;
+    void OnInvisible() override;
+
 private:
+    void Update(DAVA::float32 timeElapsed);
     void CreateCamera();
     void SetupCamera();
 
