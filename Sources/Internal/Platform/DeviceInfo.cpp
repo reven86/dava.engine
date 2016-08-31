@@ -147,6 +147,6 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-Signal<String> DeviceInfo::carrierNameChanged;
+Signal<const String&> DeviceInfo::carrierNameChanged;
 
 } // namespace DAVA
