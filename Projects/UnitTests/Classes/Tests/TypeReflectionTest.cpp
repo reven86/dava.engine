@@ -103,11 +103,16 @@ class BaseBase : public DAVA::ReflectedBase
 {
 public:
     int basebase = 99;
+    bool BaseMe()
+    {
+        return true;
+    }
 
     DAVA_VIRTUAL_REFLECTION(BaseBase)
     {
         DAVA::ReflectionRegistrator<BaseBase>::Begin()
         .Field("basebase", &BaseBase::basebase)
+        .Method("BaseMe", &BaseBase::BaseMe)
         .End();
     }
 };
@@ -254,6 +259,7 @@ public:
     }
 
     SimpleStruct* simple;
+    std::string str;
 
 protected:
     int baseInt = 123;
@@ -288,12 +294,14 @@ protected:
         .Field("simVec", &TestBaseClass::simVec)
         .Field("sptr", &TestBaseClass::sptr)
         .Field("StaticIntFn", &TestBaseClass::GetStaticIntFn, &TestBaseClass::SetStaticIntFn)
+        .Field("StaticIntFnFn", DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn), DAVA::MakeFunction(&TestBaseClass::SetStaticIntFn))
         .Field("StaticCustomFn", &TestBaseClass::GetStaticCustomFn, nullptr)
         .Field("StaticCustomRefFn", &TestBaseClass::GetStaticCustomRefFn, nullptr)
         .Field("StaticCustomPtrFn", &TestBaseClass::GetStaticCustomPtrFn, nullptr)
         .Field("StaticCustomRefConstFn", &TestBaseClass::GetStaticCustomRefConstFn, nullptr)
         .Field("StaticCustomPtrConstFn", &TestBaseClass::GetStaticCustomPtrConstFn, nullptr)
         .Field("IntFn", &TestBaseClass::GetIntFn, &TestBaseClass::SetIntFn)
+        .Field("IntFnFn", DAVA::MakeFunction(&TestBaseClass::GetIntFn), DAVA::MakeFunction(&TestBaseClass::SetIntFn))
         .Field("IntFnConst", &TestBaseClass::GetIntFnConst, nullptr)
         .Field("StrFn", &TestBaseClass::GetBaseStr, &TestBaseClass::SetBaseStr)
         .Field("CustomFn", &TestBaseClass::GetCustomFn, nullptr)
@@ -307,6 +315,16 @@ protected:
         .Method("SumMethod", &TestBaseClass::SumMethod)
         // .Method("LaMethod", [](const TestBaseClass* t, int a, int b) { return (t->GetIntFnConst() + a - b); })
         .End();
+    }
+};
+
+struct BaseOnlyReflection : public BaseBase
+{
+    int aaa = 0;
+
+    DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, BaseBase)
+    {
+        DAVA::ReflectionRegistrator<BaseOnlyReflection>::Begin().End();
     }
 };
 
@@ -363,6 +381,31 @@ DAVA_TESTCLASS (TypeReflection)
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
 
+    template <typename T>
+    void DoTypeNameTest(const char* permName)
+    {
+        const DAVA::ReflectedType* rtype0 = DAVA::ReflectedType::Get<T>();
+        TEST_VERIFY(nullptr != rtype0);
+        TEST_VERIFY(rtype0->GetPermanentName() == permName);
+        TEST_VERIFY(rtype0->GetType() == DAVA::Type::Instance<T>());
+
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(Type::Instance<T>());
+        TEST_VERIFY(rtype1 == rtype0);
+
+        const DAVA::ReflectedType* rtype2 = DAVA::ReflectedType::GetByRttiName(typeid(T).name());
+        TEST_VERIFY(rtype2 == rtype0);
+
+        const DAVA::ReflectedType* rtype3 = DAVA::ReflectedType::GetByPermanentName(permName);
+        TEST_VERIFY(rtype3 == rtype0);
+    }
+
+    DAVA_TEST (TypeNames)
+    {
+        DoTypeNameTest<BaseBase>("BaseBase");
+        DoTypeNameTest<SimpleStruct>("SimpleStruct");
+        DoTypeNameTest<TestBaseClass>("TestBaseClass");
+    }
+
     DAVA_TEST (FieldsAndMethods)
     {
         TestBaseClass t;
@@ -370,6 +413,16 @@ DAVA_TESTCLASS (TypeReflection)
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
+        TEST_VERIFY(r.GetField("basebase").ref.IsValid());
+        TEST_VERIFY(r.GetMethod("BaseMe").fn.IsValid());
+
+        BaseOnlyReflection b;
+        r = DAVA::Reflection::Create(&b).ref;
+
+        TEST_VERIFY(r.HasFields());
+        TEST_VERIFY(r.HasMethods());
+        TEST_VERIFY(r.GetField("basebase").ref.IsValid());
+        TEST_VERIFY(r.GetMethod("BaseMe").fn.IsValid());
     }
 
     template <typename T, typename... Args>
@@ -522,11 +575,13 @@ DAVA_TESTCLASS (TypeReflection)
         auto realStaticGetter = DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn);
         auto realStaticSetter = DAVA::MakeFunction(&TestBaseClass::SetStaticIntFn);
         DoValueSetGetTest(r.GetField("StaticIntFn").ref, realStaticGetter, realStaticSetter, 111, 222);
+        DoValueSetGetTest(r.GetField("StaticIntFnFn").ref, realStaticGetter, realStaticSetter, 333, 444);
 
         // class set/get
         auto realClassGetter = DAVA::MakeFunction(&t, &TestBaseClass::GetIntFn);
         auto realClassSetter = DAVA::MakeFunction(&t, &TestBaseClass::SetIntFn);
         DoValueSetGetTest(r.GetField("IntFn").ref, realClassGetter, realClassSetter, 1111, 2222);
+        DoValueSetGetTest(r.GetField("IntFnFn").ref, realClassGetter, realClassSetter, 3333, 4444);
 
         // class const set/get
         auto realClassConstGetter = DAVA::MakeFunction(&t, &TestBaseClass::GetIntFnConst);
