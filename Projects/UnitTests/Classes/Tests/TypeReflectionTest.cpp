@@ -456,7 +456,7 @@ DAVA_TESTCLASS (TypeReflection)
     }
 
     template <typename T, typename G, typename S>
-    void DoValueSetGetTest(DAVA::Reflection ref, G & realGetter, S & realSetter, const T& v1, const T& v2)
+    void DoValueSetGetTest(DAVA::Reflection ref, const G& realGetter, const S& realSetter, const T& v1, const T& v2)
     {
         TEST_VERIFY
         (
