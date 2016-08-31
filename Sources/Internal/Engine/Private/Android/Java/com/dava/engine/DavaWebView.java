@@ -23,7 +23,8 @@ class eAction
 
 public final class DavaWebView
 {
-    private long webviewBackendPointer = 0;
+    // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
+    private volatile long webviewBackendPointer = 0;
     private DavaSurfaceView surfaceView = null;
     private CustomWebView nativeWebView = null;
 
@@ -32,6 +33,7 @@ public final class DavaWebView
     // Properties that reflect WebView current properties
     private WebViewProperties curProperties = new WebViewProperties();
 
+    public static native void nativeReleaseWeakPtr(long backendPointer);
     public static native int nativeOnUrlChanged(long backendPointer, String url, boolean isRedirectedByMouseClick);
     public static native void nativeOnPageLoaded(long backendPointer);
     public static native void nativeOnExecuteJavaScript(long backendPointer, String result);
@@ -160,12 +162,7 @@ public final class DavaWebView
         DavaActivity.commandHandler().post(new Runnable() {
             @Override public void run()
             {
-                if (nativeWebView != null)
-                {
-                    webviewBackendPointer = 0;
-                    surfaceView.removeControl(nativeWebView);
-                    nativeWebView = null;
-                }
+                releaseNativeControl();
             }
         });
     }
@@ -308,6 +305,18 @@ public final class DavaWebView
         nativeWebView.setWebChromeClient(new DavaWebViewChromeClient(this));
 
         surfaceView.addControl(nativeWebView);
+    }
+
+    void releaseNativeControl()
+    {
+        nativeReleaseWeakPtr(webviewBackendPointer);
+        webviewBackendPointer = 0;
+
+        if (nativeWebView != null)
+        {
+            surfaceView.removeControl(nativeWebView);
+            nativeWebView = null;
+        }
     }
 
     void applyChangedProperties(WebViewProperties props)

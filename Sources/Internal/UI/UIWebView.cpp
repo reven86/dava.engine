@@ -12,8 +12,6 @@
 #include "UI/Private/OSX/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/Private/iOS/WebViewControliOS.h"
-#elif defined(__DAVAENGINE_WIN32__)
-#include "UI/Private/Win32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "UI/Private/UWP/WebViewControlWinUAP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -26,10 +24,10 @@ namespace DAVA
 {
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
-#if defined(__DAVAENGINE_COREV2__) && defined(__DAVAENGINE_ANDROID__)
-    , webViewControl(new WebViewControl(*Engine::Instance()->PrimaryWindow(), *this))
+#if defined(__DAVAENGINE_COREV2__)
+    , webViewControl(std::make_shared<WebViewControl>(Engine::Instance()->PrimaryWindow(), this))
 #else
-    , webViewControl(new WebViewControl(*this))
+    , webViewControl(std::make_shared<WebViewControl>(*this))
 #endif
     , isNativeControlVisible(false)
 {
@@ -41,7 +39,10 @@ UIWebView::UIWebView(const Rect& rect)
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
-UIWebView::~UIWebView() = default;
+UIWebView::~UIWebView()
+{
+    webViewControl->OwnerIsDying();
+}
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {
