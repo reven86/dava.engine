@@ -33,10 +33,14 @@ bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 
-DAVA::uint8 volatile pre_call_registers[64];
+#if defined(__DAVAENGINE_ANDROID__)
 
-#if defined(__DAVAENGINE_WIN32__)
+volatile GLCallRegisters gl_call_registers;
+
+#elif defined(__DAVAENGINE_WIN32__)
+
 HDC _GLES2_WindowDC = 0;
+
 #endif
 
 namespace rhi
@@ -220,33 +224,33 @@ static void gles_check_GL_extensions()
                 Short_Int_Supported = true;
             }
 #ifdef __DAVAENGINE_ANDROID__
+            glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
             if (glDrawElementsInstanced == nullptr)
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
-
+            
+            glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
             if (glDrawArraysInstanced == nullptr)
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
-
+            
+            glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
             if (glVertexAttribDivisor == nullptr)
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
-
+            
             glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
             if (glRenderbufferStorageMultisample == nullptr)
                 glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
-
+            
             glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
             if (glBlitFramebuffer == nullptr)
                 glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
-
+            
             glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
             if (glDebugMessageControl == nullptr)
                 glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
-
+            
             glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
             if (glDebugMessageCallback == nullptr)
                 glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
-
-            DAVA::Logger::Info("glRenderbufferStorageMultisample = %p", glRenderbufferStorageMultisample);
-            DAVA::Logger::Info("glBlitFramebuffer = %p", glBlitFramebuffer);
 #endif
         }
         else
@@ -269,36 +273,29 @@ static void gles_check_GL_extensions()
         }
     }
 
-    GLint maxSamples = 1;
-    GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
-    DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
-
+    bool runningOnTegra = false;
+    bool runningOnMali = false;
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
-        DAVA::Logger::Info("OpenGL rendered: %s", renderer);
-
         memcpy(MutableDeviceCaps::Get().deviceDescription, renderer, strlen(renderer));
-
-        if (strstr(renderer, "Mali"))
-        {
-            // drawing from memory is worst case scenario,
-            // unless running on some buggy piece of shit
-            _GLES2_UseUserProvidedIndices = true;
-        }
-
-        if (strcmp(renderer, "NVIDIA Tegra") == 0)
-        {
-            //Without offensive language:
-            //it seems like some GL-functions in SHIELD driver implementation
-            //corrupt 'callee-saved' Neon registers (q4-q7).
-            //So, we just restore it after any GL-call.
-            _GLES2_ValidateNeonCalleeSavedRegisters = true;
-            DAVA::Logger::Info("_GLES2_ValidateNeonCalleeSavedRegisters = %d", (int)_GLES2_ValidateNeonCalleeSavedRegisters);
-        }
+        runningOnMali = strstr(renderer, "Mali") != nullptr;
+        runningOnTegra = strcmp(renderer, "NVIDIA Tegra") == 0;
     }
     
-#ifdef __DAVAENGINE_ANDROID__
+    GLint maxSamples = 1;
+    
+#ifdef __DAVAENGINE_ANDROID__ // hacks and workarounds for beautiful Android
+    
+    // drawing from memory is worst case scenario,
+    // unless running on some buggy piece of shit
+    _GLES2_UseUserProvidedIndices = runningOnMali;
+    
+    // Without offensive language:
+    // it seems like some GL-functions in SHIELD driver implementation
+    // corrupt 'callee-saved' Neon registers (q4-q7).
+    // So, we just restore it after any GL-call.
+    _GLES2_ValidateNeonCalleeSavedRegisters = runningOnTegra;
     
 #if 0 && defined(__DAVAENGINE_DEBUG__)
     if (_GLES2_IsDebugSupported)
@@ -306,13 +303,16 @@ static void gles_check_GL_extensions()
         android_gl_enable_debug();
     }
 #endif
-    // cancel multisampling support, if there methods are not initialized
-    if ((glRenderbufferStorageMultisample == nullptr) || (glBlitFramebuffer == nullptr))
-    {
-        maxSamples = 1;
-    }
+    
+    // allow multisampling only on NVIDIA Tegra GPU
+    // and if functions are loaded
+    if (runningOnTegra && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
 #endif
-
+    {
+        GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
+        DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
+    }
+    
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 }
 
