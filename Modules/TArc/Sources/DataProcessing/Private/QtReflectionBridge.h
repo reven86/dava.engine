@@ -47,8 +47,8 @@ public:
     QtReflected* CreateQtReflected(DataWrapper&& wrapper, QObject* parent);
 
 private:
-    QVariant Convert(const Any& value);
-    Any Convert(const QVariant& value);
+    QVariant Convert(const Any& value) const;
+    Any Convert(const QVariant& value) const;
     friend class QtReflected;
     UnorderedMap<const ReflectedType*, QMetaObject*> metaObjects;
 

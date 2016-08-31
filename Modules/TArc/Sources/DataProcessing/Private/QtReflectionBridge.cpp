@@ -373,7 +373,7 @@ QtReflected* QtReflectionBridge::CreateQtReflected(DataWrapper&& wrapper, QObjec
     return new QtReflected(this, std::move(wrapper), parent);
 }
 
-QVariant QtReflectionBridge::Convert(const Any& value)
+QVariant QtReflectionBridge::Convert(const Any& value) const
 {
     auto iter = anyToQVariant.find(value.GetType());
     if (iter == anyToQVariant.end())
@@ -385,7 +385,7 @@ QVariant QtReflectionBridge::Convert(const Any& value)
     return iter->second(value);
 }
 
-Any QtReflectionBridge::Convert(const QVariant& value)
+Any QtReflectionBridge::Convert(const QVariant& value) const
 {
     auto iter = qvariantToAny.find(value.userType());
     if (iter == qvariantToAny.end())
