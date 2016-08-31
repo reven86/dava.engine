@@ -24,11 +24,12 @@ struct ImmediateCommand
 
 namespace DispatchPlatform
 {
+extern void (*AcquireContext)(); //TODO - move it to opengl
+extern void (*ReleaseContext)(); //TODO - move it to opengl
+
 extern void (*InitContext)();
-extern void (*AcquireContext)(); //TODO - may be this should be just part of opengl
-extern void (*ReleaseContext)(); //TODO - may be this should be just part of opengl
-extern void (*CheckSurface)();
-extern void (*Suspend)();
+extern void (*CheckSurface)(); //TODO - may be this should be part of opengl only?
+extern void (*Suspend)(); //perform finalization before going to suspend
 
 extern void (*ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
 

@@ -135,7 +135,6 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority priority, int32 bindToProcessor)
 {
     renderThreadFrameCount = frameCount;
-    DVASSERT(DispatchPlatform::InitContext);
 
     if (renderThreadFrameCount)
     {
@@ -177,7 +176,7 @@ void ResumeRender()
 {
     DVASSERT(renderThreadSuspended);
     Logger::Error("Render Resumed");
-    renderThreadSuspended = (false);
+    renderThreadSuspended = false;
     if (renderThreadFrameCount)
     {
         renderThreadSuspendSync.Post();

@@ -90,8 +90,7 @@ metal_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static const RenderDeviceCaps&
-metal_DeviceCaps()
+static const RenderDeviceCaps& metal_DeviceCaps()
 {
     return _metal_DeviceCaps;
 }
@@ -129,8 +128,6 @@ metal_Suspend()
 static void
 metal_Resume()
 {
-    //    TextureMetal::MarkAllNeedRestore();
-    //TextureMetal::ReCreateAll();
     _Metal_Suspended.Set(false);
     DAVA::Logger::Info("mtl.render-resumed");
 }

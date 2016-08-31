@@ -10,6 +10,7 @@
 using DAVA::Logger;
 #include "Core/Core.h"
 #include "Debug/Profiler.h"
+#include "../Common/CommonImpl.h"
 
 #include "_metal.h"
 
@@ -25,233 +26,7 @@ using DAVA::Logger;
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 namespace rhi
 {
-
-#if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-enum CommandMetalType
-{
-    MTL__BEGIN,
-    MTL__END,
-
-    MTL__SET_VERTEX_DATA,
-    MTL__SET_INDICES,
-    MTL__SET_QUERY_BUFFER,
-    MTL__SET_QUERY_INDEX,
-    MTL__ISSUE_TIMESTAMP_QUERY,
-
-    MTL__SET_PIPELINE_STATE,
-    MTL__SET_CULL_MODE,
-    MTL__SET_SCISSOR_RECT,
-    MTL__SET_VIEWPORT,
-    MTL__SET_FILLMODE,
-    MTL__SET_VERTEX_PROG_CONST_BUFFER,
-    MTL__SET_FRAGMENT_PROG_CONST_BUFFER,
-    MTL__SET_FRAGMENT_TEXTURE,
-    MTL__SET_VERTEX_TEXTURE,
-
-    MTL__SET_DEPTHSTENCIL_STATE,
-    MTL__SET_SAMPLER_STATE,
-
-    MTL__DRAW_PRIMITIVE,
-    MTL__DRAW_INDEXED_PRIMITIVE,
-    MTL__DRAW_INSTANCED_PRIMITIVE,
-    MTL__DRAW_INSTANCED_INDEXED_PRIMITIVE,
-
-    MTL__DEBUG_MARKER,
-
-    MTL__NOP
-};
-
-struct
-CommandMTL
-{
-    uint8 type;
-    uint8 size;
-
-    CommandMTL(uint8 t, uint8 sz)
-        : type(t)
-        , size(sz)
-    {
-    }
-};
-
-template <class T, CommandMetalType t>
-struct
-CommandMetalImpl
-: public CommandMTL
-{
-    CommandMetalImpl()
-        : CommandMTL(t, sizeof(T))
-    {
-    }
-};
-
-struct
-CommandMTL_Begin : public CommandMetalImpl<CommandMTL_Begin, MTL__BEGIN>
-{
-};
-
-struct
-CommandMTL_End : public CommandMetalImpl<CommandMTL_End, MTL__END>
-{
-    Handle syncObject;
-    bool doCommit;
-};
-
-struct
-CommandMTL_SetVertexData : public CommandMetalImpl<CommandMTL_SetVertexData, MTL__SET_VERTEX_DATA>
-{
-    uint16 streamIndex;
-    Handle vb;
-};
-
-struct
-CommandMTL_SetIndices : public CommandMetalImpl<CommandMTL_SetIndices, MTL__SET_INDICES>
-{
-    Handle ib;
-};
-
-struct
-CommandMTL_SetQueryBuffer : public CommandMetalImpl<CommandMTL_SetQueryBuffer, MTL__SET_QUERY_BUFFER>
-{
-    Handle queryBuf;
-};
-
-struct
-CommandMTL_SetQueryIndex : public CommandMetalImpl<CommandMTL_SetQueryIndex, MTL__SET_QUERY_INDEX>
-{
-    uint32 objectIndex;
-};
-
-struct
-CommandMTL_SetPipelineState : public CommandMetalImpl<CommandMTL_SetPipelineState, MTL__SET_PIPELINE_STATE>
-{
-    Handle ps;
-    uint32 vdeclUID;
-};
-
-struct
-CommandMTL_SetDepthStencilState : public CommandMetalImpl<CommandMTL_SetDepthStencilState, MTL__SET_DEPTHSTENCIL_STATE>
-{
-    Handle depthStencilState;
-};
-
-struct
-CommandMTL_SetSamplerState : public CommandMetalImpl<CommandMTL_SetSamplerState, MTL__SET_SAMPLER_STATE>
-{
-    Handle samplerState;
-};
-
-struct
-CommandMTL_SetCullMode : public CommandMetalImpl<CommandMTL_SetCullMode, MTL__SET_CULL_MODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandMTL_SetScissorRect : public CommandMetalImpl<CommandMTL_SetScissorRect, MTL__SET_SCISSOR_RECT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandMTL_SetViewport : public CommandMetalImpl<CommandMTL_SetViewport, MTL__SET_VIEWPORT>
-{
-    uint16 x, y, w, h;
-};
-
-struct
-CommandMTL_SetFillMode : public CommandMetalImpl<CommandMTL_SetFillMode, MTL__SET_FILLMODE>
-{
-    uint8 mode;
-};
-
-struct
-CommandMTL_SetVertexProgConstBuffer : public CommandMetalImpl<CommandMTL_SetVertexProgConstBuffer, MTL__SET_VERTEX_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    uint32 inst_offset;
-};
-
-struct
-CommandMTL_SetFragmentProgConstBuffer : public CommandMetalImpl<CommandMTL_SetFragmentProgConstBuffer, MTL__SET_FRAGMENT_PROG_CONST_BUFFER>
-{
-    uint16 bufIndex;
-    Handle buffer;
-    uint32 inst_offset;
-};
-
-struct
-CommandMTL_SetFragmentTexture : public CommandMetalImpl<CommandMTL_SetFragmentTexture, MTL__SET_FRAGMENT_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandMTL_SetVertexTexture : public CommandMetalImpl<CommandMTL_SetVertexTexture, MTL__SET_VERTEX_TEXTURE>
-{
-    uint16 unitIndex;
-    Handle tex;
-};
-
-struct
-CommandMTL_DrawPrimitive : public CommandMetalImpl<CommandMTL_DrawPrimitive, MTL__DRAW_PRIMITIVE>
-{
-    uint8 type;
-    uint32 vertexCount;
-    uint32 baseVertex;
-};
-
-struct
-CommandMTL_DrawIndexedPrimitive : public CommandMetalImpl<CommandMTL_DrawIndexedPrimitive, MTL__DRAW_INDEXED_PRIMITIVE>
-{
-    uint8 type;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-};
-
-struct
-CommandMTL_DrawInstancedPrimitive : public CommandMetalImpl<CommandMTL_DrawInstancedPrimitive, MTL__DRAW_INSTANCED_PRIMITIVE>
-{
-    uint8 type;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 instCount;
-};
-
-struct
-CommandMTL_DrawInstancedIndexedPrimitive : public CommandMetalImpl<CommandMTL_DrawInstancedIndexedPrimitive, MTL__DRAW_INSTANCED_INDEXED_PRIMITIVE>
-{
-    uint8 type;
-    uint32 indexCount;
-    uint32 vertexCount;
-    uint32 baseVertex;
-    uint32 startIndex;
-    uint32 instCount;
-    uint32 baseInst;
-};
-
-struct
-CommandMTL_SetMarker : public CommandMetalImpl<CommandMTL_SetMarker, MTL__DEBUG_MARKER>
-{
-};
-
-struct
-CommandMTL_IssueTimestamptQuery : public CommandMetalImpl<CommandMTL_IssueTimestamptQuery, MTL__SET_QUERY_BUFFER>
-{
-    Handle querySet;
-    uint32 timestampIndex;
-};
-
-
-
-#endif
-
-struct
-RenderPassMetal_t
+struct RenderPassMetal_t
 {
     RenderPassConfig cfg;
     MTLRenderPassDescriptor* desc;
@@ -268,8 +43,11 @@ RenderPassMetal_t
 #endif
 };
 
-struct
-CommandBufferMetal_t
+#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+class CommandBufferMetal_t
+#else
+class CommandBufferMetal_t : public SoftwareCommandBuffer
+#endif
 {
     id<MTLRenderCommandEncoder> encoder;
     id<MTLCommandBuffer> buf;
@@ -287,40 +65,16 @@ CommandBufferMetal_t
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 #else
-    template <class T>
-    T* allocCmd()
-    {
-        if (curUsedSize + sizeof(T) >= cmdDataSize)
-        {
-            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
-            cmdData = (uint8*)::realloc(cmdData, cmdDataSize);
-        }
-
-        uint8* p = cmdData + curUsedSize;
-        curUsedSize += sizeof(T);
-        return new ((T*)p) T();
-    }
-    uint8* cmdData;
-    uint32 cmdDataSize;
-    uint32 curUsedSize;
+    
 #endif
 
-    CommandBufferMetal_t();
     void _ApplyVertexData(unsigned firstVertex = 0);
     #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     void Execute();
     #endif
 };
 
-struct
-FrameMetal_t
-{
-    std::vector<Handle> pass;
-    id<CAMetalDrawable> drawable;
-};
-
-struct
-SyncObjectMetal_t
+struct SyncObjectMetal_t
 {
     uint32 is_signaled : 1;
 };
@@ -336,18 +90,7 @@ RHI_IMPL_POOL(SyncObjectMetal_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, f
 static bool _Metal_NextDrawablePending = false;
 static bool _Metal_PresentDrawablePending = false;
 
-static std::vector<FrameMetal_t> _Metal_Frame;
-static bool _Metal_NewFramePending = true;
-
-CommandBufferMetal_t::CommandBufferMetal_t()
-#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-#else
-    : cmdData(nullptr)
-    , cmdDataSize(0)
-    , curUsedSize(0)
-#endif
-{
-}
+id<CAMetalDrawable> currentDrawable = nil;
 
 void CommandBufferMetal_t::_ApplyVertexData(unsigned firstVertex)
 {
@@ -367,11 +110,11 @@ CommandBufferMetal_t::Execute()
 {
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const CommandMTL* cmd = (const CommandMTL*)c;
+        const SWCommand* cmd = (const SWCommand*)c;
 
         switch (CommandMetalType(cmd->type))
         {
-        case MTL__BEGIN:
+        case CMD_BEGIN:
         {
             cur_vstream_count = 0;
             for (unsigned s = 0; s != countof(cur_vb); ++s)
@@ -381,11 +124,11 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__END:
+        case CMD_END:
         {
             [encoder endEncoding];
 
-            Handle syncObject = ((CommandMTL_End*)cmd)->syncObject;
+            Handle syncObject = ((SWCommand_End*)cmd)->syncObject;
 
             if (syncObject != InvalidHandle)
             {
@@ -397,7 +140,7 @@ CommandBufferMetal_t::Execute()
             }
 
             #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            if (((CommandMTL_End*)cmd)->doCommit)
+            if (((SWCommand_End*)cmd)->doCommit)
             {
                 [buf commit];
             }
@@ -405,10 +148,10 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_PIPELINE_STATE:
+        case CMD_SET_PIPELINE_STATE:
         {
-            Handle ps = ((CommandMTL_SetPipelineState*)cmd)->ps;
-            unsigned layoutUID = ((CommandMTL_SetPipelineState*)cmd)->vdeclUID;
+            Handle ps = ((SWCommand_SetPipelineState*)cmd)->ps;
+            unsigned layoutUID = ((SWCommand_SetPipelineState*)cmd)->vdeclUID;
 
             cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
@@ -416,9 +159,9 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_CULL_MODE:
+        case CMD_SET_CULL_MODE:
         {
-            switch (CullMode(((CommandMTL_SetCullMode*)cmd)->mode))
+            switch (CullMode(((SWCommand_SetCullMode*)cmd)->mode))
             {
             case CULL_NONE:
                 [encoder setCullMode:MTLCullModeNone];
@@ -437,12 +180,12 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_SCISSOR_RECT:
+        case CMD_SET_SCISSOR_RECT:
         {
-            int x = ((CommandMTL_SetScissorRect*)cmd)->x;
-            int y = ((CommandMTL_SetScissorRect*)cmd)->y;
-            int w = ((CommandMTL_SetScissorRect*)cmd)->w;
-            int h = ((CommandMTL_SetScissorRect*)cmd)->h;
+            int x = ((SWCommand_SetScissorRect*)cmd)->x;
+            int y = ((SWCommand_SetScissorRect*)cmd)->y;
+            int w = ((SWCommand_SetScissorRect*)cmd)->w;
+            int h = ((SWCommand_SetScissorRect*)cmd)->h;
             MTLScissorRect rc;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
@@ -489,13 +232,13 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_VIEWPORT:
+        case CMD_SET_VIEWPORT:
         {
             MTLViewport vp;
-            int x = ((CommandMTL_SetViewport*)cmd)->x;
-            int y = ((CommandMTL_SetViewport*)cmd)->y;
-            int w = ((CommandMTL_SetViewport*)cmd)->w;
-            int h = ((CommandMTL_SetViewport*)cmd)->h;
+            int x = ((SWCommand_SetViewport*)cmd)->x;
+            int y = ((SWCommand_SetViewport*)cmd)->y;
+            int w = ((SWCommand_SetViewport*)cmd)->w;
+            int h = ((SWCommand_SetViewport*)cmd)->h;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -520,52 +263,52 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_FILLMODE:
+        case CMD_SET_FILLMODE:
         {
-            [encoder setTriangleFillMode:(FillMode(((CommandMTL_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
+            [encoder setTriangleFillMode:(FillMode(((SWCommand_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
         }
         break;
 
-        case MTL__SET_VERTEX_DATA:
+        case CMD_SET_VERTEX_DATA:
         {
-            Handle vb = ((CommandMTL_SetVertexData*)cmd)->vb;
-            unsigned streamIndex = ((CommandMTL_SetVertexData*)cmd)->streamIndex;
+            Handle vb = ((SWCommand_SetVertexData*)cmd)->vb;
+            unsigned streamIndex = ((SWCommand_SetVertexData*)cmd)->streamIndex;
 
             cur_vb[streamIndex] = vb;
             StatSet::IncStat(stat_SET_VB, 1);
         }
         break;
 
-        case MTL__SET_VERTEX_PROG_CONST_BUFFER:
+        case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandMTL_SetVertexProgConstBuffer*)cmd)->buffer;
-            unsigned index = ((CommandMTL_SetVertexProgConstBuffer*)cmd)->bufIndex;
-            unsigned inst_offset = ((CommandMTL_SetVertexProgConstBuffer*)cmd)->inst_offset;
+            Handle buffer = ((SWCommand_SetVertexProgConstBuffer*)cmd)->buffer;
+            unsigned index = ((SWCommand_SetVertexProgConstBuffer*)cmd)->bufIndex;
+            unsigned inst_offset = ((SWCommand_SetVertexProgConstBuffer*)cmd)->inst_offset;
 
             ConstBufferMetal::SetToRHI(buffer, index, inst_offset, encoder);
         }
         break;
 
-        case MTL__SET_VERTEX_TEXTURE:
+        case CMD_SET_VERTEX_TEXTURE:
         {
-            Handle tex = ((CommandMTL_SetVertexTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandMTL_SetVertexTexture*)cmd)->unitIndex;
+            Handle tex = ((SWCommand_SetVertexTexture*)cmd)->tex;
+            unsigned unitIndex = ((SWCommand_SetVertexTexture*)cmd)->unitIndex;
 
             TextureMetal::SetToRHIVertex(tex, unitIndex, encoder);
             StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
-        case MTL__SET_INDICES:
+        case CMD_SET_INDICES:
         {
-            cur_ib = ((CommandMTL_SetIndices*)cmd)->ib;
+            cur_ib = ((SWCommand_SetIndices*)cmd)->ib;
             StatSet::IncStat(stat_SET_IB, 1);
         }
         break;
 
-        case MTL__SET_QUERY_INDEX:
+        case CMD_SET_QUERY_INDEX:
         {
-            unsigned index = ((CommandMTL_SetQueryIndex*)cmd)->objectIndex;
+            unsigned index = ((SWCommand_SetQueryIndex*)cmd)->objectIndex;
 
             if (index != DAVA::InvalidIndex)
             {
@@ -578,59 +321,59 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__SET_QUERY_BUFFER:
+        case CMD_SET_QUERY_BUFFER:
             break; // do NOTHING
 
-        case MTL__SET_FRAGMENT_PROG_CONST_BUFFER:
+        case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((CommandMTL_SetFragmentProgConstBuffer*)cmd)->buffer;
-            unsigned index = ((CommandMTL_SetFragmentProgConstBuffer*)cmd)->bufIndex;
-            unsigned inst_offset = ((CommandMTL_SetFragmentProgConstBuffer*)cmd)->inst_offset;
+            Handle buffer = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->buffer;
+            unsigned index = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->bufIndex;
+            unsigned inst_offset = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->inst_offset;
 
             ConstBufferMetal::SetToRHI(buffer, index, inst_offset, encoder);
         }
         break;
 
-        case MTL__SET_FRAGMENT_TEXTURE:
+        case CMD_SET_FRAGMENT_TEXTURE:
         {
-            Handle tex = ((CommandMTL_SetFragmentTexture*)cmd)->tex;
-            unsigned unitIndex = ((CommandMTL_SetFragmentTexture*)cmd)->unitIndex;
+            Handle tex = ((SWCommand_SetFragmentTexture*)cmd)->tex;
+            unsigned unitIndex = ((SWCommand_SetFragmentTexture*)cmd)->unitIndex;
 
             TextureMetal::SetToRHIFragment(tex, unitIndex, encoder);
             StatSet::IncStat(stat_SET_TEX, 1);
         }
         break;
 
-        case MTL__SET_DEPTHSTENCIL_STATE:
+        case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateMetal::SetToRHI(((CommandMTL_SetDepthStencilState*)cmd)->depthStencilState, encoder);
+            DepthStencilStateMetal::SetToRHI(((SWCommand_SetDepthStencilState*)cmd)->depthStencilState, encoder);
         }
         break;
 
-        case MTL__SET_SAMPLER_STATE:
+        case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateMetal::SetToRHI(((CommandMTL_SetSamplerState*)cmd)->samplerState, encoder);
+            SamplerStateMetal::SetToRHI(((SWCommand_SetSamplerState*)cmd)->samplerState, encoder);
             StatSet::IncStat(stat_SET_SS, 1);
         }
         break;
 
-        case MTL__DRAW_PRIMITIVE:
+        case CMD_DRAW_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((CommandMTL_DrawPrimitive*)cmd)->type);
-            unsigned vertexCount = ((CommandMTL_DrawPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandMTL_DrawPrimitive*)cmd)->baseVertex;
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawPrimitive*)cmd)->type);
+            unsigned vertexCount = ((SWCommand_DrawPrimitive*)cmd)->vertexCount;
+            unsigned baseVertex = ((SWCommand_DrawPrimitive*)cmd)->baseVertex;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount];
         }
         break;
 
-        case MTL__DRAW_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((CommandMTL_DrawIndexedPrimitive*)cmd)->type);
-            unsigned vertexCount = ((CommandMTL_DrawIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandMTL_DrawIndexedPrimitive*)cmd)->baseVertex;
-            unsigned startIndex = ((CommandMTL_DrawIndexedPrimitive*)cmd)->startIndex;
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            unsigned vertexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->vertexCount;
+            unsigned baseVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->baseVertex;
+            unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
 
             unsigned i_cnt = 0;
             unsigned ib_base = 0;
@@ -643,27 +386,27 @@ CommandBufferMetal_t::Execute()
         }
         break;
 
-        case MTL__DRAW_INSTANCED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((CommandMTL_DrawIndexedPrimitive*)cmd)->type);
-            unsigned vertexCount = ((CommandMTL_DrawInstancedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandMTL_DrawInstancedPrimitive*)cmd)->baseVertex;
-            unsigned instCount = ((CommandMTL_DrawInstancedPrimitive*)cmd)->instCount;
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
+            unsigned baseVertex = ((SWCommand_DrawInstancedPrimitive*)cmd)->baseVertex;
+            unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instCount;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount instanceCount:instCount];
         }
         break;
 
-        case MTL__DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((CommandMTL_DrawIndexedPrimitive*)cmd)->type);
-            unsigned vertexCount = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->baseVertex;
-            unsigned indexCount = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
-            unsigned instCount = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->instCount;
-            unsigned baseInst = ((CommandMTL_DrawInstancedIndexedPrimitive*)cmd)->baseInst;
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            unsigned vertexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
+            unsigned baseVertex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseVertex;
+            unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
+            unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
+            unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instCount;
+            unsigned baseInst = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseInst;
 
             unsigned i_cnt = 0;
             unsigned ib_base = 0;
@@ -677,7 +420,7 @@ CommandBufferMetal_t::Execute()
         break;
         }
 
-        if (cmd->type == MTL__END)
+        if (cmd->type == CMD_END)
             break;
         c += cmd->size;
     }
@@ -842,8 +585,7 @@ RenderPassMetal_t::Initialize()
 
 //------------------------------------------------------------------------------
 
-static Handle
-metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
+static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     if (_Metal_Suspended.GetRelaxed())
     {
@@ -1112,14 +854,13 @@ metal_CommandBuffer_Begin(Handle cmdBuf)
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
 #else
     cb->curUsedSize = 0;
-    CommandMTL_Begin* cmd = cb->allocCmd<CommandMTL_Begin>();
+    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
+static void metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -1141,7 +882,7 @@ metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     #endif
     
 #else
-    CommandMTL_End* cmd = cb->allocCmd<CommandMTL_End>();
+    SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
     #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
     cmd->doCommit = cb->do_commit_on_end;
@@ -1151,8 +892,7 @@ metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
+static void metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -1161,7 +901,7 @@ metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
     cb->cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
     StatSet::IncStat(stat_SET_PS, 1);
 #else
-    CommandMTL_SetPipelineState* cmd = cb->allocCmd<CommandMTL_SetPipelineState>();
+    SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
     cmd->ps = ps;
     cmd->vdeclUID = layoutUID;
 #endif
@@ -1169,8 +909,7 @@ metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
+static void metal_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -1192,15 +931,14 @@ metal_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
         break;
     }
 #else
-    CommandMTL_SetCullMode* cmd = cb->allocCmd<CommandMTL_SetCullMode>();
+    SWCommand_SetCullMode* cmd = cb->allocCmd<SWCommand_SetCullMode>();
     cmd->mode = mode;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void
-metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
+static void metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
     MTLScissorRect rc;
@@ -1255,7 +993,7 @@ metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     int y = rect.y;
     int w = rect.width;
     int h = rect.height;
-    CommandMTL_SetScissorRect* cmd = cb->allocCmd<CommandMTL_SetScissorRect>();
+    SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
     cmd->x = x;
     cmd->y = y;
     cmd->w = w;
@@ -1301,7 +1039,7 @@ metal_CommandBuffer_SetViewport(Handle cmdBuf, Viewport viewport)
     int y = viewport.y;
     int w = viewport.width;
     int h = viewport.height;
-    CommandMTL_SetViewport* cmd = cb->allocCmd<CommandMTL_SetViewport>();
+    SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
     cmd->x = x;
     cmd->y = y;
     cmd->w = w;
@@ -1321,7 +1059,7 @@ metal_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     [cb->encoder setTriangleFillMode:(mode == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
 #else
-    CommandMTL_SetFillMode* cmd = cb->allocCmd<CommandMTL_SetFillMode>();
+    SWCommand_SetFillMode* cmd = cb->allocCmd<SWCommand_SetFillMode>();
     cmd->mode = mode;
 #endif
 }
@@ -1337,7 +1075,7 @@ metal_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
     cb->cur_vb[streamIndex] = vb;
     StatSet::IncStat(stat_SET_VB, 1);
 #else
-    CommandMTL_SetVertexData* cmd = cb->allocCmd<CommandMTL_SetVertexData>();
+    SWCommand_SetVertexData* cmd = cb->allocCmd<SWCommand_SetVertexData>();
     cmd->vb = vb;
     cmd->streamIndex = streamIndex;
 #endif
@@ -1356,7 +1094,7 @@ metal_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
     ConstBufferMetal::SetToRHI(buffer, bufIndex, cb->encoder);
     StatSet::IncStat(stat_SET_CB, 1);
 #else
-    CommandMTL_SetVertexProgConstBuffer* cmd = cb->allocCmd<CommandMTL_SetVertexProgConstBuffer>();
+    SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst_offset = ConstBufferMetal::Instance(buffer);
@@ -1374,7 +1112,7 @@ metal_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex
     TextureMetal::SetToRHIVertex(tex, unitIndex, cb->encoder);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandMTL_SetVertexTexture* cmd = cb->allocCmd<CommandMTL_SetVertexTexture>();
+    SWCommand_SetVertexTexture* cmd = cb->allocCmd<SWCommand_SetVertexTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -1391,7 +1129,7 @@ metal_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
     cb->cur_ib = ib;
     StatSet::IncStat(stat_SET_IB, 1);
 #else
-    CommandMTL_SetIndices* cmd = cb->allocCmd<CommandMTL_SetIndices>();
+    SWCommand_SetIndices* cmd = cb->allocCmd<SWCommand_SetIndices>();
     cmd->ib = ib;
 #endif
 }
@@ -1413,7 +1151,7 @@ metal_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
         [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeDisabled offset:0];
     }
 #else
-    CommandMTL_SetQueryIndex* cmd = cb->allocCmd<CommandMTL_SetQueryIndex>();
+    SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
     cmd->objectIndex = objectIndex;
 #endif
 }
@@ -1439,7 +1177,7 @@ metal_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     ConstBufferMetal::SetToRHI(buffer, bufIndex, cb->encoder);
     StatSet::IncStat(stat_SET_CB, 1);
 #else
-    CommandMTL_SetFragmentProgConstBuffer* cmd = cb->allocCmd<CommandMTL_SetFragmentProgConstBuffer>();
+    SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
     cmd->inst_offset = ConstBufferMetal::Instance(buffer);
@@ -1457,7 +1195,7 @@ metal_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle t
     TextureMetal::SetToRHIFragment(tex, unitIndex, cb->encoder);
     StatSet::IncStat(stat_SET_TEX, 1);
 #else
-    CommandMTL_SetFragmentTexture* cmd = cb->allocCmd<CommandMTL_SetFragmentTexture>();
+    SWCommand_SetFragmentTexture* cmd = cb->allocCmd<SWCommand_SetFragmentTexture>();
     cmd->unitIndex = unitIndex;
     cmd->tex = tex;
 #endif
@@ -1473,7 +1211,7 @@ metal_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     DepthStencilStateMetal::SetToRHI(depthStencilState, cb->encoder);
 #else
-    CommandMTL_SetDepthStencilState* cmd = cb->allocCmd<CommandMTL_SetDepthStencilState>();
+    SWCommand_SetDepthStencilState* cmd = cb->allocCmd<SWCommand_SetDepthStencilState>();
     cmd->depthStencilState = depthStencilState;
 #endif
 }
@@ -1489,7 +1227,7 @@ metal_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
     SamplerStateMetal::SetToRHI(samplerState, cb->encoder);
     StatSet::IncStat(stat_SET_SS, 1);
 #else
-    CommandMTL_SetSamplerState* cmd = cb->allocCmd<CommandMTL_SetSamplerState>();
+    SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
 #endif
 }
@@ -1544,7 +1282,7 @@ metal_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
 
 #else
 
-    CommandMTL_DrawPrimitive* cmd = cb->allocCmd<CommandMTL_DrawPrimitive>();
+    SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
 
     cmd->type = ptype;
     cmd->vertexCount = v_cnt;
@@ -1608,7 +1346,7 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
 
 #else
 
-    CommandMTL_DrawIndexedPrimitive* cmd = cb->allocCmd<CommandMTL_DrawIndexedPrimitive>();
+    SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
 
     cmd->type = ptype;
     cmd->vertexCount = i_cnt;
@@ -1668,7 +1406,7 @@ metal_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
 
 #else
 
-    CommandMTL_DrawInstancedPrimitive* cmd = cb->allocCmd<CommandMTL_DrawInstancedPrimitive>();
+    SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
 
     cmd->type = ptype;
     cmd->instCount = inst_count;
@@ -1731,7 +1469,7 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
         break;
     }
 #else
-    CommandMTL_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<CommandMTL_DrawInstancedIndexedPrimitive>();
+    SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
 
     cmd->type = ptype;
     cmd->vertexCount = i_cnt;
@@ -1804,25 +1542,11 @@ metal_SyncObject_IsSignaled(Handle obj)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Present(Handle syncObject)
+static void metal_Present(Handle syncObject)
 {
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);
     SCOPED_NAMED_TIMING("rhi.draw-present");
-
-    if (_Metal_Frame.size() == 0)
-    {
-        if (syncObject != InvalidHandle)
-        {
-            SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
-            sync->is_signaled = true;
-        }
-
-        _Metal_NewFramePending = true;
-        MTL_TRACE("  no-frames");
-        return;
-    }
 
     bool do_discard = TextureMetal::NeedRestoreCount();
 
