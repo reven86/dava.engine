@@ -6,18 +6,24 @@ namespace DAVA
 {
 bool TypeCast::CanDownCast(const Type* from, const Type* to)
 {
-    auto it = from->BaseTypes().find(to);
-    if (it != from->BaseTypes().end())
+    if (from->IsPointer() && to->IsPointer())
     {
-        return true;
-    }
-    else
-    {
-        for (auto& base : from->BaseTypes())
+        to = to->Deref();
+        from = from->Deref();
+
+        auto it = from->BaseTypes().find(to);
+        if (it != from->BaseTypes().end())
         {
-            if (CanDownCast(base.first, to))
+            return true;
+        }
+        else
+        {
+            for (auto& base : from->BaseTypes())
             {
-                return true;
+                if (CanDownCast(base.first->Pointer(), to->Pointer()))
+                {
+                    return true;
+                }
             }
         }
     }
@@ -27,18 +33,24 @@ bool TypeCast::CanDownCast(const Type* from, const Type* to)
 
 bool TypeCast::CanUpCast(const Type* from, const Type* to)
 {
-    auto it = from->DerivedTypes().find(to);
-    if (it != from->DerivedTypes().end())
+    if (from->IsPointer() && to->IsPointer())
     {
-        return true;
-    }
-    else
-    {
-        for (auto& derived : from->DerivedTypes())
+        to = to->Deref();
+        from = from->Deref();
+
+        auto it = from->DerivedTypes().find(to);
+        if (it != from->DerivedTypes().end())
         {
-            if (CanUpCast(derived.first, to))
+            return true;
+        }
+        else
+        {
+            for (auto& derived : from->DerivedTypes())
             {
-                return true;
+                if (CanUpCast(derived.first->Pointer(), to->Pointer()))
+                {
+                    return true;
+                }
             }
         }
     }
@@ -53,20 +65,26 @@ bool TypeCast::CanCast(const Type* from, const Type* to)
 
 bool TypeCast::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
-    auto it = from->BaseTypes().find(to);
-    if (it != from->BaseTypes().end())
+    if (from->IsPointer() && to->IsPointer())
     {
-        *outPtr = it->second(inPtr);
-        return true;
-    }
-    else
-    {
-        for (auto& base : from->BaseTypes())
+        to = to->Deref();
+        from = from->Deref();
+
+        auto it = from->BaseTypes().find(to);
+        if (it != from->BaseTypes().end())
         {
-            void* baseInPtr = base.second(inPtr);
-            if (DownCast(base.first, baseInPtr, to, outPtr))
+            *outPtr = it->second(inPtr);
+            return true;
+        }
+        else
+        {
+            for (auto& base : from->BaseTypes())
             {
-                return true;
+                void* baseInPtr = base.second(inPtr);
+                if (DownCast(base.first->Pointer(), baseInPtr, to->Pointer(), outPtr))
+                {
+                    return true;
+                }
             }
         }
     }
@@ -76,20 +94,26 @@ bool TypeCast::DownCast(const Type* from, void* inPtr, const Type* to, void** ou
 
 bool TypeCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
-    auto it = from->DerivedTypes().find(to);
-    if (it != from->DerivedTypes().end())
+    if (from->IsPointer() && to->IsPointer())
     {
-        *outPtr = it->second(inPtr);
-        return true;
-    }
-    else
-    {
-        for (auto& derived : from->DerivedTypes())
+        to = to->Deref();
+        from = from->Deref();
+
+        auto it = from->DerivedTypes().find(to);
+        if (it != from->DerivedTypes().end())
         {
-            void* derivedInPtr = derived.second(inPtr);
-            if (UpCast(derived.first, derivedInPtr, to, outPtr))
+            *outPtr = it->second(inPtr);
+            return true;
+        }
+        else
+        {
+            for (auto& derived : from->DerivedTypes())
             {
-                return true;
+                void* derivedInPtr = derived.second(inPtr);
+                if (UpCast(derived.first->Pointer(), derivedInPtr, to->Pointer(), outPtr))
+                {
+                    return true;
+                }
             }
         }
     }

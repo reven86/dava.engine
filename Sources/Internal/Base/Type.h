@@ -11,6 +11,15 @@ namespace DAVA
 class Type final
 {
 public:
+    template <typename T>
+    using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
+
+    template <typename T>
+    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
+
+    template <typename T>
+    using PointerT = std::add_pointer_t<std::decay_t<T>>;
+
     using InheritanceCastOP = void* (*)(void*);
     using InheritanceMap = UnorderedMap<const Type*, InheritanceCastOP>;
 

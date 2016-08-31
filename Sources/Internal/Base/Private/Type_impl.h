@@ -121,12 +121,12 @@ void Type::Init(Type** ptype)
 
     *ptype = &type;
 
-    using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
-    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
-    using PointerT = std::add_pointer_t<std::decay_t<T>>;
+    using DerefU = DerefT<T>;
+    using DecayU = DecayT<T>;
+    using PointerU = PointerT<T>;
 
-    static const bool needDeref = (!std::is_same<T, DerefT>::value && !std::is_same<T, void*>::value);
-    static const bool needDecay = (!std::is_same<T, DecayT>::value);
+    static const bool needDeref = (!std::is_same<T, DerefU>::value && !std::is_same<T, void*>::value);
+    static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
 
     type.name = typeid(T).name();
@@ -138,13 +138,13 @@ void Type::Init(Type** ptype)
     type.isFundamental = std::is_fundamental<T>::value;
 
     auto condDeref = std::integral_constant<bool, needDeref>();
-    type.derefType = TypeDetail::GetTypeIfTrue<DerefT>(condDeref);
+    type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);
 
     auto condDecay = std::integral_constant<bool, needDecay>();
-    type.decayType = TypeDetail::GetTypeIfTrue<DecayT>(condDecay);
+    type.decayType = TypeDetail::GetTypeIfTrue<DecayU>(condDecay);
 
     auto condPointer = std::integral_constant<bool, needPointer>();
-    type.pointerType = TypeDetail::GetTypeIfTrue<PointerT>(condPointer);
+    type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
     TypeDetail::TypeHolder<T>::type = &type;
 }
