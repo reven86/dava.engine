@@ -426,7 +426,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
     }
     else
     {
-        Logger::Error("FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr));
+        Logger::Error("FAILED to create const-buffer:\n%s\n", D3D11ErrorText(hr));
     }
 }
 
@@ -824,7 +824,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
             Logger::Info((const char*)(fp_err->GetBufferPointer()));
         }
         Logger::Error("shader-uid : %s", desc.fprogUid.c_str());
-        Logger::Error("vertex-shader text:\n");
+        Logger::Error("pixel-shader text:\n");
         DumpShaderText((const char*)(&fprog_bin[0]), (unsigned int)fprog_bin.size());
         ps->pixelShader = nullptr;
     }

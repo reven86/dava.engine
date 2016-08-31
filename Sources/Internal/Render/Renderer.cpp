@@ -46,7 +46,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
-    ///    FXCache::Initialize();
+    FXCache::Initialize();
     PixelFormatDescriptor::SetHardwareSupportedFormats();
 
     resetParams.width = params.width;

@@ -23,6 +23,7 @@ public:
 
     const char* GetResult() const;
     void Reset(std::string* buf = nullptr);
+    void EnableLineNumbers(bool enable);
 
 private:
     //    Allocator* m_allocator;

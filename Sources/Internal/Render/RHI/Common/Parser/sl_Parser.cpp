@@ -502,7 +502,8 @@ const Intrinsic _intrinsic[] =
 
   Intrinsic("tex2D", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2),
   Intrinsic("tex2Dproj", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
-  Intrinsic("tex2Dlod", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
+  Intrinsic("tex2Dlod", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4, HLSLBaseType_Float),
+  Intrinsic("tex2Dlod", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2, HLSLBaseType_Float),
   Intrinsic("tex2Dlod", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4, HLSLBaseType_Int2), // With offset.
   Intrinsic("tex2Dbias", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float4),
   Intrinsic("tex2Dgrad", HLSLBaseType_Float4, HLSLBaseType_Sampler2D, HLSLBaseType_Float2, HLSLBaseType_Float2, HLSLBaseType_Float2),

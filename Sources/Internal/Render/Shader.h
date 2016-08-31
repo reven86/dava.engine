@@ -86,7 +86,7 @@ public:
 
     bool IsValid();
 
-private:
+    //private:
     ShaderDescriptor(rhi::HPipelineState pipelineState, FastName vProgUid, FastName fProgUid);
     ~ShaderDescriptor();
 

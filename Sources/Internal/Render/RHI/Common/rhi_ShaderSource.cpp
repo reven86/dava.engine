@@ -104,9 +104,42 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
+#if 0
+{
+    Logger::Info("src-code:");
+
+    char ss[64 * 1024];
+    unsigned line_cnt = 0;
+
+    if (strlen(src.c_str()) < sizeof(ss))
+    {
+        strcpy(ss, src.c_str());
+
+        const char* line = ss;
+        for (char* s = ss; *s; ++s)
+        {
+            if( *s=='\r')
+                *s=' ';
+
+            if (*s == '\n')
+            {
+                *s = 0;
+                Logger::Info("%4u |  %s", 1 + line_cnt, line);
+                line = s+1;
+                ++line_cnt;
+            }
+        }
+    }
+    else
+    {
+        Logger::Info(src.c_str());
+    }
+}
+#endif
+
     static sl::Allocator alloc;
     //    sl::HLSLTree tree(&alloc);
-    sl::HLSLParser parser(&alloc, "<shader>", srcText, strlen(srcText));
+    sl::HLSLParser parser(&alloc, "<shader>", src.c_str(), strlen(src.c_str()));
     ast = new sl::HLSLTree(&alloc);
 
     if (parser.Parse(ast))
@@ -117,7 +150,10 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     }
     else
     {
+        delete ast;
+        ast = nullptr;
         sl::Log_Error("Parse error\n");
+        DVASSERT(ast);
     }
 
     // parse properties/samplers
@@ -959,7 +995,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         sl::HLSLStatement* prev_statement;
     };
 
-    std::vector<rhi::ShaderProp> property;
     std::vector<prop_t> prop_decl;
     char btype = 'x';
 
@@ -986,6 +1021,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                     rhi::ShaderProp& prop = property.back();
 
                     prop.uid = DAVA::FastName(decl->name);
+                    prop.storage = rhi::ShaderProp::STORAGE_DYNAMIC;
                     prop.precision = rhi::ShaderProp::PRECISION_NORMAL;
                     prop.arraySize = 1;
                     prop.isBigArray = false;
@@ -1011,9 +1047,9 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
 
                     for (sl::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
                     {
-                        if (!stricmp(a->attrText, "static"))
+                        if (stricmp(a->attrText, "static") == 0 || stricmp(a->attrText, "statik") == 0)
                             prop.storage = rhi::ShaderProp::STORAGE_STATIC;
-                        else if (!stricmp(a->attrText, "dynamic"))
+                        else if (stricmp(a->attrText, "dynamic") == 0)
                             prop.storage = rhi::ShaderProp::STORAGE_DYNAMIC;
                         else
                             prop.tag = FastName(a->attrText);
@@ -1320,8 +1356,8 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 vertexLayout.AddElement(usage, usage_i, data_type, data_count);
             }
 
-            Logger::Info("vertex-layout:");
-            vertexLayout.Dump();
+            //-            Logger::Info("vertex-layout:");
+            //-            vertexLayout.Dump();
         }
     }
 
@@ -1509,7 +1545,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
-#if 1
+#if 0
     Logger::Info("properties (%u) :", property.size());
     for (std::vector<rhi::ShaderProp>::const_iterator p = property.begin(), p_end = property.end(); p != p_end; ++p)
     {
@@ -1849,6 +1885,8 @@ bool ShaderSource::Save(DAVA::File* out) const
 bool
 ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
 {
+    DVASSERT(ast);
+
     bool success = false;
     static sl::Allocator alloc;
     static sl::HLSLGenerator hlsl_gen(&alloc);

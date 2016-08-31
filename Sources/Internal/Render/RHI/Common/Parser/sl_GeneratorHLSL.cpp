@@ -201,6 +201,7 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const cha
     m_isInsideBuffer = false;
 
     m_writer.Reset(code);
+    //    m_writer.EnableLineNumbers(true);
 
     // @@ Should we generate an entirely new copy of the tree so that we can modify it in place?
 
@@ -338,7 +339,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         {
             if (m_mode == MODE_DX11)
             {
-                if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
+                if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D || identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
                 {
                     m_writer.Write("%s_texture.Sample( %s_sampler ", name, name);
                 }
@@ -447,7 +448,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     else if (expression->nodeType == HLSLNodeType_BinaryExpression)
     {
         HLSLBinaryExpression* binaryExpression = static_cast<HLSLBinaryExpression*>(expression);
-        m_writer.Write("(");
+        //        m_writer.Write("(");
         OutputExpression(binaryExpression->expression1);
         const char* op = "?";
         switch (binaryExpression->binaryOp)
@@ -508,7 +509,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         }
         m_writer.Write("%s", op);
         OutputExpression(binaryExpression->expression2);
-        m_writer.Write(")");
+        //        m_writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConditionalExpression)
     {
@@ -527,6 +528,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         m_writer.Write("(");
         OutputExpression(memberAccess->object);
         m_writer.Write(").%s", memberAccess->field);
+        //        m_writer.Write(".%s", memberAccess->field);
     }
     else if (expression->nodeType == HLSLNodeType_ArrayAccess)
     {
@@ -541,16 +543,53 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         HLSLFunctionCall* functionCall = static_cast<HLSLFunctionCall*>(expression);
         const char* name = functionCall->function->name;
         bool sampler_call = false;
+        bool sampler_lod = String_Equal(name, "tex2Dlod");
 
-        if (String_Equal(name, "tex2D") || String_Equal(name, "texCUBE"))
+        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
         {
             sampler_call = true;
         }
 
         if (sampler_call)
         {
+            if (sampler_lod)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                if (m_mode == MODE_DX11)
+                {
+                    if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
+                    {
+                        m_writer.Write("%s_texture.SampleLevel( %s_sampler ", identifier->name, identifier->name);
+
+                        for (HLSLExpression* expr = identifier->nextExpression; expr; expr = expr->nextExpression)
+                        {
+                            m_writer.Write(", ");
+                            OutputExpression(expr);
+                        }
+                        m_writer.Write(")");
+                    }
+                }
+                else if (m_mode == MODE_DX9)
+                {
+                    DVASSERT(!"notimpl");
+                    if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
+                    {
+                        m_writer.Write("tex2D( %s", name);
+                    }
+                    else if (identifier->expressionType.baseType == HLSLBaseType_SamplerCube)
+                    {
+                        m_writer.Write("texCUBE( %s", name);
+                    }
+                }
+            }
+            else
+            {
             OutputExpressionList(functionCall->argument);
             m_writer.Write(")");
+            }
         }
         else
         {

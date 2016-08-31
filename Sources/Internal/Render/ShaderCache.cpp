@@ -79,8 +79,8 @@ void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines
 ShaderSourceCode LoadFromSource(const String& source)
 {
     ShaderSourceCode sourceCode;
-    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
-    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
+    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.sl");
+    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.sl");
 
     //later move it into FileSystem
 
@@ -230,9 +230,16 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", vProgUid.c_str());
 #endif
-        vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-        rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
-        vSource = &vSource2;
+        if (vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines))
+        {
+            rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
+            vSource = &vSource2;
+        }
+        else
+        {
+            vSource = nullptr;
+            Logger::Error("failed to construct \"%s\"", vProgUid.c_str());
+        }
     }
 
     if (fSource)
@@ -246,15 +253,26 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", fProgUid.c_str());
 #endif
-        fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
-        rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
-        fSource = &fSource2;
+        if (fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines))
+        {
+            rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
+            fSource = &fSource2;
+        }
+        else
+        {
+            fSource = nullptr;
+            Logger::Error("failed to construct \"%s\"", fProgUid.c_str());
+        }
     }
 
     std::string bin;
 
+    Logger::Info("\n\n%s", vProgUid.c_str());
+    vSource->Dump();
     vSource->GetSourceCode(rhi::HostApi(), &bin);
     rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, bin.c_str(), bin.length());
+    Logger::Info("\n\n%s", fProgUid.c_str());
+    fSource->Dump();
     fSource->GetSourceCode(rhi::HostApi(), &bin);
     rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, bin.c_str(), bin.length());
 

@@ -22,6 +22,8 @@ CodeWriter::CodeWriter(std::string* buf)
     m_writeLines = true;
     m_writeFileNames = true;
 #endif
+    m_writeLines = false;
+    m_writeFileNames = false;
 }
 
 void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)
@@ -139,6 +141,10 @@ void CodeWriter::Reset(std::string* buf)
 {
     m_buffer = (buf) ? buf : &ownBuffer;
     m_buffer->clear();
+}
+void CodeWriter::EnableLineNumbers(bool enable)
+{
+    m_writeLines = enable;
 }
 
 } // namespace sl

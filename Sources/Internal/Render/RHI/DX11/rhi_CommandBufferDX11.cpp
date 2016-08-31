@@ -1041,7 +1041,7 @@ static void
 dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cmdBuf);
-    wchar_t txt[128];
+    wchar_t txt[256];
 
     ::MultiByteToWideChar(CP_ACP, 0, text, -1, txt, countof(txt));
 
