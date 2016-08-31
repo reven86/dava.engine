@@ -321,6 +321,10 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
+    if (nullptr == carrierName)
+    {
+        return "";
+    }
     return UTF8Utils::EncodeToUTF8(carrierName->Data());
 }
 
@@ -414,6 +418,10 @@ void DeviceInfoPrivate::OnCarrierLineChange(::Windows::ApplicationModel::Calls::
             if (line->NetworkName != carrierName)
             {
                 carrierName = line->NetworkName;
+                if (nullptr == carrierName)
+                {
+                    return;
+                }
                 DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(carrierName->Data()));
             }
         });

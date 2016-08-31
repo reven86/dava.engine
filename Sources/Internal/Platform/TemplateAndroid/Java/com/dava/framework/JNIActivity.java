@@ -24,6 +24,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.Manifest.permission;
+import android.content.pm.PackageManager;
 
 import com.dava.framework.InputManagerCompat.InputDeviceListener;
 
@@ -154,13 +156,19 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         splashView = GetSplashView();
 
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-        if (tm != null) {
+        int permissionCheck = JNIActivity.this.getPackageManager().checkPermission(JNIActivity.this.getPackageName(), permission.READ_PHONE_STATE);
+        if    (permissionCheck == PackageManager.PERMISSION_DENIED)
+        {
+            Log.d("", "AndroidManifest.xml haven't READ_PHONE_STATE permission!");
+        }
+        if ((tm != null) & (permissionCheck == PackageManager.PERMISSION_GRANTED)) {
             signalStrengthListener = new SignalStrengthListener();
             dataConnectionStateListener = new DataConnectionStateListener();
             tm.listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);
             tm.listen(dataConnectionStateListener, DataConnectionStateListener.LISTEN_DATA_CONNECTION_STATE);
         } else {
             Log.d("", "no singalStrengthListner");
+            Log.d("", "no dataConnectionStateListener");
         }
 
         JNIApplication.mainCPPThread = new Thread(new Runnable() 
@@ -599,7 +607,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     protected void UpdateGamepadAxises()
     {
         RunOnMainLoopThread(new Runnable() 
-        {			
+        {
             @Override
             public void run() 
             {

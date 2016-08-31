@@ -304,7 +304,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return "Not yet implemented";
+    return "Not supported";
 }
 }
 

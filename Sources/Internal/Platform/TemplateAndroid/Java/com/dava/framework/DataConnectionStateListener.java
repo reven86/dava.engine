@@ -18,7 +18,13 @@ public class DataConnectionStateListener extends PhoneStateListener {
         if (!newCarrierName.equals(carrierName))
         {
             carrierName = newCarrierName;
-            OnCarrierNameChanged();
+            JNIActivity.GetActivity().RunOnMainLoopThread(new Runnable() 
+            {
+                public void run()
+                {
+                    OnCarrierNameChanged();
+                }
+            });
         }
         super.onDataConnectionStateChanged(state, networkType);
     }
