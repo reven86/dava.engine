@@ -12,9 +12,10 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    void Update(DAVA::float32 timeElapsed);
 
 private:
+    void Update(DAVA::float32 timeElapsed);
+
     DAVA::float32 timeOut = 0.f;
     DAVA::RefPtr<DAVA::UIStaticText> countdownText;
 };

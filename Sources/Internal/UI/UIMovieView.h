@@ -27,7 +27,6 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
     void Draw(const UIGeometricData& parentGeometricData) override;
-    void Update(float32 timeElapsed);
 
     void OnVisible() override;
     void OnInvisible() override;
@@ -47,6 +46,7 @@ public:
     bool IsPlaying() const;
 
 private:
+    void Update(float32 timeElapsed);
     void UpdateControlRect();
 
 protected:

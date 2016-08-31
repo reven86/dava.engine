@@ -182,8 +182,6 @@ public:
     void SetDelegate(UITextFieldDelegate* delegate);
     UITextFieldDelegate* GetDelegate();
 
-    void Update(float32 timeElapsed);
-
     bool IsEditing() const;
     void StartEdit();
     void StopEdit();
@@ -375,6 +373,7 @@ protected:
     void OnInvisible() override;
 
 private:
+    void Update(float32 timeElapsed);
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 

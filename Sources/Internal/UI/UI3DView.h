@@ -31,7 +31,6 @@ public:
     }
 
     void AddControl(UIControl* control) override;
-    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void SetSize(const Vector2& newSize) override;
@@ -61,6 +60,8 @@ protected:
     bool registeredInUIControlSystem;
 
 private:
+    void Update(float32 timeElapsed);
+
     void PrepareFrameBuffer();
 
     bool drawToFrameBuffer;

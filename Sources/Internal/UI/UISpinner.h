@@ -104,7 +104,6 @@ public:
     void RemoveControl(UIControl* control) override;
 
     void Input(UIEvent* currentInput) override;
-    void Update(float32 timeElapsed);
 
     void LoadFromYamlNodeCompleted() override;
 
@@ -165,6 +164,9 @@ protected:
 
     void OnVisible() override;
     void OnInvisible() override;
+
+private:
+    void Update(float32 timeElapsed);
 };
 }
 #endif //__DAVAENGINE_UI_SPINNER_H__

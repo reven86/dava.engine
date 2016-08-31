@@ -15,7 +15,6 @@ protected:
     ~UIScreenTransition() override;
 
 public:
-    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void OnVisible() override;
@@ -31,6 +30,7 @@ public:
     bool IsComplete() const;
 
 protected:
+    void Update(float32 timeElapsed);
     void CreateRenderTargets();
     void ReleaseRenderTargets();
     Sprite* renderTargetPrevScreen = nullptr;

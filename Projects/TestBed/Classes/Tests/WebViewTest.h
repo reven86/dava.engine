@@ -15,9 +15,10 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    void Update(float32 delta);
 
 private:
+    void Update(float32 delta);
+
     UIWebView* webView;
     UIControl* bgStubPanel;
     bool updateWait;

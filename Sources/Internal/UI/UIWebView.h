@@ -61,8 +61,6 @@ public:
     void Draw(const UIGeometricData& geometricData) override;
     void Input(UIEvent* currentInput) override;
 
-    void Update(float32 timeElapsed);
-
 protected:
     void OnVisible() override;
     void OnInvisible() override;
@@ -97,6 +95,8 @@ protected:
     std::unique_ptr<IWebViewControl> webViewControl;
 
 private:
+    void Update(float32 timeElapsed);
+
     bool isNativeControlVisible;
     int32 dataDetectorTypes;
 

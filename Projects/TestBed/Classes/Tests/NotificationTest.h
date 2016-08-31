@@ -19,13 +19,13 @@ protected:
 public:
     void LoadResources() override;
     void UnloadResources() override;
-
-    void Update(float32 timeElapsed);
     void Draw(const UIGeometricData& geometricData) override;
 
     void UpdateNotification();
 
 private:
+    void Update(float32 timeElapsed);
+
     void OnNotifyText(BaseObject* obj, void* data, void* callerData);
     void OnNotifyTextDelayed(BaseObject* obj, void* data, void* callerData);
     void OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData);

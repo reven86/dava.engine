@@ -14,7 +14,6 @@ public:
 
     virtual void SetScreenToLoad(int32 screenId);
 
-    void Update(float32 timeElapsed);
     void OnActive() override;
     void OnInactive() override;
 
@@ -23,6 +22,8 @@ protected:
     RefPtr<Thread> thread;
 
 private:
+    void Update(float32 timeElapsed);
+
     int32 nextScreenId = -1;
 };
 };

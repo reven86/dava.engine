@@ -20,7 +20,6 @@ public:
     void CopyDataFrom(UIControl* srcControl) override;
 
 public:
-    void Update(float32 timeElapsed);
     void Input(UIEvent* currentTouch) override;
     void InputCancelled(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override;
@@ -67,6 +66,9 @@ protected:
     bool scrollStartMovement : 1;
     bool enableHorizontalScroll : 1;
     bool enableVerticalScroll : 1;
+
+private:
+    void Update(float32 timeElapsed);
 };
 };
 

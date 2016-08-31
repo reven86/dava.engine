@@ -211,8 +211,6 @@ protected:
 
     void FullRefresh();
 
-    void Update(float32 timeElapsed);
-
     void OnVisible() override;
     void OnInvisible() override;
     void Input(UIEvent* currentInput) override;
@@ -249,6 +247,9 @@ protected:
     FilePath aggregatorPath;
 
     Map<String, Vector<UIListCell*>*> cellStore;
+
+private:
+    void Update(float32 timeElapsed);
 
 public:
     INTROSPECTION_EXTEND(UIList, UIControl,
