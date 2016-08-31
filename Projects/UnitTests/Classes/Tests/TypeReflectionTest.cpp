@@ -458,9 +458,20 @@ DAVA_TESTCLASS (TypeReflection)
     template <typename T, typename G, typename S>
     void DoValueSetGetTest(DAVA::Reflection ref, G & realGetter, S & realSetter, const T& v1, const T& v2)
     {
-        TEST_VERIFY(ref.GetValueType() == DAVA::Type::Instance<T>());
-        TEST_VERIFY(ref.GetValueObject().GetType() == DAVA::Type::Instance<T*>());
-        TEST_VERIFY(ref.GetValueObject().GetType() == DAVA::Type::Instance<T*>());
+        TEST_VERIFY
+        (
+        ref.GetValueType() == DAVA::Type::Instance<T>() ||
+        ref.GetValueType()->Decay() == DAVA::Type::Instance<T>()
+        );
+
+        if (ref.GetValueObject().IsValid())
+        {
+            TEST_VERIFY
+            (
+            ref.GetValueObject().GetType() == DAVA::Type::Instance<T*>() ||
+            ref.GetValueObject().GetType()->Decay() == DAVA::Type::Instance<T*>()
+            );
+        }
 
         DAVA::Any a = ref.GetValue();
         TEST_VERIFY(a.Get<T>() == realGetter());
