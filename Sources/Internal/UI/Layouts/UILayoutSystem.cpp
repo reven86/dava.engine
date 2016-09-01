@@ -78,8 +78,8 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
     TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
-    const char* ctrlName = control->GetName().c_str() ? control->GetName().c_str() : "";
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
+    //const char* ctrlName = control->GetName().c_str() ? control->GetName().c_str() : "";
+    //TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control;
@@ -96,7 +96,7 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
     ApplySizesAndPositions();
 
     layoutData.clear();
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
+    //TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
 }
 
@@ -167,18 +167,18 @@ bool UILayoutSystem::LayoutAfterReposition(const UIControl* control) const
         return false;
     }
 
-    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) == 0)
+    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) != 0)
     {
         return true;
     }
 
     static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
-    if ((parent->GetAvailableComponentFlags() & parentComponents) == 0)
+    if ((parent->GetAvailableComponentFlags() & parentComponents) != 0)
     {
         return true;
     }
 
-    if ((control->GetAvailableComponentFlags() & UIComponent::SIZE_POLICY_COMPONENT) == 0)
+    if ((control->GetAvailableComponentFlags() & UIComponent::SIZE_POLICY_COMPONENT) != 0)
     {
         UISizePolicyComponent* policy = control->GetComponent<UISizePolicyComponent>();
         bool res = policy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT ||

@@ -486,6 +486,9 @@ Vector2 UIControl::GetAbsolutePosition() const
 
 void UIControl::SetPosition(const Vector2& position)
 {
+    if (relativePosition == position)
+        return;
+
     relativePosition = position;
     SetLayoutPositionDirty();
 }
@@ -517,17 +520,25 @@ void UIControl::SetSize(const Vector2& newSize)
 
 void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
 {
-    pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
+    Vector2 newPivot((size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x),
+                     (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y));
+
+    if (pivot == newPivot)
+        return;
+
+    pivot = newPivot;
 
     SetLayoutPositionDirty();
 }
 
 void UIControl::SetPivot(const Vector2& newPivot)
 {
+    if (pivot == newPivot)
+        return;
+
     pivot = newPivot;
 
-    SetLayoutDirty();
+    SetLayoutPositionDirty();
 }
 
 void UIControl::SetAngle(float32 angleInRad)
