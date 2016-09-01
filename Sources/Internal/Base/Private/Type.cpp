@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-bool TypeCast::CanDownCast(const Type* from, const Type* to)
+bool TypePtrCast::CanDownCast(const Type* from, const Type* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
@@ -31,7 +31,7 @@ bool TypeCast::CanDownCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypeCast::CanUpCast(const Type* from, const Type* to)
+bool TypePtrCast::CanUpCast(const Type* from, const Type* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
@@ -58,12 +58,12 @@ bool TypeCast::CanUpCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypeCast::CanCast(const Type* from, const Type* to)
+bool TypePtrCast::CanCast(const Type* from, const Type* to)
 {
     return CanDownCast(from, to) || CanUpCast(from, to);
 }
 
-bool TypeCast::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypePtrCast::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
@@ -92,7 +92,7 @@ bool TypeCast::DownCast(const Type* from, void* inPtr, const Type* to, void** ou
     return false;
 }
 
-bool TypeCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypePtrCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
@@ -121,7 +121,7 @@ bool TypeCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outP
     return false;
 }
 
-bool TypeCast::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypePtrCast::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (DownCast(from, inPtr, to, outPtr))
     {

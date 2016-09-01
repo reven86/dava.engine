@@ -2,9 +2,6 @@
 
 namespace DAVA
 {
-std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap = std::make_unique<Any::AnyOPsMap>();
-std::unique_ptr<Any::CastOPsMap> Any::castOPsMap = std::make_unique<Any::CastOPsMap>();
-
 void Any::LoadValue(const Type* type_, void* data)
 {
     type = type_;
@@ -14,23 +11,13 @@ void Any::LoadValue(const Type* type_, void* data)
         void** src = reinterpret_cast<void**>(data);
         anyStorage.SetAuto(*src);
     }
-    else if (type_->IsFundamental())
+    else if (type_->IsTriviallyCopyable())
     {
         anyStorage.SetData(data, type_->GetSize());
     }
     else
     {
-        auto it = anyOPsMap->find(type_);
-        if (it != anyOPsMap->end())
-        {
-            Any::LoadOP op = it->second.load;
-            if (nullptr != op)
-            {
-                return (*op)(anyStorage, data);
-            }
-        }
-
-        DAVA_THROW(AnyException, AnyException::BadOperation, "Load operation wasn't registered");
+        DAVA_THROW(Exception, "Any:: can't be loaded from not trivial type");
     }
 }
 
@@ -40,7 +27,7 @@ void Any::StoreValue(void* data, size_t size) const
     {
         if (type->GetSize() > size)
         {
-            DAVA_THROW(AnyException, AnyException::BadSize, "Type size mismatch while saving value from Any");
+            DAVA_THROW(Exception, "Any:: can't be stored, size mismatch");
         }
 
         if (type->IsPointer())
@@ -48,23 +35,13 @@ void Any::StoreValue(void* data, size_t size) const
             void** dst = reinterpret_cast<void**>(data);
             *dst = anyStorage.GetAuto<void*>();
         }
-        else if (type->IsFundamental())
+        else if (type->IsTriviallyCopyable())
         {
             std::memcpy(data, anyStorage.GetData(), size);
         }
         else
         {
-            auto it = anyOPsMap->find(type);
-            if (it != anyOPsMap->end())
-            {
-                Any::StoreOP op = it->second.store;
-                if (nullptr != op)
-                {
-                    return (*op)(anyStorage, data);
-                }
-            }
-
-            DAVA_THROW(AnyException, AnyException::BadOperation, "Save operation wasn't registered");
+            DAVA_THROW(Exception, "Any:: can't be stored into not trivial type");
         }
     }
 }
@@ -84,7 +61,7 @@ bool Any::operator==(const Any& any) const
     {
         if (type->IsPointer())
         {
-            return GetImpl<void*>() == any.GetImpl<void*>();
+            return anyStorage.GetSimple<void*>() == any.anyStorage.GetSimple<void*>();
         }
         else
         {
@@ -97,24 +74,12 @@ bool Any::operator==(const Any& any) const
         return false;
     }
 
-    if (type->IsFundamental())
+    if (type->IsTriviallyCopyable())
     {
         return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), type->GetSize()));
     }
-    else
-    {
-        auto it = anyOPsMap->find(type);
-        if (it != anyOPsMap->end())
-        {
-            Any::CompareOP op = it->second.compare;
-            if (op != nullptr)
-            {
-                return (*op)(anyStorage.GetData(), any.anyStorage.GetData());
-            }
-        }
-    }
 
-    DAVA_THROW(AnyException, AnyException::BadOperation, "Compare operation wasn't registered");
+    return (*compareFn)(*this, any);
 }
 
 } // namespace DAVA

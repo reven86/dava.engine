@@ -133,6 +133,7 @@ inline void AutoStorage<Count>::SetData(const void* data, size_t size)
     {
         type = AutoStorage::StorageType::Shared;
         char* arr = new char[size];
+        std::memcpy(arr, data, size);
         new (storage.data()) SharedT(arr, [](char* p) { delete[] p; });
     }
 }

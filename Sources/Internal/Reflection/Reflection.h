@@ -2,11 +2,9 @@
 #define __DAVA_Reflection_Definition__
 
 #include <sstream>
-#include "Base/Type.h"
-#include "Base/BaseTypes.h"
-
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
+#include "Base/Type.h"
 
 #include "Reflection/ReflectedBase.h"
 #include "Reflection/ReflectedObject.h"

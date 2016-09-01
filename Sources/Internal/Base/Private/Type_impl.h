@@ -38,6 +38,11 @@ inline bool Type::IsFundamental() const
     return isFundamental;
 }
 
+inline bool Type::IsTriviallyCopyable() const
+{
+    return isTriviallyCopyable;
+}
+
 inline const Type* Type::Decay() const
 {
     return decayType;
@@ -136,6 +141,7 @@ void Type::Init(Type** ptype)
     type.isPointer = std::is_pointer<T>::value;
     type.isReference = std::is_reference<T>::value;
     type.isFundamental = std::is_fundamental<T>::value;
+    type.isTriviallyCopyable = std::is_trivially_copyable<T>::value;
 
     auto condDeref = std::integral_constant<bool, needDeref>();
     type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);

@@ -34,6 +34,7 @@ public:
     bool IsPointer() const;
     bool IsReference() const;
     bool IsFundamental() const;
+    bool IsTriviallyCopyable() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -56,6 +57,7 @@ private:
     bool isPointer = false;
     bool isReference = false;
     bool isFundamental = false;
+    bool isTriviallyCopyable = false;
 
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;
@@ -76,7 +78,7 @@ private:
     static bool AddDerivedType();
 };
 
-struct TypeCast
+struct TypePtrCast
 {
     static bool CanUpCast(const Type* from, const Type* to);
     static bool CanDownCast(const Type* from, const Type* to);

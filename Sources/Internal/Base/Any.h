@@ -14,17 +14,17 @@ class Any final
 {
 public:
     using AnyStorage = AutoStorage<>;
-    using LoadOP = void (*)(AnyStorage&, const void* src);
-    using StoreOP = void (*)(const AnyStorage&, void* dst);
-    using CompareOP = bool (*)(const void* a, const void* b);
-    using CastOP = Any (*)(const Any& from);
 
-    struct AnyOPs
-    {
-        LoadOP load = nullptr;
-        StoreOP store = nullptr;
-        CompareOP compare = nullptr;
-    };
+    //     using LoadOP = void (*)(AnyStorage&, const void* src);
+    //     using StoreOP = void (*)(const AnyStorage&, void* dst);
+    //     using CastOP = Any (*)(const Any& from);
+    //
+    //     struct AnyOPs
+    //     {
+    //         LoadOP load = nullptr;
+    //         StoreOP store = nullptr;
+    //         CompareOP compare = nullptr;
+    //     };
 
     template <typename T>
     using NotAny = typename std::enable_if<!std::is_same<typename std::decay<T>::type, Any>::value, bool>::type;
@@ -66,7 +66,7 @@ public:
     template <typename T>
     T Cast() const;
 
-    void LoadValue(const Type* type, void* data);
+    void LoadValue(const Type* type_, void* data);
     void StoreValue(void* data, size_t size) const;
 
     Any& operator=(Any&&);
@@ -75,80 +75,75 @@ public:
     bool operator==(const Any&) const;
     bool operator!=(const Any&) const;
 
-    template <typename T>
-    static void RegisterDefaultOPs();
-
-    template <typename T>
-    static void RegisterOPs(AnyOPs&& ops);
-
-    template <typename T1, typename T2>
-    static void RegisterDefaultCastOP();
-
-    template <typename T1, typename T2>
-    static void RegisterCastOP(CastOP&, CastOP&);
+    //     template <typename T>
+    //     static void RegisterDefaultOPs();
+    //
+    //     template <typename T>
+    //     static void RegisterOPs(LoadOP& lop, StoreOP &sop, CompareOP& cop);
+    //
+    //     template <typename T1, typename T2>
+    //     static void RegisterDefaultCastOP();
+    //
+    //     template <typename T1, typename T2>
+    //     static void RegisterCastOP(CastOP&, CastOP&);
 
 private:
-    struct CastOPKey
-    {
-        const Type* from;
-        const Type* to;
+    //     struct CastOPKey
+    //     {
+    //         const Type* from;
+    //         const Type* to;
+    //
+    //         bool operator==(const CastOPKey&) const;
+    //     };
+    //
+    //     struct CastOPKeyHasher
+    //     {
+    //         size_t operator()(const CastOPKey&) const;
+    //     };
 
-        bool operator==(const CastOPKey&) const;
-    };
+    //     using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKeyHasher>;
 
-    struct CastOPKeyHasher
-    {
-        size_t operator()(const CastOPKey&) const;
-    };
-
-    using AnyOPsMap = UnorderedMap<const Type*, AnyOPs>;
-    using CastOPsMap = UnorderedMap<CastOPKey, CastOP, CastOPKeyHasher>;
+    using CompareFn = bool (*)(const Any&, const Any&);
 
     const Type* type = nullptr;
     AnyStorage anyStorage;
+    CompareFn compareFn = nullptr;
 
-    template <typename T>
-    const T& GetImpl() const;
+    //     template <typename T>
+    //     bool CanCastImpl(std::true_type isPointer) const;
+    //
+    //     template <typename T>
+    //     bool CanCastImpl(std::false_type isPointer) const;
+    //
+    //     template <typename T>
+    //     T CastImpl(std::true_type isPointer) const;
+    //
+    //     template <typename T>
+    //     T CastImpl(std::false_type isPointer) const;
 
-    template <typename T>
-    bool CanCastImpl(std::true_type isPointer) const;
-
-    template <typename T>
-    bool CanCastImpl(std::false_type isPointer) const;
-
-    template <typename T>
-    T CastImpl(std::true_type isPointer) const;
-
-    template <typename T>
-    T CastImpl(std::false_type isPointer) const;
-
-    static std::unique_ptr<AnyOPsMap> anyOPsMap;
-    static std::unique_ptr<CastOPsMap> castOPsMap;
+    //    using CompareMap = UnorderedMap<const Type*, CompareFn>;
+    //    static std::unique_ptr<CompareMap> compareMap;
 };
 
-struct AnyException : public Exception
+template <typename T>
+struct AnyCompare
 {
-    enum ErrorCode
-    {
-        BadGet,
-        BadCast,
-        BadOperation,
-        BadSize
-    };
+    static bool IsEqual(const Any&, const Any&);
+};
 
-    ErrorCode ecode;
-
-    AnyException(ErrorCode ecode_, const String& message, const char* file_, size_t line_)
-        : Exception(message, file_, line_)
-        , ecode(ecode_)
-    {
-    }
+template <typename T>
+struct AnyCast
+{
+    static bool CanCast(const Any&);
+    static T Cast(const Any&);
 };
 
 } // namespace DAVA
 
 #define __Dava_Any__
 #include "Base/Private/Any_impl.h"
+#include "Base/Private/Any_implCompare.h"
+#include "Base/Private/Any_implCast.h"
 
 // TODO
 // ...

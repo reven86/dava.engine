@@ -1,10 +1,13 @@
 #pragma once
-#ifndef DAVAENGINE_ANY__H
+#ifndef __Dava_Any__
 #include "Base/Any.h"
 #endif
 
 namespace DAVA
 {
+
+#if 0
+
 inline bool Any::CastOPKey::operator==(const Any::CastOPKey& key) const
 {
     return from == key.from && to == key.to;
@@ -58,6 +61,8 @@ std::pair<const Type*, Any::AnyOPs> MakeDefaultOPs()
 }
 
 } // namespace AnyDetails
+
+#endif
 
 inline Any::Any(Any&& any)
 {
@@ -151,33 +156,30 @@ template <typename T>
 const T& Any::Get() const
 {
     if (CanGet<T>())
-        return GetImpl<T>();
+        return anyStorage.GetAuto<T>();
 
-    DAVA_THROW(AnyException, AnyException::BadGet, "Value can't be get as requested T");
+    DAVA_THROW(Exception, "Any:: can't be get as requested T");
 }
 
 template <typename T>
 inline const T& Any::Get(const T& defaultValue) const
 {
-    return CanGet<T>() ? GetImpl<T>() : defaultValue;
-}
-
-template <typename T>
-inline const T& Any::GetImpl() const
-{
-    return anyStorage.GetAuto<T>();
+    return CanGet<T>() ? anyStorage.GetAuto<T>() : defaultValue;
 }
 
 inline void Any::Set(const Any& any)
 {
     anyStorage = any.anyStorage;
     type = any.type;
+    compareFn = any.compareFn;
 }
 
 inline void Any::Set(Any&& any)
 {
-    anyStorage = std::move(any.anyStorage);
     type = any.type;
+    compareFn = any.compareFn;
+    anyStorage = std::move(any.anyStorage);
+
     any.type = nullptr;
 }
 
@@ -188,21 +190,23 @@ void Any::Set(T&& value, NotAny<T>)
 
     type = Type::Instance<U>();
     anyStorage.SetAuto(std::forward<T>(value));
+    compareFn = &AnyCompare<T>::IsEqual;
 }
 
 template <typename T>
 bool Any::CanCast() const
 {
-    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer{};
-    return CanGet<T>() || CanCastImpl<T>(isPointer);
+    return CanGet<T>() || AnyCast<T>::CanCast(*this);
 }
+
+#if 0
 
 template <typename T>
 inline bool Any::CanCastImpl(std::true_type isPointer) const
 {
     using P = Type::DecayT<T>;
 
-    return TypeCast::CanCast(type, Type::Instance<P>());
+    return TypePtrCast::CanCast(type, Type::Instance<P>());
 }
 
 template <typename T>
@@ -219,15 +223,18 @@ inline bool Any::CanCastImpl(std::false_type isPointer) const
     return false;
 }
 
+#endif
+
 template <typename T>
 T Any::Cast() const
 {
-    static const std::integral_constant<bool, std::is_pointer<T>::value> isPointer{};
     if (CanGet<T>())
-        return GetImpl<T>();
+        return anyStorage.GetAuto<T>();
 
-    return CastImpl<T>(isPointer);
+    return AnyCast<T>::Cast(*this);
 }
+
+#if 0
 
 template <typename T>
 inline T Any::CastImpl(std::true_type isPointer) const
@@ -237,7 +244,7 @@ inline T Any::CastImpl(std::true_type isPointer) const
     void* inPtr = GetImpl<void*>();
     void* outPtr = nullptr;
 
-    if (TypeCast::Cast(type, inPtr, Type::Instance<P>(), &outPtr))
+    if (TypePtrCast::Cast(type, inPtr, Type::Instance<P>(), &outPtr))
     {
         return static_cast<T>(outPtr);
     }
@@ -263,6 +270,9 @@ inline T Any::CastImpl(std::false_type isPointer) const
     DAVA_THROW(AnyException, AnyException::BadCast, "Value can't be casted into requested T");
 }
 
+#endif
+
+#if 0
 template <typename T>
 void Any::RegisterDefaultOPs()
 {
@@ -292,5 +302,7 @@ void Any::RegisterCastOP(CastOP& castT1T2, CastOP& castT2T1)
     castOPsMap->operator[](CastOPKey{ t1, t2 }) = castT1T2;
     castOPsMap->operator[](CastOPKey{ t2, t1 }) = castT2T1;
 }
+
+#endif
 
 } // namespace DAVA
