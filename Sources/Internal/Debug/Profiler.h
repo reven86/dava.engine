@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Hash.h"
+#include <ostream>
+
 using DAVA::int32;
 using DAVA::uint32;
 using DAVA::uint64;
@@ -31,7 +34,7 @@ void DumpAverage(const char* counterName, uint32 counterCount, File* file = null
 class ScopedCounter
 {
 public:
-    ScopedCounter(const char* counterName);
+    ScopedCounter(const char* counterName, uint32 counterNameID);
     ~ScopedCounter();
 
 private:
@@ -44,7 +47,7 @@ private:
 
 #if PROFILER_ENABLED
 
-#define PROFILER_TIMING(counter_name) DAVA::Profiler::ScopedCounter time_profiler_scope_counter(counter_name);
+#define PROFILER_TIMING(counter_name) DAVA::Profiler::ScopedCounter time_profiler_scope_counter(counter_name, DV_HASH(counter_name));
 
 #else
 

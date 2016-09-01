@@ -1,12 +1,12 @@
-#include "Profiler.h"
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
+#include "Debug/Profiler.h"
 #include "Platform/SystemTimer.h"
-#include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
-#include "Base/RingArray.h"
 #include "Base/AllocatorFactory.h"
+#include "Debug/DVAssert.h"
+#include "ProfilerRingArray.h"
 
+#include "FileSystem/File.h"
+#include "Logger/Logger.h"
 //==============================================================================
 
 const static uint32 TIME_COUNTERS_COUNT = 2048;
@@ -21,6 +21,7 @@ struct TimeCounter
     uint64 endTime = 0;
     const char* name = nullptr;
     Thread::Id tid = 0;
+    uint32 nameID = 0;
 };
 
 using CounterArray = RingArray<TimeCounter, TIME_COUNTERS_COUNT>;
@@ -44,9 +45,10 @@ struct CounterTreeNode
     static void SafeDeleteTree(CounterTreeNode*& node);
 
 protected:
-    CounterTreeNode(CounterTreeNode* _parent, const char* _name, uint64 _time, uint32 _count)
+    CounterTreeNode(CounterTreeNode* _parent, const char* _name, uint32 _nameID, uint64 _time, uint32 _count)
         : counterTime(_time)
         , counterName(_name)
+        , counterNameID(_nameID)
         , parent(_parent)
         , count(_count)
     {
@@ -54,6 +56,7 @@ protected:
 
     uint64 counterTime = 0;
     const char* counterName;
+    uint32 counterNameID;
 
     CounterTreeNode* parent;
     Vector<CounterTreeNode*> childs;
@@ -61,13 +64,12 @@ protected:
 };
 
 uint64 TimeStampUs();
-bool NameEquals(const char* name1, const char* name2);
 CounterArray& GetCounterArray(int32 snapshot);
 void DumpLine(const char* buf, File* file);
 
 //////////////////////////////////////////////////////////////////////////
 
-ScopedCounter::ScopedCounter(const char* counterName)
+ScopedCounter::ScopedCounter(const char* counterName, uint32 counterNameID)
 {
     if (profilerStarted)
     {
@@ -78,6 +80,7 @@ ScopedCounter::ScopedCounter(const char* counterName)
         c.endTime = 0;
         c.name = counterName;
         c.tid = Thread::GetCurrentId();
+        c.nameID = counterNameID;
     }
 }
 
@@ -121,12 +124,13 @@ void DeleteSnapshots()
 
 uint64 GetLastCounterTime(const char* counterName)
 {
+    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     uint64 timeDelta = 0;
     CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
     for (; it != itEnd; it++)
     {
         const TimeCounter& c = *it;
-        if (c.endTime != 0 && NameEquals(counterName, c.name))
+        if (c.endTime != 0 && counterNameID == c.nameID)
         {
             timeDelta = c.endTime - c.startTime;
             break;
@@ -142,12 +146,13 @@ void DumpLast(const char* counterName, uint32 counterCount, File* file, int32 sn
 
     DumpLine("================================================================", file);
 
+    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     CounterArray& array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
     TimeCounter* lastDumpedCounter = nullptr;
     for (; it != itEnd; it++)
     {
-        if (it->endTime != 0 && NameEquals(counterName, it->name))
+        if (it->endTime != 0 && counterNameID == it->nameID)
         {
             if (lastDumpedCounter)
                 DumpLine(DAVA::Format("=== Non-tracked time [%llu us] ===", lastDumpedCounter->endTime - it->startTime).c_str(), file);
@@ -174,12 +179,13 @@ void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32
     DumpLine("================================================================", file);
     DumpLine(DAVA::Format("=== Average time for %d counter(s):", counterCount).c_str(), file);
 
+    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     CounterArray& array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
     CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
-        if (it->endTime != 0 && NameEquals(counterName, it->name))
+        if (it->endTime != 0 && counterNameID == it->nameID)
         {
             CounterTreeNode* node = CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
 
@@ -200,8 +206,11 @@ void DumpAverage(const char* counterName, uint32 counterCount, File* file, int32
             break;
     }
 
-    CounterTreeNode::DumpTree(treeRoot, 0, file, true);
-    CounterTreeNode::SafeDeleteTree(treeRoot);
+    if (treeRoot)
+    {
+        CounterTreeNode::DumpTree(treeRoot, 0, file, true);
+        CounterTreeNode::SafeDeleteTree(treeRoot);
+    }
 
     DumpLine("================================================================", file);
 }
@@ -245,7 +254,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
     uint64 endTime = begin->endTime;
     Vector<uint64> nodeEndTime;
 
-    CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->endTime - begin->startTime, 1);
+    CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->nameID, begin->endTime - begin->startTime, 1);
     nodeEndTime.push_back(begin->endTime);
 
     CounterArray::iterator end = array.end();
@@ -269,7 +278,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
                 node = node->parent;
             }
 
-            if (NameEquals(node->counterName, c.name))
+            if (node->counterNameID == c.nameID)
             {
                 node->counterTime += c.endTime - c.startTime;
                 node->count++;
@@ -277,7 +286,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
             else
             {
                 auto found = std::find_if(node->childs.begin(), node->childs.end(), [&c](CounterTreeNode* node) {
-                    return NameEquals(c.name, node->counterName);
+                    return (c.nameID == node->counterNameID);
                 });
 
                 if (found != node->childs.end())
@@ -287,7 +296,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
                 }
                 else
                 {
-                    node->childs.push_back(new CounterTreeNode(node, c.name, c.endTime - c.startTime, 1));
+                    node->childs.push_back(new CounterTreeNode(node, c.name, c.nameID, c.endTime - c.startTime, 1));
                     node = node->childs.back();
 
                     nodeEndTime.push_back(c.endTime);
@@ -304,7 +313,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
 
 void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* node)
 {
-    if (NameEquals(root->counterName, node->counterName))
+    if (root->counterNameID == node->counterNameID)
     {
         root->counterTime += node->counterTime;
         root->count++;
@@ -315,7 +324,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
     else
     {
         auto found = std::find_if(root->childs.begin(), root->childs.end(), [&node](CounterTreeNode* child) {
-            return NameEquals(child->counterName, node->counterName);
+            return (child->counterNameID == node->counterNameID);
         });
 
         if (found != root->childs.end())
@@ -335,7 +344,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
 
 CounterTreeNode* CounterTreeNode::CopyTree(const CounterTreeNode* node)
 {
-    CounterTreeNode* nodeCopy = new CounterTreeNode(nullptr, node->counterName, node->counterTime, node->count);
+    CounterTreeNode* nodeCopy = new CounterTreeNode(nullptr, node->counterName, node->counterNameID, node->counterTime, node->count);
     for (CounterTreeNode* c : node->childs)
     {
         nodeCopy->childs.push_back(CopyTree(c));
@@ -371,14 +380,6 @@ void CounterTreeNode::SafeDeleteTree(CounterTreeNode*& node)
 uint64 TimeStampUs()
 {
     return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
-}
-
-bool NameEquals(const char* name1, const char* name2)
-{
-    if (name1 == name2)
-        return true;
-
-    return strcmp(name1, name2) == 0;
 }
 
 CounterArray& GetCounterArray(int32 snapshot)

@@ -18,11 +18,16 @@ public:
         mask = a.mask;
         head = a.head.load();
     }
-    RingArray& operator=(const RingArray& a)
+    RingArray(RingArray&& a)
     {
-        memcpy(elements.data(), a.elements.data(), elements.size() * sizeof(T));
+        elements = std::move(a.elements);
         mask = a.mask;
         head = a.head.load();
+    }
+    RingArray& operator=(const RingArray& a)
+    {
+        if (this != &a)
+            new (this) RingArray(a);
         return (*this);
     }
 
@@ -43,45 +48,82 @@ public:
     }
     inline reverse_iterator rbegin()
     {
-        return reverse_iterator(elements.data(), (head - 1) & mask, mask);
+        return reverse_iterator(elements.data(), ((head - 1) & mask) | (mask + 1), mask);
     }
     inline reverse_iterator rend()
     {
-        return reverse_iterator(elements.data(), ((head - 1) & mask) | (mask + 1), mask);
+        return reverse_iterator(elements.data(), (head - 1) & mask, mask);
     }
-    inline size_t size()
+    inline size_t size() const
     {
         return _Size;
     }
 
-    class iterator
+protected:
+    class base_iterator
     {
     public:
-        iterator() = default;
-        ~iterator() = default;
+        base_iterator() = default;
+        ~base_iterator() = default;
 
+        inline bool operator==(const base_iterator& it) const
+        {
+            return index == it.index;
+        }
+        inline bool operator!=(const base_iterator& it) const
+        {
+            return index != it.index;
+        }
+        inline T& operator*() const
+        {
+            return arrayData[index & mask];
+        }
+        inline T* operator->() const
+        {
+            return &arrayData[index & mask];
+        }
+
+        base_iterator(T* data, uint32 _index, uint32 _mask)
+            : arrayData(data)
+            , index(_index)
+            , mask(_mask)
+        {
+        }
+
+        T* arrayData = nullptr;
+        uint32 index = 0;
+        uint32 mask = 0;
+    };
+
+public:
+    class iterator : public base_iterator
+    {
+    public:
         iterator(const reverse_iterator& it)
         {
             arrayData = it.arrayData;
-            exmask = it.exmask;
-            index = it.index ^ ((exmask >> 1) + 1);
+            mask = it.mask;
+            index = it.index;
         }
-
-        inline iterator operator+(uint32 n)
+        inline operator reverse_iterator() const
+        {
+            return reverse_iterator(arrayData, index, mask);
+        }
+        inline iterator operator+(uint32 n) const
         {
             iterator it(*this);
-            it.index = (index + n) & exmask;
+            it.index += n;
             return it;
         }
-        inline iterator operator-(uint32 n)
+        inline iterator operator-(uint32 n) const
         {
             iterator it(*this);
-            it.index = (index - n) & exmask;
+            it.index -= n;
             return it;
         }
         inline iterator& operator++()
         {
-            index = (index + 1) & exmask;
+            ++index;
             return *this;
         }
         inline iterator operator++(int)
@@ -92,7 +134,7 @@ public:
         }
         inline iterator& operator--()
         {
-            index = (index - 1) & exmask;
+            --index;
             return *this;
         }
         inline iterator operator--(int)
@@ -101,71 +143,44 @@ public:
             --(*this);
             return prev;
         }
-        inline bool operator==(const iterator& it)
-        {
-            return index == it.index;
-        }
-        inline bool operator!=(const iterator& it)
-        {
-            return index != it.index;
-        }
-        inline T& operator*()
-        {
-            return arrayData[index & (exmask >> 1)];
-        }
-        inline T* operator->()
-        {
-            return &arrayData[index & (exmask >> 1)];
-        }
-        inline operator reverse_iterator() const
-        {
-            return reverse_iterator(arrayData, index ^ ((exmask >> 1) + 1), exmask >> 1);
-        }
 
     protected:
         iterator(T* data, uint32 _index, uint32 _mask)
-            : arrayData(data)
-            , index(_index)
+            : base_iterator(data, _index, _mask)
         {
-            exmask = (_mask << 1) + 1;
         }
 
-        T* arrayData = nullptr;
-        uint32 index = 0;
-        uint32 exmask = 0;
-
         friend class RingArray;
-        friend class reverse_iterator;
     };
 
-    class reverse_iterator
+    class reverse_iterator : public base_iterator
     {
     public:
-        reverse_iterator() = default;
-        ~reverse_iterator() = default;
-
         reverse_iterator(const iterator& it)
         {
             arrayData = it.arrayData;
-            exmask = it.exmask;
-            index = it.index ^ ((exmask >> 1) + 1);
+            mask = it.mask;
+            index = it.index;
         }
-
-        inline reverse_iterator operator+(uint32 n)
+        inline operator iterator() const
+        {
+            return iterator(arrayData, index, mask);
+        }
+        inline reverse_iterator operator+(uint32 n) const
         {
             reverse_iterator it(*this);
-            it.index = (index - n) & exmask;
+            it.index -= n;
             return it;
         }
-        inline reverse_iterator operator-(uint32 n)
+        inline reverse_iterator operator-(uint32 n) const
         {
             reverse_iterator it(*this);
-            it.index = (index + n) & exmask;
+            it.index += n;
             return it;
         }
         inline reverse_iterator& operator++()
         {
-            index = (index - 1) & exmask;
+            --index;
             return *this;
         }
         inline reverse_iterator operator++(int)
@@ -176,7 +191,7 @@ public:
         }
         inline reverse_iterator& operator--()
         {
-            index = (index + 1) & exmask;
+            ++index;
             return *this;
         }
         inline reverse_iterator operator--(int)
@@ -185,41 +200,14 @@ public:
             --(*this);
             return prev;
         }
-        inline bool operator==(const reverse_iterator& it)
-        {
-            return index == it.index;
-        }
-        inline bool operator!=(const reverse_iterator& it)
-        {
-            return index != it.index;
-        }
-        inline T& operator*()
-        {
-            return arrayData[index & (exmask >> 1)];
-        }
-        inline T* operator->()
-        {
-            return &arrayData[index & (exmask >> 1)];
-        }
-        inline operator iterator() const
-        {
-            return iterator(arrayData, index ^ ((exmask >> 1) + 1), exmask >> 1);
-        }
 
     protected:
         reverse_iterator(T* data, uint32 _index, uint32 _mask)
-            : arrayData(data)
-            , index(_index)
+            : base_iterator(data, _index, _mask)
         {
-            exmask = (_mask << 1) + 1;
         }
 
-        T* arrayData = nullptr;
-        uint32 index = 0;
-        uint32 exmask = 0;
-
         friend class RingArray;
-        friend class iterator;
     };
 
 protected:
