@@ -3,12 +3,17 @@ package com.dava.engine;
 import android.app.Activity;
 import android.app.Application;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.util.Log;
 
 public final class DavaActivity extends Activity
+                                implements View.OnSystemUiVisibilityChangeListener
 {
     public static final String LOG_TAG = "DAVA";
 
@@ -53,6 +58,7 @@ public final class DavaActivity extends Activity
         return activitySingleton.commandHandler;
     }
 
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d(LOG_TAG, "DavaActivity.onCreate");
@@ -65,8 +71,17 @@ public final class DavaActivity extends Activity
         String internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
         String sourceDir = app.getApplicationInfo().publicSourceDir;
         String packageName = app.getApplicationInfo().packageName;
-        String cmdline = GetCommandLine();
+        String cmdline = getCommandLine();
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
+
+        Window window = getWindow();
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        window.requestFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+        window.requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        window.requestFeature(Window.FEATURE_NO_TITLE);
+        window.getDecorView().setOnSystemUiVisibilityChangeListener(this);
+        hideNavigationBar();
         
         long primaryWindowBackendPointer = nativeOnCreate();
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
@@ -76,12 +91,14 @@ public final class DavaActivity extends Activity
         setContentView(layout);
     }
 
+    @Override
     protected void onStart()
     {
         Log.d(LOG_TAG, "DavaActivity.onStart");
         super.onStart();
     }
 
+    @Override
     protected void onResume()
     {
         Log.d(LOG_TAG, "DavaActivity.onResume");
@@ -90,6 +107,7 @@ public final class DavaActivity extends Activity
         handleResume();
     }
 
+    @Override
     protected void onPause()
     {
         Log.d(LOG_TAG, "DavaActivity.onPause");
@@ -99,18 +117,21 @@ public final class DavaActivity extends Activity
         handlePause();
     }
 
+    @Override
     protected void onRestart()
     {
         Log.d(LOG_TAG, "DavaActivity.onRestart");
         super.onRestart();
     }
     
+    @Override
     protected void onStop()
     {
         Log.d(LOG_TAG, "DavaActivity.onStop");
         super.onStop();
     }
 
+    @Override
     protected void onDestroy()
     {
         Log.d(LOG_TAG, "DavaActivity.onDestroy");
@@ -131,6 +152,7 @@ public final class DavaActivity extends Activity
         activitySingleton = null;
     }
     
+    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus)
     {
         Log.d(LOG_TAG, String.format("DavaActivity.onWindowFocusChanged: focus=%b", hasWindowFocus));
@@ -139,19 +161,66 @@ public final class DavaActivity extends Activity
         if (hasFocus)
         {
             keyboardState.start();
+            hideNavigationBar();
             handleResume();
         }
     }
-    
+
+    @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
         Log.d(LOG_TAG, "DavaActivity.onConfigurationChanged");
         super.onConfigurationChanged(newConfig);
     }
 
+    @Override
+    public void onBackPressed()
+    {
+        Log.d(LOG_TAG, "DavaActivity.onBackPressed");
+        super.onBackPressed();
+    }
+
+    /**
+     * Since API 19 we can hide Navigation bar (Immersive Full-Screen Mode)
+     */
+    public void hideNavigationBar()
+    {
+        View view = getWindow().getDecorView();
+        int uiOptions = view.getSystemUiVisibility();
+        
+        // Navigation bar hiding:  Backwards compatible to ICS.
+        // Don't use View.SYSTEM_UI_FLAG_HIDE_NAVIGATION on API less that 19 because any
+        // click on view shows navigation bar, and we must hide it manually only. It is
+        // bad workflow.
+
+        // Status bar hiding: Backwards compatible to Jellybean
+        if (Build.VERSION.SDK_INT >= 16)
+        {
+            uiOptions |= 0x00000004; //View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+
+        // Immersive mode: Backward compatible to KitKat.
+        // Note that this flag doesn't do anything by itself, it only augments the behavior
+        // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
+        // all three flags are being toggled together.
+        // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
+        // Sticky immersive mode differs in that it makes the navigation and status bars
+        // semi-transparent, and the UI flag does not get cleared when the user interacts with
+        // the screen.
+        if (Build.VERSION.SDK_INT >= 19)
+        {
+            uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION 
+                    | 0x00000200 //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | 0x00000100 //View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | 0x00000400 //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | 0x00001000; //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        }
+        view.setSystemUiVisibility(uiOptions);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    protected void handleResume()
+    private void handleResume()
     {
         startDavaMainThreadIfNotRunning();
         if (isPaused && hasFocus)
@@ -162,7 +231,7 @@ public final class DavaActivity extends Activity
         }
     }
 
-    protected void handlePause()
+    private void handlePause()
     {
         if (!isPaused)
         {
@@ -172,7 +241,7 @@ public final class DavaActivity extends Activity
         }
     }
 
-    protected void startDavaMainThreadIfNotRunning()
+    private void startDavaMainThreadIfNotRunning()
     {
         if (davaMainThread == null)
         {
@@ -186,7 +255,7 @@ public final class DavaActivity extends Activity
         }
     }
     
-    private String GetCommandLine()
+    private String getCommandLine()
     {
         String result = "app_process ";
         Bundle extras = getIntent().getExtras();
@@ -199,5 +268,14 @@ public final class DavaActivity extends Activity
             }
         }
         return result;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // View.OnSystemUiVisibilityChangeListener interface
+    @Override
+    public void onSystemUiVisibilityChange(int visibility)
+    {
+        hideNavigationBar();
     }
 }
