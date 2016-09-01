@@ -2,14 +2,13 @@ package com.dava.engine;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 class eHandlerCommand
 {
     static final int TRIGGER_PROCESS_EVENTS = 1;
 }
 
-class DavaCommandHandler extends Handler
+final class DavaCommandHandler extends Handler
 {
     public void sendCommand(int command, Object param)
     {

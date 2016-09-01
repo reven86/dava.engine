@@ -12,6 +12,14 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.util.Log;
 
+import java.lang.reflect.Constructor;
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 public final class DavaActivity extends Activity
                                 implements View.OnSystemUiVisibilityChangeListener
 {
@@ -26,15 +34,11 @@ public final class DavaActivity extends Activity
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
-    
+    // List of class instances loaded from boot_classes files on startup
+    protected List<Object> bootstrapObjects = new LinkedList<Object>();
+
     private DavaSurfaceView primarySurfaceView;
     private ViewGroup layout;
-
-    static {
-        // TODO: I need another way to load necessary libraries
-        System.loadLibrary("gnustl_shared");
-        System.loadLibrary("TestBed");
-    }
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -65,6 +69,9 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
+        // Load library modules and create class instances specified in
+        // res/raw/boot_modules and res/raw/boot_classes accordingly
+        bootstrap();
 
         Application app = getApplication();
         String externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -149,6 +156,7 @@ public final class DavaActivity extends Activity
             davaMainThread = null;
         }
         nativeShutdownEngine();
+        bootstrapObjects.clear();
         activitySingleton = null;
     }
     
@@ -268,6 +276,63 @@ public final class DavaActivity extends Activity
             }
         }
         return result;
+    }
+
+    private void bootstrap()
+    {
+        // Read and load bootstrap library modules
+        String[] modules = readTextFileFromRawDir("boot_modules");
+        if (modules != null)
+        {
+            for (String m : modules)
+            {
+                Log.i(LOG_TAG, String.format("DavaActivity: loading bootstrap module '%s'", m));
+                try {
+                    System.loadLibrary(m);
+                } catch (Throwable e) {
+                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: module '%s' not loaded: %s", m, e.toString()));
+                }
+            }
+        }
+
+        // Read and create instances of bootstrap classes
+        String[] classes = readTextFileFromRawDir("boot_classes");
+        if (classes != null)
+        {
+            for (String c : classes)
+            {
+                Log.i(LOG_TAG, String.format("DavaActivity: loading bootstrap class '%s'", c));
+                try {
+                    Class<?> clazz = Class.forName(c);
+                    Constructor<?> ctor = clazz.getConstructor();
+                    Object obj = ctor.newInstance();
+                    bootstrapObjects.add(obj);
+                } catch (Throwable e) {
+                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: class '%s' not loaded: %s", c, e.toString()));
+                }
+            }
+        }
+    }
+
+    private String[] readTextFileFromRawDir(String nameWithoutExtension)
+    {
+        try {
+            int resourceId = getResources().getIdentifier(nameWithoutExtension, "raw", getPackageName());
+            InputStream is = getResources().openRawResource(resourceId);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+            String curLine = null;
+            List<String> lines = new ArrayList<String>();
+            while ((curLine = br.readLine()) != null)
+            {
+                lines.add(curLine);
+            }
+            br.close();
+            return lines.toArray(new String[lines.size()]);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, String.format("DavaActivity.readTextFileFromRawDir: file '%s': %s", nameWithoutExtension, e.toString()));
+        }
+        return null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
