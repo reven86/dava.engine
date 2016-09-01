@@ -8,6 +8,11 @@ import shutil
 import json
 import re
 
+from string import Template
+from collections import namedtuple
+import HTMLParser
+from HTMLParser import HTMLParser
+
 CoverageMinimum    = 75.0
 
 class FileCover():
@@ -48,6 +53,27 @@ def check_sting_in_file( str, fname ):
     with open(fname) as dataf:
         return any(str in line for line in dataf)
 
+def retrieve_name(var):
+    import inspect
+    callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+    return [var_name for var_name, var_val in callers_local_vars if var_val is var][0]
+
+def configure_file( file_path_template, file_path_out, values_string_list, values_obj ) :
+    dicts = {}
+
+    for item in values_string_list :
+        item_value  = '' 
+        vl_name = retrieve_name(values_obj)
+        if hasattr( values_obj, item ) :
+            exec("%s = %s" % ('item_value', '{0}.{1}'.format(vl_name,item))) 
+
+        dicts.update( { item : item_value } )  
+
+    with open( file_path_template ) as file_template, \
+         open( file_path_out, 'w' ) as file_generated :  
+            template = Template( file_template.read() )
+            file_generated.write( template.safe_substitute( dicts ) )
+
 
 class CoverageReport():
 
@@ -80,21 +106,35 @@ class CoverageReport():
         self.pathCovInfoTests       = os.path.join    ( self.coverageTmpPath, 'cov_tests.info')        
         self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
+        self.pathMixHtml            = os.path.join    ( self.pathReportOut,   'index.html')
+        self.pathMixHtmlTemplate    = os.path.join    ( self.pathCoverageDir, 'mix_index_html.in')
+
         self.pathUnityPack          = ''
         self.testsCoverage          = {}
         self.testsCoverageFiles     = []
 
+        self.mixHtmlValueStrList = { 'full_title', 'full_date', 'full_linesHit', 'full_linesTotal', 'full_linesCoverage',
+                                     'full_funcHit', 'full_funcTotal', 'full_funcCoverage', 'full_coverLegendCovLo', 'full_coverLegendCovMed',
+                                     'full_coverLegendCovHi', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
+                                     'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
+                                     'local_coverLegendCovHi' }
+
         if self.teamcityMode == 'false' :
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            self.__execute( [ pathExecutExt ] )
+            #self.__execute( [ pathExecutExt ] )
     
-        self.__coppy_gcda_gcno_files()
-        self.__load_json_cover_data()
+        #self.__processing_gcda_gcno_files()
+        #self.__load_json_cover_data()
 
+    def __build_print( self, str ):        
+        sys.stdout.write("{0}\n".format(str) )
+        sys.stdout.flush()
+
+    
     def __teamcity_print( self, str ):
         if self.teamcityMode == 'true' :
-            print str
+            __build_print( self, str )
 
     def __execute(self, param) :
 
@@ -130,17 +170,19 @@ class CoverageReport():
         for test in jsonData[ 'Coverage' ]:
             testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
             for file in testedFiles:
-                for ext in [ 'cpp', 'c']:
+                for ext in [ 'cpp', 'c' ]:
                     find_list = find_files( '{0}.{1}'.format( file, ext ) , projectFolders )
                     if len( find_list ):
                         fileCover = FileCover( find_list[0], None )
                         self.testsCoverage.setdefault(test, []).append( fileCover )
                         self.testsCoverageFiles +=  [find_list[0]]
 
-    def __coppy_gcda_gcno_files( self ):
-
-        if not os.path.isdir( self.coverageTmpPath ):
-            os.makedirs(self.coverageTmpPath) 
+    def __processing_gcda_gcno_files( self ):
+        
+        if os.path.isdir( self.coverageTmpPath ):
+            shutil.rmtree( self.coverageTmpPath )
+                
+        os.makedirs( self.coverageTmpPath ) 
 
         if self.buildConfig:
             pathConfigSegment = os.path.join(  '{0}.build'.format(self.executName), self.buildConfig )   
@@ -162,6 +204,8 @@ class CoverageReport():
                 os.remove(pathOutFile)
 
             shutil.copy(file, self.coverageTmpPath )
+            if file.endswith( ('.gcda')  ): 
+                os.remove( file )
 
     def __error_log_coverage_file( self, test, file ):
 
@@ -207,10 +251,21 @@ class CoverageReport():
             for name in files:
                 unity_file = os.path.join(root, name)
                 if( check_sting_in_file(file, unity_file) ) :
+
                     fileName = os.path.basename( unity_file )
                     fileName, fileExt = os.path.splitext( fileName )
                     return [ '{0}.gcda'.format(fileName) ]
         return []
+
+    def generate_mix_html( self ):
+        from HTMLParser import HTMLParser 
+        class ValueList: pass
+        vl = ValueList() 
+
+        vl.full_title = 'QQWEQWERQEWRQEWRQWER'
+
+        configure_file( self.pathMixHtmlTemplate, self.pathMixHtml, self.mixHtmlValueStrList, vl )
+
 
     def generate_report_html( self ):
 
@@ -220,8 +275,6 @@ class CoverageReport():
             shutil.rmtree( self.pathReportOut )
         else:
             os.makedirs(self.pathReportOut)      
-
-        os.chdir( self.pathCoverageDir ) 
 
         ###
         params = [ self.pathLcov,
@@ -259,6 +312,8 @@ class CoverageReport():
         ###
 
         self.__teamcity_print( '##teamcity[testFinished name=\'Generate cover html\']' )
+        
+        self.generate_mix_html()
 
 
     def generate_report_coverage( self ):
@@ -272,7 +327,7 @@ class CoverageReport():
 
 
         self.__execute( [ self.pathLlvmProfdata, 'merge', '-o', '{0}.profdata'.format(self.executName), 'default.profraw' ] )
-
+        
         os.chdir( self.coverageTmpPath )
         for test in self.testsCoverage:
             state = eState.FIND_File
@@ -280,9 +335,9 @@ class CoverageReport():
             for fileCover in self.testsCoverage[ test ]:
                 fileName          = os.path.basename( fileCover.file )
                 fileName, fileExt = os.path.splitext( fileName )
-
                 fileGcda     = '{0}.gcda'.format(fileName)
                 fileGcdaList = [ ]
+                self.__build_print( "Processing file: {0}".format( fileName ) )
 
                 if  os.path.isfile( fileGcda ) :
                     fileGcdaList = [ fileGcda ]
@@ -338,8 +393,8 @@ class CoverageReport():
             for fileCover in self.testsCoverage[ test ]:
                 if CoverageMinimum > fileCover.coverLines:                
                     basename = os.path.basename( fileCover.file )
-                    print '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum)
-            print ''
+                    self.__build_print( '{0}:1: error: bad cover test {1} in file {2}: {3}% must be at least: {4}%'.format(fileCover.file,test,basename,fileCover.coverLines,CoverageMinimum) )
+            self.__build_print( '' )
         
         if self.teamcityMode == 'false' :
             for test in self.testsCoverage:
@@ -364,16 +419,22 @@ def main():
     parser.add_argument( '--pathReportOut', required = True )
     parser.add_argument( '--buildConfig', choices=['Debug', 'Release'] )
     parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--buildMode', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--runMode', default = 'false', choices=['true', 'false'] )
 
     options = parser.parse_args()
 
     cov = CoverageReport( options )
 
-    if options.teamcityMode == 'true' :
+    if options.buildMode == 'true' :
+        cov.generate_mix_html()  
+        #cov.generate_report_coverage()
+
+    elif options.runMode == 'true' :
+        cov.generate_report_html()  
+    else:
         cov.generate_report_html()
-
-    cov.generate_report_coverage()
-
+        cov.generate_report_coverage() 
 
 if __name__ == '__main__':
     main()

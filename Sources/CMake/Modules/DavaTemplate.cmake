@@ -710,6 +710,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
                     --pathBuild     ${CMAKE_BINARY_DIR}
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
+                    --buildMode     true
         )
     
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
