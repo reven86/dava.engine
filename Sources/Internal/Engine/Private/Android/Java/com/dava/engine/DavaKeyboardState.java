@@ -24,27 +24,50 @@ public class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListene
     private Rect keyboardRect = new Rect();
     private List<KeyboardStateListener> listeners = new LinkedList<KeyboardStateListener>();
 
-    public DavaKeyboardState()
+    void start()
     {
-        contentView = DavaActivity.instance().findViewById(android.R.id.content);
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    0,
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                            | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                            | WindowManager.LayoutParams.FLAG_FULLSCREEN
-                            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                    PixelFormat.TRANSPARENT);
-        params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        params.packageName = DavaActivity.instance().getApplication().getPackageName();
-        params.gravity = Gravity.LEFT | Gravity.TOP;
-        params.token = contentView.getWindowToken();
+        if (layout == null)
+        {
+            contentView = DavaActivity.instance().findViewById(android.R.id.content);
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                        0,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                | WindowManager.LayoutParams.FLAG_FULLSCREEN
+                                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                        PixelFormat.TRANSPARENT);
+            params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+            params.packageName = DavaActivity.instance().getApplication().getPackageName();
+            params.gravity = Gravity.LEFT | Gravity.TOP;
+            params.token = contentView.getWindowToken();
 
-        layout = new FrameLayout(DavaActivity.instance());
-        DavaActivity.instance().getWindowManager().addView(layout, params);
+            layout = new FrameLayout(DavaActivity.instance());
+            DavaActivity.instance().getWindowManager().addView(layout, params);
 
-        layout.getViewTreeObserver().addOnGlobalLayoutListener(this);
+            layout.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }
+    }
+
+    void stop()
+    {
+        if (layout != null)
+        {
+            layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            DavaActivity.instance().getWindowManager().removeView(layout);
+
+            keyboardRect.left = 0;
+            keyboardRect.top = 0;
+            keyboardRect.right = 0;
+            keyboardRect.bottom = 0;
+            isKeyboardOpen = false;
+
+            layout = null;
+            contentView = null;
+
+            emitKeyboardClosed();
+        }
     }
 
     public Rect keyboardRect()

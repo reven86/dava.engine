@@ -20,7 +20,7 @@ public final class DavaActivity extends Activity
     protected boolean exitCalledFromJava = false;
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
-    protected DavaKeyboardState keyboardState = null;
+    protected DavaKeyboardState keyboardState = new DavaKeyboardState();
     
     private DavaSurfaceView primarySurfaceView;
     private ViewGroup layout;
@@ -95,6 +95,7 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onPause");
         super.onPause();
 
+        keyboardState.stop();
         handlePause();
     }
 
@@ -137,10 +138,7 @@ public final class DavaActivity extends Activity
         hasFocus = hasWindowFocus;
         if (hasFocus)
         {
-            if (keyboardState == null)
-            {
-                keyboardState = new DavaKeyboardState();
-            }
+            keyboardState.start();
             handleResume();
         }
     }
