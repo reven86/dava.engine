@@ -134,6 +134,9 @@ class GTEST_API_ UntypedFunctionMockerBase {
   bool VerifyAndClearExpectationsLocked()
       GTEST_EXCLUSIVE_LOCK_REQUIRED_(g_gmock_mutex);
 
+  bool HasNotSatisfiedExpectationLocked()
+      GTEST_EXCLUSIVE_LOCK_REQUIRED_(g_gmock_mutex);
+
   // Clears the ON_CALL()s set on this mock function.
   virtual void ClearDefaultActionsLocked()
       GTEST_EXCLUSIVE_LOCK_REQUIRED_(g_gmock_mutex) = 0;
@@ -387,6 +390,12 @@ class GTEST_API_ Mock {
   // default actions and expectations.  Returns true iff the
   // verification was successful.
   static bool VerifyAndClear(void* mock_obj)
+      GTEST_LOCK_EXCLUDED_(internal::g_gmock_mutex);
+
+  static bool VerifyAndClear()
+      GTEST_LOCK_EXCLUDED_(internal::g_gmock_mutex);
+
+  static bool HasNotSatisfiedExpectation()
       GTEST_LOCK_EXCLUDED_(internal::g_gmock_mutex);
 
  private:
