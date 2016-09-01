@@ -5,8 +5,8 @@
 
 #include <UIKit/UIKit.h>
 #include "UI/UITextField.h"
-#include "UI/UITextFieldiPhone.h"
-#include "Platform/TemplateiOS/UITextFieldHolder.h"
+#include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
+#include "UI/Private/iOS/UITextFieldHolder.h"
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/Image.h"

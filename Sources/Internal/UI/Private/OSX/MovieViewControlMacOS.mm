@@ -1,4 +1,4 @@
-#include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
+#include "UI/Private/OSX/MovieViewControlMacOS.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
@@ -338,9 +338,11 @@ enum MoviePlayerHelperPlaybackState
 
 namespace DAVA
 {
-MovieViewControl::MovieViewControl()
 #if defined(__DAVAENGINE_COREV2__)
-    : window(Engine::Instance()->PrimaryWindow())
+MovieViewControl::MovieViewControl(Window* w)
+    : window(w)
+#else
+MovieViewControl::MovieViewControl()
 #endif
 {
 #if defined(__DAVAENGINE_COREV2__)

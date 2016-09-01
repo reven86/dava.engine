@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_IMOVIEVIEWCONTROL__H__
-#define __DAVAENGINE_IMOVIEVIEWCONTROL__H__
+#pragma once
 
 #include "FileSystem/FilePath.h"
 #include "Math/Rect.h"
@@ -64,5 +63,3 @@ public:
 };
 
 } // namespace DAVA
-
-#endif //__DAVAENGINE_IMOVIEVIEWCONTROL__H__

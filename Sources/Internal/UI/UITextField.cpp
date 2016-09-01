@@ -14,11 +14,11 @@
 #include "UITextFieldAndroid.h"
 #endif
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/UITextFieldiPhone.h"
+#include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 #include "UI/Private/UWP/TextFieldPlatformImplUWP.h"
 #elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
-#include "UI/UITextFieldMacOS.h"
+#include "UI/Private/OSX/TextFieldPlatformImplMacOs.h"
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"

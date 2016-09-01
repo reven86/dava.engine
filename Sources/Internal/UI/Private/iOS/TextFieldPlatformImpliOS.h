@@ -1,10 +1,13 @@
 #pragma once
 
-#include "UI/UITextField.h"
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_IPHONE__)
 
 namespace DAVA
 {
-class ObjCWrapper;
+class Window;
+class UITextField;
 
 class TextFieldPlatformImpl
 {
@@ -14,7 +17,7 @@ public:
 #else
     TextFieldPlatformImpl(UITextField* tf);
 #endif
-    ~TextFieldPlatformImpl();
+    virtual ~TextFieldPlatformImpl();
 
     void Initialize()
     {
@@ -68,11 +71,28 @@ public:
 
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
-    void SystemDraw(const UIGeometricData&)
-    {
-    }
+    void SystemDraw(const UIGeometricData& geometricData);
 
 private:
-    ObjCWrapper& objcWrapper;
+    // Truncate the text to maxLength characters.
+    void* TruncateText(void* text, int maxLength);
+    void UpdateStaticTexture();
+    void UpdateNativeRect(const Rect& virtualRect, int xOffset);
+
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
+    struct TextFieldObjcBridge;
+    std::unique_ptr<TextFieldObjcBridge> bridge;
+
+    Rect nextRect;
+    Rect prevRect;
+    UITextField& davaTextField;
+    bool renderToTexture = false;
+    bool isSingleLine = true;
+    int deltaMoveControl = 0;
+    bool isNeedToUpdateTexture = false;
 };
-} // end namespace DAVA
+}
+
+#endif // __DAVAENGINE_IPHONE__

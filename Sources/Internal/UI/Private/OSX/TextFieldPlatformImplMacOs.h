@@ -1,12 +1,15 @@
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
+#pragma once
 
-#include "UI/UITextField.h"
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+#if !defined(DISABLE_NATIVE_TEXTFIELD)
 
 namespace DAVA
 {
-class Window;
+class ObjCWrapper;
 class UITextField;
+class UITextFieldDelegate;
 
 class TextFieldPlatformImpl
 {
@@ -16,7 +19,7 @@ public:
 #else
     TextFieldPlatformImpl(UITextField* tf);
 #endif
-    virtual ~TextFieldPlatformImpl();
+    ~TextFieldPlatformImpl();
 
     void Initialize()
     {
@@ -70,28 +73,14 @@ public:
 
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
-    void SystemDraw(const UIGeometricData& geometricData);
+    void SystemDraw(const UIGeometricData&)
+    {
+    }
 
 private:
-    // Truncate the text to maxLength characters.
-    void* TruncateText(void* text, int maxLength);
-    void UpdateStaticTexture();
-    void UpdateNativeRect(const Rect& virtualRect, int xOffset);
-
-#if defined(__DAVAENGINE_COREV2__)
-    Window* window = nullptr;
-#endif
-    struct TextFieldObjcBridge;
-    std::unique_ptr<TextFieldObjcBridge> bridge;
-
-    Rect nextRect;
-    Rect prevRect;
-    UITextField& davaTextField;
-    bool renderToTexture = false;
-    bool isSingleLine = true;
-    int deltaMoveControl = 0;
-    bool isNeedToUpdateTexture = false;
+    ObjCWrapper& objcWrapper;
 };
-};
+} // end namespace DAVA
 
-#endif // __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
+#endif //!DISABLE_NATIVE_TEXTFIELD
+#endif // __DAVAENGINE_MACOS__

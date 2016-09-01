@@ -2,7 +2,7 @@
 
 #include "Base/Platform.h"
 
-#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_WIN32__)
+#if defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
@@ -64,4 +64,4 @@ public:
 
 } // namespace DAVA
 
-#endif // !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_WIN32__)
+#endif // DISABLE_NATIVE_MOVIEVIEW

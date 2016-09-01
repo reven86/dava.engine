@@ -1,4 +1,4 @@
-#include "UI/UITextFieldMacOS.h"
+#include "UI/Private/OSX/TextFieldPlatformImplMacOs.h"
 
 #if defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
 
@@ -17,6 +17,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UITextField.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"

@@ -1,4 +1,4 @@
-#include "Platform/TemplateiOS/MovieViewControliOS.h"
+#include "UI/Private/iOS/MovieViewControliOS.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
@@ -21,10 +21,13 @@ struct MovieViewControl::MovieViewObjcBridge final
     MPMoviePlayerController* moviePlayer = nullptr;
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+MovieViewControl::MovieViewControl(Window* w)
+    : bridge(new MovieViewObjcBridge)
+    , window(w)
+#else
 MovieViewControl::MovieViewControl()
     : bridge(new MovieViewObjcBridge)
-#if defined(__DAVAENGINE_COREV2__)
-    , window(Engine::Instance()->PrimaryWindow())
 #endif
 {
     bridge->moviePlayer = [[MPMoviePlayerController alloc] init];
