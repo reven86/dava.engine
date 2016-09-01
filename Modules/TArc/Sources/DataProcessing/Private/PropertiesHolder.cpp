@@ -27,9 +27,16 @@ struct PropertiesHolder::Impl
 
     ~Impl()
     {
-        if (wasChanged)
+        if(parent != nullptr)
         {
-            //save to parent
+            if (wasChanged)
+            {
+                parent->jsonObject[name] = jsonObject;
+            }
+        }
+        else
+        {
+            //save document
         }
     }
 
@@ -50,9 +57,9 @@ struct PropertiesHolder::Impl
     }
 
 private:
+    QString name;
     Impl *parent = nullptr;
     QJsonObject jsonObject;
-    QString name;
     bool wasChanged = false;
     
 };
