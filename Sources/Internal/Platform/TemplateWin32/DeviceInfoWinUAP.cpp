@@ -382,7 +382,7 @@ void DeviceInfoPrivate::InitCarrierLinesAsync()
         catch (Platform::COMException ^ e)
         {
             String str = UTF8Utils::EncodeToUTF8(e->Message->Data());
-            Logger::Error("Error msg = %s, turn on \"Phone Cell\" capabilities in Package.appxmanifest", str.c_str());
+            Logger::Error("Error msg = %s, added <uap:Capability Name=\"phoneCall\" /> capabilities in Package.appxmanifest", str.c_str());
         }
     });
 }
