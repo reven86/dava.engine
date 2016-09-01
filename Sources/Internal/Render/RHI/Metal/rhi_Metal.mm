@@ -10,6 +10,8 @@
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
+namespace rhi
+{
 id<MTLDevice> _Metal_Device = nil;
 id<MTLCommandQueue> _Metal_DefCmdQueue = nil;
 id<MTLTexture> _Metal_DefFrameBuf = nil;
@@ -20,8 +22,8 @@ CAMetalLayer* _Metal_Layer = nil;
 
 DAVA::Atomic<bool> _Metal_Suspended(false);
 
-namespace rhi
-{
+InitParam _Metal_InitParam;
+
 Dispatch DispatchMetal = { 0 };
 
 RenderDeviceCaps _metal_DeviceCaps;
@@ -153,7 +155,7 @@ rhi_MetalIsSupported()
 
 void Metal_InitContext()
 {
-    _Metal_Layer = (CAMetalLayer*)param.window;
+    _Metal_Layer = (CAMetalLayer*)_Metal_InitParam.window;
     [_Metal_Layer retain];
 
     if (!_Metal_Device)
@@ -165,14 +167,14 @@ void Metal_InitContext()
     _Metal_Layer.device = _Metal_Device;
     _Metal_Layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _Metal_Layer.framebufferOnly = YES;
-    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
+    _Metal_Layer.drawableSize = CGSizeMake((CGFloat)_Metal_InitParam.width, (CGFloat)_Metal_InitParam.height);
 
     _Metal_DefCmdQueue = [_Metal_Device newCommandQueue];
 
     // create frame-buffer
 
-    int w = param.width;
-    int h = param.height;
+    int w = _Metal_InitParam.width;
+    int h = _Metal_InitParam.height;
 
     MTLTextureDescriptor* colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
@@ -198,6 +200,7 @@ void Metal_CheckSurface()
 
 void metal_Initialize(const InitParam& param)
 {
+    _Metal_InitParam = param;
     int ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;

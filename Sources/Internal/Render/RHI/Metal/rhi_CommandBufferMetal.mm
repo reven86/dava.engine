@@ -11,6 +11,7 @@ using DAVA::Logger;
 #include "Core/Core.h"
 #include "Debug/Profiler.h"
 #include "../Common/CommonImpl.h"
+#include "../Common/SoftwareCommandBuffer.h"
 
 #include "_metal.h"
 
@@ -49,6 +50,7 @@ class CommandBufferMetal_t
 class CommandBufferMetal_t : public SoftwareCommandBuffer
 #endif
 {
+public:
     id<MTLRenderCommandEncoder> encoder;
     id<MTLCommandBuffer> buf;
 
@@ -111,7 +113,7 @@ CommandBufferMetal_t::Execute()
     {
         const SWCommand* cmd = (const SWCommand*)c;
 
-        switch (CommandMetalType(cmd->type))
+        switch (SoftwareCommandType(cmd->type))
         {
         case CMD_BEGIN:
         {
@@ -150,7 +152,7 @@ CommandBufferMetal_t::Execute()
         case CMD_SET_PIPELINE_STATE:
         {
             Handle ps = ((SWCommand_SetPipelineState*)cmd)->ps;
-            unsigned layoutUID = ((SWCommand_SetPipelineState*)cmd)->vdeclUID;
+            unsigned layoutUID = ((SWCommand_SetPipelineState*)cmd)->vdecl;
 
             cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
@@ -183,8 +185,8 @@ CommandBufferMetal_t::Execute()
         {
             int x = ((SWCommand_SetScissorRect*)cmd)->x;
             int y = ((SWCommand_SetScissorRect*)cmd)->y;
-            int w = ((SWCommand_SetScissorRect*)cmd)->w;
-            int h = ((SWCommand_SetScissorRect*)cmd)->h;
+            int w = ((SWCommand_SetScissorRect*)cmd)->width;
+            int h = ((SWCommand_SetScissorRect*)cmd)->height;
             MTLScissorRect rc;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
@@ -236,8 +238,8 @@ CommandBufferMetal_t::Execute()
             MTLViewport vp;
             int x = ((SWCommand_SetViewport*)cmd)->x;
             int y = ((SWCommand_SetViewport*)cmd)->y;
-            int w = ((SWCommand_SetViewport*)cmd)->w;
-            int h = ((SWCommand_SetViewport*)cmd)->h;
+            int w = ((SWCommand_SetViewport*)cmd)->width;
+            int h = ((SWCommand_SetViewport*)cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -360,7 +362,6 @@ CommandBufferMetal_t::Execute()
         {
             MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawPrimitive*)cmd)->type);
             unsigned vertexCount = ((SWCommand_DrawPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((SWCommand_DrawPrimitive*)cmd)->baseVertex;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount];
@@ -370,8 +371,8 @@ CommandBufferMetal_t::Execute()
         case CMD_DRAW_INDEXED_PRIMITIVE:
         {
             MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
-            unsigned vertexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->baseVertex;
+            unsigned indexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->indexCount;
+            unsigned firstVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->firstVertex;
             unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
 
             unsigned i_cnt = 0;
@@ -380,8 +381,8 @@ CommandBufferMetal_t::Execute()
             MTLIndexType i_type = IndexBufferMetal::GetType(cur_ib);
             unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
 
-            _ApplyVertexData(baseVertex);
-            [encoder drawIndexedPrimitives:ptype indexCount:vertexCount indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off];
+            _ApplyVertexData(firstVertex);
+            [encoder drawIndexedPrimitives:ptype indexCount:indexCount indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off];
         }
         break;
 
@@ -389,8 +390,7 @@ CommandBufferMetal_t::Execute()
         {
             MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
             unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((SWCommand_DrawInstancedPrimitive*)cmd)->baseVertex;
-            unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instCount;
+            unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instanceCount;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount instanceCount:instCount];
@@ -400,12 +400,11 @@ CommandBufferMetal_t::Execute()
         case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
             MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
-            unsigned vertexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->vertexCount;
-            unsigned baseVertex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseVertex;
+            unsigned firstVertex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->firstVertex;
             unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
             unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
-            unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instCount;
-            unsigned baseInst = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseInst;
+            unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instanceCount;
+            unsigned baseInst = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseInstance;
 
             unsigned i_cnt = 0;
             unsigned ib_base = 0;
@@ -413,8 +412,8 @@ CommandBufferMetal_t::Execute()
             MTLIndexType i_type = IndexBufferMetal::GetType(cur_ib);
             unsigned i_off = (i_type == MTLIndexTypeUInt16) ? startIndex * sizeof(uint16) : startIndex * sizeof(uint32);
 
-            _ApplyVertexData(baseVertex);
-            [encoder drawIndexedPrimitives:ptype indexCount:vertexCount indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off instanceCount:instCount];
+            _ApplyVertexData(firstVertex);
+            [encoder drawIndexedPrimitives:ptype indexCount:indexCount indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off instanceCount:instCount];
         }
         break;
         }
@@ -783,7 +782,6 @@ metal_RenderPass_Begin(Handle pass_h)
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
 
     pass->finished = false;
-    _Metal_Frame.back().pass.push_back(pass_h);
     MTL_TRACE("  drawable %p %i", (void*)(currentDrawable), [currentDrawable retainCount]);
 }
 
@@ -879,7 +877,7 @@ static void metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint3
 #else
     SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
     cmd->ps = ps;
-    cmd->vdeclUID = layoutUID;
+    cmd->vdecl = layoutUID;
 #endif
 }
 
@@ -972,8 +970,8 @@ static void metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
     SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
     
 #endif
 }
@@ -1018,8 +1016,8 @@ metal_CommandBuffer_SetViewport(Handle cmdBuf, Viewport viewport)
     SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
     cmd->x = x;
     cmd->y = y;
-    cmd->w = w;
-    cmd->h = h;
+    cmd->width = w;
+    cmd->height = h;
     
 
 #endif
@@ -1262,7 +1260,6 @@ metal_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
 
     cmd->type = ptype;
     cmd->vertexCount = v_cnt;
-    cmd->baseVertex = 0;
 
 #endif
 }
@@ -1325,8 +1322,8 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
     SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
 
     cmd->type = ptype;
-    cmd->vertexCount = i_cnt;
-    cmd->baseVertex = firstVertex;
+    cmd->indexCount = i_cnt;
+    cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
 
 #endif
@@ -1385,9 +1382,8 @@ metal_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
     SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
 
     cmd->type = ptype;
-    cmd->instCount = inst_count;
+    cmd->instanceCount = inst_count;
     cmd->vertexCount = v_cnt;
-    cmd->baseVertex = 0;
 
 #endif
 }
@@ -1448,11 +1444,11 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
     SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
 
     cmd->type = ptype;
-    cmd->vertexCount = i_cnt;
-    cmd->baseVertex = firstVertex;
+    cmd->indexCount = i_cnt;
+    cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
-    cmd->instCount = instCount;
-    cmd->baseInst = baseInst;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInst;
 
 #endif
 }
@@ -1552,9 +1548,9 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
     currentDrawable = nil;        
 #endif
 
-    if (frame.syncObject != InvalidHandle)
+    if (frame.sync != InvalidHandle)
     {
-        SyncObjectMetal_t* sync = SyncObjectPool::Get(syncObject);
+        SyncObjectMetal_t* sync = SyncObjectPool::Get(frame.sync);
         sync->is_signaled = true;
     }
 }
@@ -1574,7 +1570,7 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
     pass.clear();
     for (unsigned i = 0; i != frame.pass.size(); ++i)
     {
-        RenderPassMetal_t* rp = RenderPassPool::Get(_Metal_Frame.back().pass[i]);
+        RenderPassMetal_t* rp = RenderPassPool::Get(frame.pass[i]);
         bool do_add = true;
 
         for (std::vector<RenderPassMetal_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
@@ -1669,8 +1665,8 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         rp->cmdBuf.clear();
     }
 
-    for (unsigned i = 0; i != _Metal_Frame.back().pass.size(); ++i)
-        RenderPassPool::Free(_Metal_Frame.back().pass[i]);
+    for (unsigned i = 0; i != frame.pass.size(); ++i)
+        RenderPassPool::Free(frame.pass[i]);
 
     [currentDrawable release];
     currentDrawable = nil;
