@@ -1,4 +1,4 @@
-#include "UI/Private/UWP/WebViewControlWinUAP.h"
+#include "UI/Private/UWP/WebViewControlUWP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_WEBVIEW)
 

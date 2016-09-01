@@ -1,4 +1,4 @@
-#include "Platform/TemplateWin32/PrivateMovieViewWinUAP.h"
+#include "UI/Private/UWP/MovieViewControlUWP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
@@ -21,7 +21,7 @@
 
 namespace DAVA
 {
-void PrivateMovieViewWinUAP::MovieViewProperties::ClearChangedFlags()
+void MovieViewControl::MovieViewProperties::ClearChangedFlags()
 {
     anyPropertyChanged = false;
     rectChanged = false;
@@ -30,17 +30,21 @@ void PrivateMovieViewWinUAP::MovieViewProperties::ClearChangedFlags()
     actionChanged = false;
 }
 
-PrivateMovieViewWinUAP::PrivateMovieViewWinUAP()
 #if defined(__DAVAENGINE_COREV2__)
-    : window(Engine::Instance()->PrimaryWindow())
-#else
-    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
-#endif
+MovieViewControl::MovieViewControl(Window* w)
+    : window(w)
     , properties()
 {
 }
+#else
+MovieViewControl::MovieViewControl()
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , properties()
+{
+}
+#endif
 
-PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
+MovieViewControl::~MovieViewControl()
 {
     using ::Windows::UI::Xaml::Controls::MediaElement;
 
@@ -61,17 +65,17 @@ PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
     }
 }
 
-void PrivateMovieViewWinUAP::OwnerAtPremortem()
+void MovieViewControl::OwnerIsDying()
 {
     // For now do nothing here
 }
 
-void PrivateMovieViewWinUAP::Initialize(const Rect& rect)
+void MovieViewControl::Initialize(const Rect& rect)
 {
     properties.createNew = true;
 }
 
-void PrivateMovieViewWinUAP::SetRect(const Rect& rect)
+void MovieViewControl::SetRect(const Rect& rect)
 {
     if (properties.rect != rect)
     {
@@ -82,7 +86,7 @@ void PrivateMovieViewWinUAP::SetRect(const Rect& rect)
     }
 }
 
-void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
+void MovieViewControl::SetVisible(bool isVisible)
 {
     if (properties.visible != isVisible)
     {
@@ -111,7 +115,7 @@ void PrivateMovieViewWinUAP::SetVisible(bool isVisible)
     }
 }
 
-void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
+void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
     using ::Windows::UI::Xaml::Media::Stretch;
     using ::Windows::Storage::Streams::IRandomAccessStream;
@@ -152,7 +156,7 @@ void PrivateMovieViewWinUAP::OpenMovie(const FilePath& moviePath, const OpenMovi
     }
 }
 
-void PrivateMovieViewWinUAP::Play()
+void MovieViewControl::Play()
 {
     if (properties.canPlay)
     {
@@ -169,7 +173,7 @@ void PrivateMovieViewWinUAP::Play()
     }
 }
 
-void PrivateMovieViewWinUAP::Stop()
+void MovieViewControl::Stop()
 {
     // Game plays intro movie in the following sequence:
     //  1. movie->Play();
@@ -190,7 +194,7 @@ void PrivateMovieViewWinUAP::Stop()
     // }
 }
 
-void PrivateMovieViewWinUAP::Pause()
+void MovieViewControl::Pause()
 {
     if (properties.canPlay)
     {
@@ -202,12 +206,12 @@ void PrivateMovieViewWinUAP::Pause()
     }
 }
 
-void PrivateMovieViewWinUAP::Resume()
+void MovieViewControl::Resume()
 {
     Play();
 }
 
-void PrivateMovieViewWinUAP::Update()
+void MovieViewControl::Update()
 {
     if (properties.anyPropertyChanged || properties.createNew)
     {
@@ -229,7 +233,7 @@ void PrivateMovieViewWinUAP::Update()
     }
 }
 
-void PrivateMovieViewWinUAP::ProcessProperties(const MovieViewProperties& props)
+void MovieViewControl::ProcessProperties(const MovieViewProperties& props)
 {
     using ::Windows::UI::Xaml::Controls::MediaElement;
 
@@ -257,7 +261,7 @@ void PrivateMovieViewWinUAP::ProcessProperties(const MovieViewProperties& props)
     }
 }
 
-void PrivateMovieViewWinUAP::ApplyChangedProperties(const MovieViewProperties& props)
+void MovieViewControl::ApplyChangedProperties(const MovieViewProperties& props)
 {
     if (props.visibleChanged)
         SetNativeVisible(props.visible);
@@ -294,14 +298,14 @@ void PrivateMovieViewWinUAP::ApplyChangedProperties(const MovieViewProperties& p
     }
 }
 
-void PrivateMovieViewWinUAP::InstallEventHandlers()
+void MovieViewControl::InstallEventHandlers()
 {
     using ::Windows::UI::Xaml::RoutedEventHandler;
     using ::Windows::UI::Xaml::ExceptionRoutedEventHandler;
     using ::Windows::UI::Xaml::RoutedEventArgs;
     using ::Windows::UI::Xaml::ExceptionRoutedEventArgs;
 
-    std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
+    std::weak_ptr<MovieViewControl> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
     auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object ^, RoutedEventArgs ^ ) {
         auto self = self_weak.lock();
@@ -329,7 +333,7 @@ void PrivateMovieViewWinUAP::InstallEventHandlers()
     nativeControl->MediaFailed += mediaFailed;
 }
 
-Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateStreamFromFilePath(const FilePath& path) const
+Windows::Storage::Streams::IRandomAccessStream ^ MovieViewControl::CreateStreamFromFilePath(const FilePath& path) const
 {
     using ::Windows::Storage::StorageFile;
     using ::Windows::Storage::FileAccessMode;
@@ -357,14 +361,14 @@ Windows::Storage::Streams::IRandomAccessStream ^ PrivateMovieViewWinUAP::CreateS
     }
 }
 
-void PrivateMovieViewWinUAP::SetNativeVisible(bool visible)
+void MovieViewControl::SetNativeVisible(bool visible)
 {
     using ::Windows::UI::Xaml::Visibility;
 
     nativeControl->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
 }
 
-void PrivateMovieViewWinUAP::SetNativePositionAndSize(const Rect& rect)
+void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
 {
     nativeControl->Width = std::max(0.0f, rect.dx);
     nativeControl->Height = std::max(0.0f, rect.dy);
@@ -383,7 +387,7 @@ void PrivateMovieViewWinUAP::SetNativePositionAndSize(const Rect& rect)
     }
 }
 
-Rect PrivateMovieViewWinUAP::VirtualToWindow(const Rect& srcRect) const
+Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
@@ -404,7 +408,7 @@ Rect PrivateMovieViewWinUAP::VirtualToWindow(const Rect& srcRect) const
     return rect;
 }
 
-void PrivateMovieViewWinUAP::TellPlayingStatus(bool playing)
+void MovieViewControl::TellPlayingStatus(bool playing)
 {
 #if defined(__DAVAENGINE_COREV2__)
     window->RunAsyncOnUIThread([this, playing]() {
@@ -417,7 +421,7 @@ void PrivateMovieViewWinUAP::TellPlayingStatus(bool playing)
 #endif
 }
 
-void PrivateMovieViewWinUAP::OnMediaOpened()
+void MovieViewControl::OnMediaOpened()
 {
     movieLoaded = true;
     if (playAfterLoaded)
@@ -427,12 +431,12 @@ void PrivateMovieViewWinUAP::OnMediaOpened()
     }
 }
 
-void PrivateMovieViewWinUAP::OnMediaEnded()
+void MovieViewControl::OnMediaEnded()
 {
     TellPlayingStatus(false);
 }
 
-void PrivateMovieViewWinUAP::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args)
+void MovieViewControl::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args)
 {
     TellPlayingStatus(false);
     String errMessage = WStringToString(args->ErrorMessage->Data());

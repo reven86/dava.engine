@@ -13,16 +13,16 @@ import android.webkit.WebView;
 import android.webkit.CookieManager;
 import android.util.Log;
 
-// Duplicates enum IUIWebViewDelegate::eAction declared in UI/IWebViewControl.h
-class eAction
-{
-    static final int PROCESS_IN_WEBVIEW = 0;
-    static final int PROCESS_IN_SYSTEM_BROWSER = 1;
-    static final int NO_PROCESS = 2;
-};
-
 public final class DavaWebView
 {
+    // Duplicates enum IUIWebViewDelegate::eAction declared in UI/IWebViewControl.h
+    class eAction
+    {
+        static final int PROCESS_IN_WEBVIEW = 0;
+        static final int PROCESS_IN_SYSTEM_BROWSER = 1;
+        static final int NO_PROCESS = 2;
+    };
+
     // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
     private volatile long webviewBackendPointer = 0;
     private DavaSurfaceView surfaceView = null;

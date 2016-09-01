@@ -14,7 +14,8 @@ class Window;
 #else
 class CorePlatformWinUAP;
 #endif
-class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>
+class MovieViewControl : public IMovieViewControl,
+                         public std::enable_shared_from_this<MovieViewControl>
 {
     struct MovieViewProperties
     {
@@ -47,29 +48,30 @@ class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieV
     };
 
 public:
-    PrivateMovieViewWinUAP();
-    ~PrivateMovieViewWinUAP();
+#if defined(__DAVAENGINE_COREV2__)
+    MovieViewControl(Window* w);
+#else
+    MovieViewControl();
+#endif
+    ~MovieViewControl() override;
 
-    // MovieViewControl should invoke it in its destructor to tell this class instance
-    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void OwnerAtPremortem();
+    void Initialize(const Rect& rect) override;
+    void OwnerIsDying() override;
 
-    void Initialize(const Rect& rect);
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible) override;
 
-    void SetRect(const Rect& rect);
-    void SetVisible(bool isVisible);
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
 
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+    void Play() override;
+    void Stop() override;
 
-    void Play();
-    void Stop();
+    void Pause() override;
+    void Resume() override;
 
-    void Pause();
-    void Resume();
+    bool IsPlaying() const override;
 
-    bool IsPlaying();
-
-    void Update();
+    void Update() override;
 
 private:
     void ProcessProperties(const MovieViewProperties& props);
@@ -104,7 +106,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline bool PrivateMovieViewWinUAP::IsPlaying()
+inline bool MovieViewControl::IsPlaying() const
 {
     return properties.playing;
 }

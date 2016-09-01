@@ -13,7 +13,7 @@
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/Private/iOS/WebViewControliOS.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "UI/Private/UWP/WebViewControlWinUAP.h"
+#include "UI/Private/UWP/WebViewControlUWP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #else

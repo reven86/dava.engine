@@ -32,6 +32,9 @@ public:
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;
+    virtual void OwnerIsDying()
+    {
+    }
 
     // Position/visibility.
     virtual void SetRect(const Rect& rect) = 0;
