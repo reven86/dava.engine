@@ -310,7 +310,7 @@ void AutotestingSystem::Update(float32 timeElapsed)
         return;
     }
 
-    if (screenshotRequested && rhi::SyncObjectSignaled(screenshotSync))
+    if (screenshotRequested && screenshotSync.IsValid() && rhi::SyncObjectSignaled(screenshotSync))
     {
         screenshotRequested = false;
 
@@ -350,6 +350,44 @@ void AutotestingSystem::Draw()
     {
         return;
     }
+
+    DrawTouches();
+
+    if (screenshotRequested && !screenshotSync.IsValid())
+    {
+        UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
+        if (currentScreen)
+        {
+            screenshotRequested = true;
+            screenshotSync = rhi::GetCurrentFrameSyncObject();
+
+            const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.colorAttachment = screenshotTexture->handle;
+            desc.depthAttachment = screenshotTexture->handleDepthStencil;
+            desc.width = uint32(pScreenSize.dx);
+            desc.height = uint32(pScreenSize.dy);
+            desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
+            desc.clearTarget = UIControlSystem::Instance()->GetUI3DViewCount() == 0;
+            desc.clearColor = Color::Black;
+            desc.transformVirtualToPhysical = true;
+
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            DrawTouches();
+            RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+            RenderSystem2D::Instance()->EndRenderTargetPass();
+        }
+        else
+        {
+            Logger::Error("AutotestingSystem::MakeScreenShot no current screen");
+        }
+    }
+}
+
+void AutotestingSystem::DrawTouches()
+{
     if (!touches.empty())
     {
         for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
@@ -402,34 +440,8 @@ void AutotestingSystem::MakeScreenShot()
     String log = Format("AutotestingSystem::ScreenShotName %s", screenshotName.c_str());
     AutotestingDB::Instance()->Log("INFO", log.c_str());
 
-    UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
-    if (currentScreen)
-    {
-        screenshotRequested = true;
-        screenshotSync = rhi::GetCurrentFrameSyncObject();
-
-        const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
-
-        RenderSystem2D::RenderTargetPassDescriptor desc;
-        desc.colorAttachment = screenshotTexture->handle;
-        desc.depthAttachment = screenshotTexture->handleDepthStencil;
-        desc.width = uint32(pScreenSize.dx);
-        desc.height = uint32(pScreenSize.dy);
-        desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
-        desc.clearTarget = UIControlSystem::Instance()->GetUI3DViewCount() == 0;
-        desc.clearColor = Color::Black;
-        desc.transformVirtualToPhysical = true;
-
-        RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-        currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-        Draw();
-        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-    }
-    else
-    {
-        Logger::Error("AutotestingSystem::MakeScreenShot no current screen");
-    }
+    screenshotRequested = true;
+    screenshotSync = rhi::HSyncObject();
 }
 
 const String& AutotestingSystem::GetScreenShotName()

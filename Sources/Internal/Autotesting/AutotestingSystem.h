@@ -99,6 +99,7 @@ public:
     static String ResolvePathToAutomation(const String& automationPath);
 
 protected:
+    void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
     AutotestingSystemLua* luaSystem;
     //DB
