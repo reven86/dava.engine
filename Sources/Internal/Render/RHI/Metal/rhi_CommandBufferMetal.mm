@@ -2043,17 +2043,6 @@ metal_Present(Handle syncObject)
     _Metal_DefFrameBuf = nil;
 }
 
-Texture::Descriptor metal_GetBackbufferDescriptor()
-{
-    Texture::Descriptor result;
-    result.width = _Metal_Layer.drawableSize.width;
-    result.height = _Metal_Layer.drawableSize.height;
-    result.isRenderTarget = 1;
-    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
-    // TODO : fill rest of the fields
-    return result;
-}
-
 namespace CommandBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -2086,7 +2075,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_IsSignaled = &metal_SyncObject_IsSignaled;
 
     dispatch->impl_Present = &metal_Present;
-    dispatch->impl_GetBackbufferDescriptor = &metal_GetBackbufferDescriptor;
 }
 }
 

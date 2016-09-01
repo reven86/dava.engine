@@ -494,12 +494,6 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
     dx11_Texture_Unmap(tex);
 }
 
-Texture::Descriptor dx11_Texture_GetDescriptor(Handle tex)
-{
-    TextureDX11_t* self = TextureDX11Pool::Get(tex);
-    return self->descriptor;
-}
-
 //==============================================================================
 
 namespace TextureDX11
@@ -516,7 +510,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Map = &dx11_Texture_Map;
     dispatch->impl_Texture_Unmap = &dx11_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx11_Texture_Update;
-    dispatch->impl_Texture_GetDescriptor = &dx11_Texture_GetDescriptor;
 }
 
 void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)

@@ -199,35 +199,35 @@ void RenderPass::ProcessVisibilityQuery()
 }
 #endif
 
+void RenderPass::SetRenderTargetProperties(uint32 width, uint32 height, PixelFormat format)
+{
+    renderTargetProperties.width = width;
+    renderTargetProperties.height = height;
+    renderTargetProperties.format = format;
+}
+
 void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& config)
 {
-    rhi::Texture::Descriptor targetDesc;
-
-    if (config.colorBuffer[0].texture == rhi::InvalidHandle)
-    {
-        targetDesc = rhi::GetBackBufferDescriptor();
-    }
-    else
-    {
-        targetDesc = rhi::GetTextureDescriptor(static_cast<rhi::HTexture>(config.colorBuffer[0].texture));
-    }
+    uint32 requestedSamples = rhi::TextureSamplesForAAType(config.antialiasingType);
 
     bool invalidDescription =
-    (multisampledDescription.width != targetDesc.width) ||
-    (multisampledDescription.height != targetDesc.height) ||
-    (multisampledDescription.samples != config.samples);
+    (multisampledDescription.samples != requestedSamples) ||
+    (multisampledDescription.format != renderTargetProperties.format) ||
+    (multisampledDescription.width != renderTargetProperties.width) ||
+    (multisampledDescription.height != renderTargetProperties.height);
 
     if (invalidDescription || (multisampledTexture == nullptr))
     {
         SafeRelease(multisampledTexture);
 
-        multisampledDescription.width = targetDesc.width;
-        multisampledDescription.height = targetDesc.height;
-        multisampledDescription.format = PixelFormatDescriptor::GetPixelFormatForTextureFormat(targetDesc.format);
+        multisampledDescription.width = renderTargetProperties.width;
+        multisampledDescription.height = renderTargetProperties.height;
+        multisampledDescription.format = renderTargetProperties.format;
         multisampledDescription.needDepth = true;
         multisampledDescription.needPixelReadback = false;
         multisampledDescription.ensurePowerOf2 = false;
-        multisampledDescription.samples = config.samples;
+        multisampledDescription.samples = requestedSamples;
+
         multisampledTexture = Texture::CreateFBO(multisampledDescription);
     }
 }
@@ -243,10 +243,12 @@ bool RenderPass::BeginRenderPass()
     queryBuffers.push_back(qBuffer);
 #endif
 
-    if (passConfig.samples > 1)
-    {
-        DVASSERT(passConfig.samples <= rhi::DeviceCaps().maxSamples);
+    DVASSERT(renderTargetProperties.width > 0);
+    DVASSERT(renderTargetProperties.height > 0);
+    DVASSERT(renderTargetProperties.format != PixelFormat::FORMAT_INVALID);
 
+    if (passConfig.antialiasingType != rhi::AntialiasingType::NONE)
+    {
         ValidateMultisampledTextures(passConfig);
         passConfig.colorBuffer[0].multisampleTexture = multisampledTexture->handle;
         passConfig.depthStencilBuffer.multisampleTexture = multisampledTexture->handleDepthStencil;
@@ -307,6 +309,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
+    reflectionPass->SetRenderTargetProperties(RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_PIXEL_FORMAT);
 
     refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
@@ -316,6 +319,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
+    refractionPass->SetRenderTargetProperties(RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_PIXEL_FORMAT);
 }
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)

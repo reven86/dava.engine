@@ -216,6 +216,11 @@ void Scene::SetGlobalMaterial(NMaterial* globalMaterial)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
 }
 
+RenderPass* Scene::GetMainPass()
+{
+    return renderSystem->GetMainRenderPass();
+}
+
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
 {
     return renderSystem->GetMainRenderPass()->GetPassConfig();

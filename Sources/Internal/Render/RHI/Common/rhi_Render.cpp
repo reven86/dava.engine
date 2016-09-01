@@ -429,13 +429,6 @@ bool NeedRestoreTexture(HTexture tex)
 
 //------------------------------------------------------------------------------
 
-Texture::Descriptor GetTextureDescriptor(HTexture tex)
-{
-    return Texture::GetDescriptor(tex);
-}
-
-//------------------------------------------------------------------------------
-
 HTextureSet
 AcquireTextureSet(const TextureSetDescriptor& desc)
 {

@@ -471,12 +471,6 @@ bool dx9_Texture_NeedRestore(Handle tex)
     return self->NeedRestore();
 }
 
-Texture::Descriptor dx9_Texture_GetDescriptor(Handle tex)
-{
-    TextureDX9_t* self = TextureDX9Pool::Get(tex);
-    return self->CreationDesc();
-}
-
 //==============================================================================
 
 namespace TextureDX9
@@ -494,7 +488,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &dx9_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx9_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &dx9_Texture_NeedRestore;
-    dispatch->impl_Texture_GetDescriptor = &dx9_Texture_GetDescriptor;
 }
 
 void SetToRHI(Handle tex, unsigned unit_i)

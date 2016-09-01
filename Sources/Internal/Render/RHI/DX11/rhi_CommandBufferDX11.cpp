@@ -1718,7 +1718,7 @@ void CommandBufferDX11_t::Execute()
     }
     #endif
 
-    if (isLastInPass && (passCfg.samples > 1))
+    if (isLastInPass && passCfg.UsingMSAA())
     {
         TextureDX11::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture,
                                           passCfg.colorBuffer[0].texture, _D3D11_ImmediateContext);
@@ -2068,7 +2068,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
     {
         Handle targetTexture = color0.texture;
         Handle targetDepth = passCfg.depthStencilBuffer.texture;
-        if (passCfg.samples > 1)
+        if (passCfg.UsingMSAA())
         {
             targetTexture = color0.multisampleTexture;
             targetDepth = passCfg.depthStencilBuffer.multisampleTexture;
@@ -2079,7 +2079,7 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* context)
         def_viewport.Width = static_cast<float>(sz.dx);
         def_viewport.Height = static_cast<float>(sz.dy);
     }
-    else if (passCfg.samples > 1)
+    else if (passCfg.UsingMSAA())
     {
         TextureDX11::SetRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureLevel, color0.textureFace, context);
         Size2i sz = TextureDX11::Size(color0.multisampleTexture);

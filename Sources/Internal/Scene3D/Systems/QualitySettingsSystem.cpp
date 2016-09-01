@@ -21,6 +21,8 @@ const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTE
 const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING("Disable fog scattering");
 const FastName QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE("Disable half-space fog");
 
+rhi::AntialiasingType AANameToType(const FastName& name);
+
 QualitySettingsSystem::QualitySettingsSystem()
 {
     Load("~res:/quality.yaml");
@@ -184,35 +186,30 @@ void QualitySettingsSystem::Load(const FilePath& path)
             const YamlNode* msaaNode = rootNode->Get("msaa");
             if (msaaNode != nullptr)
             {
-                const YamlNode* defltAn = msaaNode->Get("default");
                 const YamlNode* qualitiesNode = msaaNode->Get("qualities");
 
                 if (qualitiesNode != nullptr)
                 {
                     FastName defaultName;
-                    if (defltAn != nullptr && defltAn->GetType() == YamlNode::TYPE_STRING)
+
+                    const YamlNode* defltAA = msaaNode->Get("default");
+                    if ((defltAA != nullptr) && (defltAA->GetType() == YamlNode::TYPE_STRING))
                     {
-                        defaultName = FastName(defltAn->AsString().c_str());
+                        defaultName = FastName(defltAA->AsString().c_str());
                     }
 
-                    anisotropyQualities.reserve(qualitiesNode->GetCount());
+                    msaaQualities.reserve(qualitiesNode->GetCount());
                     for (uint32 i = 0; i < qualitiesNode->GetCount(); ++i)
                     {
                         const YamlNode* qualityNode = qualitiesNode->Get(i);
                         const YamlNode* name = qualityNode->Get("quality");
-                        const YamlNode* maxNode = qualityNode->Get("samples");
-
-                        if ((name != nullptr) && (name->GetType() == YamlNode::TYPE_STRING) &&
-                            (maxNode != nullptr) && (maxNode->GetType() == YamlNode::TYPE_STRING))
+                        if ((name != nullptr) && (name->GetType() == YamlNode::TYPE_STRING))
                         {
-                            MSAAQ q;
-                            q.name = FastName(name->AsString().c_str());
-                            q.quality.weight = i;
-                            q.quality.samples = maxNode->AsUInt32();
-                            msaaQualities.push_back(q);
-                            if (q.name == defaultName)
+                            FastName qName(name->AsString().c_str());
+                            msaaQualities.emplace_back(qName, i, AANameToType(qName));
+                            if (qName == defaultName)
                             {
-                                curAnisotropyQuality = i;
+                                curMSAAQuality = i;
                             }
                         }
                     }
@@ -808,5 +805,26 @@ void QualitySettingsSystem::UpdateEntityVisibilityRecursively(Entity* e, bool qu
 
     for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
         UpdateEntityVisibilityRecursively(e->GetChild(i), qualityVisible);
+}
+
+/*
+ * Helper function
+ */
+rhi::AntialiasingType AANameToType(const FastName& name)
+{
+    if (name == FastName("MSAA_4X"))
+        return rhi::AntialiasingType::MSAA_4X;
+
+    if (name == FastName("MSAA_2X"))
+        return rhi::AntialiasingType::MSAA_2X;
+
+    if (name == FastName("FXAA"))
+        return rhi::AntialiasingType::FXAA;
+
+    if (name == FastName("NONE"))
+        return rhi::AntialiasingType::NONE;
+
+    DAVA::Logger::Error("Invalid or unknown AA type specified: %s", name.c_str());
+    return rhi::AntialiasingType::NONE;
 }
 }

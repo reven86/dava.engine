@@ -1150,7 +1150,7 @@ void CommandBufferGLES2_t::Execute()
 
                 if (targetColorTexture != InvalidHandle)
                 {
-                    if (passCfg.samples > 1)
+                    if (passCfg.UsingMSAA())
                     {
                         DVASSERT(color0.multisampleTexture != InvalidHandle);
                         targetColorTexture = color0.multisampleTexture;
@@ -1165,7 +1165,7 @@ void CommandBufferGLES2_t::Execute()
                 }
                 else
                 {
-                    if (passCfg.samples > 1)
+                    if (passCfg.UsingMSAA())
                     {
                         DVASSERT(color0.multisampleTexture != InvalidHandle);
                         TextureGLES2::SetAsRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureFace, color0.textureLevel);

@@ -32,7 +32,7 @@ struct AnisotropyQuality
 struct MSAAQuality
 {
     uint32 weight;
-    uint32 samples;
+    rhi::AntialiasingType type;
 };
 
 struct LandscapeQuality
@@ -176,6 +176,13 @@ protected:
     {
         FastName name;
         MSAAQuality quality;
+
+        MSAAQ(const FastName& n, uint32 i, rhi::AntialiasingType t)
+            : name(n)
+        {
+            quality.weight = i;
+            quality.type = t;
+        }
     };
 
     struct MAGrQ

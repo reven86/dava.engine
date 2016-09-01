@@ -81,6 +81,28 @@ enum
     MAX_VERTEX_STREAM_COUNT = 4
 };
 
+//------------------------------------------------------------------------------
+enum class AntialiasingType : DAVA::uint32
+{
+    NONE,
+    MSAA_2X,
+    MSAA_4X,
+    FXAA // now it serves only for debug purpose
+};
+
+inline DAVA::uint32 TextureSamplesForAAType(AntialiasingType type)
+{
+    switch (type)
+    {
+    case AntialiasingType::MSAA_2X:
+        return 2;
+    case AntialiasingType::MSAA_4X:
+        return 4;
+    default:
+        return 1;
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // vertex-pipeline
 
@@ -761,8 +783,7 @@ struct RenderPassConfig
         }
     };
 
-    struct
-    DepthStencilBuffer
+    struct DepthStencilBuffer
     {
         Handle texture = DefaultDepthBuffer;
         Handle multisampleTexture = InvalidHandle;
@@ -775,19 +796,20 @@ struct RenderPassConfig
     ColorBuffer colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer depthStencilBuffer;
 
+    AntialiasingType antialiasingType = AntialiasingType::NONE;
+
     Viewport viewport;
     Handle queryBuffer = InvalidHandle;
     uint32 PerfQueryIndex0 = DAVA::InvalidIndex;
     uint32 PerfQueryIndex1 = DAVA::InvalidIndex;
     uint32 priority = 0;
     uint32 invertCulling = 0;
-    uint32 samples = 1;
 
     void Validate() const
     {
         DVASSERT(depthStencilBuffer.storeAction != STOREACTION_RESOLVE);
 
-        if (samples > 1)
+        if (UsingMSAA())
         {
             DVASSERT(colorBuffer[0].storeAction == STOREACTION_RESOLVE);
             DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
@@ -795,9 +817,14 @@ struct RenderPassConfig
 
         if (colorBuffer[0].storeAction == STOREACTION_RESOLVE)
         {
-            DVASSERT(samples > 1);
+            DVASSERT(UsingMSAA());
             DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
         }
+    }
+
+    bool UsingMSAA() const
+    {
+        return (antialiasingType == AntialiasingType::MSAA_2X) || (antialiasingType == AntialiasingType::MSAA_4X);
     }
 };
 

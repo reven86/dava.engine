@@ -16,6 +16,9 @@ public:
     const static int32 REFLECTION_TEX_SIZE = 512;
     const static int32 REFRACTION_TEX_SIZE = 512;
 
+    const static PixelFormat REFLECTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
+    const static PixelFormat REFRACTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
+
     enum eDynamicTextureSemantic
     {
         TEXTURE_STATIC = 0,

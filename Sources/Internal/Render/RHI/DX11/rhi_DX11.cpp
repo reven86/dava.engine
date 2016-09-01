@@ -149,20 +149,6 @@ dx11_ResumeRendering()
 {
 }
 
-Texture::Descriptor dx11_GetBackbufferDescriptor()
-{
-    D3D11_TEXTURE2D_DESC desc = {};
-    _D3D11_SwapChainBuffer->GetDesc(&desc);
-
-    Texture::Descriptor result;
-    result.width = static_cast<uint32>(desc.Width);
-    result.height = static_cast<uint32>(desc.Height);
-    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
-    result.isRenderTarget = true;
-    // TODO : fill rest of the fields / get proper format
-    return result;
-}
-
 //------------------------------------------------------------------------------
 
 void _InitDX11()
@@ -361,7 +347,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
-    DispatchDX11.impl_GetBackbufferDescriptor = &dx11_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchDX11);
 

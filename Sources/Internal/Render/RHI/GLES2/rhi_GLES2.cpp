@@ -352,17 +352,6 @@ gles2_InvalidateCache()
     TextureGLES2::InvalidateCache();
 }
 
-Texture::Descriptor gles_GetBackbufferDescriptor()
-{
-    Texture::Descriptor result;
-    result.width = _GLES2_DefaultFrameBuffer_Width;
-    result.height = _GLES2_DefaultFrameBuffer_Height;
-    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
-    result.isRenderTarget = true;
-    // TODO : fill rest of the fields / get proper format
-    return result;
-}
-
 //------------------------------------------------------------------------------
 
 static bool
@@ -512,7 +501,6 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-        DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -659,7 +647,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -755,7 +742,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -851,7 +837,6 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
-    DispatchGLES2.impl_GetBackbufferDescriptor = &gles_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchGLES2);
 

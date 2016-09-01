@@ -590,12 +590,6 @@ bool gles2_Texture_NeedRestore(Handle tex)
     return self->NeedRestore();
 }
 
-Texture::Descriptor gles2_Texture_GetDescriptor(Handle tex)
-{
-    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-    return self->CreationDesc();
-}
-
 //==============================================================================
 
 struct
@@ -752,7 +746,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &gles2_Texture_Unmap;
     dispatch->impl_Texture_Update = &gles2_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &gles2_Texture_NeedRestore;
-    dispatch->impl_Texture_GetDescriptor = &gles2_Texture_GetDescriptor;
 }
 
 void InvalidateCache()

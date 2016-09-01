@@ -42,17 +42,6 @@ dx9_HostApi()
     return RHI_DX9;
 }
 
-Texture::Descriptor dx9_GetBackbufferDescriptor()
-{
-    Texture::Descriptor result;
-    result.width = _DX9_PresentParam.BackBufferWidth;
-    result.height = _DX9_PresentParam.BackBufferHeight;
-    result.format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
-    result.isRenderTarget = 1;
-    // TODO : fill rest of the fields and get proper format from desc
-    return result;
-}
-
 //------------------------------------------------------------------------------
 
 static bool
@@ -390,7 +379,6 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
-    DispatchDX9.impl_GetBackbufferDescriptor = &dx9_GetBackbufferDescriptor;
 
     SetDispatchTable(DispatchDX9);
 

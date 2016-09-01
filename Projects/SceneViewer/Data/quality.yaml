@@ -28,17 +28,16 @@ textures:
    minsize: 64
   
 msaa:
- default: "4x"
+ default: "MSAA_4X"
  qualities:
   - 
-   quality: "4x"
-   samples: 4
+   quality: "MSAA_4X"
   - 
-   quality: "2x"
-   samples: 2
+   quality: "MSAA_2X"
   -
-   quality: "OFF"
-   samples: 1
+   quality: "FXAA"
+  -
+   quality: "NONE"
 
 anisotropy:
  default: "HIGHEST"

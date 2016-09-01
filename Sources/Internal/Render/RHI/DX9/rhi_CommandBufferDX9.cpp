@@ -553,13 +553,13 @@ void CommandBufferDX9_t::Execute()
             if (isFirstInPass)
             {
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-                if ((color0.texture != rhi::InvalidHandle) || (passCfg.samples > 1))
+                if ((color0.texture != rhi::InvalidHandle) || passCfg.UsingMSAA())
                 {
                     DVASSERT(_D3D9_BackBuf == nullptr);
                     _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
 
                     Handle targetTexture = color0.texture;
-                    if (passCfg.samples > 1)
+                    if (passCfg.UsingMSAA())
                     {
                         DVASSERT(color0.multisampleTexture != InvalidHandle);
                         targetTexture = color0.multisampleTexture;
@@ -568,13 +568,13 @@ void CommandBufferDX9_t::Execute()
                 }
 
                 bool renderToDepth = (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle) && (passCfg.depthStencilBuffer.texture != DefaultDepthBuffer);
-                if (renderToDepth || (passCfg.samples > 1))
+                if (renderToDepth || passCfg.UsingMSAA())
                 {
                     DVASSERT(_D3D9_DepthBuf == nullptr);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
                     Handle targetDepthStencil = passCfg.depthStencilBuffer.texture;
-                    if (passCfg.samples > 1)
+                    if (passCfg.UsingMSAA())
                     {
                         DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
                         targetDepthStencil = passCfg.depthStencilBuffer.multisampleTexture;

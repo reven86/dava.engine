@@ -1,12 +1,11 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderHelper.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/RenderHelper.h"
+#include "Render/Highlevel/RenderPass.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -91,34 +90,42 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
         config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
         config.colorBuffer[0].texture = frameBuffer->handle;
         config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
+        scene->GetMainPass()->SetRenderTargetProperties(frameBuffer->GetWidth(), frameBuffer->GetHeight(), frameBuffer->GetFormat());
     }
     else
     {
         if (currentTarget.transformVirtualToPhysical)
+        {
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
-
-        const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
-        if (currentMSAA.IsValid() && rhi::DeviceCaps().IsMultisamplingSupported())
-        {
-            config.samples = std::min(QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->samples, rhi::DeviceCaps().maxSamples);
-        }
-        else
-        {
-            config.samples = 1;
         }
 
         config.priority = currentTarget.priority + basePriority;
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
         config.colorBuffer[0].loadAction = colorLoadAction;
-        config.colorBuffer[0].storeAction = (config.samples > 1) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
         config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
-        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
+        if (currentTarget.colorAttachment == rhi::InvalidHandle)
+        {
+            scene->GetMainPass()->SetRenderTargetProperties(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(), PixelFormat::FORMAT_RGBA8888);
+        }
+        else
+        {
+            DVASSERT(currentTarget.width > 0);
+            DVASSERT(currentTarget.height > 0);
+            DVASSERT(currentTarget.format != PixelFormat::FORMAT_INVALID);
+            scene->GetMainPass()->SetRenderTargetProperties(currentTarget.width, currentTarget.height, currentTarget.format);
+        }
     }
+
+    const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+    rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
+    config.antialiasingType = rhi::DeviceCaps().IsMultisamplingSupported(aaType) ? aaType : rhi::AntialiasingType::NONE;
+
+    config.colorBuffer[0].storeAction = (config.UsingMSAA()) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
+    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
     scene->SetMainPassViewport(viewportRc);
     scene->Draw();

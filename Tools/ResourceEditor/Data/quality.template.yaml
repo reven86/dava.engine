@@ -27,6 +27,36 @@ textures:
    normalmap: 4
    minsize: 64
   
+anisotropy:
+ default: "HIGHEST"
+ qualities:
+  - 
+   quality: "HIGHEST"
+   max: 16
+  - 
+   quality: "HIGH"
+   max: 8
+  -
+   quality: "MEDIUM"
+   max: 4
+  -
+   quality: "LOW"
+   max: 2
+  -
+   quality: "DISABLED"
+   max: 1
+
+msaa:
+ default: "MSAA_4X"
+ qualities:
+  - 
+   quality: "MSAA_4X"
+  - 
+   quality: "MSAA_2X"
+  -
+   quality: "FXAA"
+  -
+   quality: "NONE"
 
 materials:
  -

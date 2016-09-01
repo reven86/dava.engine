@@ -28,6 +28,8 @@ public:
     inline rhi::RenderPassConfig& GetPassConfig();
     inline void SetViewport(const Rect& viewPort);
 
+    void SetRenderTargetProperties(uint32 width, uint32 height, PixelFormat format);
+
 protected:
     FastName passName;
     rhi::RenderPassConfig passConfig;
@@ -58,6 +60,13 @@ protected:
 
     Texture::FBODescriptor multisampledDescription;
     Texture* multisampledTexture = nullptr;
+
+    struct RenderTargetProperites
+    {
+        uint32 width = 0;
+        uint32 height = 0;
+        PixelFormat format = PixelFormat::FORMAT_INVALID;
+    } renderTargetProperties;
 
 #ifdef __DAVAENGINE_RENDERSTATS__
 

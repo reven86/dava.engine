@@ -121,9 +121,19 @@ struct RenderDeviceCaps
         return maxAnisotropy > 1;
     }
 
-    bool IsMultisamplingSupported() const
+    bool IsMultisamplingSupported(AntialiasingType type) const
     {
-        return maxSamples > 1;
+        switch (type)
+        {
+        case AntialiasingType::MSAA_2X:
+            return (maxSamples >= 2);
+
+        case AntialiasingType::MSAA_4X:
+            return (maxSamples >= 4);
+
+        default:
+            return true;
+        }
     }
 };
 
@@ -138,8 +148,6 @@ void Present(); // execute all submitted command-buffers & do flip/present
 Api HostApi();
 bool TextureFormatSupported(TextureFormat format);
 const RenderDeviceCaps& DeviceCaps();
-
-Texture::Descriptor GetBackBufferDescriptor();
 
 void SuspendRendering();
 void ResumeRendering();
@@ -268,8 +276,6 @@ void UnmapTexture(HTexture tex);
 void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace face = TEXTURE_FACE_NEGATIVE_X);
 
 bool NeedRestoreTexture(HTexture tex);
-
-Texture::Descriptor GetTextureDescriptor(HTexture tex);
 
 struct
 TextureSetDescriptor

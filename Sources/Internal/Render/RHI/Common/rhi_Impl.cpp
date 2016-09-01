@@ -172,11 +172,6 @@ void InvalidateCache()
         (*_Impl.impl_InvalidateCache)();
 }
 
-Texture::Descriptor GetBackBufferDescriptor()
-{
-    return (_Impl.impl_GetBackbufferDescriptor)();
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
@@ -429,10 +424,6 @@ bool NeedRestore(Handle tex)
     return (*_Impl.impl_Texture_NeedRestore)(tex);
 }
 
-Texture::Descriptor GetDescriptor(Handle tex)
-{
-    return (*_Impl.impl_Texture_GetDescriptor)(tex);
-}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
