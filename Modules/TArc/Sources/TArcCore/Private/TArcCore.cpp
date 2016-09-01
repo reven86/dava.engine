@@ -568,6 +568,11 @@ public:
         });
     }
 
+    bool HasControllerModule() const
+    {
+        return controllerModule != nullptr;
+    }
+
 private:
     AnyFn FindOperation(int operationId)
     {
@@ -591,6 +596,11 @@ private:
 };
 
 Core::Core(Engine& engine)
+    : Core(engine, true)
+{
+}
+
+Core::Core(Engine& engine, bool connectSignals)
 {
     if (engine.IsConsoleMode())
     {
@@ -601,10 +611,13 @@ Core::Core(Engine& engine)
         impl.reset(new GuiImpl(engine, this));
     }
 
-    engine.update.Connect(this, &Core::OnFrame);
-    engine.gameLoopStarted.Connect(this, &Core::OnLoopStarted);
-    engine.gameLoopStopped.Connect(this, &Core::OnLoopStopped);
-    engine.windowCreated.Connect(this, &Core::OnWindowCreated);
+    if (connectSignals)
+    {
+        engine.update.Connect(this, &Core::OnFrame);
+        engine.gameLoopStarted.Connect(this, &Core::OnLoopStarted);
+        engine.gameLoopStopped.Connect(this, &Core::OnLoopStopped);
+        engine.windowCreated.Connect(this, &Core::OnWindowCreated);
+    }
 }
 
 Core::~Core() = default;
@@ -651,6 +664,12 @@ void Core::OnWindowCreated(DAVA::Window& w)
 {
     DVASSERT(impl);
     impl->OnWindowCreated(w);
+}
+
+bool Core::HasControllerModule() const
+{
+    GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
+    return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
 } // namespace TArc

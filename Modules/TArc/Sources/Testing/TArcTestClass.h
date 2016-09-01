@@ -9,7 +9,7 @@ namespace DAVA
 namespace TArc
 {
 
-class TestClass: UnitTests::TestClass
+class TestClass: public UnitTests::TestClass
 {
     static const double testTimeLimit;
 public:
@@ -21,7 +21,7 @@ public:
 
     virtual void CreateTestedModules() {}
 
-private:
+protected:
     std::unique_ptr<Core> core;
 };
 

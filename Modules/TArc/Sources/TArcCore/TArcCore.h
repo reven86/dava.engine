@@ -50,6 +50,9 @@ public:
     }
 
 private:
+    // in testing enviroment Core shouldn't connect to Engine signals.
+    // TArcTestClass wrap signals and call Core method directly
+    Core(Engine& engine, bool connectSignals);
     bool IsConsoleMode() const;
     void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
@@ -60,6 +63,7 @@ private:
     void OnLoopStopped();
     void OnFrame(float32 delta);
     void OnWindowCreated(DAVA::Window& w);
+    bool HasControllerModule() const;
 
 private:
     class Impl;

@@ -1,8 +1,11 @@
 #include "Testing/TArcTestClass.h"
+#include "TArcCore/ControllerModule.h"
 
-#include "UnitTests/UnitTests.h"
 #include "Engine/Public/Engine.h"
+#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "UnitTests/UnitTests.h"
 
+#include <QTimer>
 #include <gmock/gmock-spec-builders.h>
 
 namespace DAVA
@@ -10,7 +13,46 @@ namespace DAVA
 namespace TArc
 {
 
-const double TestClass::testTimeLimit = 30.0; // seconds
+const double TestClass::testTimeLimit = 10.0; // seconds
+
+namespace TArcTestClassDetail
+{
+class TestControllerModule: public ControllerModule
+{
+protected:
+    void OnRenderSystemInitialized(Window& w) override
+    {
+    }
+
+    bool CanWindowBeClosedSilently(const WindowKey& key) override
+    {
+        return true;
+    }
+    
+    void SaveOnWindowClose(const WindowKey& key) override
+    {
+    }
+
+    void RestoreOnWindowClose(const WindowKey& key) override
+    {
+    }
+
+    void OnContextCreated(DataContext& context) override
+    {
+    }
+
+    void OnContextDeleted(DataContext& context) override
+    {
+    }
+
+    void PostInit() override
+    {
+        ContextManager& ctxManager = GetContextManager();
+        DataContext::ContextID id = ctxManager.CreateContext();
+        ctxManager.ActivateContext(id);
+    }
+};
+}
 
 TestClass::~TestClass()
 {
@@ -19,7 +61,13 @@ TestClass::~TestClass()
     RenderWidget* widget = e->GetNativeService()->GetRenderWidget();
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
-    core->OnLoopStopped();
+
+    Core* c = core.release();
+    QTimer::singleShot(0, [c]()
+    {
+        c->OnLoopStopped();
+        delete c;
+    });
 }
 
 void TestClass::SetUp(const String& testName)
@@ -29,9 +77,13 @@ void TestClass::SetUp(const String& testName)
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         DVASSERT(e->IsConsoleMode() == false);
-        core.reset(new Core(*e));
+        core.reset(new Core(*e, false));
 
         CreateTestedModules();
+        if (!core->HasControllerModule())
+        {
+            core->CreateModule<TArcTestClassDetail::TestControllerModule>();
+        }
 
         core->OnLoopStarted();
         Window* w = e->PrimaryWindow();
@@ -61,7 +113,7 @@ bool TestClass::TestComplete(const String& testName) const
     double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - iter->startTime).count();
     if (elapsedSeconds > testTimeLimit)
     {
-        TEST_VERIFY(::testing::Mock::VerifyAndClear(nullptr));
+        TEST_VERIFY(::testing::Mock::VerifyAndClear());
         return true;
     }
 
