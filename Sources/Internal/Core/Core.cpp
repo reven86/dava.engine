@@ -530,7 +530,7 @@ void Core::SystemAppStarted()
     {
         rhi::ShaderSourceCache::Load("~doc:/ShaderSource.bin");
         Core::Instance()->CreateRenderer();
-        ///        RenderSystem2D::Instance()->Init();
+        RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
     }
 
@@ -706,7 +706,7 @@ void Core::SystemProcessFrame()
     STOP_TIMING(PROF__FRAME);
     profiler::Stop();
     //profiler::Dump();
-    profiler::DumpAverage();
+//    profiler::DumpAverage();
     #endif
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)

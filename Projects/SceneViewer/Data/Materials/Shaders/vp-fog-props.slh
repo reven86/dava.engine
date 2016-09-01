@@ -1,0 +1,37 @@
+#if VERTEX_FOG
+    
+    [statik][fog] property float3 fogColor = float3(1.0,0.0,0.0) ;
+    [statik][fog] property float  fogLimit = 1.0 ;
+    
+    
+    #if FOG_LINEAR
+    
+        [statik][fog] property float fogStart = 10.0 ;
+        [statik][fog] property float fogEnd   = 100.0 ;
+    
+    #else
+    
+        [statik][fog] property float fogDensity = 1.0 ;
+    
+    #endif
+    
+
+    #if FOG_ATMOSPHERE
+        [statik][fog] property float fogAtmosphereDistance = 100.0 ;
+        #if FOG_ATMOSPHERE_MAP
+            DECL_SAMPLERCUBE(atmospheremap) : static,fog : ;
+        #else
+            [statik][fog] property float3 fogAtmosphereColorSun   = float3(0.0,1.0,0.0) ;
+            [statik][fog] property float3 fogAtmosphereColorSky   = float3(0.0,0.0,1.0) ;
+            [statik][fog] property float  fogAtmosphereScattering = 0.5 ;
+        #endif
+    #endif
+
+    #if FOG_HALFSPACE
+        [statik][fog] property float fogHalfspaceHeight   = 10.0 ;
+        [statik][fog] property float fogHalfspaceFalloff  = 1.0 ;
+        [statik][fog] property float fogHalfspaceDensity  = 1.0 ;
+        [statik][fog] property float fogHalfspaceLimit    = 1.0 ;
+    #endif
+
+#endif
