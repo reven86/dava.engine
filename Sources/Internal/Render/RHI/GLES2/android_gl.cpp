@@ -36,7 +36,7 @@ static const EGLint contextAttribs[] = {
 void android_gl_init(void* _window)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
-    
+
     const EGLint d24s8ConfigAttribs[] = {
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -48,7 +48,7 @@ void android_gl_init(void* _window)
         EGL_STENCIL_SIZE, 8,
         EGL_NONE
     };
-    
+
     const EGLint d16s8NvidiaConfigAttribs[] = {
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -61,7 +61,7 @@ void android_gl_init(void* _window)
         EGL_DEPTH_ENCODING_NV, EGL_DEPTH_ENCODING_NONLINEAR_NV,
         EGL_NONE
     };
-    
+
     const EGLint d16s8ConfigAttribs[] = {
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -73,12 +73,12 @@ void android_gl_init(void* _window)
         EGL_STENCIL_SIZE, 8,
         EGL_NONE
     };
-    
+
     EGLint numConfigs;
-    
+
     _display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     eglInitialize(_display, nullptr, nullptr);
-    
+
     //try initialize 24 bit depth buffer
     eglChooseConfig(_display, d24s8ConfigAttribs, &_config, 1, &numConfigs);
     if (_config == nullptr)
@@ -92,22 +92,22 @@ void android_gl_init(void* _window)
         eglChooseConfig(_display, d16s8ConfigAttribs, &_config, 1, &numConfigs);
     }
     DVASSERT_MSG(_config != nullptr, "Can't set GL configuration");
-    
+
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
-    
+
     ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
     _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
-    
+
     _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
     _GLES2_Context = _context;
-    
+
     eglMakeCurrent(_display, _surface, _surface, _context);
 }
 
 void android_gl_reset(void* _window)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
-    
+
     if (nullptr != _nativeWindow)
     {
         ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
@@ -129,12 +129,12 @@ void android_gl_checkSurface()
         // Also see http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
         eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 #endif
-        
+
         eglDestroySurface(_display, _surface);
         _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
-        
+
         eglMakeCurrent(_display, _surface, _surface, _context);
-        
+
         needRecreateSurface = false;
     }
 }
@@ -142,18 +142,18 @@ void android_gl_checkSurface()
 bool android_gl_end_frame()
 {
     EGLBoolean ret = eglSwapBuffers(_display, _surface);
-    
+
     if (!ret && eglGetError() == EGL_CONTEXT_LOST)
     {
         DAVA::Logger::Error("Context Lost");
         eglDestroyContext(_display, _context);
         _GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
-        
+
         eglMakeCurrent(_display, _surface, _surface, _context);
-        
+
         return false; //if context was lost, return 'false' (need recreate all resources)
     }
-    
+
     return true;
 }
 

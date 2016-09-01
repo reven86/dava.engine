@@ -225,27 +225,27 @@ static void gles_check_GL_extensions()
             glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
             if (glDrawElementsInstanced == nullptr)
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
-            
+
             glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
             if (glDrawArraysInstanced == nullptr)
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
-            
+
             glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
             if (glVertexAttribDivisor == nullptr)
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
-            
+
             glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
             if (glRenderbufferStorageMultisample == nullptr)
                 glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
-            
+
             glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
             if (glBlitFramebuffer == nullptr)
                 glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
-            
+
             glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
             if (glDebugMessageControl == nullptr)
                 glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
-            
+
             glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
             if (glDebugMessageCallback == nullptr)
                 glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
@@ -280,15 +280,15 @@ static void gles_check_GL_extensions()
         runningOnMali = strstr(renderer, "Mali") != nullptr;
         runningOnTegra = strcmp(renderer, "NVIDIA Tegra") == 0;
     }
-    
+
     GLint maxSamples = 1;
     
 #ifdef __DAVAENGINE_ANDROID__ // hacks and workarounds for beautiful Android
-    
+
     // drawing from memory is worst case scenario,
     // unless running on some buggy piece of shit
     _GLES2_UseUserProvidedIndices = runningOnMali;
-    
+
     // Without offensive language:
     // it seems like some GL-functions in SHIELD driver implementation
     // corrupt 'callee-saved' Neon registers (q4-q7).
@@ -301,7 +301,7 @@ static void gles_check_GL_extensions()
         android_gl_enable_debug();
     }
 #endif
-    
+
     // allow multisampling only on NVIDIA Tegra GPU
     // and if functions were loaded
     if (runningOnTegra && (glRenderbufferStorageMultisample != nullptr) && (glBlitFramebuffer != nullptr))
@@ -310,7 +310,7 @@ static void gles_check_GL_extensions()
         GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
         DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
     }
-    
+
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 }
 

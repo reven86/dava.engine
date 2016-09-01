@@ -319,7 +319,8 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
 #if defined(__DAVAENGINE_ANDROID__) && defined(__DAVAENGINE_ARM_7__)
 
-extern volatile struct alignas(32) GLCallRegisters {
+extern volatile struct alignas(32) GLCallRegisters
+{
     DAVA::uint8 registers[64];
 } gl_call_registers;
 
@@ -345,9 +346,11 @@ extern volatile struct alignas(32) GLCallRegisters {
 { \
     if (_GLES2_ValidateNeonCalleeSavedRegisters) \
     { \
-        asm volatile("vstmia %0, {q4-q7}" ::"r"(gl_call_registers.registers) : "memory"); \
+        asm volatile("vstmia %0, {q4-q7}" ::"r"(gl_call_registers.registers) \
+                         : "memory"); \
         expr; \
-        asm volatile("vldmia %0, {q4-q7}" ::"r"(gl_call_registers.registers) : "q4", "q5", "q6", "q7"); \
+        asm volatile("vldmia %0, {q4-q7}" ::"r"(gl_call_registers.registers) \
+                         : "q4", "q5", "q6", "q7"); \
     } \
     else \
     { \

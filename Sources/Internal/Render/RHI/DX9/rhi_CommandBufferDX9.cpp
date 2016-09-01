@@ -170,7 +170,7 @@ struct CommandBufferDX9_t
     template <class... Args>
     void Command(Args... args)
     {
-        uint64_t argumentsCount = sizeof...(args);
+        size_t argumentsCount = sizeof...(args);
         _cmd.reserve(_cmd.size() + argumentsCount);
         _cmd.insert(_cmd.end(), { static_cast<uint64>(args)... });
     }
