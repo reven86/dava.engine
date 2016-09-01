@@ -1,6 +1,8 @@
 #include "FileSystem/File.h"
 
-#include "../Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Engine.h"
+
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -45,37 +47,43 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
-    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
+#if defined(__DAVAENGINE_COREV2__)
+    IPackManager* pm = Engine::Instance()->GetContext()->packManager;
+#else
+    IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+    if (pm != nullptr)
     {
-        String relative = filename.GetRelativePathname("~res:/");
-
-        // now with PackManager we can improve perfomance by lookup pack name
-        // from DB with all files, then check if such pack mounted and from
-        // mountedPackIndex find by name archive with file or skip to next step
-        IPackManager& pm = Core::Instance()->GetPackManager();
-        Vector<uint8> contentAndSize;
-
-        if (pm.IsGpuPacksInitialized())
+        if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
         {
-            const String& packName = pm.FindPackName(filename);
-            if (!packName.empty())
+            Vector<uint8> contentAndSize;
+            String relative = filename.GetRelativePathname("~res:/");
+
+            if (pm->IsGpuPacksInitialized())
             {
-                auto it = fileSystem->resArchiveMap.find(packName);
-                if (it != end(fileSystem->resArchiveMap))
+                const String& packName = pm->FindPackName(filename);
+                if (!packName.empty())
                 {
-                    if (it->second.archive->LoadFile(relative, contentAndSize))
+                    auto it = fileSystem->resArchiveMap.find(packName);
+                    if (it != end(fileSystem->resArchiveMap))
                     {
-                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                        if (it->second.archive->LoadFile(relative, contentAndSize))
+                        {
+                            return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                        }
                     }
                 }
             }
-        }
 
-        for (auto& pair : fileSystem->resArchiveMap)
-        {
-            if (pair.second.archive->LoadFile(relative, contentAndSize))
+            for (auto& pair : fileSystem->resArchiveMap)
             {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                if (pair.second.archive->LoadFile(relative, contentAndSize))
+                {
+                    return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                }
             }
         }
     }

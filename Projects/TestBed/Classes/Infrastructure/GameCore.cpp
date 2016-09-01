@@ -269,7 +269,9 @@ void GameCore::RegisterTests()
     new FormatsTest(this);
     new AssertTest(this);
     new FloatingPointExceptionTest(this);
+#if !defined(__DAVAENGINE_COREV2__)
     new PackManagerTest(this);
+#endif // !__DAVAENGINE_COREV2__
     //$UNITTEST_CTOR
 }
 
