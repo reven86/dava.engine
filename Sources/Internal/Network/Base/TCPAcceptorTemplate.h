@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Noncopyable.h"
+#include "Debug/DVAssert.h"
 
 #include "Network/Base/Endpoint.h"
 #include "Network/Base/IOLoop.h"

@@ -2,90 +2,59 @@
 #include "Compression/ZipCompressor.h"
 #include "Compression/LZ4Compressor.h"
 #include "FileSystem/FileSystem.h"
+#include "Utils/CRC32.h"
+
+#include <mutex>
 
 namespace DAVA
 {
-PackArchive::PackArchive(const FilePath& archiveName)
+void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
+                                       const Vector<uint8>& tmpBuffer,
+                                       String& fileNames,
+                                       PackFormat::PackFile::FilesTableBlock& fileTableBlock)
 {
-    using namespace PackFormat;
+    Vector<uint8>& compressedNamesBuffer = fileTableBlock.names.compressedNames;
+    compressedNamesBuffer.resize(footerBlock.info.namesSizeCompressed, '\0');
 
-    String fileName = archiveName.GetAbsolutePathname();
+    uint32 sizeOfFilesData = footerBlock.info.numFiles * sizeof(PackFormat::FileTableEntry);
+    const uint8* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
 
-    file.Set(File::Create(fileName, File::OPEN | File::READ));
-    if (!file)
-    {
-        throw std::runtime_error("can't Open file: " + fileName);
-    }
-    auto& headerBlock = packFile.header;
-    uint32 numBytesRead = file->Read(&headerBlock, sizeof(headerBlock));
-    if (numBytesRead != sizeof(headerBlock))
-    {
-        throw std::runtime_error("can't read header from packfile: " + fileName);
-    }
-    if (headerBlock.marker != FileMarker)
-    {
-        throw std::runtime_error("incorrect marker in pack file: " + fileName);
-    }
-    if (headerBlock.numFiles == 0)
-    {
-        throw std::runtime_error("can't load packfile no files inside");
-    }
-    if (headerBlock.startNamesBlockPosition != file->GetPos())
-    {
-        throw std::runtime_error("error in header of packfile start position for file names incorrect");
-    }
+    fileTableBlock.names.compressedNames.resize(footerBlock.info.namesSizeCompressed);
 
-    Vector<uint8>& compressedNamesBuffer = packFile.names.sortedNamesLz4hc;
-    compressedNamesBuffer.resize(headerBlock.namesBlockSizeCompressedLZ4HC, '\0');
-
-    numBytesRead = file->Read(compressedNamesBuffer.data(), static_cast<uint32>(compressedNamesBuffer.size()));
-    if (numBytesRead != compressedNamesBuffer.size())
-    {
-        throw std::runtime_error("Can't read file names from packfile");
-    }
+    std::copy_n(startOfCompressedNames, footerBlock.info.namesSizeCompressed, fileTableBlock.names.compressedNames.data());
 
     Vector<uint8> originalNamesBuffer;
-    originalNamesBuffer.resize(packFile.header.namesBlockSizeOriginal);
+    originalNamesBuffer.resize(footerBlock.info.namesSizeOriginal);
     if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
     {
         throw std::runtime_error("can't uncompress file names");
     }
 
-    String fileNames(begin(originalNamesBuffer), end(originalNamesBuffer));
+    fileNames = String(begin(originalNamesBuffer), end(originalNamesBuffer));
 
-    if (headerBlock.startFilesDataBlockPosition != file->GetPos())
-    {
-        throw std::runtime_error("can't load packfile incorrect start position of files data");
-    }
+    Vector<PackFormat::FileTableEntry>& fileTable = fileTableBlock.data.files;
+    fileTable.resize(footerBlock.info.numFiles);
 
-    Vector<FileTableEntry>& fileTable = packFile.filesData.files;
-    fileTable.resize(headerBlock.numFiles);
+    const PackFormat::FileTableEntry* startFilesData = reinterpret_cast<const PackFormat::FileTableEntry*>(tmpBuffer.data());
 
-    if (headerBlock.filesTableBlockSize / headerBlock.numFiles !=
-        sizeof(FileTableEntry))
-    {
-        throw std::runtime_error("can't load packfile bad originalSize of file table");
-    }
+    std::copy_n(startFilesData, footerBlock.info.numFiles, fileTable.data());
+}
 
-    numBytesRead = file->Read(reinterpret_cast<char*>(&fileTable[0]),
-                              headerBlock.filesTableBlockSize);
-    if (numBytesRead != headerBlock.filesTableBlockSize)
-    {
-        throw std::runtime_error("can't read files table from packfile");
-    }
-
-    if (headerBlock.startPackedFilesBlockPosition != file->GetPos())
-    {
-        throw std::runtime_error("can't read packfile, incorrect start position of compressed content");
-    }
-
-    filesInfoSortedByName.reserve(headerBlock.numFiles);
+void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
+                                const String& fileNames,
+                                UnorderedMap<String, const PackFormat::FileTableEntry*>& mapFileData,
+                                Vector<ResourceArchive::FileInfo>& filesInfo)
+{
+    filesInfo.reserve(packFile.footer.info.numFiles);
 
     size_t numFiles =
     std::count_if(begin(fileNames), end(fileNames), [](const char& ch)
                   {
                       return '\0' == ch;
                   });
+
+    const Vector<PackFormat::FileTableEntry>& fileTable = packFile.filesTable.data.files;
+
     if (numFiles != fileTable.size())
     {
         throw std::runtime_error("number of file names not match with table");
@@ -94,7 +63,7 @@ PackArchive::PackArchive(const FilePath& archiveName)
     // now fill support structures for fast search by filename
     size_t fileNameIndex{ 0 };
 
-    std::for_each(begin(fileTable), end(fileTable), [&](FileTableEntry& fileEntry)
+    std::for_each(begin(fileTable), end(fileTable), [&](const PackFormat::FileTableEntry& fileEntry)
                   {
                       const char* fileNameLoc = &fileNames[fileNameIndex];
                       mapFileData.emplace(fileNameLoc, &fileEntry);
@@ -102,45 +71,109 @@ PackArchive::PackArchive(const FilePath& archiveName)
                       ResourceArchive::FileInfo info;
 
                       info.relativeFilePath = fileNameLoc;
-                      info.originalSize = fileEntry.original;
-                      info.compressedSize = fileEntry.compressed;
-                      info.compressionType = fileEntry.packType;
+                      info.originalSize = fileEntry.originalSize;
+                      info.originalCrc32 = fileEntry.originalCrc32;
+                      info.compressedSize = fileEntry.compressedSize;
+                      info.compressedCrc32 = fileEntry.compressedCrc32;
+                      info.compressionType = fileEntry.type;
 
-                      filesInfoSortedByName.push_back(info);
+                      filesInfo.push_back(info);
 
                       fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
                       ++fileNameIndex;
                   });
+}
 
-    bool result = std::is_sorted(begin(filesInfoSortedByName),
-                                 end(filesInfoSortedByName),
-                                 [](const ResourceArchive::FileInfo& first,
-                                    const ResourceArchive::FileInfo& second)
-                                 {
-                                     return std::strcmp(first.relativeFilePath.c_str(), second.relativeFilePath.c_str()) < 0;
-                                 });
-    if (!result)
+PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
+    : archiveName(archiveName_)
+    , file(file_)
+{
+    using namespace PackFormat;
+
+    String fileName = archiveName.GetAbsolutePathname();
+
+    if (!file)
     {
-        throw std::runtime_error("relative file names in archive not sorted!");
+        throw std::runtime_error("can't Open file: " + fileName);
+    }
+
+    uint64 size = file->GetSize();
+    if (size < sizeof(packFile.footer))
+    {
+        throw std::runtime_error("file size less then pack footer: " + fileName);
+    }
+
+    if (!file->Seek(size - sizeof(packFile.footer), File::SEEK_FROM_START))
+    {
+        throw std::runtime_error("can't seek to footer in file: " + fileName);
+    }
+
+    auto& footerBlock = packFile.footer;
+    uint32 numBytesRead = file->Read(&footerBlock, sizeof(footerBlock));
+    if (numBytesRead != sizeof(footerBlock))
+    {
+        throw std::runtime_error("can't read footer from packfile: " + fileName);
+    }
+
+    uint32 crc32footer = CRC32::ForBuffer(reinterpret_cast<char*>(&packFile.footer.info), sizeof(packFile.footer.info));
+    if (crc32footer != packFile.footer.infoCrc32)
+    {
+        throw std::runtime_error("crc32 not match in footer for: " + fileName);
+    }
+
+    if (footerBlock.info.packArchiveMarker != FileMarker)
+    {
+        throw std::runtime_error("incorrect marker in pack file: " + fileName);
+    }
+
+    if (footerBlock.info.numFiles > 0)
+    {
+        uint64 startFilesTableBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
+
+        Vector<uint8> tmpBuffer;
+        tmpBuffer.resize(packFile.footer.info.filesTableSize);
+
+        if (!file->Seek(startFilesTableBlock, File::SEEK_FROM_START))
+        {
+            throw std::runtime_error("can't seek to filesTable block in file: " + fileName);
+        }
+
+        numBytesRead = file->Read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        if (numBytesRead != packFile.footer.info.filesTableSize)
+        {
+            throw std::runtime_error("can't read filesTable block from file: " + fileName);
+        }
+
+        uint32 crc32filesTable = CRC32::ForBuffer(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        if (crc32filesTable != packFile.footer.info.filesTableCrc32)
+        {
+            throw std::runtime_error("crc32 not match in filesTable in file: " + fileName);
+        }
+
+        String fileNames;
+
+        ExtractFileTableData(footerBlock, tmpBuffer, fileNames, packFile.filesTable);
+
+        FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
     }
 }
 
 const Vector<ResourceArchive::FileInfo>& PackArchive::GetFilesInfo() const
 {
-    return filesInfoSortedByName;
+    return filesInfo;
 }
 
 const ResourceArchive::FileInfo* PackArchive::GetFileInfo(const String& relativeFilePath) const
 {
-    const auto it = std::lower_bound(begin(filesInfoSortedByName), end(filesInfoSortedByName), relativeFilePath,
-                                     [relativeFilePath](const ResourceArchive::FileInfo& info,
-                                                        const String& name)
-                                     {
-                                         return info.relativeFilePath < name;
-                                     });
-    if (it != filesInfoSortedByName.end())
+    auto it = mapFileData.find(relativeFilePath);
+
+    if (it != mapFileData.end())
     {
-        return &(*it);
+        // find out index of FileInfo*
+        const PackFormat::FileTableEntry* currentFile = it->second;
+        const PackFormat::FileTableEntry* start = packFile.filesTable.data.files.data();
+        ptrdiff_t index = std::distance(start, currentFile);
+        return &filesInfo.at(static_cast<uint32>(index));
     }
     return nullptr;
 }
@@ -157,27 +190,30 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     if (!HasFile(relativeFilePath))
     {
-        Logger::Error("can't load file: %s course: not found\n",
-                      relativeFilePath.c_str());
         return false;
     }
 
     const FileTableEntry& fileEntry = *mapFileData.find(relativeFilePath)->second;
-    output.resize(fileEntry.original);
+    output.resize(fileEntry.originalSize);
 
-    bool isOk = file->Seek(fileEntry.startPositionInPackedFilesBlock, File::SEEK_FROM_START);
+    if (!file)
+    {
+        throw std::runtime_error("can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
+    }
+
+    bool isOk = file->Seek(fileEntry.startPosition, File::SEEK_FROM_START);
     if (!isOk)
     {
         Logger::Error("can't load file: %s course: can't find start file position in pack file", relativeFilePath.c_str());
         return false;
     }
 
-    switch (fileEntry.packType)
+    switch (fileEntry.type)
     {
     case Compressor::Type::None:
     {
-        uint32 readOk = file->Read(output.data(), fileEntry.original);
-        if (readOk != fileEntry.original)
+        uint32 readOk = file->Read(output.data(), fileEntry.originalSize);
+        if (readOk != fileEntry.originalSize)
         {
             Logger::Error("can't load file: %s course: can't read uncompressed content", relativeFilePath.c_str());
             return false;
@@ -187,10 +223,10 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     case Compressor::Type::Lz4:
     case Compressor::Type::Lz4HC:
     {
-        Vector<uint8> packedBuf(fileEntry.compressed);
+        Vector<uint8> packedBuf(fileEntry.compressedSize);
 
-        uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
-        if (readOk != fileEntry.compressed)
+        uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressedSize);
+        if (readOk != fileEntry.compressedSize)
         {
             Logger::Error("can't load file: %s course: can't read compressed content", relativeFilePath.c_str());
             return false;
@@ -205,10 +241,10 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     break;
     case Compressor::Type::RFC1951:
     {
-        Vector<uint8> packedBuf(fileEntry.compressed);
+        Vector<uint8> packedBuf(fileEntry.compressedSize);
 
-        uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressed);
-        if (readOk != fileEntry.compressed)
+        uint32 readOk = file->Read(packedBuf.data(), fileEntry.compressedSize);
+        if (readOk != fileEntry.compressedSize)
         {
             Logger::Error("can't load file: %s course: can't read compressed content", relativeFilePath.c_str());
             return false;
@@ -222,6 +258,13 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     }
     break;
     } // end switch
+
+    // check crc32 for file content
+    if (fileEntry.originalCrc32 != 0 && fileEntry.originalCrc32 != CRC32::ForBuffer(output.data(), output.size()))
+    {
+        throw FileCrc32FromPackNotMatch("original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue());
+    }
+
     return true;
 }
 

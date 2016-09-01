@@ -9,8 +9,8 @@ RECommandStack::RECommandStack()
 {
     canRedoChanged.Connect(this, &RECommandStack::CanRedoChanged);
     canUndoChanged.Connect(this, &RECommandStack::CanUndoChanged);
-    undoTextChanged.Connect(this, &RECommandStack::UndoTextChanged);
-    redoTextChanged.Connect(this, &RECommandStack::RedoTextChanged);
+    undoCommandChanged.Connect(this, &RECommandStack::OnUndoCommandChanged);
+    redoCommandChanged.Connect(this, &RECommandStack::OnRedoCommandChanged);
     cleanChanged.Connect(this, &CommandNotifyProvider::EmitCleanChanged);
     commandExecuted.Connect(this, &RECommandStack::OnCommandExecuted);
 }
@@ -129,5 +129,29 @@ void RECommandStack::ExecInternal(std::unique_ptr<DAVA::Command>&& command, bool
     else
     {
         CommandStack::ExecInternal(std::move(command), isSingleCommand);
+    }
+}
+
+void RECommandStack::OnUndoCommandChanged(const DAVA::Command* command)
+{
+    if (command != nullptr)
+    {
+        UndoTextChanged(command->GetDescription());
+    }
+    else
+    {
+        UndoTextChanged(DAVA::String());
+    }
+}
+
+void RECommandStack::OnRedoCommandChanged(const DAVA::Command* command)
+{
+    if (command != nullptr)
+    {
+        RedoTextChanged(command->GetDescription());
+    }
+    else
+    {
+        RedoTextChanged(DAVA::String());
     }
 }

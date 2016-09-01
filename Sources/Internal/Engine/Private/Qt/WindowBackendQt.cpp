@@ -6,6 +6,7 @@
 
 #include "Engine/Window.h"
 
+#include "Engine/Public/Engine.h"
 #include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
@@ -15,6 +16,7 @@
 #include "Render/RHI/rhi_Public.h"
 
 #include "UI/UIEvent.h"
+#include "Debug/DVAssert.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -25,12 +27,20 @@ namespace DAVA
 {
 namespace Private
 {
-class OGLContextBinder : public DAVA::Singleton<OGLContextBinder>
+class WindowBackend::OGLContextBinder
 {
 public:
     OGLContextBinder(QSurface* surface, QOpenGLContext* context)
         : davaContext(surface, context)
     {
+        DVASSERT(binder == nullptr);
+        binder = this;
+    }
+
+    ~OGLContextBinder()
+    {
+        DVASSERT(binder != nullptr);
+        binder = nullptr;
     }
 
     void AcquireContext()
@@ -38,7 +48,9 @@ public:
         QSurface* prevSurface = nullptr;
         QOpenGLContext* prevContext = QOpenGLContext::currentContext();
         if (prevContext != nullptr)
+        {
             prevSurface = prevContext->surface();
+        }
 
         contextStack.emplace(prevSurface, prevContext);
 
@@ -71,6 +83,8 @@ public:
         }
     }
 
+    static OGLContextBinder* binder;
+
 private:
     struct ContextNode
     {
@@ -88,20 +102,18 @@ private:
     DAVA::Stack<ContextNode> contextStack;
 };
 
+WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
+
 void AcqureContext()
 {
-    if (OGLContextBinder::Instance())
-    {
-        OGLContextBinder::Instance()->AcquireContext();
-    }
+    DVASSERT(WindowBackend::OGLContextBinder::binder);
+    WindowBackend::OGLContextBinder::binder->AcquireContext();
 }
 
 void ReleaseContext()
 {
-    if (OGLContextBinder::Instance())
-    {
-        OGLContextBinder::Instance()->ReleaseContext();
-    }
+    DVASSERT(WindowBackend::OGLContextBinder::binder);
+    WindowBackend::OGLContextBinder::binder->ReleaseContext();
 }
 
 class TriggerProcessEvent : public QEvent
@@ -173,13 +185,6 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
 WindowBackend::~WindowBackend()
 {
     delete renderWidget;
-}
-
-bool WindowBackend::Create(float32 width, float32 height)
-{
-    renderWidget = new RenderWidget(this, static_cast<uint32>(width), static_cast<uint32>(height));
-    renderWidget->show();
-    return true;
 }
 
 void WindowBackend::Resize(float32 width, float32 height)
@@ -261,7 +266,7 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
-    new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext());
+    contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engine->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->devicePixelRatioF();
@@ -270,7 +275,7 @@ void WindowBackend::OnCreated()
 
 void WindowBackend::OnDestroyed()
 {
-    OGLContextBinder::Instance()->Release();
+    window->PostWindowDestroyed();
     renderWidget = nullptr;
 }
 
@@ -455,8 +460,20 @@ void WindowBackend::DoCloseWindow()
     // renderWidget->hide() ???
 }
 
+void WindowBackend::Update()
+{
+    if (renderWidget != nullptr)
+    {
+        renderWidget->quickWindow()->update();
+    }
+}
+
 DAVA::RenderWidget* WindowBackend::GetRenderWidget()
 {
+    if (renderWidget == nullptr)
+    {
+        renderWidget = new RenderWidget(this, 180.0f, 180.0f);
+    }
     return renderWidget;
 }
 
@@ -607,6 +624,7 @@ uint32 WindowBackend::ConvertQtKeyToSystemScanCode(int key)
     DAVA::Logger::Warning("[WindowBackend::ConvertQtKeyToSystemScanCode] Unresolved Qt::Key: %d", key);
     return 0;
 }
+
 #endif
 
 } // namespace Private

@@ -15,11 +15,6 @@ WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
 {
 }
 
-DAVA::RenderWidget* WindowNativeService::GetRenderWidget()
-{
-    return windowBackend->GetRenderWidget();
-}
-
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__

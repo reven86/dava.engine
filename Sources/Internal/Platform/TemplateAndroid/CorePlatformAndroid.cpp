@@ -1,8 +1,7 @@
 #include "Base/Platform.h"
 
-#if !defined(__DAVAENGINE_COREV2__)
 
-//#include "Core/Core.h"
+#if !defined(__DAVAENGINE_COREV2__)
 
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -123,7 +122,7 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
 
     Core::CreateSingletons();
 
-    AssetsManager::Instance()->Init(assets);
+    new AssetsManagerAndroid(assets);
 
     Logger::SetTag(logTag);
 }
@@ -159,7 +158,6 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
-        FileSystem::Instance()->Init();
 
         Core::Instance()->SystemAppStarted();
 

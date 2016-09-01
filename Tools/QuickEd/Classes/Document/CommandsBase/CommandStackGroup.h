@@ -6,7 +6,9 @@
 namespace DAVA
 {
 class CommandStack;
+class Command;
 }
+
 class CommandStackGroup : DAVA::TrackedObject
 {
 public:
@@ -23,15 +25,15 @@ public:
     bool CanUndo() const;
     bool CanRedo() const;
 
-    DAVA::String GetUndoText() const;
-    DAVA::String GetRedoText() const;
+    const DAVA::Command* GetUndoCommand() const;
+    const DAVA::Command* GetRedoCommand() const;
 
     DAVA::Signal<bool> cleanChanged;
     DAVA::Signal<bool> canUndoChanged;
     DAVA::Signal<bool> canRedoChanged;
 
-    DAVA::Signal<const DAVA::String&> undoTextChanged;
-    DAVA::Signal<const DAVA::String&> redoTextChanged;
+    DAVA::Signal<const DAVA::Command*> undoCommandChanged;
+    DAVA::Signal<const DAVA::Command*> redoCommandChanged;
 
 private:
     DAVA::CommandStack* activeStack = nullptr;

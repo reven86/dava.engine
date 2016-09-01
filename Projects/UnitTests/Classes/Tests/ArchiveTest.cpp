@@ -11,60 +11,38 @@ DAVA_TESTCLASS (ArchiveTest)
 {
     DAVA_TEST (TestDavaArchive)
     {
-        Vector<ResourceArchive::FileInfo> infos{
-            ResourceArchive::FileInfo{ "Folder1/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder1/file2.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder1/file3.doc", 0, 0, Compressor::Type::None },
-
-            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file1.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file2", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file2.txt", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
-
-            ResourceArchive::FileInfo{ "Folder2/file1", 0, 0, Compressor::Type::None },
-            ResourceArchive::FileInfo{ "Folder2/file3.doc", 0, 0, Compressor::Type::None },
-        };
-
         FilePath baseDir("~res:/TestData/FileListTest/");
 
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 
         {
-            PackArchive archive("~res:/TestData/ArchiveTest/archive.pak");
+            RefPtr<File> fileDvpk(File::Create("~res:/TestData/ArchiveTest/archive.dvpk", File::OPEN | File::READ));
+            PackArchive archive(fileDvpk, "~res:/TestData/ArchiveTest/archive.dvpk");
 
-            for (auto& info : infos)
             {
-                TEST_VERIFY(archive.HasFile(info.relativeFilePath));
-                const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(info.relativeFilePath);
-                TEST_VERIFY(archiveInfo != nullptr);
-                if (archiveInfo)
-                {
-                    TEST_VERIFY(archiveInfo->compressionType == info.compressionType);
-                    TEST_VERIFY(archiveInfo->compressedSize == info.compressedSize);
-                    TEST_VERIFY(archiveInfo->originalSize == info.originalSize);
-                    TEST_VERIFY(archiveInfo->relativeFilePath == String(info.relativeFilePath));
+                const char* filename = "Utf8Test/utf16le.txt";
 
-                    Vector<uint8> fileContentFromArchive;
+                TEST_VERIFY(archive.HasFile(filename));
 
-                    TEST_VERIFY(archive.LoadFile(info.relativeFilePath, fileContentFromArchive));
+                const ResourceArchive::FileInfo* archiveInfo = archive.GetFileInfo(filename);
 
-                    FilePath fileOnHDD = baseDir + info.relativeFilePath;
+                TEST_VERIFY(archiveInfo->compressionType == Compressor::Type::Lz4HC);
 
-                    ScopedPtr<File> file(File::Create(fileOnHDD, File::OPEN | File::READ));
-                    TEST_VERIFY(file);
+                Vector<uint8> fileFromArchive;
 
-                    uint32 fileSize = file->GetSize();
+                TEST_VERIFY(archive.LoadFile(filename, fileFromArchive));
 
-                    TEST_VERIFY(fileSize == fileContentFromArchive.size());
+                FilePath filePath("~res:/TestData/Utf8Test/utf16le.txt");
 
-                    Vector<uint8> fileContentFromHDD(file->GetSize(), 0);
-                    uint32 readBytes = file->Read(fileContentFromHDD.data(), file->GetSize());
-                    TEST_VERIFY(readBytes == fileContentFromArchive.size());
+                ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
 
-                    TEST_VERIFY(fileContentFromArchive == fileContentFromHDD);
-                }
+                uint64 fileSize = file->GetSize();
+
+                Vector<uint8> fileFromHDD(static_cast<size_t>(fileSize), 0);
+
+                file->Read(fileFromHDD.data(), static_cast<uint32>(fileSize));
+
+                TEST_VERIFY(fileFromHDD == fileFromArchive);
             }
         }
 #endif // __DAVAENGINE_IPHONE__
@@ -74,7 +52,8 @@ DAVA_TESTCLASS (ArchiveTest)
     {
         try
         {
-            ZipArchive archive("~res:/TestData/ArchiveTest/archive.zip");
+            RefPtr<File> fileZip(File::Create("~res:/TestData/ArchiveTest/archive.zip", File::OPEN | File::READ));
+            ZipArchive archive(fileZip, "~res:/TestData/ArchiveTest/archive.zip");
             {
                 const char* filename = "Utf8Test/utf16le.txt";
 
@@ -92,11 +71,11 @@ DAVA_TESTCLASS (ArchiveTest)
 
                 ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
 
-                uint32 fileSize = file->GetSize();
+                uint64 fileSize = file->GetSize();
 
-                Vector<uint8> fileFromHDD(fileSize, 0);
+                Vector<uint8> fileFromHDD(static_cast<size_t>(fileSize), 0);
 
-                file->Read(fileFromHDD.data(), fileSize);
+                file->Read(fileFromHDD.data(), static_cast<uint32>(fileSize));
 
                 TEST_VERIFY(fileFromHDD == fileFromArchive);
             }
