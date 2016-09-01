@@ -151,9 +151,7 @@ rhi_MetalIsSupported()
     //    return [[UIDevice currentDevice].systemVersion floatValue] >= 8.0;
 }
 
-//------------------------------------------------------------------------------
-
-void metal_Initialize(const InitParam& param)
+void Metal_InitContext()
 {
     _Metal_Layer = (CAMetalLayer*)param.window;
     [_Metal_Layer retain];
@@ -191,7 +189,15 @@ void metal_Initialize(const InitParam& param)
     depth_desc.depthWriteEnabled = YES;
 
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
+}
+void Metal_CheckSurface()
+{
+}
 
+//------------------------------------------------------------------------------
+
+void metal_Initialize(const InitParam& param)
+{
     int ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
@@ -228,6 +234,9 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_DeviceCaps = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
+
+    DispatchPlatform::InitContext = &Metal_InitContext;
+    DispatchPlatform::CheckSurface = &Metal_CheckSurface;
 
     SetDispatchTable(DispatchMetal);
 
