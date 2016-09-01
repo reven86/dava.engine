@@ -682,10 +682,12 @@ CommandBufferMetal_t::Execute()
 
 void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassConfig& cfg, bool& ds_used)
 {
+    bool usingMSAA = cfg.UsingMSAA();
+    
     const RenderPassConfig::ColorBuffer& color0 = cfg.colorBuffer[0];
     if (color0.texture == InvalidHandle)
     {
-        if (cfg.samples > 1)
+        if (usingMSAA)
         {
             DVASSERT(color0.multisampleTexture != InvalidHandle);
             TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
@@ -696,7 +698,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
             desc.colorAttachments[0].texture = _Metal_Frame.back().drawable.texture;
         }
     }
-    else if (cfg.samples > 1)
+    else if (usingMSAA)
     {
         TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
         TextureMetal::SetAsResolveRenderTarget(color0.texture, desc);
@@ -718,12 +720,12 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
         desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
     }
 
-    desc.colorAttachments[0].storeAction = (cfg.samples > 1) ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
+    desc.colorAttachments[0].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
     desc.colorAttachments[0].clearColor = MTLClearColorMake(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]);
 
     if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
-        if (cfg.samples > 1)
+        if (usingMSAA)
         {
             TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.multisampleTexture, desc);
             desc.depthAttachment.resolveTexture = _Metal_DefDepthBuf;
@@ -738,7 +740,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
     }
     else if (cfg.depthStencilBuffer.texture != rhi::InvalidHandle)
     {
-        if (cfg.samples > 1)
+        if (usingMSAA)
         {
             TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.multisampleTexture, desc);
             TextureMetal::SetAsResolveDepthStencil(cfg.depthStencilBuffer.texture, desc);
@@ -760,7 +762,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
         switch (cfg.depthStencilBuffer.storeAction)
         {
         case STOREACTION_STORE:
-            DVASSERT(cfg.samples == 1);
+            DVASSERT(!usingMSAA);
             desc.depthAttachment.storeAction = MTLStoreActionStore;
             desc.stencilAttachment.storeAction = MTLStoreActionStore;
             break;
@@ -773,6 +775,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
             break;
 
         case STOREACTION_RESOLVE:
+            DVASSERT(usingMSAA);
             desc.depthAttachment.storeAction = MTLStoreActionMultisampleResolve;
             desc.stencilAttachment.storeAction = MTLStoreActionMultisampleResolve;
             break;
@@ -849,7 +852,7 @@ bool RenderPassMetal_t::Initialize()
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
-        cb->samples = cfg.samples;
+        cb->samples = rhi::TextureSamplesForAAType(cfg.antialiasingType);
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
@@ -880,7 +883,7 @@ bool RenderPassMetal_t::Initialize()
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
-            cb->samples = cfg.samples;
+            cb->samples = rhi::TextureSamplesForAAType(cfg.antialiasingType);
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 

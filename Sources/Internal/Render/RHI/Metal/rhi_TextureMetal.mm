@@ -628,14 +628,6 @@ metal_Texture_NeedRestore(Handle tex)
 
 //------------------------------------------------------------------------------
 
-Texture::Descriptor metal_Texture_GetDescriptor(Handle tex)
-{
-    TextureMetal_t* self = TextureMetalPool::Get(tex);
-    return self->CreationDesc();
-}
-
-//------------------------------------------------------------------------------
-
 namespace TextureMetal
 {
 void Init(uint32 maxCount)
@@ -651,7 +643,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Unmap = &metal_Texture_Unmap;
     dispatch->impl_Texture_Update = &metal_Texture_Update;
     dispatch->impl_Texture_NeedRestore = &metal_Texture_NeedRestore;
-    dispatch->impl_Texture_GetDescriptor = &metal_Texture_GetDescriptor;
 }
 
 void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce)
