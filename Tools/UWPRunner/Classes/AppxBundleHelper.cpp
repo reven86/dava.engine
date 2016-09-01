@@ -19,7 +19,7 @@ AppxBundleHelper::AppxBundleHelper(const FilePath& fileName)
     bool result = ExtractAllFromArchive(fileName.GetAbsolutePathname(),
                                         bundlePackageDir.GetAbsolutePathname());
 
-    DVASSERT_MSG(result, "Failed to extract files from bundle");
+    DVASSERT(result, "Failed to extract files from bundle");
 
     if (result)
     {

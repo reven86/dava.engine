@@ -460,7 +460,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
         default:
         {
-            DVASSERT_MSG(false, "Incorrect screen mode");
+            DVASSERT(false, "Incorrect screen mode");
             Logger::Error("Incorrect screen mode");
             return false;
         }

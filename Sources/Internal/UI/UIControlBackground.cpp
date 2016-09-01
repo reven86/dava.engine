@@ -232,7 +232,7 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
     }
     break;
     default:
-        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
+        DVASSERT(false, "Unknown colorInheritType: %d", static_cast<int32>(colorInheritType));
         break;
     }
 }

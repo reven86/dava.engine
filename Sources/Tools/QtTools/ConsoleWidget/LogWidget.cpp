@@ -111,7 +111,7 @@ void LogWidget::FillFiltersCombo()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
+            DVASSERT(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         ui->filter->addItem(logMap->ToString(value), value);

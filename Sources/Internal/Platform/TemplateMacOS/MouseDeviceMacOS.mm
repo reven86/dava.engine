@@ -35,7 +35,7 @@ void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
     case eCaptureMode::FRAME:
     // Unsupported yet
     default:
-        DVASSERT_MSG(false, "Unsupported cursor capture mode");
+        DVASSERT(false, "Unsupported cursor capture mode");
     }
 }
 

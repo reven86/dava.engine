@@ -239,7 +239,7 @@ void GameCore::RunOnlyThisTest()
 
 void GameCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT;
 }
 
 void GameCore::RegisterTests()

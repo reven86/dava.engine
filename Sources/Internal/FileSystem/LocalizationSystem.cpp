@@ -1,5 +1,6 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
 #include "yaml/yaml.h"
 #include "Utils/UTF8Utils.h"
@@ -57,7 +58,7 @@ void LocalizationSystem::SetDirectory(const FilePath& dirPath)
     String locale = GetDeviceLocale();
     SetCurrentLocale(locale);
 #else
-    DVASSERT_MSG(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
+    DVASSERT(false, "GetDeviceInfo() is not implemented for current platform! Used default locale!");
     String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
     SetCurrentLocale(loc);
 #endif

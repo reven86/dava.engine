@@ -23,10 +23,10 @@ void AssertTest::LoadResources()
     if (actions)
     {
         actions->GetActionMap().Put(DAVA::FastName("NON_MODAL_ASSERT"), [&]() {
-            DVWARNING(false, "Demo assert");
+            // DVWARNING(false, "Demo assert");
         });
         actions->GetActionMap().Put(DAVA::FastName("MODAL_ASSERT"), [&]() {
-            DVASSERT_MSG(false, "Demo assert");
+            DVASSERT(false, "Demo assert");
         });
         actions->GetActionMap().Put(DAVA::FastName("DELAYED_MODAL_ASSERT"), [&]() {
             timeOut = DEFAULT_TIMEOUT;
@@ -51,7 +51,7 @@ void AssertTest::Update(DAVA::float32 timeElapsed)
         if (timeOut <= 0.f)
         {
             timeOut = 0.f;
-            DVASSERT_MSG(false, "Demo assert");
+            DVASSERT(false, "Demo assert");
         }
     }
     if (countdownText.Get())

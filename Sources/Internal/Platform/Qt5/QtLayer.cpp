@@ -85,7 +85,7 @@ void QtLayer::Resize(int32 width, int32 height, float64 dpr)
     Renderer::Reset(resetParams);
 
     VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
-    DVASSERT(nullptr != vcs)
+    DVASSERT(nullptr != vcs);
 
     vcs->SetInputScreenAreaSize(realWidth, realHeight);
 

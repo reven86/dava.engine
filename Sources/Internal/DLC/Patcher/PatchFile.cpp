@@ -913,7 +913,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                                 Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected."
                                                                  " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
                                                     tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC, actualSizeFromFile, curInfo.newSize);
-                                DVASSERT_MSG(false, "check log now!");
+                                DVASSERT(false, "check log now!");
                             }
                         }
 

@@ -277,7 +277,9 @@ void DocumentGroup::CloseDocument(Document* document)
             nextDocument = documents.at(documents.size() - 2); //last document will be removed
         }
     }
-    DVVERIFY(documents.removeAll(document) == 1);
+    
+    const size_t removedCount = documents.removeAll(document);
+    DVASSERT(removedCount == 1);
     emit CanSaveAllChanged(!documents.empty());
 
     commandStackGroup->RemoveStack(document->GetCommandStack());

@@ -5,6 +5,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -372,7 +373,7 @@ bool CachedItemValue::ExportToFolder(const FilePath& folder) const
             const ValueData& data = dc.second;
 
             auto written = file->Write(data.get()->data(), static_cast<uint32>(data.get()->size()));
-            DVVERIFY(written == data.get()->size());
+            DVASSERT(written == data.get()->size());
         }
         else
         {
@@ -431,7 +432,7 @@ CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
         data.get()->resize(dataSize);
 
         auto read = file->Read(data.get()->data(), dataSize);
-        DVVERIFY(read == dataSize);
+        DVASSERT(read == dataSize);
     }
     else
     {

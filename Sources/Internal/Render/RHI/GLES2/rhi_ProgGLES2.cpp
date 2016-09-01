@@ -287,7 +287,7 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
     Handle handle = InvalidHandle;
 
     DVASSERT(bufIndex < countof(cbuf));
-    DVASSERT(prog != 0)
+    DVASSERT(prog != 0);
     //    DVASSERT(cbuf[bufIndex].location != DAVA::InvalidIndex);
 
     if (bufIndex < countof(cbuf) && cbuf[bufIndex].location != DAVA::InvalidIndex)

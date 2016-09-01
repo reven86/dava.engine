@@ -4,6 +4,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 #include "Infrastructure/GameCore.h"
 
@@ -193,7 +194,7 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT;
 }
 
 void GameCore::OnTestClassStarted(const DAVA::String& testClassName)

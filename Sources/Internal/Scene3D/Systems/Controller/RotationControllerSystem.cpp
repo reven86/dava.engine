@@ -42,7 +42,8 @@ void RotationControllerSystem::AddEntity(Entity* entity)
 
 void RotationControllerSystem::RemoveEntity(Entity* entity)
 {
-    DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
+    const bool removeResult = FindAndRemoveExchangingWithLast(entities, entity);
+    DVASSERT(removeResult);
 }
 
 void RotationControllerSystem::Process(float32 timeElapsed)

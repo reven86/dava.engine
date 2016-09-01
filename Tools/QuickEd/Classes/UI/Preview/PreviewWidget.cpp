@@ -123,7 +123,7 @@ float PreviewWidget::GetScaleFromComboboxText() const
     curTextValue.remove(' ');
     bool ok;
     float scaleValue = curTextValue.toFloat(&ok);
-    DVASSERT_MSG(ok, "can not parse text to float");
+    DVASSERT(ok, "can not parse text to float");
     return scaleValue / 100.0f;
 }
 

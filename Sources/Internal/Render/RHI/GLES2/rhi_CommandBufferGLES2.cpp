@@ -2255,7 +2255,7 @@ void SuspendGLES2()
     }
     else
     {
-        DVASSERT_MSG(false, "[RHI] Render was suspended twice");
+        DVASSERT(false, "[RHI] Render was suspended twice");
     }
 
     Logger::Error("Render GLES Suspended");
@@ -2273,7 +2273,7 @@ void ResumeGLES2()
     }
     else
     {
-        DVASSERT_MSG(false, "[RHI] Render was resumed twice");
+        DVASSERT(false, "[RHI] Render was resumed twice");
     }
 }
 

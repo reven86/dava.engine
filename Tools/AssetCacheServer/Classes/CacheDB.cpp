@@ -5,6 +5,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
+#include "Utils/StringFormat.h"
 
 #include "AssetCache/CachedItemValue.h"
 #include "ServerCacheEntry.h"
@@ -92,7 +93,7 @@ void CacheDB::Load()
 
     if (header->GetUInt32("version") != VERSION)
     {
-        DVASSERT_MSG(false, "cachedb file version is changed. Versions load functions should be implemented");
+        DVASSERT(false, "cachedb file version is changed. Versions load functions should be implemented");
         return;
     }
 

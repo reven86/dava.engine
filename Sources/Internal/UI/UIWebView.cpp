@@ -48,7 +48,7 @@ void UIWebView::OpenFile(const FilePath& path)
     // the reference type file:// is not supported in Windows 10
     // for security reasons
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
-    DVASSERT_MSG(file, "[UIWebView] Failed to open file");
+    DVASSERT(file, "[UIWebView] Failed to open file");
     String data;
     if (file && file->ReadString(data) > 0)
     {

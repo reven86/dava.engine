@@ -1294,7 +1294,7 @@ _DX9_ExecuteQueuedCommands()
                 TextureDX9::LogUnrestoredBacktraces();
                 VertexBufferDX9::LogUnrestoredBacktraces();
                 IndexBufferDX9::LogUnrestoredBacktraces();
-                DVASSERT_MSG(0, "Failed to restore all resources in time.");
+                DVASSERT(0, "Failed to restore all resources in time.");
             }
 #endif
             _RejectAllFrames();

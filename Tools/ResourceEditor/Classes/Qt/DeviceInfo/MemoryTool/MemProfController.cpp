@@ -2,6 +2,7 @@
 #include <QFileDialog>
 
 #include <Utils/UTF8Utils.h>
+#include "Utils/StringFormat.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"

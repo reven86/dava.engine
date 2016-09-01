@@ -5,6 +5,8 @@
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 
+#include "Utils/StringFormat.h"
+
 using namespace DAVA;
 
 namespace TextureDescriptorToolLocal

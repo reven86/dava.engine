@@ -405,7 +405,7 @@ Entity* Entity::Clone(Entity* dstNode)
 {
     if (!dstNode)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
+        DVASSERT(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
         dstNode = new Entity();
     }
 

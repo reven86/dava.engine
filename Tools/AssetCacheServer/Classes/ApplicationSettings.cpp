@@ -2,6 +2,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Utils/StringFormat.h"
 
 RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
     : ip(_ip)

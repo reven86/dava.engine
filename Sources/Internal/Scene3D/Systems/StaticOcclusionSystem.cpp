@@ -221,7 +221,7 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObjec
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
         indexedRenderObjects.resize(Max(static_cast<uint32>(indexedRenderObjects.size()), static_cast<uint32>(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT_MSG(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr,
                      "Static Occlusion merge conflict. Skip this message and invalidate Static Occlusion");
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }

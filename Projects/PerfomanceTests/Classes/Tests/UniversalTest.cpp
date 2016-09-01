@@ -21,7 +21,7 @@ void UniversalTest::LoadResources()
     BaseTest::LoadResources();
 
     SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
-    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
+    DVASSERT(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene " + GetParams().scenePath);
 
     Entity* cameraEntity = GetScene()->FindByName(CAMERA);
 
@@ -33,7 +33,7 @@ void UniversalTest::LoadResources()
     else
     {
         Entity* cameraPathEntity = GetScene()->FindByName(CAMERA_PATH);
-        DVASSERT_MSG(cameraPathEntity != nullptr, "Can't get path component");
+        DVASSERT(cameraPathEntity != nullptr, "Can't get path component");
 
         PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 

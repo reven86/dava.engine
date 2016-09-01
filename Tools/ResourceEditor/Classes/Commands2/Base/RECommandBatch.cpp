@@ -19,7 +19,7 @@ RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
         return DAVA::DynamicTypeCheck<RECommand*>(command);
     }
 
-    DVASSERT_MSG(false, DAVA::Format("command at index %u, in batch with size %u not found", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
+    DVASSERT(false, DAVA::Format("command at index %u, in batch with size %u not found", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
     return nullptr;
 }
 

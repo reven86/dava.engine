@@ -755,7 +755,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         Logger::Error("vertex-shader text:\n");
         DumpShaderText((const char*)(&vprog_bin[0]), (unsigned int)vprog_bin.size());
         ps->vertexShader = nullptr;
-        DVASSERT_MSG(ps->vertexShader, desc.vprogUid.c_str());
+        DVASSERT(ps->vertexShader, desc.vprogUid.c_str());
     }
 
     // create fragment-shader
@@ -813,7 +813,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
         {
             Logger::Error("FAILED to create pixel-shader:\n%s\n", D3D11ErrorText(hr));
             ps->pixelShader = nullptr;
-            DVASSERT_MSG(ps->pixelShader, desc.fprogUid.c_str());
+            DVASSERT(ps->pixelShader, desc.fprogUid.c_str());
         }
     }
     else

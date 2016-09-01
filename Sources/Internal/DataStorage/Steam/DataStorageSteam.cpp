@@ -53,7 +53,7 @@ ScopedPtr<KeyedArchive> DataStorageSteam::ReadArchFromStorage() const
 
     dataArchive = new KeyedArchive();
     bool isLoaded = dataArchive->Load(dataFile);
-    DVASSERT_MSG(isLoaded, "Wrong SteamArchive Format.");
+    DVASSERT(isLoaded, "Wrong SteamArchive Format.");
 
     return dataArchive;
 }

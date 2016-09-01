@@ -34,7 +34,8 @@ void WASDControllerSystem::AddEntity(Entity* entity)
 
 void WASDControllerSystem::RemoveEntity(Entity* entity)
 {
-    DVVERIFY(FindAndRemoveExchangingWithLast(entities, entity));
+    const bool removeResult = FindAndRemoveExchangingWithLast(entities, entity);
+    DVASSERT(removeResult);
 }
 
 void WASDControllerSystem::Process(float32 timeElapsed)

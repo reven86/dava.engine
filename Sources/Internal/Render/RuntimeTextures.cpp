@@ -105,7 +105,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         break;
 
     default:
-        DVASSERT_MSG(false, "Trying to init unknown texture as dynamic");
+        DVASSERT(false, "Trying to init unknown texture as dynamic");
         break;
     }
 }

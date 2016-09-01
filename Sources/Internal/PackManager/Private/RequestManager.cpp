@@ -1,6 +1,7 @@
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "PackManager/Private/PackManagerImpl.h"
 

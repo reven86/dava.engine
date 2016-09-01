@@ -84,7 +84,7 @@ public:
             //VI: but cast_if_equal casts to the exact types only
             return static_cast<T*>((newFunc)());
         }
-        DVASSERT_MSG(false, Format("Class %s creator not found.", name.c_str()).c_str());
+        DVASSERT(false, "Class %s creator not found.", name.c_str());
         return 0;
     }
 

@@ -114,7 +114,7 @@ PixelFormat GetDAVAFormatFromPVR(uint64 pixelFormat)
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %lu", pixelFormat).c_str());
+    DVASSERT(false, Format("Unsupported format: %lu", pixelFormat).c_str());
     return FORMAT_INVALID;
 }
 
@@ -151,7 +151,7 @@ uint64 GetPVRFormatFromDAVA(PixelFormat pixelFormat)
         return found->second;
     }
 
-    DVASSERT_MSG(false, Format("Unsupported format: %u", pixelFormat).c_str());
+    DVASSERT(false, Format("Unsupported format: %u", pixelFormat).c_str());
     return ePVRTPF_NumCompressedPFs;
 }
 

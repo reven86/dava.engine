@@ -148,7 +148,7 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex& 
     }
 
     default:
-        DVASSERT_MSG(0, "Invalid material editor filter used");
+        DVASSERT(0, "Invalid material editor filter used");
         break;
     }
 

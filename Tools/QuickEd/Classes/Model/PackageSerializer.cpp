@@ -26,6 +26,8 @@
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
 
+#include "Utils/StringFormat.h"
+
 using namespace DAVA;
 
 PackageSerializer::PackageSerializer()

@@ -1006,7 +1006,7 @@ void QtMainWindow::SetupActions()
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
     connect(ui->actionGenerate_Assert, &QAction::triggered, []()
             {
-                DVASSERT_MSG(false, "Debug assert call");
+                DVASSERT(false, "Debug assert call");
             });
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -3394,7 +3394,7 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         OnReloadTextures();
         break;
     default:
-        DVASSERT_MSG(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)).c_str());
+        DVASSERT(false, DAVA::Format("Not implemented action : %d", static_cast<DAVA::int32>(id)).c_str());
         break;
     }
 }

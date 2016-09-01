@@ -378,7 +378,7 @@ void AutotestingSystem::OnError(const String& errorMessage)
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
-    DVASSERT_MSG(false, errorMessage.c_str())
+    DVASSERT(false, errorMessage.c_str());
 #if !defined(__DAVAENGINE_COREV2__)
     Core::Instance()->Quit();
 #endif

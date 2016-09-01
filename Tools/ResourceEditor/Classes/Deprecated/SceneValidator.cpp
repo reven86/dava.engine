@@ -482,7 +482,7 @@ DAVA::FilePath SceneValidator::SetPathForChecking(const DAVA::FilePath& pathname
 
 bool SceneValidator::ValidateTexturePathname(const DAVA::FilePath& pathForValidation)
 {
-    DVASSERT_MSG(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
+    DVASSERT(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
 
     bool pathIsCorrect = IsPathCorrectForProject(pathForValidation);
     if (pathIsCorrect)
@@ -506,7 +506,7 @@ bool SceneValidator::ValidateTexturePathname(const DAVA::FilePath& pathForValida
 
 bool SceneValidator::ValidateHeightmapPathname(const DAVA::FilePath& pathForValidation)
 {
-    DVASSERT_MSG(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
+    DVASSERT(!pathForChecking.IsEmpty(), "Need to set pathname for DataSource folder");
 
     bool pathIsCorrect = IsPathCorrectForProject(pathForValidation);
     if (pathIsCorrect)

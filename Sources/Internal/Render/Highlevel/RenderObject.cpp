@@ -195,7 +195,7 @@ RenderObject* RenderObject::Clone(RenderObject* newObject)
 {
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<RenderObject>(this), "Can clone only RenderObject");
+        DVASSERT(IsPointerToExactClass<RenderObject>(this), "Can clone only RenderObject");
         newObject = new RenderObject();
     }
 

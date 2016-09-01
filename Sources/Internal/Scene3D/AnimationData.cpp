@@ -1,4 +1,5 @@
 #include "Scene3D/AnimationData.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

@@ -1,3 +1,4 @@
+#include "Utils/StringFormat.h"
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/PngImage.h"
 #include "Render/Image/LibPSDHelper.h"

@@ -353,7 +353,7 @@ float32 UIScrollView::GetParameterForScrollBar(UIScrollBar* forScrollBar, const 
         return vectorParam.y;
     }
 
-    DVASSERT_MSG(false, "Unknown orientation!")
+    DVASSERT(false, "Unknown orientation!");
     return 0.0f;
 }
 

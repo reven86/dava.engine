@@ -2,6 +2,7 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

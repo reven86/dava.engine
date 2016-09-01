@@ -4,6 +4,7 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Material/NMaterial.h"
 #include "Utils/Random.h"
+#include "Utils/StringFormat.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
@@ -166,13 +167,13 @@ RenderObject* VegetationRenderObject::Clone(RenderObject* newObject)
 {
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<VegetationRenderObject>(this), "Can clone only from VegetationRenderObject");
+        DVASSERT(IsPointerToExactClass<VegetationRenderObject>(this), "Can clone only from VegetationRenderObject");
         newObject = new VegetationRenderObject();
     }
     else
     {
-        DVASSERT_MSG(IsPointerToExactClass<VegetationRenderObject>(this), "Can clone only from VegetationRenderObject");
-        DVASSERT_MSG(IsPointerToExactClass<VegetationRenderObject>(newObject), "Can clone only to VegetationRenderObject");
+        DVASSERT(IsPointerToExactClass<VegetationRenderObject>(this), "Can clone only from VegetationRenderObject");
+        DVASSERT(IsPointerToExactClass<VegetationRenderObject>(newObject), "Can clone only to VegetationRenderObject");
     }
 
     VegetationRenderObject* vegetationRenderObject = static_cast<VegetationRenderObject*>(newObject);
@@ -880,7 +881,7 @@ void VegetationRenderObject::CreateRenderData()
 void VegetationRenderObject::RestoreRenderData()
 {
     //#if defined(__DAVAENGINE_IPHONE__)
-    //    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+    //    DVASSERT(false, "Should not even try to restore on iphone - render data is released");
     //#endif
 
     if (renderData == nullptr)

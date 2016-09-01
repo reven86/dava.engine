@@ -20,7 +20,7 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , acceptor(ioLoop)
 {
     DVASSERT(true == endpoint.Address().IsMulticast());
-    DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
+    DVASSERT(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
     DVASSERT(loop != nullptr && announcePeriod > 0 && dataCallback != nullptr);
 }
 

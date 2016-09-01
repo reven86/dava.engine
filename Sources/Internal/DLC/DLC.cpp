@@ -4,6 +4,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Downloader/DownloadManager.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Utils/StringFormat.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"

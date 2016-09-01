@@ -284,7 +284,7 @@ void UIParticles::ReloadEffect()
 {
     if (effectPath.IsEmpty())
     {
-        DVASSERT_MSG(false, "You have to load UIPartilces effect prior to calling Reload()");
+        DVASSERT(false, "You have to load UIPartilces effect prior to calling Reload()");
         return;
     }
 

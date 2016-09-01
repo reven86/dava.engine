@@ -964,6 +964,8 @@ void QtPropertyData::RefillSearchIndex()
     for (size_t i = 0; i < childrenData.size(); ++i)
     {
         const std::unique_ptr<QtPropertyData>& data = childrenData[i];
-        DVVERIFY(keyToDataMap.emplace(ChildKey(data.get()), i).second);
+
+        const auto emplacedPair = keyToDataMap.emplace(ChildKey(data.get()), i);
+        DVASSERT(emplacedPair.second);
     }
 }

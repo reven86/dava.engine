@@ -120,7 +120,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 
     if (!RecreatePending() && (mappedData != nullptr))
     {
-        DVASSERT(!isMapped)
+        DVASSERT(!isMapped);
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;

@@ -64,7 +64,7 @@ QPixmap CursorSystem::CreatePixmapForArea(float angle, const HUDAreaInfo::eArea 
     case HUDAreaInfo::ROTATE_AREA:
         return CreatePixmap(":/Cursors/cursorRotate.png");
     default:
-        DVASSERT_MSG(false, "unexpected enum value");
+        DVASSERT(false, "unexpected enum value");
         return QPixmap();
     }
 }

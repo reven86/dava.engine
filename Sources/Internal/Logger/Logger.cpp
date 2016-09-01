@@ -43,8 +43,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
         }
         // do you really want to print 1Mb with one call may be your format
         // string incorrect?
-        DVASSERT_MSG(dynamicbuf.size() < 1024 * 1024,
-                     DAVA::Format("format: {%s}", format).c_str());
+        DVASSERT(dynamicbuf.size() < 1024 * 1024, "format: {%s}", format);
 
         dynamicbuf.resize(dynamicbuf.size() * 2);
     }

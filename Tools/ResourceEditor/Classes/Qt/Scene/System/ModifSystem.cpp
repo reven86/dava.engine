@@ -850,7 +850,7 @@ void EntityModificationSystem::BakeGeometry(const SelectableGroup& entities, Bak
         commandMessage = "Move pivot point to center";
         break;
     default:
-        DVASSERT_MSG(0, "Unknown bake mode");
+        DVASSERT(0, "Unknown bake mode");
         return;
     }
 
@@ -1073,7 +1073,7 @@ void EntityModificationSystem::ApplyRotateValues(ST_Axis axis, const SelectableG
                 rotationMatrix.CreateRotation(DAVA::Vector3(0, 0, 1), z - rotate.z);
                 break;
             default:
-                DVASSERT_MSG(0, "Unable to rotate around several axis at once");
+                DVASSERT(0, "Unable to rotate around several axis at once");
                 break;
             }
 
@@ -1103,7 +1103,7 @@ void EntityModificationSystem::ApplyScaleValues(ST_Axis axis, const SelectableGr
         axisScaleValue = values.z;
         break;
     default:
-        DVASSERT_MSG(0, "Scaling must be uniform, unable to scale via several axis");
+        DVASSERT(0, "Scaling must be uniform, unable to scale via several axis");
         break;
     }
 

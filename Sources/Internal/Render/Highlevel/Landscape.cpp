@@ -133,7 +133,7 @@ void Landscape::RestoreGeometry()
             break;
 
         default:
-            DVASSERT_MSG(0, "Invalid RestoreBufferData type");
+            DVASSERT(0, "Invalid RestoreBufferData type");
         }
     }
 }
@@ -1446,7 +1446,7 @@ RenderObject* Landscape::Clone(RenderObject* newObject)
 
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
+        DVASSERT(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
         newObject = new Landscape();
     }
 

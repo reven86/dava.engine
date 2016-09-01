@@ -45,7 +45,7 @@ void FoliageSystem::AddEntity(Entity* entity)
             /*if (!foliageEntities.empty())
             {
                 const int WARNING = 0; // trick to display "WARNING" in message, instead of "0" or "false"
-                DVASSERT_MSG(WARNING, "Do not try to add more than one vegetation entity to scene.");
+                DVASSERT(WARNING, "Do not try to add more than one vegetation entity to scene.");
             }*/
             foliageEntities.push_back(SafeRetain(entity));
             SyncFoliageWithLandscape();

@@ -185,7 +185,7 @@ inline int32 BaseTest::GetTestFrameNumber() const
 
 inline void BaseTest::SetParams(const TestParams& _testParams)
 {
-    DVASSERT_MSG(frameNumber == 1, "Can't set params after test started");
+    DVASSERT(frameNumber == 1, "Can't set params after test started");
 
     this->testParams = _testParams;
 }

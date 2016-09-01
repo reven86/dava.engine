@@ -398,7 +398,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
 
     case DropingMaterial:
     {
-        DVASSERT_MSG(false, "This can't be done. Materials should be assigned only on RenderBatch");
+        DVASSERT(false, "This can't be done. Materials should be assigned only on RenderBatch");
     }
     break;
 

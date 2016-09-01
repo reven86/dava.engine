@@ -84,7 +84,7 @@ void android_gl_init(void* _window)
         //worst case only 16 bit depth buffer
         eglChooseConfig(_display, d16s8ConfigAttribs, &_config, 1, &numConfigs);
     }
-    DVASSERT_MSG(_config != nullptr, "Can't set GL configuration");
+    DVASSERT(_config != nullptr, "Can't set GL configuration");
 
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
 

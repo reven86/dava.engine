@@ -671,7 +671,7 @@ DAVA::Entity* SceneEditor2::Clone(Entity* dstNode /*= NULL*/)
 {
     if (!dstNode)
     {
-        DVASSERT_MSG(DAVA::IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
+        DVASSERT(DAVA::IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
         dstNode = new SceneEditor2();
     }
 

@@ -42,7 +42,7 @@ RenderObject* Mesh::Clone(RenderObject* newObject)
 {
     if (!newObject)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Mesh>(this), "Can clone only Mesh");
+        DVASSERT(IsPointerToExactClass<Mesh>(this), "Can clone only Mesh");
         newObject = new Mesh();
     }
 

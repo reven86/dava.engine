@@ -65,7 +65,7 @@ QStringList ThemesNames()
         bool ok = themesMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create Themes names");
+            DVASSERT(ok, "wrong enum used to create Themes names");
             break;
         }
         names << QString::fromStdString(themesMap->ToString(value));
@@ -83,7 +83,7 @@ void SetCurrentTheme(const QString& theme)
         bool ok = themesMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used");
+            DVASSERT(ok, "wrong enum used");
             break;
         }
         if (themesMap->ToString(value) == themeStr)
@@ -94,7 +94,7 @@ void SetCurrentTheme(const QString& theme)
         }
     }
 
-    DVASSERT_MSG(false, "Invalid theme passed to SetTheme");
+    DVASSERT(false, "Invalid theme passed to SetTheme");
 }
 
 void SetCurrentTheme(eTheme theme)
@@ -159,7 +159,8 @@ void SetupClassicTheme()
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, lightDisabledTextColor);
 
     QFile styleSheet(":/QtTools/LightTheme.qss");
-    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    const bool opened = styleSheet.open(QIODevice::ReadOnly);
+    DVASSERT(opened);
     QString styleSheetContent = styleSheet.readAll();
 
     qApp->setPalette(lightPalette);
@@ -204,7 +205,8 @@ void SetupDarkTheme()
     darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(0xC0, 0xC0, 0xC0));
 
     QFile styleSheet(":/QtTools/DarkTheme.qss");
-    DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
+    const bool opened = styleSheet.open(QIODevice::ReadOnly);
+    DVASSERT(opened);
     QString styleSheetContent = styleSheet.readAll();
 
     auto colorToString = [](const QColor& color)

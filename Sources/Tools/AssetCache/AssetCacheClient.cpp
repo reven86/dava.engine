@@ -318,7 +318,7 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
                 request.recieved = true;
                 request.processingRequest = true;
 
-                DVASSERT_MSG(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
+                DVASSERT(request.value != nullptr, "Request object that waits for response of data, should have valid pointer to AssetCacheValue");
                 *(request.value) = value;
 
                 DumpInfo(key, value);
@@ -380,7 +380,7 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
         request.result = AssetCache::Error::UNEXPECTED_PACKET;
         break;
     default:
-        DVASSERT_MSG(false, Format("Unexpected incorrect packet type: %d", type).c_str());
+        DVASSERT(false, "Unexpected incorrect packet type: %d", type);
         request.result = AssetCache::Error::CORRUPTED_DATA;
         break;
     }

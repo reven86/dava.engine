@@ -55,7 +55,7 @@ void MaterialsTest::LoadResources()
     ScopedPtr<Scene> materialsScene(new Scene());
 
     SceneFileV2::eError error = materialsScene->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
-    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
+    DVASSERT(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene " + GetParams().scenePath);
 
     Entity* materialsEntity = materialsScene->FindByName(MATERIALS_ENTITY);
 

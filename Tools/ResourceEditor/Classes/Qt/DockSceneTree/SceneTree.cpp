@@ -114,13 +114,15 @@ protected:
     template <typename Func>
     void Connect(QAction* action, const typename QtPrivate::FunctionPointer<Func>::Object* receiver, Func slot)
     {
-        DVVERIFY(QObject::connect(action, &QAction::triggered, receiver, slot));
+        const auto connectResult = QObject::connect(action, &QAction::triggered, receiver, slot);
+        DVASSERT(connectResult);
     }
 
     template <typename Func>
     void Connect(QAction* action, Func slot)
     {
-        DVVERIFY(QObject::connect(action, &QAction::triggered, slot));
+        const auto connectResult = QObject::connect(action, &QAction::triggered, slot);
+        DVASSERT(connectResult);
     }
 
     void MarkStructureChanged()

@@ -153,7 +153,7 @@ uint16 QuadTree::FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox)
         {
             if (currNode.children[fitNode] == INVALID_TREE_NODE_INDEX) //set child node if not exist
             {
-                DVASSERT((nodes[currIndex].nodeInfo & QuadTreeNode::NUM_CHILD_NODES_MASK) != 4)
+                DVASSERT((nodes[currIndex].nodeInfo & QuadTreeNode::NUM_CHILD_NODES_MASK) != 4);
                 uint16 newNodeIndex;
                 if (emptyNodes.size()) //take from empty
                 {

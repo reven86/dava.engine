@@ -1,197 +1,154 @@
-#ifndef __DAVAENGINE_ASSERT_H__
-#define __DAVAENGINE_ASSERT_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
-#include "Logger/Logger.h"
-#include "Utils/StringFormat.h"
-
-/**
-	\page tutorial_debug Debugging
-	Here you'll learn how to debug your project and find bugs faster.
-
-	\section asserts Assertion macros 
-	For debugging purposes and for easy search of bugs in runtime you can use assert macros. 
-	There are 2 types of macros defined: DVASSERT and DVVERIFY.
-
-	DVASSERT macro designed for situations where you want to check something but in release you want to remove this check at all. 
-
-	For example, you have a function SetFrame and frame can't be negative, but you want to check it only in debug, and stop execution if such situation happened. 
-	You can write
-	\code
-	void SetFrame(int32 frame)
-	{
-		DVASSERT(frame >= 0);		// this code will be removed in release configuration.
-
-		// Function code
-	}
-	\endcode
-
-	In case if you execute some function inside your assertion and want to leave the calls but remove checks you should 
-	use DVVERIFY macro. 
-
-	\code
-	void SomeFunction(BaseObject * object)
-	{
-		int32 propertyInt;
-		DVVERIFY(GetObjectProperty(object, "propertyInt", &propertyInt));		// this code will not be removed in release configuration.
-	}
-	\endcode
-*/
-
-// Runtime assert
-#include "Debug/DVAssertMessage.h"
+#include <tuple>
 #include "Debug/Backtrace.h"
 
-#if defined(ENABLE_ASSERT_BREAK)
+/** \defgroup Asserts
+* Asserts are a set of macroses for testing conditions which are always expected to be true.
+*
+* There are two of them:
+* DVASSERT - turned on in Debug mode, turned off for Release mode
+* DVASSERT_CRITICAL - turned on in both Debug and Release mode
+*
+* They both have the same interface and can be called with or without additional message
+* (message formatting is supported via additional arguments).
+*
+* Usage examples:
+* - DVASSERT(isConnected)
+* - DVASSERT(isConnected, "User is not connected!")
+* - DVASSERT_CRITICAL(itemId == 100, "Item id was expected to be equal to 100, but it's equal to: %d", itemId)
+*
+* If an assert fails, default behaviour is to halt a program (and show the line during debugging),
+* but adding your own handlers is supported via DAVA::Assert::AddHandler (and removing with DAVA::Assert::RemoveHandler).
+* Each handler accepts DAVA::Assert::AssertInfo object with all the info and should return one of two values:
+* - DAVA::Assert::FailBehaviour::Continue to indicate that program should not be stopped beucause of an assert
+* - DAVA::Assert::FailBehaviour::Halt otherwise
+*
+* All the handlers will be called every time, even if one of them has already reported FailBehaviour::Halt.
+*
+* Note that if at least one handler is added, you opt for controlling when a program should be halted all by yourself,
+* since default behaviour (always stopping a program) will no longer be used.
+*
+* A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Continue,
+* and second one shows a dialog box asking user if a program should be stopped and returning FailBehaviour::Halt in case it should.
+*/
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
-
-#include <signal.h>
-#include <unistd.h>
-
-#endif //PLATFORMS
-
-inline void DavaDebugBreak()
+namespace DAVA
 {
-#if defined(__DAVAENGINE_WINDOWS__)
+/** \ingroup Asserts */
+namespace Assert
+{    
+    /** Helper class that groups information about an assert */
+	class AssertInfo final
+	{
+	public:
+		AssertInfo(
+			const char* const expression,
+			const char* const fileName,
+			const int lineNumber,
+			const char* const message,
+			const DAVA::Vector<DAVA::Debug::StackFrame> backtrace)
+			: expression(expression)
+			, fileName(fileName)
+			, lineNumber(lineNumber)
+			, message(message)
+			, backtrace(backtrace)
+		{
 
-    __debugbreak();
+		}
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+		const char* const expression;
+		const char* const fileName;
+		const int lineNumber;
+        const char* const message;
+		const DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
+	};
 
-    raise(SIGTRAP);
+	/** Indicates how a program should act when an assert fails */
+	enum class FailBehaviour
+	{
+		/** Ignore an assert and continue invocation */
+		Continue,
 
-#else //PLATFORMS
-#error "DavaDebugBreak: undefined platform"
-#endif //PLATFORMS
+		/** Stop invocation */
+		Halt
+	};
+
+	/** Typedef for function that handles failed asserts and returns FailBehaviour
+    * \param[in] assertInfo Information about a failed assert
+    * \returns FailBehaviour value, indicating if a program should be halted or not
+    */
+	typedef FailBehaviour (*Handler)(const AssertInfo& assertInfo);
+
+	/** Registers a handler to use
+    * \param[in] handler Handler to add
+    */
+	void AddHandler(const Handler handler);
+
+	/** Unregisters a handler if it was added before
+    * \param[in] handler Handler to remove
+    */
+	void RemoveHandler(const Handler handler);
+
+	/** Handles a failed assert (used internally by assert macroses) */
+	FailBehaviour Handle(
+        const char* const expr,
+        const char* const fileName,
+        const int lineNumber,
+        const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+        const int varArgsCount,
+        ...);
+}
 }
 
+// Macro for generating debug break
+// It's not a function in order to prevent stacktrace altering
+#if defined (__DAVAENGINE_WINDOWS__)
+#define DVASSERT_HALT __debugbreak()
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#define DVASSERT_HALT raise(SIGTRAP)
 #else
-
-#define DavaDebugBreak()
-
-#endif //__DAVAENGINE_DEBUG__
-
-#if defined(ENABLE_ASSERT_LOGGING)
-// end=assert=msg - used as marker on teamcity to fail build
-#define LogErrorFunction(assertType, expr, msg, file, line, backtrace)                         \
-    {                                                                                          \
-        DAVA::Logger::Error( \
-        "========================================\n" \
-        "%s\n" \
-        "%s\n" \
-        "%s\n" \
-        "at %s:%d\n" \
-        "======================end=assert=msg====", \
-        assertType, expr, msg, file, line); \
-        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_ERROR); \
-    }
-#define LogWarningFunction(assertType, expr, msg, file, line, backtrace)                       \
-    {                                                                                          \
-        DAVA::Logger::Warning( \
-        "========================================\n" \
-        "%s\n" \
-        "%s\n" \
-        "%s\n" \
-        "at %s:%d\n" \
-        "======================end=assert=msg====", \
-        assertType, expr, msg, file, line); \
-        DAVA::Debug::BacktraceToLog(backtrace, DAVA::Logger::LEVEL_WARNING); \
-    }
-#else //ENABLE_ASSERT_LOGGING
-#define LogErrorFunction(assertType, expr, msg, file, line)
-#define LogWarningFunction(assertType, expr, msg, file, line)
-#endif //ENABLE_ASSERT_LOGGING
-
-#if defined(ENABLE_ASSERT_MESSAGE)
-
-// DAVA_BACKTRACE_DEPTH_UI tells how many stack frames show in assert dialog
-// Android and ios both allow content scrolling in assert dialog, so show full backtrace
-// On desktops dialogs are not scrollable so limit frames to 8
-#ifndef DVASSERT_UI_BACKTRACE_DEPTH
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-#define DVASSERT_UI_BACKTRACE_DEPTH 8
-#else
-#define DVASSERT_UI_BACKTRACE_DEPTH -1
-#endif
+#error "DVASSERT_HALT is not defined for current platform"
 #endif
 
-#define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
-    DAVA::DVAssertMessage::ShowMessage(messagetype, \
-                                       "%s\n" \
-                                       "%s\n" \
-                                       "%s\n" \
-                                       "at %s:%d\n" \
-                                       "Callstack:\n" \
-                                       "%s", \
-                                       assertType, expr, msg, file, line, \
-                                       DAVA::Debug::BacktraceToString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
-#else //ENABLE_ASSERT_MESSAGE
-#define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
-    false
-#endif //ENABLE_ASSERT_MESSAGE
+// Helper macro to get count of __VA_ARGS__
+// Required to distinguish between asserts with and without messages
+#define DVASSERT_ARGS_COUNT(...) std::tuple_size<decltype(std::make_tuple(__VA_ARGS__))>::value
 
-#if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
-
-// no assert functions in release builds
-#define DVASSERT(expr) \
-    {                  \
-    }
-#define DVASSERT_MSG(expr, msg) \
-    {                           \
-    }
-#define DVWARNING(expr, msg) \
-    {                        \
-    }
-
-#define DVVERIFY(expr) \
-    do                 \
-    {                  \
-        (void)(expr);  \
-    } while (false);
-
-#else
-
-// uncomment exit(-1) to shut up static analyzer (null pointers usage)
+// Uncomment exit(-1) to shut up static analyzer (null pointers usage)
 #define DV_EXIT_ON_ASSERT // exit(-1);
 
-#define DVASSERT(expr)                                                                 \
-    if (!(expr))                                                                       \
-    {                                                                                  \
-        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
-        LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__, backtrace);       \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                            #expr, "", __FILE__, __LINE__, backtrace))                 \
-        {                                                                              \
-            DavaDebugBreak();                                                          \
-        }                                                                              \
-        DV_EXIT_ON_ASSERT                                                              \
-    }
+#define DVASSERT_INTERNAL(expr, ...) \
+    do \
+    { \
+        if (!(expr)) \
+        { \
+            if (DAVA::Assert::Handle( \
+                    #expr, \
+                    __FILE__, \
+                    __LINE__, \
+                    DAVA::Debug::GetBacktrace(), \
+                    DVASSERT_ARGS_COUNT(__VA_ARGS__), \
+                    __VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
+            { \
+                DVASSERT_HALT; \
+            } \
+            DV_EXIT_ON_ASSERT \
+        } \
+    } \
+    while (false)
 
-#define DVASSERT_MSG(expr, msg)                                                        \
-    if (!(expr))                                                                       \
-    {                                                                                  \
-        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
-        LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__, backtrace);      \
-        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
-                            #expr, msg, __FILE__, __LINE__, backtrace))                \
-        {                                                                              \
-            DavaDebugBreak();                                                          \
-        }                                                                              \
-        DV_EXIT_ON_ASSERT                                                              \
-    }
+#if defined(__DAVAENGINE_DEBUG__)
 
-#define DVWARNING(expr, msg)                                                           \
-    if (!(expr))                                                                       \
-    {                                                                                  \
-        DAVA::Vector<DAVA::Debug::StackFrame> backtrace = DAVA::Debug::GetBacktrace(); \
-        LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__, backtrace);   \
-        MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", \
-                        #expr, msg, __FILE__, __LINE__, backtrace);                    \
-    }
+#define DVASSERT(expr, ...) DVASSERT_INTERNAL(expr, __VA_ARGS__)
 
-#define DVVERIFY(expr) DVASSERT(expr)
+#else
 
-#endif // ndef __DAVAENGINE_DEBUG__ && ndef ENABLE_ASSERT_MESSAGE
+// Tricking compiler to think this expr is actually being used without calculating it
+#define DVASSERT_UNUSED(expr) (void)(true ? (void)0 : ((void)(expr)))
 
-#endif // __LOGENGINE_ASSERT_H__
+#define DVASSERT(expr, ...) DVASSERT_UNUSED(expr)
+
+#endif
+
+#define DVASSERT_CRITICAL(expr, ...) DVASSERT_INTERNAL(expr, __VA_ARGS__)

@@ -78,7 +78,7 @@ bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
         RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
         return true;
     default:
-        DVASSERT_MSG(false, "Unknown screen mode");
+        DVASSERT(false, "Unknown screen mode");
         return false;
     }
 }

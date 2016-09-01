@@ -25,7 +25,7 @@
 {
     for (std::pair<UIView*, bool> pair : pool)
     {
-        DVASSERT_MSG(pair.second == false, "Someone did not return view back to pool");
+        DVASSERT(pair.second == false, "Someone did not return view back to pool");
         [pair.first release];
     }
     [super dealloc];
@@ -63,7 +63,7 @@
             return;
         }
     }
-    DVASSERT_MSG(false, "You try to return view that never been in pool");
+    DVASSERT(false, "You try to return view that never been in pool");
 }
 
 @end

@@ -108,7 +108,7 @@ CEFControllerImpl::CEFControllerImpl()
     else
     {
         Logger::Error("%s: cannot initialize CEF", __FUNCTION__);
-        DVASSERT_MSG(false, "CEF cannot be initialized");
+        DVASSERT(false, "CEF cannot be initialized");
     }
 }
 

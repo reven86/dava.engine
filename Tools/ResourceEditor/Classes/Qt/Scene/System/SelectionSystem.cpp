@@ -661,7 +661,7 @@ DAVA::Entity* SceneSelectionSystem::GetFirstSelectionEntity() const
     if (IsLocked())
         return nullptr;
 
-    DVASSERT(!currentSelection.IsEmpty())
+    DVASSERT(!currentSelection.IsEmpty());
     return currentSelection.GetContent().front().AsEntity();
 }
 
@@ -902,7 +902,7 @@ void SceneSelectionSystem::FinishSelection()
     }
     else
     {
-        DVASSERT_MSG(0, "Invalid selection mode");
+        DVASSERT(0, "Invalid selection mode");
     }
     objectsToSelect.Clear();
 

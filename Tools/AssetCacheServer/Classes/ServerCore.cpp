@@ -88,7 +88,7 @@ void ServerCore::StopListening()
 
 bool ServerCore::ConnectRemote()
 {
-    DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT)
+    DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT);
 
     if (!remoteServerData.ip.empty())
     {

@@ -66,7 +66,7 @@ struct AnimatedPropertySetter
             Animate<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor());
             break;
         default:
-            DVASSERT_MSG(false, "Non-animatable property");
+            DVASSERT(false, "Non-animatable property");
         }
     }
 

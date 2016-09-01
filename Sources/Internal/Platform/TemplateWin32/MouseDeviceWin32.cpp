@@ -77,7 +77,7 @@ void MouseDeviceWin32::SetMode(eCaptureMode newMode)
         Logger::Error("Unsupported cursor capture mode");
         break;
     default:
-        DVASSERT_MSG(false, "Incorrect cursor capture mode");
+        DVASSERT(false, "Incorrect cursor capture mode");
         Logger::Error("Incorrect cursor capture mode");
         break;
     }

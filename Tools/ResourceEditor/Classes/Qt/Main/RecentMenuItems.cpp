@@ -3,6 +3,8 @@
 
 #include "FileSystem/KeyedArchive.h"
 
+#include "Utils/StringFormat.h"
+
 #include <QMenu>
 #include <QAction>
 

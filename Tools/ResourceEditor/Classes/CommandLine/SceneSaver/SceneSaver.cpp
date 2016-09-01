@@ -82,7 +82,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
-    DVASSERT(0 == texturesForSave.size())
+    DVASSERT(0 == texturesForSave.size());
 
     String relativeFilename = fileName.GetRelativePathname(sceneUtils.dataSourceFolder);
     sceneUtils.workingFolder = fileName.GetDirectory().GetRelativePathname(sceneUtils.dataSourceFolder);

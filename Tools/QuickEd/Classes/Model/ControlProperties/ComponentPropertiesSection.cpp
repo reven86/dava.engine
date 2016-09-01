@@ -5,6 +5,8 @@
 
 #include "UI/UIControl.h"
 
+#include "Utils/StringFormat.h"
+
 using namespace DAVA;
 
 ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* aControl, DAVA::UIComponent::eType type, int32 _index, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)

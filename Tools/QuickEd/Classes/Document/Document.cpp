@@ -93,7 +93,7 @@ void Document::SetContext(void* requester, WidgetContext* widgetContext)
     auto iter = contexts.find(requester);
     if (iter != contexts.end())
     {
-        DVASSERT_MSG(false, "document already have this context");
+        DVASSERT(false, "document already have this context");
         delete iter->second;
         contexts.erase(iter);
     }

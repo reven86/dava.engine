@@ -61,8 +61,8 @@ CommandBatch* CommandStack::CreateCommmandBatch(const String& name, uint32 comma
 
 void CommandStack::EndBatch()
 {
-    DVASSERT_MSG(commandBatch, "CommandStack::EndMacro called without BeginMacro");
-    DVASSERT_MSG(requestedBatchCount != 0, "CommandStack::EndMacro called without BeginMacro");
+    DVASSERT(commandBatch, "CommandStack::EndMacro called without BeginMacro");
+    DVASSERT(requestedBatchCount != 0, "CommandStack::EndMacro called without BeginMacro");
 
     --requestedBatchCount;
     if (requestedBatchCount == 0)

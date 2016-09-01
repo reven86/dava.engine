@@ -24,7 +24,8 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
     auto packedSize = archieve->Save(nullptr, 0);
     uint8* packedData = new uint8[packedSize];
 
-    DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
+    const DAVA::uint32 serializedSize = archieve->Save(packedData, packedSize);
+    DVASSERT(packedSize == serializedSize);
 
     uint32 packedId = 0;
     return channel->Send(packedData, packedSize, 0, &packedId);

@@ -396,7 +396,7 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
-            DVASSERT(self->fbo.size())
+            DVASSERT(self->fbo.size());
             GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
             GLCommand cmd[] =
             {

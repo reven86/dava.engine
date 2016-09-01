@@ -128,8 +128,8 @@ UIListDelegate* UIList::GetDelegate()
 
 void UIList::ScrollToElement(int32 index)
 {
-    DVASSERT(delegate)
-    DVASSERT(0 <= index && index < delegate->ElementsCount(this))
+    DVASSERT(delegate);
+    DVASSERT(0 <= index && index < delegate->ElementsCount(this));
     float32 newScrollPos = 0.0f;
     if (orientation == ORIENTATION_HORIZONTAL)
     {

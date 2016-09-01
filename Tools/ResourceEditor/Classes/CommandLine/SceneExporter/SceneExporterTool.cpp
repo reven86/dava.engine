@@ -15,7 +15,7 @@ namespace SceneExporterToolInternal
 {
 void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const FilePath& inFolder, const SceneExporter::eExportedObjectType objectType, SceneExporter::ExportedObjectCollection& exportedObjects)
 {
-    DVASSERT(folderPathname.IsDirectoryPathname())
+    DVASSERT(folderPathname.IsDirectoryPathname());
 
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
     for (int32 i = 0, count = fileList->GetCount(); i < count; ++i)

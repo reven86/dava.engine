@@ -23,5 +23,6 @@ void ActionsStorage::RegisterAction(AbstractAction* action)
 
 void ActionsStorage::UnregisterAction(AbstractAction* action)
 {
-    DVVERIFY(registeredActions[action->member].erase(action) > 0);
+    const size_t erasedCount = registeredActions[action->member].erase(action);
+    DVASSERT(erasedCount > 0);
 }

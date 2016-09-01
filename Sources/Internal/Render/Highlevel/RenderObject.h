@@ -260,13 +260,13 @@ public:
 
 inline void RenderObject::SetLight(uint32 index, Light* light)
 {
-    DVASSERT(index < MAX_LIGHT_COUNT)
+    DVASSERT(index < MAX_LIGHT_COUNT);
     lights[index] = light;
 }
 
 inline Light* RenderObject::GetLight(uint32 index)
 {
-    DVASSERT(index < MAX_LIGHT_COUNT)
+    DVASSERT(index < MAX_LIGHT_COUNT);
     return lights[index];
 }
 

@@ -1186,7 +1186,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
 
     default:
         success = false;
-        DVASSERT_MSG(0, "Unsupported or unknown texture format specified");
+        DVASSERT(0, "Unsupported or unknown texture format specified");
     }
 
     return success;

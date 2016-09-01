@@ -47,7 +47,7 @@
         if (deadlock) \
         { \
             String s = monitor->CallChainToString(callChain); \
-            DVASSERT_MSG(0, ("Deadlock callchain: " + s).c_str()); \
+            DVASSERT(0, ("Deadlock callchain: " + s).c_str()); \
         } \
     } while (0)
 

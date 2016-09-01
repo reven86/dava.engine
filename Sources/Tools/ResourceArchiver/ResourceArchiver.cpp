@@ -5,6 +5,7 @@
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "Utils/Utils.h"
 #include "Utils/StringUtils.h"
+#include "Utils/StringFormat.h"
 #include "Compression/LZ4Compressor.h"
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
@@ -342,7 +343,7 @@ const Compressor* GetCompressor(Compressor::Type compressorType)
         return zipCompressor.get();
     default:
     {
-        DVASSERT_MSG(false, Format("Unexpected compressor type: %u", compressorType).c_str());
+        DVASSERT(false, Format("Unexpected compressor type: %u", compressorType).c_str());
         return nullptr;
     }
     }
@@ -359,7 +360,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
     if (compressionType != Compressor::Type::None)
     {
         compressor = GetCompressor(compressionType);
-        DVASSERT_MSG(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
+        DVASSERT(compressor, Format("Can't get '%s' compressor", GlobalEnumMap<Compressor::Type>::Instance()->ToString(static_cast<int>(compressionType))).c_str());
     }
 
     uint64 dataOffset = 0;

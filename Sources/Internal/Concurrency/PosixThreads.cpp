@@ -67,7 +67,7 @@ int pthread_mutex_lock(pthread_mutex_t* mutex)
     if (!mutex->attributes.isRecursive &&
         mutex->critical_section.RecursionCount > 1)
     {
-        DVASSERT_MSG(false, "Thread in deadlocked");
+        DVASSERT(false, "Thread in deadlocked");
         while (mutex->critical_section.RecursionCount > 1)
         {
         }

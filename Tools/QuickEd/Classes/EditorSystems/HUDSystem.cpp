@@ -379,7 +379,7 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             ControlNode* node = dynamic_cast<ControlNode*>(iter);
             DVASSERT(nullptr != node);
             auto findIter = hudMap.find(node);
-            DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+            DVASSERT(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
             if (hud->container->GetVisibilityFlag())
             {
@@ -438,7 +438,7 @@ void HUDSystem::UpdateAreasVisibility()
         ControlNode* node = dynamic_cast<ControlNode*>(iter);
         DVASSERT(nullptr != node);
         auto findIter = hudMap.find(node);
-        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+        DVASSERT(findIter != hudMap.end(), "hud map corrupted");
         const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {

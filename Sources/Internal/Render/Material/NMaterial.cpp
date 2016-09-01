@@ -166,7 +166,7 @@ void NMaterial::BindParams(rhi::Packet& target)
         //assume that if we have no property - we bind default value on buffer allocation step - no binding is created in that case
         for (auto& materialBinding : materialBufferBinding->propBindings)
         {
-            DVASSERT(materialBinding.source)
+            DVASSERT(materialBinding.source);
             if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
             {
                 //Logger::Info( " upd-prop " );
@@ -205,7 +205,7 @@ uint32 NMaterial::GetRequiredVertexFormat()
     for (auto& variant : renderVariants)
     {
         bool shaderValid = (nullptr != variant.second) && (variant.second->shader->IsValid());
-        DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
+        DVASSERT(shaderValid, "Shader is invalid. Check log for details.");
 
         if (shaderValid)
         {

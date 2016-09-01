@@ -738,7 +738,7 @@ const FilePath& VariantType::AsFilePath() const
 
 bool VariantType::Write(File* fp) const
 {
-    DVASSERT(type != TYPE_NONE)
+    DVASSERT(type != TYPE_NONE);
     int32 written = fp->Write(&type, 1);
     if (written != 1)
     {
@@ -1025,7 +1025,7 @@ bool VariantType::Write(File* fp) const
     break;
     default:
     {
-        DVASSERT_MSG(false, "Writing wrong variant type");
+        DVASSERT(false, "Writing wrong variant type");
         return true;
     }
     }
@@ -1611,7 +1611,7 @@ bool VariantType::operator==(const VariantType& other) const
     //TypE_NONE and TYPES_COUNT
     default:
     {
-        DVASSERT_MSG(false, "wrong variant type passed to IsEqual");
+        DVASSERT(false, "wrong variant type passed to IsEqual");
         return true;
     }
     }
@@ -1841,13 +1841,13 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
         }
     }
 
-    DVASSERT(nullptr != valMeta)
+    DVASSERT(nullptr != valMeta);
 
     // Destination meta type differ from source meta type
     // this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
     if (meta != valMeta)
     {
-        DVASSERT_MSG(false, "Destination type differ from source type");
+        DVASSERT(false, "Destination type differ from source type");
         return;
     }
     switch (val.type)

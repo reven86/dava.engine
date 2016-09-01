@@ -3,6 +3,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -641,7 +642,8 @@ bool YamlNode::GetMapOrderRepresentation() const
 
 void YamlNode::InternalSetToString(const VariantType& varType)
 {
-    DVVERIFY(InitStringFromVariantType(varType));
+    const bool initResult = InitStringFromVariantType(varType);
+    DVASSERT(initResult);
 }
 
 void YamlNode::InternalSetToString(const String& value)
@@ -930,19 +932,22 @@ YamlNode* YamlNode::CreateNodeFromVariantType(const VariantType& varType)
     case TYPE_STRING:
     {
         node = CreateStringNode();
-        DVVERIFY(node->InitStringFromVariantType(varType));
+        const bool initResult = node->InitStringFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_ARRAY:
     {
         node = CreateArrayNode();
-        DVVERIFY(node->InitArrayFromVariantType(varType));
+        const bool initResult = node->InitArrayFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     case TYPE_MAP:
     {
         node = CreateMapNode();
-        DVVERIFY(node->InitMapFromVariantType(varType));
+        const bool initResult = node->InitMapFromVariantType(varType);
+        DVASSERT(initResult);
     }
     break;
     }

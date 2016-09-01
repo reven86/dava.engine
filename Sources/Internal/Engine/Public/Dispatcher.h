@@ -96,7 +96,7 @@ void Dispatcher<T>::PostEvent(const T& e)
 template <typename T>
 void Dispatcher<T>::SendEvent(const T& e)
 {
-    DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
+    DVASSERT(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
     uint64 curThreadId = Thread::GetCurrentIdAsUInt64();
     if (linkedThreadId == curThreadId)

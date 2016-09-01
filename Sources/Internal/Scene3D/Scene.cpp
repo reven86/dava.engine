@@ -526,7 +526,8 @@ void Scene::RemoveSystem(SceneSystem* sceneSystem)
     RemoveSystem(systemsToProcess, sceneSystem);
     RemoveSystem(systemsToInput, sceneSystem);
 
-    DVVERIFY(RemoveSystem(systems, sceneSystem));
+    const bool removeResult = RemoveSystem(systems, sceneSystem);
+    DVASSERT(removeResult);
 }
 
 bool Scene::RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system)

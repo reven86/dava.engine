@@ -47,7 +47,7 @@ BaseObject* Light::Clone(BaseObject* dstNode)
 {
     if (!dstNode)
     {
-        DVASSERT_MSG(IsPointerToExactClass<Light>(this), "Can clone only LightNode");
+        DVASSERT(IsPointerToExactClass<Light>(this), "Can clone only LightNode");
         dstNode = new Light();
     }
 
