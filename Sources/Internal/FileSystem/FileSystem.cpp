@@ -556,6 +556,18 @@ bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
     return false;
 }
 
+bool FileSystem::IsHidden(const FilePath& pathToCheck) const
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+    BOOL areAttributesGot = GetFileAttributesExW(StringToWString(pathToCheck.GetStringValue()).c_str(), GetFileExInfoStandard, &fileInfo);
+    return (areAttributesGot == TRUE && (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0);
+#else
+    String name = pathToCheck.IsDirectoryPathname() ? pathToCheck.GetLastDirectoryName() : pathToCheck.GetFilename();
+    return (!name.empty() && name.front() == '.');
+#endif
+}
+
 #if defined(__DAVAENGINE_WINDOWS__)
 HANDLE CreateFileWin(const String& path, bool shareRead = false)
 {
