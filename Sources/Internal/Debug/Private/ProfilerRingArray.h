@@ -24,6 +24,7 @@ public:
     ProfilerRingArray(const ProfilerRingArray& a)
     {
         elementsCount = a.elementsCount;
+        elements = new T[elementsCount];
         memcpy(elements, a.elements, elementsCount * sizeof(T));
         mask = a.mask;
         head = a.head.load();
@@ -38,7 +39,10 @@ public:
     ProfilerRingArray& operator=(const ProfilerRingArray& a)
     {
         if (this != &a)
+        {
+            SafeDeleteArray(elements);
             new (this) ProfilerRingArray(a);
+        }
         return (*this);
     }
 
