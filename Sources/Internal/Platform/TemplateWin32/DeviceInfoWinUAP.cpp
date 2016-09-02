@@ -351,9 +351,7 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 
 void DeviceInfoPrivate::InitCarrierLinesAsync()
 {
-#if !defined(__DAVAENGINE_COREV2__)
     auto asyncTask = ::concurrency::create_task([this]() {
-        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
         try
         {
             using ::Windows::ApplicationModel::Calls::PhoneLine;
@@ -386,7 +384,6 @@ void DeviceInfoPrivate::InitCarrierLinesAsync()
             Logger::Error("Error msg = %s, added <uap:Capability Name=\"phoneCall\" /> capabilities in Package.appxmanifest", str.c_str());
         }
     });
-#endif //!defined(__DAVAENGINE_COREV2__)
 }
 
 void DeviceInfoPrivate::OnCarrierLineAdded(::Windows::ApplicationModel::Calls::PhoneLineWatcherEventArgs ^ args)
