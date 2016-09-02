@@ -1,10 +1,10 @@
-include ( CMake-common         )
-if( WIN32 AND NOT WINDOWS_UAP  )
+include ( CMake-common )
+if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
-include ( DavaLibs             )
+include ( DavaLibs )
 
-set( NAME_MODULE DavaFramework )
+set( NAME_MODULE ${DAVA_LIBRARY} )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
@@ -18,8 +18,6 @@ set( INCLUDES_WIN                   ${WINDOWSSDK_LATEST_DIR}/include/shared
                                     $ENV{DXSDK_DIR}/include 
                                     ${DAVA_THIRD_PARTY_ROOT_PATH}/include/ffmpeg )
 
-# temporal include override for android libpng
-set( INCLUDES_ANDROID               ${DAVA_THIRD_PARTY_ROOT_PATH}/include/android )
   
 set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics 
                                     Foundation 

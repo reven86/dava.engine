@@ -1,22 +1,13 @@
-#ifndef __RESOURCEEDITORQT__COMMANDACTION__
-#define __RESOURCEEDITORQT__COMMANDACTION__
+#pragma once
 
-#include "Commands2/Base/Command2.h"
+#include "Base/BaseTypes.h"
+#include "Commands2/Base/RECommand.h"
 
-class CommandAction : public Command2
+class CommandAction : public RECommand
 {
 public:
-    CommandAction(DAVA::int32 _id, const DAVA::String& _text = "");
-
-    bool CanUndo() const override;
-
-    void Undo() override;
-    DAVA::Entity* GetEntity() const override;
+    CommandAction(DAVA::uint32 id, const DAVA::String& text = DAVA::String());
+    void Undo();
 };
 
-inline bool CommandAction::CanUndo() const
-{
-    return false;
-}
-
-#endif /* defined(__RESOURCEEDITORQT__COMMANDACTION__) */
+bool IsCommandAction(const DAVA::Command* command);

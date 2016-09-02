@@ -6,12 +6,11 @@
 
 namespace DAVA
 {
-const String RequestManager::packPostfix = ".pack";
-const String RequestManager::hashPostfix = ".hash";
+const String RequestManager::packPostfix = ".dvpk";
 
 void RequestManager::Start()
 {
-    if (packManager.IsProcessingEnabled())
+    if (packManager.IsRequestingEnabled())
     {
         if (!Empty())
         {
@@ -41,16 +40,16 @@ void RequestManager::Update()
         else if (request.IsError())
         {
             const PackRequest::SubRequest& subRequest = request.GetCurrentSubRequest();
-            if (request.GetPackName() != subRequest.pack->name)
+            if (request.GetRootPack().name != subRequest.pack->name)
             {
-                PackManager::Pack& rootPack = packManager.GetPack(request.GetPackName());
-                rootPack.state = PackManager::Pack::Status::OtherError;
+                IPackManager::Pack& rootPack = packManager.GetPack(request.GetRootPack().name);
+                rootPack.state = IPackManager::Pack::Status::OtherError;
                 rootPack.otherErrorMsg = Format("can't load (%s) pack becouse dependent (%s) pack error: %s",
-                                                rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.errorMsg.c_str());
+                                                rootPack.name.c_str(), subRequest.pack->name.c_str(), subRequest.pack->otherErrorMsg.c_str());
 
                 Pop(); // first pop current request and only then inform user
 
-                packManager.onPackChange->Emit(rootPack);
+                packManager.packStateChanged.Emit(rootPack);
             }
             else
             {
@@ -64,7 +63,7 @@ bool RequestManager::IsInQueue(const String& packName) const
 {
     auto it = std::find_if(begin(items), end(items), [packName](const PackRequest& r) -> bool
                            {
-                               return r.GetPackName() == packName;
+                               return r.GetRootPack().name == packName;
                            });
     return it != end(items);
 }
@@ -91,7 +90,7 @@ PackRequest& RequestManager::Find(const String& packName)
 {
     auto it = std::find_if(begin(items), end(items), [&packName](const PackRequest& r) -> bool
                            {
-                               return r.GetPackName() == packName;
+                               return r.GetRootPack().name == packName;
                            });
     if (it == end(items))
     {
@@ -108,15 +107,18 @@ void RequestManager::CheckRestartLoading()
 
     if (Size() == 1)
     {
-        currrentTopLoadingPack = top.GetPackName();
+        currentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
-    else if (!currrentTopLoadingPack.empty() && top.GetPackName() != currrentTopLoadingPack)
+    else if (!currentTopLoadingPack.empty() && top.GetRootPack().name != currentTopLoadingPack)
     {
         // we have to cancel current pack request and start new with higher priority
-        PackRequest& prevTopRequest = Find(currrentTopLoadingPack);
-        prevTopRequest.Stop();
-        currrentTopLoadingPack = top.GetPackName();
+        if (IsInQueue(currentTopLoadingPack))
+        {
+            PackRequest& prevTopRequest = Find(currentTopLoadingPack);
+            prevTopRequest.Stop();
+        }
+        currentTopLoadingPack = top.GetRootPack().name;
         top.Start();
     }
 }
@@ -128,15 +130,15 @@ void RequestManager::Push(const String& packName, float32 priority)
         throw std::runtime_error("second time push same pack in queue, pack: " + packName);
     }
 
-    PackManager::Pack& pack = packManager.GetPack(packName);
+    IPackManager::Pack& pack = packManager.GetPack(packName);
 
-    pack.state = PackManager::Pack::Status::Requested;
+    pack.state = IPackManager::Pack::Status::Requested;
     pack.priority = priority;
 
     items.emplace_back(packManager, pack);
-    std::push_heap(begin(items), end(items));
+    stable_sort(begin(items), end(items));
 
-    packManager.onPackChange->Emit(pack);
+    packManager.packStateChanged.Emit(pack);
 
     CheckRestartLoading();
 }
@@ -149,7 +151,7 @@ void RequestManager::UpdatePriority(const String& packName, float32 newPriority)
         if (packRequest.GetPriority() != newPriority)
         {
             packRequest.ChangePriority(newPriority);
-            std::sort_heap(begin(items), end(items));
+            stable_sort(begin(items), end(items));
 
             CheckRestartLoading();
         }
@@ -160,8 +162,7 @@ void RequestManager::Pop()
 {
     DVASSERT(!items.empty());
 
-    std::pop_heap(begin(items), end(items));
-    items.pop_back();
+    items.erase(items.begin());
 }
 
 } // end namespace DAVA

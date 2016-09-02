@@ -21,6 +21,10 @@ protected:
     void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
 
+    bool CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key) override;
+    void SaveOnWindowClose(const DAVA::TArc::WindowKey& key) override;
+    void RestoreOnWindowClose(const DAVA::TArc::WindowKey& key) override;
+
 private:
     void SetupRenderWidget();
     void SetupActions();

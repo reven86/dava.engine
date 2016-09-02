@@ -16,6 +16,16 @@ const FastName& WindowKey::GetAppID() const
     return appID;
 }
 
+bool WindowKey::operator==(const WindowKey& other) const
+{
+    return appID == other.appID;
+}
+
+bool WindowKey::operator!=(const WindowKey& other) const
+{
+    return !(*this == other);
+}
+
 DockPanelInfo::DockPanelInfo()
     : actionPlacementInfo(CreateMenuPoint("View/Dock"))
 {

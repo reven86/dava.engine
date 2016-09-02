@@ -238,7 +238,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File* infile) const
         info.width = pvrFile->header.u32Width;
         info.height = pvrFile->header.u32Height;
         info.format = PVRFormatHelper::GetPixelFormat(pvrFile->header);
-        info.dataSize = infile->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize);
+        info.dataSize = static_cast<uint32>(infile->GetSize() - (PVRFile::HEADER_SIZE + pvrFile->header.u32MetaDataSize));
         info.mipmapsCount = pvrFile->header.u32MIPMapCount;
         info.faceCount = pvrFile->header.u32NumFaces;
     }

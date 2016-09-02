@@ -1,7 +1,9 @@
 #include "Commands2/EntityLockCommand.h"
+#include "Commands2/RECommandIDs.h"
+#include "Scene3D/Entity.h"
 
 EntityLockCommand::EntityLockCommand(DAVA::Entity* _entity, bool lock)
-    : Command2(CMDID_ENTITY_LOCK, "Lock entity")
+    : RECommand(CMDID_ENTITY_LOCK, "Lock entity")
     , entity(_entity)
     , newState(lock)
 {

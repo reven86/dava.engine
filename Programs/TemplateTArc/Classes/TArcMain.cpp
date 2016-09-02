@@ -24,7 +24,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "NetCore",
         "LocalizationSystem",
         "SoundSystem",
-        "DownloadManager",
+        "DownloadManager"
     };
 
     DAVA::Engine e;

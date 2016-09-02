@@ -49,7 +49,7 @@ void FillConverter(UnorderedMap<const Type*, QVariant(*)(const Any&)> & anyToVar
 }
 } // namespace ReflBridgeDetails
 
-#define FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
+#define FOR_ALL_BUILTIN_TYPES(F, ATV, VTA) \
     F(void*, ATV, VTA) \
     F(bool, ATV, VTA) \
     F(int8, ATV, VTA) \
@@ -70,7 +70,7 @@ void FillConverter(UnorderedMap<const Type*, QVariant(*)(const Any&)> & anyToVar
     F(QModelIndex, ATV, VTA)
 
 #define FOR_ALL_STATIC_TYPES(F, ATV, VTA) \
-    FOR_ALL_BUILDIN_TYPES(F, ATV, VTA) \
+    FOR_ALL_BUILTIN_TYPES(F, ATV, VTA) \
     FOR_ALL_QT_SPECIFIC_TYPES(F, ATV, VTA)
 
 #define FILL_CONVERTERS_FOR_TYPE(T, ATV, VTA) \
@@ -344,7 +344,7 @@ void QtReflected::CallMethod(int id, void** argv)
     //                                  davaArguments[8]);
         break;
     default:
-        DVASSERT_MSG(false, "Qt Reflection bridge support only 9 arguments in methods");
+        DVASSERT_MSG(false, "Qt Reflection bridge support maximum 6 arguments in methods");
         break;
     }
     

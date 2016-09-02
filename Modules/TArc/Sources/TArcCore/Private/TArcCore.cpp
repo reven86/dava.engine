@@ -66,7 +66,7 @@ void Core::OnLoopStarted()
     ToolsAssetGuard::Instance()->Init();
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
     propertiesHolder.reset(new PropertiesHolder("TArc properties", FileSystem::Instance()->GetCurrentDocumentsDirectory()));
-    uiManager.reset(new UIManager(propertiesHolder->SubHolder("UIManager")));
+    uiManager.reset(new UIManager(this, propertiesHolder->SubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
     for (std::unique_ptr<ClientModule>& module : modules)
@@ -232,9 +232,10 @@ void Core::ActivateContext(DataContext::ContextID contextID)
 void Core::ActivateContext(DataContext* context)
 {
     activeContext = context;
+    DataContext* wrapperActiveContext = activeContext != nullptr ? activeContext : globalContext.get();
     for (DataWrapper& wrapper : wrappers)
     {
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
+        wrapper.SetContext(wrapperActiveContext);
     }
 }
 
@@ -249,6 +250,7 @@ void Core::RegisterOperation(int operationID, AnyFn&& fn)
     if (iter != globalOperations.end())
     {
         Logger::Error("Global operation with ID %d, has already been registered", operationID);
+        return;
     }
 
     globalOperations.emplace(operationID, fn);
@@ -298,6 +300,42 @@ AnyFn Core::FindOperation(int operationId)
     }
 
     return operation;
+}
+
+bool Core::WindowCloseRequested(const WindowKey& key)
+{
+    DVASSERT(controllerModule != nullptr);
+    bool result = true;
+    if (controllerModule->CanWindowBeClosedSilently(key) == false)
+    {
+        ModalMessageParams params;
+        params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
+        params.message = "Some files have been modified\nDo you want to save changes?";
+        params.title = "Save Changes?";
+        ModalMessageParams::Button resultButton = uiManager->ShowModalMessage(key, params);
+        if (resultButton == ModalMessageParams::Yes)
+        {
+            controllerModule->SaveOnWindowClose(key);
+        }
+        else if (resultButton == ModalMessageParams::No)
+        {
+            controllerModule->RestoreOnWindowClose(key);
+        }
+        else
+        {
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+void Core::WindowClosed(const WindowKey& key)
+{
+    std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
+    {
+        module->OnWindowClosed(key);
+    });
 }
 
 } // namespace TArc

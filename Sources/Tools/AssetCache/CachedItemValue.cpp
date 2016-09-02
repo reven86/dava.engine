@@ -427,7 +427,7 @@ CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
     ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
     if (file)
     {
-        auto dataSize = file->GetSize();
+        uint32 dataSize = static_cast<uint32>(file->GetSize());
         data.get()->resize(dataSize);
 
         auto read = file->Read(data.get()->data(), dataSize);

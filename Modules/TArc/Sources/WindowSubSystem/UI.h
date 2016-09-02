@@ -22,6 +22,9 @@ public:
     WindowKey(const FastName& appID);
     const FastName& GetAppID() const;
 
+    bool operator==(const WindowKey& other) const;
+    bool operator!=(const WindowKey& other) const;
+
 private:
     FastName appID;
 };
@@ -107,21 +110,21 @@ struct ModalMessageParams
 {
     enum Button
     {
-        Ok,
-        Cancel,
-        Close,
-        Yes,
-        YesToAll,
-        No,
-        NoToAll,
-        Discard,
-        Apply,
-        Save,
-        SaveAll,
-        Abort,
-        Retry,
-        Ignore,
-        Reset
+        Ok = 0x1,
+        Cancel = 0x2,
+        Close = 0x4,
+        Yes = 0x8,
+        YesToAll = 0x10,
+        No = 0x20,
+        NoToAll = 0x40,
+        Discard = 0x80,
+        Apply = 0x100,
+        Save = 0x200,
+        SaveAll = 0x400,
+        Abort = 0x800,
+        Retry = 0x1000,
+        Ignore = 0x2000,
+        Reset = 0x4000
     };
 
     Q_DECLARE_FLAGS(Buttons, Button);
@@ -155,3 +158,16 @@ public:
 };
 } // namespace TArc
 } // namespace DAVA
+
+namespace std
+{
+template<>
+struct hash<DAVA::TArc::WindowKey>
+{
+    std::size_t operator()(const DAVA::TArc::WindowKey& k) const
+    {
+        std::hash<DAVA::FastName> hasher;
+        return hasher(k.GetAppID());
+    }
+};
+}

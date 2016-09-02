@@ -9,7 +9,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class QtConnections
+class QtConnections final
 {
 public:
     ~QtConnections()

@@ -1,9 +1,11 @@
 #include "Base/BaseTypes.h"
+#include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/RECommandIDs.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
-    : Command2(CMDID_EXPAND_PATH, "Expand entity path")
+    : RECommand(CMDID_EXPAND_PATH, "Expand entity path")
     , pathEntity(nullptr)
 {
     DVASSERT(pathComponent);
@@ -64,6 +66,7 @@ ExpandPathCommand::~ExpandPathCommand()
     {
         DAVA::SafeDelete(command);
     }
+    entityAddCommands.clear();
 }
 
 DAVA::Entity* ExpandPathCommand::CreateWaypointEntity(const DAVA::PathComponent::Waypoint* waypoint, const DAVA::FastName& pathname)
@@ -96,15 +99,16 @@ void ExpandPathCommand::Undo()
     DAVA::uint32 count = static_cast<DAVA::uint32>(entityAddCommands.size());
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
-        UndoInternalCommand(entityAddCommands[i]);
+        entityAddCommands[i]->Undo();
     }
 }
 
 void ExpandPathCommand::Redo()
 {
-    for (EntityAddCommand* command : entityAddCommands)
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entityAddCommands.size());
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        RedoInternalCommand(command);
+        entityAddCommands[i]->Redo();
     }
 }
 
@@ -119,7 +123,7 @@ DAVA::PathComponent::Waypoint* NewWaypoint()
 }
 
 CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
-    : Command2(CMDID_COLLAPSE_PATH, "Collapse path entities")
+    : RECommand(CMDID_COLLAPSE_PATH, "Collapse path entities")
     , pathEntity(nullptr)
     , origPathComponent(pathComponent)
     , destPathComponent(nullptr)
@@ -225,6 +229,7 @@ CollapsePathCommand::~CollapsePathCommand()
     {
         DAVA::SafeDelete(command);
     }
+    entityRemoveCommands.clear();
 }
 
 void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, DAVA::Entity* wpEntity, DAVA::WaypointComponent* wpComponent)
@@ -238,24 +243,23 @@ void CollapsePathCommand::InitWaypoint(DAVA::PathComponent::Waypoint* waypoint, 
 
 void CollapsePathCommand::Redo()
 {
-    for (EntityRemoveCommand* command : entityRemoveCommands)
+    DAVA::uint32 count = static_cast<DAVA::uint32>(entityRemoveCommands.size());
+    for (DAVA::uint32 i = 0; i < count; ++i)
     {
-        RedoInternalCommand(command);
+        entityRemoveCommands[i]->Redo();
     }
-
-    RedoInternalCommand(addNextComponent);
-    RedoInternalCommand(removePrevComponent);
+    addNextComponent->Redo();
+    removePrevComponent->Redo();
 }
 
 void CollapsePathCommand::Undo()
 {
-    UndoInternalCommand(removePrevComponent);
-    UndoInternalCommand(addNextComponent);
-
+    removePrevComponent->Undo();
+    addNextComponent->Undo();
     DAVA::uint32 count = static_cast<DAVA::uint32>(entityRemoveCommands.size());
     for (DAVA::int32 i = count - 1; i >= 0; --i)
     {
-        UndoInternalCommand(entityRemoveCommands[i]);
+        entityRemoveCommands[i]->Undo();
     }
 }
 

@@ -48,6 +48,8 @@ void SceneViewModule::PostInit()
 
 void SceneViewModule::OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
+    DVASSERT(uiScreen);
+    DVASSERT(ui3dView);
     uiScreen->SetSize(DAVA::Vector2(width, height));
     ui3dView->SetSize(DAVA::Vector2(width, height));
 }
@@ -182,4 +184,17 @@ void SceneViewModule::OpenScene(const DAVA::String& scenePath)
     uiScreen->AddControl(ui3dView);
 
     ui.ShowMessage(windowKey, QString("Opened Scene : %1").arg(scenePath.c_str()));
+}
+
+bool SceneViewModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key)
+{
+    return key != windowKey;
+}
+
+void SceneViewModule::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
+{
+}
+
+void SceneViewModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
+{
 }

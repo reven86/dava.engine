@@ -29,7 +29,7 @@ eErrorCode LibWebPHelper::ReadFile(File* infile, Vector<Image*>& imageSet, const
     }
 
     infile->Seek(0, File::SEEK_FROM_START);
-    uint32 dataSize = infile->GetSize();
+    uint32 dataSize = static_cast<uint32>(infile->GetSize());
     uint8_t* data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
@@ -167,7 +167,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File* infile) const
     DVASSERT(infile);
 
     infile->Seek(0, File::SEEK_FROM_START);
-    uint32 dataSize = infile->GetSize();
+    uint32 dataSize = static_cast<uint32>(infile->GetSize());
     uint8_t* data = new uint8_t[dataSize];
     SCOPE_EXIT
     {

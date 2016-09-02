@@ -15,7 +15,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
 
-#include "Document.h"
+#include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/CanvasSystem.h"
@@ -31,7 +31,7 @@ using namespace DAVA;
 
 namespace
 {
-QString ScaleStringFromReal(qreal scale)
+QString ScaleStringFromReal(float scale)
 {
     return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
@@ -92,7 +92,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
-    scaleCombo->setCurrentIndex(percentages.indexOf(1.00f)); //100%
+    SetActualScale();
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -115,7 +115,7 @@ RulerController* PreviewWidget::GetRulerController()
     return rulerController;
 }
 
-float PreviewWidget::GetScale() const
+float PreviewWidget::GetScaleFromComboboxText() const
 {
     // Firstly verify whether the value is already set.
     QString curTextValue = scaleCombo->currentText();
@@ -124,7 +124,7 @@ float PreviewWidget::GetScale() const
     bool ok;
     float scaleValue = curTextValue.toFloat(&ok);
     DVASSERT_MSG(ok, "can not parse text to float");
-    return scaleValue;
+    return scaleValue / 100.0f;
 }
 
 ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
@@ -181,7 +181,12 @@ void PreviewWidget::CreateActions()
     davaGLWidget->addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
-    deleteAction->setShortcut(QKeySequence::Delete);
+#if defined Q_OS_WIN
+    deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+#elif defined Q_OS_MAC
+    deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
+
     deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
     davaGLWidget->addAction(deleteAction);
@@ -296,6 +301,57 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
+void PreviewWidget::OnIncrementScale()
+{
+    int nextIndex = -1;
+    float actualScale = GetScaleFromComboboxText();
+    if (actualScale >= percentages.last())
+    {
+        return;
+    }
+    if (percentages.contains(actualScale))
+    {
+        int currentIndex = scaleCombo->currentIndex();
+        DVASSERT(currentIndex < scaleCombo->count() - 1);
+        nextIndex = currentIndex + 1;
+    }
+    else
+    {
+        QList<float>::iterator iter = std::upper_bound(percentages.begin(), percentages.end(), actualScale);
+        nextIndex = std::distance(percentages.begin(), iter);
+    }
+    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
+    scrollAreaController->SetScale(percentages.at(nextIndex));
+}
+
+void PreviewWidget::OnDecrementScale()
+{
+    int nextIndex = -1;
+    float actualScale = GetScaleFromComboboxText();
+    if (actualScale <= percentages.first())
+    {
+        return;
+    }
+    if (percentages.contains(actualScale))
+    {
+        int currentIndex = scaleCombo->currentIndex();
+        DVASSERT(currentIndex > 0);
+        nextIndex = currentIndex - 1;
+    }
+    else
+    {
+        QList<float>::iterator iter = std::lower_bound(percentages.begin(), percentages.end(), actualScale);
+        nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
+    }
+    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
+    scrollAreaController->SetScale(percentages.at(nextIndex));
+}
+
+void PreviewWidget::SetActualScale()
+{
+    scrollAreaController->SetScale(1.0f); //1.0f is a 100% scale
+}
+
 void PreviewWidget::ApplyPosChanges()
 {
     QPoint viewPos = canvasPos + rootControlPos;
@@ -331,15 +387,24 @@ void PreviewWidget::OnGLInitialized()
     systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemsManager->PropertiesChanged.Connect(this, &PreviewWidget::OnPropertiesChanged);
+    systemsManager->PropertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
+    systemsManager->TransformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
 }
 
-void PreviewWidget::OnScaleChanged(qreal scale)
+void PreviewWidget::OnScaleChanged(float scale)
 {
+    bool wasBlocked = scaleCombo->blockSignals(true);
+    int scaleIndex = percentages.indexOf(scale);
+    if (scaleIndex != -1)
+    {
+        scaleCombo->setCurrentIndex(scaleIndex);
+    }
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
+    scaleCombo->blockSignals(wasBlocked);
+
     rulerController->SetScale(scale);
     DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
     if (systemsManager)
@@ -357,8 +422,8 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 
 void PreviewWidget::OnScaleByComboText()
 {
-    float scale = GetScale();
-    scrollAreaController->SetScale(scale / 100.0f);
+    float scale = GetScaleFromComboboxText();
+    scrollAreaController->SetScale(scale);
 }
 
 void PreviewWidget::OnGLWidgetResized(int width, int height)
@@ -395,10 +460,10 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             break;
         case QEvent::MouseMove:
             OnMoveEvent(static_cast<QMouseEvent*>(event));
-            break;
+            return CanDragScreen();
         case QEvent::MouseButtonPress:
             OnPressEvent(static_cast<QMouseEvent*>(event));
-            break;
+            return CanDragScreen();
         case QEvent::MouseButtonRelease:
             OnReleaseEvent(static_cast<QMouseEvent*>(event));
             break;
@@ -413,6 +478,12 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
         case QEvent::Drop:
             OnDropEvent(static_cast<QDropEvent*>(event));
             davaGLWidget->GetGLView()->requestActivate();
+            break;
+        case QEvent::KeyPress:
+            OnKeyPressed(static_cast<QKeyEvent*>(event));
+            break;
+        case QEvent::KeyRelease:
+            OnKeyReleased(static_cast<QKeyEvent*>(event));
             break;
         default:
             break;
@@ -453,25 +524,15 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     {
         return;
     }
-//QWheelEvent::source to distinguish wheel and touchpad is implemented only in Qt 5.5
-#ifdef Q_OS_WIN //under MAC OS we get this event when scrolling by two fingers on MAC touchpad
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-#endif //Q_OS_WIN
-    {
-#ifdef Q_OS_WIN
-        QPoint delta = event->angleDelta();
-#else //Q_OS_MAC
-        QPoint delta = event->pixelDelta();
-#endif //Q_OS_WIN
-        //scroll view up and down
-        static const qreal wheelDelta = 0.002f;
-        QPoint position = scrollAreaController->GetPosition();
-        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
-                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
-        scrollAreaController->SetPosition(position - additionalPos);
-    }
-#ifdef Q_OS_WIN
-    else
+    bool shouldZoom = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)
+#if defined(Q_OS_WIN)
+    ;
+#elif defined(Q_OS_MAC)
+    && event->source() == Qt::MouseEventNotSynthesized;
+#else
+#error "wrong platform"
+#endif //platform
+    if (shouldZoom)
     {
         //resize view
         int tickSize = 120;
@@ -480,11 +541,24 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
         {
             return;
         }
-        qreal scale = GetScaleFromWheelEvent(ticksCount);
+        float scale = GetScaleFromWheelEvent(ticksCount);
         QPoint pos = event->pos();
         scrollAreaController->AdjustScale(scale, pos);
     }
-#endif //Q_OS_WIN
+    else
+    {
+#if defined(Q_OS_WIN)
+        QPoint delta = event->angleDelta();
+#else //Q_OS_MAC
+        QPoint delta = event->pixelDelta();
+#endif //platform
+        //scroll view up and down
+        static const float wheelDelta = 0.002f;
+        QPoint position = scrollAreaController->GetPosition();
+        QPoint additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
+                             (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
+        scrollAreaController->SetPosition(position - additionalPos);
+    }
 }
 
 void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
@@ -493,9 +567,9 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     {
         return;
     }
-    const qreal normalScale = 1.0f;
-    const qreal expandedScale = 1.5f;
-    qreal scale = scrollAreaController->GetScale();
+    const float normalScale = 1.0f;
+    const float expandedScale = 1.5f;
+    float scale = scrollAreaController->GetScale();
     QPoint pos = event->pos();
     switch (event->gestureType())
     {
@@ -513,27 +587,43 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
 
 void PreviewWidget::OnPressEvent(QMouseEvent* event)
 {
-    if (event->button() & Qt::MiddleButton)
+    Qt::MouseButtons buttons = event->buttons();
+    if (buttons & Qt::LeftButton)
     {
-        lastCursor = davaGLWidget->GetCursor();
-        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        isMouseLeftButtonPressed = true;
+    }
+    if (buttons & Qt::MidButton)
+    {
+        isMouseMidButtonPressed = true;
+    }
+
+    UpdateDragScreenState();
+    if (CanDragScreen())
+    {
         lastMousePos = event->pos();
     }
 }
 
 void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
 {
-    if (event->button() & Qt::MiddleButton)
+    Qt::MouseButtons buttons = event->buttons();
+    if ((buttons & Qt::LeftButton) == false)
     {
-        davaGLWidget->SetCursor(lastCursor);
+        isMouseLeftButtonPressed = false;
     }
+    if ((buttons & Qt::MidButton) == false)
+    {
+        isMouseMidButtonPressed = false;
+    }
+
+    UpdateDragScreenState();
 }
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
-    if (event->buttons() & Qt::MiddleButton)
+    if (CanDragScreen())
     {
         QPoint delta(event->pos() - lastMousePos);
         lastMousePos = event->pos();
@@ -653,9 +743,51 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
     }
 }
 
-qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
+void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 {
-    qreal scale = scrollAreaController->GetScale();
+    if (event->key() == Qt::Key_Space)
+    {
+        isSpacePressed = true;
+        UpdateDragScreenState();
+    }
+}
+
+void PreviewWidget::OnKeyReleased(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Space)
+    {
+        isSpacePressed = false;
+        UpdateDragScreenState();
+    }
+}
+
+void PreviewWidget::OnTransformStateChanged(bool inTransformState)
+{
+    if (document == nullptr)
+    {
+        return;
+    }
+    QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+    if (inTransformState)
+    {
+        executor->BeginMacro("transformations");
+    }
+    else
+    {
+        executor->EndMacro();
+    }
+}
+
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue)
+{
+    DVASSERT(!document.isNull());
+    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
+    commandExecutor->ChangeProperty(node, property, newValue);
+}
+
+float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
+{
+    float scale = scrollAreaController->GetScale();
     if (ticksCount > 0)
     {
         scale = GetNextScale(scale, ticksCount);
@@ -667,7 +799,7 @@ qreal PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
     return scale;
 }
 
-qreal PreviewWidget::GetNextScale(qreal currentScale, int ticksCount) const
+float PreviewWidget::GetNextScale(float currentScale, int ticksCount) const
 {
     auto iter = std::upper_bound(percentages.begin(), percentages.end(), currentScale);
     if (iter == percentages.end())
@@ -697,13 +829,6 @@ void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, c
     continuousUpdater->Update();
 }
 
-void PreviewWidget::OnPropertiesChanged(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash)
-{
-    DVASSERT(!document.isNull());
-    auto commandExecutor = document->GetCommandExecutor();
-    commandExecutor->ChangeProperty(propertyActions, hash);
-}
-
 void PreviewWidget::NotifySelectionChanged()
 {
     if (!tmpSelected.empty() || !tmpDeselected.empty())
@@ -714,7 +839,31 @@ void PreviewWidget::NotifySelectionChanged()
     tmpDeselected.clear();
 }
 
-qreal PreviewWidget::GetPreviousScale(qreal currentScale, int ticksCount) const
+bool PreviewWidget::CanDragScreen() const
+{
+    return inDragScreenState;
+}
+
+void PreviewWidget::UpdateDragScreenState()
+{
+    bool inDragScreenState_ = isMouseMidButtonPressed || (isMouseLeftButtonPressed && isSpacePressed);
+    if (inDragScreenState == inDragScreenState_)
+    {
+        return;
+    }
+    inDragScreenState = inDragScreenState_;
+    if (inDragScreenState)
+    {
+        lastCursor = davaGLWidget->GetCursor();
+        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+    }
+    else
+    {
+        davaGLWidget->SetCursor(lastCursor);
+    }
+}
+
+float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
 {
     auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
     if (iter == percentages.end())

@@ -9,6 +9,7 @@ namespace TArc
 class UI;
 class DataContext;
 class ContextAccessor;
+class WindowKey;
 
 class ClientModule
 {
@@ -18,6 +19,7 @@ public:
 protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
+    virtual void OnWindowClosed(const WindowKey& key){}
 
     virtual void PostInit() = 0;
     ContextAccessor& GetAccessor();
