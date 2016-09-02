@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Hash.h"
-#include <ostream>
+#include <iosfwd>
 
 using DAVA::int32;
 using DAVA::uint32;
@@ -12,8 +12,6 @@ using DAVA::uint64;
 
 namespace DAVA
 {
-class File;
-
 namespace Profiler
 {
 static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
@@ -27,9 +25,9 @@ int32 MakeSnapshot();
 void DeleteSnapshot(int32 snapshot);
 void DeleteSnapshots();
 
-void DumpJSON(File* file, int32 snapshot = NO_SNAPSHOT_ID);
-void DumpLast(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = NO_SNAPSHOT_ID);
-void DumpAverage(const char* counterName, uint32 counterCount, File* file = nullptr, int32 snapshot = NO_SNAPSHOT_ID);
+void DumpJSON(std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
+void DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
+void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
 
 class ScopedCounter
 {
