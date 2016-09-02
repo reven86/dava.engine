@@ -116,13 +116,13 @@ public:
     public:
         iterator(const reverse_iterator& it)
         {
-            arrayData = it.arrayData;
-            mask = it.mask;
-            index = it.index;
+            this->arrayData = it.arrayData;
+            this->mask = it.mask;
+            this->index = it.index;
         }
         inline operator reverse_iterator() const
         {
-            return reverse_iterator(arrayData, index, mask);
+            return reverse_iterator(this->arrayData, this->index, this->mask);
         }
         inline iterator operator+(uint32 n) const
         {
@@ -138,7 +138,7 @@ public:
         }
         inline iterator& operator++()
         {
-            ++index;
+            ++this->index;
             return *this;
         }
         inline iterator operator++(int)
@@ -149,7 +149,7 @@ public:
         }
         inline iterator& operator--()
         {
-            --index;
+            --this->index;
             return *this;
         }
         inline iterator operator--(int)
@@ -173,13 +173,13 @@ public:
     public:
         reverse_iterator(const iterator& it)
         {
-            arrayData = it.arrayData;
-            mask = it.mask;
-            index = it.index;
+            this->arrayData = it.arrayData;
+            this->mask = it.mask;
+            this->index = it.index;
         }
         inline operator iterator() const
         {
-            return iterator(arrayData, index, mask);
+            return iterator(this->arrayData, this->index, this->mask);
         }
         inline reverse_iterator operator+(uint32 n) const
         {
@@ -195,7 +195,7 @@ public:
         }
         inline reverse_iterator& operator++()
         {
-            --index;
+            --this->index;
             return *this;
         }
         inline reverse_iterator operator++(int)
@@ -206,7 +206,7 @@ public:
         }
         inline reverse_iterator& operator--()
         {
-            ++index;
+            ++this->index;
             return *this;
         }
         inline reverse_iterator operator--(int)
