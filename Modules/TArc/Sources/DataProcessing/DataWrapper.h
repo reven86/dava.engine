@@ -39,6 +39,7 @@ private:
     void SetContext(DataContext* context);
 
     void Sync(bool notifyListeners);
+    void SyncWithEditor(Reflection&& etalonData);
     void NotifyListeners(bool sendNotify, const Set<String>& fields = Set<String>());
     Reflection GetData() const;
 
@@ -65,6 +66,7 @@ public:
 private:
     Reflection reflection;
     T* dataPtr = nullptr;
+    T copyValue;
     DataWrapper holder;
 };
 } // namespace TArc

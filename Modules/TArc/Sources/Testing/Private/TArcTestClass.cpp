@@ -117,7 +117,27 @@ bool TestClass::TestComplete(const String& testName) const
         return true;
     }
 
-    return ::testing::Mock::HasNotSatisfiedExpectation() == false;
+    bool hasNotSatisfied = ::testing::Mock::HasNotSatisfiedExpectation();
+    if (hasNotSatisfied == false)
+    {
+        TEST_VERIFY(::testing::Mock::VerifyAndClear());
+    }
+    return !hasNotSatisfied;
+}
+
+OperationInvoker* TestClass::GetMockInvoker()
+{
+    return core->GetMockInvoker();
+}
+
+DataContext& TestClass::GetActiveContext()
+{
+    return core->GetActiveContext();
+}
+
+DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
+{
+    return core->CreateWrapper(type);
 }
 
 } // namespace TArc

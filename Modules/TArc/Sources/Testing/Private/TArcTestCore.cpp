@@ -235,7 +235,7 @@ void TestCore::OnTestFailed(const String& testClassName, const String& testName,
 
 void TestCore::OnTestPartResult(const ::testing::TestPartResult& testPartResult)
 {
-    if (!testPartResult.type() == ::testing::TestPartResult::kSuccess)
+    if (testPartResult.type() != ::testing::TestPartResult::kSuccess)
     {
         OnTestFailed(currentTestClass, currentTestCase, testPartResult.summary(), testPartResult.file_name(), testPartResult.line_number(), "");
     }

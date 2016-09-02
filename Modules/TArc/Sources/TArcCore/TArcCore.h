@@ -65,6 +65,10 @@ private:
     void OnWindowCreated(DAVA::Window& w);
     bool HasControllerModule() const;
 
+    OperationInvoker* GetMockInvoker();
+    DataContext& GetActiveContext();
+    DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
+
 private:
     class Impl;
     class GuiImpl;

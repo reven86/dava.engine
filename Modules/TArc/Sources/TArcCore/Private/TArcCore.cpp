@@ -672,5 +672,24 @@ bool Core::HasControllerModule() const
     return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
+OperationInvoker* Core::GetMockInvoker()
+{
+    return nullptr;
+    //GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
+    //return guiImpl != nullptr && guiImpl->HasControllerModule();
+}
+
+DataContext& Core::GetActiveContext()
+{
+    return impl->GetActiveContext();
+}
+
+DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+{
+    GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
+    DVASSERT(guiImpl != nullptr);
+    return guiImpl->CreateWrapper(type);
+}
+
 } // namespace TArc
 } // namespace DAVA

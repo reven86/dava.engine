@@ -15,11 +15,16 @@ class TestClass: public UnitTests::TestClass
 public:
     ~TestClass();
 
-    void SetUp(const String& testName) override;
+    void SetUp(const String& testName) override; 
     void Update(float32 timeElapsed, const String& testName) override;
     bool TestComplete(const String& testName) const override;
 
     virtual void CreateTestedModules() {}
+
+protected:
+    OperationInvoker* GetMockInvoker();
+    DataContext& GetActiveContext();
+    DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
 
 protected:
     std::unique_ptr<Core> core;
