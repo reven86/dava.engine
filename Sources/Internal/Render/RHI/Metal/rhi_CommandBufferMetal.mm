@@ -284,9 +284,9 @@ CommandBufferMetal_t::Execute()
         {
             Handle buffer = ((SWCommand_SetVertexProgConstBuffer*)cmd)->buffer;
             unsigned index = ((SWCommand_SetVertexProgConstBuffer*)cmd)->bufIndex;
-            unsigned inst_offset = ((SWCommand_SetVertexProgConstBuffer*)cmd)->inst_offset;
+            unsigned instOffset = ((SWCommand_SetVertexProgConstBuffer*)cmd)->instOffset;
 
-            ConstBufferMetal::SetToRHI(buffer, index, inst_offset, encoder);
+            ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
         }
         break;
 
@@ -329,9 +329,9 @@ CommandBufferMetal_t::Execute()
         {
             Handle buffer = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->buffer;
             unsigned index = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->bufIndex;
-            unsigned inst_offset = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->inst_offset;
+            unsigned instOffset = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->instOffset;
 
-            ConstBufferMetal::SetToRHI(buffer, index, inst_offset, encoder);
+            ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
         }
         break;
 
@@ -510,8 +510,6 @@ bool RenderPassMetal_t::Initialize()
 
     do_present = cfg.colorBuffer[0].texture == InvalidHandle;
 
-    id<MTLCommandBuffer> pbuf = nil;
-
     if (cmdBuf.size() == 1)
     {
         CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf[0]);
@@ -536,9 +534,6 @@ bool RenderPassMetal_t::Initialize()
         #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
         cb->do_commit_on_end = !do_present;
         #endif
-
-        if (do_present)
-            pbuf = buf;
     }
     else
     {
@@ -566,9 +561,6 @@ bool RenderPassMetal_t::Initialize()
             #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
             cb->do_commit_on_end = !do_present;
             #endif
-
-            if (i == 0 && do_present)
-                pbuf = cb->buf;
         }
     }
 
@@ -1071,7 +1063,7 @@ metal_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
     SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
-    cmd->inst_offset = ConstBufferMetal::Instance(buffer);
+    cmd->instOffset = ConstBufferMetal::Instance(buffer);
 #endif
 }
 
@@ -1154,7 +1146,7 @@ metal_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
-    cmd->inst_offset = ConstBufferMetal::Instance(buffer);
+    cmd->instOffset = ConstBufferMetal::Instance(buffer);
 #endif
 }
 

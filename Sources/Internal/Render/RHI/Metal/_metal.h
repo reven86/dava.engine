@@ -9,6 +9,8 @@
 #include <QuartzCore/CAMetalLayer.h>
 #include "Concurrency/Atomic.h"
 
+namespace rhi
+{
 extern id<MTLDevice> _Metal_Device;
 extern id<MTLCommandQueue> _Metal_DefCmdQueue;
 extern id<MTLTexture> _Metal_DefFrameBuf;
@@ -17,6 +19,7 @@ extern id<MTLTexture> _Metal_DefStencilBuf;
 extern id<MTLDepthStencilState> _Metal_DefDepthState;
 extern CAMetalLayer* _Metal_Layer;
 extern DAVA::Atomic<bool> _Metal_Suspended;
+}
 
 #endif
 
