@@ -297,7 +297,7 @@ class CoverageReport():
                     return [ '{0}.gcda'.format(fileName) ]
         return []
 
-    def generate_mix_html( self ):
+    def __generate_mix_html( self ):
         import urllib
         import HTMLParser
         import fileinput
@@ -431,7 +431,7 @@ class CoverageReport():
 
         self.__teamcity_print( '##teamcity[testFinished name=\'Generate cover html\']' )
         
-        self.generate_mix_html()
+        self.__generate_mix_html()
 
 
     def generate_report_coverage( self ):
@@ -551,8 +551,6 @@ def main():
     else:
         cov.generate_report_html()
         cov.generate_report_coverage() 
-
-    #cov.generate_mix_html()
 
 if __name__ == '__main__':
     main()
