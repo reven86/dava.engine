@@ -356,7 +356,7 @@ uint32 GetFormatSizeInBits(dds::D3D_FORMAT format)
         return 8 * 16;
 
     default:
-        DVASSERT(false, "undefined format: %d", format);
+        DVASSERT(false, "undefined format: %d", (int)format);
         return 0;
     }
 }
@@ -403,7 +403,7 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
         break;
     }
     default:
-        DVASSERT(false, "undefined format: %d", srcFormat);
+        DVASSERT(false, "undefined format: %d", (int)srcFormat);
         break;
     }
 }
@@ -447,7 +447,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
         return;
     }
     default:
-        DVASSERT(false, "undefined format: %d", dstFormat);
+        DVASSERT(false, "undefined format: %d", (int)dstFormat);
         break;
     }
 }

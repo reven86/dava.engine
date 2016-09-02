@@ -624,7 +624,7 @@ std::unique_ptr<SpritesheetLayout> SpritesheetLayout::Create(uint32 w, uint32 h,
     case PackingAlgorithm::ALG_MAXRRECT_BEST_CONTACT_POINT:
         return std::unique_ptr<SpritesheetLayout>(new MaxRectsSpritesheetLayout_CP(w, h, duplicateEdgePixel, spritesMargin));
     default:
-        DVASSERT(false, "Unknown algorithm id: %d", alg);
+        DVASSERT(false, "Unknown algorithm id: %d", (int)alg);
         return nullptr;
     }
 }

@@ -380,7 +380,7 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
         request.result = AssetCache::Error::UNEXPECTED_PACKET;
         break;
     default:
-        DVASSERT(false, "Unexpected incorrect packet type: %d", type);
+        DVASSERT(false, "Unexpected incorrect packet type: %d", (int)type);
         request.result = AssetCache::Error::CORRUPTED_DATA;
         break;
     }

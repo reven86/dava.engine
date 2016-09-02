@@ -515,7 +515,7 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     }
     else
     {
-        DVASSERT(false, "Saving for wrong gpu %d was selected", forGPU);
+        DVASSERT(false, "Saving for wrong gpu %d was selected", (int)forGPU);
     }
 }
 
