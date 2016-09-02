@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationMac.h"
+#include "Utils/StringFormat.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 

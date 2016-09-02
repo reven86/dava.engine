@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tuple>
+#include <csignal>
 #include "Debug/Backtrace.h"
 
 /** \defgroup Asserts
@@ -129,7 +130,7 @@ namespace Assert
                     __LINE__, \
                     DAVA::Debug::GetBacktrace(), \
                     DVASSERT_ARGS_COUNT(__VA_ARGS__), \
-                    __VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
+                    ##__VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
             { \
                 DVASSERT_HALT; \
             } \
@@ -140,7 +141,7 @@ namespace Assert
 
 #if defined(__DAVAENGINE_DEBUG__)
 
-#define DVASSERT(expr, ...) DVASSERT_INTERNAL(expr, __VA_ARGS__)
+#define DVASSERT(expr, ...) DVASSERT_INTERNAL(expr, ##__VA_ARGS__)
 
 #else
 
@@ -151,4 +152,4 @@ namespace Assert
 
 #endif
 
-#define DVASSERT_CRITICAL(expr, ...) DVASSERT_INTERNAL(expr, __VA_ARGS__)
+#define DVASSERT_CRITICAL(expr, ...) DVASSERT_INTERNAL(expr, ##__VA_ARGS__)

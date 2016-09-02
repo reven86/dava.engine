@@ -58,7 +58,7 @@ public:
             &SqliteMemShutdown
         };
         int32 result = sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
-        DVVERIFY(result == SQLITE_OK);
+        DVASSERT(result == SQLITE_OK);
 #endif // DAVA_MEMORY_PROFILING_ENABLE
 
         RegisterDavaVFSForSqlite3(dbInMemory);

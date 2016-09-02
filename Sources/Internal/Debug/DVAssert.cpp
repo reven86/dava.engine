@@ -47,7 +47,7 @@ FailBehaviour DAVA::Assert::Handle(
     char formattedMessage[formattedMessageBufferSize] = "";
     if (varArgsCount > 0)
     {
-        va_list argsList = nullptr;
+        va_list argsList;
         va_start(argsList, varArgsCount);
 
         const char* const messageFormat = va_arg(argsList, const char*);

@@ -23,10 +23,10 @@ static void ResetHandlersState()
     secondHandlerInvoked = false;
 }
 
-static const char* lastHandlerMessage = nullptr;
+static std::string lastHandlerMessage;
 static FailBehaviour AssertMessageSavingHandler(const AssertInfo& assertInfo)
 {
-    lastHandlerMessage = const_cast<const char*>(assertInfo.message);
+    lastHandlerMessage = std::string(assertInfo.message);
     return FailBehaviour::Continue;
 }
 
@@ -102,17 +102,17 @@ DAVA_TESTCLASS(DVAssertTestClass)
 
         // Check that message is empty if none was specified
         DVASSERT_CRITICAL(false);
-        TEST_VERIFY(strcmp(lastHandlerMessage, "") == 0);
+        TEST_VERIFY(lastHandlerMessage == "");
 
         // Check message without formatting
-        const char* message = "such assert";
-        DVASSERT_CRITICAL(false, message);
-        TEST_VERIFY(strcmp(lastHandlerMessage, message) == 0);
+        std::string message = "such assert";
+        DVASSERT_CRITICAL(false, message.c_str());
+        TEST_VERIFY(lastHandlerMessage == message);
 
         // Check message with formatting
-        const char* messageFormat = "very test: %d, %s";
-        const char* formattedMessage = "very test: 42, wow";
-        DVASSERT_CRITICAL(false, messageFormat, 42, "wow");
-        TEST_VERIFY(strcmp(lastHandlerMessage, formattedMessage) == 0);
+        std::string messageFormat = "very test: %d, %s";
+        std::string formattedMessage = "very test: 42, wow";
+        DVASSERT_CRITICAL(false, messageFormat.c_str(), 42, "wow");
+        TEST_VERIFY(lastHandlerMessage == formattedMessage);
     }
 };
