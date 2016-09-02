@@ -12,8 +12,7 @@ import io
 
 from string import Template
 from collections import namedtuple
-import HTMLParser
-from HTMLParser import HTMLParser
+
 
 CoverageMinimum    = 75.0
 
@@ -139,18 +138,20 @@ class CoverageReport():
         self.pathCovInfoTests       = os.path.join    ( self.coverageTmpPath, 'cov_tests.info')        
         self.pathGenHtml            = os.path.join    ( self.pathCoverageDir, 'genhtml')
 
-        self.pathMixHtml            = os.path.join    ( self.pathReportOut,   'index.html')
-        self.pathMixHtmlTemplate    = os.path.join    ( self.pathCoverageDir, 'mix_index_html.in')
+        self.pathFullHtml           = os.path.join    ( self.pathReportOutFull,  'index.html')
+        self.pathLocalHtml          = os.path.join    ( self.pathReportOutTests, 'index.html')
+        self.pathMixHtml            = os.path.join    ( self.pathReportOut,      'index.html')
+        self.pathMixHtmlTemplate    = os.path.join    ( self.pathCoverageDir,    'mix_index_html.in')
 
         self.pathUnityPack          = ''
         self.testsCoverage          = {}
         self.testsCoverageFiles     = []
 
-        self.mixHtmlValueStrList    = { 'full_title', 'full_date', 'full_linesHit', 'full_linesTotal', 'full_linesCoverage',
+        self.mixHtmlValueStrList    = { 'full_title' , 'full_date', 'full_linesHit', 'full_linesTotal', 'full_linesCoverage',
                                         'full_funcHit', 'full_funcTotal', 'full_funcCoverage', 'full_coverLegendCovLo', 'full_coverLegendCovMed',
-                                        'full_coverLegendCovHi', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
+                                        'full_coverLegendCovHi', 'full_coverage_href', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
                                         'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
-                                        'local_coverLegendCovHi' }
+                                        'local_coverLegendCovHi', 'local_coverage_href', }
 
         if self.notExecute == 'false' and self.tfExec.is_updated() == True:
             self.__clear_old_gcda()
@@ -298,13 +299,80 @@ class CoverageReport():
         return []
 
     def generate_mix_html( self ):
-        from HTMLParser import HTMLParser 
-        class ValueList: pass
+        import urllib
+        import HTMLParser
+        from HTMLParser import HTMLParser
+        from htmlentitydefs import name2codepoint 
+
+        class ValueList: #pass
+            def load( self, data, type, root ):
+                if type == 'full':
+                    self.full_title = 'FULL coverage report'#data[10]
+                    self.full_date = data[48]
+                    self.full_coverLegendCovLo = data[65]
+                    self.full_coverLegendCovMed = data[68]
+                    self.full_coverLegendCovHi = data[71]
+                    self.full_linesHit = data[38]
+                    self.full_linesTotal = data[40]
+                    self.full_linesCoverage = data[42]
+                    self.full_funcHit = data[53]
+                    self.full_funcTotal = data[55]
+                    self.full_funcCoverage = data[57]
+                    self.full_coverage_href = root.pathFullHtml
+
+                if type == 'local':
+                    self.local_title = 'LOCAL coverage report'#data[10]
+                    self.local_date = data[48]
+                    self.local_coverLegendCovLo = data[65]
+                    self.local_coverLegendCovMed = data[68]
+                    self.local_coverLegendCovHi = data[71]
+                    self.local_linesHit = data[38]
+                    self.local_linesTotal = data[40]
+                    self.local_linesCoverage = data[42]
+                    self.local_funcHit = data[53]
+                    self.local_funcTotal = data[55]
+                    self.local_funcCoverage = data[57]
+                    self.local_coverage_href = root.pathLocalHtml
+
+
         vl = ValueList() 
 
-        vl.full_title = 'QQWEQWERQEWRQEWRQWER'
+        class MyHTMLParser(HTMLParser):
+            def __init__( self ):
+                HTMLParser.__init__(self)
+                self.numData=0
+                self.data = []
+
+            def feed( self, html ):
+                self.data = []                
+                HTMLParser.feed( self, html )
+
+            def handle_data(self, data):
+                print "Data      ", self.numData, " :", data
+                self.numData += 1
+                self.data += [ data ]
+
+            def get_data( self ):
+                return self.data
+
+        parser = MyHTMLParser()
+
+        f = urllib.urlopen( os.path.join( self.pathReportOutFull, 'index.html' )  )
+        html = f.read()
+        f.close()
+        parser.feed( html )
+        vl.load( parser.get_data(), 'full', self )
+
+        #print 
+
+        f = urllib.urlopen( os.path.join( self.pathReportOutTests, 'index.html' )  )
+        html = f.read()
+        f.close()
+        parser.feed( html )
+        vl.load( parser.get_data(), 'local', self )
 
         configure_file( self.pathMixHtmlTemplate, self.pathMixHtml, self.mixHtmlValueStrList, vl )
+
 
 
     def generate_report_html( self ):
@@ -471,13 +539,13 @@ def main():
 
     if options.buildMode == 'true' :
         cov.generate_report_coverage()
-
     elif options.runMode == 'true' :
         cov.generate_report_html()
-
     else:
         cov.generate_report_html()
         cov.generate_report_coverage() 
+
+    #cov.generate_mix_html()
 
 if __name__ == '__main__':
     main()
