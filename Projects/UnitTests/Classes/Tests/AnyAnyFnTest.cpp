@@ -1,5 +1,6 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
+#include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
 #include <numeric>
 
@@ -418,7 +419,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(a == b);
 
         // load test
-        a.LoadValue(Type::Instance<int>(), &v1);
+        a.LoadValue(&v1, Type::Instance<int>());
         TEST_VERIFY(a.Get<int>() == v1);
 
         // store test
@@ -426,7 +427,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(v1 == v2);
 
         // load/store pointers
-        a.LoadValue(Type::Instance<int*>(), &iptr1);
+        a.LoadValue(&iptr1, Type::Instance<int*>());
         a.StoreValue(&iptr2, sizeof(iptr2));
         TEST_VERIFY(iptr1 == iptr2);
 
@@ -434,7 +435,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         NotTrivial not_triv;
         try
         {
-            a.LoadValue(Type::Instance<NotTrivial>(), &not_triv);
+            a.LoadValue(&not_triv, Type::Instance<NotTrivial>());
             TEST_VERIFY(false && "Load shouldn't be done for non-trivial types");
         }
         catch (const Exception&)
@@ -455,7 +456,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         Trivial triv;
         Trivial triv1(11, 22);
 
-        a.LoadValue(Type::Instance<Trivial>(), &triv);
+        a.LoadValue(&triv, Type::Instance<Trivial>());
         TEST_VERIFY(a.Get<Trivial>() == triv);
 
         a.StoreValue(&triv1, sizeof(triv1));
@@ -559,9 +560,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.Invoke();
             TEST_VERIFY(false && "Shouldn't be invoked with bad arguments");
         }
-        catch (const AnyFnException& anyFnExp)
+        catch (const Exception&)
         {
-            TEST_VERIFY(anyFnExp.ecode == AnyFnException::BadArguments);
+            TEST_VERIFY(true);
         }
 
         try
@@ -569,9 +570,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             fn.BindThis(&a);
             TEST_VERIFY(false && "This shouldn't be binded to static function");
         }
-        catch (const AnyFnException& anyFnExp)
+        catch (const Exception&)
         {
-            TEST_VERIFY(anyFnExp.ecode == AnyFnException::BadBind);
+            TEST_VERIFY(true);
         }
 
         fn = AnyFn(&A::TestFn);

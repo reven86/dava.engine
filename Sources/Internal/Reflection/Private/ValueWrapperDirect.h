@@ -32,7 +32,7 @@ public:
         if (object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            ret.LoadValue(type, ptr);
+            ret.LoadValue(ptr, type);
         }
 
         return ret;

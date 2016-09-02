@@ -9,36 +9,12 @@
 
 namespace DAVA
 {
-namespace AnyFnDetail
-{
-struct Invoker;
-}
-
+class AnyFnInvoker;
 class AnyFn final
 {
 public:
+    struct Params;
     using AnyFnStorage = AutoStorage<>;
-
-    struct Params
-    {
-        Params();
-        bool operator==(const Params&) const;
-
-        template <typename Ret, typename... Args>
-        Params& Set();
-
-        template <typename... Args>
-        Params& SetArgs();
-
-        template <typename Ret, typename... Args>
-        static Params From();
-
-        template <typename... Args>
-        static Params FromArgs();
-
-        const Type* retType;
-        Vector<const Type*> argsType;
-    };
 
     AnyFn();
 
@@ -64,27 +40,31 @@ public:
 
     AnyFn BindThis(const void* this_) const;
 
-private:
-    AnyFnStorage anyFnStorage;
-    AnyFnDetail::Invoker* invoker;
-    Params invokeParams;
-};
-
-struct AnyFnException : public Exception
-{
-    enum ErrorCode
+    struct Params
     {
-        BadBind,
-        BadArguments,
+        Params();
+        bool operator==(const Params&) const;
+
+        template <typename Ret, typename... Args>
+        Params& Set();
+
+        template <typename... Args>
+        Params& SetArgs();
+
+        template <typename Ret, typename... Args>
+        static Params From();
+
+        template <typename... Args>
+        static Params FromArgs();
+
+        const Type* retType;
+        Vector<const Type*> argsType;
     };
 
-    ErrorCode ecode;
-
-    AnyFnException(ErrorCode ecode_, const String& message, const char* file_, size_t line_)
-        : Exception(message, file_, line_)
-        , ecode(ecode_)
-    {
-    }
+private:
+    AnyFnStorage anyFnStorage;
+    AnyFnInvoker* invoker;
+    Params invokeParams;
 };
 
 } // namespace DAVA

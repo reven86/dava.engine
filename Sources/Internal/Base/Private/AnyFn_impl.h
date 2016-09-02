@@ -6,10 +6,13 @@
 
 namespace DAVA
 {
-namespace AnyFnDetail
+class AnyFnInvoker
 {
-struct Invoker
-{
+public:
+    virtual ~AnyFnInvoker()
+    {
+    }
+
     virtual bool IsStatic() const = 0;
     virtual Any Invoke(const AnyFn::AnyFnStorage&) const = 0;
     virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&) const = 0;
@@ -20,14 +23,12 @@ struct Invoker
     virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
 
     virtual AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void*) const = 0;
-
-    virtual ~Invoker()
-    {
-    }
 };
 
+namespace AnyFnDetails
+{
 template <typename Fn, typename Ret, typename... Args>
-struct StaticAnyFnInvoker : Invoker
+struct StaticAnyFnInvoker : AnyFnInvoker
 {
     template <bool, typename R, typename... A>
     struct FinalInvoker;
@@ -74,7 +75,7 @@ struct StaticAnyFnInvoker : Invoker
 
     AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
     {
-        DAVA_THROW(AnyFnException, AnyFnException::BadBind, "This can't be binded to static function");
+        DAVA_THROW(Exception, "AnyFn:: 'this' can't be binded to static function");
     }
 };
 
@@ -84,7 +85,7 @@ struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
     {
-        DAVA_THROW(AnyFnException, AnyFnException::BadArguments, "Invoke arguments count or type mismatch");
+        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type to count mismatch");
     }
 };
 
@@ -112,7 +113,7 @@ struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker<true, void, A...>
 };
 
 template <typename Ret, typename C, typename... Args>
-struct ClassAnyFnInvoker : Invoker
+struct ClassAnyFnInvoker : AnyFnInvoker
 {
     using Fn = Ret (C::*)(Args...);
 
@@ -176,7 +177,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        DAVA_THROW(AnyFnException, AnyFnException::BadArguments, "Invoke arguments count or type mismatch");
+        DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type to count mismatch");
     }
 };
 
@@ -219,7 +220,7 @@ struct FunctorTraits<Fn, Ret (Cls::*)(Args...) const>
     }
 };
 
-} // namespace AnyFnDetail
+} // namespace AnyFnDetails
 
 inline AnyFn::AnyFn()
     : invoker(nullptr)
@@ -229,7 +230,7 @@ inline AnyFn::AnyFn()
 template <typename Fn>
 inline AnyFn::AnyFn(const Fn& fn)
 {
-    using FunctorTraits = AnyFnDetail::FunctorTraits<Fn, decltype(&Fn::operator())>;
+    using FunctorTraits = AnyFnDetails::FunctorTraits<Fn, decltype(&Fn::operator())>;
     static typename FunctorTraits::InvokerType staticFnInvoker;
 
     anyFnStorage.SetAuto(fn);
@@ -241,7 +242,7 @@ template <typename Ret, typename... Args>
 inline AnyFn::AnyFn(Ret (*fn)(Args...))
     : invokeParams()
 {
-    static AnyFnDetail::StaticAnyFnInvoker<Ret (*)(Args...), Ret, Args...> staticFnInvoker;
+    static AnyFnDetails::StaticAnyFnInvoker<Ret (*)(Args...), Ret, Args...> staticFnInvoker;
 
     anyFnStorage.SetAuto(fn);
     invoker = &staticFnInvoker;
@@ -257,7 +258,7 @@ inline AnyFn::AnyFn(Ret (Cls::*fn)(Args...) const)
 template <typename Ret, typename Cls, typename... Args>
 inline AnyFn::AnyFn(Ret (Cls::*fn)(Args...))
 {
-    static AnyFnDetail::ClassAnyFnInvoker<Ret, Cls, Args...> classFnInvoker;
+    static AnyFnDetails::ClassAnyFnInvoker<Ret, Cls, Args...> classFnInvoker;
 
     anyFnStorage.SetAuto(fn);
     invoker = &classFnInvoker;

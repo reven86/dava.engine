@@ -2,18 +2,18 @@
 
 namespace DAVA
 {
-void Any::LoadValue(const Type* type_, void* data)
+void Any::LoadValue(void* data, const Type* type_)
 {
     type = type_;
 
-    if (type_->IsPointer())
+    if (type->IsPointer())
     {
         void** src = reinterpret_cast<void**>(data);
         anyStorage.SetAuto(*src);
     }
-    else if (type_->IsTriviallyCopyable())
+    else if (type->IsTriviallyCopyable())
     {
-        anyStorage.SetData(data, type_->GetSize());
+        anyStorage.SetData(data, type->GetSize());
     }
     else
     {
@@ -81,5 +81,4 @@ bool Any::operator==(const Any& any) const
 
     return (*compareFn)(*this, any);
 }
-
 } // namespace DAVA

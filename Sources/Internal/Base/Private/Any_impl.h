@@ -5,65 +5,6 @@
 
 namespace DAVA
 {
-
-#if 0
-
-inline bool Any::CastOPKey::operator==(const Any::CastOPKey& key) const
-{
-    return from == key.from && to == key.to;
-}
-
-inline size_t Any::CastOPKeyHasher::operator()(const DAVA::Any::CastOPKey& key) const
-{
-    return std::hash<const Type*>()(key.from) ^ std::hash<const Type*>()(key.to);
-}
-
-namespace AnyDetails
-{
-template <typename T>
-bool DefaultCompareOP(const void* lp, const void* rp)
-{
-    auto _lp = static_cast<const T*>(lp);
-    auto _rp = static_cast<const T*>(rp);
-
-    return (*_lp == *_rp);
-}
-
-template <typename T>
-void DefaultLoadOP(Any::AnyStorage& storage, const void* src)
-{
-    const T* data = static_cast<const T*>(src);
-    storage.SetAuto(*data);
-}
-
-template <typename T>
-void DefaultStoreOP(const Any::AnyStorage& storage, void* dst)
-{
-    T* data = static_cast<T*>(dst);
-    *data = storage.GetAuto<T>();
-}
-
-template <typename From, typename To>
-Any DefaultCastOP(const Any& from)
-{
-    return Any(static_cast<To>(from.Get<From>()));
-}
-
-template <typename T>
-std::pair<const Type*, Any::AnyOPs> MakeDefaultOPs()
-{
-    Any::AnyOPs ops;
-    ops.load = &DefaultLoadOP<T>;
-    ops.store = &DefaultStoreOP<T>;
-    ops.compare = &DefaultCompareOP<T>;
-
-    return std::make_pair(Type::Instance<T>(), std::move(ops));
-}
-
-} // namespace AnyDetails
-
-#endif
-
 inline Any::Any(Any&& any)
 {
     Set(std::move(any));
@@ -199,32 +140,6 @@ bool Any::CanCast() const
     return CanGet<T>() || AnyCast<T>::CanCast(*this);
 }
 
-#if 0
-
-template <typename T>
-inline bool Any::CanCastImpl(std::true_type isPointer) const
-{
-    using P = Type::DecayT<T>;
-
-    return TypePtrCast::CanCast(type, Type::Instance<P>());
-}
-
-template <typename T>
-inline bool Any::CanCastImpl(std::false_type isPointer) const
-{
-    using U = AnyStorage::StorableType<std::remove_cv_t<T>>;
-
-    auto it = castOPsMap->find(CastOPKey{ type, Type::Instance<T>() });
-    if (it != castOPsMap->end())
-    {
-        return true;
-    }
-
-    return false;
-}
-
-#endif
-
 template <typename T>
 T Any::Cast() const
 {
@@ -233,76 +148,4 @@ T Any::Cast() const
 
     return AnyCast<T>::Cast(*this);
 }
-
-#if 0
-
-template <typename T>
-inline T Any::CastImpl(std::true_type isPointer) const
-{
-    using P = Type::DecayT<T>;
-
-    void* inPtr = GetImpl<void*>();
-    void* outPtr = nullptr;
-
-    if (TypePtrCast::Cast(type, inPtr, Type::Instance<P>(), &outPtr))
-    {
-        return static_cast<T>(outPtr);
-    }
-
-    DAVA_THROW(AnyException, AnyException::BadCast, "Pointer value can't be casted into requested T");
-}
-
-template <typename T>
-inline T Any::CastImpl(std::false_type isPointer) const
-{
-    using U = AnyStorage::StorableType<std::remove_cv_t<T>>;
-
-    auto it = castOPsMap->find(CastOPKey{ type, Type::Instance<T>() });
-    if (it != castOPsMap->end())
-    {
-        CastOP op = it->second;
-        if (nullptr != op)
-        {
-            return op(*this).Get<T>();
-        }
-    }
-
-    DAVA_THROW(AnyException, AnyException::BadCast, "Value can't be casted into requested T");
-}
-
-#endif
-
-#if 0
-template <typename T>
-void Any::RegisterDefaultOPs()
-{
-    anyOPsMap->emplace(AnyDetails::MakeDefaultOPs<T>());
-}
-
-template <typename T>
-void Any::RegisterOPs(AnyOPs&& ops)
-{
-    anyOPsMap->emplace(std::make_pair(Type::Instance<T>(), std::move(ops)));
-}
-
-template <typename T1, typename T2>
-void Any::RegisterDefaultCastOP()
-{
-    const Type* t1 = Type::Instance<T1>();
-    const Type* t2 = Type::Instance<T2>();
-    castOPsMap->operator[](CastOPKey{ t1, t2 }) = &AnyDetails::DefaultCastOP<T1, T2>;
-    castOPsMap->operator[](CastOPKey{ t2, t1 }) = &AnyDetails::DefaultCastOP<T2, T1>;
-}
-
-template <typename T1, typename T2>
-void Any::RegisterCastOP(CastOP& castT1T2, CastOP& castT2T1)
-{
-    const Type* t1 = Type::Instance<T1>();
-    const Type* t2 = Type::Instance<T2>();
-    castOPsMap->operator[](CastOPKey{ t1, t2 }) = castT1T2;
-    castOPsMap->operator[](CastOPKey{ t2, t1 }) = castT2T1;
-}
-
-#endif
-
 } // namespace DAVA
