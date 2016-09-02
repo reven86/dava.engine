@@ -21,7 +21,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
 
     if (ret.empty())
     {
-        ret.reserve(22);
+        ret.reserve(32);
 
         ret.emplace_back(NMaterialFlagName::FLAG_VERTEXFOG);
         ret.emplace_back(NMaterialFlagName::FLAG_FOG_LINEAR);
@@ -50,6 +50,8 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
         ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
         ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
         ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+
+        ret.emplace_back(NMaterialFlagName::FLAG_BILLBOARD);
     }
 
     return ret;

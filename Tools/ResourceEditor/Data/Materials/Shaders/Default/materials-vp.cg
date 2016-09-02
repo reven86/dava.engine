@@ -226,7 +226,7 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-#if VERTEX_FOG 
+#if VERTEX_FOG || BILLBOARD
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 #endif
@@ -241,6 +241,10 @@ property float flowAnimOffset : static,a : ;
 #endif
 
 
+#if BILLBOARD
+property float4x4 viewProjMatrix : dynamic,a : ;
+property float3 cameraUp : dynamic,a : ;
+#endif
 
 // prototypes, to shut up Metal shader-compiler
 float  FresnelShlick( float NdotL, float Cspec );
@@ -399,33 +403,79 @@ VPROG_BEGIN
         }
     #endif // not CUT_LEAF
 
-#else // not SPEED_TREE_LEAF
+#elif WIND_ANIMATION
 
-    #if WIND_ANIMATION
+	float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
 
-        float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
-        VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
-        
-    #else // WIND_ANIMATION
+#elif WAVE_ANIMATION
 
-        #if WAVE_ANIMATION
-            float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
-            VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
-        #else
-            #if SKINNING
-//weightedVertexPosition.w=3.0;
-                float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
-                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
-                VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
-//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
-            #else
-                VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
-            #endif
-        #endif
+	float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
+	VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
 
-    #endif // WIND_ANIMATION
+#elif SKINNING
 
-#endif //end "not SPEED_TREE_LEAF
+	float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
+	float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
+	VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
+
+#elif BILLBOARD
+
+	float3 cameraPos = cameraPosition;
+	float4x4 wMatrix = worldMatrix;
+	
+	/*
+	 * Extract translation from original world matrix
+	 */
+	float4 translation = wMatrix[3];
+	wMatrix[3] = float4(0.0, 0.0, 0.0, 1.0);
+	
+	float3 directionToObject = normalize(translation.xyz - cameraPos);
+	float phi = atan(directionToObject.y, directionToObject.x) - _HALF_PI;
+	float cPhi = cos(phi);
+	float sPhi = sin(phi);
+	float sTheta = directionToObject.z;
+	float cTheta = sqrt(1.0 - sTheta * sTheta);
+
+	float4x4 result;
+	result[0] = float4( cPhi,           sPhi,          0.0,    0.0);
+	result[1] = float4(-sPhi * cTheta,  cPhi * cTheta, sTheta, 0.0);
+	result[2] = float4( sPhi * sTheta, -cPhi * sTheta, cTheta, 0.0);
+	result[3] = float4(0.0, 0.0, 0.0, 1.0);
+	
+	/*
+	float4x4 yawMatrix;
+	yawMatrix[0] = float4( cPhi, sPhi, 0.0, 0.0);
+	yawMatrix[1] = float4(-sPhi, cPhi, 0.0, 0.0);
+	yawMatrix[2] = float4(  0.0,  0.0, 1.0, 0.0);
+	yawMatrix[3] = float4(  0.0,  0.0, 0.0, 1.0);
+	
+	float4x4 rollMatrix;
+	rollMatrix[0] = float4(1.0,     0.0,    0.0, 0.0);
+	rollMatrix[1] = float4(0.0,  cTheta, sTheta, 0.0);
+	rollMatrix[2] = float4(0.0, -sTheta, cTheta, 0.0);
+	rollMatrix[3] = float4(0.0,     0.0,    0.0, 1.0);
+	float4x4 result = yawMatrix * rollMatrix;
+	// */
+	
+	/*
+	 * Apply original rotation matrix (without translation)
+	 */
+	result = mul(wMatrix, result);
+	
+	/*
+	 * Apply original translation
+	 */
+	result[3] = translation;
+	
+	float4x4 mvp = viewProjMatrix * result;
+	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), mvp );
+	
+#else
+	
+	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
+	
+#endif
 
 
 #if SPEED_TREE_LEAF

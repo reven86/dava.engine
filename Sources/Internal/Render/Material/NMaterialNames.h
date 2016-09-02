@@ -189,6 +189,8 @@ public:
 
     static const FastName FLAG_TEST_OCCLUSION;
 
+    static const FastName FLAG_BILLBOARD;
+
     static bool IsRuntimeFlag(const FastName& flag);
 };
 
