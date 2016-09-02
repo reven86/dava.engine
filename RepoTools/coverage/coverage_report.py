@@ -7,6 +7,8 @@ import subprocess
 import shutil
 import json
 import re
+import time
+import io
 
 from string import Template
 from collections import namedtuple
@@ -74,6 +76,31 @@ def configure_file( file_path_template, file_path_out, values_string_list, value
             template = Template( file_template.read() )
             file_generated.write( template.safe_substitute( dicts ) )
 
+class CheckTimeDependence():
+    def __init__(self, pathExecut, timeFile ):
+
+        self.pathExecut = pathExecut
+        self.timeFile   = timeFile
+
+    def create_time_file( self ):
+
+        dirTimeFile = os.path.dirname( self.timeFile ) 
+        if not os.path.isdir( dirTimeFile ):
+            os.makedirs( dirTimeFile ) 
+        with open(self.timeFile, "w") as  file:
+            file.write( time.ctime(os.path.getmtime(self.pathExecut)) )
+
+    def is_updated( self ):
+
+        timeExecute     = time.ctime(os.path.getmtime(self.pathExecut))
+        timeExecuteOld  = ''
+
+        if os.path.isfile( self.timeFile ) :
+            with open(self.timeFile) as f:
+                timeExecuteOld = f.readline()
+
+        return timeExecute != timeExecuteOld
+
 
 class CoverageReport():
 
@@ -97,6 +124,11 @@ class CoverageReport():
         self.executName, ExecutExt  = os.path.splitext( self.executName )
         
         self.pathCoverageDir        = os.path.dirname (os.path.realpath(__file__))
+        self.pathExecutTime         = os.path.join( self.pathBuild, 'CMakeFiles/{0}.time'.format( self.executName ) )
+
+
+        self.tfExec                 = CheckTimeDependence( self.pathExecut, self.pathExecutTime )
+
 
         self.coverFilePath          = os.path.join    ( self.pathExecutDir,   '{0}.cover'.format( self.executName ) )
         self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
@@ -114,14 +146,15 @@ class CoverageReport():
         self.testsCoverage          = {}
         self.testsCoverageFiles     = []
 
-        self.mixHtmlValueStrList = { 'full_title', 'full_date', 'full_linesHit', 'full_linesTotal', 'full_linesCoverage',
-                                     'full_funcHit', 'full_funcTotal', 'full_funcCoverage', 'full_coverLegendCovLo', 'full_coverLegendCovMed',
-                                     'full_coverLegendCovHi', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
-                                     'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
-                                     'local_coverLegendCovHi' }
+        self.mixHtmlValueStrList    = { 'full_title', 'full_date', 'full_linesHit', 'full_linesTotal', 'full_linesCoverage',
+                                        'full_funcHit', 'full_funcTotal', 'full_funcCoverage', 'full_coverLegendCovLo', 'full_coverLegendCovMed',
+                                        'full_coverLegendCovHi', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
+                                        'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
+                                        'local_coverLegendCovHi' }
 
-        if self.notExecute == 'false' :
+        if self.notExecute == 'false' and self.tfExec.is_updated() == True:
             self.__clear_old_gcda()
+            self.tfExec.create_time_file()
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
             self.__execute( [ pathExecutExt ] )
@@ -291,6 +324,7 @@ class CoverageReport():
                     '--capture',   
                     '-o', self.pathCovInfoFull
                  ]        
+        self.__build_print( params )                 
         self.__execute( params )
         
         ###        
@@ -298,8 +332,7 @@ class CoverageReport():
                     '--extract', self.pathCovInfoFull, 
                     '-o', self.pathCovInfoTests
                  ] + self.testsCoverageFiles
-        print params       
-         
+        self.__build_print( params )         
         self.__execute( params ) 
 
         ###
@@ -308,6 +341,7 @@ class CoverageReport():
                    '-o', self.pathReportOutFull,
                    '--legend'
                  ]
+        self.__build_print( params )                 
         self.__execute( params) 
 
         params = [ self.pathGenHtml,
@@ -315,6 +349,7 @@ class CoverageReport():
                    '-o', self.pathReportOutTests,
                    '--legend'
                  ]
+        self.__build_print( params )                 
         self.__execute( params)         
         ###
 
@@ -438,7 +473,7 @@ def main():
         cov.generate_report_coverage()
 
     elif options.runMode == 'true' :
-        cov.generate_report_html()  
+        cov.generate_report_html()
 
     else:
         cov.generate_report_html()

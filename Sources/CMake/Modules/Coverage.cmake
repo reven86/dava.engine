@@ -32,7 +32,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     add_executable( COVERAGE_${PROJECT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp )
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
-    add_custom_command( TARGET COVERAGE_${PROJECT_NAME} PRE_LINK
+    add_custom_command( TARGET COVERAGE_${PROJECT_NAME} 
             COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
                     --pathExecut    ${EXECUT_FILE}
                     --pathBuild     ${CMAKE_BINARY_DIR}
