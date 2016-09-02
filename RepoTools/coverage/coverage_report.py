@@ -87,6 +87,7 @@ class CoverageReport():
         self.pathReportOutTests     = os.path.join( arg.pathReportOut, 'CoverageTests' )
 
         self.buildConfig            = arg.buildConfig
+        self.notExecute             = arg.notExecute
         self.teamcityMode           = arg.teamcityMode
 
         self.coverageTmpPath        = os.path.join( arg.pathBuild, 'CoverageTmpData' )
@@ -119,13 +120,20 @@ class CoverageReport():
                                      'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
                                      'local_coverLegendCovHi' }
 
-        if self.teamcityMode == 'false' :
+        if self.notExecute == 'false' :
+            self.__clear_old_gcda()
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            #self.__execute( [ pathExecutExt ] )
+            self.__execute( [ pathExecutExt ] )
     
-        #self.__processing_gcda_gcno_files()
-        #self.__load_json_cover_data()
+        self.__processing_gcda_gcno_files()
+        self.__load_json_cover_data()
+
+    def __clear_old_gcda( self ):        
+        for rootdir, dirs, files in os.walk( self.pathBuild ):
+            for file in files:   
+                if file.endswith( ('.gcda')  ):
+                    os.remove( os.path.join(rootdir, file) ) 
 
     def __build_print( self, str ):        
         sys.stdout.write("{0}\n".format(str) )
@@ -204,8 +212,7 @@ class CoverageReport():
                 os.remove(pathOutFile)
 
             shutil.copy(file, self.coverageTmpPath )
-            if file.endswith( ('.gcda')  ): 
-                os.remove( file )
+
 
     def __error_log_coverage_file( self, test, file ):
 
@@ -418,7 +425,8 @@ def main():
     parser.add_argument( '--pathExecut', required = True )
     parser.add_argument( '--pathReportOut', required = True )
     parser.add_argument( '--buildConfig', choices=['Debug', 'Release'] )
-    parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--notExecute', default = 'false', choices=['true', 'false'] ) 
+    parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )    
     parser.add_argument( '--buildMode', default = 'false', choices=['true', 'false'] )
     parser.add_argument( '--runMode', default = 'false', choices=['true', 'false'] )
 
@@ -427,11 +435,11 @@ def main():
     cov = CoverageReport( options )
 
     if options.buildMode == 'true' :
-        cov.generate_mix_html()  
-        #cov.generate_report_coverage()
+        cov.generate_report_coverage()
 
     elif options.runMode == 'true' :
         cov.generate_report_html()  
+
     else:
         cov.generate_report_html()
         cov.generate_report_coverage() 
