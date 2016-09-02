@@ -23,12 +23,14 @@ public:
     }
     ProfilerRingArray(const ProfilerRingArray& a)
     {
+        elementsCount = a.elementsCount;
         memcpy(elements, a.elements, elementsCount * sizeof(T));
         mask = a.mask;
         head = a.head.load();
     }
     ProfilerRingArray(ProfilerRingArray&& a)
     {
+        elementsCount = a.elementsCount;
         elements = a.elements;
         mask = a.mask;
         head = a.head.load();
