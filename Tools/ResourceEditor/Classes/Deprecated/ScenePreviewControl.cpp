@@ -31,7 +31,8 @@ void ScenePreviewControl::RecreateScene()
     DVASSERT(editorScene == nullptr);
 
     editorScene = new DAVA::Scene();
-    editorScene->GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
+    DVASSERT(0, "NOT IMPLEMENTED");
+    // GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
 
     rotationSystem = new DAVA::RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);

@@ -152,11 +152,10 @@ void EntityCache::Clear(const FilePath& path)
 
 void EntityCache::ClearAll()
 {
-    for (auto i : cachedEntities)
+    for (auto& i : cachedEntities)
     {
         SafeRelease(i.second);
     }
-
     cachedEntities.clear();
 }
 
@@ -216,19 +215,21 @@ void Scene::SetGlobalMaterial(NMaterial* globalMaterial)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
 }
 
-RenderPass* Scene::GetMainPass()
+void Scene::SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format)
 {
-    return renderSystem->GetMainRenderPass();
-}
+    rhi::RenderPassConfig& config = renderSystem->GetMainRenderPass()->GetPassConfig();
+    config.priority = priority;
 
-rhi::RenderPassConfig& Scene::GetMainPassConfig()
-{
-    return renderSystem->GetMainRenderPass()->GetPassConfig();
-}
-
-void Scene::SetMainPassViewport(const Rect& viewport)
-{
     renderSystem->GetMainRenderPass()->SetViewport(viewport);
+    renderSystem->GetMainRenderPass()->SetRenderTargetProperties(width, height, format);
+}
+
+void Scene::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction)
+{
+    rhi::RenderPassConfig& config = renderSystem->GetMainRenderPass()->GetPassConfig();
+    config.colorBuffer[0].texture = color;
+    config.colorBuffer[0].loadAction = colorLoadAction;
+    config.depthStencilBuffer.texture = depthStencil;
 }
 
 void Scene::CreateSystems()

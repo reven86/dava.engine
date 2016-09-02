@@ -67,7 +67,6 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
 
     RenderSystem2D::Instance()->Flush();
 
-    rhi::RenderPassConfig& config = scene->GetMainPassConfig();
     const RenderSystem2D::RenderTargetPassDescriptor& currentTarget = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
 
     Rect viewportRect = geometricData.GetUnrotatedRect();
@@ -77,22 +76,31 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     else
         viewportRc = viewportRect;
 
+    uint32 priority = currentTarget.priority;
+
+    uint32 targetWidth = 0;
+    uint32 targetHeight = 0;
+    PixelFormat targetFormat = PixelFormat::FORMAT_INVALID;
+
+    rhi::HTexture colorTexture;
+    rhi::HTexture depthStencilTexture;
+    rhi::LoadAction loadAction = rhi::LOADACTION_CLEAR;
+
     if (drawToFrameBuffer)
     {
-        // Calculate viewport for frame buffer
-        viewportRc.x = 0.f;
-        viewportRc.y = 0.f;
+        viewportRc.x = 0.0f;
+        viewportRc.y = 0.0f;
         viewportRc.dx *= fbScaleFactor;
         viewportRc.dy *= fbScaleFactor;
 
         PrepareFrameBuffer();
 
-        config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
-        config.colorBuffer[0].texture = frameBuffer->handle;
-        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-
-        scene->GetMainPass()->SetRenderTargetProperties(frameBuffer->GetWidth(), frameBuffer->GetHeight(), frameBuffer->GetFormat());
+        priority += PRIORITY_SERVICE_3D;
+        colorTexture = frameBuffer->handle;
+        depthStencilTexture = frameBuffer->handleDepthStencil;
+        targetFormat = frameBuffer->GetFormat();
+        targetWidth = frameBuffer->GetWidth();
+        targetHeight = frameBuffer->GetHeight();
     }
     else
     {
@@ -101,33 +109,31 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
             viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
         }
 
-        config.priority = currentTarget.priority + basePriority;
-        config.colorBuffer[0].texture = currentTarget.colorAttachment;
-        config.colorBuffer[0].loadAction = colorLoadAction;
-        config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
+        priority += basePriority;
+        colorTexture = currentTarget.colorAttachment;
+        depthStencilTexture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::HTexture(rhi::DefaultDepthBuffer);
+        loadAction = colorLoadAction;
 
         if (currentTarget.colorAttachment == rhi::InvalidHandle)
         {
-            scene->GetMainPass()->SetRenderTargetProperties(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight(), PixelFormat::FORMAT_RGBA8888);
+            targetFormat = PixelFormat::FORMAT_RGBA8888;
+            targetWidth = Renderer::GetFramebufferWidth();
+            targetHeight = Renderer::GetFramebufferHeight();
         }
         else
         {
-            DVASSERT(currentTarget.width > 0);
-            DVASSERT(currentTarget.height > 0);
-            DVASSERT(currentTarget.format != PixelFormat::FORMAT_INVALID);
-            scene->GetMainPass()->SetRenderTargetProperties(currentTarget.width, currentTarget.height, currentTarget.format);
+            targetFormat = currentTarget.format;
+            targetWidth = currentTarget.width;
+            targetHeight = currentTarget.height;
         }
     }
 
-    const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
-    rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
-    config.antialiasingType = rhi::DeviceCaps().IsMultisamplingSupported(aaType) ? aaType : rhi::AntialiasingType::NONE;
+    DVASSERT(targetWidth > 0);
+    DVASSERT(targetHeight > 0);
+    DVASSERT(targetFormat != PixelFormat::FORMAT_INVALID);
 
-    config.colorBuffer[0].storeAction = (config.UsingMSAA()) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
-    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-
-    scene->SetMainPassViewport(viewportRc);
+    scene->SetMainRenderTarget(colorTexture, depthStencilTexture, loadAction);
+    scene->SetMainPassProperties(priority, viewportRc, targetWidth, targetHeight, targetFormat);
     scene->Draw();
 
     if (drawToFrameBuffer)

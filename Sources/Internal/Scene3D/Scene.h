@@ -225,10 +225,8 @@ public:
 
     EntityCache cache;
 
-    RenderPass* GetMainPass();
-    rhi::RenderPassConfig& GetMainPassConfig();
-
-    void SetMainPassViewport(const Rect& viewport);
+    void SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format);
+    void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction);
 
 protected:
     void UpdateLights();

@@ -339,6 +339,16 @@ void RenderSystem::Render()
 {
     TIME_PROFILE("RenderSystem::Render");
 
+    rhi::RenderPassConfig& config = mainRenderPass->GetPassConfig();
+
+    const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+    rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
+    config.antialiasingType = rhi::DeviceCaps().IsMultisamplingSupported(aaType) ? aaType : rhi::AntialiasingType::NONE;
+
+    config.colorBuffer[0].storeAction = (config.UsingMSAA()) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
+    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
     mainRenderPass->Draw(this);
 }
 };
