@@ -32,7 +32,6 @@ const char* D3D11ErrorText(HRESULT hr);
     if (FAILED(hr)) \
     { \
         DAVA::Logger::Error("D3D11Error at %s: %d\n%s", __FILE__, __LINE__, D3D11ErrorText(hr)); \
-		DVASSERT(0); \
     } 
 #else
 #define CHECK_HR(hr) hr
