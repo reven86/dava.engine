@@ -27,8 +27,6 @@ public:
 
     static bool IsCompressedFormat(PixelFormat format);
 
-    static PixelFormat GetPixelFormatForTextureFormat(rhi::TextureFormat format);
-
 private:
     static UnorderedMap<PixelFormat, PixelFormatDescriptor, std::hash<uint8>> pixelDescriptors;
 
