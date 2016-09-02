@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>LCOV - cov_full.info</title>
+  <title>DAVA coverage</title>
   <link rel="stylesheet" type="text/css" href="CoverageFull/gcov.css">
 </head>
 
@@ -72,7 +72,7 @@
           <table cellpadding=1 border=0 width="100%">
             <tr>
               <td width="10%" class="headerItem"></td>
-              <td width="35%" class="headerValue"><a href="$local_coverage_href">LOCAL COVERAGE</a></td>
+              <td width="35%" class="headerValue"><a href="$local_coverage_href">TESTS COVERAGE</a></td>
               <td width="5%"></td>
               <td width="15%"></td>
               <td width="10%" class="headerCovTableHead">Hit</td>

@@ -13,7 +13,6 @@ import io
 from string import Template
 from collections import namedtuple
 
-
 CoverageMinimum    = 75.0
 
 class FileCover():
@@ -301,8 +300,29 @@ class CoverageReport():
     def generate_mix_html( self ):
         import urllib
         import HTMLParser
+        import fileinput
         from HTMLParser import HTMLParser
         from htmlentitydefs import name2codepoint 
+
+        class MyHTMLParser(HTMLParser):
+            def __init__( self ):
+                HTMLParser.__init__(self)
+                self.numData=0
+                self.data = []
+
+            def feed( self, html ):
+                self.data = []                
+                HTMLParser.feed( self, html )
+
+            def handle_data(self, data):
+                #print "Data      ", self.numData, " :", data
+                self.numData += 1
+                self.data += [ data ]
+
+            def get_data( self ):
+                return self.data
+
+        parser = MyHTMLParser()
 
         class ValueList: #pass
             def load( self, data, type, root ):
@@ -321,7 +341,7 @@ class CoverageReport():
                     self.full_coverage_href = root.pathFullHtml
 
                 if type == 'local':
-                    self.local_title = 'LOCAL coverage report'#data[10]
+                    self.local_title = 'TESTS coverage report'#data[10]
                     self.local_date = data[48]
                     self.local_coverLegendCovLo = data[65]
                     self.local_coverLegendCovMed = data[68]
@@ -334,44 +354,32 @@ class CoverageReport():
                     self.local_funcCoverage = data[57]
                     self.local_coverage_href = root.pathLocalHtml
 
-
         vl = ValueList() 
 
-        class MyHTMLParser(HTMLParser):
-            def __init__( self ):
-                HTMLParser.__init__(self)
-                self.numData=0
-                self.data = []
-
-            def feed( self, html ):
-                self.data = []                
-                HTMLParser.feed( self, html )
-
-            def handle_data(self, data):
-                print "Data      ", self.numData, " :", data
-                self.numData += 1
-                self.data += [ data ]
-
-            def get_data( self ):
-                return self.data
-
-        parser = MyHTMLParser()
-
-        f = urllib.urlopen( os.path.join( self.pathReportOutFull, 'index.html' )  )
+        f = urllib.urlopen( self.pathFullHtml  )
         html = f.read()
         f.close()
         parser.feed( html )
         vl.load( parser.get_data(), 'full', self )
 
-        #print 
-
-        f = urllib.urlopen( os.path.join( self.pathReportOutTests, 'index.html' )  )
+        f = urllib.urlopen( self.pathLocalHtml )
         html = f.read()
         f.close()
         parser.feed( html )
         vl.load( parser.get_data(), 'local', self )
 
         configure_file( self.pathMixHtmlTemplate, self.pathMixHtml, self.mixHtmlValueStrList, vl )
+
+        defTopLink     = '<td width="35%" class="headerValue">top level</td>' 
+        newTopLinkMix  = '<td width="35%" class="headerValue"><a href="{0}">top level</a> DAVA coverage</td>'.format( self.pathMixHtml )
+
+        for url in [ self.pathFullHtml, self.pathLocalHtml ]:
+            filedata = None
+            with  open(url, 'r') as file:
+              filedata = file.read()
+            filedata = filedata.replace(defTopLink, newTopLinkMix)
+            with  open(url, 'w') as file:
+              file.write(filedata)
 
 
 
@@ -434,7 +442,6 @@ class CoverageReport():
                        FIND_File  =1, 
                        FIND_Lines =2, 
                        FIND_Taken =3 )
-
 
         self.__execute( [ self.pathLlvmProfdata, 'merge', '-o', '{0}.profdata'.format(self.executName), 'default.profraw' ] )
         
