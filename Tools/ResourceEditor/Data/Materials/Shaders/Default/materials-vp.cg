@@ -243,7 +243,6 @@ property float flowAnimOffset : static,a : ;
 
 #if BILLBOARD
 property float4x4 viewProjMatrix : dynamic,a : ;
-property float3 cameraUp : dynamic,a : ;
 #endif
 
 // prototypes, to shut up Metal shader-compiler
