@@ -54,6 +54,7 @@ private:
 
     QString name;
     FilePath storagePath;
+    UnorderedSet<String> createdSubholders;
     Impl *parent = nullptr;
     QJsonObject jsonObject;
     bool wasChanged = false;
@@ -71,6 +72,8 @@ PropertiesHolder::Impl::Impl(Impl *impl_, const String &name_)
     : name(QString::fromStdString(name_))
     , parent(impl_)
 {
+    DVASSERT(parent->createdSubholders.find(name_) == parent->createdSubholders.end());
+    parent->createdSubholders.insert(name_);
     jsonObject = parent->jsonObject[name].toObject();
 }
 
@@ -78,6 +81,7 @@ PropertiesHolder::Impl::~Impl()
 {
     if (parent != nullptr)
     {
+        parent->createdSubholders.erase(name.toStdString());
         if (wasChanged)
         {
             SaveToParent();

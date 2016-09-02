@@ -274,7 +274,8 @@ struct UIManager::Impl : public QObject
     bool initializationFinished = false;
 
     Impl(UIManager::Delegate* delegate, PropertiesHolder &&givenPropertiesHolder)
-        : managerDelegate(delegate, std::move(givenPropertiesHolder))
+        : managerDelegate(delegate)
+        , propertiesHolder(std::move(givenPropertiesHolder))
     {
     }
 
@@ -284,7 +285,7 @@ struct UIManager::Impl : public QObject
         String stateKey("state");
         for (auto& window : windows)
         {
-            PropertiesHolder ph = propertiesHolder.SubHolder(window.first.c_str());
+            PropertiesHolder ph = propertiesHolder.SubHolder(window.first.GetAppID().c_str());
             QMainWindow *mainWindow = window.second.window;
             ph.Save(mainWindow->saveState(), stateKey);
             ph.Save(mainWindow->saveGeometry(), geometryKey);
@@ -304,7 +305,7 @@ struct UIManager::Impl : public QObject
             window->setWindowTitle(appId.c_str());
             window->setObjectName(appId.c_str());
 
-            PropertiesHolder ph = propertiesHolder.SubHolder(appID.c_str());
+            PropertiesHolder ph = propertiesHolder.SubHolder(appId.c_str());
             window->restoreGeometry(ph.Load<QByteArray>("geometry"));
             window->restoreState(ph.Load<QByteArray>("state"));
 
