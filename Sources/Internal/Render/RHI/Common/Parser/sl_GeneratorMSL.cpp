@@ -172,6 +172,8 @@ bool MSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName
       "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float t ) { return mix( a, b, t ); }",
       "inline vector_float4 lerp( vector_float4 a, vector_float4 b, float t ) { return mix( a, b, t ); }",
 
+      "#define FP_A8(t) (t).a",
+
       ""
     };
 

@@ -164,6 +164,7 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
     #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     m_writer.WriteLine(0, "precision highp float;");
     #endif
+    m_writer.WriteLine(0, "#define FP_A8(t) (t).a");
 
     ChooseUniqueName("matrix_row", m_matrixRowFunction, sizeof(m_matrixRowFunction));
     ChooseUniqueName("clip", m_clipFunction, sizeof(m_clipFunction));
@@ -229,20 +230,23 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
         }
     }
 
-    for (HLSLStatement* s = entryFunction->statement; s; s = s->nextStatement)
+    if (m_target == Target_VertexShader)
     {
-        if (s->nodeType == HLSLNodeType_ReturnStatement)
+        for (HLSLStatement* s = entryFunction->statement; s; s = s->nextStatement)
         {
-            HLSLReturnStatement* ret = static_cast<HLSLReturnStatement*>(s);
-            HLSLStruct* out_struct = tree->FindGlobalStruct(ret->expression->expressionType.typeName);
-
-            for (HLSLStructField* field = out_struct->field; field; field = field->nextField)
+            if (s->nodeType == HLSLNodeType_ReturnStatement)
             {
-                if (stricmp(field->semantic, "SV_POSITION") != 0
-                    && stricmp(field->semantic, "SV_TARGET") != 0
-                    )
+                HLSLReturnStatement* ret = static_cast<HLSLReturnStatement*>(s);
+                HLSLStruct* out_struct = tree->FindGlobalStruct(ret->expression->expressionType.typeName);
+
+                for (HLSLStructField* field = out_struct->field; field; field = field->nextField)
                 {
-                    m_writer.WriteLine(0, "varying %s var_%s;", GetTypeName(field->type), field->name);
+                    if (stricmp(field->semantic, "SV_POSITION") != 0
+                        && stricmp(field->semantic, "SV_TARGET") != 0
+                        )
+                    {
+                        m_writer.WriteLine(0, "varying %s var_%s;", GetTypeName(field->type), field->name);
+                    }
                 }
             }
         }
@@ -627,7 +631,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                         {
                             m_writer.Write("gl_Position");
                         }
-                        else if (f->semantic && stricmp(f->semantic, "SV_TARGET") == 0)
+                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0))
                         {
                             m_writer.Write("gl_FragColor");
                         }
@@ -703,7 +707,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                 m_writer.Write("(");
                 OutputExpression(memberAccess->object);
                 m_writer.Write(")");
-
+                /*
                 if (memberAccess->object->expressionType.baseType == HLSLBaseType_Float3x3 ||
                     memberAccess->object->expressionType.baseType == HLSLBaseType_Float4x4)
                 {
@@ -737,6 +741,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                     }
                 }
                 else
+*/
                 {
                     m_writer.Write(".%s", memberAccess->field);
                 }
@@ -747,6 +752,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
     {
         HLSLArrayAccess* arrayAccess = static_cast<HLSLArrayAccess*>(expression);
 
+        /*
         if (!arrayAccess->array->expressionType.array &&
             (arrayAccess->array->expressionType.baseType == HLSLBaseType_Float3x3 ||
              arrayAccess->array->expressionType.baseType == HLSLBaseType_Float4x4))
@@ -760,6 +766,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
             m_writer.Write(")");
         }
         else
+*/
         {
             OutputExpression(arrayAccess->array);
             m_writer.Write("[");
@@ -771,7 +778,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
     {
         HLSLFunctionCall* functionCall = static_cast<HLSLFunctionCall*>(expression);
 
-        // Handle intrinsic funtions that are different between HLSL and GLSL.
+        // Handle intrinsic functions that are different between HLSL and GLSL.
         bool handled = false;
         const char* functionName = functionCall->function->name;
 
@@ -850,7 +857,7 @@ void GLESGenerator::OutputIdentifier(const char* name)
     }
     else if (String_Equal(name, "texCUBE"))
     {
-        name = "texture";
+        name = "textureCube";
     }
     else if (String_Equal(name, "clip"))
     {
@@ -858,7 +865,7 @@ void GLESGenerator::OutputIdentifier(const char* name)
     }
     else if (String_Equal(name, "tex2Dlod"))
     {
-        name = m_tex2DlodFunction;
+        name = "texture2DLod";
     }
     else if (String_Equal(name, "texCUBEbias"))
     {

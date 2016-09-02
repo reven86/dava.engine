@@ -228,5 +228,5 @@
 #define min10float4 half4
 
 
-#define FP_A8(t) (t).r
+//- #define FP_A8(t) (t).r
 

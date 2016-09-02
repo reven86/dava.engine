@@ -202,6 +202,10 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const cha
 
     m_writer.Reset(code);
     //    m_writer.EnableLineNumbers(true);
+    if (m_mode == MODE_DX11)
+        m_writer.WriteLine(0, "#define FP_A8(t) (t).r");
+    else
+        m_writer.WriteLine(0, "#define FP_A8(t) (t).a");
 
     // @@ Should we generate an entirely new copy of the tree so that we can modify it in place?
 

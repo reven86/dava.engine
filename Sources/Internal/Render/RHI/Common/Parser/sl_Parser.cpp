@@ -533,7 +533,12 @@ const Intrinsic _intrinsic[] =
   Intrinsic("sincos", HLSLBaseType_Void, HLSLBaseType_Half, HLSLBaseType_Half, HLSLBaseType_Half),
   Intrinsic("sincos", HLSLBaseType_Void, HLSLBaseType_Half2, HLSLBaseType_Half2, HLSLBaseType_Half2),
   Intrinsic("sincos", HLSLBaseType_Void, HLSLBaseType_Half3, HLSLBaseType_Half3, HLSLBaseType_Half3),
-  Intrinsic("sincos", HLSLBaseType_Void, HLSLBaseType_Half4, HLSLBaseType_Half4, HLSLBaseType_Half4)
+  Intrinsic("sincos", HLSLBaseType_Void, HLSLBaseType_Half4, HLSLBaseType_Half4, HLSLBaseType_Half4),
+
+  Intrinsic("FP_A8", HLSLBaseType_Float, HLSLBaseType_Float3),
+  Intrinsic("FP_A8", HLSLBaseType_Float, HLSLBaseType_Float4),
+  Intrinsic("FP_A8", HLSLBaseType_Half, HLSLBaseType_Half3),
+  Intrinsic("FP_A8", HLSLBaseType_Half, HLSLBaseType_Half4)
 
 };
 
