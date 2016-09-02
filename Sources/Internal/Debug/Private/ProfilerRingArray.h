@@ -1,33 +1,42 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 #include <atomic>
 
 namespace DAVA
 {
-template <class T, uint32 _Size>
-class RingArray
+template <class T>
+class ProfilerRingArray
 {
 public:
-    static_assert(((_Size - 1) & _Size) == 0 && _Size != 0, "Size of RingArray should be pow of two");
-
-    RingArray() = default;
-    RingArray(const RingArray& a)
+    ProfilerRingArray(uint32 _size)
     {
-        memcpy(elements.data(), a.elements.data(), elements.size() * sizeof(T));
+        DVASSERT(((_size - 1) & _size) == 0 && _size != 0 && "Size of RingArray should be pow of two");
+        elementsCount = _size;
+        mask = elementsCount - 1;
+        elements = new T[elementsCount];
+    }
+    ~ProfilerRingArray()
+    {
+        SafeDeleteArray(elements);
+    }
+    ProfilerRingArray(const ProfilerRingArray& a)
+    {
+        memcpy(elements, a.elements, elementsCount * sizeof(T));
         mask = a.mask;
         head = a.head.load();
     }
-    RingArray(RingArray&& a)
+    ProfilerRingArray(ProfilerRingArray&& a)
     {
-        elements = std::move(a.elements);
+        elements = a.elements;
         mask = a.mask;
         head = a.head.load();
     }
-    RingArray& operator=(const RingArray& a)
+    ProfilerRingArray& operator=(const ProfilerRingArray& a)
     {
         if (this != &a)
-            new (this) RingArray(a);
+            new (this) ProfilerRingArray(a);
         return (*this);
     }
 
@@ -40,23 +49,23 @@ public:
     }
     inline iterator begin()
     {
-        return iterator(elements.data(), head & mask, mask);
+        return iterator(elements, head & mask, mask);
     }
     inline iterator end()
     {
-        return iterator(elements.data(), (head & mask) | (mask + 1), mask);
+        return iterator(elements, (head & mask) | (mask + 1), mask);
     }
     inline reverse_iterator rbegin()
     {
-        return reverse_iterator(elements.data(), ((head - 1) & mask) | (mask + 1), mask);
+        return reverse_iterator(elements, ((head - 1) & mask) | (mask + 1), mask);
     }
     inline reverse_iterator rend()
     {
-        return reverse_iterator(elements.data(), (head - 1) & mask, mask);
+        return reverse_iterator(elements, (head - 1) & mask, mask);
     }
     inline size_t size() const
     {
-        return _Size;
+        return elementsCount;
     }
 
 protected:
@@ -150,7 +159,7 @@ public:
         {
         }
 
-        friend class RingArray;
+        friend class ProfilerRingArray;
     };
 
     class reverse_iterator : public base_iterator
@@ -207,12 +216,13 @@ public:
         {
         }
 
-        friend class RingArray;
+        friend class ProfilerRingArray;
     };
 
 protected:
-    std::array<T, _Size> elements;
-    uint32 mask = _Size - 1;
+    T* elements = nullptr;
+    uint32 elementsCount = 0;
+    uint32 mask = 0;
     std::atomic<uint32> head = { 0 };
 };
 

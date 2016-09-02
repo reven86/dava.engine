@@ -12,7 +12,16 @@ namespace DAVA
 {
 namespace Profiler
 {
-const static uint32 TIME_COUNTERS_COUNT = 2048;
+
+#if PROFILER_ENABLED
+static TimeProfiler GLOBAL_TIME_PROFILER;
+TimeProfiler* const TimeProfiler::GlobalProfiler = &GLOBAL_TIME_PROFILER;
+#else
+TimeProfiler* const GlobalTimeProfiler = nullptr;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+//Internal Declaration
 
 struct TimeCounter
 {
@@ -23,21 +32,11 @@ struct TimeCounter
     uint32 nameID = 0;
 };
 
-using CounterArray = RingArray<TimeCounter, TIME_COUNTERS_COUNT>;
-
-static CounterArray counters;
-static bool profilerStarted = false;
-
-Vector<CounterArray> snapshots;
-
-//////////////////////////////////////////////////////////////////////////
-//Internal Declaration
-
 struct CounterTreeNode
 {
     IMPLEMENT_POOL_ALLOCATOR(CounterTreeNode, 128);
 
-    static CounterTreeNode* BuildTree(CounterArray::iterator begin, CounterArray& array);
+    static CounterTreeNode* BuildTree(CounterArray::iterator begin, CounterArray* array);
     static CounterTreeNode* CopyTree(const CounterTreeNode* node);
     static void MergeTree(CounterTreeNode* root, const CounterTreeNode* node);
     static void DumpTree(const CounterTreeNode* node, std::ostream& stream, bool average);
@@ -63,15 +62,15 @@ protected:
 };
 
 uint64 TimeStampUs();
-CounterArray& GetCounterArray(int32 snapshot);
 
 //////////////////////////////////////////////////////////////////////////
 
-ScopedCounter::ScopedCounter(const char* counterName, uint32 counterNameID)
+TimeProfiler::ScopedTimeCounter::ScopedTimeCounter(const char* counterName, uint32 counterNameID, TimeProfiler* _profiler)
 {
-    if (profilerStarted)
+    profiler = _profiler;
+    if (profiler->started)
     {
-        TimeCounter& c = counters.next();
+        TimeCounter& c = profiler->counters->next();
 
         endTime = &c.endTime;
         c.startTime = TimeStampUs();
@@ -82,49 +81,63 @@ ScopedCounter::ScopedCounter(const char* counterName, uint32 counterNameID)
     }
 }
 
-ScopedCounter::~ScopedCounter()
+TimeProfiler::ScopedTimeCounter::~ScopedTimeCounter()
 {
-    if (profilerStarted && endTime)
+    if (profiler->started && endTime)
     {
         *endTime = TimeStampUs();
     }
 }
 
-void Start()
+TimeProfiler::TimeProfiler(uint32 countersCount)
 {
-    profilerStarted = true;
+    counters = new CounterArray(countersCount);
 }
 
-void Stop()
+TimeProfiler::~TimeProfiler()
 {
-    profilerStarted = false;
+    DeleteSnapshots();
+    SafeDelete(counters);
 }
 
-int32 MakeSnapshot()
+void TimeProfiler::Start()
 {
-    snapshots.push_back(counters);
+    started = true;
+}
+
+void TimeProfiler::Stop()
+{
+    started = false;
+}
+
+int32 TimeProfiler::MakeSnapshot()
+{
+    snapshots.push_back(new CounterArray(*counters));
     return int32(snapshots.size() - 1);
 }
 
-void DeleteSnapshot(int32 snapshot)
+void TimeProfiler::DeleteSnapshot(int32 snapshot)
 {
     if (snapshot != NO_SNAPSHOT_ID)
     {
-        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()))
+        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
+        SafeDelete(snapshots[snapshot]);
         snapshots.erase(snapshots.begin() + snapshot);
     }
 }
 
-void DeleteSnapshots()
+void TimeProfiler::DeleteSnapshots()
 {
+    for (CounterArray*& c : snapshots)
+        SafeDelete(c);
     snapshots.clear();
 }
 
-uint64 GetLastCounterTime(const char* counterName)
+uint64 TimeProfiler::GetLastCounterTime(const char* counterName)
 {
     uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     uint64 timeDelta = 0;
-    CounterArray::reverse_iterator it = counters.rbegin(), itEnd = counters.rend();
+    CounterArray::reverse_iterator it = counters->rbegin(), itEnd = counters->rend();
     for (; it != itEnd; it++)
     {
         const TimeCounter& c = *it;
@@ -138,15 +151,15 @@ uint64 GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
-void DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void TimeProfiler::DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
     stream << "================================================================" << std::endl;
 
     uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
-    CounterArray& array = GetCounterArray(snapshot);
-    CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
+    CounterArray* array = GetCounterArray(snapshot);
+    CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
     TimeCounter* lastDumpedCounter = nullptr;
     for (; it != itEnd; it++)
     {
@@ -171,16 +184,16 @@ void DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream
     stream.flush();
 }
 
-void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void TimeProfiler::DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
     stream << "================================================================" << std::endl;
     stream << "=== Average time for " << counterCount << " counter(s):" << std::endl;
 
     uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
-    CounterArray& array = GetCounterArray(snapshot);
-    CounterArray::reverse_iterator it = array.rbegin(), itEnd = array.rend();
+    CounterArray* array = GetCounterArray(snapshot);
+    CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
     CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
@@ -215,16 +228,16 @@ void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& str
     stream.flush();
 }
 
-void DumpJSON(std::ostream& stream, int32 snapshot)
+void TimeProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !profilerStarted) && "Stop profiler before dumping");
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
-    CounterArray& array = GetCounterArray(snapshot);
+    CounterArray* array = GetCounterArray(snapshot);
 
     stream << "{ \"traceEvents\": [" << std::endl;
 
-    CounterArray::iterator it = array.begin(), itEnd = array.end();
-    CounterArray::iterator last(array.rbegin());
+    CounterArray::iterator it = array->begin(), itEnd = array->end();
+    CounterArray::iterator last(array->rbegin());
     for (; it != itEnd; it++)
     {
         stream << "{ \"pid\":0, \"tid\":" << uint64(it->tid) << ", \"ts\":" << it->startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << it->name << "\" }," << std::endl;
@@ -239,10 +252,21 @@ void DumpJSON(std::ostream& stream, int32 snapshot)
     stream.flush();
 }
 
+CounterArray* TimeProfiler::GetCounterArray(int32 snapshot)
+{
+    if (snapshot != TimeProfiler::NO_SNAPSHOT_ID)
+    {
+        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
+        return snapshots[snapshot];
+    }
+
+    return counters;
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 //Internal Definition
 
-CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, CounterArray& array)
+CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, CounterArray* array)
 {
     DVASSERT(begin->endTime);
 
@@ -253,7 +277,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
     CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->nameID, begin->endTime - begin->startTime, 1);
     nodeEndTime.push_back(begin->endTime);
 
-    CounterArray::iterator end = array.end();
+    CounterArray::iterator end = array->end();
     for (CounterArray::iterator it = begin + 1; it != end; ++it)
     {
         const TimeCounter& c = *it;
@@ -384,17 +408,6 @@ void CounterTreeNode::SafeDeleteTree(CounterTreeNode*& node)
 uint64 TimeStampUs()
 {
     return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
-}
-
-CounterArray& GetCounterArray(int32 snapshot)
-{
-    if (snapshot != NO_SNAPSHOT_ID)
-    {
-        DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
-        return snapshots[snapshot];
-    }
-
-    return counters;
 }
 
 } //ns Profiler
