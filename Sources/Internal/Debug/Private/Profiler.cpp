@@ -285,7 +285,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
         if (c.tid != threadID)
             continue;
 
-        if (c.startTime > endTime || c.endTime == 0)
+        if (c.startTime >= endTime || c.endTime == 0)
             break;
 
         if (c.tid == threadID)
