@@ -2,7 +2,7 @@
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
 #include "Scene/SceneEditor2.h"
-#include "Commands2/BeastAction.h"
+#include "Beast/BeastRunner.h"
 
 #include "CommandLine/OptionName.h"
 
@@ -49,7 +49,10 @@ void BeastCommandLineTool::ProcessInternal()
     if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
-        scene->Exec(Command2::Create<BeastAction>(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr));
+        {
+            BeastRunner beast(scene, outputPath, BeastProxy::MODE_LIGHTMAPS, nullptr);
+            beast.Run();
+        }
         scene->SaveScene();
     }
     RenderObjectsFlusher::Flush();

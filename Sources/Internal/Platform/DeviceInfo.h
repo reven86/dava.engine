@@ -1,4 +1,4 @@
-﻿#ifndef __FRAMEWORK__DEVICEINFO__
+#ifndef __FRAMEWORK__DEVICEINFO__
 #define __FRAMEWORK__DEVICEINFO__
 
 #include "Base/BaseTypes.h"
@@ -153,7 +153,7 @@ public:
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
     static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
-    static Signal<String> сarrierNameChanged;
+    static Signal<const String&> carrierNameChanged;
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

@@ -5,7 +5,7 @@ using namespace DAVA;
 
 auto GetIndex = [](const FileList* files, DAVA::String filename)
 {
-    auto i = 0;
+    auto i = 0u;
     for (; i < files->GetCount(); ++i)
     {
         if (files->GetFilename(i) == filename)
@@ -22,7 +22,7 @@ DAVA_TESTCLASS (FileListTest)
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
         FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
-        
+
     #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
         FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
@@ -36,7 +36,7 @@ DAVA_TESTCLASS (FileListTest)
         TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
-        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        for (uint32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
             if (fileList->IsNavigationDirectory(ifo))
                 continue;
@@ -51,25 +51,25 @@ DAVA_TESTCLASS (FileListTest)
                 TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file1");
                     }
-                    else if (filename == "file2.txt")
+                    else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file2.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file2.txt");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file3.doc");
                     }
                     else
                     {
@@ -81,37 +81,37 @@ DAVA_TESTCLASS (FileListTest)
             {
                 TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/");
                 TEST_VERIFY(files->GetFileCount() == 6);
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file1");
                     }
-                    else if (filename == "file1.txt")
+                    else if (f == "file1.txt")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file1.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file1.txt");
                     }
-                    else if (filename == "file2")
+                    else if (f == "file2")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file2");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file2");
                     }
-                    else if (filename == "file2.txt")
+                    else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file2.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file2.txt");
                     }
-                    else if (filename == "file3")
+                    else if (f == "file3")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file3");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file3");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file3.doc");
                     }
                     else
                     {
@@ -123,21 +123,21 @@ DAVA_TESTCLASS (FileListTest)
             {
                 TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder3/");
                 TEST_VERIFY(files->GetFileCount() == 2);
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder3/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder3/file1");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder3/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder3/file3.doc");
                     }
                     else
                     {
@@ -186,7 +186,7 @@ DAVA_TESTCLASS (FileListTest)
         TEST_VERIFY(fileList->GetDirectoryCount() == 1); //cyrillic directory
         TEST_VERIFY(fileList->GetFileCount() == 1); //file with cyrillic path definition
 
-        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        for (uint32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
             if (fileList->IsNavigationDirectory(ifo) || !fileList->IsDirectory(ifo))
             {
@@ -224,7 +224,7 @@ DAVA_TESTCLASS (FileListTest)
         TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
-        for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
+        for (uint32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
         {
             if (fileList->IsNavigationDirectory(ifo))
                 continue;
@@ -239,25 +239,25 @@ DAVA_TESTCLASS (FileListTest)
                 TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file1");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file1");
                     }
-                    else if (filename == "file2.txt")
+                    else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file2.txt");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file2.txt");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file3.doc");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file3.doc");
                     }
                     else
                     {
@@ -269,37 +269,37 @@ DAVA_TESTCLASS (FileListTest)
             {
                 TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/");
                 TEST_VERIFY(files->GetFileCount() == 6);
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file1");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file1");
                     }
-                    else if (filename == "file1.txt")
+                    else if (f == "file1.txt")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file1.txt");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file1.txt");
                     }
-                    else if (filename == "file2")
+                    else if (f == "file2")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file2");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file2");
                     }
-                    else if (filename == "file2.txt")
+                    else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file2.txt");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file2.txt");
                     }
-                    else if (filename == "file3")
+                    else if (f == "file3")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file3");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file3");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/file3.doc");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file3.doc");
                     }
                     else
                     {
@@ -311,21 +311,21 @@ DAVA_TESTCLASS (FileListTest)
             {
                 TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder3/");
                 TEST_VERIFY(files->GetFileCount() == 2);
-                for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
+                for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
                     if (files->IsNavigationDirectory(ifi))
                         continue;
 
-                    String filename = files->GetFilename(ifi);
-                    FilePath pathname = files->GetPathname(ifi);
+                    String f = files->GetFilename(ifi);
+                    FilePath p = files->GetPathname(ifi);
 
-                    if (filename == "file1")
+                    if (f == "file1")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder3/file1");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder3/file1");
                     }
-                    else if (filename == "file3.doc")
+                    else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder3/file3.doc");
+                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder3/file3.doc");
                     }
                     else
                     {

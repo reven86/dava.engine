@@ -16,7 +16,6 @@ class LODEditor;
 class GlobalOperations;
 class SceneEditor2;
 class SelectableGroup;
-class Command2;
 class QFrame;
 class QPushButton;
 class LODDistanceWidget;

@@ -147,14 +147,7 @@ DavaGLWidget::DavaGLWidget(QWidget* parent)
 
     davaGLView = new DavaGLView();
 
-    connect(qApp, &QApplication::focusWindowChanged, [this](QWindow* now) //fix bug with actions focus scope
-            {
-                bool isActive = (now == davaGLView);
-                for (auto& action : actions())
-                {
-                    action->setEnabled(isActive);
-                }
-            });
+    connect(qApp, &QApplication::focusWindowChanged, this, &DavaGLWidget::OnFocusWindowChanged); //fix bug with actions focus scope
 
     davaGLView->setClearBeforeRendering(false);
     QTimer* timer = new QTimer(this);
@@ -277,4 +270,13 @@ void DavaGLWidget::resizeEvent(QResizeEvent*)
 void DavaGLWidget::OnCleanup()
 {
     delete renderer;
+}
+
+void DavaGLWidget::OnFocusWindowChanged(QWindow* focusWindow)
+{
+    bool isActive = (focusWindow == davaGLView);
+    for (QAction* action : actions())
+    {
+        action->setEnabled(isActive);
+    }
 }

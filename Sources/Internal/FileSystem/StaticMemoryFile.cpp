@@ -87,9 +87,9 @@ uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
     return 0;
 }
 
-bool StaticMemoryFile::Seek(int32 position, eFileSeek seekType)
+bool StaticMemoryFile::Seek(int64 position, eFileSeek seekType)
 {
-    int32 pos = 0;
+    int64 pos = 0;
     switch (seekType)
     {
     case SEEK_FROM_START:
@@ -111,7 +111,7 @@ bool StaticMemoryFile::Seek(int32 position, eFileSeek seekType)
     }
 
     // behavior taken from std::FILE - don't move pointer to less than 0 value
-    currentPos = pos;
+    currentPos = static_cast<uint32>(pos);
 
     // like in std::FILE
     // The end-of-file internal indicator of the stream is cleared after a successful call to this function

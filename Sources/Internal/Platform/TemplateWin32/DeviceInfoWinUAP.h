@@ -1,4 +1,4 @@
-﻿#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
+#ifndef __FRAMEWORK__DEVICEINFO_WINUAP__
 #define __FRAMEWORK__DEVICEINFO_WINUAP__
 
 #include "Base/Platform.h"
@@ -102,7 +102,7 @@ private:
     ::Windows::ApplicationModel::Calls::PhoneCallStore ^ phoneCallStore;
     ::Windows::ApplicationModel::Calls::PhoneLineWatcher ^ watcher;
     Map<Platform::Guid, ::Windows::ApplicationModel::Calls::PhoneLine ^> phoneLines;
-    Platform::String ^ сarrierName;
+    Platform::String ^ carrierName = nullptr;
 };
 };
 

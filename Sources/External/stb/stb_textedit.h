@@ -695,11 +695,8 @@ static int stb_textedit_paste(STB_TEXTEDIT_STRING *str, STB_TexteditState *state
    // remove the undo since we didn't actually insert the characters
    if (state->undostate.undo_point)
       --state->undostate.undo_point;
-   return 0;
-#else // DAVA: Always return 1 because we can delete selected text and text will be changed
-   return 1; 
 #endif
-   
+   return 0;
 }
 
 // API key: process a keyboard input
@@ -969,8 +966,11 @@ retry:
             stb_textedit_delete_selection(str, state);
          else {
             int n = STB_TEXTEDIT_STRINGLEN(str);
-            if (state->cursor < n)
-               stb_textedit_delete(str, state, state->cursor, 1);
+            if (state->cursor < n) {
+                stb_textedit_delete(str, state, state->cursor, 1);
+            } else {
+                break; // Content wasn't changed
+            }
          }
          state->has_preferred_x = 0;
          ret = 1; // Content was changed
@@ -985,6 +985,8 @@ retry:
             if (state->cursor > 0) {
                stb_textedit_delete(str, state, state->cursor-1, 1);
                --state->cursor;
+            } else {
+                break; // Content wasn't changed
             }
          }
          state->has_preferred_x = 0;

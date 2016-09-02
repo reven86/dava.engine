@@ -111,6 +111,7 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
     add_definitions ( -D_UNICODE )
     add_definitions ( -DUNICODE )
+    add_definitions ( -D_SCL_SECURE_NO_WARNINGS)
 endif  ()
 
 if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )

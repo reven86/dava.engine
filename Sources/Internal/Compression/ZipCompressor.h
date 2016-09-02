@@ -2,11 +2,13 @@
 #define COMPRESSION_ZIP_COMPRESSOR_H
 
 #include "Compression/Compressor.h"
+#include "Base/RefPtr.h"
 
 namespace DAVA
 {
 class FilePath;
 class ZipPrivateData;
+class File;
 
 // deflate/inflate
 class ZipCompressor : public Compressor
@@ -20,7 +22,7 @@ public:
 class ZipFile final
 {
 public:
-    ZipFile(const FilePath& path);
+    ZipFile(RefPtr<File>& file_, const FilePath& path);
     ~ZipFile();
 
     uint32 GetNumFiles() const;

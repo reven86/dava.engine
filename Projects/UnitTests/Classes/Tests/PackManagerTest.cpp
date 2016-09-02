@@ -12,26 +12,26 @@
 class GameClient
 {
 public:
-    GameClient(DAVA::PackManager& packManager_)
+    GameClient(DAVA::IPackManager& packManager_)
         : packManager(packManager_)
     {
-        sigConnection = packManager.packState.Connect(this, &GameClient::OnPackStateChange);
+        sigConnection = packManager.packStateChanged.Connect(this, &GameClient::OnPackStateChange);
     }
-    void OnPackStateChange(const DAVA::PackManager::Pack& pack)
+    void OnPackStateChange(const DAVA::IPackManager::Pack& pack)
     {
         DAVA::StringStream ss;
 
         ss << "pack: " << pack.name << " change: ";
         ss << "new state - " << static_cast<unsigned>(pack.state);
-        if (pack.state == DAVA::PackManager::Pack::Status::ErrorLoading)
+        if (pack.state == DAVA::IPackManager::Pack::Status::ErrorLoading)
         {
             ss << '\n' << pack.otherErrorMsg;
         }
 
-        DAVA::Logger::FrameworkDebug("%s", ss.str().c_str());
+        DAVA::Logger::Info("%s", ss.str().c_str());
     }
     DAVA::SigConnectionID sigConnection;
-    DAVA::PackManager& packManager;
+    DAVA::IPackManager& packManager;
 };
 
 DAVA_TESTCLASS (PackManagerTest)
@@ -40,77 +40,116 @@ DAVA_TESTCLASS (PackManagerTest)
     {
         using namespace DAVA;
 
-        String dbFile("~res:/TestData/PackManagerTest/packs/testbed_{gpu}.db");
-        FilePath folderWithDownloadedPacks("~doc:/UnitTests/PackManagerTest/packs/");
+        Logger::Info("before init");
+
+        String dbFileName("db_{gpu}.db.zip");
+        FilePath downloadedPacksDir("~doc:/UnitTests/PackManagerTest/packs/");
+        FilePath readOnlyPacksDir("~res:/TestData/PackManagerTest/packs/");
+
+        Logger::Info("clear dirs");
 
         // every time clear directory to download once again
-        FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
-        FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
+        FileSystem::Instance()->DeleteDirectory(downloadedPacksDir);
+        FileSystem::Instance()->CreateDirectory(downloadedPacksDir, true);
 
-        String commonPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/common/");
-        String gpuPacksUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/{gpu}/");
+        String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
-        String gpuName = "noname";
+        String architecture = "noname";
+
+        Logger::Info("get gpu family");
 
         eGPUFamily gpu = DeviceInfo::GetGPUFamily();
         switch (gpu)
         {
         case GPU_ADRENO:
-            gpuName = "adreno";
+            architecture = "adreno";
             break;
         case GPU_DX11:
-            gpuName = "dx11";
+            architecture = "dx11";
             break;
         case GPU_MALI:
-            gpuName = "mali";
+            architecture = "mali";
             break;
         case GPU_POWERVR_IOS:
-            gpuName = "pvr_ios";
+            architecture = "pvr_ios";
             break;
         case GPU_POWERVR_ANDROID:
-            gpuName = "pvr_android";
+            architecture = "pvr_android";
             break;
         case GPU_TEGRA:
-            gpuName = "tegra";
+            architecture = "tegra";
             break;
         default:
-            throw std::runtime_error("unknown gpu famili");
+            throw std::runtime_error("unknown gpu family");
         }
 
-        dbFile.replace(dbFile.find("{gpu}"), 5, gpuName);
-        gpuPacksUrl.replace(gpuPacksUrl.find("{gpu}"), 5, gpuName);
+        IPackManager& packManager = Core::Instance()->GetPackManager();
 
-#if defined(__DAVAENGINE_COREV2__)
-        PackManager packManager;
-#else
-        PackManager& packManager = Core::Instance()->GetPackManager();
-#endif
+        FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 
-        FilePath fileInPack("~res:/3d/Objects/monkey.sc2");
+        dbFileName.replace(dbFileName.find("{gpu}"), 5, architecture);
+
+        Logger::Info("init packManager");
 
         try
         {
-            packManager.Initialize(dbFile,
-                                   folderWithDownloadedPacks,
-                                   "",
-                                   commonPacksUrl,
-                                   gpuPacksUrl);
+            Logger::Info("init common packs");
+            packManager.InitLocalCommonPacks(readOnlyPacksDir,
+                                             downloadedPacksDir,
+                                             IPackManager::Hints());
+
+            Logger::Info("init gpu packs");
+            FileSystem::Instance()->DeleteFile("~doc:/" + dbFileName);
+            packManager.InitLocalGpuPacks(architecture, dbFileName);
+
+            Logger::Info("sync with server");
+            packManager.InitRemotePacks(superPackUrl);
+
+            Logger::Info("create game client");
 
             GameClient client(packManager);
 
-            packManager.EnableProcessing();
+            Logger::Info("wait till packManagerInitialization done");
+            // wait till initialization done
+            while (packManager.GetInitError() == IPackManager::InitError::AllGood
+                   && packManager.GetInitState() != IPackManager::InitState::Ready)
+            {
+                Thread::Sleep(100);
+
+                Logger::Info("update download manager");
+
+                DownloadManager::Instance()->Update();
+
+                Logger::Info("updata pack manager");
+
+                packManager.Update();
+            }
+
+            if (packManager.GetInitError() != IPackManager::InitError::AllGood)
+            {
+                Logger::Info("can't initialize packManager(remember on build agents network disabled)");
+                return;
+            }
+
+            Logger::Info("before enable requesting");
+
+            packManager.EnableRequesting();
 
             String packName = "vpack";
 
-            const PackManager::Pack& pack = packManager.RequestPack(packName);
-            if (pack.state != PackManager::Pack::Status::Mounted)
+            Logger::Info("before request pack");
+
+            const IPackManager::Pack& pack = packManager.RequestPack(packName);
+            if (pack.state != IPackManager::Pack::Status::Mounted)
             {
-                TEST_VERIFY(pack.state == PackManager::Pack::Status::Downloading || pack.state == PackManager::Pack::Status::Requested);
+                TEST_VERIFY(pack.state == IPackManager::Pack::Status::Downloading || pack.state == IPackManager::Pack::Status::Requested);
             }
 
             uint32 maxIter = 360;
 
-            while ((pack.state == PackManager::Pack::Status::Requested || pack.state == PackManager::Pack::Status::Downloading) && maxIter-- > 0)
+            Logger::Info("wait till pack loading");
+
+            while ((pack.state == IPackManager::Pack::Status::Requested || pack.state == IPackManager::Pack::Status::Downloading) && maxIter-- > 0)
             {
                 // wait
                 Thread::Sleep(100);
@@ -118,39 +157,48 @@ DAVA_TESTCLASS (PackManagerTest)
                 DownloadManager::Instance()->Update();
                 packManager.Update();
             }
-            // TODO disable test for now - on local server newer packs
-            if (pack.state != PackManager::Pack::Status::Mounted)
+
+            Logger::Info("finish loading pack");
+
+            // disable test for now - on local server newer packs
+            if (pack.state != IPackManager::Pack::Status::Mounted)
             {
                 return;
             }
 
-            if (pack.state != PackManager::Pack::Status::OtherError)
+            if (pack.state != IPackManager::Pack::Status::OtherError)
             {
-                TEST_VERIFY(pack.state == PackManager::Pack::Status::Mounted);
+                Logger::Info("check pack");
+
+                TEST_VERIFY(pack.state == IPackManager::Pack::Status::Mounted);
 
                 ScopedPtr<File> file(File::Create(fileInPack, File::OPEN | File::READ));
                 TEST_VERIFY(file);
                 if (file)
                 {
-                    String fileContent(file->GetSize(), '\0');
+                    String fileContent(static_cast<size_t>(file->GetSize()), '\0');
                     file->Read(&fileContent[0], static_cast<uint32>(fileContent.size()));
 
                     uint32 crc32 = CRC32::ForBuffer(fileContent.data(), static_cast<uint32>(fileContent.size()));
 
-                    TEST_VERIFY(crc32 == 0xc8101bca); // crc32 for monkey.sc2
+                    TEST_VERIFY(crc32 == 0x4a2039c8); // crc32 for monkey.sc2
                 }
             }
             else
             {
+                Logger::Info("check if no wifi on device");
+
                 // if device without wifi
-                const Vector<PackManager::Pack>& allPacks = packManager.GetPacks();
+                const Vector<IPackManager::Pack>& allPacks = packManager.GetPacks();
                 TEST_VERIFY(allPacks.at(0).name == "pack1");
                 TEST_VERIFY(allPacks.at(0).downloadError == DLE_COULDNT_RESOLVE_HOST);
             }
+
+            Logger::Info("done test");
         }
         catch (std::exception& ex)
         {
-            Logger::Error("%s", ex.what());
+            Logger::Error("PackManagerTest failed: %s", ex.what());
             TEST_VERIFY(false);
         }
     }

@@ -1,4 +1,4 @@
-﻿#include "Platform/DeviceInfo.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
     #include "Platform/TemplateiOS/DeviceInfoiOS.h"
@@ -147,6 +147,6 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-Signal<String> DeviceInfo::сarrierNameChanged;
+Signal<const String&> DeviceInfo::carrierNameChanged;
 
 } // namespace DAVA

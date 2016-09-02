@@ -400,15 +400,7 @@ bool UIInputSystem::HandleKeyEvent(UIEvent* event)
     UIEvent::Phase phase = event->phase;
     DVASSERT(phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_UP || phase == UIEvent::Phase::KEY_DOWN_REPEAT || phase == UIEvent::Phase::CHAR || phase == UIEvent::Phase::CHAR_REPEAT);
 
-    if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
-    {
-        modifiers |= KeyboardShortcut::ConvertKeyToModifier(event->key);
-    }
-    else if (phase == UIEvent::Phase::KEY_UP)
-    {
-        modifiers &= ~KeyboardShortcut::ConvertKeyToModifier(event->key);
-    }
-    KeyboardShortcut shortcut(event->key, modifiers);
+    KeyboardShortcut shortcut(event->key, event->modifiers);
 
     UIControl* focusedControl = focusSystem->GetFocusedControl();
     UIControl* rootControl = modalControl.Valid() ? modalControl.Get() : currentScreen;

@@ -22,7 +22,7 @@ public:
 };
 }
 
-DAVA_TESTCLASS (CommandsTest)
+DAVA_TESTCLASS (CommandTest)
 {
     DAVA_TEST (ObjectHandleCreationTest)
     {
@@ -50,7 +50,7 @@ DAVA_TESTCLASS (CommandsTest)
         const DAVA::InspMember* inspMember = handle.GetIntrospection()->Member(DAVA::FastName("intValue"));
         {
             DAVA::SetPropertyValueCommand command(handle, inspMember, DAVA::VariantType(static_cast<DAVA::int32>(15)));
-            command.Execute();
+            command.Redo();
             TEST_VERIFY(testObject.intValue == 15);
             command.Undo();
             TEST_VERIFY(testObject.intValue == 10);
@@ -60,7 +60,7 @@ DAVA_TESTCLASS (CommandsTest)
 
         {
             DAVA::SetPropertyValueCommand command(handle, inspMember, DAVA::VariantType(static_cast<DAVA::uint32>(20)));
-            command.Execute();
+            command.Redo();
             TEST_VERIFY(testObject.intValue == 20);
             command.Undo();
             TEST_VERIFY(testObject.intValue == 15);
@@ -92,15 +92,15 @@ DAVA_TESTCLASS (CommandsTest)
         TEST_VERIFY(collection[0] == 10);
         TEST_VERIFY(collection[1] == 11);
         TEST_VERIFY(collection[2] == 12);
-        command0.Execute();
+        command0.Redo();
         TEST_VERIFY(collection[0] == 15);
         TEST_VERIFY(collection[1] == 11);
         TEST_VERIFY(collection[2] == 12);
-        command1.Execute();
+        command1.Redo();
         TEST_VERIFY(collection[0] == 15);
         TEST_VERIFY(collection[1] == 20);
         TEST_VERIFY(collection[2] == 12);
-        command2.Execute();
+        command2.Redo();
         TEST_VERIFY(collection[0] == 15);
         TEST_VERIFY(collection[1] == 20);
         TEST_VERIFY(collection[2] == 42);

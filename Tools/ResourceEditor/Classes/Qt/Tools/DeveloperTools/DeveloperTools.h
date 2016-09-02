@@ -4,7 +4,6 @@
 
 #include <QObject>
 
-class GlobalOperations;
 class DeveloperTools : public QObject
 {
     Q_OBJECT

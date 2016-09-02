@@ -1,5 +1,7 @@
 #include "QtPropertyDataInspDynamic.h"
 
+#include "Commands2/Base/RECommand.h"
+
 #include <QDebug>
 
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(const DAVA::FastName& name_, DAVA::InspInfoDynamic* _dynamicInfo, DAVA::InspInfoDynamic::DynamicData _ddata)
@@ -122,12 +124,12 @@ bool QtPropertyDataInspDynamic::EditorDoneInternal(QWidget* editor)
     return ret;
 }
 
-Command2::Pointer QtPropertyDataInspDynamic::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyDataInspDynamic::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        return Command2::Create<InspDynamicModifyCommand>(*lastCommand);
+        return std::unique_ptr<DAVA::Command>(new InspDynamicModifyCommand(*lastCommand));
     }
 
-    return Command2::CreateEmptyCommand();
+    return std::unique_ptr<DAVA::Command>();
 }
