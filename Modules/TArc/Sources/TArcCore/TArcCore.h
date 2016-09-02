@@ -5,7 +5,6 @@
 #include "Base/BaseTypes.h"
 #include <memory>
 
-#include "DataProcessing/PropertiesHolder.h"
 
 namespace DAVA
 {
@@ -16,6 +15,7 @@ namespace TArc
 class ClientModule;
 class ControllerModule;
 class UIManager;
+class PropertiesHolder;
 
 class Core final : private CoreInterface
 {
@@ -88,7 +88,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
-    PropertiesHolder propertiesHolder;
+    std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
 template<typename... Args>

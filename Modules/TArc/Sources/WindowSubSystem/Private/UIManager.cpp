@@ -298,6 +298,10 @@ struct UIManager::Impl
             window->setWindowTitle(appID.c_str());
             window->setObjectName(appID.c_str());
 
+            PropertiesHolder ph = propertiesHolder.SubHolder(appID.c_str());
+            window->restoreGeometry(ph.Load<QByteArray>("geometry"));
+            window->restoreState(ph.Load<QByteArray>("state"));
+
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
             auto emplacePair = windows.emplace(appID, info);
@@ -414,19 +418,22 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
-    
+
     String dirKey("fileDialogDir");
     QString dir = params.dir;
     if (dir.isEmpty())
     {
-        String loadedDir = impl->propertiesHolder.Load(dirKey).Get<String>(String());
-        if (!loadedDir.empty())
+        QString loadedDir = impl->propertiesHolder.Load<QString>(dirKey);
+        if (!loadedDir.isEmpty())
         {
-            dir = QString::fromStdString(loadedDir);
+            dir = loadedDir;
         }
     }
-    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, params.dir, params.filters);
-    impl->propertiesHolder.Save(dirKey, filePath.toStdString());
+    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
+    if (!filePath.isEmpty())
+    {
+        impl->propertiesHolder.Save(filePath, dirKey);
+    }
     return filePath;
 }
 

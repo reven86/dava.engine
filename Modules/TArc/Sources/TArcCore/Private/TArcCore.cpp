@@ -1,6 +1,7 @@
 #include "TArcCore/TArcCore.h"
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
+#include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
@@ -8,6 +9,7 @@
 #include "Engine/Public/Window.h"
 #include "Engine/Public/NativeService.h"
 #include "Functional/Function.h"
+#include "FileSystem/FileSystem.h"
 
 #include "Debug/DVAssert.h"
 
@@ -20,7 +22,6 @@ namespace TArc
 Core::Core(Engine& engine_)
     : engine(engine_)
     , globalContext(new DataContext())
-    , propertiesHolder("TArc properties")
 {
     engine.beginFrame.Connect(MakeFunction(this, &Core::OnFrame));
     engine.gameLoopStarted.Connect(MakeFunction(this, &Core::OnLoopStarted));
@@ -64,8 +65,8 @@ void Core::OnLoopStarted()
 {
     ToolsAssetGuard::Instance()->Init();
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
-
-    uiManager.reset(new UIManager(propertiesHolder.SubHolder("UIManager")));
+    propertiesHolder.reset(new PropertiesHolder("TArc properties", FileSystem::Instance()->GetCurrentDocumentsDirectory()));
+    uiManager.reset(new UIManager(propertiesHolder->SubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
     for (std::unique_ptr<ClientModule>& module : modules)
