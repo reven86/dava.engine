@@ -18,8 +18,14 @@ int main ()
 {
   string coveredCall( "@COVERAGE_COMMAND_GENERATE_HTML@" );
 
-  replace( coveredCall, "$(CONFIGURATION)", "Debug" );
+#ifdef __DEBUG
+    replace( coveredCall, "$(CONFIGURATION)", "Debug" );
+#endif
 
+#ifdef __RELEASE
+    replace( coveredCall, "$(CONFIGURATION)", "Release" );
+#endif
+      
   system ( coveredCall.c_str() );
   system ("open @COVERAGE_INDEX_HTML@");
 

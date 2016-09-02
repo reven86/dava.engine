@@ -29,6 +29,9 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/CoverageExecuteGenHtml.in
                     ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp  )
 
+    set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -D__DEBUG"   )
+    set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D__RELEASE" )
+
     add_executable( COVERAGE_${PROJECT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp )
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
 
