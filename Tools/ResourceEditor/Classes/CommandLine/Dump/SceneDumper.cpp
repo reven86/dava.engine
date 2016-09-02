@@ -112,6 +112,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         links.insert(vegetation->GetHeightmapPath());
         links.insert(vegetation->GetCustomGeometryPath());
 
+        DumpMaterial(vegetation->GetMaterial(), links, descriptorPathnames);
+
         descriptorPathnames.insert(vegetation->GetLightmapPath());
         break;
     }
@@ -120,25 +122,12 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         break;
     }
 
-    //Enumerate textures from materials
-    Set<MaterialTextureInfo*> materialTextures;
     const uint32 count = renderObject->GetRenderBatchCount();
     for (uint32 rb = 0; rb < count; ++rb)
     {
-        auto renderBatch = renderObject->GetRenderBatch(rb);
-        auto material = renderBatch->GetMaterial();
-
-        while (nullptr != material)
-        {
-            material->CollectLocalTextures(materialTextures);
-            material = material->GetParent();
-        }
-    }
-
-    // enumerate descriptor pathnames
-    for (const auto& matTex : materialTextures)
-    {
-        descriptorPathnames.insert(matTex->path);
+        DAVA::RenderBatch* renderBatch = renderObject->GetRenderBatch(rb);
+        DAVA::NMaterial* material = renderBatch->GetMaterial();
+        DumpMaterial(material, links, descriptorPathnames);
     }
 
     // create pathnames for textures
@@ -184,6 +173,24 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
                 }
             }
         }
+    }
+}
+
+void SceneDumper::DumpMaterial(DAVA::NMaterial* material, SceneLinks& links, DAVA::Set<DAVA::FilePath>& descriptorPathnames) const
+{
+    //Enumerate textures from materials
+    Set<MaterialTextureInfo*> materialTextures;
+
+    while (nullptr != material)
+    {
+        material->CollectLocalTextures(materialTextures);
+        material = material->GetParent();
+    }
+
+    // enumerate descriptor pathnames
+    for (const MaterialTextureInfo* matTex : materialTextures)
+    {
+        descriptorPathnames.insert(matTex->path);
     }
 }
 

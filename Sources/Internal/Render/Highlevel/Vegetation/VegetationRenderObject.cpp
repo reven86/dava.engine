@@ -804,6 +804,12 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*>& dataNodes)
     }
 }
 
+NMaterial* VegetationRenderObject::GetMaterial() const
+{
+    DVASSERT(renderData != nullptr);
+    return renderData->GetMaterial();
+}
+
 void VegetationRenderObject::CreateRenderData()
 {
     InitLodRanges();
