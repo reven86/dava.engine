@@ -139,6 +139,10 @@ class CoverageReport():
 
         self.pathFullHtml           = os.path.join    ( self.pathReportOutFull,  'index.html')
         self.pathLocalHtml          = os.path.join    ( self.pathReportOutTests, 'index.html')
+
+        self.pathRelativeFullHtml   = os.path.join    ( 'CoverageFull',       'index.html')
+        self.pathRelativeLocalHtml  = os.path.join    ( 'CoverageTests',      'index.html')
+
         self.pathMixHtml            = os.path.join    ( self.pathReportOut,      'index.html')
         self.pathMixHtmlTemplate    = os.path.join    ( self.pathCoverageDir,    'mix_index_html.in')
 
@@ -354,7 +358,7 @@ class CoverageReport():
                     self.full_funcHit = data[53]
                     self.full_funcTotal = data[55]
                     self.full_funcCoverage = data[57]
-                    self.full_coverage_href = root.pathFullHtml
+                    self.full_coverage_href = root.pathRelativeFullHtml 
 
                     self.full_linesCoverageAtribute = atributes[21]                    
                     self.full_funcCoverageAtribute = atributes[27]                    
@@ -371,7 +375,7 @@ class CoverageReport():
                     self.local_funcHit = data[53]
                     self.local_funcTotal = data[55]
                     self.local_funcCoverage = data[57]
-                    self.local_coverage_href = root.pathLocalHtml
+                    self.local_coverage_href = root.pathRelativeLocalHtml
 
                     self.local_funcCoverageAtribute = atributes[21]
                     self.local_linesCoverageAtribute = atributes[27]
