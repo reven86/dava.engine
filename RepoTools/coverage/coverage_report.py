@@ -150,7 +150,8 @@ class CoverageReport():
                                         'full_funcHit', 'full_funcTotal', 'full_funcCoverage', 'full_coverLegendCovLo', 'full_coverLegendCovMed',
                                         'full_coverLegendCovHi', 'full_coverage_href', 'local_title', 'local_date', 'local_linesHit', 'local_linesTotal', 'local_linesCoverage',
                                         'local_funcHit', 'local_funcTotal', 'local_funcCoverage', 'local_coverLegendCovLo', 'local_coverLegendCovMed',
-                                        'local_coverLegendCovHi', 'local_coverage_href', }
+                                        'local_coverLegendCovHi', 'local_coverage_href', 
+                                        'local_funcCoverageAtribute', 'local_linesCoverageAtribute', 'full_funcCoverageAtribute', 'full_linesCoverageAtribute' }
 
         if self.notExecute == 'false' and self.tfExec.is_updated() == True:
             self.__clear_old_gcda()
@@ -305,14 +306,21 @@ class CoverageReport():
         from htmlentitydefs import name2codepoint 
 
         class MyHTMLParser(HTMLParser):
-            def __init__( self ):
-                HTMLParser.__init__(self)
-                self.numData=0
-                self.data = []
 
             def feed( self, html ):
-                self.data = []                
+                self.numData   = 0
+                self.numAtr    = 0
+                self.data      = []
+                self.atributes = []                                                        
                 HTMLParser.feed( self, html )
+
+            def handle_starttag(self, tag, attrs):
+                #print "Start tag:", self.numData, " :", tag
+                if attrs:
+                    #print "     class: ", self.numAtr, attrs[0][1]
+                    self.numAtr += 1
+                    atr = attrs[0][1]
+                    self.atributes += [ atr ]                               
 
             def handle_data(self, data):
                 #print "Data      ", self.numData, " :", data
@@ -322,10 +330,18 @@ class CoverageReport():
             def get_data( self ):
                 return self.data
 
+            def get_atributes( self ):
+                return self.atributes
+               
+
         parser = MyHTMLParser()
 
         class ValueList: #pass
             def load( self, data, type, root ):
+
+                data      = parser.get_data()
+                atributes = parser.get_atributes()
+
                 if type == 'full':
                     self.full_title = 'FULL coverage report'#data[10]
                     self.full_date = data[48]
@@ -339,6 +355,9 @@ class CoverageReport():
                     self.full_funcTotal = data[55]
                     self.full_funcCoverage = data[57]
                     self.full_coverage_href = root.pathFullHtml
+
+                    self.full_linesCoverageAtribute = atributes[21]                    
+                    self.full_funcCoverageAtribute = atributes[27]                    
 
                 if type == 'local':
                     self.local_title = 'TESTS coverage report'#data[10]
@@ -354,19 +373,22 @@ class CoverageReport():
                     self.local_funcCoverage = data[57]
                     self.local_coverage_href = root.pathLocalHtml
 
+                    self.local_funcCoverageAtribute = atributes[21]
+                    self.local_linesCoverageAtribute = atributes[27]
+
         vl = ValueList() 
 
         f = urllib.urlopen( self.pathFullHtml  )
         html = f.read()
         f.close()
         parser.feed( html )
-        vl.load( parser.get_data(), 'full', self )
+        vl.load( parser, 'full', self )
 
         f = urllib.urlopen( self.pathLocalHtml )
         html = f.read()
         f.close()
         parser.feed( html )
-        vl.load( parser.get_data(), 'local', self )
+        vl.load( parser, 'local', self )
 
         configure_file( self.pathMixHtmlTemplate, self.pathMixHtml, self.mixHtmlValueStrList, vl )
 
