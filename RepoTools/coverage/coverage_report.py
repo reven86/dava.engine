@@ -397,7 +397,7 @@ class CoverageReport():
         configure_file( self.pathMixHtmlTemplate, self.pathMixHtml, self.mixHtmlValueStrList, vl )
 
         defTopLink     = '<td width="35%" class="headerValue">top level</td>' 
-        newTopLinkMix  = '<td width="35%" class="headerValue"><a href="{0}">top level</a> DAVA coverage</td>'.format( self.pathMixHtml )
+        newTopLinkMix  = '<td width="35%" class="headerValue"><a href="{0}">top level</a> DAVA coverage</td>'.format( '../index.html' )
 
         for url in [ self.pathFullHtml, self.pathLocalHtml ]:
             filedata = None
