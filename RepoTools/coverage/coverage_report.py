@@ -176,7 +176,7 @@ class CoverageReport():
     
     def __teamcity_print( self, str ):
         if self.teamcityMode == 'true' :
-            __build_print( self, str )
+            self.__build_print( str )
 
     def __execute(self, param) :
 
