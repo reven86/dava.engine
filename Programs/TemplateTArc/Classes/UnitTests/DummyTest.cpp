@@ -20,8 +20,9 @@ DAVA_TARC_TESTCLASS(DummyTest)
 
     DAVA_TEST(DummyTestCase)
     {
-        MockClass* mock = new MockClass();
-        EXPECT_CALL(*mock, GetValue()).WillOnce(::testing::Return(1));
-        mock->GetValue();
+        EXPECT_CALL(mock, GetValue()).WillOnce(::testing::Return(1));
+        mock.GetValue();
     }
+    
+    MockClass mock;
 };

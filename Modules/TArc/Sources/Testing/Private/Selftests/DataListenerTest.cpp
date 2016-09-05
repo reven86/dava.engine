@@ -42,6 +42,8 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         activeWrapper.AddListener(&listener);
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
 
         secondWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
         secondWrapper.AddListener(&secondListener);
@@ -59,6 +61,8 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         ctx.GetData<DataListenerNode>().dummyIntField = 1;
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
     }
 
     DAVA_TEST(CrossDataChangingTest)
@@ -81,6 +85,8 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         ctx.DeleteData<DataListenerNode>();
 
         EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{}));
         TEST_VERIFY(ctx.HasData<DataListenerNode>() == false);
     }
 

@@ -1,9 +1,12 @@
 #include "Testing/TArcTestCore.h"
+#include "Testing/Private/Selftests/DeadCodeTrick.h"
 
 #include "Engine/Public/Engine.h"
 
 #include "UnitTests/TestCore.h"
 #include "Logger/TeamCityTestsOutput.h"
+#include "UnitTests/UnitTests.h"
+#include "FileSystem/File.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Engine/Public/Qt/NativeServiceQt.h"
 #include "Engine/Public/Qt/RenderWidget.h"
@@ -42,6 +45,9 @@ TestCore::TestCore(Engine& e_)
     e.gameLoopStarted.Connect(this, &TestCore::OnAppStarted);
     e.gameLoopStopped.Connect(this, &TestCore::OnAppFinished);
     e.update.Connect(this, &TestCore::Update);
+    
+    bool result = AvoidTestsStriping();
+    DAVA::Logger::Info("Avoid tests stripint result %d", result);
 }
 
 TestCore::~TestCore()
@@ -85,7 +91,7 @@ void TestCore::OnAppStarted()
     else
     {
 #if defined(TEST_COVERAGE)
-        RefPtr<File> covergeFile(File::Create(TestCoverageFileName, File::CREATE | File::WRITE));
+        RefPtr<File> covergeFile(DAVA::File::Create(TArcTestCoreDetail::TestCoverageFileName, File::CREATE | File::WRITE));
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
@@ -125,7 +131,7 @@ void TestCore::Update(float32 delta)
         }
 
 #if defined(TEST_COVERAGE)
-        RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
+        RefPtr<File> coverageFile(File::Create(TArcTestCoreDetail::TestCoverageFileName, File::APPEND | File::WRITE));
         DVASSERT(coverageFile);
 
         auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };

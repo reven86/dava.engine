@@ -25,7 +25,10 @@ ERASE_FILES_${DAVA_PLATFORM_CURENT}
 ERASE_FILES_NOT_${DAVA_PLATFORM_CURENT} 
 #
 UNITY_IGNORE_LIST             
-UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}  
+UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}
+#
+CUSTOM_PACK_1
+CUSTOM_PACK_1_${DAVA_PLATFORM_CURENT}
 #
 INCLUDES         
 INCLUDES_PRIVATE 
@@ -145,7 +148,8 @@ macro( setup_main_module )
                            DEFINITIONS_PRIVATE 
                            INCLUDES
                            INCLUDES_PRIVATE 
-                           UNITY_IGNORE_LIST )
+                           UNITY_IGNORE_LIST
+                           CUSTOM_PACK_1 )
                 if( ${VALUE}_APPLE)
                     list( APPEND ${VALUE}_${DAVA_PLATFORM_CURENT} ${${VALUE}_APPLE} )  
                 endif()
@@ -301,7 +305,8 @@ macro( setup_main_module )
             project( ${NAME_MODULE} )
             
             generated_unity_sources( ALL_SRC  IGNORE_LIST ${UNITY_IGNORE_LIST}
-                                              IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}} ) 
+                                              IGNORE_LIST_${DAVA_PLATFORM_CURENT} ${UNITY_IGNORE_LIST_${DAVA_PLATFORM_CURENT}}
+                                              CUSTOM_PACK_1 ${CUSTOM_PACK_1} ${CUSTOM_PACK_1_${DAVA_PLATFORM_CURENT}}) 
                                
             if( ${MODULE_TYPE} STREQUAL "STATIC" )
                 add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
@@ -378,6 +383,12 @@ macro( setup_main_module )
 
             if (QT5_FOUND)
                 link_with_qt5(${PROJECT_NAME})
+            endif()
+
+            if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+                add_definitions( -DTEST_COVERAGE )
+                add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
+                add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
             endif()
 
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} )

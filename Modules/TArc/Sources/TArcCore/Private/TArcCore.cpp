@@ -684,6 +684,11 @@ DataContext& Core::GetActiveContext()
     return impl->GetActiveContext();
 }
 
+DataContext& Core::GetGlobalContext()
+{
+    return impl->GetGlobalContext();
+}
+
 DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
 {
     GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());

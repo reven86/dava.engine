@@ -134,6 +134,11 @@ DataContext& TestClass::GetActiveContext()
 {
     return core->GetActiveContext();
 }
+    
+DataContext& TestClass::GetGlobalContext()
+{
+    return core->GetGlobalContext();
+}
 
 DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
 {

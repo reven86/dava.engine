@@ -24,6 +24,7 @@ public:
 protected:
     OperationInvoker* GetMockInvoker();
     DataContext& GetActiveContext();
+    DataContext& GetGlobalContext();
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
 
 protected:

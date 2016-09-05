@@ -56,6 +56,7 @@ class CoverageReport():
         self.arg                    = arg
         self.pathBuild              = arg.pathBuild
         self.pathExecut             = arg.pathExecut
+        self.targetArgs             = arg.targetArgs
         self.pathReportOut          = arg.pathReportOut
         self.pathReportOutFull      = os.path.join( arg.pathReportOut, 'CoverageFull' ) 
         self.pathReportOutTests     = os.path.join( arg.pathReportOut, 'CoverageTests' )
@@ -87,10 +88,10 @@ class CoverageReport():
         if self.teamcityMode == 'false' :
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            self.__execute( [ pathExecutExt ] )
+            self.__execute( [ pathExecutExt, self.targetArgs ] )
     
         self.__coppy_gcda_gcno_files()
-        self.__load_json_cover_data()
+        #self.__load_json_cover_data()
 
     def __teamcity_print( self, str ):
         if self.teamcityMode == 'true' :
@@ -174,6 +175,7 @@ class CoverageReport():
                   '-instr-profile={0}.profdata'.format(self.executName), 
                   file  
                 ] 
+        print param
         sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         subProcessContinue = True
@@ -364,15 +366,16 @@ def main():
     parser.add_argument( '--pathReportOut', required = True )
     parser.add_argument( '--buildConfig', choices=['Debug', 'Release'] )
     parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--targetArgs', default = '')
 
     options = parser.parse_args()
 
     cov = CoverageReport( options )
 
-    if options.teamcityMode == 'true' :
-        cov.generate_report_html()
+    #if options.teamcityMode == 'true' :
+    cov.generate_report_html()
 
-    cov.generate_report_coverage()
+    #cov.generate_report_coverage()
 
 
 if __name__ == '__main__':
