@@ -1060,7 +1060,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                         if (decl->assignment->nodeType == sl::HLSLNodeType_ConstructorExpression)
                         {
                             sl::HLSLConstructorExpression* ctor = (sl::HLSLConstructorExpression*)(decl->assignment);
-                            float val[4] = { 0, 0, 0, 0 };
                             unsigned val_i = 0;
 
                             for (sl::HLSLExpression *arg = ctor->argument; arg; arg = arg->nextExpression, ++val_i)
@@ -1070,9 +1069,9 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                                     sl::HLSLLiteralExpression* expr = (sl::HLSLLiteralExpression*)(arg);
 
                                     if (expr->type == sl::HLSLBaseType_Float)
-                                        val[val_i] = expr->fValue;
+                                        prop.defaultValue[val_i] = expr->fValue;
                                     else if (expr->type == sl::HLSLBaseType_Int)
-                                        val[val_i] = float(expr->iValue);
+                                        prop.defaultValue[val_i] = float(expr->iValue);
                                 }
                             }
                         }
