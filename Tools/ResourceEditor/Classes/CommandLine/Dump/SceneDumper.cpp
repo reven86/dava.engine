@@ -112,7 +112,16 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks&
         links.insert(vegetation->GetHeightmapPath());
         links.insert(vegetation->GetCustomGeometryPath());
 
-        DumpMaterial(vegetation->GetMaterial(), links, descriptorPathnames);
+        Set<DataNode*> dataNodes;
+        vegetation->GetDataNodes(dataNodes);
+        for (DataNode* node : dataNodes)
+        {
+            NMaterial* material = dynamic_cast<NMaterial*>(node);
+            if (material != nullptr)
+            {
+                DumpMaterial(material, links, descriptorPathnames);
+            }
+        }
 
         descriptorPathnames.insert(vegetation->GetLightmapPath());
         break;

@@ -79,8 +79,6 @@ public:
     void DebugDrawVisibleNodes(RenderHelper* drawer);
     void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
-    NMaterial* GetMaterial() const;
-
     inline void SetHeightmap(Heightmap* _heightmap);
     inline Heightmap* GetHeightmap() const;
     inline const FilePath& GetHeightmapPath() const;
