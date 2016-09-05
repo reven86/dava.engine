@@ -245,7 +245,6 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
         if (controlsStack.empty() || isRoot)
         {
             UIControl* control = lastDescr->control.Get();
-            control->UpdateLayout();
             package->AddControl(control);
         }
         else

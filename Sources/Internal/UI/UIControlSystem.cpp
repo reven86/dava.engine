@@ -354,6 +354,12 @@ void UIControlSystem::Draw()
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
+void UIControlSystem::ProcessControl(UIControl* control)
+{
+    GetStyleSheetSystem()->ProcessControl(control);
+    GetLayoutSystem()->ProcessControl(control);
+}
+
 void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)
 {
     return inputSystem->SwitchInputToControl(eventID, targetControl);
