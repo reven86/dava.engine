@@ -10,7 +10,7 @@
 using DAVA::Logger;
 
 #include "Core/Core.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 

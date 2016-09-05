@@ -1,4 +1,4 @@
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Base/AllocatorFactory.h"
@@ -10,43 +10,39 @@
 
 namespace DAVA
 {
-namespace Profiler
-{
 
-#if PROFILER_ENABLED
-static TimeProfiler GLOBAL_TIME_PROFILER;
-TimeProfiler* const TimeProfiler::GlobalProfiler = &GLOBAL_TIME_PROFILER;
+#if CPU_PROFILER_ENABLED
+static CPUProfiler GLOBAL_TIME_PROFILER;
+CPUProfiler* const CPUProfiler::GlobalProfiler = &GLOBAL_TIME_PROFILER;
 #else
-TimeProfiler* const GlobalTimeProfiler = nullptr;
+CPUProfiler* const GlobalTimeProfiler = nullptr;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 //Internal Declaration
 
-struct TimeCounter
+struct CPUProfiler::TimeCounter
 {
     uint64 startTime = 0;
     uint64 endTime = 0;
     const char* name = nullptr;
     Thread::Id tid = 0;
-    uint32 nameID = 0;
 };
 
 struct CounterTreeNode
 {
     IMPLEMENT_POOL_ALLOCATOR(CounterTreeNode, 128);
 
-    static CounterTreeNode* BuildTree(CounterArray::iterator begin, CounterArray* array);
+    static CounterTreeNode* BuildTree(CPUProfiler::CounterArray::iterator begin, CPUProfiler::CounterArray* array);
     static CounterTreeNode* CopyTree(const CounterTreeNode* node);
     static void MergeTree(CounterTreeNode* root, const CounterTreeNode* node);
     static void DumpTree(const CounterTreeNode* node, std::ostream& stream, bool average);
     static void SafeDeleteTree(CounterTreeNode*& node);
 
 protected:
-    CounterTreeNode(CounterTreeNode* _parent, const char* _name, uint32 _nameID, uint64 _time, uint32 _count)
+    CounterTreeNode(CounterTreeNode* _parent, const char* _name, uint64 _time, uint32 _count)
         : counterTime(_time)
         , counterName(_name)
-        , counterNameID(_nameID)
         , parent(_parent)
         , count(_count)
     {
@@ -54,18 +50,32 @@ protected:
 
     uint64 counterTime = 0;
     const char* counterName;
-    uint32 counterNameID;
 
     CounterTreeNode* parent;
     Vector<CounterTreeNode*> childs;
     uint32 count; //recursive and duplicate counters
 };
 
-uint64 TimeStampUs();
+namespace CPUProfilerDetails
+{
+uint64 TimeStampUs()
+{
+    return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+}
+
+bool NameCmp(const char* name1, const char* name2)
+{
+#ifdef __DAVAENGINE_DEBUG__
+    return strcmp(name1, name2);
+#else
+    return name1 == name2;
+#endif
+}
+}
 
 //////////////////////////////////////////////////////////////////////////
 
-TimeProfiler::ScopedTimeCounter::ScopedTimeCounter(const char* counterName, uint32 counterNameID, TimeProfiler* _profiler)
+CPUProfiler::ScopeTiming::ScopeTiming(const char* counterName, CPUProfiler* _profiler)
 {
     profiler = _profiler;
     if (profiler->started)
@@ -73,50 +83,49 @@ TimeProfiler::ScopedTimeCounter::ScopedTimeCounter(const char* counterName, uint
         TimeCounter& c = profiler->counters->next();
 
         endTime = &c.endTime;
-        c.startTime = TimeStampUs();
+        c.startTime = CPUProfilerDetails::TimeStampUs();
         c.endTime = 0;
         c.name = counterName;
         c.tid = Thread::GetCurrentId();
-        c.nameID = counterNameID;
     }
 }
 
-TimeProfiler::ScopedTimeCounter::~ScopedTimeCounter()
+CPUProfiler::ScopeTiming::~ScopeTiming()
 {
     if (profiler->started && endTime)
     {
-        *endTime = TimeStampUs();
+        *endTime = CPUProfilerDetails::TimeStampUs();
     }
 }
 
-TimeProfiler::TimeProfiler(uint32 countersCount)
+CPUProfiler::CPUProfiler(uint32 countersCount)
 {
     counters = new CounterArray(countersCount);
 }
 
-TimeProfiler::~TimeProfiler()
+CPUProfiler::~CPUProfiler()
 {
     DeleteSnapshots();
     SafeDelete(counters);
 }
 
-void TimeProfiler::Start()
+void CPUProfiler::Start()
 {
     started = true;
 }
 
-void TimeProfiler::Stop()
+void CPUProfiler::Stop()
 {
     started = false;
 }
 
-int32 TimeProfiler::MakeSnapshot()
+int32 CPUProfiler::MakeSnapshot()
 {
     snapshots.push_back(new CounterArray(*counters));
     return int32(snapshots.size() - 1);
 }
 
-void TimeProfiler::DeleteSnapshot(int32 snapshot)
+void CPUProfiler::DeleteSnapshot(int32 snapshot)
 {
     if (snapshot != NO_SNAPSHOT_ID)
     {
@@ -126,22 +135,21 @@ void TimeProfiler::DeleteSnapshot(int32 snapshot)
     }
 }
 
-void TimeProfiler::DeleteSnapshots()
+void CPUProfiler::DeleteSnapshots()
 {
     for (CounterArray*& c : snapshots)
         SafeDelete(c);
     snapshots.clear();
 }
 
-uint64 TimeProfiler::GetLastCounterTime(const char* counterName)
+uint64 CPUProfiler::GetLastCounterTime(const char* counterName)
 {
-    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     uint64 timeDelta = 0;
     CounterArray::reverse_iterator it = counters->rbegin(), itEnd = counters->rend();
     for (; it != itEnd; it++)
     {
         const TimeCounter& c = *it;
-        if (c.endTime != 0 && counterNameID == c.nameID)
+        if (c.endTime != 0 && (strcmp(counterName, c.name) == 0))
         {
             timeDelta = c.endTime - c.startTime;
             break;
@@ -151,19 +159,18 @@ uint64 TimeProfiler::GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
-void TimeProfiler::DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
     stream << "================================================================" << std::endl;
 
-    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
     TimeCounter* lastDumpedCounter = nullptr;
     for (; it != itEnd; it++)
     {
-        if (it->endTime != 0 && counterNameID == it->nameID)
+        if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
         {
             if (lastDumpedCounter)
                 stream << "=== Non-tracked time [" << (lastDumpedCounter->endTime - it->startTime) << " us] ===" << std::endl;
@@ -184,20 +191,19 @@ void TimeProfiler::DumpLast(const char* counterName, uint32 counterCount, std::o
     stream.flush();
 }
 
-void TimeProfiler::DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
     stream << "================================================================" << std::endl;
     stream << "=== Average time for " << counterCount << " counter(s):" << std::endl;
 
-    uint32 counterNameID = HashValue_N(counterName, uint32(strlen(counterName)));
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
     CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
-        if (it->endTime != 0 && counterNameID == it->nameID)
+        if (it->endTime != 0 && (strcmp(counterName, it->name)))
         {
             CounterTreeNode* node = CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
 
@@ -228,7 +234,7 @@ void TimeProfiler::DumpAverage(const char* counterName, uint32 counterCount, std
     stream.flush();
 }
 
-void TimeProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
+void CPUProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
@@ -252,9 +258,9 @@ void TimeProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
     stream.flush();
 }
 
-CounterArray* TimeProfiler::GetCounterArray(int32 snapshot)
+CPUProfiler::CounterArray* CPUProfiler::GetCounterArray(int32 snapshot)
 {
-    if (snapshot != TimeProfiler::NO_SNAPSHOT_ID)
+    if (snapshot != CPUProfiler::NO_SNAPSHOT_ID)
     {
         DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
         return snapshots[snapshot];
@@ -266,7 +272,7 @@ CounterArray* TimeProfiler::GetCounterArray(int32 snapshot)
 /////////////////////////////////////////////////////////////////////////////////
 //Internal Definition
 
-CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, CounterArray* array)
+CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator begin, CPUProfiler::CounterArray* array)
 {
     DVASSERT(begin->endTime);
 
@@ -274,13 +280,13 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
     uint64 endTime = begin->endTime;
     Vector<uint64> nodeEndTime;
 
-    CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->nameID, begin->endTime - begin->startTime, 1);
+    CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->endTime - begin->startTime, 1);
     nodeEndTime.push_back(begin->endTime);
 
-    CounterArray::iterator end = array->end();
-    for (CounterArray::iterator it = begin + 1; it != end; ++it)
+    CPUProfiler::CounterArray::iterator end = array->end();
+    for (CPUProfiler::CounterArray::iterator it = begin + 1; it != end; ++it)
     {
-        const TimeCounter& c = *it;
+        const CPUProfiler::TimeCounter& c = *it;
 
         if (c.tid != threadID)
             continue;
@@ -298,7 +304,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
                 node = node->parent;
             }
 
-            if (node->counterNameID == c.nameID)
+            if (CPUProfilerDetails::NameCmp(node->counterName, c.name))
             {
                 node->counterTime += c.endTime - c.startTime;
                 node->count++;
@@ -306,7 +312,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
             else
             {
                 auto found = std::find_if(node->childs.begin(), node->childs.end(), [&c](CounterTreeNode* node) {
-                    return (c.nameID == node->counterNameID);
+                    return (CPUProfilerDetails::NameCmp(c.name, node->counterName));
                 });
 
                 if (found != node->childs.end())
@@ -316,7 +322,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
                 }
                 else
                 {
-                    node->childs.push_back(new CounterTreeNode(node, c.name, c.nameID, c.endTime - c.startTime, 1));
+                    node->childs.push_back(new CounterTreeNode(node, c.name, c.endTime - c.startTime, 1));
                     node = node->childs.back();
 
                     nodeEndTime.push_back(c.endTime);
@@ -333,7 +339,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CounterArray::iterator begin, Counte
 
 void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* node)
 {
-    if (root->counterNameID == node->counterNameID)
+    if (CPUProfilerDetails::NameCmp(root->counterName, node->counterName))
     {
         root->counterTime += node->counterTime;
         root->count++;
@@ -344,7 +350,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
     else
     {
         auto found = std::find_if(root->childs.begin(), root->childs.end(), [&node](CounterTreeNode* child) {
-            return (child->counterNameID == node->counterNameID);
+            return (CPUProfilerDetails::NameCmp(child->counterName, node->counterName));
         });
 
         if (found != root->childs.end())
@@ -364,7 +370,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
 
 CounterTreeNode* CounterTreeNode::CopyTree(const CounterTreeNode* node)
 {
-    CounterTreeNode* nodeCopy = new CounterTreeNode(nullptr, node->counterName, node->counterNameID, node->counterTime, node->count);
+    CounterTreeNode* nodeCopy = new CounterTreeNode(nullptr, node->counterName, node->counterTime, node->count);
     for (CounterTreeNode* c : node->childs)
     {
         nodeCopy->childs.push_back(CopyTree(c));
@@ -405,10 +411,4 @@ void CounterTreeNode::SafeDeleteTree(CounterTreeNode*& node)
     }
 }
 
-uint64 TimeStampUs()
-{
-    return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
-}
-
-} //ns Profiler
 } //ns DAVA

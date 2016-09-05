@@ -1,40 +1,37 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Base/Hash.h"
 #include <iosfwd>
 
-#define PROFILER_ENABLED 1
+#define CPU_PROFILER_ENABLED 1
 
 namespace DAVA
 {
 template <class T>
 class ProfilerRingArray;
 
-namespace Profiler
-{
-struct TimeCounter;
-using CounterArray = ProfilerRingArray<Profiler::TimeCounter>;
-
-class TimeProfiler
+class CPUProfiler
 {
 public:
-    class ScopedTimeCounter
+    struct TimeCounter;
+    using CounterArray = ProfilerRingArray<CPUProfiler::TimeCounter>;
+
+    class ScopeTiming
     {
     public:
-        ScopedTimeCounter(const char* counterName, uint32 counterNameID, TimeProfiler* profiler);
-        ~ScopedTimeCounter();
+        ScopeTiming(const char* counterName, CPUProfiler* profiler);
+        ~ScopeTiming();
 
     private:
         uint64* endTime = nullptr;
-        TimeProfiler* profiler;
+        CPUProfiler* profiler;
     };
 
     static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
-    static TimeProfiler* const GlobalProfiler;
+    static CPUProfiler* const GlobalProfiler;
 
-    TimeProfiler(uint32 countersCount = 2048);
-    ~TimeProfiler();
+    CPUProfiler(uint32 countersCount = 2048);
+    ~CPUProfiler();
 
     void Start();
     void Stop();
@@ -56,21 +53,18 @@ protected:
     Vector<CounterArray*> snapshots;
     bool started = false;
 
-    friend class ScopedTimeCounter;
+    friend class ScopeTiming;
 };
-
-} //ns Profiler
 
 } //ns DAVA
 
-#if PROFILER_ENABLED
+#if CPU_PROFILER_ENABLED
 
-#define PROFILER_TIMING(counter_name) DAVA::Profiler::TimeProfiler::ScopedTimeCounter time_profiler_scope_counter(counter_name, DV_HASH(counter_name), DAVA::Profiler::TimeProfiler::GlobalProfiler);
-#define PROFILER_TIMING_CUSTOM(counter_name, time_profiler) DAVA::Profiler::TimeProfiler::ScopedTimeCounter time_profiler_scope_counter(counter_name, DV_HASH(counter_name), time_profiler);
+#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopeTiming time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::GlobalProfiler);
 
 #else
 
-#define PROFILER_TIMING(counter_name)
+#define DAVA_CPU_PROFILER_SCOPE(counter_name)
 #define PROFILER_TIMING_CUSTOM(counter_name, time_profiler)
 
 #endif

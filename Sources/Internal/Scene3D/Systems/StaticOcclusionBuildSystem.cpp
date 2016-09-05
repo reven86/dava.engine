@@ -18,7 +18,7 @@
 #include "Scene3D/Lod/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Highlevel/Landscape.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -257,7 +257,7 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("StaticOcclusionBuildSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE("StaticOcclusionBuildSystem::Process")
 
     if (activeIndex == static_cast<uint32>(-1))
         return;

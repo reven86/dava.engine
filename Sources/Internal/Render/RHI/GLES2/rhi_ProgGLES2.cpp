@@ -6,7 +6,7 @@
 
     #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
 
     #include "rhi_GLES2.h"
     #include "_gl.h"

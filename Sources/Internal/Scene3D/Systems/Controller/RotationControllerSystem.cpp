@@ -12,7 +12,7 @@
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -49,7 +49,7 @@ void RotationControllerSystem::RemoveEntity(Entity* entity)
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("RotationControllerSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE("RotationControllerSystem::Process")
 
     Camera* camera = GetScene()->GetDrawCamera();
     if (camera != oldCamera)

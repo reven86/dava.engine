@@ -16,7 +16,7 @@ using DAVA::Logger;
     #include "Concurrency/LockGuard.h"
     #include "Concurrency/AutoResetEvent.h"
     #include "Concurrency/ManualResetEvent.h"
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
 
 #include "_gl.h"
 
@@ -1067,7 +1067,7 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
 
 void CommandBufferGLES2_t::Execute()
 {
-    PROFILER_TIMING("cb::Execute");
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
 
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
@@ -1911,7 +1911,7 @@ _RejectAllFrames()
 static void
 _GLES2_ExecuteQueuedCommands()
 {
-    PROFILER_TIMING("rhi::ExecuteQueuedCmds");
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
 
     StatSet::ResetAll();
 
@@ -2002,7 +2002,7 @@ _GLES2_ExecuteQueuedCommands()
     {
         // do swap-buffers
 
-        PROFILER_TIMING("rhi::SwapBuffers");
+        DAVA_CPU_PROFILER_SCOPE("rhi::SwapBuffers");
         
 #if defined(__DAVAENGINE_WIN32__)
         Trace("rhi-gl.swap-buffers...\n");
@@ -2043,7 +2043,7 @@ _GLES2_ExecuteQueuedCommands()
 static void
 gles2_Present(Handle sync)
 {
-    PROFILER_TIMING("rhi::Present");
+    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
 
     if (_GLES2_RenderThreadFrameCount)
     {
@@ -2069,7 +2069,7 @@ gles2_Present(Handle sync)
         }
 
         {
-            PROFILER_TIMING("rhi::WaitFrameExecution");
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
 
             uint32 frame_cnt = 0;
             do
@@ -2114,7 +2114,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        PROFILER_TIMING("rhi::RenderLoop");
+        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
 
         if (_GLES2_RenderThreadSuspended.Get())
         {
@@ -2130,7 +2130,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         ios_gl_check_layer();
 #endif
         {
-            PROFILER_TIMING("rhi::WaitFrame");
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
 
             // CRAP: busy-wait
             bool do_wait = true;
@@ -2269,7 +2269,7 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL(GLCommand* command, uint32 cmdCount)
 {
-    PROFILER_TIMING("rhi::ExecuteImmidiateCmds");
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
 
     int err = GL_NO_ERROR;
 
@@ -2693,7 +2693,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        PROFILER_TIMING("rhi::WaitImmediateCmd");
+        DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
 
         while (!scheduled)
         {

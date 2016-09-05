@@ -7,7 +7,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Platform/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Scene3D/Systems/EventSystem.h"
 
 namespace DAVA
@@ -24,7 +24,7 @@ LodSystem::LodSystem(Scene* scene)
 
 void LodSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("LodSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("LodSystem::Process");
 
     Camera* camera = GetScene()->GetCurrentCamera();
     if (!camera)

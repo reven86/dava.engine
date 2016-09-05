@@ -17,7 +17,7 @@
 #include "Scene3D/Lod/LodSystem.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -89,7 +89,7 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("StaticOcclusionSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE("StaticOcclusionSystem::Process")
 
     SetCamera(GetScene()->GetCurrentCamera());
 

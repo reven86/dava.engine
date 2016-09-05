@@ -5,7 +5,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #include "Engine/EngineModule.h"
 
@@ -75,7 +75,7 @@ void JobManager::Update(float32 /*frameDelta*/)
 void JobManager::Update()
 #endif
 {
-    PROFILER_TIMING("JobManager::Update");
+    DAVA_CPU_PROFILER_SCOPE("JobManager::Update");
 
     bool hasFinishedJobs = false;
 

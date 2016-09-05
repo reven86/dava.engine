@@ -5,7 +5,7 @@
     #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
     #include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;

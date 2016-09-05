@@ -35,7 +35,7 @@
 
 #include "Job/JobManager.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -58,7 +58,7 @@
 #endif
 
 #include "Concurrency/Thread.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -544,7 +544,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-    PROFILER_TIMING("Core::SystemProcessFrame");
+    DAVA_CPU_PROFILER_SCOPE("Core::SystemProcessFrame");
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;

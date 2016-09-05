@@ -4,7 +4,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -19,7 +19,7 @@ SwitchSystem::SwitchSystem(Scene* scene)
 
 void SwitchSystem::Process(float32 timeElapsed)
 {
-    PROFILER_TIMING("SwitchSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("SwitchSystem::Process");
 
     Set<Entity*>::iterator it;
     Set<Entity*>::const_iterator itEnd = updatableEntities.end();

@@ -13,7 +13,7 @@
 #include "Render/ShaderCache.h"
 
 #include "Utils/Utils.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {

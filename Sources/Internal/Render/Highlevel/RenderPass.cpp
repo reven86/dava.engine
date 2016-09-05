@@ -6,7 +6,7 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 
 #include "Render/Renderer.h"
@@ -106,7 +106,7 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
-    PROFILER_TIMING("RenderPass::PrepareVisibilityArrays")
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::PrepareVisibilityArrays")
 
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
@@ -147,7 +147,7 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
 
 void RenderPass::DrawLayers(Camera* camera)
 {
-    PROFILER_TIMING("RenderPass::DrawLayers")
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::DrawLayers")
 
     ShaderDescriptorCache::ClearDynamicBindigs();
 

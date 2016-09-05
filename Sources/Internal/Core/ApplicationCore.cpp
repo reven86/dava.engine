@@ -7,7 +7,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
@@ -32,7 +32,7 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    PROFILER_TIMING("ApplicationCore::Update")
+    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Update")
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
@@ -58,7 +58,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-    PROFILER_TIMING("Core::Draw")
+    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Draw")
 
     Renderer::GetRenderStats().Reset();
 
@@ -73,14 +73,14 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-    PROFILER_TIMING("Core::BeginFrame")
+    DAVA_CPU_PROFILER_SCOPE("Core::BeginFrame")
 
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    PROFILER_TIMING("Core::EndFrame")
+    DAVA_CPU_PROFILER_SCOPE("Core::EndFrame")
 
     Renderer::EndFrame();
 }
