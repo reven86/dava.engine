@@ -893,8 +893,14 @@ GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat)
         return GL_RGBA8;
 
     case rhi::TEXTURE_FORMAT_R5G6B5:
+    {
+    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+        return GL_RGB5;
+    #else
         return GL_RGB565;
-
+    #endif
+    }
+            
     default:
         DVASSERT_MSG(0, "Unsupported or unknown render target format specified");
         return 0;

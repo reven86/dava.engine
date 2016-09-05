@@ -17,7 +17,8 @@
 
     #include <Carbon/Carbon.h>
     #include <AGL/agl.h>
-    #include <OpenGL/glext.h>
+    #include <OpenGL/gl3.h>
+    #include <OpenGL/gl3ext.h>
     
     #define GetGLErrorString(code) #code
 
@@ -214,7 +215,7 @@ extern PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 #endif
 
 #ifndef GL_RGB565
-    #define GL_RGB565 0x8D62
+#define GL_RGB565 0x8D62
 #endif
 
 #if !defined(GL_R8)
@@ -331,10 +332,9 @@ extern volatile struct alignas(32) GLCallRegisters
 { \
     expr; \
     GLint err = glGetError(); \
-    while (err != GL_NO_ERROR) \
+    if (err != GL_NO_ERROR) \
     { \
         DAVA::Logger::Error("OpenGL call %s failed with %s", #expr, glErrorToString(err)); \
-        err = glGetError(); \
     } \
 }
 

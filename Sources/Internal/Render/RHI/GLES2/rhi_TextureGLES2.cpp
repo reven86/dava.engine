@@ -289,37 +289,29 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd[16];
+    GLCommand cmd[16] = { };
     size_t cmd_cnt = 1;
 
-    if (isRenderTarget)
+    if (isRenderTarget || isRenderBuffer)
     {
-        cmd[0].func = GLCommand::DELETE_TEXTURES;
+        cmd[0].func = isRenderBuffer ? GLCommand::DELETE_RENDERBUFFERS : GLCommand::DELETE_TEXTURES;
         cmd[0].arg[0] = 1;
         cmd[0].arg[1] = uint64(&(uid));
 
-        DVASSERT(fbo.size() <= countof(cmd) - 1);
-        for (unsigned i = 0; i != fbo.size(); ++i)
-        {
-            cmd[1 + i].func = GLCommand::DELETE_FRAMEBUFFERS;
-            cmd[1 + i].arg[0] = 1;
-            cmd[1 + i].arg[1] = uint64(&(fbo[i].frameBuffer));
-        }
-
-        cmd_cnt += fbo.size();
-    }
-    else if (isRenderBuffer)
-    {
-        cmd[0].func = GLCommand::DELETE_RENDERBUFFERS;
-        cmd[0].arg[0] = 1;
-        cmd[0].arg[1] = uint64(&(uid));
-
-        if (uid2 && uid2 != uid)
+        if ((uid2 != 0) && (uid2 != uid))
         {
             cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
             cmd[1].arg[0] = 1;
             cmd[1].arg[1] = uint64(&(uid2));
-
+            ++cmd_cnt;
+        }
+        
+        DVASSERT(fbo.size() <= countof(cmd) - 1);
+        for (unsigned i = 0; i != fbo.size(); ++i)
+        {
+            cmd[cmd_cnt].func = GLCommand::DELETE_FRAMEBUFFERS;
+            cmd[cmd_cnt].arg[0] = 1;
+            cmd[cmd_cnt].arg[1] = uint64(&(fbo[i].frameBuffer));
             ++cmd_cnt;
         }
     }
@@ -820,6 +812,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
 
         if (color->isRenderBuffer)
         {
+            DVASSERT(glIsRenderbuffer(color->uid));
             GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color->uid));
         }
         else
