@@ -16,6 +16,6 @@ private:
     void UpdateTestInfo();
     void OnInputChanged(DAVA::DeviceInfo::eHIDType hidType, bool connected);
     void OnCarrierChanged(const DAVA::String&);
-    UIStaticText* info = nullptr;
+    DAVA::UIStaticText* info = nullptr;
     DAVA::Map<DAVA::DeviceInfo::eHIDType, bool> hidDevices;
 };
