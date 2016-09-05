@@ -1251,7 +1251,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
               { "TEXCOORD5", "texcoord5" },
               { "TEXCOORD6", "texcoord6" },
               { "TEXCOORD7", "texcoord7" },
-              { "COLOR", "color" },
+              { "COLOR", "color0" },
               { "COLOR0", "color0" },
               { "COLOR1", "color1" },
               { "TANGENT", "tangent" },
