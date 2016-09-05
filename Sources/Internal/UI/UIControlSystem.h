@@ -169,8 +169,6 @@ public:
 	 */
     void Draw();
 
-    void ProcessControl(UIControl* control);
-
     //	void SetTransitionType(int newTransitionType);
 
     /**
