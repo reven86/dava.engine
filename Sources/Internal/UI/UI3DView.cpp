@@ -132,7 +132,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     DVASSERT(targetHeight > 0);
     DVASSERT(targetFormat != PixelFormat::FORMAT_INVALID);
 
-    scene->SetMainRenderTarget(colorTexture, depthStencilTexture, loadAction);
+    scene->SetMainRenderTarget(colorTexture, depthStencilTexture, loadAction, currentTarget.clearColor);
     scene->SetMainPassProperties(priority, viewportRc, targetWidth, targetHeight, targetFormat);
     scene->Draw();
 

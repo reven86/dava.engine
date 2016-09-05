@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_H__
-#define __DAVAENGINE_RENDER_RENDERSYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
@@ -71,7 +70,6 @@ public:
 
     void MarkForUpdate(RenderObject* renderObject);
     void MarkForUpdate(Light* lightNode);
-    //void MarkForMaterialSort(Material * material);
 
     /**
         \brief This is required for objects that needs permanent update every frame like 
@@ -85,6 +83,10 @@ public:
     Vector<Light*>& GetLights();
     void SetForceUpdateLights();
 
+    void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor);
+    void SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format);
+    void SetForceAntialiasingType(bool enable, rhi::AntialiasingType aaType);
+
     void DebugDrawHierarchy(const Matrix4& cameraMatrix);
 
     RenderHierarchy* GetRenderHierarchy()
@@ -97,43 +99,41 @@ public:
         return hierarchyInitialized;
     }
 
-    inline RenderPass* GetMainRenderPass() const;
-
     inline RenderHelper* GetDebugDrawer() const
     {
         return debugDrawer;
     }
 
+public:
+    DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
+
 private:
-    void CreateSpatialTree();
-    void ProcessClipping();
     void FindNearestLights();
     void FindNearestLights(RenderObject* renderObject);
     void AddRenderObject(RenderObject* renderObject);
-
     void RemoveRenderObject(RenderObject* renderObject);
+
+private:
+    friend class RenderPass;
 
     Vector<IRenderUpdatable*> objectsForUpdate;
     Vector<RenderObject*> objectsForPermanentUpdate;
     Vector<RenderObject*> markedObjects;
     Vector<Light*> movedLights;
-    RenderPass* mainRenderPass;
-
     Vector<RenderObject*> renderObjectArray;
     Vector<Light*> lights;
-    bool forceUpdateLights;
 
-    RenderHierarchy* renderHierarchy;
-    bool hierarchyInitialized;
+    RenderPass* mainRenderPass = nullptr;
+    RenderHierarchy* renderHierarchy = nullptr;
+    Camera* mainCamera = nullptr;
+    Camera* drawCamera = nullptr;
+    NMaterial* globalMaterial = nullptr;
+    RenderHelper* debugDrawer = nullptr;
+    rhi::AntialiasingType forcedAAType = rhi::AntialiasingType::NONE;
 
-    Camera* mainCamera;
-    Camera* drawCamera;
-
-    NMaterial* globalMaterial;
-
-    RenderHelper* debugDrawer;
-
-    friend class RenderPass;
+    bool hierarchyInitialized = false;
+    bool forceUpdateLights = false;
+    bool overrideAntialiasingType = false;
 };
 
 inline RenderHierarchy* RenderSystem::GetRenderHierarchy() const
@@ -163,11 +163,4 @@ inline Camera* RenderSystem::GetDrawCamera() const
     return drawCamera;
 }
 
-inline RenderPass* RenderSystem::GetMainRenderPass() const
-{
-    return mainRenderPass;
 }
-
-} // ns
-
-#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_H__ */

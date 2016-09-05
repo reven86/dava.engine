@@ -805,21 +805,21 @@ struct RenderPassConfig
     uint32 priority = 0;
     uint32 invertCulling = 0;
 
-    void Validate() const
+    bool IsValid() const
     {
-        DVASSERT(depthStencilBuffer.storeAction != STOREACTION_RESOLVE);
+        if (depthStencilBuffer.storeAction == STOREACTION_RESOLVE)
+            return false;
 
-        if (UsingMSAA())
-        {
-            DVASSERT(colorBuffer[0].storeAction == STOREACTION_RESOLVE);
-            DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
-        }
+        bool usingResolve = colorBuffer[0].storeAction == STOREACTION_RESOLVE;
+        bool hasMSTexture = colorBuffer[0].multisampleTexture != InvalidHandle;
 
-        if (colorBuffer[0].storeAction == STOREACTION_RESOLVE)
-        {
-            DVASSERT(UsingMSAA());
-            DVASSERT(colorBuffer[0].multisampleTexture != InvalidHandle);
-        }
+        if (UsingMSAA() && !(usingResolve || hasMSTexture))
+            return false;
+
+        if (usingResolve && !(UsingMSAA() || hasMSTexture))
+            return false;
+
+        return true;
     }
 
     bool UsingMSAA() const

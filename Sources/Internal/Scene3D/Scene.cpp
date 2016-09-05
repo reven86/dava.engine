@@ -217,19 +217,17 @@ void Scene::SetGlobalMaterial(NMaterial* globalMaterial)
 
 void Scene::SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format)
 {
-    rhi::RenderPassConfig& config = renderSystem->GetMainRenderPass()->GetPassConfig();
-    config.priority = priority;
-
-    renderSystem->GetMainRenderPass()->SetViewport(viewport);
-    renderSystem->GetMainRenderPass()->SetRenderTargetProperties(width, height, format);
+    renderSystem->SetMainPassProperties(priority, viewport, width, height, format);
 }
 
-void Scene::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction)
+void Scene::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor)
 {
-    rhi::RenderPassConfig& config = renderSystem->GetMainRenderPass()->GetPassConfig();
-    config.colorBuffer[0].texture = color;
-    config.colorBuffer[0].loadAction = colorLoadAction;
-    config.depthStencilBuffer.texture = depthStencil;
+    renderSystem->SetMainRenderTarget(color, depthStencil, colorLoadAction, clearColor);
+}
+
+rhi::RenderPassConfig& Scene::GetMainPassConfig()
+{
+    return renderSystem->GetMainPassConfig();
 }
 
 void Scene::CreateSystems()

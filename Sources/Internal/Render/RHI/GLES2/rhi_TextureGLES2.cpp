@@ -929,7 +929,7 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
     DVASSERT(glBlitFramebuffer != nullptr);
 #endif
 
-    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_LINEAR));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
 }
 

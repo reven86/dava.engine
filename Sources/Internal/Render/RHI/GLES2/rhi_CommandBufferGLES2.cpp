@@ -380,7 +380,7 @@ static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
-    passConf.Validate();
+    DVASSERT(passConf.IsValid());
 
     Handle handle = RenderPassPoolGLES2::Alloc();
     RenderPassGLES2_t* pass = RenderPassPoolGLES2::Get(handle);

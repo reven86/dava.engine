@@ -208,7 +208,7 @@ static Handle
 dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
-    passDesc.Validate();
+    DVASSERT(passDesc.IsValid());
 
     Handle handle = RenderPassPoolDX9::Alloc();
     RenderPassDX9_t* pass = RenderPassPoolDX9::Get(handle);

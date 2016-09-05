@@ -121,7 +121,7 @@ struct RenderDeviceCaps
         return maxAnisotropy > 1;
     }
 
-    bool IsMultisamplingSupported(AntialiasingType type) const
+    bool SupportsAntialiasingType(AntialiasingType type) const
     {
         switch (type)
         {

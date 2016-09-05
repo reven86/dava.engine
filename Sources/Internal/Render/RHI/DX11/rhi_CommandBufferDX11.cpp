@@ -479,7 +479,7 @@ static Handle
 dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
-    passDesc.Validate();
+    DVASSERT(passDesc.IsValid());
 
     Handle handle = RenderPassPoolDX11::Alloc();
     RenderPassDX11_t* pass = RenderPassPoolDX11::Get(handle);

@@ -55,8 +55,8 @@ protected:
     std::array<RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT> layersBatchArrays;
     Vector<RenderObject*> visibilityArray;
 
-    rhi::HPacketList packetList = static_cast<rhi::HPacketList>(rhi::InvalidHandle);
-    rhi::HRenderPass renderPass = static_cast<rhi::HRenderPass>(rhi::InvalidHandle);
+    rhi::HPacketList packetList;
+    rhi::HRenderPass renderPass;
 
     Texture::FBODescriptor multisampledDescription;
     Texture* multisampledTexture = nullptr;

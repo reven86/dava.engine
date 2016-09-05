@@ -226,7 +226,10 @@ public:
     EntityCache cache;
 
     void SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format);
-    void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction);
+    void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor);
+
+public: // deprecated methods
+    DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
 
 protected:
     void UpdateLights();
