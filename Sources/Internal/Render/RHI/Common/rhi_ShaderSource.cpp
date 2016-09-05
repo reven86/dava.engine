@@ -104,7 +104,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
-#if 0
+#if 1
 {
     Logger::Info("src-code:");
 
@@ -1055,7 +1055,28 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                             prop.tag = FastName(a->attrText);
                     }
 
-                    // TODO: handle assignment/default-value
+                    if (decl->assignment)
+                    {
+                        if (decl->assignment->nodeType == sl::HLSLNodeType_ConstructorExpression)
+                        {
+                            sl::HLSLConstructorExpression* ctor = (sl::HLSLConstructorExpression*)(decl->assignment);
+                            float val[4] = { 0, 0, 0, 0 };
+                            unsigned val_i = 0;
+
+                            for (sl::HLSLExpression *arg = ctor->argument; arg; arg = arg->nextExpression, ++val_i)
+                            {
+                                if (arg->nodeType == sl::HLSLNodeType_LiteralExpression)
+                                {
+                                    sl::HLSLLiteralExpression* expr = (sl::HLSLLiteralExpression*)(arg);
+
+                                    if (expr->type == sl::HLSLBaseType_Float)
+                                        val[val_i] = expr->fValue;
+                                    else if (expr->type == sl::HLSLBaseType_Int)
+                                        val[val_i] = float(expr->iValue);
+                                }
+                            }
+                        }
+                    }
 
                     buf_t* cbuf = nullptr;
 
@@ -1174,6 +1195,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         }
     }
 
+    // rename vertex-input variables to pre-defined names
     {
         sl::HLSLStruct* vinput = ast->FindGlobalStruct("vertex_in");
         if (vinput)
