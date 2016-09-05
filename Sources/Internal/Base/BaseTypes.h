@@ -28,6 +28,13 @@
 #include "MemoryManager/TrackingAllocator.h"
 #endif
 
+#if defined(__DAVAENGINE_WINDOWS__)
+
+#define vsnprintf _vsnprintf
+#define snprintf _snprintf
+
+#endif
+
 namespace DAVA
 {
 //Platform-independent signed and unsigned integer type

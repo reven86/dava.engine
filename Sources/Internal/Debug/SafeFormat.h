@@ -85,7 +85,7 @@ inline void AppendFormat(std::ostringstream& stringStream, const std::string& fo
     else
     {
         char buffer[appendBufferSize];
-        std::sprintf(buffer, format.c_str(), value);
+        snprintf(buffer, appendBufferSize, format.c_str(), value);
         stringStream << buffer;
     }    
 }
