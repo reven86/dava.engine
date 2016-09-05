@@ -99,8 +99,13 @@ if( STEAM_SDK_FOUND )
        list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
     endif ()
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+    if( STEAM_APPID )
+        configure_file( ${STEAM_APPID}
+                        ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+    else()
+        message( FATAL_ERROR "Please set the correct path to steam_appid.txt in value STEAM_APPID"  )
+    endif()
+  
 
 endif ()
 
