@@ -3,11 +3,14 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <type_traits>
 
 namespace DAVA
 {
 namespace Assert
 {
+    
+static const char* const invalidArgText = "<wrong arg>";
 
 static const size_t appendBufferSize = 256;
 
@@ -16,12 +19,13 @@ static const std::string allFormatChars = "cCdiouxXeEfgGaAnpsS";
 
 // Functions to check if a printf-style format specifier matches the argument
 // All of them check the last symbol of a format string since it defines its type (like "%4.5f", "%d" etc.)
-// TODO: enum support
+// If type is not supported for formatting, CheckFormatParameter won't compile
 
 template<typename T>
 bool CheckFormatParameter(const std::string& format, const T param)
 {
-    static_assert(false, "CheckFormatParameter is not defined for this type");
+    static_assert(std::is_enum<T>::value, "CheckFormatParameter is not implemented for requested type");
+    return CheckFormatParameter(format, static_cast<int>(param)) || CheckFormatParameter(format, static_cast<unsigned int>(param));
 }
 
 template<>
@@ -76,7 +80,7 @@ inline void AppendFormat(std::ostringstream& stringStream, const std::string& fo
     // Append error string if format and value do no match
     if (!CheckFormatParameter(format, value))
     {
-        stringStream << "<wrong arg>";
+        stringStream << invalidArgText;
     }
     else
     {
@@ -112,7 +116,18 @@ inline void SafeFormat(std::ostringstream& output, const char* string)
 {
     while (*string)
     {
-        output << (*string);
+        const char currentChar = *string;
+
+        if (currentChar == '%')
+        {
+            // Handle %% special case
+            if (*(string + 1) == '%')
+            {
+                ++string;
+            }
+        }
+        
+        output << currentChar;
         ++string;
     }
 }
