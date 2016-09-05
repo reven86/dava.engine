@@ -281,16 +281,6 @@ struct UIManager::Impl : public QObject
 
     ~Impl()
     {
-        String geometryKey("geometry");
-        String stateKey("state");
-        for (auto& window : windows)
-        {
-            PropertiesHolder ph = propertiesHolder.SubHolder(window.first.GetAppID().c_str());
-            QMainWindow *mainWindow = window.second.window;
-            ph.Save(mainWindow->saveState(), stateKey);
-            ph.Save(mainWindow->saveGeometry(), geometryKey);
-            delete window.second.window;
-        }
     }
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
@@ -333,10 +323,19 @@ protected:
             });
             DVASSERT(iter != windows.end());
 
-            if (managerDelegate->WindowCloseRequested(iter->first))
+            const WindowKey &windowKey = iter->first;
+            if (managerDelegate->WindowCloseRequested(windowKey))
             {
-                iter->second.window->deleteLater();
-                managerDelegate->WindowClosed(iter->first);
+                QMainWindow *mainWindow = iter->second.window;
+
+                String geometryKey("geometry");
+                String stateKey("state");
+                PropertiesHolder ph = propertiesHolder.SubHolder(windowKey.GetAppID().c_str());
+                ph.Save(stateKey, mainWindow->saveState());
+                ph.Save(geometryKey, mainWindow->saveGeometry());
+                
+                mainWindow->deleteLater();
+                managerDelegate->WindowClosed(windowKey);
                 windows.erase(iter);
             }
             else
@@ -460,16 +459,12 @@ QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogP
     QString dir = params.dir;
     if (dir.isEmpty())
     {
-        QString loadedDir = impl->propertiesHolder.Load<QString>(dirKey);
-        if (!loadedDir.isEmpty())
-        {
-            dir = loadedDir;
-        }
+        dir = impl->propertiesHolder.Load<QString>(dirKey, dir);
     }
     QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
-        impl->propertiesHolder.Save(filePath, dirKey);
+        impl->propertiesHolder.Save(dirKey, filePath);
     }
     return filePath;
 }

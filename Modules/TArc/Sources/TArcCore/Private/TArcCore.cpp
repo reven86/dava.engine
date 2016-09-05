@@ -65,7 +65,9 @@ void Core::OnLoopStarted()
 {
     ToolsAssetGuard::Instance()->Init();
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
-    propertiesHolder.reset(new PropertiesHolder("TArc properties", FileSystem::Instance()->GetCurrentDocumentsDirectory()));
+    FileSystem *fileSystem = GetEngineContext().fileSystem;
+    DVASSERT(fileSystem != nullptr);
+    propertiesHolder.reset(new PropertiesHolder("TArc properties", fileSystem->GetCurrentDocumentsDirectory()));
     uiManager.reset(new UIManager(this, propertiesHolder->SubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
