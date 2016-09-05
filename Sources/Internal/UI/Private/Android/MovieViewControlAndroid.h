@@ -61,6 +61,7 @@ private:
     Function<void(jobject, jboolean)> setVisible;
     Function<void(jobject, jstring, jint)> openMovie;
     Function<void(jobject, jint)> doAction;
+    Function<jboolean(jobject)> isPlaying;
     Function<void(jobject)> update;
 };
 

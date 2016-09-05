@@ -57,9 +57,10 @@ final class DavaSurfaceView extends SurfaceView
 
     public void addControl(View control)
     {
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(new FrameLayout.MarginLayoutParams(0, 0));
-        control.setLayoutParams(params);
-        ((ViewGroup)getParent()).addView(control);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                            FrameLayout.LayoutParams.MATCH_PARENT,
+                                            FrameLayout.LayoutParams.MATCH_PARENT);
+        ((ViewGroup)getParent()).addView(control, params);
     }
 
     public void positionControl(View control, float x, float y, float w, float h)

@@ -1,5 +1,17 @@
 package com.dava.engine;
 
+import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.util.Log;
+import android.view.View;
+import android.widget.VideoView;
+import android.widget.RelativeLayout;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 // Duplicates enum eMovieScalingMode declared in UI/IMovieViewControl.h
 class eMovieScalingMode
 {
@@ -9,7 +21,9 @@ class eMovieScalingMode
     static final int scalingModeFill = 3;
 };
 
-final class DavaMovieView
+final class DavaMovieView implements MediaPlayer.OnCompletionListener,
+                                     MediaPlayer.OnPreparedListener,
+                                     MediaPlayer.OnErrorListener
 {
     // Duplicates enum MovieViewControl::eAction declared in UI/Private/Android/MovieViewControlAndroid.h
     class eAction
@@ -23,15 +37,26 @@ final class DavaMovieView
     // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
     private volatile long movieviewBackendPointer = 0;
     private DavaSurfaceView surfaceView = null;
+    // VideoView is located inside RelativeLayout which in turn is added into view hierarchy
+    private RelativeLayout movieViewLayout = null;
+    private VideoView nativeMovieView = null;
 
     // Properties that have been set in DAVA::Engine thread and waiting to apply to MovieView
     private MovieViewProperties properties = new MovieViewProperties();
 
-    // Some properties that reflect MovieView current properties
-    float x;
-    float y;
-    float width;
-    float height;
+    // Some properties that reflect MovieView current properties, accessed in UI thread
+    private float x;
+    private float y;
+    private float width;
+    private float height;
+    private int scaleMode = 0;
+    private boolean movieLoaded = false;        // Movie file is succesfully decoded and loaded
+    private boolean playAfterLoaded = false;    // Flag that tells to play movie after being loaded
+    private String movieFile = "";
+
+    // Flags accessed in dava main thread (where cpp code lives)
+    private boolean playing = false;    // Movie is playing
+    private boolean canPlay = false;    // openMovie method has been called and movie file exists
 
     public static native void nativeReleaseWeakPtr(long backendPointer);
 
@@ -131,10 +156,10 @@ final class DavaMovieView
                 DavaActivity.commandHandler().post(new Runnable() {
                     @Override public void run()
                     {
-                        /*if (nativeWebView != null)
+                        if (nativeMovieView != null)
                         {
                             setNativeVisible(false);
-                        }*/
+                        }
                     }
                 });
             }
@@ -143,17 +168,48 @@ final class DavaMovieView
 
     void openMovie(String moviePath, int scaleMode)
     {
-        properties.moviePath = moviePath;
-        properties.scaleMode = scaleMode;
-        properties.movieChanged = true;
-        properties.anyPropertyChanged = true;
+        canPlay = false;
+        playing = false;
+
+        String path = prepareMovieFile(moviePath);
+        if (path != null)
+        {
+            canPlay = true;
+
+            properties.moviePath = path;
+            properties.scaleMode = scaleMode;
+            properties.movieChanged = true;
+            properties.anyPropertyChanged = true;
+        }
     }
 
     void doAction(int action)
     {
-        properties.action = action;
-        properties.actionChanged = true;
-        properties.anyPropertyChanged = true;
+        if (canPlay)
+        {
+            // Game does not take into account that video playback can take some time after Play() has been called
+            // So assume movie is playing under following conditions:
+            //  - movie is really playing
+            //  - game has called Play() method after openMovie
+            switch (action)
+            {
+            case eAction.ACTION_PLAY:
+            case eAction.ACTION_RESUME:
+                playing = true;
+                break;
+            default:
+                playing = false;
+                break;
+            }
+            properties.action = action;
+            properties.actionChanged = true;
+            properties.anyPropertyChanged = true;
+        }
+    }
+
+    boolean isPlaying()
+    {
+        return playing;
     }
 
     void update()
@@ -185,43 +241,235 @@ final class DavaMovieView
 
     void createNativeControl()
     {
+        nativeMovieView = new VideoView(DavaActivity.instance());
+        
+        nativeMovieView.setOnCompletionListener(this);
+        nativeMovieView.setOnPreparedListener(this);
+        nativeMovieView.setOnErrorListener(this);
+        nativeMovieView.setBackgroundColor(Color.BLACK);
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                                                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                                                    RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.alignWithParent = true;
+
+        RelativeLayout layout = new RelativeLayout(DavaActivity.instance());
+        layout.addView(nativeMovieView, params);
+
+        movieViewLayout = layout;
+
+        layout.clearAnimation();
+        nativeMovieView.clearAnimation();
+        nativeMovieView.setZOrderOnTop(true);
+
+        surfaceView.addControl(movieViewLayout);
     }
 
     void releaseNativeControl()
     {
         nativeReleaseWeakPtr(movieviewBackendPointer);
         movieviewBackendPointer = 0;
+
+        if (nativeMovieView != null)
+        {
+            surfaceView.removeControl(movieViewLayout);
+            movieViewLayout = null;
+            nativeMovieView = null;
+        }
     }
 
     void applyChangedProperties(MovieViewProperties props)
     {
-        /*if (props.movieChanged)
-            ;
-        if (props.actionChanged)
-            applyAction(props.action);
-        if (props.rectChanged || props.visibleChanged)
+        if (props.visibleChanged)
+            setNativeVisible(props.visible);
+        if (props.rectChanged)
         {
             x = props.x;
             y = props.y;
             width = props.width;
             height = props.height;
-            setNativeVisible(props.visible);
             setNativePositionAndSize(x, y, width, height);
-        }*/
+        }
+        if (props.movieChanged)
+        {
+            scaleMode = props.scaleMode;
+            movieFile = props.moviePath;
+            nativeMovieView.setVideoPath(movieFile);
+
+            movieLoaded = false;
+            playAfterLoaded = false;
+        }
+        if (props.actionChanged)
+        {
+            if (movieLoaded)
+            {
+                switch (props.action)
+                {
+                case eAction.ACTION_PLAY:
+                    nativeMovieView.start();
+                    break;
+                case eAction.ACTION_PAUSE:
+                    nativeMovieView.pause();
+                    break;
+                case eAction.ACTION_RESUME:
+                    nativeMovieView.start();
+                    break;
+                case eAction.ACTION_STOP:
+                    nativeMovieView.stopPlayback();
+                    break;
+                default:
+                    return;
+                }
+            }
+            playAfterLoaded = !movieLoaded && props.action == eAction.ACTION_PLAY;
+        }
     }
 
     void setNativePositionAndSize(float x, float y, float width, float height)
     {
-        //surfaceView.positionControl(nativeWebView, x, y, width, height);
+        surfaceView.positionControl(movieViewLayout, x, y, width, height);
     }
 
     void setNativeVisible(boolean visible)
     {
-
+        nativeMovieView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void applyAction(int action)
+    void tellPlayingStatus(final boolean status)
     {
+        DavaActivity.commandHandler().post(new Runnable() {
+            @Override public void run()
+            {
+                playing = status;
+            }
+        });
+    }
 
+    String prepareMovieFile(String path)
+    {
+        File f = new File(path);
+        if (!f.exists())
+        {
+            // It seems that file in assets, so try to copy it to doc folder
+            // as VideoView cannot load movie from assets
+            try {
+                File targetFile = File.createTempFile("movie", null, null);
+                targetFile.deleteOnExit();
+
+                InputStream is = DavaActivity.instance().getAssets().open("Data/" + path);
+                OutputStream os = new FileOutputStream(targetFile);
+
+                int nread = 0;
+                byte[] buffer = new byte[4096];
+                while ((nread = is.read(buffer)) != -1)
+                {
+                    os.write(buffer, 0, nread);
+                }
+                os.close();
+                return targetFile.getAbsolutePath();
+            } catch (Exception e) {
+                Log.e(DavaActivity.LOG_TAG, "DavaMovieView: failed to extract file from assets: " + e.toString());
+            }
+        }
+        else
+        {
+            // File is not in assets, so return path as is
+            return path;
+        }
+        return null;
+    }
+
+    // MediaPlayer.OnCompletionListener interface
+    @Override
+    public void onCompletion(MediaPlayer mplayer)
+    {
+        tellPlayingStatus(false);
+    }
+
+    // MediaPlayer.OnPreparedListener interface
+    @Override
+    public void onPrepared(MediaPlayer mplayer)
+    {
+        // Code that takes into account scaling mode is stealed from previous JNIMovieViewControl implementation
+        int videoWidth = mplayer.getVideoWidth();
+        int videoHeight = mplayer.getVideoHeight();
+        int w = (int)width;
+        int h = (int)height;
+
+        float xFactor = videoWidth / width;
+        float yFactor = videoHeight / height;
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(0, 0);
+        switch (scaleMode)
+        {
+        case eMovieScalingMode.scalingModeAspectFit:
+            if (xFactor > yFactor)
+            {
+                params.width = w;
+                params.height = videoHeight * w / videoWidth;
+                params.topMargin = (h - params.height) / 2;
+                params.leftMargin = 0;
+            }
+            else
+            {
+                params.height = h;
+                params.width = videoWidth * h / videoHeight;
+                params.leftMargin = (w - params.width) / 2;
+                params.topMargin = 0;
+            }
+            break;
+        case eMovieScalingMode.scalingModeAspectFill:
+            if (xFactor > yFactor)
+            {
+                params.height = h;
+                params.width = videoWidth * h / videoHeight;
+                params.leftMargin = params.rightMargin = (w - params.width) / 2;
+                params.topMargin = 0;
+                params.bottomMargin = 0;
+            }
+            else
+            {
+                params.width = w;
+                params.height = videoHeight * w / videoWidth;
+                params.leftMargin = 0;
+                params.rightMargin = 0;
+                params.topMargin = (h - params.height) / 2;
+                params.bottomMargin = params.topMargin;
+            }
+            break;
+        case eMovieScalingMode.scalingModeFill:
+            params.rightMargin = 0;
+            params.bottomMargin = 0;
+            params.width = w;
+            params.height = h;
+            break;
+        case eMovieScalingMode.scalingModeNone:
+        default:
+            params.width = videoWidth;
+            params.height = videoHeight;
+            params.leftMargin = (w - params.width) / 2;
+            params.topMargin = (h - params.height) / 2;
+            break;
+        }
+
+        setNativePositionAndSize(x, y, width, height);
+        nativeMovieView.setLayoutParams(params);
+        
+        movieLoaded = true;
+        if (playAfterLoaded)
+        {
+            playAfterLoaded = false;
+            nativeMovieView.start();
+        }
+    }
+
+    // MediaPlayer.OnErrorListener interface
+    @Override
+    public boolean onError(MediaPlayer mplayer, int what, int extra)
+    {
+        Log.e(DavaActivity.LOG_TAG, String.format("DavaMovieView.onError: file='%s', what=%d, extra=%d", movieFile, what, extra));
+
+        tellPlayingStatus(false);
+        // Return true to prevent showing error dialog on error
+        return true;
     }
 }

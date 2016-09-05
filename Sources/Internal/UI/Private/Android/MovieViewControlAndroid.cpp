@@ -44,6 +44,7 @@ void MovieViewControl::Initialize(const Rect& rect)
         setVisible = movieViewJavaClass->GetMethod<void, jboolean>("setVisible");
         openMovie = movieViewJavaClass->GetMethod<void, jstring, jint>("openMovie");
         doAction = movieViewJavaClass->GetMethod<void, jint>("doAction");
+        isPlaying = movieViewJavaClass->GetMethod<jboolean>("isPlaying");
         update = movieViewJavaClass->GetMethod<void>("update");
     }
     catch (const JNI::Exception& e)
@@ -146,6 +147,7 @@ bool MovieViewControl::IsPlaying() const
 {
     if (javaMovieView != nullptr)
     {
+        return isPlaying(javaMovieView) == JNI_TRUE;
     }
     return false;
 }
