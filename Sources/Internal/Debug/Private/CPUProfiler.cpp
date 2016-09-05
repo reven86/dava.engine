@@ -121,6 +121,8 @@ void CPUProfiler::Stop()
 
 int32 CPUProfiler::MakeSnapshot()
 {
+    DVASSERT(!started && "Stop profiler before make snapshot");
+
     snapshots.push_back(new CounterArray(*counters));
     return int32(snapshots.size() - 1);
 }

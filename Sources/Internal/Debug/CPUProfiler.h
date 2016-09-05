@@ -65,6 +65,5 @@ protected:
 #else
 
 #define DAVA_CPU_PROFILER_SCOPE(counter_name)
-#define PROFILER_TIMING_CUSTOM(counter_name, time_profiler)
 
 #endif
