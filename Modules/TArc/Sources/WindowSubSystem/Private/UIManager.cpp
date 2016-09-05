@@ -32,6 +32,9 @@ namespace TArc
 namespace UIManagerDetail
 {
 
+String geometryKey("geometry");
+String stateKey("state");
+
 static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
     std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
@@ -296,8 +299,8 @@ struct UIManager::Impl : public QObject
             window->setObjectName(appId.c_str());
 
             PropertiesHolder ph = propertiesHolder.SubHolder(appId.c_str());
-            window->restoreGeometry(ph.Load<QByteArray>("geometry"));
-            window->restoreState(ph.Load<QByteArray>("state"));
+            window->restoreGeometry(ph.Load<QByteArray>(UIManagerDetail::geometryKey));
+            window->restoreState(ph.Load<QByteArray>(UIManagerDetail::stateKey));
 
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
@@ -328,11 +331,9 @@ protected:
             {
                 QMainWindow *mainWindow = iter->second.window;
 
-                String geometryKey("geometry");
-                String stateKey("state");
                 PropertiesHolder ph = propertiesHolder.SubHolder(windowKey.GetAppID().c_str());
-                ph.Save(stateKey, mainWindow->saveState());
-                ph.Save(geometryKey, mainWindow->saveGeometry());
+                ph.Save(UIManagerDetail::stateKey, mainWindow->saveState());
+                ph.Save(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
                 
                 mainWindow->deleteLater();
                 managerDelegate->WindowClosed(windowKey);
