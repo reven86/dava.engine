@@ -88,11 +88,11 @@ class eReturnKeyType
     static final int RETURN_KEY_EMERGENCY_CALL = 10;
 }
 
-public final class DavaTextField implements TextWatcher,
-                                            View.OnLongClickListener,
-                                            View.OnFocusChangeListener,
-                                            TextView.OnEditorActionListener,
-                                            DavaKeyboardState.KeyboardStateListener
+final class DavaTextField implements TextWatcher,
+                                     View.OnLongClickListener,
+                                     View.OnFocusChangeListener,
+                                     TextView.OnEditorActionListener,
+                                     DavaKeyboardState.KeyboardStateListener
 {
     // About java volatile https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html
     private volatile long textfieldBackendPointer = 0;

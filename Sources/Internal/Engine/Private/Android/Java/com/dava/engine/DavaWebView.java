@@ -11,7 +11,7 @@ import android.webkit.WebView;
 import android.webkit.CookieManager;
 import android.util.Log;
 
-public final class DavaWebView
+final class DavaWebView
 {
     // Duplicates enum IUIWebViewDelegate::eAction declared in UI/IWebViewControl.h
     class eAction

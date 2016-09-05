@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -30,7 +31,7 @@ public final class DavaActivity extends Activity
 
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
-    protected boolean exitCalledFromJava = false;
+    protected boolean isDestoying = false;
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
@@ -144,7 +145,7 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onDestroy");
         super.onDestroy();
 
-        exitCalledFromJava = true;
+        isDestoying = true;
         nativeOnDestroy();
         if (davaMainThread != null)
         {
@@ -158,6 +159,15 @@ public final class DavaActivity extends Activity
         nativeShutdownEngine();
         bootstrapObjects.clear();
         activitySingleton = null;
+
+        // Quit application when activity has been destroyed as:
+        //  - it is hard to make java to unload shared library, it is necessary because:
+        //    dava.engine is started when Activity.onCreate called and is ended on Activity.onDestroy
+        //    but engine's shared library is not unloaded and all static variables preserve their
+        //    values which leads to unpredictable behavior on next activity.onCreate call
+        //  - same is applied to java classes
+        Log.i(LOG_TAG, "Quitting application...");
+        System.exit(0);
     }
     
     @Override
@@ -184,8 +194,25 @@ public final class DavaActivity extends Activity
     @Override
     public void onBackPressed()
     {
-        Log.d(LOG_TAG, "DavaActivity.onBackPressed");
-        super.onBackPressed();
+        // Do not call base class method to prevent finishing activity
+        // and application on back pressed
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        int keyCode = event.getKeyCode();
+        // Ignore certain special keys so they're handled by Android
+        // Stealed from SDL
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+            keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_CAMERA ||
+            keyCode == KeyEvent.KEYCODE_ZOOM_IN ||
+            keyCode == KeyEvent.KEYCODE_ZOOM_OUT)
+        {
+            return false;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     /**
@@ -196,18 +223,18 @@ public final class DavaActivity extends Activity
         View view = getWindow().getDecorView();
         int uiOptions = view.getSystemUiVisibility();
         
-        // Navigation bar hiding:  Backwards compatible to ICS.
+        // Navigation bar hiding: backward compatible with ICS.
         // Don't use View.SYSTEM_UI_FLAG_HIDE_NAVIGATION on API less that 19 because any
         // click on view shows navigation bar, and we must hide it manually only. It is
         // bad workflow.
 
-        // Status bar hiding: Backwards compatible to Jellybean
+        // Status bar hiding: backward compatible with Jellybean
         if (Build.VERSION.SDK_INT >= 16)
         {
             uiOptions |= 0x00000004; //View.SYSTEM_UI_FLAG_FULLSCREEN;
         }
 
-        // Immersive mode: Backward compatible to KitKat.
+        // Immersive mode: backward compatible with KitKat.
         // Note that this flag doesn't do anything by itself, it only augments the behavior
         // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
         // all three flags are being toggled together.
@@ -301,14 +328,14 @@ public final class DavaActivity extends Activity
         {
             for (String c : classes)
             {
-                Log.i(LOG_TAG, String.format("DavaActivity: loading bootstrap class '%s'", c));
+                Log.i(LOG_TAG, String.format("DavaActivity: instantiate bootstrap class '%s'", c));
                 try {
                     Class<?> clazz = Class.forName(c);
                     Constructor<?> ctor = clazz.getConstructor();
                     Object obj = ctor.newInstance();
                     bootstrapObjects.add(obj);
                 } catch (Throwable e) {
-                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: class '%s' not loaded: %s", c, e.toString()));
+                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: class '%s' not instantiated: %s", c, e.toString()));
                 }
             }
         }

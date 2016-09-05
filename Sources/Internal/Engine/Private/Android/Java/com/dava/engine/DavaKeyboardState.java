@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListener
+class DavaKeyboardState implements ViewTreeObserver.OnGlobalLayoutListener
 {
     public interface KeyboardStateListener
     {

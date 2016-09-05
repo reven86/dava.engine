@@ -2,6 +2,7 @@ package com.dava.engine;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
@@ -13,9 +14,10 @@ import android.widget.FrameLayout;
 import android.util.Log;
 import java.lang.reflect.Constructor;
 
-public final class DavaSurfaceView extends SurfaceView
-                                   implements SurfaceHolder.Callback,
-                                              View.OnTouchListener
+final class DavaSurfaceView extends SurfaceView
+                            implements SurfaceHolder.Callback,
+                                       View.OnTouchListener,
+                                       View.OnKeyListener
 {
     protected long windowBackendPointer = 0;
     
@@ -38,6 +40,7 @@ public final class DavaSurfaceView extends SurfaceView
         setFocusableInTouchMode(true);
         requestFocus();
         setOnTouchListener(this);
+        setOnKeyListener(this);
     }
 
     public Object createNativeControl(String className, long backendPointer)
@@ -146,6 +149,7 @@ public final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnSurfaceDestroyed(windowBackendPointer);
     }
     
+    // View.OnTouchListener interface
     @Override
     public boolean onTouch(View v, MotionEvent event) 
     {
@@ -194,5 +198,23 @@ public final class DavaSurfaceView extends SurfaceView
             }
         }
         return true;
+    }
+
+    // View.OnKeyListener interface
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event)
+    {
+        int source = event.getSource();
+        int action = event.getAction();
+        if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+            (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD)
+        {
+            
+        }
+        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
+        {
+            
+        }
+        return false;
     }
 }

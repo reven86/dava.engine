@@ -9,7 +9,7 @@ class eMovieScalingMode
     static final int scalingModeFill = 3;
 };
 
-public final class DavaMovieView
+final class DavaMovieView
 {
     // Duplicates enum MovieViewControl::eAction declared in UI/Private/Android/MovieViewControlAndroid.h
     class eAction
