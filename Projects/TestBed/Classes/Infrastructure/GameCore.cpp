@@ -41,26 +41,60 @@
 void CheckDeviceInfoValid()
 {
     using namespace DAVA;
-    DVASSERT(DeviceInfo::PLATFORM_UNKNOWN_VALUE != DeviceInfo::GetPlatform());
-    DVASSERT(DeviceInfo::GetPlatformString() != "Unknown");
-    DVASSERT(DeviceInfo::GetVersion() != "");
-    DVASSERT(DeviceInfo::GetManufacturer() != "" || true);
-    DVASSERT(DeviceInfo::GetModel() != "" || true);
-    DVASSERT(DeviceInfo::GetLocale() != "");
-    DVASSERT(DeviceInfo::GetRegion() != "");
-    DVASSERT(DeviceInfo::GetTimeZone() != "");
-    DVASSERT(DeviceInfo::GetUDID() != "");
-    DVASSERT(DeviceInfo::GetName() != L"");
-    DVASSERT(DeviceInfo::GetHTTPProxyHost() == "Not yet implemented");
-    DVASSERT(DeviceInfo::GetHTTPNonProxyHosts() == "Not yet implemented");
-    DVASSERT(DeviceInfo::GetHTTPProxyPort() == 0);
-    DVASSERT(DeviceInfo::GetScreenInfo().height > 0);
-    DVASSERT(DeviceInfo::GetScreenInfo().width > 0);
-    DVASSERT(DeviceInfo::GetScreenInfo().scale == 1);
-    DVASSERT(DeviceInfo::GetZBufferSize() == 24);
-    DVASSERT(DeviceInfo::GetGPUFamily() != GPU_INVALID);
-    DVASSERT(DeviceInfo::GetNetworkInfo().networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
-    DVASSERT(DeviceInfo::GetNetworkInfo().signalStrength >= 0 || true);
+    auto platform = DeviceInfo::GetPlatform();
+    DVASSERT(DeviceInfo::PLATFORM_UNKNOWN_VALUE != platform);
+
+    auto platformString = DeviceInfo::GetPlatformString();
+    DVASSERT(platformString != "Unknown");
+
+    auto version = DeviceInfo::GetVersion();
+    DVASSERT(version != "");
+
+    auto manufacturer = DeviceInfo::GetManufacturer();
+    DVASSERT(manufacturer != "" || true);
+
+    auto model = DeviceInfo::GetModel();
+    DVASSERT(model != "" || true);
+
+    auto locale = DeviceInfo::GetLocale();
+    DVASSERT(locale != "");
+
+    auto region = DeviceInfo::GetRegion();
+    DVASSERT(region != "");
+
+    auto timezone = DeviceInfo::GetTimeZone();
+    DVASSERT(timezone != "");
+
+    auto udid = DeviceInfo::GetUDID();
+    DVASSERT(udid != "");
+
+    auto name = DeviceInfo::GetName();
+    DVASSERT(name != L"");
+
+    auto httpProxyHost = DeviceInfo::GetHTTPProxyHost();
+    DVASSERT(httpProxyHost == "Not yet implemented");
+
+    auto httpNonProxyHosts = DeviceInfo::GetHTTPNonProxyHosts();
+    DVASSERT(httpNonProxyHosts == "Not yet implemented");
+
+    auto httpProxyPort = DeviceInfo::GetHTTPProxyPort();
+    DVASSERT(httpProxyPort == 0);
+
+    auto screenInfo = DeviceInfo::GetScreenInfo();
+    DVASSERT(screenInfo.height > 0);
+    DVASSERT(screenInfo.width > 0);
+    DVASSERT(screenInfo.scale >= 1);
+
+    auto zbufferSize = DeviceInfo::GetZBufferSize();
+    DVASSERT(zbufferSize == 24);
+
+    auto gpuFamily = DeviceInfo::GetGPUFamily();
+    DVASSERT(gpuFamily != GPU_INVALID);
+
+    auto networkInfo = DeviceInfo::GetNetworkInfo();
+    DVASSERT(networkInfo.networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
+    DVASSERT(networkInfo.signalStrength >= 0 || true);
+
     List<DeviceInfo::StorageInfo> storageInfo = DeviceInfo::GetStoragesList();
     DVASSERT(storageInfo.empty() || true);
     DVASSERT(DeviceInfo::GetCpuCount() > 0);
