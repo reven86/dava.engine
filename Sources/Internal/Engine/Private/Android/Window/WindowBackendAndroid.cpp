@@ -127,6 +127,7 @@ void WindowBackend::OnPause()
 
 void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
 {
+    // Here reference to java DavaSurfaceView instance is obtained
     if (surfaceView == nullptr)
     {
         surfaceView = env->NewGlobalRef(surfaceViewInstance);

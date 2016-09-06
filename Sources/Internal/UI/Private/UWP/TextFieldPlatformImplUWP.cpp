@@ -233,12 +233,12 @@ void TextFieldPlatformImpl::SetVisible(bool isVisible)
                 }
             });
 #else
-                core->RunOnUIThread([this, self]() {
-                    if (nativeControl != nullptr)
-                    {
-                        SetNativeVisible(false);
-                    }
-                });
+            core->RunOnUIThread([this, self]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
 #endif
         }
     }
@@ -300,9 +300,9 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
             ProcessProperties(props);
         });
 #else
-            core->RunOnUIThread([this, self, props] {
-                ProcessProperties(props);
-            });
+        core->RunOnUIThread([this, self, props] {
+            ProcessProperties(props);
+        });
 #endif
 
         properties.createNew = false;
@@ -366,7 +366,7 @@ void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 #if defined(__DAVAENGINE_COREV2__)
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
-        const float32 scaleFactor = core->GetScreenScaleFactor();
+    const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
     fontSize /= scaleFactor;
@@ -485,7 +485,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
 #if defined(__DAVAENGINE_COREV2__)
         nativeText->Style = customTextBoxStyle;
 #else
-            core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
+        core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
 #endif
         InstallTextEventHandlers();
     }
@@ -496,7 +496,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
 #if defined(__DAVAENGINE_COREV2__)
         nativePassword->Style = customPasswordBoxStyle;
 #else
-            core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
+        core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
 #endif
         InstallPasswordEventHandlers();
     }
@@ -526,7 +526,7 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
 #if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->AddXamlControl(nativeControlHolder);
 #else
-        core->XamlApplication()->AddUIElement(nativeControlHolder);
+    core->XamlApplication()->AddUIElement(nativeControlHolder);
 #endif
 }
 
@@ -535,7 +535,7 @@ void TextFieldPlatformImpl::DeleteNativeControl()
 #if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->RemoveXamlControl(nativeControlHolder);
 #else
-        core->XamlApplication()->RemoveUIElement(nativeControlHolder);
+    core->XamlApplication()->RemoveUIElement(nativeControlHolder);
 #endif
     nativeControl = nullptr;
     nativeText = nullptr;
@@ -651,10 +651,10 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
                 textFieldDelegate->TextFieldShouldCancel(uiTextField);
         });
 #else
-            core->RunOnMainThread([this, self]() {
-                if (textFieldDelegate != nullptr)
-                    textFieldDelegate->TextFieldShouldCancel(uiTextField);
-            });
+        core->RunOnMainThread([this, self]() {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->TextFieldShouldCancel(uiTextField);
+        });
 #endif
     }
     break;
@@ -670,10 +670,10 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
                     textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
 #else
-                core->RunOnMainThread([this, self]() {
-                    if (textFieldDelegate != nullptr)
-                        textFieldDelegate->TextFieldShouldReturn(uiTextField);
-                });
+            core->RunOnMainThread([this, self]() {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
+            });
 #endif
         }
         break;
@@ -689,7 +689,7 @@ void TextFieldPlatformImpl::OnGotFocus()
 #if defined(__DAVAENGINE_COREV2__)
 // TODO: core->XamlApplication()->CaptureTextBox(nativeControl);
 #else
-        core->XamlApplication()->CaptureTextBox(nativeControl);
+    core->XamlApplication()->CaptureTextBox(nativeControl);
 #endif
 
     SetNativeCaretPosition(GetNativeText()->Length());
@@ -706,7 +706,7 @@ void TextFieldPlatformImpl::OnGotFocus()
 #if defined(__DAVAENGINE_COREV2__)
     window->GetEngine()->RunAsyncOnMainThread([this, self, multiline, keyboardRect]() {
 #else
-        core->RunOnMainThread([this, self, multiline, keyboardRect]() {
+    core->RunOnMainThread([this, self, multiline, keyboardRect]() {
 #endif
         if (uiTextField != nullptr)
         {
@@ -751,7 +751,7 @@ void TextFieldPlatformImpl::OnLostFocus()
 #if defined(__DAVAENGINE_COREV2__)
     window->GetEngine()->RunAsyncOnMainThread([this, self]() {
 #else
-        core->RunOnMainThread([this, self]() {
+    core->RunOnMainThread([this, self]() {
 #endif
         if (uiTextField != nullptr)
         {
@@ -787,7 +787,7 @@ void TextFieldPlatformImpl::OnTextChanged()
 #if defined(__DAVAENGINE_COREV2__)
     window->GetEngine()->RunAndWaitOnMainThread([this, self, &newText, &textAccepted, &textToRestore]() {
 #else
-        core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
+    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
 #endif
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
         if (programmaticTextChange && targetAlive && newText != lastProgrammaticText)
@@ -854,7 +854,7 @@ void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::Inp
 #if defined(__DAVAENGINE_COREV2__)
         window->GetEngine()->RunAsyncOnMainThread([this, self, keyboardRect]() {
 #else
-            core->RunOnMainThread([this, self, keyboardRect]() {
+        core->RunOnMainThread([this, self, keyboardRect]() {
 #endif
             if (textFieldDelegate != nullptr)
             {
@@ -899,7 +899,7 @@ void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
 #if defined(__DAVAENGINE_COREV2__)
             window->GetNativeService()->UnfocusXamlControl();
 #else
-                core->XamlApplication()->UnfocusUIElement();
+            core->XamlApplication()->UnfocusUIElement();
 #endif
     }
 
@@ -980,7 +980,7 @@ void TextFieldPlatformImpl::SetNativePositionAndSize(const Rect& rect, bool offS
 #if defined(__DAVAENGINE_COREV2__)
     window->GetNativeService()->PositionXamlControl(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #else
-        core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+    core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 #endif
 }
 
@@ -1196,7 +1196,7 @@ Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 #if defined(__DAVAENGINE_COREV2__)
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
-        const float32 scaleFactor = core->GetScreenScaleFactor();
+    const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x /= scaleFactor;
     rect.y /= scaleFactor;
@@ -1214,8 +1214,8 @@ Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
     // 1. map window to physical
     const float32 scaleFactor = window->GetRenderSurfaceScaleX();
 #else
-        // 1. map window to physical
-        const float32 scaleFactor = core->GetScreenScaleFactor();
+    // 1. map window to physical
+    const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
     rect.x *= scaleFactor;
     rect.y *= scaleFactor;
