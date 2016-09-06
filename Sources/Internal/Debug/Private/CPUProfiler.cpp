@@ -13,9 +13,9 @@ namespace DAVA
 
 #if CPU_PROFILER_ENABLED
 static CPUProfiler GLOBAL_TIME_PROFILER;
-CPUProfiler* const CPUProfiler::GlobalProfiler = &GLOBAL_TIME_PROFILER;
+CPUProfiler* const CPUProfiler::globalProfiler = &GLOBAL_TIME_PROFILER;
 #else
-CPUProfiler* const GlobalTimeProfiler = nullptr;
+CPUProfiler* const CPUProfiler::globalProfiler = nullptr;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,6 +29,8 @@ struct CPUProfiler::TimeCounter
     Thread::Id tid = 0;
 };
 
+namespace CPUProfilerDetails
+{
 struct CounterTreeNode
 {
     IMPLEMENT_POOL_ALLOCATOR(CounterTreeNode, 128);
@@ -56,8 +58,6 @@ protected:
     uint32 count; //recursive and duplicate counters
 };
 
-namespace CPUProfilerDetails
-{
 uint64 TimeStampUs()
 {
     return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
@@ -178,8 +178,8 @@ void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::os
                 stream << "=== Non-tracked time [" << (lastDumpedCounter->endTime - it->startTime) << " us] ===" << std::endl;
             lastDumpedCounter = &(*it);
 
-            CounterTreeNode* treeRoot = CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
-            CounterTreeNode::DumpTree(treeRoot, stream, false);
+            CPUProfilerDetails::CounterTreeNode* treeRoot = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
+            CPUProfilerDetails::CounterTreeNode::DumpTree(treeRoot, stream, false);
             SafeDelete(treeRoot);
 
             counterCount--;
@@ -202,17 +202,17 @@ void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std:
 
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
-    CounterTreeNode* treeRoot = nullptr;
+    CPUProfilerDetails::CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
         if (it->endTime != 0 && (strcmp(counterName, it->name)))
         {
-            CounterTreeNode* node = CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
+            CPUProfilerDetails::CounterTreeNode* node = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
 
             if (treeRoot)
             {
-                CounterTreeNode::MergeTree(treeRoot, node);
-                CounterTreeNode::SafeDeleteTree(node);
+                CPUProfilerDetails::CounterTreeNode::MergeTree(treeRoot, node);
+                CPUProfilerDetails::CounterTreeNode::SafeDeleteTree(node);
             }
             else
             {
@@ -228,8 +228,8 @@ void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std:
 
     if (treeRoot)
     {
-        CounterTreeNode::DumpTree(treeRoot, stream, true);
-        CounterTreeNode::SafeDeleteTree(treeRoot);
+        CPUProfilerDetails::CounterTreeNode::DumpTree(treeRoot, stream, true);
+        CPUProfilerDetails::CounterTreeNode::SafeDeleteTree(treeRoot);
     }
 
     stream << "================================================================" << std::endl;
@@ -273,7 +273,8 @@ CPUProfiler::CounterArray* CPUProfiler::GetCounterArray(int32 snapshot)
 
 /////////////////////////////////////////////////////////////////////////////////
 //Internal Definition
-
+namespace CPUProfilerDetails
+{
 CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator begin, CPUProfiler::CounterArray* array)
 {
     DVASSERT(begin->endTime);
@@ -412,5 +413,7 @@ void CounterTreeNode::SafeDeleteTree(CounterTreeNode*& node)
         SafeDelete(node);
     }
 }
+
+} //ns CPUProfilerDetails
 
 } //ns DAVA

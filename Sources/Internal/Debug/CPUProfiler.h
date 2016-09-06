@@ -28,7 +28,7 @@ public:
     };
 
     static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
-    static CPUProfiler* const GlobalProfiler;
+    static CPUProfiler* const globalProfiler;
 
     CPUProfiler(uint32 countersCount = 2048);
     ~CPUProfiler();
@@ -60,7 +60,7 @@ protected:
 
 #if CPU_PROFILER_ENABLED
 
-#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopeTiming time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::GlobalProfiler);
+#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopeTiming time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::globalProfiler);
 
 #else
 
