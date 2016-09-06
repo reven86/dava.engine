@@ -9,7 +9,6 @@
 
 namespace DAVA
 {
-
 namespace
 {
 const size_t defaultBufferSize{ 4096 };

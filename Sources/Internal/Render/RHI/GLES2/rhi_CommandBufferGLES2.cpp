@@ -1783,7 +1783,7 @@ void CommandBufferGLES2_t::Execute()
             }
 
             #if defined(__DAVAENGINE_IPHONE__)
-            DVASSERT(baseInst == 0) // it's not supported in GLES
+            DVASSERT(baseInst == 0); // it's not supported in GLES
             GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0); // it's not supported in GLES

@@ -34,44 +34,42 @@
 
 namespace DAVA
 {
-/// \ingroup Asserts 
+/// \ingroup Asserts
 namespace Assert
-{    
-
+{
 /// Helper class that groups information about an assert
 class AssertInfo final
 {
 public:
-	AssertInfo(
-		const char* const expression,
-		const char* const fileName,
-		const int lineNumber,
-		const char* const message,
-		const DAVA::Vector<DAVA::Debug::StackFrame> backtrace)
-		: expression(expression)
-		, fileName(fileName)
-		, lineNumber(lineNumber)
-		, message(message)
-		, backtrace(backtrace)
-	{
+    AssertInfo(
+    const char* const expression,
+    const char* const fileName,
+    const int lineNumber,
+    const char* const message,
+    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace)
+        : expression(expression)
+        , fileName(fileName)
+        , lineNumber(lineNumber)
+        , message(message)
+        , backtrace(backtrace)
+    {
+    }
 
-	}
-
-	const char* const expression;
-	const char* const fileName;
-	const int lineNumber;
+    const char* const expression;
+    const char* const fileName;
+    const int lineNumber;
     const char* const message;
-	const DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
+    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
 };
 
 /// Indicates how a program should act when an assert fails
 enum class FailBehaviour
 {
     /// Ignore an assert and continue invocation
-	Continue,
+    Continue,
 
     /// Stop invocation
-	Halt
+    Halt
 };
 
 /// Typedef for function that handles failed asserts and returns FailBehaviour
@@ -89,14 +87,13 @@ void RemoveHandler(const Handler handler);
 
 /// \returns Vector of registred handlers
 const DAVA::Vector<Handler>& GetHandlers();
-
 }
 }
 
 // Macro for generating debug break
 // It's not a function in order to prevent stacktrace altering
 // TODO: release behaviour?
-#if defined (__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__)
 #define DVASSERT_HALT __debugbreak()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 #define DVASSERT_HALT raise(SIGTRAP)
@@ -106,11 +103,11 @@ const DAVA::Vector<Handler>& GetHandlers();
 
 /// Used internally by DVASSERT_INTERNAL macro
 static DAVA::Assert::FailBehaviour HandleAssert(
-    const char* const expr,
-    const char* const fileName,
-    const int lineNumber,
-    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
-    const char* const message = "");
+const char* const expr,
+const char* const fileName,
+const int lineNumber,
+const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+const char* const message = "");
 
 // Common macro to use by DVASSERT & DVASSERT_CRITICAL to avoid code duplication
 #define DVASSERT_INTERNAL(expr, ...) \
@@ -119,11 +116,11 @@ static DAVA::Assert::FailBehaviour HandleAssert(
         if (!(expr)) \
         { \
             if (HandleAssert( \
-                    #expr, \
-                    __FILE__, \
-                    __LINE__, \
-                    DAVA::Debug::GetBacktrace(), \
-                    ##__VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
+                #expr, \
+                __FILE__, \
+                __LINE__, \
+                DAVA::Debug::GetBacktrace(), \
+                ##__VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
             { \
                 DVASSERT_HALT; \
             } \

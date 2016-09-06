@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Notification/LocalNotificationUAP.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

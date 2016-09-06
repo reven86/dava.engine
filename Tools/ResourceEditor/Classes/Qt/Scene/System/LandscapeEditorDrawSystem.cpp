@@ -288,7 +288,7 @@ DAVA::float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const DAVA::V
     DAVA::int32 y = static_cast<DAVA::int32>(point.y);
 
     DVASSERT((x >= 0) && (x < hmSize) && (y >= 0) && (y < hmSize),
-                 "Point must be in heightmap coordinates");
+             "Point must be in heightmap coordinates");
 
     int nextX = DAVA::Min(x + 1, hmSize - 1);
     int nextY = DAVA::Min(y + 1, hmSize - 1);

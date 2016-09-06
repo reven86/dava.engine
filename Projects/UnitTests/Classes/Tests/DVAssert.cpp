@@ -30,9 +30,9 @@ static FailBehaviour AssertMessageSavingHandler(const AssertInfo& assertInfo)
     return FailBehaviour::Continue;
 }
 
-DAVA_TESTCLASS(DVAssertTestClass)
+DAVA_TESTCLASS (DVAssertTestClass)
 {
-    DAVA_TEST(AssertTestFunction)
+    DAVA_TEST (AssertTestFunction)
     {
         AddHandler(FirstHandler);
         AddHandler(SecondHandler);
@@ -51,7 +51,7 @@ DAVA_TESTCLASS(DVAssertTestClass)
         TEST_VERIFY(!firstHandlerInvoked);
         TEST_VERIFY(!secondHandlerInvoked);
 #endif
-        
+
         // Check that first removed handler doesn't get called
         RemoveHandler(FirstHandler);
         ResetHandlersState();
@@ -69,7 +69,7 @@ DAVA_TESTCLASS(DVAssertTestClass)
         ResetHandlersState();
     }
 
-    DAVA_TEST(AlwaysAssertTestFunction)
+    DAVA_TEST (AlwaysAssertTestFunction)
     {
         AddHandler(FirstHandler);
         AddHandler(SecondHandler);
@@ -96,7 +96,7 @@ DAVA_TESTCLASS(DVAssertTestClass)
         ResetHandlersState();
     }
 
-    DAVA_TEST(AssertMessageTestFunction)
+    DAVA_TEST (AssertMessageTestFunction)
     {
         AddHandler(AssertMessageSavingHandler);
 

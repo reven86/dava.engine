@@ -437,11 +437,11 @@ void TextBox::Split(const WrapMode mode, const Vector<uint8>& breaks, const Vect
     else
     {
         DVASSERT(breaks.size() == processedText.length(),
-                     Format("Incorrect breaks information (%d != %d)", breaks.size(), processedText.length()).c_str());
+                 Format("Incorrect breaks information (%d != %d)", breaks.size(), processedText.length()).c_str());
         DVASSERT(widths.size() == processedText.length(),
-                     Format("Incorrect character sizes information (%d != %d)", widths.size(), processedText.length()).c_str());
+                 Format("Incorrect character sizes information (%d != %d)", widths.size(), processedText.length()).c_str());
         DVASSERT(characters.size() == processedText.length(),
-                     Format("Incorrect character information and process text lengths (%d != %d)", widths.size(), processedText.length()).c_str());
+                 Format("Incorrect character information and process text lengths (%d != %d)", widths.size(), processedText.length()).c_str());
 
         float32 currentWidth = 0;
         uint32 lastPossibleBreak = 0;

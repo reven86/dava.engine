@@ -149,7 +149,7 @@ void PreferencesStorage::UnregisterPreferences(void* realObj, const DAVA::InspBa
 {
     DVASSERT(nullptr != inspBase);
     const DAVA::InspInfo* info = inspBase->GetTypeInfo();
-    
+
     const size_t erasedCount = registeredObjects[info].erase(realObj);
     DVASSERT(erasedCount > 0);
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive);
