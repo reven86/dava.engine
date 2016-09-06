@@ -76,6 +76,7 @@ struct SWCommand_Begin : public SWCommandImpl<SWCommand_Begin, CMD_BEGIN>
 struct SWCommand_End : public SWCommandImpl<SWCommand_End, CMD_END>
 {
     Handle syncObject;
+    bool doCommit;
 } DV_ATTR_PACKED;
 
 struct SWCommand_SetVertexData : public SWCommandImpl<SWCommand_SetVertexData, CMD_SET_VERTEX_DATA>

@@ -600,10 +600,8 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         }
     }
 
-    if (need_drawable && !currentDrawable.drawable)
+    if (need_drawable && !currentDrawable)
     {
-        _Metal_Frame.clear();
-
         for (unsigned i = 0; i != cmdBufCount; ++i)
             cmdBuf[i] = InvalidHandle;
 
@@ -1537,7 +1535,19 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
         rp->cmdBuf.clear();
     }
     [currentDrawable release];
-    currentDrawable = nil;        
+    currentDrawable = nil;
+#else
+    for (unsigned i = 0; i != frame.pass.size(); ++i)
+    {
+        RenderPassMetal_t* rp = RenderPassPool::Get(frame.pass[i]);
+
+        for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
+        {
+            Handle cbh = rp->cmdBuf[b];
+            CommandBufferPool::Free(cbh);
+        }
+        RenderPassPool::Free(frame.pass[i]);
+    }
 #endif
 
     if (frame.sync != InvalidHandle)
