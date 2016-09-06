@@ -160,7 +160,7 @@
 // Usage:
 //  DAVA_TESTCLASS(UsefulTest)
 //  {
-//      BEGIN_CLASSES_COVERED_BY_TESTS()
+//      BEGIN_FILES_COVERED_BY_TESTS()
 //          DECLARE_COVERED_FILES("FileSystem")
 //          DECLARE_COVERED_FILES("JobManager")
 //      END_FILES_COVERED_BY_TESTS()
@@ -185,7 +185,7 @@
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
 
-#define BEGIN_CLASSES_COVERED_BY_TESTS() \
+#define BEGIN_FILES_COVERED_BY_TESTS() \
     DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
         DAVA::Vector<DAVA::String> result;
 
