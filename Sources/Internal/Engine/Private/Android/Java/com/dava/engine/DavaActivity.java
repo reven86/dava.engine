@@ -2,6 +2,8 @@ package com.dava.engine;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,10 +16,6 @@ import android.widget.FrameLayout;
 import android.util.Log;
 
 import java.lang.reflect.Constructor;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,6 +30,11 @@ public final class DavaActivity extends Activity
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
     protected boolean isDestoying = false;
+    
+    protected String externalFilesDir;
+    protected String internalFilesDir;
+    protected String sourceDir;
+    protected String packageName;
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
@@ -70,16 +73,18 @@ public final class DavaActivity extends Activity
         super.onCreate(savedInstanceState);
         
         activitySingleton = this;
-        // Load library modules and create class instances specified in
-        // res/raw/boot_modules and res/raw/boot_classes accordingly
-        bootstrap();
-
+        
         Application app = getApplication();
-        String externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
-        String internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
-        String sourceDir = app.getApplicationInfo().publicSourceDir;
-        String packageName = app.getApplicationInfo().packageName;
+        externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
+        internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
+        sourceDir = app.getApplicationInfo().publicSourceDir;
+        packageName = app.getApplicationInfo().packageName;
         String cmdline = getCommandLine();
+        
+        // Load library modules and create class instances specified under meta-data tag
+        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
+        bootstrap();
+        
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
 
         Window window = getWindow();
@@ -308,7 +313,7 @@ public final class DavaActivity extends Activity
     private void bootstrap()
     {
         // Read and load bootstrap library modules
-        String[] modules = readTextFileFromRawDir("boot_modules");
+        String[] modules = getBootMetadata("boot_modules");
         if (modules != null)
         {
             for (String m : modules)
@@ -323,7 +328,7 @@ public final class DavaActivity extends Activity
         }
 
         // Read and create instances of bootstrap classes
-        String[] classes = readTextFileFromRawDir("boot_classes");
+        String[] classes = getBootMetadata("boot_classes");
         if (classes != null)
         {
             for (String c : classes)
@@ -340,24 +345,18 @@ public final class DavaActivity extends Activity
             }
         }
     }
-
-    private String[] readTextFileFromRawDir(String nameWithoutExtension)
+    
+    private String[] getBootMetadata(String key)
     {
         try {
-            int resourceId = getResources().getIdentifier(nameWithoutExtension, "raw", getPackageName());
-            InputStream is = getResources().openRawResource(resourceId);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-            String curLine = null;
-            List<String> lines = new ArrayList<String>();
-            while ((curLine = br.readLine()) != null)
+            ApplicationInfo appInfo = getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            String s = appInfo.metaData.getString(key);
+            if (s != null)
             {
-                lines.add(curLine);
+                return s.split(";");
             }
-            br.close();
-            return lines.toArray(new String[lines.size()]);
         } catch (Exception e) {
-            Log.e(LOG_TAG, String.format("DavaActivity.readTextFileFromRawDir: file '%s': %s", nameWithoutExtension, e.toString()));
+            Log.e(LOG_TAG, String.format("DavaActivity: get metadata for '%s' failed: %s", key, e.toString()));
         }
         return null;
     }
