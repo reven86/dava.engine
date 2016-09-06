@@ -360,7 +360,7 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawPrimitive*)cmd)->type);
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawPrimitive*)cmd)->mode);
             unsigned vertexCount = ((SWCommand_DrawPrimitive*)cmd)->vertexCount;
 
             _ApplyVertexData();
@@ -370,7 +370,7 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->mode);
             unsigned indexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->indexCount;
             unsigned firstVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->firstVertex;
             unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
@@ -388,7 +388,7 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawInstancedPrimitive*)cmd)->mode);
             unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
             unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instanceCount;
 
@@ -399,7 +399,7 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->type);
+            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->mode);
             unsigned firstVertex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->firstVertex;
             unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
             unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
@@ -1248,7 +1248,7 @@ metal_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 coun
 
     SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
 
-    cmd->type = ptype;
+    cmd->mode = ptype;
     cmd->vertexCount = v_cnt;
 
 #endif
@@ -1311,7 +1311,7 @@ metal_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint
 
     SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
 
-    cmd->type = ptype;
+    cmd->mode = ptype;
     cmd->indexCount = i_cnt;
     cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
@@ -1371,7 +1371,7 @@ metal_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
 
     SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
 
-    cmd->type = ptype;
+    cmd->mode = ptype;
     cmd->instanceCount = inst_count;
     cmd->vertexCount = v_cnt;
 
@@ -1433,7 +1433,7 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
 #else
     SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
 
-    cmd->type = ptype;
+    cmd->mode = ptype;
     cmd->indexCount = i_cnt;
     cmd->firstVertex = firstVertex;
     cmd->startIndex = startIndex;
