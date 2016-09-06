@@ -906,7 +906,7 @@ bool RenderPassMetal_t::Initialize()
 static Handle
 metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    passConf.Validate();
+    DVASSERT(passConf.IsValid());
 
     if (_Metal_Suspended.GetRelaxed())
     {
