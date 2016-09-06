@@ -167,17 +167,17 @@ public:
     virtual void SetInputEnabled(bool value) = 0;
 
     // Keyboard traits.
-    void SetAutoCapitalizationType(DAVA::int32 value)
+    void SetAutoCapitalizationType(int32 value)
     {
         // not supported implement on client in delegate
     }
 
-    void SetAutoCorrectionType(DAVA::int32 value)
+    void SetAutoCorrectionType(int32 value)
     {
         // not supported implement on client in delegate
     }
 
-    void SetSpellCheckingType(DAVA::int32 value)
+    void SetSpellCheckingType(int32 value)
     {
         // not supported for NSTextField
         // we can implement it in NSTextView with property
@@ -185,17 +185,17 @@ public:
         // but does we really need it?
     }
 
-    void SetKeyboardAppearanceType(DAVA::int32 value)
+    void SetKeyboardAppearanceType(int32 value)
     {
         // not aplicable on mac os with hardware keyboard
     }
 
-    void SetKeyboardType(DAVA::int32 value)
+    void SetKeyboardType(int32 value)
     {
         // not aplicable on mac os with hardware keyboard
     }
 
-    void SetReturnKeyType(DAVA::int32 value)
+    void SetReturnKeyType(int32 value)
     {
         // not aplicable on mac os with hardware keyboard
     }
@@ -514,15 +514,15 @@ public:
         }
     }
 
-    void SetTextColor(const DAVA::Color& color) override
+    void SetTextColor(const Color& color) override
     {
         currentColor = color;
 
         NSColor* nsColor = [NSColor
-        colorWithCalibratedRed:color.r
-                         green:color.g
-                          blue:color.b
-                         alpha:color.a];
+        colorWithCalibratedRed:static_cast<CGFloat>(color.r)
+                         green:static_cast<CGFloat>(color.g)
+                          blue:static_cast<CGFloat>(color.b)
+                         alpha:static_cast<CGFloat>(color.a)];
         [nsTextView setTextColor:nsColor];
 
         [nsTextView setInsertionPointColor:nsColor];
@@ -534,7 +534,7 @@ public:
 
         float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
 
-        NSSize origSz = NSMakeSize(size, 0);
+        NSSize origSz = NSMakeSize(static_cast<CGFloat>(size), 0);
 #if defined(__DAVAENGINE_COREV2__)
         [[nsScrollView superview] convertSizeFromBacking:origSz];
         NSSize convSz = [[nsScrollView superview] convertSizeFromBacking:origSz];
@@ -545,7 +545,7 @@ public:
         [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
     }
 
-    void SetTextAlign(DAVA::int32 align) override
+    void SetTextAlign(int32 align) override
     {
         alignment = static_cast<eAlign>(align);
 
@@ -579,7 +579,7 @@ public:
         }
     }
 
-    DAVA::int32 GetTextAlign() override
+    int32 GetTextAlign() override
     {
         return alignment;
     }
@@ -1271,7 +1271,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
     objcWrapper->UpdateRect(rect);
 }
 
-void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
+void TextFieldPlatformImpl::SetTextColor(const Color& color)
 {
     objcWrapper->SetTextColor(color);
 }

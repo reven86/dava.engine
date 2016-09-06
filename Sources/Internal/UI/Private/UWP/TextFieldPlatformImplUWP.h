@@ -13,6 +13,7 @@ namespace DAVA
 {
 class Color;
 class Sprite;
+class UIGeometricData;
 class UITextField;
 class UITextFieldDelegate;
 #if defined(__DAVAENGINE_COREV2__)
