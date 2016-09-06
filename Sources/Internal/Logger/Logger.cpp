@@ -5,6 +5,7 @@
 #include <array>
 
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -36,7 +37,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
         }
         // do you really want to print 1Mb with one call may be your format
         // string incorrect?
-        DVASSERT(dynamicbuf.size() < 1024 * 1024, "format: {%s}", format);
+        DVASSERT(dynamicbuf.size() < 1024 * 1024, Format("format: {%s}", format).c_str());
 
         dynamicbuf.resize(dynamicbuf.size() * 2);
     }

@@ -1287,7 +1287,7 @@ _DX9_ExecuteQueuedCommands()
     {
         if (rhi::NeedRestoreResources())
         {
-#if defined(ENABLE_ASSERT_MESSAGE) || defined(ENABLE_ASSERT_LOGGING)
+#if defined(__DAVAENGINE_DEBUG__) || defined(__DAVAENGINE_ENABLE_ASSERTS__)
             ++_DX9_FramesWithRestoreAttempt;
             if (_DX9_FramesWithRestoreAttempt > _DX9_MaxFramesWithRestoreAttempt)
             {

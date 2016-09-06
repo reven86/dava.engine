@@ -5,6 +5,7 @@
 #include "Base/BaseObject.h"
 #include "Base/StaticSingleton.h"
 #include "Base/ObjectCreator.h"
+#include "Utils/StringFormat.h"
 #include <typeinfo>
 
 namespace DAVA
@@ -84,7 +85,7 @@ public:
             //VI: but cast_if_equal casts to the exact types only
             return static_cast<T*>((newFunc)());
         }
-        DVASSERT(false, "Class %s creator not found.", name.c_str());
+        DVASSERT(false, Format("Class %s creator not found.", name.c_str()).c_str());
         return 0;
     }
 

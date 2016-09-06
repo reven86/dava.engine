@@ -1,5 +1,6 @@
 #include "ParticlesQualitySettings.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 
@@ -270,7 +271,7 @@ void ParticlesQualitySettings::SetCurrentQuality(const FastName& name)
     int32 index = GetQualityIndex(name);
     if (index == -1)
     {
-        DVASSERT(0, "No %s particles quality", name.c_str());
+        DVASSERT(0, Format("No %s particles quality", name.c_str()).c_str());
         return;
     }
 

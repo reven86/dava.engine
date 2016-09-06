@@ -356,7 +356,7 @@ uint32 GetFormatSizeInBits(dds::D3D_FORMAT format)
         return 8 * 16;
 
     default:
-        DVASSERT(false, "undefined format: %d", (int)format);
+        DVASSERT(false, Format("undefined format: %d", format).c_str());
         return 0;
     }
 }
@@ -403,7 +403,7 @@ void DirectConvertFromD3D(const uint8* srcData, Image* dstImage, dds::D3D_FORMAT
         break;
     }
     default:
-        DVASSERT(false, "undefined format: %d", (int)srcFormat);
+        DVASSERT(false, Format("undefined format: %d", srcFormat).c_str());
         break;
     }
 }
@@ -447,7 +447,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
         return;
     }
     default:
-        DVASSERT(false, "undefined format: %d", (int)dstFormat);
+        DVASSERT(false, Format("undefined format: %d", dstFormat).c_str());
         break;
     }
 }
@@ -978,7 +978,7 @@ std::unique_ptr<DDSReader> DDSReader::CreateReader(File* file)
 
     DDSReaderImpl* readerImpl = new DDSReaderImpl(file);
     std::unique_ptr<DDSReader> ddsFile(readerImpl);
-    DVASSERT(file->GetPos() == 0, "File %s position is not 0 (file had been already read)", file->GetFilename().GetStringValue().c_str());
+    DVASSERT(file->GetPos() == 0, Format("File %s position is not 0 (file had been already read)", file->GetFilename().GetStringValue().c_str()).c_str());
 
     if (readerImpl->ReadMagicWord() && readerImpl->ReadHeaders())
     {
@@ -1158,7 +1158,7 @@ struct DDSWriterImpl : public DDSWriter, public DDSHandler
 std::unique_ptr<DDSWriter> DDSWriter::CreateWriter(File* file)
 {
     DVASSERT(file);
-    DVASSERT(file->GetSize() == 0, "File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str());
+    DVASSERT(file->GetSize() == 0, Format("File '%s' is not empty", file->GetFilename().GetAbsolutePathname().c_str()).c_str());
     std::unique_ptr<DDSWriter> writerPtr(new DDSWriterImpl(file));
     return writerPtr;
 }

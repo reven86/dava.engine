@@ -6,6 +6,7 @@
 #include "Concurrency/Thread.h"
 #include "Job/JobManager.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -380,7 +381,7 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
         request.result = AssetCache::Error::UNEXPECTED_PACKET;
         break;
     default:
-        DVASSERT(false, "Unexpected incorrect packet type: %d", (int)type);
+        DVASSERT(false, Format("Unexpected incorrect packet type: %d", type).c_str());
         request.result = AssetCache::Error::CORRUPTED_DATA;
         break;
     }

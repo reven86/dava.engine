@@ -69,25 +69,25 @@ DAVA_TESTCLASS(DVAssertTestClass)
         ResetHandlersState();
     }
 
-    DAVA_TEST(CriticalAssertTestFunction)
+    DAVA_TEST(AlwaysAssertTestFunction)
     {
         AddHandler(FirstHandler);
         AddHandler(SecondHandler);
 
         // If an assert doesn't fail, none should be called
-        DVASSERT_CRITICAL(true);
+        DVASSERT_ALWAYS(true);
         TEST_VERIFY(!firstHandlerInvoked);
         TEST_VERIFY(!secondHandlerInvoked);
 
         // If it fails, both should be called in both debug & release modes
-        DVASSERT_CRITICAL(false);
+        DVASSERT_ALWAYS(false);
         TEST_VERIFY(firstHandlerInvoked);
         TEST_VERIFY(secondHandlerInvoked);
 
         // Check that first removed handler doesn't get called
         RemoveHandler(FirstHandler);
         ResetHandlersState();
-        DVASSERT_CRITICAL(false);
+        DVASSERT_ALWAYS(false);
         TEST_VERIFY(!firstHandlerInvoked);
         TEST_VERIFY(secondHandlerInvoked);
 
@@ -101,18 +101,12 @@ DAVA_TESTCLASS(DVAssertTestClass)
         AddHandler(AssertMessageSavingHandler);
 
         // Check that message is empty if none was specified
-        DVASSERT_CRITICAL(false);
+        DVASSERT_ALWAYS(false);
         TEST_VERIFY(lastHandlerMessage == "");
 
-        // Check message without formatting
-        std::string message = "such assert";
-        DVASSERT_CRITICAL(false, message.c_str());
+        // Check specified message
+        std::string message = "such assert, wow";
+        DVASSERT_ALWAYS(false, message.c_str());
         TEST_VERIFY(lastHandlerMessage == message);
-
-        // Check message with formatting
-        std::string messageFormat = "very test: %d, %s";
-        std::string formattedMessage = "very test: 42, wow";
-        DVASSERT_CRITICAL(false, messageFormat.c_str(), 42, "wow");
-        TEST_VERIFY(lastHandlerMessage == formattedMessage);
     }
 };

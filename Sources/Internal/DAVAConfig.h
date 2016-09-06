@@ -39,18 +39,11 @@
 //suppress 'deprecated' warning
 #define DAVAENGINE_HIDE_DEPRECATED
 
-// Switch on/off message box in assertion situation. In case this flag is
-// enabled the assertion message will be displayed even in release builds.
-#if defined(__DAVAENGINE_DEBUG__) //always enable full DVASSERT service for debug configurations
-#define ENABLE_ASSERT_LOGGING
-#define ENABLE_ASSERT_MESSAGE
-#define ENABLE_ASSERT_BREAK
+#if defined(__DAVAENGINE_DEBUG__)
 //#define DAVA_ENGINE_DEBUG_FPU_EXCEPTIONS // throw std::runtime_error on div_by_zero, overflow, underflow
-#else //not defined __DAVAENGINE_DEBUG__    // can disable or select any dvassert service
-#define ENABLE_ASSERT_LOGGING
-#define ENABLE_ASSERT_MESSAGE
-//    #define ENABLE_ASSERT_BREAK
-#endif //
+#else
+// #define __DAVAENGINE_ENABLE_ASSERTS__ // uncomment if DVASSERT macro should not be stripped in release mode
+#endif
 
 #define USE_FILEPATH_IN_MAP
 #ifdef USE_FILEPATH_IN_MAP

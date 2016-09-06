@@ -10,6 +10,7 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -515,7 +516,7 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     }
     else
     {
-        DVASSERT(false, "Saving for wrong gpu %d was selected", (int)forGPU);
+        DVASSERT(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
     }
 }
 
