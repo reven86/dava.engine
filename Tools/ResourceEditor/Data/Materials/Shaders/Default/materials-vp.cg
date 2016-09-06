@@ -420,54 +420,48 @@ VPROG_BEGIN
 
 #elif BILLBOARD
 
-	float3 cameraPos = cameraPosition;
-	float4x4 wMatrix = worldMatrix;
-	
 	/*
-	 * Extract translation from original world matrix
+	 * HARDCORE implementation
 	 */
+	float4x4 wMatrix = worldMatrix;
 	float4 translation = wMatrix[3];
 	wMatrix[3] = float4(0.0, 0.0, 0.0, 1.0);
 	
-	float3 directionToObject = normalize(translation.xyz - cameraPos);
-	float phi = atan(directionToObject.y, directionToObject.x) - _HALF_PI;
-	float cPhi = cos(phi);
-	float sPhi = sin(phi);
+	float3 directionToObject = normalize(translation.xyz - cameraPosition);
+	
 	float sTheta = directionToObject.z;
 	float cTheta = sqrt(1.0 - sTheta * sTheta);
+	
+	float2 dxdy = normalize(directionToObject.xy);
+	float YoverX = dxdy.y / dxdy.x;
+	dxdy.x = -sign(dxdy.x) / sqrt(1.0 + YoverX * YoverX);
 
 	float4x4 result;
-	result[0] = float4( cPhi,           sPhi,          0.0,    0.0);
-	result[1] = float4(-sPhi * cTheta,  cPhi * cTheta, sTheta, 0.0);
-	result[2] = float4( sPhi * sTheta, -cPhi * sTheta, cTheta, 0.0);
+	result[0] = float4( dxdy.y,           dxdy.x,          0.0,    0.0);
+	result[1] = float4(-dxdy.x * cTheta,  dxdy.y * cTheta, sTheta, 0.0);
+	result[2] = float4( dxdy.x * sTheta, -dxdy.y * sTheta, cTheta, 0.0);
 	result[3] = float4(0.0, 0.0, 0.0, 1.0);
 	
+	wMatrix = mul(wMatrix, result);
+	wMatrix[3] = translation;
+	
+	float4x4 mvp = viewProjMatrix * wMatrix;
+
 	/*
-	float4x4 yawMatrix;
-	yawMatrix[0] = float4( cPhi, sPhi, 0.0, 0.0);
-	yawMatrix[1] = float4(-sPhi, cPhi, 0.0, 0.0);
-	yawMatrix[2] = float4(  0.0,  0.0, 1.0, 0.0);
-	yawMatrix[3] = float4(  0.0,  0.0, 0.0, 1.0);
+	// Result matrix consists of:
+	// float4x4 yawMatrix;
+	// yawMatrix[0] = float4( cPhi, sPhi, 0.0, 0.0);
+	// yawMatrix[1] = float4(-sPhi, cPhi, 0.0, 0.0);
+	// yawMatrix[2] = float4(  0.0,  0.0, 1.0, 0.0);
+	// yawMatrix[3] = float4(  0.0,  0.0, 0.0, 1.0);
+	// float4x4 rollMatrix;
+	// rollMatrix[0] = float4(1.0,     0.0,    0.0, 0.0);
+	// rollMatrix[1] = float4(0.0,  cTheta, sTheta, 0.0);
+	// rollMatrix[2] = float4(0.0, -sTheta, cTheta, 0.0);
+	// rollMatrix[3] = float4(0.0,     0.0,    0.0, 1.0);
+	// float4x4 result = yawMatrix * rollMatrix;
+	*/
 	
-	float4x4 rollMatrix;
-	rollMatrix[0] = float4(1.0,     0.0,    0.0, 0.0);
-	rollMatrix[1] = float4(0.0,  cTheta, sTheta, 0.0);
-	rollMatrix[2] = float4(0.0, -sTheta, cTheta, 0.0);
-	rollMatrix[3] = float4(0.0,     0.0,    0.0, 1.0);
-	float4x4 result = yawMatrix * rollMatrix;
-	// */
-	
-	/*
-	 * Apply original rotation matrix (without translation)
-	 */
-	result = mul(wMatrix, result);
-	
-	/*
-	 * Apply original translation
-	 */
-	result[3] = translation;
-	
-	float4x4 mvp = viewProjMatrix * result;
 	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), mvp );
 	
 #else
