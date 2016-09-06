@@ -326,6 +326,7 @@ void ServerCore::OnServerShared(PoolID poolID, ServerID serverID, const DAVA::St
     settings.SetOwnID(serverID);
     settings.SetOwnName(serverName);
     settings.SetSharedForOthers(true);
+    settings.Save();
     emit ServerShared();
 }
 
@@ -333,12 +334,14 @@ void ServerCore::OnServerUnshared()
 {
     settings.SetOwnID(NullServerID);
     settings.SetSharedForOthers(false);
+    settings.Save();
     emit ServerUnshared();
 }
 
 void ServerCore::OnSharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers)
 {
     settings.UpdateSharedPools(pools, servers);
+    settings.Save();
     emit SharedDataUpdated();
 }
 

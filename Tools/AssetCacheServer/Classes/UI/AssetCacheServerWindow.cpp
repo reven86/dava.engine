@@ -641,6 +641,8 @@ void AssetCacheServerWindow::UpdateSharedPoolsList()
             RemovePoolContainer(deletedPoolIter);
         }
     }
+
+    DisplayCurrentRemoteServer();
 }
 
 AssetCacheServerWindow::SharedPoolContainer& AssetCacheServerWindow::AddPoolContainer(const SharedPool& pool)
@@ -703,9 +705,36 @@ void AssetCacheServerWindow::RemovePoolContainer(PoolContainersMap::iterator ite
 {
     QVBoxLayout* poolLayout = iter->second.poolLayout;
 
-    while (QLayoutItem* item = poolLayout->takeAt(0))
+    ClearVBoxLayout(poolLayout);
+    sharedPoolsLayout->removeItem(poolLayout);
+
+    poolContainers.erase(iter);
+}
+
+void AssetCacheServerWindow::ConstructCustomServersList()
+{
+    ClearCustomServersList();
+
+    customServersLayout->addWidget(new QLabel("User defined servers:", this));
+
+    auto& servers = serverCore.Settings().GetCustomServers();
+    for (const RemoteServerParams& sd : servers)
     {
-        poolLayout->removeItem(item);
+        AddCustomServer(sd);
+    }
+}
+
+void AssetCacheServerWindow::ClearCustomServersList()
+{
+    ClearVBoxLayout(customServersLayout);
+    customServersWidgets.clear();
+}
+
+void AssetCacheServerWindow::ClearVBoxLayout(QVBoxLayout* layout)
+{
+    while (QLayoutItem* item = layout->takeAt(0))
+    {
+        layout->removeItem(item);
         if (QWidget* widget = item->widget())
         {
             widget->deleteLater();
@@ -714,21 +743,6 @@ void AssetCacheServerWindow::RemovePoolContainer(PoolContainersMap::iterator ite
         {
             delete item;
         }
-    }
-
-    sharedPoolsLayout->removeItem(poolLayout);
-
-    poolContainers.erase(iter);
-}
-
-void AssetCacheServerWindow::ConstructCustomServersList()
-{
-    customServersLayout->addWidget(new QLabel("User defined servers:", this));
-
-    auto& servers = serverCore.Settings().GetCustomServers();
-    for (const RemoteServerParams& sd : servers)
-    {
-        AddCustomServer(sd);
     }
 }
 

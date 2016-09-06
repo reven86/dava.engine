@@ -120,12 +120,16 @@ private:
     void LoadSettings();
     void SaveSettings();
 
-    void ConstructSharedPoolsList();
     void ConstructCustomServersList();
+    void ClearCustomServersList();
+
+    void ConstructSharedPoolsList();
     void UpdateSharedPoolsList();
 
     void ConstructSharedPoolsCombo();
     void UpdateSharedPoolsCombo();
+
+    void ClearVBoxLayout(QVBoxLayout* layout);
 
     void SetVisibilityForShareControls();
 
