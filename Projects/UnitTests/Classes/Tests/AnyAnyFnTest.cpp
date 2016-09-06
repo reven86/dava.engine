@@ -301,9 +301,12 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         Any a;
         a.Set(bPtr);
 
-        Type::RegisterBases<B, A>();
-        Type::RegisterBases<D, A, A1>();
-        Type::RegisterBases<E, D>();
+        TypeInheritance::RegisterBases<B, A>();
+        TypeInheritance::RegisterBases<D, A, A1>();
+        TypeInheritance::RegisterBases<E, D>();
+
+        size_t s = sizeof(DAVA::Type);
+        std::cout << s;
 
         // simple
         TEST_VERIFY(bPtr == a.Get<void*>());

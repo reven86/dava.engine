@@ -3,6 +3,7 @@
 #include <memory>
 #include <typeindex>
 #include <type_traits>
+#include <bitset>
 
 #include "Base/BaseTypes.h"
 
@@ -10,18 +11,17 @@ namespace DAVA
 {
 class Type final
 {
+    friend class TypeInheritance;
+
 public:
     template <typename T>
-    using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
+    using DecayT = std::decay_t<T>;
 
     template <typename T>
-    using DerefT = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
+    using DerefT = std::remove_pointer_t<DecayT<T>>;
 
     template <typename T>
-    using PointerT = std::add_pointer_t<std::decay_t<T>>;
-
-    using InheritanceCastOP = void* (*)(void*);
-    using InheritanceMap = UnorderedMap<const Type*, InheritanceCastOP>;
+    using PointerT = std::add_pointer_t<DecayT<T>>;
 
     Type(Type&&) = delete;
     Type(const Type&) = delete;
@@ -29,6 +29,7 @@ public:
 
     size_t GetSize() const;
     const char* GetName() const;
+    const TypeInheritance* GetInheritance() const;
 
     bool IsConst() const;
     bool IsPointer() const;
@@ -40,46 +41,44 @@ public:
     const Type* Deref() const;
     const Type* Pointer() const;
 
-    const InheritanceMap& BaseTypes() const;
-    const InheritanceMap& DerivedTypes() const;
-
     template <typename T>
     static const Type* Instance();
 
-    template <typename T, typename... Bases>
-    static void RegisterBases();
-
 private:
+    enum TypeFlag
+    {
+        isConst,
+        isPointer,
+        isReference,
+        isFundamental,
+        isTriviallyCopyable,
+    };
+
     size_t size = 0;
     const char* name = nullptr;
-
-    bool isConst = false;
-    bool isPointer = false;
-    bool isReference = false;
-    bool isFundamental = false;
-    bool isTriviallyCopyable = false;
 
     const Type* derefType = nullptr;
     const Type* decayType = nullptr;
     const Type* pointerType = nullptr;
 
-    mutable InheritanceMap baseTypes;
-    mutable InheritanceMap derivedTypes;
+    std::bitset<sizeof(int) * 8> flags;
+    mutable std::unique_ptr<TypeInheritance> inheritance;
 
     Type() = default;
 
     template <typename T>
     static void Init(Type** ptype);
-
-    template <typename T, typename B>
-    static bool AddBaseType();
-
-    template <typename T, typename D>
-    static bool AddDerivedType();
 };
 
-struct TypePtrCast
+class TypeInheritance final
 {
+public:
+    using CastOP = void* (*)(void*);
+    using InheritanceMap = UnorderedMap<const Type*, CastOP>;
+
+    const InheritanceMap& GetBaseTypes() const;
+    const InheritanceMap& GetDerivedTypes() const;
+
     static bool CanUpCast(const Type* from, const Type* to);
     static bool CanDownCast(const Type* from, const Type* to);
     static bool CanCast(const Type* from, const Type* to);
@@ -87,6 +86,19 @@ struct TypePtrCast
     static bool UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
     static bool DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
     static bool Cast(const Type* from, void* inPtr, const Type* to, void** outPtr);
+
+    template <typename T, typename... Bases>
+    static void RegisterBases();
+
+private:
+    mutable InheritanceMap baseTypes;
+    mutable InheritanceMap derivedTypes;
+
+    template <typename T, typename B>
+    static bool AddBaseType();
+
+    template <typename T, typename D>
+    static bool AddDerivedType();
 };
 
 } // namespace DAVA

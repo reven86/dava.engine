@@ -159,7 +159,7 @@ const ReflectedType* ReflectedType::GetByPointer(const T* ptr)
 template <typename T, typename... Bases>
 void ReflectedType::RegisterBases()
 {
-    Type::RegisterBases<T, Bases...>();
+    TypeInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
 }
 

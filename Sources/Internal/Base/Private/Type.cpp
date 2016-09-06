@@ -4,25 +4,29 @@
 
 namespace DAVA
 {
-bool TypePtrCast::CanDownCast(const Type* from, const Type* to)
+bool TypeInheritance::CanDownCast(const Type* from, const Type* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        auto it = from->BaseTypes().find(to);
-        if (it != from->BaseTypes().end())
+        const TypeInheritance* fti = from->inheritance.get();
+        if (nullptr != fti)
         {
-            return true;
-        }
-        else
-        {
-            for (auto& base : from->BaseTypes())
+            auto it = fti->GetBaseTypes().find(to);
+            if (it != fti->GetBaseTypes().end())
             {
-                if (CanDownCast(base.first->Pointer(), to->Pointer()))
+                return true;
+            }
+            else
+            {
+                for (auto& base : fti->GetBaseTypes())
                 {
-                    return true;
+                    if (CanDownCast(base.first->Pointer(), to->Pointer()))
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -31,25 +35,29 @@ bool TypePtrCast::CanDownCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypePtrCast::CanUpCast(const Type* from, const Type* to)
+bool TypeInheritance::CanUpCast(const Type* from, const Type* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        auto it = from->DerivedTypes().find(to);
-        if (it != from->DerivedTypes().end())
+        const TypeInheritance* fti = from->inheritance.get();
+        if (nullptr != fti)
         {
-            return true;
-        }
-        else
-        {
-            for (auto& derived : from->DerivedTypes())
+            auto it = fti->GetDerivedTypes().find(to);
+            if (it != fti->GetDerivedTypes().end())
             {
-                if (CanUpCast(derived.first->Pointer(), to->Pointer()))
+                return true;
+            }
+            else
+            {
+                for (auto& derived : fti->GetDerivedTypes())
                 {
-                    return true;
+                    if (CanUpCast(derived.first->Pointer(), to->Pointer()))
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -58,32 +66,36 @@ bool TypePtrCast::CanUpCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypePtrCast::CanCast(const Type* from, const Type* to)
+bool TypeInheritance::CanCast(const Type* from, const Type* to)
 {
     return CanDownCast(from, to) || CanUpCast(from, to);
 }
 
-bool TypePtrCast::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypeInheritance::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        auto it = from->BaseTypes().find(to);
-        if (it != from->BaseTypes().end())
+        const TypeInheritance* fti = from->inheritance.get();
+        if (nullptr != fti)
         {
-            *outPtr = it->second(inPtr);
-            return true;
-        }
-        else
-        {
-            for (auto& base : from->BaseTypes())
+            auto it = fti->GetBaseTypes().find(to);
+            if (it != fti->GetBaseTypes().end())
             {
-                void* baseInPtr = base.second(inPtr);
-                if (DownCast(base.first->Pointer(), baseInPtr, to->Pointer(), outPtr))
+                *outPtr = it->second(inPtr);
+                return true;
+            }
+            else
+            {
+                for (auto& base : fti->GetBaseTypes())
                 {
-                    return true;
+                    void* baseInPtr = base.second(inPtr);
+                    if (DownCast(base.first->Pointer(), baseInPtr, to->Pointer(), outPtr))
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -92,27 +104,31 @@ bool TypePtrCast::DownCast(const Type* from, void* inPtr, const Type* to, void**
     return false;
 }
 
-bool TypePtrCast::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypeInheritance::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        auto it = from->DerivedTypes().find(to);
-        if (it != from->DerivedTypes().end())
+        const TypeInheritance* fti = from->inheritance.get();
+        if (nullptr != fti)
         {
-            *outPtr = it->second(inPtr);
-            return true;
-        }
-        else
-        {
-            for (auto& derived : from->DerivedTypes())
+            auto it = fti->GetDerivedTypes().find(to);
+            if (it != fti->GetDerivedTypes().end())
             {
-                void* derivedInPtr = derived.second(inPtr);
-                if (UpCast(derived.first->Pointer(), derivedInPtr, to->Pointer(), outPtr))
+                *outPtr = it->second(inPtr);
+                return true;
+            }
+            else
+            {
+                for (auto& derived : fti->GetDerivedTypes())
                 {
-                    return true;
+                    void* derivedInPtr = derived.second(inPtr);
+                    if (UpCast(derived.first->Pointer(), derivedInPtr, to->Pointer(), outPtr))
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -121,7 +137,7 @@ bool TypePtrCast::UpCast(const Type* from, void* inPtr, const Type* to, void** o
     return false;
 }
 
-bool TypePtrCast::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool TypeInheritance::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
 {
     if (DownCast(from, inPtr, to, outPtr))
     {
