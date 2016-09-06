@@ -358,7 +358,6 @@ void AutotestingSystem::Draw()
         UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
         if (currentScreen)
         {
-            screenshotRequested = true;
             screenshotSync = rhi::GetCurrentFrameSyncObject();
 
             const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
