@@ -6,6 +6,7 @@
 
 namespace DAVA
 {
+class Thread;
 class UILoadingScreen : public UIScreen
 {
 public:
@@ -26,7 +27,5 @@ private:
     int32 nextScreenId = -1;
 };
 };
-
-
 
 #endif // __DAVAENGINE_UI_LOADING_SCREEN_H__

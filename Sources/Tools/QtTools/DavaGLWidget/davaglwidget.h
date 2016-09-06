@@ -1,5 +1,6 @@
-#ifndef __DAVAGLWIDGET_H__
-#define __DAVAGLWIDGET_H__
+#pragma once
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 #include "Render/RenderBase.h" // need to include glew.h in right order
 
@@ -90,4 +91,4 @@ private:
     DavaRenderer* renderer = nullptr;
 };
 
-#endif // __DAVAGLWIDGET_H__
+#endif // __DAVAENGINE_COREV2__

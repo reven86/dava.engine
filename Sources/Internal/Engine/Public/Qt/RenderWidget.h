@@ -34,12 +34,18 @@ public:
         virtual void OnKeyReleased(QKeyEvent* e) = 0;
     };
 
+    Q_SIGNAL void Resized(uint32 width, uint32 height);
+
 protected:
     bool eventFilter(QObject* object, QEvent* e) override;
     void resizeEvent(QResizeEvent* e) override;
     void showEvent(QShowEvent* e) override;
     void hideEvent(QHideEvent* e) override;
     void timerEvent(QTimerEvent* e) override;
+    void dragEnterEvent(QDragEnterEvent* e) override;
+    void dragMoveEvent(QDragMoveEvent* e) override;
+    void dragLeaveEvent(QDragLeaveEvent* e) override;
+    void dropEvent(QDropEvent* e) override;
 
     void mousePressEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
@@ -55,6 +61,7 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnFrame();
+    Q_SLOT void OnActiveFocusItemChanged();
 
 private:
     bool initialized = false;

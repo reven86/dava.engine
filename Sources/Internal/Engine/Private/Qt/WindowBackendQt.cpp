@@ -104,13 +104,13 @@ private:
 
 WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
 
-void AcqureContext()
+void AcqureContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->AcquireContext();
 }
 
-void ReleaseContext()
+void ReleaseContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->ReleaseContext();
@@ -292,7 +292,6 @@ void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
     window->PostVisibilityChanged(isVisible);
-    window->PostFocusChanged(isVisible);
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
@@ -460,6 +459,15 @@ void WindowBackend::DoCloseWindow()
     // renderWidget->hide() ???
 }
 
+void WindowBackend::AcqureContext()
+{
+    AcqureContextImpl();
+}
+
+void WindowBackend::ReleaseContext()
+{
+    ReleaseContextImpl();
+}
 void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
@@ -481,8 +489,8 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcqureContext;
-    params.releaseContextFunc = &ReleaseContext;
+    params.acquireContextFunc = &AcqureContextImpl;
+    params.releaseContextFunc = &ReleaseContextImpl;
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

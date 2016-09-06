@@ -1,9 +1,12 @@
-#ifndef __TEXTURE_CONVERTOR_WORK_H__
-#define __TEXTURE_CONVERTOR_WORK_H__
+#pragma once
 
 #include "DAVAEngine.h"
-#include "Render/TextureDescriptor.h"
 #include "TextureConvertMode.h"
+#include "TextureInfo.h"
+
+#include "Render/TextureDescriptor.h"
+
+#include "Concurrency/Mutex.h"
 
 struct JobItem
 {
@@ -45,4 +48,34 @@ private:
     int itemsCount;
 };
 
-#endif // __TEXTURE_CONVERTOR_WORK_H__
+class JobWatcher
+{
+public:
+    using TJobFunction = DAVA::Function<TextureInfo(const JobItem*)>;
+    using TReadyCallback = DAVA::Function<void(const TextureInfo&, const JobItem*)>;
+
+    JobWatcher(DAVA::JobManager* manager);
+
+    void Init(const TJobFunction& convertFunction, const TReadyCallback& readyCallback);
+
+    bool IsFinished() const;
+    void RunJob(std::unique_ptr<JobItem>&& item);
+    const JobItem* GetCurrentJobItem() const;
+
+private:
+    void OnConvert();
+    void OnReady();
+
+    JobItem* GetCurrentJobItemImpl();
+
+private:
+    class Impl;
+    std::shared_ptr<Impl> impl;
+    TJobFunction convertFunction;
+    TReadyCallback readyCallback;
+    DAVA::JobManager* manager = nullptr;
+    std::unique_ptr<JobItem> jobItem = nullptr;
+    TextureInfo result;
+    bool isFinished = true;
+    mutable DAVA::Mutex mutex;
+};

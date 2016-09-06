@@ -1,6 +1,7 @@
 #include "FileSystem/FileList.h"
 #include "Functional/Function.h"
 #include "Render/Image/ImageSystem.h"
+#include "FileSystem/KeyedArchive.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "ImageTools/ImageTools.h"
@@ -268,7 +269,7 @@ void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vec
             continue;
         }
 
-        ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
+        ScopedPtr<KeyedArchive> presetArchive(new DAVA::KeyedArchive());
         if (descriptor->SerializeToPreset(presetArchive) == false)
         {
             Logger::Error("Can't create preset from descriptor");

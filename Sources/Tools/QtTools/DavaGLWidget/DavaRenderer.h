@@ -1,5 +1,6 @@
-#ifndef __QTTOOLS_DAVARENDERER_H__
-#define __QTTOOLS_DAVARENDERER_H__
+#pragma once
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 PUSH_QT_WARNING_SUPRESSOR
@@ -27,5 +28,4 @@ public:
     ~RenderContextGuard();
 };
 
-
-#endif //__QTTOOLS_DAVARENDERER_H__
+#endif // __DAVAENGINE_COREV2__

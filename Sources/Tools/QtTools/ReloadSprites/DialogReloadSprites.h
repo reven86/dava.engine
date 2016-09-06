@@ -5,9 +5,9 @@
 #include "Base/Introspection.h"
 #include "SpritesPacker.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
+#include "QtTools/Utils/QtThread.h"
 PUSH_QT_WARNING_SUPRESSOR
 #include <QDialog>
-#include <QThread>
 POP_QT_WARNING_SUPRESSOR
 
 namespace Ui
@@ -57,7 +57,7 @@ private:
 
     std::unique_ptr<Ui::DialogReloadSprites> ui;
     SpritesPacker* spritesPacker;
-    QThread workerThread; //we need this thread only for "cancel" button
+    QtThread workerThread; //we need this thread only for "cancel" button
 
 public:
     INTROSPECTION(DialogReloadSprites,

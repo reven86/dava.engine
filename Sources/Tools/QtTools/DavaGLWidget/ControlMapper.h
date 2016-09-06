@@ -4,6 +4,8 @@
 #include "UI/UIEvent.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 PUSH_QT_WARNING_SUPRESSOR
 #include <QObject>
 #include <QPointer>
@@ -45,6 +47,6 @@ private:
     QPointer<QWindow> window;
 };
 
-
+#endif
 
 #endif // QTTOOLS_CONTROLMAPPER_H

@@ -1,5 +1,4 @@
-#ifndef __COMMAND_LINE_MANAGER_H__
-#define __COMMAND_LINE_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "CommandLine/ProgramOptions.h"
@@ -8,7 +7,7 @@
 class CommandLineManager
 {
 public:
-    CommandLineManager(int argc, char* argv[]);
+    CommandLineManager(const DAVA::Vector<DAVA::String>& cmdLine);
     ~CommandLineManager();
 
     bool IsEnabled() const
@@ -20,7 +19,7 @@ public:
 private:
     void CreateTools();
 
-    void ParseCommandLine(int argc, char* argv[]);
+    void ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine);
 
     void PrintUsage();
 
@@ -33,5 +32,3 @@ private:
 
     DAVA::ProgramOptions helpOption;
 };
-
-#endif // __COMMAND_LINE_MANAGER_H__

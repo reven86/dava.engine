@@ -16,6 +16,8 @@
 #include <QVariant>
 #include <QOpenGLContext>
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace
 {
 const QSize cMinSize = QSize(180, 180);
@@ -280,3 +282,5 @@ void DavaGLWidget::OnFocusWindowChanged(QWindow* focusWindow)
         action->setEnabled(isActive);
     }
 }
+
+#endif // __DAVAENGINE_COREV2__

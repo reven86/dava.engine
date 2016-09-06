@@ -6,6 +6,8 @@
 
 #include "UI/UIEvent.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class QtLayerDelegate
@@ -61,5 +63,6 @@ private:
 };
 }
 
+#endif
 
 #endif // __DAVAENGINE_QT_LAYER_H__

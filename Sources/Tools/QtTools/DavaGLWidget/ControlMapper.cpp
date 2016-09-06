@@ -2,6 +2,9 @@
 #include "Input/KeyboardDevice.h"
 
 #include "UI/UIControlSystem.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Platform/Qt5/QtLayer.h"
 
 #include "ControlMapper.h"
@@ -280,3 +283,5 @@ DAVA::Vector<DAVA::UIEvent::MouseButton>& ControlMapper::MapQtButtonToDAVA(const
 
     return mouseButtons;
 }
+
+#endif

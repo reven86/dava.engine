@@ -43,9 +43,27 @@ void PlatformCore::Run()
                          windowBackend->Update();
                      });
 
-    windowBackend = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
+    Window* primaryWindow = engineBackend->GetPrimaryWindow();
+    windowBackend = new WindowBackend(engineBackend, primaryWindow);
     engineBackend->OnGameLoopStarted();
     timer.start(16.0);
+
+    QObject::connect(&app, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state)
+                     {
+                         Window* primaryWindow = engineBackend->GetPrimaryWindow();
+                         if (primaryWindow == nullptr)
+                         {
+                             return;
+                         }
+
+                         bool isInFocus = false;
+                         if (state == Qt::ApplicationActive)
+                         {
+                             isInFocus = true;
+                         }
+
+                         primaryWindow->PostFocusChanged(isInFocus);
+                     });
 
     QObject::connect(&app, &QApplication::aboutToQuit, [this]()
                      {

@@ -488,9 +488,11 @@ void Window::HandlePendingSizeChanging()
     if (windowBackend->IsWindowReadyForRender())
     {
         virtualCoordSystem->SetInputScreenAreaSize(w, h);
+        virtualCoordSystem->SetVirtualScreenSize(w, h);
         virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
         virtualCoordSystem->UnregisterAllAvailableResourceSizes();
         virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
+        virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx2");
         virtualCoordSystem->ScreenSizeChanged();
 
         sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);

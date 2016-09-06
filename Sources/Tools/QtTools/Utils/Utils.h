@@ -22,3 +22,4 @@ extern QColor ColorToQColor(const DAVA::Color& davaColor);
 void ShowFileInExplorer(const QString& path);
 
 void ConnectApplicationFocus();
+void MakeAppForeground();

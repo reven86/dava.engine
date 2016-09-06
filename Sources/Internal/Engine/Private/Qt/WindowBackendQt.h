@@ -29,6 +29,9 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
+    void AcqureContext();
+    void ReleaseContext();
+
     void Update();
     RenderWidget* GetRenderWidget();
     void* GetHandle() const;
@@ -81,8 +84,8 @@ private:
     QtEventListener* qtEventListener = nullptr;
 
     class OGLContextBinder;
-    friend void AcqureContext();
-    friend void ReleaseContext();
+    friend void AcqureContextImpl();
+    friend void ReleaseContextImpl();
 
     std::unique_ptr<OGLContextBinder> contextBinder;
 };

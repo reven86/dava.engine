@@ -44,7 +44,7 @@
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -331,6 +331,7 @@ void EngineBackend::OnDraw()
 
     engine->draw.Emit();
     context->renderSystem2D->EndFrame();
+    globalFrameIndex++;
 }
 
 void EngineBackend::OnEndFrame()
@@ -551,6 +552,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->fileSystem = new FileSystem();
+    context->virtualCoordSystem = new VirtualCoordinatesSystem();
+    context->renderSystem2D = new RenderSystem2D();
+    context->uiControlSystem = new UIControlSystem();
+    context->animationManager = new AnimationManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManager();
@@ -600,19 +605,15 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new PackManager;
+                context->packManager = new PackManagerImpl;
             }
         }
     }
 
     if (!IsConsoleMode())
     {
-        context->animationManager = new AnimationManager();
         context->fontManager = new FontManager();
-        context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->virtualCoordSystem = new VirtualCoordinatesSystem();
-        context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
@@ -632,14 +633,14 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->uiControlSystem->Release();
         context->fontManager->Release();
-        context->animationManager->Release();
-        context->virtualCoordSystem->Release();
-        context->renderSystem2D->Release();
         context->inputSystem->Release();
     }
 
+    context->virtualCoordSystem->Release();
+    context->renderSystem2D->Release();
+    context->uiControlSystem->Release();
+    context->animationManager->Release();
     context->performanceSettings->Release();
     context->random->Release();
 

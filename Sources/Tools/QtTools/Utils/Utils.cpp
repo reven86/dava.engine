@@ -90,6 +90,7 @@ void ShowFileInExplorer(const QString& path)
 #endif //
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void ConnectApplicationFocus()
 {
     if (qApp->applicationState() == Qt::ApplicationActive)
@@ -113,3 +114,11 @@ void ConnectApplicationFocus()
                          }
                      });
 }
+
+#endif // __DAVAENGINE_COREV2__
+
+#if !defined(__DAVAENGINE_MACOS__)
+void MakeAppForeground()
+{
+}
+#endif

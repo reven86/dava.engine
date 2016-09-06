@@ -26,7 +26,7 @@ public slots:
     void StructureChanged(SceneEditor2* scene, DAVA::Entity* parent);
 
     void UpdateByTimer();
-    void OnSceneGeometryChaged(int width, int height);
+    void OnSceneGeometryChaged(DAVA::int32 width, DAVA::int32 height);
 
 private:
     void UpdateDistanceToCamera();

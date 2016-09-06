@@ -159,8 +159,11 @@ private:
     friend class CorePlatformAndroid;
     friend class DavaQtKeyboard;
     friend class DavaQtApplyModifier;
+#if !defined(__DAVAENGINE_COREV2__)
     friend class QtLayer;
+#endif
     friend class Window;
+
 #ifdef __DAVAENGINE_WIN_UAP__
     friend ref class WinUAPXamlApp;
 #endif

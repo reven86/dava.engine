@@ -10,6 +10,7 @@
 
 #include <QQuickWindow>
 #include <QOpenGLContext>
+#include <QQuickItem>
 
 namespace DAVA
 {
@@ -19,7 +20,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::StrongFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(QSize(width, height));
     setResizeMode(QQuickWidget::SizeViewToRootObject);
@@ -28,6 +29,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget()
@@ -51,6 +53,16 @@ void RenderWidget::OnFrame()
     }
 
     widgetDelegate->OnFrame();
+    quickWindow()->resetOpenGLState();
+}
+
+void RenderWidget::OnActiveFocusItemChanged()
+{
+    QQuickItem* item = quickWindow()->activeFocusItem();
+    if (item != nullptr)
+    {
+        item->installEventFilter(this);
+    }
 }
 
 void RenderWidget::resizeEvent(QResizeEvent* e)
@@ -59,6 +71,7 @@ void RenderWidget::resizeEvent(QResizeEvent* e)
     float32 dpi = devicePixelRatioF();
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height(), dpi);
+    emit Resized(size.width(), size.height());
 }
 
 void RenderWidget::showEvent(QShowEvent* e)
@@ -82,6 +95,26 @@ void RenderWidget::timerEvent(QTimerEvent* e)
     }
 
     QQuickWidget::timerEvent(e);
+}
+
+void RenderWidget::dragEnterEvent(QDragEnterEvent* e)
+{
+    e->ignore();
+}
+
+void RenderWidget::dragMoveEvent(QDragMoveEvent* e)
+{
+    e->ignore();
+}
+
+void RenderWidget::dragLeaveEvent(QDragLeaveEvent* e)
+{
+    e->ignore();
+}
+
+void RenderWidget::dropEvent(QDropEvent* e)
+{
+    e->ignore();
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent* e)
@@ -128,16 +161,17 @@ void RenderWidget::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::eventFilter(QObject* object, QEvent* e)
 {
-    if (object == quickWindow() && keyEventRecursiveGuard == false)
+    QEvent::Type t = e->type();
+    if ((t == QEvent::KeyPress || t == QEvent::KeyRelease) && keyEventRecursiveGuard == false)
     {
-        keyEventRecursiveGuard = true;
-        SCOPE_EXIT
+        QQuickItem* focusObject = quickWindow()->activeFocusItem();
+        if (object == quickWindow() || object == focusObject)
         {
-            keyEventRecursiveGuard = false;
-        };
-        QEvent::Type t = e->type();
-        if (t == QEvent::KeyPress || t == QEvent::KeyRelease)
-        {
+            keyEventRecursiveGuard = true;
+            SCOPE_EXIT
+            {
+                keyEventRecursiveGuard = false;
+            };
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
             if (t == QEvent::KeyPress)
             {

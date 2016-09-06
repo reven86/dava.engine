@@ -105,6 +105,11 @@ const Vector<String>& Engine::GetCommandLine() const
     return engineBackend->GetCommandLine();
 }
 
+DAVA::Vector<char*> Engine::GetCommandLineAsArgv()
+{
+    return engineBackend->GetCommandLineAsArgv();
+}
+
 void Engine::SetOptions(KeyedArchive* options)
 {
     engineBackend->SetOptions(options);

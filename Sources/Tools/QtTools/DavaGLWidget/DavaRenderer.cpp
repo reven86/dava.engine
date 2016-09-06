@@ -12,6 +12,8 @@
 #include <QOpenGLContext>
 #include <QApplication>
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class DavaQtApplyModifier
@@ -152,3 +154,5 @@ RenderContextGuard::~RenderContextGuard()
 {
     ReleaseContext();
 }
+
+#endif // __DAVAENGINE_COREV2__

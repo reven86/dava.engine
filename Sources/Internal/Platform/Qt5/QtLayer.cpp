@@ -10,6 +10,8 @@
 
 #include "UI/UIControlSystem.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 extern void FrameworkWillTerminate();
 extern void FrameworkDidLaunched();
 
@@ -145,3 +147,5 @@ void QtLayer::ReleaseAutoreleasePool(void* pool)
     
 #endif
 };
+
+#endif
