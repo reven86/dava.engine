@@ -15,6 +15,8 @@
 #include "Reflection/Private/StructureWrapperClass.h"
 #include "Reflection/Private/StructureWrapperPtr.h"
 #include "Reflection/Private/StructureWrapperStd.h"
+#include "Reflection/Private/StructureEditorWrapperPtr.h"
+#include "Reflection/Private/StructureEditorWrapperStd.h"
 
 #define DAVA_REFLECTION(Cls) \
     template <typename FT__> \

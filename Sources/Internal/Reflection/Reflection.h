@@ -38,9 +38,15 @@ public:
     Field GetField(const Any&) const;
     Vector<Field> GetFields() const;
 
-    // TODO:
-    // add/remove fields
-    // ...
+    bool CanAddFields() const;
+    bool CanInsertFields() const;
+    bool CanRemoveFields() const;
+    bool CanCreateFieldValue() const;
+
+    Any CreateFieldValue() const;
+    bool AddField(const Any& key, const Any& value) const;
+    bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
+    bool RemoveField(const Any& key) const;
 
     bool HasMethods() const;
     Method GetMethod(const String& key) const;
@@ -56,7 +62,7 @@ public:
     void DumpMethods(std::ostream& out) const;
 
     template <typename T>
-    static Reflection::Field Create(T* ptr, const Any& key = Any());
+    static Reflection Create(T* ptr, const ReflectedMeta* meta = nullptr);
 
 private:
     const ValueWrapper* vw = nullptr;
@@ -71,6 +77,9 @@ struct Reflection::Field
 {
     Any key;
     Reflection ref;
+
+    template <typename T>
+    static Reflection::Field Create(const Any& key, T* ptr, const ReflectedMeta* meta = nullptr);
 };
 
 struct Reflection::Method

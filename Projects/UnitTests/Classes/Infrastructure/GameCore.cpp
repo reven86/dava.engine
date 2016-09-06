@@ -17,7 +17,7 @@ using namespace DAVA;
 namespace
 {
 // List of semicolon separated names specifying which test classes should run
-String runOnlyTheseTestClasses = "";
+String runOnlyTheseTestClasses = "AnyAnyFnTest, ReflectionTest; ReflectionCollectionTest";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 

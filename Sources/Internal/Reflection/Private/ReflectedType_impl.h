@@ -75,7 +75,6 @@ public:
     }
 };
 
-#if 0
 template <typename T>
 CtorWrapper* GetDefaultCtor(std::true_type hasDefault)
 {
@@ -87,7 +86,6 @@ CtorWrapper* GetDefaultCtor(std::false_type hasDefault)
 {
     return nullptr;
 }
-#endif
 
 } // namespace ReflectionDetail
 
@@ -108,24 +106,28 @@ ReflectedType* ReflectedType::Edit()
     {
         ret->type = Type::Instance<DecayT>();
         ret->rttiName = typeid(DecayT).name();
-        ret->structureWrapper.reset(StructureWrapperCreator<T>::Create());
-        ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<T>::Create());
+        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
+        ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
 
-#if 0
-        static const bool hasDefaultCtor = std::is_trivially_default_constructible<T>::value &&
-            (std::is_trivially_copy_constructible<T>::value || std::is_trivially_move_constructible<T>::value);
-        
-        CtorWrapper* defaultCtor = ReflectionDetail::GetDefaultCtor<T>(std::integral_constant<bool, hasDefaultCtor>());
-        if (nullptr != defaultCtor)
-        {
-            ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
-        }
-#endif
+        //        broken on vs 2013!
+        //        TODO: fix
+        //        ...
+        //
+        //        static const bool isDfConstructible = std::is_default_constructible<DecayT>::value;
+        //        static const bool isCpConstructible = std::is_copy_constructible<DecayT>::value;
+        //        static const bool isMvConstructible = std::is_move_constructible<DecayT>::value;
+        //        static const bool hasDefaultCtor = isDfConstructible && (isCpConstructible || isMvConstructible);
+        //
+        //         CtorWrapper* defaultCtor = ReflectionDetail::GetDefaultCtor<T>(std::integral_constant<bool, hasDefaultCtor>());
+        //         if (nullptr != defaultCtor)
+        //         {
+        //             ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
+        //         }
 
         typeToReflectedTypeMap[ret->type] = ret;
         rttiNameToReflectedTypeMap[ret->rttiName] = ret;
 
-        ReflectionDetail::ReflectionInitializerRunner<T>::Run();
+        ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 
     return ret;

@@ -106,7 +106,8 @@ void AutoStorage<Count>::SetShared(T&& value)
 
     Clear();
     type = StorageType::Shared;
-    new (storage.data()) SharedT(new U(std::forward<T>(value)));
+    U* valueCopy = new U(std::forward<T>(value));
+    new (storage.data()) SharedT(valueCopy);
 }
 
 template <size_t Count>

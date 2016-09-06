@@ -58,7 +58,7 @@ void TestCore::RunOnlyTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         // First, disable all tests
         for (TestClassInfo& x : testClasses)

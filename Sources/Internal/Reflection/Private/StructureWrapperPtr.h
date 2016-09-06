@@ -1,6 +1,7 @@
 #pragma once
 #include "Reflection/Wrappers.h"
 #include "Reflection/Private/ValueWrapperDefault.h"
+#include "Reflection/Private/StructureWrapperDefault.h"
 
 namespace DAVA
 {
@@ -13,7 +14,7 @@ public:
     bool HasFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->HasFields(derefObj, &ptrVW);
@@ -26,7 +27,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetField(derefObj, &ptrVW, key);
@@ -39,7 +40,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetFields(derefObj, &ptrVW);
@@ -52,7 +53,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->HasMethods(derefObj, &ptrVW);
@@ -65,7 +66,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetMethod(derefObj, &ptrVW, key);
@@ -78,7 +79,7 @@ public:
     {
         ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
 
-        const StructureWrapper* sw = GetPtrStructureWrapper(derefObj);
+        const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
             return sw->GetMethods(derefObj, &ptrVW);
@@ -90,7 +91,7 @@ public:
 protected:
     ValueWrapperDefault<T*> ptrVW;
 
-    const StructureWrapper* GetPtrStructureWrapper(const ReflectedObject& derefObj) const
+    const StructureWrapper* GetInternalWrapper(const ReflectedObject& derefObj) const
     {
         const StructureWrapper* sw = nullptr;
 

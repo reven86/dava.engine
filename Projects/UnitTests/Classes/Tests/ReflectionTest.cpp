@@ -266,7 +266,7 @@ protected:
     std::string baseStr = "baseStr";
     std::vector<int> intVec;
     SimpleStruct s1;
-    SimpleStruct* simpleNull = nullptr;
+    const SimpleStruct* simpleNull = nullptr;
     std::vector<std::string> strVec;
     std::vector<SimpleStruct*> simVec;
     StructPtr* sptr = nullptr;
@@ -363,12 +363,12 @@ TestBaseClass::~TestBaseClass()
     sptr->Release();
 }
 
-DAVA_TESTCLASS (TypeReflection)
+DAVA_TESTCLASS (ReflectionTest)
 {
     DAVA_TEST (DumpTest)
     {
         TestBaseClass t;
-        DAVA::Reflection t_ref = DAVA::Reflection::Create(&t).ref;
+        DAVA::Reflection t_ref = DAVA::Reflection::Create(&t);
 
         std::ostringstream dumpOutput;
         t_ref.Dump(dumpOutput);
@@ -379,6 +379,13 @@ DAVA_TESTCLASS (TypeReflection)
         t_ref.DumpMethods(dumpOutput);
 
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
+        const TestBaseClass* tptr = &t;
+        DAVA::Reflection t_pref = DAVA::Reflection::Create(tptr);
+
+        DAVA::ReflectedObject obj(tptr);
+
+        TEST_VERIFY(t_pref.IsReadonly());
     }
 
     template <typename T>
@@ -409,7 +416,7 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (FieldsAndMethods)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
+        DAVA::Reflection r = DAVA::Reflection::Create(&t);
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
@@ -417,7 +424,7 @@ DAVA_TESTCLASS (TypeReflection)
         TEST_VERIFY(r.GetMethod("BaseMe").fn.IsValid());
 
         BaseOnlyReflection b;
-        r = DAVA::Reflection::Create(&b).ref;
+        r = DAVA::Reflection::Create(&b);
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
@@ -504,6 +511,15 @@ DAVA_TESTCLASS (TypeReflection)
                 TEST_VERIFY(!obj.IsValid());
             }
         }
+
+        //         rtype = DAVA::ReflectedType::Get<StructPtr>();
+        //         TEST_VERIFY(nullptr != rtype->GetCtor());
+        //
+        //         rtype = DAVA::ReflectedType::Get<int>();
+        //         TEST_VERIFY(nullptr != rtype->GetCtor());
+        //
+        //         rtype = DAVA::ReflectedType::Get<BaseBase>();
+        //         TEST_VERIFY(nullptr != rtype->GetCtor());
     }
 
     template <typename T, typename G, typename S>
@@ -546,7 +562,7 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (ValueSetGet)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
+        DAVA::Reflection r = DAVA::Reflection::Create(&t);
 
         // static get/set
         auto realStaticGetter = []() { return TestBaseClass::staticInt; };
@@ -567,7 +583,7 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (ValueFnSetGet)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
+        DAVA::Reflection r = DAVA::Reflection::Create(&t);
 
         // static get/set
         auto realStaticGetter = DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn);
@@ -594,7 +610,7 @@ DAVA_TESTCLASS (TypeReflection)
     DAVA_TEST (ValueSetGetByPointer)
     {
         TestBaseClass t;
-        DAVA::Reflection r = DAVA::Reflection::Create(&t).ref;
+        DAVA::Reflection r = DAVA::Reflection::Create(&t);
 
         SimpleStruct s1;
         SimpleStruct s2;

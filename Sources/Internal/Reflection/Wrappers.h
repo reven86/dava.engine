@@ -20,9 +20,7 @@ class ValueWrapper
 public:
     ValueWrapper() = default;
     ValueWrapper(const ValueWrapper&) = delete;
-    virtual ~ValueWrapper()
-    {
-    }
+    virtual ~ValueWrapper() = default;
 
     virtual bool IsReadonly() const = 0;
     virtual const Type* GetType() const = 0;
@@ -56,12 +54,14 @@ public:
     StructureEditorWrapper(const StructureEditorWrapper&) = delete;
     virtual ~StructureEditorWrapper() = default;
 
-    virtual bool CanAdd() const = 0;
-    virtual bool CanInsert() const = 0;
-    virtual bool CanRemove() const = 0;
+    virtual bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual bool CanInsert(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual bool CanCreateValue(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
 
+    virtual Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const = 0;
-    virtual bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& beforeKey, const Any& value) const = 0;
+    virtual bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const = 0;
     virtual bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
 };
 

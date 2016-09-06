@@ -37,54 +37,12 @@ public:
     }
 };
 
-class StructureEditorWrapperDefault : public StructureEditorWrapper
-{
-    bool CanAdd() const override
-    {
-        return false;
-    }
-
-    bool CanInsert() const override
-    {
-        return false;
-    }
-
-    bool CanRemove() const override
-    {
-        return false;
-    }
-
-    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
-    {
-        return false;
-    }
-
-    bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& beforeKey, const Any& value) const override
-    {
-        return false;
-    }
-
-    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
-    {
-        return false;
-    }
-};
-
 template <typename T>
 struct StructureWrapperCreator
 {
     static StructureWrapper* Create()
     {
         return new StructureWrapperDefault();
-    }
-};
-
-template <typename T>
-struct StructureEditorWrapperCreator
-{
-    static StructureEditorWrapper* Create()
-    {
-        return new StructureEditorWrapperDefault();
     }
 };
 
