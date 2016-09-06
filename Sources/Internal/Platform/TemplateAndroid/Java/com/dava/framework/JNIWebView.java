@@ -305,12 +305,7 @@ public class JNIWebView {
                 }
 
                 WebViewWrapper webView = views.get(id);
-                String baseUrlInAssetsOrSd = baseUrl;
-                if (baseUrl.equals("file://"))
-                {
-                	baseUrlInAssetsOrSd = "file:///android_asset/Data/";
-                }
-                webView.loadDataWithBaseURL(baseUrlInAssetsOrSd, data, "text/html",
+                webView.loadDataWithBaseURL(baseUrl, data, "text/html",
                         "utf-8", null);
                 startRecursiveRefreshSequence(webView);
             }
