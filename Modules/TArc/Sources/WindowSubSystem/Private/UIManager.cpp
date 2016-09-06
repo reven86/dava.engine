@@ -298,7 +298,7 @@ struct UIManager::Impl : public QObject
             window->setWindowTitle(appId.c_str());
             window->setObjectName(appId.c_str());
 
-            PropertiesHolder ph = propertiesHolder.SubHolder(appId.c_str());
+            PropertiesHolder ph = propertiesHolder.CreateSubHolder(appId.c_str());
             window->restoreGeometry(ph.Load<QByteArray>(UIManagerDetail::geometryKey));
             window->restoreState(ph.Load<QByteArray>(UIManagerDetail::stateKey));
 
@@ -331,7 +331,7 @@ protected:
             {
                 QMainWindow *mainWindow = iter->second.window;
 
-                PropertiesHolder ph = propertiesHolder.SubHolder(windowKey.GetAppID().c_str());
+                PropertiesHolder ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
                 ph.Save(UIManagerDetail::stateKey, mainWindow->saveState());
                 ph.Save(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
                 

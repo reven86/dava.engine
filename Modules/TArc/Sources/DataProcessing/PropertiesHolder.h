@@ -19,7 +19,7 @@ public:
 
     ~PropertiesHolder();
 
-    PropertiesHolder SubHolder(const String &name) const;
+    PropertiesHolder CreateSubHolder(const String &name) const;
 
     void Save(const String &key, const Any &value);
     void SaveToFile();

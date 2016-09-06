@@ -270,7 +270,7 @@ PropertiesHolder& PropertiesHolder::operator = (PropertiesHolder &&holder)
     return *this;
 }
 
-PropertiesHolder PropertiesHolder::SubHolder(const String &holderName) const
+PropertiesHolder PropertiesHolder::CreateSubHolder(const String &holderName) const
 {
     return PropertiesHolder(*this, holderName);
 }

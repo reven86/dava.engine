@@ -68,7 +68,7 @@ void Core::OnLoopStarted()
     FileSystem *fileSystem = GetEngineContext().fileSystem;
     DVASSERT(fileSystem != nullptr);
     propertiesHolder.reset(new PropertiesHolder("TArc properties", fileSystem->GetCurrentDocumentsDirectory()));
-    uiManager.reset(new UIManager(this, propertiesHolder->SubHolder("UIManager")));
+    uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
     for (std::unique_ptr<ClientModule>& module : modules)
