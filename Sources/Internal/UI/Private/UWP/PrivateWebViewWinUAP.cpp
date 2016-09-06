@@ -24,6 +24,7 @@
 #include "Utils/Utils.h"
 #include "Utils/Random.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 #include "UI/UIWebView.h"
 

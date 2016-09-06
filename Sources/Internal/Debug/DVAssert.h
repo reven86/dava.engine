@@ -93,13 +93,6 @@ const DAVA::Vector<Handler>& GetHandlers();
 }
 }
 
-static DAVA::Assert::FailBehaviour HandleAssert(
-    const char* const expr,
-    const char* const fileName,
-    const int lineNumber,
-    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
-    const char* const message = "");
-
 // Macro for generating debug break
 // It's not a function in order to prevent stacktrace altering
 // TODO: release behaviour?
@@ -110,6 +103,14 @@ static DAVA::Assert::FailBehaviour HandleAssert(
 #else
 #error "DVASSERT_HALT is not defined for current platform"
 #endif
+
+/// Used internally by DVASSERT_INTERNAL macro
+static DAVA::Assert::FailBehaviour HandleAssert(
+    const char* const expr,
+    const char* const fileName,
+    const int lineNumber,
+    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+    const char* const message = "");
 
 // Common macro to use by DVASSERT & DVASSERT_CRITICAL to avoid code duplication
 #define DVASSERT_INTERNAL(expr, ...) \
@@ -145,5 +146,5 @@ static DAVA::Assert::FailBehaviour HandleAssert(
 
 #define DVASSERT_ALWAYS(expr, ...) DVASSERT_INTERNAL(expr, ##__VA_ARGS__)
 
-#define __DAVA_ASSERT_H__
+#define __DAVA_DVASSERT_H__
 #include "Debug/Private/DVAssertImpl.h"

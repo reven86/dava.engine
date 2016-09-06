@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef __DAVA_ASSERT_H__
+#ifndef __DAVA_DVASSERT_H__
 #include "Debug/DVAssert.h"
 #endif
 
