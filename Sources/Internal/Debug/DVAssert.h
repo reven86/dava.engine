@@ -41,17 +41,16 @@ namespace Assert
 class AssertInfo final
 {
 public:
-    AssertInfo(
-    const char* const expression,
-    const char* const fileName,
-    const int lineNumber,
-    const char* const message,
-    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace)
+    AssertInfo(const char* const expression,
+               const char* const fileName,
+               const int lineNumber,
+               const char* const message,
+               Vector<Debug::StackFrame> backtrace)
         : expression(expression)
         , fileName(fileName)
         , lineNumber(lineNumber)
         , message(message)
-        , backtrace(backtrace)
+        , backtrace(std::move(backtrace))
     {
     }
 
@@ -59,7 +58,7 @@ public:
     const char* const fileName;
     const int lineNumber;
     const char* const message;
-    const DAVA::Vector<DAVA::Debug::StackFrame> backtrace;
+    const Vector<Debug::StackFrame> backtrace;
 };
 
 /// Indicates how a program should act when an assert fails
@@ -72,10 +71,10 @@ enum class FailBehaviour
     Halt
 };
 
-/// Typedef for function that handles failed asserts and returns FailBehaviour
+/// Function that handles failed asserts and returns FailBehaviour
 /// \param[in] assertInfo Information about a failed assert
 /// \returns FailBehaviour value, indicating if a program should be halted or not
-typedef FailBehaviour (*Handler)(const AssertInfo& assertInfo);
+using Handler = FailBehaviour (*)(const AssertInfo& assertInfo);
 
 /// Registers a handler to use
 /// \param[in] handler Handler to add
@@ -102,12 +101,11 @@ const DAVA::Vector<Handler>& GetHandlers();
 #endif
 
 /// Used internally by DVASSERT_INTERNAL macro
-static DAVA::Assert::FailBehaviour HandleAssert(
-const char* const expr,
-const char* const fileName,
-const int lineNumber,
-const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
-const char* const message = "");
+static DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
+                                                const char* const fileName,
+                                                const int lineNumber,
+                                                const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+                                                const char* const message = "");
 
 // Common macro to use by DVASSERT & DVASSERT_CRITICAL to avoid code duplication
 #define DVASSERT_INTERNAL(expr, ...) \

@@ -4,12 +4,11 @@
 #include "Debug/DVAssert.h"
 #endif
 
-static DAVA::Assert::FailBehaviour HandleAssert(
-const char* const expr,
-const char* const fileName,
-const int lineNumber,
-const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
-const char* const message)
+static DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
+                                                const char* const fileName,
+                                                const int lineNumber,
+                                                const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+                                                const char* const message)
 {
     const DAVA::Vector<DAVA::Assert::Handler>& handlers = DAVA::Assert::GetHandlers();
 
