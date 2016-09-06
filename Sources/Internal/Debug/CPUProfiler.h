@@ -13,14 +13,14 @@ class ProfilerRingArray;
 class CPUProfiler
 {
 public:
-    struct TimeCounter;
-    using CounterArray = ProfilerRingArray<CPUProfiler::TimeCounter>;
+    struct Counter;
+    using CounterArray = ProfilerRingArray<CPUProfiler::Counter>;
 
-    class ScopeTiming
+    class ScopedCounter
     {
     public:
-        ScopeTiming(const char* counterName, CPUProfiler* profiler);
-        ~ScopeTiming();
+        ScopedCounter(const char* counterName, CPUProfiler* profiler);
+        ~ScopedCounter();
 
     private:
         uint64* endTime = nullptr;
@@ -53,14 +53,14 @@ protected:
     Vector<CounterArray*> snapshots;
     bool started = false;
 
-    friend class ScopeTiming;
+    friend class ScopedCounter;
 };
 
 } //ns DAVA
 
 #if CPU_PROFILER_ENABLED
 
-#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopeTiming time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::globalProfiler);
+#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopedCounter time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::globalProfiler);
 
 #else
 

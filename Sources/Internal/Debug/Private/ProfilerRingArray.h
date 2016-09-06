@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Math/MathHelpers.h"
 #include "Debug/DVAssert.h"
 #include <atomic>
 
@@ -12,7 +13,7 @@ class ProfilerRingArray
 public:
     ProfilerRingArray(uint32 _size)
     {
-        DVASSERT(((_size - 1) & _size) == 0 && _size != 0 && "Size of RingArray should be pow of two");
+        DVASSERT(IsPowerOf2(_size) && "Size of RingArray should be pow of two");
         elementsCount = _size;
         mask = elementsCount - 1;
         elements = new T[elementsCount];
@@ -26,13 +27,6 @@ public:
         elementsCount = a.elementsCount;
         elements = new T[elementsCount];
         memcpy(elements, a.elements, elementsCount * sizeof(T));
-        mask = a.mask;
-        head = a.head.load();
-    }
-    ProfilerRingArray(ProfilerRingArray&& a)
-    {
-        elementsCount = a.elementsCount;
-        elements = a.elements;
         mask = a.mask;
         head = a.head.load();
     }
@@ -83,11 +77,11 @@ protected:
 
         inline bool operator==(const base_iterator& it) const
         {
-            return index == it.index;
+            return (index == it.index) && (arrayData == it.arrayData);
         }
         inline bool operator!=(const base_iterator& it) const
         {
-            return index != it.index;
+            return !(*this == it);
         }
         inline T& operator*() const
         {

@@ -21,12 +21,12 @@ CPUProfiler* const CPUProfiler::globalProfiler = nullptr;
 //////////////////////////////////////////////////////////////////////////
 //Internal Declaration
 
-struct CPUProfiler::TimeCounter
+struct CPUProfiler::Counter
 {
     uint64 startTime = 0;
     uint64 endTime = 0;
     const char* name = nullptr;
-    Thread::Id tid = 0;
+    uint64 threadID = 0;
 };
 
 namespace CPUProfilerDetails
@@ -75,22 +75,22 @@ bool NameCmp(const char* name1, const char* name2)
 
 //////////////////////////////////////////////////////////////////////////
 
-CPUProfiler::ScopeTiming::ScopeTiming(const char* counterName, CPUProfiler* _profiler)
+CPUProfiler::ScopedCounter::ScopedCounter(const char* counterName, CPUProfiler* _profiler)
 {
     profiler = _profiler;
     if (profiler->started)
     {
-        TimeCounter& c = profiler->counters->next();
+        Counter& c = profiler->counters->next();
 
         endTime = &c.endTime;
         c.startTime = CPUProfilerDetails::TimeStampUs();
         c.endTime = 0;
         c.name = counterName;
-        c.tid = Thread::GetCurrentId();
+        c.threadID = Thread::GetCurrentIdAsUInt64();
     }
 }
 
-CPUProfiler::ScopeTiming::~ScopeTiming()
+CPUProfiler::ScopedCounter::~ScopedCounter()
 {
     if (profiler->started && endTime)
     {
@@ -150,7 +150,7 @@ uint64 CPUProfiler::GetLastCounterTime(const char* counterName)
     CounterArray::reverse_iterator it = counters->rbegin(), itEnd = counters->rend();
     for (; it != itEnd; it++)
     {
-        const TimeCounter& c = *it;
+        const Counter& c = *it;
         if (c.endTime != 0 && (strcmp(counterName, c.name) == 0))
         {
             timeDelta = c.endTime - c.startTime;
@@ -169,7 +169,7 @@ void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::os
 
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
-    TimeCounter* lastDumpedCounter = nullptr;
+    Counter* lastDumpedCounter = nullptr;
     for (; it != itEnd; it++)
     {
         if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
@@ -248,8 +248,8 @@ void CPUProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
     CounterArray::iterator last(array->rbegin());
     for (; it != itEnd; it++)
     {
-        stream << "{ \"pid\":0, \"tid\":" << uint64(it->tid) << ", \"ts\":" << it->startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << it->name << "\" }," << std::endl;
-        stream << "{ \"pid\":0, \"tid\":" << uint64(it->tid) << ", \"ts\":" << (it->endTime ? it->endTime : it->startTime) << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << it->name << "\" }";
+        stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << it->startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << it->name << "\" }," << std::endl;
+        stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << (it->endTime ? it->endTime : it->startTime) << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << it->name << "\" }";
         if (it != last)
             stream << ",";
         stream << std::endl;
@@ -279,7 +279,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
 {
     DVASSERT(begin->endTime);
 
-    Thread::Id threadID = begin->tid;
+    uint64 threadID = begin->threadID;
     uint64 endTime = begin->endTime;
     Vector<uint64> nodeEndTime;
 
@@ -289,15 +289,15 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
     CPUProfiler::CounterArray::iterator end = array->end();
     for (CPUProfiler::CounterArray::iterator it = begin + 1; it != end; ++it)
     {
-        const CPUProfiler::TimeCounter& c = *it;
+        const CPUProfiler::Counter& c = *it;
 
-        if (c.tid != threadID)
+        if (c.threadID != threadID)
             continue;
 
         if (c.startTime >= endTime || c.endTime == 0)
             break;
 
-        if (c.tid == threadID)
+        if (c.threadID == threadID)
         {
             while (nodeEndTime.size() && (c.startTime >= nodeEndTime.back()))
             {
