@@ -7,6 +7,13 @@
 
 namespace DAVA
 {
+//////////////////////////////////////////////////////////////////////////
+//'pseudo-thread-safe' ring array. It's provide only thread-safe obtaining
+// of reference to element. So, don't write to array in parallel with
+// array iterating.
+// It's made for performance reasons.
+//////////////////////////////////////////////////////////////////////////
+
 template <class T>
 class ProfilerRingArray
 {

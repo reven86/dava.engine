@@ -92,6 +92,11 @@ CPUProfiler::ScopedCounter::ScopedCounter(const char* counterName, CPUProfiler* 
 
 CPUProfiler::ScopedCounter::~ScopedCounter()
 {
+    // We don't write end time if profiler stopped cause
+    // in this moment thread may other dump counters.
+    // Potentially due to 'pseudo-thread-safe' (see ProfilerRingArray.h)
+    // we can get invalid counter (only one, therefore there is 'if(started)' ).
+    // We know it. But it performance reason.
     if (profiler->started && endTime)
     {
         *endTime = CPUProfilerDetails::TimeStampUs();
@@ -121,6 +126,9 @@ void CPUProfiler::Stop()
 
 int32 CPUProfiler::MakeSnapshot()
 {
+    //CPU profiler use 'pseudo-thread-safe' ring array (see ProfilerRingArray.h)
+    //So we can't read array when other thread may write
+    //For performance reasons we should stop profiler before dumping or snapshotting
     DVASSERT(!started && "Stop profiler before make snapshot");
 
     snapshots.push_back(new CounterArray(*counters));
