@@ -313,34 +313,49 @@ public final class DavaActivity extends Activity
     private void bootstrap()
     {
         // Read and load bootstrap library modules
+        int nloaded = 0;
         String[] modules = getBootMetadata("boot_modules");
         if (modules != null)
         {
             for (String m : modules)
             {
-                Log.i(LOG_TAG, String.format("DavaActivity: loading bootstrap module '%s'", m));
-                try {
-                    System.loadLibrary(m);
-                } catch (Throwable e) {
-                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: module '%s' not loaded: %s", m, e.toString()));
+                if (!m.isEmpty())
+                {
+                    Log.i(LOG_TAG, String.format("DavaActivity: loading bootstrap module '%s'", m));
+                    try {
+                        System.loadLibrary(m);
+                        nloaded += 1;
+                    } catch (Throwable e) {
+                        Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: module '%s' not loaded: %s", m, e.toString()));
+                    }
                 }
             }
         }
+        if (nloaded == 0)
+        {
+            // Issue warning if no boot modules were loaded as usually all logic is contained
+            // in shared libraries written in C/C++
+            Log.w(LOG_TAG, "DavaActivity: no bootstrap modules loaded!!! Maybe you forgot to add meta-data tag with module list to AndroidManifest.xml");
+        }
 
         // Read and create instances of bootstrap classes
+        // Do not issue warning if no classes instantiated as application may not require own java part
         String[] classes = getBootMetadata("boot_classes");
         if (classes != null)
         {
             for (String c : classes)
             {
-                Log.i(LOG_TAG, String.format("DavaActivity: instantiate bootstrap class '%s'", c));
-                try {
-                    Class<?> clazz = Class.forName(c);
-                    Constructor<?> ctor = clazz.getConstructor();
-                    Object obj = ctor.newInstance();
-                    bootstrapObjects.add(obj);
-                } catch (Throwable e) {
-                    Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: class '%s' not instantiated: %s", c, e.toString()));
+                if (!c.isEmpty())
+                {
+                    Log.i(LOG_TAG, String.format("DavaActivity: instantiate bootstrap class '%s'", c));
+                    try {
+                        Class<?> clazz = Class.forName(c);
+                        Constructor<?> ctor = clazz.getConstructor();
+                        Object obj = ctor.newInstance();
+                        bootstrapObjects.add(obj);
+                    } catch (Throwable e) {
+                        Log.e(DavaActivity.LOG_TAG, String.format("DavaActivity: class '%s' not instantiated: %s", c, e.toString()));
+                    }
                 }
             }
         }
