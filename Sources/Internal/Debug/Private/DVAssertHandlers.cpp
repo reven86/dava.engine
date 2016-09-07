@@ -10,12 +10,12 @@ FailBehaviour LoggerHandler(const AssertInfo& assertInfo)
 {
     Logger::Error(
     "========================================\n"
-    "Assert failed\n"
+    "%s\n"
     "Expression: %s\n"
     "Message: %s\n"
     "At %s:%d\n"
     "========================================",
-    assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber);
+    AssertMessageTag.c_str(), assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber);
 
     Debug::BacktraceToLog(assertInfo.backtrace, Logger::LEVEL_ERROR);
 
@@ -34,13 +34,13 @@ FailBehaviour DialogBoxHandler(const AssertInfo& assertInfo)
 
     const bool halt = DVAssertMessage::ShowMessage(
     DVAssertMessage::ALWAYS_MODAL,
-    "Assert failed\n"
+    "%s\n"
     "Expression: %s\n"
     "Message: %s\n"
     "At %s:%d\n"
     "Callstack:\n"
     "%s",
-    assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
+    AssertMessageTag.c_str(), assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
     Debug::BacktraceToString(assertInfo.backtrace, backtraceDepth).c_str());
 
     return halt ? FailBehaviour::Halt : FailBehaviour::Continue;

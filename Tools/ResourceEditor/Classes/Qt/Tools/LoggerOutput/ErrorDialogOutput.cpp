@@ -8,6 +8,8 @@
 
 #include "Settings/SettingsManager.h"
 
+#include "Debug/DVAssertHandlers.h"
+
 #include <QMessageBox>
 
 namespace ErrorDialogDetail
@@ -51,18 +53,9 @@ private:
             return true;
         }
 
-        static const DAVA::Vector<DAVA::String> ignoredWords =
+        if (testedString.find(DAVA::Assert::AssertMessageTag) != DAVA::String::npos)
         {
-          "DV_ASSERT",
-          "DV_WARNING",
-        };
-
-        for (const DAVA::String& word : ignoredWords)
-        {
-            if (testedString.find(word) != DAVA::String::npos)
-            {
-                return true;
-            }
+            return true;
         }
 
         if (testedString.find(callstackProlog) != DAVA::String::npos)
