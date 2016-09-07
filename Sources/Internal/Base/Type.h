@@ -91,8 +91,8 @@ public:
     static bool Cast(const Type* from, void* inPtr, const Type* to, void** outPtr);
 
 private:
-    mutable InheritanceMap baseTypes;
-    mutable InheritanceMap derivedTypes;
+    InheritanceMap baseTypes;
+    InheritanceMap derivedTypes;
 
     template <typename T, typename B>
     static bool AddBaseType();
