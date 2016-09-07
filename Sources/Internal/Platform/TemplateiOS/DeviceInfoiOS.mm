@@ -19,14 +19,14 @@
 
 namespace DAVA
 {
-struct DeviceInfoObjBridge
+struct DeviceInfoObjcBridge
 {
     void OnCarrierChange(CTCarrier* carrier);
     CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
     NSString* carrierName = nullptr;
 };
 
-void DeviceInfoObjBridge::OnCarrierChange(CTCarrier* carrier)
+void DeviceInfoObjcBridge::OnCarrierChange(CTCarrier* carrier)
 {
     NSString* newCarrier = [carrier carrierName];
     if (![newCarrier isEqualToString:carrierName])
@@ -37,7 +37,7 @@ void DeviceInfoObjBridge::OnCarrierChange(CTCarrier* carrier)
 }
 
 DeviceInfoPrivate::DeviceInfoPrivate()
-    : bridge(new DeviceInfoObjBridge())
+    : bridge(std::make_unique<DeviceInfoObjcBridge>())
 {
     bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
