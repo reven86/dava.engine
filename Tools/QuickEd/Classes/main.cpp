@@ -13,18 +13,13 @@
 #include "QtTools/Utils/AssertGuard.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
+#include "Helpers/ResourcesManageHelper.h"
+
 #include <QtGlobal>
 #include <QApplication>
 
-void InitPVRTexTool()
-{
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
-}
+void UnpackHelp(DAVA::FileSystem* fileSystem);
+void InitPVRTexTool();
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
@@ -69,6 +64,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
         Q_INIT_RESOURCE(QtToolsResources);
         InitPVRTexTool();
+        UnpackHelp(engine.GetContext()->fileSystem);
 
         Themes::InitFromQApplication();
 
@@ -81,4 +77,36 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     });
 
     return engine.Run();
+}
+
+void UnpackHelp(DAVA::FileSystem* fileSystem)
+{
+    //Unpack Help to Documents.
+    DAVA::FilePath docsPath = DAVA::FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
+    if (!fileSystem->Exists(docsPath))
+    {
+        try
+        {
+            DAVA::ResourceArchive helpRA("~res:/Help.docs");
+
+            fileSystem->DeleteDirectory(docsPath);
+            fileSystem->CreateDirectory(docsPath, true);
+
+            helpRA.UnpackToFolder(docsPath);
+        }
+        catch (std::exception& ex)
+        {
+            DVASSERT_MSG("can't unpack help docs to documents dir: %s", ex.what());
+        }
+    }
+}
+
+void InitPVRTexTool()
+{
+#if defined(__DAVAENGINE_MACOS__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
+#elif defined(__DAVAENGINE_WIN32__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+#endif
+    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 }

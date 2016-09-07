@@ -34,7 +34,7 @@ public:
         virtual void OnKeyReleased(QKeyEvent* e) = 0;
     };
 
-    Q_SIGNAL void Resized(QSize size);
+    Q_SIGNAL void Resized(uint32 width, uint32 height);
 
 protected:
     bool eventFilter(QObject* object, QEvent* e) override;

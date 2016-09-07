@@ -153,7 +153,9 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     frame->layout()->addWidget(renderWidget);
     renderWidget->installEventFilter(this);
 
-    connect(renderWidget, &RenderWidget::Resized, scrollAreaController, &ScrollAreaController::SetViewSize);
+    connect(renderWidget, &RenderWidget::Resized, scrollAreaController
+            ,
+            static_cast<void (ScrollAreaController::*)(int, int)>(&ScrollAreaController::SetViewSize));
 
     CreateActions();
 }
