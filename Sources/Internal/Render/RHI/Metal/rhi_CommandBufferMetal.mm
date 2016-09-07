@@ -683,7 +683,7 @@ CommandBufferMetal_t::Execute()
 void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassConfig& cfg, bool& ds_used)
 {
     bool usingMSAA = cfg.UsingMSAA();
-    
+
     const RenderPassConfig::ColorBuffer& color0 = cfg.colorBuffer[0];
     if (color0.texture == InvalidHandle)
     {
