@@ -428,20 +428,20 @@ VPROG_BEGIN
 	
 	float3 dir = normalize(translation.xyz - cameraPosition);
 	
-	float2 sinCosPhi = normalize(dir.xy);
-	float2 sinCosPhiSqr = sinCosPhi * sinCosPhi;
-	sinCosPhi.x = -sign(sinCosPhi.x) / sqrt(1.0 + sinCosPhiSqr.y / sinCosPhiSqr.x); // ~ cos(atan(dir.y, dir.x))
+	float2 phiSinCos = normalize(dir.xy);
+	float yOverX = phiSinCos.y / phiSinCos.x;
+	phiSinCos.x = -sign(phiSinCos.x) / sqrt(1.0 + yOverX * yOverX); // ~ cos(atan2(dir.y, dir.x))
 	
 	float4x4 result;
 #	if CYLINDRICAL_BILLBOARD
-		result[0] = float4( sinCosPhi.y, sinCosPhi.x, 0.0, 0.0);
-		result[1] = float4(-sinCosPhi.x, sinCosPhi.y, 0.0, 0.0);
+		result[0] = float4( phiSinCos.y, phiSinCos.x, 0.0, 0.0);
+		result[1] = float4(-phiSinCos.x, phiSinCos.y, 0.0, 0.0);
 		result[2] = float4(         0.0,         0.0, 1.0, 0.0);
 #	else
-		float2 sinCosTheta = float2(dir.z, sqrt(1.0 - dir.z * dir.z));
-		result[0] = float4(                 sinCosPhi.y,                  sinCosPhi.x,           0.0, 0.0);
-		result[1] = float4(-sinCosPhi.x * sinCosTheta.y,  sinCosPhi.y * sinCosTheta.y, sinCosTheta.x, 0.0);
-		result[2] = float4( sinCosPhi.x * sinCosTheta.x, -sinCosPhi.y * sinCosTheta.x, sinCosTheta.y, 0.0);
+		float2 thetaSinCos = float2(dir.z, sqrt(1.0 - dir.z * dir.z));
+		result[0] = float4(                 phiSinCos.y,                  phiSinCos.x,           0.0, 0.0);
+		result[1] = float4(-phiSinCos.x * thetaSinCos.y,  phiSinCos.y * thetaSinCos.y, thetaSinCos.x, 0.0);
+		result[2] = float4( phiSinCos.x * thetaSinCos.x, -phiSinCos.y * thetaSinCos.x, thetaSinCos.y, 0.0);
 #	endif
 	result[3] = float4(0.0, 0.0, 0.0, 0.0); // intentionally: to remove translation from world matrix
 	
