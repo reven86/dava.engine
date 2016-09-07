@@ -1,11 +1,14 @@
 #include "UI/mainwindow.h"
+#include "Engine/Public/Window.h"
+#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Public/NativeService.h"
+
 #include "Document/DocumentGroup.h"
 #include "Document/Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Utils.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -18,8 +21,8 @@ using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
 
-EditorCore::EditorCore(QObject* parent)
-    : QObject(parent)
+EditorCore::EditorCore(const Engine& engine)
+    : QObject(nullptr)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
     , cacheClient(nullptr)
@@ -28,7 +31,6 @@ EditorCore::EditorCore(QObject* parent)
     , mainWindow(std::make_unique<MainWindow>())
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
-    mainWindow->AttachDocumentGroup(documentGroup);
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
@@ -80,7 +82,6 @@ EditorCore::EditorCore(QObject* parent)
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
-    connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
