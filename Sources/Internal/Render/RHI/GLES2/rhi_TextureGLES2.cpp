@@ -289,7 +289,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd[16] = { };
+    GLCommand cmd[16] = {};
     size_t cmd_cnt = 1;
 
     if (isRenderTarget || isRenderBuffer)
@@ -305,7 +305,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
             cmd[1].arg[1] = uint64(&(uid2));
             ++cmd_cnt;
         }
-        
+
         DVASSERT(fbo.size() <= countof(cmd) - 1);
         for (unsigned i = 0; i != fbo.size(); ++i)
         {
@@ -888,11 +888,11 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
     _GLES2_Binded_FrameBuffer = fb;
 }
 
-void ResolveMultisampling(Handle fromHandle, Handle toHandle)
+void ResolveMultisampling(Handle fromTexture, Handle toTexture)
 {
-    DVASSERT(fromHandle != rhi::InvalidHandle);
-    TextureGLES2_t* from = TextureGLES2Pool::Get(fromHandle);
-    TextureGLES2_t* to = toHandle == rhi::InvalidHandle ? nullptr : TextureGLES2Pool::Get(toHandle);
+    DVASSERT(fromTexture != rhi::InvalidHandle);
+    TextureGLES2_t* from = TextureGLES2Pool::Get(fromTexture);
+    TextureGLES2_t* to = toTexture == rhi::InvalidHandle ? nullptr : TextureGLES2Pool::Get(toTexture);
 
     GLuint targetBuffer = _GLES2_Default_FrameBuffer;
 
@@ -907,7 +907,7 @@ void ResolveMultisampling(Handle fromHandle, Handle toHandle)
         if (to->fbo.empty())
         {
             // force create framebuffer object
-            SetAsRenderTarget(toHandle, InvalidHandle, TextureFace::TEXTURE_FACE_POSITIVE_X, 0);
+            SetAsRenderTarget(toTexture, InvalidHandle, TextureFace::TEXTURE_FACE_POSITIVE_X, 0);
         }
         targetBuffer = to->fbo.front().frameBuffer;
     }

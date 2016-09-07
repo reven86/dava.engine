@@ -1675,7 +1675,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         }
         break;
 
-        case DX9Command::CREARE_RENDER_TARGET:
+        case DX9Command::CREATE_RENDER_TARGET:
         {
             DX9_CALL(_D3D9_Device->CreateRenderTarget((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
                                                       static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],

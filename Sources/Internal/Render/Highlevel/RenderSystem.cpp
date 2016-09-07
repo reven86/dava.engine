@@ -329,17 +329,9 @@ void RenderSystem::Render()
 
     rhi::RenderPassConfig& config = mainRenderPass->GetPassConfig();
 
-    if (overrideAntialiasingType)
-    {
-        DVASSERT(rhi::DeviceCaps().SupportsAntialiasingType(forcedAAType));
-        config.antialiasingType = forcedAAType;
-    }
-    else
-    {
-        const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
-        rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
-        config.antialiasingType = rhi::DeviceCaps().SupportsAntialiasingType(aaType) ? aaType : rhi::AntialiasingType::NONE;
-    }
+    const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+    rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
+    config.antialiasingType = (allowAntialiasing && rhi::DeviceCaps().SupportsAntialiasingType(aaType)) ? aaType : rhi::AntialiasingType::NONE;
 
     config.colorBuffer[0].storeAction = (config.UsingMSAA()) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
     config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -348,10 +340,9 @@ void RenderSystem::Render()
     mainRenderPass->Draw(this);
 }
 
-void RenderSystem::SetForceAntialiasingType(bool enable, rhi::AntialiasingType aaType)
+void RenderSystem::SetAntialiasingAllowed(bool allow)
 {
-    overrideAntialiasingType = enable;
-    forcedAAType = aaType;
+    allowAntialiasing = allow;
 }
 
 void RenderSystem::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor)

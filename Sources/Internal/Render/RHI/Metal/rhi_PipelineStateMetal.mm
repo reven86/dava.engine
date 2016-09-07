@@ -262,7 +262,7 @@ public:
         id<MTLRenderPipelineState> state;
         uint32 stride;
         uint32 samples;
-        uint32 ds_used;
+        bool ds_used;
     };
     std::vector<state_t> altState;
 };
