@@ -519,6 +519,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             }
         }
 
+        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
+            scene->editorVegetationSystem->ReloadVegetation();
+        }
+
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticleEffects();
     }
