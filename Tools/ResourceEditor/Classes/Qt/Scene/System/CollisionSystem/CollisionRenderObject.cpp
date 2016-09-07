@@ -68,7 +68,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
                                              btVector3(v2.x, v2.y, v2.z), false);
                 }
 
-                bool isBillboard = batch->MaterialHasAnyFlag({ NMaterialFlagName::FLAG_BILLBOARD, NMaterialFlagName::FLAG_CYLINDRIACAL_BILLBOARD });
+                bool isBillboard = (batch->GetMaterial() != nullptr) && (batch->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_BILLBOARD) != 0);
                 const AABBox3& pgBox = pg->GetBoundingBox();
                 boundingBox.AddAABBox(isBillboard ? pgBox.GetMaxExtentBox() : pgBox);
             }

@@ -130,8 +130,18 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
-#if BILLBOARD || CYLINDRICAL_BILLBOARD
-#	define BILLBOARD_ENABLED 1
+#define BILLBOARD_TYPE_NONE 0
+#define BILLBOARD_TYPE_SPHERICAL 1
+#define BILLBOARD_TYPE_CYLINDRICAL 2
+
+#if BILLBOARD
+#	if CYLINDRICAL_BILLBOARD
+#		define BILLBOARD_TYPE BILLBOARD_TYPE_CYLINDRICAL
+#	else
+#		define BILLBOARD_TYPE BILLBOARD_TYPE_SPHERICAL
+#	endif
+#else
+#	define BILLBOARD_TYPE BILLBOARD_TYPE_NONE
 #endif
 
 #if !SPEED_TREE_LEAF || CUT_LEAF
@@ -230,9 +240,13 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-#if VERTEX_FOG || BILLBOARD_ENABLED
+#if VERTEX_FOG || (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
+#endif
+
+#if (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
+property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
 
 #if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
@@ -242,10 +256,6 @@ property float globalTime : dynamic,a : ;
 #if FLOWMAP
 property float flowAnimSpeed : static,a : ;
 property float flowAnimOffset : static,a : ;
-#endif
-
-#if BILLBOARD_ENABLED
-property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
 
 // prototypes, to shut up Metal shader-compiler
@@ -421,7 +431,7 @@ VPROG_BEGIN
 	float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
 	VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
 
-#elif BILLBOARD_ENABLED
+#elif (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
 
 	float4x4 wMatrix = worldMatrix;
 	float4 translation = wMatrix[3];
@@ -433,7 +443,7 @@ VPROG_BEGIN
 	phiSinCos.x = -sign(phiSinCos.x) / sqrt(1.0 + yOverX * yOverX); // ~ cos(atan2(dir.y, dir.x))
 	
 	float4x4 result;
-#	if CYLINDRICAL_BILLBOARD
+#	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
 		result[0] = float4( phiSinCos.y, phiSinCos.x, 0.0, 0.0);
 		result[1] = float4(-phiSinCos.x, phiSinCos.y, 0.0, 0.0);
 		result[2] = float4(         0.0,         0.0, 1.0, 0.0);

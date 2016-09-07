@@ -34,7 +34,7 @@ public:
 
     void SetMaterial(NMaterial* _material);
     inline NMaterial* GetMaterial();
-    bool MaterialHasAnyFlag(const DAVA::Vector<FastName>& flags);
+    bool MaterialHasFlag(const FastName& flags);
 
     void SetRenderObject(RenderObject* renderObject);
     inline RenderObject* GetRenderObject() const;
