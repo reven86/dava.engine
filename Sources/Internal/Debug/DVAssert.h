@@ -8,7 +8,8 @@
 /// Asserts are a set of macroses for testing conditions which are always expected to be true.
 ///
 /// There are two of them defined:
-/// DVASSERT - turned on in Debug mode, turned off for Release mode
+/// DVASSERT - turned on in Debug mode, turned off for Release mode by default (will be fully stripped including expression it checks).
+///            It can also be left turned on in Release mode using __DAVAENGINE_ENABLE_ASSERTS__
 /// DVASSERT_ALWAYS - turned on in both Debug and Release mode
 ///
 /// They both have the same interface and can be called with or without additional message
@@ -31,7 +32,6 @@
 /// A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Continue,
 /// and second one shows a dialog box asking user if a program should be stopped and returning FailBehaviour::Halt in case it should.
 ///
-
 namespace DAVA
 {
 /// \ingroup Asserts
@@ -85,7 +85,7 @@ void AddHandler(const Handler handler);
 void RemoveHandler(const Handler handler);
 
 /// \returns Vector of registred handlers
-const DAVA::Vector<Handler>& GetHandlers();
+const Vector<Handler>& GetHandlers();
 }
 }
 
@@ -101,11 +101,11 @@ const DAVA::Vector<Handler>& GetHandlers();
 #endif
 
 /// Used internally by DVASSERT_INTERNAL macro
-static DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
-                                                const char* const fileName,
-                                                const int lineNumber,
-                                                const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
-                                                const char* const message = "");
+DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
+                                         const char* const fileName,
+                                         const int lineNumber,
+                                         const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+                                         const char* const message = "");
 
 // Common macro to use by DVASSERT & DVASSERT_CRITICAL to avoid code duplication
 #define DVASSERT_INTERNAL(expr, ...) \
@@ -140,6 +140,3 @@ static DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
 #endif
 
 #define DVASSERT_ALWAYS(expr, ...) DVASSERT_INTERNAL(expr, ##__VA_ARGS__)
-
-#define __DAVA_DVASSERT_H__
-#include "Debug/Private/DVAssertImpl.h"

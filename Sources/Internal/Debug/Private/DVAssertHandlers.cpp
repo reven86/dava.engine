@@ -2,11 +2,13 @@
 #include "Debug/DVAssertMessage.h"
 #include "Logger/Logger.h"
 
-using namespace DAVA::Assert;
-
-FailBehaviour DAVA::Assert::LoggerHandler(const AssertInfo& assertInfo)
+namespace DAVA
 {
-    DAVA::Logger::Error(
+namespace Assert
+{
+FailBehaviour LoggerHandler(const AssertInfo& assertInfo)
+{
+    Logger::Error(
     "========================================\n"
     "Assert failed\n"
     "Expression: %s\n"
@@ -15,12 +17,12 @@ FailBehaviour DAVA::Assert::LoggerHandler(const AssertInfo& assertInfo)
     "========================================",
     assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber);
 
-    DAVA::Debug::BacktraceToLog(assertInfo.backtrace, DAVA::Logger::LEVEL_ERROR);
+    Debug::BacktraceToLog(assertInfo.backtrace, Logger::LEVEL_ERROR);
 
     return FailBehaviour::Continue;
 }
 
-FailBehaviour DAVA::Assert::DialogBoxHandler(const AssertInfo& assertInfo)
+FailBehaviour DialogBoxHandler(const AssertInfo& assertInfo)
 {
 // Android and iOS both allow content scrolling in assert dialog, so show full backtrace
 // On desktops dialogs are not scrollable so limit frames
@@ -30,8 +32,8 @@ FailBehaviour DAVA::Assert::DialogBoxHandler(const AssertInfo& assertInfo)
     const int backtraceDepth = -1;
 #endif
 
-    const bool halt = DAVA::DVAssertMessage::ShowMessage(
-    DAVA::DVAssertMessage::ALWAYS_MODAL,
+    const bool halt = DVAssertMessage::ShowMessage(
+    DVAssertMessage::ALWAYS_MODAL,
     "Assert failed\n"
     "Expression: %s\n"
     "Message: %s\n"
@@ -39,7 +41,9 @@ FailBehaviour DAVA::Assert::DialogBoxHandler(const AssertInfo& assertInfo)
     "Callstack:\n"
     "%s",
     assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
-    DAVA::Debug::BacktraceToString(assertInfo.backtrace, backtraceDepth).c_str());
+    Debug::BacktraceToString(assertInfo.backtrace, backtraceDepth).c_str());
 
     return halt ? FailBehaviour::Halt : FailBehaviour::Continue;
+}
+}
 }
