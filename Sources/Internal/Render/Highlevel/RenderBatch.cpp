@@ -45,6 +45,20 @@ void RenderBatch::SetMaterial(NMaterial* _material)
     SafeRelease(oldMat);
 }
 
+bool RenderBatch::MaterialHasAnyFlag(const DAVA::Vector<FastName>& flags)
+{
+    if (material == nullptr)
+        return false;
+
+    for (const FastName& flag : flags)
+    {
+        if (material->GetEffectiveFlagValue(flag) != 0)
+            return true;
+    }
+
+    return false;
+}
+
 void RenderBatch::SetRenderObject(RenderObject* _renderObject)
 {
     renderObject = _renderObject;

@@ -658,7 +658,7 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* 
         for (int32 i = 0; i < rbCount; ++i)
         {
             RenderBatch* rb = renderObject->GetRenderBatch(i);
-            if (rb->GetMaterial() && rb->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_SPEED_TREE_LEAF))
+            if (rb->MaterialHasAnyFlag({ NMaterialFlagName::FLAG_SPEED_TREE_LEAF }))
             {
                 PolygonGroup* pg = rb->GetPolygonGroup();
                 int32 triangleCount = pg->GetIndexCount() / 3;
