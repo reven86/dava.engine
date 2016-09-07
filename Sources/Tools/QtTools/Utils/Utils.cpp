@@ -89,27 +89,3 @@ void ShowFileInExplorer(const QString& path)
     QProcess::startDetached("explorer", args);
 #endif //
 }
-
-void ConnectApplicationFocus()
-{
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        DAVA::Core::Instance()->FocusReceived();
-    }
-    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
-                     {
-                         DAVA::Core* core = DAVA::Core::Instance();
-                         if (core == nullptr)
-                         {
-                             return;
-                         }
-                         if (state == Qt::ApplicationActive)
-                         {
-                             core->FocusReceived();
-                         }
-                         else
-                         {
-                             core->FocusLost();
-                         }
-                     });
-}

@@ -1,5 +1,4 @@
 #include "SpritesPacker.h"
-#include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
 
 #include <QDir>
@@ -28,7 +27,6 @@ void SpritesPacker::ClearTasks()
 void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     SetRunning(true);
-    void* pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D.SetRunning(true);
     for (const auto& task : tasks)
     {
@@ -52,7 +50,6 @@ void SpritesPacker::ReloadSprites(bool clearDirs, bool forceRepack, const eGPUFa
             break;
         }
     }
-    QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     SetRunning(false);
 }
 

@@ -4,7 +4,6 @@
 
 #include "EditorCore.h"
 
-#include "Platform/Qt5/QtLayer.h"
 #include "TextureCompression/PVRConverter.h"
 #include "QtTools/Utils/MessageHandler.h"
 #include "QtTools/Utils/AssertGuard.h"
@@ -25,8 +24,6 @@ void InitPVRTexTool()
 
 int main(int argc, char* argv[])
 {
-    DAVA::QtLayer qtLayer;
-    DAVA::Core::Run(argc, argv);
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     const char* settingsPath = "QuickEdSettings.archive";

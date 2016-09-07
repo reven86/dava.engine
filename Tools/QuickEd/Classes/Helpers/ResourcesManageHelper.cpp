@@ -58,23 +58,6 @@ QStringList ResourcesManageHelper::GetFontsList()
     return filesNamesList;
 }
 
-void ResourcesManageHelper::InitInternalResources()
-{
-    using namespace ResourcesManageHelperLocal;
-    // Save project default title
-    if (DAVA::Core::Instance())
-    {
-        DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
-        if (options)
-        {
-            projectTitle = options->GetString("title", PROJECT_TITLE.toStdString()).c_str();
-        }
-    }
-    // If project name wasn't set - create default name
-    if (projectTitle.isNull() || projectTitle.isEmpty())
-        projectTitle = PROJECT_TITLE;
-}
-
 QString ResourcesManageHelper::GetDocumentationPath()
 {
     return ResourcesManageHelperLocal::DOCUMENTATION_PATH;

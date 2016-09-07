@@ -27,8 +27,6 @@ EditorCore::EditorCore(QObject* parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
-    ConnectApplicationFocus();
-
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 

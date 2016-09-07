@@ -1,5 +1,4 @@
 #include "DAVAEngine.h"
-#include "Platform/Qt5/QtLayer.h"
 
 #include "DavaRenderer.h"
 #include "Davaglwidget.h"
@@ -212,7 +211,6 @@ void DavaGLWidget::OnResize()
     if (nullptr != renderer)
     {
         auto dpr = davaGLView->devicePixelRatio();
-        DAVA::QtLayer::Instance()->Resize(width(), height(), dpr);
         emit Resized(width(), height());
     }
 }
