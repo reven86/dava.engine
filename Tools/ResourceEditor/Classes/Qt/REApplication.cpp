@@ -332,6 +332,7 @@ public:
         launcher.Launch();
 
         REApp::OnWindowCreated(w);
+        RestoreMenuBar();
     }
 
     DAVA::eEngineRunMode GetEngineMode() override
@@ -397,6 +398,8 @@ int Run(CommandLineManager& cmdLineMng)
 
 int Run()
 {
+    InitQtToolsResource();
+
     DAVA::Engine e;
     const DAVA::Vector<DAVA::String>& cmdLine = e.GetCommandLine();
     DVASSERT(!cmdLine.empty());

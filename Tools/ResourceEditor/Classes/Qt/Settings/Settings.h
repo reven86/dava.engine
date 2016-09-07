@@ -78,6 +78,7 @@ public:
 
     static const DAVA::FastName General_Mouse_InvertWheel;
     static const DAVA::FastName General_Mouse_WheelMoveCamera;
+    static const DAVA::FastName General_Mouse_WheelMoveIntensity;
 
     // this settings won't be shown in settings dialog
     // and are used only by application

@@ -89,3 +89,40 @@ void ShowFileInExplorer(const QString& path)
     QProcess::startDetached("explorer", args);
 #endif //
 }
+
+#if !defined(__DAVAENGINE_COREV2__)
+void ConnectApplicationFocus()
+{
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        DAVA::Core::Instance()->FocusReceived();
+    }
+    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
+                     {
+                         DAVA::Core* core = DAVA::Core::Instance();
+                         if (core == nullptr)
+                         {
+                             return;
+                         }
+                         if (state == Qt::ApplicationActive)
+                         {
+                             core->FocusReceived();
+                         }
+                         else
+                         {
+                             core->FocusLost();
+                         }
+                     });
+}
+
+#endif // __DAVAENGINE_COREV2__
+
+#if !defined(__DAVAENGINE_MACOS__)
+void MakeAppForeground()
+{
+}
+
+void RestoreMenuBar()
+{
+}
+#endif

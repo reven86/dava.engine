@@ -4,6 +4,6 @@ class CommandLineManager;
 
 namespace REApplication
 {
-    int Run();
-    int Run(CommandLineManager& cmdLineMng);
-    }
+int Run();
+int Run(CommandLineManager& cmdLineMng);
+}

@@ -4,23 +4,29 @@
 
 #import "AppKit/NSView.h"
 
+id prevActiveApp = nil;
+
 void MakeAppForeground()
 {
-    id activeApp = nil;
     NSArray* runningApps;
     runningApps = [[NSWorkspace sharedWorkspace] runningApplications];
     for (id currApp in runningApps)
     {
         if ([currApp isActive])
         {
-            activeApp = currApp;
+            prevActiveApp = currApp;
             break;
         }
     }
 
     ProcessSerialNumber psn = { 0, kCurrentProcess };
     TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-    [activeApp activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+    [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+}
+
+void RestoreMenuBar()
+{
+    [prevActiveApp activateWithOptions:NSApplicationActivateIgnoringOtherApps];
     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 

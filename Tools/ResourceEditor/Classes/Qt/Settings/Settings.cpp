@@ -69,6 +69,7 @@ const FastName Settings::Scene_Sound_SoundObjectBoxColor = FastName("Scene/Sound
 const FastName Settings::Scene_Sound_SoundObjectSphereColor = FastName("Scene/Sound/SoundObjectSphereColor");
 const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/InvertWheel");
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
+const FastName Settings::General_Mouse_WheelMoveIntensity = FastName("General/Mouse/WheelMoveIntensity");
 const FastName Settings::InternalGroup = FastName("Internal");
 const FastName Settings::Internal_TextureViewGPU = FastName("Internal/TextureViewGPU");
 const FastName Settings::Internal_SpriteViewGPU = FastName("Internal/SpriteViewGPU");
