@@ -18,17 +18,23 @@ class SpritesPacker;
 namespace DAVA
 {
 class AssetCacheClient;
+class Engine;
+class Window;
 }
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DAVA::InspBase
 {
     Q_OBJECT
 public:
-    explicit EditorCore(QObject* parent = nullptr);
+    explicit EditorCore(const DAVA::Engine& engine);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
     void Start();
+
+    void OnWindowCreated(DAVA::Window&);
+    void OnLoopStarted();
+    void OnLoopStopped();
 
 private slots:
     bool CloseProject();

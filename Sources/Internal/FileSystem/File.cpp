@@ -6,15 +6,16 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
-#ifdef __DAVAENGINE_COREV2__
-#include "Engine/Public/Engine.h"
-#endif
-
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Core/Core.h"
 #include "PackManager/PackManager.h"
+#include "Engine/Public/EngineContext.h"
+
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Public/Engine.h"
+#endif
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -54,10 +55,10 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 // mountedPackIndex find by name archive with file or skip to next step
 #ifdef __DAVAENGINE_COREV2__
     IPackManager* pm = nullptr;
-    Engine* e = Engine::Instance();
-    if (e != nullptr)
+    Engine* engine = Engine::Instance();
+    if (engine != nullptr)
     {
-        EngineContext* context = e->GetContext();
+        EngineContext* context = engine->GetContext();
         if (context != nullptr)
         {
             pm = context->packManager;
@@ -69,6 +70,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     if (pm != nullptr && FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
+
         Vector<uint8> contentAndSize;
 
         if (pm->IsGpuPacksInitialized())

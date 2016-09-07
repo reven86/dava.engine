@@ -2,7 +2,6 @@
 #include "Render/RenderBase.h"
 
 #include "Core/Core.h"
-#include "Platform/Qt5/QtLayer.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
@@ -116,11 +115,11 @@ DavaRenderer::DavaRenderer(QSurface* surface, QOpenGLContext* context)
     DVASSERT(OGLContextBinder::Instance() == nullptr);
     new OGLContextBinder(surface, context);
 
-    DAVA::Core::Instance()->rendererParams.acquireContextFunc = &AcqureContext;
-    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &ReleaseContext;
-
-    DAVA::QtLayer::Instance()->AppStarted();
-    DAVA::QtLayer::Instance()->OnResume();
+    //     DAVA::Core::Instance()->rendererParams.acquireContextFunc = &AcqureContext;
+    //     DAVA::Core::Instance()->rendererParams.releaseContextFunc = &ReleaseContext;
+    //
+    //     DAVA::QtLayer::Instance()->AppStarted();
+    //     DAVA::QtLayer::Instance()->OnResume();
 }
 
 DavaRenderer::~DavaRenderer()
@@ -142,7 +141,7 @@ void DavaRenderer::paint()
     mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
     mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
 
-    DAVA::QtLayer::Instance()->ProcessFrame();
+    //DAVA::QtLayer::Instance()->ProcessFrame();
 }
 
 RenderContextGuard::RenderContextGuard()

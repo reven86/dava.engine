@@ -3,10 +3,6 @@
 
 #include "UI/UIControlSystem.h"
 
-#if !defined(__DAVAENGINE_COREV2__)
-
-#include "Platform/Qt5/QtLayer.h"
-
 #include "ControlMapper.h"
 
 PUSH_QT_WARNING_SUPRESSOR
@@ -106,7 +102,7 @@ void ControlMapper::keyPressEvent(QKeyEvent* e)
 
     if (davaKey != Key::UNKNOWN)
     {
-        QtLayer::Instance()->KeyPressed(davaKey, e->timestamp());
+        //QtLayer::Instance()->KeyPressed(davaKey, e->timestamp());
     }
 }
 
@@ -140,7 +136,7 @@ void ControlMapper::keyReleaseEvent(QKeyEvent* e)
 #endif
     if (davaKey != Key::UNKNOWN)
     {
-        QtLayer::Instance()->KeyReleased(davaKey, e->timestamp());
+        //QtLayer::Instance()->KeyReleased(davaKey, e->timestamp());
     }
 }
 
@@ -158,7 +154,7 @@ void ControlMapper::mouseMoveEvent(QMouseEvent* event)
         {
             ev.phase = DAVA::UIEvent::Phase::MOVE;
         }
-        DAVA::QtLayer::Instance()->MouseEvent(ev);
+        //QtLayer::Instance()->MouseEvent(ev);
     }
 }
 
@@ -169,7 +165,7 @@ void ControlMapper::mousePressEvent(QMouseEvent* event)
     for (auto& ev : mouseButtons)
     {
         ev.phase = DAVA::UIEvent::Phase::BEGAN;
-        DAVA::QtLayer::Instance()->MouseEvent(ev);
+        //QtLayer::Instance()->MouseEvent(ev);
     }
 }
 
@@ -180,7 +176,7 @@ void ControlMapper::mouseReleaseEvent(QMouseEvent* event)
     for (auto& ev : mouseButtons)
     {
         ev.phase = DAVA::UIEvent::Phase::ENDED;
-        DAVA::QtLayer::Instance()->MouseEvent(ev);
+        //QtLayer::Instance()->MouseEvent(ev);
     }
 }
 
@@ -198,7 +194,7 @@ void ControlMapper::wheelEvent(QWheelEvent* event)
     davaEvent.phase = DAVA::UIEvent::Phase::WHEEL;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    //QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
@@ -213,7 +209,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
     davaEvent.phase = DAVA::UIEvent::Phase::MOVE;
     davaEvent.device = DAVA::UIEvent::Device::MOUSE;
 
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    //QtLayer::Instance()->MouseEvent(davaEvent);
 }
 
 void ControlMapper::releaseKeyboard()
@@ -283,5 +279,3 @@ DAVA::Vector<DAVA::UIEvent::MouseButton>& ControlMapper::MapQtButtonToDAVA(const
 
     return mouseButtons;
 }
-
-#endif
