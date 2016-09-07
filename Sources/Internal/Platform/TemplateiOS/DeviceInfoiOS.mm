@@ -426,6 +426,5 @@ String DeviceInfoPrivate::GetCarrierName()
 {
     return StringFromNSString(bridge->carrierName);
 }
-
 }
 #endif
