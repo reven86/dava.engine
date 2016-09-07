@@ -42,6 +42,12 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
     bridge->carrierName = [phoneCarrier carrierName];
+    NSString* tmp = [phoneCarrier carrierName];
+    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier mobileCountryCode]];
+    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier mobileNetworkCode]];
+    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier isoCountryCode]];
+    bridge->carrierName = tmp;
+
     if (bridge->carrierName == nil)
     {
         bridge->carrierName = @"";
