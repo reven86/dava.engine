@@ -19,35 +19,27 @@
 
 namespace DAVA
 {
-struct DeviceInfoObjBridge
+struct DeviceInfoPrivate::DeviceInfoObjcBridge final
 {
-    void OnCarrierChange(CTCarrier* carrier);
+    void OnCarrierChange(CTCarrier* carrier)
+    {
+        NSString* newCarrier = [carrier carrierName];
+        if (![newCarrier isEqualToString:carrierName])
+        {
+            carrierName = [carrier carrierName];
+            DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
+        }
+    }
     CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
     NSString* carrierName = nullptr;
 };
 
-void DeviceInfoObjBridge::OnCarrierChange(CTCarrier* carrier)
-{
-    NSString* newCarrier = [carrier carrierName];
-    if (![newCarrier isEqualToString:carrierName])
-    {
-        carrierName = [carrier carrierName];
-        DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
-    }
-}
-
 DeviceInfoPrivate::DeviceInfoPrivate()
-    : bridge(new DeviceInfoObjBridge())
+    : bridge(new DeviceInfoObjcBridge)
 {
     bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
     bridge->carrierName = [phoneCarrier carrierName];
-    NSString* tmp = [phoneCarrier carrierName];
-    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier mobileCountryCode]];
-    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier mobileNetworkCode]];
-    tmp = [NSString stringWithFormat:@"%@+%@", tmp, [phoneCarrier isoCountryCode]];
-    bridge->carrierName = tmp;
-
     if (bridge->carrierName == nil)
     {
         bridge->carrierName = @"";
@@ -55,6 +47,10 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     bridge->telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
         bridge->OnCarrierChange(carrier);
     };
+}
+
+DeviceInfoPrivate::~DeviceInfoPrivate()
+{
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()

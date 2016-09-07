@@ -9,12 +9,12 @@
 
 namespace DAVA
 {
-struct DeviceInfoObjBridge;
 
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
     DeviceInfoPrivate();
+    ~DeviceInfoPrivate();
     DeviceInfo::ePlatform GetPlatform();
     String GetPlatformString();
     String GetVersion();
@@ -40,7 +40,8 @@ public:
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
-    DeviceInfoObjBridge* bridge;
+    struct DeviceInfoObjcBridge;
+    std::unique_ptr<DeviceInfoObjcBridge> bridge;
 };
 
 }; // namespace DAVA
