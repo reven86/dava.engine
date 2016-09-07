@@ -26,15 +26,16 @@ class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DA
 {
     Q_OBJECT
 public:
-    explicit EditorCore(const DAVA::Engine& engine);
+    explicit EditorCore(DAVA::Engine& engine);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
     void Start();
 
-    void OnWindowCreated(DAVA::Window&);
+    void OnWindowCreated(DAVA::Window& window);
     void OnLoopStarted();
     void OnLoopStopped();
+    void OnGLWidgedInitialized(DAVA::Window& window);
 
 private slots:
     bool CloseProject();
@@ -42,7 +43,6 @@ private slots:
     void OnReloadSpritesFinished();
 
     void OnProjectPathChanged(const QString& path);
-    void OnGLWidgedInitialized();
 
     void RecentMenu(QAction*);
 

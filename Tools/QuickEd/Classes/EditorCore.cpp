@@ -1,4 +1,5 @@
 #include "UI/mainwindow.h"
+#include "Engine/Public/Engine.h"
 #include "Engine/Public/Window.h"
 #include "Engine/Public/Qt/RenderWidget.h"
 #include "Engine/Public/NativeService.h"
@@ -21,7 +22,7 @@ using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
 
-EditorCore::EditorCore(const Engine& engine)
+EditorCore::EditorCore(Engine& engine)
     : QObject(nullptr)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
@@ -30,7 +31,13 @@ EditorCore::EditorCore(const Engine& engine)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
+    NativeService* nativeService = engine.GetNativeService();
+    RenderWidget* renderWidget = nativeService->GetRenderWidget();
+
+    engine.windowCreated.Connect(this, &EditorCore::OnGLWidgedInitialized);
+
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
+    mainWindow->AttachDocumentGroup(documentGroup, renderWidget);
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
@@ -137,8 +144,9 @@ void EditorCore::OnReloadSpritesFinished()
     Sprite::ReloadSprites(Texture::GetDefaultGPU());
 }
 
-void EditorCore::OnGLWidgedInitialized()
+void EditorCore::OnGLWidgedInitialized(Window& window)
 {
+    mainWindow->previewWidget->OnGLInitialized();
     QStringList projectsPathes = project->GetProjectsHistory();
     if (!projectsPathes.isEmpty())
     {

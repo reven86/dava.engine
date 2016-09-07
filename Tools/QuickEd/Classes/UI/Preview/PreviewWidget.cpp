@@ -1,4 +1,5 @@
 #include "PreviewWidget.h"
+#include "Engine/Public/Qt/RenderWidget.h"
 
 #include "ScrollAreaController.h"
 
@@ -12,7 +13,6 @@
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
 
 #include "Document/Document.h"
@@ -49,7 +49,6 @@ struct SystemsContext : WidgetContext
 
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
-    , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
@@ -69,13 +68,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
     verticalRuler->SetRulerOrientation(Qt::Vertical);
-    frame->layout()->addWidget(davaGLWidget);
-    davaGLWidget->GetGLView()->installEventFilter(this);
 
-    davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-
-    connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
-    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -97,7 +90,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
-    CreateActions();
 }
 
 PreviewWidget::~PreviewWidget()
@@ -129,7 +121,7 @@ float PreviewWidget::GetScaleFromComboboxText() const
 
 ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
 {
-    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y));
+    QPoint globalPos = renderWidget->mapToGlobal(QPoint(point.x, point.y));
     QMenu menu;
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
@@ -154,31 +146,39 @@ ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& no
     return nullptr;
 }
 
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
+{
+    frame->layout()->addWidget(renderWidget);
+    renderWidget->quickWindow()->installEventFilter(this);
+
+    CreateActions();
+}
+
 void PreviewWidget::CreateActions()
 {
     QAction* importPackageAction = new QAction(tr("Import package"), this);
     importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WindowShortcut);
+    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    davaGLWidget->addAction(importPackageAction);
+    renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WindowShortcut);
+    cutAction->setShortcutContext(Qt::WidgetShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    davaGLWidget->addAction(cutAction);
+    renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WindowShortcut);
+    copyAction->setShortcutContext(Qt::WidgetShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    davaGLWidget->addAction(copyAction);
+    renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WindowShortcut);
+    pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    davaGLWidget->addAction(pasteAction);
+    renderWidget->addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -187,24 +187,24 @@ void PreviewWidget::CreateActions()
     deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
 #endif // platform
 
-    deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
+    deleteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    davaGLWidget->addAction(deleteAction);
+    renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(selectAllAction);
+    selectAllAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
-    focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(focusNextChildAction);
+    focusNextChildAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
-    focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(focusPreviousChildAction);
+    focusPreviousChildAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
@@ -380,7 +380,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 void PreviewWidget::OnGLInitialized()
 {
     DVASSERT(nullptr == systemsManager);
-    systemsManager.reset(new EditorSystemsManager());
+    systemsManager.reset(new EditorSystemsManager(renderWidget));
     systemsManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
     scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
     scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
@@ -448,7 +448,7 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
 
 bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
 {
-    if (obj == davaGLWidget->GetGLView())
+    if (obj == renderWidget->quickWindow())
     {
         switch (event->type())
         {
@@ -477,7 +477,6 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             return true;
         case QEvent::Drop:
             OnDropEvent(static_cast<QDropEvent*>(event));
-            davaGLWidget->GetGLView()->requestActivate();
             break;
         case QEvent::KeyPress:
             OnKeyPressed(static_cast<QKeyEvent*>(event));
@@ -854,12 +853,12 @@ void PreviewWidget::UpdateDragScreenState()
     inDragScreenState = inDragScreenState_;
     if (inDragScreenState)
     {
-        lastCursor = davaGLWidget->GetCursor();
-        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        lastCursor = renderWidget->cursor();
+        renderWidget->setCursor(Qt::OpenHandCursor);
     }
     else
     {
-        davaGLWidget->SetCursor(lastCursor);
+        renderWidget->setCursor(lastCursor);
     }
 }
 

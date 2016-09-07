@@ -3,6 +3,8 @@
 
 #include "UI/UIControlSystem.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "ControlMapper.h"
 
 PUSH_QT_WARNING_SUPRESSOR
@@ -279,3 +281,4 @@ DAVA::Vector<DAVA::UIEvent::MouseButton>& ControlMapper::MapQtButtonToDAVA(const
 
     return mouseButtons;
 }
+#endif

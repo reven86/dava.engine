@@ -1,5 +1,4 @@
-#ifndef __QUICKED_PREVIEW_WIDGET_H__
-#define __QUICKED_PREVIEW_WIDGET_H__
+#pragma once
 
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -8,6 +7,11 @@
 #include <QCursor>
 #include <QPointer>
 
+namespace DAVA
+{
+class RenderWidget;
+}
+
 namespace Ui
 {
 class PreviewWidget;
@@ -15,7 +19,6 @@ class PreviewWidget;
 class EditorSystemsManager;
 
 class Document;
-class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
@@ -34,10 +37,12 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
-    DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
+
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnGLInitialized();
 
 signals:
     void DeleteRequested();
@@ -73,7 +78,6 @@ private slots:
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
-    void OnGLInitialized();
 
 protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
@@ -111,7 +115,7 @@ private:
     QPoint lastMousePos;
     QCursor lastCursor;
     QPointer<Document> document;
-    DavaGLWidget* davaGLWidget = nullptr;
+    DAVA::RenderWidget* renderWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<float> percentages;
 
@@ -138,10 +142,3 @@ private:
     bool isMouseLeftButtonPressed = false;
     bool isMouseMidButtonPressed = false;
 };
-
-inline DavaGLWidget* PreviewWidget::GetGLWidget() const
-{
-    return davaGLWidget;
-}
-
-#endif // __QUICKED_PREVIEW_WIDGET_H__
