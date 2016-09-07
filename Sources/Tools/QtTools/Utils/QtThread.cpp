@@ -5,7 +5,7 @@ QtThread::QtThread(QObject* parent /*= nullptr*/)
 {
 }
 
-#if !defined(__DAVAENGINE_APPLE__)
+#if defined(__DAVAENGINE_WIN32__)
 void QtThread::run()
 {
     QThread::exec();

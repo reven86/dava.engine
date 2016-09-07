@@ -241,7 +241,7 @@ public:
         DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
     }
 
-    void OnUpdate(DAVA::float32 delta)
+    void OnUpdate(DAVA::float32 delta) override
     {
         cmdLineManager.Process();
         engine.Quit(0);
@@ -296,7 +296,6 @@ public:
 
         ToolsAssetGuard::Instance()->Init();
         Themes::InitFromQApplication();
-        Q_INIT_RESOURCE(QtToolsResources);
 
         DAVA::EngineContext* engineContext = engine.GetContext();
         engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
@@ -310,7 +309,7 @@ public:
         mainWindow->show();
     }
 
-    void OnLoopStopped()
+    void OnLoopStopped() override
     {
         DAVA::SafeDelete(mainWindow);
         ControlsFactory::ReleaseFonts();
@@ -381,9 +380,14 @@ private:
 };
 }
 
+void InitQtToolsResource()
+{
+    Q_INIT_RESOURCE(QtToolsResources);
+}
+
 namespace REApplication
 {
-int REApplication::Run(CommandLineManager& cmdLineMng)
+int Run(CommandLineManager& cmdLineMng)
 {
     DAVA::Engine e;
     REAppDetail::REConsoleApp app(e, cmdLineMng);
@@ -391,7 +395,7 @@ int REApplication::Run(CommandLineManager& cmdLineMng)
     return e.Run();
 }
 
-int REApplication::Run()
+int Run()
 {
     DAVA::Engine e;
     const DAVA::Vector<DAVA::String>& cmdLine = e.GetCommandLine();
