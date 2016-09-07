@@ -11,6 +11,8 @@
 
 namespace DAVA
 {
+struct DeviceInfoObjBridge;
+
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
@@ -41,6 +43,7 @@ public:
 private:
     DeviceInfo::ScreenInfo screenInfo;
 
+    DeviceInfoObjBridge* bridge;
     void OnCarrierChange(CTCarrier* carrier);
     CTTelephonyNetworkInfo* telephonyNetworkInfo;
     NSString* carrierName;

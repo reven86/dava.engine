@@ -17,17 +17,35 @@
 
 namespace DAVA
 {
-DeviceInfoPrivate::DeviceInfoPrivate()
+struct DeviceInfoObjBridge
 {
-    telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier* phoneCarrier = [telephonyNetworkInfo subscriberCellularProvider];
-    carrierName = [phoneCarrier carrierName];
-    if (carrierName == nil)
+    void OnCarrierChange(CTCarrier* carrier);
+    CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
+    NSString* carrierName = nullptr;
+};
+
+void DeviceInfoObjBridge::OnCarrierChange(CTCarrier* carrier)
+{
+    NSString* newCarrier = [carrier carrierName];
+    if (![newCarrier isEqualToString:carrierName])
     {
-        carrierName = @"";
+        carrierName = [carrier carrierName];
+        DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
+    }
+}
+
+DeviceInfoPrivate::DeviceInfoPrivate()
+    : bridge(new DeviceInfoObjBridge())
+{
+    bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
+    bridge->carrierName = [phoneCarrier carrierName];
+    if (bridge->carrierName == nil)
+    {
+        bridge->carrierName = @"";
     }
     telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
-        OnCarrierChange(carrier);
+        bridge->OnCarrierChange(carrier);
     };
 }
 
@@ -406,17 +424,8 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return StringFromNSString(carrierName);
+    return StringFromNSString(bridge->carrierName);
 }
 
-void DeviceInfoPrivate::OnCarrierChange(CTCarrier* carrier)
-{
-    NSString* newCarrier = [carrier carrierName];
-    if (![newCarrier isEqualToString:carrierName])
-    {
-        carrierName = [carrier carrierName];
-        DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
-    }
-}
 }
 #endif
