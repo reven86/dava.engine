@@ -46,7 +46,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     {
         bridge->carrierName = @"";
     }
-    telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
+    bridge->telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
         bridge->OnCarrierChange(carrier);
     };
 }

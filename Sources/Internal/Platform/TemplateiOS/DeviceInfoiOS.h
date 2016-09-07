@@ -40,11 +40,7 @@ public:
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
-
     DeviceInfoObjBridge* bridge;
-    void OnCarrierChange(CTCarrier* carrier);
-    CTTelephonyNetworkInfo* telephonyNetworkInfo;
-    NSString* carrierName;
 };
 
 }; // namespace DAVA
