@@ -34,7 +34,6 @@ public:
 
     void SetMaterial(NMaterial* _material);
     inline NMaterial* GetMaterial();
-    bool MaterialHasFlag(const FastName& flags);
 
     void SetRenderObject(RenderObject* renderObject);
     inline RenderObject* GetRenderObject() const;

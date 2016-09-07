@@ -45,14 +45,6 @@ void RenderBatch::SetMaterial(NMaterial* _material)
     SafeRelease(oldMat);
 }
 
-bool RenderBatch::MaterialHasFlag(const FastName& flag)
-{
-    if (material == nullptr)
-        return false;
-
-    return material->GetEffectiveFlagValue(flag) != 0;
-}
-
 void RenderBatch::SetRenderObject(RenderObject* _renderObject)
 {
     renderObject = _renderObject;
