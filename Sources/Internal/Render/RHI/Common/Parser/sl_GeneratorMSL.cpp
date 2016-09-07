@@ -172,6 +172,11 @@ bool MSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName
       "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float t ) { return mix( a, b, t ); }",
       "inline vector_float4 lerp( vector_float4 a, vector_float4 b, float t ) { return mix( a, b, t ); }",
 
+      "inline half  lerp( half a, half b, half t ) { return mix( a, b, t ); }",
+      "inline vector_half2 lerp( vector_half2 a, vector_half2 b, half t ) { return mix( a, b, t ); }",
+      "inline vector_half3 lerp( vector_half3 a, vector_half3 b, half t ) { return mix( a, b, t ); }",
+      "inline vector_half4 lerp( vector_half4 a, vector_half4 b, half t ) { return mix( a, b, t ); }",
+
       "#define FP_A8(t) (t).a",
 
       ""
@@ -423,7 +428,55 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
     {
         HLSLFunctionCall* functionCall = static_cast<HLSLFunctionCall*>(expression);
         const char* name = functionCall->function->name;
+        bool sampler_call = false;
+        bool sampler_lod = String_Equal(name, "tex2Dlod");
 
+        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
+        {
+            sampler_call = true;
+        }
+
+        if (sampler_call)
+        {
+            if (sampler_lod)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
+                {
+                    m_writer.Write("%s_texture.sample( %s_sampler ", identifier->name, identifier->name);
+                    int arg = 2;
+
+                    for (HLSLExpression* expr = identifier->nextExpression; expr; expr = expr->nextExpression)
+                    {
+                        m_writer.Write(", ");
+
+                        if (arg == 3)
+                            m_writer.Write("level(");
+                        OutputExpression(expr);
+                        if (arg == 3)
+                            m_writer.Write(")");
+
+                        ++arg;
+                    }
+                    m_writer.Write(")");
+                }
+            }
+            else
+            {
+                OutputExpressionList(functionCall->argument);
+                m_writer.Write(")");
+            }
+        }
+        else
+        {
+            m_writer.Write("%s(", name);
+            OutputExpressionList(functionCall->argument);
+            m_writer.Write(")");
+        }
+        /*
         if (String_Equal(name, "tex2D") || String_Equal(name, "texCUBE"))
         {
             OutputExpressionList(functionCall->argument);
@@ -435,6 +488,7 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
             OutputExpressionList(functionCall->argument);
             m_writer.Write(")");
         }
+*/
     }
     else
     {
@@ -646,6 +700,10 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                     {
                         ttype = "texture2d<float>";
                     }
+                    else if (_tex[t].type == HLSLBaseType_SamplerCube)
+                    {
+                        ttype = "texturecube<float>";
+                    }
 
                     m_writer.WriteLine(indent + 1, ", %s %s_texture [[ texture(%u) ]]", ttype, _tex[t].name.c_str(), _tex[t].unit);
                 }
@@ -740,7 +798,7 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
         else if (statement->nodeType == HLSLNodeType_DiscardStatement)
         {
             HLSLDiscardStatement* discardStatement = static_cast<HLSLDiscardStatement*>(statement);
-            m_writer.WriteLine(indent, discardStatement->fileName, discardStatement->line, "discard;");
+            m_writer.WriteLine(indent, discardStatement->fileName, discardStatement->line, "discard_fragment();");
         }
         else if (statement->nodeType == HLSLNodeType_BreakStatement)
         {

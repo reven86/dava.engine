@@ -104,7 +104,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
-#if 1
+#if 0
 {
     Logger::Info("src-code:");
 
@@ -1346,7 +1346,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 {
                     const char* t = strstr(sem, semantic[i].semantic);
 
-                    if (t)
+                    if (t == sem)
                     {
                         const char* tu = sem + strlen(semantic[i].semantic);
 
