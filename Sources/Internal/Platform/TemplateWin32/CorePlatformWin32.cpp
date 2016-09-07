@@ -668,9 +668,15 @@ bool IsMouseWheelEvent(UINT message)
     return message == WM_MOUSEWHEEL;
 }
 
-bool IsMouseInputEvent(UINT message)
+bool IsMouseInputEvent(UINT message, LPARAM messageExtraInfo)
 {
-    return (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT;
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
+
+    const LPARAM MI_WP_SIGNATURE = 0xFF515700;
+    const LPARAM SIGNATURE_MASK = 0xFFFFFF00;
+    const bool isTouchOrPen = (messageExtraInfo & SIGNATURE_MASK) == MI_WP_SIGNATURE;
+
+    return !isTouchOrPen && ((WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT);
 }
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
@@ -906,7 +912,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
     RECT rect;
 
-    if (IsMouseInputEvent(message))
+    if (IsMouseInputEvent(message, GetMessageExtraInfo()))
     {
         bool interruptProcessing = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
         if (interruptProcessing)
@@ -1040,7 +1046,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
                 }
                 else if (input.dwFlags & TOUCHEVENTF_MOVE)
                 {
-                    core->OnTouchEvent(UIEvent::Phase::MOVE, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
+                    core->OnTouchEvent(UIEvent::Phase::DRAG, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
                 }
                 else if (input.dwFlags & TOUCHEVENTF_UP)
                 {
