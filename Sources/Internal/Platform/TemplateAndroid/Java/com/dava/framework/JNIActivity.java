@@ -87,9 +87,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         return activity;
     }
         
-    public static boolean HasPermission(String permission)
+    public boolean HasPermission(String permission)
     {
-        return activity.getPackageManager().checkPermission(activity.getPackageName(), permission) != PackageManager.PERMISSION_DENIED;
+        return activity.getPackageManager().checkPermission(permission, activity.getPackageName()) != PackageManager.PERMISSION_DENIED;
     }
 
     /**
