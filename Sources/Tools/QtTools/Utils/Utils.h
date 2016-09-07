@@ -23,3 +23,4 @@ void ShowFileInExplorer(const QString& path);
 
 void ConnectApplicationFocus();
 void MakeAppForeground();
+void RestoreMenuBar();

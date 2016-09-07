@@ -121,4 +121,8 @@ void ConnectApplicationFocus()
 void MakeAppForeground()
 {
 }
+
+void RestoreMenuBar()
+{
+}
 #endif
