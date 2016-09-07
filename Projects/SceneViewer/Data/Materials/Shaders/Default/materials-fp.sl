@@ -146,14 +146,14 @@ fragment_out
     [statik][a] property float lightmapSize;
 #endif
 
-float 
+inline float 
 FresnelShlick( float NdotL, float Cspec )
 {
     float expf = 5.0;
     return Cspec + (1.0 - Cspec) * pow(1.0 - NdotL, expf);
 }
 
-float3
+inline float3
 FresnelShlickVec3( float NdotL, float3 Cspec )
 {
     float expf = 5.0;
@@ -171,31 +171,31 @@ fp_main( fragment_in input )
     fragment_out    output;
 
     #if VERTEX_FOG
-        float   varFogAmoung = input.varFog.a;
-        float3  varFogColor  = input.varFog.rgb;
+        float   varFogAmoung = float(input.varFog.a);
+        float3  varFogColor  = float3(input.varFog.rgb);
     #endif
     
     // FETCH PHASE
     #if MATERIAL_TEXTURE
     
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
-            min10float4 textureColor0 = tex2D( albedo, input.varTexCoord0 );
+            half4 textureColor0 = half4(tex2D( albedo, input.varTexCoord0 ));
             #if ALPHA_MASK 
                 textureColor0.a *= FP_A8(tex2D( alphamask, input.varTexCoord1 ));
             #endif
         #else
-            min10float3 textureColor0 = tex2D( albedo, input.varTexCoord0 ).rgb;
+            half3 textureColor0 = half3(tex2D( albedo, input.varTexCoord0 ).rgb);
         #endif
             
         #if FRAME_BLEND
-            min10float4 blendFrameColor = tex2D( albedo, input.varTexCoord1 );
-            min10float varTime = input.varTime;
+            half4 blendFrameColor = half4(tex2D( albedo, input.varTexCoord1 ));
+            half varTime = input.varTime;
             textureColor0 = lerp( textureColor0, blendFrameColor, varTime );
         #endif
     
     #elif MATERIAL_SKYBOX
     
-        min10float4 textureColor0 = texCUBE( cubemap, input.varTexCoord0 );
+        half4 textureColor0 = half4(texCUBE( cubemap, input.varTexCoord0 ));
     
     #endif
 
@@ -204,7 +204,7 @@ fp_main( fragment_in input )
         #if ALPHATEST
             float alpha = textureColor0.a;
             #if VERTEX_COLOR
-                alpha *= input.varVertexColor.a;
+                alpha *= float(input.varVertexColor.a);
             #endif
             #if ALPHATESTVALUE
                 if( alpha < alphatestThreshold ) discard;
@@ -216,17 +216,17 @@ fp_main( fragment_in input )
 
     
     #if MATERIAL_DECAL
-        min10float3 textureColor1 = tex2D( decal, input.varTexCoord1 ).rgb;
+        half3 textureColor1 = half3(tex2D( decal, input.varTexCoord1 ).rgb);
     #endif
     
     
     #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
-        min10float3 textureColor1 = tex2D( lightmap, input.varTexCoord1 ).rgb;
+        half3 textureColor1 = half3(tex2D( lightmap, input.varTexCoord1 ).rgb);
     #endif
     
     
     #if MATERIAL_DETAIL
-        min10float3 detailTextureColor = tex2D( detail, input.varDetailTexCoord ).rgb;
+        half3 detailTextureColor = half3(tex2D( detail, input.varDetailTexCoord ).rgb);
     #endif
 
 
@@ -276,11 +276,11 @@ fp_main( fragment_in input )
             
             min10float3 color = float3(0.0,0.0,0.0);
             #if VIEW_AMBIENT
-                color += lightAmbientColor0;
+                color += half3(lightAmbientColor0);
             #endif
 
             #if VIEW_DIFFUSE
-                color += float3(input.varDiffuseColor, input.varDiffuseColor, input.varDiffuseColor);
+                color += half3(input.varDiffuseColor, input.varDiffuseColor, input.varDiffuseColor);
             #endif
 
             #if VIEW_ALBEDO
@@ -299,10 +299,10 @@ fp_main( fragment_in input )
     
         #elif NORMALIZED_BLINN_PHONG
    
-            min10float3 color = float3(0.0,0.0,0.0);
+            half3 color = float3(0.0,0.0,0.0);
             
             #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
-                color += lightAmbientColor0;
+                color += half3(lightAmbientColor0);
             #endif
         
             #if VIEW_DIFFUSE
@@ -351,7 +351,7 @@ fp_main( fragment_in input )
         normal = normalize (normal);        
     
         #if !FAST_NORMALIZATION
-            float3 toLightNormalized = normalize(input.varToLightVec.xyz);
+            float3 toLightNormalized = float3(normalize(input.varToLightVec.xyz));
             float3 toCameraNormalized = normalize(input.varToCameraVec);
             float3 H = toCameraNormalized + toLightNormalized;
             H = normalize(H);
@@ -431,10 +431,10 @@ fp_main( fragment_in input )
         
         #endif
     
-        min10float3 color = min10float3(0.0,0.0,0.0);
+        half3 color = half3(0.0,0.0,0.0);
     
         #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
-            color += lightAmbientColor0;
+            color += half3(lightAmbientColor0);
         #endif
     
         #if VIEW_DIFFUSE
@@ -446,7 +446,7 @@ fp_main( fragment_in input )
                     color = textureColor1.rgb; 
                 #endif
             #else
-                color += diffuse * lightColor0;
+                color += half3(diffuse * lightColor0);
             #endif
         #endif
     
@@ -462,9 +462,9 @@ fp_main( fragment_in input )
     
         #if VIEW_SPECULAR
             #if MATERIAL_LIGHTMAP
-                color += specular * textureColor1.rgb * lightColor0;
+                color += half3(specular * textureColor1.rgb * lightColor0);
             #else
-                color += specular * lightColor0;
+                color += half3(specular * lightColor0);
             #endif
         #endif
 
@@ -475,23 +475,23 @@ fp_main( fragment_in input )
             float3 color = float3(0.0,0.0,0.0);
 
             #if VIEW_ALBEDO
-                color = textureColor0.rgb;
+                color = float3(textureColor0.rgb);
             #else
                 color = float3(1.0,1.0,1.0);
             #endif
 
             #if VIEW_DIFFUSE
                 #if VIEW_ALBEDO
-                    color *= textureColor1.rgb * 2.0;
+                    color *= float3(textureColor1.rgb * 2.0);
                 #else
                     //do not scale lightmap in view diffuse only case. artist request
-                    color *= textureColor1.rgb; 
+                    color *= float3(textureColor1.rgb); 
                 #endif              
             #endif
 
         #elif MATERIAL_TEXTURE
 
-            float3 color = textureColor0.rgb;
+            float3 color = float3(textureColor0.rgb);
         
         #elif MATERIAL_SKYBOX
             
@@ -523,12 +523,12 @@ fp_main( fragment_in input )
     #elif MATERIAL_SKYBOX
         output.color = color;
     #else
-        output.color = float4( color, 1.0 );
+        output.color = float4( color.r, color.g, color.b, 1.0 );
     #endif
 
     
     #if VERTEX_COLOR || SPEED_TREE_LEAF || SPHERICAL_LIT
-        output.color *= input.varVertexColor;
+        output.color *= float4(input.varVertexColor);
     #endif
         
     #if FLATCOLOR

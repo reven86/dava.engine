@@ -42,7 +42,7 @@ fp_main( fragment_in input )
 #if ALPHA8
     half4 resColor = half4( 1.0, 1.0, 1.0, FP_A8(tex2D( tex, in_uv )) );
 #else
-    half4 resColor = tex2D( tex, in_uv );
+    half4 resColor = half4(tex2D( tex, in_uv ));
 #endif
 
 #if (COLOR_OP == COLOR_MUL)
@@ -62,8 +62,8 @@ fp_main( fragment_in input )
 #endif //TEXTURED
 
 #if GRAYSCALE
-    min10float gray = dot(resColor.rgb, float3(0.3, 0.59, 0.11));
-    resColor.rgb = float3(gray , gray, gray);
+    half gray = dot(resColor.rgb, half3(0.3, 0.59, 0.11));
+    resColor.rgb = half3(gray,gray,gray);
 #endif
 
 #if ALPHATEST
@@ -71,7 +71,7 @@ fp_main( fragment_in input )
     if( alpha < 0.5 ) discard;
 #endif
 
-    output.color = resColor;
+    output.color = float4(resColor);
     
     return output;
 }

@@ -34,7 +34,7 @@ vp_main( vertex_in input )
 #if TEXTURED
     output.uv = in_texcoord;
 #endif //TEXTURED
-    output.color =  in_color;
+    output.color = half4(in_color);
 
     return output;
 }

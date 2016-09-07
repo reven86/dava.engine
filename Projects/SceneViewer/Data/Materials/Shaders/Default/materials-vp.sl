@@ -49,7 +49,7 @@ vertex_in
 
     
     #if WIND_ANIMATION
-    float2 texcoord5 : TEXCOORD5;
+    float texcoord5 : TEXCOORD5;
     #endif
 
     #if FRAME_BLEND
@@ -110,7 +110,7 @@ vertex_out
     #endif
     
     #if VERTEX_FOG
-        float4 varFog : TEXCOORD5;
+        half4 varFog : TEXCOORD5;
     #endif
 
 
@@ -505,9 +505,9 @@ vertex_out vp_main( vertex_in input )
     v.z = dot (toLightDir, n);
     
     #if !FAST_NORMALIZATION
-        output.varToLightVec = v;
+        output.varToLightVec = half3(v);
     #else
-        output.varToLightVec = normalize(v);
+        output.varToLightVec = half3(normalize(v));
     #endif
 
     float3 toCameraDir = -eyeCoordsPosition;
@@ -559,12 +559,12 @@ vertex_out vp_main( vertex_in input )
     
     #include "vp-fog-math.slh" // in{float3 FOG_view_position; float3 FOG_eye_position; float3 FOG_to_light_dir; float3 FOG_world_position; } ; out{ float4 FOG_result }
     
-    output.varFog = FOG_result;
+    output.varFog = half4(FOG_result);
 
 #endif
 
 #if VERTEX_COLOR
-    output.varVertexColor = input.color0;
+    output.varVertexColor = half4(input.color0);
 #endif
 
 
@@ -638,7 +638,7 @@ vertex_out vp_main( vertex_in input )
 
 #elif SPEED_TREE_LEAF //legacy for old tree lighting
     
-    output.varVertexColor.xyz = inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+    output.varVertexColor.xyz = half3(inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset));
 
 #endif
 
