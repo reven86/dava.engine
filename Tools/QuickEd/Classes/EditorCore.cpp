@@ -34,6 +34,8 @@ EditorCore::EditorCore(Engine& engine)
     NativeService* nativeService = engine.GetNativeService();
     RenderWidget* renderWidget = nativeService->GetRenderWidget();
 
+    mainWindow->previewWidget->InjectRenderWidget(renderWidget);
+
     engine.windowCreated.Connect(this, &EditorCore::OnGLWidgedInitialized);
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));

@@ -146,10 +146,14 @@ ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& no
     return nullptr;
 }
 
-void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
+    DVASSERT(renderWidget_ != nullptr);
+    renderWidget = renderWidget_;
     frame->layout()->addWidget(renderWidget);
-    renderWidget->quickWindow()->installEventFilter(this);
+    renderWidget->installEventFilter(this);
+
+    connect(renderWidget, &RenderWidget::Resized, scrollAreaController, &ScrollAreaController::SetViewSize);
 
     CreateActions();
 }
@@ -426,12 +430,6 @@ void PreviewWidget::OnScaleByComboText()
     scrollAreaController->SetScale(scale);
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height)
-{
-    scrollAreaController->SetViewSize(QSize(width, height));
-    UpdateScrollArea();
-}
-
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
     QPoint canvasPosition = scrollAreaController->GetPosition();
@@ -448,7 +446,7 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
 
 bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
 {
-    if (obj == renderWidget->quickWindow())
+    if (obj == renderWidget)
     {
         switch (event->type())
         {
@@ -468,6 +466,7 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             OnReleaseEvent(static_cast<QMouseEvent*>(event));
             break;
         case QEvent::DragEnter:
+            event->accept();
             return true;
         case QEvent::DragMove:
             OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
@@ -477,6 +476,7 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
             return true;
         case QEvent::Drop:
             OnDropEvent(static_cast<QDropEvent*>(event));
+            renderWidget->setFocus();
             break;
         case QEvent::KeyPress:
             OnKeyPressed(static_cast<QKeyEvent*>(event));

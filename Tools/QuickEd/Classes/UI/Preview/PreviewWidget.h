@@ -71,7 +71,6 @@ private slots:
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
-    void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);

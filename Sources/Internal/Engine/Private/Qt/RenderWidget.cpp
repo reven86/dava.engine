@@ -71,7 +71,7 @@ void RenderWidget::resizeEvent(QResizeEvent* e)
     float32 dpi = devicePixelRatioF();
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height(), dpi);
-    emit Resized(size.width(), size.height());
+    emit Resized(QSize(size.width(), size.height()));
 }
 
 void RenderWidget::showEvent(QShowEvent* e)
