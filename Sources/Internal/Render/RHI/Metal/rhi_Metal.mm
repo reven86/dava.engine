@@ -20,8 +20,6 @@ id<MTLTexture> _Metal_DefStencilBuf = nil;
 id<MTLDepthStencilState> _Metal_DefDepthState = nil;
 CAMetalLayer* _Metal_Layer = nil;
 
-DAVA::Atomic<bool> _Metal_Suspended(false);
-
 InitParam _Metal_InitParam;
 
 Dispatch DispatchMetal = { 0 };
@@ -118,26 +116,7 @@ metal_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
-static void
-metal_Suspend()
-{
-    _Metal_Suspended.Set(true);
-    DAVA::Logger::Info("mtl.render-suspended");
-}
-
-//------------------------------------------------------------------------------
-
-static void
-metal_Resume()
-{
-    _Metal_Suspended.Set(false);
-    DAVA::Logger::Info("mtl.render-resumed");
-}
-
-//------------------------------------------------------------------------------
-
-bool
-rhi_MetalIsSupported()
+bool rhi_MetalIsSupported()
 {
     if (!_Metal_Device)
     {

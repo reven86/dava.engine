@@ -416,6 +416,11 @@ CommandBufferMetal_t::Execute()
             [encoder drawIndexedPrimitives:ptype indexCount:indexCount indexType:i_type indexBuffer:ib indexBufferOffset:ib_base + i_off instanceCount:instCount];
         }
         break;
+        case CMD_NOP:
+            break;
+
+        default:
+            Logger::Debug("unsupportd command: %d", cmd->type);
         }
 
         if (cmd->type == CMD_END)
@@ -574,15 +579,6 @@ bool RenderPassMetal_t::Initialize()
 static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
-
-    if (_Metal_Suspended.GetRelaxed())
-    {
-        for (unsigned i = 0; i != cmdBufCount; ++i)
-            cmdBuf[i] = InvalidHandle;
-
-        MTL_TRACE("-rp.alloc InvalidHande (suspended)");
-        return InvalidHandle;
-    }
     
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
@@ -765,8 +761,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
 #endif
 }
 
-static void
-metal_RenderPass_Begin(Handle pass_h)
+static void metal_RenderPass_Begin(Handle pass_h)
 {
     MTL_TRACE(" -rp.begin %u", RHI_HANDLE_INDEX(pass_h));
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
@@ -775,8 +770,7 @@ metal_RenderPass_Begin(Handle pass_h)
     MTL_TRACE("  drawable %p %i", (void*)(currentDrawable), [currentDrawable retainCount]);
 }
 
-static void
-metal_RenderPass_End(Handle pass_h)
+static void metal_RenderPass_End(Handle pass_h)
 {
     MTL_TRACE(" -rp.end %u", RHI_HANDLE_INDEX(pass_h));
     RenderPassMetal_t* pass = RenderPassPool::Get(pass_h);
@@ -805,8 +799,7 @@ void SetupDispatch(Dispatch* dispatch)
 
 //------------------------------------------------------------------------------
 
-static void
-metal_CommandBuffer_Begin(Handle cmdBuf)
+static void metal_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -1510,6 +1503,8 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
 
     for (unsigned i = 0; i != frame.pass.size(); ++i)
     {
+        if (frame.pass[i] == InvalidHandle)
+            continue;
         RenderPassMetal_t* rp = RenderPassPool::Get(frame.pass[i]);
 
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
@@ -1521,8 +1516,6 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
             [cb->encoder release];
             cb->encoder = nil;
             cb->rt = nil;
-
-            CommandBufferPool::Free(cbh);
         }
 
         rp->desc = nullptr;
@@ -1531,14 +1524,13 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
         rp->buf = nil;
         [rp->encoder release];
         rp->encoder = nil;
-
-        rp->cmdBuf.clear();
     }
-    [currentDrawable release];
-    currentDrawable = nil;
-#else
+#endif
+
     for (unsigned i = 0; i != frame.pass.size(); ++i)
     {
+        if (frame.pass[i] == InvalidHandle)
+            continue;
         RenderPassMetal_t* rp = RenderPassPool::Get(frame.pass[i]);
 
         for (unsigned b = 0; b != rp->cmdBuf.size(); ++b)
@@ -1546,9 +1538,16 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
             Handle cbh = rp->cmdBuf[b];
             CommandBufferPool::Free(cbh);
         }
+        rp->cmdBuf.clear();
         RenderPassPool::Free(frame.pass[i]);
     }
-#endif
+
+    if (currentDrawable != nil)
+    {
+        [currentDrawable release];
+        currentDrawable = nil;
+        _Metal_DefFrameBuf = nil;
+    }
 
     if (frame.sync != InvalidHandle)
     {
@@ -1564,6 +1563,14 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);
     SCOPED_NAMED_TIMING("rhi.draw-present");
+    
+#if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+    if (currentDrawable == nil)
+    {
+        Metal_RejectFrame(std::move(frame));
+        return;
+    }
+#endif
 
     static std::vector<RenderPassMetal_t*> pass;
     Handle syncObject = frame.sync;
@@ -1601,6 +1608,14 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         if (pass->do_present)
             pbuf = pass->buf;
     }
+    
+#if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+    if (currentDrawable == nil)
+    {
+        Metal_RejectFrame(std::move(frame));
+        return;
+    }
+#endif
 
     if (pass.size())
     {
@@ -1686,6 +1701,11 @@ static void Metal_InvalidateFrameCache()
     ConstBufferMetal::ResetRingBuffer();
 }
 
+static void Metal_Suspend()
+{
+    Logger::Debug(" ***** Metal_Suspend");
+}
+
 namespace CommandBufferMetal
 {
 void SetupDispatch(Dispatch* dispatch)
@@ -1718,10 +1738,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_IsSignaled = &metal_SyncObject_IsSignaled;
 
     //dispatch->impl_Present = &metal_Present;
-    DispatchPlatform::ExecuteFrame = Metal_ExecuteQueuedCommands;
-    DispatchPlatform::RejectFrame = Metal_RejectFrame;
-    DispatchPlatform::PresntBuffer = Metal_PresentBuffer;
-    DispatchPlatform::FinishFrame = Metal_InvalidateFrameCache;
+    DispatchPlatform::ExecuteFrame = &Metal_ExecuteQueuedCommands;
+    DispatchPlatform::RejectFrame = &Metal_RejectFrame;
+    DispatchPlatform::PresntBuffer = &Metal_PresentBuffer;
+    DispatchPlatform::FinishFrame = &Metal_InvalidateFrameCache;
+    DispatchPlatform::Suspend = &Metal_Suspend;
 }
 }
 

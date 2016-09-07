@@ -47,7 +47,10 @@ void Present(Handle syncHandle) // called from main thread
     uint32 frame_cnt = 0;
     if (renderThreadFrameCount == 0) //single thread render
     {
-        FrameLoop::ProcessFrame();
+        if (renderThreadSuspended)
+            FrameLoop::RejectFrames();
+        else
+            FrameLoop::ProcessFrame();
     }
     else //wait for render thread if needed
     {

@@ -18,7 +18,6 @@ extern id<MTLTexture> _Metal_DefDepthBuf;
 extern id<MTLTexture> _Metal_DefStencilBuf;
 extern id<MTLDepthStencilState> _Metal_DefDepthState;
 extern CAMetalLayer* _Metal_Layer;
-extern DAVA::Atomic<bool> _Metal_Suspended;
 }
 
 #endif
