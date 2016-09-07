@@ -15,13 +15,13 @@ class Type final
 
 public:
     template <typename T>
-    using DecayT = std::decay_t<T>;
+    using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
 
     template <typename T>
-    using DerefT = std::remove_pointer_t<DecayT<T>>;
+    using DerefT = std::remove_pointer_t<std::decay_t<T>>;
 
     template <typename T>
-    using PointerT = std::add_pointer_t<DecayT<T>>;
+    using PointerT = std::add_pointer_t<std::decay_t<T>>;
 
     Type(Type&&) = delete;
     Type(const Type&) = delete;
@@ -79,6 +79,9 @@ public:
     const InheritanceMap& GetBaseTypes() const;
     const InheritanceMap& GetDerivedTypes() const;
 
+    template <typename T, typename... Bases>
+    static void RegisterBases();
+
     static bool CanUpCast(const Type* from, const Type* to);
     static bool CanDownCast(const Type* from, const Type* to);
     static bool CanCast(const Type* from, const Type* to);
@@ -86,9 +89,6 @@ public:
     static bool UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
     static bool DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr);
     static bool Cast(const Type* from, void* inPtr, const Type* to, void** outPtr);
-
-    template <typename T, typename... Bases>
-    static void RegisterBases();
 
 private:
     mutable InheritanceMap baseTypes;
