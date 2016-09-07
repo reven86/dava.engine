@@ -12,6 +12,8 @@
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
 
 #import "Platform/Reachability.h"
 

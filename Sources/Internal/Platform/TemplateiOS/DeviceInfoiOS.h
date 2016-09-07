@@ -6,8 +6,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Platform/DeviceInfoPrivateBase.h"
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
 
 namespace DAVA
 {
