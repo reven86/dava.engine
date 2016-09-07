@@ -190,6 +190,7 @@ public:
     static const FastName FLAG_TEST_OCCLUSION;
 
     static const FastName FLAG_BILLBOARD;
+    static const FastName FLAG_CYLINDRIACAL_BILLBOARD;
 
     static bool IsRuntimeFlag(const FastName& flag);
 };

@@ -170,10 +170,23 @@ void RenderObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
 
-    uint32 size = static_cast<uint32>(renderBatchArray.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (const IndexedRenderBatch& i : renderBatchArray)
     {
-        bbox.AddAABBox(renderBatchArray[k].renderBatch->GetBoundingBox());
+        RenderBatch* batch = i.renderBatch;
+        NMaterial* material = batch->GetMaterial();
+
+        bool isBillboard = (material != nullptr) &&
+        (material->GetEffectiveFlagValue(NMaterialFlagName::FLAG_BILLBOARD) |
+         material->GetEffectiveFlagValue(NMaterialFlagName::FLAG_CYLINDRIACAL_BILLBOARD));
+
+        if (isBillboard)
+        {
+            bbox.AddAABBox(batch->GetBoundingBox().GetMaxExtentBox());
+        }
+        else
+        {
+            bbox.AddAABBox(batch->GetBoundingBox());
+        }
     }
 }
 

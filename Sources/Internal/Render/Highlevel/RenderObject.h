@@ -209,22 +209,11 @@ protected:
     static const uint32 MAX_LIGHT_COUNT = 2;
     Light* lights[MAX_LIGHT_COUNT];
 
-    //    Sphere bsphere;
-
     struct IndexedRenderBatch : public InspBase
     {
-        IndexedRenderBatch()
-            : renderBatch(0)
-            ,
-            lodIndex(-2)
-            ,
-            switchIndex(-1)
-        {
-        }
-
-        RenderBatch* renderBatch;
-        int32 lodIndex;
-        int32 switchIndex;
+        RenderBatch* renderBatch = nullptr;
+        int32 lodIndex = -2;
+        int32 switchIndex = -1;
 
         INTROSPECTION(IndexedRenderBatch,
                       MEMBER(renderBatch, "Render Batch", I_SAVE | I_VIEW)

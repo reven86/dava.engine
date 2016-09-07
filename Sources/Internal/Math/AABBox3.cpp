@@ -107,4 +107,10 @@ void AABBox3::GetCorners(Vector3* cornersArray) const
     cornersArray[6].Set(max.x, min.y, max.z);
     cornersArray[7].Set(min.x, max.y, max.z);
 }
+
+AABBox3 AABBox3::GetMaxExtentBox() const
+{
+    Vector3 size = GetSize();
+    return AABBox3(GetCenter(), Max(size.x, Max(size.y, size.z)));
+}
 };

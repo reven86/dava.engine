@@ -52,6 +52,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
         ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
 
         ret.emplace_back(NMaterialFlagName::FLAG_BILLBOARD);
+        ret.emplace_back(NMaterialFlagName::FLAG_CYLINDRIACAL_BILLBOARD);
     }
 
     return ret;

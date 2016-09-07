@@ -34,6 +34,10 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
         int batchSwitchIndex = 0;
         DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
 
+        bool isBillboard = (batch->GetMaterial() != nullptr) &&
+        (batch->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_BILLBOARD) |
+         batch->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_CYLINDRIACAL_BILLBOARD));
+
         if ((batchLodIndex == bestLodIndex) && (batchSwitchIndex == curSwitchIndex))
         {
             DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
@@ -69,7 +73,8 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
                 }
 
                 // save original bbox
-                boundingBox.AddAABBox(pg->GetBoundingBox());
+                const AABBox3& pgBox = pg->GetBoundingBox();
+                boundingBox.AddAABBox(isBillboard ? pgBox.GetMaxExtentBox() : pgBox);
             }
         }
     }

@@ -130,6 +130,10 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
+#if BILLBOARD || CYLINDRICAL_BILLBOARD
+#	define BILLBOARD_ENABLED 1
+#endif
+
 #if !SPEED_TREE_LEAF || CUT_LEAF
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 #endif
@@ -226,7 +230,7 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-#if VERTEX_FOG || BILLBOARD
+#if VERTEX_FOG || BILLBOARD_ENABLED
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 #endif
@@ -240,8 +244,7 @@ property float flowAnimSpeed : static,a : ;
 property float flowAnimOffset : static,a : ;
 #endif
 
-
-#if BILLBOARD
+#if BILLBOARD_ENABLED
 property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
 
@@ -418,51 +421,34 @@ VPROG_BEGIN
 	float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
 	VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
 
-#elif BILLBOARD
+#elif BILLBOARD_ENABLED
 
-	/*
-	 * HARDCORE implementation
-	 */
 	float4x4 wMatrix = worldMatrix;
 	float4 translation = wMatrix[3];
-	wMatrix[3] = float4(0.0, 0.0, 0.0, 1.0);
 	
-	float3 directionToObject = normalize(translation.xyz - cameraPosition);
+	float3 dir = normalize(translation.xyz - cameraPosition);
 	
-	float sTheta = directionToObject.z;
-	float cTheta = sqrt(1.0 - sTheta * sTheta);
+	float2 sinCosPhi = normalize(dir.xy);
+	float2 sinCosPhiSqr = sinCosPhi * sinCosPhi;
+	sinCosPhi.x = -sign(sinCosPhi.x) / sqrt(1.0 + sinCosPhiSqr.y / sinCosPhiSqr.x); // ~ cos(atan(dir.y, dir.x))
 	
-	float2 dxdy = normalize(directionToObject.xy);
-	float YoverX = dxdy.y / dxdy.x;
-	dxdy.x = -sign(dxdy.x) / sqrt(1.0 + YoverX * YoverX);
-
 	float4x4 result;
-	result[0] = float4( dxdy.y,           dxdy.x,          0.0,    0.0);
-	result[1] = float4(-dxdy.x * cTheta,  dxdy.y * cTheta, sTheta, 0.0);
-	result[2] = float4( dxdy.x * sTheta, -dxdy.y * sTheta, cTheta, 0.0);
-	result[3] = float4(0.0, 0.0, 0.0, 1.0);
+#	if CYLINDRICAL_BILLBOARD
+		result[0] = float4( sinCosPhi.y, sinCosPhi.x, 0.0, 0.0);
+		result[1] = float4(-sinCosPhi.x, sinCosPhi.y, 0.0, 0.0);
+		result[2] = float4(         0.0,         0.0, 1.0, 0.0);
+#	else
+		float2 sinCosTheta = float2(dir.z, sqrt(1.0 - dir.z * dir.z));
+		result[0] = float4(                 sinCosPhi.y,                  sinCosPhi.x,           0.0, 0.0);
+		result[1] = float4(-sinCosPhi.x * sinCosTheta.y,  sinCosPhi.y * sinCosTheta.y, sinCosTheta.x, 0.0);
+		result[2] = float4( sinCosPhi.x * sinCosTheta.x, -sinCosPhi.y * sinCosTheta.x, sinCosTheta.y, 0.0);
+#	endif
+	result[3] = float4(0.0, 0.0, 0.0, 0.0); // intentionally: to remove translation from world matrix
 	
 	wMatrix = mul(wMatrix, result);
 	wMatrix[3] = translation;
-	
-	float4x4 mvp = viewProjMatrix * wMatrix;
 
-	/*
-	// Result matrix consists of:
-	// float4x4 yawMatrix;
-	// yawMatrix[0] = float4( cPhi, sPhi, 0.0, 0.0);
-	// yawMatrix[1] = float4(-sPhi, cPhi, 0.0, 0.0);
-	// yawMatrix[2] = float4(  0.0,  0.0, 1.0, 0.0);
-	// yawMatrix[3] = float4(  0.0,  0.0, 0.0, 1.0);
-	// float4x4 rollMatrix;
-	// rollMatrix[0] = float4(1.0,     0.0,    0.0, 0.0);
-	// rollMatrix[1] = float4(0.0,  cTheta, sTheta, 0.0);
-	// rollMatrix[2] = float4(0.0, -sTheta, cTheta, 0.0);
-	// rollMatrix[3] = float4(0.0,     0.0,    0.0, 1.0);
-	// float4x4 result = yawMatrix * rollMatrix;
-	*/
-	
-	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), mvp );
+	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), mul(wMatrix, viewProjMatrix) );
 	
 #else
 	
