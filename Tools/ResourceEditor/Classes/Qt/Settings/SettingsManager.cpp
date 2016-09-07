@@ -97,6 +97,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_Sound_SoundObjectSphereColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.1f)));
 
     CreateValue(Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType(true));
+    CreateValue(Settings::General_Mouse_WheelMoveIntensity, DAVA::VariantType(180.0f));
     CreateValue(Settings::General_Mouse_InvertWheel, DAVA::VariantType(false));
 
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));
