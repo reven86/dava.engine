@@ -246,6 +246,7 @@ property float4x4 worldMatrix : dynamic,a : ;
 #endif
 
 #if (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
+property float3 cameraUp : dynamic,a : ;
 property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
 
@@ -433,36 +434,24 @@ VPROG_BEGIN
 
 #elif (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
 
-	float4x4 wMatrix = worldMatrix;
-	float4 translation = wMatrix[3];
-	
-	float3 dir = normalize(translation.xyz - cameraPosition);
-	
-	float2 phiSinCos = normalize(dir.xy);
-	float yOverX = phiSinCos.y / phiSinCos.x;
-	phiSinCos.x = -sign(phiSinCos.x) / sqrt(1.0 + yOverX * yOverX); // ~ cos(atan2(dir.y, dir.x))
-	
-	float4x4 result;
-#	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
-		result[0] = float4( phiSinCos.y, phiSinCos.x, 0.0, 0.0);
-		result[1] = float4(-phiSinCos.x, phiSinCos.y, 0.0, 0.0);
-		result[2] = float4(         0.0,         0.0, 1.0, 0.0);
-#	else
-		float2 thetaSinCos = float2(dir.z, sqrt(1.0 - dir.z * dir.z));
-		result[0] = float4(                 phiSinCos.y,                  phiSinCos.x,           0.0, 0.0);
-		result[1] = float4(-phiSinCos.x * thetaSinCos.y,  phiSinCos.y * thetaSinCos.y, thetaSinCos.x, 0.0);
-		result[2] = float4( phiSinCos.x * thetaSinCos.x, -phiSinCos.y * thetaSinCos.x, thetaSinCos.y, 0.0);
-#	endif
-	result[3] = float4(0.0, 0.0, 0.0, 0.0); // intentionally: to remove translation from world matrix
-	
-	wMatrix = mul(wMatrix, result);
-	wMatrix[3] = translation;
+	float3 up = cameraUp;
+	float3 dir = normalize(worldMatrix[3].xyz - cameraPosition);
+	float3 side = normalize(cross(dir, up));
 
-	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), mul(wMatrix, viewProjMatrix) );
+#	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
+		dir = cross(up, side);
+#	else
+		up = cross(side, dir);
+#	endif
+
+	float4 inPos = mul(float4(VP_IN_POSITION.xyz, 1.0), worldMatrix);
+	float4 outPos = float4(inPos.x * side + inPos.z * up + inPos.y * dir, 1.0);
+	
+	VP_OUT_POSITION = mul(outPos, viewProjMatrix);
 	
 #else
 	
-	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
+	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz, 1.0), worldViewProjMatrix );
 	
 #endif
 
