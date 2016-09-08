@@ -194,7 +194,7 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnError()
 {
-    DVASSERT_HALT;
+    DVASSERT_HALT();
 }
 
 void GameCore::OnTestClassStarted(const DAVA::String& testClassName)

@@ -239,7 +239,7 @@ void GameCore::RunOnlyThisTest()
 
 void GameCore::OnError()
 {
-    DVASSERT_HALT;
+    DVASSERT_HALT();
 }
 
 void GameCore::RegisterTests()

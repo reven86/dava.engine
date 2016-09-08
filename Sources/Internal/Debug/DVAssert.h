@@ -20,17 +20,16 @@
 ///
 /// If an assert fails, default behaviour is to halt a program (and show the line during debugging),
 /// but adding your own handlers is supported via DAVA::Assert::AddHandler (and removing with DAVA::Assert::RemoveHandler).
-/// Each handler accepts DAVA::Assert::AssertInfo object with all the info and should return one of two values:
-/// - DAVA::Assert::FailBehaviour::Continue to indicate that program should not be stopped beucause of an assert
+/// Each handler accepts DAVA::Assert::AssertInfo object with all the info and should return one of three values:
+/// - DAVA::Assert::FailBehaviour::Default if handler either doesn't know what to do or is not responsible for that
+/// - DAVA::Assert::FailBehaviour::Continue to indicate that program should not be stopped because of an assert
 /// - DAVA::Assert::FailBehaviour::Halt otherwise
 ///
 /// All the handlers will be called every time, even if one of them has already reported FailBehaviour::Halt.
 ///
-/// Note that if at least one handler is added, you opt for controlling when a program should be halted all by yourself,
-/// since default behaviour (always stopping a program) will no longer be used.
-///
-/// A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Continue,
-/// and second one shows a dialog box asking user if a program should be stopped and returning FailBehaviour::Halt in case it should.
+/// A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Default,
+/// (since it doesn't know what to do with the assert and just logs it), and second one shows a dialog box asking user
+/// if a program should be stopped and returning FailBehaviour::Halt in case it should.
 ///
 namespace DAVA
 {
@@ -64,6 +63,9 @@ public:
 /// Indicates how a program should act when an assert fails
 enum class FailBehaviour
 {
+    /// Default behaviour
+    Default,
+
     /// Ignore an assert and continue invocation
     Continue,
 
@@ -93,9 +95,9 @@ const Vector<Handler>& GetHandlers();
 // It's not a function in order to prevent stacktrace altering
 // TODO: release behaviour?
 #if defined(__DAVAENGINE_WINDOWS__)
-#define DVASSERT_HALT __debugbreak()
+#define DVASSERT_HALT() __debugbreak()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#define DVASSERT_HALT raise(SIGTRAP)
+#define DVASSERT_HALT() raise(SIGTRAP)
 #else
 #error "DVASSERT_HALT is not defined for current platform"
 #endif
@@ -104,10 +106,10 @@ const Vector<Handler>& GetHandlers();
 DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const char* const fileName,
                                          const int lineNumber,
-                                         const DAVA::Vector<DAVA::Debug::StackFrame> backtrace,
+                                         const DAVA::Vector<DAVA::Debug::StackFrame>& backtrace,
                                          const char* const message = "");
 
-// Common macro to use by DVASSERT & DVASSERT_CRITICAL to avoid code duplication
+// Common macro to use by DVASSERT & DVASSERT_ALWAYS to avoid code duplication
 #define DVASSERT_INTERNAL(expr, ...) \
     do \
     { \
@@ -118,9 +120,9 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                 __FILE__, \
                 __LINE__, \
                 DAVA::Debug::GetBacktrace(), \
-                ##__VA_ARGS__) == DAVA::Assert::FailBehaviour::Halt) \
+                ##__VA_ARGS__) != DAVA::Assert::FailBehaviour::Continue) \
             { \
-                DVASSERT_HALT; \
+                DVASSERT_HALT(); \
             } \
         } \
     } \

@@ -8,7 +8,7 @@
 
 #include "Settings/SettingsManager.h"
 
-#include "Debug/DVAssertHandlers.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include <QMessageBox>
 
