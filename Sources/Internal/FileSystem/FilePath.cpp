@@ -940,11 +940,17 @@ int32 FilePath::Compare(const FilePath& right) const
 String FilePath::AsURL() const
 {
     String path = GetAbsolutePathname();
-    
+// HACK this code incorrect but works
+// how do we know where file exist on android FS or inside APK(Zip)
+// here we always
 #if defined(__DAVAENGINE_ANDROID__)
-    if (!path.empty() && (path[0] != '/'))
+    if (path.empty())
     {
-        return ("file:///android_asset/" + path);
+        return "file:///android_asset/Data/";
+    }
+    else if (path.at(0) != '/')
+    {
+        return ("file:///android_asset/Data/" + path);
     }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
