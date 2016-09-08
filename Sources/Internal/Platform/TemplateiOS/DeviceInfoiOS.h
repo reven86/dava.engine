@@ -9,7 +9,6 @@
 
 namespace DAVA
 {
-
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
