@@ -7,12 +7,6 @@ UIControlPackageContext::~UIControlPackageContext()
 {
 }
 
-UIControlPackageContext::UIControlPackageContext()
-    :
-    styleSheetsSorted(false)
-{
-}
-
 void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet& styleSheet)
 {
     styleSheetsSorted = false;
@@ -24,6 +18,8 @@ void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet& styleShe
     if (it == styleSheets.end())
     {
         styleSheets.push_back(styleSheet);
+
+        maxStyleSheetHierarchyDepth = Max(maxStyleSheetHierarchyDepth, styleSheet.GetStyleSheet()->GetSelectorChain().GetSize());
     }
     else
     {
@@ -35,6 +31,7 @@ void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet& styleShe
 void UIControlPackageContext::RemoveAllStyleSheets()
 {
     styleSheets.clear();
+    maxStyleSheetHierarchyDepth = 0;
 }
 
 const Vector<UIPriorityStyleSheet>& UIControlPackageContext::GetSortedStyleSheets()
@@ -46,5 +43,10 @@ const Vector<UIPriorityStyleSheet>& UIControlPackageContext::GetSortedStyleSheet
     }
 
     return styleSheets;
+}
+
+int32 UIControlPackageContext::GetMaxStyleSheetHierarchyDepth() const
+{
+    return maxStyleSheetHierarchyDepth;
 }
 }

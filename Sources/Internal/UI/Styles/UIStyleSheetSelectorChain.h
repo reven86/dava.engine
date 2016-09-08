@@ -19,6 +19,8 @@ public:
     Vector<UIStyleSheetSelector>::const_reverse_iterator rbegin() const;
     Vector<UIStyleSheetSelector>::const_reverse_iterator rend() const;
 
+    int32 GetSize() const;
+
 private:
     Vector<UIStyleSheetSelector> selectors;
 };

@@ -1,17 +1,22 @@
 #ifndef __ENTITY_LOCK_COMMAND_H__
 #define __ENTITY_LOCK_COMMAND_H__
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommand.h"
 
-class EntityLockCommand : public Command2
+namespace DAVA
+{
+class Entity;
+}
+
+class EntityLockCommand : public RECommand
 {
 public:
     EntityLockCommand(DAVA::Entity* entity, bool lock);
     ~EntityLockCommand();
 
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
+    void Undo() override;
+    void Redo() override;
+    DAVA::Entity* GetEntity() const;
 
     DAVA::Entity* entity;
     bool oldState;

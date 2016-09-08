@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "Extensions.h"
@@ -57,7 +58,7 @@ private:
     void UpdateModel();
 
     void BeginBatch(const DAVA::String& name, DAVA::uint32 commandCount) override;
-    void Exec(Command2::Pointer&& command) override;
+    void Exec(std::unique_ptr<DAVA::Command>&& command) override;
     void EndBatch() override;
 
 private:
@@ -70,3 +71,4 @@ private:
     bool isSelectionDirty = false;
     DAVA::Vector<DAVA::InspBase*> selectedObjects;
 };
+#endif //0

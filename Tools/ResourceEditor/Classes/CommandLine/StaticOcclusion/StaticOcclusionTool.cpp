@@ -3,6 +3,8 @@
 #include "Scene/SceneEditor2.h"
 #include "CommandLine/OptionName.h"
 
+#include <QOpenGLContext>
+
 using namespace DAVA;
 
 StaticOcclusionTool::StaticOcclusionTool()
@@ -48,9 +50,25 @@ void StaticOcclusionTool::ProcessInternal()
 
     if (commandAction == ACTION_BUILD)
     {
+        if (QOpenGLContext::currentContext() == nullptr)
+        {
+            Logger::Error("Cannot swap buffers because of no OPEN GL Context.");
+        }
+
         ScopedPtr<SceneEditor2> scene(new SceneEditor2());
         if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
         {
+            ScopedPtr<DAVA::Camera> lodSystemDummyCamera(new Camera());
+            {
+                lodSystemDummyCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
+                lodSystemDummyCamera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
+                lodSystemDummyCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
+                lodSystemDummyCamera->SetupPerspective(90.f, 320.0f / 480.0f, 1.f, 5000.f);
+                lodSystemDummyCamera->SetAspect(1.0f);
+            }
+
+            scene->SetCurrentCamera(lodSystemDummyCamera);
+
             scene->Update(0.1f); // we need to call update to initialize (at least) QuadTree.
             scene->staticOcclusionBuildSystem->Build();
             RenderObjectsFlusher::Flush();
@@ -61,8 +79,15 @@ void StaticOcclusionTool::ProcessInternal()
                 RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
                 Renderer::EndFrame();
+
+                QOpenGLContext* context = QOpenGLContext::currentContext();
+                if (context)
+                {
+                    context->swapBuffers(context->surface());
+                }
             }
 
+            scene->SetCurrentCamera(nullptr);
             scene->SaveScene();
         }
         RenderObjectsFlusher::Flush();

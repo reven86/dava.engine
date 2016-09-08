@@ -20,6 +20,11 @@ QApplication* NativeService::GetApplication()
     return core->GetApplication();
 }
 
+RenderWidget* NativeService::GetRenderWidget()
+{
+    return core->GetRenderWidget();
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__

@@ -104,24 +104,21 @@ bool LibDdsHelper::AddCRCIntoMetaData(const FilePath& filePathname)
 uint32 LibDdsHelper::GetCRCFromMetaData(const FilePath& filePathname)
 {
     ScopedPtr<File> ddsFile(File::Create(filePathname, File::READ | File::OPEN));
-    if (!ddsFile)
+    if (ddsFile)
     {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] cannot open %s", filePathname.GetStringValue().c_str());
-        return 0;
-    }
-
-    std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(ddsFile));
-    if (reader)
-    {
-        uint32 crc = 0;
-        if (reader->GetCRC(crc))
+        std::unique_ptr<DDSReader> reader(DDSReader::CreateReader(ddsFile));
+        if (reader)
         {
-            return crc;
+            uint32 crc = 0;
+            if (reader->GetCRC(crc))
+            {
+                return crc;
+            }
         }
-    }
-    else
-    {
-        Logger::Error("[LibDdsHelper::GetCRCFromFile] %s is not a DDS file", filePathname.GetStringValue().c_str());
+        else
+        {
+            Logger::Error("[LibDdsHelper::GetCRCFromFile] %s is not a DDS file", filePathname.GetStringValue().c_str());
+        }
     }
 
     return 0;

@@ -47,6 +47,11 @@ bool LZ4HCCompressor::Compress(const Vector<uint8>& in, Vector<uint8>& out) cons
         Logger::Error("LZ4 compress failed too big input buffer");
         return false;
     }
+    if (in.empty())
+    {
+        Logger::Error("LZ4 can't compress empty buffer");
+        return false;
+    }
     uint32 maxSize = static_cast<uint32>(LZ4_compressBound(static_cast<uint32>(in.size())));
     if (out.size() < maxSize)
     {

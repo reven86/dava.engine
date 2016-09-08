@@ -30,6 +30,7 @@ private:
 
     void DumpCustomProperties(DAVA::KeyedArchive* properties, SceneLinks& links) const;
     void DumpRenderObject(DAVA::RenderObject* renderObject, SceneLinks& links) const;
+    void DumpMaterial(DAVA::NMaterial* material, SceneLinks& links, DAVA::Set<DAVA::FilePath>& descriptorPathnames) const;
     void DumpEffect(DAVA::ParticleEffectComponent* effect, SceneLinks& links) const;
     void DumpEmitter(DAVA::ParticleEmitterInstance* emitter, SceneLinks& links, SceneLinks& gfxFolders) const;
 

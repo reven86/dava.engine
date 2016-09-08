@@ -2,83 +2,115 @@
 
 namespace DAVA
 {
-std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap;
-
-#ifdef ANY_EXPERIMENTAL_CAST_IMPL
-std::unique_ptr<Any::CastOPsMap> Any::castOPsMap;
-#endif
-
-/*
-Any::Any()
-{
-    if (nullptr == anyOPsMap && nullptr == castOPsMap)
-    {
-        anyOPsMap.reset(new AnyOPsMap());
-        castOPsMap.reset(new CastOPsMap());
-
-        RegisterDefaultOPs<void*>();
-        RegisterDefaultOPs<bool>();
-        RegisterDefaultOPs<DAVA::int8>();
-        RegisterDefaultOPs<DAVA::uint8>();
-        RegisterDefaultOPs<DAVA::float32>();
-        RegisterDefaultOPs<DAVA::float64>();
-        RegisterDefaultOPs<DAVA::int16>();
-        RegisterDefaultOPs<DAVA::uint16>();
-        RegisterDefaultOPs<DAVA::int32>();
-        RegisterDefaultOPs<DAVA::uint32>();
-        RegisterDefaultOPs<DAVA::int64>();
-        RegisterDefaultOPs<DAVA::uint64>();
-        RegisterDefaultOPs<DAVA::String>();
-    }
-}
-*/
+std::unique_ptr<Any::AnyOPsMap> Any::anyOPsMap = std::make_unique<Any::AnyOPsMap>();
+std::unique_ptr<Any::CastOPsMap> Any::castOPsMap = std::make_unique<Any::CastOPsMap>();
 
 void Any::LoadValue(const Type* type_, void* data)
 {
-    if (anyOPsMap->count(type_) == 0 || anyOPsMap->at(type_).load == nullptr)
+    type = type_;
+
+    if (type_->IsPointer())
     {
+        void** src = reinterpret_cast<void**>(data);
+        anyStorage.SetAuto(*src);
+    }
+    else if (type_->IsFundamental())
+    {
+        anyStorage.SetData(data, type_->GetSize());
+    }
+    else
+    {
+        auto it = anyOPsMap->find(type_);
+        if (it != anyOPsMap->end())
+        {
+            Any::LoadOP op = it->second.load;
+            if (nullptr != op)
+            {
+                return (*op)(anyStorage, data);
+            }
+        }
+
         throw Exception(Exception::BadOperation, "Load operation wasn't registered");
     }
-
-    const AnyOPs& ops = anyOPsMap->at(type_);
-    (*ops.load)(anyStorage, data);
-    type = type_;
 }
 
 void Any::StoreValue(void* data, size_t size) const
 {
-    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).store == nullptr)
+    if (nullptr != type)
     {
-        throw Exception(Exception::BadOperation, "Save operation wasn't registered");
-    }
+        if (type->GetSize() > size)
+        {
+            throw Exception(Exception::BadSize, "Type size mismatch while saving value from Any");
+        }
 
-    if (type->GetSize() < size)
-    {
-        throw Exception(Exception::BadSize, "Type size mismatch while saving value into Any");
-    }
+        if (type->IsPointer())
+        {
+            void** dst = reinterpret_cast<void**>(data);
+            *dst = anyStorage.GetAuto<void*>();
+        }
+        else if (type->IsFundamental())
+        {
+            std::memcpy(data, anyStorage.GetData(), size);
+        }
+        else
+        {
+            auto it = anyOPsMap->find(type);
+            if (it != anyOPsMap->end())
+            {
+                Any::StoreOP op = it->second.store;
+                if (nullptr != op)
+                {
+                    return (*op)(anyStorage, data);
+                }
+            }
 
-    const AnyOPs& ops = anyOPsMap->at(type);
-    (*ops.store)(anyStorage, data);
+            throw Exception(Exception::BadOperation, "Save operation wasn't registered");
+        }
+    }
 }
 
 bool Any::operator==(const Any& any) const
 {
+    if (any.type == nullptr)
+    {
+        return (type == nullptr);
+    }
+
+    if (any.type->IsPointer())
+    {
+        if (type->IsPointer())
+        {
+            return GetImpl<void*>() == any.GetImpl<void*>();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     if (type != any.type)
     {
         return false;
     }
-    else if (nullptr == type)
+
+    if (type->IsFundamental())
     {
-        return true;
+        return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), type->GetSize()));
+    }
+    else
+    {
+        auto it = anyOPsMap->find(type);
+        if (it != anyOPsMap->end())
+        {
+            Any::CompareOP op = it->second.compare;
+            if (op != nullptr)
+            {
+                return (*op)(anyStorage.GetData(), any.anyStorage.GetData());
+            }
+        }
     }
 
-    if (anyOPsMap->count(type) == 0 || anyOPsMap->at(type).compare == nullptr)
-    {
-        throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
-    }
-
-    const AnyOPs& ops = anyOPsMap->operator[](type);
-    return (*ops.compare)(anyStorage.GetData(), any.anyStorage.GetData());
+    throw Exception(Exception::BadOperation, "Compare operation wasn't registered");
 }
 
 Any::Exception::Exception(ErrorCode code, const std::string& message)
