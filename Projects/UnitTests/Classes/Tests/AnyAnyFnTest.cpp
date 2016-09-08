@@ -189,9 +189,9 @@ DAVA_TESTCLASS (AnyAnyFnTest)
             a.Get<int>();
             TEST_VERIFY(false && "Shouldn't be able to get int from empty Any");
         }
-        catch (const Exception&)
+        catch (const Exception& e)
         {
-            TEST_VERIFY(true);
+            TEST_VERIFY(e.callstack.size() > 0);
         }
     }
 
