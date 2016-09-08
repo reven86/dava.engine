@@ -161,14 +161,19 @@
 //  DAVA_TESTCLASS(UsefulTest)
 //  {
 //      BEGIN_FILES_COVERED_BY_TESTS()
-//          DECLARE_COVERED_FILES("FileSystem")
-//          DECLARE_COVERED_FILES("JobManager")
+//          DECLARE_COVERED_FILES("FileSystem.cpp")
+//          DECLARE_COVERED_FILES("JobManager.cpp")
+//      FIND_FILES_IN_TARGET( DavaTools )
+//          DECLARE_COVERED_FILES("FramePathHelper.cpp")
 //      END_FILES_COVERED_BY_TESTS()
 //
 //      DAVA_TEST(test1) {}
 //  };
 //
 // Test class UsefulTest covers two file: "FileSystem.cpp" and "JobManager.cpp"
+//
+// FIND_FILES_IN_TARGET( NAME_TARGET ) It indicates to what TARGET applies the file.
+// It is necessary if different target have files with the same name.
 //
 // or to automatically deduce covered file from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
@@ -179,30 +184,37 @@
 // DEDUCE_COVERED_FILES_FROM_TESTCLASS discards Test postfix of any and considers that
 // DateTimeTest covers class DateTime.
 //
+//
 // This is test author's responsibility to specify valid and corresponding classes
 //
 // You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
+//You must declare DAVA_FOLDERS, TARGET_FOLDERS which contains a list of folders where the sources are located.
+//DAVA_FOLDERS general list of folders where the sources are
+//TARGET_FOLDERS list of folders with source code for the current target has
+//
 
 #ifdef COVERAGE
 
 #define BEGIN_FILES_COVERED_BY_TESTS() \
-    void FilesCoveredByTests(DAVA::UnitTests::CoverageTestInfo& testInfo) const override { \
-        testInfo.listTargetFolders.insert(std::pair<DAVA::String, DAVA::String>("all", DAVA::String(DAVA_FOLDERS)));\
+    CoverageTestInfo FilesCoveredByTests() const override { \
+        DAVA::UnitTests::CoverageTestInfo testInfo;  \
+        testInfo.targetFolders.emplace_back("all", DAVA::String(DAVA_FOLDERS));\
         const char* targetFolders = nullptr;
 
 #define FIND_FILES_IN_TARGET(targetname) \
         targetFolders = TARGET_FOLDERS_##targetname;
 
 #define DECLARE_COVERED_FILES(classname) \
-        testInfo.listTestFile.emplace_back(classname); \
+        testInfo.testFiles.emplace_back(classname); \
         if (targetFolders != nullptr)\
         { \
-            testInfo.listTargetFolders.insert(std::pair<DAVA::String, DAVA::String>(DAVA::String(classname), DAVA::String(targetFolders)));\
+            testInfo.targetFolders.emplace_back(DAVA::String(classname), DAVA::String(targetFolders));\
         }
 
 #define END_FILES_COVERED_BY_TESTS() \
+        return testInfo; \
     }
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \

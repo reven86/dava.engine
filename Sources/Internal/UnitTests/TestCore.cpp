@@ -163,10 +163,8 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 testClassFinishedCallback(curTestClassName);
 
                 if (curTestClass->TestCount() > 0)
-                { // Get and save files names which are covered by test only if test files has tests
-                    CoverageTestInfo testInfo;
-                    curTestClass->FilesCoveredByTests(testInfo);
-                    testClasses[curTestClassIndex].testedFiles = testInfo;
+                { // Get and save files names which are covered by test only if test files has tests                    
+                    testClasses[curTestClassIndex].testedFiles = curTestClass->FilesCoveredByTests();
                 }
 
                 SafeDelete(curTestClass);
@@ -188,7 +186,7 @@ Map<String, CoverageTestInfo> TestCore::GetTestCoverage()
     Map<String, CoverageTestInfo> result;
     for (TestClassInfo& x : testClasses)
     {
-        if (!x.testedFiles.listTestFile.empty())
+        if (!x.testedFiles.testFiles.empty())
         {
             result.emplace(x.name, std::move(x.testedFiles));
         }

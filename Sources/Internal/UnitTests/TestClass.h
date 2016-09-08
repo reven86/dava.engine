@@ -2,7 +2,6 @@
 #define __DAVAENGINE_TESTCLASS_H__
 
 #include "Base/BaseTypes.h"
-#include "UnitTests/TestClass.h"
 
 namespace DAVA
 {
@@ -16,8 +15,8 @@ struct TestClassTypeKeeper
 
 struct CoverageTestInfo
 {
-    DAVA::Vector<DAVA::String> listTestFile;
-    DAVA::Map<DAVA::String, DAVA::String> listTargetFolders;
+    DAVA::Vector<DAVA::String> testFiles;
+    DAVA::Map<DAVA::String, DAVA::String> targetFolders;
 };
 
 class TestClass
@@ -41,7 +40,7 @@ public:
     virtual void TearDown(const String& testName);
     virtual void Update(float32 timeElapsed, const String& testName);
     virtual bool TestComplete(const String& testName) const;
-    virtual void FilesCoveredByTests(CoverageTestInfo&) const;
+    virtual CoverageTestInfo FilesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;
