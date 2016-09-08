@@ -40,14 +40,26 @@ void ReleaseQueryPool();
 
 namespace PerfQueryDX11
 {
+class FreqPerfQueryDX11
+{
+public:
+    void IssueTimestamp(Handle handle, ID3D11DeviceContext* context);
+    void BeginMeasurment(ID3D11DeviceContext* context);
+    void EndMeasurment(ID3D11DeviceContext* context);
+
+    ID3D11Query* freqQuery = nullptr;
+    DAVA::List<HPerfQuery> perfQueries;
+    uint64 freq = 0;
+    Handle frameQuery0 = InvalidHandle;
+    Handle frameQuery1 = InvalidHandle;
+    bool isFreqValid = false;
+};
+
 void SetupDispatch(Dispatch* dispatch);
 void IssueTimestampQuery(Handle query, ID3D11DeviceContext* context);
-void GetCurrentFrameQueries(Handle& start, Handle& end);
+FreqPerfQueryDX11* NextFreqPerfQuery();
 
-void BeginPerfQueryMeasurment(Handle frameQuery0, ID3D11DeviceContext* context);
-void ObtainPerfQueryMeasurment();
-void EndPerfQueryMeasurment(Handle frameQuery1, ID3D11DeviceContext* context);
-
+void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context);
 void ReleasePerfQueryPool();
 }
 

@@ -4,6 +4,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Base/Radix/Radix.h"
 #include "Debug/Stats.h"
+#include "Debug/GPUProfiler.h"
 
 namespace DAVA
 {
@@ -87,6 +88,17 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             DVASSERT(packet.primitiveCount);
             mat->BindParams(packet);
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
+
+            if (mat->GetEffectiveFXName() == NMaterialName::TILE_MASK)
+            {
+                DAVA_GPU_PROFILER_PACKET(packet, "Landscape");
+            }
+            else
+            {
+                packet.perfQueryStart = rhi::HPerfQuery();
+                packet.perfQueryEnd = rhi::HPerfQuery();
+            }
+
 #ifdef __DAVAENGINE_RENDERSTATS__
             packet.queryIndex = layerID;
 #endif

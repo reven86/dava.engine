@@ -44,7 +44,7 @@ public:
     uint32 GetFramesCount() const;
     void OnFrameEnd(); //should be called before rhi::Present();
 
-    void AddMarker(rhi::Handle& query0, rhi::Handle& query1, const char* markerName);
+    void AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName);
 
 protected:
     struct PerfQueryPair
@@ -96,8 +96,8 @@ protected:
 
 #if GPU_PROFILER_ENABLED
 
-#define DAVA_GPU_PROFILER_PACKET(packet, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(packet.perfQueryStart, packet.perfQueryEnd, marker_name);
-#define DAVA_GPU_PROFILER_RENDER_PASS(passDesc, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(passDesc.perfQueryStart, passDesc.perfQueryEnd, marker_name);
+#define DAVA_GPU_PROFILER_PACKET(packet, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryEnd), marker_name);
+#define DAVA_GPU_PROFILER_RENDER_PASS(passDesc, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryEnd), marker_name);
 
 #else
 

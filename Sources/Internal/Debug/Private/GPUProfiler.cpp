@@ -144,13 +144,13 @@ void GPUProfiler::OnFrameEnd()
     currentFrame.Reset();
 }
 
-void GPUProfiler::AddMarker(rhi::Handle& query0, rhi::Handle& query1, const char* markerName)
+void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName)
 {
     PerfQueryPair p = GetPerfQueryPair();
     currentFrame.pendingMarkers.push_back(Marker(markerName, p));
 
-    query0 = p.query[0];
-    query1 = p.query[1];
+    *query0 = p.query[0];
+    *query1 = p.query[1];
 }
 
 GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()

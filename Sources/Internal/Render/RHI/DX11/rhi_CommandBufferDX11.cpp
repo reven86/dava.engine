@@ -244,7 +244,7 @@ CommandDX11_SetMarker : public CommandDX11Impl<CommandDX11_SetMarker, DX11__DEBU
 };
 
 struct
-CommandDX11_IssueTimestamptQuery : public CommandDX11Impl<CommandDX11_IssueTimestamptQuery, DX11__SET_QUERY_BUFFER>
+CommandDX11_IssueTimestamptQuery : public CommandDX11Impl<CommandDX11_IssueTimestamptQuery, DX11__ISSUE_TIMESTAMP_QUERY>
 {
     Handle perfQuery;
 };
@@ -373,8 +373,7 @@ FrameDX11
 {
     unsigned number;
     Handle sync;
-    Handle perfQuery0;
-    Handle perfQuery1;
+    PerfQueryDX11::FreqPerfQueryDX11* freqQuery;
     std::vector<Handle> pass;
     uint32 readyToExecute : 1;
     uint32 toBeDiscarded : 1;
@@ -530,8 +529,7 @@ dx11_RenderPass_Begin(Handle pass)
         _DX11_Frame.push_back(FrameDX11());
         _DX11_Frame.back().number = _DX11_FrameNumber;
         _DX11_Frame.back().sync = rhi::InvalidHandle;
-        _DX11_Frame.back().perfQuery0 = rhi::InvalidHandle;
-        _DX11_Frame.back().perfQuery1 = rhi::InvalidHandle;
+        _DX11_Frame.back().freqQuery = PerfQueryDX11::NextFreqPerfQuery();
         _DX11_Frame.back().readyToExecute = false;
         _DX11_Frame.back().toBeDiscarded = false;
         _DX11_Frame.back().cmdList = nullptr;
@@ -1110,8 +1108,7 @@ _ExecuteQueuedCommandsDX11()
     std::vector<RenderPassDX11_t*> pass;
     std::vector<Handle> pass_h;
     ID3D11CommandList* cmdList = nullptr;
-    Handle frameQuery0 = rhi::InvalidHandle;
-    Handle frameQuery1 = rhi::InvalidHandle;
+    PerfQueryDX11::FreqPerfQueryDX11* freqPerfQuery = nullptr;
     unsigned frame_n = 0;
     bool do_exec = true;
     bool do_discard = false;
@@ -1142,8 +1139,7 @@ _ExecuteQueuedCommandsDX11()
         frame_n = _DX11_Frame.begin()->number;
         cmdList = _DX11_Frame.begin()->cmdList;
         do_discard = _DX11_Frame.begin()->toBeDiscarded;
-        frameQuery0 = _DX11_Frame.begin()->perfQuery0;
-        frameQuery1 = _DX11_Frame.begin()->perfQuery1;
+        freqPerfQuery = _DX11_Frame.begin()->freqQuery;
     }
     else
     {
@@ -1161,12 +1157,13 @@ _ExecuteQueuedCommandsDX11()
 
     _DX11_FrameSync.Unlock();
 
+    PerfQueryDX11::ObtainPerfQueryMeasurment(_D3D11_ImmediateContext);
+
     if (do_exec)
     {
         Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
 
-        PerfQueryDX11::ObtainPerfQueryMeasurment();
-        PerfQueryDX11::BeginPerfQueryMeasurment(frameQuery0, _D3D11_ImmediateContext);
+        freqPerfQuery->BeginMeasurment(_D3D11_ImmediateContext);
 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
@@ -1179,7 +1176,7 @@ _ExecuteQueuedCommandsDX11()
             RenderPassDX11_t* pp = *p;
 
             if (pp->perfQuery0 != InvalidHandle)
-                PerfQueryDX11::IssueTimestampQuery(pp->perfQuery0, _D3D11_ImmediateContext);
+                freqPerfQuery->IssueTimestamp(pp->perfQuery0, _D3D11_ImmediateContext);
 
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
@@ -1205,7 +1202,7 @@ _ExecuteQueuedCommandsDX11()
             }
 
             if (pp->perfQuery1 != InvalidHandle)
-                PerfQueryDX11::IssueTimestampQuery(pp->perfQuery1, _D3D11_ImmediateContext);
+                freqPerfQuery->IssueTimestamp(pp->perfQuery1, _D3D11_ImmediateContext);
         }
 
         _DX11_FrameSync.Lock();
@@ -1218,8 +1215,6 @@ _ExecuteQueuedCommandsDX11()
         }
         _DX11_FrameSync.Unlock();
 
-        PerfQueryDX11::EndPerfQueryMeasurment(frameQuery1, _D3D11_ImmediateContext);
-
         // do present
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
@@ -1229,6 +1224,8 @@ _ExecuteQueuedCommandsDX11()
         CHECK_HR(hr);
         if (hr == DXGI_ERROR_DEVICE_REMOVED)
             CHECK_HR(_D3D11_Device->GetDeviceRemovedReason());
+
+        freqPerfQuery->EndMeasurment(_D3D11_ImmediateContext);
 
         // update sync-objects
 
@@ -1452,7 +1449,6 @@ dx11_Present(Handle sync)
 
                 _DX11_Frame.back().readyToExecute = true;
                 _DX11_Frame.back().sync = sync;
-                PerfQueryDX11::GetCurrentFrameQueries(_DX11_Frame.back().perfQuery0, _DX11_Frame.back().perfQuery1);
 
                 _DX11_FrameStarted = false;
                 Trace("\n\n-------------------------------\nframe %u generated\n", _DX11_Frame.back().number);
