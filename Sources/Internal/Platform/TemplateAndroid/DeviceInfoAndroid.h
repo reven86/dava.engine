@@ -65,6 +65,8 @@ private:
     Function<jint()> getNetworkType;
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
+    Function<jint()> getDefaultDisplayWidth;
+    Function<jint()> getDefaultDisplayHeight;
 
     DeviceInfo::ScreenInfo screenInfo;
 };

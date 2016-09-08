@@ -124,12 +124,12 @@ String DeviceInfoPrivate::GetTimeZone()
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 int DeviceInfoPrivate::GetHTTPProxyPort()

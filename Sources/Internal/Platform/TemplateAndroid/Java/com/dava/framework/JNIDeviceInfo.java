@@ -19,6 +19,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -28,6 +29,8 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 public class JNIDeviceInfo {
     final static String TAG = "JNIDeviceInfo";
@@ -108,20 +111,48 @@ public class JNIDeviceInfo {
     }
     
     public static String GetHTTPProxyHost()
-    {		
+    {
         return System.getProperty("http.proxyHost");
     }
     
     public static int GetHTTPProxyPort()
     {
         String portStr = System.getProperty("http.proxyPort");
-        int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+        int proxyPort = Integer.parseInt((portStr != null ? portStr : "0"));
         return proxyPort;
     }
     
     public static String GetHTTPNonProxyHosts()
     {
         return System.getProperty("http.nonProxyHosts");
+    }
+    
+    private static Point GetDefaultDisplaySize()
+    {
+        Display display = null;
+    	if (JNIActivity.GetActivity() != null)
+        {
+    	    display = JNIActivity.GetActivity().getWindowManager().getDefaultDisplay();
+        }
+        else
+        {
+            display = DavaActivity.instance().getWindowManager().getDefaultDisplay();
+        }
+    	Point size = new Point();
+    	display.getSize(size);
+        return size;
+    }
+        
+    public static int GetScreenInfoWidth()
+    {
+    	Point size = GetDefaultDisplaySize();
+    	return size.x;
+    }
+    
+    public static int GetScreenInfoHeight()
+    {
+    	Point size = GetDefaultDisplaySize();
+    	return size.y;
     }
         
     private static final int NETWORK_TYPE_NOT_CONNECTED = 0;

@@ -29,6 +29,8 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
+    getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -165,9 +167,13 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = dynamic_cast<CorePlatformAndroid*>(Core::Instance());
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
+#else
+    screenInfo.width = getDefaultDisplayWidth();
+    screenInfo.height = getDefaultDisplayHeight();
     screenInfo.scale = 1;
 #endif
 }

@@ -41,63 +41,91 @@
 void CheckDeviceInfoValid()
 {
     using namespace DAVA;
+    Logger::Info("device info begin==========================================");
+
     auto platform = DeviceInfo::GetPlatform();
+    Logger::Info("platform enum index: %d", platform);
     DVASSERT(DeviceInfo::PLATFORM_UNKNOWN_VALUE != platform);
 
     auto platformString = DeviceInfo::GetPlatformString();
+    Logger::Info("platform name: %s", platformString.c_str());
     DVASSERT(platformString != "Unknown");
 
     auto version = DeviceInfo::GetVersion();
+    Logger::Info("version: %s", version.c_str());
     DVASSERT(version != "");
 
     auto manufacturer = DeviceInfo::GetManufacturer();
+    Logger::Info("manufacturer: %s", manufacturer.c_str());
     DVASSERT(manufacturer != "" || true);
 
     auto model = DeviceInfo::GetModel();
+    Logger::Info("model: %s", model.c_str());
     DVASSERT(model != "" || true);
 
     auto locale = DeviceInfo::GetLocale();
+    Logger::Info("locale: %s", locale.c_str());
     DVASSERT(locale != "");
 
     auto region = DeviceInfo::GetRegion();
+    Logger::Info("region: %s", region.c_str());
     DVASSERT(region != "");
 
     auto timezone = DeviceInfo::GetTimeZone();
+    Logger::Info("timezone: %s", timezone.c_str());
     DVASSERT(timezone != "");
 
     auto udid = DeviceInfo::GetUDID();
+    Logger::Info("udid: %s", udid.c_str());
     DVASSERT(udid != "");
 
     auto name = DeviceInfo::GetName();
+    Logger::Info("name: %s", name.c_str());
     DVASSERT(name != L"");
 
     auto httpProxyHost = DeviceInfo::GetHTTPProxyHost();
-    DVASSERT(httpProxyHost == "Not yet implemented");
+    Logger::Info("http_proxy_host: %s", httpProxyHost.c_str());
+    DVASSERT(httpProxyHost == "");
 
     auto httpNonProxyHosts = DeviceInfo::GetHTTPNonProxyHosts();
-    DVASSERT(httpNonProxyHosts == "Not yet implemented");
+    Logger::Info("http_non_proxy_host: %s", httpNonProxyHosts.c_str());
+    DVASSERT(httpNonProxyHosts == "");
 
     auto httpProxyPort = DeviceInfo::GetHTTPProxyPort();
+    Logger::Info("http_proxy_port: %d", httpProxyPort);
     DVASSERT(httpProxyPort == 0);
 
     auto screenInfo = DeviceInfo::GetScreenInfo();
+    Logger::Info("screen_info: w=%d h=%d scale=%d", screenInfo.width, screenInfo.height, screenInfo.scale);
     DVASSERT(screenInfo.height > 0);
     DVASSERT(screenInfo.width > 0);
     DVASSERT(screenInfo.scale >= 1);
 
     auto zbufferSize = DeviceInfo::GetZBufferSize();
+    Logger::Info("zbuffer_size: %d", zbufferSize);
     DVASSERT(zbufferSize == 24);
 
     auto gpuFamily = DeviceInfo::GetGPUFamily();
+    Logger::Info("gpu_family enum index: %d", gpuFamily);
     DVASSERT(gpuFamily != GPU_INVALID);
 
     auto networkInfo = DeviceInfo::GetNetworkInfo();
+    Logger::Info("network: type=%d signal_strength=%d", networkInfo.networkType, networkInfo.signalStrength);
     DVASSERT(networkInfo.networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
     DVASSERT(networkInfo.signalStrength >= 0 || true);
 
     List<DeviceInfo::StorageInfo> storageInfo = DeviceInfo::GetStoragesList();
+    for (const auto& info : storageInfo)
+    {
+        Logger::Info("storage info: type=%d total_space=%lld free_space=%lld, read_only=%d, removable=%d, emulated=%d",
+                     info.type, info.totalSpace, info.freeSpace, info.readOnly, info.removable, info.emulated);
+    }
     DVASSERT(storageInfo.empty() || true);
-    DVASSERT(DeviceInfo::GetCpuCount() > 0);
+
+    uint32 cpuCount = DeviceInfo::GetCpuCount();
+    Logger::Info("cpu_count: %d", cpuCount);
+    DVASSERT(cpuCount > 0);
+    Logger::Info("device info end============================================");
 }
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)

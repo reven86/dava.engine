@@ -130,13 +130,13 @@ WideString DeviceInfoPrivate::GetName()
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 // Not impletemted yet

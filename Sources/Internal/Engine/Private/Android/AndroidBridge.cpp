@@ -25,14 +25,18 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeInitializeEngine(
                                                                                 jstring internalFilesDir,
                                                                                 jstring sourceDir,
                                                                                 jstring packageName,
-                                                                                jstring cmdline)
+                                                                                jstring cmdline,
+                                                                                jint defaultDisplayWidth,
+                                                                                jint defaultDisplayHeight)
 {
     using namespace DAVA::JNI;
     androidBridge->InitializeEngine(JavaStringToString(externalFilesDir, env),
                                     JavaStringToString(internalFilesDir, env),
                                     JavaStringToString(sourceDir, env),
                                     JavaStringToString(packageName, env),
-                                    JavaStringToString(cmdline, env));
+                                    JavaStringToString(cmdline, env),
+                                    defaultDisplayWidth,
+                                    defaultDisplayHeight);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeShutdownEngine(JNIEnv* env, jclass jclazz)
@@ -197,7 +201,9 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
                                      String internalFilesDir,
                                      String sourceDir,
                                      String apkName,
-                                     String cmdline)
+                                     String cmdline,
+                                     int defaultDisplayW,
+                                     int defaultDisplayH)
 {
     if (engineBackend != nullptr)
     {
@@ -213,11 +219,16 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
     appPath = std::move(sourceDir);
     packageName = std::move(apkName);
 
+    defaultDisplayWidth = defaultDisplayW;
+    defaultDisplayHeight = defaultDisplayH;
+
     Logger::FrameworkDebug("=========== externalDocumentsDir='%s'", externalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== internalDocumentsDir='%s'", internalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== appPath='%s'", appPath.c_str());
     Logger::FrameworkDebug("=========== packageName='%s'", packageName.c_str());
     Logger::FrameworkDebug("=========== cmdline='%s'", cmdline.c_str());
+    Logger::FrameworkDebug("=========== defaultDisplayWidth=%d", defaultDisplayWidth);
+    Logger::FrameworkDebug("=========== defaultDisplayHeight=%d", defaultDisplayHeight);
 }
 
 void AndroidBridge::ShutdownEngine()
@@ -369,6 +380,16 @@ const String& AndroidBridge::GetApplicatiionPath()
 const String& AndroidBridge::GetPackageName()
 {
     return androidBridge->packageName;
+}
+
+int32 AndroidBridge::GetDefaultDisplayWidth()
+{
+    return androidBridge->defaultDisplayWidth;
+}
+
+int32 AndroidBridge::GetDefaultDisplayHeight()
+{
+    return androidBridge->defaultDisplayHeight;
 }
 
 } // namespace Private
