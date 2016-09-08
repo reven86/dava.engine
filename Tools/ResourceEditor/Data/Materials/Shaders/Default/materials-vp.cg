@@ -434,8 +434,9 @@ VPROG_BEGIN
 
 #elif (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
 
+	float4 translation = worldMatrix[3];
 	float3 up = cameraUp;
-	float3 dir = worldMatrix[3].xyz - cameraPosition;
+	float3 dir = translation.xyz - cameraPosition;
 
 #	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
 		float3 side = normalize(cross(dir, up));
@@ -446,8 +447,8 @@ VPROG_BEGIN
 		up = cross(side, dir);
 #	endif
 
-	float4 inPos = mul(float4(VP_IN_POSITION.xyz, 1.0), worldMatrix);
-	float4 outPos = float4(inPos.x * side + inPos.z * up + inPos.y * dir, 1.0);
+	float4 inPos = mul(float4(VP_IN_POSITION.xyz, 0.0), worldMatrix);
+	float4 outPos = translation + float4(inPos.x * side + inPos.z * up + inPos.y * dir, 0.0);
 	
 	VP_OUT_POSITION = mul(outPos, viewProjMatrix);
 	
