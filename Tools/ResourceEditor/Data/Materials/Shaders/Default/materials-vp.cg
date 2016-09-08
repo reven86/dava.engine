@@ -435,12 +435,14 @@ VPROG_BEGIN
 #elif (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
 
 	float3 up = cameraUp;
-	float3 dir = normalize(worldMatrix[3].xyz - cameraPosition);
-	float3 side = normalize(cross(dir, up));
+	float3 dir = worldMatrix[3].xyz - cameraPosition;
 
 #	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
+		float3 side = normalize(cross(dir, up));
 		dir = cross(up, side);
 #	else
+		dir = normalize(dir);
+		float3 side = normalize(cross(dir, up));
 		up = cross(side, dir);
 #	endif
 
