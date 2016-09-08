@@ -26,14 +26,12 @@ class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DA
 {
     Q_OBJECT
 public:
-    explicit EditorCore(DAVA::RenderWidget* renderWidget);
+    explicit EditorCore(DAVA::Engine* engine);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
-    void Start();
 
-    void OnLoopStarted();
-    void OnLoopStopped();
+    void OnGameLoopStarted();
     void OnWindowCreated(DAVA::Window& window);
 
 private slots:
@@ -63,6 +61,7 @@ private:
 
     void EnableCacheClient();
     void DisableCacheClient();
+    void ConnectInternal();
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
@@ -73,6 +72,7 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
+    DAVA::Engine* engine = nullptr;
 
 public:
     INTROSPECTION(EditorCore,
