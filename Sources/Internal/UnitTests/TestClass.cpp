@@ -22,9 +22,8 @@ bool TestClass::TestComplete(const String& testName) const
     return true;
 }
 
-Vector<String> TestClass::FilesCoveredByTests() const
+void TestClass::FilesCoveredByTests(CoverageTestInfo&) const
 {
-    return Vector<String>();
 }
 
 String TestClass::PrettifyTypeName(const String& name) const

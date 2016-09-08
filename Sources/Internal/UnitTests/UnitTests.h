@@ -185,22 +185,36 @@
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
 
+
 #define BEGIN_FILES_COVERED_BY_TESTS() \
-    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
-        DAVA::Vector<DAVA::String> result;
+    void FilesCoveredByTests(DAVA::UnitTests::CoverageTestInfo& testInfo) const override { \
+        testInfo.listTargetFolders.insert(std::pair<DAVA::String, DAVA::String>("all", DAVA::String(DAVA_FOLDERS)));\
+        const char* targetFolders = nullptr;
+
+#define FIND_FILES_IN_TARGET(targetname) \
+        targetFolders = TARGET_FOLDERS_##targetname;
 
 #define DECLARE_COVERED_FILES(classname) \
-        result.emplace_back(classname);
+        testInfo.listTestFile.emplace_back(classname); \
+        if (targetFolders != nullptr)\
+        { \
+            printf(">>>>sdfsdfsdf!!! %s %s\n", #classname, targetFolders);\
+            testInfo.listTargetFolders.insert(std::pair<DAVA::String, DAVA::String>(DAVA::String(classname), DAVA::String(targetFolders)));\
+        }
 
 #define END_FILES_COVERED_BY_TESTS() \
-        return result; \
     }
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
-    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
-        DAVA::Vector<DAVA::String> result; \
-        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
-        return result; \
-    }
+        BEGIN_FILES_COVERED_BY_TESTS() \
+        DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
+        END_FILES_COVERED_BY_TESTS()
+
+
+
+
+
+
+
 
 #endif // __DAVAENGINE_UNITTESTS_H__

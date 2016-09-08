@@ -13,7 +13,7 @@ import io
 from string import Template
 from collections import namedtuple
 
-CoverageMinimum    = 75.0
+CoverageMinimum    = 80.0
 
 class FileCover():
     def __init__(self, fileName, coverLines):
@@ -205,23 +205,27 @@ class CoverageReport():
             print 'ERROR : file {0} is missing or is not readable'.format( self.coverFilePath )
             return
 
-        coverFile          = open(self.coverFilePath).read()
-        jsonData           = json.loads(coverFile)
-        projectFolders     = jsonData[ 'ProjectFolders' ].split(' ')
+        coverFile               = open(self.coverFilePath).read()
+        jsonData                = json.loads(coverFile)
+        testsFolders            = {} #jsonData[ 'ProjectFolders' ].split(' ')
 
         self.pathUnityPack      = jsonData[ 'UnityFolder' ]
         self.testsCoverage      = {}
         self.testsCoverageFiles = []
+        
+        for file in jsonData[ 'CoverageFolders' ]:
+            folders = jsonData[ 'CoverageFolders' ][ file ]
+            testsFolders[ file ] = folders.split(' ')
 
+        
         for test in jsonData[ 'Coverage' ]:
             testedFiles = jsonData[ 'Coverage' ][ test ].split(' ')
             for file in testedFiles:
-                for ext in [ 'cpp', 'c' ]:
-                    find_list = find_files( '{0}.{1}'.format( file, ext ) , projectFolders )
-                    if len( find_list ):
-                        fileCover = FileCover( find_list[0], None )
-                        self.testsCoverage.setdefault(test, []).append( fileCover )
-                        self.testsCoverageFiles +=  [find_list[0]]
+                find_list = find_files( file, testsFolders[ file ] )
+                if len( find_list ):
+                    fileCover = FileCover( find_list[0], None )
+                    self.testsCoverage.setdefault(test, []).append( fileCover )
+                    self.testsCoverageFiles +=  [find_list[0]]
 
     def __processing_gcda_gcno_files( self ):
         

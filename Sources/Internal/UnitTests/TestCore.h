@@ -22,7 +22,7 @@ class TestCore final
         String name;
         bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
-        Vector<String> testedFiles;
+        CoverageTestInfo testedFiles;
     };
 
 public:
@@ -51,7 +51,7 @@ public:
 
     bool ProcessTests(float32 timeElapsed);
 
-    Map<String, Vector<String>> GetTestCoverage();
+    Map<String, CoverageTestInfo> GetTestCoverage();
 
     void TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage);
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);

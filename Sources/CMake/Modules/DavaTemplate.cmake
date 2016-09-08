@@ -40,6 +40,8 @@ macro( setup_main_executable )
 include      ( PlatformSettings )
 
 load_property( PROPERTY_LIST 
+        DEFINITIONS                
+        DEFINITIONS_${DAVA_PLATFORM_CURENT}
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -57,12 +59,26 @@ load_property( PROPERTY_LIST
         INCLUDES_${DAVA_PLATFORM_CURENT}
     )
 
+if( COVERAGE )
+    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+endif()
+
 if( INCLUDES )
     include_directories( ${INCLUDES})
 endif()
 
 if( INCLUDES_${DAVA_PLATFORM_CURENT} )
     include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )
+endif()
+
+if( DEFINITIONS )
+   add_definitions( ${DEFINITIONS} )
+endif()
+
+if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+    add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ) 
 endif()
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
@@ -446,7 +462,6 @@ if ( QT5_FOUND )
     )
 
 endif()
-
 
 if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )

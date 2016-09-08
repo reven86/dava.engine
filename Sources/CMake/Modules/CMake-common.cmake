@@ -86,7 +86,7 @@ macro (define_source)
     
     get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
     list( APPEND DEFINE_SOURCE_LIST "define_source" )
-    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} )        
+    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} ) 
     
     if( NOT ARG_RECURSIVE_CALL )
         set( PROJECT_SOURCE_FILES )
@@ -109,6 +109,7 @@ macro (define_source)
                     get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  DIRECTORY    )
                 endif()
                 append_property( PROJECT_FOLDERS ${FOLDER_NAME} )
+                list(APPEND TARGET_FOLDERS_${PROJECT_NAME} ${FOLDER_NAME} )
             endforeach ()
         endif()
     endif()
@@ -234,6 +235,8 @@ macro (define_source)
         #message( "")
         reset_property( PROJECT_FOLDERS )    
     endif()
+    
+    list( REMOVE_DUPLICATES TARGET_FOLDERS_${PROJECT_NAME} )
 
 endmacro ()
 
