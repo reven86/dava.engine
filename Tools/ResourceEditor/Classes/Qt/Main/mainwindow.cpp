@@ -76,7 +76,6 @@
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
