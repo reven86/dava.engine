@@ -85,7 +85,7 @@ public:
 
     void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor);
     void SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format);
-    void SetForceAntialiasingType(bool enable, rhi::AntialiasingType aaType);
+    void SetAntialiasingAllowed(bool allowed);
 
     void DebugDrawHierarchy(const Matrix4& cameraMatrix);
 
@@ -129,11 +129,10 @@ private:
     Camera* drawCamera = nullptr;
     NMaterial* globalMaterial = nullptr;
     RenderHelper* debugDrawer = nullptr;
-    rhi::AntialiasingType forcedAAType = rhi::AntialiasingType::NONE;
 
     bool hierarchyInitialized = false;
     bool forceUpdateLights = false;
-    bool overrideAntialiasingType = false;
+    bool allowAntialiasing = true;
 };
 
 inline RenderHierarchy* RenderSystem::GetRenderHierarchy() const
