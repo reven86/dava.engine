@@ -38,16 +38,17 @@ bool QueryIsCompleted(Handle buf);
 void ReleaseQueryPool();
 }
 
-namespace PerfQuerySetDX11
+namespace PerfQueryDX11
 {
 void SetupDispatch(Dispatch* dispatch);
-void BeginFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
-void EndFreqMeasurment(Handle handle, ID3D11DeviceContext* context);
-void IssueTimestampQuery(Handle handle, uint32 timestampIndex, ID3D11DeviceContext* context);
-void IssueFrameBeginQuery(Handle handle, ID3D11DeviceContext* context);
-void IssueFrameEndQuery(Handle handle, ID3D11DeviceContext* context);
-Handle Current();
-void ObtainResults(Handle handle);
+void IssueTimestampQuery(Handle query, ID3D11DeviceContext* context);
+void GetCurrentFrameQueries(Handle& start, Handle& end);
+
+void BeginPerfQueryMeasurment(Handle frameQuery0, ID3D11DeviceContext* context);
+void ObtainPerfQueryMeasurment();
+void EndPerfQueryMeasurment(Handle frameQuery1, ID3D11DeviceContext* context);
+
+void ReleasePerfQueryPool();
 }
 
 namespace PipelineStateDX11

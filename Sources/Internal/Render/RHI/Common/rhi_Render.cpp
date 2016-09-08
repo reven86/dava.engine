@@ -76,8 +76,6 @@ static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
 static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 static DAVA::Mutex scheduledDeleteMutex;
 
-static Handle CurFramePerfQuerySet = InvalidHandle;
-
 inline void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
 {
     scheduledDeleteMutex.Lock();
@@ -263,36 +261,48 @@ int QueryValue(HQueryBuffer buf, uint32 objectIndex)
 {
     return QueryBuffer::Value(buf, objectIndex);
 }
-HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
+
+//------------------------------------------------------------------------------
+
+HPerfQuery CreatePerfQuery()
 {
-    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
+    return HPerfQuery(PerfQuery::Create());
 }
-void ResetPerfQuerySet(HPerfQuerySet set)
-{
-    PerfQuerySet::Reset(set);
-}
-void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
-{
-    PerfQuerySet::GetStatus(hset, isReady, isValid);
-}
-void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
+
+//------------------------------------------------------------------------------
+
+void DeletePerfQuery(HPerfQuery handle, bool forceImmediate)
 {
     if (forceImmediate)
-        PerfQuerySet::Delete(set);
+        PerfQuery::Delete(handle);
     else
-        ScheduleResourceDeletion(set, RESOURCE_PERFQUERY_SET);
+        ScheduleResourceDeletion(handle, RESOURCE_PERFQUERY);
 }
-bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
+
+void ResetPerfQuery(HPerfQuery handle)
 {
-    return PerfQuerySet::GetFreq(set, freq);
+    PerfQuery::Reset(handle);
 }
-bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
+
+//------------------------------------------------------------------------------
+
+bool PerfQueryIsReady(HPerfQuery handle)
 {
-    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
+    return PerfQuery::IsReady(handle);
 }
-bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
+
+//------------------------------------------------------------------------------
+
+uint64 PerfQueryTimeStamp(HPerfQuery handle)
 {
-    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
+    return PerfQuery::Value(handle);
+}
+
+//------------------------------------------------------------------------------
+
+void SetFramePerfQueries(HPerfQuery startQuery, HPerfQuery endQuery)
+{
+    PerfQuery::SetCurrent(startQuery, endQuery);
 }
 
 //------------------------------------------------------------------------------
@@ -727,11 +737,6 @@ bool SyncObjectSignaled(HSyncObject obj)
 {
     return SyncObject::IsSygnaled(obj);
 }
-void SetFramePerfQuerySet(HPerfQuerySet hset)
-{
-    CurFramePerfQuerySet = hset;
-    PerfQuerySet::SetCurrent(hset);
-}
 
 //------------------------------------------------------------------------------
 
@@ -864,6 +869,9 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
 
     for (const Packet *p = packet, *p_end = packet + packetCount; p != p_end; ++p)
     {
+        if (p->perfQueryStart.IsValid())
+            rhi::CommandBuffer::IssueTimestampQuery(cmdBuf, p->perfQueryStart);
+
         Handle dsState = (p->depthStencilState != rhi::InvalidHandle) ? p->depthStencilState : pl->defDepthStencilState;
         Handle sState = (p->samplerState != rhi::InvalidHandle) ? p->samplerState : pl->defSamplerState;
 
@@ -1011,6 +1019,9 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
                 rhi::CommandBuffer::DrawPrimitive(cmdBuf, p->primitiveType, p->primitiveCount);
             }
         }
+
+        if (p->perfQueryEnd.IsValid())
+            rhi::CommandBuffer::IssueTimestampQuery(cmdBuf, p->perfQueryEnd);
 
         ++pl->batchIndex;
     }

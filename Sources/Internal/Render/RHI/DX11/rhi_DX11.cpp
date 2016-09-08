@@ -110,6 +110,7 @@ static void
 dx11_Uninitialize()
 {
     QueryBufferDX11::ReleaseQueryPool();
+    PerfQueryDX11::ReleasePerfQueryPool();
     UninitializeRenderThreadDX11();
 }
 
@@ -340,7 +341,7 @@ void dx11_Initialize(const InitParam& param)
     VertexBufferDX11::SetupDispatch(&DispatchDX11);
     IndexBufferDX11::SetupDispatch(&DispatchDX11);
     QueryBufferDX11::SetupDispatch(&DispatchDX11);
-    PerfQuerySetDX11::SetupDispatch(&DispatchDX11);
+    PerfQueryDX11::SetupDispatch(&DispatchDX11);
     TextureDX11::SetupDispatch(&DispatchDX11);
     PipelineStateDX11::SetupDispatch(&DispatchDX11);
     ConstBufferDX11::SetupDispatch(&DispatchDX11);

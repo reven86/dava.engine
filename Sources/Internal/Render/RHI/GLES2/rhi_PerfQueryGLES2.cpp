@@ -62,14 +62,14 @@ namespace PerfQuerySetGLES2
 {
 void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_PerfQuerySet_Create = &gles2_PerfQuerySet_Create;
-    dispatch->impl_PerfQuerySet_Delete = &gles2_PerfQuerySet_Delete;
-    dispatch->impl_PerfQuerySet_Reset = &gles2_PerfQuerySet_Reset;
-    dispatch->impl_PerfQuerySet_SetCurrent = &gles2_PerfQuerySet_SetCurrent;
-    dispatch->impl_PerfQuerySet_GetStatus = &gles2_PerfQuerySet_GetStatus;
-    dispatch->impl_PerfQuerySet_GetFreq = &gles2_PerfQuerySet_GetFreq;
-    dispatch->impl_PerfQuerySet_GetTimestamp = &gles2_PerfQuerySet_GetTimestamp;
-    dispatch->impl_PerfQuerySet_GetFrameTimestamps = &gles2_PerfQuerySet_GetFrameTimestamps;
+    //dispatch->impl_PerfQuerySet_Create = &gles2_PerfQuerySet_Create;
+    //dispatch->impl_PerfQuerySet_Delete = &gles2_PerfQuerySet_Delete;
+    //dispatch->impl_PerfQuerySet_Reset = &gles2_PerfQuerySet_Reset;
+    //dispatch->impl_PerfQuerySet_SetCurrent = &gles2_PerfQuerySet_SetCurrent;
+    //dispatch->impl_PerfQuerySet_GetStatus = &gles2_PerfQuerySet_GetStatus;
+    //dispatch->impl_PerfQuerySet_GetFreq = &gles2_PerfQuerySet_GetFreq;
+    //dispatch->impl_PerfQuerySet_GetTimestamp = &gles2_PerfQuerySet_GetTimestamp;
+    //dispatch->impl_PerfQuerySet_GetFrameTimestamps = &gles2_PerfQuerySet_GetFrameTimestamps;
 }
 }
 

@@ -14,6 +14,7 @@
 
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Debug/GPUProfiler.h"
 
 namespace DAVA
 {
@@ -324,9 +325,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     PrepareVisibilityArrays(mainCamera, renderSystem);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
-    passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
-    passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
-
+    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "MainForward3D");
     if (BeginRenderPass())
     {
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")

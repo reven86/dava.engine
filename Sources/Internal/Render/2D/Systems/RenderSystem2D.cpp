@@ -9,6 +9,8 @@
 
 #include "Render/ShaderCache.h"
 
+#include "Debug/GPUProfiler.h"
+
 namespace DAVA
 {
 namespace
@@ -150,8 +152,7 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
-    renderPass2DConfig.PerfQueryIndex0 = PERFQUERY__2D_PASS_T0;
-    renderPass2DConfig.PerfQueryIndex1 = PERFQUERY__2D_PASS_T1;
+    DAVA_GPU_PROFILER_RENDER_PASS(renderPass2DConfig, "Render2D");
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;

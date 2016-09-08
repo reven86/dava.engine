@@ -313,42 +313,40 @@ int Value(Handle buf, uint32 objectIndex)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace PerfQuerySet
+
+namespace PerfQuery
 {
-Handle Create(uint32 maxTimestampCount)
+Handle Create()
 {
-    return (*_Impl.impl_PerfQuerySet_Create)(maxTimestampCount);
-}
-void Reset(Handle set)
-{
-    (*_Impl.impl_PerfQuerySet_Reset)(set);
-}
-void SetCurrent(Handle set)
-{
-    (*_Impl.impl_PerfQuerySet_SetCurrent)(set);
-}
-void Delete(Handle set)
-{
-    (*_Impl.impl_PerfQuerySet_Delete)(set);
+    return (*_Impl.impl_PerfQuery_Create)();
 }
 
-void GetStatus(Handle set, bool* isReady, bool* isValid)
+void Delete(Handle query)
 {
-    (*_Impl.impl_PerfQuerySet_GetStatus)(set, isReady, isValid);
+    (*_Impl.impl_PerfQuery_Delete)(query);
 }
-bool GetFreq(Handle set, uint64* freq)
+
+void Reset(Handle query)
 {
-    return (*_Impl.impl_PerfQuerySet_GetFreq)(set, freq);
+    (*_Impl.impl_PerfQuery_Reset)(query);
 }
-bool GetTimestamp(Handle set, uint32 timestampIndex, uint64* timestamp)
+
+bool IsReady(Handle query)
 {
-    return (*_Impl.impl_PerfQuerySet_GetTimestamp)(set, timestampIndex, timestamp);
+    return (*_Impl.impl_PerfQuery_IsReady)(query);
 }
-bool GetFrameTimestamps(Handle set, uint64* t0, uint64* t1)
+
+uint64 Value(Handle query)
 {
-    return (*_Impl.impl_PerfQuerySet_GetFrameTimestamps)(set, t0, t1);
+    return (*_Impl.impl_PerfQuery_Value)(query);
+}
+
+void SetCurrent(Handle startQuery, Handle endQuery)
+{
+    (*_Impl.impl_PerfQuery_SetCurrent)(startQuery, endQuery);
 }
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace Texture
@@ -656,9 +654,9 @@ void SetQueryIndex(Handle cmdBuf, uint32 index)
 {
     (*_Impl.impl_CommandBuffer_SetQueryIndex)(cmdBuf, index);
 }
-void IssueTimestampQuery(Handle cmdBuf, Handle pqset, uint32 timestampIndex)
+void IssueTimestampQuery(Handle cmdBuf, Handle perfQuery)
 {
-    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, pqset, timestampIndex);
+    (*_Impl.impl_CommandBuffer_IssueTimestampQuery)(cmdBuf, perfQuery);
 }
 
 void SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buf)

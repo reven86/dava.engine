@@ -62,14 +62,14 @@ namespace PerfQuerySetDX9
 {
 void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_PerfQuerySet_Create = &dx9_PerfQuerySet_Create;
-    dispatch->impl_PerfQuerySet_Delete = &dx9_PerfQuerySet_Delete;
-    dispatch->impl_PerfQuerySet_Reset = &dx9_PerfQuerySet_Reset;
-    dispatch->impl_PerfQuerySet_SetCurrent = &dx9_PerfQuerySet_SetCurrent;
-    dispatch->impl_PerfQuerySet_GetStatus = &dx9_PerfQuerySet_GetStatus;
-    dispatch->impl_PerfQuerySet_GetFreq = &dx9_PerfQuerySet_GetFreq;
-    dispatch->impl_PerfQuerySet_GetTimestamp = &dx9_PerfQuerySet_GetTimestamp;
-    dispatch->impl_PerfQuerySet_GetFrameTimestamps = &dx9_PerfQuerySet_GetFrameTimestamps;
+    //dispatch->impl_PerfQuerySet_Create = &dx9_PerfQuerySet_Create;
+    //dispatch->impl_PerfQuerySet_Delete = &dx9_PerfQuerySet_Delete;
+    //dispatch->impl_PerfQuerySet_Reset = &dx9_PerfQuerySet_Reset;
+    //dispatch->impl_PerfQuerySet_SetCurrent = &dx9_PerfQuerySet_SetCurrent;
+    //dispatch->impl_PerfQuerySet_GetStatus = &dx9_PerfQuerySet_GetStatus;
+    //dispatch->impl_PerfQuerySet_GetFreq = &dx9_PerfQuerySet_GetFreq;
+    //dispatch->impl_PerfQuerySet_GetTimestamp = &dx9_PerfQuerySet_GetTimestamp;
+    //dispatch->impl_PerfQuerySet_GetFrameTimestamps = &dx9_PerfQuerySet_GetFrameTimestamps;
 }
 }
 

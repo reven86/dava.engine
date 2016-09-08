@@ -46,15 +46,12 @@ Dispatch
     bool (*impl_QueryBuffer_ObjectIsReady)(Handle buf, uint32 objectIndex);
     int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
 
-    Handle (*impl_PerfQuerySet_Create)(uint32 maxQueryCount);
-    void (*impl_PerfQuerySet_Delete)(Handle set);
-    void (*impl_PerfQuerySet_Reset)(Handle set);
-    void (*impl_PerfQuerySet_SetCurrent)(Handle set);
-    void (*impl_PerfQuerySet_GetStatus)(Handle set, bool* isReady, bool* isValid);
-    bool (*impl_PerfQuerySet_IsValid)(Handle handle);
-    bool (*impl_PerfQuerySet_GetFreq)(Handle set, uint64* freq);
-    bool (*impl_PerfQuerySet_GetTimestamp)(Handle set, uint32 timestampIndex, uint64* time);
-    bool (*impl_PerfQuerySet_GetFrameTimestamps)(Handle set, uint64* t0, uint64* t1);
+    Handle (*impl_PerfQuery_Create)();
+    void (*impl_PerfQuery_Delete)(Handle query);
+    void (*impl_PerfQuery_Reset)(Handle query);
+    bool (*impl_PerfQuery_IsReady)(Handle query);
+    uint64 (*impl_PerfQuery_Value)(Handle query);
+    void (*impl_PerfQuery_SetCurrent)(Handle startQuery, Handle endQuery);
 
     Handle (*impl_Texture_Create)(const Texture::Descriptor& desc);
     void (*impl_Texture_Delete)(Handle);
@@ -106,7 +103,7 @@ Dispatch
     void (*impl_CommandBuffer_SetIndices)(Handle, Handle);
     void (*impl_CommandBuffer_SetQueryIndex)(Handle, uint32);
     void (*impl_CommandBuffer_SetQueryBuffer)(Handle, Handle);
-    void (*impl_CommandBuffer_IssueTimestampQuery)(Handle, Handle, uint32);
+    void (*impl_CommandBuffer_IssueTimestampQuery)(Handle, Handle);
     void (*impl_CommandBuffer_SetFragmentConstBuffer)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetFragmentTexture)(Handle, uint32, Handle);
     void (*impl_CommandBuffer_SetDepthStencilState)(Handle, Handle);
