@@ -14,22 +14,14 @@ DAVA_TESTCLASS (AnyAnyFnTest)
 
     struct Trivial
     {
-        Trivial() = default;
-
-        Trivial(int a_, int b_)
-            : a(a_)
-            , b(b_)
-        {
-        }
-
         bool operator==(const Trivial& t) const
         {
             return (a == t.a && b == t.b && c == t.c);
         }
 
-        int a = 0;
-        int b = 0;
-        int c = 0;
+        int a;
+        int b;
+        int c;
     };
 
     struct NotTrivial
@@ -454,7 +446,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         }
 
         Trivial triv;
-        Trivial triv1(11, 22);
+        Trivial triv1{ 11, 22 };
 
         a.LoadValue(&triv, Type::Instance<Trivial>());
         TEST_VERIFY(a.Get<Trivial>() == triv);

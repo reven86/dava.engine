@@ -227,11 +227,11 @@ DAVA_NOINLINE size_t GetBacktrace(void** frames, size_t depth)
 #elif defined(__DAVAENGINE_APPLE__)
         sz = backtrace(frames, static_cast<int>(depth));
 #elif defined(__DAVAENGINE_ANDROID__)
-        StackCrawlState state;
+        BacktraiceDetails::StackCrawlState state;
         state.count = depth;
         state.frames = frames;
-        _Unwind_Backtrace(&TraceFunction, &state);
-        szn = depth - state.count;
+        _Unwind_Backtrace(&BacktraiceDetails::TraceFunction, &state);
+        sz = depth - state.count;
 #endif
     }
 

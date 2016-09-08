@@ -36,7 +36,7 @@ public:
     bool IsPointer() const;
     bool IsReference() const;
     bool IsFundamental() const;
-    bool IsTriviallyCopyable() const;
+    bool IsTrivial() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -52,7 +52,7 @@ private:
         isPointer,
         isReference,
         isFundamental,
-        isTriviallyCopyable,
+        isTrivial,
     };
 
     size_t size = 0;

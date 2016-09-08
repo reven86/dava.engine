@@ -11,7 +11,7 @@ void Any::LoadValue(void* data, const Type* type_)
         void** src = reinterpret_cast<void**>(data);
         anyStorage.SetAuto(*src);
     }
-    else if (type->IsTriviallyCopyable())
+    else if (type->IsTrivial())
     {
         anyStorage.SetData(data, type->GetSize());
     }
@@ -35,7 +35,7 @@ void Any::StoreValue(void* data, size_t size) const
             void** dst = reinterpret_cast<void**>(data);
             *dst = anyStorage.GetAuto<void*>();
         }
-        else if (type->IsTriviallyCopyable())
+        else if (type->IsTrivial())
         {
             std::memcpy(data, anyStorage.GetData(), size);
         }
@@ -74,7 +74,7 @@ bool Any::operator==(const Any& any) const
         return false;
     }
 
-    if (type->IsTriviallyCopyable())
+    if (type->IsTrivial())
     {
         return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), type->GetSize()));
     }

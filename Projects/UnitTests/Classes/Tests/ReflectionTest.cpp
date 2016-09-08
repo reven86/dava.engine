@@ -447,7 +447,7 @@ DAVA_TESTCLASS (ReflectionTest)
 
             DAVA::Any a = ctor->Create(DAVA::CtorWrapper::Policy::ByValue, args...);
             DAVA::Any b = T(args...);
-            TEST_VERIFY(a == b);
+            TEST_VERIFY(a.Get<T>() == b.Get<T>());
 
             a = ctor->Create(DAVA::CtorWrapper::Policy::ByPointer, args...);
             TEST_VERIFY(*a.Get<T*>() == b.Get<T>());

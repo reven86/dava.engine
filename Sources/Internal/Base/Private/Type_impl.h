@@ -43,9 +43,9 @@ inline bool Type::IsFundamental() const
     return flags.test(static_cast<size_t>(TypeFlag::isFundamental));
 }
 
-inline bool Type::IsTriviallyCopyable() const
+inline bool Type::IsTrivial() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isTriviallyCopyable));
+    return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
 }
 
 inline const Type* Type::Decay() const
@@ -146,7 +146,7 @@ void Type::Init(Type** ptype)
     type.flags.set(isPointer, std::is_pointer<T>::value);
     type.flags.set(isReference, std::is_reference<T>::value);
     type.flags.set(isFundamental, std::is_fundamental<T>::value);
-    type.flags.set(isTriviallyCopyable, std::is_trivially_copyable<T>::value);
+    type.flags.set(isTrivial, std::is_trivial<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
     type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);
