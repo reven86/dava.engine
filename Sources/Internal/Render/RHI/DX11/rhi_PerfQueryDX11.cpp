@@ -109,7 +109,7 @@ static bool dx11_PerfQuery_IsReady(Handle handle)
 
     if (perfQuery)
     {
-        ret = perfQuery->isReady && perfQuery->freq;
+        ret = perfQuery->isReady;
     }
 
     return ret;
