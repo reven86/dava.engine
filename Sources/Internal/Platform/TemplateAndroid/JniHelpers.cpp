@@ -1,12 +1,9 @@
-#include "JniHelpers.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
 
-#if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Private/Android/AndroidBridge.h"
-#else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#endif
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
 #include "Utils/UTF8Utils.h"
@@ -22,9 +19,6 @@ namespace JNI
 {
 JNIEnv* GetEnv()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::GetEnv();
-#else
     JNIEnv* env;
     JavaVM* vm = GetJVM();
 
@@ -34,14 +28,10 @@ JNIEnv* GetEnv()
     }
     DVASSERT(nullptr != env);
     return env;
-#endif
 }
 
 void AttachCurrentThreadToJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::AttachCurrentThreadToJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
@@ -53,14 +43,10 @@ void AttachCurrentThreadToJVM()
         if (vm->AttachCurrentThread(&env, NULL) != 0)
             Logger::Error("runtime_error(Could not attach current thread to JNI)");
     }
-#endif
 }
 
 void DetachCurrentThreadFromJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::DetachCurrentThreadFromJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
@@ -71,7 +57,6 @@ void DetachCurrentThreadFromJVM()
         if (0 != vm->DetachCurrentThread())
             Logger::Error("runtime_error(Could not detach current thread from JNI)");
     }
-#endif
 }
 
 Rect V2I(const Rect& srcRect)
@@ -81,9 +66,6 @@ Rect V2I(const Rect& srcRect)
 
 DAVA::String ToString(const jstring jniString)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToString(jniString);
-#else
     DAVA::String result;
 
     if (jniString == nullptr)
@@ -113,31 +95,22 @@ DAVA::String ToString(const jstring jniString)
     }
 
     return result;
-#endif
 }
 
 DAVA::WideString ToWideString(const jstring jniString)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToWideString(jniString);
-#else
     DAVA::String utf8 = ToString(jniString);
     return DAVA::UTF8Utils::EncodeToWideString(utf8);
-#endif
 }
 
 jstring ToJNIString(const DAVA::WideString& string)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::WideStringToJavaString(string);
-#else
     JNIEnv* env = GetEnv();
     DVASSERT(env);
 
     String utf8 = DAVA::UTF8Utils::EncodeToUTF8(string);
 
     return env->NewStringUTF(utf8.c_str());
-#endif
 }
 
 jobject JavaClass::classLoader = nullptr;
@@ -150,49 +123,49 @@ void JavaClass::Initialize()
     jclass jclass_JNIActivity = env->FindClass("com/dava/framework/JNIActivity");
     if (jclass_JNIActivity == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jclass jclass_Class = env->GetObjectClass(jclass_JNIActivity);
     if (jclass_Class == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jclass jclass_ClassLoader = env->FindClass("java/lang/ClassLoader");
     if (jclass_ClassLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jmethodID jmethod_Class_getClassLoader = env->GetMethodID(jclass_Class, "getClassLoader", "()Ljava/lang/ClassLoader;");
     if (jmethod_Class_getClassLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jobject classLoader1 = env->CallObjectMethod(jclass_JNIActivity, jmethod_Class_getClassLoader);
     if (classLoader1 == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     classLoader = env->NewGlobalRef(classLoader1);
     if (classLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jmethod_ClassLoader_findClass = env->GetMethodID(jclass_ClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
     if (jmethod_ClassLoader_findClass == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 }
@@ -238,7 +211,7 @@ void JavaClass::FindJavaClass()
     jclass foundLocalRefClass = static_cast<jclass>(env->CallObjectMethod(classLoader, jmethod_ClassLoader_findClass, className));
     env->DeleteLocalRef(className);
 
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
 
     if (nullptr == foundLocalRefClass)
     {
@@ -251,4 +224,6 @@ void JavaClass::FindJavaClass()
 }
 }
 }
-#endif
+
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

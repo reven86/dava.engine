@@ -8,7 +8,7 @@
 
 #include <shellapi.h>
 
-#include "Engine/Public/Win32/NativeServiceWin32.h"
+#include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
