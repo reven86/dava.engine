@@ -352,7 +352,6 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 void DeviceInfoPrivate::InitCarrierLinesAsync()
 {
     auto asyncTask = ::concurrency::create_task([this]() {
-        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
         try
         {
             using ::Windows::ApplicationModel::Calls::PhoneLine;
