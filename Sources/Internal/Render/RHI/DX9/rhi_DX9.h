@@ -111,7 +111,6 @@ void SetupDispatch(Dispatch* dispatch);
     if (FAILED(hr)) \
     { \
         Logger::Error("%s failed (%08X):\n%s\n", name, hr, D3D9ErrorText(hr)); \
-		DVASSERT(0); \
     } \
 }
 
