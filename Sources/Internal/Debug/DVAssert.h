@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO: get rid of this dependency
 #include "Debug/Backtrace.h"
 
 /// \defgroup Asserts
@@ -83,9 +84,6 @@ void AddHandler(const Handler handler);
 /// Unregisters a handler if it was added before
 /// \param[in] handler Handler to remove
 void RemoveHandler(const Handler handler);
-
-/// \returns Vector of registred handlers
-const Vector<Handler>& GetHandlers();
 }
 }
 

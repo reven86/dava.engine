@@ -34,13 +34,13 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
 
     const bool halt = DVAssertMessage::ShowMessage(
     DVAssertMessage::ALWAYS_MODAL,
-    "%s\n"
+    "Assert failed\n"
     "Expression: %s\n"
     "Message: %s\n"
     "At %s:%d\n"
     "Callstack:\n"
     "%s",
-    AssertMessageTag.c_str(), assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
+    assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
     Debug::BacktraceToString(assertInfo.backtrace, backtraceDepth).c_str());
 
     return halt ? FailBehaviour::Halt : FailBehaviour::Continue;

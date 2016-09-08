@@ -1,4 +1,6 @@
 #include "Debug/DVAssert.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 
 #include <csignal>
 
@@ -8,8 +10,12 @@ namespace Assert
 {
 static Vector<Handler> registredHandlers;
 
+static Mutex registredHandlersMutex;
+
 void AddHandler(const Handler handler)
 {
+    LockGuard<Mutex> lock(registredHandlersMutex);
+
     const Vector<Handler>::iterator position = std::find(registredHandlers.begin(), registredHandlers.end(), handler);
     if (position != registredHandlers.end())
     {
@@ -21,16 +27,13 @@ void AddHandler(const Handler handler)
 
 void RemoveHandler(const Handler handler)
 {
+    LockGuard<Mutex> lock(registredHandlersMutex);
+
     const Vector<Handler>::iterator position = std::find(registredHandlers.begin(), registredHandlers.end(), handler);
     if (position != registredHandlers.end())
     {
         registredHandlers.erase(position);
     }
-}
-
-const Vector<Handler>& GetHandlers()
-{
-    return registredHandlers;
 }
 }
 }
@@ -66,9 +69,14 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const DAVA::Vector<DAVA::Debug::StackFrame>& backtrace,
                                          const char* const message)
 {
-    const DAVA::Vector<DAVA::Assert::Handler>& handlers = DAVA::Assert::GetHandlers();
+    // Copy handlers list to avoid data race in case some handler uses AddHandler or RemoveHandler functions
+    DAVA::Vector<DAVA::Assert::Handler> handlersCopy;
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(DAVA::Assert::registredHandlersMutex);
+        handlersCopy = DAVA::Assert::registredHandlers;
+    }
 
-    if (handlers.empty())
+    if (handlersCopy.empty())
     {
         return DAVA::Assert::FailBehaviour::Default;
     }
@@ -80,7 +88,7 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
     const DAVA::Assert::AssertInfo assertInfo(expr, fileName, lineNumber, message, backtrace);
 
     DAVA::Assert::FailBehaviour resultBehaviour = DAVA::Assert::FailBehaviour::Default;
-    for (const DAVA::Assert::Handler& handler : handlers)
+    for (const DAVA::Assert::Handler& handler : handlersCopy)
     {
         const DAVA::Assert::FailBehaviour requestedBehaviour = handler(assertInfo);
 
