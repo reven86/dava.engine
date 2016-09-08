@@ -163,7 +163,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 testClassFinishedCallback(curTestClassName);
 
                 if (curTestClass->TestCount() > 0)
-                { // Get and save files names which are covered by test only if test files has tests                    
+                { // Get and save files names which are covered by test only if test files has tests
                     testClasses[curTestClassIndex].testedFiles = curTestClass->FilesCoveredByTests();
                 }
 
