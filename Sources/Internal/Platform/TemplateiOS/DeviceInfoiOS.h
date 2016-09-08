@@ -6,8 +6,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Platform/DeviceInfoPrivateBase.h"
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
 
 namespace DAVA
 {
@@ -15,6 +13,7 @@ class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
     DeviceInfoPrivate();
+    ~DeviceInfoPrivate();
     DeviceInfo::ePlatform GetPlatform();
     String GetPlatformString();
     String GetVersion();
@@ -40,10 +39,8 @@ public:
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
-
-    void OnCarrierChange(CTCarrier* carrier);
-    CTTelephonyNetworkInfo* telephonyNetworkInfo;
-    NSString* carrierName;
+    struct DeviceInfoObjcBridge;
+    std::unique_ptr<DeviceInfoObjcBridge> bridge;
 };
 
 }; // namespace DAVA

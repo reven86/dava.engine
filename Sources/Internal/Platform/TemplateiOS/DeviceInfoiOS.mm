@@ -12,23 +12,45 @@
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
 
 #import "Platform/Reachability.h"
 
 namespace DAVA
 {
-DeviceInfoPrivate::DeviceInfoPrivate()
+struct DeviceInfoPrivate::DeviceInfoObjcBridge final
 {
-    telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier* phoneCarrier = [telephonyNetworkInfo subscriberCellularProvider];
-    carrierName = [phoneCarrier carrierName];
-    if (carrierName == nil)
+    void OnCarrierChange(CTCarrier* carrier)
     {
-        carrierName = @"";
+        NSString* newCarrier = [carrier carrierName];
+        if (![newCarrier isEqualToString:carrierName])
+        {
+            carrierName = [carrier carrierName];
+            DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
+        }
     }
-    telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
-        OnCarrierChange(carrier);
+    CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
+    NSString* carrierName = nullptr;
+};
+
+DeviceInfoPrivate::DeviceInfoPrivate()
+    : bridge(new DeviceInfoObjcBridge)
+{
+    bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
+    bridge->carrierName = [phoneCarrier carrierName];
+    if (bridge->carrierName == nil)
+    {
+        bridge->carrierName = @"";
+    }
+    bridge->telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
+        bridge->OnCarrierChange(carrier);
     };
+}
+
+DeviceInfoPrivate::~DeviceInfoPrivate()
+{
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -406,17 +428,7 @@ bool DeviceInfoPrivate::IsTouchPresented()
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return StringFromNSString(carrierName);
-}
-
-void DeviceInfoPrivate::OnCarrierChange(CTCarrier* carrier)
-{
-    NSString* newCarrier = [carrier carrierName];
-    if (![newCarrier isEqualToString:carrierName])
-    {
-        carrierName = [carrier carrierName];
-        DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
-    }
+    return StringFromNSString(bridge->carrierName);
 }
 }
 #endif
