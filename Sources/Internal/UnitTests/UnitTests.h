@@ -195,22 +195,21 @@
 //TARGET_FOLDERS list of folders with source code for the current target has
 //
 
-#ifdef COVERAGE
+#if defined(TEST_COVERAGE)
 
 #define BEGIN_FILES_COVERED_BY_TESTS() \
-    CoverageTestInfo FilesCoveredByTests() const override { \
+    DAVA::UnitTests::CoverageTestInfo FilesCoveredByTests() const override { \
         DAVA::UnitTests::CoverageTestInfo testInfo;  \
-        testInfo.targetFolders.emplace_back("all", DAVA::String(DAVA_FOLDERS));\
+        testInfo.targetFolders.emplace("all", DAVA::String(DAVA_FOLDERS)); \
         const char* targetFolders = nullptr;
 
-#define FIND_FILES_IN_TARGET(targetname) \
-        targetFolders = TARGET_FOLDERS_##targetname;
+#define FIND_FILES_IN_TARGET(targetname) 
 
 #define DECLARE_COVERED_FILES(classname) \
         testInfo.testFiles.emplace_back(classname); \
         if (targetFolders != nullptr)\
         { \
-            testInfo.targetFolders.emplace_back(DAVA::String(classname), DAVA::String(targetFolders));\
+            testInfo.targetFolders.emplace(DAVA::String(classname), DAVA::String(targetFolders));\
         }
 
 #define END_FILES_COVERED_BY_TESTS() \
@@ -225,6 +224,7 @@ END_FILES_COVERED_BY_TESTS()
 #else
 
 #define BEGIN_FILES_COVERED_BY_TESTS()
+#define FIND_FILES_IN_TARGET(targetname)
 #define DECLARE_COVERED_FILES(classname)
 #define END_FILES_COVERED_BY_TESTS()
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS()
