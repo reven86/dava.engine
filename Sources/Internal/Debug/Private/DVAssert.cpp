@@ -1,5 +1,7 @@
 #include "Debug/DVAssert.h"
 
+#include <csignal>
+
 namespace DAVA
 {
 namespace Assert
@@ -32,6 +34,13 @@ const Vector<Handler>& GetHandlers()
 }
 }
 }
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+void RaiseSigTrap()
+{
+    raise(SIGTRAP);
+}
+#endif
 
 int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
 {

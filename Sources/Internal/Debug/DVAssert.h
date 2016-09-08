@@ -2,8 +2,6 @@
 
 #include "Debug/Backtrace.h"
 
-#include <csignal>
-
 /// \defgroup Asserts
 /// Asserts are a set of macroses for testing conditions which are always expected to be true.
 ///
@@ -92,12 +90,13 @@ const Vector<Handler>& GetHandlers();
 }
 
 // Macro for generating debug break
-// It's not a function in order to prevent stacktrace altering
+// It's not a function on Windows in order to prevent stacktrace altering
 // TODO: release behaviour?
 #if defined(__DAVAENGINE_WINDOWS__)
 #define DVASSERT_HALT() __debugbreak()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#define DVASSERT_HALT() raise(SIGTRAP)
+void RaiseSigTrap();
+#define DVASSERT_HALT() RaiseSigTrap();
 #else
 #error "DVASSERT_HALT is not defined for current platform"
 #endif
