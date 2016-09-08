@@ -73,6 +73,11 @@ EditorCore::EditorCore(Engine* engine_)
     , Singleton<EditorCore>()
     , engine(engine_)
 {
+    engine->windowCreated.Connect(this, &EditorCore::OnWindowCreated);
+
+    //we need to do it after QApplication will be created
+    engine->gameLoopStarted.Connect(this, &EditorCore::OnGameLoopStarted);
+
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 
     ToolsAssetGuard::Instance()->Init();
