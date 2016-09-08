@@ -153,9 +153,8 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     frame->layout()->addWidget(renderWidget);
     renderWidget->installEventFilter(this);
 
-    connect(renderWidget, &RenderWidget::Resized, scrollAreaController
-            ,
-            static_cast<void (ScrollAreaController::*)(int, int)>(&ScrollAreaController::SetViewSize));
+    connect(renderWidget, &RenderWidget::Resized, scrollAreaController,
+            static_cast<void (ScrollAreaController::*)(int32, int32)>(&ScrollAreaController::SetViewSize));
 
     CreateActions();
 }
@@ -383,7 +382,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
     verticalScrollBar->setSliderPosition(position.y());
 }
 
-void PreviewWidget::OnGLInitialized()
+void PreviewWidget::OnWindowCreated()
 {
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));

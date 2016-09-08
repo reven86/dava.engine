@@ -295,7 +295,8 @@ public:
         textureCache = new TextureCache();
 
         ToolsAssetGuard::Instance()->Init();
-        Themes::InitFromQApplication();
+        DAVA::NativeService* nativeService = engine.GetNativeService();
+        Themes::InitFromQApplication(nativeService->GetApplication());
 
         DAVA::EngineContext* engineContext = engine.GetContext();
         engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
@@ -305,7 +306,7 @@ public:
 
         mainWindow = new QtMainWindow();
         mainWindow->EnableGlobalTimeout(true);
-        mainWindow->InjectRenderWidget(engine.GetNativeService()->GetRenderWidget());
+        mainWindow->InjectRenderWidget(nativeService->GetRenderWidget());
         mainWindow->show();
     }
 

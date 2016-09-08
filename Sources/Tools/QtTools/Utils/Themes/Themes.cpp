@@ -22,6 +22,7 @@ namespace Themes_local
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
 GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Dark)));
+QApplication* app = nullptr;
 }
 
 namespace Themes
@@ -39,14 +40,16 @@ bool themesInitialized = false;
 void SetupClassicTheme();
 void SetupDarkTheme();
 
-void InitFromQApplication()
+void InitFromQApplication(QApplication* app_)
 {
+    DVASSERT(nullptr != app_);
+    Themes_local::app = app_;
 #if defined(Q_OS_MAC)
     //this is default font on MAC OS X
-    QApplication::setFont(QFont(".SF NS Text", 13));
+    Themes_local::app->setFont(QFont(".SF NS Text", 13));
 #elif defined(Q_OS_WIN)
     //this is default font on Windows
-    QApplication::setFont(QFont("MS Shell Dlg 2", 10));
+    Themes_local::app->setFont(QFont("MS Shell Dlg 2", 10));
 #else
 #error "unsupported OS"
 #endif //platform
@@ -121,7 +124,7 @@ void SetCurrentTheme(eTheme theme)
 
 void SetupClassicTheme()
 {
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    Themes_local::app->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, lightWindowColor);
@@ -162,13 +165,13 @@ void SetupClassicTheme()
     DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
     QString styleSheetContent = styleSheet.readAll();
 
-    qApp->setPalette(lightPalette);
-    qApp->setStyleSheet(styleSheetContent);
+    Themes_local::app->setPalette(lightPalette);
+    Themes_local::app->setStyleSheet(styleSheetContent);
 }
 
 void SetupDarkTheme()
 {
-    qApp->setStyle(QStyleFactory::create("Fusion"));
+    Themes_local::app->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette darkPalette;
 
@@ -223,8 +226,8 @@ void SetupDarkTheme()
 
     styleSheetContent.append(tabBarStyle);
 
-    qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(styleSheetContent);
+    Themes_local::app->setPalette(darkPalette);
+    Themes_local::app->setStyleSheet(styleSheetContent);
 }
 
 QString GetCurrentThemeStr()

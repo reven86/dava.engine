@@ -3,7 +3,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIScreen.h"
-#include "Concurrency/Thread.h"
 #include "Base/RefPtr.h"
 
 namespace DAVA

@@ -6,16 +6,15 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
 
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Public/Engine.h"
+#endif
+
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Core/Core.h"
 #include "PackManager/PackManager.h"
-#include "Engine/Public/EngineContext.h"
-
-#ifdef __DAVAENGINE_COREV2__
-#include "Engine/Public/Engine.h"
-#endif
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>

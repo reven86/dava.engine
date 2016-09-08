@@ -40,7 +40,7 @@ public:
 
 public slots:
     void SetViewSize(const QSize& size);
-    void SetViewSize(int widgth, int height);
+    void SetViewSize(DAVA::int32 width, DAVA::int32 height);
     void SetPosition(const QPoint& position);
     void UpdateCanvasContentSize();
     void SetScale(float scale);

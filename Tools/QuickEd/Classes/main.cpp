@@ -1,5 +1,6 @@
 #include "Engine/Public/Engine.h"
 #include "Engine/Public/EngineContext.h"
+#include "Engine/Public/NativeService.h"
 
 #include "Logger/Logger.h"
 
@@ -66,9 +67,14 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         InitPVRTexTool();
         UnpackHelp(engine.GetContext()->fileSystem);
 
-        Themes::InitFromQApplication();
+        DAVA::NativeService* nativeService = engine.GetNativeService();
+        Themes::InitFromQApplication(nativeService->GetApplication());
 
-        editorCore = new EditorCore(engine);
+        DAVA::RenderWidget* renderWidget = nativeService->GetRenderWidget();
+        editorCore = new EditorCore(renderWidget);
+
+        engine.windowCreated.Connect(editorCore, &EditorCore::OnWindowCreated);
+
         editorCore->Start();
     });
 

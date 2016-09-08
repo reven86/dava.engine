@@ -98,7 +98,7 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup, RenderWidget*
 
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    actionCloseDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
     renderWidget->addAction(actionCloseDocument);
 
@@ -107,7 +107,7 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup, RenderWidget*
     shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
               << Qt::Key_F5;
     actionReloadDocument->setShortcuts(shortcurs);
-    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    actionReloadDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
     renderWidget->addAction(actionReloadDocument);
 }

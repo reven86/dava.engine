@@ -42,7 +42,7 @@ public:
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-    void OnGLInitialized();
+    void OnWindowCreated();
 
 signals:
     void DeleteRequested();

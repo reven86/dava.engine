@@ -22,7 +22,7 @@ ScrollAreaController::~ScrollAreaController()
     UIScreenManager::Instance()->ResetScreen();
 }
 
-void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
+void ScrollAreaController::SetNestedControl(UIControl* arg)
 {
     if (nullptr != nestedControl)
     {
@@ -36,7 +36,7 @@ void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
     }
 }
 
-void ScrollAreaController::SetMovableControl(DAVA::UIControl* arg)
+void ScrollAreaController::SetMovableControl(UIControl* arg)
 {
     if (arg != movableControl)
     {
@@ -140,7 +140,7 @@ void ScrollAreaController::SetScale(float arg)
     }
 }
 
-void ScrollAreaController::SetViewSize(int width, int height)
+void ScrollAreaController::SetViewSize(int32 width, int32 height)
 {
     SetViewSize(QSize(width, height));
 }
@@ -161,8 +161,7 @@ void ScrollAreaController::SetPosition(const QPoint& position_)
 {
     QPoint minPos = GetMinimumPos();
     QPoint maxPos = GetMaximumPos();
-    QPoint fixedPos(qBound(minPos.x(), position_.x(), maxPos.x())
-                    ,
+    QPoint fixedPos(qBound(minPos.x(), position_.x(), maxPos.x()),
                     qBound(minPos.y(), position_.y(), maxPos.y()));
     if (fixedPos != position)
     {
