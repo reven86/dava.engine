@@ -207,7 +207,7 @@ String GetFrameSymbol(void* frame, bool demangle)
     if (dladdr(frame, &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
     {
         if (demangle)
-            result = DemangleSymbol(dlinfo.dli_sname);
+            result = DemangleFrameSymbol(dlinfo.dli_sname);
         if (result.empty())
             result = dlinfo.dli_sname;
     }

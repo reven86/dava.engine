@@ -396,7 +396,7 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(rtype0->GetPermanentName() == permName);
         TEST_VERIFY(rtype0->GetType() == DAVA::Type::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(Type::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(DAVA::Type::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
         const DAVA::ReflectedType* rtype2 = DAVA::ReflectedType::GetByRttiName(typeid(T).name());

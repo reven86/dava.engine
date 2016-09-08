@@ -9,6 +9,7 @@
 
 namespace DAVA
 {
+class TypeInheritance;
 class Type final
 {
     friend class TypeInheritance;

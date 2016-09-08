@@ -305,9 +305,6 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TypeInheritance::RegisterBases<D, A, A1>();
         TypeInheritance::RegisterBases<E, D>();
 
-        size_t s = sizeof(DAVA::Type);
-        std::cout << s;
-
         // simple
         TEST_VERIFY(bPtr == a.Get<void*>());
         TEST_VERIFY(bPtr == a.Get<const void*>());
