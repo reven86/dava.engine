@@ -400,7 +400,7 @@ final class DavaWebView
             for (int i = 0; i < cookies.length; i++)
             {
                 String[] cookie = cookies[i].split("=");
-                String name = cookie[0].trim();
+                String name = cookie[0];
                 cookieManager.setCookie(url, name + "=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
             }
             cookieManager.flush();
@@ -415,10 +415,10 @@ final class DavaWebView
             String[] cookies = cookieManager.getCookie(url).split(";");
             for (int i = 0; i < cookies.length; i++)
             {
-                String cookieName = cookies[0].trim();
-                if (cookieName.compareTo(name) == 0)
+                String[] cookie = cookies[i].split("=");
+                if (cookie[0].compareTo(name) == 0)
                 {
-                    return cookies[1];
+                    return cookie[1];
                 }
             }
         }
