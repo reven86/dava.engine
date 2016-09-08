@@ -289,7 +289,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd[16] = { };
+    GLCommand cmd[16] = {};
     size_t cmd_cnt = 1;
 
     if (isRenderTarget || isRenderBuffer)
@@ -305,7 +305,7 @@ void TextureGLES2_t::Destroy(bool force_immediate)
             cmd[1].arg[1] = uint64(&(uid2));
             ++cmd_cnt;
         }
-        
+
         DVASSERT(fbo.size() <= countof(cmd) - 1);
         for (unsigned i = 0; i != fbo.size(); ++i)
         {

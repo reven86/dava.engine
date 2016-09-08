@@ -113,5 +113,4 @@ Size2i PixelFormatDescriptor::GetPixelFormatBlockSize(PixelFormat formatID)
 {
     return GetPixelFormatDescriptor(formatID).blockSize;
 }
-
 }

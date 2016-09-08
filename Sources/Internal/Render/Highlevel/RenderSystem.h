@@ -162,5 +162,4 @@ inline Camera* RenderSystem::GetDrawCamera() const
 {
     return drawCamera;
 }
-
 }

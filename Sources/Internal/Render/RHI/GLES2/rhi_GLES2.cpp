@@ -900,7 +900,7 @@ GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat)
         return GL_RGB565;
     #endif
     }
-            
+
     default:
         DVASSERT_MSG(0, "Unsupported or unknown render target format specified");
         return 0;
