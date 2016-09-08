@@ -89,8 +89,8 @@ public final class DavaActivity extends Activity
         // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
         bootstrap();
         
-        int displayWidth = JNIDeviceInfo.GetScreenInfoWidth();
-        int displayHeight = JNIDeviceInfo.GetScreenInfoHeight();
+        int displayWidth = JNIDeviceInfo.GetDefaultDisplayWidth();
+        int displayHeight = JNIDeviceInfo.GetDefaultDisplayHeight();
         
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline, displayWidth, displayHeight);
 

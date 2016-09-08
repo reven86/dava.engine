@@ -30,7 +30,6 @@ import android.os.StatFs;
 import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.Display;
-import android.view.WindowManager;
 
 public class JNIDeviceInfo {
     final static String TAG = "JNIDeviceInfo";
@@ -143,13 +142,13 @@ public class JNIDeviceInfo {
         return size;
     }
         
-    public static int GetScreenInfoWidth()
+    public static int GetDefaultDisplayWidth()
     {
     	Point size = GetDefaultDisplaySize();
     	return size.x;
     }
     
-    public static int GetScreenInfoHeight()
+    public static int GetDefaultDisplayHeight()
     {
     	Point size = GetDefaultDisplaySize();
     	return size.y;
