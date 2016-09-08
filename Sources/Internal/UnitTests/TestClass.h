@@ -13,10 +13,10 @@ struct TestClassTypeKeeper
     using TestClassType = T;
 };
 
-struct CoverageTestInfo
+struct TestCoverageInfo
 {
-    DAVA::Vector<DAVA::String> testFiles;
-    DAVA::Map<DAVA::String, DAVA::String> targetFolders;
+    Vector<String> testFiles;
+    Map<String, String> targetFolders;
 };
 
 class TestClass
@@ -40,7 +40,7 @@ public:
     virtual void TearDown(const String& testName);
     virtual void Update(float32 timeElapsed, const String& testName);
     virtual bool TestComplete(const String& testName) const;
-    virtual CoverageTestInfo FilesCoveredByTests() const;
+    virtual TestCoverageInfo FilesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;

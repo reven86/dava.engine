@@ -237,11 +237,11 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
 }
 
-void GameCore::ProcessCoverageTests()
+void GameCore::ProcessTestCoverage()
 {
 #if defined(TEST_COVERAGE)
     // Output test coverage for sample
-    Map<String, DAVA::UnitTests::CoverageTestInfo> map = UnitTests::TestCore::Instance()->GetTestCoverage();
+    Map<String, DAVA::UnitTests::TestCoverageInfo> map = UnitTests::TestCore::Instance()->GetTestCoverage();
     Logger::Info("Test coverage");
     
     for (const auto& x : map)
@@ -320,7 +320,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
 {
     if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
     {
-        ProcessCoverageTests();
+        ProcessTestCoverage();
         FinishTests();
     }
 }

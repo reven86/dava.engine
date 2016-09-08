@@ -172,8 +172,8 @@
 //
 // Test class UsefulTest covers two file: "FileSystem.cpp" and "JobManager.cpp"
 //
-// FIND_FILES_IN_TARGET( NAME_TARGET ) It indicates to what TARGET applies the file.
-// It is necessary if different target have files with the same name.
+// FIND_FILES_IN_TARGET( NAME_TARGET ) It set file belongs to target.
+// It needed if are files single name but  there are in different  folders
 //
 // or to automatically deduce covered file from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
@@ -190,7 +190,7 @@
 // You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
-//You must declare DAVA_FOLDERS, TARGET_FOLDERS which contains a list of folders where the sources are located.
+//Macros DAVA_FOLDERS, TARGET_FOLDERS are installed by cmake through add_definitions(...)
 //DAVA_FOLDERS general list of folders where the sources are
 //TARGET_FOLDERS list of folders with source code for the current target has
 //
@@ -198,8 +198,8 @@
 #if defined(TEST_COVERAGE)
 
 #define BEGIN_FILES_COVERED_BY_TESTS() \
-    DAVA::UnitTests::CoverageTestInfo FilesCoveredByTests() const override { \
-        DAVA::UnitTests::CoverageTestInfo testInfo;  \
+    DAVA::UnitTests::TestCoverageInfo FilesCoveredByTests() const override { \
+        DAVA::UnitTests::TestCoverageInfo testInfo;  \
         testInfo.targetFolders.emplace("all", DAVA::String(DAVA_FOLDERS)); \
         const char* targetFolders = nullptr;
 

@@ -181,9 +181,9 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     }
 }
 
-Map<String, CoverageTestInfo> TestCore::GetTestCoverage()
+Map<String, TestCoverageInfo> TestCore::GetTestCoverage()
 {
-    Map<String, CoverageTestInfo> result;
+    Map<String, TestCoverageInfo> result;
     for (TestClassInfo& x : testClasses)
     {
         if (!x.testedFiles.testFiles.empty())
