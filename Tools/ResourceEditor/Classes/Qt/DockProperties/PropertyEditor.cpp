@@ -31,6 +31,7 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SoundComponentEditCommands.h"
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/ConvertToBillboardCommand.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -399,6 +400,10 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                         cloneBatches->setEnabled(isSingleSelection);
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
+
+                    QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Make billboard");
+                    convertRenderObject->setEnabled(isSingleSelection);
+                    QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
                 }
             }
             else if (DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
@@ -1534,6 +1539,27 @@ void PropertyEditor::OnTriggerWaveComponent()
         {
             component->Trigger();
         }
+    }
+}
+
+void PropertyEditor::OnConvertRenderObjectToBillboard()
+{
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
+    DVASSERT(btn != nullptr);
+
+    QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+    if (data != nullptr)
+    {
+        DAVA::RenderObject* renderObject = reinterpret_cast<DAVA::RenderObject*>(data->object);
+        DVASSERT(curNodes.GetSize() == 1);
+
+        DAVA::Entity* entity = curNodes.GetFirst().AsEntity();
+        DAVA::RenderComponent* renderComponent = DAVA::GetRenderComponent(entity);
+        DVASSERT(renderComponent != nullptr);
+        DVASSERT(renderComponent->GetRenderObject() == renderObject);
+
+        SceneEditor2* curScene = sceneHolder.GetScene();
+        curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToBillboardCommand(renderObject, renderComponent)));
     }
 }
 
