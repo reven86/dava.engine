@@ -2,6 +2,7 @@
 #define __DAVAENGINE_TESTCLASS_H__
 
 #include "Base/BaseTypes.h"
+#include "UnitTests/TestClass.h"
 
 namespace DAVA
 {

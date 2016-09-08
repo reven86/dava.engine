@@ -185,6 +185,7 @@
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
 
+#ifdef COVERAGE
 
 #define BEGIN_FILES_COVERED_BY_TESTS() \
     void FilesCoveredByTests(DAVA::UnitTests::CoverageTestInfo& testInfo) const override { \
@@ -198,7 +199,6 @@
         testInfo.listTestFile.emplace_back(classname); \
         if (targetFolders != nullptr)\
         { \
-            printf(">>>>sdfsdfsdf!!! %s %s\n", #classname, targetFolders);\
             testInfo.listTargetFolders.insert(std::pair<DAVA::String, DAVA::String>(DAVA::String(classname), DAVA::String(targetFolders)));\
         }
 
@@ -206,11 +206,18 @@
     }
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
-        BEGIN_FILES_COVERED_BY_TESTS() \
-        DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
-        END_FILES_COVERED_BY_TESTS()
+BEGIN_FILES_COVERED_BY_TESTS() \
+DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
+END_FILES_COVERED_BY_TESTS()
 
+#else
 
+#define BEGIN_FILES_COVERED_BY_TESTS()
+#define DECLARE_COVERED_FILES(classname)
+#define END_FILES_COVERED_BY_TESTS()
+#define DEDUCE_COVERED_FILES_FROM_TESTCLASS()
+
+#endif
 
 
 

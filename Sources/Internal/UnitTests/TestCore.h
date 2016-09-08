@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
+#include "UnitTests/TestClass.h"
 
 namespace DAVA
 {

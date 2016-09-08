@@ -207,7 +207,7 @@ class CoverageReport():
 
         coverFile               = open(self.coverFilePath).read()
         jsonData                = json.loads(coverFile)
-        testsFolders            = {} #jsonData[ 'ProjectFolders' ].split(' ')
+        testsFolders            = {} 
 
         self.pathUnityPack      = jsonData[ 'UnityFolder' ]
         self.testsCoverage      = {}
