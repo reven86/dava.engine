@@ -175,7 +175,7 @@ void RenderObject::RecalcBoundingBox()
         RenderBatch* batch = i.renderBatch;
         if ((batch->GetMaterial() != nullptr) && (batch->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_BILLBOARD) != 0))
         {
-            bbox.AddAABBox(batch->GetBoundingBox().GetMaxExtentBox());
+            bbox.AddAABBox(batch->GetBoundingBox().GetMaxRotationExtentBox(Vector3(0.0f, 0.0f, 0.0f)));
         }
         else
         {

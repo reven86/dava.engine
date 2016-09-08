@@ -108,8 +108,8 @@ void AABBox3::GetCorners(Vector3* cornersArray) const
     cornersArray[7].Set(min.x, max.y, max.z);
 }
 
-AABBox3 AABBox3::GetMaxExtentBox() const
+AABBox3 AABBox3::GetMaxRotationExtentBox(const Vector3& rotationCenter) const
 {
-    return AABBox3(Vector3(0.0f, 0.0f, 0.0f), 2.0f * Max(min.Length(), max.Length()));
+    return AABBox3(rotationCenter, 2.0f * Max((min - rotationCenter).Length(), (rotationCenter - rotationCenter).Length()));
 }
 };

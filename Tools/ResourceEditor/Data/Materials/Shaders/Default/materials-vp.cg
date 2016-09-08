@@ -135,13 +135,14 @@ VPROG_OUT_END
 #define BILLBOARD_TYPE_CYLINDRICAL 2
 
 #if BILLBOARD
-#	if CYLINDRICAL_BILLBOARD
-#		define BILLBOARD_TYPE BILLBOARD_TYPE_CYLINDRICAL
-#	else
-#		define BILLBOARD_TYPE BILLBOARD_TYPE_SPHERICAL
-#	endif
+	#define BILLBOARD_ENABLED 1
+	#if CYLINDRICAL_BILLBOARD
+		#define BILLBOARD_TYPE BILLBOARD_TYPE_CYLINDRICAL
+	#else
+		#define BILLBOARD_TYPE BILLBOARD_TYPE_SPHERICAL
+	#endif
 #else
-#	define BILLBOARD_TYPE BILLBOARD_TYPE_NONE
+	#define BILLBOARD_TYPE BILLBOARD_TYPE_NONE
 #endif
 
 #if !SPEED_TREE_LEAF || CUT_LEAF
@@ -240,12 +241,12 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-#if VERTEX_FOG || (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
+#if VERTEX_FOG || BILLBOARD_ENABLED
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 #endif
 
-#if (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
+#if BILLBOARD_ENABLED
 property float3 cameraUp : dynamic,a : ;
 property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
@@ -432,7 +433,7 @@ VPROG_BEGIN
 	float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
 	VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
 
-#elif (BILLBOARD_TYPE != BILLBOARD_TYPE_NONE)
+#elif BILLBOARD_ENABLED
 
 	float4 translation = worldMatrix[3];
 	float3 up = cameraUp;
