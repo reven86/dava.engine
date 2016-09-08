@@ -1,27 +1,42 @@
 #include "../rhi_ShaderSource.h"
+#include "rhi_Utils.h"
     
-    #include "Logger/Logger.h"
-using DAVA::Logger;
-    #include "FileSystem/DynamicMemoryFile.h"
-    #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
+#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
+#include "Debug/Profiler.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+
 using DAVA::DynamicMemoryFile;
-    #include "Utils/Utils.h"
-    #include "Debug/Profiler.h"
-    #include "Concurrency/Mutex.h"
-    #include "Concurrency/LockGuard.h"
+using DAVA::Logger;
 using DAVA::Mutex;
 using DAVA::LockGuard;
 
-    #include "PreProcess.h"
+#include "PreProcess.h"
 
-    #define RHI__USE_STD_REGEX 0
-    #define RHI__OPTIMIZED_REGEX 1
+#define RHI__USE_STD_REGEX 0
+#define RHI__OPTIMIZED_REGEX 1
 
-    #if RHI__USE_STD_REGEX
-        #include <regex>
-    #else
-        #include "RegExp.h"
-    #endif
+#if RHI__USE_STD_REGEX
+    #include <regex>
+#else
+    #include "RegExp.h"
+#endif
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+
+#endif
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+
+#define stricmp _strcmpi
+
+#endif
 
 namespace rhi
 {

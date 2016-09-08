@@ -1,8 +1,9 @@
 #include "../rhi_Public.h"
-    #include "rhi_Private.h"
-    #include "rhi_Pool.h"
+#include "rhi_Private.h"
+#include "rhi_Pool.h"
+#include "rhi_Utils.h"
 
-    #include "Core/Core.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
 #include "Debug/Profiler.h"
@@ -33,23 +34,20 @@ void InitTextreSetPool(uint32 maxCount)
     TextureSetPool::Reserve(maxCount);
 }
 
-struct
-TextureSetInfo
+struct TextureSetInfo
 {
     TextureSetDescriptor desc;
     Handle handle;
 };
 
-struct
-DepthStencilState_t
+struct DepthStencilState_t
 {
     DepthStencilState::Descriptor desc;
     Handle state;
     int refCount;
 };
 
-struct
-SamplerState_t
+struct SamplerState_t
 {
     SamplerState::Descriptor desc;
     Handle state;
@@ -709,8 +707,7 @@ void ReleaseSamplerState(HSamplerState ss, bool forceImmediate)
 
 //------------------------------------------------------------------------------
 
-HSyncObject
-CreateSyncObject()
+HSyncObject CreateSyncObject()
 {
     return HSyncObject(SyncObject::Create());
 }
@@ -736,8 +733,7 @@ void SetFramePerfQuerySet(HPerfQuerySet hset)
 
 //------------------------------------------------------------------------------
 
-HRenderPass
-AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList)
+HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList)
 {
     Handle cb[8];
     DVASSERT(packetListCount < countof(cb));

@@ -24,9 +24,6 @@ struct ImmediateCommand
 
 namespace DispatchPlatform
 {
-extern void (*AcquireContext)(); //TODO - move it to opengl
-extern void (*ReleaseContext)(); //TODO - move it to opengl
-
 extern void (*InitContext)();
 extern void (*CheckSurface)(); //TODO - may be this should be part of opengl only?
 extern void (*Suspend)(); //perform finalization before going to suspend

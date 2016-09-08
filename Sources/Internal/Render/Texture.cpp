@@ -625,7 +625,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
         rhi::TextureFace face[] = { rhi::TEXTURE_FACE_POSITIVE_X, rhi::TEXTURE_FACE_NEGATIVE_X, rhi::TEXTURE_FACE_POSITIVE_Y, rhi::TEXTURE_FACE_NEGATIVE_Y, rhi::TEXTURE_FACE_POSITIVE_Z, rhi::TEXTURE_FACE_NEGATIVE_Z };
         void** data = descriptor.initialData;
 
-        for (unsigned f = 0; f != countof(face); ++f)
+        for (unsigned f = 0; f != CUBE_FACE_COUNT; ++f)
         {
             for (unsigned m = 0; m != descriptor.levelCount; ++m)
             {

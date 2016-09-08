@@ -4,8 +4,6 @@ namespace rhi
 namespace DispatchPlatform
 {
 void (*InitContext)() = nullptr;
-void (*AcquireContext)() = nullptr;
-void (*ReleaseContext)() = nullptr;
 void (*CheckSurface)() = nullptr;
 void (*Suspend)() = nullptr;
 

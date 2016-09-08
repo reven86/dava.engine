@@ -1,4 +1,5 @@
 #include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 #include "_dx11.h"
 #include "rhi_DX11.h"
 
@@ -15,6 +16,8 @@
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "../Common/SoftwareCommandBuffer.h"
+#include "../Common/RenderLoop.h"
+#include "../Common/CommonImpl.h"
 
 using DAVA::Logger;
 

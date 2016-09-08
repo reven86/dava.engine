@@ -188,8 +188,6 @@ void InitTextreSetPool(uint32 maxCount);
 void BeginFreqMeasurement(Handle pqset);
 void EndFreqMeasurement(Handle pqset);
 
-void PresentImpl(Handle sync);
-
 // debug
 
 extern uint32 stat_DIP;

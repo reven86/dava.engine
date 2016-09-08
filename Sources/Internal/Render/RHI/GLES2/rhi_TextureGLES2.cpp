@@ -1,5 +1,6 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
+#include "../Common/rhi_Utils.h"
 #include "../Common/rhi_FormatConversion.h"
 #include "../rhi_Public.h"
 #include "rhi_GLES2.h"

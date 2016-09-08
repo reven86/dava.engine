@@ -9,11 +9,14 @@ using DAVA::Logger;
 #include "_dx11.h"
 #include "../rhi_Type.h"
 #include "../Common/dbg_StatSet.h"
+#include "../Common/rhi_Utils.h"
 
 #include <vector>
 #include "../Common/CommonImpl.h"
+#include "../Common/RenderLoop.h"
 
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 	#include "uap_dx11.h"
@@ -126,7 +129,7 @@ static void dx11_ResetBlock()
 {
 	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
-    DAVA::LockGuard<Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
+    DAVA::LockGuard<DAVA::Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
 #endif	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     {

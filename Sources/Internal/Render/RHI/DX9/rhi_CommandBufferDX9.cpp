@@ -14,6 +14,10 @@ using DAVA::Logger;
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 
+#include "../Common/SoftwareCommandBuffer.h"
+#include "../Common/RenderLoop.h"
+#include "../Common/CommonImpl.h"
+
 #include "_dx9.h"
 #include <vector>
 #include <atomic>

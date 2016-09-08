@@ -1,7 +1,7 @@
 #ifndef __RHI_PUBLIC_H__
 #define __RHI_PUBLIC_H__
 
-    #include "rhi_Type.h"
+ #include "rhi_Type.h"
 
 namespace DAVA
 {
@@ -324,8 +324,7 @@ bool NeedInvertProjection(const RenderPassConfig& passDesc);
 ////////////////////////////////////////////////////////////////////////////////
 // rendering
 
-struct
-Packet
+struct Packet
 {
     enum
     {
@@ -383,6 +382,8 @@ void BeginPacketList(HPacketList packetList);
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount);
 void AddPacket(HPacketList packetList, const Packet& packet);
 void EndPacketList(HPacketList packetList, HSyncObject syncObject = HSyncObject(InvalidHandle)); // 'packetList' handle invalid after this, no explicit "release" needed
+
+uint32 NativeColorRGBA(float r, float g, float b, float a = 1.0f);
 
 } // namespace rhi
 

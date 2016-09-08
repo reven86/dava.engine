@@ -1,9 +1,9 @@
 #ifndef __RHI_RINGBUFFER_H__
 #define __RHI_RINGBUFFER_H__
 
-    #include "../rhi_Type.h"
-    #include "Logger/Logger.h"
-    #include "MemoryManager/MemoryProfiler.h"
+#include "rhi_Utils.h"
+#include "Logger/Logger.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
 {
@@ -44,8 +44,7 @@ inline RingBuffer::RingBuffer()
 
 //------------------------------------------------------------------------------
 
-inline void
-RingBuffer::Initialize(unsigned sz)
+inline void RingBuffer::Initialize(unsigned sz)
 {
     DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFER);
 
@@ -87,8 +86,7 @@ RingBuffer::Uninitialize()
 
 //------------------------------------------------------------------------------
 
-inline float*
-RingBuffer::Alloc(unsigned cnt, unsigned align)
+inline float* RingBuffer::Alloc(unsigned cnt, unsigned align)
 {
     DVASSERT(cur);
 

@@ -1,5 +1,6 @@
 #include "FrameLoop.h"
 #include "rhi_Pool.h"
+#include "../rhi_Public.h"
 #include "CommonImpl.h"
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"

@@ -1,17 +1,18 @@
 #include "../dbg_Draw.h"
-    #include "../rhi_ShaderSource.h"
-    #include "../rhi_ShaderCache.h"
+#include "../rhi_ShaderSource.h"
+#include "../rhi_ShaderCache.h"
+#include "rhi_Utils.h"
 
-    #include "Math/Matrix4.h"
-    #include "Math/Vector.h"
+#include "Math/Matrix4.h"
+#include "Math/Vector.h"
 using DAVA::Vector3;
 
-    #include <stdio.h>
-    #include <stdarg.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    #define _vsnprintf vsnprintf
-    #endif
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define _vsnprintf vsnprintf
+#endif
 
 //==============================================================================
 
@@ -678,8 +679,7 @@ DbgDraw::Text2D(int x, int y, uint32 color, const char* format, ...)
 
 //------------------------------------------------------------------------------
 
-unsigned
-DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
+unsigned DbgDraw::MultilineText2D(int x, int y, uint32 color, const char* format, ...)
 {
     va_list arglist;
     char text[2048] = { 0 };

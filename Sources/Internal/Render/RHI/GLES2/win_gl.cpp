@@ -4,6 +4,7 @@
 
 #include "_gl.h"
 #include "../rhi_Public.h"
+using DAVA::Logger;
 
 void win_gl_reset(const rhi::ResetParam& param)
 {

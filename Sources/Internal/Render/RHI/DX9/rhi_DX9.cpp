@@ -9,6 +9,8 @@ using DAVA::Logger;
 
 #include "_dx9.h"
 #include "../rhi_Type.h"
+#include "../Common/rhi_Utils.h"
+#include "../Common/RenderLoop.h"
 #include "../Common/dbg_StatSet.h"
 
 #include <vector>
