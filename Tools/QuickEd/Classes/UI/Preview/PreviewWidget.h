@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Public/Qt/RenderWidget.h"
 
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -7,10 +8,6 @@
 #include <QCursor>
 #include <QPointer>
 
-namespace DAVA
-{
-class RenderWidget;
-}
 
 namespace Ui
 {
@@ -31,7 +28,7 @@ class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget
+class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::ClientDelegate
 {
     Q_OBJECT
 public:
@@ -78,26 +75,27 @@ private slots:
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
 
-protected:
-    bool eventFilter(QObject* obj, QEvent* e) override;
-
 private:
     void LoadContext();
     void SaveContext();
 
+public:
     void CreateActions();
     void ApplyPosChanges();
-    void OnWheelEvent(QWheelEvent* event);
-    void OnNativeGuestureEvent(QNativeGestureEvent* event);
-    void OnPressEvent(QMouseEvent* event);
-    void OnReleaseEvent(QMouseEvent* event);
-    void OnMoveEvent(QMouseEvent* event);
-    void OnDragMoveEvent(QDragMoveEvent* event);
+    void OnWheel(QWheelEvent* event) override;
+    void OnNativeGuesture(QNativeGestureEvent* event) override;
+    void OnMousePressed(QMouseEvent* event) override;
+    void OnMouseReleased(QMouseEvent* event) override;
+    void OnMouseDBClick(QMouseEvent* event) override;
+    void OnMouseMove(QMouseEvent* event) override;
+    void OnDragEntered(QDragEnterEvent* event) override;
+    void OnDragMoved(QDragMoveEvent* event) override;
     bool ProcessDragMoveEvent(QDropEvent* event);
-    void OnDragLeaveEvent(QDragLeaveEvent* event);
-    void OnDropEvent(QDropEvent* event);
-    void OnKeyPressed(QKeyEvent* event);
-    void OnKeyReleased(QKeyEvent* event);
+    void OnDragLeaved(QDragLeaveEvent* event) override;
+    void OnDrop(QDropEvent* event) override;
+    void OnKeyPressed(QKeyEvent* event) override;
+    void OnKeyReleased(QKeyEvent* event) override;
+
     void OnTransformStateChanged(bool inTransformState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 

@@ -1,5 +1,4 @@
 #include "PreviewWidget.h"
-#include "Engine/Public/Qt/RenderWidget.h"
 
 #include "ScrollAreaController.h"
 
@@ -53,6 +52,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
+    setAcceptDrops(true);
+
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
@@ -90,6 +91,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
+    verticalScrollBar->setAcceptDrops(true);
+    horizontalScrollBar->setAcceptDrops(true);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -150,8 +153,8 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
     DVASSERT(renderWidget_ != nullptr);
     renderWidget = renderWidget_;
+    renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
-    renderWidget->installEventFilter(this);
 
     connect(renderWidget, &RenderWidget::Resized, scrollAreaController,
             static_cast<void (ScrollAreaController::*)(int32, int32)>(&ScrollAreaController::SetViewSize));
@@ -445,53 +448,6 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     scrollAreaController->SetPosition(canvasPosition);
 }
 
-bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
-{
-    if (obj == renderWidget)
-    {
-        switch (event->type())
-        {
-        case QEvent::Wheel:
-            OnWheelEvent(static_cast<QWheelEvent*>(event));
-            break;
-        case QEvent::NativeGesture:
-            OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
-            break;
-        case QEvent::MouseMove:
-            OnMoveEvent(static_cast<QMouseEvent*>(event));
-            return CanDragScreen();
-        case QEvent::MouseButtonPress:
-            OnPressEvent(static_cast<QMouseEvent*>(event));
-            return CanDragScreen();
-        case QEvent::MouseButtonRelease:
-            OnReleaseEvent(static_cast<QMouseEvent*>(event));
-            break;
-        case QEvent::DragEnter:
-            event->accept();
-            return true;
-        case QEvent::DragMove:
-            OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
-            return true;
-        case QEvent::DragLeave:
-            OnDragLeaveEvent(static_cast<QDragLeaveEvent*>(event));
-            return true;
-        case QEvent::Drop:
-            OnDropEvent(static_cast<QDropEvent*>(event));
-            renderWidget->setFocus();
-            break;
-        case QEvent::KeyPress:
-            OnKeyPressed(static_cast<QKeyEvent*>(event));
-            break;
-        case QEvent::KeyRelease:
-            OnKeyReleased(static_cast<QKeyEvent*>(event));
-            break;
-        default:
-            break;
-        }
-    }
-    return QWidget::eventFilter(obj, event);
-}
-
 void PreviewWidget::LoadContext()
 {
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
@@ -518,7 +474,7 @@ void PreviewWidget::SaveContext()
     context->canvasPosition = scrollAreaController->GetPosition();
 }
 
-void PreviewWidget::OnWheelEvent(QWheelEvent* event)
+void PreviewWidget::OnWheel(QWheelEvent* event)
 {
     if (document.isNull())
     {
@@ -561,7 +517,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     }
 }
 
-void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
+void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
 {
     if (document.isNull())
     {
@@ -585,7 +541,12 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     }
 }
 
-void PreviewWidget::OnPressEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
+{
+    // do nothing
+}
+
+void PreviewWidget::OnMousePressed(QMouseEvent* event)
 {
     Qt::MouseButtons buttons = event->buttons();
     if (buttons & Qt::LeftButton)
@@ -604,7 +565,7 @@ void PreviewWidget::OnPressEvent(QMouseEvent* event)
     }
 }
 
-void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseReleased(QMouseEvent* event)
 {
     Qt::MouseButtons buttons = event->buttons();
     if ((buttons & Qt::LeftButton) == false)
@@ -619,7 +580,7 @@ void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
     UpdateDragScreenState();
 }
 
-void PreviewWidget::OnMoveEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseMove(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
@@ -638,7 +599,12 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
     }
 }
 
-void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+void PreviewWidget::OnDragEntered(QDragEnterEvent* event)
+{
+    event->accept();
+}
+
+void PreviewWidget::OnDragMoved(QDragMoveEvent* event)
 {
     DVASSERT(nullptr != event);
     ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
@@ -700,12 +666,12 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     return false;
 }
 
-void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
+void PreviewWidget::OnDragLeaved(QDragLeaveEvent*)
 {
     systemsManager->NodesHovered.Emit({ nullptr });
 }
 
-void PreviewWidget::OnDropEvent(QDropEvent* event)
+void PreviewWidget::OnDrop(QDropEvent* event)
 {
     systemsManager->NodesHovered.Emit({ nullptr });
     DVASSERT(nullptr != event);
@@ -741,6 +707,7 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
             }
         }
     }
+    renderWidget->setFocus();
 }
 
 void PreviewWidget::OnKeyPressed(QKeyEvent* event)
