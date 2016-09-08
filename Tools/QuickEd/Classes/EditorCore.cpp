@@ -78,7 +78,7 @@ EditorCore::EditorCore(Engine* engine_)
     ToolsAssetGuard::Instance()->Init();
 
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "TemplateTArc");
+    appOptions->SetString("title", "QuickEd");
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 1);
