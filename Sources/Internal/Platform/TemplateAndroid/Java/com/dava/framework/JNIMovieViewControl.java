@@ -258,27 +258,26 @@ public class JNIMovieViewControl {
 		String extPath = null;
 		File f = new File(path);
 		if (!f.exists()) {
-			// first copy file to local documents to play it with out hack
-			// with second MediaPlayer
-			String[] pathSplit = path.split("/");
-			String fileName = pathSplit[pathSplit.length - 1];
-			extPath = JNIApplication.GetApplication().getFilesDir().getAbsolutePath() + "/" + fileName;
-			File file = new File(extPath);
-			if (!file.exists()) {
-				AssetManager assetManager = JNIActivity.GetActivity().getAssets();
-				try {
-					// HACK we need add Data to path
-					InputStream in = assetManager.open("Data/" + path);
-					OutputStream out = new FileOutputStream(extPath);
-					byte[] buffer = new byte[4096];
-					int read;
-					while ((read = in.read(buffer)) != -1) {
-						out.write(buffer, 0, read);
-					}
-					out.close();
-				} catch (IOException e) {
-					Log.e(JNIConst.LOG_TAG, e.getMessage());
-				}
+			AssetManager assetManager = JNIActivity.GetActivity().getAssets();
+			try {
+				// HACK we need add Data to path
+				File targetFile = File.createTempFile("movie", null, null);
+                targetFile.deleteOnExit();
+ 
+                extPath = targetFile.getAbsolutePath();
+ 
+                InputStream is = assetManager.open("Data/" + path);
+                OutputStream os = new FileOutputStream(targetFile);
+ 
+                int nread = 0;
+                byte[] buffer = new byte[4096];
+                while ((nread = is.read(buffer)) != -1)
+                {
+                    os.write(buffer, 0, nread);
+                }
+                os.close();
+			} catch (IOException e) {
+				Log.e(JNIConst.LOG_TAG, e.getMessage());
 			}
 		} else
 		{

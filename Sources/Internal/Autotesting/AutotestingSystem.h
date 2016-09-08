@@ -39,8 +39,6 @@ public:
 
     void InitLua(AutotestingSystemLuaDelegate* _delegate);
 
-    void OnScreenShot(Texture* texture);
-
     void RunTests();
 
     // Parameters from DB
@@ -101,6 +99,7 @@ public:
     static String ResolvePathToAutomation(const String& automationPath);
 
 protected:
+    void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
     AutotestingSystemLua* luaSystem;
     //DB
@@ -155,8 +154,10 @@ public:
     Map<int32, UIEvent> touches;
     UIEvent mouseMove;
 
-    String screenShotName;
-    Texture* screenShotTexture = nullptr;
+    String screenshotName;
+    Texture* screenshotTexture = nullptr;
+    rhi::HSyncObject screenshotSync;
+    bool screenshotRequested = false;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const
