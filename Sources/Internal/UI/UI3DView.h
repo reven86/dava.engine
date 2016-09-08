@@ -3,7 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "Render/RHI/rhi_type.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
