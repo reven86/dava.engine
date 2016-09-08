@@ -330,7 +330,10 @@ public:
                              mainWindow->SetupTitle();
                              mainWindow->OnSceneNew();
                          });
-        launcher.Launch();
+        QTimer::singleShot(0, [this]()
+                           {
+                               launcher.Launch();
+                           });
 
         REApp::OnWindowCreated(w);
         RestoreMenuBar();

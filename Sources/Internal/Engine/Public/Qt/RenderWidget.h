@@ -107,12 +107,16 @@ private:
     RenderWidget(WindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
 
+    Q_SLOT void OnCreated();
+    Q_SLOT void OnInitialize();
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void OnClientDelegateDestroyed();
 
+    void ActivateRendering();
+    bool IsInitialized();
+
 private:
-    bool initialized = false;
     WindowDelegate* widgetDelegate = nullptr;
     ClientDelegate* clientDelegate = nullptr;
     bool keyEventRecursiveGuard = false;

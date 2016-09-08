@@ -33,6 +33,7 @@ public:
     void ReleaseContext();
 
     void Update();
+    void ActivateRendering();
     RenderWidget* GetRenderWidget();
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;

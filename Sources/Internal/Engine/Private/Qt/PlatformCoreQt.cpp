@@ -46,6 +46,7 @@ void PlatformCore::Run()
     Window* primaryWindow = engineBackend->GetPrimaryWindow();
     windowBackend = new WindowBackend(engineBackend, primaryWindow);
     engineBackend->OnGameLoopStarted();
+    windowBackend->ActivateRendering();
     timer.start(16.0);
 
     QObject::connect(&app, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state)

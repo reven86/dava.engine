@@ -15,6 +15,7 @@
 
 namespace DAVA
 {
+const char* initializedPropertyName = "initialized";
 RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
 {
@@ -29,7 +30,7 @@ RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32
     QQuickWindow* window = quickWindow();
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
-    connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
@@ -49,6 +50,18 @@ void RenderWidget::SetClientDelegate(ClientDelegate* delegate)
     }
 }
 
+void RenderWidget::OnCreated()
+{
+    widgetDelegate->OnCreated();
+    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
+}
+
+void RenderWidget::OnInitialize()
+{
+    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize);
+    setProperty(initializedPropertyName, true);
+}
+
 void RenderWidget::OnFrame()
 {
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
@@ -58,14 +71,20 @@ void RenderWidget::OnFrame()
         throw std::runtime_error("GL context is not valid!");
     }
 
-    if (initialized == false)
-    {
-        widgetDelegate->OnCreated();
-        initialized = true;
-    }
-
     widgetDelegate->OnFrame();
     quickWindow()->resetOpenGLState();
+}
+
+void RenderWidget::ActivateRendering()
+{
+    QQuickWindow* w = quickWindow();
+    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize, Qt::DirectConnection);
+    connect(w, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+}
+
+bool RenderWidget::IsInitialized()
+{
+    return property(initializedPropertyName).isValid();
 }
 
 void RenderWidget::OnActiveFocusItemChanged()
