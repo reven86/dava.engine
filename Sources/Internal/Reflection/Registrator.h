@@ -50,6 +50,7 @@
 
 namespace DAVA
 {
+/// \brief A reflection registrator, that is used to register complex types structure.
 template <typename C>
 class ReflectionRegistrator final
 {

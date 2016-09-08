@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-inline Reflection::Reflection(const ReflectedObject& object_, ValueWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
+inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
     : object(object_)
     , vw(vw_)
     , meta(meta_)
