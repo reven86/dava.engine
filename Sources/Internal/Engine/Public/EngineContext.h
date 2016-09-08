@@ -30,7 +30,7 @@ class UIScreenManager;
 class LocalNotificationController;
 
 class IPackManager;
-class AssetsManager;
+class AssetsManagerAndroid;
 
 namespace Net
 {
@@ -67,7 +67,7 @@ public:
     LocalNotificationController* localNotificationController = nullptr;
 
     IPackManager* packManager = nullptr;
-    AssetsManager* assetsManager = nullptr;
+    AssetsManagerAndroid* assetsManager = nullptr;
 };
 
 } // namespace DAVA

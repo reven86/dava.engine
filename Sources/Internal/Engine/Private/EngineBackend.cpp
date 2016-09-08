@@ -553,8 +553,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->fileSystem = new FileSystem();
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager = new AssetsManager();
-    context->assetsManager->Init(AndroidBridge::GetApplicatiionPath());
+    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
 #endif
 
     // Naive implementation of on demand module creation
