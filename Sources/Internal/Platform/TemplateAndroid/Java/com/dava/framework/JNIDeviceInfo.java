@@ -1,6 +1,7 @@
 package com.dava.framework;
 
 import com.dava.engine.DavaActivity;
+import com.dava.engine.DavaSplashView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,6 +34,9 @@ import android.view.Display;
 
 public class JNIDeviceInfo {
     final static String TAG = "JNIDeviceInfo";
+    
+    public static int zBufferSize = 0;
+    public static byte gpuFamily = DavaSplashView.GPU_INVALID;
 
     public static String GetVersion()
     {
@@ -106,7 +110,18 @@ public class JNIDeviceInfo {
     
     public static int GetZBufferSize()
     {
-        return JNIConfigChooser.GetDepthBufferSize();
+        if (DavaActivity.instance() != null)
+        {
+            return zBufferSize;
+        } else
+        {
+            return JNIConfigChooser.GetDepthBufferSize();   
+        }
+    }
+    
+    public static byte GetGPUFamily()
+    {
+        return gpuFamily;
     }
     
     public static String GetHTTPProxyHost()

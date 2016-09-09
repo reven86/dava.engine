@@ -37,6 +37,10 @@ public final class DavaActivity extends Activity
     protected String internalFilesDir;
     protected String sourceDir;
     protected String packageName;
+    protected String cmdline;
+    
+    private int displayWidth = 0;
+    private int displayHeight = 0;
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
@@ -44,6 +48,7 @@ public final class DavaActivity extends Activity
     protected List<Object> bootstrapObjects = new LinkedList<Object>();
 
     private DavaSurfaceView primarySurfaceView;
+    private DavaSplashView splashView;
     private ViewGroup layout;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
@@ -83,17 +88,8 @@ public final class DavaActivity extends Activity
         internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
         sourceDir = app.getApplicationInfo().publicSourceDir;
         packageName = app.getApplicationInfo().packageName;
-        String cmdline = getCommandLine();
+        cmdline = getCommandLine();
         
-        // Load library modules and create class instances specified under meta-data tag
-        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
-        bootstrap();
-        
-        int displayWidth = JNIDeviceInfo.GetDefaultDisplayWidth();
-        int displayHeight = JNIDeviceInfo.GetDefaultDisplayHeight();
-        
-        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline, displayWidth, displayHeight);
-
         Window window = getWindow();
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -103,12 +99,49 @@ public final class DavaActivity extends Activity
         window.getDecorView().setOnSystemUiVisibilityChangeListener(this);
         hideNavigationBar();
         
-        long primaryWindowBackendPointer = nativeOnCreate();
-        primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
+        splashView = new DavaSplashView(this);
         
         layout = new FrameLayout(this);
-        layout.addView(primarySurfaceView);
+        layout.addView(splashView);
         setContentView(layout);
+    }
+    
+    private void startNativeInitialization() {
+        // Load library modules and create class instances specified under meta-data tag
+        // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
+        bootstrap();
+        
+        displayWidth = JNIDeviceInfo.GetDefaultDisplayWidth();
+        displayHeight = JNIDeviceInfo.GetDefaultDisplayHeight();
+        
+        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline, displayWidth, displayHeight);
+        
+        long primaryWindowBackendPointer = nativeOnCreate();
+        primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
+        layout.addView(primarySurfaceView);
+    }
+    
+    public void onFinishCollectDeviceInfo()
+    {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                startNativeInitialization();
+                // now wait till SurfaceView will be created to continue
+            }
+        });
+    }
+    
+    public void onFinishCreatingMainWindowSurface()
+    {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                startDavaMainThreadIfNotRunning();
+                handleResume();
+                layout.removeView(splashView);
+            }
+        });
     }
 
     @Override
@@ -269,12 +302,13 @@ public final class DavaActivity extends Activity
 
     private void handleResume()
     {
-        startDavaMainThreadIfNotRunning();
-        if (isPaused && hasFocus)
+        if (primarySurfaceView != null && davaMainThread != null)
         {
-            isPaused = false;
-            nativeOnResume();
-            primarySurfaceView.handleResume();
+            if (isPaused && hasFocus) {
+                isPaused = false;
+                nativeOnResume();
+                primarySurfaceView.handleResume();
+            }
         }
     }
 
@@ -310,8 +344,8 @@ public final class DavaActivity extends Activity
         {
             for (String key : extras.keySet())
             {
-                String value = extras.getString(key);
-                result += key + " " + value + " ";
+                Object value = extras.get(key);
+                result += key + " " + value.toString() + " ";
             }
         }
         return result;

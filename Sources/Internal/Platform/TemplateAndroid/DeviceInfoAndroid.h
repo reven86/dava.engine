@@ -67,6 +67,7 @@ private:
     Function<jboolean()> isPrimaryExternalStoragePresent;
     Function<jint()> getDefaultDisplayWidth;
     Function<jint()> getDefaultDisplayHeight;
+    Function<jbyte()> getGpuFamily;
 
     DeviceInfo::ScreenInfo screenInfo;
 };

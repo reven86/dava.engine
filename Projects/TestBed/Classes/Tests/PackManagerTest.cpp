@@ -506,7 +506,7 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
 
     ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
     // if we read file from pack - it will be DynamicMemoryFile
-    if (f && typeid(*f) == typeid(DynamicMemoryFile))
+    if (f && typeid(f.get()) == typeid(DynamicMemoryFile))
     {
         packNameLoading->SetText(L"file loaded successfully");
     }

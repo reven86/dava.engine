@@ -141,6 +141,9 @@ final class DavaSurfaceView extends SurfaceView
 
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
+        
+        // continue initialization of game after creating main window
+        DavaActivity.instance().onFinishCreatingMainWindowSurface();
     }
     
     @Override
