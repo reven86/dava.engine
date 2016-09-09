@@ -148,7 +148,7 @@ public:
 
 private:
     DAVA::Mutex mutex;
-    JobWatcher* watcher;
+    JobWatcher* watcher = nullptr;
 };
 
 JobWatcher::JobWatcher(DAVA::JobManager* manager_)

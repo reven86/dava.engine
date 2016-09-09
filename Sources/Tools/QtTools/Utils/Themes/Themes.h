@@ -1,6 +1,5 @@
-#ifndef __QT_TOOLS_THEMES_H__
-#define __QT_TOOLS_THEMES_H__
-    
+#pragma once
+
 #include <QString>
 #include <QStringList>
 #include <QPalette>
@@ -14,7 +13,7 @@ enum eTheme : int
     Light,
     Dark
 };
-void InitFromQApplication(QApplication* app);
+void InitFromQApplication();
 QStringList ThemesNames();
 void SetCurrentTheme(const QString& theme);
 void SetCurrentTheme(eTheme theme);
@@ -28,5 +27,3 @@ QColor GetStyleSheetNodeColor();
 QColor GetRulerWidgetBackgroungColor();
 QColor GetHighligtedItemTextColor();
 };
-
-#endif // __QT_TOOLS_THEMES_H__

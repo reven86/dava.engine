@@ -15,6 +15,7 @@ public:
         return isConsoleModeEnabled;
     };
     void Process();
+    void Cleanup();
 
 private:
     void CreateTools();

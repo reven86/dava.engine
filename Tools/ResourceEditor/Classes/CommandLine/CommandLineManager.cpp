@@ -73,6 +73,11 @@ void CommandLineManager::Process()
     }
 }
 
+void CommandLineManager::Cleanup()
+{
+    commandLineTools.clear();
+}
+
 void CommandLineManager::PrintUsage()
 {
     printf("Usage: ResourceEditor <command>\n");

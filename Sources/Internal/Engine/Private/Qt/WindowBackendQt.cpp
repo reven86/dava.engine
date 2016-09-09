@@ -469,6 +469,11 @@ void WindowBackend::ReleaseContext()
     ReleaseContextImpl();
 }
 
+void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
+{
+    window->PostFocusChanged(isInFocus);
+}
+
 void WindowBackend::Update()
 {
     if (renderWidget != nullptr)

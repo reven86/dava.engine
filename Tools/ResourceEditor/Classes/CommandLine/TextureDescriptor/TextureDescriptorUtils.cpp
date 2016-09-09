@@ -269,7 +269,7 @@ void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptors, const DAVA::Vec
             continue;
         }
 
-        ScopedPtr<KeyedArchive> presetArchive(new DAVA::KeyedArchive());
+        ScopedPtr<KeyedArchive> presetArchive(new KeyedArchive());
         if (descriptor->SerializeToPreset(presetArchive) == false)
         {
             Logger::Error("Can't create preset from descriptor");

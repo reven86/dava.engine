@@ -6,11 +6,10 @@
 
 void QtThread::run()
 {
-    NSAutoreleasePool* autoreleasePool = [[NSAutoreleasePool alloc] init];
-
-    QThread::exec();
-
-    [autoreleasePool release];
+    @autoreleasepool
+    {
+        QThread::exec();
+    }
 }
 
 #endif

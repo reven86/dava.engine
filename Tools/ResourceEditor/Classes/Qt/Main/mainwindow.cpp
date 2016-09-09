@@ -1,6 +1,7 @@
 #include "DAVAEngine.h"
 
 #include "mainwindow.h"
+#include "version.h"
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
@@ -87,6 +88,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Utils/StringFormat.h"
 
 #include <QActionGroup>
 #include <QColorDialog>
@@ -609,15 +611,17 @@ void QtMainWindow::closeEvent(QCloseEvent* event)
 
 void QtMainWindow::SetupTitle()
 {
-    QString title = QString::fromStdString(DAVA::Engine::Instance()->GetOptions()->GetString("title"));
+    String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
+                                static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
+    ;
 
     if (ProjectManager::Instance()->IsOpened())
     {
         title += " | Project - ";
-        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
     }
 
-    setWindowTitle(title);
+    setWindowTitle(QString::fromStdString(title));
 }
 
 void QtMainWindow::SetupMainMenu()

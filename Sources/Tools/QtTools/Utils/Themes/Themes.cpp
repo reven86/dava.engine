@@ -2,6 +2,9 @@
 #include "Debug/DVassert.h"
 #include "Base/GlobalEnum.h"
 
+#include "Engine/Public/Engine.h"
+#include "Engine/Public/NativeService.h"
+
 #include "Preferences/PreferencesStorage.h"
 #include "Preferences/PreferencesRegistrator.h"
 
@@ -18,11 +21,18 @@ ENUM_DECLARE(Themes::eTheme)
     ENUM_ADD_DESCR(Themes::Dark, "Dark");
 };
 
-namespace Themes_local
+namespace ThemesDetail
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
 GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Dark)));
-QApplication* app = nullptr;
+
+QApplication* GetApplication()
+{
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    QApplication* app = engine->GetNativeService()->GetApplication();
+    return app;
+}
 }
 
 namespace Themes
@@ -40,16 +50,15 @@ bool themesInitialized = false;
 void SetupClassicTheme();
 void SetupDarkTheme();
 
-void InitFromQApplication(QApplication* app_)
+void InitFromQApplication()
 {
-    DVASSERT(nullptr != app_);
-    Themes_local::app = app_;
+    QApplication* app = ThemesDetail::GetApplication();
 #if defined(Q_OS_MAC)
     //this is default font on MAC OS X
-    Themes_local::app->setFont(QFont(".SF NS Text", 13));
+    app->setFont(QFont(".SF NS Text", 13));
 #elif defined(Q_OS_WIN)
     //this is default font on Windows
-    Themes_local::app->setFont(QFont("MS Shell Dlg 2", 10));
+    app->setFont(QFont("MS Shell Dlg 2", 10));
 #else
 #error "unsupported OS"
 #endif //platform
@@ -119,12 +128,13 @@ void SetCurrentTheme(eTheme theme)
         DVASSERT(false && "unhandled theme passed to SetCurrentTheme");
         break;
     }
-    PreferencesStorage::Instance()->SetValue(Themes_local::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
+    PreferencesStorage::Instance()->SetValue(ThemesDetail::themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(theme)));
 }
 
 void SetupClassicTheme()
 {
-    Themes_local::app->setStyle(QStyleFactory::create("Fusion"));
+    QApplication* app = ThemesDetail::GetApplication();
+    app->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, lightWindowColor);
@@ -165,13 +175,14 @@ void SetupClassicTheme()
     DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
     QString styleSheetContent = styleSheet.readAll();
 
-    Themes_local::app->setPalette(lightPalette);
-    Themes_local::app->setStyleSheet(styleSheetContent);
+    app->setPalette(lightPalette);
+    app->setStyleSheet(styleSheetContent);
 }
 
 void SetupDarkTheme()
 {
-    Themes_local::app->setStyle(QStyleFactory::create("Fusion"));
+    QApplication* app = ThemesDetail::GetApplication();
+    app->setStyle(QStyleFactory::create("Fusion"));
 
     QPalette darkPalette;
 
@@ -226,8 +237,8 @@ void SetupDarkTheme()
 
     styleSheetContent.append(tabBarStyle);
 
-    Themes_local::app->setPalette(darkPalette);
-    Themes_local::app->setStyleSheet(styleSheetContent);
+    app->setPalette(darkPalette);
+    app->setStyleSheet(styleSheetContent);
 }
 
 QString GetCurrentThemeStr()
@@ -238,7 +249,7 @@ QString GetCurrentThemeStr()
 
 eTheme GetCurrentTheme()
 {
-    DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(Themes_local::themeSettingsKey);
+    DAVA::VariantType value = PreferencesStorage::Instance()->GetValue(ThemesDetail::themeSettingsKey);
     return static_cast<eTheme>(value.AsInt64());
 }
 

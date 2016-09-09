@@ -20,7 +20,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : private RenderWidget::WindowDelegate
+class WindowBackend final : public TrackedObject, private RenderWidget::WindowDelegate
 {
 public:
     WindowBackend(EngineBackend* e, Window* w);
@@ -31,6 +31,7 @@ public:
 
     void AcqureContext();
     void ReleaseContext();
+    void OnApplicationFocusChanged(bool isInFocus);
 
     void Update();
     void ActivateRendering();

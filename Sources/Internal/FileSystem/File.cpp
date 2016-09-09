@@ -52,7 +52,6 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
-
         Vector<uint8> contentAndSize;
 
 // now with PackManager we can improve perfomance by lookup pack name
@@ -60,15 +59,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 // mountedPackIndex find by name archive with file or skip to next step
 #ifdef __DAVAENGINE_COREV2__
         IPackManager* pm = nullptr;
-        Engine* engine = Engine::Instance();
-        if (engine != nullptr)
-        {
-            EngineContext* context = engine->GetContext();
-            if (context != nullptr)
-            {
-                pm = context->packManager;
-            }
-        }
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
 #else
         IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif

@@ -49,25 +49,14 @@ void PlatformCore::Run()
 
     Window* primaryWindow = engineBackend->GetPrimaryWindow();
     windowBackend = new WindowBackend(engineBackend, primaryWindow);
+    applicationFocusChanged.Connect(windowBackend, &WindowBackend::OnApplicationFocusChanged);
     engineBackend->OnGameLoopStarted();
     windowBackend->ActivateRendering();
     timer.start(16.0);
 
     QObject::connect(&app, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state)
                      {
-                         Window* primaryWindow = engineBackend->GetPrimaryWindow();
-                         if (primaryWindow == nullptr)
-                         {
-                             return;
-                         }
-
-                         bool isInFocus = false;
-                         if (state == Qt::ApplicationActive)
-                         {
-                             isInFocus = true;
-                         }
-
-                         primaryWindow->PostFocusChanged(isInFocus);
+                         applicationFocusChanged.Emit(state == Qt::ApplicationActive);
                      });
 
     QObject::connect(&app, &QApplication::aboutToQuit, [this]()

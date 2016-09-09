@@ -83,6 +83,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
 
 EngineBackend::~EngineBackend()
 {
+    SafeRelease(options);
     instance = nullptr;
 }
 
@@ -99,6 +100,8 @@ void EngineBackend::EngineDestroyed()
 
 void EngineBackend::SetOptions(KeyedArchive* options_)
 {
+    SafeRetain(options_);
+    SafeRelease(options);
     options = options_;
 }
 
