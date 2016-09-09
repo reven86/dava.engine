@@ -138,7 +138,7 @@ public class JNIDeviceInfo {
             display = DavaActivity.instance().getWindowManager().getDefaultDisplay();
         }
     	Point size = new Point();
-    	display.getSize(size);
+    	display.getRealSize(size);
         return size;
     }
         

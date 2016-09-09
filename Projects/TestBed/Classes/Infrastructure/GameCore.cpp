@@ -96,7 +96,7 @@ void CheckDeviceInfoValid()
     DVASSERT(httpProxyPort == 0);
 
     auto screenInfo = DeviceInfo::GetScreenInfo();
-    Logger::Info("screen_info: w=%d h=%d scale=%d", screenInfo.width, screenInfo.height, screenInfo.scale);
+    Logger::Info("screen_info: w=%d h=%d scale=%f", screenInfo.width, screenInfo.height, screenInfo.scale);
     DVASSERT(screenInfo.height > 0);
     DVASSERT(screenInfo.width > 0);
     DVASSERT(screenInfo.scale >= 1);
