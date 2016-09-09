@@ -239,7 +239,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
     if (mid)
     {
         jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
             info = StorageInfoFromJava(object);
@@ -270,7 +270,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
     if (mid)
     {
         jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
             info = StorageInfoFromJava(object);
@@ -292,7 +292,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     if (mid)
     {
         jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (array)
         {
             jsize length = env->GetArrayLength(array);
