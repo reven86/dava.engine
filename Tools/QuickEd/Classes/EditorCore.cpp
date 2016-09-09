@@ -68,49 +68,12 @@ void InitPVRTexTool()
 }
 }
 
-EditorCore::EditorCore(Engine* engine_)
+EditorCore::EditorCore()
     : QObject(nullptr)
     , Singleton<EditorCore>()
-    , engine(engine_)
 {
-    engine->windowCreated.Connect(this, &EditorCore::OnWindowCreated);
-
-    //we need to do it after QApplication will be created
-    engine->gameLoopStarted.Connect(this, &EditorCore::OnGameLoopStarted);
-
     ParticleEmitter::FORCE_DEEP_CLONE = true;
-
     ToolsAssetGuard::Instance()->Init();
-
-    KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "QuickEd");
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetInt32("rhi_threaded_frame_count", 1);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-
-    Vector<String> modules = {
-        "JobManager",
-        "NetCore",
-        "LocalizationSystem",
-        "SoundSystem",
-        "DownloadManager",
-    };
-    engine->SetOptions(appOptions);
-    engine->Init(eEngineRunMode::GUI_EMBEDDED, modules);
-
-    EngineContext* context = engine->GetContext();
-
-    context->logger->SetLogFilename("QuickEd.txt");
-
-    const char* settingsPath = "QuickEdSettings.archive";
-    FilePath localPrefrencesPath(context->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-
-    EditorCoreDetails::UnpackHelp(context->fileSystem);
-    EditorCoreDetails::InitPVRTexTool();
 }
 
 EditorCore::~EditorCore()
@@ -189,16 +152,25 @@ void EditorCore::ConnectInternal()
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 }
 
-void EditorCore::OnGameLoopStarted()
+void EditorCore::Init(DAVA::Engine& engine)
 {
+    EngineContext* context = engine.GetContext();
+
+    context->logger->SetLogFilename("QuickEd.txt");
+
+    const char* settingsPath = "QuickEdSettings.archive";
+    FilePath localPrefrencesPath(context->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    EditorCoreDetails::UnpackHelp(context->fileSystem);
+    EditorCoreDetails::InitPVRTexTool();
+
     qInstallMessageHandler(DAVAMessageHandler);
 
     Q_INIT_RESOURCE(QtToolsResources);
+    Themes::InitFromQApplication();
 
-    DAVA::NativeService* nativeService = engine->GetNativeService();
-    Themes::InitFromQApplication(nativeService->GetApplication());
-
-    DAVA::RenderWidget* renderWidget = nativeService->GetRenderWidget();
+    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
 
     spritesPacker.reset(new SpritesPacker());
     project = new Project(this);
@@ -218,6 +190,16 @@ void EditorCore::OnGameLoopStarted()
     ConnectInternal();
 
     mainWindow->show();
+}
+
+void EditorCore::OnRenderingInitialized()
+{
+    mainWindow->previewWidget->OnWindowCreated();
+    QStringList projectsPathes = project->GetProjectsHistory();
+    if (!projectsPathes.isEmpty())
+    {
+        OpenProject(projectsPathes.last());
+    }
 }
 
 void EditorCore::OnReloadSpritesStarted()
@@ -241,16 +223,6 @@ void EditorCore::OnReloadSpritesFinished()
     }
 
     Sprite::ReloadSprites(Texture::GetDefaultGPU());
-}
-
-void EditorCore::OnWindowCreated(Window& window)
-{
-    mainWindow->previewWidget->OnWindowCreated();
-    QStringList projectsPathes = project->GetProjectsHistory();
-    if (!projectsPathes.isEmpty())
-    {
-        OpenProject(projectsPathes.last());
-    }
 }
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)

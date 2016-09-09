@@ -22,6 +22,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 #endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
              )
     {
+        Q_INIT_RESOURCE(QtToolsResources);
         REGuiApplication app;
         app.beforeTerminate.Connect([&cmdLineMng]()
                                     {

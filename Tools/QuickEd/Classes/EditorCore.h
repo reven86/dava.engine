@@ -18,21 +18,20 @@ class SpritesPacker;
 namespace DAVA
 {
 class AssetCacheClient;
-class RenderWidget;
-class Window;
+class Engine;
 }
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DAVA::InspBase
 {
     Q_OBJECT
 public:
-    explicit EditorCore(DAVA::Engine* engine);
+    explicit EditorCore();
     ~EditorCore();
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
 
-    void OnGameLoopStarted();
-    void OnWindowCreated(DAVA::Window& window);
+    void Init(DAVA::Engine& engine);
+    void OnRenderingInitialized();
 
 private slots:
     bool CloseProject();
@@ -72,7 +71,6 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
-    DAVA::Engine* engine = nullptr;
 
 public:
     INTROSPECTION(EditorCore,
