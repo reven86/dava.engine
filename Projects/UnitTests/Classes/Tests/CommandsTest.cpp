@@ -42,9 +42,9 @@ public:
 DAVA_TESTCLASS (CommandsTest)
 {
     BEGIN_FILES_COVERED_BY_TESTS()
-    DECLARE_COVERED_FILES("Command")
-    DECLARE_COVERED_FILES("CommandBatch")
-    DECLARE_COVERED_FILES("CommandStack")
+    DECLARE_COVERED_FILES("Command.cpp")
+    DECLARE_COVERED_FILES("CommandBatch.cpp")
+    DECLARE_COVERED_FILES("CommandStack.cpp")
     END_FILES_COVERED_BY_TESTS()
 
     DAVA_TEST (SimpleTest)
