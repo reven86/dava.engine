@@ -10,6 +10,8 @@
 #include "UI/FileSystemView/FindFileInPackageDialog.h"
 
 #include "ui_FileSystemDockWidget.h"
+#include <QClipboard>
+#include <QMimeData>
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -53,9 +55,12 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
     newFileAction = new QAction(tr("Create file"), this);
     connect(newFileAction, &QAction::triggered, this, &FileSystemDockWidget::onNewFile);
-
     deleteAction = new QAction(tr("Delete"), this);
+#if defined Q_OS_WIN
     deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+#elif defined Q_OS_MAC
+    deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
     deleteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteAction, &QAction::triggered, this, &FileSystemDockWidget::onDeleteFile);
     
@@ -75,12 +80,16 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     openFileAction->setShortcutContext(Qt::WidgetShortcut);
     connect(openFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnOpenFile);
 
+    copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
+    connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
+
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
     ui->treeView->addAction(showInSystemExplorerAction);
     ui->treeView->addAction(renameAction);
     ui->treeView->addAction(openFileAction);
+    ui->treeView->addAction(copyInternalPathToFileAction);
     installEventFilter(this);
     RefreshActions();
 }
@@ -119,10 +128,12 @@ void FileSystemDockWidget::FindInFiles()
 //refresh actions by menu invoke pos
 void FileSystemDockWidget::RefreshActions()
 {
-    bool canCreateFile = !ui->treeView->isColumnHidden(0);
-    bool canCreateDir = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
+    bool isProjectOpened = !ui->treeView->isColumnHidden(0); //column is hidden if no open projects
+    bool canCreateFile = isProjectOpened;
+    bool canCreateDir = isProjectOpened;
     bool canShow = false;
     bool canRename = false;
+    bool canCopyInternalPath = false;
     const QModelIndex& index = ui->treeView->indexAt(menuInvokePos);
 
     if (index.isValid())
@@ -131,7 +142,9 @@ void FileSystemDockWidget::RefreshActions()
         canCreateDir = isDir;
         canShow = true;
         canRename = true;
+        canCopyInternalPath = true;
     }
+    copyInternalPathToFileAction->setEnabled(canCopyInternalPath);
     UpdateActionsWithShortcutsState(QModelIndexList() << index);
     newFileAction->setEnabled(canCreateFile);
     newFolderAction->setEnabled(canCreateDir);
@@ -159,7 +172,7 @@ bool FileSystemDockWidget::CanDelete(const QModelIndex& index) const
     return true;
 }
 
-QString FileSystemDockWidget::GetPathByCurrentPos()
+QString FileSystemDockWidget::GetPathByCurrentPos(ePathType pathType)
 {
     QModelIndex index = ui->treeView->indexAt(menuInvokePos);
     QString path;
@@ -170,6 +183,14 @@ QString FileSystemDockWidget::GetPathByCurrentPos()
     else
     {
         path = model->filePath(index);
+        if (pathType == DirPath)
+        {
+            QFileInfo fileInfo(path);
+            if (fileInfo.isFile())
+            {
+                path = fileInfo.absolutePath();
+            }
+        }
     }
     return path + "/";
 }
@@ -198,7 +219,7 @@ void FileSystemDockWidget::onNewFolder()
     dialog.setLabelText("Enter new folder name:");
     dialog.SetWarningMessage("This folder already exists");
 
-    auto path = GetPathByCurrentPos();
+    auto path = GetPathByCurrentPos(DirPath);
     auto validateFunction = [path](const QString& text) {
         return !QFileInfo::exists(path + text);
     };
@@ -233,7 +254,7 @@ void FileSystemDockWidget::onNewFolder()
 
 void FileSystemDockWidget::onNewFile()
 {
-    auto path = GetPathByCurrentPos();
+    auto path = GetPathByCurrentPos(DirPath);
     QString strFile = FileDialog::getSaveFileName(this, tr("Create new file"), path, "*" + FileSystemModel::GetYamlExtensionString());
     if (strFile.isEmpty())
     {
@@ -284,7 +305,7 @@ void FileSystemDockWidget::onDeleteFile()
 
 void FileSystemDockWidget::OnShowInExplorer()
 {
-    auto pathIn = GetPathByCurrentPos();
+    auto pathIn = GetPathByCurrentPos(AnyPath);
     ShowFileInExplorer(pathIn);
 }
 
@@ -303,6 +324,20 @@ void FileSystemDockWidget::OnOpenFile()
         {
             emit OpenPackageFile(model->filePath(index));
         }
+    }
+}
+
+void FileSystemDockWidget::OnCopyInternalPathToFile()
+{
+    const QModelIndexList& indexes = ui->treeView->selectionModel()->selectedIndexes();
+    for (const QModelIndex& index : indexes)
+    {
+        DAVA::FilePath path = model->filePath(index).toStdString();
+
+        QClipboard* clipboard = QApplication::clipboard();
+        QMimeData* data = new QMimeData();
+        data->setText(QString::fromStdString(path.GetFrameworkPath()));
+        clipboard->setMimeData(data);
     }
 }
 

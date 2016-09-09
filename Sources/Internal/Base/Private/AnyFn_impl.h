@@ -19,7 +19,11 @@ struct Invoker
     virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
     virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
 
-    virtual AnyFn BindThis(const AnyFn::AnyFnStorage& storage, void*) const = 0;
+    virtual AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void*) const = 0;
+
+    virtual ~Invoker()
+    {
+    }
 };
 
 template <typename Fn, typename Ret, typename... Args>
@@ -68,7 +72,7 @@ struct StaticAnyFnInvoker : Invoker
         return FinalInvoker<6 == sizeof...(Args), Ret, Any, Any, Any, Any, Any, Any>::Invoke(storage, a1, a2, a3, a4, a5, a6);
     }
 
-    AnyFn BindThis(const AnyFn::AnyFnStorage& storage, void* this_) const override
+    AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
     {
         throw AnyFn::Exception(AnyFn::Exception::BadBindThis, "this can't be binded to static function");
     }
@@ -80,7 +84,7 @@ struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
     {
-        throw std::runtime_error("Bad arguments");
+        throw AnyFn::Exception(AnyFn::Exception::BadInvokeArguments, "Bad arguments");
     }
 };
 
@@ -155,10 +159,10 @@ struct ClassAnyFnInvoker : Invoker
         return FinalInvoker<5 == sizeof...(Args), Ret, Any, Any, Any, Any, Any>::Invoke(storage, that, a1, a2, a3, a4, a5);
     }
 
-    AnyFn BindThis(const AnyFn::AnyFnStorage& storage, void* this_) const override
+    AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
     {
         Fn fn = storage.GetAuto<Fn>();
-        C* p = static_cast<C*>(this_);
+        C* p = const_cast<C*>(static_cast<const C*>(this_));
         return AnyFn([p, fn](Args... args) -> Ret
                      {
                          return (p->*fn)(std::forward<Args>(args)...);
@@ -172,7 +176,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
-        throw std::runtime_error("Bad arguments");
+        throw AnyFn::Exception(AnyFn::Exception::BadInvokeArguments, "Bad arguments");
     }
 };
 
@@ -183,7 +187,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker<true, R, A...>
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
         Fn fn = storage.GetAuto<Fn>();
-        C* p = cls.Get<C*>();
+        C* p = const_cast<C*>(cls.Get<const C*>());
         return Any((p->*fn)(args.template Get<Args>()...));
     }
 };
@@ -195,7 +199,7 @@ struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker<true, void, A...>
     inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
     {
         Fn fn = storage.GetAuto<Fn>();
-        C* p = cls.Get<C*>();
+        C* p = const_cast<C*>(cls.Get<const C*>());
         (p->*fn)(args.template Get<Args>()...);
         return Any();
     }
@@ -216,6 +220,11 @@ struct FunctorTraits<Fn, Ret (Cls::*)(Args...) const>
 };
 
 } // namespace AnyFnDetail
+
+inline AnyFn::AnyFn()
+    : invoker(nullptr)
+{
+}
 
 template <typename Fn>
 inline AnyFn::AnyFn(const Fn& fn)
@@ -275,7 +284,7 @@ inline Any AnyFn::Invoke(const Args&... args) const
     return invoker->Invoke(anyFnStorage, args...);
 }
 
-inline AnyFn AnyFn::BindThis(void* this_) const
+inline AnyFn AnyFn::BindThis(const void* this_) const
 {
     return invoker->BindThis(anyFnStorage, this_);
 }

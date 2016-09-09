@@ -14,9 +14,9 @@ const String AutotestingDB::DB_ERROR_STR_VALUE = "not_found";
 const String MULTIPLAYER_ARCHIVE = "multiplayer";
 
 AutotestingDB::AutotestingDB()
-    : dbClient(nullptr)
+    : logsFolder(FilePath(""))
+    , dbClient(nullptr)
     , logFilePath(FilePath(""))
-    , logsFolder(FilePath(""))
     , autoSys(nullptr)
 {
     autoSys = AutotestingSystem::Instance();

@@ -181,6 +181,13 @@ FilePath FilePath::FilepathInDocuments(const String& relativePathname)
     return FilepathInDocuments(relativePathname.c_str());
 }
 
+bool FilePath::StartsWith(const FilePath& basePath)
+{
+    DVASSERT(!basePath.IsEmpty());
+    String baseStr = basePath.GetAbsolutePathname();
+    return (GetAbsolutePathname().compare(0, baseStr.size(), baseStr) == 0);
+}
+
 bool FilePath::ContainPath(const FilePath& basePath, const FilePath& partPath)
 {
     return basePath.GetAbsolutePathname().find(partPath.GetAbsolutePathname()) != std::string::npos;
@@ -213,8 +220,8 @@ FilePath::FilePath(const FilePath& path)
 }
 
 FilePath::FilePath(FilePath&& path)
-    : pathType(path.pathType)
-    , absolutePathname(std::move(path.absolutePathname))
+    : absolutePathname(std::move(path.absolutePathname))
+    , pathType(path.pathType)
 {
     path.pathType = PATH_EMPTY;
 }
@@ -409,11 +416,7 @@ String FilePath::ResolveResourcesPath() const
                 return path.absolutePathname;
             }
         }
-        // if we can't find full path to file from any resource folder return relative path
-        // for example if we on android in APK path may contains "assets/Data"
-        // so we just add Data/ and inside c++ code append "assets/" in Java
-        // code don't add "assets/"
-        return "Data/" + relativePathname;
+        return relativePathname;
     }
 
     return absolutePathname;
@@ -937,11 +940,17 @@ int32 FilePath::Compare(const FilePath& right) const
 String FilePath::AsURL() const
 {
     String path = GetAbsolutePathname();
-    
+// HACK this code incorrect but works
+// how do we know where file exist on android FS or inside APK(Zip)
+// here we always
 #if defined(__DAVAENGINE_ANDROID__)
-    if (!path.empty() && (path[0] != '/'))
+    if (path.empty())
     {
-        return ("file:///android_asset/" + path);
+        return "file:///android_asset/Data/";
+    }
+    else if (path.at(0) != '/')
+    {
+        return ("file:///android_asset/Data/" + path);
     }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

@@ -1,11 +1,21 @@
-#include "Base/Platform.h"
-#if defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
-
 #include "UI/Private/iOS/WebViewControliOS.h"
 
+#if defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
+
 #import <UIKit/UIKit.h>
-#import <Platform/TemplateiOS/HelperAppDelegate.h>
+
+#include "Render/Image/Image.h"
+#include "UI/UIWebView.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/EngineModule.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
+#include "Core/Core.h"
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
 #import "Platform/TemplateiOS/BackgroundView.h"
+#endif
 
 @interface WebViewURLDelegate : NSObject<UIWebViewDelegate>
 {
@@ -24,7 +34,9 @@
 - (void)webView:(UIWebView*)webView didFailLoadWithError:(NSError*)error;
 - (void)leftGesture;
 - (void)rightGesture;
+#if !defined(__DAVAENGINE_COREV2__)
 - (UIImage*)renderUIViewToImage:(UIView*)view;
+#endif
 - (void)setDAVAUIWebView:(DAVA::UIWebView*)uiWebControl;
 - (void)onExecuteJScript:(NSArray*)result;
 - (void)setDAVAWebViewControl:(DAVA::WebViewControl*)webViewControl;
@@ -131,6 +143,7 @@
     }
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 - (UIImage*)renderUIViewToImage:(UIView*)view
 {
     void* image = DAVA::WebViewControl::RenderIOSUIViewToImage(view);
@@ -138,6 +151,7 @@
     UIImage* uiImage = static_cast<UIImage*>(image);
     return uiImage;
 }
+#endif
 
 - (void)onExecuteJScript:(NSString*)result
 {
@@ -161,39 +175,49 @@
 
 @end
 
-DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
-    : webViewPtr(0)
-    , webViewURLDelegatePtr(0)
-    , rightSwipeGesturePtr(0)
-    , leftSwipeGesturePtr(0)
-    , gesturesEnabled(false)
-    , isRenderToTexture(false)
-    , pendingRenderToTexture(false)
-    , isVisible(true)
+namespace DAVA
+{
+struct WebViewControl::WebViewObjcBridge final
+{
+    ::UIWebView* nativeWebView = nullptr;
+    WebViewURLDelegate* webViewDelegate = nullptr;
+    UISwipeGestureRecognizer* rightSwipeGesture = nullptr;
+    UISwipeGestureRecognizer* leftSwipeGesture = nullptr;
+};
+
+WebViewControl::WebViewControl(UIWebView& uiWeb)
+    : bridge(new WebViewObjcBridge)
+#if defined(__DAVAENGINE_COREV2__)
+    , window(Engine::Instance()->PrimaryWindow())
+#endif
     , uiWebView(uiWeb)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    WindowNativeService* nativeService = window->GetNativeService();
+    bridge->nativeWebView = static_cast<::UIWebView*>(nativeService->GetUIViewFromPool("UIWebView"));
+#else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
-    ::UIWebView* localWebView = [backgroundView CreateWebView];
-    webViewPtr = localWebView;
+    bridge->nativeWebView = [backgroundView CreateWebView];
+#endif
 
     CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-    [localWebView setFrame:emptyRect];
+    [bridge->nativeWebView setFrame:emptyRect];
 
     SetBounces(false);
 
-    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-    WebViewURLDelegate* viewURLDelegate =
-    (WebViewURLDelegate*)webViewURLDelegatePtr;
-    [localWebView setDelegate:viewURLDelegate];
-    [viewURLDelegate setDAVAUIWebView:&uiWebView];
-    [viewURLDelegate setDAVAWebViewControl:this];
+    bridge->webViewDelegate = [[WebViewURLDelegate alloc] init];
 
-    [localWebView becomeFirstResponder];
+    [bridge->nativeWebView setDelegate:bridge->webViewDelegate];
+    [bridge->webViewDelegate setDAVAUIWebView:&uiWebView];
+    [bridge->webViewDelegate setDAVAWebViewControl:this];
+
+    [bridge->nativeWebView becomeFirstResponder];
 }
 
-void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
+#if !defined(__DAVAENGINE_COREV2__)
+void* WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
@@ -224,7 +248,7 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     return image;
 }
 
-void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& control)
+void WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& control)
 {
     ::UIImage* image = static_cast<::UIImage*>(imagePtr);
     DVASSERT(image);
@@ -275,48 +299,62 @@ void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& 
         DAVA::SafeRelease(imageRGB);
     }
 }
+#endif
 
-void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
-DAVA::UIWebView& control)
+void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control)
 {
-    WebViewURLDelegate* webURLDelegate =
-    (WebViewURLDelegate*)webViewURLDelegatePtr;
-    DVASSERT(webURLDelegate);
+#if defined(__DAVAENGINE_COREV2__)
+    UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(bridge->nativeWebView);
 
-    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
-    DVASSERT(iosWebView);
+    if (nativeImage != nullptr)
+    {
+        RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+        if (image != nullptr)
+        {
+            RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));
+            if (texture != nullptr)
+            {
+                uint32 width = image->GetWidth();
+                uint32 height = image->GetHeight();
+                Rect rect = control.GetRect();
+                RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
+                if (sprite != nullptr)
+                {
+                    control.GetBackground()->SetSprite(sprite.Get(), 0);
+                }
+            }
+        }
+    }
+#else
+    WebViewURLDelegate* webURLDelegate = bridge->webViewDelegate;
+    ::UIWebView* iosWebView = bridge->nativeWebView;
 
     UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
     DVASSERT(image);
 
     WebViewControl::SetImageAsSpriteToControl(image, control);
+#endif
 }
-
-namespace DAVA
-{
-typedef DAVA::UIWebView DAVAWebView;
-
-//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
 
 static const struct
 {
-    DAVAWebView::eDataDetectorType davaDetectorType;
+    DAVA::UIWebView::eDataDetectorType davaDetectorType;
     NSUInteger systemDetectorType;
 }
 detectorsMap[] =
 {
-  { DAVAWebView::DATA_DETECTOR_ALL, UIDataDetectorTypeAll },
-  { DAVAWebView::DATA_DETECTOR_NONE, UIDataDetectorTypeNone },
-  { DAVAWebView::DATA_DETECTOR_PHONE_NUMBERS, UIDataDetectorTypePhoneNumber },
-  { DAVAWebView::DATA_DETECTOR_LINKS, UIDataDetectorTypeLink },
-  { DAVAWebView::DATA_DETECTOR_ADDRESSES, UIDataDetectorTypeAddress },
-  { DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent }
+  { DAVA::UIWebView::DATA_DETECTOR_ALL, UIDataDetectorTypeAll },
+  { DAVA::UIWebView::DATA_DETECTOR_NONE, UIDataDetectorTypeNone },
+  { DAVA::UIWebView::DATA_DETECTOR_PHONE_NUMBERS, UIDataDetectorTypePhoneNumber },
+  { DAVA::UIWebView::DATA_DETECTOR_LINKS, UIDataDetectorTypeLink },
+  { DAVA::UIWebView::DATA_DETECTOR_ADDRESSES, UIDataDetectorTypeAddress },
+  { DAVA::UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent }
 };
 
 WebViewControl::~WebViewControl()
 {
-    SetGestures(NO);
-    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
+    SetGestures(false);
+    ::UIWebView* innerWebView = bridge->nativeWebView;
 
     [innerWebView setDelegate:nil];
     [innerWebView stopLoading];
@@ -324,23 +362,23 @@ WebViewControl::~WebViewControl()
 
     [innerWebView resignFirstResponder];
 
+#if defined(__DAVAENGINE_COREV2__)
+    WindowNativeService* nativeService = window->GetNativeService();
+    nativeService->ReturnUIViewToPool(innerWebView);
+#else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
     [backgroundView ReleaseWebView:innerWebView];
+#endif
 
-    webViewPtr = nil;
-
-    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
-    [w release];
-    webViewURLDelegatePtr = nil;
+    [bridge->webViewDelegate release];
 
     RestoreSubviewImages();
 }
 
-void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, DAVAWebView* webView)
+void WebViewControl::SetDelegate(IUIWebViewDelegate* delegate, DAVA::UIWebView* webView)
 {
-    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
-    [w setDelegate:delegate andWebView:webView];
+    [bridge->webViewDelegate setDelegate:delegate andWebView:webView];
 }
 
 void WebViewControl::Initialize(const Rect& rect)
@@ -355,7 +393,7 @@ void WebViewControl::OpenURL(const String& urlToOpen)
     NSURL* url = [NSURL URLWithString:[nsURLPathToOpen stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
     NSURLRequest* requestObj = [NSURLRequest requestWithURL:url];
-    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
+    ::UIWebView* innerWebView = bridge->nativeWebView;
     [innerWebView stopLoading];
     [innerWebView loadRequest:requestObj];
 }
@@ -365,7 +403,7 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
     NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
 
-    ::UIWebView* innerWebView = (::UIWebView*)webViewPtr;
+    ::UIWebView* innerWebView = bridge->nativeWebView;
     [innerWebView stopLoading];
 
     [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
@@ -377,7 +415,7 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
                                                          length:htlmString.size() * sizeof(wchar_t)
                                                        encoding:NSUTF32LittleEndianStringEncoding] autorelease];
 
-    [(::UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
+    [bridge->nativeWebView loadHTMLString:htmlPageToLoad baseURL:nil];
 }
 
 void WebViewControl::DeleteCookies(const String& targetUrl)
@@ -430,21 +468,16 @@ void WebViewControl::ExecuteJScript(const String& scriptString)
     NSString* jScriptString = [NSString stringWithUTF8String:
                                         scriptString.c_str()];
 
-    NSString* resultString = [(::UIWebView*)webViewPtr
-    stringByEvaluatingJavaScriptFromString:jScriptString];
+    NSString* resultString = [bridge->nativeWebView stringByEvaluatingJavaScriptFromString:jScriptString];
 
-    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
-    if (w)
-    {
-        [w performSelector:@selector(onExecuteJScript:)
-                withObject:resultString
-                afterDelay:0.0];
-    }
+    [bridge->webViewDelegate performSelector:@selector(onExecuteJScript:)
+                                  withObject:resultString
+                                  afterDelay:0.0];
 }
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-    CGRect webViewRect = [(::UIWebView*)webViewPtr frame];
+    CGRect webViewRect = [bridge->nativeWebView frame];
 
     VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
 
@@ -465,8 +498,13 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.width = physicalRect.dx;
     webViewRect.size.height = physicalRect.dy;
 
+#if defined(__DAVAENGINE_COREV2__)
     // Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
+    float32 scaleDivider = window->GetScaleX();
+#else
+    // Apply the Retina scale divider, if any.
+    float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
+#endif
     webViewRect.origin.x /= scaleDivider;
     webViewRect.origin.y /= scaleDivider;
     webViewRect.size.height /= scaleDivider;
@@ -476,7 +514,7 @@ void WebViewControl::SetRect(const Rect& rect)
     webViewRect.size.width = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.width);
     webViewRect.size.height = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.height);
 
-    [(::UIWebView*)webViewPtr setFrame:webViewRect];
+    [bridge->nativeWebView setFrame:webViewRect];
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
@@ -492,12 +530,12 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 
 void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
 {
-    [(::UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
+    [bridge->nativeWebView setScalesPageToFit:isScalesToFit];
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
-    ::UIWebView* webView = (::UIWebView*)webViewPtr;
+    ::UIWebView* webView = bridge->nativeWebView;
     [webView setOpaque:(enabled ? NO : YES)];
 
     UIColor* color = [webView backgroundColor];
@@ -524,7 +562,7 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 void WebViewControl::HideSubviewImages(void* view)
 {
-    ::UIWebView* webView = (::UIWebView*)webViewPtr;
+    ::UIWebView* webView = bridge->nativeWebView;
     ::UIScrollView* scrollView = webView.scrollView;
 
     UIView* uiview = (UIView*)view;
@@ -557,56 +595,48 @@ void WebViewControl::RestoreSubviewImages()
 
 bool WebViewControl::GetBounces() const
 {
-    if (!webViewPtr)
-    {
-        return false;
-    }
-
-    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
-    return (localWebView.scrollView.bounces == YES);
+    return [[bridge->nativeWebView scrollView] bounces] == YES;
 }
 
 void WebViewControl::SetBounces(bool value)
 {
-    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
-    localWebView.scrollView.bounces = (value == true);
+    [[bridge->nativeWebView scrollView] setBounces:value ? YES : NO];
 }
 
 //for iOS we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
 void WebViewControl::SetGestures(bool value)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    UIView* backView = [bridge->nativeWebView superview];
+#else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     UIView* backView = appDelegate.renderViewController.backgroundView;
+#endif
 
     if (value && !gesturesEnabled)
     {
-        WebViewURLDelegate* urlDelegate = (WebViewURLDelegate*)webViewURLDelegatePtr;
+        WebViewURLDelegate* urlDelegate = bridge->webViewDelegate;
 
-        UISwipeGestureRecognizer* rightSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(rightGesture)];
-        UISwipeGestureRecognizer* leftSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(leftGesture)];
-        rightSwipeGesture.direction = UISwipeGestureRecognizerDirectionRight;
-        leftSwipeGesture.direction = UISwipeGestureRecognizerDirectionLeft;
+        bridge->rightSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(rightGesture)];
+        bridge->leftSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(leftGesture)];
+        bridge->rightSwipeGesture.direction = UISwipeGestureRecognizerDirectionRight;
+        bridge->leftSwipeGesture.direction = UISwipeGestureRecognizerDirectionLeft;
 
-        [backView addGestureRecognizer:rightSwipeGesture];
-        [backView addGestureRecognizer:leftSwipeGesture];
+        [backView addGestureRecognizer:bridge->rightSwipeGesture];
+        [backView addGestureRecognizer:bridge->leftSwipeGesture];
 
-        ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
-        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:rightSwipeGesture];
-        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:leftSwipeGesture];
-        rightSwipeGesturePtr = rightSwipeGesture;
-        leftSwipeGesturePtr = leftSwipeGesture;
+        ::UIWebView* localWebView = bridge->nativeWebView;
+        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:bridge->rightSwipeGesture];
+        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:bridge->leftSwipeGesture];
     }
     else if (!value && gesturesEnabled)
     {
-        UISwipeGestureRecognizer* rightSwipeGesture = (UISwipeGestureRecognizer*)rightSwipeGesturePtr;
-        UISwipeGestureRecognizer* leftSwipeGesture = (UISwipeGestureRecognizer*)leftSwipeGesturePtr;
-
-        [backView removeGestureRecognizer:rightSwipeGesture];
-        [backView removeGestureRecognizer:leftSwipeGesture];
-        [rightSwipeGesture release];
-        [leftSwipeGesture release];
-        rightSwipeGesturePtr = nil;
-        leftSwipeGesturePtr = nil;
+        [backView removeGestureRecognizer:bridge->rightSwipeGesture];
+        [backView removeGestureRecognizer:bridge->leftSwipeGesture];
+        [bridge->rightSwipeGesture release];
+        [bridge->leftSwipeGesture release];
+        bridge->rightSwipeGesture = nullptr;
+        bridge->leftSwipeGesture = nullptr;
     }
     gesturesEnabled = value;
 }
@@ -624,14 +654,12 @@ void WebViewControl::SetDataDetectorTypes(int32 value)
         }
     }
 
-    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
-    localWebView.dataDetectorTypes = systemDetectorTypes;
+    [bridge->nativeWebView setDataDetectorTypes:systemDetectorTypes];
 }
 
 int32 WebViewControl::GetDataDetectorTypes() const
 {
-    ::UIWebView* localWebView = (::UIWebView*)webViewPtr;
-    NSUInteger systemDetectorTypes = localWebView.dataDetectorTypes;
+    NSUInteger systemDetectorTypes = [bridge->nativeWebView dataDetectorTypes];
 
     int32 davaDetectorTypes = 0;
 
@@ -657,7 +685,7 @@ void WebViewControl::WillDraw()
     if (isVisible != pendingVisible)
     {
         isVisible = pendingVisible;
-        [(::UIWebView*)webViewPtr setHidden:(isVisible ? NO : YES)];
+        [bridge->nativeWebView setHidden:(isVisible ? NO : YES)];
     }
 
     if (isRenderToTexture != pendingRenderToTexture)
@@ -674,12 +702,12 @@ void WebViewControl::WillDraw()
             // we have to show window or we can't render web view into texture
             if (!isVisible)
             {
-                [(::UIWebView*)webViewPtr setHidden:NO];
+                [bridge->nativeWebView setHidden:NO];
             }
             RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
             if (!isVisible)
             {
-                [(::UIWebView*)webViewPtr setHidden:YES];
+                [bridge->nativeWebView setHidden:YES];
             }
         }
     }

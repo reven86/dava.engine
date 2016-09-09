@@ -4,6 +4,7 @@
 #include "QtPropertyDataDavaKeyedArchive.h"
 #include "QtPropertyDataKeyedArchiveMember.h"
 #include "Deprecated/EditorConfig.h"
+#include "Commands2/RECommandIDs.h"
 
 #include <QSet>
 #include <QMenu>
@@ -237,21 +238,21 @@ void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String
     }
 }
 
-Command2::Pointer QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
+std::unique_ptr<DAVA::Command> QtPropertyDataDavaKeyedArcive::CreateLastCommand() const
 {
     if (nullptr != lastCommand)
     {
-        if (CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetId())
+        if (CMDID_KEYEDARCHIVE_REM_KEY == lastCommand->GetID())
         {
-            return Command2::Create<KeyeadArchiveRemValueCommand>(*((KeyeadArchiveRemValueCommand*)lastCommand));
+            return std::unique_ptr<DAVA::Command>(new KeyeadArchiveRemValueCommand(*((KeyeadArchiveRemValueCommand*)lastCommand)));
         }
-        else if (CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetId())
+        else if (CMDID_KEYEDARCHIVE_ADD_KEY == lastCommand->GetID())
         {
-            return Command2::Create<KeyedArchiveAddValueCommand>(*((KeyedArchiveAddValueCommand*)lastCommand));
+            return std::unique_ptr<DAVA::Command>(new KeyedArchiveAddValueCommand(*((KeyedArchiveAddValueCommand*)lastCommand)));
         }
     }
 
-    return Command2::CreateEmptyCommand();
+    return std::unique_ptr<DAVA::Command>();
 }
 
 void QtPropertyDataDavaKeyedArcive::FinishTreeCreation()

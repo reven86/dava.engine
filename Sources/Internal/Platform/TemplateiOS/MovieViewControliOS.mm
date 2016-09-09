@@ -1,38 +1,59 @@
-#include "MovieViewControliOS.h"
+#include "Platform/TemplateiOS/MovieViewControliOS.h"
+
+#if defined(__DAVAENGINE_IPHONE__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
+
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #import <MediaPlayer/MediaPlayer.h>
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/EngineModule.h"
+#include "Engine/Public/WindowNativeService.h"
+#else
 #import <Platform/TemplateiOS/HelperAppDelegate.h>
+#endif
 
 namespace DAVA
 {
-//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
-using ::UIScreen;
+struct MovieViewControl::MovieViewObjcBridge final
+{
+    MPMoviePlayerController* moviePlayer = nullptr;
+};
 
 MovieViewControl::MovieViewControl()
+    : bridge(new MovieViewObjcBridge)
+#if defined(__DAVAENGINE_COREV2__)
+    , window(Engine::Instance()->PrimaryWindow())
+#endif
 {
-    moviePlayerController = [[MPMoviePlayerController alloc] init];
+    bridge->moviePlayer = [[MPMoviePlayerController alloc] init];
 
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-    [player setShouldAutoplay:FALSE];
-    [player.view setUserInteractionEnabled:NO];
+    [bridge->moviePlayer setShouldAutoplay:FALSE];
+    [[bridge->moviePlayer view] setUserInteractionEnabled:NO];
 
-    if ([player respondsToSelector:@selector(loadState)])
+    if ([bridge->moviePlayer respondsToSelector:@selector(loadState)])
     {
-        [player setControlStyle:MPMovieControlStyleNone];
-        player.scalingMode = MPMovieScalingModeFill;
+        [bridge->moviePlayer setControlStyle:MPMovieControlStyleNone];
+        [bridge->moviePlayer setScalingMode:MPMovieScalingModeFill];
     }
 
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->AddUIView([bridge->moviePlayer view]);
+#else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    [[appDelegate renderViewController].backgroundView addSubview:player.view];
+    [[appDelegate renderViewController].backgroundView addSubview:[bridge->moviePlayer view]];
+#endif
 }
 
 MovieViewControl::~MovieViewControl()
 {
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-
-    [player.view removeFromSuperview];
-    [player release];
-    moviePlayerController = nil;
+#if defined(__DAVAENGINE_COREV2__)
+    window->GetNativeService()->RemoveUIView([bridge->moviePlayer view]);
+#else
+    [[bridge->moviePlayer view] removeFromSuperview];
+#endif
+    [bridge->moviePlayer release];
 }
 
 void MovieViewControl::Initialize(const Rect& rect)
@@ -44,16 +65,32 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
 {
     NSURL* movieURL = [NSURL fileURLWithPath:[NSString stringWithCString:moviePath.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding]];
 
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-    [player setScalingMode:(MPMovieScalingMode)ConvertScalingModeToPlatform(params.scalingMode)];
-    [player setContentURL:movieURL];
+    MPMovieScalingMode scaling = MPMovieScalingModeNone;
+    switch (params.scalingMode)
+    {
+    case scalingModeNone:
+        scaling = MPMovieScalingModeNone;
+        break;
+    case scalingModeFill:
+        scaling = MPMovieScalingModeFill;
+        break;
+    case scalingModeAspectFill:
+        scaling = MPMovieScalingModeAspectFill;
+        break;
+    case scalingModeAspectFit:
+        scaling = MPMovieScalingModeAspectFit;
+        break;
+    default:
+        scaling = MPMovieScalingModeNone;
+        break;
+    }
+    [bridge->moviePlayer setScalingMode:scaling];
+    [bridge->moviePlayer setContentURL:movieURL];
 }
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-
-    CGRect playerViewRect = player.view.frame;
+    CGRect playerViewRect = [[bridge->moviePlayer view] frame];
 
     Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
     playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
@@ -61,8 +98,13 @@ void MovieViewControl::SetRect(const Rect& rect)
     playerViewRect.size.width = physicalRect.dx;
     playerViewRect.size.height = physicalRect.dy;
 
+#if defined(__DAVAENGINE_COREV2__)
     // Apply the Retina scale divider, if any.
-    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
+    float32 scaleDivider = window->GetScaleX();
+#else
+    // Apply the Retina scale divider, if any.
+    float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
+#endif
     playerViewRect.origin.x /= scaleDivider;
     playerViewRect.origin.y /= scaleDivider;
     playerViewRect.size.height /= scaleDivider;
@@ -72,65 +114,40 @@ void MovieViewControl::SetRect(const Rect& rect)
     playerViewRect.size.width = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.width);
     playerViewRect.size.height = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.height);
 
-    [player.view setFrame:playerViewRect];
+    [[bridge->moviePlayer view] setFrame:playerViewRect];
 }
 
 void MovieViewControl::SetVisible(bool isVisible)
 {
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-    [player.view setHidden:!isVisible];
+    [[bridge->moviePlayer view] setHidden:!isVisible];
 }
 
 void MovieViewControl::Play()
 {
-    [(MPMoviePlayerController*)moviePlayerController play];
+    [bridge->moviePlayer play];
 }
 
 void MovieViewControl::Stop()
 {
-    [(MPMoviePlayerController*)moviePlayerController stop];
+    [bridge->moviePlayer stop];
 }
 
 void MovieViewControl::Pause()
 {
-    [(MPMoviePlayerController*)moviePlayerController pause];
+    [bridge->moviePlayer pause];
 }
 
 void MovieViewControl::Resume()
 {
-    [(MPMoviePlayerController*)moviePlayerController play];
+    [bridge->moviePlayer play];
 }
 
 bool MovieViewControl::IsPlaying() const
 {
-    MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
-    return (player.playbackState == MPMoviePlaybackStatePlaying);
+    return [bridge->moviePlayer playbackState] == MPMoviePlaybackStatePlaying;
 }
 
-int MovieViewControl::ConvertScalingModeToPlatform(eMovieScalingMode scalingMode)
-{
-    switch (scalingMode)
-    {
-    case scalingModeFill:
-    {
-        return MPMovieScalingModeFill;
-    }
+} // namespace DAVA
 
-    case scalingModeAspectFill:
-    {
-        return MPMovieScalingModeAspectFill;
-    }
-
-    case scalingModeAspectFit:
-    {
-        return MPMovieScalingModeAspectFit;
-    }
-
-    case scalingModeNone:
-    default:
-    {
-        return MPMovieScalingModeNone;
-    }
-    }
-}
-}
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_IPHONE__

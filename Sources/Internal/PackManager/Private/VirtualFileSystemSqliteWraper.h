@@ -2,6 +2,6 @@
 
 namespace DAVA
 {
-void RegisterDavaVFSForSqlite3();
+void RegisterDavaVFSForSqlite3(bool dbInMemory);
 void UnregisterDavaVFSForSqlite3();
 }

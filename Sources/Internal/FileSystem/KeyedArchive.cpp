@@ -172,9 +172,9 @@ uint32 KeyedArchive::Save(uint8* data, uint32 size) const
     auto archieveSize = buffer->GetSize();
     if ((nullptr != data) && (size >= archieveSize))
     { // if data is null, we just return requested size for data
-        Memcpy(data, buffer->GetData(), archieveSize);
+        Memcpy(data, buffer->GetData(), static_cast<size_t>(archieveSize));
     }
-    return archieveSize;
+    return static_cast<uint32>(archieveSize);
 }
 
 bool KeyedArchive::Load(const uint8* data, uint32 size)
@@ -334,7 +334,7 @@ void KeyedArchive::SetByteArrayFromArchive(const String& key, KeyedArchive* arch
     //DVWARNING(false, "Method is depriceted! Use SetArchive()");
     DynamicMemoryFile* file = DynamicMemoryFile::Create(File::CREATE | File::WRITE);
     archive->Save(file);
-    SetByteArray(key, file->GetData(), file->GetSize());
+    SetByteArray(key, file->GetData(), static_cast<uint32>(file->GetSize()));
     SafeRelease(file);
 }
 

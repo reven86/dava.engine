@@ -99,8 +99,11 @@ if( STEAM_SDK_FOUND )
        list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
     endif ()
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
+    ASSERT( STEAM_APPID "Please set the correct path to steam_appid.txt in value STEAM_APPID" )
+ 
+    configure_file( ${STEAM_APPID}
                     ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+  
 
 endif ()
 
@@ -129,6 +132,7 @@ if( DAVA_FOUND )
 
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
 
 endif()
 
@@ -264,44 +268,46 @@ if( DAVA_FOUND )
 
     endif()
 
-    if( QT5_FOUND )
-        if( WIN32 )
-            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/Qt5 ${DAVA_PLATFORM_SRC}/Qt5/Win32 )
-            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.cpp )
-            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.h   )
+    if ( NOT DAVA_COREV2 )
+        if( QT5_FOUND )
+            if( WIN32 )
+                set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/Qt5 ${DAVA_PLATFORM_SRC}/Qt5/Win32 )
+                list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.cpp )
+                list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.h   )
 
-        elseif( MACOS )
-            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/Qt5  ${DAVA_PLATFORM_SRC}/Qt5/MacOS )
-            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.mm )
-            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.h   )
-            list( APPEND UNIFIED_IGNORE_LIST_APPLE "Qt5/MacOS/CoreMacOSPlatformQt.cpp" )
+            elseif( MACOS )
+                set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/Qt5  ${DAVA_PLATFORM_SRC}/Qt5/MacOS )
+                list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.mm )
+                list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.h   )
+                list( APPEND UNIFIED_IGNORE_LIST_APPLE "Qt5/MacOS/CoreMacOSPlatformQt.cpp" )
+            endif()
+
+            include_directories( ${PLATFORM_INCLUDES_DIR} )
+
+        else()
+            if( WIN32 )
+                add_definitions        ( -D_UNICODE
+                                         -DUNICODE )
+                list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp
+                                        ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
+
+            elseif( MACOS )
+                set( MACOS_PLATFORM_SRC  
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.h
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.mm
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.h
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.mm
+                                    ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
+                            )
+
+                list( APPEND ADDED_SRC ${MACOS_PLATFORM_SRC} )
+            endif()
+
         endif()
-
-        include_directories( ${PLATFORM_INCLUDES_DIR} )
-
-    else()
-        if( WIN32 )
-            add_definitions        ( -D_UNICODE
-                                     -DUNICODE )
-            list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp
-                                    ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
-
-        elseif( MACOS )
-            set( MACOS_PLATFORM_SRC  
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.h
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/AppDelegate.mm
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.h
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/HelperAppDelegate.mm
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.h
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/MainWindowController.mm
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.h
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/OpenGLView.mm
-                                ${DAVA_PLATFORM_SRC}/TemplateMacOS/CorePlatformMacOS.h
-                        )
-
-            list( APPEND ADDED_SRC ${MACOS_PLATFORM_SRC} )
-        endif()
-
     endif()
 
     file( GLOB_RECURSE CPP_FILES ${PATTERNS_CPP} )
@@ -451,8 +457,13 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
     set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_TARGET_API_LEVEL} )
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    if (DAVA_COREV2)
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest_v2.in
+                        ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    else()
+        configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest.in
+                        ${CMAKE_CURRENT_BINARY_DIR}/AndroidManifest.xml )
+    endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AntProperties.in
                     ${CMAKE_CURRENT_BINARY_DIR}/ant.properties )
@@ -676,48 +687,6 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 
 endif()
 
-##
-
-if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
-    if( MAC_DISABLE_BUNDLE )
-        set( APP_ATRIBUTE )
-    else()
-        set( APP_ATRIBUTE .app )
-
-    endif()
-
-    if( DEPLOY )
-        set( EXECUT_FILE ${DEPLOY_DIR}/${PROJECT_NAME}${APP_ATRIBUTE})
-    else()
-        set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
-    endif()
-
-
-    set( COVERAGE_SCRIPT ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_report.py )
-
-    add_custom_target ( COVERAGE_${PROJECT_NAME}  
-            SOURCES ${COVERAGE_SCRIPT}
-            COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
-                    --pathExecut    ${EXECUT_FILE}
-                    --pathBuild     ${CMAKE_BINARY_DIR}
-                    --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
-                    --buildConfig   $(CONFIGURATION)
-        )
-    
-    add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
-
-    string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )
-    string(REPLACE "\"" "" DAVA_FOLDERS "${DAVA_FOLDERS}" )
-
-    add_definitions( -DTEST_COVERAGE )
-    add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
-    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
-
-endif()
-
-
-###
-
 if( DEPLOY )
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
@@ -733,14 +702,18 @@ if( DEPLOY )
 
     if( WIN32 )
         if( APP_DATA )
-            get_filename_component( DIR_NAME ${APP_DATA} NAME )
+            foreach( APP_DATA_DIR_ITEM ${APP_DATA})
+                get_filename_component( DIR_NAME ${APP_DATA_DIR_ITEM} NAME )
+
+                ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA_DIR_ITEM}  ${DEPLOY_DIR}/${DIR_NAME}
+                )
+            endforeach(APP_DATA_DIR_ITEM)
 
             ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-               COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/${DIR_NAME}/
-               COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
-            )
-
-        endif()
+                    COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
+                )
+        endif(APP_DATA)
 
 		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
@@ -792,6 +765,10 @@ if( DEPLOY )
     endif()
 
 endif()
+
+coverage_processing()
+
+reset_MAIN_MODULE_VALUES()
 
 endmacro ()
 

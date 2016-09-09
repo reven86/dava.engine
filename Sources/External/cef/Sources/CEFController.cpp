@@ -9,6 +9,8 @@
 #include "Functional/Signal.h"
 #include "CEFController.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 uint32 cacheSizeLimit = 50 * 1024 * 1024; // 50 MB default
@@ -91,12 +93,17 @@ CEFControllerImpl::CEFControllerImpl()
 
     if (isInitialized && schemeRegistered)
     {
-        Core* core = Core::Instance();
         auto shutdown = [] { cefControllerGlobal = nullptr; };
         auto update = [this](float32) { Update(); };
-
+#if defined(__DAVAENGINE_COREV2__)
+        Engine* e = Engine::Instance();
+        updateConnectionID = e->update.Connect(update);
+        appFinishedConnectionID = e->gameLoopStopped.Connect(shutdown);
+#else
+        Core* core = Core::Instance();
         appFinishedConnectionID = core->systemAppFinished.Connect(shutdown);
         updateConnectionID = core->updated.Connect(update);
+#endif
     }
     else
     {
@@ -111,9 +118,15 @@ CEFControllerImpl::~CEFControllerImpl()
     {
         if (schemeRegistered)
         {
+#if defined(__DAVAENGINE_COREV2__)
+            Engine* e = Engine::Instance();
+            e->update.Disconnect(updateConnectionID);
+            e->gameLoopStopped.Disconnect(appFinishedConnectionID);
+#else
             Core* core = Core::Instance();
             core->systemAppFinished.Disconnect(appFinishedConnectionID);
             core->updated.Disconnect(updateConnectionID);
+#endif
         }
 
         do
@@ -182,9 +195,9 @@ void CEFControllerImpl::CleanCache()
     size_t cacheSize = 0;
     for (const FilePath& path : cacheDirContent)
     {
-        uint32 size = 0;
+        uint64 size = 0;
         fs->GetFileSize(path, size);
-        cacheSize += size;
+        cacheSize += static_cast<size_t>(size);
 
         if (cacheSize > cacheSizeLimit)
         {

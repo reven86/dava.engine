@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "Project/Project.h"
-#include "Document.h"
-#include "DocumentGroup.h"
+#include "Document/Document.h"
+#include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
 #include "Helpers/ResourcesManageHelper.h"
@@ -94,17 +94,9 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     documentGroup->ConnectToTabBar(tabBar);
 
-    QAction* undoAction = documentGroup->CreateUndoAction(this);
-    undoAction->setShortcut(QKeySequence::Undo);
-    undoAction->setIcon(QIcon(":/Icons/edit_undo.png"));
-
-    QAction* redoAction = documentGroup->CreateRedoAction(this);
-    redoAction->setShortcut(QKeySequence::Redo);
-    redoAction->setIcon(QIcon(":/Icons/edit_redo.png"));
-
-    mainToolbar->addAction(undoAction);
-    mainToolbar->addAction(redoAction);
-
+    documentGroup->AttachRedoAction(actionRedo);
+    documentGroup->AttachUndoAction(actionUndo);
+    actionRedo->setShortcuts(QList<QKeySequence>() << Qt::CTRL + Qt::Key_Y << Qt::CTRL + Qt::SHIFT + Qt::Key_Z); //Qt can not set multishortcut or enum shortcut in Qt designer
     Q_ASSERT(documentGroup != nullptr);
     documentGroup->AttachSaveAction(actionSaveDocument);
     documentGroup->AttachSaveAllAction(actionForceSaveAllDocuments);
@@ -234,6 +226,10 @@ void MainWindow::InitMenu()
 
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
+
+    connect(actionZoomOut, &QAction::triggered, previewWidget, &PreviewWidget::OnDecrementScale);
+    connect(actionZoomIn, &QAction::triggered, previewWidget, &PreviewWidget::OnIncrementScale);
+    connect(actionActualZoom, &QAction::triggered, previewWidget, &PreviewWidget::SetActualScale);
 
 // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
@@ -418,7 +414,7 @@ void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const Va
     if (member == backgroundIndexMember)
     {
         uint32 index = value.AsUInt32();
-        DVASSERT(actions.size() > index);
+        DVASSERT(static_cast<int>(index) < actions.size());
         actions.at(index)->setChecked(true);
         return;
     }
@@ -478,6 +474,18 @@ bool MainWindow::IsPixelized() const
 void MainWindow::SetPixelized(bool pixelized)
 {
     actionPixelized->setChecked(pixelized);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if (CanClose())
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
 }
 
 String MainWindow::GetState() const
