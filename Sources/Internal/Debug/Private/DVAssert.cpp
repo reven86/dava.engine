@@ -47,15 +47,17 @@ void RaiseSigTrap()
 
 int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
 {
+    using namespace DAVA::Assert;
+
     switch (behaviour)
     {
-    case DAVA::Assert::FailBehaviour::Default:
+    case FailBehaviour::Default:
         return 0;
 
-    case DAVA::Assert::FailBehaviour::Continue:
+    case FailBehaviour::Continue:
         return 1;
 
-    case DAVA::Assert::FailBehaviour::Halt:
+    case FailBehaviour::Halt:
         return 2;
 
     default:
@@ -69,28 +71,31 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const DAVA::Vector<DAVA::Debug::StackFrame>& backtrace,
                                          const char* const message)
 {
+    using namespace DAVA;
+    using namespace DAVA::Assert;
+
     // Copy handlers list to avoid data race in case some handler uses AddHandler or RemoveHandler functions
-    DAVA::Vector<DAVA::Assert::Handler> handlersCopy;
+    Vector<Handler> handlersCopy;
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(DAVA::Assert::registredHandlersMutex);
-        handlersCopy = DAVA::Assert::registredHandlers;
+        LockGuard<Mutex> lock(registredHandlersMutex);
+        handlersCopy = registredHandlers;
     }
 
     if (handlersCopy.empty())
     {
-        return DAVA::Assert::FailBehaviour::Default;
+        return FailBehaviour::Default;
     }
 
     // Invoke all the handlers with according assert info and return result behaviour
     // Each behaviour is more prioritized than the previous one, in this order:
     // Default -> Continue -> Halt
 
-    const DAVA::Assert::AssertInfo assertInfo(expr, fileName, lineNumber, message, backtrace);
+    const AssertInfo assertInfo(expr, fileName, lineNumber, message, backtrace);
 
-    DAVA::Assert::FailBehaviour resultBehaviour = DAVA::Assert::FailBehaviour::Default;
-    for (const DAVA::Assert::Handler& handler : handlersCopy)
+    FailBehaviour resultBehaviour = FailBehaviour::Default;
+    for (const Handler& handler : handlersCopy)
     {
-        const DAVA::Assert::FailBehaviour requestedBehaviour = handler(assertInfo);
+        const FailBehaviour requestedBehaviour = handler(assertInfo);
 
         if (GetFailBehaviourPriority(requestedBehaviour) > GetFailBehaviourPriority(resultBehaviour))
         {

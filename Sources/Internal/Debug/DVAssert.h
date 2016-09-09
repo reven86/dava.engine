@@ -94,7 +94,7 @@ void RemoveHandler(const Handler handler);
 #define DVASSERT_HALT() __debugbreak()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 void RaiseSigTrap();
-#define DVASSERT_HALT() RaiseSigTrap();
+#define DVASSERT_HALT() RaiseSigTrap()
 #else
 #error "DVASSERT_HALT is not defined for current platform"
 #endif
