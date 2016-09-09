@@ -13,8 +13,7 @@ namespace rhi
 ////////////////////////////////////////////////////////////////////////////////
 // base operation
 
-struct
-InitParam
+struct InitParam
 {
     uint32 width;
     uint32 height;
@@ -72,8 +71,7 @@ InitParam
     }
 };
 
-struct
-ResetParam
+struct ResetParam
 {
     uint32 width;
     uint32 height;
@@ -140,8 +138,7 @@ void InvalidateCache();
 // resource-handle
 
 template <ResourceType T>
-class
-ResourceHandle
+class ResourceHandle
 {
 public:
     ResourceHandle()
@@ -259,19 +256,12 @@ void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace fac
 
 bool NeedRestoreTexture(HTexture tex);
 
-struct
-TextureSetDescriptor
+struct TextureSetDescriptor
 {
-    uint32 fragmentTextureCount;
+    uint32 fragmentTextureCount = 0;
+    uint32 vertexTextureCount = 0;
     HTexture fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    uint32 vertexTextureCount;
     HTexture vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
-
-    TextureSetDescriptor()
-        : fragmentTextureCount(0)
-        , vertexTextureCount(0)
-    {
-    }
 };
 
 HTextureSet AcquireTextureSet(const TextureSetDescriptor& desc);

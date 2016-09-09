@@ -456,8 +456,6 @@ void gles2_Initialize(const InitParam& param)
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
 
-    if (param.maxTextureSetCount)
-        InitTextreSetPool(param.maxTextureSetCount);
     if (param.maxSamplerStateCount)
         SamplerStateGLES2::Init(param.maxSamplerStateCount);
     if (param.maxPipelineStateCount)
@@ -468,8 +466,6 @@ void gles2_Initialize(const InitParam& param)
         RenderPassGLES2::Init(param.maxRenderPassCount);
     if (param.maxCommandBuffer)
         CommandBufferGLES2::Init(param.maxCommandBuffer);
-    if (param.maxPacketListCount)
-        InitPacketListPool(param.maxPacketListCount);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)

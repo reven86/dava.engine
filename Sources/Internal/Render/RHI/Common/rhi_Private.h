@@ -1,10 +1,11 @@
 #ifndef __RHI_PRIVATE_H__
 #define __RHI_PRIVATE_H__
 
-    #include "../rhi_Type.h"
+#include "../rhi_Type.h"
 
 namespace rhi
 {
+struct InitParam;
 ////////////////////////////////////////////////////////////////////////////////
 // render-target
 
@@ -181,6 +182,8 @@ void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 ins
 void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
+
+void InitializeImplementation(Api api, const InitParam& param);
 
 void InitPacketListPool(uint32 maxCount);
 void InitTextreSetPool(uint32 maxCount);

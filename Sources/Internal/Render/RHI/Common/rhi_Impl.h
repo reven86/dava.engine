@@ -1,7 +1,7 @@
 #ifndef __RHI_IMPL_H__
 #define __RHI_IMPL_H__
 
-    #include "rhi_Private.h"
+#include "rhi_Private.h"
 
 namespace rhi
 {
@@ -111,7 +111,6 @@ struct Dispatch
     void (*impl_CommandBuffer_DrawInstancedPrimitive)(Handle, PrimitiveType, uint32, uint32);
     void (*impl_CommandBuffer_DrawInstancedIndexedPrimitive)(Handle, PrimitiveType, uint32, uint32, uint32, uint32, uint32, uint32);
     void (*impl_CommandBuffer_SetMarker)(Handle, const char*);
-    void (*impl_CommandBuffer_SetSync)(Handle, Handle);
 };
 
 void SetDispatchTable(const Dispatch& dispatch);

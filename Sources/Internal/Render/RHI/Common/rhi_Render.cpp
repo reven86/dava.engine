@@ -12,8 +12,7 @@ using DAVA::Logger;
 
 namespace rhi
 {
-struct
-TextureSet_t
+struct TextureSet_t
 {
     struct Desc
     {
@@ -84,8 +83,7 @@ inline void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
     scheduledDeleteMutex.Unlock();
 }
 
-struct
-PacketList_t
+struct PacketList_t
 {
     struct Desc
     {
@@ -173,8 +171,7 @@ bool NeedRestoreVertexBuffer(HVertexBuffer vb)
 
 //------------------------------------------------------------------------------
 
-HIndexBuffer
-CreateIndexBuffer(const IndexBuffer::Descriptor& desc)
+HIndexBuffer CreateIndexBuffer(const IndexBuffer::Descriptor& desc)
 {
     return HIndexBuffer(IndexBuffer::Create(desc));
 }
@@ -219,8 +216,7 @@ bool NeedRestoreIndexBuffer(HIndexBuffer ib)
 
 //------------------------------------------------------------------------------
 
-HQueryBuffer
-CreateQueryBuffer(uint32 maxObjectCount)
+HQueryBuffer CreateQueryBuffer(uint32 maxObjectCount)
 {
     return HQueryBuffer(QueryBuffer::Create(maxObjectCount));
 }
@@ -296,8 +292,7 @@ bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
 
 //------------------------------------------------------------------------------
 
-HPipelineState
-AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
+HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
 {
     HPipelineState ps;
 
@@ -554,8 +549,7 @@ void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle)
 
 //------------------------------------------------------------------------------
 
-HDepthStencilState
-AcquireDepthStencilState(const DepthStencilState::Descriptor& desc)
+HDepthStencilState AcquireDepthStencilState(const DepthStencilState::Descriptor& desc)
 {
     Handle ds = InvalidHandle;
     DAVA::LockGuard<DAVA::Mutex> lock(_DepthStencilStateInfoMutex);
@@ -630,8 +624,7 @@ void ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate)
 
 //------------------------------------------------------------------------------
 
-HSamplerState
-AcquireSamplerState(const SamplerState::Descriptor& desc)
+HSamplerState AcquireSamplerState(const SamplerState::Descriptor& desc)
 {
     Handle ss = InvalidHandle;
 
@@ -663,8 +656,7 @@ AcquireSamplerState(const SamplerState::Descriptor& desc)
 
 //------------------------------------------------------------------------------
 
-HSamplerState
-CopySamplerState(HSamplerState ss)
+HSamplerState CopySamplerState(HSamplerState ss)
 {
     Handle handle = InvalidHandle;
 
@@ -739,6 +731,7 @@ HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetLi
     DVASSERT(packetListCount < countof(cb));
 
     Handle pass = RenderPass::Allocate(passDesc, packetListCount, cb);
+    FrameLoop::AddPass(pass);
 
     for (unsigned i = 0; i != packetListCount; ++i)
     {
@@ -1099,6 +1092,80 @@ HSyncObject GetCurrentFrameSyncObject()
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
 
     return frameSyncObjects[currFrameSyncId];
+}
+
+void SuspendRendering()
+{
+    RenderLoop::SuspendRender();
+}
+
+void ResumeRendering()
+{
+    RenderLoop::ResumeRender();
+}
+
+void Initialize(Api api, const InitParam& param)
+{
+    InitializeImplementation(api, param);
+
+    //init common
+    if (param.maxTextureSetCount)
+        InitTextreSetPool(param.maxTextureSetCount);
+    if (param.maxPacketListCount)
+        InitPacketListPool(param.maxPacketListCount);
+
+    //temporary here to support legacy - later read all this from config, and assert on unsupported values
+    DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
+    int32 bindToProcessor = -1;
+    uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
+    if (api == RHI_METAL)
+        renderTreadFrameCount = 0; //no render thread for metal yet
+    if (api == RHI_DX11)
+    {
+        bindToProcessor = 1;
+        priority = DAVA::Thread::PRIORITY_HIGH;
+    }
+    //end of temporary
+
+    RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
+}
+
+void Uninitialize()
+{
+    RenderLoop::UninitializeRenderLoop();
+}
+
+uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
+{
+    uint32 color = 0;
+    int r = int(red * 255.0f);
+    int g = int(green * 255.0f);
+    int b = int(blue * 255.0f);
+    int a = int(alpha * 255.0f);
+
+    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
+
+    switch (HostApi())
+    {
+    case RHI_DX9:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
+        break;
+
+    case RHI_DX11:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
+        break;
+
+    case RHI_GLES2:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        break;
+
+    case RHI_METAL:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        break;
+    }
+
+    return color;
 }
 
 } //namespace rhi

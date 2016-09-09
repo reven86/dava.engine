@@ -163,8 +163,7 @@ ResourcePool<T, RT, DT, nr>::Reserve(unsigned maxCount)
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, class DT, bool nr>
-inline Handle
-ResourcePool<T, RT, DT, nr>::Alloc()
+inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(ObjectSync);
 

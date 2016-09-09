@@ -1,7 +1,4 @@
 #include "rhi_Impl.h"
-#include "CommonImpl.h"
-#include "RenderLoop.h"
-#include "FrameLoop.h"
 
 #if defined(__DAVAENGINE_WIN32__)
     #include "../DX9/rhi_DX9.h"
@@ -88,7 +85,7 @@ bool ApiIsSupported(Api api)
     return supported;
 }
 
-void Initialize(Api api, const InitParam& param)
+void InitializeImplementation(Api api, const InitParam& param)
 {
     switch (api)
     {
@@ -123,20 +120,6 @@ void Initialize(Api api, const InitParam& param)
         DVASSERT_MSG(false, "Unsupported rendering api");
     }
     }
-
-    //temporary here to support legacy - later read all this from config, and assert on unsupported values
-    DAVA::Thread::eThreadPriority priority = DAVA::Thread::PRIORITY_NORMAL;
-    int32 bindToProcessor = -1;
-    uint32 renderTreadFrameCount = (param.threadedRenderEnabled) ? param.threadedRenderFrameCount : 0;
-    if (api == RHI_METAL)
-        renderTreadFrameCount = 0; //no render thread for metal yet
-    if (api == RHI_DX11)
-    {
-        bindToProcessor = 1;
-        priority = DAVA::Thread::PRIORITY_HIGH;
-    }
-
-    RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
 }
 
 void Reset(const ResetParam& param)
@@ -147,11 +130,6 @@ void Reset(const ResetParam& param)
 bool NeedRestoreResources()
 {
     return (*_Impl.impl_NeedRestoreResources)();
-}
-
-void Uninitialize()
-{
-    RenderLoop::UninitializeRenderLoop();
 }
 
 
@@ -168,16 +146,6 @@ bool TextureFormatSupported(TextureFormat format)
 const RenderDeviceCaps& DeviceCaps()
 {
     return (*_Impl.impl_DeviceCaps)();
-}
-
-void SuspendRendering()
-{
-    RenderLoop::SuspendRender();
-}
-
-void ResumeRendering()
-{
-    RenderLoop::ResumeRender();
 }
 
 void InvalidateCache()
@@ -387,8 +355,7 @@ uint32 TextureSizeForProfiling(Handle handle, const Texture::Descriptor& desc)
 }
 #endif
 
-Handle
-Create(const Texture::Descriptor& desc)
+Handle Create(const Texture::Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_Texture_Create)(desc);
@@ -555,9 +522,7 @@ namespace RenderPass
 {
 Handle Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
-    Handle res = (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
-    FrameLoop::AddPass(res);
-    return res;
+    return (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
 }
 
 void Begin(Handle pass)
@@ -712,39 +677,6 @@ void SetMarker(Handle cmdBuf, const char* text)
 } // namespace CommandBuffer
 
 //------------------------------------------------------------------------------
-
-uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
-{
-    uint32 color = 0;
-    int r = int(red * 255.0f);
-    int g = int(green * 255.0f);
-    int b = int(blue * 255.0f);
-    int a = int(alpha * 255.0f);
-
-    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
-
-    switch (HostApi())
-    {
-    case RHI_DX9:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
-        break;
-
-    case RHI_DX11:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
-        break;
-
-    case RHI_GLES2:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-
-    case RHI_METAL:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-    }
-
-    return color;
-}
 
 } //namespace rhi
 
