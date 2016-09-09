@@ -13,4 +13,3 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     return engine.Run();
 }
-

@@ -8,7 +8,6 @@
 #include <QCursor>
 #include <QPointer>
 
-
 namespace Ui
 {
 class PreviewWidget;
@@ -67,7 +66,6 @@ private slots:
     void OnScaleChanged(float scale);
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
-
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
