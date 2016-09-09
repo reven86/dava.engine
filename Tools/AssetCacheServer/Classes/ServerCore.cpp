@@ -168,9 +168,44 @@ void ServerCore::UseNextRemote()
 
 void ServerCore::ResetRemotesList()
 {
-    DAVA::List<RemoteServerParams> remotes = settings.GetEnabledRemoteServers();
-    remoteServers.assign(std::make_move_iterator(std::begin(remotes)), std::make_move_iterator(std::end(remotes)));
-    remoteServerIndex = -1;
+    DAVA::List<RemoteServerParams> updatedRemotesList = settings.GetEnabledRemoteServers();
+
+    CompareResult compareResult = CompareWithRemoteList(updatedRemotesList);
+    if (!compareResult.listsAreEqual)
+    {
+        remoteServers.assign(std::make_move_iterator(std::begin(updatedRemotesList)), std::make_move_iterator(std::end(updatedRemotesList)));
+        if (!compareResult.currentIndexIsValid)
+            remoteServerIndex = -1;
+    }
+}
+
+ServerCore::CompareResult ServerCore::CompareWithRemoteList(const DAVA::List<RemoteServerParams>& updatedRemotesList)
+{
+    CompareResult result;
+
+    auto ourIter = remoteServers.begin();
+    auto ourEnd = remoteServers.end();
+    auto updatedIter = updatedRemotesList.begin();
+    auto updatedEnd = updatedRemotesList.end();
+    DAVA::uint32 index = 0;
+
+    for (; ourIter != ourEnd && updatedIter != updatedEnd; ++ourIter, ++updatedIter, ++index)
+    {
+        if (*ourIter == *updatedIter)
+        {
+            if (index == remoteServerIndex)
+            {
+                result.currentIndexIsValid = true;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    result.listsAreEqual = (ourIter == ourEnd && updatedIter == updatedEnd);
+    return result;
 }
 
 void ServerCore::OnRefreshTimer()
@@ -214,12 +249,24 @@ void ServerCore::OnClientProxyStateChanged()
     }
     else
     {
-        connectTimer->start();
+        connectTimer->stop();
         reconnectWaitTimer->stop();
-        remoteState = RemoteState::CONNECTING;
+        ReconnectAsynchronously();
     }
 
     emit ServerStateChanged(this);
+}
+
+void ServerCore::ReconnectAsynchronously()
+{
+    QTimer::singleShot(0, this, &ServerCore::ReconnectNow);
+}
+
+void ServerCore::ReconnectNow()
+{
+    DisconnectRemote();
+    UseNextRemote();
+    ConnectRemote();
 }
 
 void ServerCore::OnServerStatusReceived()

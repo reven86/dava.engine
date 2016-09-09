@@ -85,6 +85,8 @@ private slots:
     void OnRefreshTimer();
     void OnConnectTimeout();
     void OnReattemptTimer();
+    void ReconnectAsynchronously();
+    void ReconnectNow();
     void OnSharedDataUpdateTimer();
 
 private:
@@ -97,6 +99,13 @@ private:
     void ReconnectRemoteLater();
     void UseNextRemote();
     void ResetRemotesList();
+
+    struct CompareResult
+    {
+        bool listsAreEqual = false;
+        bool currentIndexIsValid = false;
+    };
+    CompareResult CompareWithRemoteList(const DAVA::List<RemoteServerParams>& updatedRemotesList);
 
 private:
     AssetCacheHttpServer httpServer;
