@@ -9,13 +9,14 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/SceneEditor2.h"
 
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/TransformCommand.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/EntityParentChangeCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/ConvertToBillboardCommand.h"
 
 #include "Settings/SettingsManager.h"
 
@@ -403,7 +404,8 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
       CMDID_LOD_DELETE,
       CMDID_INSP_MEMBER_MODIFY,
       CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
-      CMDID_TRANSFORM
+      CMDID_TRANSFORM,
+      CMDID_CONVERT_TO_BILLBOARD
     };
 
     if (commandNotification.MatchCommandIDs(acceptableCommands) == false)
@@ -438,6 +440,11 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
         {
             auto cmd = static_cast<const TransformCommand*>(command);
             UpdateCollisionObject(cmd->GetTransformedObject());
+        }
+        else if (command->MatchCommandID(CMDID_CONVERT_TO_BILLBOARD))
+        {
+            auto cmd = static_cast<const ConvertToBillboardCommand*>(command);
+            UpdateCollisionObject(Selectable(cmd->GetEntity()));
         }
     };
 
@@ -592,7 +599,12 @@ void SceneCollisionSystem::EnumerateObjectHierarchy(const Selectable& object, bo
         if ((result.isValid == false) && (renderObject != nullptr) && entity->IsLodMain(0))
         {
             DAVA::RenderObject::eType objType = renderObject->GetType();
-            if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))
+            if (objType == DAVA::RenderObject::TYPE_BILLBOARD)
+            {
+                const DAVA::AABBox3& box = renderObject->GetWorldBoundingBox();
+                result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, box.GetCenter(), box.GetSize().x);
+            }
+            else if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))
             {
                 result = CollisionDetails::InitCollision<CollisionRenderObject>(createCollision, entity, objectsCollWorld, renderObject);
             }

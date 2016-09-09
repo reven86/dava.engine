@@ -402,7 +402,6 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                     }
 
                     QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Make billboard");
-                    convertRenderObject->setEnabled(isSingleSelection);
                     QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
                 }
             }
@@ -797,6 +796,10 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommandNotific
         else if (cmdID == CMDID_COLLAPSE_PATH)
         {
             return IsCurNodesContainsEntityFromCommand<CollapsePathCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CONVERT_TO_BILLBOARD)
+        {
+            return true;
         }
         return false;
     };
@@ -1550,16 +1553,29 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
     QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
     if (data != nullptr)
     {
-        DAVA::RenderObject* renderObject = reinterpret_cast<DAVA::RenderObject*>(data->object);
-        DVASSERT(curNodes.GetSize() == 1);
-
-        DAVA::Entity* entity = curNodes.GetFirst().AsEntity();
-        DAVA::RenderComponent* renderComponent = DAVA::GetRenderComponent(entity);
-        DVASSERT(renderComponent != nullptr);
-        DVASSERT(renderComponent->GetRenderObject() == renderObject);
+        bool anyConvertToBillboardCommandIssued = false;
 
         SceneEditor2* curScene = sceneHolder.GetScene();
-        curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToBillboardCommand(renderObject, renderComponent)));
+        curScene->BeginBatch("Convert to billboard", curNodes.GetSize());
+        for (Selectable& obj : curNodes.GetMutableContent())
+        {
+            DAVA::Entity* entity = obj.AsEntity();
+            if (entity != nullptr)
+            {
+                RenderComponent* component = GetRenderComponent(entity);
+                if (component != nullptr)
+                {
+                    DAVA::RenderObject* ro = component->GetRenderObject();
+                    if (ro != nullptr)
+                    {
+                        anyConvertToBillboardCommandIssued = true;
+                        curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToBillboardCommand(ro, entity)));
+                    }
+                }
+            }
+        }
+        curScene->EndBatch();
+        DVASSERT(anyConvertToBillboardCommandIssued); // sanity check
     }
 }
 
