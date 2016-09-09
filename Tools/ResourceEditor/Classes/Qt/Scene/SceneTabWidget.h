@@ -23,7 +23,6 @@ class RenderWidget;
 
 class SceneEditor2;
 class MainTabBar;
-class DavaGLWidget;
 class ScenePreviewDialog;
 class Request;
 class SelectableGroup;
@@ -80,7 +79,6 @@ protected:
     bool CloseTabInternal(int index, bool silent);
 
     MainTabBar* tabBar;
-    DavaGLWidget* davaWidget;
     DAVA::UIScreen* davaUIScreen;
     DAVA::UI3DView* dava3DView;
     const int davaUIScreenID = 0;

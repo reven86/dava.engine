@@ -5,6 +5,8 @@
 #include <QStringList>
 #include <QPalette>
 
+class QApplication;
+
 namespace Themes
 {
 enum eTheme : int
@@ -12,7 +14,7 @@ enum eTheme : int
     Light,
     Dark
 };
-void InitFromQApplication();
+void InitFromQApplication(QApplication* app);
 QStringList ThemesNames();
 void SetCurrentTheme(const QString& theme);
 void SetCurrentTheme(eTheme theme);

@@ -4,6 +4,8 @@
 #include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
+#include "Engine/Public/Qt/RenderWidget.h"
+
 #include "Helpers/ResourcesManageHelper.h"
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
@@ -13,7 +15,6 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "Preferences/PreferencesDialog.h"
@@ -82,7 +83,7 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
+void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup, RenderWidget* renderWidget)
 {
     Q_ASSERT(documentGroup != nullptr);
 
@@ -97,18 +98,18 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 
     QAction* actionCloseDocument = new QAction("Close current document", this);
     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    actionCloseDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
-    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    renderWidget->addAction(actionCloseDocument);
 
     QAction* actionReloadDocument = new QAction("Reload current document", this);
     QList<QKeySequence> shortcurs;
     shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
               << Qt::Key_F5;
     actionReloadDocument->setShortcuts(shortcurs);
-    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    actionReloadDocument->setShortcutContext(Qt::WidgetShortcut);
     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
-    previewWidget->GetGLWidget()->addAction(actionReloadDocument);
+    renderWidget->addAction(actionReloadDocument);
 }
 
 void MainWindow::OnDocumentChanged(Document* document)

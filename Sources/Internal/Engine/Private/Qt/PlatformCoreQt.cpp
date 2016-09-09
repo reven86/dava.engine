@@ -12,6 +12,7 @@
 
 #include <QTimer>
 #include <QApplication>
+#include <QSurfaceFormat>
 
 namespace DAVA
 {
@@ -35,6 +36,9 @@ void PlatformCore::Run()
     int qtArgc = static_cast<int>(qtCommandLine.size());
 
     QApplication app(qtArgc, qtCommandLine.data());
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(0);
+    QSurfaceFormat::setDefaultFormat(format);
 
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
@@ -46,6 +50,7 @@ void PlatformCore::Run()
     Window* primaryWindow = engineBackend->GetPrimaryWindow();
     windowBackend = new WindowBackend(engineBackend, primaryWindow);
     engineBackend->OnGameLoopStarted();
+    windowBackend->ActivateRendering();
     timer.start(16.0);
 
     QObject::connect(&app, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state)

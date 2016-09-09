@@ -205,7 +205,7 @@ void WindowBackend::Close()
 
 bool WindowBackend::IsWindowReadyForRender() const
 {
-    return renderWidget != nullptr && renderWidget->initialized;
+    return renderWidget != nullptr && renderWidget->IsInitialized();
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -468,11 +468,20 @@ void WindowBackend::ReleaseContext()
 {
     ReleaseContextImpl();
 }
+
 void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
     {
         renderWidget->quickWindow()->update();
+    }
+}
+
+void WindowBackend::ActivateRendering()
+{
+    if (renderWidget != nullptr)
+    {
+        renderWidget->ActivateRendering();
     }
 }
 

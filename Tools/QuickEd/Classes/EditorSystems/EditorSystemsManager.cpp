@@ -1,5 +1,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Engine/Public/Qt/RenderWidget.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -38,11 +40,12 @@ private:
     EditorSystemsManager* systemManager = nullptr;
 };
 
-EditorSystemsManager::EditorSystemsManager()
+EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     : rootControl(new UIControl())
     , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
+    , renderWidget(renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -63,6 +66,11 @@ EditorSystemsManager::EditorSystemsManager()
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
+
+DAVA::RenderWidget* EditorSystemsManager::GetRenderWidget() const
+{
+    return renderWidget;
+}
 
 UIControl* EditorSystemsManager::GetRootControl() const
 {

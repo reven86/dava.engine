@@ -1,5 +1,5 @@
-#ifndef __QUICKED_PREVIEW_WIDGET_H__
-#define __QUICKED_PREVIEW_WIDGET_H__
+#pragma once
+#include "Engine/Public/Qt/RenderWidget.h"
 
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -8,6 +8,7 @@
 #include <QCursor>
 #include <QPointer>
 
+
 namespace Ui
 {
 class PreviewWidget;
@@ -15,7 +16,6 @@ class PreviewWidget;
 class EditorSystemsManager;
 
 class Document;
-class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
@@ -28,16 +28,18 @@ class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget
+class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::ClientDelegate
 {
     Q_OBJECT
 public:
     explicit PreviewWidget(QWidget* parent = nullptr);
     ~PreviewWidget();
-    DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
+
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnWindowCreated();
 
 signals:
     void DeleteRequested();
@@ -66,35 +68,33 @@ private slots:
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
-    void OnGLWidgetResized(int width, int height);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
 
     void UpdateScrollArea();
     void OnPositionChanged(const QPoint& position);
-    void OnGLInitialized();
-
-protected:
-    bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
     void LoadContext();
     void SaveContext();
 
+public:
     void CreateActions();
     void ApplyPosChanges();
-    void OnWheelEvent(QWheelEvent* event);
-    void OnNativeGuestureEvent(QNativeGestureEvent* event);
-    void OnPressEvent(QMouseEvent* event);
-    void OnReleaseEvent(QMouseEvent* event);
-    void OnMoveEvent(QMouseEvent* event);
-    void OnDragMoveEvent(QDragMoveEvent* event);
+    void OnWheel(QWheelEvent* event) override;
+    void OnNativeGuesture(QNativeGestureEvent* event) override;
+    void OnMousePressed(QMouseEvent* event) override;
+    void OnMouseReleased(QMouseEvent* event) override;
+    void OnMouseMove(QMouseEvent* event) override;
+    void OnDragEntered(QDragEnterEvent* event) override;
+    void OnDragMoved(QDragMoveEvent* event) override;
     bool ProcessDragMoveEvent(QDropEvent* event);
-    void OnDragLeaveEvent(QDragLeaveEvent* event);
-    void OnDropEvent(QDropEvent* event);
-    void OnKeyPressed(QKeyEvent* event);
-    void OnKeyReleased(QKeyEvent* event);
+    void OnDragLeaved(QDragLeaveEvent* event) override;
+    void OnDrop(QDropEvent* event) override;
+    void OnKeyPressed(QKeyEvent* event) override;
+    void OnKeyReleased(QKeyEvent* event) override;
+
     void OnTransformStateChanged(bool inTransformState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
@@ -111,7 +111,7 @@ private:
     QPoint lastMousePos;
     QCursor lastCursor;
     QPointer<Document> document;
-    DavaGLWidget* davaGLWidget = nullptr;
+    DAVA::RenderWidget* renderWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;
     QList<float> percentages;
 
@@ -138,10 +138,3 @@ private:
     bool isMouseLeftButtonPressed = false;
     bool isMouseMidButtonPressed = false;
 };
-
-inline DavaGLWidget* PreviewWidget::GetGLWidget() const
-{
-    return davaGLWidget;
-}
-
-#endif // __QUICKED_PREVIEW_WIDGET_H__

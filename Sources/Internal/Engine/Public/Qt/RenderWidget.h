@@ -15,7 +15,7 @@ class RenderWidget final : public QQuickWidget
 {
     Q_OBJECT
 public:
-    class Delegate
+    class WindowDelegate
     {
     public:
         virtual void OnCreated() = 0;
@@ -34,7 +34,52 @@ public:
         virtual void OnKeyReleased(QKeyEvent* e) = 0;
     };
 
+    class ClientDelegate
+    {
+    public:
+        virtual void OnMousePressed(QMouseEvent* e)
+        {
+        }
+        virtual void OnMouseReleased(QMouseEvent* e)
+        {
+        }
+        virtual void OnMouseMove(QMouseEvent* e)
+        {
+        }
+        virtual void OnMouseDBClick(QMouseEvent* e)
+        {
+        }
+        virtual void OnWheel(QWheelEvent* e)
+        {
+        }
+        virtual void OnNativeGuesture(QNativeGestureEvent* e)
+        {
+        }
+
+        virtual void OnKeyPressed(QKeyEvent* e)
+        {
+        }
+        virtual void OnKeyReleased(QKeyEvent* e)
+        {
+        }
+
+        virtual void OnDragEntered(QDragEnterEvent* e)
+        {
+        }
+        virtual void OnDragMoved(QDragMoveEvent* e)
+        {
+        }
+        virtual void OnDragLeaved(QDragLeaveEvent* e)
+        {
+        }
+        virtual void OnDrop(QDropEvent* e)
+        {
+        }
+    };
+
     Q_SIGNAL void Resized(uint32 width, uint32 height);
+
+    void SetClientDelegate(ClientDelegate* delegate);
 
 protected:
     bool eventFilter(QObject* object, QEvent* e) override;
@@ -56,16 +101,24 @@ protected:
     void keyPressEvent(QKeyEvent* e) override;
     void keyReleaseEvent(QKeyEvent* e) override;
 
+    bool event(QEvent* e) override;
+
 private:
-    RenderWidget(Delegate* widgetDelegate, uint32 width, uint32 height);
+    RenderWidget(WindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
 
+    Q_SLOT void OnCreated();
+    Q_SLOT void OnInitialize();
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
+    Q_SLOT void OnClientDelegateDestroyed();
+
+    void ActivateRendering();
+    bool IsInitialized();
 
 private:
-    bool initialized = false;
-    Delegate* widgetDelegate = nullptr;
+    WindowDelegate* widgetDelegate = nullptr;
+    ClientDelegate* clientDelegate = nullptr;
     bool keyEventRecursiveGuard = false;
 
     friend class Private::WindowBackend;

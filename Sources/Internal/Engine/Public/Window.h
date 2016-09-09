@@ -74,7 +74,7 @@ public:
     Signal<Window&, bool> visibilityChanged;
     Signal<Window&, bool> focusChanged;
     Signal<Window&> destroyed;
-    Signal<Window&, float32, float32, float32, float32> sizeScaleChanged;
+    Signal<Window&, float32 /*width*/, float32 /*height*/, float32 /*scaleX*/, float32 /*scaleY*/> sizeScaleChanged;
     //Signal<Window&> beginUpdate;
     //Signal<Window&> beginDraw;
     Signal<Window&, float32> update;

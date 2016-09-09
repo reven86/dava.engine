@@ -1,58 +1,16 @@
-#include "Core/Core.h"
-#include "Particles/ParticleEmitter.h"
-#include "FileSystem/FileSystem.h"
-
+#include "Engine/Public/Engine.h"
 #include "EditorCore.h"
 
-#include "Platform/Qt5/QtLayer.h"
-#include "TextureCompression/PVRConverter.h"
-#include "QtTools/Utils/MessageHandler.h"
-#include "QtTools/Utils/AssertGuard.h"
-#include "QtTools/Utils/Themes/Themes.h"
-
-#include <QtGlobal>
-#include <QApplication>
-
-void InitPVRTexTool()
+int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
+    DAVA::Engine engine;
+
+    EditorCore* editorCore = new EditorCore(&engine);
+
+    engine.gameLoopStopped.Connect([editorCore]() {
+        delete editorCore;
+    });
+
+    return engine.Run();
 }
 
-int main(int argc, char* argv[])
-{
-    DAVA::QtLayer qtLayer;
-    DAVA::Core::Run(argc, argv);
-    DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
-    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-    const char* settingsPath = "QuickEdSettings.archive";
-    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-    int retCode = 0;
-    {
-        qInstallMessageHandler(DAVAMessageHandler);
-        ToolsAssetGuard::Instance()->Init();
-        QApplication a(argc, argv);
-        qApp->setOrganizationName("DAVA");
-        qApp->setApplicationName("QuickEd");
-
-        const char* settingsPath = "QuickEdSettings.archive";
-        DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
-        PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-
-        Q_INIT_RESOURCE(QtToolsResources);
-        InitPVRTexTool();
-
-        Themes::InitFromQApplication();
-
-        EditorCore editorCore;
-        editorCore.Start();
-
-        retCode = a.exec();
-    }
-    return retCode;
-}

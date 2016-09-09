@@ -20,7 +20,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : private RenderWidget::Delegate
+class WindowBackend final : private RenderWidget::WindowDelegate
 {
 public:
     WindowBackend(EngineBackend* e, Window* w);
@@ -33,6 +33,7 @@ public:
     void ReleaseContext();
 
     void Update();
+    void ActivateRendering();
     RenderWidget* GetRenderWidget();
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
