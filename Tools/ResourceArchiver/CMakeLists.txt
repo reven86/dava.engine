@@ -12,11 +12,10 @@ if (DAVA_COREV2)
 endif()
  
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-set          ( NO_CEF true)
 
 include      ( CMake-common )
 
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS "Sound" )
 find_package( DavaTools     REQUIRED )
 
 include_directories (Classes)

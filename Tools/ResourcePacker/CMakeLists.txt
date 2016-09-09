@@ -7,7 +7,7 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 set 				  ( NO_CEF true )
 include               ( CMake-common )
 
-find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaFramework REQUIRED COMPONENTS "Sound" )
 find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )

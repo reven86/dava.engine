@@ -40,6 +40,8 @@ macro( setup_main_executable )
 include      ( PlatformSettings )
 
 load_property( PROPERTY_LIST 
+        DEFINITIONS                
+        DEFINITIONS_${DAVA_PLATFORM_CURENT}
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -57,12 +59,26 @@ load_property( PROPERTY_LIST
         INCLUDES_${DAVA_PLATFORM_CURENT}
     )
 
+if( COVERAGE )
+    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+endif()
+
 if( INCLUDES )
     include_directories( ${INCLUDES})
 endif()
 
 if( INCLUDES_${DAVA_PLATFORM_CURENT} )
     include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )
+endif()
+
+if( DEFINITIONS )
+   add_definitions( ${DEFINITIONS} )
+endif()
+
+if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+    add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ) 
 endif()
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
@@ -99,8 +115,11 @@ if( STEAM_SDK_FOUND )
        list ( APPEND MACOS_DYLIB  ${STEAM_SDK_DYNAMIC_LIBRARIES} )
     endif ()
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/SteamAppid.in
+    ASSERT( STEAM_APPID "Please set the correct path to steam_appid.txt in value STEAM_APPID" )
+ 
+    configure_file( ${STEAM_APPID}
                     ${CMAKE_CURRENT_BINARY_DIR}/steam_appid.txt  )
+  
 
 endif ()
 
@@ -447,7 +466,6 @@ if ( QT5_FOUND )
 
 endif()
 
-
 if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
@@ -684,48 +702,6 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 
 endif()
 
-##
-
-if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
-    if( MAC_DISABLE_BUNDLE )
-        set( APP_ATRIBUTE )
-    else()
-        set( APP_ATRIBUTE .app )
-
-    endif()
-
-    if( DEPLOY )
-        set( EXECUT_FILE ${DEPLOY_DIR}/${PROJECT_NAME}${APP_ATRIBUTE})
-    else()
-        set( EXECUT_FILE ${CMAKE_BINARY_DIR}/$(CONFIGURATION)/${PROJECT_NAME}${APP_ATRIBUTE} )
-    endif()
-
-
-    set( COVERAGE_SCRIPT ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_report.py )
-
-    add_custom_target ( COVERAGE_${PROJECT_NAME}  
-            SOURCES ${COVERAGE_SCRIPT}
-            COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
-                    --pathExecut    ${EXECUT_FILE}
-                    --pathBuild     ${CMAKE_BINARY_DIR}
-                    --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
-                    --buildConfig   $(CONFIGURATION)
-        )
-    
-    add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
-
-    string(REPLACE ";" " " DAVA_FOLDERS "${DAVA_FOLDERS}" )
-    string(REPLACE "\"" "" DAVA_FOLDERS "${DAVA_FOLDERS}" )
-
-    add_definitions( -DTEST_COVERAGE )
-    add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
-    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
-
-endif()
-
-
-###
-
 if( DEPLOY )
     message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
@@ -804,6 +780,8 @@ if( DEPLOY )
     endif()
 
 endif()
+
+coverage_processing()
 
 reset_MAIN_MODULE_VALUES()
 
