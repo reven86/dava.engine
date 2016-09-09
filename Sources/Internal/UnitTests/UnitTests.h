@@ -172,8 +172,9 @@
 //
 // Test class UsefulTest covers two file: "FileSystem.cpp" and "JobManager.cpp"
 //
-// FIND_FILES_IN_TARGET( NAME_TARGET ) It set file belongs to target.
-// It needed if are files single name but  there are in different  folders
+// FIND_FILES_IN_TARGET( TARGET_NAME )
+// Explicitly tells that next files belong to specified target. It is used to distinguish
+// files with the same names located in different targets
 //
 // or to automatically deduce covered file from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
@@ -203,7 +204,8 @@
         testInfo.targetFolders.emplace("all", DAVA::String(DAVA_FOLDERS)); \
         const char* targetFolders = nullptr;
 
-#define FIND_FILES_IN_TARGET(targetname) 
+#define FIND_FILES_IN_TARGET(targetname) \
+        targetFolders = TARGET_FOLDERS_##targetname;
 
 #define DECLARE_COVERED_FILES(classname) \
         testInfo.testFiles.emplace_back(classname); \
