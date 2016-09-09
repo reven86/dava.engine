@@ -130,21 +130,6 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
-#define BILLBOARD_TYPE_NONE 0
-#define BILLBOARD_TYPE_SPHERICAL 1
-#define BILLBOARD_TYPE_CYLINDRICAL 2
-
-#if BILLBOARD
-	#define BILLBOARD_ENABLED 1
-	#if CYLINDRICAL_BILLBOARD
-		#define BILLBOARD_TYPE BILLBOARD_TYPE_CYLINDRICAL
-	#else
-		#define BILLBOARD_TYPE BILLBOARD_TYPE_SPHERICAL
-	#endif
-#else
-	#define BILLBOARD_TYPE BILLBOARD_TYPE_NONE
-#endif
-
 #if !SPEED_TREE_LEAF || CUT_LEAF
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 #endif
@@ -241,14 +226,9 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-#if VERTEX_FOG || BILLBOARD_ENABLED
+#if VERTEX_FOG 
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
-#endif
-
-#if BILLBOARD_ENABLED
-property float3 cameraUp : dynamic,a : ;
-property float4x4 viewProjMatrix : dynamic,a : ;
 #endif
 
 #if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
@@ -259,6 +239,8 @@ property float globalTime : dynamic,a : ;
 property float flowAnimSpeed : static,a : ;
 property float flowAnimOffset : static,a : ;
 #endif
+
+
 
 // prototypes, to shut up Metal shader-compiler
 float  FresnelShlick( float NdotL, float Cspec );
@@ -417,47 +399,33 @@ VPROG_BEGIN
         }
     #endif // not CUT_LEAF
 
-#elif WIND_ANIMATION
+#else // not SPEED_TREE_LEAF
 
-	float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
-	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
+    #if WIND_ANIMATION
 
-#elif WAVE_ANIMATION
+        float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+        VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
+        
+    #else // WIND_ANIMATION
 
-	float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
-	VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
+        #if WAVE_ANIMATION
+            float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
+            VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
+        #else
+            #if SKINNING
+//weightedVertexPosition.w=3.0;
+                float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
+                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
+                VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
+//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
+            #else
+                VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewProjMatrix );
+            #endif
+        #endif
 
-#elif SKINNING
+    #endif // WIND_ANIMATION
 
-	float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
-	float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
-	VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
-
-#elif BILLBOARD_ENABLED
-
-	float4 translation = worldMatrix[3];
-	float3 up = cameraUp;
-	float3 dir = translation.xyz - cameraPosition;
-
-#	if (BILLBOARD_TYPE == BILLBOARD_TYPE_CYLINDRICAL)
-		float3 side = normalize(cross(dir, up));
-		dir = cross(up, side);
-#	else
-		dir = normalize(dir);
-		float3 side = normalize(cross(dir, up));
-		up = cross(side, dir);
-#	endif
-
-	float4 inPos = mul(float4(VP_IN_POSITION.xyz, 0.0), worldMatrix);
-	float4 outPos = translation + float4(inPos.x * side + inPos.z * up + inPos.y * dir, 0.0);
-	
-	VP_OUT_POSITION = mul(outPos, viewProjMatrix);
-	
-#else
-	
-	VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz, 1.0), worldViewProjMatrix );
-	
-#endif
+#endif //end "not SPEED_TREE_LEAF
 
 
 #if SPEED_TREE_LEAF
