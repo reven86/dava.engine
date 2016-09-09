@@ -105,7 +105,7 @@ const Vector<String>& Engine::GetCommandLine() const
     return engineBackend->GetCommandLine();
 }
 
-DAVA::Vector<char*> Engine::GetCommandLineAsArgv()
+Vector<char*> Engine::GetCommandLineAsArgv()
 {
     return engineBackend->GetCommandLineAsArgv();
 }

@@ -1,52 +1,24 @@
-#ifndef __RESOURCEEDITOR_LAUNCHER_H__
-#define __RESOURCEEDITOR_LAUNCHER_H__
+#pragma once
 
 #include "Scene/BaseTransformProxies.h"
 #include "Project/ProjectManager.h"
 #include "Main/mainwindow.h"
 
-#include <QObject>
+#include "QtTools/Utils/QtDelayedExecutor.h"
 
-class ResourceEditorLauncher : public QObject
+class ResourceEditorLauncher : public QtDelayedExecutor
 {
     Q_OBJECT
 
 public:
     ~ResourceEditorLauncher();
 
-public slots:
     void Launch();
+
+private:
+    void LaunchImpl();
     void OnProjectOpened(const QString&);
 
 public:
     Q_SIGNAL void LaunchFinished();
 };
-
-inline void ResourceEditorLauncher::Launch()
-{
-    Selectable::AddTransformProxyForClass<DAVA::Entity, EntityTransformProxy>();
-    Selectable::AddTransformProxyForClass<DAVA::ParticleEmitterInstance, EmitterTransformProxy>();
-
-    DVASSERT(ProjectManager::Instance() != nullptr);
-    connect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened, Qt::QueuedConnection);
-    ProjectManager::Instance()->OpenLastProject();
-}
-
-inline ResourceEditorLauncher::~ResourceEditorLauncher()
-{
-    Selectable::RemoveAllTransformProxies();
-}
-
-inline void ResourceEditorLauncher::OnProjectOpened(const QString&)
-{
-    DVASSERT(ProjectManager::Instance() != nullptr);
-    disconnect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened);
-
-    DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
-
-    emit LaunchFinished();
-}
-
-#endif // __RESOURCEEDITOR_LAUNCHER_H__

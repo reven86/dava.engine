@@ -35,6 +35,8 @@ private:
     EngineBackend* engineBackend = nullptr;
     WindowBackend* windowBackend = nullptr;
     std::unique_ptr<NativeService> nativeService;
+
+    Signal<bool> applicationFocusChanged;
 };
 
 inline NativeService* PlatformCore::GetNativeService()

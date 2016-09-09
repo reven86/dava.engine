@@ -1,4 +1,5 @@
-#include "REApplication.h"
+#include "Classes/Qt/Application/REConsoleApplication.h"
+#include "Classes/Qt/Application/REGuiApplication.h"
 
 #include "CommandLine/CommandLineManager.h"
 #include "Logger/Logger.h"
@@ -8,7 +9,12 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     CommandLineManager cmdLineMng(cmdline);
     if (cmdLineMng.IsEnabled())
     {
-        return REApplication::Run(cmdLineMng);
+        REConsoleApplication app(cmdLineMng);
+        app.beforeTerminate.Connect([&cmdLineMng]()
+                                    {
+                                        cmdLineMng.Cleanup();
+                                    });
+        return app.Run();
     }
     else if (cmdline.size() == 1
 #if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
@@ -16,7 +22,12 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 #endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
              )
     {
-        return REApplication::Run();
+        REGuiApplication app;
+        app.beforeTerminate.Connect([&cmdLineMng]()
+                                    {
+                                        cmdLineMng.Cleanup();
+                                    });
+        return app.Run();
     }
     else
     {
