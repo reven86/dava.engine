@@ -99,8 +99,6 @@ public:
     void AddDelegate(SceneSelectionSystemDelegate* delegate_);
     void RemoveDelegate(SceneSelectionSystemDelegate* delegate_);
 
-    void InvalidateSelectionBoxes();
-
 private:
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
     DAVA::AABBox3 GetTransformedBoundingBox(const Selectable& object, const DAVA::Matrix4& transform) const;
@@ -172,11 +170,6 @@ inline void SceneSelectionSystem::SetSelectionAllowed(bool allowed)
 inline bool SceneSelectionSystem::IsSelectionAllowed() const
 {
     return selectionAllowed;
-}
-
-inline void SceneSelectionSystem::InvalidateSelectionBoxes()
-{
-    invalidSelectionBoxes = true;
 }
 
 #endif //__SCENE_SELECTION_SYSTEM_H__
