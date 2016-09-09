@@ -33,6 +33,8 @@ void REGuiApplication::OnLoopStarted()
     mainWindow = new QtMainWindow();
     mainWindow->EnableGlobalTimeout(true);
     mainWindow->InjectRenderWidget(engine.GetNativeService()->GetRenderWidget());
+
+    RestoreMenuBar();
     mainWindow->show();
 }
 
@@ -60,7 +62,6 @@ void REGuiApplication::OnWindowCreated(DAVA::Window& w)
     launcher->Launch();
 
     REBaseApplication::OnWindowCreated(w);
-    RestoreMenuBar();
 }
 
 DAVA::eEngineRunMode REGuiApplication::GetEngineMode()

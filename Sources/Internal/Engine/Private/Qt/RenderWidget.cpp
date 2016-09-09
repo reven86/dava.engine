@@ -29,7 +29,8 @@ RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32
 
     QQuickWindow* window = quickWindow();
     window->installEventFilter(this);
-    window->setClearBeforeRendering(false);
+    window->setClearBeforeRendering(true);
+    window->setColor(QColor(76, 76, 76, 255));
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
@@ -80,6 +81,7 @@ void RenderWidget::ActivateRendering()
     QQuickWindow* w = quickWindow();
     connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize, Qt::DirectConnection);
     connect(w, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    w->setClearBeforeRendering(false);
 }
 
 bool RenderWidget::IsInitialized()

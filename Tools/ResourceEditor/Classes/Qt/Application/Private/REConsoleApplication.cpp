@@ -17,7 +17,9 @@ void REConsoleApplication::OnLoopStarted()
     REBaseApplication::OnLoopStarted();
     DVASSERT(engine.IsConsoleMode() == true);
 
+#if defined(__DAVAENGINE_WIN32__)
     locker = new WinConsoleIOLocker();
+#endif
 
     argv = engine.GetCommandLineAsArgv();
     argc = static_cast<int>(argv.size());
@@ -97,7 +99,9 @@ void REConsoleApplication::OnLoopStopped()
     DAVA::SafeDelete(context);
     DAVA::SafeDelete(surface);
     DAVA::SafeDelete(application);
+#if defined(__DAVAENGINE_WIN32__)
     DAVA::SafeDelete(locker);
+#endif
 
     argv.clear();
 
