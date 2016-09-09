@@ -52,8 +52,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
-    setAcceptDrops(true);
-
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
@@ -91,8 +89,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
-    verticalScrollBar->setAcceptDrops(true);
-    horizontalScrollBar->setAcceptDrops(true);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -539,11 +535,6 @@ void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
     default:
         break;
     }
-}
-
-void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
-{
-    // do nothing
 }
 
 void PreviewWidget::OnMousePressed(QMouseEvent* event)

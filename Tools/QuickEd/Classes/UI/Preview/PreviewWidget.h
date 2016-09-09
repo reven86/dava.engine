@@ -86,7 +86,6 @@ public:
     void OnNativeGuesture(QNativeGestureEvent* event) override;
     void OnMousePressed(QMouseEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
-    void OnMouseDBClick(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
     void OnDragEntered(QDragEnterEvent* event) override;
     void OnDragMoved(QDragMoveEvent* event) override;
