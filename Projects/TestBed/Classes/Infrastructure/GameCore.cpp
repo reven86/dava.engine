@@ -1,6 +1,10 @@
 #include "Infrastructure/GameCore.h"
 
 #include "Engine/EngineModule.h"
+#if defined(__DAVAENGINE_QT__)
+#include "Engine/Public/NativeService.h"
+#include "Engine/Public/Qt/RenderWidget.h"
+#endif
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -127,6 +131,12 @@ void GameCore::OnGameLoopStarted()
             Logger::Error("******** KABOOM on main thread********");
         });
     }
+#if defined(__DAVAENGINE_QT__)
+    else
+    {
+        engine->GetNativeService()->GetRenderWidget()->show();
+    }
+#endif
 }
 
 void GameCore::OnGameLoopStopped()

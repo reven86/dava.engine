@@ -7,6 +7,7 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Functional/Signal.h"
 
 class QApplication;
 namespace DAVA

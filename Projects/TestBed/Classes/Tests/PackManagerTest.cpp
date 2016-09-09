@@ -295,6 +295,7 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = Core::Instance()->GetPackManager();
 
     if (pm.IsRequestingEnabled())
@@ -321,17 +322,21 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     pm.EnableRequesting();
 
     packNameLoading->SetText(L"done: finish init");
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     packNameLoading->SetText(L"done: start sync");
     IPackManager& pm = Core::Instance()->GetPackManager();
     pm.InitRemotePacks(urlToServerSuperpack);
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = Core::Instance()->GetPackManager();
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
@@ -347,10 +352,12 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = Core::Instance()->GetPackManager();
 
     std::stringstream ss;
@@ -369,10 +376,12 @@ void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, v
         s = s.substr(0, s.size() - 2);
     }
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
@@ -399,10 +408,12 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+#if !defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = Core::Instance()->GetPackManager();
     WideString packName = packNextInput->GetText();
 
@@ -422,6 +433,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
+#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)

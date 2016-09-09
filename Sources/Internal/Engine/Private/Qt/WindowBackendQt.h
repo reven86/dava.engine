@@ -10,6 +10,7 @@
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Functional/Function.h"
+#include "Functional/SignalBase.h"
 
 namespace rhi
 {
