@@ -9,5 +9,7 @@ public:
     QtThread(QObject* parent = nullptr);
 
 protected:
+#if defined(__DAVAENGINE_WINDOWS__)
     void run() override;
+#endif
 };

@@ -12,6 +12,7 @@
 
 #include <QTimer>
 #include <QApplication>
+#include <QSurfaceFormat>
 
 namespace DAVA
 {
@@ -35,6 +36,9 @@ void PlatformCore::Run()
     int qtArgc = static_cast<int>(qtCommandLine.size());
 
     QApplication app(qtArgc, qtCommandLine.data());
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(0);
+    QSurfaceFormat::setDefaultFormat(format);
 
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
