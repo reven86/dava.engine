@@ -119,15 +119,12 @@ static uint64 dx11_PerfQuery_Value(Handle handle)
 {
     uint64 ret = 0;
     PerfQueryDX11_t* perfQuery = PerfQueryDX11Pool::Get(handle);
-    if (perfQuery)
+    if (perfQuery && perfQuery->isReady)
     {
-        if (perfQuery->isReady)
-        {
-            if (perfQuery->isFreqValid)
-                ret = perfQuery->timestamp / (perfQuery->freq / 1000000); //mcs
-            else
-                ret = uint64(-1);
-        }
+        if (perfQuery->isFreqValid)
+            ret = perfQuery->timestamp / (perfQuery->freq / 1000000); //mcs
+        else
+            ret = uint64(-1);
     }
 
     return ret;

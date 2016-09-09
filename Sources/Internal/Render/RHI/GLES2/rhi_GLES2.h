@@ -39,9 +39,14 @@ bool QueryIsCompleted(Handle buf);
 
 void ReleaseQueryObjectsPool();
 }
-namespace PerfQuerySetGLES2
+namespace PerfQueryGLES2
 {
 void SetupDispatch(Dispatch* dispatch);
+
+void ObtainPerfQueryResults();
+void IssueTimestampQuery(Handle handle);
+void GetCurrentFrameQueries(Handle* query0, Handle* query1);
+void ReleaseQueryObjectsPool();
 }
 
 namespace TextureGLES2

@@ -1221,11 +1221,11 @@ _ExecuteQueuedCommandsDX11()
         HRESULT hr = _D3D11_SwapChain->Present(1, 0);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
 
+        freqPerfQuery->EndMeasurment(_D3D11_ImmediateContext);
+
         CHECK_HR(hr);
         if (hr == DXGI_ERROR_DEVICE_REMOVED)
             CHECK_HR(_D3D11_Device->GetDeviceRemovedReason());
-
-        freqPerfQuery->EndMeasurment(_D3D11_ImmediateContext);
 
         // update sync-objects
 
