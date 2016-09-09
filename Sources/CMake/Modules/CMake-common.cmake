@@ -119,7 +119,7 @@ macro (define_source)
         list( APPEND ARG_SOURCE ${LIST_SOURCE_RECURSE} )
     endforeach ()
     
-    set( FILE_EXTENSIONS_CPP .c .cpp  )
+    set( FILE_EXTENSIONS_CPP .c .cc .cpp )
     set( FILE_EXTENSIONS_HPP .h .hpp )        
     if( APPLE )
         list( APPEND FILE_EXTENSIONS_CPP .m .mm )
@@ -250,7 +250,7 @@ macro (define_source_files)
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
-        set (ARG_GLOB_CPP_PATTERNS *.c *.cpp )    # Default glob pattern
+        set (ARG_GLOB_CPP_PATTERNS *.c *.cc *.cpp )    # Default glob pattern
         if( APPLE )  
             list ( APPEND ARG_GLOB_CPP_PATTERNS *.m *.mm )
         endif  ()
