@@ -45,6 +45,8 @@ int Core::Run(int argc, char* argv[], AppHandle handle)
     }
 #endif
     SetProcessDPIAware();
+    SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+
     CoreWin32Platform* core = new CoreWin32Platform();
     core->InitArgs();
     core->CreateSingletons();
