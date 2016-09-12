@@ -9,7 +9,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 public class DavaSplashView extends GLSurfaceView {
-                /*// from RenderBase.h
+    /*// from RenderBase.h
     enum eGPUFamily : uint8
     {
         GPU_POWERVR_IOS = 0,
@@ -40,6 +40,8 @@ public class DavaSplashView extends GLSurfaceView {
             getZBufferSize(gl);
             getGPUFamily(gl);
             
+            // Now we collect all device info and while show splash to user
+            // continue engine initialization
             DavaActivity.instance().onFinishCollectDeviceInfo();
         }
         @Override
@@ -49,9 +51,6 @@ public class DavaSplashView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl) {
             gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-            
-            // TODO now we show splash to user and can start native
-            // engine initialization
         }
         
         private void getZBufferSize(GL10 gl) {
@@ -61,10 +60,11 @@ public class DavaSplashView extends GLSurfaceView {
         }
         private void getGPUFamily(GL10 gl) {
             String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
-            int gpuArchitecture = getSupportedTextures(extensions);
+            byte gpuArchitecture = getSupportedTextures(extensions);
+            JNIDeviceInfo.gpuFamily = gpuArchitecture;
         }
         
-        private int getSupportedTextures(String ext)
+        private byte getSupportedTextures(String ext)
         {
             // next code from: gles_check_GL_extensions(rhi_GLES2.cpp)
             boolean ATC_Supported = ext.contains("GL_AMD_compressed_ATC_texture");
@@ -75,7 +75,7 @@ public class DavaSplashView extends GLSurfaceView {
             // boolean EAC_Supported = ETC2_Supported;
             boolean DXT_Supported = ext.contains("GL_EXT_texture_compression_s3tc") || ext.contains("GL_NV_texture_compression_s3tc");
 
-            int gpuFamily = GPU_INVALID;
+            byte gpuFamily = GPU_INVALID;
             // next code from: GetGPUFamily(DeviceInfoAndroid.cpp) and from: gles2_TextureFormatSupported(rhi_GLES2.cpp)
             if (PVRTC_Supported || PVRTC2_Supported) // TEXTURE_FORMAT_PVRTC_4BPP_RGBA
             {

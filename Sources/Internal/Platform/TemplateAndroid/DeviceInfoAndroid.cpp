@@ -31,6 +31,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
     getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
     getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
+    getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -111,6 +112,9 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     eGPUFamily gpuFamily = GPU_INVALID;
+#ifdef __DAVAENGINE_COREV2__
+    gpuFamily = static_cast<eGPUFamily>(getGpuFamily());
+#else
     if (Renderer::IsInitialized())
     {
         if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_PVRTC_4BPP_RGBA))
@@ -130,6 +134,7 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
             gpuFamily = GPU_MALI;
         }
     }
+#endif
 
     return gpuFamily;
 }

@@ -119,7 +119,7 @@ public class JNIDeviceInfo {
         }
     }
     
-    public static byte GetGPUFamily()
+    public static byte GetGpuFamily()
     {
         return gpuFamily;
     }
