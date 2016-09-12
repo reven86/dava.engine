@@ -308,6 +308,8 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+    IModule::ReleaseModules();
+
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);

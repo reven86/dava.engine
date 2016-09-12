@@ -4,8 +4,21 @@
 
 namespace DAVA
 {
+    Vector<IModule*> IModule::listModules;
+
     void IModule::InitModules()
     {
 @IMODULE_CODE@
     }
+
+    void IModule::ReleaseModules()
+    {
+        for (const auto& module : listModules)
+        {
+            module->Shutdown();
+            delete module;
+        }
+    
+    }    
+
 }

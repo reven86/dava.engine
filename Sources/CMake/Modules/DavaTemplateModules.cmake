@@ -181,6 +181,7 @@ macro( generated_initialization_module_code )
 
     foreach( ITEM ${MODULES_INITIALIZATION} )
         list( APPEND IMODULE_CODE "\n        IModule* _${ITEM} = new Module${ITEM}()" )
+        list( APPEND IMODULE_CODE "\n        listModules.emplace_back( _TEST_MODULE )" )                
         list( APPEND IMODULE_CODE "\n        _${ITEM}->Init()" )
     endforeach()
     
