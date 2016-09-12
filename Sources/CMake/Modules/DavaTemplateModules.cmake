@@ -178,10 +178,11 @@ macro( generated_initialization_module_code )
     foreach( ITEM ${MODULES_INITIALIZATION_HPP} )
         list( APPEND IMODULE_INCLUDES "#include \"${ITEM}\" \n" )
     endforeach()
+    string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
 
     foreach( ITEM ${MODULES_INITIALIZATION} )
         list( APPEND IMODULE_CODE "\n        IModule* _${ITEM} = new Module${ITEM}()" )
-        list( APPEND IMODULE_CODE "\n        listModules.emplace_back( _TEST_MODULE )" )                
+        list( APPEND IMODULE_CODE "\n        listModules.emplace_back( _${ITEM} )" )                
         list( APPEND IMODULE_CODE "\n        _${ITEM}->Init()" )
     endforeach()
     
@@ -190,7 +191,6 @@ macro( generated_initialization_module_code )
     endforeach()
 
     list( APPEND IMODULE_CODE "\n" )
-
 
     set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/IModule.cpp )
     configure_file( ${IMODULE_IN}
