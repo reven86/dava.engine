@@ -928,7 +928,7 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
             if ((psm->altState[i].layoutUID == layoutUID) &&
                 (psm->altState[i].color_format == color_fmt) &&
                 (psm->altState[i].ds_used == ds_used) &&
-                (psm->altState[i].samples == samples))
+                (psm->altState[i].sampleCount == sampleCount))
             {
                 si = i;
                 do_add = false;
@@ -957,7 +957,7 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
 
             rp_desc.colorAttachments[0] = psm->desc.colorAttachments[0];
             rp_desc.colorAttachments[0].pixelFormat = color_fmt;
-            rp_desc.sampleCount = samples;
+            rp_desc.sampleCount = sampleCount;
             rp_desc.vertexFunction = psm->desc.vertexFunction;
             rp_desc.fragmentFunction = psm->desc.fragmentFunction;
 
@@ -1070,7 +1070,7 @@ uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_u
             state.color_format = color_fmt;
             state.ds_used = ds_used;
             state.stride = layout->Stride();
-            state.samples = samples;
+            state.sampleCount = sampleCount;
 
             if (state.state != nil)
             {

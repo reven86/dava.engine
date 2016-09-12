@@ -336,9 +336,6 @@ RHI_IMPL_POOL(SyncObjectGLES2_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, f
 
 const uint64 CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 
-static bool _GLES2_CmdBufIsBeingExecuted = false;
-static DAVA::Spinlock _GLES2_CmdBufIsBeingExecutedSync;
-
 static GLCommand* _GLES2_PendingImmediateCmd = nullptr;
 static uint32 _GLES2_PendingImmediateCmdCount = 0;
 static DAVA::Mutex _GLES2_PendingImmediateCmdSync;

@@ -411,7 +411,7 @@ CommandBufferMetal_t::Execute()
             Handle ps = ((CommandMTL_SetPipelineState*)cmd)->ps;
             unsigned layoutUID = ((CommandMTL_SetPipelineState*)cmd)->vdeclUID;
 
-            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder, samples);
+            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder, sampleCount);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
             StatSet::IncStat(stat_SET_PS, 1);
         }
@@ -852,7 +852,7 @@ bool RenderPassMetal_t::Initialize()
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
-        cb->samples = rhi::TextureSamplesForAAType(cfg.antialiasingType);
+        cb->sampleCount = rhi::TextureSampleCountForAAType(cfg.antialiasingType);
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
@@ -883,7 +883,7 @@ bool RenderPassMetal_t::Initialize()
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
-            cb->samples = rhi::TextureSamplesForAAType(cfg.antialiasingType);
+            cb->sampleCount = rhi::TextureSampleCountForAAType(cfg.antialiasingType);
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 
@@ -993,7 +993,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
-        cb->samples = passConf.samples;
+        cb->sampleCount = passConf.sampleCount;
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
@@ -1028,7 +1028,7 @@ metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
-            cb->samples = passConf.samples;
+            cb->sampleCount = passConf.sampleCount;
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
             
@@ -1180,7 +1180,7 @@ metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 layoutUID)
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->color_fmt, cb->ds_used, cb->encoder, cb->samples);
+    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->color_fmt, cb->ds_used, cb->encoder, cb->sampleCount);
     cb->cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
     StatSet::IncStat(stat_SET_PS, 1);
 #else

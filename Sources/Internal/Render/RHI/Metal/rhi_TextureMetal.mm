@@ -224,17 +224,17 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
     desc.height = texDesc.height;
     desc.pixelFormat = pf;
     desc.arrayLength = 1;
-    desc.sampleCount = texDesc.samples;
+    desc.sampleCount = texDesc.sampleCount;
     desc.mipmapLevelCount = texDesc.levelCount;
     desc.resourceOptions = MTLResourceCPUCacheModeDefaultCache;
     if (texDesc.type == TEXTURE_TYPE_CUBE)
     {
-        DVASSERT(texDesc.samples == 1);
+        DVASSERT(texDesc.sampleCount == 1);
         desc.textureType = MTLTextureTypeCube;
     }
     else
     {
-        desc.textureType = (texDesc.samples > 1) ? MTLTextureType2DMultisample : MTLTextureType2D;
+        desc.textureType = (texDesc.sampleCount > 1) ? MTLTextureType2DMultisample : MTLTextureType2D;
     }
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
@@ -308,8 +308,8 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
             desc2.width = texDesc.width;
             desc2.height = texDesc.height;
             desc2.mipmapLevelCount = 1;
-            desc2.sampleCount = texDesc.samples;
-            desc2.textureType = texDesc.samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
+            desc2.sampleCount = texDesc.sampleCount;
+            desc2.textureType = texDesc.sampleCount > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
 
             id<MTLTexture> uid2 = [_Metal_Device newTextureWithDescriptor:desc2];
 

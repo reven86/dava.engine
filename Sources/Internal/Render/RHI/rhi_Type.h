@@ -90,7 +90,7 @@ enum class AntialiasingType : DAVA::uint32
     FXAA // now it serves only for debug purpose
 };
 
-inline DAVA::uint32 TextureSamplesForAAType(AntialiasingType type)
+inline DAVA::uint32 TextureSampleCountForAAType(AntialiasingType type)
 {
     switch (type)
     {

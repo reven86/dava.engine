@@ -208,7 +208,7 @@ void RenderPass::SetRenderTargetProperties(uint32 width, uint32 height, PixelFor
 
 void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& config)
 {
-    uint32 requestedSamples = rhi::TextureSamplesForAAType(config.antialiasingType);
+    uint32 requestedSamples = rhi::TextureSampleCountForAAType(config.antialiasingType);
 
     bool invalidDescription =
     (multisampledDescription.sampleCount != requestedSamples) ||
