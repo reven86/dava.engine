@@ -165,7 +165,8 @@ GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()
         }
         else
         {
-            q = rhi::CreatePerfQuery();
+            if (rhi::DeviceCaps().isPerfQuerySupported)
+                q = rhi::CreatePerfQuery();
         }
     }
 

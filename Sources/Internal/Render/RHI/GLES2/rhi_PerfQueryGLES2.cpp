@@ -38,6 +38,8 @@ Handle currentFramePerfQuery[2] = { InvalidHandle, InvalidHandle };
 
 static Handle gles2_PerfQuery_Create()
 {
+    DVASSERT(DeviceCaps().isPerfQuerySupported);
+
     Handle handle = PerfQueryGLES2Pool::Alloc();
     PerfQueryGLES2_t* query = PerfQueryGLES2Pool::Get(handle);
     if (query)
@@ -122,7 +124,14 @@ void ObtainPerfQueryResults()
         result = 1;
 #elif defined(__DAVAENGINE_ANDROID__)
 #else
-        GL_CALL(glGetQueryObjectuiv(it->second, GL_QUERY_RESULT_AVAILABLE, &result));
+        if (DeviceCaps().isPerfQuerySupported)
+        {
+            GL_CALL(glGetQueryObjectuiv(it->second, GL_QUERY_RESULT_AVAILABLE, &result));
+        }
+        else
+        {
+            result = 1;
+        }
 #endif
 
         if (result == GL_TRUE)

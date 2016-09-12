@@ -18,7 +18,9 @@
     #include <Carbon/Carbon.h>
     #include <AGL/agl.h>
     #include <OpenGL/glext.h>
-    
+    #include <OpenGL/gl3.h>
+    #include <OpenGL/gl3ext.h>
+
     #define GetGLErrorString(code) #code
 
     #include "macos_gl.h"
