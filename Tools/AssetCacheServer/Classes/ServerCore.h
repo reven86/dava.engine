@@ -23,7 +23,7 @@ class ServerCore : public QObject,
     static const DAVA::uint32 UPDATE_INTERVAL_MS = 16;
     static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
     static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
-    static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 3; // 5 * 60;
+    static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 3;
 
 public:
     enum class State
@@ -102,8 +102,8 @@ private:
 
     struct CompareResult
     {
-        bool listsAreEqual = false;
-        bool currentIndexIsValid = false;
+        bool listsAreTotallyEqual = false;
+        bool listsAreEqualAtLeastTillCurrentIndex = false;
     };
     CompareResult CompareWithRemoteList(const DAVA::List<RemoteServerParams>& updatedRemotesList);
 
@@ -122,7 +122,8 @@ private:
     DAVA::String appPath;
 
     DAVA::Vector<RemoteServerParams> remoteServers;
-    DAVA::int32 remoteServerIndex = -1;
+    size_t remoteServerIndex = 0;
+    bool remoteServerIndexIsValid = false;
     RemoteServerParams currentRemoteServer;
 
     SharedDataRequester sharedDataRequester;

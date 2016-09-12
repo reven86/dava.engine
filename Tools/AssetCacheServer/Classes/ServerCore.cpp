@@ -145,16 +145,17 @@ void ServerCore::ReconnectRemoteLater()
 
 void ServerCore::UseNextRemote()
 {
-    if (remoteServerIndex == -1)
+    if (!remoteServerIndexIsValid)
     {
         if (remoteServers.empty() == false)
         {
+            remoteServerIndexIsValid = true;
             remoteServerIndex = 0;
             currentRemoteServer = remoteServers.front();
         }
         else
         {
-            currentRemoteServer.SetEmpty();
+            currentRemoteServer.Clear();
         }
     }
     else
@@ -171,11 +172,11 @@ void ServerCore::ResetRemotesList()
     DAVA::List<RemoteServerParams> updatedRemotesList = settings.GetEnabledRemoteServers();
 
     CompareResult compareResult = CompareWithRemoteList(updatedRemotesList);
-    if (!compareResult.listsAreEqual)
+    if (!compareResult.listsAreTotallyEqual)
     {
         remoteServers.assign(std::make_move_iterator(std::begin(updatedRemotesList)), std::make_move_iterator(std::end(updatedRemotesList)));
-        if (!compareResult.currentIndexIsValid)
-            remoteServerIndex = -1;
+        if (!compareResult.listsAreEqualAtLeastTillCurrentIndex)
+            remoteServerIndexIsValid = false;
     }
 }
 
@@ -195,7 +196,7 @@ ServerCore::CompareResult ServerCore::CompareWithRemoteList(const DAVA::List<Rem
         {
             if (index == remoteServerIndex)
             {
-                result.currentIndexIsValid = true;
+                result.listsAreEqualAtLeastTillCurrentIndex = true;
             }
         }
         else
@@ -204,7 +205,7 @@ ServerCore::CompareResult ServerCore::CompareWithRemoteList(const DAVA::List<Rem
         }
     }
 
-    result.listsAreEqual = (ourIter == ourEnd && updatedIter == updatedEnd);
+    result.listsAreTotallyEqual = (ourIter == ourEnd && updatedIter == updatedEnd);
     return result;
 }
 

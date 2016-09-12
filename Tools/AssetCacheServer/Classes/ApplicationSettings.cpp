@@ -9,7 +9,7 @@ RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
 {
 }
 
-void RemoteServerParams::SetEmpty()
+void RemoteServerParams::Clear()
 {
     ip.clear();
 }
@@ -91,7 +91,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetUInt32("ServersSize", size);
 
     DAVA::uint32 index = 0;
-    for (auto& pool : customServers)
+    for (const RemoteServerParams& pool : customServers)
     {
         archive->SetString(DAVA::Format("Server_%u_ip", index), pool.ip);
         archive->SetBool(DAVA::Format("Server_%u_enabled", index), pool.enabled);

@@ -15,7 +15,7 @@ struct RemoteServerParams
     RemoteServerParams() = default;
     RemoteServerParams(DAVA::String _ip, bool _enabled);
 
-    void SetEmpty();
+    void Clear();
     bool IsEmpty() const;
 
     bool operator==(const RemoteServerParams& right) const;
