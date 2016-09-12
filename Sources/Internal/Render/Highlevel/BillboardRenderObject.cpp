@@ -51,7 +51,7 @@ void BillboardRenderObject::PrepareToRender(Camera* camera)
     0.0, 0.0, 0.0, 1.0
     );
 
-    billboardTransform = bMatrix * wTransform;
+    billboardTransform = wTransform * bMatrix;
     billboardTransform.SetTranslationVector(translation);
 }
 
