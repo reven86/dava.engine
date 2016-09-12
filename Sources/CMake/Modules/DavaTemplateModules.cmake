@@ -162,6 +162,24 @@ macro( modules_tree_info )
     endif()
 endmacro()
 #
+macro( generated_initialization_module_code )
+    ASSERT( IMODULE_IN "Please set path to IModule.in in the variable NAME IMODULE_IN" )
+    get_filename_component( IMODULE_IN ${IMODULE_IN} ABSOLUTE )
+
+    set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/IModule.cpp )
+    configure_file( ${IMODULE_IN}
+                    ${IMODULE_CPP}  @ONLY ) 
+    list( APPEND CPP_FILES ${IMODULE_CPP} )
+
+
+    file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${IMODULE_IN}) 
+    string(REGEX REPLACE "/" "\\\\" RELATIVE_PATH ${RELATIVE_PATH})
+    get_filename_component( FOLDER_NAME ${RELATIVE_PATH}  DIRECTORY    )
+
+    set( MODULE_GROUP_STRINGS "${FOLDER_NAME} ${IMODULE_CPP}")
+
+endmacro()
+#
 macro( reset_MAIN_MODULE_VALUES )
     foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
                                          QT_DEPLOY_LIST_VALUE 
@@ -218,6 +236,7 @@ macro( setup_main_module )
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
         if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
             modules_tree_info_execute()
+            generated_initialization_module_code()
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
@@ -308,7 +327,8 @@ macro( setup_main_module )
             
             if( SRC_FOLDERS_DIR_NAME )
                 define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
-                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} 
+                             )
                                          
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
                 list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
@@ -346,6 +366,7 @@ macro( setup_main_module )
                        SOURCE_RECURSE ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
+                       GROUP_STRINGS  ${MODULE_GROUP_STRINGS}
                      )
 
 
@@ -510,18 +531,17 @@ macro( setup_main_module )
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
             endif()
-
-
-            #"hack - find first call"
-            get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
-            list( REMOVE_AT  MAIN_MODULES_FIND_FIRST_CALL_LIST 0 )
-            set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
-            
-            list( LENGTH MAIN_MODULES_FIND_FIRST_CALL_LIST LENGTH_DEFINE_SOURCE_LIST  )
-            if ( NOT LENGTH_DEFINE_SOURCE_LIST )
-                #"first call"
-            endif()
                 
+        endif()
+
+        #"hack - find first call"
+        get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
+        list( REMOVE_AT  MAIN_MODULES_FIND_FIRST_CALL_LIST 0 )
+        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
+        
+        list( LENGTH MAIN_MODULES_FIND_FIRST_CALL_LIST LENGTH_DEFINE_SOURCE_LIST  )
+        if ( NOT LENGTH_DEFINE_SOURCE_LIST )
+            #"first call"
         endif()
 
         set_property( GLOBAL PROPERTY MODULES_NAME "${NAME_MODULE}" )

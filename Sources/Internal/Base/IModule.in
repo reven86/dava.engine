@@ -1,0 +1,11 @@
+#include "Base/IModule.h"
+
+@IMODULE_INCLUDES@
+
+namespace DAVA
+{
+    void IModule::InitModules()
+    {
+        @IMODULE_CODE@
+    }
+}
