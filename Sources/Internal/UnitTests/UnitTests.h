@@ -161,14 +161,20 @@
 //  DAVA_TESTCLASS(UsefulTest)
 //  {
 //      BEGIN_FILES_COVERED_BY_TESTS()
-//          DECLARE_COVERED_FILES("FileSystem")
-//          DECLARE_COVERED_FILES("JobManager")
+//          DECLARE_COVERED_FILES("FileSystem.cpp")
+//          DECLARE_COVERED_FILES("JobManager.cpp")
+//      FIND_FILES_IN_TARGET( DavaTools )
+//          DECLARE_COVERED_FILES("FramePathHelper.cpp")
 //      END_FILES_COVERED_BY_TESTS()
 //
 //      DAVA_TEST(test1) {}
 //  };
 //
 // Test class UsefulTest covers two file: "FileSystem.cpp" and "JobManager.cpp"
+//
+// FIND_FILES_IN_TARGET( TARGET_NAME )
+// Explicitly tells that next files belong to specified target. It is used to distinguish
+// files with the same names located in different targets
 //
 // or to automatically deduce covered file from test class name
 //  DAVA_TESTCLASS(DateTimeTest)
@@ -179,28 +185,57 @@
 // DEDUCE_COVERED_FILES_FROM_TESTCLASS discards Test postfix of any and considers that
 // DateTimeTest covers class DateTime.
 //
+//
 // This is test author's responsibility to specify valid and corresponding classes
 //
 // You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
 // which returns Map<String, Vector<String>> where key is test class name and value is vector of covered files
 //
+//Macros DAVA_FOLDERS, TARGET_FOLDERS are installed by cmake through add_definitions(...)
+//DAVA_FOLDERS general list of folders where the sources are
+//TARGET_FOLDERS list of folders with source code for the current target has
+//
+
+#if defined(TEST_COVERAGE)
 
 #define BEGIN_FILES_COVERED_BY_TESTS() \
-    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
-        DAVA::Vector<DAVA::String> result;
+    DAVA::UnitTests::TestCoverageInfo FilesCoveredByTests() const override { \
+        DAVA::UnitTests::TestCoverageInfo testInfo;  \
+        testInfo.targetFolders.emplace("all", DAVA::String(DAVA_FOLDERS)); \
+        const char* targetFolders = nullptr;
+
+#define FIND_FILES_IN_TARGET(targetname) \
+        targetFolders = TARGET_FOLDERS_##targetname;
 
 #define DECLARE_COVERED_FILES(classname) \
-        result.emplace_back(classname);
+        testInfo.testFiles.emplace_back(classname); \
+        if (targetFolders != nullptr)\
+        { \
+            testInfo.targetFolders.emplace(DAVA::String(classname), DAVA::String(targetFolders));\
+        }
 
 #define END_FILES_COVERED_BY_TESTS() \
-        return result; \
+        return testInfo; \
     }
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
-    DAVA::Vector<DAVA::String> FilesCoveredByTests() const override { \
-        DAVA::Vector<DAVA::String> result; \
-        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
-        return result; \
-    }
+BEGIN_FILES_COVERED_BY_TESTS() \
+DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
+END_FILES_COVERED_BY_TESTS()
+
+#else
+
+#define BEGIN_FILES_COVERED_BY_TESTS()
+#define FIND_FILES_IN_TARGET(targetname)
+#define DECLARE_COVERED_FILES(classname)
+#define END_FILES_COVERED_BY_TESTS()
+#define DEDUCE_COVERED_FILES_FROM_TESTCLASS()
+
+#endif
+
+
+
+
+
 
 #endif // __DAVAENGINE_UNITTESTS_H__
