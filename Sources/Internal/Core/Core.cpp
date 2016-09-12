@@ -385,7 +385,15 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
         break;
     }
 
-    SetDisplayAutoRotationPreferences(orientationp);
+    using SetDisplayAutoRotationPreferencesFn = BOOL (*)(_In_ ORIENTATION_PREFERENCE);
+    SetDisplayAutoRotationPreferencesFn fn = (SetDisplayAutoRotationPreferencesFn)GetProcAddress(
+    GetModuleHandle(TEXT("user32.dll")),
+    "SetDisplayAutoRotationPreferences");
+
+    if (nullptr != fn)
+    {
+        (*fn)(orientationp);
+    }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
