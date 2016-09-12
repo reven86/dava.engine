@@ -11,7 +11,6 @@ public:
     virtual ~IModule()
     {
     }
-
     virtual void Init()
     {
     }
