@@ -353,5 +353,4 @@ inline void RenderObject::SetRefractionVisible(bool visible)
     else
         flags &= ~VISIBLE_REFRACTION;
 }
-
 }
