@@ -159,19 +159,25 @@ void FreqPerfQueryDX11::IssueTimestamp(Handle handle, ID3D11DeviceContext* conte
 void FreqPerfQueryDX11::BeginMeasurment(ID3D11DeviceContext* context)
 {
     context->Begin(freqQuery);
-
-    if (frameQuery0)
-        IssueTimestamp(frameQuery0, context);
 }
 
 void FreqPerfQueryDX11::EndMeasurment(ID3D11DeviceContext* context)
 {
-    if (frameQuery1)
-        IssueTimestamp(frameQuery1, context);
-
     context->End(freqQuery);
 
     pendingFreqPerfQuery.push_back(this);
+}
+
+void FreqPerfQueryDX11::BeginFrame(ID3D11DeviceContext* context)
+{
+    if (frameQuery0)
+        IssueTimestamp(frameQuery0, context);
+}
+
+void FreqPerfQueryDX11::EndFrame(ID3D11DeviceContext* context)
+{
+    if (frameQuery1)
+        IssueTimestamp(frameQuery1, context);
 }
 
 void SetupDispatch(Dispatch* dispatch)

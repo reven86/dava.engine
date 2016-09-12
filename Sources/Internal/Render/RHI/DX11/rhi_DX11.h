@@ -46,6 +46,8 @@ public:
     void IssueTimestamp(Handle handle, ID3D11DeviceContext* context);
     void BeginMeasurment(ID3D11DeviceContext* context);
     void EndMeasurment(ID3D11DeviceContext* context);
+    void BeginFrame(ID3D11DeviceContext* context);
+    void EndFrame(ID3D11DeviceContext* context);
 
     ID3D11Query* freqQuery = nullptr;
     DAVA::List<HPerfQuery> perfQueries;

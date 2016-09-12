@@ -1164,6 +1164,7 @@ _ExecuteQueuedCommandsDX11()
         Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
 
         freqPerfQuery->BeginMeasurment(_D3D11_ImmediateContext);
+        freqPerfQuery->BeginFrame(_D3D11_ImmediateContext);
 
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         _D3D11_ImmediateContext->ExecuteCommandList(cmdList, FALSE);
@@ -1215,8 +1216,9 @@ _ExecuteQueuedCommandsDX11()
         }
         _DX11_FrameSync.Unlock();
 
-        // do present
+        freqPerfQuery->EndFrame(_D3D11_ImmediateContext);
 
+        // do present
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
         HRESULT hr = _D3D11_SwapChain->Present(1, 0);
         TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
