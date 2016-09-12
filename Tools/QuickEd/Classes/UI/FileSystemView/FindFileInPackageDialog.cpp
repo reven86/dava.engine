@@ -4,26 +4,29 @@
 #include <QLineEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
-#include <QDirIterator>
+#include <QApplication>
+#include <QAbstractItemView>
+#include <QKeyEvent>
 
-FindFileInPackageDialog::FindFileInPackageDialog(const QString& rootPath, QWidget* parent)
+FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
     : QDialog(parent)
+    , projectDir(QString::fromStdString(rootPath))
 {
     installEventFilter(this);
     setLayout(new QHBoxLayout(this));
-    InitFromPath(rootPath);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-
     layout()->addWidget(buttonBox);
+
+    Init(files);
 }
 
-QString FindFileInPackageDialog::GetFilePath(const QString& rootPath, QWidget* parent)
+QString FindFileInPackageDialog::GetFilePath(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
 {
-    FindFileInPackageDialog dialog(rootPath, parent);
+    FindFileInPackageDialog dialog(rootPath, files, parent);
     if (dialog.exec() == QDialog::Accepted && dialog.availableFiles.contains(dialog.filePath))
     {
         return dialog.availableFiles[dialog.filePath];
@@ -31,37 +34,26 @@ QString FindFileInPackageDialog::GetFilePath(const QString& rootPath, QWidget* p
     return QString();
 }
 
-void FindFileInPackageDialog::InitFromPath(const QString& path)
+void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::String>& files)
 {
-    QFileInfo fileInfo(path);
-    qApp->setOverrideCursor(Qt::BusyCursor);
     QPair<int, QString> longestPath(-1, QString());
-    if (fileInfo.exists() && fileInfo.isDir())
+    for (const DAVA::String& filePath : files)
     {
-        QDirIterator iter(path, QDirIterator::Subdirectories);
-        while (iter.hasNext())
+        QString absPath = QString::fromStdString(filePath);
+        QString relPath = absPath.right(absPath.size() - projectDir.size() - 1); //chop "/" symbol at begin of relPath
+        int relPathSize = relPath.size();
+        const int maxPathLen = 200;
+        if (relPathSize > maxPathLen)
         {
-            QFileInfo info(iter.fileInfo());
-            if (info.isFile() && info.suffix() == "yaml")
-            {
-                QString absPath = info.absoluteFilePath();
-                QString relPath = absPath.right(absPath.size() - path.size() - 1); //chop "/" symbol at begin of relPath
-                int relPathSize = relPath.size();
-                const int maxPathLen = 200;
-                if (relPathSize > maxPathLen)
-                {
-                    relPath.remove(0, relPathSize - maxPathLen);
-                    relPath.prepend("...");
-                }
-                relPathSize = relPath.size();
-                if (relPathSize > longestPath.first)
-                {
-                    longestPath = { relPathSize, relPath };
-                }
-                availableFiles.insert(relPath, absPath);
-            }
-            iter.next();
+            relPath.remove(0, relPathSize - maxPathLen);
+            relPath.prepend("...");
         }
+        relPathSize = relPath.size();
+        if (relPathSize > longestPath.first)
+        {
+            longestPath = { relPathSize, relPath };
+        }
+        availableFiles.insert(relPath, absPath);
     }
 
     qApp->restoreOverrideCursor();

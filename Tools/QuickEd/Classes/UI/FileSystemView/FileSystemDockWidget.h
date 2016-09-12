@@ -14,6 +14,7 @@ class QFileSystemModel;
 class QInputDialog;
 class QItemSelection;
 class QMouseEvent;
+class ProjectStructureHolder;
 
 class FileSystemDockWidget : public QDockWidget
 {
@@ -48,6 +49,9 @@ private:
     void RefreshActions();
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
+
+    void ShowEndSelectFile(const QString& filePath);
+
     enum ePathType
     {
         AnyPath,
@@ -67,6 +71,8 @@ private:
     QPoint menuInvokePos = QPoint(-1, -1);
 
     bool isAvailable = false;
+
+    std::unique_ptr<ProjectStructureHolder> projectStructureHolder;
 };
 
 #endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
