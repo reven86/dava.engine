@@ -357,41 +357,40 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
 #if defined(__DAVAENGINE_WIN32__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 
-    ORIENTATION_PREFERENCE orientationp = ORIENTATION_PREFERENCE_NONE;
+    using RotationPrefFn = BOOL(WINAPI*)(_In_ ORIENTATION_PREFERENCE);
 
-    switch (screenOrientation)
-    {
-    case DAVA::Core::SCREEN_ORIENTATION_TEXTURE:
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-        orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE;
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-        orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED;
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
-        orientationp |= ORIENTATION_PREFERENCE_PORTRAIT;
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-        orientationp |= ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED;
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
-        orientationp |= (ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
-        break;
-    case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
-        orientationp |= (ORIENTATION_PREFERENCE_PORTRAIT | ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED);
-        break;
-    default:
-        break;
-    }
-
-    using SetDisplayAutoRotationPreferencesFn = BOOL (*)(_In_ ORIENTATION_PREFERENCE);
-    SetDisplayAutoRotationPreferencesFn fn = (SetDisplayAutoRotationPreferencesFn)GetProcAddress(
+    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(
     GetModuleHandle(TEXT("user32.dll")),
-    "SetDisplayAutoRotationPreferences");
+    "SetDisplayAutoRotationPreferences"));
 
     if (nullptr != fn)
     {
+        ORIENTATION_PREFERENCE orientationp = ORIENTATION_PREFERENCE_NONE;
+
+        switch (screenOrientation)
+        {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_PORTRAIT | ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED);
+            break;
+        default:
+            break;
+        }
+
         (*fn)(orientationp);
     }
 
