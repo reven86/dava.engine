@@ -14,8 +14,9 @@ void BillboardRenderObject::RecalcBoundingBox()
     for (const IndexedRenderBatch& i : renderBatchArray)
     {
         RenderBatch* batch = i.renderBatch;
-        bbox.AddAABBox(batch->GetBoundingBox().GetMaxRotationExtentBox(Vector3(0.0f, 0.0f, 0.0f)));
+        bbox.AddAABBox(batch->GetBoundingBox());
     }
+    bbox = bbox.GetMaxRotationExtentBox(Vector3(0.0f, 0.0f, 0.0f));
 }
 
 void BillboardRenderObject::PrepareToRender(Camera* camera)

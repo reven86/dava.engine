@@ -4,14 +4,15 @@
 
 namespace DAVA
 {
-enum BillboardType : uint32
-{
-    BILLBOARD_SPHERICAL,
-    BILLBOARD_CYLINDRICAL
-};
-
 class BillboardRenderObject : public RenderObject
 {
+public:
+    enum BillboardType : uint32
+    {
+        BILLBOARD_SPHERICAL,
+        BILLBOARD_CYLINDRICAL
+    };
+
 public:
     BillboardRenderObject();
 
@@ -31,7 +32,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(BillboardRenderObject, RenderObject,
-                         MEMBER(billboardType, InspDesc("billboardType", GlobalEnumMap<BillboardType>::Instance()), I_SAVE | I_VIEW | I_EDIT))
+                         MEMBER(billboardType, InspDesc("billboardType", GlobalEnumMap<BillboardRenderObject::BillboardType>::Instance()), I_SAVE | I_VIEW | I_EDIT))
 };
 
 inline uint32 BillboardRenderObject::GetBillboardType() const

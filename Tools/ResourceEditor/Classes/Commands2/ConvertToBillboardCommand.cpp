@@ -4,32 +4,37 @@
 ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAVA::Entity* entity_)
     : RECommand(CMDID_CONVERT_TO_BILLBOARD, "Convert to billboard")
     , entity(entity_)
-    , oldRenderObject(SafeRetain(ro))
+    , oldRenderComponent(GetRenderComponent(entity))
+    , newRenderComponent(new RenderComponent())
 {
+    ScopedPtr<RenderObject> newRenderObject(new BillboardRenderObject());
+    oldRenderComponent->GetRenderObject()->Clone(newRenderObject);
+    newRenderObject->AddFlag(RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER);
+    newRenderObject->RecalcBoundingBox();
+
+    newRenderComponent->SetRenderObject(newRenderObject);
+
+    detachedComponent = newRenderComponent;
 }
 
 ConvertToBillboardCommand::~ConvertToBillboardCommand()
 {
-    SafeRelease(oldRenderObject);
-    SafeRelease(billboardRenderObject);
+    DVASSERT(detachedComponent->GetEntity() == nullptr);
+    SafeDelete(detachedComponent);
 }
 
 void ConvertToBillboardCommand::Redo()
 {
-    oldRenderComponent = new RenderComponent(oldRenderObject);
-    entity->RemoveComponent(GetRenderComponent(entity));
+    entity->DetachComponent(oldRenderComponent);
+    entity->AddComponent(newRenderComponent);
 
-    billboardRenderObject = oldRenderObject->CloneToDerivedClass<BillboardRenderObject>();
-    billboardRenderObject->AddFlag(RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER);
-    entity->AddComponent(new RenderComponent(billboardRenderObject));
-
-    billboardRenderObject->RecalcBoundingBox();
+    detachedComponent = oldRenderComponent;
 }
 
 void ConvertToBillboardCommand::Undo()
 {
-    entity->RemoveComponent(GetRenderComponent(entity));
-
+    entity->DetachComponent(newRenderComponent);
     entity->AddComponent(oldRenderComponent);
-    SafeRelease(billboardRenderObject);
+
+    detachedComponent = newRenderComponent;
 }

@@ -413,23 +413,8 @@ ENUM_DECLARE(eGradientBlendMode)
     ENUM_ADD_DESCR(GRADIENT_OVERLAY, "Overlay");
 };
 
-ENUM_DECLARE(BillboardType)
+ENUM_DECLARE(BillboardRenderObject::BillboardType)
 {
-    ENUM_ADD_DESCR(BILLBOARD_SPHERICAL, "Spherical");
-    ENUM_ADD_DESCR(BILLBOARD_CYLINDRICAL, "Cylindrical");
+    ENUM_ADD_DESCR(BillboardRenderObject::BILLBOARD_SPHERICAL, "Spherical");
+    ENUM_ADD_DESCR(BillboardRenderObject::BILLBOARD_CYLINDRICAL, "Cylindrical");
 }
-
-/*
-void f()
-{
-}
-
-GlobalEnum *globalEnum = GlobalEnum::Instance();
-f();
-*/
-/*
-->Add(DAVA::MetaInfo::Instance<DAVA::Texture::TextureWrap>(), DAVA::Texture::WRAP_CLAMP_TO_EDGE, "WRAP_CLAMP_TO_EDGE");
-
-ENUM_ADD(DAVA::Texture::TextureWrap, DAVA::Texture::WRAP_CLAMP_TO_EDGE, "WRAP_CLAMP_TO_EDGE");
-ENUM_ADD(DAVA::Texture::TextureWrap, DAVA::Texture::WRAP_REPEAT, "WRAP_REPEAT");
-*/

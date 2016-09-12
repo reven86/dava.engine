@@ -133,9 +133,6 @@ public:
         ownerDebugInfo = str;
     };
 
-    template <class T, class... Arg>
-    T* CloneToDerivedClass(Arg&&...);
-
     virtual void SetRenderSystem(RenderSystem* renderSystem);
     RenderSystem* GetRenderSystem();
 
@@ -357,12 +354,4 @@ inline void RenderObject::SetRefractionVisible(bool visible)
         flags &= ~VISIBLE_REFRACTION;
 }
 
-template <class T, class... Arg>
-inline T* RenderObject::CloneToDerivedClass(Arg&&... args)
-{
-    static_assert(std::is_base_of<RenderObject, T>::value, "Can only Clone to derived class");
-
-    T* result = new T(std::forward<Arg>(args)...);
-    return static_cast<T*>(Clone(result));
-}
 }

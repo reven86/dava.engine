@@ -23,9 +23,9 @@ public:
 
 private:
     DAVA::Entity* entity = nullptr;
-    DAVA::RenderObject* oldRenderObject = nullptr;
     DAVA::RenderComponent* oldRenderComponent = nullptr;
-    DAVA::BillboardRenderObject* billboardRenderObject = nullptr;
+    DAVA::RenderComponent* newRenderComponent = nullptr;
+    DAVA::Component* detachedComponent = nullptr;
 };
 
 inline DAVA::Entity* ConvertToBillboardCommand::GetEntity() const

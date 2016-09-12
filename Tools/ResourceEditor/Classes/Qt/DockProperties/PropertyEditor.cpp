@@ -401,8 +401,12 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
 
-                    QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Make billboard");
-                    QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
+                    if ((renderObject->GetType() == RenderObject::TYPE_MESH) ||
+                        (renderObject->GetType() == RenderObject::TYPE_RENDEROBJECT))
+                    {
+                        QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/sphere.png"), "Make billboard");
+                        QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
+                    }
                 }
             }
             else if (DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
