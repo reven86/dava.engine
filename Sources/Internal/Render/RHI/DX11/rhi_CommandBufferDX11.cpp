@@ -17,7 +17,7 @@
 #include "Concurrency/AutoResetEvent.h"
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 
 using DAVA::Logger;
 

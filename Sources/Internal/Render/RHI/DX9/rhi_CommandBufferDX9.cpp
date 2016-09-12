@@ -16,7 +16,7 @@ using DAVA::Logger;
 
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 
 #include "_dx9.h"
 #include <vector>

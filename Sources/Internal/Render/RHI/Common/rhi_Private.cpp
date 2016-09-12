@@ -1,4 +1,4 @@
-#include "rhi_Impl.h"
+#include "rhi_BackendImpl.h"
 
 #if defined(__DAVAENGINE_WIN32__)
     #include "../DX9/rhi_DX9.h"
@@ -22,7 +22,6 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 using DAVA::Logger;
-
 
 namespace rhi
 {
@@ -131,7 +130,6 @@ bool NeedRestoreResources()
 {
     return (*_Impl.impl_NeedRestoreResources)();
 }
-
 
 Api HostApi()
 {
@@ -590,7 +588,7 @@ void Delete(Handle obj)
     (*_Impl.impl_SyncObject_Delete)(obj);
 }
 
-bool IsSygnaled(Handle obj)
+bool IsSignaled(Handle obj)
 {
     return (*_Impl.impl_SyncObject_IsSignaled)(obj);
 }
@@ -719,4 +717,3 @@ void SetMarker(Handle cmdBuf, const char* text)
 //------------------------------------------------------------------------------
 
 } //namespace rhi
-

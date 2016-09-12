@@ -1,5 +1,5 @@
 #include "rhi_DX11.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
     
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
@@ -12,7 +12,7 @@ using DAVA::Logger;
 #include "../Common/rhi_Utils.h"
 
 #include <vector>
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 #include "../Common/RenderLoop.h"
 
 #include "Concurrency/LockGuard.h"

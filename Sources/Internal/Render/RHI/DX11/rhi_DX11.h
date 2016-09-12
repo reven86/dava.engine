@@ -3,7 +3,7 @@
 
 #include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 #include "_dx11.h"
 
 struct ID3D11DeviceContext;

@@ -2,7 +2,7 @@
 #define __RHI_PRIVATE_H__
 
 #include "../rhi_Type.h"
-#include "CommonImpl.h"
+#include "rhi_CommonImpl.h"
 
 namespace rhi
 {
@@ -143,7 +143,7 @@ namespace SyncObject
 {
 Handle Create();
 void Delete(Handle obj);
-bool IsSygnaled(Handle obj);
+bool IsSignaled(Handle obj);
 }
 
 namespace CommandBuffer
@@ -201,9 +201,6 @@ void ResetBlock();
 }
 
 void InitializeImplementation(Api api, const InitParam& param);
-
-void InitPacketListPool(uint32 maxCount);
-void InitTextreSetPool(uint32 maxCount);
 
 void BeginFreqMeasurement(Handle pqset);
 void EndFreqMeasurement(Handle pqset);

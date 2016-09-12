@@ -5,7 +5,7 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/dbg_StatSet.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
 
@@ -558,8 +558,7 @@ gles2_SyncObject_Delete(Handle obj)
 
 //------------------------------------------------------------------------------
 
-static bool
-gles2_SyncObject_IsSignaled(Handle obj)
+static bool gles2_SyncObject_IsSignaled(Handle obj)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_GLES2_SyncObjectsSync);
 

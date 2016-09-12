@@ -2,7 +2,7 @@
 #define __RHI_IMPL_H__
 
 #include "rhi_Private.h"
-#include "CommonImpl.h"
+#include "rhi_CommonImpl.h"
 
 namespace rhi
 {

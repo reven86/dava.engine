@@ -1,6 +1,6 @@
 #include "rhi_DX9.h"
-#include "../Common/rhi_Impl.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_BackendImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"

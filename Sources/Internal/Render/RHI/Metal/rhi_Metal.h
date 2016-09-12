@@ -2,7 +2,7 @@
 #define __RHI_METAL_H__
 
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 #if defined __OBJC__
 #include <Metal/Metal.h>
 #endif

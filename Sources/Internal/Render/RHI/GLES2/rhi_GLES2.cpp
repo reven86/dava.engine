@@ -6,7 +6,7 @@
 #include "../Common/rhi_Pool.h"
 #include "../Common/rhi_Utils.h"
 #include "../Common/dbg_StatSet.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"

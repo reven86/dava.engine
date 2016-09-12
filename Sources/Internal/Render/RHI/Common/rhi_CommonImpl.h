@@ -22,4 +22,5 @@ struct ImmediateCommand
 };
 }
 
+void InitTextreSetPool(uint32 maxCount);
 }

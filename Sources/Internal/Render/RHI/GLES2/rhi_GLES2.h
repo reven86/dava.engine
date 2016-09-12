@@ -2,7 +2,7 @@
 #define __RHI_GLES2_H__
 
 #include "../Common/rhi_Private.h"
-#include "../Common/rhi_Impl.h"
+#include "../Common/rhi_BackendImpl.h"
 
 namespace rhi
 {

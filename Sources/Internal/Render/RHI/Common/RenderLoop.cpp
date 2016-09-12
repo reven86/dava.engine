@@ -1,6 +1,6 @@
 #include "RenderLoop.h"
 #include "rhi_Pool.h"
-#include "CommonImpl.h"
+#include "rhi_CommonImpl.h"
 #include "FrameLoop.h"
 #include "rhi_Private.h"
 #include "../rhi_Type.h"

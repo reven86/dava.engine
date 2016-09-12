@@ -10,7 +10,7 @@
 using DAVA::Logger;
 #include "Core/Core.h"
 #include "Debug/Profiler.h"
-#include "../Common/CommonImpl.h"
+#include "../Common/rhi_CommonImpl.h"
 #include "../Common/SoftwareCommandBuffer.h"
 
 #include "_metal.h"

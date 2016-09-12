@@ -1,6 +1,6 @@
 #pragma once
 #include "../rhi_Type.h"
-#include "CommonImpl.h"
+#include "rhi_CommonImpl.h"
 #include "Concurrency/Thread.h"
 
 namespace rhi
@@ -19,5 +19,7 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command); //blocking un
 void CheckImmediateCommand(); //called from render thread only
 
 void SetResetPending();
+
+void ScheduleResourceDeletion(Handle handle, ResourceType resourceType);
 }
 }
