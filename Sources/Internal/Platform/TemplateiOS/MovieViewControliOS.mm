@@ -70,14 +70,19 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
     {
     case scalingModeNone:
         scaling = MPMovieScalingModeNone;
+        break;
     case scalingModeFill:
         scaling = MPMovieScalingModeFill;
+        break;
     case scalingModeAspectFill:
         scaling = MPMovieScalingModeAspectFill;
+        break;
     case scalingModeAspectFit:
         scaling = MPMovieScalingModeAspectFit;
+        break;
     default:
         scaling = MPMovieScalingModeNone;
+        break;
     }
     [bridge->moviePlayer setScalingMode:scaling];
     [bridge->moviePlayer setContentURL:movieURL];
