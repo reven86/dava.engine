@@ -153,9 +153,9 @@ void DX9CheckMultisampleSupport()
     const _D3DFORMAT formatsToCheck[] = { D3DFMT_A8R8G8B8, D3DFMT_D24S8 };
     const D3DMULTISAMPLE_TYPE samplesToCheck[] = { D3DMULTISAMPLE_2_SAMPLES, D3DMULTISAMPLE_4_SAMPLES, D3DMULTISAMPLE_8_SAMPLES };
 
-    uint32 samples = 2;
+    uint32 sampleCount = 2;
 
-    for (uint32 s = 0; (s < countof(samplesToCheck)) && (samples <= 8); ++s, samples *= 2)
+    for (uint32 s = 0; (s < countof(samplesToCheck)) && (sampleCount <= 8); ++s, sampleCount *= 2)
     {
         DWORD qualityLevels = 0;
         for (uint32 f = 0; f < countof(formatsToCheck); ++f)
@@ -169,12 +169,12 @@ void DX9CheckMultisampleSupport()
 
         if (qualityLevels == 0)
         {
-            DAVA::Logger::Info("DX9 max multisample samples: %u", samples);
+            DAVA::Logger::Info("DX9 max multisample samples: %u", sampleCount);
             break;
         }
     }
 
-    MutableDeviceCaps::Get().maxSamples = samples / 2;
+    MutableDeviceCaps::Get().maxSamples = sampleCount / 2;
 }
 
 //------------------------------------------------------------------------------

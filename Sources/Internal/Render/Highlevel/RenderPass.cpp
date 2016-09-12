@@ -211,7 +211,7 @@ void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& confi
     uint32 requestedSamples = rhi::TextureSamplesForAAType(config.antialiasingType);
 
     bool invalidDescription =
-    (multisampledDescription.samples != requestedSamples) ||
+    (multisampledDescription.sampleCount != requestedSamples) ||
     (multisampledDescription.format != renderTargetProperties.format) ||
     (multisampledDescription.width != renderTargetProperties.width) ||
     (multisampledDescription.height != renderTargetProperties.height);
@@ -226,7 +226,7 @@ void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& confi
         multisampledDescription.needDepth = true;
         multisampledDescription.needPixelReadback = false;
         multisampledDescription.ensurePowerOf2 = false;
-        multisampledDescription.samples = requestedSamples;
+        multisampledDescription.sampleCount = requestedSamples;
 
         multisampledTexture = Texture::CreateFBO(multisampledDescription);
     }

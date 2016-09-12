@@ -76,7 +76,7 @@ void ios_gl_init(void* nativeLayer)
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
 
-    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+    _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
 
     ios_gl_check_layer();
 }

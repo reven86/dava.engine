@@ -280,7 +280,7 @@ CommandBufferMetal_t
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
-    uint32 samples;
+    uint32 sampleCount;
     bool ds_used;
 #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
     bool do_commit_on_end;

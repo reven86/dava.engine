@@ -1170,10 +1170,10 @@ void CommandBufferGLES2_t::Execute()
                         DVASSERT(color0.multisampleTexture != InvalidHandle);
                         TextureGLES2::SetAsRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureFace, color0.textureLevel);
                     }
-                    else if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+                    else if (_GLES2_Bound_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
                         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
-                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+                        _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
 
                     def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
@@ -1239,7 +1239,7 @@ void CommandBufferGLES2_t::Execute()
                 }
 
             #if defined(__DAVAENGINE_IPHONE__)
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) // defualt framebuffer is discard once after frame
+                if (_GLES2_Bound_FrameBuffer != _GLES2_Default_FrameBuffer) // defualt framebuffer is discard once after frame
                 {
                     bool discardColor = (passCfg.colorBuffer[0].storeAction != STOREACTION_STORE);
                     bool discardDepthStencil = (passCfg.depthStencilBuffer.storeAction != STOREACTION_STORE);

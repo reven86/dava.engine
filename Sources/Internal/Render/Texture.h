@@ -56,7 +56,7 @@ public:
     {
         uint32 width = 0;
         uint32 height = 0;
-        uint32 samples = 1;
+        uint32 sampleCount = 1;
         PixelFormat format = PixelFormat::FORMAT_INVALID;
         rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
         bool needDepth = false;

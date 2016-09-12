@@ -380,7 +380,7 @@ void dx11_Initialize(const InitParam& param)
     MutableDeviceCaps::Get().isCenterPixelMapping = false;
     MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
-    MutableDeviceCaps::Get().maxSamples = DX11_CheckMultisampleSupport(_D3D11_Device);
+    MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
 }
 
 //==============================================================================

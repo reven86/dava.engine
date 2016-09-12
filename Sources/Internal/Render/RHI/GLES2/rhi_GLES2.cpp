@@ -12,7 +12,7 @@ using DAVA::Logger;
 
     #include "_gl.h"
 
-GLuint _GLES2_Binded_FrameBuffer = 0;
+GLuint _GLES2_Bound_FrameBuffer = 0;
 GLuint _GLES2_Default_FrameBuffer = 0;
 void* _GLES2_Native_Window = nullptr;
 void* _GLES2_Context = nullptr;

@@ -96,8 +96,8 @@ ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, Texture
         }
         else
         {
-            desc.ViewDimension = (descriptor.samples > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-            if (descriptor.samples == 1)
+            desc.ViewDimension = (descriptor.sampleCount > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+            if (descriptor.sampleCount == 1)
             {
                 desc.Texture2D.MipSlice = level;
             }
@@ -134,7 +134,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     desc2d.MipLevels = desc.levelCount;
     desc2d.ArraySize = 1;
     desc2d.Format = DX11_TextureFormat(desc.format);
-    desc2d.SampleDesc.Count = desc.samples;
+    desc2d.SampleDesc.Count = desc.sampleCount;
     desc2d.SampleDesc.Quality = 0;
     desc2d.Usage = D3D11_USAGE_DEFAULT;
     desc2d.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -145,7 +145,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
     if (desc.type == TEXTURE_TYPE_CUBE)
     {
-        DVASSERT(desc.samples == 1);
+        DVASSERT(desc.sampleCount == 1);
         desc2d.ArraySize = 6;
         desc2d.MiscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
     }
@@ -238,11 +238,11 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
             if (desc.type == TEXTURE_TYPE_CUBE)
             {
-                DVASSERT(desc.samples == 1);
+                DVASSERT(desc.sampleCount == 1);
                 srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
                 srv_desc.TextureCube.MipLevels = desc2d.MipLevels;
             }
-            else if (desc.samples > 1)
+            else if (desc.sampleCount > 1)
             {
                 srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
             }
@@ -285,7 +285,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
             D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc = {};
             dsv_desc.Format = desc2d.Format;
-            dsv_desc.ViewDimension = (desc.samples > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+            dsv_desc.ViewDimension = (desc.sampleCount > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 
             ID3D11DepthStencilView* dsv = nullptr;
             hr = _D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv);

@@ -33,7 +33,7 @@ public:
     uint32 uid2 = 0;
     uint32 width = 0;
     uint32 height = 0;
-    uint32 samples = 1;
+    uint32 sampleCount = 1;
     TextureFormat format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
     uint32 mappedLevel = 0;
     GLenum mappedFace = 0;
@@ -93,7 +93,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 GLCommand d24s8cmd[] =
                 {
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height, desc.samples } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height, desc.sampleCount } },
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
                 ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
@@ -113,10 +113,10 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 GLCommand d16s8cmd[] =
                 {
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, depthComponentFormat, desc.width, desc.height, desc.samples } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, depthComponentFormat, desc.width, desc.height, desc.sampleCount } },
 
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[1] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height, desc.samples } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height, desc.sampleCount } },
 
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
@@ -124,7 +124,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             }
         }
     }
-    else if (desc.samples > 1) // create multisampled render target texture
+    else if (desc.sampleCount > 1) // create multisampled render target texture
     {
         DVASSERT(desc.isRenderTarget); // do not support plain multisampled textures
         DVASSERT(desc.type == rhi::TextureType::TEXTURE_TYPE_2D); // do not support cube maps now
@@ -138,7 +138,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         GLCommand cmd[] =
         {
           { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
-          { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, static_cast<uint64>(int_fmt), desc.width, desc.height, desc.samples } },
+          { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, static_cast<uint64>(int_fmt), desc.width, desc.height, desc.sampleCount } },
           { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
         };
 
@@ -232,7 +232,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         width = desc.width;
         height = desc.height;
         format = desc.format;
-        samples = desc.samples;
+        sampleCount = desc.sampleCount;
         isCubeMap = desc.type == TEXTURE_TYPE_CUBE;
         isRenderTarget = desc.isRenderTarget;
         isRenderBuffer = is_render_buffer;
@@ -390,7 +390,7 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
             {
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo[0].frameBuffer } },
               { GLCommand::READ_PIXELS, { 0, 0, self->width, self->height, GL_RGBA, GL_UNSIGNED_BYTE, uint64(self->mappedData) } },
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Bound_FrameBuffer } },
             };
 
             ExecGL(cmd, countof(cmd));
@@ -885,7 +885,7 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
     }
 
     GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-    _GLES2_Binded_FrameBuffer = fb;
+    _GLES2_Bound_FrameBuffer = fb;
 }
 
 void ResolveMultisampling(Handle fromTexture, Handle toTexture)
@@ -912,8 +912,8 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
         targetBuffer = to->fbo.front().frameBuffer;
     }
 
-    _GLES2_Binded_FrameBuffer = from->fbo.front().frameBuffer;
-    GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
+    _GLES2_Bound_FrameBuffer = from->fbo.front().frameBuffer;
+    GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Bound_FrameBuffer));
     GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -923,7 +923,7 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
 #endif
 
     GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_LINEAR));
-    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Binded_FrameBuffer));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Bound_FrameBuffer));
 }
 
 Size2i Size(Handle tex)

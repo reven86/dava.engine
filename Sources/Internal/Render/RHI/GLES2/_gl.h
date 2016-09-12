@@ -366,7 +366,7 @@ extern volatile struct alignas(32) GLCallRegisters
 
 #endif
 
-extern GLuint _GLES2_Binded_FrameBuffer;
+extern GLuint _GLES2_Bound_FrameBuffer;
 extern GLuint _GLES2_Default_FrameBuffer;
 extern void* _GLES2_Native_Window;
 extern void* _GLES2_Context;

@@ -73,17 +73,17 @@ bool TextureDX9_t::Create(const Texture::Descriptor& desc, bool force_immediate)
         usage = D3DUSAGE_DEPTHSTENCIL;
     }
 
-    if (desc.samples > 1)
+    if (desc.sampleCount > 1)
     {
         DX9Command cmds[1] = {};
 
         if (is_depthbuf)
         {
-            cmds[0] = { DX9Command::CREARE_DEPTHSTENCIL_SURFACE, { desc.width, desc.height, fmt, desc.samples, 0, 0, uint64_t(&surf9), 0 } };
+            cmds[0] = { DX9Command::CREARE_DEPTHSTENCIL_SURFACE, { desc.width, desc.height, fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
         }
         else
         {
-            cmds[0] = { DX9Command::CREATE_RENDER_TARGET, { desc.width, desc.height, fmt, desc.samples, 0, 0, uint64_t(&surf9), 0 } };
+            cmds[0] = { DX9Command::CREATE_RENDER_TARGET, { desc.width, desc.height, fmt, desc.sampleCount, 0, 0, uint64_t(&surf9), 0 } };
         };
         ExecDX9(cmds, countof(cmds), force_immediate);
         DVASSERT(surf9 != nullptr);
@@ -465,7 +465,7 @@ dx9_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
 
 //------------------------------------------------------------------------------
 
-bool dx9_Texture_NeedRestore(Handle tex)
+static bool dx9_Texture_NeedRestore(Handle tex)
 {
     TextureDX9_t* self = TextureDX9Pool::Get(tex);
     return self->NeedRestore();

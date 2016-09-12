@@ -496,7 +496,7 @@ Descriptor
     uint32 height = 0;
     TextureFormat format = TEXTURE_FORMAT_R8G8B8A8;
     uint32 levelCount = 1;
-    uint32 samples = 1;
+    uint32 sampleCount = 1;
     void* initialData[128]; // it must be writable!
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;

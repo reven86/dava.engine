@@ -261,8 +261,8 @@ public:
         MTLPixelFormat color_format;
         id<MTLRenderPipelineState> state;
         uint32 stride;
-        uint32 samples;
-        bool ds_used;
+        uint32 sampleCount;
+        uint32 ds_used : 1;
     };
     std::vector<state_t> altState;
 };
@@ -904,7 +904,7 @@ VertexStreamCount(Handle ps)
     return psm->layout.StreamCount();
 }
 
-uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 samples)
+uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 sampleCount)
 {
     uint32 stride = 0;
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
