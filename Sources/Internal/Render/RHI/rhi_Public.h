@@ -109,6 +109,7 @@ struct RenderDeviceCaps
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
     bool isInstancingSupported = false;
+    bool isPerfQuerySupported = false;
 
     RenderDeviceCaps()
     {

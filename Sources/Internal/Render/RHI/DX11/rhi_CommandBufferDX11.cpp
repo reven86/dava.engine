@@ -1746,7 +1746,7 @@ void CommandBufferDX11_t::Execute()
         {
             Handle perfQuery = ((CommandDX11_IssueTimestamptQuery*)cmd)->perfQuery;
 
-            PerfQuerySetDX11::IssueTimestampQuery(perfQuery, _D3D11_ImmediateContext);
+            PerfQueryDX11::IssueTimestampQuery(perfQuery, _D3D11_ImmediateContext);
         }
         break;
 

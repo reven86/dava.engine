@@ -41,63 +41,48 @@ namespace rhi
 //==============================================================================
 
 static Handle
-metal_PerfQuerySet_Create(uint32 maxTimestampCount)
+metal_PerfQuery_Create()
 {
     return InvalidHandle;
 }
 
 static void
-metal_PerfQuerySet_Delete(Handle handle)
+metal_PerfQuery_Delete(Handle handle)
 {
 }
 
 static void
-metal_PerfQuerySet_Reset(Handle handle)
+metal_PerfQuery_Reset(Handle handle)
 {
+}
+
+static bool
+metal_PerfQuery_IsReady(Handle handle)
+{
+    return true;
+}
+
+static uint64
+metal_PerfQueryValue(Handle handle)
+{
+    return 0;
 }
 
 static void
-metal_PerfQuerySet_SetCurrent(Handle handle)
+metal_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
 {
 }
 
-static void
-metal_PerfQuerySet_GetStatus(Handle handle, bool* IsReady, bool* isValid)
-{
-    *IsReady = false;
-    *isValid = false;
-}
-
-static bool
-metal_PerfQuerySet_GetFreq(Handle handle, uint64* freq)
-{
-    return false;
-}
-
-static bool
-metal_PerfQuerySet_GetTimestamp(Handle handle, uint32 timestampIndex, uint64* time)
-{
-    return false;
-}
-
-static bool
-metal_PerfQuerySet_GetFrameTimestamps(Handle handle, uint64* t0, uint64* t1)
-{
-    return false;
-}
-
-namespace PerfQuerySetMetal
+namespace PerfQueryMetal
 {
 void SetupDispatch(Dispatch* dispatch)
 {
-    dispatch->impl_PerfQuerySet_Create = &metal_PerfQuerySet_Create;
-    dispatch->impl_PerfQuerySet_Delete = &metal_PerfQuerySet_Delete;
-    dispatch->impl_PerfQuerySet_Reset = &metal_PerfQuerySet_Reset;
-    dispatch->impl_PerfQuerySet_SetCurrent = &metal_PerfQuerySet_SetCurrent;
-    dispatch->impl_PerfQuerySet_GetStatus = &metal_PerfQuerySet_GetStatus;
-    dispatch->impl_PerfQuerySet_GetFreq = &metal_PerfQuerySet_GetFreq;
-    dispatch->impl_PerfQuerySet_GetTimestamp = &metal_PerfQuerySet_GetTimestamp;
-    dispatch->impl_PerfQuerySet_GetFrameTimestamps = &metal_PerfQuerySet_GetFrameTimestamps;
+    dispatch->impl_PerfQuery_Create = &metal_PerfQuery_Create;
+    dispatch->impl_PerfQuery_Delete = &metal_PerfQuery_Delete;
+    dispatch->impl_PerfQuery_Reset = &metal_PerfQuery_Reset;
+    dispatch->impl_PerfQuery_IsReady = &metal_PerfQuery_IsReady;
+    dispatch->impl_PerfQuery_Value = &metal_PerfQueryValue;
+    dispatch->impl_PerfQuery_SetCurrent = &metal_PerfQuery_SetCurrent;
 }
 }
 

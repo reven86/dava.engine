@@ -119,6 +119,7 @@ void ObtainPerfQueryResults()
     {
         uint32 result = 0;
 #if defined(__DAVAENGINE_IPHONE__)
+        result = 1;
 #elif defined(__DAVAENGINE_ANDROID__)
 #else
         GL_CALL(glGetQueryObjectuiv(it->second, GL_QUERY_RESULT_AVAILABLE, &result));
@@ -180,7 +181,11 @@ void IssueTimestampQuery(Handle handle)
 
         if (!queryObject)
         {
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
             GL_CALL(glGenQueries(1, &queryObject));
+#endif
         }
 
 #if defined(__DAVAENGINE_IPHONE__)

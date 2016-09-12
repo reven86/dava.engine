@@ -215,7 +215,7 @@ void metal_Initialize(const InitParam& param)
     VertexBufferMetal::SetupDispatch(&DispatchMetal);
     IndexBufferMetal::SetupDispatch(&DispatchMetal);
     QueryBufferMetal::SetupDispatch(&DispatchMetal);
-    PerfQuerySetMetal::SetupDispatch(&DispatchMetal);
+    PerfQueryMetal::SetupDispatch(&DispatchMetal);
     TextureMetal::SetupDispatch(&DispatchMetal);
     PipelineStateMetal::SetupDispatch(&DispatchMetal);
     ConstBufferMetal::SetupDispatch(&DispatchMetal);
