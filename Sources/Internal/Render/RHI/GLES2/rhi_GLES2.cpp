@@ -358,7 +358,7 @@ void gles2_Uninitialize()
     //TODO: release GL resources
     //now it's crash cause Qt context deleted before uninit renderer
     //QueryBufferGLES2::ReleaseQueryObjectsPool();
-    //PerfQuerySetGLES2::ReleaseQueryObjectsPool();
+    //PerfQueryGLES2::ReleaseQueryObjectsPool();
     UninitializeRenderThreadGLES2();
 }
 
@@ -673,7 +673,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQueryGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -769,7 +769,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQueryGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
@@ -865,7 +865,7 @@ void gles2_Initialize(const InitParam& param)
     VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
     IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
     QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
-    PerfQuerySetGLES2::SetupDispatch(&DispatchGLES2);
+    PerfQueryGLES2::SetupDispatch(&DispatchGLES2);
     TextureGLES2::SetupDispatch(&DispatchGLES2);
     PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
     ConstBufferGLES2::SetupDispatch(&DispatchGLES2);

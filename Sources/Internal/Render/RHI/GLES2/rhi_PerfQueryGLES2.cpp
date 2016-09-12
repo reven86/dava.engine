@@ -117,10 +117,12 @@ void ObtainPerfQueryResults()
     DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>>::iterator it = pendingQueries.begin();
     while (it != pendingQueries.end())
     {
-        PerfQueryGLES2_t* query = it->first;
-
         uint32 result = 0;
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
         GL_CALL(glGetQueryObjectuiv(it->second, GL_QUERY_RESULT_AVAILABLE, &result));
+#endif
 
         if (result == GL_TRUE)
         {
@@ -134,7 +136,7 @@ void ObtainPerfQueryResults()
     }
 
     GLint disjointOccurred = 0;
-#ifdef __DAVAENGINE_IPHONE__
+#ifdef __DAVAENGINE_ANDROID__
     GL_CALL(glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjointOccurred));
 #endif
 
@@ -143,7 +145,11 @@ void ObtainPerfQueryResults()
         uint64 ts = 0;
         if (!disjointOccurred)
         {
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
             GL_CALL(glGetQueryObjectui64v(p.second, GL_QUERY_RESULT, &ts));
+#endif
             ts /= 1000; //mcs
         }
 
@@ -177,7 +183,11 @@ void IssueTimestampQuery(Handle handle)
             GL_CALL(glGenQueries(1, &queryObject));
         }
 
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
         GL_CALL(glQueryCounter(queryObject, GL_TIMESTAMP));
+#endif
 
         query->isUsed = true;
         pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
