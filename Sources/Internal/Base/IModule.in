@@ -18,7 +18,5 @@ namespace DAVA
             module->Shutdown();
             delete module;
         }
-    
     }    
-
 }
