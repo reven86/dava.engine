@@ -1527,12 +1527,12 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &dx9_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &dx9_SyncObject_IsSignaled;
 
-    DispatchPlatform::ProcessImmediateCommand = _DX9_ExecImmediateCommand;
-    DispatchPlatform::ExecuteFrame = _DX9_ExecuteQueuedCommands;
-    DispatchPlatform::RejectFrame = _DX9_RejectFrame;
-    DispatchPlatform::PresntBuffer = _DX9_PresentBuffer;
-    DispatchPlatform::ResetBlock = _DX9_ResetBlock;
-    DispatchPlatform::FinishFrame = _DX9_InvalidateFrameCache;
+    dispatch->impl_ProcessImmediateCommand = _DX9_ExecImmediateCommand;
+    dispatch->impl_ExecuteFrame = _DX9_ExecuteQueuedCommands;
+    dispatch->impl_RejectFrame = _DX9_RejectFrame;
+    dispatch->impl_PresntBuffer = _DX9_PresentBuffer;
+    dispatch->impl_ResetBlock = _DX9_ResetBlock;
+    dispatch->impl_FinishFrame = _DX9_InvalidateFrameCache;
 }
 }
 

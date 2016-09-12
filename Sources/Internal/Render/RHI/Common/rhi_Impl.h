@@ -2,6 +2,7 @@
 #define __RHI_IMPL_H__
 
 #include "rhi_Private.h"
+#include "CommonImpl.h"
 
 namespace rhi
 {
@@ -19,6 +20,16 @@ struct Dispatch
     void (*impl_InvalidateCache)();
 
     const RenderDeviceCaps& (*impl_DeviceCaps)();
+
+    void (*impl_InitContext)();
+    void (*impl_ValidateSurface)(); //TODO - may be this should be part of opengl only?
+    void (*impl_FinishRendering)(); //perform finalization before going to suspend
+    void (*impl_ProcessImmediateCommand)(CommonImpl::ImmediateCommand* command); //called from render thread
+    void (*impl_FinishFrame)(); //this functions is called from main thread
+    void (*impl_ExecuteFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
+    void (*impl_RejectFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
+    bool (*impl_PresntBuffer)();
+    void (*impl_ResetBlock)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
     void (*impl_VertexBuffer_Delete)(Handle);

@@ -1634,11 +1634,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &dx11_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &dx11_SyncObject_IsSignaled;
 
-    DispatchPlatform::ProcessImmediateCommand = &dx11_ExecImmediateCommand;
-    DispatchPlatform::ExecuteFrame = &dx11_ExecuteQueuedCommands;
-    DispatchPlatform::RejectFrame = &dx11_RejectFrame;
-    DispatchPlatform::PresntBuffer = &dx11_PresentBuffer;
-    DispatchPlatform::FinishFrame = &dx11_EndFrame;
+    dispatch->impl_ProcessImmediateCommand = &dx11_ExecImmediateCommand;
+    dispatch->impl_ExecuteFrame = &dx11_ExecuteQueuedCommands;
+    dispatch->impl_RejectFrame = &dx11_RejectFrame;
+    dispatch->impl_PresntBuffer = &dx11_PresentBuffer;
+    dispatch->impl_FinishFrame = &dx11_EndFrame;
 }
 
 

@@ -2,6 +2,7 @@
 #define __RHI_PRIVATE_H__
 
 #include "../rhi_Type.h"
+#include "CommonImpl.h"
 
 namespace rhi
 {
@@ -182,6 +183,22 @@ void DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 ins
 void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
+
+namespace DispatchPlatform
+{
+void InitContext();
+void ValidateSurface(); //TODO - may be this should be part of opengl only?
+void FinishRendering(); //perform finalization before going to suspend
+
+void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command); //called from render thread
+
+void FinishFrame(); //this functions is called from main thread
+void ExecuteFrame(CommonImpl::Frame&&); //should also handle command buffer sync here
+void RejectFrame(CommonImpl::Frame&&); //should also handle command buffer sync here
+
+bool PresntBuffer();
+void ResetBlock();
+}
 
 void InitializeImplementation(Api api, const InitParam& param);
 

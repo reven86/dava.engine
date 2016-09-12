@@ -1742,7 +1742,7 @@ void SetupDispatch(Dispatch* dispatch)
     DispatchPlatform::RejectFrame = &Metal_RejectFrame;
     DispatchPlatform::PresntBuffer = &Metal_PresentBuffer;
     DispatchPlatform::FinishFrame = &Metal_InvalidateFrameCache;
-    DispatchPlatform::Suspend = &Metal_Suspend;
+    DispatchPlatform::FinishRendering = &Metal_Suspend;
 }
 }
 

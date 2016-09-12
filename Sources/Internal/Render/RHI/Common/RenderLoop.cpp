@@ -2,6 +2,7 @@
 #include "rhi_Pool.h"
 #include "CommonImpl.h"
 #include "FrameLoop.h"
+#include "rhi_Private.h"
 #include "../rhi_Type.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/Concurrency.h"
@@ -87,12 +88,12 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         if (renderThreadSuspended.load())
         {
-            DispatchPlatform::Suspend();
+            DispatchPlatform::FinishRendering();
             renderThreadSuspendSyncReached = true;
             renderThreadSuspendSync.Wait();
         }
 
-        DispatchPlatform::CheckSurface();
+        DispatchPlatform::ValidateSurface();
 
         TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
         bool frameReady = false;
@@ -169,7 +170,7 @@ void SuspendRender()
     }
     else
     {
-        DispatchPlatform::Suspend();
+        DispatchPlatform::FinishRendering();
     }
 
     Logger::Error("Render  Suspended");

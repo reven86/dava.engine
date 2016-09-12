@@ -132,6 +132,8 @@ const RenderDeviceCaps& DeviceCaps();
 void SuspendRendering();
 void ResumeRendering();
 
+//notify rendering backend that some explicit code can do some rendering not using rhi and thus leave rendering api in different state
+//eg: QT in RE/QuickEd do some opengl calls itself, thus values cached in rhi backend not correspond with actual state of opengl and should be invalidated
 void InvalidateCache();
 
 ////////////////////////////////////////////////////////////////////////////////

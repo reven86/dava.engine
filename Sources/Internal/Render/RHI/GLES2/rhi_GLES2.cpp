@@ -443,10 +443,6 @@ void gles2_Initialize(const InitParam& param)
     _GLES2_ReleaseContext = &android_gl_release_context;                
 #endif
 
-    DispatchPlatform::InitContext = _GLES2_AcquireContext;
-    DispatchPlatform::CheckSurface = &gles2_CheckSurface;
-    DispatchPlatform::Suspend = &gles2_Suspend;
-
     if (param.maxVertexBufferCount)
         VertexBufferGLES2::Init(param.maxVertexBufferCount);
     if (param.maxIndexBufferCount)
@@ -497,6 +493,10 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_DeviceCaps = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+
+    DispatchGLES2.impl_InitContext = _GLES2_AcquireContext;
+    DispatchGLES2.impl_ValidateSurface = &gles2_CheckSurface;
+    DispatchGLES2.impl_FinishRendering = &gles2_Suspend;
 
     SetDispatchTable(DispatchGLES2);
 

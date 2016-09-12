@@ -404,10 +404,10 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
 
-    DispatchPlatform::InitContext = &dx11_InitContext;
-    DispatchPlatform::CheckSurface = &dx11_CheckSurface;
-    DispatchPlatform::Suspend = &dx11_SuspendRendering;
-    DispatchPlatform::ResetBlock = &dx11_ResetBlock;
+    DispatchDX11.impl_InitContext = &dx11_InitContext;
+    DispatchDX11.impl_ValidateSurface = &dx11_CheckSurface;
+    DispatchDX11.impl_FinishRendering = &dx11_SuspendRendering;
+    DispatchDX11.impl_ResetBlock = &dx11_ResetBlock;
 
     SetDispatchTable(DispatchDX11);
 

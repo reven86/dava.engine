@@ -154,6 +154,46 @@ void InvalidateCache()
         (*_Impl.impl_InvalidateCache)();
 }
 
+namespace DispatchPlatform
+{
+void InitContext()
+{
+    (*_Impl.impl_InitContext)();
+}
+void ValidateSurface()
+{
+    (*_Impl.impl_ValidateSurface)();
+}
+void FinishRendering()
+{
+    (*_Impl.impl_FinishRendering)();
+}
+void ProcessImmediateCommand(CommonImpl::ImmediateCommand* command)
+{
+    (*_Impl.impl_ProcessImmediateCommand)(command);
+}
+void FinishFrame()
+{
+    (*_Impl.impl_FinishFrame)();
+}
+void ExecuteFrame(CommonImpl::Frame&& frame)
+{
+    (*_Impl.impl_ExecuteFrame)(std::move(frame));
+}
+void RejectFrame(CommonImpl::Frame&& frame)
+{
+    (*_Impl.impl_RejectFrame)(std::move(frame));
+}
+bool PresntBuffer()
+{
+    return (*_Impl.impl_PresntBuffer)();
+}
+void ResetBlock()
+{
+    (*_Impl.impl_ResetBlock)();
+}
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer

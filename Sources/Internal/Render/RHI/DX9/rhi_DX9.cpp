@@ -376,8 +376,8 @@ void dx9_Initialize(const InitParam& param)
 
     SetDispatchTable(DispatchDX9);
 
-    DispatchPlatform::InitContext = &dx9_InitContext;
-    DispatchPlatform::CheckSurface = &dx9_CheckSurface;
+    DispatchDX9.impl_InitContext = &dx9_InitContext;
+    DispatchDX9.impl_ValidateSurface = &dx9_CheckSurface;
 
     if (param.maxVertexBufferCount)
         VertexBufferDX9::Init(param.maxVertexBufferCount);

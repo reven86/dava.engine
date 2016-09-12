@@ -1997,12 +1997,12 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &gles2_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &gles2_SyncObject_IsSignaled;
 
-    DispatchPlatform::ProcessImmediateCommand = _GLES2_ExecImmediateCommand;
-    DispatchPlatform::ExecuteFrame = _GLES2_ExecuteQueuedCommands;
-    DispatchPlatform::RejectFrame = _GLES2_RejectFrame;
-    DispatchPlatform::PresntBuffer = _GLES2_PresentBuffer;
-    DispatchPlatform::ResetBlock = _GLES2_ResetBlock;
-    DispatchPlatform::FinishFrame = _GLES2_InvalidateFrameCache;
+    dispatch->impl_ProcessImmediateCommand = _GLES2_ExecImmediateCommand;
+    dispatch->impl_ExecuteFrame = _GLES2_ExecuteQueuedCommands;
+    dispatch->impl_RejectFrame = _GLES2_RejectFrame;
+    dispatch->impl_PresntBuffer = _GLES2_PresentBuffer;
+    dispatch->impl_ResetBlock = _GLES2_ResetBlock;
+    dispatch->impl_FinishFrame = _GLES2_InvalidateFrameCache;
 }
 }
 
