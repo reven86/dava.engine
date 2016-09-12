@@ -1,8 +1,10 @@
 
 set(  MAIN_MODULE_VALUES 
 NAME_MODULE                            #
+NAME_MODULE_STUB                       #
 MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
 #
+IMPL_MODULE
 EXTERNAL_MODULES
 EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
 #
@@ -15,12 +17,31 @@ ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}
 CPP_FILES                  
 HPP_FILES                  
 CPP_FILES_${DAVA_PLATFORM_CURENT}       
-HPP_FILES_${DAVA_PLATFORM_CURENT}       
+HPP_FILES_${DAVA_PLATFORM_CURENT}
+#
+HPP_FILES_STUB
+HPP_FILES_IMPL
+HPP_FILES_STUB_${DAVA_PLATFORM_CURENT} 
+HPP_FILES_IMPL_${DAVA_PLATFORM_CURENT}   
+#
+CPP_FILES_STUB
+CPP_FILES_IMPL
+CPP_FILES_STUB_${DAVA_PLATFORM_CURENT} 
+CPP_FILES_IMPL_${DAVA_PLATFORM_CURENT}        
 #
 CPP_FILES_RECURSE            
 HPP_FILES_RECURSE            
 CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
 HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
+#
+HPP_FILES_RECURSE_STUB
+HPP_FILES_RECURSE_IMPL
+HPP_FILES_RECURSE_STUB_${DAVA_PLATFORM_CURENT} 
+HPP_FILES_RECURSE_IMPL_${DAVA_PLATFORM_CURENT}
+CPP_FILES_RECURSE_STUB
+CPP_FILES_RECURSE_IMPL
+CPP_FILES_RECURSE_STUB_${DAVA_PLATFORM_CURENT} 
+CPP_FILES_RECURSE_IMPL_${DAVA_PLATFORM_CURENT}
 #
 ERASE_FILES                
 ERASE_FILES_${DAVA_PLATFORM_CURENT}     
@@ -81,6 +102,66 @@ macro ( load_external_modules EXTERNAL_MODULES )
     endforeach()
 endmacro()
 #
+macro( modules_tree_info_execute )
+    set( TMP_CMAKE_MODULE_INFO       ${CMAKE_CURRENT_BINARY_DIR}/tmp_module_info)
+    set( TMP_CMAKE_MODULE_INFO_BUILD ${TMP_CMAKE_MODULE_INFO}/build)
+
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${TMP_BUILD_MODULE_INFO}/" )
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${TMP_CMAKE_MODULE_INFO_BUILD}/" )
+
+    set( FOLDER_MODULE ${CMAKE_CURRENT_LIST_DIR} )
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfoCmake.in
+                    ${TMP_CMAKE_MODULE_INFO}/CMakeLists.txt  @ONLY )
+
+    if( CUSTOM_DAVA_CONFIG_PATH )
+        set( CUSTOM_VALUES -DCUSTOM_DAVA_CONFIG_PATH=${CUSTOM_DAVA_CONFIG_PATH} )
+    endif()
+
+    execute_process( COMMAND ${CMAKE_COMMAND} ${TMP_CMAKE_MODULE_INFO}  -DMODULES_TREE_INFO=true -D${DAVA_PLATFORM_CURENT}=true ${CUSTOM_VALUES}
+                     WORKING_DIRECTORY ${TMP_CMAKE_MODULE_INFO_BUILD} )
+
+    include( ${TMP_CMAKE_MODULE_INFO}/ModulesInfo.cmake )
+
+endmacro()
+#
+macro( modules_tree_info )
+    if( NAME_MODULE )
+        append_property( LOADED_MODULES ${NAME_MODULE} )
+    endif()
+
+    if( MODULE_INITIALIZATION_CODE AND NAME_MODULE )
+        append_property( MODULES_INITIALIZATION ${NAME_MODULE} )   
+    endif()
+
+    set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ${IMPL_MODULE} ) 
+
+    if( SRC_FOLDERS OR EXTERNAL_MODULES )
+
+        foreach( VALUE ${MAIN_MODULE_VALUES} )
+            set( ${VALUE}_DIR_NAME ${${VALUE}} )
+            set( ${VALUE})
+        endforeach()
+
+        if( EXTERNAL_MODULES_DIR_NAME )
+            load_external_modules( "${EXTERNAL_MODULES_DIR_NAME}" )
+        endif()
+        
+        if( SRC_FOLDERS_DIR_NAME )
+            define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
+                           IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                                     
+            set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
+            list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
+            list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
+        endif()
+
+        foreach( VALUE ${MAIN_MODULE_VALUES} )
+            set(  ${VALUE} ${${VALUE}_DIR_NAME} )
+        endforeach()
+    endif()
+endmacro()
+#
 macro( reset_MAIN_MODULE_VALUES )
     foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
                                          QT_DEPLOY_LIST_VALUE 
@@ -99,7 +180,7 @@ macro( setup_main_module )
 
     set( ORIGINAL_NAME_MODULE ${NAME_MODULE} )
 
-    if( NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+    if( NOT MODULES_TREE_INFO AND NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
         get_property( MODULES_ARRAY GLOBAL PROPERTY MODULES_ARRAY )
         list (FIND MODULES_ARRAY ${NAME_MODULE} _index)
         if ( JOIN_PROJECT_NAME OR ${_index} GREATER -1)
@@ -116,7 +197,6 @@ macro( setup_main_module )
 
     get_filename_component (DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     get_property( DAVA_COMPONENTS GLOBAL PROPERTY  DAVA_COMPONENTS )
-
     list (FIND DAVA_COMPONENTS "ALL" _index)
     if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
         set( INIT true )
@@ -129,18 +209,29 @@ macro( setup_main_module )
         else()
             set( INIT true )
         endif()
-    endif()
+    endif()  
 
-
-    if ( INIT )
-
-        if( MODULE_INITIALIZATION_CODE )
-            ASSER( NAME_MODULE "Please define the name of the module in the variable NAME MODULE")
-            list( APPEND CPP_FILES ${MODULE_INITIALIZATION_CODE} )
+    if( MODULES_TREE_INFO AND INIT )
+        modules_tree_info()
+    elseif ( INIT )
+        #"hack - find first call"
+        get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
+        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
+            modules_tree_info_execute()
         endif()
 
+        list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
+        set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
+    endif()
+
+    if ( INIT AND NOT MODULES_TREE_INFO )
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
             set( MODULE_TYPE "STATIC" )
+        endif()
+
+        if( MODULE_INITIALIZATION_CODE )
+            ASSERT( NAME_MODULE "Please define the name of the module in the variable NAME MODULE")
+            list( APPEND CPP_FILES ${MODULE_INITIALIZATION_CODE} )
         endif()
 
         #"APPLE VALUES"
@@ -202,7 +293,7 @@ macro( setup_main_module )
 
         set( ALL_SRC )
         set( ALL_SRC_HEADER_FILE_ONLY )
-        set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ) 
+        set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ${IMPL_MODULE} ) 
         
         if( SRC_FOLDERS OR EXTERNAL_MODULES )
 
@@ -227,6 +318,26 @@ macro( setup_main_module )
             foreach( VALUE ${MAIN_MODULE_VALUES} )
                 set(  ${VALUE} ${${VALUE}_DIR_NAME} )
             endforeach()
+
+        endif()
+
+        if( NAME_MODULE_STUB )
+            set( CONECTION_TYPE STUB )
+            list (FIND LOADED_MODULES ${NAME_MODULE_STUB} _index)
+            if ( ${_index} GREATER -1 )
+                set( NAME_MODULE )
+                set( MODULE_TYPE INLINE )
+                set( CONECTION_TYPE IMPL )
+
+            endif()
+
+            foreach ( ITEM  HPP_FILES_RECURSE HPP_FILES
+                            CPP_FILES_RECURSE CPP_FILES )
+
+                list( APPEND ${ITEM}   ${${ITEM}_${CONECTION_TYPE}} )
+                list( APPEND ${ITEM}_${DAVA_PLATFORM_CURENT} ${${ITEM}_${CONECTION_TYPE}_${DAVA_PLATFORM_CURENT}} )
+            
+            endforeach ()
 
         endif()
 
@@ -357,8 +468,9 @@ macro( setup_main_module )
 
             if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
                 include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
-            endif() 
+            endif()  
 
+            include_directories( . ) 
 
             if( WIN32 )
                 grab_libs(LIST_SHARED_LIBRARIES_DEBUG   "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}"   EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)
@@ -399,6 +511,17 @@ macro( setup_main_module )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
             endif()
 
+
+            #"hack - find first call"
+            get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
+            list( REMOVE_AT  MAIN_MODULES_FIND_FIRST_CALL_LIST 0 )
+            set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} )        
+            
+            list( LENGTH MAIN_MODULES_FIND_FIRST_CALL_LIST LENGTH_DEFINE_SOURCE_LIST  )
+            if ( NOT LENGTH_DEFINE_SOURCE_LIST )
+                #"first call"
+            endif()
+                
         endif()
 
         set_property( GLOBAL PROPERTY MODULES_NAME "${NAME_MODULE}" )

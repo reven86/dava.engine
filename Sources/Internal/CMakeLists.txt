@@ -2,6 +2,11 @@ include ( CMake-common )
 if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
+
+if( NOT DAVA_LIBRARY )
+    set( DAVA_LIBRARY    "DavaFramework" )
+endif()
+
 include ( DavaLibs )
 
 set( NAME_MODULE ${DAVA_LIBRARY} )

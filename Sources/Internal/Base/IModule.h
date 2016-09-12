@@ -11,6 +11,8 @@ class IModule
     virtual void Init(Engine* engine) {};
     virtual void PostInit() {};
     virtual void Shutdown() {};
+    
+    static void InitModules();
 }
     
 }
