@@ -107,6 +107,7 @@ public:
 
     /** Advances to the next token in the stream. */
     void Next();
+    void ScanString();
 
     /** Returns the current token in the stream. */
     int GetToken() const;

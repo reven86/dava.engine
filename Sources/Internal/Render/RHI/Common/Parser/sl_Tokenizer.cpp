@@ -231,6 +231,13 @@ void HLSLTokenizer::Next()
         return;
     }
 
+    if (m_buffer[0] == '\"')
+    {
+        m_token = static_cast<unsigned char>(m_buffer[0]);
+        ++m_buffer;
+        return;
+    }
+
     // Must be an identifier or a reserved word.
 
     while (m_buffer < m_bufferEnd && m_buffer[0] != 0 && !GetIsSymbol(m_buffer[0]) && !isspace(m_buffer[0]))
@@ -253,6 +260,24 @@ void HLSLTokenizer::Next()
     }
 
     m_token = HLSLToken_Identifier;
+}
+
+void HLSLTokenizer::ScanString()
+{
+    const char* start = m_buffer;
+
+    while (m_buffer < m_bufferEnd && *m_buffer && *m_buffer != '\"')
+        ++m_buffer;
+
+    int len = m_buffer - start;
+
+    memcpy(m_identifier, start, len);
+    m_identifier[len] = 0;
+
+    ++m_buffer;
+    m_token = HLSLToken_Identifier;
+
+    return;
 }
 
 bool HLSLTokenizer::SkipWhitespace()

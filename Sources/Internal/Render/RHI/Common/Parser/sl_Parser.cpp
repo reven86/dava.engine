@@ -1450,7 +1450,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     }
                     declaration->type.array = true;
                 }
-
+                /*
                 // Handle optional register.
                 if (Accept(':'))
                 {
@@ -1462,6 +1462,17 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     else if (!Expect(HLSLToken_Register) || !Expect('(') || !ExpectIdentifier(declaration->registerName) || !Expect(')'))
                     {
                         return false;
+                    }
+                }
+*/
+
+                if (Accept(':'))
+                {
+                    if (m_tokenizer.GetToken() == '\"')
+                    {
+                        m_tokenizer.ScanString();
+                        declaration->annotation = m_tree->AddString(m_tokenizer.GetIdentifier());
+                        m_tokenizer.Next();
                     }
                 }
 

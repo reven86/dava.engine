@@ -288,6 +288,7 @@ struct HLSLDeclaration : public HLSLStatement
         name = NULL;
         registerName = NULL;
         semantic = NULL;
+        annotation = NULL;
         nextDeclaration = NULL;
         assignment = NULL;
     }
@@ -295,6 +296,7 @@ struct HLSLDeclaration : public HLSLStatement
     HLSLType type;
     const char* registerName; // @@ Store register index?
     const char* semantic;
+    const char* annotation;
     HLSLDeclaration* nextDeclaration; // If multiple variables declared on a line.
     HLSLExpression* assignment;
 };
