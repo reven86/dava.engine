@@ -6,6 +6,6 @@ namespace DAVA
 {
     void IModule::InitModules()
     {
-        @IMODULE_CODE@
+@IMODULE_CODE@
     }
 }

@@ -131,7 +131,16 @@ macro( modules_tree_info )
     endif()
 
     if( MODULE_INITIALIZATION_CODE AND NAME_MODULE )
-        append_property( MODULES_INITIALIZATION ${NAME_MODULE} )   
+        append_property( MODULES_INITIALIZATION ${NAME_MODULE} ) 
+
+        foreach( FILE ${MODULE_INITIALIZATION_CODE} )
+            get_filename_component( FILE_EXT ${FILE} EXT )
+            if( FILE_EXT STREQUAL ".h" OR FILE_EXT STREQUAL ".hpp")
+                get_filename_component( FILE ${FILE} REALPATH )
+                append_property( MODULES_INITIALIZATION_HPP ${FILE} ) 
+            endif()
+        endforeach() 
+
     endif()
 
     set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ${IMPL_MODULE} ) 
@@ -165,6 +174,22 @@ endmacro()
 macro( generated_initialization_module_code )
     ASSERT( IMODULE_IN "Please set path to IModule.in in the variable NAME IMODULE_IN" )
     get_filename_component( IMODULE_IN ${IMODULE_IN} ABSOLUTE )
+
+    foreach( ITEM ${MODULES_INITIALIZATION_HPP} )
+        list( APPEND IMODULE_INCLUDES "#include \"${ITEM}\" \n" )
+    endforeach()
+
+    foreach( ITEM ${MODULES_INITIALIZATION} )
+        list( APPEND IMODULE_CODE "\n        IModule* _${ITEM} = new Module${ITEM}()" )
+        list( APPEND IMODULE_CODE "\n        _${ITEM}->Init()" )
+    endforeach()
+    
+    foreach( ITEM ${MODULES_INITIALIZATION} )
+        list( APPEND IMODULE_CODE "\n        _${ITEM}->PostInit()" )
+    endforeach()
+
+    list( APPEND IMODULE_CODE "\n" )
+
 
     set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/IModule.cpp )
     configure_file( ${IMODULE_IN}

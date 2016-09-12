@@ -3,6 +3,7 @@
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
+#include "Base/IModule.h"
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
@@ -266,6 +267,8 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
+    
+    IModule::InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create

@@ -79,6 +79,8 @@ set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
 set( SRC_FOLDERS                    "." )
 
+set( IMODULE_IN                     Base/IModule.in )
+
 set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    
 set( ERASE_FOLDERS_IOS              "DX9" "DX11" )

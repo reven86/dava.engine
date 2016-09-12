@@ -6,9 +6,11 @@ namespace DAVA
     
 class IModule
 {
-    virtual void Init() {};
-    virtual void PostInit() {};
-    virtual void Shutdown() {};
+public:
+    virtual ~IModule() {}
+    virtual void Init() {}
+    virtual void PostInit() {}
+    virtual void Shutdown() {}
     
     static void InitModules();
 };
