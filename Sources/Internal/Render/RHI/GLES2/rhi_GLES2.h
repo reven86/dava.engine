@@ -44,7 +44,10 @@ namespace PerfQueryGLES2
 void SetupDispatch(Dispatch* dispatch);
 
 void ObtainPerfQueryResults();
-void IssueTimestampQuery(Handle handle);
+
+void IssueQuery(Handle handle);
+void SkipQuery(Handle handle);
+
 void GetCurrentFrameQueries(Handle* query0, Handle* query1);
 void ReleaseQueryObjectsPool();
 }

@@ -44,6 +44,7 @@ bool _GLES2_IsGlDepth24Stencil8Supported = true;
 bool _GLES2_IsGlDepthNvNonLinearSupported = false;
 bool _GLES2_IsSeamlessCubmapSupported = false;
 bool _GLES2_UseUserProvidedIndices = false;
+bool _GLES2_TimeStampQuerySupported = false;
 volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 
 DAVA::uint8 volatile pre_call_registers[64];
@@ -219,6 +220,9 @@ gles_check_GL_extensions()
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
             _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
+
+        _GLES2_TimeStampQuerySupported = strstr(ext, "ARB_timer_query") != nullptr;
+        _GLES2_DeviceCaps.isPerfQuerySupported = strstr(ext, "EXT_timer_query") != nullptr || _GLES2_TimeStampQuerySupported;
     }
 
     const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));

@@ -18,8 +18,6 @@
     #include <Carbon/Carbon.h>
     #include <AGL/agl.h>
     #include <OpenGL/glext.h>
-    #include <OpenGL/gl3.h>
-    #include <OpenGL/gl3ext.h>
 
     #define GetGLErrorString(code) #code
 
@@ -259,6 +257,14 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 
+#if !defined(GL_TIME_ELAPSED)
+#define GL_TIME_ELAPSED 0x88BF
+#endif
+
+#if !defined(GL_TIMESTAMP)
+#define GL_TIMESTAMP 0x8E28
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
@@ -322,6 +328,7 @@ extern HDC _GLES2_WindowDC;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;
 extern bool _GLES2_UseUserProvidedIndices;
+extern bool _GLES2_TimeStampQuerySupported;
 extern volatile bool _GLES2_ValidateNeonCalleeSavedRegisters;
 
 bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed);

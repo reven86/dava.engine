@@ -33,6 +33,7 @@ RHI_IMPL_POOL(PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, fals
 DAVA::Vector<GLuint> queryObjectPool;
 DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>> pendingQueries;
 Handle currentFramePerfQuery[2] = { InvalidHandle, InvalidHandle };
+GLuint currentTimeElapsedQuery = 0;
 
 //==============================================================================
 
@@ -113,6 +114,87 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PerfQuery_SetCurrent = &gles2_PerfQuery_SetCurrent;
 }
 
+GLuint GetQueryFromPool()
+{
+    GLuint q = 0;
+    if (queryObjectPool.size())
+    {
+        q = queryObjectPool.back();
+        queryObjectPool.pop_back();
+    }
+
+    if (!q)
+    {
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#else
+        GL_CALL(glGenQueries(1, &q));
+#endif
+    }
+
+    return q;
+}
+
+void IssueTimestampQuery(Handle handle)
+{
+    DVASSERT(_GLES2_TimeStampQuerySupported);
+
+    PerfQueryGLES2_t* query = PerfQueryGLES2Pool::Get(handle);
+    if (query)
+    {
+        DVASSERT(!query->isUsed);
+
+        GLuint queryObject = GetQueryFromPool();
+        
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__)
+#else
+        GL_CALL(glQueryCounter(queryObject, GL_TIMESTAMP));
+#endif
+
+        query->isUsed = true;
+        pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
+    }
+}
+
+void BeginTimeElapsedQuery(Handle handle)
+{
+    PerfQueryGLES2_t* query = PerfQueryGLES2Pool::Get(handle);
+    if (query)
+    {
+        DVASSERT(!query->isUsed);
+        DVASSERT(!currentTimeElapsedQuery);
+
+        currentTimeElapsedQuery = GetQueryFromPool();
+
+        GL_CALL(glBeginQuery(GL_TIME_ELAPSED, currentTimeElapsedQuery));
+
+        query->isUsed = true;
+        query->timestamp = 0;
+        query->isValid = true;
+        query->isReady = true;
+    }
+}
+
+void EndTimeElapsedQuery(Handle handle)
+{
+    PerfQueryGLES2_t* query = PerfQueryGLES2Pool::Get(handle);
+    if (query)
+    {
+        DVASSERT(!query->isUsed);
+        DVASSERT(currentTimeElapsedQuery);
+
+        GL_CALL(glEndQuery(GL_TIME_ELAPSED));
+
+        query->isUsed = true;
+        pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, currentTimeElapsedQuery));
+        currentTimeElapsedQuery = 0;
+    }
+}
+
+//==============================================================================
+
 void ObtainPerfQueryResults()
 {
     DAVA::Vector<std::pair<PerfQueryGLES2_t*, GLuint>> completedQueries;
@@ -157,6 +239,8 @@ void ObtainPerfQueryResults()
         {
 #if defined(__DAVAENGINE_IPHONE__)
 #elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__)
+            GL_CALL(glGetQueryObjectui64vEXT(p.second, GL_QUERY_RESULT, &ts));
 #else
             GL_CALL(glGetQueryObjectui64v(p.second, GL_QUERY_RESULT, &ts));
 #endif
@@ -174,37 +258,30 @@ void ObtainPerfQueryResults()
     }
 }
 
-void IssueTimestampQuery(Handle handle)
+void IssueQuery(Handle handle)
+{
+    if (_GLES2_TimeStampQuerySupported)
+    {
+        IssueTimestampQuery(handle);
+    }
+    else
+    {
+        if (!currentTimeElapsedQuery)
+            BeginTimeElapsedQuery(handle);
+        else
+            EndTimeElapsedQuery(handle);
+    }
+}
+
+void SkipQuery(Handle handle)
 {
     PerfQueryGLES2_t* query = PerfQueryGLES2Pool::Get(handle);
     if (query)
     {
-        DVASSERT(!query->isUsed);
-
-        GLuint queryObject = 0;
-        if (queryObjectPool.size())
-        {
-            queryObject = queryObjectPool.back();
-            queryObjectPool.pop_back();
-        }
-
-        if (!queryObject)
-        {
-#if defined(__DAVAENGINE_IPHONE__)
-#elif defined(__DAVAENGINE_ANDROID__)
-#else
-            GL_CALL(glGenQueries(1, &queryObject));
-#endif
-        }
-
-#if defined(__DAVAENGINE_IPHONE__)
-#elif defined(__DAVAENGINE_ANDROID__)
-#else
-        GL_CALL(glQueryCounter(queryObject, GL_TIMESTAMP));
-#endif
-
+        query->timestamp = 0;
+        query->isReady = true;
+        query->isValid = true;
         query->isUsed = true;
-        pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
     }
 }
 

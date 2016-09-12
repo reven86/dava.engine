@@ -93,32 +93,30 @@ void GPUProfiler::CheckPendingFrames()
             FrameInfo frameInfo;
             frameInfo.frameIndex = frame.globalFrameIndex;
             frame.perfQuery.GetTimestamps(frameInfo.startTime, frameInfo.endTime);
-            if (frameInfo.startTime != rhi::NonreliableQueryValue && frameInfo.endTime != rhi::NonreliableQueryValue)
+
+            bool isFrameReliable = (frameInfo.startTime != rhi::NonreliableQueryValue) && (frameInfo.endTime != rhi::NonreliableQueryValue);
+            for (Marker& marker : frame.readyMarkers)
             {
-                bool isFrameReliable = true;
-                for (Marker& marker : frame.readyMarkers)
-                {
-                    if (isFrameReliable)
-                    {
-                        uint64 t0, t1;
-                        marker.perfQuery.GetTimestamps(t0, t1);
-
-                        isFrameReliable = ((t0 != rhi::NonreliableQueryValue) && (t1 != rhi::NonreliableQueryValue));
-                        if (isFrameReliable)
-                        {
-                            frameInfo.markers.push_back(MarkerInfo(marker.name, t0, t1));
-                        }
-                    }
-
-                    ResetPerfQueryPair(marker.perfQuery);
-                }
-                frame.readyMarkers.clear();
-
                 if (isFrameReliable)
                 {
-                    framesInfoHead = (framesInfoHead + 1) % framesInfoCount;
-                    framesInfo[framesInfoHead] = frameInfo;
+                    uint64 t0, t1;
+                    marker.perfQuery.GetTimestamps(t0, t1);
+
+                    isFrameReliable = ((t0 != rhi::NonreliableQueryValue) && (t1 != rhi::NonreliableQueryValue));
+                    if (isFrameReliable)
+                    {
+                        frameInfo.markers.push_back(MarkerInfo(marker.name, t0, t1));
+                    }
                 }
+
+                ResetPerfQueryPair(marker.perfQuery);
+            }
+            frame.readyMarkers.clear();
+
+            if (isFrameReliable)
+            {
+                framesInfoHead = (framesInfoHead + 1) % framesInfoCount;
+                framesInfo[framesInfoHead] = frameInfo;
             }
 
             ResetPerfQueryPair(frame.perfQuery);
