@@ -184,8 +184,14 @@ struct CommandBufferDX9_t
     RenderPassConfig passCfg;
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
-    bool isFirstInPass = true;
-    bool isLastInPass = true;
+    uint32 isFirstInPass : 1;
+    uint32 isLastInPass : 1;
+
+    CommandBufferDX9_t()
+        : isFirstInPass(1)
+        , isLastInPass(1)
+    {
+    }
 };
 
 struct
