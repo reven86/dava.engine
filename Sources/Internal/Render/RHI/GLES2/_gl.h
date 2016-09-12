@@ -59,13 +59,31 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+typedef DAVA::uint64 GLuint64;
+
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWARRAYSINSTANCED)(GLenum, GLint, GLsizei, GLsizei);
 typedef void(GL_APIENTRY* PFNGLEGL_GLVERTEXATTRIBDIVISOR)(GLuint, GLuint);
 
+typedef void(GL_APIENTRY* PFNGLGENQUERIESEXTPROC)(GLsizei n, GLuint* ids);
+typedef void(GL_APIENTRY* PFNGLDELETEQUERIESEXTPROC)(GLsizei n, const GLuint* ids);
+typedef void(GL_APIENTRY* PFNGLBEGINQUERYEXTPROC)(GLenum target, GLuint id);
+typedef void(GL_APIENTRY* PFNGLENDQUERYEXTPROC)(GLenum target);
+typedef void(GL_APIENTRY* PFNGLQUERYCOUNTEREXTPROC)(GLuint id, GLenum target);
+typedef void(GL_APIENTRY* PFNGLGETQUERYOBJECTUIVEXTPROC)(GLuint id, GLenum pname, GLuint* params);
+typedef void(GL_APIENTRY* PFNGLGETQUERYOBJECTUI64VEXTPROC)(GLuint id, GLenum pname, GLuint64* params);
+
 extern PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced;
 extern PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced;
 extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
+
+extern PFNGLGENQUERIESEXTPROC glGenQueries;
+extern PFNGLDELETEQUERIESEXTPROC glDeleteQueries;
+extern PFNGLBEGINQUERYEXTPROC glBeginQuery;
+extern PFNGLENDQUERYEXTPROC glEndQuery;
+extern PFNGLQUERYCOUNTEREXTPROC glQueryCounter;
+extern PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuiv;
+extern PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64v;
 
 #endif
 
@@ -263,6 +281,10 @@ extern PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor;
 
 #if !defined(GL_TIMESTAMP)
 #define GL_TIMESTAMP 0x8E28
+#endif
+
+#if !defined(GL_GPU_DISJOINT)
+#define GL_GPU_DISJOINT 0x8FBB
 #endif
 
 #if 0

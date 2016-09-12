@@ -258,6 +258,14 @@ gles_check_GL_extensions()
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
             }
+
+            glGenQueries = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
+            glDeleteQueries = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
+            glBeginQuery = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
+            glEndQuery = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
+            glQueryCounter = (PFNGLQUERYCOUNTEREXTPROC)eglGetProcAddress("glQueryCounterEXT");
+            glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVEXTPROC)eglGetProcAddress("glGetQueryObjectuivEXT");
+            glGetQueryObjectui64v = (PFNGLGETQUERYOBJECTUI64VEXTPROC)eglGetProcAddress("glGetQueryObjectui64vEXT");
 #endif
         }
         else
@@ -271,6 +279,12 @@ gles_check_GL_extensions()
             {
                 if ((majorVersion > 3) || (minorVersion >= 2))
                     _GLES2_IsSeamlessCubmapSupported = true;
+
+                if ((majorVersion > 3) || (minorVersion >= 3))
+                {
+                    _GLES2_TimeStampQuerySupported = true;
+                    _GLES2_DeviceCaps.isPerfQuerySupported = true;
+                }
             }
 
             Float_Supported |= majorVersion >= 3;

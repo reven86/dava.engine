@@ -6,6 +6,8 @@
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/dbg_StatSet.h"
 
+#include "../rhi_Public.h"
+
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
@@ -2754,6 +2756,10 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 #if defined(__DAVAENGINE_IPHONE__)
             EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glGetQueryObjectuiv)
+            {
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+            }
 #else
             EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
 #endif
@@ -2766,6 +2772,10 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 #if defined(__DAVAENGINE_IPHONE__)
             EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), (const GLuint*)(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glDeleteQueries)
+            {
+                EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            }
 #else
             EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
 #endif
@@ -2780,6 +2790,10 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 #if defined(__DAVAENGINE_IPHONE__)
             EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
 #elif defined(__DAVAENGINE_ANDROID__)
+            if (glGetQueryObjectuiv)
+            {
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
+            }
 #else
             EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT_AVAILABLE, &result));
 #endif
@@ -2790,6 +2804,10 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 #if defined(__DAVAENGINE_IPHONE__)
                 EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
+                if (glGetQueryObjectuiv)
+                {
+                    EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                }
 #else
                 EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
 #endif

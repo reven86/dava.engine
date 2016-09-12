@@ -22,6 +22,14 @@ PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
 PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor = nullptr;
 
+PFNGLGENQUERIESEXTPROC glGenQueries = nullptr;
+PFNGLDELETEQUERIESEXTPROC glDeleteQueries = nullptr;
+PFNGLBEGINQUERYEXTPROC glBeginQuery = nullptr;
+PFNGLENDQUERYEXTPROC glEndQuery = nullptr;
+PFNGLQUERYCOUNTEREXTPROC glQueryCounter = nullptr;
+PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuiv = nullptr;
+PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64v = nullptr;
+
 static bool needRecreateSurface = false;
 
 static const EGLint contextAttribs[] = {
