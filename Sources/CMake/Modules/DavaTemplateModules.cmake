@@ -6,6 +6,8 @@ MODULE_TYPE                            #"[ INLINE STATIC DYNAMIC ]"
 EXTERNAL_MODULES
 EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
 #
+MODULE_INITIALIZATION_CODE
+#
 SRC_FOLDERS             
 ERASE_FOLDERS              
 ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}   
@@ -131,6 +133,12 @@ macro( setup_main_module )
 
 
     if ( INIT )
+
+        if( MODULE_INITIALIZATION_CODE )
+            ASSER( NAME_MODULE "Please define the name of the module in the variable NAME MODULE")
+            list( APPEND CPP_FILES ${MODULE_INITIALIZATION_CODE} )
+        endif()
+
         if( IOS AND ${MODULE_TYPE} STREQUAL "DYNAMIC" )
             set( MODULE_TYPE "STATIC" )
         endif()
