@@ -15,30 +15,27 @@
 
 namespace DAVA
 {
-Window::Window(Private::EngineBackend* engine, bool primary)
-    : engineBackend(engine)
-    , dispatcher(engineBackend->GetDispatcher())
+Window::Window(Private::EngineBackend* engineBackend, bool primary)
+    : engineBackend(engineBackend)
+    , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
 }
 
 Window::~Window()
 {
+    Logger::Debug("===================================== Window::~Window");
     delete windowBackend;
     windowBackend = nullptr;
 }
 
 void Window::Resize(float32 w, float32 h)
 {
-    if (windowBackend != nullptr)
-    {
-        windowBackend->Resize(w, h);
-    }
+    windowBackend->Resize(w, h);
 }
 
 void Window::Close()
 {
-    DVASSERT(windowBackend != nullptr);
     windowBackend->Close();
 }
 
@@ -49,144 +46,41 @@ Engine* Window::GetEngine() const
 
 void* Window::GetNativeHandle() const
 {
-    DVASSERT(windowBackend != nullptr);
     return windowBackend->GetHandle();
 }
 
 WindowNativeService* Window::GetNativeService() const
 {
-    DVASSERT(windowBackend != nullptr);
     return windowBackend->GetNativeService();
 }
 
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
-    DVASSERT(windowBackend != nullptr);
     windowBackend->RunAsyncOnUIThread(task);
+}
+
+void Window::Detach()
+{
+    windowBackend->Detach();
+}
+
+void Window::InitCustomRenderParams(rhi::InitParam& params)
+{
+    windowBackend->InitCustomRenderParams(params);
 }
 
 void Window::Update(float32 frameDelta)
 {
-    if (windowBackend != nullptr)
-    {
-        uiControlSystem->Update();
-        update.Emit(*this, frameDelta);
-    }
+    uiControlSystem->Update();
+    update.Emit(*this, frameDelta);
 }
 
 void Window::Draw()
 {
-    if (windowBackend != nullptr && isVisible)
+    if (isVisible)
     {
         uiControlSystem->Draw();
     }
-}
-
-void Window::PostFocusChanged(bool focus)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = MainDispatcherEvent::WINDOW_FOCUS_CHANGED;
-    e.stateEvent.state = focus;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostVisibilityChanged(bool visibility)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = MainDispatcherEvent::WINDOW_VISIBILITY_CHANGED;
-    e.stateEvent.state = visibility;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED;
-
-    e.sizeEvent.width = width;
-    e.sizeEvent.height = height;
-    e.sizeEvent.scaleX = scaleX;
-    e.sizeEvent.scaleY = scaleY;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostWindowCreated(Private::WindowBackend* wbackend, float32 width, float32 height, float32 scaleX, float32 scaleY)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = MainDispatcherEvent::WINDOW_CREATED;
-
-    e.windowCreatedEvent.windowBackend = wbackend;
-    e.windowCreatedEvent.size.width = width;
-    e.windowCreatedEvent.size.height = height;
-    e.windowCreatedEvent.size.scaleX = scaleX;
-    e.windowCreatedEvent.size.scaleY = scaleY;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostWindowDestroyed()
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = MainDispatcherEvent::WINDOW_DESTROYED;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostKeyDown(uint32 key, bool isRepeated)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_DOWN;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.keyEvent.key = key;
-    e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostKeyUp(uint32 key)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_UP;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.keyEvent.key = key;
-    e.keyEvent.isRepeated = false;
-    dispatcher->PostEvent(e);
-}
-
-void Window::PostKeyChar(uint32 key, bool isRepeated)
-{
-    using Private::MainDispatcherEvent;
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_CHAR;
-    e.window = this;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.keyEvent.key = key;
-    e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
 }
 
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
@@ -246,22 +140,17 @@ void Window::FinishEventHandlingOnCurrentFrame()
         pendingSizeChanging = false;
     }
 
-    if (windowBackend != nullptr)
-    {
-        windowBackend->TriggerPlatformEvents();
-    }
+    windowBackend->TriggerPlatformEvents();
 }
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_CREATED: w=%.1f, h=%.1f", e.windowCreatedEvent.size.width, e.windowCreatedEvent.size.height);
+    Logger::FrameworkDebug("=========== WINDOW_CREATED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
 
-    windowBackend = e.windowCreatedEvent.windowBackend;
-
-    width = e.windowCreatedEvent.size.width;
-    height = e.windowCreatedEvent.size.height;
-    scaleX = e.windowCreatedEvent.size.scaleX;
-    scaleY = e.windowCreatedEvent.size.scaleY;
+    width = e.sizeEvent.width;
+    height = e.sizeEvent.height;
+    scaleX = e.sizeEvent.scaleX;
+    scaleY = e.sizeEvent.scaleY;
 
     pendingInitRender = true;
     pendingSizeChanging = true;
@@ -518,11 +407,6 @@ void Window::ClearMouseButtons()
         }
     }
     mouseButtonState.reset();
-}
-
-void Window::InitCustomRenderParams(rhi::InitParam& params)
-{
-    windowBackend->InitCustomRenderParams(params);
 }
 
 } // namespace DAVA

@@ -87,12 +87,12 @@ void Engine::Quit(int exitCode)
 
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 {
-    engineBackend->RunAsyncOnMainThread(task);
+    engineBackend->DispatchOnMainThread(task, false);
 }
 
 void Engine::RunAndWaitOnMainThread(const Function<void()>& task)
 {
-    engineBackend->RunAndWaitOnMainThread(task);
+    engineBackend->DispatchOnMainThread(task, true);
 }
 
 uint32 Engine::GetGlobalFrameIndex() const

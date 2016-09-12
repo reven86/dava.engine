@@ -8,8 +8,6 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
-#include "Functional/Function.h"
-
 namespace DAVA
 {
 namespace Private
@@ -31,7 +29,7 @@ ref struct WindowNativeBridge sealed
     void TriggerPlatformEvents();
 
     void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    void DoCloseWindow(bool detach);
 
 private:
     void OnTriggerPlatformEvents();
@@ -59,7 +57,7 @@ private:
     void UninstallEventHandlers();
 
 private:
-    WindowBackend* uwpWindow = nullptr;
+    WindowBackend* windowBackend = nullptr;
 
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;

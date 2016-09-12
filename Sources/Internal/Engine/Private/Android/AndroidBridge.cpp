@@ -40,9 +40,9 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeShutdownEngine(JN
     androidBridge->ShutdownEngine();
 }
 
-JNIEXPORT jlong JNICALL Java_com_dava_engine_DavaActivity_nativeOnCreate(JNIEnv* env, jclass jclazz)
+JNIEXPORT jlong JNICALL Java_com_dava_engine_DavaActivity_nativeOnCreate(JNIEnv* env, jclass jclazz, jobject activity)
 {
-    DAVA::Private::WindowBackend* wbackend = androidBridge->ActivityOnCreate();
+    DAVA::Private::WindowBackend* wbackend = androidBridge->ActivityOnCreate(env, activity);
     return static_cast<jlong>(reinterpret_cast<uintptr_t>(wbackend));
 }
 
@@ -58,7 +58,7 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeOnPause(JNIEnv* e
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeOnDestroy(JNIEnv* env, jclass jclazz)
 {
-    androidBridge->ActivityOnDestroy();
+    androidBridge->ActivityOnDestroy(env);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeGameThread(JNIEnv* env, jclass jcls)
@@ -151,6 +151,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         jclass jclassDavaActivity = env->FindClass("com/dava/engine/DavaActivity");
         JNI::CheckJavaException(env, true);
 
+        methodDavaActivity_postFinish = env->GetMethodID(jclassDavaActivity, "postQuit", "()V");
+        JNI::CheckJavaException(env, true);
+
         // Get java.lang.Class<com.dava.engine.DavaActivity>
         jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
         JNI::CheckJavaException(env, true);
@@ -227,8 +230,9 @@ void AndroidBridge::ShutdownEngine()
     core = nullptr;
 }
 
-WindowBackend* AndroidBridge::ActivityOnCreate()
+WindowBackend* AndroidBridge::ActivityOnCreate(JNIEnv* env, jobject activityInstance)
 {
+    activity = env->NewGlobalRef(activityInstance);
     return core->ActivityOnCreate();
 }
 
@@ -242,9 +246,12 @@ void AndroidBridge::ActivityOnPause()
     core->ActivityOnPause();
 }
 
-void AndroidBridge::ActivityOnDestroy()
+void AndroidBridge::ActivityOnDestroy(JNIEnv* env)
 {
     core->ActivityOnDestroy();
+
+    env->DeleteGlobalRef(activity);
+    activity = nullptr;
 }
 
 void AndroidBridge::GameThread()
@@ -319,6 +326,20 @@ bool AndroidBridge::DetachCurrentThreadFromJavaVM()
         return status == JNI_OK;
     }
     return false;
+}
+
+void AndroidBridge::PostQuitToActivity()
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_postFinish);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("postQuit call failed: %s", e.what());
+    }
 }
 
 jclass AndroidBridge::LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException)

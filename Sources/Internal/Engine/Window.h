@@ -9,6 +9,7 @@
 #include "UI/UIEvent.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Private/EngineBackend.h"
 
 namespace rhi
 {
@@ -23,6 +24,13 @@ class VirtualCoordinatesSystem;
 
 class Window final
 {
+private:
+    Window(Private::EngineBackend* engineBackend, bool primary);
+    ~Window();
+
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+
 public:
     bool IsPrimary() const;
     bool IsVisible() const;
@@ -58,18 +66,6 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
 public:
-    // For now these methods are public
-    void PostFocusChanged(bool focus);
-    void PostVisibilityChanged(bool visibility);
-    void PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
-    void PostWindowCreated(Private::WindowBackend* wbackend, float32 width, float32 height, float32 scaleX, float32 scaleY);
-    void PostWindowDestroyed();
-
-    void PostKeyDown(uint32 key, bool isRepeated);
-    void PostKeyUp(uint32 key);
-    void PostKeyChar(uint32 key, bool isRepeated);
-
-public:
     // Signals
     Signal<Window&, bool> visibilityChanged;
     Signal<Window&, bool> focusChanged;
@@ -82,17 +78,20 @@ public:
     //Signal<Window&> endUpdate;
 
 private:
-    Window(Private::EngineBackend* engine, bool primary);
-    ~Window();
+    /// Get pointer to WindowBackend which may be used by PlatformCore
+    Private::WindowBackend* GetBackend() const;
+    /// Detach from native window, used on exit when alive windows still exist
+    void Detach();
 
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
-
-private:
+    /// Initialize platform specific render params, e.g. acquire/release context functions for Qt platform
+    void InitCustomRenderParams(rhi::InitParam& params);
     void Update(float32 frameDelta);
     void Draw();
 
+    /// Process main dispatcher events targeting this window
     void EventHandler(const Private::MainDispatcherEvent& e);
+    /// Do some window specific tasks after all dispatcher events have been processed on current frame,
+    /// e.g. initiate processing tasks on window UI thread
     void FinishEventHandlingOnCurrentFrame();
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
@@ -111,11 +110,10 @@ private:
     void HandlePendingSizeChanging();
 
     void ClearMouseButtons();
-    void InitCustomRenderParams(rhi::InitParam& params);
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
-    Private::MainDispatcher* dispatcher = nullptr;
+    // TODO: unique_ptr
     Private::WindowBackend* windowBackend = nullptr;
 
     InputSystem* inputSystem = nullptr;
@@ -138,7 +136,7 @@ private:
 
     // Friends
     friend class Private::EngineBackend;
-    friend Private::WindowBackend;
+    friend class Private::PlatformCore;
 };
 
 inline bool Window::IsPrimary() const
@@ -214,6 +212,11 @@ inline Vector2 Window::GetScale() const
 inline void Window::Resize(Vector2 size)
 {
     Resize(size.dx, size.dy);
+}
+
+inline Private::WindowBackend* Window::GetBackend() const
+{
+    return windowBackend;
 }
 
 } // namespace DAVA

@@ -22,7 +22,7 @@ public:
 
     void Init();
     void Run();
-    void Quit();
+    void Quit(bool triggeredBySystem);
 
 private:
     WindowBackend* ActivityOnCreate();

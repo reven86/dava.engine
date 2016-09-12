@@ -50,7 +50,7 @@ public final class DavaActivity extends Activity
                                                      String packageName,
                                                      String cmdline);
     public static native void nativeShutdownEngine();
-    public static native long nativeOnCreate();
+    public static native long nativeOnCreate(DavaActivity activity);
     public static native void nativeOnResume();
     public static native void nativeOnPause();
     public static native void nativeOnDestroy();
@@ -96,7 +96,7 @@ public final class DavaActivity extends Activity
         window.getDecorView().setOnSystemUiVisibilityChangeListener(this);
         hideNavigationBar();
         
-        long primaryWindowBackendPointer = nativeOnCreate();
+        long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         
         layout = new FrameLayout(this);
@@ -256,6 +256,11 @@ public final class DavaActivity extends Activity
                     | 0x00001000; //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
         view.setSystemUiVisibility(uiOptions);
+    }
+
+    public void postQuit()
+    {
+        commandHandler.sendQuit();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

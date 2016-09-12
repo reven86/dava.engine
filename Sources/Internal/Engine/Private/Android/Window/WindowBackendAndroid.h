@@ -8,9 +8,7 @@
 
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/Dispatcher/UIDispatcher.h"
-
-#include "Functional/Function.h"
+#include "Engine/Private/WindowBackendBase.h"
 
 #include <android/native_window_jni.h>
 
@@ -23,35 +21,33 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final
+class WindowBackend final : public WindowBackendBase
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
+    void Detach();
+
+    void Resize(float32 width, float32 height);
+    void Close();
+
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
 
-    bool Create(float32 width, float32 height);
-    void Resize(float32 width, float32 height);
-    void Close();
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
-
-    void RunAsyncOnUIThread(const Function<void()>& task);
 
     void TriggerPlatformEvents();
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
 private:
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
-
-    void EventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
+    void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
 
     void OnResume();
     void OnPause();
@@ -64,16 +60,11 @@ private:
 private:
     jobject surfaceView = nullptr;
     ANativeWindow* androidWindow = nullptr;
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
 
     std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
     Function<void(jobject)> triggerPlatformEvents;
     Function<jobject(jobject, jstring, jlong)> createNativeControl;
-
-    UIDispatcher platformDispatcher;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool firstTimeSurfaceChanged = true;
 
