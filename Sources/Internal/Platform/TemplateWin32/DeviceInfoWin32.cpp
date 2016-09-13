@@ -155,8 +155,8 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
     // we should get current and update screen scale
     // in case if application is DPI-Aware
     // see https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
-    float64 defaultDPI = 96.0;
-    float64 currDPI = static_cast<float64>(DPIHelper::GetScreenDPI());
+    float32 defaultDPI = 96.0f;
+    float32 currDPI = static_cast<float32>(DPIHelper::GetScreenDPI());
 
     screenInfo.scale = currDPI / defaultDPI;
 
