@@ -911,7 +911,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     // win32 app don't have ui-scaling option,
     // so hard-code default
-    float64 uiScale = 1.0;
+    float32 uiScale = 1.0;
 
     if (IsMouseInputEvent(message, GetMessageExtraInfo()))
     {
