@@ -1,4 +1,6 @@
 #include "UI/FileSystemView/FindFileInPackageDialog.h"
+#include "ui_FindFileInPackageDialog.h"
+
 #include <QHBoxLayout>
 #include <QCompleter>
 #include <QLineEdit>
@@ -11,15 +13,10 @@
 FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
     : QDialog(parent)
     , projectDir(QString::fromStdString(rootPath))
+    , ui(new Ui::FindFileInPackageDialog())
 {
+    ui->setupUi(this);
     installEventFilter(this);
-    setLayout(new QHBoxLayout(this));
-
-    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-    layout()->addWidget(buttonBox);
 
     Init(files);
 }
@@ -27,9 +24,13 @@ FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::String& rootPath, c
 QString FindFileInPackageDialog::GetFilePath(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
 {
     FindFileInPackageDialog dialog(rootPath, files, parent);
-    if (dialog.exec() == QDialog::Accepted && dialog.availableFiles.contains(dialog.filePath))
+    if (dialog.exec() == QDialog::Accepted)
     {
-        return dialog.availableFiles[dialog.filePath];
+        QString filePath = dialog.ui->lineEdit->text();
+        if (dialog.availableFiles.contains(filePath))
+        {
+            return dialog.availableFiles[filePath];
+        }
     }
     return QString();
 }
@@ -65,20 +66,13 @@ void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::String>& files)
     completer->installEventFilter(this);
     completer->popup()->installEventFilter(this);
 
-    QLineEdit* lineEdit = new QLineEdit(this);
-    lineEdit->installEventFilter(this);
-    QFontMetrics fm(lineEdit->font());
+    ui->lineEdit->installEventFilter(this);
+    QFontMetrics fm(ui->lineEdit->font());
     int width = fm.width(longestPath.second) + 50; //50px for scrollbar
-    lineEdit->setMinimumWidth(width);
-    lineEdit->setPlaceholderText("Start typing a file name...");
-    lineEdit->setCompleter(completer);
+    ui->lineEdit->setMinimumWidth(width);
+    ui->lineEdit->setCompleter(completer);
 
-    //make one-way binding from lineEdit to the class member;
-    connect(lineEdit, &QLineEdit::textChanged, [this](QString text) {
-        filePath = text;
-    });
-    layout()->addWidget(lineEdit);
-    lineEdit->setFocus();
+    ui->lineEdit->setFocus();
 }
 
 bool FindFileInPackageDialog::eventFilter(QObject* obj, QEvent* event)

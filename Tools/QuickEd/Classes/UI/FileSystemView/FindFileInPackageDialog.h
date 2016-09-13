@@ -5,6 +5,11 @@
 #include <QDialog>
 #include <QMap>
 
+namespace Ui
+{
+class FindFileInPackageDialog;
+}
+
 class QFileSystemModel;
 class QCompleter;
 
@@ -19,8 +24,8 @@ private:
 
     void Init(const DAVA::Vector<DAVA::String>& files);
 
-    QString filePath;
     QString projectDir;
     QMap<QString, QString> availableFiles;
     QCompleter* completer = nullptr;
+    std::unique_ptr<Ui::FindFileInPackageDialog> ui;
 };
