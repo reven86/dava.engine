@@ -16,15 +16,20 @@ def main():
     proc.communicate()
     hadErrors = false
     if proc.returncode == 0:
-        #OK
+        ok
     elif proc.returncode == 7:
         hadErrors = true
+    else:
+        return proc.returncode
 
     proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe", 
         "-t", "Html",
         "-a", "GA:1",
         args.output_log])
     proc.communicate()
+    if proc.returncode != 0:
+        return proc.returncode
+        
     if hadErrors:
         print "PVS found some issues, see .plog.html for details"
         return 7
