@@ -31,34 +31,33 @@ namespace TArc
 {
 namespace UIManagerDetail
 {
-
 String geometryKey("geometry");
 String stateKey("state");
 
 static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
-    std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
-    std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
-    std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
-    std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
-    std::make_pair(QMessageBox::YesToAll, ModalMessageParams::YesToAll),
-    std::make_pair(QMessageBox::No, ModalMessageParams::No),
-    std::make_pair(QMessageBox::NoToAll, ModalMessageParams::NoToAll),
-    std::make_pair(QMessageBox::Discard, ModalMessageParams::Discard),
-    std::make_pair(QMessageBox::Apply, ModalMessageParams::Apply),
-    std::make_pair(QMessageBox::Save, ModalMessageParams::Save),
-    std::make_pair(QMessageBox::SaveAll, ModalMessageParams::SaveAll),
-    std::make_pair(QMessageBox::Abort, ModalMessageParams::Abort),
-    std::make_pair(QMessageBox::Retry, ModalMessageParams::Retry),
-    std::make_pair(QMessageBox::Ignore, ModalMessageParams::Ignore),
-    std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
+  std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
+  std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
+  std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
+  std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
+  std::make_pair(QMessageBox::YesToAll, ModalMessageParams::YesToAll),
+  std::make_pair(QMessageBox::No, ModalMessageParams::No),
+  std::make_pair(QMessageBox::NoToAll, ModalMessageParams::NoToAll),
+  std::make_pair(QMessageBox::Discard, ModalMessageParams::Discard),
+  std::make_pair(QMessageBox::Apply, ModalMessageParams::Apply),
+  std::make_pair(QMessageBox::Save, ModalMessageParams::Save),
+  std::make_pair(QMessageBox::SaveAll, ModalMessageParams::SaveAll),
+  std::make_pair(QMessageBox::Abort, ModalMessageParams::Abort),
+  std::make_pair(QMessageBox::Retry, ModalMessageParams::Retry),
+  std::make_pair(QMessageBox::Ignore, ModalMessageParams::Ignore),
+  std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
 };
 
 QMessageBox::StandardButtons Convert(const ModalMessageParams::Buttons& buttons)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
     QMessageBox::StandardButtons ret;
-    for (const ButtonNode& node: buttonsConvertor)
+    for (const ButtonNode& node : buttonsConvertor)
     {
         if (buttons.testFlag(node.second))
         {
@@ -73,9 +72,9 @@ ModalMessageParams::Button Convert(const QMessageBox::StandardButton& button)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
     auto iter = std::find_if(buttonsConvertor.begin(), buttonsConvertor.end(), [button](const ButtonNode& node)
-    {
-        return node.first == button;
-    });
+                             {
+                                 return node.first == button;
+                             });
 
     DVASSERT(iter != buttonsConvertor.end());
     return iter->second;
@@ -86,7 +85,6 @@ struct MainWindowInfo
     QMainWindow* window = nullptr;
     QMenuBar* menuBar = nullptr;
 };
-
 
 void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
 {
@@ -189,26 +187,26 @@ void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement,
     }
 }
 
-QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo &mainWindowInfo, QMainWindow *mainWindow)
+QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo& mainWindowInfo, QMainWindow* mainWindow)
 {
-    const QString &text = dockPanelInfo.title;
+    const QString& text = dockPanelInfo.title;
 
-    QDockWidget *dockWidget = new QDockWidget(text, mainWindow);
+    QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
 
-    QAction *dockWidgetAction = dockWidget->toggleViewAction();
+    QAction* dockWidgetAction = dockWidget->toggleViewAction();
 
-    const ActionPlacementInfo &placement = dockPanelInfo.actionPlacementInfo;
+    const ActionPlacementInfo& placement = dockPanelInfo.actionPlacementInfo;
 
     AddAction(mainWindowInfo, placement, dockWidgetAction);
 
     return dockWidget;
 }
 
-void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* widget)
+void AddDockPanel(const PanelKey& key, MainWindowInfo& mainWindowInfo, QWidget* widget)
 {
     DVASSERT(key.GetType() == PanelKey::DockPanel);
     const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
-    QMainWindow *mainWindow = mainWindowInfo.window;
+    QMainWindow* mainWindow = mainWindowInfo.window;
     DVASSERT(mainWindow != nullptr);
     QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
     newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -218,7 +216,7 @@ void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* 
     {
         QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
         QDockWidget* dockToTabbify = nullptr;
-        foreach(QDockWidget* dock, dockWidgets)
+        foreach (QDockWidget* dock, dockWidgets)
         {
             if (mainWindow->dockWidgetArea(dock) == info.area)
             {
@@ -243,9 +241,9 @@ void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* 
     mainWindow->restoreDockWidget(newDockWidget);
 }
 
-void AddCentralPanel(const PanelKey& key, const MainWindowInfo &mainWindowInfo, QWidget* widget)
+void AddCentralPanel(const PanelKey& key, const MainWindowInfo& mainWindowInfo, QWidget* widget)
 {
-    QMainWindow *mainWindow = mainWindowInfo.window;
+    QMainWindow* mainWindow = mainWindowInfo.window;
     DVASSERT(mainWindow != nullptr);
     QWidget* centralWidget = mainWindow->centralWidget();
     if (centralWidget == nullptr)
@@ -276,7 +274,7 @@ struct UIManager::Impl : public QObject
     PropertiesHolder propertiesHolder;
     bool initializationFinished = false;
 
-    Impl(UIManager::Delegate* delegate, PropertiesHolder &&givenPropertiesHolder)
+    Impl(UIManager::Delegate* delegate, PropertiesHolder&& givenPropertiesHolder)
         : managerDelegate(delegate)
         , propertiesHolder(std::move(givenPropertiesHolder))
     {
@@ -321,20 +319,20 @@ protected:
             DVASSERT(window);
 
             auto iter = std::find_if(windows.begin(), windows.end(), [window](const std::pair<WindowKey, UIManagerDetail::MainWindowInfo>& w)
-            {
-                return window == w.second.window;
-            });
+                                     {
+                                         return window == w.second.window;
+                                     });
             DVASSERT(iter != windows.end());
 
-            const WindowKey &windowKey = iter->first;
+            const WindowKey& windowKey = iter->first;
             if (managerDelegate->WindowCloseRequested(windowKey))
             {
-                QMainWindow *mainWindow = iter->second.window;
+                QMainWindow* mainWindow = iter->second.window;
 
                 PropertiesHolder ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
                 ph.Save(UIManagerDetail::stateKey, mainWindow->saveState());
                 ph.Save(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
-                
+
                 mainWindow->deleteLater();
                 managerDelegate->WindowClosed(windowKey);
                 windows.erase(iter);
@@ -350,7 +348,7 @@ protected:
     }
 };
 
-UIManager::UIManager(Delegate* delegate, PropertiesHolder &&holder)
+UIManager::UIManager(Delegate* delegate, PropertiesHolder&& holder)
     : impl(new Impl(delegate, std::move(holder)))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
@@ -381,7 +379,7 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
 
     PanelKey::Type type = panelKey.GetType();
     DVASSERT(impl->addFunctions[type] != nullptr);
-    
+
     impl->addFunctions[type](panelKey, mainWindowInfo, widget);
 
     QMainWindow* window = mainWindowInfo.window;
@@ -411,24 +409,24 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
 
     QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(std::move(data), view);
     qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
-    {
-        if (qtReflected != nullptr && view != nullptr)
-        {
-            view->rootContext()->setContextProperty("context", qtReflected);
-            view->setSource(QUrl(resourceName));
+                                           {
+                                               if (qtReflected != nullptr && view != nullptr)
+                                               {
+                                                   view->rootContext()->setContextProperty("context", qtReflected);
+                                                   view->setSource(QUrl(resourceName));
 
-            if (view->status() != QQuickWidget::Ready)
-            {
-                Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
-                foreach(QQmlError error, view->errors())
-                {
-                    Logger::Error("Error : %s", error.toString().toStdString().c_str());
-                }
-            }
-        }
+                                                   if (view->status() != QQuickWidget::Ready)
+                                                   {
+                                                       Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
+                                                       foreach (QQmlError error, view->errors())
+                                                       {
+                                                           Logger::Error("Error : %s", error.toString().toStdString().c_str());
+                                                       }
+                                                   }
+                                               }
 
-        qtReflected->metaObjectCreated.DisconnectAll();
-    });
+                                               qtReflected->metaObjectCreated.DisconnectAll();
+                                           });
     qtReflected->Init();
 
     return view;

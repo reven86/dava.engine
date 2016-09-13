@@ -14,22 +14,26 @@ class WindowKey;
 class ClientModule
 {
 public:
-    virtual ~ClientModule() {}
+    virtual ~ClientModule()
+    {
+    }
 
 protected:
     virtual void OnContextCreated(DataContext& context) = 0;
     virtual void OnContextDeleted(DataContext& context) = 0;
-    virtual void OnWindowClosed(const WindowKey& key){}
+    virtual void OnWindowClosed(const WindowKey& key)
+    {
+    }
 
     virtual void PostInit() = 0;
     ContextAccessor& GetAccessor();
     UI& GetUI();
 
     template <typename Ret, typename Cls, typename... Args>
-    void RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...) const);
+    void RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...) const);
 
     template <typename Ret, typename Cls, typename... Args>
-    void RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...));
+    void RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...));
 
     template <typename... Args>
     void InvokeOperation(int operationId, const Args&... args);
@@ -46,13 +50,13 @@ private:
 };
 
 template <typename Ret, typename Cls, typename... Args>
-inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...) const)
+inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...) const)
 {
     coreInterface->RegisterOperation(operationID, AnyFn(fn).BindThis(object));
 }
 
 template <typename Ret, typename Cls, typename... Args>
-inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret(Cls::*fn)(Args...))
+inline void ClientModule::RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...))
 {
     coreInterface->RegisterOperation(operationID, AnyFn(fn).BindThis(object));
 }

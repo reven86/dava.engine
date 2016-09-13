@@ -13,11 +13,11 @@ namespace DAVA
 namespace TArc
 {
 class QtReflectionBridge;
-class QtReflected final: public QObject, private DataListener
+class QtReflected final : public QObject, private DataListener
 {
 public:
     const QMetaObject* metaObject() const override;
-    int qt_metacall(QMetaObject::Call c, int id, void **argv) override;
+    int qt_metacall(QMetaObject::Call c, int id, void** argv) override;
     void Init();
 
     Signal<> metaObjectCreated;
@@ -39,7 +39,7 @@ private:
     QMetaObject* qtMetaObject = nullptr;
 };
 
-class QtReflectionBridge final: public QObject
+class QtReflectionBridge final : public QObject
 {
 public:
     QtReflectionBridge();
@@ -52,8 +52,8 @@ private:
     friend class QtReflected;
     UnorderedMap<const ReflectedType*, QMetaObject*> metaObjects;
 
-    UnorderedMap<const Type*, QVariant(*)(const Any&)> anyToQVariant;
-    UnorderedMap<int, Any(*)(const QVariant&)> qvariantToAny;
+    UnorderedMap<const Type*, QVariant (*)(const Any&)> anyToQVariant;
+    UnorderedMap<int, Any (*)(const QVariant&)> qvariantToAny;
 };
 } // namespace TArc
 } // namespace DAVA

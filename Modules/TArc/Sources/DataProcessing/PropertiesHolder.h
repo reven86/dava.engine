@@ -15,34 +15,34 @@ namespace TArc
 class PropertiesHolder
 {
 public:
-    PropertiesHolder(const String &rootPath, const FilePath &dirPath);
+    PropertiesHolder(const String& rootPath, const FilePath& dirPath);
 
     ~PropertiesHolder();
 
-    PropertiesHolder CreateSubHolder(const String &name) const;
+    PropertiesHolder CreateSubHolder(const String& name) const;
 
-    void Save(const String &key, const Any &value);
+    void Save(const String& key, const Any& value);
     void SaveToFile();
 
     template <typename T>
-    T Load(const String &key, const T& defaultValue = T()) const;
+    T Load(const String& key, const T& defaultValue = T()) const;
 
-    PropertiesHolder(const PropertiesHolder &holder) = delete;
-    PropertiesHolder(PropertiesHolder &&holder);
-    PropertiesHolder& operator =(const PropertiesHolder &holder) = delete;
-    PropertiesHolder& operator = (PropertiesHolder &&holder);
+    PropertiesHolder(const PropertiesHolder& holder) = delete;
+    PropertiesHolder(PropertiesHolder&& holder);
+    PropertiesHolder& operator=(const PropertiesHolder& holder) = delete;
+    PropertiesHolder& operator=(PropertiesHolder&& holder);
 
     void SetDirectory(const FilePath& dirPath);
 
 private:
-    Any Load(const String &key, const Any &defaultValue, const Type *type) const;
-    PropertiesHolder(const PropertiesHolder &parent, const String &name);
+    Any Load(const String& key, const Any& defaultValue, const Type* type) const;
+    PropertiesHolder(const PropertiesHolder& parent, const String& name);
     struct Impl;
     std::unique_ptr<Impl> impl;
 };
 
 template <typename T>
-T PropertiesHolder::Load(const String &key, const T& defaultValue) const
+T PropertiesHolder::Load(const String& key, const T& defaultValue) const
 {
     Any loadedValue = Load(key, defaultValue, Type::Instance<T>());
     if (loadedValue.CanGet<T>())

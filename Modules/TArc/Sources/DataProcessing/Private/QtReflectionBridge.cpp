@@ -15,7 +15,7 @@ namespace TArc
 {
 namespace ReflBridgeDetails
 {
-template<typename T>
+template <typename T>
 Any ToAny(const QVariant& v)
 {
     Any ret;
@@ -28,7 +28,7 @@ Any QStringToAny(const QVariant& v)
     return Any(v.toString().toStdString());
 }
 
-template<typename T>
+template <typename T>
 QVariant ToVariant(const Any& v)
 {
     return QVariant::fromValue(v.Get<T>());
@@ -39,10 +39,9 @@ QVariant StringToVariant(const Any& v)
     return QVariant::fromValue(QString::fromStdString(v.Get<String>()));
 }
 
-
-template<typename T>
-void FillConverter(UnorderedMap<const Type*, QVariant(*)(const Any&)> & anyToVar,
-                   UnorderedMap<int, Any(*)(const QVariant&)> & varToAny)
+template <typename T>
+void FillConverter(UnorderedMap<const Type*, QVariant (*)(const Any&)>& anyToVar,
+                   UnorderedMap<int, Any (*)(const QVariant&)>& varToAny)
 {
     anyToVar.emplace(Type::Instance<T>(), &ToVariant<T>);
     varToAny.emplace(qMetaTypeId<T>(), &ToAny<T>);
@@ -96,7 +95,7 @@ const QMetaObject* QtReflected::metaObject() const
     return qtMetaObject;
 }
 
-int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
+int QtReflected::qt_metacall(QMetaObject::Call c, int id, void** argv)
 {
     id = QObject::qt_metacall(c, id, argv);
 
@@ -144,7 +143,7 @@ int QtReflected::qt_metacall(QMetaObject::Call c, int id, void **argv)
     }
     break;
     default:
-    break;
+        break;
     }
 
     return id;
@@ -330,24 +329,24 @@ void QtReflected::CallMethod(int id, void** argv)
         davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
                                       davaArguments[4], davaArguments[5]);
         break;
-    //case 7:
-    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
-    //                                  davaArguments[4], davaArguments[5], davaArguments[6]);
-    //    break;
-    //case 8:
-    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
-    //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7]);
-    //    break;
-    //case 9:
-    //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
-    //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7],
-    //                                  davaArguments[8]);
+        //case 7:
+        //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+        //                                  davaArguments[4], davaArguments[5], davaArguments[6]);
+        //    break;
+        //case 8:
+        //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+        //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7]);
+        //    break;
+        //case 9:
+        //    davaResult = method.fn.Invoke(davaArguments[0], davaArguments[1], davaArguments[2], davaArguments[3],
+        //                                  davaArguments[4], davaArguments[5], davaArguments[6], davaArguments[7],
+        //                                  davaArguments[8]);
         break;
     default:
         DVASSERT_MSG(false, "Qt Reflection bridge support maximum 6 arguments in methods");
         break;
     }
-    
+
     if (qtResult)
     {
         *qtResult = reflectionBridge->Convert(davaResult);
