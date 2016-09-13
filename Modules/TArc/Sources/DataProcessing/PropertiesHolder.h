@@ -21,11 +21,11 @@ public:
 
     PropertiesHolder CreateSubHolder(const String& name) const;
 
-    void Save(const String& key, const Any& value);
+    void Set(const String& key, const Any& value);
     void SaveToFile();
 
     template <typename T>
-    T Load(const String& key, const T& defaultValue = T()) const;
+    T Get(const String& key, const T& defaultValue = T()) const;
 
     PropertiesHolder(const PropertiesHolder& holder) = delete;
     PropertiesHolder(PropertiesHolder&& holder);
@@ -35,16 +35,16 @@ public:
     void SetDirectory(const FilePath& dirPath);
 
 private:
-    Any Load(const String& key, const Any& defaultValue, const Type* type) const;
+    Any Get(const String& key, const Any& defaultValue, const Type* type) const;
     PropertiesHolder(const PropertiesHolder& parent, const String& name);
     struct Impl;
     std::unique_ptr<Impl> impl;
 };
 
 template <typename T>
-T PropertiesHolder::Load(const String& key, const T& defaultValue) const
+T PropertiesHolder::Get(const String& key, const T& defaultValue) const
 {
-    Any loadedValue = Load(key, defaultValue, Type::Instance<T>());
+    Any loadedValue = Get(key, defaultValue, Type::Instance<T>());
     if (loadedValue.CanGet<T>())
     {
         return loadedValue.Get<T>();

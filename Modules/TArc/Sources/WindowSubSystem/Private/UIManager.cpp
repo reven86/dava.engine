@@ -1,14 +1,14 @@
 #include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
+#include "Base/Any.h"
+#include "Debug/DVAssert.h"
 
 #include "WindowSubSystem/ActionUtils.h"
 #include "WindowSubSystem/Private/WaitDialog.h"
 #include "DataProcessing/Private/QtReflectionBridge.h"
 #include "DataProcessing/PropertiesHolder.h"
 
-#include "Base/Any.h"
-#include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
 
 #include <QMainWindow>
@@ -297,8 +297,8 @@ struct UIManager::Impl : public QObject
             window->setObjectName(appId.c_str());
 
             PropertiesHolder ph = propertiesHolder.CreateSubHolder(appId.c_str());
-            window->restoreGeometry(ph.Load<QByteArray>(UIManagerDetail::geometryKey));
-            window->restoreState(ph.Load<QByteArray>(UIManagerDetail::stateKey));
+            window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::geometryKey));
+            window->restoreState(ph.Get<QByteArray>(UIManagerDetail::stateKey));
 
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
@@ -330,8 +330,8 @@ protected:
                 QMainWindow* mainWindow = iter->second.window;
 
                 PropertiesHolder ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
-                ph.Save(UIManagerDetail::stateKey, mainWindow->saveState());
-                ph.Save(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
+                ph.Set(UIManagerDetail::stateKey, mainWindow->saveState());
+                ph.Set(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
 
                 mainWindow->deleteLater();
                 managerDelegate->WindowClosed(windowKey);
@@ -458,12 +458,12 @@ QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogP
     QString dir = params.dir;
     if (dir.isEmpty())
     {
-        dir = impl->propertiesHolder.Load<QString>(dirKey, dir);
+        dir = impl->propertiesHolder.Get<QString>(dirKey, dir);
     }
     QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
-        impl->propertiesHolder.Save(dirKey, filePath);
+        impl->propertiesHolder.Set(dirKey, filePath);
     }
     return filePath;
 }

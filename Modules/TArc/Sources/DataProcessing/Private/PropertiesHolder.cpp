@@ -1,5 +1,4 @@
 #include "DataProcessing/PropertiesHolder.h"
-#include "Base/Any.h"
 #include "FileSystem/FilePath.h"
 #include "Debug/DVAssert.h"
 
@@ -22,20 +21,23 @@ struct PropertiesHolder::Impl
     Impl(Impl* impl_, const String& name_);
     ~Impl();
 
+    //realization for the fundamental types
     template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
-    void Save(const QString& key, T value);
+    void Set(const QString& key, T value);
 
+    //realization for the pointers
     template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
-    void Save(const QString& key, const T& value);
+    void Set(const QString& key, const T& value);
 
+    //realization for the pointers
     template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
-    void Save(const QString& key, const T& value);
+    void Set(const QString& key, const T& value);
 
     QJsonValue ToValue(const QString& value);
     QJsonValue ToValue(const QByteArray& value);
 
     template <typename T>
-    T Load(const QString& key, const T& defaultValue);
+    T Get(const QString& key, const T& defaultValue);
 
     template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
     T FromValue(const QJsonValue& value, const T& defaultValue);
@@ -55,7 +57,7 @@ struct PropertiesHolder::Impl
     QString name;
     QFileInfo storagePath;
     Impl* parent = nullptr;
-    UnorderedSet<Impl*> childs;
+    List<Impl*> children;
     QJsonObject jsonObject;
     bool wasChanged = false;
 };
@@ -63,7 +65,6 @@ struct PropertiesHolder::Impl
 PropertiesHolder::Impl::Impl(const String& name_, const FilePath& dirPath)
     : name(QString::fromStdString(name_))
 {
-    DVASSERT(!dirPath.IsEmpty());
     SetDirectory(dirPath);
 }
 
@@ -71,24 +72,24 @@ PropertiesHolder::Impl::Impl(Impl* impl_, const String& name_)
     : name(QString::fromStdString(name_))
     , parent(impl_)
 {
-    auto iter = std::find_if(parent->childs.begin(), parent->childs.end(), [this](const Impl* child) {
+    auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const Impl* child) {
         return child->name == name;
     });
-    DVASSERT(iter == parent->childs.end());
-    parent->childs.insert(this);
+    DVASSERT(iter == parent->children.end());
+    parent->children.push_back(this);
     jsonObject = parent->jsonObject[name].toObject();
 }
 
 PropertiesHolder::Impl::~Impl()
 {
-    DVASSERT(childs.empty());
+    DVASSERT(children.empty());
     if (parent != nullptr)
     {
         if (wasChanged)
         {
             SaveToParent();
         }
-        parent->childs.erase(this);
+        parent->children.remove(this);
     }
     else
     {
@@ -97,19 +98,19 @@ PropertiesHolder::Impl::~Impl()
 }
 
 template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type>
-void PropertiesHolder::Impl::Save(const QString& key, T value)
+void PropertiesHolder::Impl::Set(const QString& key, T value)
 {
     jsonObject[key] = value;
 }
 
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
-void PropertiesHolder::Impl::Save(const QString& key, const T& value)
+void PropertiesHolder::Impl::Set(const QString& key, const T& value)
 {
     static_assert("unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
-void PropertiesHolder::Impl::Save(const QString& key, const T& value)
+void PropertiesHolder::Impl::Set(const QString& key, const T& value)
 {
     jsonObject[key] = ToValue(value);
 }
@@ -125,7 +126,7 @@ QJsonValue PropertiesHolder::Impl::ToValue(const QByteArray& value)
 }
 
 template <typename T>
-T PropertiesHolder::Impl::Load(const QString& key, const T& defaultValue)
+T PropertiesHolder::Impl::Get(const QString& key, const T& defaultValue)
 {
     auto iter = jsonObject.find(key);
     if (iter == jsonObject.end())
@@ -174,6 +175,7 @@ QByteArray PropertiesHolder::Impl::FromValue(const QJsonValue& value, const QByt
 
 void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
 {
+    DVASSERT(!dirPath.IsEmpty());
     QString dirPathStr = QString::fromStdString(dirPath.GetAbsolutePathname());
     QFileInfo fileInfo(dirPathStr);
     if (!fileInfo.isDir())
@@ -222,7 +224,7 @@ void PropertiesHolder::Impl::SaveToFile()
 {
     // right now we not need to save root element with existed child
     DVASSERT(parent == nullptr);
-    DVASSERT(childs.empty());
+    DVASSERT(children.empty());
     QString filePath = storagePath.absoluteFilePath();
     QFile file(filePath);
     if (!file.open(QFile::WriteOnly | QFile::Truncate))
@@ -282,7 +284,7 @@ PropertiesHolder::PropertiesHolder(const PropertiesHolder& parent, const String&
         DVASSERT(nullptr != impl); \
         try \
         { \
-            impl->Save(keyStr, value.Get<T>()); \
+            impl->Set(keyStr, value.Get<T>()); \
         } \
         catch (const Any::Exception& exception) \
         { \
@@ -297,7 +299,7 @@ PropertiesHolder::PropertiesHolder(const PropertiesHolder& parent, const String&
         Any retVal; \
         try \
         { \
-            retVal = Any(impl->Load(key, value.Get<T>())); \
+            retVal = Any(impl->Get(key, value.Get<T>())); \
         } \
         catch (const Any::Exception& exception) \
         { \
@@ -315,7 +317,7 @@ PropertiesHolder::PropertiesHolder(const PropertiesHolder& parent, const String&
     METHOD(value, type, QString, key) \
     METHOD(value, type, QByteArray, key)
 
-void PropertiesHolder::Save(const String& key, const Any& value)
+void PropertiesHolder::Set(const String& key, const Any& value)
 {
     const Type* type = value.GetType();
     QString keyStr = QString::fromStdString(key);
@@ -329,7 +331,7 @@ void PropertiesHolder::SaveToFile()
     impl->SaveToFile();
 }
 
-Any PropertiesHolder::Load(const String& key, const Any& defaultValue, const Type* type) const
+Any PropertiesHolder::Get(const String& key, const Any& defaultValue, const Type* type) const
 {
     DVASSERT(type != nullptr);
     DVASSERT(!defaultValue.IsEmpty());
