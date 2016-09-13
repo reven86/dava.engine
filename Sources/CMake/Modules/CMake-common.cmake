@@ -86,7 +86,7 @@ macro (define_source)
     
     get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
     list( APPEND DEFINE_SOURCE_LIST "define_source" )
-    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} )        
+    set_property(GLOBAL PROPERTY DEFINE_SOURCE_LIST ${DEFINE_SOURCE_LIST} ) 
     
     if( NOT ARG_RECURSIVE_CALL )
         set( PROJECT_SOURCE_FILES )
@@ -109,6 +109,7 @@ macro (define_source)
                     get_filename_component( FOLDER_NAME ${ITEM_ARG_SOURCE}  DIRECTORY    )
                 endif()
                 append_property( PROJECT_FOLDERS ${FOLDER_NAME} )
+                list(APPEND TARGET_FOLDERS_${PROJECT_NAME} ${FOLDER_NAME} )
             endforeach ()
         endif()
     endif()
@@ -119,7 +120,7 @@ macro (define_source)
         list( APPEND ARG_SOURCE ${LIST_SOURCE_RECURSE} )
     endforeach ()
     
-    set( FILE_EXTENSIONS_CPP .c .cpp  )
+    set( FILE_EXTENSIONS_CPP .c .cc .cpp )
     set( FILE_EXTENSIONS_HPP .h .hpp )        
     if( APPLE )
         list( APPEND FILE_EXTENSIONS_CPP .m .mm )
@@ -234,6 +235,8 @@ macro (define_source)
         #message( "")
         reset_property( PROJECT_FOLDERS )    
     endif()
+    
+    list( REMOVE_DUPLICATES TARGET_FOLDERS_${PROJECT_NAME} )
 
 endmacro ()
 
@@ -250,7 +253,7 @@ macro (define_source_files)
 
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
-        set (ARG_GLOB_CPP_PATTERNS *.c *.cpp )    # Default glob pattern
+        set (ARG_GLOB_CPP_PATTERNS *.c *.cc *.cpp )    # Default glob pattern
         if( APPLE )  
             list ( APPEND ARG_GLOB_CPP_PATTERNS *.m *.mm )
         endif  ()

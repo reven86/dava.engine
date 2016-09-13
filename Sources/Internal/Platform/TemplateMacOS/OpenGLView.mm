@@ -125,6 +125,14 @@ using namespace DAVA;
     return YES;
 }
 
+- (IBAction)copy:sender
+{
+}
+
+- (IBAction)paste:sender
+{
+}
+
 static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSOpenGLView* glview, NSEvent* curEvent, UIEvent& event, UIEvent::Phase phase)
