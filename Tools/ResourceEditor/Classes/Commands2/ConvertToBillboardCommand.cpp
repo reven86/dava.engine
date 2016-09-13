@@ -9,7 +9,7 @@ ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAV
 {
     ScopedPtr<RenderObject> newRenderObject(new BillboardRenderObject());
     oldRenderComponent->GetRenderObject()->Clone(newRenderObject);
-    newRenderObject->AddFlag(RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER | RenderObject::eFlags::MARKED_FOR_UPDATE);
+    newRenderObject->AddFlag(RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER);
     newRenderObject->RecalcBoundingBox();
 
     newRenderComponent->SetRenderObject(newRenderObject);
@@ -27,6 +27,8 @@ void ConvertToBillboardCommand::Redo()
 {
     entity->DetachComponent(oldRenderComponent);
     entity->AddComponent(newRenderComponent);
+
+    entity->GetScene()->GetRenderSystem()->MarkForUpdate(newRenderComponent->GetRenderObject());
 
     detachedComponent = oldRenderComponent;
 }
