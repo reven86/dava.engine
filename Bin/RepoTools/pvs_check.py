@@ -14,11 +14,11 @@ def main():
         "--target", args.sln_path, 
         "--output", args.output_log])
     proc.communicate()
-    hadErrors = false
+    hadErrors = False
     if proc.returncode == 0:
         ok
     elif proc.returncode == 7:
-        hadErrors = true
+        hadErrors = True
     else:
         return proc.returncode
 
@@ -29,7 +29,7 @@ def main():
     proc.communicate()
     if proc.returncode != 0:
         return proc.returncode
-        
+
     if hadErrors:
         print "PVS found some issues, see .plog.html for details"
         return 7
