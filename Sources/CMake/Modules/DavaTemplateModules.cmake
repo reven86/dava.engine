@@ -182,7 +182,10 @@ macro( generated_initialization_module_code )
 
             list( APPEND IMODULE_INCLUDES "#include \"${RELATIVE_PATH_ITEM}\" \n" )
         endforeach()
-        string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
+        
+        if( IMODULE_INCLUDES )
+            string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
+        endif()
 
         foreach( ITEM ${MODULES_INITIALIZATION} )
             list( APPEND IMODULE_CODE_LIST "        IModule* _${ITEM} = new ${ITEM}()\;\n" )
