@@ -26,6 +26,8 @@ public:
     uint32 GetBillboardType() const;
     void SetBillboardType(uint32 type);
 
+    RenderObject* Clone(RenderObject* toObject) override;
+
 private:
     Matrix4 billboardTransform = Matrix4::IDENTITY;
     uint32 billboardType = BillboardType::BILLBOARD_SPHERICAL;

@@ -79,4 +79,18 @@ void BillboardRenderObject::SetBillboardType(uint32 type)
     billboardType = type;
     RecalcBoundingBox();
 }
+
+RenderObject* BillboardRenderObject::Clone(RenderObject* toObject)
+{
+    if (toObject == nullptr)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<BillboardRenderObject>(this), "Can clone only BillboardRenderObject");
+        toObject = new BillboardRenderObject();
+    }
+
+    RenderObject::Clone(toObject);
+    static_cast<BillboardRenderObject*>(toObject)->billboardType = billboardType;
+
+    return toObject;
+}
 }
