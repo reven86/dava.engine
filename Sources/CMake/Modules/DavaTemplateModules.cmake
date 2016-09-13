@@ -9,6 +9,7 @@ EXTERNAL_MODULES
 EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
 #
 MODULE_INITIALIZATION_CODE
+MODULE_MANAGER_TEMPLATE
 #
 SRC_FOLDERS             
 ERASE_FOLDERS              
@@ -103,7 +104,7 @@ macro ( load_external_modules EXTERNAL_MODULES )
 endmacro()
 #
 macro( modules_tree_info_execute )
-    set( TMP_CMAKE_MODULE_INFO       ${CMAKE_CURRENT_BINARY_DIR}/tmp_module_info)
+    set( TMP_CMAKE_MODULE_INFO       ${CMAKE_CURRENT_BINARY_DIR}/ModulesInfo)
     set( TMP_CMAKE_MODULE_INFO_BUILD ${TMP_CMAKE_MODULE_INFO}/build)
 
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${TMP_BUILD_MODULE_INFO}/" )
@@ -184,7 +185,7 @@ macro( generated_initialization_module_code )
         string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
 
         foreach( ITEM ${MODULES_INITIALIZATION} )
-            list( APPEND IMODULE_CODE_LIST "        IModule* _${ITEM} = new Module${ITEM}()\;\n" )
+            list( APPEND IMODULE_CODE_LIST "        IModule* _${ITEM} = new ${ITEM}()\;\n" )
             list( APPEND IMODULE_CODE_LIST "        listModules.emplace_back( _${ITEM} )\;\n" )                
             list( APPEND IMODULE_CODE_LIST "        _${ITEM}->Init()\;\n\n" )
         endforeach()
@@ -301,6 +302,16 @@ macro( setup_main_module )
             endforeach()
         endif()
 
+        #"INCLUDES"
+        set( INCLUDES_LIST )
+        foreach( ITEM ${INCLUDES} ${INCLUDES_${DAVA_PLATFORM_CURENT}} )
+            get_filename_component( ITEM ${ITEM} ABSOLUTE )
+            list( APPEND INCLUDES_LIST ${ITEM} )
+        endforeach()
+        set( INCLUDES  ${INCLUDES_LIST} )
+        list( APPEND INCLUDES_PRIVATE  ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} )
+        
+        #"STATIC_LIBRARIES"
         if( ANDROID )
             list( APPEND STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}}  )
         endif()
@@ -424,9 +435,7 @@ macro( setup_main_module )
                 DEPLOY_TO_BIN
                 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
                 INCLUDES
-                INCLUDES_${DAVA_PLATFORM_CURENT}
                 INCLUDES_PRIVATE
-                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                
                 BINARY_WIN32_DIR_RELEASE
                 BINARY_WIN32_DIR_DEBUG
                 BINARY_WIN32_DIR_RELWITHDEB
@@ -443,9 +452,7 @@ macro( setup_main_module )
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
                 STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT}
                 INCLUDES
-                INCLUDES_${DAVA_PLATFORM_CURENT}
                 INCLUDES_PRIVATE
-                INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                  
                 )
 
         #"DEFINITIONS"
@@ -460,9 +467,6 @@ macro( setup_main_module )
         load_property( PROPERTY_LIST INCLUDES )
         if( INCLUDES )
             include_directories( "${INCLUDES}" )  
-        endif()
-        if( INCLUDES_${DAVA_PLATFORM_CURENT} )
-            include_directories( "${INCLUDES_${DAVA_PLATFORM_CURENT}}" )  
         endif()
 
         if( ${MODULE_TYPE} STREQUAL "INLINE" )
@@ -518,10 +522,6 @@ macro( setup_main_module )
                 include_directories( ${INCLUDES_PRIVATE} ) 
             endif() 
 
-            if( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
-                include_directories( ${INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}} ) 
-            endif()  
-
             include_directories( . ) 
 
             if( WIN32 )
@@ -557,7 +557,6 @@ macro( setup_main_module )
             reset_property( STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG )
             reset_property( STATIC_LIBRARIES_SYSTEM_${DAVA_PLATFORM_CURENT} )
             reset_property( INCLUDES_PRIVATE )
-            reset_property( INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT} )
 
             if ( WINDOWS_UAP )
                 set_property(TARGET ${NAME_MODULE} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )

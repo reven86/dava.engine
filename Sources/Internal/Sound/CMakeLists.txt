@@ -3,8 +3,6 @@ set( NAME_MODULE Sound )
 
 set( MODULE_TYPE INLINE )#INLINE STATIC DYNAMIC 
 
-set( MODULE_INITIALIZATION_CODE      Private/ModuleSound.h )
-
 set( HPP_FILES                       *.h *.hpp            )
 set( CPP_FILES                       *.cpp                )
 
