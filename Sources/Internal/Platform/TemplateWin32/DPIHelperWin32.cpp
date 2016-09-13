@@ -1,7 +1,9 @@
 #include "Platform/DPIHelper.h"
+#include "ShellScalingAPI.h"
 
 //temporary decision
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
 
 namespace DAVA
 {
@@ -10,12 +12,35 @@ namespace DAVA
 
 uint32 DPIHelper::GetScreenDPI()
 {
-    HDC screen = GetDC(NULL);
+    uint32 hDPI = 0;
 
-    // in common dpi is the same in horizontal and vertical demensions
-    // in any case under win this value is 96dpi due to OS limitation
-    uint32 hDPI = GetDeviceCaps(screen, LOGPIXELSX);
-    ReleaseDC(NULL, screen);
+    using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
+
+    // we are trying to get pointer on GetDpiForMonitor function with GetProcAddress
+    // because this function is available only on win8.1 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and GetDpiForMonitor wont be called
+    HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
+    MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
+
+    if (nullptr != fn)
+    {
+        CoreWin32Platform* coreWin32 = static_cast<CoreWin32Platform*>(Core::Instance());
+
+        UINT x = 0, y = 0;
+        HMONITOR monitor = MonitorFromWindow(coreWin32->GetHwnd(), MONITOR_DEFAULTTOPRIMARY);
+        (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
+
+        hDPI = x;
+    }
+    else
+    {
+        // default behavior for windows (ver < 8.1)
+        // get dpi from caps
+        HDC screen = GetDC(NULL);
+        hDPI = GetDeviceCaps(screen, LOGPIXELSX);
+        ReleaseDC(NULL, screen);
+    }
 
     return hDPI;
 }

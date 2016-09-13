@@ -32,6 +32,8 @@ public:
     void InitArgs();
     void Quit() override;
 
+    HWND GetHwnd() const;
+
 private:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;

@@ -240,6 +240,7 @@ public:
     // InitWindowSize, WindowSizeChanged deprecated methods
     void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    DAVA_DEPRECATED(void ApplyWindowSize());
 
     bool IsFocused();
     rhi::InitParam rendererParams;
@@ -257,9 +258,6 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    // ApplyWindowSize deprecated method
-    void ApplyWindowSize();
-
     KeyedArchive* options;
 
     bool isFocused = false;
