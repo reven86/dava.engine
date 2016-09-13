@@ -8,9 +8,7 @@ namespace DAVA
 class IModule
 {
 public:
-    virtual ~IModule()
-    {
-    }
+    virtual ~IModule() = default;
     virtual void Init()
     {
     }
