@@ -3,7 +3,7 @@
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
-#include "Base/IModule.h"
+#include "Base/ModuleManager.h"
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
@@ -267,8 +267,8 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-
-    IModule::InitModules();
+    
+    moduleManager.reset(new ModuleManager());
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -308,7 +308,7 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    IModule::ReleaseModules();
+    moduleManager.reset();
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown

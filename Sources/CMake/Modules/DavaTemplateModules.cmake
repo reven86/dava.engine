@@ -172,38 +172,43 @@ macro( modules_tree_info )
 endmacro()
 #
 macro( generated_initialization_module_code )
-    ASSERT( IMODULE_IN "Please set path to IModule.in in the variable NAME IMODULE_IN" )
-    get_filename_component( IMODULE_IN ${IMODULE_IN} ABSOLUTE )
+    if( MODULE_MANAGER_TEMPLATE )
+        get_filename_component( MODULE_MANAGER_TEMPLATE ${MODULE_MANAGER_TEMPLATE} ABSOLUTE )
+        get_filename_component( MODULE_MANAGER_TEMPLATE_NAME_WE ${MODULE_MANAGER_TEMPLATE} NAME_WE )
 
-    foreach( ITEM ${MODULES_INITIALIZATION_HPP} )
-        list( APPEND IMODULE_INCLUDES "#include \"${ITEM}\" \n" )
-    endforeach()
-    string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
+        foreach( ITEM ${MODULES_INITIALIZATION_HPP} )
+            file(RELATIVE_PATH RELATIVE_PATH_ITEM ${CMAKE_CURRENT_LIST_DIR} ${ITEM}) 
 
-    foreach( ITEM ${MODULES_INITIALIZATION} )
-        list( APPEND IMODULE_CODE "\n        IModule* _${ITEM} = new Module${ITEM}()" )
-        list( APPEND IMODULE_CODE "\n        listModules.emplace_back( _${ITEM} )" )                
-        list( APPEND IMODULE_CODE "\n        _${ITEM}->Init()" )
-    endforeach()
-    
-    foreach( ITEM ${MODULES_INITIALIZATION} )
-        list( APPEND IMODULE_CODE "\n        _${ITEM}->PostInit()" )
-    endforeach()
+            list( APPEND IMODULE_INCLUDES "#include \"${RELATIVE_PATH_ITEM}\" \n" )
+        endforeach()
+        string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
 
-    list( APPEND IMODULE_CODE "\n" )
+        foreach( ITEM ${MODULES_INITIALIZATION} )
+            list( APPEND IMODULE_CODE_LIST "        IModule* _${ITEM} = new Module${ITEM}()\;\n" )
+            list( APPEND IMODULE_CODE_LIST "        listModules.emplace_back( _${ITEM} )\;\n" )                
+            list( APPEND IMODULE_CODE_LIST "        _${ITEM}->Init()\;\n\n" )
+        endforeach()
+        
+        foreach( ITEM ${MODULES_INITIALIZATION} )
+            list( APPEND IMODULE_CODE_LIST "        _${ITEM}->PostInit()\;\n" )
+        endforeach()
 
-    set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/IModule.cpp )
-    configure_file( ${IMODULE_IN}
-                    ${IMODULE_CPP}  @ONLY ) 
-    list( APPEND CPP_FILES ${IMODULE_CPP} )
+        foreach( ITEM ${IMODULE_CODE_LIST} )
+            set( IMODULE_CODE "${IMODULE_CODE}${ITEM}")
+        endforeach()
+
+        set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${MODULE_MANAGER_TEMPLATE_NAME_WE}.cpp )
+        configure_file( ${MODULE_MANAGER_TEMPLATE}
+                        ${IMODULE_CPP}  @ONLY ) 
+        list( APPEND CPP_FILES ${IMODULE_CPP} )
 
 
-    file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${IMODULE_IN}) 
-    string(REGEX REPLACE "/" "\\\\" RELATIVE_PATH ${RELATIVE_PATH})
-    get_filename_component( FOLDER_NAME ${RELATIVE_PATH}  DIRECTORY    )
+        file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${MODULE_MANAGER_TEMPLATE}) 
+        string(REGEX REPLACE "/" "\\\\" RELATIVE_PATH ${RELATIVE_PATH})
+        get_filename_component( FOLDER_NAME ${RELATIVE_PATH}  DIRECTORY    )
 
-    set( MODULE_GROUP_STRINGS "${FOLDER_NAME} ${IMODULE_CPP}")
-
+        set( MODULE_GROUP_STRINGS "${FOLDER_NAME} ${IMODULE_CPP}")
+    endif()
 endmacro()
 #
 macro( reset_MAIN_MODULE_VALUES )

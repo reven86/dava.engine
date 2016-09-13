@@ -1,17 +1,16 @@
+#include "Base/ModuleManager.h"
 #include "Base/IModule.h"
 
 @IMODULE_INCLUDES@
 
 namespace DAVA
 {
-    Vector<IModule*> IModule::listModules;
-
-    void IModule::InitModules()
+    ModuleManager::ModuleManager()
     {
 @IMODULE_CODE@
     }
 
-    void IModule::ReleaseModules()
+    ModuleManager::~ModuleManager()
     {
         for (const auto& module : listModules)
         {

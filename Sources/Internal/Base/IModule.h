@@ -20,12 +20,6 @@ public:
     virtual void Shutdown()
     {
     }
-
-    static void ReleaseModules();
-    static void InitModules();
-
-private:
-    static Vector<IModule*> listModules;
 };
 }
 

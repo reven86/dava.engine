@@ -28,7 +28,7 @@ using AppHandle = uint32;
 #endif
 
 class IPackManager;
-
+class ModuleManager;
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms.
@@ -284,7 +284,8 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-
+    
+    std::unique_ptr<ModuleManager> moduleManager;
     std::unique_ptr<IPackManager> packManager;
 };
 
