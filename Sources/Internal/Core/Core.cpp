@@ -267,7 +267,7 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
-    
+
     moduleManager.reset(new ModuleManager());
 }
 

@@ -284,7 +284,7 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    
+
     std::unique_ptr<ModuleManager> moduleManager;
     std::unique_ptr<IPackManager> packManager;
 };
