@@ -24,9 +24,9 @@ public:
     ID3D11Query* query = nullptr;
     uint64 timestamp = 0;
     uint64 freq = 0;
-    bool isUsed = false;
-    bool isReady = false;
-    bool isFreqValid = false;
+    uint32 isUsed : 1;
+    uint32 isReady : 1;
+    uint32 isFreqValid : 1;
 };
 
 //==============================================================================
@@ -50,9 +50,9 @@ static Handle dx11_PerfQuery_Create()
     {
         perfQuery->timestamp = 0;
         perfQuery->freq = 0;
-        perfQuery->isUsed = false;
-        perfQuery->isReady = false;
-        perfQuery->isFreqValid = false;
+        perfQuery->isUsed = 0;
+        perfQuery->isReady = 0;
+        perfQuery->isFreqValid = 0;
 
         DVASSERT(perfQuery->query == nullptr)
 
@@ -95,9 +95,9 @@ static void dx11_PerfQuery_Reset(Handle handle)
     if (perfQuery)
     {
         perfQuery->freq = 0;
-        perfQuery->isFreqValid = false;
-        perfQuery->isReady = false;
-        perfQuery->isUsed = false;
+        perfQuery->isFreqValid = 0;
+        perfQuery->isReady = 0;
+        perfQuery->isUsed = 0;
         perfQuery->timestamp = 0;
     }
 }
@@ -149,8 +149,8 @@ void FreqPerfQueryDX11::IssueTimestamp(Handle handle, ID3D11DeviceContext* conte
 
         context->End(perfQuery->query);
 
-        perfQuery->isUsed = true;
-        perfQuery->isReady = false;
+        perfQuery->isUsed = 1;
+        perfQuery->isReady = 0;
 
         perfQueries.push_back(HPerfQuery(handle));
     }
@@ -273,7 +273,7 @@ void ObtainPerfQueryMeasurment(ID3D11DeviceContext* context)
             {
                 query->freq = frame->freq;
                 query->isFreqValid = frame->isFreqValid;
-                query->isReady = true;
+                query->isReady = 1;
 
                 qit = frame->perfQueries.erase(qit);
             }
