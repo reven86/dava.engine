@@ -78,6 +78,7 @@ void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::String>& files)
         filePath = text;
     });
     layout()->addWidget(lineEdit);
+    lineEdit->setFocus();
 }
 
 bool FindFileInPackageDialog::eventFilter(QObject* obj, QEvent* event)

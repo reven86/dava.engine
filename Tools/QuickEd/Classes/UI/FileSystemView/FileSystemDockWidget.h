@@ -3,6 +3,7 @@
 
 #include <QDockWidget>
 #include <QModelIndex>
+#include <QPersistentModelIndex>
 #include <memory>
 
 namespace Ui
@@ -44,6 +45,7 @@ private slots:
     void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    void OnDirectoryLoaded();
 
 private:
     void RefreshActions();
@@ -73,6 +75,8 @@ private:
     bool isAvailable = false;
 
     std::unique_ptr<ProjectStructureHolder> projectStructureHolder;
+    //QFileSystemModel is uses async api to fetch it data, so we can call setCurrentIndex only when signal dirLoaded is emitted
+    QPersistentModelIndex indexToSetCurrent;
 };
 
 #endif // __QUICKED_FILE_SYSTEM_DIALOG_H__

@@ -8,7 +8,15 @@ FileSystemModel::FileSystemModel(QObject* parent)
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex& index) const
 {
-    return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+    Qt::ItemFlags flags = QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+    QFileInfo fi(filePath(index));
+    bool isDir = fi.isDir();
+    //qfilesystemModel not detect isDir correctly after dirLoaded signal is emited
+    if (isDir)
+    {
+        flags &= ~Qt::ItemNeverHasChildren;
+    }
+    return flags;
 }
 
 QVariant FileSystemModel::data(const QModelIndex& index, int role) const

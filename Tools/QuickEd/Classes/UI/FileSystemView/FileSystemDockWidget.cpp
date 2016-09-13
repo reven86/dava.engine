@@ -24,6 +24,29 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
+#include <QTimer>
+
+namespace FileSystemDockWidgetDetails
+{
+template <typename T>
+QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex& rootIndex, T&& predicate)
+{
+    QModelIndexList modelIndexList;
+    QModelIndex parentIndex = index;
+
+    while (parentIndex != rootIndex)
+    {
+        if (predicate(parentIndex))
+        {
+            modelIndexList << parentIndex;
+        }
+        parentIndex = parentIndex.parent();
+    }
+    //to expand or fetch items we reverse list to walk from parent to child
+    std::reverse(modelIndexList.begin(), modelIndexList.end());
+    return modelIndexList;
+}
+}
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -42,6 +65,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     setFilterFixedString("");
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
+
+    connect(model, &QFileSystemModel::directoryLoaded, this, &FileSystemDockWidget::OnDirectoryLoaded);
 
     ui->treeView->setModel(model);
     ui->treeView->hideColumn(0);
@@ -367,6 +392,35 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
     UpdateActionsWithShortcutsState(indexes);
 }
 
+void FileSystemDockWidget::OnDirectoryLoaded()
+{
+    if (!indexToSetCurrent.isValid())
+    {
+        return;
+    }
+    QModelIndex rootIndex = ui->treeView->rootIndex();
+    auto predicate = [this](const QModelIndex& index) {
+        return model->canFetchMore(index);
+    };
+    QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, predicate);
+    if (!indexes.isEmpty())
+    {
+        return;
+    }
+
+    auto dummyPredicate = [this](const QModelIndex& index) {
+        return true;
+    };
+    indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, dummyPredicate);
+    for (const QModelIndex& index : indexes)
+    {
+        ui->treeView->expand(index);
+    }
+
+    ui->treeView->setCurrentIndex(indexToSetCurrent);
+    indexToSetCurrent = QPersistentModelIndex();
+}
+
 void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList& indexes)
 {
     bool canDelete = false;
@@ -387,14 +441,26 @@ void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList
 
 void FileSystemDockWidget::ShowEndSelectFile(const QString& filePath)
 {
-    QModelIndex index = model->index(filePath);
-    if (index.isValid())
+    if (filePath.isEmpty())
     {
-        QItemSelectionModel* selectionModel = ui->treeView->selectionModel();
-        bool wasBlocked = selectionModel->blockSignals(true);
-        ui->treeView->expand(index);
-        ui->treeView->scrollTo(index);
-        selectionModel->select(index, QItemSelectionModel::SelectCurrent);
-        selectionModel->blockSignals(wasBlocked);
+        return;
+    }
+    indexToSetCurrent = model->index(filePath);
+    if (indexToSetCurrent.isValid())
+    {
+        auto predicate = [this](const QModelIndex& index) -> bool {
+            return model->canFetchMore(index);
+        };
+        //get unfetched indexes
+        QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, ui->treeView->rootIndex(), predicate);
+        for (const QModelIndex& index : indexes)
+        {
+            model->fetchMore(index);
+        }
+        //nothing to fetch - can show selected file
+        if (indexes.isEmpty())
+        {
+            OnDirectoryLoaded();
+        }
     }
 }
