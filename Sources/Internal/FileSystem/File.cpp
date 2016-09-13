@@ -73,7 +73,7 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         IPackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
 
-        if (pm.IsGpuPacksInitialized())
+        if (pm.IsInitialized())
         {
             const String& packName = pm.FindPackName(filename);
             if (!packName.empty())

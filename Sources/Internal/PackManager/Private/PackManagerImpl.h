@@ -13,15 +13,13 @@ class PackManagerImpl : public IPackManager
 public:
     PackManagerImpl() = default;
 
-    void InitLocalCommonPacks(const FilePath& readOnlyPacksDir_,
-                              const FilePath& downloadPacksDir_,
-                              const Hints& hints_) override;
+    void Initialize(const String& architecture_,
+                    const FilePath& dirToDownloadPacks_,
+                    const FilePath& pathToBasePacksDB_,
+                    const String& urlToServerSuperpack_,
+                    const Hints& hints_) override;
 
-    void InitLocalGpuPacks(const String& architecture_, const String& dbFileName) override;
-
-    bool IsGpuPacksInitialized() const override;
-
-    void InitRemotePacks(const String& urlToServerSuperpack) override;
+    bool IsInitialized() const override;
 
     InitState GetInitState() const override;
 
@@ -86,8 +84,7 @@ private:
     void ContinueInitialization();
     void FirstTimeInit();
     void InitStarting();
-    void InitializePacks();
-    void MountCommonBasePacks();
+    void InitializePacksAndBuildIndex();
     void AskFooter();
     void GetFooter();
     void AskFileTable();
@@ -101,8 +98,8 @@ private:
     void MountDownloadedPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
-    FilePath localPacksDir;
-    FilePath readOnlyPacksDir;
+    FilePath dirToDownloadedPacks;
+    FilePath pathToBasePacksDB;
     String superPackUrl;
     String architecture;
     bool isProcessingEnabled = false;

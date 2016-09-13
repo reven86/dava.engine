@@ -311,12 +311,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
-    // clear and renew all packs state
-    pm.InitLocalCommonPacks(readOnlyDirWithPacks,
-                            folderWithDownloadedPacks,
-                            IPackManager::Hints());
-
-    pm.InitLocalGpuPacks(gpuArchitecture, dbFile);
+    pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, IPackManager::Hints());
 
     pm.EnableRequesting();
 
@@ -325,9 +320,10 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    /*
     packNameLoading->SetText(L"done: start sync");
     IPackManager& pm = Core::Instance()->GetPackManager();
-    pm.InitRemotePacks(urlToServerSuperpack);
+    */
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -378,7 +374,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
     IPackManager& pm = Core::Instance()->GetPackManager();
 
-    if (pm.GetInitState() < IPackManager::InitState::MountingReadOnlyPacks)
+    if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
     {
         return;
     }
