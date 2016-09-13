@@ -32,7 +32,8 @@ def main():
         sys.exit(proc.returncode)
 
     if hadErrors:
-        print "PVS found some issues, see .plog.html for details"
+        errorMsg = "##teamcity[message text=\'PVS found some issues, see .plog.html for details\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
+        print errorMsg
         sys.exit(7)
 
 if "__main__" == __name__:
