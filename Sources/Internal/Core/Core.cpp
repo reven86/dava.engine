@@ -3,7 +3,7 @@
 #include "DAVAClassRegistrator.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
-#include "Base/ModuleManager.h"
+#include "ModuleManager/ModuleManager.h"
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"

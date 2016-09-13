@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/IModule.h"
+#include "ModuleManager/IModule.h"
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
 
