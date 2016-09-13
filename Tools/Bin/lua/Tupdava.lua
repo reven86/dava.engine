@@ -503,7 +503,7 @@ function TupState.BuildLists(self)
         for gpu, files in pairs(pack.files) do
             if pack.is_base == true then
                 for index, file in pairs(files) do
-                    local baseOutput = self.conf.outputDir .. "/" .. self.currentDir .. "/" .. file
+                    local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
                     baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
                     -- tup.rule(file, self.cmd.cp .. " %f %o", {baseOutput})
                     tup.rule(file, self.cmd.fwdep .. " merge %f -o %o", {baseOutput})
