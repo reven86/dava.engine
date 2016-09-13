@@ -12,7 +12,8 @@ def main():
     proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe", 
         "--progress",
         "--target", args.sln_path, 
-        "--output", args.output_log])
+        "--output", args.output_log,
+        "--settings", "Settings.xml"])
     proc.communicate()
     hadErrors = False
     if proc.returncode == 0:
@@ -20,7 +21,7 @@ def main():
     elif proc.returncode == 7:
         hadErrors = True
     else:
-        return proc.returncode
+        sys.exit(proc.returncode)
 
     proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe", 
         "-t", "Html",
@@ -28,11 +29,11 @@ def main():
         args.output_log])
     proc.communicate()
     if proc.returncode != 0:
-        return proc.returncode
+        sys.exit(proc.returncode)
 
     if hadErrors:
         print "PVS found some issues, see .plog.html for details"
-        return 7
+        sys.exit(7)
 
 if "__main__" == __name__:
     main()
