@@ -27,7 +27,7 @@ public:
     static void Uninitialize();
 
     static void SetScreenSize(uint32 w, uint32 h);
-    static void FlushBatched(rhi::HPacketList batchBuf, const Matrix4& view, const Matrix4& projection);
+    static void FlushBatched(rhi::HPacketList batchBuf);
     static void SetNormalTextSize();
     static void SetSmallTextSize();
 

@@ -327,6 +327,9 @@ void GetCurrentFrameQueries(Handle* query0, Handle* query1)
 {
     *query0 = currentFramePerfQuery[0];
     *query1 = currentFramePerfQuery[1];
+
+    currentFramePerfQuery[0] = InvalidHandle;
+    currentFramePerfQuery[1] = InvalidHandle;
 }
 
 void ReleaseQueryObjectsPool()

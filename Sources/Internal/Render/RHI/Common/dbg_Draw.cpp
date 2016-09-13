@@ -439,7 +439,6 @@ DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
             batch.fragmentConstCount = 0;
             batch.primitiveType = Prim;
             batch.primitiveCount = _prim_count(_v_cnt);
-            batch.textureSet = (_small_text) ? dd->_texset_small_font : dd->_texset_normal_font;
 
             switch (Vertex::Format)
             {
@@ -454,6 +453,7 @@ DbgDraw::Buffer<Vertex, Prim>::flush_batched_2d(rhi::HPacketList batch_buf)
                 batch.vertexConst[0] = dd->_ptc_const;
                 batch.depthStencilState = dd->_ptc_depth_state;
                 batch.samplerState = dd->_ptc_sampler_state;
+                batch.textureSet = (_small_text) ? dd->_texset_small_font : dd->_texset_normal_font;
                 rhi::UpdateConstBuffer4fv(dd->_ptc_const, 0, ortho.data, 4);
                 break;
             }
@@ -522,7 +522,7 @@ void DbgDraw::SetScreenSize(uint32 w, uint32 h)
 
 //------------------------------------------------------------------------------
 
-void DbgDraw::FlushBatched(rhi::HPacketList batchBuf, const Matrix4& view, const Matrix4& projection)
+void DbgDraw::FlushBatched(rhi::HPacketList batchBuf)
 {
     DbgDraw* dd = Instance();
 
@@ -900,7 +900,7 @@ void DbgDraw::_init()
         desc.vertexLayout = vp_pc.ShaderVertexLayout();
         desc.vprogUid = FastName("vp.pc");
         desc.fprogUid = FastName("fp.pc");
-        ///        desc.blend_state.blend_mode = fp_pc.blending();
+        desc.blending = fp_pc.Blending();
 
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, vp_pc.SourceCode());
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, fp_pc.SourceCode());

@@ -11,7 +11,7 @@ namespace DAVA
 class GPUProfiler
 {
 public:
-    GPUProfiler(uint32 framesCount = 60);
+    GPUProfiler(uint32 framesCount = 180);
     ~GPUProfiler();
 
     struct MarkerInfo
@@ -36,6 +36,7 @@ public:
         Vector<MarkerInfo> markers;
 
         void Dump(std::ostream& stream) const;
+        void GetMarkerTimestamps(const char* markerName, uint64* ts0, uint64* ts1) const;
     };
 
     static GPUProfiler* const globalProfiler;
@@ -45,6 +46,12 @@ public:
     void OnFrameEnd(); //should be called before rhi::Present();
 
     void AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName);
+
+    void EnableStatisticOverlay(uint32 updatePeriod = 5);
+    void DisableStatisticOverlay();
+
+    void Start();
+    void Stop();
 
 protected:
     struct PerfQueryPair
@@ -83,6 +90,9 @@ protected:
     PerfQueryPair GetPerfQueryPair();
     void ResetPerfQueryPair(const PerfQueryPair& perfQuery);
 
+    void UpdateStatistic();
+    void DrawStatistic();
+
     Vector<FrameInfo> framesInfo;
     uint32 framesInfoCount = 0;
     uint32 framesInfoHead = 0;
@@ -90,6 +100,14 @@ protected:
     Vector<rhi::HPerfQuery> queryPool;
     List<Frame> pendingFrames;
     Frame currentFrame;
+
+    Map<const char*, std::pair<Vector<uint64>, uint64>> statistic; //[marker name]: (values, max-value)
+    Vector<const char*> statisticMarkers;
+    uint32 statisticUpdatePeriod = 0;
+    uint32 statisticUpdateCounter = 0;
+    bool overlayEnabled = false;
+
+    bool profilerStarted = false;
 };
 
 } //ns DAVA
