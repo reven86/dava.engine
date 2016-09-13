@@ -23,12 +23,13 @@ uint32 DPIHelper::GetScreenDPI()
     HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
     MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
 
-    if (nullptr != fn)
+    void* nativeWindow = Core::Instance()->GetNativeWindow();
+    if (nullptr != fn && nullptr != nativeWindow)
     {
-        CoreWin32Platform* coreWin32 = static_cast<CoreWin32Platform*>(Core::Instance());
+        HWND hwnd = static_cast<HWND>(nativeWindow);
 
         UINT x = 0, y = 0;
-        HMONITOR monitor = MonitorFromWindow(coreWin32->GetHwnd(), MONITOR_DEFAULTTOPRIMARY);
+        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
         (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
 
         hDPI = x;

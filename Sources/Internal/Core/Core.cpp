@@ -1007,6 +1007,11 @@ Vector2 Core::GetWindowMinimumSize() const
     return Vector2();
 }
 
+void* DAVA::Core::GetNativeWindow() const
+{
+    return nullptr;
+}
+
 IPackManager& Core::GetPackManager()
 {
     DVASSERT(packManager);

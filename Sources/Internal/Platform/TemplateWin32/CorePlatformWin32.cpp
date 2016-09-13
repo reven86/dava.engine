@@ -1150,7 +1150,7 @@ void CoreWin32Platform::Quit()
     PostQuitMessage(0);
 }
 
-HWND CoreWin32Platform::GetHwnd() const
+void* CoreWin32Platform::GetNativeWindow() const
 {
     return hWindow;
 }

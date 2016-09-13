@@ -169,6 +169,8 @@ public:
     virtual void SetWindowMinimumSize(float32 width, float32 height);
     virtual Vector2 GetWindowMinimumSize() const;
 
+    virtual void* GetNativeWindow() const;
+
     /*
 		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X)
 	 */

@@ -32,7 +32,7 @@ public:
     void InitArgs();
     void Quit() override;
 
-    HWND GetHwnd() const;
+    void* GetNativeWindow() const override;
 
 private:
     DisplayMode currentMode;
