@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Tests/PackManagerTest.h"
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
@@ -486,3 +488,4 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
         packNameLoading->SetText(L"can't load file");
     }
 }
+#endif // !__DAVAENGINE_COREV2__

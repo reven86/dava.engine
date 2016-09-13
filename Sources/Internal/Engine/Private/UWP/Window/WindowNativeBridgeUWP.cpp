@@ -101,6 +101,125 @@ void WindowNativeBridge::DoCloseWindow()
     UninstallEventHandlers();
 }
 
+void WindowNativeBridge::SetMouseMode(eCaptureMode newMode)
+{
+    if (captureMode != newMode)
+    {
+        captureMode = newMode;
+        mouseVisibled = !(eCaptureMode::PINING != captureMode);
+        auto task = [=]() {
+            if (eCaptureMode::OFF == captureMode)
+            {
+                SetSystemMode(eCaptureMode::OFF);
+                deferredCapture = false;
+            }
+            if (eCaptureMode::PINING == captureMode)
+            {
+                if (hasFocus && !focusChanged)
+                {
+                    SetSystemMode(eCaptureMode::PINING);
+                }
+                else
+                {
+                    deferredCapture = true;
+                }
+            }
+        };
+        uwpWindow->RunAsyncOnUIThread(task);
+    }
+}
+
+eCaptureMode WindowNativeBridge::GetMouseMode() const
+{
+    return captureMode;
+}
+
+void WindowNativeBridge::SetCursorVisibility(bool visible)
+{
+    using ::Windows::UI::Core::CoreCursor;
+    using ::Windows::UI::Core::CoreCursorType;
+    if (mouseVisibled != visible)
+    {
+        mouseVisibled = !(eCaptureMode::PINING != captureMode);
+        auto task = [=]() {
+            if (mouseVisibled)
+            {
+                ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+            }
+            else
+            {
+                ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+            }
+        };
+        uwpWindow->RunAsyncOnUIThread(task);
+    }
+}
+
+bool WindowNativeBridge::GetCursorVisibility() const
+{
+    return mouseVisibled;
+}
+
+bool WindowNativeBridge::SkipEvents(const MainDispatcherEvent& e)
+{
+    focusChanged = false;
+    if (!hasFocus)
+    {
+        return true;
+    }
+    if (skipMouseMoveEvents && MainDispatcherEvent::MOUSE_MOVE == e.type)
+    {
+        skipMouseMoveEvents--;
+        return true;
+    }
+    if (deferredCapture)
+    {
+        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
+        {
+            SetSystemMode(eCaptureMode::PINING);
+            deferredCapture = false;
+            return false;
+        }
+        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        {
+            // check, only mouse release event in work rect tern on capture mode
+            bool mclickInRect = true;
+            Vector2 virtualPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(Vector2(e.mclickEvent.x, e.mclickEvent.y));
+            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= uwpWindow->GetWindow()->GetWidth());
+            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= uwpWindow->GetWindow()->GetHeight());
+            if (mclickInRect && hasFocus)
+            {
+                SetSystemMode(eCaptureMode::PINING);
+                deferredCapture = false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void WindowNativeBridge::SetSystemMode(eCaptureMode newMode)
+{
+    using ::Windows::UI::Core::CoreCursor;
+    using ::Windows::UI::Core::CoreCursorType;
+    using namespace ::Windows::Devices::Input;
+    using namespace ::Windows::Foundation;
+    if (eCaptureMode::PINING == newMode)
+    {
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+    }
+    if (eCaptureMode::PINING == newMode)
+    {
+        ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+    }
+    else
+    {
+        ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+    }
+}
+
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     uwpWindow->ProcessPlatformEvents();
@@ -109,7 +228,16 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
 void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
-    bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
+    hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
+    if (!hasFocus)
+    {
+        focusChanged = true;
+        if (captureMode == eCaptureMode::PINING)
+        {
+            SetSystemMode(eCaptureMode::OFF);
+            deferredCapture = true;
+        }
+    }
     uwpWindow->GetWindow()->PostFocusChanged(hasFocus);
 }
 
@@ -138,12 +266,28 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     {
     case CoreAcceleratorKeyEventType::KeyDown:
     case CoreAcceleratorKeyEventType::SystemKeyDown:
-        uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
+    {
+        MainDispatcherEvent e;
+        e.type = MainDispatcherEvent::KEY_DOWN;
+        if (!SkipEvents(e))
+        {
+            uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
+        }
+        //uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         break;
+    }
     case CoreAcceleratorKeyEventType::KeyUp:
     case CoreAcceleratorKeyEventType::SystemKeyUp:
-        uwpWindow->GetWindow()->PostKeyUp(key);
+    {
+        MainDispatcherEvent e;
+        e.type = MainDispatcherEvent::KEY_DOWN;
+        if (!SkipEvents(e))
+        {
+            uwpWindow->GetWindow()->PostKeyUp(key);
+        }
+        //uwpWindow->GetWindow()->PostKeyUp(key);
         break;
+    }
     default:
         break;
     }
@@ -189,7 +333,11 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(state);
-        uwpWindow->GetDispatcher()->PostEvent(e);
+
+        if (!SkipEvents(e))
+        {
+            uwpWindow->GetDispatcher()->PostEvent(e);
+        }
 
         mouseButtonState = state;
     }
@@ -219,7 +367,11 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(mouseButtonState);
-        uwpWindow->GetDispatcher()->PostEvent(e);
+
+        if (!SkipEvents(e))
+        {
+            uwpWindow->GetDispatcher()->PostEvent(e);
+        }
 
         mouseButtonState.reset();
     }
@@ -257,14 +409,21 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
             {
                 e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
                 e.mclickEvent.button = static_cast<uint32>(i + 1);
-                uwpWindow->GetDispatcher()->PostEvent(e);
+                if (!SkipEvents(e))
+                {
+                    uwpWindow->GetDispatcher()->PostEvent(e);
+                }
             }
         }
 
         e.type = MainDispatcherEvent::MOUSE_MOVE;
         e.mmoveEvent.x = pointerPoint->Position.X;
         e.mmoveEvent.y = pointerPoint->Position.Y;
-        uwpWindow->GetDispatcher()->PostEvent(e);
+
+        if (!SkipEvents(e))
+        {
+            uwpWindow->GetDispatcher()->PostEvent(e);
+        }
 
         mouseButtonState = state;
     }
@@ -288,7 +447,28 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     e.mwheelEvent.y = pointerPoint->Position.Y;
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    uwpWindow->GetDispatcher()->PostEvent(e);
+    if (!SkipEvents(e))
+    {
+        uwpWindow->GetDispatcher()->PostEvent(e);
+    }
+}
+
+void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
+{
+    if (uwpWindow->GetWindow()->GetMouseMode() != eCaptureMode::PINING)
+    {
+        return;
+    }
+    MainDispatcherEvent e;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.window = uwpWindow->GetWindow();
+    e.type = MainDispatcherEvent::MOUSE_MOVE;
+    e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
+    e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
+    if (!SkipEvents(e))
+    {
+        uwpWindow->GetDispatcher()->PostEvent(e);
+    }
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
@@ -373,6 +553,7 @@ void WindowNativeBridge::InstallEventHandlers()
     using namespace ::Windows::UI::Core;
     using namespace ::Windows::UI::Xaml;
     using namespace ::Windows::UI::Xaml::Input;
+    using namespace ::Windows::Devices::Input;
     using namespace ::Windows::UI::Xaml::Controls;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
@@ -390,6 +571,7 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
+    //     tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
 }
 
 void WindowNativeBridge::UninstallEventHandlers()

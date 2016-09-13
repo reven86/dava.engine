@@ -8,6 +8,8 @@
 
 #include "Engine/EngineModule.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceStub : public MouseDeviceInterface
@@ -182,3 +184,5 @@ void MouseDevice::SetSystemMode(eCaptureMode sysMode)
 }
 
 } // namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)

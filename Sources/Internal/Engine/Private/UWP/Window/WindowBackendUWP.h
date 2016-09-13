@@ -8,6 +8,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/Public/EngineTypes.h"
 
 #include "Functional/Function.h"
 
@@ -43,6 +44,11 @@ public:
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
+    void SetMouseMode(eCaptureMode mode);
+    eCaptureMode GetMouseMode() const;
+    void SetCursorVisibility(bool visible);
+    bool GetCursorVisibility() const;
+
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
 
@@ -55,6 +61,9 @@ private:
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
+
+    eCaptureMode mouseCaptureMode = eCaptureMode::OFF;
+    bool mouseVisibility = false;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const

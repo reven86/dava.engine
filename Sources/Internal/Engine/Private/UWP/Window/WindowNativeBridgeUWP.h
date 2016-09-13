@@ -33,6 +33,22 @@ ref struct WindowNativeBridge sealed
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
 
+    void SetMouseMode(eCaptureMode newMode);
+    eCaptureMode GetMouseMode() const;
+    void SetCursorVisibility(bool visible);
+    bool GetCursorVisibility() const;
+
+private:
+    bool SkipEvents(const MainDispatcherEvent& e);
+    void SetSystemMode(eCaptureMode newMode);
+    bool hasFocus = false;
+    bool focusChanged = false;
+    bool deferredCapture = false;
+    eCaptureMode captureMode = eCaptureMode::OFF;
+    bool mouseVisibled = true;
+    uint32 skipMouseMoveEvents = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
+
 private:
     void OnTriggerPlatformEvents();
 
@@ -49,6 +65,7 @@ private:
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
 
     static uint32 GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
     static uint32 GetMouseButtonIndex(std::bitset<5> state);
@@ -79,6 +96,7 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
+    ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;
 
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;

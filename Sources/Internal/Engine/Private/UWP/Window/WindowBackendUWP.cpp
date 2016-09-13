@@ -96,6 +96,26 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
     }
 }
 
+void WindowBackend::SetMouseMode(eCaptureMode mode)
+{
+    bridge->SetMouseMode(mode);
+}
+
+eCaptureMode WindowBackend::GetMouseMode() const
+{
+    return bridge->GetMouseMode();
+}
+
+void WindowBackend::SetCursorVisibility(bool visible)
+{
+    bridge->SetCursorVisibility(visible);
+}
+
+bool WindowBackend::GetCursorVisibility() const
+{
+    return bridge->GetCursorVisibility();
+}
+
 } // namespace Private
 } // namespace DAVA
 

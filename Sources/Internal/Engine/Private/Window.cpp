@@ -65,6 +65,30 @@ void Window::RunAsyncOnUIThread(const Function<void()>& task)
     windowBackend->RunAsyncOnUIThread(task);
 }
 
+void Window::SetMouseMode(eCaptureMode mode)
+{
+    DVASSERT(windowBackend != nullptr);
+    windowBackend->SetMouseMode(mode);
+}
+
+eCaptureMode Window::GetMouseMode() const
+{
+    DVASSERT(windowBackend != nullptr);
+    return windowBackend->GetMouseMode();
+}
+
+void Window::SetCursorVisibility(bool visible)
+{
+    DVASSERT(windowBackend != nullptr);
+    windowBackend->SetCursorVisibility(visible);
+}
+
+bool Window::GetCursorVisibility() const
+{
+    DVASSERT(windowBackend != nullptr);
+    return windowBackend->GetCursorVisibility();
+}
+
 void Window::Update(float32 frameDelta)
 {
     if (windowBackend != nullptr)

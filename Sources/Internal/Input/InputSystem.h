@@ -52,7 +52,9 @@ public:
 
     inline KeyboardDevice& GetKeyboard();
     inline GamepadDevice& GetGamepadDevice();
+#if !defined(__DAVAENGINE_COREV2__)
     inline MouseDevice& GetMouseDevice();
+#endif // !defined(__DAVAENGINE_COREV2__)
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
@@ -60,7 +62,9 @@ public:
 protected:
     KeyboardDevice* keyboard;
     GamepadDevice* gamepad;
+#if !defined(__DAVAENGINE_COREV2__)
     MouseDevice* mouse;
+#endif // !defined(__DAVAENGINE_COREV2__)
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
@@ -78,10 +82,12 @@ inline GamepadDevice& InputSystem::GetGamepadDevice()
     return *gamepad;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 inline MouseDevice& InputSystem::GetMouseDevice()
 {
     return *mouse;
 }
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 inline void InputSystem::EnableMultitouch(bool enabled)
 {
