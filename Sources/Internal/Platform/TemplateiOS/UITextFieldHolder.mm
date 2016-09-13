@@ -238,24 +238,40 @@
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
 
         // Workaround: Additional check on the maximum length for cases
-        // where the system event shouldChangeCharactersInRange does not work for Asian keyboards
+        // where system event shouldChangeCharactersInRange does not work for Asian keyboards
+        //
+        // It also helps in case of multistage text input (like chinese-simplified),
+        // since iOS can append spaces between symbols for non-commited text
         int maxLength = cppTextField->GetMaxLength();
         if (maxLength > 0 && (int)fieldText.length > maxLength)
         {
             fieldText = [fieldText substringToIndex:maxLength];
+            
+            // Truncate text only if user is not in multistage input (markedTextRange is nil)
+            // It prevents commiting it,
+            // and also avoids crash on iOS7 when setText is called during multistage input
+            
             if ([textCtrl class] == [ ::UITextField class])
             {
                 auto textFieldPtr = (::UITextField*)textCtrl;
-                auto selection = [textFieldPtr selectedTextRange];
-                [textFieldPtr setText:fieldText];
-                [textFieldPtr setSelectedTextRange:selection];
+                
+                if ([textFieldPtr markedTextRange] == nil)
+                {
+                    auto selection = [textFieldPtr selectedTextRange];
+                    [textFieldPtr setText:fieldText];
+                    [textFieldPtr setSelectedTextRange:selection];
+                }
             }
             else
             {
                 auto textViewPtr = (::UITextView*)textCtrl;
-                auto selection = [textViewPtr selectedTextRange];
-                [textViewPtr setText:fieldText];
-                [textViewPtr setSelectedTextRange:selection];
+                
+                if ([textViewPtr markedTextRange] == nil)
+                {
+                    auto selection = [textViewPtr selectedTextRange];
+                    [textViewPtr setText:fieldText];
+                    [textViewPtr setSelectedTextRange:selection];
+                }
             }
         }
         // End workaround
