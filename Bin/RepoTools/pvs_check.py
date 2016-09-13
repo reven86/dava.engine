@@ -14,18 +14,20 @@ def main():
         "--target", args.sln_path, 
         "--output", args.output_log])
     proc.communicate()
-    if proc.returncode != 0:
-        print "Failed with return code %s" % proc.returncode
-        raise
+    hadErrors = false
+    if proc.returncode == 0:
+        #OK
+    elif proc.returncode == 7:
+        hadErrors = true
 
     proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe", 
         "-t", "Html",
         "-a", "GA:1",
         args.output_log])
     proc.communicate()
-    if proc.returncode != 0:
-        print "Failed with return code %s" % proc.returncode
-        raise
+    if hadErrors:
+        print "PVS found some issues, see .plog.html for details"
+        return 7
 
 if "__main__" == __name__:
     main()
