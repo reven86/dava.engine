@@ -135,35 +135,54 @@ void ProjectStructureHolder::Impl::OnDirChanged(const QString& path)
 {
     QFileInfo changedDirInfo(path);
     DVASSERT(changedDirInfo.isDir());
+    QMutableSetIterator<QFileInfo> iter(yamlFiles);
+    while (iter.hasNext())
+    {
+        QFileInfo fileInfo = iter.next();
+        QString absoluteFilePath = fileInfo.absoluteFilePath();
+        if (absoluteFilePath.startsWith(path) && !QFile::exists(absoluteFilePath))
+        {
+            iter.remove();
+        }
+    }
+
+    QStringList watchedDirectories = watcher.directories();
+    for (const QString& dirPath : watchedDirectories)
+    {
+        QFileInfo fileInfo(dirPath);
+        if (!fileInfo.isDir())
+        {
+            watcher.removePath(dirPath);
+        }
+    }
+
     if (changedDirInfo.exists())
     {
         AddFilesRecursively(changedDirInfo);
-    }
-    else
-    {
-        QMutableSetIterator<QFileInfo> iter(yamlFiles);
-        while (iter.hasNext())
-        {
-            QFileInfo fileInfo = iter.next();
-            if (fileInfo.absoluteFilePath().startsWith(path) && !fileInfo.exists())
-            {
-                iter.remove();
-            }
-        }
     }
 }
 
 void ProjectStructureHolder::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
 {
     DVASSERT(dirInfo.isDir());
-    QDirIterator dirIterator(dirInfo.absoluteFilePath(), QDirIterator::Subdirectories);
+    QStringList watchedDirectories = watcher.directories();
+
+    QString absDirPath(dirInfo.absoluteFilePath());
+    QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden | QDir::System, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {
+        dirIterator.next();
+        QString tmp = dirIterator.filePath();
         QFileInfo fileInfo(dirIterator.fileInfo());
+        QString absFilePath = fileInfo.absoluteFilePath();
+        if (fileInfo.isDir() && !watchedDirectories.contains(absFilePath))
+        {
+            watcher.addPath(absFilePath);
+            watchedDirectories.append(absFilePath);
+        }
         if (fileInfo.isFile() && fileInfo.suffix() == YamlSuffix())
         {
             yamlFiles.insert(fileInfo);
         }
-        dirIterator.next();
     }
 }

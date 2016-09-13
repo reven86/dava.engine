@@ -166,8 +166,8 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
-        const QFileInfo& fileInfo = it.fileInfo();
         it.next();
+        const QFileInfo& fileInfo = it.fileInfo();
         if (fileInfo.isDir())
         {
             QString outputPath = fileInfo.absoluteFilePath();
