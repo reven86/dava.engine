@@ -21,9 +21,9 @@ public:
     ~PerfQueryGLES2_t() = default;
 
     uint64 timestamp = 0;
-    bool isUsed = false;
-    bool isReady = false;
-    bool isValid = false;
+    uint32 isUsed : 1;
+    uint32 isReady : 1;
+    uint32 isValid : 1;
 };
 
 //==============================================================================
@@ -47,9 +47,9 @@ static Handle gles2_PerfQuery_Create()
     if (query)
     {
         query->timestamp = 0;
-        query->isUsed = false;
-        query->isReady = false;
-        query->isValid = false;
+        query->isUsed = 0;
+        query->isReady = 0;
+        query->isValid = 0;
     }
 
     return handle;
@@ -66,9 +66,9 @@ static void gles2_PerfQuery_Reset(Handle handle)
     if (query)
     {
         query->timestamp = 0;
-        query->isReady = false;
-        query->isValid = false;
-        query->isUsed = false;
+        query->isReady = 0;
+        query->isValid = 0;
+        query->isUsed = 0;
     }
 }
 
@@ -162,7 +162,7 @@ void IssueTimestampQuery(Handle handle)
         GL_CALL(glQueryCounter(queryObject, GL_TIMESTAMP));
 #endif
 
-        query->isUsed = true;
+        query->isUsed = 1;
         pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
     }
 }
@@ -186,10 +186,10 @@ void BeginTimeElapsedQuery(Handle handle)
         GL_CALL(glBeginQuery(GL_TIME_ELAPSED, currentTimeElapsedQuery));
 #endif
 
-        query->isUsed = true;
+        query->isUsed = 1;
         query->timestamp = 0;
-        query->isValid = true;
-        query->isReady = true;
+        query->isValid = 1;
+        query->isReady = 1;
     }
 }
 
@@ -210,7 +210,7 @@ void EndTimeElapsedQuery(Handle handle)
         GL_CALL(glEndQuery(GL_TIME_ELAPSED));
 #endif
 
-        query->isUsed = true;
+        query->isUsed = 1;
         pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, currentTimeElapsedQuery));
         currentTimeElapsedQuery = 0;
     }
@@ -224,7 +224,7 @@ void ObtainPerfQueryResults()
     DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>>::iterator it = pendingQueries.begin();
     while (it != pendingQueries.end())
     {
-        uint32 result = 0;
+        uint32 result = GL_FALSE;
 #if defined(__DAVAENGINE_IPHONE__)
         result = 1;
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -234,7 +234,7 @@ void ObtainPerfQueryResults()
         }
         else
         {
-            result = 1;
+            result = GL_TRUE;
         }
 #else
         if (DeviceCaps().isPerfQuerySupported)
@@ -243,7 +243,7 @@ void ObtainPerfQueryResults()
         }
         else
         {
-            result = 1;
+            result = GL_TRUE;
         }
 #endif
 
@@ -289,7 +289,7 @@ void ObtainPerfQueryResults()
         {
             p.first->timestamp = ts;
             p.first->isValid = !disjointOccurred;
-            p.first->isReady = true;
+            p.first->isReady = 1;
         }
 
         queryObjectPool.push_back(p.second);
@@ -317,9 +317,9 @@ void SkipQuery(Handle handle)
     if (query)
     {
         query->timestamp = 0;
-        query->isReady = true;
-        query->isValid = true;
-        query->isUsed = true;
+        query->isReady = 1;
+        query->isValid = 1;
+        query->isUsed = 1;
     }
 }
 

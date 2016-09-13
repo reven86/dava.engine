@@ -221,7 +221,7 @@ gles_check_GL_extensions()
             _GLES2_DeviceCaps.maxAnisotropy = static_cast<DAVA::uint32>(value);
         }
 
-        _GLES2_TimeStampQuerySupported = strstr(ext, "ARB_timer_query") != nullptr;
+        _GLES2_TimeStampQuerySupported = strstr(ext, "ARB_timer_query") != nullptr || strstr(ext, "EXT_disjoint_timer_query") != nullptr;
         _GLES2_DeviceCaps.isPerfQuerySupported = strstr(ext, "EXT_timer_query") != nullptr || _GLES2_TimeStampQuerySupported;
     }
 
@@ -251,20 +251,27 @@ gles_check_GL_extensions()
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
+
+                glGenQueries = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueries");
+                glDeleteQueries = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueries");
+                glBeginQuery = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQuery");
+                glEndQuery = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQuery");
+                glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVEXTPROC)eglGetProcAddress("glGetQueryObjectuiv");
             }
             else
             {
                 glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
                 glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
                 glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
+
+                glGenQueries = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
+                glDeleteQueries = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
+                glBeginQuery = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
+                glEndQuery = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
+                glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVEXTPROC)eglGetProcAddress("glGetQueryObjectuivEXT");
             }
 
-            glGenQueries = (PFNGLGENQUERIESEXTPROC)eglGetProcAddress("glGenQueriesEXT");
-            glDeleteQueries = (PFNGLDELETEQUERIESEXTPROC)eglGetProcAddress("glDeleteQueriesEXT");
-            glBeginQuery = (PFNGLBEGINQUERYEXTPROC)eglGetProcAddress("glBeginQueryEXT");
-            glEndQuery = (PFNGLENDQUERYEXTPROC)eglGetProcAddress("glEndQueryEXT");
             glQueryCounter = (PFNGLQUERYCOUNTEREXTPROC)eglGetProcAddress("glQueryCounterEXT");
-            glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVEXTPROC)eglGetProcAddress("glGetQueryObjectuivEXT");
             glGetQueryObjectui64v = (PFNGLGETQUERYOBJECTUI64VEXTPROC)eglGetProcAddress("glGetQueryObjectui64vEXT");
 #endif
         }
