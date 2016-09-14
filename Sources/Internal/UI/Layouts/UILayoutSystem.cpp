@@ -41,14 +41,14 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     if (!IsAutoupdatesEnabled())
         return;
 
-    //TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
+    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
 
     bool dirty = control->IsLayoutDirty();
     bool orderDirty = control->IsLayoutOrderDirty();
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || orderDirty && LayoutAfterReorder(control))
+    if (dirty || (orderDirty && LayoutAfterReorder(control)))
     {
         ApplyLayout(control, true);
     }
@@ -57,7 +57,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
         ApplyLayoutNonRecursive(control);
     }
 
-    //TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
+    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
 }
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
@@ -77,9 +77,7 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 
 void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
 {
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
-    //const char* ctrlName = control->GetName().c_str() ? control->GetName().c_str() : "";
-    //TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
+    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control;
@@ -96,13 +94,12 @@ void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnCh
     ApplySizesAndPositions();
 
     layoutData.clear();
-    //TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", ctrlName);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
+    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
 }
 
 void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 {
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
+    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     UIControl* container = control->GetParent();
@@ -115,7 +112,7 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     ApplyPositions();
 
     layoutData.clear();
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
+    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const

@@ -8,6 +8,7 @@ using DAVA::uint64;
 
     #define PROFILER_ENABLED 0
     #define TRACER_ENABLED 0
+    #define UI_TRACER_ENABLED 0
 
 namespace profiler
 {
@@ -150,6 +151,18 @@ void StopTraceEvents();
 #define TRACE_BEGIN_EVENT(tid, cat, name) 
 #define TRACE_END_EVENT(tid, cat, name)   
 #define TRACE_INSTANT_EVENT(tid, cat, name)
+
+#endif
+
+#if UI_TRACER_ENABLED
+
+#define UI_TRACE_BEGIN_EVENT(tid, cat, name) profiler::BeginEvent(tid, cat, name);
+#define UI_TRACE_END_EVENT(tid, cat, name) profiler::EndEvent(tid, cat, name);
+
+#else
+
+#define UI_TRACE_BEGIN_EVENT(tid, cat, name) 
+#define UI_TRACE_END_EVENT(tid, cat, name)   
 
 #endif
 
