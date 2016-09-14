@@ -242,36 +242,28 @@
         //
         // It also helps in case of multistage text input (like chinese-simplified),
         // since iOS can append spaces between symbols for non-commited text
+        // Truncate text only if user is not in multistage input (markedTextRange is nil)
+        // It prevents commiting it,
+        // and also avoids crash on iOS7 when setText is called during multistage input
+        id<UITextInput> inputObject = (id<UITextInput>)textCtrl;
         int maxLength = cppTextField->GetMaxLength();
-        if (maxLength > 0 && (int)fieldText.length > maxLength)
+        if (maxLength > 0 && (int)fieldText.length > maxLength && ([inputObject markedTextRange] == nil))
         {
             fieldText = [fieldText substringToIndex:maxLength];
-            
-            // Truncate text only if user is not in multistage input (markedTextRange is nil)
-            // It prevents commiting it,
-            // and also avoids crash on iOS7 when setText is called during multistage input
             
             if ([textCtrl class] == [ ::UITextField class])
             {
                 auto textFieldPtr = (::UITextField*)textCtrl;
-                
-                if ([textFieldPtr markedTextRange] == nil)
-                {
-                    auto selection = [textFieldPtr selectedTextRange];
-                    [textFieldPtr setText:fieldText];
-                    [textFieldPtr setSelectedTextRange:selection];
-                }
+                auto selection = [textFieldPtr selectedTextRange];
+                [textFieldPtr setText:fieldText];
+                [textFieldPtr setSelectedTextRange:selection];
             }
             else
             {
                 auto textViewPtr = (::UITextView*)textCtrl;
-                
-                if ([textViewPtr markedTextRange] == nil)
-                {
-                    auto selection = [textViewPtr selectedTextRange];
-                    [textViewPtr setText:fieldText];
-                    [textViewPtr setSelectedTextRange:selection];
-                }
+                auto selection = [textViewPtr selectedTextRange];
+                [textViewPtr setText:fieldText];
+                [textViewPtr setSelectedTextRange:selection];
             }
         }
         // End workaround
