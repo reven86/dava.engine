@@ -26,12 +26,12 @@ public:
     void ManualApplyLayout(UIControl* control);
 
 private:
-    void ApplyLayout(UIControl* control, bool considerDenendenceOnChildren);
+    void ApplyLayout(UIControl* control);
     void ApplyLayoutNonRecursive(UIControl* control);
 
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
-    bool LayoutAfterReorder(const UIControl* control) const;
-    bool LayoutAfterReposition(const UIControl* control) const;
+    bool HaveToLayoutAfterReorder(const UIControl* control) const;
+    bool HaveToLayoutAfterReposition(const UIControl* control) const;
 
     void CollectControls(UIControl* control, bool recursive);
     void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);

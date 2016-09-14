@@ -48,12 +48,14 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || (orderDirty && LayoutAfterReorder(control)))
+    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)))
     {
-        ApplyLayout(control, true);
+        UIControl* container = FindNotDependentOnChildrenControl(control);
+        ApplyLayout(container);
     }
-    else if (positionDirty && LayoutAfterReposition(control))
+    else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
+        UIControl* container = control->GetParent();
         ApplyLayoutNonRecursive(control);
     }
 
@@ -62,7 +64,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
 {
-    ApplyLayout(control, false);
+    ApplyLayout(control);
 }
 
 bool UILayoutSystem::IsAutoupdatesEnabled() const
@@ -75,18 +77,12 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
     autoupdatesEnabled = enabled;
 }
 
-void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
+void UILayoutSystem::ApplyLayout(UIControl* control)
 {
     UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
-    UIControl* container = control;
-    if (considerDenendenceOnChildren)
-    {
-        container = FindNotDependentOnChildrenControl(container);
-    }
-
-    CollectControls(container, true);
+    CollectControls(control, true);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
@@ -102,9 +98,7 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
-    UIControl* container = control->GetParent();
-
-    CollectControls(container, false);
+    CollectControls(control, false);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
@@ -139,7 +133,7 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
     return result;
 }
 
-bool UILayoutSystem::LayoutAfterReorder(const UIControl* control) const
+bool UILayoutSystem::HaveToLayoutAfterReorder(const UIControl* control) const
 {
     static const uint64 sensitiveComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
     if ((control->GetAvailableComponentFlags() & sensitiveComponents) != 0)
@@ -156,7 +150,7 @@ bool UILayoutSystem::LayoutAfterReorder(const UIControl* control) const
     return false;
 }
 
-bool UILayoutSystem::LayoutAfterReposition(const UIControl* control) const
+bool UILayoutSystem::HaveToLayoutAfterReposition(const UIControl* control) const
 {
     const UIControl* parent = control->GetParent();
     if (parent == nullptr)
@@ -173,14 +167,6 @@ bool UILayoutSystem::LayoutAfterReposition(const UIControl* control) const
     if ((parent->GetAvailableComponentFlags() & parentComponents) != 0)
     {
         return true;
-    }
-
-    if ((control->GetAvailableComponentFlags() & UIComponent::SIZE_POLICY_COMPONENT) != 0)
-    {
-        UISizePolicyComponent* policy = control->GetComponent<UISizePolicyComponent>();
-        bool res = policy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT ||
-        policy->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT;
-        return res;
     }
 
     return false;
