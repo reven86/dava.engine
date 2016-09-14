@@ -10,7 +10,6 @@
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
 
-
 PackManagerTest::PackManagerTest(GameCore* g)
     : BaseScreen(g, "PackManagerTest")
 {
@@ -405,8 +404,8 @@ void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, v
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     using namespace DAVA;
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
-    // on MacOS slowly connect and then fast downloading
+// To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+// on MacOS slowly connect and then fast downloading
 
 #ifdef __DAVAENGINE_COREV2__
     IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
