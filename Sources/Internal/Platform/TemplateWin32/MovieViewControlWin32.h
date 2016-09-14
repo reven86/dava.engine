@@ -53,7 +53,7 @@ private:
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
     uint32 textureDataLen = 0;
-    eMovieScalingMode scaling;
+    eMovieScalingMode scaling = scalingModeNone;
 };
 }
 

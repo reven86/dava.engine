@@ -221,8 +221,8 @@ struct FunctorTraits<Fn, Ret (Cls::*)(Args...) const>
 
 } // namespace AnyFnDetail
 
-inline AnyFn::AnyFn()
-    : invoker(nullptr)
+inline AnyFn::AnyFn() //-V730 no need to init invoceParams
+: invoker(nullptr)
 {
 }
 

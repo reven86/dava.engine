@@ -83,6 +83,7 @@ Core::Core()
         defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
     screenMetrics.userScale = defaultUserScale;
+    screenOrientation = SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
 }
 
 Core::~Core()
