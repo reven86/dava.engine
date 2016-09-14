@@ -21,8 +21,8 @@ public:
         ES_POST_INIT,
         ES_SHUTDOWN
     };
-
-    Vector<eStatus> StatusList() const
+    
+    const Vector<eStatus>& StatusList() const
     {
         return statusList;
     }

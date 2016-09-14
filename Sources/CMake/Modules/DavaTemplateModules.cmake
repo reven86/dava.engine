@@ -210,6 +210,7 @@ macro( generated_initialization_module_code )
         configure_file( ${MODULE_MANAGER_TEMPLATE}
                         ${IMODULE_CPP}  @ONLY ) 
         list( APPEND CPP_FILES ${IMODULE_CPP} )
+        list( APPEND ERASE_FILES ${MODULE_MANAGER_TEMPLATE_NAME_WE}Stub.cpp )
 
 
         file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${MODULE_MANAGER_TEMPLATE}) 
@@ -378,6 +379,7 @@ macro( setup_main_module )
             if( SRC_FOLDERS_DIR_NAME )
                 define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
                                IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} 
+                                             ${ERASE_FILES_DIR_NAME} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}_DIR_NAME}
                              )
                                          
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
