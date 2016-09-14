@@ -15,7 +15,7 @@
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #endif
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "Render/Image/Image.h"
@@ -582,7 +582,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
 
     // 1. map virtual to physical
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);

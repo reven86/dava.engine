@@ -4,7 +4,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Utils/UTF8Utils.h"
 
@@ -61,7 +61,7 @@ void DetachCurrentThreadFromJVM()
 
 Rect V2I(const Rect& srcRect)
 {
-    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(srcRect);
+    return UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
 }
 
 DAVA::String ToString(const jstring jniString)

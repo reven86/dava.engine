@@ -147,10 +147,10 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
+    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size);
     scaledSize /= window->GetScaleX();
 #else
-    float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
+    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size);
     scaledSize /= Core::Instance()->GetScreenScaleFactor();
 #endif
 
@@ -376,8 +376,8 @@ void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffse
 #else
     float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
 #endif
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
-    Vector2 physicalOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    Rect physicalRect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(virtualRect);
+    Vector2 physicalOffset = UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
     CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x) / divider, (physicalRect.y + physicalOffset.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
 
     nativeRect = CGRectIntegral(nativeRect);

@@ -140,7 +140,7 @@ void AutotestingSystem::OnAppStarted()
 
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
 
-    Size2i size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
     Texture::FBODescriptor desc;
     desc.width = uint32(size.dx);
@@ -360,7 +360,7 @@ void AutotestingSystem::Draw()
         {
             screenshotSync = rhi::GetCurrentFrameSyncObject();
 
-            const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+            const Size2i& pScreenSize = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.colorAttachment = screenshotTexture->handle;
@@ -457,7 +457,7 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
     DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
-    const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
 

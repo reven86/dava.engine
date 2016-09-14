@@ -306,8 +306,8 @@ String AutotestingSystemLua::GetDeviceName()
 bool AutotestingSystemLua::IsPhoneScreen()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
-    float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 xInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
+    float32 yInch = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
     return sqrtf(xInch * xInch + yInch * yInch) <= 6.5f;
 #else
     return false;
@@ -711,7 +711,7 @@ void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
     touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
 }
@@ -721,7 +721,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
     UIEvent touchMove;
     touchMove.touchId = touchId;
     touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    touchMove.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchMove.point = point;
 
     if (AutotestingSystem::Instance()->IsTouchDown(touchId))
@@ -761,7 +761,7 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
     clickDown.mouseButton = UIEvent::MouseButton::LEFT;
     clickDown.device = UIEvent::Device::MOUSE;
     clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickDown.point = point;
     ProcessInput(clickDown);
 }
@@ -777,7 +777,7 @@ void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
     clickUp.mouseButton = UIEvent::MouseButton::LEFT;
     clickUp.device = UIEvent::Device::MOUSE;
     clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    clickUp.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickUp.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickUp.point = point;
     ProcessInput(clickUp);
 }
@@ -790,7 +790,7 @@ void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y
     wheel.phase = UIEvent::Phase::WHEEL;
     wheel.device = UIEvent::Device::MOUSE;
     wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
-    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     wheel.point = point;
     ProcessInput(wheel);
 }

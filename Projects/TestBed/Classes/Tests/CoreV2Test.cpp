@@ -100,7 +100,7 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         w = 1024.0f;
         h = 768.0f;
     }
-    engine->PrimaryWindow()->Resize(w, h);
+    engine->PrimaryWindow()->Resize({ w, h });
 }
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)

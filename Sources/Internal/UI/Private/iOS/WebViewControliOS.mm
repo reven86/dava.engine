@@ -483,7 +483,7 @@ void WebViewControl::SetRect(const Rect& rect)
 {
     CGRect webViewRect = [bridge->nativeWebView frame];
 
-    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem& VCS = *UIControlSystem::Instance()->vcs;
 
     Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
 

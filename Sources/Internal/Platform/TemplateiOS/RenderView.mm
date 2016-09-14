@@ -68,7 +68,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         }
 
         //        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
-        DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+        DAVA::Size2i physicalScreen = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
         //        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         //        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         //        DAVA::RenderSystem2D::Instance()->Init();

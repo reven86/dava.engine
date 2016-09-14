@@ -9,7 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Render/Renderer.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 #include "Logger/Logger.h"
@@ -34,7 +34,6 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
@@ -154,8 +153,8 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     {
         DeviceInfo::InitializeScreenInfo();
 
-        context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
-        context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
+        context->uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
+        context->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 
     RegisterDAVAClasses();
@@ -611,7 +610,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->fontManager = new FontManager();
         context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->virtualCoordSystem = new VirtualCoordinatesSystem();
         context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
@@ -635,7 +633,6 @@ void EngineBackend::DestroySubsystems()
         context->uiControlSystem->Release();
         context->fontManager->Release();
         context->animationManager->Release();
-        context->virtualCoordSystem->Release();
         context->renderSystem2D->Release();
         context->inputSystem->Release();
     }

@@ -6,7 +6,7 @@
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
@@ -14,6 +14,9 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
+#include "UI/UIScreenTransition.h"
+#include "UI/UIEvent.h"
+#include "UI/UIPopup.h"
 #include "Debug/Profiler.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
@@ -33,6 +36,9 @@ UIControlSystem::UIControlSystem()
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
     inputSystem = new UIInputSystem();
+
+    vcs = new VirtualCoordinatesSystem();
+    vcs->EnableReloadResourceOnResize(true);
 
     screenshoter = new UIScreenshoter();
 
@@ -363,7 +369,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
 {
     inputCounter = 0;
 
-    newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
+    newEvent->point = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(newEvent->physPoint);
     newEvent->tapCount = CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())

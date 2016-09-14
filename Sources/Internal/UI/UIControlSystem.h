@@ -4,11 +4,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/Singleton.h"
+#include "Base/FastName.h"
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
-#include "UI/UIScreenTransition.h"
-#include "UI/UIPopup.h"
-#include "Base/FastName.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
@@ -25,6 +24,8 @@ class UIStyleSheetSystem;
 class UIFocusSystem;
 class UIInputSystem;
 class UIScreenshoter;
+class UIScreenTransition;
+class UIPopup;
 
 class ScreenSwitchListener
 {
@@ -289,6 +290,8 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
     int32 GetUI3DViewCount();
+
+    VirtualCoordinatesSystem* vcs = nullptr;
 
 private:
     void ProcessScreenLogic();

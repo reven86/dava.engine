@@ -14,8 +14,7 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 extern "C"
 {
 
@@ -274,7 +273,7 @@ void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
     if (javaTextField != nullptr)
     {
         // TODO: window.GetVirtualCoordinatesSystem
-        float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputY(virtualFontSize);
+        float32 fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputY(virtualFontSize);
         setFontSize(javaTextField, fontSize);
     }
 }

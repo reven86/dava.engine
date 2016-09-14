@@ -8,8 +8,7 @@
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
 #include "Engine/WindowNativeService.h"
@@ -389,7 +388,7 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
 
 Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
 
     // 1. map virtual to physical
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);

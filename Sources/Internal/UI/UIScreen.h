@@ -3,9 +3,9 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
@@ -16,10 +16,8 @@ class UIScreen : public UIControl
 public:
     enum eFillBorderOrder
     {
-        FILL_BORDER_BEFORE_DRAW = 0
-        ,
-        FILL_BORDER_AFTER_DRAW
-        ,
+        FILL_BORDER_BEFORE_DRAW = 0,
+        FILL_BORDER_AFTER_DRAW,
         FILL_BORDER_NONE
     };
 
@@ -29,8 +27,8 @@ protected:
 public:
     UIScreen(const Rect& rect = Rect(0.0f,
                                      0.0f,
-                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
-                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy)
+                                     static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx),
+                                     static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy)
                                      ));
 
     /**

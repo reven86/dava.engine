@@ -20,7 +20,7 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
@@ -329,7 +329,7 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    VirtualCoordinatesSystem::Instance()->Release();
+    UIControlSystem::Instance()->vcs->Release();
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
@@ -558,9 +558,9 @@ void Core::SystemAppStarted()
     NAME_COUNTER(PROF__FRAME_ENDFRAME, "frame-endframe");
     #endif
 
-    if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
+    if (UIControlSystem::Instance()->vcs->WasScreenSizeChanged())
     {
-        VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+        UIControlSystem::Instance()->vcs->ScreenSizeChanged();
         /*  Question to Hottych: Does it really necessary here?
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
@@ -678,7 +678,7 @@ void Core::SystemProcessFrame()
 // delete after change resize in Android and IOS (Core::WindowSizeChanged)
 #if !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_MACOS__)
         // recalc frame inside begin / end frame
-        VirtualCoordinatesSystem* vsc = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* vsc = UIControlSystem::Instance()->vcs;
         if (vsc->WasScreenSizeChanged())
         {
             vsc->ScreenSizeChanged();
@@ -897,7 +897,7 @@ void Core::InitWindowSize(void* nativeView, float32 width, float32 height, float
     rendererParams.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
     rendererParams.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(static_cast<int32>(rendererParams.width), static_cast<int32>(rendererParams.height));
     virtSystem->EnableReloadResourceOnResize(true);
@@ -943,7 +943,7 @@ void Core::ApplyWindowSize()
     params.window = screenMetrics.nativeView;
     Renderer::Reset(params);
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* virtSystem = UIControlSystem::Instance()->vcs;
     virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
     virtSystem->ScreenSizeChanged();

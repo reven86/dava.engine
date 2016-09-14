@@ -72,7 +72,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     Rect viewportRect = geometricData.GetUnrotatedRect();
 
     if (currentTarget.transformVirtualToPhysical)
-        viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+        viewportRc = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(viewportRect);
     else
         viewportRc = viewportRect;
 
@@ -98,7 +98,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     else
     {
         if (currentTarget.transformVirtualToPhysical)
-            viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+            viewportRc += UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
 
         config.colorBuffer[0].texture = currentTarget.colorAttachment;
         config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
@@ -196,7 +196,7 @@ void UI3DView::PrepareFrameBuffer()
 {
     DVASSERT(scene);
 
-    fbRenderSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
+    fbRenderSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
 
     if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
     {

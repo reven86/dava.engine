@@ -58,7 +58,6 @@ public:
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;

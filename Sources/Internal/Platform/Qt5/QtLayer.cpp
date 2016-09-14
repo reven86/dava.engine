@@ -1,8 +1,7 @@
 #include "Platform/Qt5/QtLayer.h"
 
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 #include "Sound/SoundSystem.h"
 
 #include "Input/InputSystem.h"
@@ -84,7 +83,7 @@ void QtLayer::Resize(int32 width, int32 height, float64 dpr)
     resetParams.height = realHeight;
     Renderer::Reset(resetParams);
 
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
     DVASSERT(nullptr != vcs)
 
     vcs->SetInputScreenAreaSize(realWidth, realHeight);

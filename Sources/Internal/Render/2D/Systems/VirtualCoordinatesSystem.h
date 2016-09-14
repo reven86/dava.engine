@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-class VirtualCoordinatesSystem : public Singleton<VirtualCoordinatesSystem>
+class VirtualCoordinatesSystem
 {
     struct ResourceSpaceSize
     {
@@ -320,4 +320,5 @@ const Vector2& VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
     return drawOffset;
 }
 };
+
 #endif

@@ -278,7 +278,7 @@ enum MoviePlayerHelperPlaybackState
 
 - (void)applyVideoRect
 {
-    DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::VirtualCoordinatesSystem::Instance();
+    DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::UIControlSystem::Instance()->vcs;
 
     // 1. map virtual to physical
     DAVA::Rect rect = coordSystem->ConvertVirtualToPhysical(videoRect);

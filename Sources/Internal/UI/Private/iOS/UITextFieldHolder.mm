@@ -26,7 +26,7 @@
         window = nullptr;
 #else
         DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-        DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+        DAVA::Size2i physicalScreenSize = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
         self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx / divider, physicalScreenSize.dy / divider);
         self.center = CGPointMake(physicalScreenSize.dx / 2.f / divider, physicalScreenSize.dy / 2.f / divider);
@@ -66,7 +66,7 @@
     window = w;
 
     DAVA::float32 divider = window->GetScaleX();
-    DAVA::Size2i physicalScreenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    DAVA::Size2i physicalScreenSize = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
     self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx / divider, physicalScreenSize.dy / divider);
     self.center = CGPointMake(physicalScreenSize.dx / 2.f / divider, physicalScreenSize.dy / 2.f / divider);
@@ -78,8 +78,8 @@
     cppTextField = tf;
     if (tf)
     {
-        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(tf->GetRect());
-        DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        DAVA::Rect physicalRect = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(tf->GetRect());
+        DAVA::Vector2 physicalOffset = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
         CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x),
                                        (physicalRect.y + physicalOffset.y),
                                        physicalRect.dx,
@@ -619,10 +619,10 @@
 
     // Recalculate to virtual coordinates.
     DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
-    keyboardOrigin = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardOrigin);
+    keyboardOrigin = DAVA::UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardOrigin);
 
     DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
-    keyboardSize = DAVA::VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(keyboardSize);
+    keyboardSize = DAVA::UIControlSystem::Instance()->vcs->ConvertInputToVirtual(keyboardSize);
 
     cppTextField->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }

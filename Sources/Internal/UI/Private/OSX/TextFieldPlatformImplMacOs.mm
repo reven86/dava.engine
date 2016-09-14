@@ -298,7 +298,7 @@ public:
 
     NSRect ConvertToNativeWindowRect(const Rect& srcRect, NSView* parent)
     {
-        VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+        VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
      
 #if defined(__DAVAENGINE_COREV2__)
         // 1. map virtual to physical
@@ -436,7 +436,7 @@ public:
         {
             isKeyboardOpened = true;
             Rect emptyRect;
-            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+            emptyRect.y = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy;
             davaText->OnKeyboardShown(emptyRect);
         }
     }
@@ -532,7 +532,7 @@ public:
     {
         currentFontSize = virtualFontSize;
 
-        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+        float32 size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(virtualFontSize);
 
         NSSize origSz = NSMakeSize(static_cast<CGFloat>(size), 0);
 #if defined(__DAVAENGINE_COREV2__)
@@ -740,7 +740,7 @@ public:
         {
             isKeyboardOpened = true;
             Rect emptyRect;
-            emptyRect.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+            emptyRect.y = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy;
             davaText->OnKeyboardShown(emptyRect);
         }
 
@@ -945,7 +945,7 @@ public:
 
         currentFontSize = virtualFontSize;
 
-        float32 size = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInputX(virtualFontSize);
+        float32 size = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
 
         [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }

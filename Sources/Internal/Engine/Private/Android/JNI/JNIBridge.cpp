@@ -8,8 +8,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
+#include "UI/UIControlSystem.h"
 namespace DAVA
 {
 namespace JNI
@@ -17,7 +16,7 @@ namespace JNI
 // TODO: del V2I
 Rect V2I(const Rect& rect)
 {
-    return VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(rect);
+    return UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
 }
 
 JNIEnv* GetEnv()

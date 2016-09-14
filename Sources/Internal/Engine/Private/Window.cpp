@@ -269,9 +269,6 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
-    virtualCoordSystem = context->virtualCoordSystem;
-
-    virtualCoordSystem->EnableReloadResourceOnResize(true);
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)

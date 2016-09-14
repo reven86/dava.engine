@@ -25,7 +25,7 @@ void DeviceInfoTest::LoadResources()
     DVASSERT(font);
 
     font->SetSize(24.0f);
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     BaseScreen::LoadResources();
     info = new UIStaticText(Rect(0.f, 0.f, static_cast<float32>(screenSize.dx), static_cast<float32>(screenSize.dy)));
     info->SetTextColor(Color::White);

@@ -318,7 +318,7 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
 
     // 1. map virtual to physical
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);

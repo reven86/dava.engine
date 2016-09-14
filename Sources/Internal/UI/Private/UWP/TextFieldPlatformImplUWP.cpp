@@ -13,7 +13,7 @@
 #include "UI/UITextField.h"
 #include "UI/Focus/FocusHelpers.h"
 
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
@@ -368,7 +368,7 @@ void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 #else
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
-    float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+    float32 fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(virtualFontSize);
     fontSize /= scaleFactor;
 
     properties.fontSize = fontSize;
@@ -1186,7 +1186,7 @@ bool TextFieldPlatformImpl::IsMultiline() const
 
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
 
     // 1. map virtual to physical
     Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
@@ -1207,7 +1207,7 @@ Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
 
     Rect rect = srcRect;
 #if defined(__DAVAENGINE_COREV2__)

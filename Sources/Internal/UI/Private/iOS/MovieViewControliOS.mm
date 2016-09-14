@@ -95,9 +95,9 @@ void MovieViewControl::SetRect(const Rect& rect)
 {
     CGRect playerViewRect = [[bridge->moviePlayer view] frame];
 
-    Rect physicalRect = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
-    playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    Rect physicalRect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(rect);
+    playerViewRect.origin.x = physicalRect.x + UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset().x;
+    playerViewRect.origin.y = physicalRect.y + UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset().y;
     playerViewRect.size.width = physicalRect.dx;
     playerViewRect.size.height = physicalRect.dy;
 

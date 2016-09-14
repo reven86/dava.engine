@@ -7,6 +7,7 @@
 #include "UI/UIWebView.h"
 #include "CEFWebViewControl.h"
 #include "CEFDavaResourceHandler.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -449,7 +450,7 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
 
     switch (currentInput->device)
     {

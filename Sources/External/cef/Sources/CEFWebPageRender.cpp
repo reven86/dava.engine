@@ -3,7 +3,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/TextureDescriptor.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 
 #include "Engine/EngineModule.h"
 
@@ -158,7 +158,7 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
     float32 width = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dx);
     float32 height = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dy);
 

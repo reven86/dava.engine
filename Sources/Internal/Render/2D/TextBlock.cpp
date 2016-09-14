@@ -1,5 +1,5 @@
 #include "Render/2D/TextBlock.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicRender.h"
 #include "Render/2D/TextLayout.h"
@@ -929,10 +929,10 @@ void TextBlock::CalculateCacheParams()
     }
 
     //calculate texture size
-    int32 dx = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
-    int32 dy = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
-    int32 ox = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
-    int32 oy = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
+    int32 dx = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.dx))));
+    int32 dy = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.dy))));
+    int32 ox = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(textMetrics.drawRect.x))));
+    int32 oy = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(textMetrics.drawRect.y))));
 
     cacheUseJustify = useJustify;
     cacheDx = dx;
