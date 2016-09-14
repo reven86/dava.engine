@@ -1152,9 +1152,10 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity* node)
 
             while (material)
             {
-                /*if (material->HasLocalFlag(FLAG_FOG_EXP))
-                    material->RemoveFlag(FLAG_FOG_EXP);                */
-
+                if (material->HasLocalFlag(FLAG_FOG_EXP))
+                {
+                    material->RemoveFlag(FLAG_FOG_EXP);
+                }
                 if (material->HasLocalFlag(FLAG_TILED_DECAL))
                 {
                     material->AddFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, material->GetLocalFlagValue(FLAG_TILED_DECAL));
@@ -1321,10 +1322,7 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         RebuildTangentSpace(rootNode);
     }
 
-    if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
-    {
-        RemoveDeprecatedMaterialFlags(rootNode);
-    }
+    RemoveDeprecatedMaterialFlags(rootNode);
 
     if (header.version < ALPHATEST_VALUE_FLAG_SCENE_VERSION)
     {
@@ -1333,12 +1331,6 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
 
-    //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
-    //    {
-    //        Entity * node = rootNode->GetChild(k);
-    //        if (node->GetName() == "instance_0")
-    //            node->SetName(rootNodeName);
-    //    }
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
 }
