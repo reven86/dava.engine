@@ -360,6 +360,25 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
 {
     //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
 
+    if (quality.IsValid())
+    {
+        static FILE* onotole = fopen("D:\\material.csv", "w");
+
+        Set<String> sortedDefines;
+        for (auto def : defines)
+            sortedDefines.insert(String(def.first.c_str()));
+
+        String allDefines;
+        for (auto i = sortedDefines.begin(), e = sortedDefines.end(); i != e; ++i)
+            allDefines += (*i) + ",";
+
+        const char* fxStr = fxName.c_str();
+        const char* qStr = quality.c_str();
+        const char* dStr = allDefines.c_str();
+        fprintf(onotole, "%s,%s,%s\n", fxStr, qStr, dStr);
+        fflush(onotole);
+    }
+
     FXDescriptor target = LoadOldTempalte(fxName, quality); //we copy it to new fxdescr as single template can be compiled to many descriptors
     target.defines = defines; //combine
     for (auto& pass : target.renderPassDescriptors)
