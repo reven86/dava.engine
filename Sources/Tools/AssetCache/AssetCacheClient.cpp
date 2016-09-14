@@ -67,7 +67,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
             uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
             if (((timeoutms > 0) && (deltaTime > timeoutms)) && (client.ChannelIsOpened() == false))
             {
-                Logger::Error("[AssetCacheClient::%s] connection to %s:%hu refused by timeout (%lld ms)", __FUNCTION__, connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
+                Logger::Error("Timeout on connecting to asset cache %s:%hu (%lld ms)", connectionParams.ip.c_str(), connectionParams.port, connectionParams.timeoutms);
                 isActive = false;
                 return AssetCache::Error::OPERATION_TIMEOUT;
             }
@@ -290,8 +290,11 @@ void AssetCacheClient::OnReceivedFromCache(const AssetCache::CacheItemKey& key, 
         auto DumpInfo = [](const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value)
         {
             const AssetCache::CachedItemValue::Description& description = value.GetDescription();
-            Logger::Info("[%s] %s - %s", description.creationDate.c_str(), description.machineName.c_str(), key.ToString().c_str());
-            Logger::FrameworkDebug("[AssetCacheClient::OnReceivedFromCache] addingChain(%s), receivingChain(%s), comment(%s)", description.addingChain.c_str(), description.receivingChain.c_str(), description.comment.c_str());
+            Logger::Info("Data got from cache. Generated %s on mashine %s (%s)",
+                         description.creationDate.c_str(),
+                         description.machineName.c_str(),
+                         description.comment.c_str());
+            Logger::Info("addingChain: %s, receivingChain: %s", description.addingChain.c_str(), description.receivingChain.c_str());
         };
 
         if (value.IsEmpty())

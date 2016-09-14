@@ -1,8 +1,10 @@
-#ifndef __JNI_HELPERS_H__
-#define __JNI_HELPERS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
@@ -10,7 +12,7 @@
 #include "Math/Rect.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
-{\
+do {\
     JNIEnv* env = JNI::GetEnv();\
     jthrowable e = env->ExceptionOccurred();\
     if (nullptr != e)\
@@ -27,7 +29,7 @@
         env->ReleaseStringUTFChars(estring, utf);\
         DVASSERT_MSG(false, error.c_str());\
     }\
-}
+} while (0);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wclass-varargs"
@@ -816,6 +818,5 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 
 #pragma clang diagnostic pop
 
-#endif
-
-#endif
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

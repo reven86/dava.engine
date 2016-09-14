@@ -5,7 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
-#include "Engine/Public/EngineTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 #include "UI/UIEvent.h"

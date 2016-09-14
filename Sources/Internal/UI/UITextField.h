@@ -409,7 +409,10 @@ private:
     bool isMultiline = false;
     bool isEditing = false;
 
-    TextFieldPlatformImpl* textFieldImpl = nullptr;
+    // Make impl to be controlled by std::shared_ptr as on some platforms (e.g. uwp, android)
+    // impl can live longer than its owner: native control can queue callback in UI thread
+    // but impl's owner is already dead
+    std::shared_ptr<TextFieldPlatformImpl> textFieldImpl;
     int32 maxLength = -1;
 
 public:
