@@ -6,7 +6,6 @@
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Render/Renderer.h"
 #include <unistd.h>
 

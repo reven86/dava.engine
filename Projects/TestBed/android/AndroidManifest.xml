@@ -28,6 +28,10 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:backupAgent="com.dava.framework.JNIBackupAgent">
+        
+        <meta-data android:name="boot_modules" android:value="gnustl_shared;TestBed"/>
+        <meta-data android:name="boot_classes" android:value="com.dava.testbed.TestBed"/>
+        
         <activity
             android:name="com.dava.engine.DavaActivity"
             android:label="@string/app_name"

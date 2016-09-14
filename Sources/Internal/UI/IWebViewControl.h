@@ -48,6 +48,9 @@ public:
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;
+    virtual void OwnerIsDying()
+    {
+    }
 
     // Open the URL requested.
     virtual void OpenURL(const String& urlToOpen) = 0;
