@@ -27,7 +27,7 @@
 #include "Core/Core.h"
 #include "Utils/StringFormat.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

@@ -1,4 +1,4 @@
-#include "Engine/Public/Android/NativeServiceAndroid.h"
+#include "Engine/Android/NativeServiceAndroid.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 

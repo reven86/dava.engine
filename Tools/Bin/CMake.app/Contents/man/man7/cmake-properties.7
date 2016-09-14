@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-PROPERTIES" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-PROPERTIES" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-properties \- CMake Properties Reference
 .
@@ -261,7 +261,7 @@ Automatic function return type, as defined in \fI\%N2541\fP\&.
 Unicode string literals, as defined in \fI\%N2442\fP\&.
 .TP
 .B \fBcxx_uniform_initialization\fP
-Uniform intialization, as defined in \fI\%N2640\fP\&.
+Uniform initialization, as defined in \fI\%N2640\fP\&.
 .TP
 .B \fBcxx_unrestricted_unions\fP
 Unrestricted unions, as defined in \fI\%N2544\fP\&.
@@ -321,20 +321,22 @@ Read\-only property that contains the list of currently enabled languages
 Set to list of currently enabled languages.
 .SS FIND_LIBRARY_USE_LIB64_PATHS
 .sp
-Whether FIND_LIBRARY should automatically search lib64 directories.
+Whether \fBfind_library()\fP should automatically search lib64
+directories.
 .sp
 FIND_LIBRARY_USE_LIB64_PATHS is a boolean specifying whether the
-FIND_LIBRARY command should automatically search the lib64 variant of
-directories called lib in the search path when building 64\-bit
-binaries.
+\fBfind_library()\fP command should automatically search the lib64
+variant of directories called lib in the search path when building
+64\-bit binaries.
 .SS FIND_LIBRARY_USE_OPENBSD_VERSIONING
 .sp
-Whether FIND_LIBRARY should find OpenBSD\-style shared libraries.
+Whether \fBfind_library()\fP should find OpenBSD\-style shared
+libraries.
 .sp
-This property is a boolean specifying whether the FIND_LIBRARY command
-should find shared libraries with OpenBSD\-style versioned extension:
-".so.<major>.<minor>".  The property is set to true on OpenBSD and
-false on other platforms.
+This property is a boolean specifying whether the
+\fBfind_library()\fP command should find shared libraries with
+OpenBSD\-style versioned extension: ".so.<major>.<minor>".  The
+property is set to true on OpenBSD and false on other platforms.
 .SS GLOBAL_DEPENDS_DEBUG_MODE
 .sp
 Enable global target dependency graph debug mode.
@@ -355,7 +357,8 @@ all cycles completely, even among static libraries.
 .sp
 Read\-only property that is true during a try\-compile configuration.
 .sp
-True when building a project inside a TRY_COMPILE or TRY_RUN command.
+True when building a project inside a \fBtry_compile()\fP or
+\fBtry_run()\fP command.
 .SS PACKAGES_FOUND
 .sp
 List of packages which were found during the CMake run.
@@ -402,8 +405,8 @@ Name of FOLDER for targets that are added automatically by CMake.
 .sp
 If not set, CMake uses "CMakePredefinedTargets" as a default value for
 this property.  Targets such as INSTALL, PACKAGE and RUN_TESTS will be
-organized into this FOLDER.  See also the documentation for the FOLDER
-target property.
+organized into this FOLDER.  See also the documentation for the
+\fBFOLDER\fP target property.
 .SS ECLIPSE_EXTRA_NATURES
 .sp
 List of natures to add to the generated Eclipse project file.
@@ -457,9 +460,9 @@ progress message describing what each build rule does.  If the
 property is not set the default is ON.  Set the property to OFF to
 disable granular messages and report only as each target completes.
 This is intended to allow scripted builds to avoid the build time cost
-of detailed reports.  If a CMAKE_RULE_MESSAGES cache entry exists its
-value initializes the value of this property.  Non\-Makefile generators
-currently ignore this property.
+of detailed reports.  If a \fBCMAKE_RULE_MESSAGES\fP cache entry exists
+its value initializes the value of this property.  Non\-Makefile
+generators currently ignore this property.
 .SS TARGET_ARCHIVES_MAY_BE_SHARED_LIBS
 .sp
 Set if shared libraries may be named like archives.
@@ -495,12 +498,13 @@ general purpose OS do so, the exception are usually embedded systems
 with no or special OSs.
 .SS USE_FOLDERS
 .sp
-Use the FOLDER target property to organize targets into folders.
+Use the \fBFOLDER\fP target property to organize targets into
+folders.
 .sp
 If not set, CMake treats this property as OFF by default.  CMake
 generators that are capable of organizing into a hierarchy of folders
-use the values of the FOLDER target property to name those folders.
-See also the documentation for the FOLDER target property.
+use the values of the \fBFOLDER\fP target property to name those
+folders. See also the documentation for the FOLDER target property.
 .SH PROPERTIES ON DIRECTORIES
 .SS ADDITIONAL_MAKE_CLEAN_FILES
 .sp
@@ -545,8 +549,7 @@ This property will be initialized in each directory by its value in the
 directory\(aqs parent.
 .sp
 CMake will automatically drop some definitions that are not supported
-by the native build tool.  The VS6 IDE does not support definition
-values with spaces (but NMake does).
+by the native build tool.
 .sp
 Disclaimer: Most native build tools have poor support for escaping
 certain values.  CMake has work\-arounds for many cases but some values
@@ -683,7 +686,7 @@ directories for the compiler.
 In addition to accepting values from that command, values may be set
 directly on any directory using the \fBset_property()\fP command.  A
 directory gets its initial value from its parent directory if it has one.
-The intial value of the \fBINCLUDE_DIRECTORIES\fP target property
+The initial value of the \fBINCLUDE_DIRECTORIES\fP target property
 comes from the value of this property.  Both directory and target property
 values are adjusted by calls to the \fBinclude_directories()\fP command.
 .sp
@@ -728,8 +731,9 @@ The current stack of listfiles being processed.
 .sp
 This property is mainly useful when trying to debug errors in your
 CMake scripts.  It returns a list of what list files are currently
-being processed, in order.  So if one listfile does an INCLUDE command
-then that is effectively pushing the included listfile onto the stack.
+being processed, in order.  So if one listfile does an
+\fBinclude()\fP command then that is effectively pushing the
+included listfile onto the stack.
 .SS MACROS
 .sp
 List of macro commands available in the current directory.
@@ -835,6 +839,23 @@ List elements which do not contain an equal sign are skipped.
 This property only works for Visual Studio 7 and above; it is ignored
 on other generators.  The property only applies when set on a
 directory whose CMakeLists.txt contains a project() command.
+.SS VS_STARTUP_PROJECT
+.sp
+Specify the default startup project in a Visual Studio solution.
+.sp
+The Visual Studio Generators create a \fB\&.sln\fP file for each directory
+whose \fBCMakeLists.txt\fP file calls the \fBproject()\fP command.  Set this
+property in the same directory as a \fBproject()\fP command call (e.g. in
+the top\-level \fBCMakeLists.txt\fP file) to specify the default startup project
+for the correpsonding solution file.
+.sp
+The property must be set to the name of an existing target.  This
+will cause that project to be listed first in the generated solution
+file causing Visual Studio to make it the startup project if the
+solution has never been opened before.
+.sp
+If this property is not specified, then the \fBALL_BUILD\fP project
+will be the default.
 .SH PROPERTIES ON TARGETS
 .SS ALIASED_TARGET
 .sp
@@ -1089,22 +1110,37 @@ Should the target be processed with automoc (for Qt projects).
 AUTOMOC is a boolean specifying whether CMake will handle the Qt \fBmoc\fP
 preprocessor automatically, i.e.  without having to use the
 \fBQT4_WRAP_CPP()\fP or QT5_WRAP_CPP() macro.  Currently Qt4 and Qt5 are
-supported.  When this property is set \fBON\fP, CMake will scan the
-source files at build time and invoke moc accordingly.  If an \fB#include\fP
-statement like \fB#include "moc_foo.cpp"\fP is found, the \fBQ_OBJECT\fP class
-declaration is expected in the header, and \fBmoc\fP is run on the header
-file.  If an \fB#include\fP statement like \fB#include "foo.moc"\fP is found, then
-a \fBQ_OBJECT\fP is expected in the current source file and \fBmoc\fP is run on
-the file itself.  Additionally, header files with the same base name (like
-\fBfoo.h\fP) or \fB_p\fP appended to the base name (like \fBfoo_p.h\fP) are parsed
-for \fBQ_OBJECT\fP macros, and if found, \fBmoc\fP is also executed on those files.
-\fBAUTOMOC\fP checks multiple header alternative extensions, such as
-\fBhpp\fP, \fBhxx\fP etc when searching for headers.
-The resulting moc files, which are not included as shown above in any
-of the source files are included in a generated
+supported.
+.sp
+When this property is set \fBON\fP, CMake will scan the
+source files at build time and invoke moc accordingly.
+.INDENT 0.0
+.IP \(bu 2
+If an \fB#include\fP statement like \fB#include "moc_foo.cpp"\fP is found,
+the \fBQ_OBJECT\fP class declaration is expected in the header, and
+\fBmoc\fP is run on the header file.  A \fBmoc_foo.cpp\fP file will be
+generated from the source\(aqs header into the
+\fBCMAKE_CURRENT_BINARY_DIR\fP directory.  This allows the
+compiler to find the included \fBmoc_foo.cpp\fP file regardless of the
+location the original source.  However, if multiple source files
+in different directories do this then their generated moc files would
+collide.  In this case a diagnostic will be issued.
+.IP \(bu 2
+If an \fB#include\fP statement like \fB#include "foo.moc"\fP is found,
+then a \fBQ_OBJECT\fP is expected in the current source file and \fBmoc\fP
+is run on the file itself.  Additionally, header files with the same
+base name (like \fBfoo.h\fP) or \fB_p\fP appended to the base name (like
+\fBfoo_p.h\fP) are parsed for \fBQ_OBJECT\fP macros, and if found, \fBmoc\fP
+is also executed on those files.  \fBAUTOMOC\fP checks multiple header
+alternative extensions, such as \fBhpp\fP, \fBhxx\fP etc when searching
+for headers.  The resulting moc files, which are not included as shown
+above in any of the source files are included in a generated
 \fB<targetname>_automoc.cpp\fP file, which is compiled as part of the
-target.  This property is initialized by the value of the
-\fBCMAKE_AUTOMOC\fP variable if it is set when a target is created.
+target.
+.UNINDENT
+.sp
+This property is initialized by the value of the \fBCMAKE_AUTOMOC\fP
+variable if it is set when a target is created.
 .sp
 Additional command line options for moc can be set via the
 \fBAUTOMOC_MOC_OPTIONS\fP property.
@@ -1243,7 +1279,8 @@ Boolean specifying whether compiler specific extensions are requested.
 This property specifies whether compiler specific extensions should be
 used.  For some compilers, this results in adding a flag such
 as \fB\-std=gnu11\fP instead of \fB\-std=c11\fP to the compile line.  This
-property is \fBON\fP by default.
+property is \fBON\fP by default. The basic C standard level is
+controlled by the \fBC_STANDARD\fP target property.
 .sp
 See the \fBcmake\-compile\-features(7)\fP manual for information on
 compile features and a list of supported compilers.
@@ -1280,6 +1317,8 @@ with a compiler which does not support \fB\-std=gnu11\fP or an equivalent
 flag will not result in an error or warning, but will instead add the
 \fB\-std=gnu99\fP or \fB\-std=gnu90\fP flag if supported.  This "decay" behavior may
 be controlled with the \fBC_STANDARD_REQUIRED\fP target property.
+Additionally, the \fBC_EXTENSIONS\fP target property may be used to
+control whether compiler\-specific extensions are enabled on a per\-target basis.
 .sp
 See the \fBcmake\-compile\-features(7)\fP manual for information on
 compile features and a list of supported compilers.
@@ -1384,8 +1423,7 @@ automatically escape the value correctly for the native build system
 values).
 .sp
 CMake will automatically drop some definitions that are not supported
-by the native build tool.  The VS6 IDE does not support definition
-values with spaces (but NMake does).
+by the native build tool.
 .sp
 Disclaimer: Most native build tools have poor support for escaping
 certain values.  CMake has work\-arounds for many cases but some values
@@ -1437,12 +1475,12 @@ for information on compile features and a list of supported compilers.
 .sp
 Additional flags to use when compiling this target\(aqs sources.
 .sp
-The COMPILE_FLAGS property sets additional compiler flags used to
-build sources within the target.  Use COMPILE_DEFINITIONS to pass
-additional preprocessor definitions.
+The \fBCOMPILE_FLAGS\fP property sets additional compiler flags used to
+build sources within the target.  Use \fBCOMPILE_DEFINITIONS\fP
+to pass additional preprocessor definitions.
 .sp
-This property is deprecated.  Use the COMPILE_OPTIONS property or the
-target_compile_options command instead.
+This property is deprecated.  Use the \fBCOMPILE_OPTIONS\fP
+property or the command:\fItarget_compile_options\fP command instead.
 .SS COMPILE_OPTIONS
 .sp
 List of options to pass to the compiler.
@@ -1451,7 +1489,7 @@ This property holds a ;\-list of options
 specified so far for its target.  Use the \fBtarget_compile_options()\fP
 command to append more options.
 .sp
-This property is intialized by the \fBCOMPILE_OPTIONS\fP directory
+This property is initialized by the \fBCOMPILE_OPTIONS\fP directory
 property when a target is created, and is used by the generators to set
 the options for the compiler.
 .sp
@@ -1474,9 +1512,6 @@ The compiler\-generated program database files are specified by the
 \fB/Fd\fP compiler flag and are not the same as linker\-generated
 program database files specified by the \fB/pdb\fP linker flag.
 Use the \fBPDB_NAME\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS COMPILE_PDB_NAME_<CONFIG>
@@ -1493,9 +1528,6 @@ The compiler\-generated program database files are specified by the
 \fB/Fd\fP compiler flag and are not the same as linker\-generated
 program database files specified by the \fB/pdb\fP linker flag.
 Use the \fBPDB_NAME_<CONFIG>\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS COMPILE_PDB_OUTPUT_DIRECTORY
@@ -1515,9 +1547,6 @@ The compiler\-generated program database files are specified by the
 \fB/Fd\fP compiler flag and are not the same as linker\-generated
 program database files specified by the \fB/pdb\fP linker flag.
 Use the \fBPDB_OUTPUT_DIRECTORY\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS COMPILE_PDB_OUTPUT_DIRECTORY_<CONFIG>
@@ -1540,9 +1569,6 @@ The compiler\-generated program database files are specified by the
 \fB/Fd\fP compiler flag and are not the same as linker\-generated
 program database files specified by the \fB/pdb\fP linker flag.
 Use the \fBPDB_OUTPUT_DIRECTORY_<CONFIG>\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS <CONFIG>_OUTPUT_NAME
@@ -1563,9 +1589,10 @@ CMAKE_<CONFIG>_POSTFIX if it is set when a target is created.  This
 property is ignored on the Mac for Frameworks and App Bundles.
 .SS CROSSCOMPILING_EMULATOR
 .sp
-Use the given emulator to run executables created when crosscompiling.  This
-command will be added as a prefix to \fBadd_test()\fP test commands for
-built target system executables.
+Use the given emulator to run executables created when crosscompiling.
+This command will be added as a prefix to \fBadd_test()\fP,
+\fBadd_custom_command()\fP, and \fBadd_custom_target()\fP commands
+for built target system executables.
 .SS CXX_EXTENSIONS
 .sp
 Boolean specifying whether compiler specific extensions are requested.
@@ -1573,7 +1600,8 @@ Boolean specifying whether compiler specific extensions are requested.
 This property specifies whether compiler specific extensions should be
 used.  For some compilers, this results in adding a flag such
 as \fB\-std=gnu++11\fP instead of \fB\-std=c++11\fP to the compile line.  This
-property is \fBON\fP by default.
+property is \fBON\fP by default. The basic C++ standard level is
+controlled by the \fBCXX_STANDARD\fP target property.
 .sp
 See the \fBcmake\-compile\-features(7)\fP manual for information on
 compile features and a list of supported compilers.
@@ -1610,6 +1638,8 @@ with a compiler which does not support \fB\-std=gnu++11\fP or an equivalent
 flag will not result in an error or warning, but will instead add the
 \fB\-std=gnu++98\fP flag if supported.  This "decay" behavior may be controlled
 with the \fBCXX_STANDARD_REQUIRED\fP target property.
+Additionally, the \fBCXX_EXTENSIONS\fP target property may be used to
+control whether compiler\-specific extensions are enabled on a per\-target basis.
 .sp
 See the \fBcmake\-compile\-features(7)\fP manual for information on
 compile features and a list of supported compilers.
@@ -1650,6 +1680,37 @@ to target_EXPORTS by default (with some substitutions if the target is
 not a valid C identifier).  This is useful for headers to know whether
 they are being included from inside their library or outside to
 properly setup dllexport/dllimport decorations.
+.SS DEPLOYMENT_REMOTE_DIRECTORY
+.sp
+Set the WinCE project \fBRemoteDirectory\fP in \fBDeploymentTool\fP and
+\fBRemoteExecutable\fP in \fBDebuggerTool\fP in \fB\&.vcproj\fP files generated
+by the \fBVisual Studio 9 2008\fP and \fBVisual Studio 8 2005\fP
+generators.  This is useful when you want to debug on remote WinCE device.
+For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set_property(TARGET ${TARGET} PROPERTY
+  DEPLOYMENT_REMOTE_DIRECTORY "\e\eFlashStorage")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+produces:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+<DeploymentTool RemoteDirectory="\eFlashStorage" ... />
+<DebuggerTool RemoteExecutable="\eFlashStorage\etarget_file" ... />
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .SS EchoString
 .sp
 A message to be displayed when the target is built.
@@ -1772,6 +1833,10 @@ set_target_properties(dynamicFramework PROPERTIES
   FRAMEWORK_VERSION C
   MACOSX_FRAMEWORK_IDENTIFIER com.cmake.dynamicFramework
   MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+  # "current version" in semantic format in Mach\-O binary file
+  VERSION 16.4.0
+  # "compatibility version" in semantic format in Mach\-O binary file
+  SOVERSION 1.0.0
   PUBLIC_HEADER dynamicFramework.h
   XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
 )
@@ -2349,7 +2414,7 @@ Ninja only: Pool used for linking.
 .sp
 The number of parallel link processes could be limited by defining
 pools with the global \fBJOB_POOLS\fP
-property and then specifing here the pool name.
+property and then specifying here the pool name.
 .sp
 For instance:
 .INDENT 0.0
@@ -2369,6 +2434,18 @@ This property is initialized by the value of \fBCMAKE_JOB_POOL_LINK\fP\&.
 Specify a list of text labels associated with a target.
 .sp
 Target label semantics are currently unspecified.
+.SS <LANG>_CLANG_TIDY
+.sp
+This property is implemented only when \fB<LANG>\fP is \fBC\fP or \fBCXX\fP\&.
+.sp
+Specify a ;\-list containing a command
+line for the \fBclang\-tidy\fP tool.  The Makefile Generators
+and the \fBNinja\fP generator will run this tool along with the
+compiler and report a warning if the tool reports any problems.
+.sp
+This property is initialized by the value of
+the \fBCMAKE_<LANG>_CLANG_TIDY\fP variable if it is set
+when a target is created.
 .SS <LANG>_COMPILER_LAUNCHER
 .sp
 This property is implemented only when \fB<LANG>\fP is \fBC\fP or \fBCXX\fP\&.
@@ -2894,9 +2971,6 @@ The linker\-generated program database files are specified by the
 \fB/pdb\fP linker flag and are not the same as compiler\-generated
 program database files specified by the \fB/Fd\fP compiler flag.
 Use the \fBCOMPILE_PDB_NAME_<CONFIG>\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS PDB_NAME
@@ -2919,9 +2993,6 @@ The linker\-generated program database files are specified by the
 \fB/pdb\fP linker flag and are not the same as compiler\-generated
 program database files specified by the \fB/Fd\fP compiler flag.
 Use the \fBCOMPILE_PDB_NAME\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS PDB_OUTPUT_DIRECTORY_<CONFIG>
@@ -2947,9 +3018,6 @@ The linker\-generated program database files are specified by the
 \fB/pdb\fP linker flag and are not the same as compiler\-generated
 program database files specified by the \fB/Fd\fP compiler flag.
 Use the \fBCOMPILE_PDB_OUTPUT_DIRECTORY_<CONFIG>\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS PDB_OUTPUT_DIRECTORY
@@ -2973,9 +3041,6 @@ The linker\-generated program database files are specified by the
 \fB/pdb\fP linker flag and are not the same as compiler\-generated
 program database files specified by the \fB/Fd\fP compiler flag.
 Use the \fBCOMPILE_PDB_OUTPUT_DIRECTORY\fP property to specify the latter.
-.sp
-This property is not implemented by the \fBVisual Studio 6\fP
-generator.
 .UNINDENT
 .UNINDENT
 .SS POSITION_INDEPENDENT_CODE
@@ -3196,15 +3261,24 @@ List of sources specified for a target.
 .sp
 What version number is this target.
 .sp
-For shared libraries VERSION and SOVERSION can be used to specify the
-build version and API version respectively.  When building or
+For shared libraries \fBVERSION\fP and \fBSOVERSION\fP can be used to
+specify the build version and API version respectively.  When building or
 installing appropriate symlinks are created if the platform supports
 symlinks and the linker supports so\-names.  If only one of both is
 specified the missing is assumed to have the same version number.
-SOVERSION is ignored if NO_SONAME property is set.  For shared
-libraries and executables on Windows the VERSION attribute is parsed
-to extract a "major.minor" version number.  These numbers are used as
-the image version of the binary.
+\fBSOVERSION\fP is ignored if \fBNO_SONAME\fP property is set.
+.SS Windows Versions
+.sp
+For shared libraries and executables on Windows the \fBVERSION\fP
+attribute is parsed to extract a \fB<major>.<minor>\fP version number.
+These numbers are used as the image version of the binary.
+.SS Mach\-O Versions
+.sp
+For shared libraries and executables on Mach\-O systems (e.g. OS X, iOS),
+the \fBSOVERSION\fP property corresponds to \fIcompatibility version\fP and
+\fBVERSION\fP to \fIcurrent version\fP\&.  See the \fBFRAMEWORK\fP target
+property for an example.  Versions of Mach\-O binaries may be checked with the
+\fBotool \-L <binary>\fP command.
 .SS STATIC_LIBRARY_FLAGS_<CONFIG>
 .sp
 Per\-configuration flags for creating a static library.
@@ -3233,17 +3307,26 @@ target types.
 .sp
 What version number is this target.
 .sp
-For shared libraries VERSION and SOVERSION can be used to specify the
-build version and API version respectively.  When building or
+For shared libraries \fBVERSION\fP and \fBSOVERSION\fP can be used
+to specify the build version and API version respectively.  When building or
 installing appropriate symlinks are created if the platform supports
 symlinks and the linker supports so\-names.  If only one of both is
 specified the missing is assumed to have the same version number.  For
-executables VERSION can be used to specify the build version.  When
+executables \fBVERSION\fP can be used to specify the build version.  When
 building or installing appropriate symlinks are created if the
-platform supports symlinks.  For shared libraries and executables on
-Windows the VERSION attribute is parsed to extract a "major.minor"
-version number.  These numbers are used as the image version of the
-binary.
+platform supports symlinks.
+.SS Windows Versions
+.sp
+For shared libraries and executables on Windows the \fBVERSION\fP
+attribute is parsed to extract a \fB<major>.<minor>\fP version number.
+These numbers are used as the image version of the binary.
+.SS Mach\-O Versions
+.sp
+For shared libraries and executables on Mach\-O systems (e.g. OS X, iOS),
+the \fBSOVERSION\fP property correspond to \fIcompatibility version\fP and
+\fBVERSION\fP to \fIcurrent version\fP\&.  See the \fBFRAMEWORK\fP target
+property for an example.  Versions of Mach\-O binaries may be checked with the
+\fBotool \-L <binary>\fP command.
 .SS VISIBILITY_INLINES_HIDDEN
 .sp
 Whether to add a compile flag to hide symbols of inline functions
@@ -3256,6 +3339,15 @@ in sources of all types of targets (subject to policy \fBCMP0063\fP).
 This property is initialized by
 the value of the \fBCMAKE_VISIBILITY_INLINES_HIDDEN\fP variable if it
 is set when a target is created.
+.SS VS_CONFIGURATION_TYPE
+.sp
+Visual Studio project configuration type.
+.sp
+Sets the \fBConfigurationType\fP attribute for a generated Visual Studio project.
+If this property is set, it overrides the default setting that is based on the
+target type (e.g. \fBStaticLibrary\fP, \fBApplication\fP, ...).
+.sp
+Supported on Visual Studio Generators for VS 2010 and higher.
 .SS VS_DESKTOP_EXTENSIONS_VERSION
 .sp
 Visual Studio Windows 10 Desktop Extensions Version
@@ -3472,8 +3564,8 @@ This property depends on \fBBUNDLE\fP to be effective.
 .sp
 Attach a list of files to a dashboard submission if the test fails.
 .sp
-Same as ATTACHED_FILES, but these files will only be included if the
-test does not pass.
+Same as \fBATTACHED_FILES\fP, but these files will only be
+included if the test does not pass.
 .SS ATTACHED_FILES
 .sp
 Attach a list of files to a dashboard submission.
@@ -3594,6 +3686,44 @@ This property if set will limit a test to not take more than the
 specified number of seconds to run.  If it exceeds that the test
 process will be killed and ctest will move to the next test.  This
 setting takes precedence over \fBCTEST_TEST_TIMEOUT\fP\&.
+.SS TIMEOUT_AFTER_MATCH
+.sp
+Change a test\(aqs timeout duration after a matching line is encountered
+in its output.
+.SS Usage
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_test(mytest ...)
+set_property(TEST mytest PROPERTY TIMEOUT_AFTER_MATCH "${seconds}" "${regex}")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Description
+.sp
+Allow a test \fBseconds\fP to complete after \fBregex\fP is encountered in
+its output.
+.sp
+When the test outputs a line that matches \fBregex\fP its start time is
+reset to the current time and its timeout duration is changed to
+\fBseconds\fP\&.  Prior to this, the timeout duration is determined by the
+\fBTIMEOUT\fP property or the \fBCTEST_TEST_TIMEOUT\fP
+variable if either of these are set.
+.sp
+\fI\%TIMEOUT_AFTER_MATCH\fP is useful for avoiding spurious
+timeouts when your test must wait for some system resource to become
+available before it can execute.  Set \fBTIMEOUT\fP to a longer
+duration that accounts for resource acquisition and use
+\fI\%TIMEOUT_AFTER_MATCH\fP to control how long the actual test
+is allowed to run.
+.sp
+If the required resource can be controlled by CTest you should use
+\fBRESOURCE_LOCK\fP instead of \fI\%TIMEOUT_AFTER_MATCH\fP\&.
+This property should be used when only the test itself can determine
+when its required resources are available.
 .SS WILL_FAIL
 .sp
 If set to true, this will invert the pass/fail flag of the test.
@@ -3654,9 +3784,8 @@ the name COMPILE_DEFINITIONS_<CONFIG> where <CONFIG> is an upper\-case
 name (ex.  "COMPILE_DEFINITIONS_DEBUG").
 .sp
 CMake will automatically drop some definitions that are not supported
-by the native build tool.  The VS6 IDE does not support definition
-values with spaces (but NMake does).  Xcode does not support
-per\-configuration definitions on source files.
+by the native build tool.  Xcode does not support per\-configuration
+definitions on source files.
 .sp
 Disclaimer: Most native build tools have poor support for escaping
 certain values.  CMake has work\-arounds for many cases but some values
@@ -3689,8 +3818,8 @@ some cases.  Use with caution.
 Additional flags to be added when compiling this source file.
 .sp
 These flags will be added to the list of compile flags when this
-source file builds.  Use COMPILE_DEFINITIONS to pass additional
-preprocessor definitions.
+source file builds.  Use \fBCOMPILE_DEFINITIONS\fP to pass
+additional preprocessor definitions.
 .SS EXTERNAL_OBJECT
 .sp
 If set to true then this is an object file.

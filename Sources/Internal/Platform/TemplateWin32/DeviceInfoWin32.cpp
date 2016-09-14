@@ -301,6 +301,11 @@ bool DeviceInfoPrivate::IsTouchPresented()
     //TODO: remove this empty realization and implement detection touch
     return false;
 }
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return "Not supported";
+}
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)
