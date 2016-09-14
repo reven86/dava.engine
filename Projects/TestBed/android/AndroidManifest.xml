@@ -21,7 +21,7 @@
         Uncomment to use core v2 dava.engine implementation
         Do not forget to uncomment APP_CPPFLAGS += -D__DAVAENGINE_COREV2__ in Application.mk
     -->
-    
+    <!--
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -46,13 +46,13 @@
         </activity>
         <receiver android:name="com.dava.framework.ScheduledNotificationReceiver"/>
     </application>
-    
+    -->
 
     <!-- 
         Uncomment to use current dava.engine implementation
         Do not forget to comment APP_CFLAGS += -D__DAVAENGINE_COREV2__ in Application.mk 
     -->
-    <!--
+    
     <application
         android:name="com.dava.testbed.TestBedApp"
         android:allowBackup="true"
@@ -74,5 +74,5 @@
         </activity>
         <receiver android:name="com.dava.framework.ScheduledNotificationReceiver"/>
     </application>
-    -->
+    
 </manifest>
