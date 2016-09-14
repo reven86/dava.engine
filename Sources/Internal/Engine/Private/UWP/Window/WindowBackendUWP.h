@@ -44,10 +44,8 @@ public:
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
-    void SetMouseMode(eCaptureMode mode);
-    eCaptureMode GetMouseMode() const;
-    void SetCursorVisibility(bool visible);
-    bool GetCursorVisibility() const;
+    void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
@@ -62,8 +60,6 @@ private:
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
-    eCaptureMode mouseCaptureMode = eCaptureMode::OFF;
-    bool mouseVisibility = false;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const

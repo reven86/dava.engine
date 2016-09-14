@@ -57,7 +57,11 @@ void FullscreenTest::LoadResources()
     // pinning mode
     btn.reset(new UIButton(Rect(10, 110, 300, 20)));
     btn->SetStateFont(0xFF, font);
+#if !defined(__DAVAENGINE_COREV2__)
     btn->SetStateText(0xFF, L"Mouse Capute: Frame");
+#else
+    btn->SetStateText(0xFF, L"Mouse Capute: Hide");
+#endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(0);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -292,7 +296,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 #if !defined(__DAVAENGINE_COREV2__)
         InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::FRAME);
 #else
-        Engine::Instance()->PrimaryWindow()->SetMouseMode(eCaptureMode::FRAME);
+        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::HIDE);
 #endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
@@ -300,7 +304,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 #if !defined(__DAVAENGINE_COREV2__)
         InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
 #else
-        Engine::Instance()->PrimaryWindow()->SetMouseMode(eCaptureMode::PINING);
+        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::PINING);
 #endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
@@ -350,20 +354,20 @@ void FullscreenTest::UpdateMode()
     }
 #else
     Window* primWind = Engine::Instance()->PrimaryWindow();
-    eCaptureMode captureMode = primWind->GetMouseMode();
+    eMouseMode captureMode = primWind->GetMouseMode();
     switch (captureMode)
     {
-    case eCaptureMode::OFF:
+    case eMouseMode::OFF:
         pinningText->SetText(L"Mouse capture mode: OFF");
         pinningMousePosText->SetVisibilityFlag(false);
         break;
 
-    case eCaptureMode::FRAME:
-        pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
+    case eMouseMode::HIDE:
+        pinningText->SetText(L"Mouse Capture = HIDE, press Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
 
-    case eCaptureMode::PINING:
+    case eMouseMode::PINING:
         pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
@@ -397,15 +401,15 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
     return BaseScreen::SystemInput(currentInput);
 #else
     Window* primWind = Engine::Instance()->PrimaryWindow();
-    eCaptureMode captureMode = primWind->GetMouseMode();
-    if ((primWind->GetMouseMode() != eCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    eMouseMode captureMode = primWind->GetMouseMode();
+    if ((primWind->GetMouseMode() != eMouseMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
     {
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                primWind->SetMouseMode(eCaptureMode::OFF);
+                primWind->SetMouseMode(eMouseMode::OFF);
             }
             break;
 

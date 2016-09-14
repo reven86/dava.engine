@@ -58,10 +58,8 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     // Window's cursor mode
-    void SetMouseMode(eCaptureMode mode);
-    eCaptureMode GetMouseMode() const;
-    void SetCursorVisibility(bool visible);
-    bool GetCursorVisibility() const;
+    void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 public:
     // For now these methods are public

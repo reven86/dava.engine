@@ -33,19 +33,20 @@ ref struct WindowNativeBridge sealed
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
 
-    void SetMouseMode(eCaptureMode newMode);
-    eCaptureMode GetMouseMode() const;
-    void SetCursorVisibility(bool visible);
-    bool GetCursorVisibility() const;
+    void SetMouseMode(eMouseMode newMode);
+    eMouseMode GetMouseMode() const;
 
 private:
+    void SetMouseVisibility(bool visible);
+    void SetMouseCaptured(bool capture);
     bool SkipEvents(const MainDispatcherEvent& e);
-    void SetSystemMode(eCaptureMode newMode);
+    bool mouseCaptured = false;
+    bool mouseVisibled = true;
+    bool deferredMouseMode = false;
+    eMouseMode uicaptureMode = eMouseMode::OFF;
+    eMouseMode captureMode = eMouseMode::OFF;
     bool hasFocus = false;
     bool focusChanged = false;
-    bool deferredCapture = false;
-    eCaptureMode captureMode = eCaptureMode::OFF;
-    bool mouseVisibled = true;
     uint32 skipMouseMoveEvents = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 
