@@ -250,7 +250,7 @@
         if (maxLength > 0 && (int)fieldText.length > maxLength && ([inputObject markedTextRange] == nil))
         {
             fieldText = [fieldText substringToIndex:maxLength];
-            
+
             if ([textCtrl class] == [ ::UITextField class])
             {
                 auto textFieldPtr = (::UITextField*)textCtrl;
