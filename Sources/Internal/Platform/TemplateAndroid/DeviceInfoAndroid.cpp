@@ -29,6 +29,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
     getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
     getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
     getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
@@ -250,7 +251,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
     if (mid)
     {
         jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
             info = StorageInfoFromJava(object);
@@ -281,7 +282,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
     if (mid)
     {
         jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
             info = StorageInfoFromJava(object);
@@ -303,7 +304,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     if (mid)
     {
         jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
-        DAVA_JNI_EXCEPTION_CHECK();
+        DAVA_JNI_EXCEPTION_CHECK
         if (array)
         {
             jsize length = env->GetArrayLength(array);
@@ -324,6 +325,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     }
 
     return list;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return JNI::ToString(getCarrierName());
 }
 }
 

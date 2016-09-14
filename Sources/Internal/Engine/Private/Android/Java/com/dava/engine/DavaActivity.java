@@ -31,7 +31,6 @@ public final class DavaActivity extends Activity
 
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
-    protected boolean isDestoying = false;
     
     protected String externalFilesDir;
     protected String internalFilesDir;
@@ -190,7 +189,6 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onDestroy");
         super.onDestroy();
 
-        isDestoying = true;
         nativeOnDestroy();
         if (davaMainThread != null)
         {

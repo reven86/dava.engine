@@ -75,6 +75,10 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
     }
     gpu = GPUFamily();
+    if (isMobileMode)
+    {
+        InitCarrierLinesAsync();
+    }
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -315,6 +319,15 @@ bool DeviceInfoPrivate::IsTouchPresented()
     return isTouchPresent && !isContinuumMode; //  Touch is always present in MSVS simulator
 }
 
+String DeviceInfoPrivate::GetCarrierName()
+{
+    if (nullptr == carrierName)
+    {
+        return "";
+    }
+    return UTF8Utils::EncodeToUTF8(carrierName->Data());
+}
+
 void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
 #if !defined(__DAVAENGINE_COREV2__)
@@ -334,6 +347,81 @@ void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 eGPUFamily DeviceInfoPrivate::GPUFamily()
 {
     return GPU_DX11;
+}
+
+void DeviceInfoPrivate::InitCarrierLinesAsync()
+{
+    auto asyncTask = ::concurrency::create_task([this]() {
+        try
+        {
+            using ::Windows::ApplicationModel::Calls::PhoneLine;
+            using ::Windows::ApplicationModel::Calls::PhoneCallManager;
+            using ::Windows::ApplicationModel::Calls::PhoneLineWatcher;
+            using ::Windows::ApplicationModel::Calls::PhoneLineWatcherEventArgs;
+            using ::Windows::Foundation::TypedEventHandler;
+            phoneCallStore = WaitAsync(PhoneCallManager::RequestStoreAsync());
+            watcher = phoneCallStore->RequestLineWatcher();
+
+            Platform::Guid defaultGuid = WaitAsync(phoneCallStore->GetDefaultLineAsync());
+            PhoneLine ^ defaultLine = WaitAsync(PhoneLine::FromIdAsync(defaultGuid));
+            // can't do it on main thread, main dispatcher not ready
+            carrierName = defaultLine->NetworkName;
+
+            auto lineAdded = ref new TypedEventHandler<PhoneLineWatcher ^, PhoneLineWatcherEventArgs ^>([this](PhoneLineWatcher ^, PhoneLineWatcherEventArgs ^ args) {
+                OnCarrierLineAdded(args);
+            });
+            auto completed = ref new TypedEventHandler<PhoneLineWatcher ^, Platform::Object ^>([this](PhoneLineWatcher ^, Platform::Object ^ ) {
+                watcher = nullptr;
+            });
+
+            watcher->LineAdded += lineAdded;
+            watcher->EnumerationCompleted += completed;
+            watcher->Start();
+        }
+        catch (Platform::COMException ^ e)
+        {
+            String str = UTF8Utils::EncodeToUTF8(e->Message->Data());
+            Logger::Error("Error msg = %s, added <uap:Capability Name=\"phoneCall\" /> capabilities in Package.appxmanifest", str.c_str());
+        }
+    });
+}
+
+void DeviceInfoPrivate::OnCarrierLineAdded(::Windows::ApplicationModel::Calls::PhoneLineWatcherEventArgs ^ args)
+{
+    using ::Windows::ApplicationModel::Calls::PhoneLine;
+    using ::Windows::ApplicationModel::Calls::PhoneLineTransport;
+    using ::Windows::Foundation::TypedEventHandler;
+
+    PhoneLine ^ line = WaitAsync(PhoneLine::FromIdAsync(args->LineId));
+    if ((nullptr != line) && (line->Transport == PhoneLineTransport::Cellular))
+    {
+        phoneLines.insert(std::make_pair(line->Id, line));
+        auto lineChange = ref new TypedEventHandler<PhoneLine ^, Platform::Object ^>([this](PhoneLine ^ line, Platform::Object ^ ) {
+            OnCarrierLineChange(line);
+        });
+        line->LineChanged += lineChange;
+    }
+}
+
+void DeviceInfoPrivate::OnCarrierLineChange(::Windows::ApplicationModel::Calls::PhoneLine ^ line)
+{
+#if !defined(__DAVAENGINE_COREV2__)
+    using ::Windows::ApplicationModel::Calls::PhoneCallStore;
+    using ::Windows::ApplicationModel::Calls::PhoneCallManager;
+    Platform::Guid guid = WaitAsync(phoneCallStore->GetDefaultLineAsync());
+    if (guid == line->Id)
+    {
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        core->RunOnMainThread([=] {
+            // must run on main thread
+            if ((nullptr != line->NetworkName) && (line->NetworkName != carrierName))
+            {
+                carrierName = line->NetworkName;
+                DeviceInfo::carrierNameChanged.Emit(UTF8Utils::EncodeToUTF8(carrierName->Data()));
+            }
+        });
+    }
+#endif //!defined(__DAVAENGINE_COREV2__)
 }
 
 ::Windows::Devices::Enumeration::DeviceWatcher ^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)

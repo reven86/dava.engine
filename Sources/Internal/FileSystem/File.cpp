@@ -47,43 +47,47 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
+    {
+        String relative = filename.GetRelativePathname("~res:/");
+        Vector<uint8> contentAndSize;
+
 // now with PackManager we can improve perfomance by lookup pack name
 // from DB with all files, then check if such pack mounted and from
 // mountedPackIndex find by name archive with file or skip to next step
-#if defined(__DAVAENGINE_COREV2__)
-    IPackManager* pm = Engine::Instance()->GetContext()->packManager;
+#ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
+        IPackManager* pm = nullptr;
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
 #else
-    IPackManager* pm = &Core::Instance()->GetPackManager();
+        IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif
-    if (pm != nullptr)
-    {
-        if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
+        if (pm != nullptr && pm->IsGpuPacksInitialized())
         {
-            Vector<uint8> contentAndSize;
-            String relative = filename.GetRelativePathname("~res:/");
-
-            if (pm->IsGpuPacksInitialized())
+            const String& packName = pm->FindPackName(filename);
+            if (!packName.empty())
             {
-                const String& packName = pm->FindPackName(filename);
-                if (!packName.empty())
+                auto it = fileSystem->resArchiveMap.find(packName);
+                if (it != end(fileSystem->resArchiveMap))
                 {
-                    auto it = fileSystem->resArchiveMap.find(packName);
-                    if (it != end(fileSystem->resArchiveMap))
+                    if (it->second.archive->LoadFile(relative, contentAndSize))
                     {
-                        if (it->second.archive->LoadFile(relative, contentAndSize))
-                        {
-                            return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
-                        }
+                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
                     }
                 }
             }
+        }
 
-            for (auto& pair : fileSystem->resArchiveMap)
+        for (auto& pair : fileSystem->resArchiveMap)
+        {
+            if (pair.second.archive->LoadFile(relative, contentAndSize))
             {
-                if (pair.second.archive->LoadFile(relative, contentAndSize))
-                {
-                    return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
-                }
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
         }
     }

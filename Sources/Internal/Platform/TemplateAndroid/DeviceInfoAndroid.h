@@ -37,6 +37,7 @@ public:
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
@@ -65,6 +66,7 @@ private:
     Function<jint()> getNetworkType;
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
+    Function<jstring()> getCarrierName;
     Function<jint()> getDefaultDisplayWidth;
     Function<jint()> getDefaultDisplayHeight;
     Function<jbyte()> getGpuFamily;

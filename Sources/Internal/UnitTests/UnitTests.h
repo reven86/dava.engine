@@ -220,6 +220,7 @@
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
 BEGIN_FILES_COVERED_BY_TESTS() \
+\
 DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
 END_FILES_COVERED_BY_TESTS()
 

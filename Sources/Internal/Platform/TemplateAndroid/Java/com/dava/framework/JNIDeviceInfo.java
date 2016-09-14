@@ -449,4 +449,13 @@ public class JNIDeviceInfo {
         infos.toArray(arr);
         return arr;
     }
+
+    public static String GetCarrierName()
+    {
+        if (JNIActivity.dataConnectionStateListener != null)
+        {
+            return JNIActivity.dataConnectionStateListener.GetCarrierName();
+        }
+        return "";
+    }
 }
