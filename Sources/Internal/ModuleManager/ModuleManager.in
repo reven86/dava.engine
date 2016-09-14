@@ -5,17 +5,30 @@
 
 namespace DAVA
 {
+
+@IMODULE_INIT_POINTERS@
+@IMODULE_GET_MODULE_CODE@
     ModuleManager::ModuleManager()
     {
-@IMODULE_CODE@
+        pointersToModules = new PointersToModules;
+
+@IMODULE_INIT_CODE@
+        for (const auto& module : listModules)
+        {
+            module->PostInit();
+        }
     }
 
     ModuleManager::~ModuleManager()
     {
+        delete pointersToModules;
+        pointersToModules = nullptr;
+
         for (const auto& module : listModules)
         {
             module->Shutdown();
             delete module;
         }
+        listModules.clear();
     }    
 }

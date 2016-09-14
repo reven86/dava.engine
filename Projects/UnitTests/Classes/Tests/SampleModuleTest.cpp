@@ -9,7 +9,10 @@ DAVA_TESTCLASS (SampleModuleTest)
 {
     DAVA_TEST (CheckStatus)
     {
-        auto statusList = SampleModule::Instance()->StatusList();
+        ModuleManager& moduleManager = Core::Instance()->GetModuleManager();
+        SampleModule* sampleModule = moduleManager.GetModule<SampleModule>();
+        
+        auto statusList = sampleModule->StatusList();
 
         TEST_VERIFY(statusList.size() == 3);
         TEST_VERIFY(statusList[0] == SampleModule::ES_UNKNOWN);

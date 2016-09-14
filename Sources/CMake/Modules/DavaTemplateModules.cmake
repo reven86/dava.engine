@@ -187,19 +187,24 @@ macro( generated_initialization_module_code )
             string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
         endif()
 
+        list( APPEND INIT_POINTERS "    struct PointersToModules\n    {\n" )
         foreach( ITEM ${MODULES_INITIALIZATION} )
-            list( APPEND IMODULE_CODE_LIST "        IModule* _${ITEM} = new ${ITEM}()\;\n" )
-            list( APPEND IMODULE_CODE_LIST "        listModules.emplace_back( _${ITEM} )\;\n" )                
-            list( APPEND IMODULE_CODE_LIST "        _${ITEM}->Init()\;\n\n" )
-        endforeach()
-        
-        foreach( ITEM ${MODULES_INITIALIZATION} )
-            list( APPEND IMODULE_CODE_LIST "        _${ITEM}->PostInit()\;\n" )
-        endforeach()
+            list( APPEND INIT_POINTERS "        ${ITEM}* _${ITEM}\;\n" )
 
-        foreach( ITEM ${IMODULE_CODE_LIST} )
-            set( IMODULE_CODE "${IMODULE_CODE}${ITEM}")
+            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule()\n" )
+            list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_SampleModule\;\n    }\n" )
+
+            list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${ITEM}()\;\n" )
+            list( APPEND INIT_CODE "        listModules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
+            list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n" )
         endforeach()
+        list( APPEND INIT_POINTERS "    }\;\n" )
+
+        foreach( TYPE_VALUE  INIT_POINTERS INIT_CODE GET_MODULE_CODE )
+            foreach( ITEM ${${TYPE_VALUE}} )
+                set( IMODULE_${TYPE_VALUE} "${IMODULE_${TYPE_VALUE}}${ITEM}")
+            endforeach()
+        endforeach() 
 
         set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${MODULE_MANAGER_TEMPLATE_NAME_WE}.cpp )
         configure_file( ${MODULE_MANAGER_TEMPLATE}

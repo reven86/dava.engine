@@ -1,21 +1,24 @@
-#ifndef __DAVAENGINE_MODULE_MANAGER_H__
-#define __DAVAENGINE_MODULE_MANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-class IModule;
-
+class  IModule;
+struct PointersToModules;
+    
 class ModuleManager
 {
 public:
     ModuleManager();
     ~ModuleManager();
-
+    
+    template <typename T>
+    T* GetModule();
+    
 private:
     Vector<IModule*> listModules;
+    PointersToModules* pointersToModules;
 };
 }
 
-#endif

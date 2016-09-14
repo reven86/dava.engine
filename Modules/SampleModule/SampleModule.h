@@ -1,13 +1,17 @@
 #pragma once
 
 #include "ModuleManager/IModule.h"
+#include "ModuleManager/ModuleManager.h"
+
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
     
-class SampleModule : public IModule, public Singleton<SampleModule>
+class ModuleManager;
+    
+class SampleModule : public IModule
 {
 public:
     enum eStatus
@@ -23,9 +27,10 @@ public:
         return statusList;
     }
     
-    SampleModule();
-    
 private:
+    SampleModule();
+    friend ModuleManager;
+    
     void Init() override;
     void PostInit() override;
     void Shutdown() override;

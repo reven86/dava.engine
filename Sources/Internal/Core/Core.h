@@ -248,6 +248,7 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager();
+    ModuleManager& GetModuleManager();
 
 protected:
     eScreenOrientation screenOrientation;
