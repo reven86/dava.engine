@@ -1,9 +1,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
-#include "Engine/Public/EngineContext.h"
-#include "Engine/Public/Window.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -45,6 +45,7 @@
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
 #include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -553,8 +554,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->fileSystem = new FileSystem();
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager = new AssetsManager();
-    context->assetsManager->Init(AndroidBridge::GetApplicatiionPath());
+    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
 #endif
 
     // Naive implementation of on demand module creation
@@ -600,7 +600,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new PackManager;
+                context->packManager = new PackManagerImpl;
             }
         }
     }

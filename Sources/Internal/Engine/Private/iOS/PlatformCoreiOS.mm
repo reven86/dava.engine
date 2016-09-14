@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/Public/iOS/NativeServiceiOS.h"
+#include "Engine/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"

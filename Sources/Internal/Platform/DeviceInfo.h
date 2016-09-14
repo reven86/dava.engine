@@ -143,6 +143,7 @@ public:
     static int32 GetCpuCount();
     static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
+    static String GetCarrierName();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
@@ -152,6 +153,7 @@ public:
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
     static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
+    static Signal<const String&> carrierNameChanged;
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

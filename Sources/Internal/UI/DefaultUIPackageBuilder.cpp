@@ -93,6 +93,21 @@ void DefaultUIPackageBuilder::EndPackage()
         }
     }
 
+    // kill duplicates
+    {
+        std::sort(styleSheets.begin(), styleSheets.end(), [](const UIPriorityStyleSheet& a, const UIPriorityStyleSheet& b)
+                  {
+                      const UIStyleSheet* s1 = a.GetStyleSheet();
+                      const UIStyleSheet* s2 = b.GetStyleSheet();
+                      return s1 == s2 ? a.GetPriority() < b.GetPriority() : s1 < s2;
+                  });
+        auto lastNeeded = std::unique(styleSheets.begin(), styleSheets.end(), [](const UIPriorityStyleSheet& a, const UIPriorityStyleSheet& b)
+                                      {
+                                          return a.GetStyleSheet() == b.GetStyleSheet();
+                                      });
+        styleSheets.erase(lastNeeded, styleSheets.end());
+    }
+
     for (const UIPriorityStyleSheet& styleSheet : styleSheets)
     {
         package->GetControlPackageContext()->AddStyleSheet(styleSheet);

@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/Public/WindowNativeService.h"
+#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -187,12 +187,16 @@ struct WebViewControl::WebViewObjCBridge final
     NSBitmapImageRep* bitmapImageRep = nullptr;
 };
 
-WebViewControl::WebViewControl(UIWebView& uiWebView)
-    : uiWebViewControl(uiWebView)
 #if defined(__DAVAENGINE_COREV2__)
-    , window(Engine::Instance()->PrimaryWindow())
-#endif
+WebViewControl::WebViewControl(Window* w, UIWebView* uiWebView)
+    : uiWebViewControl(*uiWebView)
+    , window(w)
     , bridge(new WebViewObjCBridge)
+#else
+WebViewControl::WebViewControl(UIWebView* uiWebView)
+    : uiWebViewControl(*uiWebView)
+    , bridge(new WebViewObjCBridge)
+#endif
 {
     bridge->controlUIDelegate = [[WebViewControlUIDelegate alloc] init];
     bridge->policyDelegate = [[WebViewPolicyDelegate alloc] init];
