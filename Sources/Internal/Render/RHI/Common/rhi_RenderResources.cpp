@@ -2,6 +2,7 @@
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
 #include "rhi_Pool.h"
+#include "RenderLoop.h"
 
 #include "Core/Core.h"
 
@@ -374,7 +375,7 @@ void ReplaceTextureInAllTextureSets(HTexture oldHandle, HTexture newHandle)
     {
         // update texture-set itself
 
-        CommonImpl::TextureSet_t* ts = TextureSetPool::Get(s->handle);
+        CommonImpl::TextureSet_t* ts = TextureSet::Get(s->handle);
 
         if (ts)
         {

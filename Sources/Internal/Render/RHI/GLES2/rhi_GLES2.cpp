@@ -428,6 +428,7 @@ void gles2_Initialize(const InitParam& param)
     win32_gl_init(param);
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &win32_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &win32_gl_release_context;
+    #undef ENABLE_DEBUG_OUTPUT 
     #define ENABLE_DEBUG_OUTPUT 1
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_init(param);

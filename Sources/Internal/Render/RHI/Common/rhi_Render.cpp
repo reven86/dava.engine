@@ -2,12 +2,14 @@
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
 #include "rhi_Pool.h"
+#include "rhi_Utils.h"
 
 #include "Core/Core.h"
 
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
 #include "RenderLoop.h"
+#include "FrameLoop.h"
 
 namespace rhi
 {
@@ -253,7 +255,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         {
             if (p->textureSet != InvalidHandle)
             {
-                CommonImpl::TextureSet_t* ts = TextureSetPool::Get(p->textureSet);
+                CommonImpl::TextureSet_t* ts = TextureSet::Get(p->textureSet);
                 for (unsigned i = 0; i != ts->fragmentTextureCount; ++i)
                 {
                     rhi::CommandBuffer::SetFragmentTexture(cmdBuf, i, ts->fragmentTexture[i]);
