@@ -601,7 +601,7 @@ void SceneCollisionSystem::EnumerateObjectHierarchy(const Selectable& object, bo
             DAVA::RenderObject::eType objType = renderObject->GetType();
             if (objType == DAVA::RenderObject::TYPE_BILLBOARD)
             {
-                const DAVA::AABBox3& box = renderObject->GetWorldBoundingBox();
+                const DAVA::AABBox3& box = renderObject->GetBoundingBox();
                 result = CollisionDetails::InitCollision<CollisionBox>(createCollision, entity, objectsCollWorld, box.GetCenter(), box.GetSize().x);
             }
             else if ((objType != DAVA::RenderObject::TYPE_SPRITE) && (objType != DAVA::RenderObject::TYPE_VEGETATION))

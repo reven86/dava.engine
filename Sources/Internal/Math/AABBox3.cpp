@@ -108,10 +108,18 @@ void AABBox3::GetCorners(Vector3* cornersArray) const
     cornersArray[7].Set(min.x, max.y, max.z);
 }
 
+float32 AABBox3::GetBoundingSphereRadius() const
+{
+    Vector3 maxToCenter = max - GetCenter();
+    Vector3 minToCenter = min - GetCenter();
+    float32 maxCoord = Max(maxToCenter.x, Max(maxToCenter.y, maxToCenter.z));
+    float32 minCoord = Max(Abs(minToCenter.x), Max(Abs(minToCenter.y), Abs(minToCenter.z)));
+    return Max(maxCoord, minCoord);
+}
+
 AABBox3 AABBox3::GetMaxRotationExtentBox(const Vector3& rotationCenter) const
 {
-    Vector3 center = GetCenter();
-    float32 maxLocalExtent = (max - center).Length();
-    return AABBox3(rotationCenter, 2.0f * (rotationCenter - center).Length() + maxLocalExtent);
+    float32 rotationRadius = (GetCenter() - rotationCenter).Length();
+    return AABBox3(rotationCenter, 2.0f * (rotationRadius + GetBoundingSphereRadius()));
 }
 };
