@@ -423,46 +423,19 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         a.StoreValue(&iptr2, sizeof(iptr2));
         TEST_VERIFY(iptr1 == iptr2);
 
-        // exceptions tests
-        NotTrivial not_triv;
-        try
-        {
-            a.LoadValue(&not_triv, Type::Instance<NotTrivial>());
-            TEST_VERIFY(false && "Load shouldn't be done for non-trivial types");
-        }
-        catch (const Exception&)
-        {
-            TEST_VERIFY(true);
-        }
-
-        try
-        {
-            a.StoreValue(&not_triv, sizeof(not_triv));
-            TEST_VERIFY(false && "Store shouldn't be done for non-trivial types");
-        }
-        catch (const Exception&)
-        {
-            TEST_VERIFY(true);
-        }
-
+        // load/store trivial types
         Trivial triv;
         Trivial triv1{ 11, 22 };
-
         a.LoadValue(&triv, Type::Instance<Trivial>());
         TEST_VERIFY(a.Get<Trivial>() == triv);
-
         a.StoreValue(&triv1, sizeof(triv1));
         TEST_VERIFY(triv1 == triv);
 
-        try
-        {
-            a.StoreValue(&triv, sizeof(triv) / 2);
-            TEST_VERIFY(false && "Store should be done if destenation size is smaller then source type require");
-        }
-        catch (const Exception&)
-        {
-            TEST_VERIFY(true);
-        }
+        // load/store fail cases
+        NotTrivial not_triv;
+        TEST_VERIFY(!a.LoadValue(&not_triv, Type::Instance<NotTrivial>()));
+        TEST_VERIFY(!a.StoreValue(&not_triv, sizeof(not_triv)));
+        TEST_VERIFY(!a.StoreValue(&triv, sizeof(triv) / 2));
     }
 
     DAVA_TEST (AnyCastTest)
