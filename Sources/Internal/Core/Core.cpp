@@ -974,7 +974,7 @@ IPackManager& Core::GetPackManager()
     DVASSERT(packManager);
     return *packManager;
 }
-    
+
 ModuleManager& Core::GetModuleManager()
 {
     DVASSERT(moduleManager);

@@ -11,7 +11,7 @@ DAVA_TESTCLASS (SampleModuleTest)
     {
         ModuleManager& moduleManager = Core::Instance()->GetModuleManager();
         SampleModule* sampleModule = moduleManager.GetModule<SampleModule>();
-        
+
         auto statusList = sampleModule->StatusList();
 
         TEST_VERIFY(statusList.size() == 3);
