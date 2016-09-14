@@ -10,22 +10,30 @@ namespace Ui
 class FindFileInPackageDialog;
 }
 
+namespace DAVA
+{
+class FilePath;
+}
+
+class ProjectStructure;
 class QFileSystemModel;
 class QCompleter;
+class QAction;
 
 class FindFileInPackageDialog : public QDialog
 {
 public:
-    static QString GetFilePath(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent);
+    static QString GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent);
 
 private:
-    explicit FindFileInPackageDialog(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent = nullptr);
+    explicit FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent = nullptr);
+
+    void Init(const DAVA::Vector<DAVA::FilePath>& files);
+
     bool eventFilter(QObject* obj, QEvent* event);
 
-    void Init(const DAVA::Vector<DAVA::String>& files);
-
-    QString projectDir;
-    QMap<QString, QString> availableFiles;
-    QCompleter* completer = nullptr;
     std::unique_ptr<Ui::FindFileInPackageDialog> ui;
+
+    QString prefix;
+    QCompleter* completer = nullptr;
 };

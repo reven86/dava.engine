@@ -1,5 +1,4 @@
-#ifndef __QUICKED_FILE_SYSTEM_DIALOG_H__
-#define __QUICKED_FILE_SYSTEM_DIALOG_H__
+#pragma once
 
 #include <QDockWidget>
 #include <QModelIndex>
@@ -15,7 +14,7 @@ class QFileSystemModel;
 class QInputDialog;
 class QItemSelection;
 class QMouseEvent;
-class ProjectStructureHolder;
+class ProjectStructure;
 
 class FileSystemDockWidget : public QDockWidget
 {
@@ -52,7 +51,7 @@ private:
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
 
-    void ShowEndSelectFile(const QString& filePath);
+    void ShowAndSelectFile(const QString& filePath);
 
     enum ePathType
     {
@@ -70,13 +69,14 @@ private:
     QAction* renameAction = nullptr;
     QAction* openFileAction = nullptr;
     QAction* copyInternalPathToFileAction = nullptr;
+
+    QAction* findInFilesAction = nullptr;
+
     QPoint menuInvokePos = QPoint(-1, -1);
 
     bool isAvailable = false;
 
-    std::unique_ptr<ProjectStructureHolder> projectStructureHolder;
-    //QFileSystemModel is uses async api to fetch it data, so we can call setCurrentIndex only when signal dirLoaded is emitted
+    std::unique_ptr<ProjectStructure> projectStructure;
+    //we set current index asyncronysly, when model emits signal "directoryLoaded"
     QPersistentModelIndex indexToSetCurrent;
 };
-
-#endif // __QUICKED_FILE_SYSTEM_DIALOG_H__

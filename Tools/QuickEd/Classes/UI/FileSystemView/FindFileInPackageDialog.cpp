@@ -1,78 +1,84 @@
 #include "UI/FileSystemView/FindFileInPackageDialog.h"
 #include "ui_FindFileInPackageDialog.h"
 
+#include "Debug/DVAssert.h"
+#include "FileSystem/FilePath.h"
+
+#include "QtTools/ProjectInformation/ProjectStructure.h"
+
 #include <QHBoxLayout>
 #include <QCompleter>
 #include <QLineEdit>
 #include <QDialogButtonBox>
 #include <QFileInfo>
-#include <QApplication>
 #include <QAbstractItemView>
 #include <QKeyEvent>
 
-FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
-    : QDialog(parent)
-    , projectDir(QString::fromStdString(rootPath))
-    , ui(new Ui::FindFileInPackageDialog())
+QString FindFileInPackageDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
 {
-    ui->setupUi(this);
-    installEventFilter(this);
+    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
+    DVASSERT(!files.empty());
 
-    Init(files);
-}
-
-QString FindFileInPackageDialog::GetFilePath(const DAVA::String& rootPath, const DAVA::Vector<DAVA::String>& files, QWidget* parent)
-{
-    FindFileInPackageDialog dialog(rootPath, files, parent);
+    FindFileInPackageDialog dialog(files, parent);
     if (dialog.exec() == QDialog::Accepted)
     {
         QString filePath = dialog.ui->lineEdit->text();
-        if (dialog.availableFiles.contains(filePath))
-        {
-            return dialog.availableFiles[filePath];
-        }
+        QString absFilePath = dialog.prefix + filePath;
+        QFileInfo fileInfo(absFilePath);
+        DVASSERT(fileInfo.isFile() && fileInfo.suffix() == QString::fromStdString(suffix));
+        return absFilePath;
     }
     return QString();
 }
 
-void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::String>& files)
+FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent)
+    : QDialog(parent)
+    , ui(new Ui::FindFileInPackageDialog())
 {
-    QPair<int, QString> longestPath(-1, QString());
-    for (const DAVA::String& filePath : files)
+    ui->setupUi(this);
+    ui->lineEdit->setFocus();
+
+    installEventFilter(this);
+    ui->lineEdit->installEventFilter(this);
+
+    Init(files);
+}
+
+void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
+{
+    //calculate common prefix for all given files
+    //initialize prefix with first element
+    prefix = QString::fromStdString(files.front().GetAbsolutePathname());
+    for (const DAVA::FilePath& filePath : files)
     {
-        QString absPath = QString::fromStdString(filePath);
-        QString relPath = absPath.right(absPath.size() - projectDir.size() - 1); //chop "/" symbol at begin of relPath
-        int relPathSize = relPath.size();
-        const int maxPathLen = 200;
-        if (relPathSize > maxPathLen)
+        QString absPath = QString::fromStdString(filePath.GetAbsolutePathname());
+        int index = 0;
+        for (int i = 0, count = qMin(absPath.size(), prefix.size()); i < count && prefix[i] == absPath[i]; ++i, ++index)
         {
-            relPath.remove(0, relPathSize - maxPathLen);
-            relPath.prepend("...");
         }
-        relPathSize = relPath.size();
-        if (relPathSize > longestPath.first)
-        {
-            longestPath = { relPathSize, relPath };
-        }
-        availableFiles.insert(relPath, absPath);
+        prefix.truncate(index);
     }
 
-    qApp->restoreOverrideCursor();
+    //collect all items in short form
+    QStringList stringsToDisplay;
+    const int prefixSize = prefix.size();
+    for (const DAVA::FilePath& filePath : files)
+    {
+        QString absPath = QString::fromStdString(filePath.GetAbsolutePathname());
+        const int relPathSize(absPath.size() - prefixSize);
+        stringsToDisplay << absPath.right(relPathSize);
+    }
+
     //the only way to not create model and use stringlist is a pass stringlist to the QCompleter c-tor :(
-    completer = new QCompleter(availableFiles.keys(), this);
+    completer = new QCompleter(stringsToDisplay, this);
     completer->setFilterMode(Qt::MatchContains);
     completer->setCompletionMode(QCompleter::PopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->installEventFilter(this);
     completer->popup()->installEventFilter(this);
+    completer->popup()->setTextElideMode(Qt::ElideRight);
 
-    ui->lineEdit->installEventFilter(this);
-    QFontMetrics fm(ui->lineEdit->font());
-    int width = fm.width(longestPath.second) + 50; //50px for scrollbar
-    ui->lineEdit->setMinimumWidth(width);
     ui->lineEdit->setCompleter(completer);
-
-    ui->lineEdit->setFocus();
 }
 
 bool FindFileInPackageDialog::eventFilter(QObject* obj, QEvent* event)

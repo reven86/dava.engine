@@ -1,6 +1,7 @@
-#include "DataProcessing/ProjectInformation/ProjectStructureHolder.h"
+#include "QtTools/ProjectInformation/ProjectStructure.h"
 
 #include "Debug/DVAssert.h"
+#include "FileSystem/FilePath.h"
 
 #include <QFileInfo>
 #include <QDirIterator>
@@ -11,131 +12,117 @@
 
 using namespace DAVA;
 
+//this function is reimplemented for QSet<QFileInfo> in the class Impl
 uint qHash(const QFileInfo& fi, uint seed)
 {
     return qHash(fi.absoluteFilePath(), seed);
 }
 
-struct ProjectStructureHolder::Impl : public QObject
+struct ProjectStructure::Impl : public QObject
 {
     Impl();
-    void SetProjectDirectory(const String& directory);
-    Vector<String> GetProjectYamlFiles() const;
-    String GetProjectDirectory() const;
+    void AddProjectDirectory(const FilePath& directory);
+    void ClearProjectDirectories();
+
+    Vector<FilePath> GetFiles(const String& extension) const;
 
 private slots:
     void OnDirChanged(const QString& path);
     void OnFileChanged(const QString& path);
 
 private:
-    QString YamlSuffix() const;
     void AddFilesRecursively(const QFileInfo& dirInfo);
 
-    QFileInfo projectDirFileInfo;
-    QSet<QFileInfo> yamlFiles;
+    QSet<QFileInfo> projectFiles;
     QFileSystemWatcher watcher;
 };
 
-ProjectStructureHolder::ProjectStructureHolder()
+ProjectStructure::ProjectStructure()
     : impl(new Impl())
 {
 }
 
-ProjectStructureHolder::~ProjectStructureHolder() = default;
+ProjectStructure::~ProjectStructure() = default;
 
-void ProjectStructureHolder::SetProjectDirectory(const String& directory)
+void ProjectStructure::AddProjectDirectory(const FilePath& directory)
 {
-    impl->SetProjectDirectory(directory);
+    impl->AddProjectDirectory(directory);
 }
 
-Vector<String> ProjectStructureHolder::GetProjectYamlFiles() const
+void ProjectStructure::ClearProjectDirectories()
 {
-    return impl->GetProjectYamlFiles();
+    impl->ClearProjectDirectories();
 }
 
-String ProjectStructureHolder::GetProjectDirectory() const
+DAVA::Vector<DAVA::FilePath> ProjectStructure::GetFiles(const DAVA::String& extension) const
 {
-    return impl->GetProjectDirectory();
+    return impl->GetFiles(extension);
 }
 
-ProjectStructureHolder::Impl::Impl()
+ProjectStructure::Impl::Impl()
     : QObject(nullptr)
 {
     QObject::connect(&watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
     QObject::connect(&watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
 }
 
-void ProjectStructureHolder::Impl::SetProjectDirectory(const String& directory)
+void ProjectStructure::Impl::AddProjectDirectory(const FilePath& directory)
 {
-    projectDirFileInfo = QFileInfo();
-    yamlFiles.clear();
+    DVASSERT(!directory.IsEmpty());
+    QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
+    QFileInfo projectDirFileInfo(directoryStr);
+    DVASSERT(projectDirFileInfo.isDir());
+    if (!watcher.directories().contains(directoryStr))
+    {
+        watcher.addPath(directoryStr);
+        AddFilesRecursively(projectDirFileInfo);
+    }
+}
 
+void ProjectStructure::Impl::ClearProjectDirectories()
+{
+    projectFiles.clear();
     const QStringList& directories = watcher.directories();
     if (!directories.isEmpty())
     {
         watcher.removePaths(directories);
     }
     DVASSERT(watcher.files().isEmpty());
+}
 
-    if (directory.empty())
+Vector<FilePath> ProjectStructure::Impl::GetFiles(const String& extension) const
+{
+    Vector<FilePath> files;
+    QString extensionStr = QString::fromStdString(extension);
+    for (const QFileInfo& fileInfo : projectFiles)
     {
-        return;
+        if (fileInfo.suffix() == extensionStr)
+        {
+            files.push_back(fileInfo.absoluteFilePath().toStdString());
+        }
     }
-
-    QString directoryStr = QString::fromStdString(directory);
-    projectDirFileInfo = QFileInfo(directoryStr);
-    DVASSERT(projectDirFileInfo.isDir());
-
-    watcher.addPath(directoryStr);
-
-    AddFilesRecursively(projectDirFileInfo);
+    return files;
 }
 
-Vector<String> ProjectStructureHolder::Impl::GetProjectYamlFiles() const
-{
-    Vector<String> yamlFilesStrings;
-    yamlFilesStrings.reserve(yamlFiles.size());
-    for (const QFileInfo& fileInfo : yamlFiles)
-    {
-        yamlFilesStrings.push_back(fileInfo.absoluteFilePath().toStdString());
-    }
-    return yamlFilesStrings;
-}
-
-String ProjectStructureHolder::Impl::GetProjectDirectory() const
-{
-    QString filePath = projectDirFileInfo.absoluteFilePath();
-    return projectDirFileInfo.absoluteFilePath().toStdString();
-}
-
-QString ProjectStructureHolder::Impl::YamlSuffix() const
-{
-    return "yaml";
-}
-
-void ProjectStructureHolder::Impl::OnFileChanged(const QString& path)
+void ProjectStructure::Impl::OnFileChanged(const QString& path)
 {
     QFileInfo changedFileInfo(path);
     DVASSERT(changedFileInfo.isFile());
-    if (changedFileInfo.suffix() != YamlSuffix())
-    {
-        return;
-    }
     if (changedFileInfo.exists())
     {
-        yamlFiles.insert(changedFileInfo);
+        projectFiles.insert(changedFileInfo);
     }
     else
     {
-        yamlFiles.remove(changedFileInfo);
+        projectFiles.remove(changedFileInfo);
     }
 }
 
-void ProjectStructureHolder::Impl::OnDirChanged(const QString& path)
+void ProjectStructure::Impl::OnDirChanged(const QString& path)
 {
     QFileInfo changedDirInfo(path);
     DVASSERT(changedDirInfo.isDir());
-    QMutableSetIterator<QFileInfo> iter(yamlFiles);
+    QMutableSetIterator<QFileInfo> iter(projectFiles);
     while (iter.hasNext())
     {
         QFileInfo fileInfo = iter.next();
@@ -162,7 +149,7 @@ void ProjectStructureHolder::Impl::OnDirChanged(const QString& path)
     }
 }
 
-void ProjectStructureHolder::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
+void ProjectStructure::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
 {
     DVASSERT(dirInfo.isDir());
     QStringList watchedDirectories = watcher.directories();
@@ -180,9 +167,9 @@ void ProjectStructureHolder::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
             watcher.addPath(absFilePath);
             watchedDirectories.append(absFilePath);
         }
-        if (fileInfo.isFile() && fileInfo.suffix() == YamlSuffix())
+        if (fileInfo.isFile())
         {
-            yamlFiles.insert(fileInfo);
+            projectFiles.insert(fileInfo);
         }
     }
 }

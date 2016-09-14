@@ -64,12 +64,6 @@ MainWindow::MainWindow(QWidget* parent)
     tabBar->setUsesScrollButtons(true);
     setUnifiedTitleAndToolBarOnMac(true);
 
-    findInFilesAction = new QAction(tr("Find file in project"), this);
-    findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
-    findInFilesAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
-    connect(findInFilesAction, &QAction::triggered, fileSystemDockWidget, &FileSystemDockWidget::FindInFiles);
-    addAction(findInFilesAction);
-
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
 
@@ -170,7 +164,7 @@ void MainWindow::InitLanguageBox()
 void MainWindow::FillComboboxLanguages(const Project* project)
 {
     QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
-    bool wasBlocked = comboboxLanguage->blockSignals(true); //performace fix
+    bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
     comboboxLanguage->clear();
     comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
     comboboxLanguage->setCurrentText(currentText);
@@ -354,7 +348,6 @@ void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
 
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
-    findInFilesAction->setEnabled(resultList);
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
     currentProjectPath = project->GetProjectPath() + project->GetProjectName();

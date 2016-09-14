@@ -3,12 +3,13 @@
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
-#include "DataProcessing/ProjectInformation/ProjectStructureHolder.h"
 
 #include "ValidatedTextInputDialog.h"
 #include "FileSystemModel.h"
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
+#include "QtTools/ProjectInformation/ProjectStructure.h"
+
 #include "Project/Project.h"
 #include "UI/FileSystemView/FindFileInPackageDialog.h"
 
@@ -32,18 +33,17 @@ template <typename T>
 QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex& rootIndex, T&& predicate)
 {
     QModelIndexList modelIndexList;
-    QModelIndex parentIndex = index;
+    QModelIndex parentIndex = index.parent();
 
     while (parentIndex != rootIndex)
     {
         if (predicate(parentIndex))
         {
-            modelIndexList << parentIndex;
+            //to expand or fetch items we reverse list to walk from parent to child
+            modelIndexList.push_front(parentIndex);
         }
         parentIndex = parentIndex.parent();
     }
-    //to expand or fetch items we reverse list to walk from parent to child
-    std::reverse(modelIndexList.begin(), modelIndexList.end());
     return modelIndexList;
 }
 }
@@ -52,7 +52,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
     , model(new FileSystemModel(this))
-    , projectStructureHolder(new ProjectStructureHolder())
+    , projectStructure(new ProjectStructure())
 {
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
@@ -112,6 +112,15 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
     connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
+    findInFilesAction = new QAction(tr("Find file in project"), parent);
+    findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
+    QList<QKeySequence> keySequences;
+    keySequences << Qt::CTRL + Qt::SHIFT + Qt::Key_O;
+#ifdef Q_OS_WIN
+    keySequences << Qt::ALT + Qt::SHIFT + Qt::Key_O;
+#endif //Q_OS_WIN
+    findInFilesAction->setShortcuts(keySequences);
+
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
@@ -128,13 +137,9 @@ FileSystemDockWidget::~FileSystemDockWidget() = default;
 void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
     isAvailable = !path.isEmpty();
-    if (path.isEmpty())
-    {
-        ui->treeView->hideColumn(0);
+    findInFilesAction->setEnabled(isAvailable);
 
-        projectStructureHolder->SetProjectDirectory(path.toStdString());
-    }
-    else
+    if (isAvailable)
     {
         QDir dir(path);
         QString uiPath = dir.path() + Project::GetScreensRelativePath();
@@ -143,22 +148,24 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
 
-        projectStructureHolder->SetProjectDirectory(uiPath.toStdString());
+        projectStructure->AddProjectDirectory(uiPath.toStdString());
+    }
+    else
+    {
+        ui->treeView->hideColumn(0);
+
+        projectStructure->ClearProjectDirectories();
     }
 }
 
 void FileSystemDockWidget::FindInFiles()
 {
-    DAVA::String rootPath = projectStructureHolder->GetProjectDirectory();
-    DAVA::Vector<DAVA::String> files = std::move(projectStructureHolder->GetProjectYamlFiles());
-    QString filePath = FindFileInPackageDialog::GetFilePath(rootPath, files, parentWidget());
+    QString filePath = FindFileInPackageDialog::GetFilePath(projectStructure.get(), "yaml", parentWidget());
     if (filePath.isEmpty())
     {
         return;
     }
-    QFileInfo fileInfo(filePath);
-    DVASSERT(fileInfo.isFile() && fileInfo.suffix() == "yaml");
-    ShowEndSelectFile(filePath);
+    ShowAndSelectFile(filePath);
     emit OpenPackageFile(filePath);
 }
 
@@ -439,12 +446,9 @@ void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList
     openFileAction->setVisible(canOpen);
 }
 
-void FileSystemDockWidget::ShowEndSelectFile(const QString& filePath)
+void FileSystemDockWidget::ShowAndSelectFile(const QString& filePath)
 {
-    if (filePath.isEmpty())
-    {
-        return;
-    }
+    DVASSERT(!filePath.isEmpty());
     indexToSetCurrent = model->index(filePath);
     if (indexToSetCurrent.isValid())
     {
