@@ -25,7 +25,6 @@
 #include "Tests/FullscreenTest.h"
 #include "Tests/UIBackgroundTest.h"
 #include "Tests/ClipTest.h"
-#include "Tests/InputTest.h"
 #include "Tests/FloatingPointExceptionTest.h"
 #include "Tests/DlcTest.h"
 #include "Tests/CoreTest.h"
@@ -34,6 +33,7 @@
 #include "Tests/PackManagerTest.h"
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
+#include "Tests/DeviceInfoTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -257,6 +257,7 @@ void GameCore::RegisterTests()
 #if defined(__DAVAENGINE_COREV2__)
     new CoreV2Test(this);
 #endif
+    new DeviceInfoTest(this);
     new DlcTest(this);
     new UIScrollViewTest(this);
     new NotificationScreen(this);
@@ -273,13 +274,14 @@ void GameCore::RegisterTests()
     new FullscreenTest(this);
     new UIBackgroundTest(this);
     new ClipTest(this);
-    new InputTest(this);
     new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
     new AssertTest(this);
     new FloatingPointExceptionTest(this);
+#if !defined(__DAVAENGINE_COREV2__)
     new PackManagerTest(this);
+#endif // !__DAVAENGINE_COREV2__
     //$UNITTEST_CTOR
 }
 

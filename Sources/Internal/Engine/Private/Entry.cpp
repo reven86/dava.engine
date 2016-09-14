@@ -75,17 +75,23 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 DAVA::Private::AndroidBridge* androidBridge = nullptr;
 
-jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 {
     JNIEnv* env = nullptr;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
     {
-        __android_log_print(ANDROID_LOG_ERROR, "DAVA", "JNI_OnLoad: failed to get environment");
+        ANDROID_LOG_FATAL("JNI_OnLoad: failed to get environment");
         return -1;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "DAVA", "JNI_OnLoad: androidBridge=%p", androidBridge);
+    if (androidBridge != nullptr)
+    {
+        ANDROID_LOG_FATAL("JNI_OnLoad: androidBridge is not null");
+        return -1;
+    }
+
     androidBridge = new DAVA::Private::AndroidBridge(vm);
+    androidBridge->InitializeJNI(env);
     return JNI_VERSION_1_6;
 }
 

@@ -26,13 +26,11 @@ struct CEFColor
     uint8 alpha = 0;
 };
 
-CEFWebPageRender::CEFWebPageRender()
+#if defined(__DAVAENGINE_COREV2__)
+CEFWebPageRender::CEFWebPageRender(Window* w)
     : contentBackground(new UIControlBackground)
-#if defined(__DAVAENGINE_COREV2__)
-    , window(Engine::Instance()->PrimaryWindow())
-#endif
+    , window(w)
 {
-#if defined(__DAVAENGINE_COREV2__)
     auto focusChanged = [this](Window&, bool isFocused) -> void
     {
         if (!isFocused)
@@ -50,16 +48,6 @@ CEFWebPageRender::CEFWebPageRender()
     };
     windowDestroyedConnection = window->destroyed.Connect(windowDestroyed);
     focusConnection = window->focusChanged.Connect(focusChanged);
-#else
-    auto focusChanged = [this](bool isFocused) -> void
-    {
-        if (!isFocused)
-        {
-            ResetCursor();
-        }
-    };
-    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
-#endif
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
@@ -68,6 +56,27 @@ CEFWebPageRender::CEFWebPageRender()
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
+#else
+CEFWebPageRender::CEFWebPageRender()
+    : contentBackground(new UIControlBackground)
+{
+    auto focusChanged = [this](bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+
+    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetColor(Color::White);
+    contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+}
+#endif
 
 CEFWebPageRender::~CEFWebPageRender()
 {

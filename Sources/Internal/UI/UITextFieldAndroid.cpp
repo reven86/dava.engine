@@ -1,4 +1,8 @@
-#include "UITextFieldAndroid.h"
+#include "UI/UITextFieldAndroid.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Utils/UTF8Utils.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -561,3 +565,6 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
 void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
 {
 }
+
+#endif // !__DAVAENGINE_COREV2__
+#endif //__DAVAENGINE_ANDROID__

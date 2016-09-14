@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Engine/Public/Android/NativeServiceAndroid.h"
+#include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"

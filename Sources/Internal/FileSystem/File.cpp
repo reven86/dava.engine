@@ -1,14 +1,12 @@
 #include "FileSystem/File.h"
 
-#include "../Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Engine.h"
+
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
-
-#ifdef __DAVAENGINE_COREV2__
-#include "Engine/Public/Engine.h"
-#endif
 
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
@@ -58,6 +56,8 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 // from DB with all files, then check if such pack mounted and from
 // mountedPackIndex find by name archive with file or skip to next step
 #ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
         IPackManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
