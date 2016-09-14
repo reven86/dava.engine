@@ -1529,6 +1529,8 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                         src = BLENDOP_INV_SRC_ALPHA;
                     else if (stricmp(op, "src_color") == 0)
                         src = BLENDOP_SRC_COLOR;
+                    else if (stricmp(op, "dst_color") == 0)
+                        src = BLENDOP_DST_COLOR;
                     else
                         Log_Error("unsupported src blend-op \"%s\"", op);
                 }
@@ -1557,6 +1559,8 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                         dst = BLENDOP_INV_SRC_ALPHA;
                     else if (stricmp(op, "src_color") == 0)
                         dst = BLENDOP_SRC_COLOR;
+                    else if (stricmp(op, "dst_color") == 0)
+                        dst = BLENDOP_DST_COLOR;
                     else
                         Log_Error("unsupported dst blend-op \"%s\"", op);
                 }
