@@ -104,7 +104,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
-#if 0
+#if 1
 {
     Logger::Info("src-code:");
 
@@ -1026,6 +1026,25 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                     prop.arraySize = 1;
                     prop.isBigArray = false;
 
+                    if (decl->type.array)
+                    {
+                        if (decl->type.arraySize->nodeType == sl::HLSLNodeType_LiteralExpression)
+                        {
+                            sl::HLSLLiteralExpression* expr = (sl::HLSLLiteralExpression*)(decl->type.arraySize);
+
+                            if (expr->type == sl::HLSLBaseType_Int)
+                                prop.arraySize = expr->iValue;
+                        }
+                    }
+
+                    if (decl->annotation)
+                    {
+                        if (strstr(decl->annotation, "bigarray"))
+                        {
+                            prop.isBigArray = true;
+                        }
+                    }
+
                     switch (decl->type.baseType)
                     {
                     case sl::HLSLBaseType_Float:
@@ -1097,6 +1116,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                         cbuf->storage = prop.storage;
                         cbuf->tag = prop.tag;
                         cbuf->regCount = 0;
+                        cbuf->isArray = false;
                     }
 
                     prop.bufferindex = static_cast<uint32>(cbuf - &(buf[0]));
@@ -1152,8 +1172,16 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
 
                         cbuf->regCount += prop.bufferRegCount;
 
-                        for (int i = 0; i != prop.bufferRegCount; ++i)
-                            cbuf->avlRegIndex.push_back(4);
+                        if (prop.arraySize > 1)
+                        {
+                            cbuf->isArray = true;
+                            prop.isBigArray = true;
+                        }
+                        else
+                        {
+                            for (int i = 0; i != prop.bufferRegCount; ++i)
+                                cbuf->avlRegIndex.push_back(4);
+                        }
                     }
 
                     prop_t pp;
@@ -1406,6 +1434,22 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             decl->type.array = true;
             decl->type.arraySize = sz;
 
+            if (buf[i].isArray)
+            {
+                for (unsigned p = 0; p != property.size(); ++p)
+                {
+                    if (property[p].bufferindex == i)
+                    {
+                        decl->name = ast->AddString(property[p].uid.c_str());
+                        //                        decl->type.baseType=sl::HLSLBaseType_Float4x4;
+                        break;
+                    }
+                }
+
+                decl->annotation = ast->AddString("bigarray");
+                decl->registerName = ast->AddString(buf_name);
+            }
+
             sz->type = sl::HLSLBaseType_Int;
             sz->iValue = buf[i].regCount;
 
@@ -1432,6 +1476,8 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             {
             case rhi::ShaderProp::TYPE_FLOAT4:
             {
+                if (!property[i].isBigArray)
+                {
                 sl::HLSLArrayAccess* arr_access = ast->AddNode<sl::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
                 sl::HLSLLiteralExpression* idx = ast->AddNode<sl::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
                 sl::HLSLIdentifierExpression* arr = ast->AddNode<sl::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
@@ -1458,6 +1504,14 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 prop_decl[i].decl->assignment = arr_access;
                 prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
                     #endif
+                }
+                else
+                {
+                    char buf_name[128];
+
+                    Snprintf(buf_name, sizeof(buf_name), "%cP_Buffer%u", btype, property[i].bufferindex);
+                    prop_decl[i].decl->registerName = ast->AddString(buf_name);
+                }
             }
             break;
 
@@ -1563,6 +1617,14 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             }
             break;
             }
+
+            if (property[i].isBigArray)
+            {
+                //                if( prop_decl[i].prev_statement )
+                //                    prop_decl[i].prev_statement->nextStatement = prop_decl[i].decl->nextStatement;
+
+                prop_decl[i].decl->hidden = true;
+            }
         }
     }
 
@@ -1578,54 +1640,42 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
         {
         case sl::BLENDOP_ZERO:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_ZERO;
-            ;
             break;
         case sl::BLENDOP_ONE:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_ONE;
-            ;
             break;
         case sl::BLENDOP_SRC_ALPHA:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_SRC_ALPHA;
-            ;
             break;
         case sl::BLENDOP_INV_SRC_ALPHA:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_INV_SRC_ALPHA;
-            ;
             break;
         case sl::BLENDOP_SRC_COLOR:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_SRC_COLOR;
-            ;
             break;
         case sl::BLENDOP_DST_COLOR:
             blending.rtBlend[0].colorSrc = rhi::BLENDOP_DST_COLOR;
-            ;
             break;
         }
         switch (blend->dst_op)
         {
         case sl::BLENDOP_ZERO:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_ZERO;
-            ;
             break;
         case sl::BLENDOP_ONE:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_ONE;
-            ;
             break;
         case sl::BLENDOP_SRC_ALPHA:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_SRC_ALPHA;
-            ;
             break;
         case sl::BLENDOP_INV_SRC_ALPHA:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_INV_SRC_ALPHA;
-            ;
             break;
         case sl::BLENDOP_SRC_COLOR:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_SRC_COLOR;
-            ;
             break;
         case sl::BLENDOP_DST_COLOR:
             blending.rtBlend[0].colorDst = rhi::BLENDOP_DST_COLOR;
-            ;
             break;
         }
     }
@@ -1974,6 +2024,38 @@ ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
     }
     break;
     }
+#if 0
+{
+    Logger::Info("src-code:");
+
+    char ss[64 * 1024];
+    unsigned line_cnt = 0;
+
+    if (strlen(code->c_str()) < sizeof(ss))
+    {
+        strcpy(ss, code->c_str());
+
+        const char* line = ss;
+        for (char* s = ss; *s; ++s)
+        {
+            if( *s=='\r')
+                *s=' ';
+
+            if (*s == '\n')
+            {
+                *s = 0;
+                Logger::Info("%4u |  %s", 1 + line_cnt, line);
+                line = s+1;
+                ++line_cnt;
+            }
+        }
+    }
+    else
+    {
+        Logger::Info(code->c_str());
+    }
+}
+#endif
 
     return success;
 }

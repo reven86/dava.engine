@@ -106,6 +106,7 @@ private:
         FastName tag;
         uint32 regCount;
         std::vector<int> avlRegIndex;
+        bool isArray;
     };
 
     std::string fileName;
