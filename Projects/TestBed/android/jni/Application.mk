@@ -3,8 +3,9 @@ APP_CPPFLAGS := -frtti -fexceptions
 
 #APP_CFLAGS := -marm
 
-#debug
-APP_CPPFLAGS += -DNDK_DEBUG=1 -O0 -g
+# debug
+# not forget to build: "ndk-build NDK_DEBUG=1"
+APP_CPPFLAGS += -O0 -g
 APP_CPPFLAGS += -D__DAVAENGINE_DEBUG__
 # http://en.cppreference.com/w/cpp/numeric/fenv
 #APP_CFLAGS += -fnon-call-exceptions
