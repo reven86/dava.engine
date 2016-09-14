@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Engine/Public/Dispatcher.h"
+#include "Engine/Dispatcher.h"
 #include "Engine/Private/Dispatcher/UIDispatcherEvent.h"
 
 namespace DAVA

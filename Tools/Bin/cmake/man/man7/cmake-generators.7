@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-GENERATORS" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-GENERATORS" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-generators \- CMake Generators Reference
 .
@@ -100,6 +100,10 @@ Generates build.ninja files.
 A build.ninja file is generated into the build tree.  Recent versions
 of the ninja program can build the project through the "all" target.
 An "install" target is also provided.
+.sp
+For each subdirectory \fBsub/dir\fP of the project an additional target
+named \fBsub/dir/all\fP is generated that depends on all targets required
+by that subdirectory.
 .SS IDE Build Tool Generators
 .sp
 These generators support Integrated Development Environment (IDE)
@@ -108,33 +112,27 @@ one may launch CMake from any environment.
 .SS Visual Studio Generators
 .SS Visual Studio 6
 .sp
-Deprected.  Generates Visual Studio 6 project files.
-.sp
-\fBNOTE:\fP
-.INDENT 0.0
-.INDENT 3.5
-This generator is deprecated and will be removed
-in a future version of CMake.  It will still be
-possible to build with VS 6 tools using the
-\fBNMake Makefiles\fP generator.
-.UNINDENT
-.UNINDENT
+Removed.  This once generated Visual Studio 6 project files, but the
+generator has been removed since CMake 3.6.  It is still possible to
+build with VS 6 tools using the \fBNMake Makefiles\fP generator.
 .SS Visual Studio 7
 .sp
-Deprected.  Generates Visual Studio .NET 2002 project files.
+Removed.  This once generated Visual Studio .NET 2002 project files, but
+the generator has been removed since CMake 3.6.  It is still possible to
+build with VS 7.0 tools using the \fBNMake Makefiles\fP generator.
+.SS Visual Studio 7 .NET 2003
+.sp
+Deprecated.  Generates Visual Studio .NET 2003 project files.
 .sp
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
 This generator is deprecated and will be removed
 in a future version of CMake.  It will still be
-possible to build with VS 7.0 tools using the
+possible to build with VS 7.1 tools using the
 \fBNMake Makefiles\fP generator.
 .UNINDENT
 .UNINDENT
-.SS Visual Studio 7 .NET 2003
-.sp
-Generates Visual Studio .NET 2003 project files.
 .SS Visual Studio 8 2005
 .sp
 Generates Visual Studio 8 2005 project files.
@@ -272,7 +270,7 @@ Customizations are available through the following cache variables:
 \fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-This generator is deemed experimental as of CMake 3.5.0\-rc3
+This generator is deemed experimental as of CMake 3.6.2
 and is still a work in progress.  Future versions of CMake
 may make breaking changes as the generator matures.
 .UNINDENT

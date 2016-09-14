@@ -13,9 +13,9 @@ public:
         bool accept = true;
         for (size_t i = 0, n = replacementString.length(); i < n && accept; ++i)
         {
-            accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
+            accept = ('a' <= replacementString[i] && replacementString[i] <= 'z') || replacementString[i] == ' ';
         }
-        Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
+        Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
@@ -40,7 +40,7 @@ public:
         {
             accept = '0' <= replacementString[i] && replacementString[i] <= '9';
         }
-        Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
+        Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
@@ -71,24 +71,26 @@ void MultilineTest::LoadResources()
 
     textField1 = new UITextField(Rect(5, 10, 400, 60));
     textField1->SetFont(font);
-    textField1->SetText(L"Hello World");
+    textField1->SetText(L"hello world");
     textField1->SetDebugDraw(true);
     textField1->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     textField1->SetDelegate(textDelegate1);
     textField1->GetOrCreateComponent<UIFocusComponent>();
     textField1->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     textField1->SetMaxLength(10);
+    AddControl(textField1);
 
     textField2 = new UITextField(Rect(5, 80, 400, 60));
     textField2->SetIsPassword(true);
     textField2->SetFont(font);
-    textField2->SetText(L"Die my darling");
+    textField2->SetText(L"123456");
     textField2->SetDebugDraw(true);
     textField2->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
     textField2->SetKeyboardType(UITextField::eKeyboardType::KEYBOARD_TYPE_NUMBER_PAD);
     textField2->SetDelegate(textDelegate2);
     textField2->GetOrCreateComponent<UIFocusComponent>();
     textField2->SetTextAlign(ALIGN_RIGHT | ALIGN_TOP);
+    AddControl(textField2);
 
     textFieldMulti = new UITextField(Rect(450, 10, 400, 120));
     textFieldMulti->GetOrCreateComponent<UIFocusComponent>();
@@ -98,16 +100,11 @@ void MultilineTest::LoadResources()
     textFieldMulti->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
     textFieldMulti->SetMultiline(true);
     textFieldMulti->SetTextAlign(ALIGN_HCENTER | ALIGN_TOP);
-
-    AddControl(textField1);
-    AddControl(textField2);
     AddControl(textFieldMulti);
 
     const float32 Y_OFFSET = 500;
     const float32 CONTROL_LENGHT = 400;
     const float32 CONTROL_HEIGTH = 70;
-
-    BaseScreen::LoadResources();
 
     font->SetSize(25.f);
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));

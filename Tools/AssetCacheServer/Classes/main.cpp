@@ -3,7 +3,7 @@
 #include "QtTools/RunGuard/RunGuard.h"
 
 #include "ServerCore.h"
-#include "AssetCacheServerWindow.h"
+#include "UI/AssetCacheServerWindow.h"
 
 #include <QApplication>
 #include <QCryptographicHash>

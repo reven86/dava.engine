@@ -2,7 +2,7 @@
 #define __SHARED_PREFERENCES_H__
 
 #include "DataStorage/DataStorage.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {

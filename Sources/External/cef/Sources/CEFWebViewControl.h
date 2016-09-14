@@ -8,6 +8,7 @@
 
 namespace DAVA
 {
+class Window;
 class CEFWebViewControl : public CefClient,
                           public CefLoadHandler,
                           public CefRequestHandler,
@@ -16,7 +17,11 @@ class CEFWebViewControl : public CefClient,
     IMPLEMENT_REFCOUNTING(CEFWebViewControl);
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    CEFWebViewControl(Window* w, UIWebView& uiWebView);
+#else
     CEFWebViewControl(UIWebView& uiWebView);
+#endif
     ~CEFWebViewControl() = default;
 
     // Initialize the control.
@@ -93,6 +98,9 @@ private:
     void OnMouseWheel(UIEvent* input);
     void OnKey(UIEvent* input);
 
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
     UIWebView& webView;
     Vector2 webViewOffSet;
     IUIWebViewDelegate* delegate = nullptr;

@@ -1,6 +1,8 @@
 #include "FileSystem/File.h"
 
-#include "../Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Engine.h"
+
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -66,16 +68,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
-
-        // now with PackManager we can improve perfomance by lookup pack name
-        // from DB with all files, then check if such pack mounted and from
-        // mountedPackIndex find by name archive with file or skip to next step
-        IPackManager& pm = Core::Instance()->GetPackManager();
         Vector<uint8> contentAndSize;
 
         if (pm.IsInitialized())
         {
-            const String& packName = pm.FindPackName(filename);
+            const String& packName = pm->FindPackName(filename);
             if (!packName.empty())
             {
                 auto it = fileSystem->resArchiveMap.find(packName);
