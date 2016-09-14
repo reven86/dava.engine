@@ -28,7 +28,7 @@ fp_main( fragment_in input )
     fragment_out    output;
 
     float4 textureColor0 = tex2D( albedo, input.texCoord );
-    float3 color = textureColor0.rgb * input.vegetationColor * 2.0;
+    float3 color = textureColor0.rgb * float3(input.vegetationColor) * 2.0;
 
 #if LOD_COLOR
     color += lodColor;

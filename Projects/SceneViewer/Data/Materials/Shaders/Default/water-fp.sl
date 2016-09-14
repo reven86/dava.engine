@@ -173,7 +173,7 @@ fp_main( fragment_in input )
         
         output.color = float4(resColor, 1.0);
     #else
-        float3x3 tbnToWorldMatrix = float3x3(input.tbnToWorld0), input.tbnToWorld1, input.tbnToWorld2);
+        float3x3 tbnToWorldMatrix = float3x3(input.tbnToWorld0, input.tbnToWorld1, input.tbnToWorld2);
         float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
         reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
         float3 reflectionVectorInWorldSpace = mul (reflectionVectorInTangentSpace, tbnToWorldMatrix);    

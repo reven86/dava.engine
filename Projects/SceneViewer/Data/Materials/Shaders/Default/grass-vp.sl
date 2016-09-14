@@ -85,7 +85,7 @@ vp_main( vertex_in input )
 
     float4 vegetationMask = tex2Dlod( vegetationmap, uvColor, 0.0 );
     
-    output.vegetationColor = vegetationMask.rgb;
+    output.vegetationColor = half3(vegetationMask.rgb);
     
     //wave transform
     int waveIndex = int(inTexCoord1.y);

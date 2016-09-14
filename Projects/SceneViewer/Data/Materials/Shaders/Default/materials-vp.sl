@@ -35,7 +35,7 @@ vertex_in
     #endif
     
     #if SKINNING
-    uint4 index : BLENDINDICES;
+    float index : BLENDINDICES;
     #endif
 
 
@@ -56,6 +56,9 @@ vertex_in
     float texcoord3 : TEXCOORD3;
     #endif
 
+    #if FLOWMAP
+        float3 varFlowData : TEXCOORD4;
+    #endif
 
 };
 
@@ -89,9 +92,9 @@ vertex_out
     
     
     #if VERTEX_LIT
-        half4 varDiffuseColor : COLOR0;
+        half varDiffuseColor : COLOR0;
         #if BLINN_PHONG
-            half4 varSpecularColor : TEXCOORD4;
+            half varSpecularColor : TEXCOORD4;
         #elif NORMALIZED_BLINN_PHONG
             half4 varSpecularColor : TEXCOORD4;
         #endif
@@ -116,6 +119,10 @@ vertex_out
 
     #if FRAME_BLEND
         half varTime : TEXCOORD3;
+    #endif
+
+    #if FLOWMAP
+        float3 varFlowData : TEXCOORD4;
     #endif
 
 };
@@ -152,8 +159,8 @@ vertex_out
 #endif
 
 #if SKINNING
-[dynamic][skin1][bigarray] property float4 jointPositions[MAX_JOINTS]; // (x, y, z, scale)
-[dynamic][skin2][bigarray] property float4 jointQuaternions[MAX_JOINTS];
+[dynamic][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray" ; // (x, y, z, scale)
+[dynamic][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
 #endif
 
 #include "vp-fog-props.slh"
@@ -226,10 +233,14 @@ vertex_out
 [dynamic][a] property float4x4 worldMatrix;
 #endif
 
-#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
 [dynamic][a] property float globalTime;
 #endif
 
+#if FLOWMAP
+[statik][a] property float flowAnimSpeed;
+[statik][a] property float flowAnimOffset;
+#endif
 
 // prototypes, to shut up Metal shader-compiler
 /*
@@ -325,6 +336,13 @@ vertex_out vp_main( vertex_in input )
     #if VERTEX_COLOR
     float4 inVertexColor = input.color0;
     #endif
+
+#if FLOWMAP
+    float scaledTime = globalTime * flowAnimSpeed;
+    float2 flowPhases = frac(float2(scaledTime, scaledTime+0.5))-float2(0.5, 0.5);
+    float flowBlend = abs(flowPhases.x*2.0);
+    output.varFlowData = float3(flowPhases * flowAnimOffset, flowBlend);
+#endif
 
 #if MATERIAL_SKYBOX
     
@@ -474,8 +492,8 @@ vertex_out vp_main( vertex_in input )
         
         output.varDiffuseColor = NdotL / _PI;
         
-        output.varSpecularColor.xyz = Dbp * Geo * fresnelOut * specularity;
-        output.varSpecularColor.w = NdotH;
+        output.varSpecularColor.xyz = half3(Dbp * Geo * fresnelOut * specularity);
+        output.varSpecularColor.w = half(NdotH);
     
     #endif
     
@@ -517,9 +535,9 @@ vertex_out vp_main( vertex_in input )
     v.z = dot (toCameraDir, n);
     
     #if !FAST_NORMALIZATION
-        output.varToCameraVec = v;
+        output.varToCameraVec = float3(v);
     #else
-        output.varToCameraVec = normalize(v);
+        output.varToCameraVec = float3(normalize(v));
     #endif
     
     /* Normalize the halfVector to pass it to the fragment shader */
@@ -532,7 +550,7 @@ vertex_out vp_main( vertex_in input )
         v.z = dot (halfVector, n);
         
         // No need to normalize, t,b,n and halfVector are normal vectors.
-        output.varHalfVec = v;
+        output.varHalfVec = half3(v);
     #endif
 
 //    varLightPosition.x = dot (lightPosition0.xyz, t);

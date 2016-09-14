@@ -33,7 +33,7 @@ vertex_out
         float2  uv1 : TEXCOORD1;
     #endif
     #if SHADING == SHADING_PERPIXEL
-        float3  cameraToPointInTangentSpace TEXCOORD2;
+        float3  cameraToPointInTangentSpace : TEXCOORD2;
         #if REAL_REFLECTION
             float3  eyeDist           : TEXCOORD3;
             float4  normalizedFragPos : TEXCOORD4;

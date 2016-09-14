@@ -38,14 +38,14 @@ fragment_in
 
     #if VERTEX_LIT
 
-        half4 varDiffuseColor : COLOR0;
+        half varDiffuseColor : COLOR0;
 
         #if BLINN_PHONG
-            half4 varSpecularColor : TEXCOORD4;
+            half varSpecularColor : TEXCOORD4;
         #elif NORMALIZED_BLINN_PHONG
             half4 varSpecularColor : TEXCOORD4;
         #endif
-
+    
     #elif PIXEL_LIT
         
         #if FAST_NORMALIZATION
@@ -55,6 +55,10 @@ fragment_in
         float3 varToCameraVec : TEXCOORD7;
     #endif
     
+    #if FLOWMAP
+        float3 varFlowData : TEXCOORD4;
+    #endif
+
     #if VERTEX_COLOR || SPHERICAL_LIT
         half4 varVertexColor : COLOR1;
     #endif
@@ -103,6 +107,10 @@ fragment_out
 
 #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
     uniform sampler2D lightmap;
+#endif
+
+#if FLOWMAP
+    uniform sampler2D flowmap;
 #endif
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
@@ -179,14 +187,38 @@ fp_main( fragment_in input )
     #if MATERIAL_TEXTURE
     
         #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
-            half4 textureColor0 = half4(tex2D( albedo, input.varTexCoord0 ));
+            #if FLOWMAP
+                float3 flowData = input.varFlowData;
+                float2 flowDir = float2( tex2D( flowmap, input.varTexCoord0 ).xy) * 2.0 - 1.0;
+                half4 flowSample1 = half4(tex2D( albedo, input.varTexCoord0 + flowDir*flowData.x));
+                half4 flowSample2 = half4(tex2D( albedo, input.varTexCoord0 + flowDir*flowData.y));
+                half4 textureColor0 = lerp(flowSample1, flowSample2, half(flowData.z) );
+            #else
+                half4 textureColor0 = half4(tex2D( albedo, input.varTexCoord0 ));
+            #endif
+            
             #if ALPHA_MASK 
                 textureColor0.a *= FP_A8(tex2D( alphamask, input.varTexCoord1 ));
-            #endif
+            #endif          
         #else
-            half3 textureColor0 = half3(tex2D( albedo, input.varTexCoord0 ).rgb);
+            #if FLOWMAP
+                float3 flowData = input.varFlowData;
+                float2 flowDir = float2(tex2D( flowmap, input.varTexCoord0 ).xy) * 2.0 - 1.0;
+                half3 flowSample1 = half3( tex2D( albedo, input.varTexCoord0 + flowDir*flowData.x).rgb);
+                half3 flowSample2 = half3(tex2D( albedo, input.varTexCoord0) + flowDir*flowData.y).rgb);
+                half3 textureColor0 = lerp(flowSample1, flowSample2, half(flowData.z) );
+            #else
+                #if TEST_OCCLUSION
+                    half4 preColor = half4(tex2D( albedo, input.varTexCoord0 ) );
+                    half3 textureColor0 = min10float3(preColor.rgb*preColor.a);
+                #else
+                    half3 textureColor0 = half3(tex2D( albedo, input.varTexCoord0 ).rgb);
+                #endif
+                
+            #endif
         #endif
-            
+        
+        
         #if FRAME_BLEND
             half4 blendFrameColor = half4(tex2D( albedo, input.varTexCoord1 ));
             half varTime = input.varTime;
@@ -274,7 +306,7 @@ fp_main( fragment_in input )
     
         #if BLINN_PHONG
             
-            min10float3 color = float3(0.0,0.0,0.0);
+            half3 color = half3(0.0,0.0,0.0);
             #if VIEW_AMBIENT
                 color += half3(lightAmbientColor0);
             #endif
@@ -285,8 +317,8 @@ fp_main( fragment_in input )
 
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    min10float maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
-                    min10float4 tileColor = tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor;
+                    half maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
+                    half4 tileColor = half4(tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor);
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
                     color *= textureColor0.rgb;
@@ -294,12 +326,12 @@ fp_main( fragment_in input )
             #endif
 
             #if VIEW_SPECULAR
-                color += (input.varSpecularColor * textureColor0.a) * lightColor0;
+                color += half3((input.varSpecularColor * textureColor0.a) * lightColor0);
             #endif
     
         #elif NORMALIZED_BLINN_PHONG
    
-            half3 color = float3(0.0,0.0,0.0);
+            half3 color = half3(0.0,0.0,0.0);
             
             #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
                 color += half3(lightAmbientColor0);
@@ -320,8 +352,8 @@ fp_main( fragment_in input )
         
             #if VIEW_ALBEDO
                 #if TILED_DECAL_MASK
-                    min10float maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
-                    min10float4 tileColor = tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor;
+                    half maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
+                    half4 tileColor = half4(tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor);
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
                 #else
                     color *= textureColor0.rgb;
@@ -331,12 +363,12 @@ fp_main( fragment_in input )
             #if VIEW_SPECULAR
                 float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
                 float specularNorm = (glossiness + 2.0) / 8.0;
-                float3 spec = input.varSpecularColor.xyz * pow(/*varNdotH*/FP_IN(varSpecularColor).w, glossiness) * specularNorm;
+                float3 spec = float3(input.varSpecularColor.xyz * pow(input.varSpecularColor.w, glossiness) * specularNorm);
                                                      
                 #if MATERIAL_LIGHTMAP
-                    color += spec * textureColor1.rgb / 2.0 * lightColor0;
+                    color += half3(spec * (textureColor1.rgb / 2.0) * lightColor0);
                 #else
-                    color += spec * lightColor0;
+                    color += half3(spec * lightColor0);
                 #endif
             #endif
     
@@ -352,7 +384,7 @@ fp_main( fragment_in input )
     
         #if !FAST_NORMALIZATION
             float3 toLightNormalized = float3(normalize(input.varToLightVec.xyz));
-            float3 toCameraNormalized = normalize(input.varToCameraVec);
+            float3 toCameraNormalized = float3(normalize(input.varToCameraVec));
             float3 H = toCameraNormalized + toLightNormalized;
             H = normalize(H);
 
@@ -364,11 +396,11 @@ fp_main( fragment_in input )
         #else
             // Kwasi normalization :-)
             // compute diffuse lighting
-            float3 normalizedHalf = normalize(input.varHalfVec.xyz);
+            float3 normalizedHalf = float3(normalize(input.varHalfVec.xyz));
             
-            float NdotL = max (dot (normal, input.varToLightVec.xyz), 0.0);
+            float NdotL = max (dot (normal, float3(input.varToLightVec.xyz)), 0.0);
             float NdotH = max (dot (normal, normalizedHalf), 0.0);
-            float LdotH = max (dot (input.varToLightVec.xyz, normalizedHalf), 0.0);
+            float LdotH = max (dot (float3(input.varToLightVec.xyz), normalizedHalf), 0.0);
             float NdotV = max (dot (normal, input.varToCameraVec), 0.0);
         #endif
     
@@ -440,10 +472,10 @@ fp_main( fragment_in input )
         #if VIEW_DIFFUSE
             #if MATERIAL_LIGHTMAP
                 #if VIEW_ALBEDO
-                    color = textureColor1.rgb * 2.0;
+                    color = half3(textureColor1.rgb * 2.0);
                 #else
                     //do not scale lightmap in view diffuse only case. artist request
-                    color = textureColor1.rgb; 
+                    color = half3(textureColor1.rgb); 
                 #endif
             #else
                 color += half3(diffuse * lightColor0);
@@ -452,8 +484,8 @@ fp_main( fragment_in input )
     
         #if VIEW_ALBEDO
             #if TILED_DECAL_MASK
-                min10float maskSample = FP_A8( tex2D( decalmask, input.varTexCoord0 ));
-                min10float4 tileColor = tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor;
+                half maskSample = FP_A8( tex2D( decalmask, input.varTexCoord0 ));
+                half4 tileColor = half4(tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor);
                 color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
             #else
                 color *= textureColor0.rgb;
@@ -495,7 +527,7 @@ fp_main( fragment_in input )
         
         #elif MATERIAL_SKYBOX
             
-            float4 color = textureColor0;
+            float4 color = float4(textureColor0);
         
         #else
             
@@ -504,8 +536,8 @@ fp_main( fragment_in input )
         #endif
         
         #if TILED_DECAL_MASK
-            min10float maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
-            min10float4 tileColor = tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor;
+            half maskSample = FP_A8(tex2D( decalmask, input.varTexCoord0 ));
+            half4 tileColor = half4(tex2D( decaltexture, input.varDecalTileTexCoord ).rgba * decalTileColor);
             color.rgb += (tileColor.rgb - color.rgb) * tileColor.a * maskSample;
         #endif
         

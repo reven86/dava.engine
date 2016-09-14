@@ -102,7 +102,7 @@ fp_main( fragment_in input )
             
     float NdotL = max (dot (normal, input.varToLightVec.xyz), 0.0);
     float NdotH = max (dot (normal, normalizedHalf), 0.0);
-    float LdotH = max (dot (FP_IN(varToLightVec).xyz, normalizedHalf), 0.0);
+    float LdotH = max (dot (input.varToLightVec.xyz, normalizedHalf), 0.0);
     float NdotV = max (dot (normal, input.varToCameraVec), 0.0);
 
     float3 fresnelOut = FresnelShlickVec3( NdotV, metalFresnelReflectance );
