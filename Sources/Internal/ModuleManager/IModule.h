@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_IMODULE_H__
-#define __DAVAENGINE_IMODULE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -21,4 +20,4 @@ public:
 };
 }
 
-#endif
+
