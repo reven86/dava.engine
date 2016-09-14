@@ -165,14 +165,7 @@ void UIList::SetScrollPosition(float32 newScrollPos)
         FullRefresh();
     }
 
-    if (orientation == ORIENTATION_HORIZONTAL)
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
-    else
-    {
-        scroll->SetPosition(-newScrollPos);
-    }
+    scroll->SetPosition(-newScrollPos);
 }
 
 void UIList::ResetScrollPosition()

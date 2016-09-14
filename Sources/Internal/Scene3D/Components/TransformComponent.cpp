@@ -10,8 +10,6 @@ TransformComponent::TransformComponent()
 {
     localMatrix = Matrix4::IDENTITY;
     worldMatrix = Matrix4::IDENTITY;
-    parentMatrix = 0;
-    parent = 0;
 }
 
 TransformComponent::~TransformComponent()
