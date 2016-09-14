@@ -584,11 +584,11 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
         default:
             DVASSERT(0);
         }
-        ///        m_writer.Write("(");
+        m_writer.Write("(");
         OutputExpression(binaryExpression->expression1, dstType1);
         m_writer.Write("%s", op);
         OutputExpression(binaryExpression->expression2, dstType2);
-        ///        m_writer.Write(")");
+        m_writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConditionalExpression)
     {
@@ -982,14 +982,19 @@ void GLESGenerator::OutputStatements(int indent, HLSLStatement* statement, const
         {
             HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
             HLSLLiteralExpression* arr_sz = static_cast<HLSLLiteralExpression*>(buffer->field->type.arraySize);
+            HLSLDeclaration* decl = buffer->field;
+            bool isBigArray = decl->annotation && strstr(decl->annotation, "bigarray");
 
             m_writer.WriteLine
             (
             indent, "uniform %s %s[%i];",
-            GetTypeName(buffer->field->type),
-            buffer->field->name,
+            GetTypeName(decl->type),
+            (isBigArray) ? decl->registerName : decl->name,
             arr_sz->iValue
             );
+
+            if (isBigArray)
+                m_writer.WriteLine(indent, "#define %s %s", decl->name, decl->registerName);
 
             /*
             // Empty uniform blocks cause compilation errors on NVIDIA, so don't emit them.
@@ -1352,10 +1357,9 @@ void GLESGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 {
     if (declaration->type.flags & HLSLTypeFlag_Property)
     {
-        m_writer.Write("#define %s ", declaration->name);
-
         if (declaration->assignment)
         {
+            m_writer.Write("#define %s ", declaration->name);
             m_writer.Write("(");
             if (declaration->type.array)
             {

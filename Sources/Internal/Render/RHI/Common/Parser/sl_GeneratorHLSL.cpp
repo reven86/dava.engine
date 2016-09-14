@@ -452,7 +452,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
     else if (expression->nodeType == HLSLNodeType_BinaryExpression)
     {
         HLSLBinaryExpression* binaryExpression = static_cast<HLSLBinaryExpression*>(expression);
-        //        m_writer.Write("(");
+        m_writer.Write("(");
         OutputExpression(binaryExpression->expression1);
         const char* op = "?";
         switch (binaryExpression->binaryOp)
@@ -513,7 +513,7 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         }
         m_writer.Write("%s", op);
         OutputExpression(binaryExpression->expression2);
-        //        m_writer.Write(")");
+        m_writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConditionalExpression)
     {
@@ -1025,6 +1025,7 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
 
     if (registerName != NULL)
     {
+        /*
         if (m_isInsideBuffer)
         {
             m_writer.Write(" : packoffset(%s)", registerName);
@@ -1033,6 +1034,7 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         {
             m_writer.Write(" : register(%s)", registerName);
         }
+*/
     }
 
     if (assignment != NULL && !IsSamplerType(type))
