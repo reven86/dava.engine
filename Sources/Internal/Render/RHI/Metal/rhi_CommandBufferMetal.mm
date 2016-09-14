@@ -1737,12 +1737,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_SyncObject_Delete = &metal_SyncObject_Delete;
     dispatch->impl_SyncObject_IsSignaled = &metal_SyncObject_IsSignaled;
 
-    //dispatch->impl_Present = &metal_Present;
-    DispatchPlatform::ExecuteFrame = &Metal_ExecuteQueuedCommands;
-    DispatchPlatform::RejectFrame = &Metal_RejectFrame;
-    DispatchPlatform::PresntBuffer = &Metal_PresentBuffer;
-    DispatchPlatform::FinishFrame = &Metal_InvalidateFrameCache;
-    DispatchPlatform::FinishRendering = &Metal_Suspend;
+    dispatch->impl_ExecuteFrame = &Metal_ExecuteQueuedCommands;
+    dispatch->impl_RejectFrame = &Metal_RejectFrame;
+    dispatch->impl_PresntBuffer = &Metal_PresentBuffer;
+    dispatch->impl_FinishFrame = &Metal_InvalidateFrameCache;
+    dispatch->impl_FinishRendering = &Metal_Suspend;
 }
 }
 

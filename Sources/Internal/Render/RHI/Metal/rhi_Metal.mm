@@ -217,8 +217,8 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_DeviceCaps = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
 
-    DispatchPlatform::InitContext = &Metal_InitContext;
-    DispatchPlatform::ValidateSurface = &Metal_CheckSurface;
+    DispatchMetal.impl_InitContext = &Metal_InitContext;
+    DispatchMetal.impl_ValidateSurface = &Metal_CheckSurface;
 
     SetDispatchTable(DispatchMetal);
 
