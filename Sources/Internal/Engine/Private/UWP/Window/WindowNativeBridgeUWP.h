@@ -39,7 +39,8 @@ ref struct WindowNativeBridge sealed
 private:
     void SetMouseVisibility(bool visible);
     void SetMouseCaptured(bool capture);
-    bool SkipEvents(const MainDispatcherEvent& e);
+    bool DeferredMouseMode(const MainDispatcherEvent& e);
+    bool SkipMoveEvents(const MainDispatcherEvent& e);
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;

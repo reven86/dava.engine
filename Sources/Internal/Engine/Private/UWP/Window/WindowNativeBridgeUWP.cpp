@@ -191,7 +191,7 @@ void WindowNativeBridge::SetMouseCaptured(bool capture)
     }
 }
 
-bool WindowNativeBridge::SkipEvents(const MainDispatcherEvent& e)
+bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
 {
     // run on UI thread
     if (!hasFocus)
@@ -199,11 +199,6 @@ bool WindowNativeBridge::SkipEvents(const MainDispatcherEvent& e)
         return true;
     }
     focusChanged = false;
-    if (skipMouseMoveEvents && MainDispatcherEvent::MOUSE_MOVE == e.type)
-    {
-        skipMouseMoveEvents--;
-        return true;
-    }
     if (deferredMouseMode)
     {
         if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
@@ -296,7 +291,7 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     {
         MainDispatcherEvent e;
         e.type = MainDispatcherEvent::KEY_DOWN;
-        if (!SkipEvents(e))
+        if (!DeferredMouseMode(e))
         {
             uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         }
@@ -307,8 +302,8 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     case CoreAcceleratorKeyEventType::SystemKeyUp:
     {
         MainDispatcherEvent e;
-        e.type = MainDispatcherEvent::KEY_DOWN;
-        if (!SkipEvents(e))
+        e.type = MainDispatcherEvent::KEY_UP;
+        if (!DeferredMouseMode(e))
         {
             uwpWindow->GetWindow()->PostKeyUp(key);
         }
@@ -361,7 +356,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(state);
 
-        if (!SkipEvents(e))
+        if (!DeferredMouseMode(e))
         {
             uwpWindow->GetDispatcher()->PostEvent(e);
         }
@@ -395,7 +390,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(mouseButtonState);
 
-        if (!SkipEvents(e))
+        if (!DeferredMouseMode(e))
         {
             uwpWindow->GetDispatcher()->PostEvent(e);
         }
@@ -436,7 +431,7 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
             {
                 e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
                 e.mclickEvent.button = static_cast<uint32>(i + 1);
-                if (!SkipEvents(e))
+                if (!DeferredMouseMode(e))
                 {
                     uwpWindow->GetDispatcher()->PostEvent(e);
                 }
@@ -447,7 +442,7 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
         e.mmoveEvent.x = pointerPoint->Position.X;
         e.mmoveEvent.y = pointerPoint->Position.Y;
 
-        if (!SkipEvents(e))
+        if (!DeferredMouseMode(e))
         {
             uwpWindow->GetDispatcher()->PostEvent(e);
         }
@@ -474,7 +469,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     e.mwheelEvent.y = pointerPoint->Position.Y;
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    if (!SkipEvents(e))
+    if (!DeferredMouseMode(e))
     {
         uwpWindow->GetDispatcher()->PostEvent(e);
     }
@@ -492,10 +487,13 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
     e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
-    if (!SkipEvents(e))
+    // after enabled Pinning mode, skip move events, large x, y delta
+    if (skipMouseMoveEvents)
     {
-        uwpWindow->GetDispatcher()->PostEvent(e);
+        skipMouseMoveEvents--;
+        return;
     }
+    uwpWindow->GetDispatcher()->PostEvent(e);
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
