@@ -2,10 +2,8 @@
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
 #include "rhi_Pool.h"
-#include "rhi_Utils.h"
 
 #include "Core/Core.h"
-using DAVA::Logger;
 
 #include "Debug/Profiler.h"
 #include "Concurrency/Thread.h"
@@ -13,26 +11,8 @@ using DAVA::Logger;
 
 namespace rhi
 {
-struct ScheduledDeleteResource
-{
-    Handle handle;
-    ResourceType resourceType;
-};
-
-const static uint32 frameSyncObjectsCount = 16;
-static uint32 currFrameSyncId = 0;
-static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
-static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
-static DAVA::Mutex scheduledDeleteMutex;
 
 static Handle CurFramePerfQuerySet = InvalidHandle;
-
-inline void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
-{
-    scheduledDeleteMutex.Lock();
-    scheduledDeleteResources[currFrameSyncId].push_back({ handle, resourceType });
-    scheduledDeleteMutex.Unlock();
-}
 
 struct PacketList_t
 {
@@ -74,323 +54,6 @@ void InitPacketListPool(uint32 maxCount)
     PacketListPool::Reserve(maxCount);
 }
 
-//------------------------------------------------------------------------------
-
-HVertexBuffer CreateVertexBuffer(const VertexBuffer::Descriptor& desc)
-{
-    return HVertexBuffer(VertexBuffer::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate)
-{
-    if (forceImmediate)
-        VertexBuffer::Delete(vb);
-    else
-        ScheduleResourceDeletion(vb, RESOURCE_VERTEX_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapVertexBuffer(HVertexBuffer vb, uint32 offset, uint32 size)
-{
-    return VertexBuffer::Map(vb, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapVertexBuffer(HVertexBuffer vb)
-{
-    VertexBuffer::Unmap(vb);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateVertexBuffer(HVertexBuffer vb, const void* data, uint32 offset, uint32 size)
-{
-    VertexBuffer::Update(vb, data, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreVertexBuffer(HVertexBuffer vb)
-{
-    return VertexBuffer::NeedRestore(vb);
-}
-
-//------------------------------------------------------------------------------
-
-HIndexBuffer CreateIndexBuffer(const IndexBuffer::Descriptor& desc)
-{
-    return HIndexBuffer(IndexBuffer::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate)
-{
-    if (forceImmediate)
-        IndexBuffer::Delete(ib);
-    else
-        ScheduleResourceDeletion(ib, RESOURCE_INDEX_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapIndexBuffer(HIndexBuffer ib, uint32 offset, uint32 size)
-{
-    return IndexBuffer::Map(ib, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapIndexBuffer(HIndexBuffer ib)
-{
-    IndexBuffer::Unmap(ib);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateIndexBuffer(HIndexBuffer ib, const void* data, uint32 offset, uint32 size)
-{
-    IndexBuffer::Update(ib, data, offset, size);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreIndexBuffer(HIndexBuffer ib)
-{
-    return IndexBuffer::NeedRestore(ib);
-}
-
-//------------------------------------------------------------------------------
-
-HQueryBuffer CreateQueryBuffer(uint32 maxObjectCount)
-{
-    return HQueryBuffer(QueryBuffer::Create(maxObjectCount));
-}
-
-//------------------------------------------------------------------------------
-
-void ResetQueryBuffer(HQueryBuffer buf)
-{
-    QueryBuffer::Reset(buf);
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate)
-{
-    if (forceImmediate)
-        QueryBuffer::Delete(buf);
-    else
-        ScheduleResourceDeletion(buf, RESOURCE_QUERY_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-bool QueryBufferIsReady(HQueryBuffer buf)
-{
-    return QueryBuffer::BufferIsReady(buf);
-}
-
-//------------------------------------------------------------------------------
-
-bool QueryIsReady(HQueryBuffer buf, uint32 objectIndex)
-{
-    return QueryBuffer::IsReady(buf, objectIndex);
-}
-
-//------------------------------------------------------------------------------
-
-int QueryValue(HQueryBuffer buf, uint32 objectIndex)
-{
-    return QueryBuffer::Value(buf, objectIndex);
-}
-HPerfQuerySet CreatePerfQuerySet(unsigned maxTimestampCount)
-{
-    return HPerfQuerySet(PerfQuerySet::Create(maxTimestampCount));
-}
-void ResetPerfQuerySet(HPerfQuerySet set)
-{
-    PerfQuerySet::Reset(set);
-}
-void GetPerfQuerySetStatus(HPerfQuerySet hset, bool* isReady, bool* isValid)
-{
-    PerfQuerySet::GetStatus(hset, isReady, isValid);
-}
-void DeletePerfQuerySet(HPerfQuerySet set, bool forceImmediate)
-{
-    if (forceImmediate)
-        PerfQuerySet::Delete(set);
-    else
-        ScheduleResourceDeletion(set, RESOURCE_PERFQUERY_SET);
-}
-bool GetPerfQuerySetFreq(HPerfQuerySet set, uint64* freq)
-{
-    return PerfQuerySet::GetFreq(set, freq);
-}
-bool GetPerfQuerySetTimestamp(HPerfQuerySet set, uint32 timestampIndex, uint64* timestamp)
-{
-    return PerfQuerySet::GetTimestamp(set, timestampIndex, timestamp);
-}
-bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
-{
-    return PerfQuerySet::GetFrameTimestamps(hset, t0, t1);
-}
-
-//------------------------------------------------------------------------------
-
-HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
-{
-    HPipelineState ps;
-
-    if (!ps.IsValid())
-    {
-        ps = HPipelineState(PipelineState::Create(desc));
-    }
-
-    return ps;
-}
-
-//------------------------------------------------------------------------------
-
-void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate)
-{
-    //    PipelineState::Delete( rps );
-}
-
-//------------------------------------------------------------------------------
-
-HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex)
-{
-    return HConstBuffer(PipelineState::CreateVertexConstBuffer(rps, bufIndex));
-}
-
-//------------------------------------------------------------------------------
-
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
-{
-    bool success = false;
-
-    for (unsigned i = 0; i != maxCount; ++i)
-        constBuf[i] = HConstBuffer(PipelineState::CreateVertexConstBuffer(rps, i));
-
-    return success;
-}
-
-//------------------------------------------------------------------------------
-
-HConstBuffer CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex)
-{
-    return HConstBuffer(PipelineState::CreateFragmentConstBuffer(rps, bufIndex));
-}
-
-//------------------------------------------------------------------------------
-
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
-{
-    bool success = false;
-
-    for (unsigned i = 0; i != maxCount; ++i)
-        constBuf[i] = HConstBuffer(PipelineState::CreateFragmentConstBuffer(rps, i));
-
-    return success;
-}
-
-//------------------------------------------------------------------------------
-
-bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount)
-{
-    return ConstBuffer::SetConst(constBuf, constIndex, constCount, data);
-}
-
-//------------------------------------------------------------------------------
-
-bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount)
-{
-    return ConstBuffer::SetConst(constBuf, constIndex, constSubIndex, data, dataCount);
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate)
-{
-    if (forceImmediate)
-        ConstBuffer::Delete(constBuf);
-    else
-        ScheduleResourceDeletion(constBuf, RESOURCE_CONST_BUFFER);
-}
-
-//------------------------------------------------------------------------------
-
-HTexture
-CreateTexture(const Texture::Descriptor& desc)
-{
-    return HTexture(Texture::Create(desc));
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteTexture(HTexture tex, bool forceImmediate)
-{
-    if (forceImmediate)
-        Texture::Delete(tex);
-    else
-        ScheduleResourceDeletion(tex, RESOURCE_TEXTURE);
-}
-
-//------------------------------------------------------------------------------
-
-void* MapTexture(HTexture tex, uint32 level)
-{
-    return Texture::Map(tex, level);
-}
-
-//------------------------------------------------------------------------------
-
-void UnmapTexture(HTexture tex)
-{
-    Texture::Unmap(tex);
-}
-
-//------------------------------------------------------------------------------
-
-void UpdateTexture(HTexture tex, const void* data, uint32 level, TextureFace face)
-{
-    Texture::Update(tex, data, level, face);
-}
-
-//------------------------------------------------------------------------------
-
-bool NeedRestoreTexture(HTexture tex)
-{
-    return Texture::NeedRestore(tex);
-}
-
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-
-HSyncObject CreateSyncObject()
-{
-    return HSyncObject(SyncObject::Create());
-}
-
-//------------------------------------------------------------------------------
-
-void DeleteSyncObject(HSyncObject obj)
-{
-    SyncObject::Delete(obj);
-}
-
-//------------------------------------------------------------------------------
-
-bool SyncObjectSignaled(HSyncObject obj)
-{
-    return SyncObject::IsSignaled(obj);
-}
 void SetFramePerfQuerySet(HPerfQuerySet hset)
 {
     CurFramePerfQuerySet = hset;
@@ -436,15 +99,6 @@ void BeginRenderPass(HRenderPass pass)
 void EndRenderPass(HRenderPass pass)
 {
     RenderPass::End(pass);
-}
-
-bool NeedInvertProjection(const RenderPassConfig& passDesc)
-{
-    bool isRT = (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
-    (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
-    (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
-
-    return (isRT && !rhi::DeviceCaps().isUpperLeftRTOrigin);
 }
 
 //------------------------------------------------------------------------------
@@ -599,7 +253,7 @@ void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount
         {
             if (p->textureSet != InvalidHandle)
             {
-                TextureSet_t* ts = TextureSetPool::Get(p->textureSet);
+                CommonImpl::TextureSet_t* ts = TextureSetPool::Get(p->textureSet);
                 for (unsigned i = 0; i != ts->fragmentTextureCount; ++i)
                 {
                     rhi::CommandBuffer::SetFragmentTexture(cmdBuf, i, ts->fragmentTexture[i]);
@@ -689,83 +343,15 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 
 /**/
 
-void ProcessScheduledDelete()
-{
-    for (int i = 0; i < frameSyncObjectsCount; i++)
-    {
-        if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
-        {
-            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)
-            {
-                ScheduledDeleteResource& res = *it;
-                switch (res.resourceType)
-                {
-                case RESOURCE_VERTEX_BUFFER: //+
-                    VertexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_INDEX_BUFFER: //+
-                    IndexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE: //+
-                    Texture::Delete(res.handle);
-                    break;
-                case RESOURCE_QUERY_BUFFER: //+
-                    QueryBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_CONST_BUFFER: //+
-                    ConstBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_PIPELINE_STATE: //-
-                    PipelineState::Delete(res.handle);
-                    break;
-                case RESOURCE_DEPTHSTENCIL_STATE: //+
-                    DepthStencilState::Delete(res.handle);
-                    break;
-                case RESOURCE_SAMPLER_STATE: //+
-                    SamplerState::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE_SET:
-                    TextureSetPool::Free(res.handle);
-                    break;
-                default:
-                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
-                }
-            }
-            scheduledDeleteResources[i].clear();
-        }
-    }
-}
 
 void Present()
 {
-    scheduledDeleteMutex.Lock();
-    if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
-        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
-
-    //PresentImpl(frameSyncObjects[currFrameSyncId]);
-    RenderLoop::Present(frameSyncObjects[currFrameSyncId]);
-
-    currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
-    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
-    if (frameSyncObjects[currFrameSyncId].IsValid())
-    {
-        DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
-        frameSyncObjects[currFrameSyncId] = HSyncObject();
-    }
-
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
-    ProcessScheduledDelete();
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
-
-    scheduledDeleteMutex.Unlock();
+    RenderLoop::Present();
 }
 
 HSyncObject GetCurrentFrameSyncObject()
 {
-    if (!frameSyncObjects[currFrameSyncId].IsValid())
-        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
-
-    return frameSyncObjects[currFrameSyncId];
+    return RenderLoop::GetCurrentFrameSyncObject();
 }
 
 void SuspendRendering()
@@ -784,7 +370,7 @@ void Initialize(Api api, const InitParam& param)
 
     //init common
     if (param.maxTextureSetCount)
-        InitTextreSetPool(param.maxTextureSetCount);
+        TextureSet::InitTextreSetPool(param.maxTextureSetCount);
     if (param.maxPacketListCount)
         InitPacketListPool(param.maxPacketListCount);
 
@@ -809,37 +395,6 @@ void Uninitialize()
     RenderLoop::UninitializeRenderLoop();
 }
 
-uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
-{
-    uint32 color = 0;
-    int r = int(red * 255.0f);
-    int g = int(green * 255.0f);
-    int b = int(blue * 255.0f);
-    int a = int(alpha * 255.0f);
 
-    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
-
-    switch (HostApi())
-    {
-    case RHI_DX9:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
-        break;
-
-    case RHI_DX11:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
-        break;
-
-    case RHI_GLES2:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-
-    case RHI_METAL:
-        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
-        break;
-    }
-
-    return color;
-}
 
 } //namespace rhi

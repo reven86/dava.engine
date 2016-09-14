@@ -20,7 +20,26 @@ struct ImmediateCommand
     uint32 cmdCount;
     bool forceImmediate = false;
 };
+
+struct TextureSet_t
+{
+    struct Desc
+    {
+    };
+
+    uint32 fragmentTextureCount;
+    Handle fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32 vertexTextureCount;
+    Handle vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
+    int refCount;
+};
 }
 
+namespace TextureSet
+{
+Handle Create();
+CommonImpl::TextureSet_t* Get(Handle);
+void Delete(Handle);
 void InitTextreSetPool(uint32 maxCount);
+}
 }

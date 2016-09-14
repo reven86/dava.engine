@@ -1,7 +1,7 @@
 #ifndef __RHI_PUBLIC_H__
 #define __RHI_PUBLIC_H__
 
- #include "rhi_Type.h"
+#include "rhi_Type.h"
 
 namespace DAVA
 {

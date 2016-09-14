@@ -379,8 +379,7 @@ dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx9_SyncObject_Create()
+static Handle dx9_SyncObject_Create()
 {
     Handle handle = SyncObjectPoolDX9::Alloc();
     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(handle);
@@ -393,16 +392,14 @@ dx9_SyncObject_Create()
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_SyncObject_Delete(Handle obj)
+static void dx9_SyncObject_Delete(Handle obj)
 {
     SyncObjectPoolDX9::Free(obj);
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx9_SyncObject_IsSignaled(Handle obj)
+static bool dx9_SyncObject_IsSignaled(Handle obj)
 {
     if (!SyncObjectPoolDX9::IsAlive(obj))
         return true;

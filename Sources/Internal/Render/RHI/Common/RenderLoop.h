@@ -1,4 +1,5 @@
 #pragma once
+#include "../rhi_Public.h"
 #include "../rhi_Type.h"
 #include "rhi_CommonImpl.h"
 #include "Concurrency/Thread.h"
@@ -7,7 +8,7 @@ namespace rhi
 {
 namespace RenderLoop
 {
-void Present(Handle syncHandle); // called from main thread
+void Present(); // called from main thread
 
 void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority priority, int32 bindToProcessor);
 void UninitializeRenderLoop();
@@ -21,5 +22,6 @@ void CheckImmediateCommand(); //called from render thread only
 void SetResetPending();
 
 void ScheduleResourceDeletion(Handle handle, ResourceType resourceType);
+HSyncObject GetCurrentFrameSyncObject();
 }
 }

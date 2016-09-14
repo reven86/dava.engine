@@ -1537,7 +1537,7 @@ void _GLES2_ResetBlock()
 #endif
 }
 
-void _GLES2_InvalidateFrameCache()
+void _GLES2_FinishFrame()
 {
     ProgGLES2::InvalidateAllConstBufferInstances();
 }
@@ -2001,7 +2001,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_RejectFrame = _GLES2_RejectFrame;
     dispatch->impl_PresntBuffer = _GLES2_PresentBuffer;
     dispatch->impl_ResetBlock = _GLES2_ResetBlock;
-    dispatch->impl_FinishFrame = _GLES2_InvalidateFrameCache;
+    dispatch->impl_FinishFrame = _GLES2_FinishFrame;
 }
 }
 

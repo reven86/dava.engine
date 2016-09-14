@@ -1,4 +1,5 @@
 #include "rhi_Utils.h"
+#include "../rhi_Public.h"
 
 #include "Concurrency/Spinlock.h"
 
@@ -300,5 +301,47 @@ uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 lev
     }
 
     return sz;
+}
+
+uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
+{
+    uint32 color = 0;
+    int32 r = int32(red * 255.0f);
+    int32 g = int32(green * 255.0f);
+    int32 b = int32(blue * 255.0f);
+    int32 a = int32(alpha * 255.0f);
+
+    DVASSERT((r >= 0) && (r <= 0xff) && (g >= 0) && (g <= 0xff) && (b >= 0) && (b <= 0xff) && (a >= 0) && (a <= 0xff));
+
+    switch (HostApi())
+    {
+    case RHI_DX9:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((r)&0xFF) << 16) | (((g)&0xFF) << 8) | ((b)&0xFF));
+        break;
+
+    case RHI_DX11:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
+        break;
+
+    case RHI_GLES2:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        break;
+
+    case RHI_METAL:
+        color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
+        break;
+    }
+
+    return color;
+}
+
+bool NeedInvertProjection(const RenderPassConfig& passDesc)
+{
+    bool isRT = (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
+    (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
+    (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
+
+    return (isRT && !DeviceCaps().isUpperLeftRTOrigin);
 }
 }
