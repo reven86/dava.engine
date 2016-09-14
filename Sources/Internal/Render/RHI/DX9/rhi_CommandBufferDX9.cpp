@@ -33,6 +33,7 @@ FrameDX9
 {
     unsigned number;
     Handle sync;
+    PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame;
     std::vector<Handle> pass;
     uint32 readyToExecute : 1;
 };
@@ -129,6 +130,7 @@ enum CommandDX9
     DX9__SET_INDICES,
     DX9__SET_QUERY_BUFFER,
     DX9__SET_QUERY_INDEX,
+    DX9__ISSUE_TIMESTAMP_QUERY,
 
     DX9__SET_PIPELINE_STATE,
     DX9__SET_CULL_MODE,
@@ -159,6 +161,8 @@ RenderPassDX9_t
 public:
     std::vector<Handle> cmdBuf;
     int priority;
+    Handle perfQuery0;
+    Handle perfQuery1;
 };
 
 class
@@ -192,6 +196,8 @@ public:
 
     RingBuffer* text;
 
+    PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame;
+
     Handle sync;
 };
 
@@ -223,6 +229,8 @@ dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Ha
 
     pass->cmdBuf.resize(cmdBufCount);
     pass->priority = passDesc.priority;
+    pass->perfQuery0 = passDesc.perfQueryStart;
+    pass->perfQuery1 = passDesc.perfQueryEnd;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
@@ -251,8 +259,10 @@ dx9_RenderPass_Begin(Handle pass)
     {
         _DX9_Frame.emplace_back();
         _DX9_Frame.back().number = _DX9_FrameNumber;
+        _DX9_Frame.back().perfQueryFrame = PerfQueryDX9::NextPerfQueryFrame();
         _DX9_Frame.back().sync = rhi::InvalidHandle;
         _DX9_Frame.back().readyToExecute = false;
+
         ++_DX9_FrameNumber;
     }
 
@@ -376,6 +386,12 @@ static void
 dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
 {
     CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__SET_QUERY_INDEX, objectIndex);
+}
+
+static void
+dx9_CommandBuffer_IssueTimestampQuery(Handle cmdBuf, Handle query)
+{
+    CommandBufferPoolDX9::Get(cmdBuf)->Command(DX9__ISSUE_TIMESTAMP_QUERY, query);
 }
 
 //------------------------------------------------------------------------------
@@ -519,6 +535,7 @@ CommandBufferDX9_t::CommandBufferDX9_t()
     : isFirstInPass(true)
     , isLastInPass(true)
     , text(nullptr)
+    , perfQueryFrame(nullptr)
     , sync(InvalidHandle)
 {
 }
@@ -842,6 +859,13 @@ void CommandBufferDX9_t::Execute()
             if (cur_query_buf != InvalidHandle)
                 QueryBufferDX9::SetQueryIndex(cur_query_buf, uint32(arg[0]));
             c += 1;
+        }
+        break;
+
+        case DX9__ISSUE_TIMESTAMP_QUERY:
+        {
+            DVASSERT(perfQueryFrame);
+            PerfQueryDX9::IssueTimestamp(perfQueryFrame, Handle(arg[0]));
         }
         break;
 
@@ -1232,6 +1256,9 @@ _RejectAllFrames()
 
                 RenderPassPoolDX9::Free(*p);
             }
+
+            PerfQueryDX9::RejectPerfQueryFrame(f->perfQueryFrame);
+
             f = _DX9_Frame.erase(f);
         }
         else
@@ -1252,6 +1279,12 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
         bool do_add = true;
         for (unsigned i = 0; i != pass.size(); ++i)
         {
+            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+            {
+                CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(pp->cmdBuf[b]);
+                cb->perfQueryFrame = _DX9_Frame.front().perfQueryFrame;
+            }
+
             if (pp->priority > pass[i]->priority)
             {
                 pass.insert(pass.begin() + i, 1, pp);
@@ -1301,23 +1334,31 @@ _DX9_ExecuteQueuedCommands()
         }
         else
         {
+            PerfQueryDX9::ObtainPerfQueryMeasurment();
+
             _DX9_FramesWithRestoreAttempt = 0;
 
             std::vector<Handle> pass_h;
             std::vector<RenderPassDX9_t*> pass;
+            PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
 
             _DX9_FrameSync.Lock();
             bool hasFrames = !_DX9_Frame.empty();
             if (hasFrames)
             {
                 _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
+                perfQueryFrame = _DX9_Frame.front().perfQueryFrame;
             }
             _DX9_FrameSync.Unlock();
 
             if (hasFrames)
             {
+                PerfQueryDX9::BeginMeasurment(perfQueryFrame);
                 for (RenderPassDX9_t* pp : pass)
                 {
+                    if (pp->perfQuery0)
+                        PerfQueryDX9::IssueTimestamp(perfQueryFrame, pp->perfQuery0);
+
                     for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
                     {
                         Handle cb_h = pp->cmdBuf[b];
@@ -1335,7 +1376,12 @@ _DX9_ExecuteQueuedCommands()
 
                         CommandBufferPoolDX9::Free(cb_h);
                     }
+
+                    if (pp->perfQuery1)
+                        PerfQueryDX9::IssueTimestamp(perfQueryFrame, pp->perfQuery1);
                 }
+
+                PerfQueryDX9::EndMeasurment(perfQueryFrame);
 
                 _DX9_FrameSync.Lock();
                 _DX9_Frame.erase(_DX9_Frame.begin());
@@ -1981,6 +2027,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetIndices = &dx9_CommandBuffer_SetIndices;
     dispatch->impl_CommandBuffer_SetQueryBuffer = &dx9_CommandBuffer_SetQueryBuffer;
     dispatch->impl_CommandBuffer_SetQueryIndex = &dx9_CommandBuffer_SetQueryIndex;
+    dispatch->impl_CommandBuffer_IssueTimestampQuery = &dx9_CommandBuffer_IssueTimestampQuery;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &dx9_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture = &dx9_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState = &dx9_CommandBuffer_SetDepthStencilState;

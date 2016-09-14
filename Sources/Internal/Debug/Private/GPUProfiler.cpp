@@ -18,11 +18,7 @@ GPUProfiler* const GPUProfiler::globalProfiler = nullptr;
 
 static const char* GPU_FRAME_MARKER = "GPUFrame";
 static const char* OVERLAY_MARKER = "GPUProfiler Overlay";
-static uint64 STATISTIC_GRAPH_CEIL_STEP = 500; //mcs
-static uint32 STATISTIC_GRAPHRECT_COLOR = 0x55FF0000;
-static uint32 STATISTIC_GRAPH_COLOR = 0xFF0000FF;
-static uint32 STATISTIC_TEXT_COLOR = 0xFFFFFFFF;
-static uint32 STATISTIC_LINE_COLOR = 0xFF00007F;
+static const uint64 STATISTIC_GRAPH_CEIL_STEP = 500; //mcs
 
 bool GPUProfiler::PerfQueryPair::IsReady()
 {
@@ -300,6 +296,11 @@ void GPUProfiler::DrawStatistic()
 {
     if (!statistic.size())
         return;
+
+    static const uint32 STATISTIC_GRAPHRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .3f);
+    static const uint32 STATISTIC_GRAPH_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
+    static const uint32 STATISTIC_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
+    static const uint32 STATISTIC_LINE_COLOR = rhi::NativeColorRGBA(.5f, 0.f, 0.f, 1.f);
 
     DbgDraw::EnsureInited();
 

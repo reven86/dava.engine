@@ -31,9 +31,9 @@ public:
 typedef ResourcePool<PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, false> PerfQueryGLES2Pool;
 RHI_IMPL_POOL(PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, false);
 
-DAVA::Vector<GLuint> queryObjectPool;
-DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>> pendingQueries;
-Handle currentFramePerfQuery[2] = { InvalidHandle, InvalidHandle };
+DAVA::Vector<GLuint> queryObjectPoolGLES2;
+DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>> pendingQueriesGLES2;
+Handle currentFramePerfQueryGLES2[2] = { InvalidHandle, InvalidHandle };
 GLuint currentTimeElapsedQuery = 0;
 
 //==============================================================================
@@ -99,8 +99,8 @@ static uint64 gles2_PerfQuery_Value(Handle handle)
 
 static void gles2_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
 {
-    currentFramePerfQuery[0] = handle0;
-    currentFramePerfQuery[1] = handle1;
+    currentFramePerfQueryGLES2[0] = handle0;
+    currentFramePerfQueryGLES2[1] = handle1;
 }
 
 namespace PerfQueryGLES2
@@ -118,10 +118,10 @@ void SetupDispatch(Dispatch* dispatch)
 GLuint GetQueryFromPool()
 {
     GLuint q = 0;
-    if (queryObjectPool.size())
+    if (queryObjectPoolGLES2.size())
     {
-        q = queryObjectPool.back();
-        queryObjectPool.pop_back();
+        q = queryObjectPoolGLES2.back();
+        queryObjectPoolGLES2.pop_back();
     }
 
     if (!q)
@@ -163,7 +163,7 @@ void IssueTimestampQuery(Handle handle)
 #endif
 
         query->isUsed = 1;
-        pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
+        pendingQueriesGLES2.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, queryObject));
     }
 }
 
@@ -211,7 +211,7 @@ void EndTimeElapsedQuery(Handle handle)
 #endif
 
         query->isUsed = 1;
-        pendingQueries.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, currentTimeElapsedQuery));
+        pendingQueriesGLES2.push_back(std::pair<PerfQueryGLES2_t*, GLuint>(query, currentTimeElapsedQuery));
         currentTimeElapsedQuery = 0;
     }
 }
@@ -221,8 +221,8 @@ void EndTimeElapsedQuery(Handle handle)
 void ObtainPerfQueryResults()
 {
     DAVA::Vector<std::pair<PerfQueryGLES2_t*, GLuint>> completedQueries;
-    DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>>::iterator it = pendingQueries.begin();
-    while (it != pendingQueries.end())
+    DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>>::iterator it = pendingQueriesGLES2.begin();
+    while (it != pendingQueriesGLES2.end())
     {
         uint32 result = GL_FALSE;
 #if defined(__DAVAENGINE_IPHONE__)
@@ -250,7 +250,7 @@ void ObtainPerfQueryResults()
         if (result == GL_TRUE)
         {
             completedQueries.push_back(*it);
-            it = pendingQueries.erase(it);
+            it = pendingQueriesGLES2.erase(it);
         }
         else
         {
@@ -292,7 +292,7 @@ void ObtainPerfQueryResults()
             p.first->isReady = 1;
         }
 
-        queryObjectPool.push_back(p.second);
+        queryObjectPoolGLES2.push_back(p.second);
     }
 }
 
@@ -325,21 +325,21 @@ void SkipQuery(Handle handle)
 
 void GetCurrentFrameQueries(Handle* query0, Handle* query1)
 {
-    *query0 = currentFramePerfQuery[0];
-    *query1 = currentFramePerfQuery[1];
+    *query0 = currentFramePerfQueryGLES2[0];
+    *query1 = currentFramePerfQueryGLES2[1];
 
-    currentFramePerfQuery[0] = InvalidHandle;
-    currentFramePerfQuery[1] = InvalidHandle;
+    currentFramePerfQueryGLES2[0] = InvalidHandle;
+    currentFramePerfQueryGLES2[1] = InvalidHandle;
 }
 
 void ReleaseQueryObjectsPool()
 {
-    if (queryObjectPool.size())
+    if (queryObjectPoolGLES2.size())
     {
-        GLCommand cmd = { GLCommand::DELETE_QUERIES, { uint64(queryObjectPool.size()), uint64(queryObjectPool.data()) } };
+        GLCommand cmd = { GLCommand::DELETE_QUERIES, { uint64(queryObjectPoolGLES2.size()), uint64(queryObjectPoolGLES2.data()) } };
         ExecGL(&cmd, 1);
 
-        queryObjectPool.clear();
+        queryObjectPoolGLES2.clear();
     }
 }
 }

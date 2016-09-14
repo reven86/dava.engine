@@ -44,9 +44,21 @@ bool QueryIsCompleted(Handle buf);
 void ReleaseQueryPool();
 }
 
-namespace PerfQuerySetDX9
+namespace PerfQueryDX9
 {
+struct PerfQueryFrameDX9;
+
 void SetupDispatch(Dispatch* dispatch);
+
+void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle);
+void BeginMeasurment(PerfQueryFrameDX9* frame);
+void EndMeasurment(PerfQueryFrameDX9* frame);
+
+PerfQueryFrameDX9* NextPerfQueryFrame();
+void RejectPerfQueryFrame(PerfQueryFrameDX9* frame);
+
+void ObtainPerfQueryMeasurment();
+void ReleasePerfQueryPool();
 }
 
 namespace PipelineStateDX9
