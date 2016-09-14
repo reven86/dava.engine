@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-void Any::LoadValue(void* data, const Type* type_)
+bool Any::LoadValue(void* data, const Type* type_)
 {
     type = type_;
 
@@ -10,40 +10,35 @@ void Any::LoadValue(void* data, const Type* type_)
     {
         void** src = reinterpret_cast<void**>(data);
         anyStorage.SetAuto(*src);
+        return true;
     }
     else if (type->IsTrivial())
     {
         anyStorage.SetData(data, type->GetSize());
+        return true;
     }
-    else
-    {
-        DAVA_THROW(Exception, "Any:: can't be loaded from not trivial type");
-    }
+
+    return false;
 }
 
-void Any::StoreValue(void* data, size_t size) const
+bool Any::StoreValue(void* data, size_t size) const
 {
-    if (nullptr != type)
+    if (nullptr != type && size >= type->GetSize())
     {
-        if (type->GetSize() > size)
-        {
-            DAVA_THROW(Exception, "Any:: can't be stored, size mismatch");
-        }
-
         if (type->IsPointer())
         {
             void** dst = reinterpret_cast<void**>(data);
             *dst = anyStorage.GetAuto<void*>();
+            return true;
         }
         else if (type->IsTrivial())
         {
             std::memcpy(data, anyStorage.GetData(), size);
-        }
-        else
-        {
-            DAVA_THROW(Exception, "Any:: can't be stored into not trivial type");
+            return true;
         }
     }
+
+    return false;
 }
 
 bool Any::operator==(const Any& any) const

@@ -50,9 +50,7 @@ public:
         {
             void* ptr = object.GetVoidPtr();
             const Type* inType = object.GetType()->Deref();
-            value.StoreValue(ptr, inType->GetSize());
-
-            ret = true;
+            ret = value.StoreValue(ptr, inType->GetSize());
         }
 
         return ret;

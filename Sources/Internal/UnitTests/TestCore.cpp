@@ -87,7 +87,7 @@ void TestCore::DisableTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         for (const String& testName : testNames)
         {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <typeindex>
-#include <string>
 
 #include "Base/BaseTypes.h"
 #include "Base/Type.h"
@@ -91,20 +90,20 @@ public:
     ///         types for which Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on source memory, from where value should be loaded.
     /// \param          type    The type of the loading value.
-    void LoadValue(void* data, const Type* type);
+    bool LoadValue(void* data, const Type* type);
 
     /// \brief  Stores contained value into specified memory location. Storing can
     ///          be done only for values whose type Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on destination memory, where contained value should be stored.
     /// \param          size    The size of the destination memory.
-    void StoreValue(void* data, size_t size) const;
+    bool StoreValue(void* data, size_t size) const;
 
     Any& operator=(Any&&);
     Any& operator=(const Any&) = default;
 
     /// \brief  Equality operator. Two Any objects can be equal only if they both contain values of the same Any::type.
     ///         Values of type for which Type::IsTrivial is true are compared by ::std::memcmp function. Values with
-    ///         other types can be compared only if AnyCompate class has specialization for thous types.
+    ///         other types can be compared only if AnyCompate class has specialization for thous type.
     /// \exception  DAVA::Exception there is no appropriate compare operation for contaited values.
     /// \sa AnyCompare
     bool operator==(const Any&) const;

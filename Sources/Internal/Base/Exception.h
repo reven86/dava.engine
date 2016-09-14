@@ -6,7 +6,8 @@ namespace DAVA
 {
 struct Exception : public ::std::runtime_error
 {
-    Exception(const String& message, const char* file_, size_t line_);
+    Exception(const String& message, const char* file, size_t line);
+    Exception(const char*, const char* file, size_t line);
 
     String file;
     size_t line;
