@@ -19,8 +19,5 @@ extern DAVA::Color QColorToColor(const QColor& qtColor);
 
 extern QColor ColorToQColor(const DAVA::Color& davaColor);
 
-void ShowFileInExplorer(const QString& path);
-
-void ConnectApplicationFocus();
 void MakeAppForeground();
 void RestoreMenuBar();

@@ -70,53 +70,6 @@ QColor ColorToQColor(const DAVA::Color& davaColor)
     return QColor::fromRgbF(davaColor.r / maxC, davaColor.g / maxC, davaColor.b / maxC, DAVA::Clamp(davaColor.a, 0.0f, 1.0f));
 }
 
-void ShowFileInExplorer(const QString& path)
-{
-#if defined(Q_OS_MAC)
-    QStringList args;
-    args << "-e";
-    args << "tell application \"Finder\"";
-    args << "-e";
-    args << "activate";
-    args << "-e";
-    args << "select POSIX file \"" + path + "\"";
-    args << "-e";
-    args << "end tell";
-    QProcess::startDetached("osascript", args);
-#elif defined(Q_OS_WIN)
-    QStringList args;
-    args << "/select," << QDir::toNativeSeparators(path);
-    QProcess::startDetached("explorer", args);
-#endif //
-}
-
-#if !defined(__DAVAENGINE_COREV2__)
-void ConnectApplicationFocus()
-{
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        DAVA::Core::Instance()->FocusReceived();
-    }
-    QObject::connect(qApp, &QApplication::applicationStateChanged, [](Qt::ApplicationState state)
-                     {
-                         DAVA::Core* core = DAVA::Core::Instance();
-                         if (core == nullptr)
-                         {
-                             return;
-                         }
-                         if (state == Qt::ApplicationActive)
-                         {
-                             core->FocusReceived();
-                         }
-                         else
-                         {
-                             core->FocusLost();
-                         }
-                     });
-}
-
-#endif // __DAVAENGINE_COREV2__
-
 #if !defined(__DAVAENGINE_MACOS__)
 void MakeAppForeground()
 {

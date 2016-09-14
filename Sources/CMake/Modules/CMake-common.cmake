@@ -68,6 +68,19 @@ macro (enable_pch)
     endif ()
 endmacro ()
 
+macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
+    set(OUTPUT_LIST "")
+    foreach (LIB_FILE ${LIB_LIST})
+        get_filename_component(LIB_NAME ${LIB_FILE} NAME)
+        list (FIND ${EXCLUDE_LIBS} ${LIB_NAME} LIB_INDEX)
+        if (${LIB_INDEX} EQUAL -1)
+            list ( APPEND OUTPUT_LIST ${LIB_FILE}  )
+        endif()
+    endforeach()
+    list (APPEND OUTPUT_LIST ${${ADDITIONAL_LIBS}})
+    set(${OUTPUT_LIST_VAR} ${OUTPUT_LIST})
+endmacro()
+
 
 ##
 #in

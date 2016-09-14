@@ -1,8 +1,10 @@
-#include "QtTools/RunGuard/RunGuard.h"
+#include "QtHelpers/RunGuard.h"
 
 #include <QCryptographicHash>
 
-namespace
+namespace QtHelpers
+{
+namespace RunGuardDetail
 {
 QString generateKeyHash(const QString& key, const QString& salt)
 {
@@ -18,8 +20,8 @@ QString generateKeyHash(const QString& key, const QString& salt)
 
 RunGuard::RunGuard(const QString& key)
     : key(key)
-    , memLockKey(generateKeyHash(key, "_memLockKey"))
-    , sharedmemKey(generateKeyHash(key, "_sharedmemKey"))
+    , memLockKey(RunGuardDetail::generateKeyHash(key, "_memLockKey"))
+    , sharedmemKey(RunGuardDetail::generateKeyHash(key, "_sharedmemKey"))
     , sharedMem(sharedmemKey)
     , memLock(memLockKey, 1)
 {
@@ -70,3 +72,4 @@ void RunGuard::release()
         sharedMem.detach();
     memLock.release();
 }
+} // namespace QtHelpers
