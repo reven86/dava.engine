@@ -100,6 +100,7 @@ public:
     struct Hints
     {
         bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
+        // TODO do we need bool firstLoadFromAssetsOnAndroid = true;?
     };
 
     /// you can call after in GameCore::OnAppStarted (throw exception on error)

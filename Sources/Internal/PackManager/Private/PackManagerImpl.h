@@ -100,7 +100,7 @@ private:
 
     FilePath dirToDownloadedPacks;
     FilePath pathToBasePacksDB;
-    String superPackUrl;
+    String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
     UnorderedMap<String, uint32> packsIndex;
@@ -124,8 +124,6 @@ private:
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
-
-    List<FilePath> mountedCommonPacks;
 
     Hints hints;
 };

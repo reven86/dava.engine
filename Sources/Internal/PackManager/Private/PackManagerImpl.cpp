@@ -40,7 +40,6 @@ void PackManagerImpl::Initialize(const String& architecture_,
 
     urlToSuperPack = urlToServerSuperpack_;
     architecture = architecture_;
-    mountedCommonPacks.clear();
 
     hints = hints_;
 
@@ -53,7 +52,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
     initLocalDBFileName = pathToBasePacksDB.GetFilename();
 
     dbZipInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbZipInData = pathToBasePacksDB_;
+    dbZipInData = pathToBasePacksDB;
 
     // TODO on Windows user can change content of ~doc:/ but on iOS and Android this path is private for App
     dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
@@ -834,65 +833,28 @@ void PackManagerImpl::SetRequestOrder(const String& packName, float newPriority)
 
 void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 {
-    FileSystem* fs = FileSystem::Instance();
-
-    if (packsIndex.empty())
-    {
-        for (const auto& filePath : basePacks)
-        {
-            String fileName = filePath.GetBasename();
-
-            try
-            {
-                fs->Mount(filePath, "Data/");
-                mountedCommonPacks.emplace_back(filePath);
-            }
-            catch (std::exception& ex)
-            {
-                Logger::Error("%s", ex.what());
-            }
-        };
-    }
-    else
-    {
-        for_each(begin(basePacks), end(basePacks), [&](const FilePath& filePath)
+    for_each(begin(basePacks), end(basePacks), [this](const FilePath& filePath)
+             {
+                 String fileName = filePath.GetBasename();
+                 auto it = packsIndex.find(fileName);
+                 if (it == end(packsIndex))
                  {
-                     String fileName = filePath.GetBasename();
-                     auto it = packsIndex.find(fileName);
-                     if (it == end(packsIndex))
-                     {
-                         throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
-                     }
+                     throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
+                 }
 
-                     Pack& pack = packs.at(it->second);
+                 Pack& pack = packs.at(it->second);
 
-                     try
-                     {
-                         fs->Mount(filePath, "Data/");
-                         pack.state = Pack::Status::Mounted;
-                     }
-                     catch (std::exception& ex)
-                     {
-                         Logger::Error("%s", ex.what());
-                     }
-                 });
-
-        // mark mounted before common packs as mounted
-        for (auto& filePath : mountedCommonPacks)
-        {
-            auto& pack = GetPack(filePath.GetBasename());
-            if (fs->IsMounted(filePath))
-            {
-                pack.state = Pack::Status::Mounted;
-            }
-            else
-            {
-                throw std::runtime_error("not mounted base pack: " + filePath.GetStringValue());
-            }
-        }
-
-        mountedCommonPacks.clear();
-    }
+                 try
+                 {
+                     FileSystem* fs = FileSystem::Instance();
+                     fs->Mount(filePath, "Data/");
+                     pack.state = Pack::Status::Mounted;
+                 }
+                 catch (std::exception& ex)
+                 {
+                     Logger::Error("%s", ex.what());
+                 }
+             });
 }
 
 void PackManagerImpl::DeletePack(const String& packName)
