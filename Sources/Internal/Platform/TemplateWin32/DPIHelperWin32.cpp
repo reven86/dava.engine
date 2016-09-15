@@ -2,6 +2,8 @@
 #include "ShellScalingAPI.h"
 
 //temporary decision
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
@@ -23,7 +25,12 @@ uint32 DPIHelper::GetScreenDPI()
     HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
     MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
 
+#if defined(__DAVAENGINE_COREV2__)
+    Window* w = Engine::Instance()->PrimaryWindow();
+    void* nativeWindow = w != nullptr ? w->GetNativeHandle() : nullptr;
+#else
     void* nativeWindow = Core::Instance()->GetNativeWindow();
+#endif
     if (nullptr != fn && nullptr != nativeWindow)
     {
         HWND hwnd = static_cast<HWND>(nativeWindow);
