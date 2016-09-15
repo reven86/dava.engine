@@ -39,8 +39,6 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-#if defined(__DAVAENGINE_COREV2__)
-
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
     KeyedArchive* appOptions = new KeyedArchive();
@@ -188,49 +186,6 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
         engine->Quit();
     }
 }
-#else // __DAVAENGINE_COREV2__
-
-void GameCore::OnAppStarted()
-{
-    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
-
-    testListScreen = new TestListScreen();
-    UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
-
-    InitNetwork();
-    RunOnlyThisTest();
-    RegisterTests();
-    RunTests();
-}
-
-GameCore::GameCore()
-    : currentScreen(nullptr)
-    , testListScreen(nullptr)
-{
-}
-
-GameCore::~GameCore()
-{
-}
-
-void GameCore::OnAppFinished()
-{
-    for (auto testScreen : screens)
-    {
-        SafeRelease(testScreen);
-    }
-    screens.clear();
-
-    SafeRelease(testListScreen);
-    netLogger.Uninstall();
-}
-
-void GameCore::BeginFrame()
-{
-    ApplicationCore::BeginFrame();
-}
-
-#endif // !__DAVAENGINE_COREV2__
 
 void GameCore::RunOnlyThisTest()
 {
@@ -244,9 +199,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-#if defined(__DAVAENGINE_COREV2__)
     new CoreV2Test(this);
-#endif
     new DlcTest(this);
     new UIScrollViewTest(this);
     new NotificationScreen(this);
