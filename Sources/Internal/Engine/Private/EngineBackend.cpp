@@ -472,13 +472,13 @@ void EngineBackend::InitRenderer(Window* w)
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
-    int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
-    int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
+    Size2f size = w->GetSize();
+    Size2f physicalSize = w->GetPhysicalSize();
     rendererParams.window = w->GetNativeHandle();
-    rendererParams.width = physW;
-    rendererParams.height = physH;
-    rendererParams.scaleX = w->GetRenderSurfaceScaleX();
-    rendererParams.scaleY = w->GetRenderSurfaceScaleY();
+    rendererParams.width = static_cast<int32>(physicalSize.dx);
+    rendererParams.height = static_cast<int32>(physicalSize.dy);
+    rendererParams.scaleX = physicalSize.dx / size.dx;
+    rendererParams.scaleY = physicalSize.dy / size.dy;
 
     w->InitCustomRenderParams(rendererParams);
 
@@ -500,13 +500,13 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
     }
     else
     {
-        int32 physW = static_cast<int32>(w->GetRenderSurfaceWidth());
-        int32 physH = static_cast<int32>(w->GetRenderSurfaceHeight());
-        rendererParams.window = w->GetNativeHandle();
-        rendererParams.width = physW;
-        rendererParams.height = physH;
-        rendererParams.scaleX = w->GetRenderSurfaceScaleX();
-        rendererParams.scaleY = w->GetRenderSurfaceScaleY();
+        Size2f size = w->GetSize();
+        Size2f physicalSize = w->GetPhysicalSize();
+
+        rendererParams.width = static_cast<int32>(physicalSize.dx);
+        rendererParams.height = static_cast<int32>(physicalSize.dy);
+        rendererParams.scaleX = physicalSize.dx / size.dx;
+        rendererParams.scaleY = physicalSize.dy / size.dy;
     }
     Renderer::Reset(rendererParams);
 }

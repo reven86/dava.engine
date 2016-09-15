@@ -41,7 +41,8 @@ public:
     void OnGameLoopStopped();
     void OnBeforeTerminate();
 
-    void OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
+    void OnWindowSizeChanged(DAVA::Window& w, DAVA::Size2f size);
+    void OnWindowPhysicalSizeChanged(DAVA::Window& w, DAVA::Size2f size);
     void OnWindowCreated(DAVA::Window& w);
     void OnWindowDestroyed(DAVA::Window& w);
 

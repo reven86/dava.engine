@@ -106,7 +106,8 @@ GameCore::GameCore(Engine* e)
         engine->windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
 
         Window* w = engine->PrimaryWindow();
-        w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+        w->sizeChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+        w->physicalSizeChanged.Connect(this, &GameCore::OnWindowPhysicalSizeChanged);
     }
 
     engine->GetContext()->uiControlSystem->SetClearColor(Color::Black);
@@ -160,9 +161,14 @@ void GameCore::OnWindowDestroyed(DAVA::Window& w)
     Logger::Error("****** GameCore::OnWindowDestroyed");
 }
 
-void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::Size2f size)
 {
-    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f", size.dx, size.dy);
+}
+
+void GameCore::OnWindowPhysicalSizeChanged(DAVA::Window& w, DAVA::Size2f phisicalSize)
+{
+    Logger::Debug("********** GameCore::OnWindowPhysicalSizeChanged: w=%.1f, h=%.1f", phisicalSize.dx, phisicalSize.dy);
 }
 
 void GameCore::OnSuspended()

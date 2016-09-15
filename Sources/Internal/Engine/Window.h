@@ -24,6 +24,9 @@ class VirtualCoordinatesSystem;
 
 class Window final
 {
+    friend class Private::EngineBackend;
+    friend class Private::PlatformCore;
+
 private:
     Window(Private::EngineBackend* engineBackend, bool primary);
     ~Window();
@@ -36,6 +39,7 @@ public:
     bool IsVisible() const;
     bool HasFocus() const;
 
+    /*
     // Window size in logical pixels
     float32 GetWidth() const;
     float32 GetHeight() const;
@@ -57,6 +61,13 @@ public:
 
     void Resize(float32 w, float32 h);
     void Resize(Vector2 size);
+    */
+
+    uint32 GetDPI() const;
+    Size2f GetPhysicalSize() const;
+    Size2f GetSize() const;
+
+    void Resize(const Size2f& size);
     void Close();
 
     Engine* GetEngine() const;
@@ -70,7 +81,8 @@ public:
     Signal<Window&, bool> visibilityChanged;
     Signal<Window&, bool> focusChanged;
     Signal<Window&> destroyed;
-    Signal<Window&, float32, float32, float32, float32> sizeScaleChanged;
+    Signal<Window&, Size2f> sizeChanged;
+    Signal<Window&, Size2f> physicalSizeChanged;
     //Signal<Window&> beginUpdate;
     //Signal<Window&> beginDraw;
     Signal<Window&, float32> update;
@@ -112,31 +124,32 @@ private:
     void ClearMouseButtons();
 
 private:
-    Private::EngineBackend* engineBackend = nullptr;
     // TODO: unique_ptr
+    Private::EngineBackend* engineBackend = nullptr;
     Private::WindowBackend* windowBackend = nullptr;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
-    VirtualCoordinatesSystem* virtualCoordSystem = nullptr;
 
     bool isPrimary = false;
     bool isVisible = false;
     bool hasFocus = false;
+
+    /*
     float32 width = 0.0f;
     float32 height = 0.0f;
     float32 scaleX = 1.0f;
     float32 scaleY = 1.0f;
     float32 userScale = 1.0f;
+    */
+
+    Size2f size = { 0.0f, 0.0f };
+    Size2f physicalSize = { 0.0f, 0.0f };
 
     bool pendingInitRender = false;
     bool pendingSizeChanging = false;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
-
-    // Friends
-    friend class Private::EngineBackend;
-    friend class Private::PlatformCore;
 };
 
 inline bool Window::IsPrimary() const
@@ -154,6 +167,7 @@ inline bool Window::HasFocus() const
     return hasFocus;
 }
 
+/*
 inline float32 Window::GetWidth() const
 {
     return width;
@@ -212,6 +226,17 @@ inline Vector2 Window::GetScale() const
 inline void Window::Resize(Vector2 size)
 {
     Resize(size.dx, size.dy);
+}
+*/
+
+inline Size2f Window::GetSize() const
+{
+    return size;
+}
+
+inline Size2f Window::GetPhysicalSize() const
+{
+    return physicalSize;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

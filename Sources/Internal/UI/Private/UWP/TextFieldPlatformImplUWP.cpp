@@ -364,7 +364,7 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
 #else
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
@@ -1194,7 +1194,7 @@ Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 
 // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
 #else
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif
@@ -1212,7 +1212,7 @@ Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
     Rect rect = srcRect;
 #if defined(__DAVAENGINE_COREV2__)
     // 1. map window to physical
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
 #else
     // 1. map window to physical
     const float32 scaleFactor = core->GetScreenScaleFactor();

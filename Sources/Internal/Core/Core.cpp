@@ -329,7 +329,6 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
     Random::Instance()->Release();
-    UIControlSystem::Instance()->vcs->Release();
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();

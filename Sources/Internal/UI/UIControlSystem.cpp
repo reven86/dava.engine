@@ -88,6 +88,7 @@ UIControlSystem::~UIControlSystem()
     SafeDelete(layoutSystem);
     SafeDelete(inputSystem);
     SafeDelete(screenshoter);
+    SafeDelete(vcs);
 }
 
 void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)

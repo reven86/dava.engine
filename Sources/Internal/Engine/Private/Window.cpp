@@ -29,9 +29,9 @@ Window::~Window()
     windowBackend = nullptr;
 }
 
-void Window::Resize(float32 w, float32 h)
+void Window::Resize(const Size2f& size)
 {
-    windowBackend->Resize(w, h);
+    windowBackend->Resize(size.dx, size.dy);
 }
 
 void Window::Close()
@@ -147,10 +147,10 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_CREATED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
 
-    width = e.sizeEvent.width;
-    height = e.sizeEvent.height;
-    scaleX = e.sizeEvent.scaleX;
-    scaleY = e.sizeEvent.scaleY;
+    size.dx = e.sizeEvent.width;
+    size.dy = e.sizeEvent.height;
+    physicalSize.dx = size.dx * e.sizeEvent.scaleX;
+    physicalSize.dy = size.dy * e.sizeEvent.scaleY;
 
     pendingInitRender = true;
     pendingSizeChanging = true;
@@ -168,7 +168,6 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
-    virtualCoordSystem = nullptr;
 
     engineBackend->DeinitRender(this);
 }
@@ -177,10 +176,10 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
 
-    width = e.sizeEvent.width;
-    height = e.sizeEvent.height;
-    scaleX = e.sizeEvent.scaleX;
-    scaleY = e.sizeEvent.scaleY;
+    size.dx = e.sizeEvent.width;
+    size.dy = e.sizeEvent.height;
+    physicalSize.dx = size.dx * e.sizeEvent.scaleX;
+    physicalSize.dy = size.dy * e.sizeEvent.scaleY;
     pendingSizeChanging = true;
 }
 
@@ -356,10 +355,10 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
 
 void Window::HandlePendingSizeChanging()
 {
-    int32 w = static_cast<int32>(width);
-    int32 h = static_cast<int32>(height);
-    int32 physW = static_cast<int32>(GetRenderSurfaceWidth());
-    int32 physH = static_cast<int32>(GetRenderSurfaceHeight());
+    int32 w = static_cast<int32>(size.dx);
+    int32 h = static_cast<int32>(size.dy);
+    int32 physW = static_cast<int32>(physicalSize.dx);
+    int32 physH = static_cast<int32>(physicalSize.dy);
 
     if (pendingInitRender)
     {
@@ -373,14 +372,15 @@ void Window::HandlePendingSizeChanging()
 
     if (windowBackend->IsWindowReadyForRender())
     {
-        virtualCoordSystem->SetInputScreenAreaSize(w, h);
-        virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
-        virtualCoordSystem->SetVirtualScreenSize(w, h);
-        virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-        virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
-        virtualCoordSystem->ScreenSizeChanged();
+        uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
+        uiControlSystem->vcs->SetPhysicalScreenSize(physW, physH);
+        uiControlSystem->vcs->SetVirtualScreenSize(w, h);
+        uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
+        uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
+        uiControlSystem->vcs->ScreenSizeChanged();
 
-        sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+        sizeChanged.Emit(*this, size);
+        physicalSizeChanged.Emit(*this, physicalSize);
     }
 }
 

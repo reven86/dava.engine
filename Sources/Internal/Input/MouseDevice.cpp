@@ -155,12 +155,12 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
         {
             bool inRect = true;
 #if defined(__DAVAENGINE_COREV2__)
-            Vector2 windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
+            Size2f windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
 #else
-            Vector2 windowSize = Core::Instance()->GetWindowSize();
+            Vector2 windowSize_ = Core::Instance()->GetWindowSize();
 #endif
-            inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.x);
-            inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.y);
+            inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.dx);
+            inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.dy);
             if (inRect && context->focused)
             {
                 SetSystemMode(eCaptureMode::PINING);

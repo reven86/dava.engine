@@ -396,7 +396,7 @@ Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 
 // 2. map physical to window
 #if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
 #else
     const float32 scaleFactor = core->GetScreenScaleFactor();
 #endif

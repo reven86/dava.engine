@@ -590,7 +590,7 @@ Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 
 #if defined(__DAVAENGINE_COREV2__)
     // 2. map physical to window
-    const float32 scaleFactor = window->GetRenderSurfaceScaleX();
+    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
 #else
     // 2. map physical to window
     const float32 scaleFactor = core->GetScreenScaleFactor();
