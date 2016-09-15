@@ -18,5 +18,10 @@ get_property           ( MODULES_INITIALIZATION GLOBAL PROPERTY MODULES_INITIALI
 get_property           ( MODULES_INITIALIZATION_HPP GLOBAL PROPERTY MODULES_INITIALIZATION_HPP )
 get_property           ( MODULES_CODE GLOBAL PROPERTY MODULES_CODE )
 
+foreach( ITEM ${MODULES_CODE})
+    set( MODULES_CODE_TMP "${MODULES_CODE_TMP}${ITEM}")
+endforeach()
+set( MODULES_CODE ${MODULES_CODE_TMP} )
+
 configure_file         ( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfo.in
                          ${CMAKE_CURRENT_LIST_DIR}/ModulesInfo.cmake  @ONLY )

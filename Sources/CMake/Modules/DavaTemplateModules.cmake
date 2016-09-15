@@ -204,11 +204,11 @@ macro( generated_initialization_module_code )
             list( APPEND INIT_POINTERS "        ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
 
             list( APPEND GET_MODULE_CODE "    template <>\n    ${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
-            list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_SampleModule\;\n    }\n" )
+            list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_${ITEM}\;\n    }\n" )
 
             list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}()\;\n" )
             list( APPEND INIT_CODE "        modules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
-            list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n" )
+            list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n\n" )
         endforeach()
         list( APPEND INIT_POINTERS "    }\;\n" )
 
