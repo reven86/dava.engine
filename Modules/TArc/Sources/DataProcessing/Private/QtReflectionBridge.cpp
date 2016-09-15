@@ -197,7 +197,7 @@ void QtReflected::CreateMetaObject()
     DVASSERT(wrapper.HasData());
     Reflection reflectionData = wrapper.GetData();
 
-    const ReflectedType* type = reflectionData.GetObjectType();
+    const ReflectedType* type = reflectionData.GetReflectedType();
 
     SCOPE_EXIT
     {

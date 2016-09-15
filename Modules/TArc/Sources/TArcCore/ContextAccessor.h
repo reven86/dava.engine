@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Public/EngineContext.h"
+#include "Engine/EngineContext.h"
 
 #include "DataProcessing/DataContext.h"
 #include "DataProcessing/DataWrapper.h"

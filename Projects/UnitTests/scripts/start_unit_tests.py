@@ -184,7 +184,8 @@ if sys.platform == "darwin" and start_on_ios == False:
                 '--pathExecut', pathExecut,                   
                 '--pathReportOut', pathReportOut,
                 '--buildConfig', 'Release',
-                '--teamcityMode', 'true'
+                '--notExecute' , 'true',
+                '--teamcityMode' , 'true'                
                  ]
 
     subprocess.call(params)

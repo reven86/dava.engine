@@ -11,8 +11,8 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "UI/UIScreenManager.h"
-#include "Engine/Public/EngineContext.h"
-#include "Engine/Public/Window.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Window.h"
 #include "Math/Rect.h"
 
 #include <QAction>
