@@ -9,7 +9,7 @@ DAVA_TESTCLASS (SampleModuleTest)
 {
     DAVA_TEST (CheckStatus)
     {
-        ModuleManager& moduleManager = Core::Instance()->GetModuleManager();
+        const ModuleManager& moduleManager = Core::Instance()->GetModuleManager();
         Test::SampleModule* sampleModule = moduleManager.GetModule<Test::SampleModule>();
 
         auto statusList = sampleModule->StatusList();
