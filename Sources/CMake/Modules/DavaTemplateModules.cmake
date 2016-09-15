@@ -9,6 +9,7 @@ EXTERNAL_MODULES
 EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT} 
 #
 MODULE_INITIALIZATION_CODE
+MODULE_INITIALIZATION_NAMESPACE
 MODULE_MANAGER_TEMPLATE
 #
 SRC_FOLDERS             
@@ -142,6 +143,11 @@ macro( modules_tree_info )
             endif()
         endforeach() 
 
+        if( MODULE_INITIALIZATION_NAMESPACE )
+            list( APPEND MODULES_CODE  "set( MODULE_INITIALIZATION_NAMESPACE_${NAME_MODULE} ${MODULE_INITIALIZATION_NAMESPACE} )\n" )
+            append_property( MODULES_CODE ${MODULES_CODE} ) 
+        endif()
+
     endif()
 
     set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ${IMPL_MODULE} ) 
@@ -189,12 +195,18 @@ macro( generated_initialization_module_code )
 
         list( APPEND INIT_POINTERS "    struct ModuleManager::PointersToModules\n    {\n" )
         foreach( ITEM ${MODULES_INITIALIZATION} )
-            list( APPEND INIT_POINTERS "        ${ITEM}* _${ITEM}\;\n" )
+            set( NAMESPACE_PREFIX )
+            if( MODULE_INITIALIZATION_NAMESPACE_${ITEM} )
+               set( NAMESPACE_PREFIX "${MODULE_INITIALIZATION_NAMESPACE_${ITEM}}::" )
 
-            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule<${ITEM}>() const\n" )
+            endif()
+
+            list( APPEND INIT_POINTERS "        ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
+
+            list( APPEND GET_MODULE_CODE "    template <>\n    ${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
             list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_SampleModule\;\n    }\n" )
 
-            list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${ITEM}()\;\n" )
+            list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}()\;\n" )
             list( APPEND INIT_CODE "        modules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
             list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n" )
         endforeach()

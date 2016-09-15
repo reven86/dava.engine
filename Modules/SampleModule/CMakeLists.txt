@@ -7,6 +7,7 @@ set( INCLUDES "." )                              # set search path headers for a
 set( INCLUDES_PRIVATE ${DAVA_ENGINE_DIR} )       # set search path headers inside module
 
 set( MODULE_INITIALIZATION_CODE SampleModule.h ) # set hider where found module
+set( MODULE_INITIALIZATION_NAMESPACE Test )      # set module namespace
 set( HPP_FILES *.h )                             # 
 set( CPP_FILES Private/*.cpp )                   # set where are sources
 

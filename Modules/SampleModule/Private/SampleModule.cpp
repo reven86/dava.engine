@@ -4,6 +4,8 @@
 
 namespace DAVA
 {
+namespace Test
+{
     SampleModule::SampleModule()
     {
         statusList.emplace_back( eStatus::ES_UNKNOWN );
@@ -18,4 +20,5 @@ namespace DAVA
     {
         statusList.emplace_back( eStatus::ES_SHUTDOWN );
     }
+}
 }

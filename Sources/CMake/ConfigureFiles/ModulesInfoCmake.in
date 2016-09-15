@@ -16,6 +16,7 @@ add_subdirectory       ( ${FOLDER_MODULE}     ${FOLDER_NAME} )
 get_property           ( LOADED_MODULES GLOBAL PROPERTY LOADED_MODULES )
 get_property           ( MODULES_INITIALIZATION GLOBAL PROPERTY MODULES_INITIALIZATION )
 get_property           ( MODULES_INITIALIZATION_HPP GLOBAL PROPERTY MODULES_INITIALIZATION_HPP )
+get_property           ( MODULES_CODE GLOBAL PROPERTY MODULES_CODE )
 
 configure_file         ( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfo.in
                          ${CMAKE_CURRENT_LIST_DIR}/ModulesInfo.cmake  @ONLY )
