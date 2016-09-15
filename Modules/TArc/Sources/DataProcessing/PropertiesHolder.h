@@ -14,11 +14,11 @@ namespace TArc
 {
 class PropertiesItem;
 
-class RootPropertiesHolder
+class PropertiesHolder
 {
 public:
-    RootPropertiesHolder(const String& rootPath, const FilePath& dirPath);
-    ~RootPropertiesHolder();
+    PropertiesHolder(const String& rootPath, const FilePath& dirPath);
+    ~PropertiesHolder();
 
     PropertiesItem CreateSubHolder(const String& name) const;
 
@@ -48,7 +48,7 @@ public:
     PropertiesItem& operator=(PropertiesItem&& holder);
 
 private:
-    friend class RootPropertiesHolder;
+    friend class PropertiesHolder;
     //RootPropertiesHolder use this empty c-tor
     PropertiesItem();
     Any Get(const String& key, const Any& defaultValue, const Type* type) const;

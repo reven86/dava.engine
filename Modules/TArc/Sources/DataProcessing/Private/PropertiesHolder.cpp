@@ -74,7 +74,7 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     bool wasChanged = false;
 };
 
-struct RootPropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
+struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
 {
     Impl(const String& name_, const FilePath& dirPath);
     ~Impl();
@@ -87,14 +87,14 @@ struct RootPropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
     QFileInfo storagePath;
 };
 
-PropertiesItem RootPropertiesHolder::CreateSubHolder(const String& holderName) const
+PropertiesItem PropertiesHolder::CreateSubHolder(const String& holderName) const
 {
     PropertiesItem ph;
     ph.impl.reset(new PropertiesItem::Impl(impl.get(), holderName));
     return ph;
 }
 
-RootPropertiesHolder::Impl::Impl(const String& name_, const FilePath& dirPath)
+PropertiesHolder::Impl::Impl(const String& name_, const FilePath& dirPath)
     : PropertiesHolderDetails::JSONObject(QString::fromStdString(name_))
 {
     SetDirectory(dirPath);
@@ -122,7 +122,7 @@ PropertiesItem::Impl::~Impl()
     parent->children.remove(this);
 }
 
-RootPropertiesHolder::Impl::~Impl()
+PropertiesHolder::Impl::~Impl()
 {
     SaveToFile();
 }
@@ -203,7 +203,7 @@ QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteA
     }
 }
 
-void RootPropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
+void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
 {
     DVASSERT(!dirPath.IsEmpty());
     QString dirPathStr = QString::fromStdString(dirPath.GetAbsolutePathname());
@@ -218,7 +218,7 @@ void RootPropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
     LoadFromFile();
 }
 
-void RootPropertiesHolder::Impl::LoadFromFile()
+void PropertiesHolder::Impl::LoadFromFile()
 {
     jsonObject = {};
     if (!storagePath.exists())
@@ -250,7 +250,7 @@ void RootPropertiesHolder::Impl::LoadFromFile()
     }
 }
 
-void RootPropertiesHolder::Impl::SaveToFile()
+void PropertiesHolder::Impl::SaveToFile()
 {
     // right now we not need to save root element with existed child
     DVASSERT(children.empty());
@@ -276,12 +276,12 @@ void PropertiesItem::Impl::SaveToParent()
     parent->jsonObject[name] = jsonObject;
 }
 
-RootPropertiesHolder::RootPropertiesHolder(const String& projectName, const FilePath& directory)
+PropertiesHolder::PropertiesHolder(const String& projectName, const FilePath& directory)
     : impl(new Impl(projectName, directory))
 {
 }
 
-RootPropertiesHolder::~RootPropertiesHolder() = default;
+PropertiesHolder::~PropertiesHolder() = default;
 
 PropertiesItem::PropertiesItem() = default;
 PropertiesItem::~PropertiesItem() = default;
@@ -358,7 +358,7 @@ void PropertiesItem::Set(const String& key, const Any& value)
     ENUM_TYPES(SAVE_IF_ACCEPTABLE, value, type, keyStr);
 }
 
-void RootPropertiesHolder::SaveToFile()
+void PropertiesHolder::SaveToFile()
 {
     static_cast<Impl*>(impl.get())->SaveToFile();
 }

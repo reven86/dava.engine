@@ -67,7 +67,7 @@ void Core::OnLoopStarted()
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
     FileSystem* fileSystem = GetEngineContext().fileSystem;
     DVASSERT(fileSystem != nullptr);
-    propertiesHolder.reset(new RootPropertiesHolder("TArc properties", fileSystem->GetCurrentDocumentsDirectory()));
+    propertiesHolder.reset(new PropertiesHolder("TArc properties", fileSystem->GetCurrentDocumentsDirectory()));
     uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 

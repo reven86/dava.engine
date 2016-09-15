@@ -14,7 +14,7 @@ namespace TArc
 {
 class ClientModule;
 class ControllerModule;
-class RootPropertiesHolder;
+class PropertiesHolder;
 
 class Core final : private CoreInterface, private UIManager::Delegate
 {
@@ -92,7 +92,7 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
-    std::unique_ptr<RootPropertiesHolder> propertiesHolder;
+    std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
 template <typename... Args>
