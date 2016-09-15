@@ -35,6 +35,10 @@ public:
 private:
     int OnFrame();
 
+    // Allows CoreNativeBridge class to access Window's WindowBackend instance
+    // as CoreNativeBridge cannot make friends with Window class
+    static WindowBackend* GetWindowBackend(Window* window);
+
 private:
     EngineBackend* engineBackend = nullptr;
 

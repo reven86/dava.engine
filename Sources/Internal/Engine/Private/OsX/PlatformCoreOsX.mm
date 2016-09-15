@@ -8,6 +8,7 @@
 
 #import <AppKit/NSApplication.h>
 
+#include "Engine/Window.h"
 #include "Engine/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
@@ -44,6 +45,11 @@ void PlatformCore::Quit(bool /*triggeredBySystem*/)
 int32 PlatformCore::OnFrame()
 {
     return engineBackend->OnFrame();
+}
+
+WindowBackend* PlatformCore::GetWindowBackend(Window* window)
+{
+    return window->GetBackend();
 }
 
 } // namespace Private

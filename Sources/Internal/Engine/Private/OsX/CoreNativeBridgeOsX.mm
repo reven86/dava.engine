@@ -143,7 +143,7 @@ void CoreNativeBridge::ApplicationDidFinishLaunching()
 {
     core->engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = core->engineBackend->GetPrimaryWindow()->GetBackend();
+    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
