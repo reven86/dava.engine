@@ -51,6 +51,8 @@ struct PerfQueryFrameDX9;
 void SetupDispatch(Dispatch* dispatch);
 
 void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle);
+void BeginFrame(PerfQueryFrameDX9* frame);
+void EndFrame(PerfQueryFrameDX9* frame);
 void BeginMeasurment(PerfQueryFrameDX9* frame);
 void EndMeasurment(PerfQueryFrameDX9* frame);
 

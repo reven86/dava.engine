@@ -161,6 +161,17 @@ void IssueTimestamp(PerfQueryFrameDX9* frame, Handle handle)
         frame->perfQueries.push_back(HPerfQuery(handle));
     }
 }
+void BeginFrame(PerfQueryFrameDX9* frame)
+{
+    if (frame->frameQuery0)
+        IssueTimestamp(frame, frame->frameQuery0);
+}
+
+void EndFrame(PerfQueryFrameDX9* frame)
+{
+    if (frame->frameQuery1)
+        IssueTimestamp(frame, frame->frameQuery1);
+}
 
 void BeginMeasurment(PerfQueryFrameDX9* frame)
 {
@@ -172,16 +183,10 @@ void BeginMeasurment(PerfQueryFrameDX9* frame)
 
     frame->disjointQuery->Issue(D3DISSUE_BEGIN);
     frame->freqQuery->Issue(D3DISSUE_END);
-
-    if (frame->frameQuery0)
-        IssueTimestamp(frame, frame->frameQuery0);
 }
 
 void EndMeasurment(PerfQueryFrameDX9* frame)
 {
-    if (frame->frameQuery1)
-        IssueTimestamp(frame, frame->frameQuery1);
-
     frame->disjointQuery->Issue(D3DISSUE_END);
 
     pendingPerfQueryFrameDX9.push_back(frame);

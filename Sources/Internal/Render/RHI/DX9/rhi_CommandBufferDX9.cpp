@@ -1318,6 +1318,8 @@ _DX9_ExecuteQueuedCommands()
 
     if (_DX9_ResetPending == false)
     {
+        PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
+
         if (rhi::NeedRestoreResources())
         {
 #if defined(ENABLE_ASSERT_MESSAGE) || defined(ENABLE_ASSERT_LOGGING)
@@ -1340,7 +1342,6 @@ _DX9_ExecuteQueuedCommands()
 
             std::vector<Handle> pass_h;
             std::vector<RenderPassDX9_t*> pass;
-            PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
 
             _DX9_FrameSync.Lock();
             bool hasFrames = !_DX9_Frame.empty();
@@ -1354,6 +1355,8 @@ _DX9_ExecuteQueuedCommands()
             if (hasFrames)
             {
                 PerfQueryDX9::BeginMeasurment(perfQueryFrame);
+                PerfQueryDX9::BeginFrame(perfQueryFrame);
+
                 for (RenderPassDX9_t* pp : pass)
                 {
                     if (pp->perfQuery0)
@@ -1381,7 +1384,7 @@ _DX9_ExecuteQueuedCommands()
                         PerfQueryDX9::IssueTimestamp(perfQueryFrame, pp->perfQuery1);
                 }
 
-                PerfQueryDX9::EndMeasurment(perfQueryFrame);
+                PerfQueryDX9::EndFrame(perfQueryFrame);
 
                 _DX9_FrameSync.Lock();
                 _DX9_Frame.erase(_DX9_Frame.begin());
@@ -1393,6 +1396,9 @@ _DX9_ExecuteQueuedCommands()
         }
 
         HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+
+        if (perfQueryFrame)
+            PerfQueryDX9::EndMeasurment(perfQueryFrame);
 
         if (FAILED(hr))
         {
