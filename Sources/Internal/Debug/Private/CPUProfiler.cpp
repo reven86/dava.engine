@@ -256,6 +256,9 @@ void CPUProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
     CounterArray::iterator last(array->rbegin());
     for (; it != itEnd; it++)
     {
+        if (!it->name)
+            continue;
+
         stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << it->startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << it->name << "\" }," << std::endl;
         stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << (it->endTime ? it->endTime : it->startTime) << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << it->name << "\" }";
         if (it != last)
