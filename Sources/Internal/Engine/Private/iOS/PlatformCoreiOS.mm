@@ -32,7 +32,7 @@ void PlatformCore::Run()
     bridge->Run();
 }
 
-void PlatformCore::Quit()
+void PlatformCore::Quit(bool /*triggeredBySystem*/)
 {
     // Quit is not supported on iOS
 }

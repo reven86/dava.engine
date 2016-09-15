@@ -24,7 +24,7 @@ public:
 
     void Init();
     void Run();
-    void Quit();
+    void Quit(bool triggeredBySystem);
 
     // Signals for distribution UIApplicationDelegate's notifications:
     //  - applicationDidBecomeActive/applicationWillResignActive

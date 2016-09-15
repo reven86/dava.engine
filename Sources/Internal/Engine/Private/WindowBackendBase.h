@@ -44,6 +44,9 @@ public:
     void PostKeyChar(uint32 key, bool isRepeated);
     void PostMouseMove(float32 x, float32 y);
     void PostMouseWheel(float32 x, float32 y, float32 deltaX, float32 deltaY);
+    void PostTouchDown(uint32 touchId, float32 x, float32 y);
+    void PostTouchUp(uint32 touchId, float32 x, float32 y);
+    void PostTouchMove(uint32 touchId, float32 x, float32 y);
 
 public:
     Window& window; // Window frontend reference

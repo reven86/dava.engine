@@ -17,13 +17,13 @@ namespace DAVA
 {
 namespace Private
 {
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engineBackend(e)
-    , dispatcher(engineBackend->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : WindowBackendBase(*window,
+                        *engineBackend->GetDispatcher(),
+                        MakeFunction(this, &WindowBackend::UIEventHandler))
+    , engineBackend(engineBackend)
     , bridge(new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge))
+    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 
@@ -32,8 +32,6 @@ WindowBackend::~WindowBackend()
     PlatformCore* core = engineBackend->GetPlatformCore();
     core->didBecomeResignActive.Disconnect(sigidAppBecomeOrResignActive);
     core->didEnterForegroundBackground.Disconnect(sigidAppDidEnterForegroundOrBackground);
-
-    delete bridge;
 }
 
 void* WindowBackend::GetHandle() const
@@ -44,11 +42,13 @@ void* WindowBackend::GetHandle() const
 bool WindowBackend::Create(float32 /*width*/, float32 /*height*/)
 {
     // iOS windows are always created with size same as screen size
-    if (bridge->DoCreateWindow())
+    if (bridge->CreateWindow())
     {
         PlatformCore* core = engineBackend->GetPlatformCore();
-        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge, &WindowNativeBridge::ApplicationDidBecomeOrResignActive);
-        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge, &WindowNativeBridge::ApplicationDidEnterForegroundOrBackground);
+        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge.get(),
+                                                                           &WindowNativeBridge::ApplicationDidBecomeOrResignActive);
+        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge.get(),
+                                                                                            &WindowNativeBridge::ApplicationDidEnterForegroundOrBackground);
         return true;
     }
     return false;
@@ -64,17 +64,13 @@ void WindowBackend::Close()
     // iOS windows cannot be closed
 }
 
+void WindowBackend::Detach()
+{
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;
-}
-
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
 }
 
 void WindowBackend::TriggerPlatformEvents()
@@ -84,10 +80,10 @@ void WindowBackend::TriggerPlatformEvents()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    platformDispatcher.ProcessEvents();
+    uiDispatcher.ProcessEvents();
 }
 
-void WindowBackend::EventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {

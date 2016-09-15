@@ -132,6 +132,36 @@ void WindowBackendBase::PostMouseWheel(float32 x, float32 y, float32 deltaX, flo
     mainDispatcher.PostEvent(e);
 }
 
+void WindowBackendBase::PostTouchDown(uint32 touchId, float32 x, float32 y)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::TOUCH_DOWN, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.tclickEvent.touchId = touchId;
+    e.tclickEvent.x = x;
+    e.tclickEvent.y = y;
+    mainDispatcher.PostEvent(e);
+}
+
+void WindowBackendBase::PostTouchUp(uint32 touchId, float32 x, float32 y)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::TOUCH_UP, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.tclickEvent.touchId = touchId;
+    e.tclickEvent.x = x;
+    e.tclickEvent.y = y;
+    mainDispatcher.PostEvent(e);
+}
+
+void WindowBackendBase::PostTouchMove(uint32 touchId, float32 x, float32 y)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::TOUCH_MOVE, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.tmoveEvent.touchId = touchId;
+    e.tmoveEvent.x = x;
+    e.tmoveEvent.y = y;
+    mainDispatcher.PostEvent(e);
+}
+
 } // namespace Private
 } // namespace DAVA
 
