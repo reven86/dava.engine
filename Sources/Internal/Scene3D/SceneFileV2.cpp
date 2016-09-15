@@ -44,7 +44,7 @@
 
 namespace DAVA
 {
-SceneFileV2::SceneFileV2()
+SceneFileV2::SceneFileV2() //-V730 no need to init descriptor
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;

@@ -24,10 +24,12 @@ NetCore::NetCore(Engine* e)
     sigUpdateId = e->update.Connect(this, &NetCore::Poll);
 }
 #else
-NetCore::NetCore()
-    : loop(true)
-    , isFinishing(false)
-    , allStopped(false)
+NetCore::NetCore() //-V730 no need to init registrar
+: loop(true)
+  ,
+  isFinishing(false)
+  ,
+  allStopped(false)
 {
 }
 #endif

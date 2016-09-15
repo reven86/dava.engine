@@ -65,7 +65,7 @@ class RenderVariantInstance
     rhi::HDepthStencilState depthState;
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
-    rhi::CullMode cullMode;
+    rhi::CullMode cullMode = rhi::CULL_CCW;
     bool wireFrame = 0;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;
@@ -75,7 +75,7 @@ class RenderVariantInstance
 
     uint32 renderLayer = 0;
 
-    RenderVariantInstance();
+    RenderVariantInstance() = default;
     RenderVariantInstance(const RenderVariantInstance&) = delete;
     ~RenderVariantInstance();
 };

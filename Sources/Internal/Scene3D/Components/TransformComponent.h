@@ -35,12 +35,10 @@ public:
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
 private:
-    Matrix4 localMatrix;
-    Matrix4 worldMatrix;
-    Matrix4* parentMatrix;
-    Entity* parent; //Entity::parent should be removed
-
-    int32 index;
+    Matrix4 localMatrix = Matrix4::IDENTITY;
+    Matrix4 worldMatrix = Matrix4::IDENTITY;
+    Matrix4* parentMatrix = nullptr;
+    Entity* parent = nullptr; //Entity::parent should be removed
 
     friend class TransformSystem;
 
@@ -60,11 +58,6 @@ const Matrix4& TransformComponent::GetWorldTransform()
 const Matrix4& TransformComponent::GetLocalTransform()
 {
     return localMatrix;
-}
-
-int32 TransformComponent::GetIndex()
-{
-    return index;
 }
 
 Matrix4* TransformComponent::GetWorldTransformPtr()

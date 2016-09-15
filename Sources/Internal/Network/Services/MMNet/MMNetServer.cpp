@@ -263,7 +263,8 @@ bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 
     bool result = false;
     FilePath filePath("~doc:");
-    filePath += Format("msnap_%u.bin", curSnapshotIndex++);
+    filePath += Format("msnap_%u.bin", curSnapshotIndex.Get());
+    curSnapshotIndex++;
 
     bool erase = false;
     {

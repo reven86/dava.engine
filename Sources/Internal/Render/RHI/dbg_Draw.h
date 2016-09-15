@@ -109,9 +109,7 @@ private:
     };
 
     template <typename Vertex, rhi::PrimitiveType Prim>
-    class
-    Buffer
-    : public BufferBase
+    class Buffer : public BufferBase
     {
     public:
         Buffer(const char* const name = "");

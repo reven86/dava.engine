@@ -20,7 +20,7 @@ public:
 
     struct InvokeParams
     {
-        const Type* retType;
+        const Type* retType = nullptr;
         Vector<const Type*> argsType;
 
         template <typename Ret, typename... Args>

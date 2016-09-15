@@ -64,6 +64,8 @@ Sprite::Sprite()
     clipPolygon = 0;
 
     defaultPivotPoint = Vector2(0.0f, 0.0f);
+
+    type = SPRITE_FROM_FILE;
 }
 
 Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)

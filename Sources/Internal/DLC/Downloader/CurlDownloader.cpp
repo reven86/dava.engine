@@ -18,22 +18,36 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
     { DLE_NO_ERROR, 10 },
 };
 
-CurlDownloader::CurlDownloader()
-    : isDownloadInterrupting(false)
-    , currentDownloadPartsCount(0)
-    , multiHandle(NULL)
-    , storePath("")
-    , downloadUrl("")
-    , operationTimeout(30)
-    , remoteFileSize(0)
-    , sizeToDownload(0)
-    , downloadSpeedLimit(0)
-    , saveResult(DLE_NO_ERROR)
-    , chunkInfo(NULL)
-    , saveThread(NULL)
-    , allowedBuffersInMemory(3)
-    , maxChunkSize(20 * 1024 * 1024)
-    , minChunkSize(16 * 1024)
+CurlDownloader::CurlDownloader() //-V730 no need to init inactivityConnectionTimer
+: isDownloadInterrupting(false)
+  ,
+  currentDownloadPartsCount(0)
+  ,
+  multiHandle(NULL)
+  ,
+  storePath("")
+  ,
+  downloadUrl("")
+  ,
+  operationTimeout(30)
+  ,
+  remoteFileSize(0)
+  ,
+  sizeToDownload(0)
+  ,
+  downloadSpeedLimit(0)
+  ,
+  saveResult(DLE_NO_ERROR)
+  ,
+  chunkInfo(NULL)
+  ,
+  saveThread(NULL)
+  ,
+  allowedBuffersInMemory(3)
+  ,
+  maxChunkSize(20 * 1024 * 1024)
+  ,
+  minChunkSize(16 * 1024)
 {
     if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
     {
