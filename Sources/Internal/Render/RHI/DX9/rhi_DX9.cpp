@@ -374,10 +374,10 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
     DispatchDX9.impl_DeviceCaps = &dx9_DeviceCaps;
 
-    SetDispatchTable(DispatchDX9);
-
     DispatchDX9.impl_InitContext = &dx9_InitContext;
     DispatchDX9.impl_ValidateSurface = &dx9_CheckSurface;
+
+    SetDispatchTable(DispatchDX9);
 
     if (param.maxVertexBufferCount)
         VertexBufferDX9::Init(param.maxVertexBufferCount);

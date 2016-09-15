@@ -1,4 +1,5 @@
 #include "rhi_BackendImpl.h"
+#include "rhi_Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
     #include "../DX9/rhi_DX9.h"

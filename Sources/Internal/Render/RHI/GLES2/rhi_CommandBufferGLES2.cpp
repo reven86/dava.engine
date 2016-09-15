@@ -1520,9 +1520,6 @@ bool _GLES2_PresentBuffer()
 void _GLES2_ResetBlock()
 {        
 #if defined(__DAVAENGINE_ANDROID__)
-    TextureGLES2::ReleaseAll();
-    VertexBufferGLES2::ReleaseAll();
-    IndexBufferGLES2::ReleaseAll();
 
     TextureGLES2::ReCreateAll();
     VertexBufferGLES2::ReCreateAll();
