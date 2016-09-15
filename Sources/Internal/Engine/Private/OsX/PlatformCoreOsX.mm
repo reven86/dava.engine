@@ -28,6 +28,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    engineBackend->InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -35,7 +36,7 @@ void PlatformCore::Run()
     bridge->Run();
 }
 
-void PlatformCore::Quit()
+void PlatformCore::Quit(bool /*triggeredBySystem*/)
 {
     bridge->Quit();
 }
@@ -43,17 +44,6 @@ void PlatformCore::Quit()
 int32 PlatformCore::OnFrame()
 {
     return engineBackend->OnFrame();
-}
-
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
-{
-    WindowBackend* wbackend = new WindowBackend(engineBackend, w);
-    if (!wbackend->Create(width, height))
-    {
-        delete wbackend;
-        wbackend = nullptr;
-    }
-    return wbackend;
 }
 
 } // namespace Private

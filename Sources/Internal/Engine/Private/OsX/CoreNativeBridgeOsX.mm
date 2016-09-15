@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
@@ -141,7 +142,9 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 void CoreNativeBridge::ApplicationDidFinishLaunching()
 {
     core->engineBackend->OnGameLoopStarted();
-    core->CreateNativeWindow(core->engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+
+    WindowBackend* primaryWindowBackend = core->engineBackend->GetPrimaryWindow()->GetBackend();
+    primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1.0 / 60.0];
@@ -174,7 +177,7 @@ bool CoreNativeBridge::ApplicationShouldTerminate()
 {
     if (!quitSent)
     {
-        core->engineBackend->PostAppTerminate();
+        core->engineBackend->PostAppTerminate(false);
         return false;
     }
     return true;

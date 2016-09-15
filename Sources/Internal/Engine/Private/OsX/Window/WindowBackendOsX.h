@@ -11,7 +11,7 @@
 #include "Functional/Function.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/Private/WindowBackendBase.h"
 
 namespace rhi
 {
@@ -22,39 +22,33 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final
+class WindowBackend final : public WindowBackendBase
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
-
-    void* GetHandle() const;
-    MainDispatcher* GetDispatcher() const;
-    Window* GetWindow() const;
-    WindowNativeService* GetNativeService() const;
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
     void Close();
+    void Detach();
+
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
-
-    void RunAsyncOnUIThread(const Function<void()>& task);
 
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
 private:
-    void EventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
+    void WindowWillClose();
 
 private:
     EngineBackend* engineBackend = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
-
-    UIDispatcher platformDispatcher;
-
-    WindowNativeBridge* bridge = nullptr;
+    std::unique_ptr<WindowNativeBridge> bridge;
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
@@ -64,16 +58,6 @@ private:
     friend class PlatformCore;
     friend struct WindowNativeBridge;
 };
-
-inline MainDispatcher* WindowBackend::GetDispatcher() const
-{
-    return dispatcher;
-}
-
-inline Window* WindowBackend::GetWindow() const
-{
-    return window;
-}
 
 inline WindowNativeService* WindowBackend::GetNativeService() const
 {

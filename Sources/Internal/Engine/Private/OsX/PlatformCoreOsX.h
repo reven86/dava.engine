@@ -26,7 +26,7 @@ public:
 
     void Init();
     void Run();
-    void Quit();
+    void Quit(bool triggeredBySystem);
 
     // Through this signal WindowOsX gets notified about application hidden/unhidden state has changed
     // to update its visibility state
@@ -34,8 +34,6 @@ public:
 
 private:
     int OnFrame();
-
-    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
 
 private:
     EngineBackend* engineBackend = nullptr;
