@@ -14,7 +14,7 @@ protected:
     virtual ~RenderComponent();
 
 public:
-    RenderComponent(RenderObject* _object = 0);
+    RenderComponent(RenderObject* _object = nullptr);
 
     IMPLEMENT_COMPONENT_TYPE(RENDER_COMPONENT);
 
@@ -28,7 +28,7 @@ public:
     void OptimizeBeforeExport() override;
 
 private:
-    RenderObject* renderObject;
+    RenderObject* renderObject = nullptr;
 
 public:
     INTROSPECTION_EXTEND(RenderComponent, Component,

@@ -238,11 +238,19 @@
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
 
         // Workaround: Additional check on the maximum length for cases
-        // where the system event shouldChangeCharactersInRange does not work for Asian keyboards
+        // where system event shouldChangeCharactersInRange does not work for Asian keyboards
+        //
+        // It also helps in case of multistage text input (like chinese-simplified),
+        // since iOS can append spaces between symbols for non-commited text
+        // Truncate text only if user is not in multistage input (markedTextRange is nil)
+        // It prevents commiting it,
+        // and also avoids crash on iOS7 when setText is called during multistage input
+        id<UITextInput> inputObject = (id<UITextInput>)textCtrl;
         int maxLength = cppTextField->GetMaxLength();
-        if (maxLength > 0 && (int)fieldText.length > maxLength)
+        if (maxLength > 0 && (int)fieldText.length > maxLength && ([inputObject markedTextRange] == nil))
         {
             fieldText = [fieldText substringToIndex:maxLength];
+
             if ([textCtrl class] == [ ::UITextField class])
             {
                 auto textFieldPtr = (::UITextField*)textCtrl;

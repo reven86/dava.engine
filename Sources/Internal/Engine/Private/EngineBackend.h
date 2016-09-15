@@ -64,13 +64,14 @@ public:
     void SetOptions(KeyedArchive* options_);
     KeyedArchive* GetOptions();
 
+    Window* InitializePrimaryWindow();
+
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules);
     int Run();
-    void Quit(int32 exitCode_);
+    void Quit(int32 exitCode);
 
-    void RunAsyncOnMainThread(const Function<void()>& task);
-    void RunAndWaitOnMainThread(const Function<void()>& task);
-    void PostAppTerminate();
+    void DispatchOnMainThread(const Function<void()>& task, bool blocking);
+    void PostAppTerminate(bool triggeredBySystem);
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
@@ -100,9 +101,6 @@ private:
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
-    void HandleAppImmediateTerminate(const MainDispatcherEvent& e);
-
-    Window* CreatePrimaryWindowBackend();
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
@@ -117,7 +115,9 @@ private:
     Engine* engine = nullptr;
 
     Window* primaryWindow = nullptr;
-    Set<Window*> windows;
+    Set<Window*> justCreatedWindows; // Just created Window instances which do not have native windows yet
+    Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
+    Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool quitConsole = false;

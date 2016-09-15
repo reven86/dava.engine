@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/Window.h"
 #include "Engine/UWP/NativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
@@ -60,7 +61,7 @@ void PlatformCore::Run()
     engineBackend->OnBeforeTerminate();
 }
 
-void PlatformCore::Quit()
+void PlatformCore::Quit(bool /*triggeredBySystem*/)
 {
     quitGameThread = true;
 }
@@ -91,8 +92,14 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
-    WindowBackend* nativeWindow = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
-    nativeWindow->BindXamlWindow(xamlWindow);
+    // TODO: think about binding XAML window to prior created Window instance
+    Window* primaryWindow = engineBackend->GetPrimaryWindow();
+    if (primaryWindow == nullptr)
+    {
+        primaryWindow = engineBackend->InitializePrimaryWindow();
+    }
+    WindowBackend* backend = primaryWindow->GetBackend();
+    backend->BindXamlWindow(xamlWindow);
 }
 
 void PlatformCore::OnSuspending()
@@ -122,19 +129,11 @@ void PlatformCore::GameThread()
 {
     Logger::Debug("****** PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
 
-    try
-    {
-        Vector<String> cmdline = engineBackend->GetCommandLine();
-        GameMain(std::move(cmdline));
-    }
-    catch (const std::exception& e)
-    {
-        Logger::Error("Unhandled exception in GameThread: %s", e.what());
-        // TODO: think about rethrow
-        // throw;
-    }
+    Vector<String> cmdline = engineBackend->GetCommandLine();
+    GameMain(std::move(cmdline));
 
-    Logger::Debug("****** PlatformCore::GameThread leave: thread=%d", GetCurrentThreadId());
+    // DAVA::Logger is already dead
+    OutputDebugStringA("****** PlatformCore::GameThread leave");
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();

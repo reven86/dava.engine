@@ -30,6 +30,7 @@ struct AndroidBridge final
     static JNIEnv* GetEnv();
     static bool AttachCurrentThreadToJavaVM();
     static bool DetachCurrentThreadFromJavaVM();
+    static void PostQuitToActivity();
     static jclass LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException);
     static String toString(JNIEnv* env, jobject object);
 
@@ -47,10 +48,10 @@ struct AndroidBridge final
                           String cmdline);
     void ShutdownEngine();
 
-    WindowBackend* ActivityOnCreate();
+    WindowBackend* ActivityOnCreate(JNIEnv* env, jobject activityInstance);
     void ActivityOnResume();
     void ActivityOnPause();
-    void ActivityOnDestroy();
+    void ActivityOnDestroy(JNIEnv* env);
 
     void GameThread();
 
@@ -66,6 +67,9 @@ struct AndroidBridge final
     jobject classLoader = nullptr; // Cached instance of ClassLoader
     jmethodID methodClassLoader_loadClass = nullptr; // ClassLoader.loadClass method
     jmethodID methodObject_toString = nullptr; // Object.toString method
+
+    jobject activity = nullptr; // Reference to DavaActivity instance
+    jmethodID methodDavaActivity_postFinish = nullptr; // DavaActivity.postFinish method
 
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;

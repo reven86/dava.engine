@@ -7,9 +7,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/Dispatcher/UIDispatcher.h"
-
-#include "Functional/Function.h"
+#include "Engine/Private/WindowBackendBase.h"
 
 namespace rhi
 {
@@ -20,23 +18,21 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final
+class WindowBackend final : public WindowBackendBase
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
-
-    void* GetHandle() const;
-    MainDispatcher* GetDispatcher() const;
-    Window* GetWindow() const;
-    WindowNativeService* GetNativeService() const;
 
     void Resize(float32 width, float32 height);
     void Close();
+    void Detach();
+
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
-
-    void RunAsyncOnUIThread(const Function<void()>& task);
 
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
@@ -44,28 +40,12 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
 private:
-    void PlatformEventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
 
 private:
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
-
-    UIDispatcher platformDispatcher;
-
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 };
-
-inline MainDispatcher* WindowBackend::GetDispatcher() const
-{
-    return dispatcher;
-}
-
-inline Window* WindowBackend::GetWindow() const
-{
-    return window;
-}
 
 inline WindowNativeService* WindowBackend::GetNativeService() const
 {

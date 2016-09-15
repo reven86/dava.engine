@@ -12,9 +12,7 @@
 #include <windows.h>
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/Dispatcher/UIDispatcher.h"
-
-#include "Functional/Function.h"
+#include "Engine/Private/WindowBackendBase.h"
 
 namespace rhi
 {
@@ -25,27 +23,28 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final
+class WindowBackend final : public WindowBackendBase
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
-
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
     void Close();
+    void Detach();
+
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
 
-    void RunAsyncOnUIThread(const Function<void()>& task);
-
     void TriggerPlatformEvents();
+    void ProcessPlatformEvents();
 
 private:
     void DoResizeWindow(float32 width, float32 height);
@@ -53,7 +52,7 @@ private:
 
     void AdjustWindowSize(int32* w, int32* h);
 
-    void EventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnSetKillFocus(bool gotFocus);
@@ -64,25 +63,19 @@ private:
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
     LRESULT OnDestroy();
-    LRESULT OnCustomMessage();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
 private:
     HWND hwnd = nullptr;
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
 
-    UIDispatcher platformDispatcher;
-    std::unique_ptr<WindowNativeService> nativeService;
-
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
-    static const UINT WM_CUSTOM_MESSAGE = WM_USER + 39;
+    static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;
     static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD windowExStyle = 0;
 };

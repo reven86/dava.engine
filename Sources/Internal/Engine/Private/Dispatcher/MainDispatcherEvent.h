@@ -41,14 +41,37 @@ struct MainDispatcherEvent final
         APP_RESUMED,
 
         APP_TERMINATE,
-        APP_IMMEDIATE_TERMINATE,
     };
 
+    /// Parameter for APP_TERMINATE event
+    struct AppTerminateEvent
+    {
+        /// Flag indicating whether termination was initiated by system (value 1) or by application (value 0).
+        /// System initiates termination on some platforms:
+        ///     - on android when activity is finishing
+        ///     - on mac when user pressed cmd+q
+        uint32 triggeredBySystem;
+    };
+
+    /// Parameter for events:
+    ///     - WINDOW_FOCUS_CHANGED: window got focus (value 1) or lost focus (value 0)
+    ///     - WINDOW_VISIBILITY_CHANGED: window became visible (value 1) or became hidden (value 0)
     struct WindowStateEvent
     {
         uint32 state;
     };
 
+    /// Parameter for WINDOW_DESTROYED event
+    struct WindowDestroyedEvent
+    {
+        /// Flag indicating whether native window was truly destroyed (value 0) or detached from DAVA::Window instance (value 1)
+        /// Windows are detached only on app exit
+        uint32 detached;
+    };
+
+    /// Parameter for events:
+    ///     - WINDOW_CREATED
+    ///     - WINDOW_SIZE_SCALE_CHANGED
     struct WindowSizeEvent
     {
         float32 width;
@@ -57,12 +80,9 @@ struct MainDispatcherEvent final
         float32 scaleY;
     };
 
-    struct WindowCreatedEvent
-    {
-        WindowBackend* windowBackend;
-        WindowSizeEvent size;
-    };
-
+    /// Parameter for events:
+    ///     - MOUSE_BUTTON_DOWN
+    ///     - MOUSE_BUTTON_UP
     struct MouseClickEvent
     {
         uint32 button;
@@ -71,6 +91,7 @@ struct MainDispatcherEvent final
         float32 y;
     };
 
+    /// Parameter for MOUSE_WHEEL event
     struct MouseWheelEvent
     {
         float32 x;
@@ -79,12 +100,16 @@ struct MainDispatcherEvent final
         float32 deltaY;
     };
 
+    /// Parameter for MOUSE_MOVE event
     struct MouseMoveEvent
     {
         float32 x;
         float32 y;
     };
 
+    /// Parameter for events:
+    ///     - TOUCH_DOWN
+    ///     - TOUCH_UP
     struct TouchClickEvent
     {
         uint32 touchId;
@@ -92,6 +117,7 @@ struct MainDispatcherEvent final
         float32 y;
     };
 
+    /// Parameter for TOUCH_MOVE events
     struct TouchMoveEvent
     {
         uint32 touchId;
@@ -99,6 +125,10 @@ struct MainDispatcherEvent final
         float32 y;
     };
 
+    /// Parameter for events:
+    ///     - KEY_DOWN
+    ///     - KEY_UP
+    ///     - KEY_CHAR
     struct KeyEvent
     {
         uint32 key;
@@ -110,13 +140,13 @@ struct MainDispatcherEvent final
         : type(type)
     {
     }
-    MainDispatcherEvent(Window* window)
-        : window(window)
+    MainDispatcherEvent(Window& window)
+        : window(&window)
     {
     }
-    MainDispatcherEvent(eType type, Window* window)
+    MainDispatcherEvent(eType type, Window& window)
         : type(type)
-        , window(window)
+        , window(&window)
     {
     }
 
@@ -126,8 +156,9 @@ struct MainDispatcherEvent final
     Function<void()> functor;
     union
     {
-        WindowCreatedEvent windowCreatedEvent;
+        AppTerminateEvent terminateEvent;
         WindowStateEvent stateEvent;
+        WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
         MouseClickEvent mclickEvent;
         MouseWheelEvent mwheelEvent;

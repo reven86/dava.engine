@@ -75,10 +75,6 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     instance = this;
 
     context->logger = new Logger;
-
-#if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_ANDROID__)
-    CreatePrimaryWindowBackend();
-#endif
 }
 
 EngineBackend::~EngineBackend()
@@ -123,17 +119,19 @@ Vector<char*> EngineBackend::GetCommandLineAsArgv()
     return argv;
 }
 
+Window* EngineBackend::InitializePrimaryWindow()
+{
+    DVASSERT(primaryWindow == nullptr);
+    primaryWindow = new Window(this, true);
+    justCreatedWindows.insert(primaryWindow);
+    return primaryWindow;
+}
+
 void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
     runMode = engineRunMode;
 
     platformCore->Init();
-    if (!IsConsoleMode())
-    {
-#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_ANDROID__)
-        CreatePrimaryWindowBackend();
-#endif
-    }
 
     Thread::InitMainThread();
     // For now only next subsystems/modules are created on demand:
@@ -173,13 +171,13 @@ int EngineBackend::Run()
     return exitCode;
 }
 
-void EngineBackend::Quit(int exitCode_)
+void EngineBackend::Quit(int exitCode)
 {
-    exitCode = exitCode_;
+    this->exitCode = exitCode;
     switch (runMode)
     {
     case eEngineRunMode::GUI_STANDALONE:
-        PostAppTerminate();
+        PostAppTerminate(false);
         break;
     case eEngineRunMode::GUI_EMBEDDED:
         Logger::Warning("Engine does not support Quit command in embedded mode");
@@ -192,22 +190,11 @@ void EngineBackend::Quit(int exitCode_)
     }
 }
 
-void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
+void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool blocking)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::FUNCTOR;
-    e.window = nullptr;
+    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
     e.functor = task;
-    dispatcher->PostEvent(e);
-}
-
-void EngineBackend::RunAndWaitOnMainThread(const Function<void()>& task)
-{
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::FUNCTOR;
-    e.window = nullptr;
-    e.functor = task;
-    dispatcher->SendEvent(e);
+    blocking ? dispatcher->SendEvent(e) : dispatcher->PostEvent(e);
 }
 
 void EngineBackend::RunConsole()
@@ -229,6 +216,19 @@ void EngineBackend::OnGameLoopStarted()
 
 void EngineBackend::OnGameLoopStopped()
 {
+    DVASSERT(justCreatedWindows.empty());
+
+    // Detach alive windows if any
+    for (Window* w : aliveWindows)
+    {
+        w->Detach();
+    }
+
+    while (!aliveWindows.empty())
+    {
+        DoEvents();
+    }
+
     engine->gameLoopStopped.Emit();
     if (!IsConsoleMode())
     {
@@ -253,7 +253,7 @@ void EngineBackend::OnBeforeTerminate()
 void EngineBackend::DoEvents()
 {
     dispatcher->ProcessEvents();
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->FinishEventHandlingOnCurrentFrame();
     }
@@ -311,7 +311,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->Update(frameDelta);
     }
@@ -324,7 +324,7 @@ void EngineBackend::OnDraw()
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->Draw();
     }
@@ -362,9 +362,6 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
-    case MainDispatcherEvent::APP_IMMEDIATE_TERMINATE:
-        HandleAppImmediateTerminate(e);
-        break;
     default:
         if (e.window != nullptr)
         {
@@ -377,6 +374,16 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
 {
     e.window->EventHandler(e);
+
+    {
+        // Place window into alive window list
+        DVASSERT(justCreatedWindows.find(e.window) != justCreatedWindows.end());
+        DVASSERT(aliveWindows.find(e.window) == aliveWindows.end());
+
+        justCreatedWindows.erase(e.window);
+        aliveWindows.insert(e.window);
+    }
+
     engine->windowCreated.Emit(*e.window);
 }
 
@@ -385,46 +392,28 @@ void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
     e.window->EventHandler(e);
     engine->windowDestroyed.Emit(*e.window);
 
-    size_t nerased = windows.erase(e.window);
-    DVASSERT(nerased == 1);
-
-    bool isPrimary = e.window->IsPrimary();
-    delete e.window;
-
-    if (isPrimary)
+    if (e.window->IsPrimary())
     {
         primaryWindow = nullptr;
         // If primary window is destroyed then terminate application
-        PostAppTerminate();
+        PostAppTerminate(false);
     }
 
-    if (windows.empty())
-    {
-        platformCore->Quit();
-    }
+    // Remove window from alive window list and delete
+    size_t nerased = aliveWindows.erase(e.window);
+    DVASSERT(nerased == 1);
+    delete e.window;
 }
 
 void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
 {
-    for (Window* w : windows)
+    if (!appIsTerminating)
     {
-        w->Close();
+        // Prevent handling multiple Quit from user code
+        // System request to terminate should come only once
+        appIsTerminating = e.terminateEvent.triggeredBySystem != 0;
+        platformCore->Quit(appIsTerminating);
     }
-}
-
-void EngineBackend::HandleAppImmediateTerminate(const MainDispatcherEvent& e)
-{
-    MainDispatcherEvent dummyEvent;
-    dummyEvent.type = MainDispatcherEvent::WINDOW_DESTROYED;
-    for (Window* w : windows)
-    {
-        dummyEvent.window = w;
-        w->HandleWindowDestroyed(dummyEvent);
-        engine->windowDestroyed.Emit(*w);
-        delete w;
-    }
-    windows.clear();
-    platformCore->Quit();
 }
 
 void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
@@ -449,18 +438,12 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
     }
 }
 
-void EngineBackend::PostAppTerminate()
+void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
-    if (!appIsTerminating)
-    {
-        MainDispatcherEvent e;
-        e.window = nullptr;
-        e.type = MainDispatcherEvent::APP_TERMINATE;
-        e.timestamp = context->systemTimer->FrameStampTimeMS();
-        dispatcher->PostEvent(e);
-
-        appIsTerminating = true;
-    }
+    MainDispatcherEvent e(MainDispatcherEvent::APP_TERMINATE);
+    e.timestamp = context->systemTimer->FrameStampTimeMS();
+    e.terminateEvent.triggeredBySystem = triggeredBySystem;
+    dispatcher->PostEvent(e);
 }
 
 void EngineBackend::InitRenderer(Window* w)
@@ -530,17 +513,6 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 
 void EngineBackend::DeinitRender(Window* w)
 {
-}
-
-Window* EngineBackend::CreatePrimaryWindowBackend()
-{
-    DVASSERT(primaryWindow == nullptr);
-
-    Window* window = new Window(this, true);
-    windows.insert(window);
-
-    primaryWindow = window;
-    return window;
 }
 
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)

@@ -8,6 +8,7 @@
 
 #include <shellapi.h>
 
+#include "Engine/Window.h"
 #include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
@@ -32,6 +33,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    engineBackend->InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -40,7 +42,9 @@ void PlatformCore::Run()
     bool quitLoop = false;
 
     engineBackend->OnGameLoopStarted();
-    CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+
+    WindowBackend* primaryWindowBackend = engineBackend->GetPrimaryWindow()->GetBackend();
+    primaryWindowBackend->Create(640.0f, 480.0f);
 
     for (;;)
     {
@@ -76,20 +80,9 @@ void PlatformCore::Run()
     engineBackend->OnBeforeTerminate();
 }
 
-void PlatformCore::Quit()
+void PlatformCore::Quit(bool /*triggeredBySystem*/)
 {
     ::PostQuitMessage(engineBackend->GetExitCode());
-}
-
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
-{
-    WindowBackend* nativeWindow = new WindowBackend(engineBackend, w);
-    if (!nativeWindow->Create(width, height))
-    {
-        delete nativeWindow;
-        nativeWindow = nullptr;
-    }
-    return nativeWindow;
 }
 
 } // namespace Private

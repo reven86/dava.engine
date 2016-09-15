@@ -14,11 +14,10 @@ namespace DAVA
 {
 namespace Private
 {
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::PlatformEventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : WindowBackendBase(*window,
+                        *engineBackend->GetDispatcher(),
+                        MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(ref new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
@@ -26,25 +25,24 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
 
 WindowBackend::~WindowBackend() = default;
 
-void* WindowBackend::GetHandle() const
-{
-    return bridge->GetHandle();
-}
-
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    PostResize(width, height);
 }
 
 void WindowBackend::Close()
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+    PostClose(false);
+}
+
+void WindowBackend::Detach()
+{
+    PostClose(true);
+}
+
+void* WindowBackend::GetHandle() const
+{
+    return bridge->GetHandle();
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -52,32 +50,28 @@ bool WindowBackend::IsWindowReadyForRender() const
     return GetHandle() != nullptr;
 }
 
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
-}
-
 void WindowBackend::TriggerPlatformEvents()
 {
-    bridge->TriggerPlatformEvents();
+    if (uiDispatcher.HasEvents())
+    {
+        bridge->TriggerPlatformEvents();
+    }
 }
 
 void WindowBackend::ProcessPlatformEvents()
 {
     // Method executes in context of XAML::Window's UI thread
-    platformDispatcher.ProcessEvents();
+    uiDispatcher.ProcessEvents();
 }
 
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     // Method executes in context of XAML::Window's UI thread
+    uiDispatcher.LinkToCurrentThread();
     bridge->BindToXamlWindow(xamlWindow);
 }
 
-void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     // Method executes in context of XAML::Window's UI thread
     switch (e.type)
@@ -86,7 +80,7 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
         bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow();
+        bridge->DoCloseWindow(e.closeEvent.detach ? true : false);
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

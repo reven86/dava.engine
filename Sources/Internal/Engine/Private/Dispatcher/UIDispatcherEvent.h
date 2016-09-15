@@ -26,11 +26,23 @@ struct UIDispatcherEvent final
         float32 height;
     };
 
+    struct CloseEvent
+    {
+        uint32 detach;
+    };
+
+    UIDispatcherEvent() = default;
+    UIDispatcherEvent(eType type)
+        : type(type)
+    {
+    }
+
     eType type = DUMMY;
     Function<void()> functor;
     union
     {
         ResizeEvent resizeEvent;
+        CloseEvent closeEvent;
     };
 };
 

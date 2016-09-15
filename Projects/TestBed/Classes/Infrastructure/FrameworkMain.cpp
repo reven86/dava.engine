@@ -10,8 +10,7 @@ const int32 HEIGHT = 768;
 
 void FrameworkDidLaunched()
 {
-#if defined(__DAVAENGINE_COREV2__)
-#else
+#if !defined(__DAVAENGINE_COREV2__)
     int32 screenWidth = 0;
     int32 screenHeight = 0;
 

@@ -9,6 +9,7 @@
 
 namespace DAVA
 {
+class Window;
 class Sprite;
 class CorePlatformWinUAP;
 class PrivateWebViewWinUAP;

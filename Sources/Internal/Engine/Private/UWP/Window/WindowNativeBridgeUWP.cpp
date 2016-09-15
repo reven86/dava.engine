@@ -16,7 +16,7 @@ namespace DAVA
 namespace Private
 {
 WindowNativeBridge::WindowNativeBridge(WindowBackend* window)
-    : uwpWindow(window)
+    : windowBackend(window)
 {
 }
 
@@ -34,7 +34,7 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
     float32 h = xamlWindow->Bounds.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindow()->PostWindowCreated(uwpWindow, w, h, scaleX, scaleY);
+    windowBackend->PostWindowCreated(w, h, scaleX, scaleY);
 
     xamlWindow->Activate();
 }
@@ -86,41 +86,42 @@ void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
     appView->TryResizeView(Size(width, height));
 }
 
-void WindowNativeBridge::DoCloseWindow()
+void WindowNativeBridge::DoCloseWindow(bool detach)
 {
     // WinRT does not permit to close main window, so for primary window pretend that window has been closed.
     // For secondary window invoke Close() method, and also do not wait Closed event as stated in MSDN:
     //      Apps are typically suspended, not terminated. As a result, this event (Closed) is rarely fired, if ever.
-    if (!uwpWindow->GetWindow()->IsPrimary())
+    if (!windowBackend->window.IsPrimary())
     {
         xamlWindow->CoreWindow->Close();
     }
-    uwpWindow->GetWindow()->PostFocusChanged(false);
-    uwpWindow->GetWindow()->PostVisibilityChanged(false);
-    uwpWindow->GetWindow()->PostWindowDestroyed();
+
     UninstallEventHandlers();
+    windowBackend->PostFocusChanged(false);
+    windowBackend->PostVisibilityChanged(false);
+    windowBackend->DispatchWindowDestroyed(false);
 }
 
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
-    uwpWindow->ProcessPlatformEvents();
+    windowBackend->ProcessPlatformEvents();
 }
 
 void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
     bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
-    uwpWindow->GetWindow()->PostFocusChanged(hasFocus);
+    windowBackend->PostFocusChanged(hasFocus);
 }
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
-    uwpWindow->GetWindow()->PostVisibilityChanged(arg->Visible);
+    windowBackend->PostVisibilityChanged(arg->Visible);
 }
 
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
-    uwpWindow->GetWindow()->PostKeyChar(arg->KeyCode, arg->KeyStatus.WasKeyDown);
+    windowBackend->PostKeyChar(arg->KeyCode, arg->KeyStatus.WasKeyDown);
 }
 
 void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
@@ -138,11 +139,11 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     {
     case CoreAcceleratorKeyEventType::KeyDown:
     case CoreAcceleratorKeyEventType::SystemKeyDown:
-        uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
+        windowBackend->PostKeyDown(key, status.WasKeyDown);
         break;
     case CoreAcceleratorKeyEventType::KeyUp:
     case CoreAcceleratorKeyEventType::SystemKeyUp:
-        uwpWindow->GetWindow()->PostKeyUp(key);
+        windowBackend->PostKeyUp(key);
         break;
     default:
         break;
@@ -155,7 +156,7 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
     float32 h = arg->NewSize.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
+    windowBackend->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
@@ -164,7 +165,7 @@ void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    uwpWindow->GetWindow()->PostSizeChanged(w, h, scaleX, scaleY);
+    windowBackend->PostSizeChanged(w, h, scaleX, scaleY);
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
@@ -178,7 +179,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
 
     MainDispatcherEvent e;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
+    e.window = &windowBackend->window;
 
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
@@ -189,7 +190,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(state);
-        uwpWindow->GetDispatcher()->PostEvent(e);
+        windowBackend->mainDispatcher.PostEvent(e);
 
         mouseButtonState = state;
     }
@@ -208,18 +209,15 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
-    MainDispatcherEvent e;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
-
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        MainDispatcherEvent e(MainDispatcherEvent::MOUSE_BUTTON_UP, windowBackend->window);
+        e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
         e.mclickEvent.clicks = 1;
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(mouseButtonState);
-        uwpWindow->GetDispatcher()->PostEvent(e);
+        windowBackend->mainDispatcher.PostEvent(e);
 
         mouseButtonState.reset();
     }
@@ -238,18 +236,19 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
-    MainDispatcherEvent e;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
-
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
         std::bitset<5> state = FillMouseButtonState(prop);
         std::bitset<5> change = mouseButtonState ^ state;
 
+        float32 x = pointerPoint->Position.X;
+        float32 y = pointerPoint->Position.Y;
+
+        MainDispatcherEvent e(windowBackend->window);
+        e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
         e.mclickEvent.clicks = 1;
-        e.mclickEvent.x = pointerPoint->Position.X;
-        e.mclickEvent.y = pointerPoint->Position.Y;
+        e.mclickEvent.x = x;
+        e.mclickEvent.y = y;
 
         for (size_t i = 0, n = change.size(); i < n; ++i)
         {
@@ -257,14 +256,11 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
             {
                 e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
                 e.mclickEvent.button = static_cast<uint32>(i + 1);
-                uwpWindow->GetDispatcher()->PostEvent(e);
+                windowBackend->mainDispatcher.PostEvent(e);
             }
         }
 
-        e.type = MainDispatcherEvent::MOUSE_MOVE;
-        e.mmoveEvent.x = pointerPoint->Position.X;
-        e.mmoveEvent.y = pointerPoint->Position.Y;
-        uwpWindow->GetDispatcher()->PostEvent(e);
+        windowBackend->PostMouseMove(x, y);
 
         mouseButtonState = state;
     }
@@ -280,15 +276,10 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
 
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::MOUSE_WHEEL;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
-    e.mwheelEvent.x = pointerPoint->Position.X;
-    e.mwheelEvent.y = pointerPoint->Position.Y;
-    e.mwheelEvent.deltaX = 0.0f;
-    e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    uwpWindow->GetDispatcher()->PostEvent(e);
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
+    float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
+    windowBackend->PostMouseWheel(x, y, 0.f, deltaY);
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
