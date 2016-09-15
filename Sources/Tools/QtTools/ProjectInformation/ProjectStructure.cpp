@@ -20,7 +20,7 @@ uint qHash(const QFileInfo& fi, uint seed)
 
 struct ProjectStructure::Impl : public QObject
 {
-    Impl();
+    Impl(const Vector<String>& supportedExtensions);
     void AddProjectDirectory(const FilePath& directory);
     void ClearProjectDirectories();
 
@@ -35,10 +35,11 @@ private:
 
     QSet<QFileInfo> projectFiles;
     QFileSystemWatcher watcher;
+    QStringList supportedExtensions;
 };
 
-ProjectStructure::ProjectStructure()
-    : impl(new Impl())
+ProjectStructure::ProjectStructure(const Vector<String>& supportedExtensions)
+    : impl(new Impl(supportedExtensions))
 {
 }
 
@@ -59,11 +60,15 @@ DAVA::Vector<DAVA::FilePath> ProjectStructure::GetFiles(const DAVA::String& exte
     return impl->GetFiles(extension);
 }
 
-ProjectStructure::Impl::Impl()
+ProjectStructure::Impl::Impl(const Vector<String>& supportedExtensions_)
     : QObject(nullptr)
 {
     QObject::connect(&watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
     QObject::connect(&watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
+    for (const String& extension : supportedExtensions_)
+    {
+        supportedExtensions << QString::fromStdString(extension);
+    }
 }
 
 void ProjectStructure::Impl::AddProjectDirectory(const FilePath& directory)
@@ -167,7 +172,7 @@ void ProjectStructure::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
             watcher.addPath(absFilePath);
             watchedDirectories.append(absFilePath);
         }
-        if (fileInfo.isFile())
+        if (fileInfo.isFile() && supportedExtensions.contains(fileInfo.suffix()))
         {
             projectFiles.insert(fileInfo);
         }

@@ -6,7 +6,7 @@
 class ProjectStructure
 {
 public:
-    ProjectStructure();
+    ProjectStructure(const DAVA::Vector<DAVA::String>& supportedExtensions);
     ~ProjectStructure();
 
     void AddProjectDirectory(const DAVA::FilePath& directory);

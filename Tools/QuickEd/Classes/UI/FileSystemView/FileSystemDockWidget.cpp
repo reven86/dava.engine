@@ -52,8 +52,10 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
     , model(new FileSystemModel(this))
-    , projectStructure(new ProjectStructure())
 {
+    DAVA::Vector<DAVA::String> extensions = { "yaml" };
+    projectStructure.reset(new ProjectStructure(extensions));
+
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
