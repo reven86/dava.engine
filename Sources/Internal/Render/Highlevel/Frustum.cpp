@@ -4,7 +4,6 @@
 
 namespace DAVA
 {
-
 //! \brief Set view frustum from matrix information
 //! \param viewProjection view * projection matrix
 void Frustum::Build(const Matrix4& viewProjection, bool zeroBaseClipRange)

@@ -457,5 +457,4 @@ void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 
         *newMeshData += formatSize;
     }
 }
-
 };
