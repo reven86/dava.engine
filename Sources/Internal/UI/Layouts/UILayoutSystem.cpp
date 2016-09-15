@@ -56,7 +56,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
         UIControl* container = control->GetParent();
-        ApplyLayoutNonRecursive(control);
+        ApplyLayoutNonRecursive(container);
     }
 
     UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
@@ -111,6 +111,7 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
+    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::FindNotDependentOnChildrenControl");
     UIControl* result = control;
     while (result->GetParent() != nullptr)
     {
@@ -130,6 +131,7 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
         result = result->GetParent();
     }
 
+    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::FindNotDependentOnChildrenControl");
     return result;
 }
 
