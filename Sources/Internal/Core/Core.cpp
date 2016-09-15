@@ -363,9 +363,12 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
 
     using RotationPrefFn = BOOL(WINAPI*)(_In_ ORIENTATION_PREFERENCE);
 
-    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(
-    GetModuleHandle(TEXT("user32.dll")),
-    "SetDisplayAutoRotationPreferences"));
+    // we are trying to get SetDisplayAutoRotationPreferences with GetProcAddress
+    // because this function is available only on win8 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and SetDisplayAutoRotationPreferences wont be called
+    HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(user32, "SetDisplayAutoRotationPreferences"));
 
     if (nullptr != fn)
     {
@@ -1006,6 +1009,11 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+void* DAVA::Core::GetNativeWindow() const
+{
+    return nullptr;
 }
 
 IPackManager& Core::GetPackManager() const
