@@ -191,7 +191,7 @@ macro( generated_initialization_module_code )
         foreach( ITEM ${MODULES_INITIALIZATION} )
             list( APPEND INIT_POINTERS "        ${ITEM}* _${ITEM}\;\n" )
 
-            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule() const\n" )
+            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule<${ITEM}>() const\n" )
             list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_SampleModule\;\n    }\n" )
 
             list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${ITEM}()\;\n" )

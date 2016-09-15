@@ -268,7 +268,7 @@ void Core::CreateSingletons()
     new AutotestingSystem();
 #endif
 
-    moduleManager.reset(new ModuleManager());
+    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -308,8 +308,7 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
-    moduleManager.reset();
-
+    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -1015,10 +1014,9 @@ IPackManager& Core::GetPackManager() const
     return *packManager;
 }
 
-ModuleManager& Core::GetModuleManager() const
+ModuleManager& Core::GetModuleManager()
 {
-    DVASSERT(moduleManager);
-    return *moduleManager;
+    return moduleManager;
 }
 
 } // namespace DAVA

@@ -9,17 +9,25 @@ namespace DAVA
 @IMODULE_INIT_POINTERS@
 @IMODULE_GET_MODULE_CODE@
     ModuleManager::ModuleManager()
+        : pointersToModules( new PointersToModules )
     {
-        pointersToModules.reset( new PointersToModules );
+    }
 
+    ModuleManager::~ModuleManager()
+    {
+        ResetModules();
+    }
+
+    void ModuleManager::InitModules()
+    {
 @IMODULE_INIT_CODE@
         for (IModule* module : modules)
         {
             module->PostInit();
         }
     }
-
-    ModuleManager::~ModuleManager()
+    
+    void  ModuleManager::ResetModules()
     {
         for (const auto& module : modules)
         {
@@ -27,5 +35,7 @@ namespace DAVA
             delete module;
         }
         modules.clear();
-    }    
+    }
+    
+
 }

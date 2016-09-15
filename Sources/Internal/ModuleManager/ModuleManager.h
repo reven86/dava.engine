@@ -15,6 +15,9 @@ public:
 
     template <typename T>
     T* GetModule() const;
+    
+    void InitModules();
+    void ResetModules();
 
 private:
     struct PointersToModules;

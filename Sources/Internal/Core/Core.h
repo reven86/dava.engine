@@ -11,6 +11,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
+#include "ModuleManager/ModuleManager.h"
 
 /**
 	\defgroup core Core
@@ -28,7 +29,6 @@ using AppHandle = uint32;
 #endif
 
 class IPackManager;
-class ModuleManager;
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms.
@@ -248,7 +248,7 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager() const;
-    ModuleManager& GetModuleManager() const;
+    ModuleManager& GetModuleManager();
 
 protected:
     eScreenOrientation screenOrientation;
@@ -285,8 +285,8 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-
-    std::unique_ptr<ModuleManager> moduleManager;
+    ModuleManager moduleManager;
+    
     std::unique_ptr<IPackManager> packManager;
 };
 
