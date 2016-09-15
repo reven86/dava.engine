@@ -61,6 +61,40 @@ File* File::Create(const FilePath& filePath, uint32 attributes)
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
+File* File::LoadFileFromMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            Vector<uint8> contentAndSize;
+            if (it->second.archive->LoadFile(relative, contentAndSize))
+            {
+                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, "~res:/" + relative);
+            }
+        }
+        return nullptr;
+    }
+}
+
+bool File::IsFileInMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            return it->second.archive->HasFile(relative);
+        }
+        return false;
+    }
+}
+
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
@@ -70,27 +104,32 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         String relative = filename.GetRelativePathname("~res:/");
         Vector<uint8> contentAndSize;
 
-        if (pm.IsInitialized())
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
+#ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
+        IPackManager* pm = nullptr;
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
+#else
+        IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+        if (nullptr != pm && pm->IsInitialized())
         {
             const String& packName = pm->FindPackName(filename);
             if (!packName.empty())
             {
-                auto it = fileSystem->resArchiveMap.find(packName);
-                if (it != end(fileSystem->resArchiveMap))
+                File* file = LoadFileFromMountedArchive(packName, relative);
+                if (file != nullptr)
                 {
-                    if (it->second.archive->LoadFile(relative, contentAndSize))
-                    {
-                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
-                    }
+                    return file;
                 }
-            }
-        }
-
-        for (auto& pair : fileSystem->resArchiveMap)
-        {
-            if (pair.second.archive->LoadFile(relative, contentAndSize))
-            {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
         }
     }

@@ -11,8 +11,6 @@ public:
     virtual ~IPackManager();
     enum class InitState : uint32
     {
-        FirstInit,
-        Starting, ///< if not exist local DB in ~doc copy it from local resources (on first start)
         MountingLocalPacks, ///< mount all local readonly packs (mount all founded in pointed directory)
         LocalPacksMounted,
         LoadingRequestAskFooter, ///< if no connection goto LoadingPacksDataFromDB try using only local packs

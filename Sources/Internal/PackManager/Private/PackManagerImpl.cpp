@@ -43,11 +43,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
 
     hints = hints_;
 
-    initState = InitState::Starting;
-
-    // now init all pack in local read only dir
-    FirstTimeInit();
-    InitStarting();
+    initState = InitState::MountingLocalPacks;
 
     initLocalDBFileName = pathToBasePacksDB.GetFilename();
 
@@ -158,8 +154,6 @@ bool PackManagerImpl::CanRetryInit() const
 {
     switch (initState)
     {
-    case InitState::FirstInit:
-    case InitState::Starting:
     case InitState::MountingLocalPacks:
     case InitState::LocalPacksMounted:
         return false;
@@ -219,7 +213,7 @@ void PackManagerImpl::PauseInit()
 
 void PackManagerImpl::Update()
 {
-    if (InitState::FirstInit != initState)
+    if (InitState::MountingLocalPacks != initState)
     {
         if (!initPaused)
         {
@@ -242,7 +236,11 @@ void PackManagerImpl::ContinueInitialization()
 {
     const InitState beforeState = initState;
 
-    if (InitState::LoadingRequestAskFooter == initState)
+    if (InitState::LocalPacksMounted == initState)
+    {
+        initState = InitState::LoadingRequestAskFooter;
+    }
+    else if (InitState::LoadingRequestAskFooter == initState)
     {
         AskFooter();
     }
@@ -297,19 +295,6 @@ void PackManagerImpl::ContinueInitialization()
     {
         asyncConnectStateChanged.Emit(*this);
     }
-}
-
-void PackManagerImpl::FirstTimeInit()
-{
-    initState = InitState::Starting;
-}
-
-void PackManagerImpl::InitStarting()
-{
-    Logger::FrameworkDebug("pack manager init_starting");
-
-    DVASSERT(initState != InitState::FirstInit);
-    initState = InitState::MountingLocalPacks;
 }
 
 void PackManagerImpl::InitializePacksAndBuildIndex()

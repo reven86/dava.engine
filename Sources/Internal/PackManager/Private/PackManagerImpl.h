@@ -82,8 +82,6 @@ public:
 
 private:
     void ContinueInitialization();
-    void FirstTimeInit();
-    void InitStarting();
     void InitializePacksAndBuildIndex();
     void AskFooter();
     void GetFooter();
@@ -114,7 +112,7 @@ private:
 
     String initLocalDBFileName;
     String initErrorMsg;
-    InitState initState = InitState::FirstInit;
+    InitState initState = InitState::MountingLocalPacks;
     InitError initError = InitError::AllGood;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
