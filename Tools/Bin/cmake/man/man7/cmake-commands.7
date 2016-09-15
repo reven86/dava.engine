@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-COMMANDS" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-COMMANDS" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-commands \- CMake Language Command Reference
 .
@@ -153,9 +153,12 @@ a \fBCOMMAND\fP to launch it.)
 The optional \fBARGS\fP argument is for backward compatibility and
 will be ignored.
 .sp
-If \fBCOMMAND\fP specifies an executable target (created by the
+If \fBCOMMAND\fP specifies an executable target name (created by the
 \fBadd_executable()\fP command) it will automatically be replaced
-by the location of the executable created at build time.
+by the location of the executable created at build time. If set, the
+\fBCROSSCOMPILING_EMULATOR\fP executable target property will
+also be prepended to the command to allow the executable to run on
+the host.
 (Use the \fBTARGET_FILE\fP
 \fBgenerator expression\fP to
 reference an executable later in the command line.)
@@ -358,9 +361,12 @@ but \fInot\fP necessarily composed into a stateful shell or batch script.
 \fBfile(GENERATE)\fP command to create it, and then specify
 a \fBCOMMAND\fP to launch it.)
 .sp
-If \fBCOMMAND\fP specifies an executable target (created by the
+If \fBCOMMAND\fP specifies an executable target name (created by the
 \fBadd_executable()\fP command) it will automatically be replaced
-by the location of the executable created at build time.
+by the location of the executable created at build time. If set, the
+\fBCROSSCOMPILING_EMULATOR\fP executable target property will
+also be prepended to the command to allow the executable to run on
+the host.
 Additionally a target\-level dependency will be added so that the
 executable target will be built before this custom target.
 .sp
@@ -571,7 +577,7 @@ does not appear in the generated buildsystem as a make target.  The
 \fB<target>\fP may not be an Imported Target or an
 \fBALIAS\fP\&.  \fBALIAS\fP targets can be used as targets to read properties
 from, executables for custom commands and custom targets.  They can also be
-tested for existance with the regular \fBif(TARGET)\fP subcommand.
+tested for existence with the regular \fBif(TARGET)\fP subcommand.
 The \fB<name>\fP may not be used to modify properties of \fB<target>\fP, that
 is, it may not be used as the operand of \fBset_property()\fP,
 \fBset_target_properties()\fP, \fBtarget_link_libraries()\fP etc.
@@ -718,7 +724,7 @@ used to refer to \fB<target>\fP in subsequent commands.  The \fB<name>\fP does
 not appear in the generatedbuildsystem as a make target.  The \fB<target>\fP
 may not be an Imported Target or an \fBALIAS\fP\&.
 \fBALIAS\fP targets can be used as linkable targets and as targets to
-read properties from.  They can also be tested for existance with the
+read properties from.  They can also be tested for existence with the
 regular \fBif(TARGET)\fP subcommand.  The \fB<name>\fP may not be used
 to modify properties of \fB<target>\fP, that is, it may not be used as the
 operand of \fBset_property()\fP, \fBset_target_properties()\fP,
@@ -1004,7 +1010,7 @@ compatibility.  Use the first signature instead.
 It sets the given \fB<cachevariable>\fP to a command\-line string as
 above but without the \fB\-\-target\fP option.
 The \fB<makecommand>\fP is ignored but should be the full path to
-msdev, devenv, nmake, make or one of the end user build tools
+devenv, nmake, make or one of the end user build tools
 for legacy invocations.
 .sp
 \fBNOTE:\fP
@@ -1054,7 +1060,8 @@ AVAILABLE_PHYSICAL_MEMORY = Available physical memory in megabytes.
 .UNINDENT
 .SS cmake_minimum_required
 .sp
-Set the minimum required version of cmake for a project.
+Set the minimum required version of cmake for a project and
+update \fI\%Policy Settings\fP to match the version given:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -1068,33 +1075,7 @@ cmake_minimum_required(VERSION major.minor[.patch[.tweak]]
 .UNINDENT
 .sp
 If the current version of CMake is lower than that required it will
-stop processing the project and report an error.  When a version
-higher than 2.4 is specified the command implicitly invokes
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-cmake_policy(VERSION major[.minor[.patch[.tweak]]])
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-which sets the cmake policy version level to the version specified.
-When version 2.4 or lower is given the command implicitly invokes
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-cmake_policy(VERSION 2.4)
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-which enables compatibility features for CMake 2.4 and lower.
+stop processing the project and report an error.
 .sp
 The \fBFATAL_ERROR\fP option is accepted but ignored by CMake 2.6 and
 higher.  It should be specified so CMake versions 2.4 and lower fail
@@ -1114,6 +1095,44 @@ limits some effects to the function scope when invoked.  Such calls
 should not be made with the intention of having global effects.
 .UNINDENT
 .UNINDENT
+.SS Policy Settings
+.sp
+The \fBcmake_minimum_required(VERSION)\fP command implicitly invokes the
+\fBcmake_policy(VERSION)\fP command to specify that the current
+project code is written for the given version of CMake.
+All policies introduced in the specified version or earlier will be
+set to use NEW behavior.  All policies introduced after the specified
+version will be unset.  This effectively requests behavior preferred
+as of a given CMake version and tells newer CMake versions to warn
+about their new policies.
+.sp
+When a version higher than 2.4 is specified the command implicitly
+invokes:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake_policy(VERSION major[.minor[.patch[.tweak]]])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+which sets the cmake policy version level to the version specified.
+When version 2.4 or lower is given the command implicitly invokes:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake_policy(VERSION 2.4)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+which enables compatibility features for CMake 2.4 and lower.
 .SS cmake_parse_arguments
 .sp
 \fBcmake_parse_arguments\fP is intended to be used in macros or functions for
@@ -2100,8 +2119,9 @@ Generate a list of files that match the \fB<globbing\-expressions>\fP and
 store it into the \fB<variable>\fP\&.  Globbing expressions are similar to
 regular expressions, but much simpler.  If \fBRELATIVE\fP flag is
 specified, the results will be returned as relative paths to the given
-path.  No specific order of results is defined.  If order is important then
-sort the list explicitly (e.g. using the \fBlist(SORT)\fP command).
+path.  No specific order of results is defined other than that it is
+deterministic.  If order is important then sort the list explicitly
+(e.g. using the \fBlist(SORT)\fP command).
 .sp
 By default \fBGLOB\fP lists directories \- directories are omited in result if
 \fBLIST_DIRECTORIES\fP is set to false.
@@ -2606,7 +2626,8 @@ Search the standard system environment variables.
 This can be skipped if \fBNO_SYSTEM_ENVIRONMENT_PATH\fP is an argument.
 .INDENT 3.0
 .IP \(bu 2
-Directories in \fBINCLUDE\fP,
+Directories in \fBINCLUDE\fP\&.
+On Windows hosts:
 \fB<prefix>/include/<arch>\fP if \fBCMAKE_LIBRARY_ARCHITECTURE\fP
 is set, and \fB<prefix>/include\fP for each \fB<prefix>/[s]bin\fP in \fBPATH\fP, and
 \fB<entry>/include\fP for other entries in \fBPATH\fP, and the
@@ -2800,7 +2821,8 @@ Search the standard system environment variables.
 This can be skipped if \fBNO_SYSTEM_ENVIRONMENT_PATH\fP is an argument.
 .INDENT 3.0
 .IP \(bu 2
-Directories in \fBLIB\fP,
+Directories in \fBLIB\fP\&.
+On Windows hosts:
 \fB<prefix>/lib/<arch>\fP if \fBCMAKE_LIBRARY_ARCHITECTURE\fP is set,
 and \fB<prefix>/lib\fP for each \fB<prefix>/[s]bin\fP in \fBPATH\fP, and
 \fB<entry>/lib\fP for other entries in \fBPATH\fP,
@@ -3508,7 +3530,8 @@ Search the standard system environment variables.
 This can be skipped if \fBNO_SYSTEM_ENVIRONMENT_PATH\fP is an argument.
 .INDENT 3.0
 .IP \(bu 2
-Directories in \fBINCLUDE\fP,
+Directories in \fBINCLUDE\fP\&.
+On Windows hosts:
 \fB<prefix>/include/<arch>\fP if \fBCMAKE_LIBRARY_ARCHITECTURE\fP
 is set, and \fB<prefix>/include\fP for each \fB<prefix>/[s]bin\fP in \fBPATH\fP, and
 \fB<entry>/include\fP for other entries in \fBPATH\fP, and the
@@ -4523,8 +4546,7 @@ command to make things depend on the external project.
 \fBTYPE\fP, \fBGUID\fP and \fBPLATFORM\fP are optional parameters that allow one to
 specify the type of project, id (GUID) of the project and the name of
 the target platform.  This is useful for projects requiring values
-other than the default (e.g.  WIX projects).  These options are not
-supported by the Visual Studio 6 generator.
+other than the default (e.g.  WIX projects).
 .SS include_regular_expression
 .sp
 Set the regular expression used for dependency checking.
@@ -4625,10 +4647,14 @@ Specify an installation component name with which the install rule
 is associated, such as "runtime" or "development".  During
 component\-specific installation only install rules associated with
 the given component name will be executed.  During a full installation
-all components are installed.  If \fBCOMPONENT\fP is not provided a
-default component "Unspecified" is created.  The default component
-name may be controlled with the
+all components are installed unless marked with \fBEXCLUDE_FROM_ALL\fP\&.
+If \fBCOMPONENT\fP is not provided a default component "Unspecified" is
+created.  The default component name may be controlled with the
 \fBCMAKE_INSTALL_DEFAULT_COMPONENT_NAME\fP variable.
+.TP
+.B \fBEXCLUDE_FROM_ALL\fP
+Specify that the file is excluded from a full installation and only
+installed as part of a component\-specific installation
 .TP
 .B \fBRENAME\fP
 Specify a name for an installed file that may be different from the
@@ -4656,7 +4682,8 @@ install(TARGETS targets... [EXPORT <export\-name>]
          [PERMISSIONS permissions...]
          [CONFIGURATIONS [Debug|Release|...]]
          [COMPONENT <component>]
-         [OPTIONAL] [NAMELINK_ONLY|NAMELINK_SKIP]
+         [OPTIONAL] [EXCLUDE_FROM_ALL]
+         [NAMELINK_ONLY|NAMELINK_SKIP]
         ] [...]
         [INCLUDES DESTINATION [<dir> ...]]
         )
@@ -4776,7 +4803,7 @@ install(<FILES|PROGRAMS> files... DESTINATION <dir>
         [PERMISSIONS permissions...]
         [CONFIGURATIONS [Debug|Release|...]]
         [COMPONENT <component>]
-        [RENAME <name>] [OPTIONAL])
+        [RENAME <name>] [OPTIONAL] [EXCLUDE_FROM_ALL])
 .ft P
 .fi
 .UNINDENT
@@ -4814,7 +4841,8 @@ install(DIRECTORY dirs... DESTINATION <dir>
         [DIRECTORY_PERMISSIONS permissions...]
         [USE_SOURCE_PERMISSIONS] [OPTIONAL] [MESSAGE_NEVER]
         [CONFIGURATIONS [Debug|Release|...]]
-        [COMPONENT <component>] [FILES_MATCHING]
+        [COMPONENT <component>] [EXCLUDE_FROM_ALL]
+        [FILES_MATCHING]
         [[PATTERN <pattern> | REGEX <regex>]
          [EXCLUDE] [PERMISSIONS permissions...]] [...])
 .ft P
@@ -4906,7 +4934,7 @@ manual for available expressions.
 .nf
 .ft C
 install([[SCRIPT <file>] [CODE <code>]]
-        [COMPONENT <component>] [...])
+        [COMPONENT <component>] [EXCLUDE_FROM_ALL] [...])
 .ft P
 .fi
 .UNINDENT
@@ -4941,7 +4969,8 @@ install(EXPORT <export\-name> DESTINATION <dir>
         [PERMISSIONS permissions...]
         [CONFIGURATIONS [Debug|Release|...]]
         [EXPORT_LINK_INTERFACE_LIBRARIES]
-        [COMPONENT <component>])
+        [COMPONENT <component>]
+        [EXCLUDE_FROM_ALL])
 .ft P
 .fi
 .UNINDENT
@@ -5065,6 +5094,7 @@ list(LENGTH <list> <output variable>)
 list(GET <list> <element index> [<element index> ...]
      <output variable>)
 list(APPEND <list> [<element> ...])
+list(FILTER <list> <INCLUDE|EXCLUDE> REGEX <regular_expression>)
 list(FIND <list> <value> <output variable>)
 list(INSERT <list> <element_index> <element> [<element> ...])
 list(REMOVE_ITEM <list> <value> [<value> ...])
@@ -5083,6 +5113,12 @@ list(SORT <list>)
 .sp
 \fBAPPEND\fP will append elements to the list.
 .sp
+\fBFILTER\fP will include or remove items from the list that match the
+mode\(aqs pattern.
+In \fBREGEX\fP mode, items will be matched against the given regular expression.
+For more information on regular expressions see also the \fBstring()\fP
+command.
+.sp
 \fBFIND\fP will return the index of the element specified in the list or \-1
 if it wasn\(aqt found.
 .sp
@@ -5098,9 +5134,9 @@ difference is that \fBREMOVE_ITEM\fP will remove the given items, while
 .sp
 \fBSORT\fP sorts the list in\-place alphabetically.
 .sp
-The list subcommands \fBAPPEND\fP, \fBINSERT\fP, \fBREMOVE_AT\fP, \fBREMOVE_ITEM\fP,
-\fBREMOVE_DUPLICATES\fP, \fBREVERSE\fP and \fBSORT\fP may create new values for
-the list within the current CMake variable scope.  Similar to the
+The list subcommands \fBAPPEND\fP, \fBINSERT\fP, \fBFILTER\fP, \fBREMOVE_AT\fP,
+\fBREMOVE_ITEM\fP, \fBREMOVE_DUPLICATES\fP, \fBREVERSE\fP and \fBSORT\fP may create new
+values for the list within the current CMake variable scope.  Similar to the
 \fBset()\fP command, the LIST command creates new variable values in the
 current scope, even if the list itself is actually defined in a parent
 scope.  To propagate the results of these operations upwards, use
@@ -6258,6 +6294,7 @@ specifiers:
 %j        The day of the current year (001\-366).
 %m        The month of the current year (01\-12).
 %M        The minute of the current hour (00\-59).
+%s        Seconds since midnight (UTC) 1\-Jan\-1970 (UNIX time).
 %S        The second of the current minute.
           60 represents a leap second. (00\-60)
 %U        The week number of the current year (00\-53).
@@ -6911,6 +6948,13 @@ The current setting of \fBCMP0065\fP is set in the generated project.
 .sp
 Set the \fBCMAKE_TRY_COMPILE_CONFIGURATION\fP variable to choose
 a build configuration.
+.sp
+Set the \fBCMAKE_TRY_COMPILE_TARGET_TYPE\fP variable to specify
+the type of target used for the source file signature.
+.sp
+Set the \fBCMAKE_TRY_COMPILE_PLATFORM_VARIABLES\fP variable to specify
+variables that must be propagated into the test project.  This variable is
+meant for use only in toolchain files.
 .SS try_run
 .sp
 Try compiling and then running some code.
@@ -8069,6 +8113,10 @@ have otherwise printed to the console.  CTest will still report
 the new revision of the repository and any conflicting files
 that were found.
 .UNINDENT
+.sp
+The update always follows the version control branch currently checked
+out in the source directory.  See the CTest Update Step
+documentation for more information.
 .SS ctest_upload
 .sp
 Upload files to a dashboard server as a Dashboard Client\&.

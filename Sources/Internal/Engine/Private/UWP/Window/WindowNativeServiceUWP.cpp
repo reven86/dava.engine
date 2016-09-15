@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/UWP/WindowNativeServiceUWP.h"
+#include "Engine/UWP/WindowNativeServiceUWP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 

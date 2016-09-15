@@ -16,7 +16,11 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-    explicit WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     virtual ~WebViewControl();
 
     // Initialize the control.
