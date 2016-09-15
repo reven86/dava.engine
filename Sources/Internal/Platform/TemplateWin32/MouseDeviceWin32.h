@@ -8,6 +8,8 @@
 #include "Input/MouseDevice.h"
 #include "Math/Math2D.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceWin32 : public MouseDeviceInterface
@@ -24,6 +26,8 @@ private:
 };
 
 } //  namespace DAVA
+
+#endif //!defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_WIN32__
 

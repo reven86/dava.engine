@@ -47,7 +47,21 @@ public:
 
     void TriggerPlatformEvents();
 
+    void SetMouseMode(eMouseMode mode);
+
 private:
+    bool DeferredMouseMode(const MainDispatcherEvent& e);
+    void SetMouseCaptured(bool capture);
+    bool SetMouseVisibility(bool visible);
+    void SetCursorInCenter();
+    Point2i lastCursorPosition;
+    eMouseMode uicaptureMode = eMouseMode::OFF;
+    bool mouseCaptured = false;
+    bool mouseVisibled = true;
+    bool deferredMouseMode = false;
+    bool hasFocus = false;
+    bool focusChanged = false;
+
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
 

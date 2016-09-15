@@ -103,53 +103,44 @@ void WindowNativeBridge::DoCloseWindow()
 
 void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
 {
-    if (captureMode != newMode)
-    {
-        captureMode = newMode;
-        auto task = [this, newMode]() {
-            uicaptureMode = newMode;
-            deferredMouseMode = false;
-            switch (newMode)
+    auto task = [this, newMode]() {
+        uicaptureMode = newMode;
+        deferredMouseMode = false;
+        switch (newMode)
+        {
+        case DAVA::eMouseMode::FRAME:
+            //not implemented
+            SetMouseCaptured(false);
+            SetMouseVisibility(true);
+            break;
+        case DAVA::eMouseMode::PINING:
+        {
+            if (hasFocus && !focusChanged)
             {
-            case DAVA::eMouseMode::FRAME:
-                //not implemented
-                SetMouseCaptured(false);
-                SetMouseVisibility(true);
-                break;
-            case DAVA::eMouseMode::PINING:
-            {
-                if (hasFocus && !focusChanged)
-                {
-                    SetMouseCaptured(true);
-                    SetMouseVisibility(false);
-                }
-                else
-                {
-                    deferredMouseMode = true;
-                }
-                break;
-            }
-            case DAVA::eMouseMode::OFF:
-            {
-                SetMouseCaptured(false);
-                SetMouseVisibility(true);
-                break;
-            }
-            case DAVA::eMouseMode::HIDE:
-            {
-                SetMouseCaptured(false);
+                SetMouseCaptured(true);
                 SetMouseVisibility(false);
-                break;
             }
+            else
+            {
+                deferredMouseMode = true;
             }
-        };
-        uwpWindow->RunAsyncOnUIThread(task);
-    }
-}
-
-eMouseMode WindowNativeBridge::GetMouseMode() const
-{
-    return captureMode;
+            break;
+        }
+        case DAVA::eMouseMode::OFF:
+        {
+            SetMouseCaptured(false);
+            SetMouseVisibility(true);
+            break;
+        }
+        case DAVA::eMouseMode::HIDE:
+        {
+            SetMouseCaptured(false);
+            SetMouseVisibility(false);
+            break;
+        }
+        }
+    };
+    uwpWindow->RunAsyncOnUIThread(task);
 }
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)
@@ -493,7 +484,10 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
         skipMouseMoveEvents--;
         return;
     }
-    uwpWindow->GetDispatcher()->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        uwpWindow->GetDispatcher()->PostEvent(e);
+    }
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)

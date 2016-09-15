@@ -107,6 +107,139 @@ void WindowBackend::TriggerPlatformEvents()
     ::PostMessage(hwnd, WM_CUSTOM_MESSAGE, 0, 0);
 }
 
+void WindowBackend::SetCursorInCenter()
+{
+    RECT wndRect;
+    ::GetWindowRect(hwnd, &wndRect);
+    int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
+    int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
+    ::SetCursorPos(centerX, centerY);
+    ::SetCursor(NULL);
+}
+
+bool WindowBackend::SetMouseVisibility(bool visible)
+{
+    if (mouseVisibled != visible)
+    {
+        mouseVisibled = visible;
+        if (visible)
+        {
+            HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
+            SetClassLongPtr(hwnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
+            ::SetCursor(defaultCursor);
+        }
+        else
+        {
+            SetClassLongPtr(hwnd, GCLP_HCURSOR, NULL);
+            ::SetCursor(NULL);
+        }
+    }
+    return true;
+}
+
+bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
+{
+    if (!hasFocus)
+    {
+        return true;
+    }
+    focusChanged = false;
+    if (deferredMouseMode)
+    {
+        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
+        {
+            deferredMouseMode = false;
+            SetMouseVisibility(false);
+            if (eMouseMode::PINING == uicaptureMode)
+            {
+                SetMouseCaptured(false);
+            }
+            return false;
+        }
+        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        {
+            // check, only mouse release event in work rect tern on capture mode
+            bool mclickInRect = true;
+            Vector2 virtualPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(Vector2(e.mclickEvent.x, e.mclickEvent.y));
+            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= window->GetWidth());
+            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= window->GetHeight());
+            if (mclickInRect && hasFocus)
+            {
+                deferredMouseMode = false;
+                SetMouseVisibility(false);
+                if (eMouseMode::PINING == uicaptureMode)
+                {
+                    SetMouseCaptured(true);
+                }
+                // skip this event
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void WindowBackend::SetMouseMode(eMouseMode newMode)
+{
+    uicaptureMode = newMode;
+    deferredMouseMode = false;
+    switch (newMode)
+    {
+    case DAVA::eMouseMode::FRAME:
+        //not implemented
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    case DAVA::eMouseMode::PINING:
+    {
+        if (hasFocus && !focusChanged)
+        {
+            SetMouseCaptured(true);
+            SetMouseVisibility(false);
+        }
+        else
+        {
+            deferredMouseMode = true;
+        }
+        break;
+    }
+    case DAVA::eMouseMode::OFF:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    }
+    case DAVA::eMouseMode::HIDE:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(false);
+        break;
+    }
+    }
+}
+
+void WindowBackend::SetMouseCaptured(bool capture)
+{
+    if (mouseCaptured != capture)
+    {
+        mouseCaptured = capture;
+        if (mouseCaptured)
+        {
+            SetMouseVisibility(false);
+            POINT p;
+            ::GetCursorPos(&p);
+            lastCursorPosition.x = p.x;
+            lastCursorPosition.y = p.y;
+            SetCursorInCenter();
+        }
+        else
+        {
+            SetMouseVisibility(true);
+            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+        }
+    }
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
     int32 w = static_cast<int32>(width);
@@ -177,19 +310,67 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
 
 LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
 {
+    hasFocus = gotFocus;
+    if (!gotFocus)
+    {
+        focusChanged = true;
+        if (eMouseMode::PINING == uicaptureMode)
+        {
+            SetMouseVisibility(true);
+            SetMouseCaptured(false);
+            deferredMouseMode = true;
+        }
+        else if (eMouseMode::HIDE == uicaptureMode)
+        {
+            SetMouseVisibility(true);
+            deferredMouseMode = true;
+        }
+    }
     window->PostFocusChanged(gotFocus);
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
+    if (!mouseVisibled)
+    {
+        // need hide, because windows recreate cursor
+        ::SetCursor(NULL);
+    }
+    if (mouseCaptured)
+    {
+        RECT clientRect;
+        ::GetClientRect(hwnd, &clientRect);
+        int clientCenterX = static_cast<int>((clientRect.left + clientRect.right) >> 1);
+        int clientCenterY = static_cast<int>((clientRect.bottom + clientRect.top) >> 1);
+        int shiftX = x - clientCenterX;
+        int shiftY = y - clientCenterY;
+        if (shiftX != 0 || shiftY != 0)
+        {
+            POINT cursorInScreen;
+            ::GetCursorPos(&cursorInScreen);
+            cursorInScreen.x -= shiftX;
+            cursorInScreen.y -= shiftY;
+            ::SetCursorPos(cursorInScreen.x, cursorInScreen.y);
+            ::SetCursor(NULL);
+            x = shiftX;
+            y = shiftY;
+        }
+        else
+        {
+            return 0;
+        }
+    }
     MainDispatcherEvent e;
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.window = window;
     e.mmoveEvent.x = static_cast<float32>(x);
     e.mmoveEvent.y = static_cast<float32>(y);
-    dispatcher->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        dispatcher->PostEvent(e);
+    }
     return 0;
 }
 
@@ -203,7 +384,10 @@ LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x
     e.mwheelEvent.y = static_cast<float32>(y);
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(delta);
-    dispatcher->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        dispatcher->PostEvent(e);
+    }
     return 0;
 }
 
@@ -266,8 +450,11 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
     default:
         return 0;
     }
-
-    dispatcher->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        Logger::Info("!!!!! dispatcher->PostEvent WM_MBUTTON");
+        dispatcher->PostEvent(e);
+    }
     return 0;
 }
 
@@ -284,7 +471,10 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
     e.window = window;
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        dispatcher->PostEvent(e);
+    }
     return 0;
 }
 
@@ -296,7 +486,10 @@ LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        dispatcher->PostEvent(e);
+    }
     return 0;
 }
 

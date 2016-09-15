@@ -140,6 +140,7 @@ private:
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
+    eMouseMode mouseMode = eMouseMode::OFF;
     // Friends
     friend class Private::EngineBackend;
     friend Private::WindowBackend;

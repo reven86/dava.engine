@@ -34,18 +34,15 @@ ref struct WindowNativeBridge sealed
     void DoCloseWindow();
 
     void SetMouseMode(eMouseMode newMode);
-    eMouseMode GetMouseMode() const;
 
 private:
     void SetMouseVisibility(bool visible);
     void SetMouseCaptured(bool capture);
     bool DeferredMouseMode(const MainDispatcherEvent& e);
-    bool SkipMoveEvents(const MainDispatcherEvent& e);
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;
     eMouseMode uicaptureMode = eMouseMode::OFF;
-    eMouseMode captureMode = eMouseMode::OFF;
     bool hasFocus = false;
     bool focusChanged = false;
     uint32 skipMouseMoveEvents = 0;
