@@ -55,6 +55,7 @@ void Present() // called from main thread
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
     Handle frameSync = frameSyncObjects[currFrameSyncId];
     currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
+    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
     if (frameSyncObjects[currFrameSyncId].IsValid())
     {
         DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
@@ -63,8 +64,6 @@ void Present() // called from main thread
     scheduledDeleteMutex.Unlock();
 
     bool res = FrameLoop::FinishFrame(frameSync);
-
-    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
 
     if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
     {
