@@ -683,7 +683,7 @@ int32 FTInternalFont::LoadString(const WideString& str)
             !(getGlyphError = FT_Get_Glyph(face->glyph, &glyph.image)))
         {
             if (prevRsbDelta - face->glyph->lsb_delta >= 32)
-                glyph.delta = static_cast<FT_Pos>(-1) << 6;
+                glyph.delta = static_cast<uint32>(-1) << 6;
             else if (prevRsbDelta - face->glyph->lsb_delta < -32)
                 glyph.delta = 1 << 6;
             else
