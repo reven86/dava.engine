@@ -19,6 +19,7 @@
   </Dependencies>
 
   <Capabilities>
+    <uap:Capability Name="phoneCall" />
     <uap:Capability Name="removableStorage" />
     <Capability Name="internetClient" />
     <Capability Name="internetClientServer" />

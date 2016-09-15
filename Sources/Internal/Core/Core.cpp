@@ -359,7 +359,47 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
 
     options = SafeRetain(archiveOfOptions);
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
+
+    using RotationPrefFn = BOOL(WINAPI*)(_In_ ORIENTATION_PREFERENCE);
+
+    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(
+    GetModuleHandle(TEXT("user32.dll")),
+    "SetDisplayAutoRotationPreferences"));
+
+    if (nullptr != fn)
+    {
+        ORIENTATION_PREFERENCE orientationp = ORIENTATION_PREFERENCE_NONE;
+
+        switch (screenOrientation)
+        {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_PORTRAIT | ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED);
+            break;
+        default:
+            break;
+        }
+
+        (*fn)(orientationp);
+    }
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view

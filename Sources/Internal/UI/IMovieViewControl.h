@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_IMOVIEVIEWCONTROL__H__
-#define __DAVAENGINE_IMOVIEVIEWCONTROL__H__
+#pragma once
 
 #include "FileSystem/FilePath.h"
 #include "Math/Rect.h"
@@ -32,6 +31,9 @@ public:
 
     // Initialize the control.
     virtual void Initialize(const Rect& rect) = 0;
+    virtual void OwnerIsDying()
+    {
+    }
 
     // Position/visibility.
     virtual void SetRect(const Rect& rect) = 0;
@@ -61,5 +63,3 @@ public:
 };
 
 } // namespace DAVA
-
-#endif //__DAVAENGINE_IMOVIEVIEWCONTROL__H__

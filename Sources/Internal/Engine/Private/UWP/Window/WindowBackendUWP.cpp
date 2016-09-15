@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Engine/Public/UWP/WindowNativeServiceUWP.h"
+#include "Engine/UWP/WindowNativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"

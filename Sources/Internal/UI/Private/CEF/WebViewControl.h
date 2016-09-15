@@ -3,10 +3,15 @@
 
 namespace DAVA
 {
+class Window;
 class WebViewControl : public IWebViewControl
 {
 public:
-    WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     ~WebViewControl() override;
 
     // Initialize the control.
