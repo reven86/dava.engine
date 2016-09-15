@@ -31,6 +31,7 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SoundComponentEditCommands.h"
 #include "Commands2/ConvertPathCommands.h"
+#include "Commands2/ConvertToBillboardCommand.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -398,6 +399,13 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                         QtPropertyToolButton* cloneBatches = CreateButton(data, SharedIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
+                    }
+
+                    if ((renderObject->GetType() == RenderObject::TYPE_MESH) ||
+                        (renderObject->GetType() == RenderObject::TYPE_RENDEROBJECT))
+                    {
+                        QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/sphere.png"), "Make billboard");
+                        QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
                     }
                 }
             }
@@ -792,6 +800,10 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommandNotific
         else if (cmdID == CMDID_COLLAPSE_PATH)
         {
             return IsCurNodesContainsEntityFromCommand<CollapsePathCommand>(cmd, curNodes);
+        }
+        else if (cmdID == CMDID_CONVERT_TO_BILLBOARD)
+        {
+            return true;
         }
         return false;
     };
@@ -1534,6 +1546,40 @@ void PropertyEditor::OnTriggerWaveComponent()
         {
             component->Trigger();
         }
+    }
+}
+
+void PropertyEditor::OnConvertRenderObjectToBillboard()
+{
+    QtPropertyToolButton* btn = dynamic_cast<QtPropertyToolButton*>(QObject::sender());
+    DVASSERT(btn != nullptr);
+
+    QtPropertyDataIntrospection* data = dynamic_cast<QtPropertyDataIntrospection*>(btn->GetPropertyData());
+    if (data != nullptr)
+    {
+        bool anyConvertToBillboardCommandIssued = false;
+
+        SceneEditor2* curScene = sceneHolder.GetScene();
+        curScene->BeginBatch("Convert to billboard", curNodes.GetSize());
+        for (Selectable& obj : curNodes.GetMutableContent())
+        {
+            DAVA::Entity* entity = obj.AsEntity();
+            if (entity != nullptr)
+            {
+                RenderComponent* component = GetRenderComponent(entity);
+                if (component != nullptr)
+                {
+                    DAVA::RenderObject* ro = component->GetRenderObject();
+                    if (ro != nullptr)
+                    {
+                        anyConvertToBillboardCommandIssued = true;
+                        curScene->Exec(std::unique_ptr<DAVA::Command>(new ConvertToBillboardCommand(ro, entity)));
+                    }
+                }
+            }
+        }
+        curScene->EndBatch();
+        DVASSERT(anyConvertToBillboardCommandIssued); // sanity check
     }
 }
 
