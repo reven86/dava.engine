@@ -14,11 +14,6 @@ namespace DAVA
         statusList.emplace_back( eStatus::ES_INIT );
     }
 
-    void SampleModule::PostInit()
-    {
-        statusList.emplace_back( eStatus::ES_POST_INIT );
-    }
-
     void SampleModule::Shutdown()
     {
         statusList.emplace_back( eStatus::ES_SHUTDOWN );

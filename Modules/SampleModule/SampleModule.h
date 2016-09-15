@@ -18,7 +18,6 @@ public:
     {
         ES_UNKNOWN,
         ES_INIT,
-        ES_POST_INIT,
         ES_SHUTDOWN
     };
     
@@ -32,7 +31,6 @@ private:
     friend ModuleManager;
     
     void Init() override;
-    void PostInit() override;
     void Shutdown() override;
     
     Vector<eStatus> statusList;

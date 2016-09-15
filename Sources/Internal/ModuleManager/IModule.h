@@ -11,9 +11,6 @@ public:
     virtual void Init()
     {
     }
-    virtual void PostInit()
-    {
-    }
     virtual void Shutdown()
     {
     }

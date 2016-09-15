@@ -14,9 +14,8 @@ DAVA_TESTCLASS (SampleModuleTest)
 
         auto statusList = sampleModule->StatusList();
 
-        TEST_VERIFY(statusList.size() == 3);
+        TEST_VERIFY(statusList.size() == 2);
         TEST_VERIFY(statusList[0] == SampleModule::ES_UNKNOWN);
         TEST_VERIFY(statusList[1] == SampleModule::ES_INIT);
-        TEST_VERIFY(statusList[2] == SampleModule::ES_POST_INIT);
     }
 };

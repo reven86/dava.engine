@@ -21,10 +21,6 @@ namespace DAVA
     void ModuleManager::InitModules()
     {
 @IMODULE_INIT_CODE@
-        for (IModule* module : modules)
-        {
-            module->PostInit();
-        }
     }
     
     void  ModuleManager::ResetModules()
