@@ -185,6 +185,34 @@ void GPUProfiler::OnFrameEnd()
     }
 }
 
+void GPUProfiler::DumpJSON(std::ostream& stream) const
+{
+    stream << "{ \"traceEvents\": [" << std::endl;
+
+    for (uint32 fi = 0; fi < framesInfoCount; ++fi)
+    {
+        const FrameInfo& frameInfo = framesInfo[(framesInfoHead + fi + 1) % framesInfoCount];
+
+        stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << frameInfo.startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"frame " << frameInfo.frameIndex << "\" }," << std::endl;
+        stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << frameInfo.endTime << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"frame " << frameInfo.frameIndex << "\" }";
+
+        for (const MarkerInfo& m : frameInfo.markers)
+        {
+            stream << "," << std::endl;
+            stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << m.startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << m.name << "\" }," << std::endl;
+            stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << m.endTime << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << m.name << "\" }";
+        }
+
+        if (fi < (framesInfoCount - 1))
+            stream << ",";
+        stream << std::endl;
+    }
+
+    stream << "] }" << std::endl;
+
+    stream.flush();
+}
+
 void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName)
 {
     if (profilerStarted)

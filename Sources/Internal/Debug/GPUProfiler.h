@@ -45,6 +45,8 @@ public:
     uint32 GetFramesCount() const;
     void OnFrameEnd(); //should be called before rhi::Present();
 
+    void DumpJSON(std::ostream& stream) const;
+
     void AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName);
 
     void EnableStatisticOverlay(uint32 updatePeriod = 5);
