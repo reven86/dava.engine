@@ -9,7 +9,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class PropertiesHolder;
+class PropertiesItem;
 
 class UIManager final : public UI
 {
@@ -20,7 +20,7 @@ public:
         virtual bool WindowCloseRequested(const WindowKey& key) = 0;
         virtual void WindowClosed(const WindowKey& key) = 0;
     };
-    UIManager(Delegate* delegate, PropertiesHolder&& holder);
+    UIManager(Delegate* delegate, PropertiesItem&& holder);
     ~UIManager();
 
     void InitializationFinished();

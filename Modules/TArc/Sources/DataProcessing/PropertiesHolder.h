@@ -12,37 +12,54 @@ class Type;
 
 namespace TArc
 {
-class PropertiesHolder
+class PropertiesItem;
+
+class RootPropertiesHolder
 {
 public:
-    PropertiesHolder(const String& rootPath, const FilePath& dirPath);
+    RootPropertiesHolder(const String& rootPath, const FilePath& dirPath);
+    ~RootPropertiesHolder();
 
-    ~PropertiesHolder();
+    PropertiesItem CreateSubHolder(const String& name) const;
 
-    PropertiesHolder CreateSubHolder(const String& name) const;
+    void SaveToFile();
+    void SetDirectory(const FilePath& dirPath);
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+};
+
+class PropertiesItem
+{
+public:
+    virtual ~PropertiesItem();
+
+    PropertiesItem CreateSubHolder(const String& name) const;
 
     void Set(const String& key, const Any& value);
-    void SaveToFile();
 
     template <typename T>
     T Get(const String& key, const T& defaultValue = T()) const;
 
-    PropertiesHolder(const PropertiesHolder& holder) = delete;
-    PropertiesHolder(PropertiesHolder&& holder);
-    PropertiesHolder& operator=(const PropertiesHolder& holder) = delete;
-    PropertiesHolder& operator=(PropertiesHolder&& holder);
-
-    void SetDirectory(const FilePath& dirPath);
+    PropertiesItem(const PropertiesItem& holder) = delete;
+    PropertiesItem(PropertiesItem&& holder);
+    PropertiesItem& operator=(const PropertiesItem& holder) = delete;
+    PropertiesItem& operator=(PropertiesItem&& holder);
 
 private:
+    friend class RootPropertiesHolder;
+    //RootPropertiesHolder use this empty c-tor
+    PropertiesItem();
     Any Get(const String& key, const Any& defaultValue, const Type* type) const;
-    PropertiesHolder(const PropertiesHolder& parent, const String& name);
+    PropertiesItem(const PropertiesItem& parent, const String& name);
+
     struct Impl;
     std::unique_ptr<Impl> impl;
 };
 
 template <typename T>
-T PropertiesHolder::Get(const String& key, const T& defaultValue) const
+T PropertiesItem::Get(const String& key, const T& defaultValue) const
 {
     Any loadedValue = Get(key, defaultValue, Type::Instance<T>());
     if (loadedValue.CanGet<T>())

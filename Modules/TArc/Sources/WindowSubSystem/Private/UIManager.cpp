@@ -192,6 +192,7 @@ QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo
     const QString& text = dockPanelInfo.title;
 
     QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
+    dockWidget->setObjectName(text);
 
     QAction* dockWidgetAction = dockWidget->toggleViewAction();
 
@@ -271,10 +272,10 @@ struct UIManager::Impl : public QObject
     UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
-    PropertiesHolder propertiesHolder;
+    PropertiesItem propertiesHolder;
     bool initializationFinished = false;
 
-    Impl(UIManager::Delegate* delegate, PropertiesHolder&& givenPropertiesHolder)
+    Impl(UIManager::Delegate* delegate, PropertiesItem&& givenPropertiesHolder)
         : managerDelegate(delegate)
         , propertiesHolder(std::move(givenPropertiesHolder))
     {
@@ -296,7 +297,7 @@ struct UIManager::Impl : public QObject
             window->setWindowTitle(appId.c_str());
             window->setObjectName(appId.c_str());
 
-            PropertiesHolder ph = propertiesHolder.CreateSubHolder(appId.c_str());
+            PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
             window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::geometryKey));
             window->restoreState(ph.Get<QByteArray>(UIManagerDetail::stateKey));
 
@@ -329,7 +330,7 @@ protected:
             {
                 QMainWindow* mainWindow = iter->second.window;
 
-                PropertiesHolder ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
+                PropertiesItem ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
                 ph.Set(UIManagerDetail::stateKey, mainWindow->saveState());
                 ph.Set(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
 
@@ -348,7 +349,7 @@ protected:
     }
 };
 
-UIManager::UIManager(Delegate* delegate, PropertiesHolder&& holder)
+UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
     : impl(new Impl(delegate, std::move(holder)))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
