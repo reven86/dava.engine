@@ -1,4 +1,4 @@
-#include "UI/FileSystemView/FindFileInPackageDialog.h"
+#include "QtTools/FileDialogs/FindFileInPackageDialog.h"
 #include "ui_FindFileInPackageDialog.h"
 
 #include "Debug/DVAssert.h"
@@ -31,6 +31,19 @@ QString FindFileInPackageDialog::GetFilePath(const ProjectStructure* projectStru
     return QString();
 }
 
+QAction* FindFileInPackageDialog::CreateFindInFilesAction(QWidget* parent)
+{
+    QAction* findInFilesAction = new QAction(tr("Find file in project"), parent);
+    findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
+    QList<QKeySequence> keySequences;
+    keySequences << Qt::CTRL + Qt::SHIFT + Qt::Key_O;
+#ifdef Q_OS_WIN
+    keySequences << Qt::ALT + Qt::SHIFT + Qt::Key_O;
+#endif //Q_OS_WIN
+    findInFilesAction->setShortcuts(keySequences);
+    return findInFilesAction;
+}
+
 FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::FindFileInPackageDialog())
@@ -46,19 +59,6 @@ FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePa
 
 void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
 {
-    //calculate common prefix for all given files
-    //initialize prefix with first element
-    prefix = QString::fromStdString(files.front().GetAbsolutePathname());
-    for (const DAVA::FilePath& filePath : files)
-    {
-        QString absPath = QString::fromStdString(filePath.GetAbsolutePathname());
-        int index = 0;
-        for (int i = 0, count = qMin(absPath.size(), prefix.size()); i < count && prefix[i] == absPath[i]; ++i, ++index)
-        {
-        }
-        prefix.truncate(index);
-    }
-
     //collect all items in short form
     QStringList stringsToDisplay;
     const int prefixSize = prefix.size();
@@ -76,7 +76,7 @@ void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->installEventFilter(this);
     completer->popup()->installEventFilter(this);
-    completer->popup()->setTextElideMode(Qt::ElideRight);
+    completer->popup()->setTextElideMode(Qt::ElideLeft);
 
     ui->lineEdit->setCompleter(completer);
 }

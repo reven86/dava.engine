@@ -155,7 +155,7 @@ void ProjectStructure::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
     QStringList watchedDirectories = watcher.directories();
 
     QString absDirPath(dirInfo.absoluteFilePath());
-    QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden | QDir::System, QDirIterator::Subdirectories);
+    QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {
         dirIterator.next();

@@ -24,6 +24,7 @@ class FindFileInPackageDialog : public QDialog
 {
 public:
     static QString GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent);
+    static QAction* CreateFindInFilesAction(QWidget* parent);
 
 private:
     explicit FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent = nullptr);

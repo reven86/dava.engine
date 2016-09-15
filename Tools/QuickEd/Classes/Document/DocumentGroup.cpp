@@ -7,7 +7,7 @@
 
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 

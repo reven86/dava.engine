@@ -76,7 +76,7 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
 #include "Platform/Qt5/QtLayer.h"
@@ -86,6 +86,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 
 #include <QActionGroup>
 #include <QColorDialog>

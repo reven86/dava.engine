@@ -6,12 +6,12 @@
 
 #include "ValidatedTextInputDialog.h"
 #include "FileSystemModel.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 
 #include "Project/Project.h"
-#include "UI/FileSystemView/FindFileInPackageDialog.h"
+#include "QtTools/FileDialogs/FindFileInPackageDialog.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QClipboard>
@@ -112,14 +112,9 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
     connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
-    findInFilesAction = new QAction(tr("Find file in project"), parent);
-    findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
-    QList<QKeySequence> keySequences;
-    keySequences << Qt::CTRL + Qt::SHIFT + Qt::Key_O;
-#ifdef Q_OS_WIN
-    keySequences << Qt::ALT + Qt::SHIFT + Qt::Key_O;
-#endif //Q_OS_WIN
-    findInFilesAction->setShortcuts(keySequences);
+    findInFilesAction = FindFileInPackageDialog::CreateFindInFilesAction(parent);
+    connect(findInFilesAction, &QAction::triggered, this, &FileSystemDockWidget::FindInFiles);
+    addAction(findInFilesAction);
 
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
