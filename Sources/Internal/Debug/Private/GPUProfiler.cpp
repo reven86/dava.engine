@@ -1,6 +1,7 @@
 #include "Debug/GPUProfiler.h"
 #include "Debug/DVAssert.h"
 #include "Core/Core.h"
+#include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include <ostream>
 
