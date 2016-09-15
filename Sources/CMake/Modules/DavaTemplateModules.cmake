@@ -187,15 +187,15 @@ macro( generated_initialization_module_code )
             string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
         endif()
 
-        list( APPEND INIT_POINTERS "    struct PointersToModules\n    {\n" )
+        list( APPEND INIT_POINTERS "    struct ModuleManager::PointersToModules\n    {\n" )
         foreach( ITEM ${MODULES_INITIALIZATION} )
             list( APPEND INIT_POINTERS "        ${ITEM}* _${ITEM}\;\n" )
 
-            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule()\n" )
+            list( APPEND GET_MODULE_CODE "    template <>\n    SampleModule* ModuleManager::GetModule() const\n" )
             list( APPEND GET_MODULE_CODE "    {\n        return pointersToModules->_SampleModule\;\n    }\n" )
 
             list( APPEND INIT_CODE "        pointersToModules->_${ITEM} = new ${ITEM}()\;\n" )
-            list( APPEND INIT_CODE "        listModules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
+            list( APPEND INIT_CODE "        modules.emplace_back( pointersToModules->_${ITEM} )\;\n" )                
             list( APPEND INIT_CODE "        pointersToModules->_${ITEM}->Init()\;\n" )
         endforeach()
         list( APPEND INIT_POINTERS "    }\;\n" )

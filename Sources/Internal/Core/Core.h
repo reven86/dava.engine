@@ -247,8 +247,8 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    IPackManager& GetPackManager();
-    ModuleManager& GetModuleManager();
+    IPackManager& GetPackManager() const;
+    ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;

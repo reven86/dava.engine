@@ -1,13 +1,13 @@
 
-set( NAME_MODULE SampleModule )                  # именуем модуль
+set( NAME_MODULE SampleModule )                  # set name to module 
 
-set( MODULE_TYPE STATIC )                        # указываем тип модуля [INLINE, STATIC, DYNAMIC]
+set( MODULE_TYPE STATIC )                        # set module type [INLINE, STATIC, DYNAMIC]
 
-set( INCLUDES "." )                              # указываем путь поиска хидеров модуля для всего проекта
-set( INCLUDES_PRIVATE ${DAVA_ENGINE_DIR} )       # указываем путь поиска хидеров внутри модуля
+set( INCLUDES "." )                              # set search path hiders for all project
+set( INCLUDES_PRIVATE ${DAVA_ENGINE_DIR} )       # set search path hiders inside module
 
-set( MODULE_INITIALIZATION_CODE SampleModule.h ) # указываем хидер где объявляется модуль
+set( MODULE_INITIALIZATION_CODE SampleModule.h ) # set hider where found module
 set( HPP_FILES *.h )                             # 
-set( CPP_FILES Private/*.cpp )                   # указываем где живут исходники
+set( CPP_FILES Private/*.cpp )                   # set where are sources
 
-setup_main_module()                              # вызываем макрос формирования модуля
+setup_main_module()                              # induce macros of module formation

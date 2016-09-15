@@ -1009,13 +1009,13 @@ Vector2 Core::GetWindowMinimumSize() const
     return Vector2();
 }
 
-IPackManager& Core::GetPackManager()
+IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
 }
 
-ModuleManager& Core::GetModuleManager()
+ModuleManager& Core::GetModuleManager() const
 {
     DVASSERT(moduleManager);
     return *moduleManager;

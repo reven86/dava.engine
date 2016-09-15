@@ -4,8 +4,8 @@
 
 namespace DAVA
 {
+
 class IModule;
-struct PointersToModules;
 
 class ModuleManager
 {
@@ -14,10 +14,13 @@ public:
     ~ModuleManager();
 
     template <typename T>
-    T* GetModule();
+    T* GetModule() const;
 
 private:
-    Vector<IModule*> listModules;
-    PointersToModules* pointersToModules;
+    struct PointersToModules;
+
+    Vector<IModule*> modules;
+    std::unique_ptr<PointersToModules> pointersToModules;
+
 };
 }
