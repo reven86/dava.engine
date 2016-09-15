@@ -5,7 +5,7 @@
 #include "Render/Renderer.h"
 #include "Core/Core.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

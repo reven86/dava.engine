@@ -14,7 +14,7 @@ extern void FrameworkWillTerminate();
 #include "FileSystem/FileSystem.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
 namespace DAVA

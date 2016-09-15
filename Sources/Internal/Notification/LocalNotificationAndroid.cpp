@@ -5,7 +5,6 @@
 #include "Notification/LocalNotificationController.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Concurrency/LockGuard.h"
 
 namespace DAVA

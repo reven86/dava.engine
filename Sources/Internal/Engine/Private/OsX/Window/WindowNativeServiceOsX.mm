@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
+#include "Engine/OsX/WindowNativeServiceOsX.h"
 
 #include "Base/BaseTypes.h"
 

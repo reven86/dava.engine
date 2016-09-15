@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-PACKAGES" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-PACKAGES" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-packages \- CMake Packages Reference
 .
@@ -141,7 +141,7 @@ a package is to set the \fBCMAKE_PREFIX_PATH\fP cache variable.
 .sp
 Config\-file packages are provided by upstream vendors as part of development
 packages, that is, they belong with the header files and any other files
-provided to assist downsteams in using the package.
+provided to assist downstreams in using the package.
 .sp
 A set of variables which provide package status information are also set
 automatically when using a config\-file package.  The \fB<Package>_FOUND\fP
@@ -450,7 +450,7 @@ version\-specific variables \fB<Package>_VERSION\fP, \fB<Package>_VERSION_MAJOR\
 used to export the targets in the \fBClimbingStatsTargets\fP export\-set, defined
 previously by the \fBinstall(TARGETS)\fP command. This command generates
 the \fBClimbingStatsTargets.cmake\fP file to contain \fBIMPORTED\fP
-targets, suitable for use by downsteams and arranges to install it to
+targets, suitable for use by downstreams and arranges to install it to
 \fBlib/cmake/ClimbingStats\fP\&.  The generated \fBClimbingStatsConfigVersion.cmake\fP
 and a \fBcmake/ClimbingStatsConfig.cmake\fP are installed to the same location,
 completing the package.
@@ -481,7 +481,7 @@ In this case, when using \fBinstall(TARGETS)\fP the \fBINCLUDES DESTINATION\fP
 was specified.  This causes the \fBIMPORTED\fP targets to have their
 \fBINTERFACE_INCLUDE_DIRECTORIES\fP populated with the \fBinclude\fP
 directory in the \fBCMAKE_INSTALL_PREFIX\fP\&.  When the \fBIMPORTED\fP
-target is used by downsteam, it automatically consumes the entries from
+target is used by downstream, it automatically consumes the entries from
 that property.
 .SS Creating a Package Configuration File
 .sp
@@ -520,7 +520,7 @@ target_link_libraries(ClimbingStats PUBLIC Stats::Types)
 .UNINDENT
 .sp
 As the \fBStats::Types\fP target is a \fBPUBLIC\fP dependency of \fBClimbingStats\fP,
-downsteams must also find the \fBStats\fP package and link to the \fBStats::Types\fP
+downstreams must also find the \fBStats\fP package and link to the \fBStats::Types\fP
 library.  The \fBStats\fP package should be found in the \fBClimbingStatsConfig.cmake\fP
 file to ensure this.  The \fBfind_dependency\fP macro from the
 \fBCMakeFindDependencyMacro\fP helps with this by propagating
@@ -582,7 +582,7 @@ and will be displayed to the user.
 .sp
 The \fBexport(EXPORT)\fP command creates an \fBIMPORTED\fP targets
 definition file which is specific to the build\-tree, and is not relocatable.
-This can similiarly be used with a suitable package configuration file and
+This can similarly be used with a suitable package configuration file and
 package version file to define a package for the build tree which may be used
 without installation.  Consumers of the build tree can simply ensure that the
 \fBCMAKE_PREFIX_PATH\fP contains the build directory, or set the
@@ -796,7 +796,7 @@ There is no system package registry on non\-Windows platforms.
 .SS Disabling the Package Registry
 .sp
 In some cases using the Package Registries is not desirable. CMake
-allows to disable them using the following variables:
+allows one to disable them using the following variables:
 .INDENT 0.0
 .INDENT 3.5
 .INDENT 0.0
