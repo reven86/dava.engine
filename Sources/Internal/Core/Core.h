@@ -286,7 +286,7 @@ private:
     };
     ScreenMetrics screenMetrics;
     ModuleManager moduleManager;
-    
+
     std::unique_ptr<IPackManager> packManager;
 };
 
