@@ -63,10 +63,10 @@ uint64 TimeStampUs()
     return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
 }
 
-bool NameCmp(const char* name1, const char* name2)
+bool NameEquals(const char* name1, const char* name2)
 {
 #ifdef __DAVAENGINE_DEBUG__
-    return strcmp(name1, name2);
+    return (strcmp(name1, name2) == 0);
 #else
     return name1 == name2;
 #endif
@@ -315,7 +315,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
                 node = node->parent;
             }
 
-            if (CPUProfilerDetails::NameCmp(node->counterName, c.name))
+            if (CPUProfilerDetails::NameEquals(node->counterName, c.name))
             {
                 node->counterTime += c.endTime - c.startTime;
                 node->count++;
@@ -323,7 +323,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
             else
             {
                 auto found = std::find_if(node->childs.begin(), node->childs.end(), [&c](CounterTreeNode* node) {
-                    return (CPUProfilerDetails::NameCmp(c.name, node->counterName));
+                    return (CPUProfilerDetails::NameEquals(c.name, node->counterName));
                 });
 
                 if (found != node->childs.end())
@@ -350,7 +350,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
 
 void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* node)
 {
-    if (CPUProfilerDetails::NameCmp(root->counterName, node->counterName))
+    if (CPUProfilerDetails::NameEquals(root->counterName, node->counterName))
     {
         root->counterTime += node->counterTime;
         root->count++;
@@ -361,7 +361,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
     else
     {
         auto found = std::find_if(root->childs.begin(), root->childs.end(), [&node](CounterTreeNode* child) {
-            return (CPUProfilerDetails::NameCmp(child->counterName, node->counterName));
+            return (CPUProfilerDetails::NameEquals(child->counterName, node->counterName));
         });
 
         if (found != root->childs.end())

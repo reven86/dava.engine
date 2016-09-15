@@ -58,7 +58,6 @@
 #endif
 
 #include "Concurrency/Thread.h"
-#include "Debug/CPUProfiler.h"
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
