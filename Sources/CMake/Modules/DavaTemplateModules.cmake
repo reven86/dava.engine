@@ -19,6 +19,7 @@ CPP_FILES_RECURSE
 HPP_FILES_RECURSE            
 CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
 HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
+GROUP_SOURCE
 #
 ERASE_FILES                
 ERASE_FILES_${DAVA_PLATFORM_CURENT}     
@@ -85,7 +86,8 @@ macro( reset_MAIN_MODULE_VALUES )
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
                                          DEPENDENT_LIST
-                                         DAVA_COMPONENTS )
+                                         DAVA_COMPONENTS 
+                                         GROUP_SOURCE )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -210,7 +212,8 @@ macro( setup_main_module )
             
             if( SRC_FOLDERS_DIR_NAME )
                 define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
-                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} )
+                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} 
+                                GROUP_SOURCE ${GROUP_SOURCE})
                                          
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
                 list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
@@ -228,7 +231,7 @@ macro( setup_main_module )
                        SOURCE_RECURSE ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
-                     )
+                       GROUP_SOURCE ${GROUP_SOURCE} )
 
 
         list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )

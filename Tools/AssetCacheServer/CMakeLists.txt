@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project               ( AssetCacheServer )
 
-#set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
@@ -11,12 +10,11 @@ add_definitions (
 -DCONSOLE )
 
 find_package          ( QT5 REQUIRED )
-find_package          ( QtHelpers REQUIRED)
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
+find_package          ( QtHelpers REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-#include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

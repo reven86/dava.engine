@@ -3,7 +3,7 @@ if ( QT_HELPERS_FOUND )
 endif ()
 set ( QT_HELPERS_FOUND 1 )
 
+include (GlobalVariables)
 append_property( DAVA_COMPONENTS  "QtHelpers"  )
 
-get_filename_component( CURRENT_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH CACHE )
-add_subdirectory ( "${CURRENT_DIR}/../../Tools/QtHelpers" ${CMAKE_CURRENT_BINARY_DIR}/QtHelpers )
+add_subdirectory ( "${DAVA_MODULES_DIR}/QtHelpers" ${CMAKE_CURRENT_BINARY_DIR}/QtHelpers )

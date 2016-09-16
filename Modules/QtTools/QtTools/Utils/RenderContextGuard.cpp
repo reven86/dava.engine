@@ -7,18 +7,14 @@
 
 RenderContextGuard::RenderContextGuard()
 {
-#if defined(__DAVAENGINE_QT__)
     DAVA::Window* window = DAVA::Engine::Instance()->PrimaryWindow();
     window->GetNativeService()->AcqureContext();
-#endif
 }
 
 RenderContextGuard::~RenderContextGuard()
 {
-#if defined(__DAVAENGINE_QT__)
     DAVA::Window* window = DAVA::Engine::Instance()->PrimaryWindow();
     window->GetNativeService()->ReleaseContext();
-#endif
 }
 
 #endif

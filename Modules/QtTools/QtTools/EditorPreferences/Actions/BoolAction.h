@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorPreferences/Actions/AbstractAction.h"
+#include "QtTools/EditorPreferences/Actions/AbstractAction.h"
 
 class BoolAction final : public AbstractAction
 {
