@@ -247,7 +247,7 @@ uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
         }
         if (numQualityLevels == 0)
         {
-            DAVA::Logger::Info("DX11 max multisample samples: %u", sampleCount);
+            DAVA::Logger::Info("DX11 max multisample samples: %u", sampleCount / 2);
             break;
         }
     }

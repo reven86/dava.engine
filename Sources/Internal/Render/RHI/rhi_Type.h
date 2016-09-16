@@ -87,7 +87,6 @@ enum class AntialiasingType : DAVA::uint32
     NONE,
     MSAA_2X,
     MSAA_4X,
-    FXAA // now it serves only for debug purpose
 };
 
 inline DAVA::uint32 TextureSampleCountForAAType(AntialiasingType type)

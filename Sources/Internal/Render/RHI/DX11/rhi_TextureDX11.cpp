@@ -186,6 +186,9 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             uint32 di = s * desc.levelCount + m;
             if (desc.initialData[di])
             {
+                // multisampled texture should be created without initial data
+                DVASSERT(desc2d.SampleDesc.Count == 1);
+
                 data[di].pSysMem = desc.initialData[di];
                 data[di].SysMemPitch = TextureStride(desc.format, Size2i(desc.width, desc.height), m);
 

@@ -819,9 +819,6 @@ rhi::AntialiasingType AANameToType(const FastName& name)
     if (name == FastName("MSAA_2X"))
         return rhi::AntialiasingType::MSAA_2X;
 
-    if (name == FastName("FXAA"))
-        return rhi::AntialiasingType::FXAA;
-
     if (name == FastName("NONE"))
         return rhi::AntialiasingType::NONE;
 
