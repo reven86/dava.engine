@@ -2,7 +2,7 @@
 
 #include "DataProcessing/DataContext.h"
 
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 
 namespace DAVA
 {

@@ -2,8 +2,8 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
 namespace DAVA

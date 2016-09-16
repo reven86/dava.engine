@@ -32,7 +32,7 @@ public:
 
     const Type* GetValueType() const;
     ReflectedObject GetValueObject() const;
-    const ReflectedType* GetObjectType() const;
+    const ReflectedType* GetReflectedType() const;
 
     Any GetValue() const;
     bool SetValue(const Any&) const;

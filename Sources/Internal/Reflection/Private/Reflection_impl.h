@@ -54,7 +54,7 @@ inline ReflectedObject Reflection::GetValueObject() const
     return vw->GetValueObject(object);
 }
 
-inline const DAVA::ReflectedType* Reflection::GetObjectType() const
+inline const DAVA::ReflectedType* Reflection::GetReflectedType() const
 {
     return objectType;
 }

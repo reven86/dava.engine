@@ -4,7 +4,7 @@
 
 #include "TArcCore/TArcCore.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"
@@ -25,8 +25,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "NetCore",
         "LocalizationSystem",
         "SoundSystem",
-        "DownloadManager",
-        "PackManager"
+        "DownloadManager"
     };
     
     DAVA::Engine e;

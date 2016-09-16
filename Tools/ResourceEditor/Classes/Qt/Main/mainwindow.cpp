@@ -519,6 +519,12 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             }
         }
 
+        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
+            scene->editorVegetationSystem->ReloadVegetation();
+        }
+
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticleEffects();
     }
@@ -2811,8 +2817,8 @@ bool QtMainWindow::OpenScene(const QString& path)
         if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
         {
             QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
-                                                                              projectPath.GetAbsolutePathname().c_str(),
-                                                                              argumentPath.GetAbsolutePathname().c_str()));
+                                                                              argumentPath.GetAbsolutePathname().c_str(),
+                                                                              projectPath.GetAbsolutePathname().c_str()));
         }
         else
         {

@@ -20,6 +20,8 @@ public:
 
     void GetActiveVegetation(DAVA::Vector<DAVA::VegetationRenderObject*>& activeVegetationObjects);
 
+    void ReloadVegetation();
+
 private:
     DAVA::Vector<DAVA::VegetationRenderObject*> vegetationObjects;
 };

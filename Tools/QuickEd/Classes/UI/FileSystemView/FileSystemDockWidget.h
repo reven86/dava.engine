@@ -37,6 +37,7 @@ private slots:
     void OnShowInExplorer();
     void OnRename();
     void OnOpenFile();
+    void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
@@ -59,6 +60,7 @@ private:
     QAction* showInSystemExplorerAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* openFileAction = nullptr;
+    QAction* copyInternalPathToFileAction = nullptr;
     QPoint menuInvokePos = QPoint(-1, -1);
 };
 
