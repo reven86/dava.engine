@@ -49,6 +49,7 @@ bool WindowNativeBridge::DoCreateWindow(float32 x, float32 y, float32 width, flo
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
+    CreateOrUpdateTrackArea();
 
     {
         float32 scale = [nswindow backingScaleFactor];
@@ -59,6 +60,17 @@ bool WindowNativeBridge::DoCreateWindow(float32 x, float32 y, float32 width, flo
 
     [nswindow makeKeyAndOrderFront:nil];
     return true;
+}
+
+void WindowNativeBridge::CreateOrUpdateTrackArea()
+{
+    int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
+    if (trackingArea != nullptr)
+    {
+        [renderView removeTrackingArea:trackingArea];
+    }
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
+    [renderView addTrackingArea:trackingArea];
 }
 
 void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
@@ -96,6 +108,7 @@ void WindowNativeBridge::WindowDidDeminiaturize()
 
 void WindowNativeBridge::WindowDidBecomeKey()
 {
+    hasFocus = true;
     if (isMiniaturized || isAppHidden)
     {
         windowBackend->GetWindow()->PostVisibilityChanged(true);
@@ -105,6 +118,19 @@ void WindowNativeBridge::WindowDidBecomeKey()
 
 void WindowNativeBridge::WindowDidResignKey()
 {
+    hasFocus = false;
+    focusChanged = true;
+    if (eMouseMode::PINING == uicaptureMode)
+    {
+        SetMouseVisibility(true);
+        SetMouseCaptured(false);
+        deferredMouseMode = true;
+    }
+    else if (eMouseMode::HIDE == uicaptureMode)
+    {
+        SetMouseVisibility(true);
+        deferredMouseMode = true;
+    }
     windowBackend->GetWindow()->PostFocusChanged(false);
     if (isAppHidden)
     {
@@ -116,7 +142,7 @@ void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-
+    CreateOrUpdateTrackArea();
     windowBackend->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
 }
 
@@ -168,11 +194,20 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
-    windowBackend->GetDispatcher()->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        windowBackend->GetDispatcher()->PostEvent(e);
+    }
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
+    if (skipMouseMoveEvents)
+    {
+        skipMouseMoveEvents--;
+        return;
+    }
+
     MainDispatcherEvent e;
     e.window = windowBackend->window;
     e.type = MainDispatcherEvent::MOUSE_MOVE;
@@ -182,7 +217,10 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
     NSPoint pt = theEvent.locationInWindow;
     e.mmoveEvent.x = pt.x;
     e.mmoveEvent.y = sz.height - pt.y;
-    windowBackend->GetDispatcher()->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        windowBackend->GetDispatcher()->PostEvent(e);
+    }
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -226,7 +264,10 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         e.mwheelEvent.deltaY = deltaY * scrollK;
     }
 
-    windowBackend->GetDispatcher()->PostEvent(e);
+    if (!DeferredMouseMode(e))
+    {
+        windowBackend->GetDispatcher()->PostEvent(e);
+    }
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -248,9 +289,202 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
         for (NSUInteger i = 0; i < n; ++i)
         {
             e.keyEvent.key = [chars characterAtIndex:i];
-            windowBackend->GetDispatcher()->PostEvent(e);
+            if (!DeferredMouseMode(e))
+            {
+                windowBackend->GetDispatcher()->PostEvent(e);
+            }
         }
     }
+}
+
+void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
+{
+    if (uicaptureMode == eMouseMode::HIDE)
+    {
+        SetMouseVisibility(false);
+        deferredMouseMode = false;
+    }
+}
+
+void WindowNativeBridge::MouseExited(NSEvent* theEvent)
+{
+    if (uicaptureMode == eMouseMode::HIDE)
+    {
+        SetMouseVisibility(true);
+        deferredMouseMode = false;
+    }
+}
+
+void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
+{
+    uicaptureMode = newMode;
+    deferredMouseMode = false;
+    switch (newMode)
+    {
+    case DAVA::eMouseMode::FRAME:
+        //not implemented
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    case DAVA::eMouseMode::PINING:
+    {
+        if (hasFocus && !focusChanged)
+        {
+            SetMouseCaptured(true);
+            SetMouseVisibility(false);
+        }
+        else
+        {
+            deferredMouseMode = true;
+        }
+        break;
+    }
+    case DAVA::eMouseMode::OFF:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    }
+    case DAVA::eMouseMode::HIDE:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(false);
+        break;
+    }
+    }
+}
+
+void WindowNativeBridge::SetMouseVisibility(bool visible)
+{
+    if (mouseVisibled == visible)
+    {
+        return;
+    }
+    mouseVisibled = visible;
+    if (visible)
+    {
+        [[NSCursor arrowCursor] set];
+    }
+    else
+    {
+        [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
+    }
+}
+
+void WindowNativeBridge::SetMouseCaptured(bool capture)
+{
+    if (mouseCaptured == capture)
+    {
+        return;
+    }
+    mouseCaptured = capture;
+    if (capture)
+    {
+        // mouse capture
+        CGAssociateMouseAndMouseCursorPosition(false);
+        // set cursor in window center
+        NSRect windowRect = [nswindow frame];
+        NSRect screenRect = [[NSScreen mainScreen] frame];
+        // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
+        windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
+        float x = windowRect.origin.x + windowRect.size.width / 2.0f;
+        float y = windowRect.origin.y + windowRect.size.height / 2.0f;
+        CGWarpMouseCursorPosition(CGPointMake(x, y));
+    }
+    else
+    {
+        CGAssociateMouseAndMouseCursorPosition(true);
+    }
+}
+
+bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
+{
+    if (!hasFocus)
+    {
+        return true;
+    }
+    focusChanged = false;
+    if (deferredMouseMode)
+    {
+        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
+        {
+            deferredMouseMode = false;
+            SetMouseVisibility(false);
+            if (eMouseMode::PINING == uicaptureMode)
+            {
+                SetMouseCaptured(true);
+                skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+            }
+            return false;
+        }
+        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        {
+            // mouseUp event in work area, turn on mouse capture mode
+            bool mclickInRect = true;
+            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= windowBackend->GetWindow()->GetWidth());
+            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= windowBackend->GetWindow()->GetHeight());
+            if (mclickInRect && hasFocus)
+            {
+                deferredMouseMode = false;
+                SetMouseVisibility(false);
+                if (eMouseMode::PINING == uicaptureMode)
+                {
+                    SetMouseCaptured(true);
+                    skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+                }
+                // skip this event
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void* WindowNativeBridge::GetOrCreateBlankCursor()
+{
+    if (blankCursor != nullptr)
+    {
+        return blankCursor;
+    }
+
+    // Image data -> CGDataProviderRef
+    const size_t width = 1;
+    const size_t height = 1;
+    uint32 pixel = 0;
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(nullptr, &pixel, sizeof(pixel), nullptr);
+
+    // CGDataProviderRef -> CGImageRef
+    const size_t bitsPerComponent = 8;
+    const size_t bitsPerPixel = 32;
+    const size_t bytesPerRow = width * 4;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Host;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+    CGImageRef imageRef = CGImageCreate(width,
+                                        height,
+                                        bitsPerComponent,
+                                        bitsPerPixel,
+                                        bytesPerRow,
+                                        colorSpace,
+                                        bitmapInfo,
+                                        dataProvider,
+                                        nullptr,
+                                        false,
+                                        renderingIntent);
+
+    // CGImageRef -> NSImage
+    NSImage* img = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(width, height)];
+
+    // NSImage -> NSCursor
+    NSCursor* cursor = [[NSCursor alloc] initWithImage:img hotSpot:NSMakePoint(0, 0)];
+
+    CFRelease(dataProvider);
+    CFRelease(colorSpace);
+    CGImageRelease(imageRef);
+    [img release];
+
+    blankCursor = cursor;
+    return blankCursor;
 }
 
 } // namespace Private

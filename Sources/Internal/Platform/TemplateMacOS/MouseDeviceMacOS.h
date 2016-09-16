@@ -7,6 +7,8 @@
 
 #include "Input/MouseDevice.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 class MouseDeviceMacOS : public MouseDeviceInterface
@@ -41,6 +43,8 @@ private:
 };
 
 } //  namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif //  __DAVAENGINE_MACOS__
 

@@ -8,6 +8,8 @@
 #include "Input/InputSystem.h"
 #include "Platform/TemplateMacOS/MouseDeviceMacOS.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 namespace DAVA
 {
 MouseDeviceMacOS::~MouseDeviceMacOS()
@@ -143,5 +145,7 @@ void* MouseDeviceMacOS::GetOrCreateBlankCursor()
 }
 
 } //  namespace DAVA
+
+#endif // !defined(__DAVAENGINE_COREV2__)
 
 #endif // __DAVAENGINE_MACOS__

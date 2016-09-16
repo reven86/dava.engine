@@ -44,6 +44,8 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
+    void SetMouseMode(eMouseMode mode);
+
 private:
     void EventHandler(const UIDispatcherEvent& e);
 
