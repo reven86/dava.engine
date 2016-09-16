@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_ASSERT_H__
 #define __DAVAENGINE_ASSERT_H__
 
+#include <algorithm>
 #include "Base/BaseTypes.h"
 #include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
@@ -134,7 +135,7 @@ inline void DavaDebugBreak()
                                        "Callstack:\n" \
                                        "%s", \
                                        assertType, expr, msg, file, line, \
-                                       DAVA::Debug::GetBacktraceString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
+                                       DAVA::Debug::GetBacktraceString(backtrace.data(), std::min<size_t>(backtrace.size(), static_cast<size_t>(DVASSERT_UI_BACKTRACE_DEPTH))).c_str())
 #else //ENABLE_ASSERT_MESSAGE
 #define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
     false
