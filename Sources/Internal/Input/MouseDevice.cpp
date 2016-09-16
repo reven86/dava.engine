@@ -157,7 +157,7 @@ bool MouseDevice::SkipEvents(const UIEvent* event)
 #if defined(__DAVAENGINE_COREV2__)
             Size2f windowSize = Engine::Instance()->PrimaryWindow()->GetSize();
 #else
-            Vector2 windowSize_ = Core::Instance()->GetWindowSize();
+            Vector2 windowSize = Core::Instance()->GetWindowSize();
 #endif
             inRect &= (event->point.x >= 0.f && event->point.x <= windowSize.dx);
             inRect &= (event->point.y >= 0.f && event->point.y <= windowSize.dy);

@@ -284,8 +284,7 @@ public:
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool useClearPass);
 
-    void SetDefaultTapCountSettings();
-    void SetTapCountSettings(float32 time, float32 inch);
+    void SetDoubleTapSettings(float32 time, float32 inch);
 
     void UI3DViewAdded();
     void UI3DViewRemoved();
@@ -331,10 +330,16 @@ private:
     bool removeCurrentScreen = false;
 
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
-    float32 doubleClickRadiusSquared = 0.f;
+
     float32 doubleClickTime = 0.f;
-    const float32 defaultDoubleClickTime = 0.5f; // seconds
-    float32 defaultDoubleClickRadiusSquared = 0.f; // calculate in constructor
+#if !defined(__DAVAENGINE_COREV2__)
+    float32 doubleClickPhysSquare = 0.f;
+    float32 doubleClickRadiusSquared = 0.f;
+    float32 defaultDoubleClickRadiusSquared = 0.f;
+    float32 defaultDoubleClickTime = 0.5f;
+#else
+    float32 doubleClickInchSquare = 0.f;
+#endif
     struct LastClickData
     {
         uint32 touchId = 0;
