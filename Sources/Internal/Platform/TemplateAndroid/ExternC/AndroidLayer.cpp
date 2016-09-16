@@ -33,12 +33,12 @@ JavaVM* GetJVM()
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
+#include "UI/Private/Android/MovieViewControlAndroid.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
-#include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include <dirent.h>
 
 #include "Render/Renderer.h"

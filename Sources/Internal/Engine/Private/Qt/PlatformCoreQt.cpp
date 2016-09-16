@@ -4,11 +4,11 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Engine/Qt/NativeServiceQt.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
-#include "Engine/Public/Qt/NativeServiceQt.h"
-#include "Engine/Public/Qt/RenderWidget.h"
-#include "Engine/Public/Window.h"
+#include "Engine/Window.h"
 
 #include <QTimer>
 #include <QApplication>

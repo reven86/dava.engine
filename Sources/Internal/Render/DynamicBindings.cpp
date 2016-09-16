@@ -5,7 +5,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderBase.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

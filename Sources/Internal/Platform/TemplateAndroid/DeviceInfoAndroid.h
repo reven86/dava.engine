@@ -5,10 +5,10 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 #include "Platform/DeviceInfoPrivateBase.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {

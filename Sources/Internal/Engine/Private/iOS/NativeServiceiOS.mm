@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/iOS/NativeServiceiOS.h"
+#include "Engine/iOS/NativeServiceiOS.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 

@@ -2,7 +2,7 @@
 #define __FRAMEWORK__DATETIMEANDROID__
 
 #include "Base/BaseTypes.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 
 namespace DAVA
 {
