@@ -219,6 +219,9 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
             if (field->semantic && (stricmp(field->semantic, "COLOR") == 0 || stricmp(field->semantic, "COLOR0") == 0 || stricmp(field->semantic, "COLOR1") == 0))
                 tname = "vec4";
 
+            if (field->semantic && (stricmp(field->semantic, "POSITION") == 0))
+                tname = "vec4";
+
             m_writer.WriteLine(0, "attribute %s attr_%s;", tname, field->name);
         }
     }
