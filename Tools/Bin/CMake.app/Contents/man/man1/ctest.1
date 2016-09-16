@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CTEST" "1" "February 18, 2016" "3.5.0" "CMake"
+.TH "CTEST" "1" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 ctest \- CTest Command-Line Reference
 .
@@ -778,6 +778,20 @@ Command\-line options to the \fBCVSCommand\fP when updating the source.
 \fI\%CTest Script\fP variable: \fBCTEST_GIT_COMMAND\fP
 .IP \(bu 2
 \fBCTest\fP module variable: \fBGITCOMMAND\fP
+.UNINDENT
+.sp
+The source tree is updated by \fBgit fetch\fP followed by
+\fBgit reset \-\-hard\fP to the \fBFETCH_HEAD\fP\&.  The result is the same
+as \fBgit pull\fP except that any local moficiations are overwritten.
+Use \fBGITUpdateCustom\fP to specify a different approach.
+.TP
+.B \fBGITInitSubmodules\fP
+If set, CTest will update the repository\(aqs submodules before updating.
+.INDENT 7.0
+.IP \(bu 2
+\fI\%CTest Script\fP variable: \fBCTEST_GIT_INIT_SUBMODULES\fP
+.IP \(bu 2
+\fBCTest\fP module variable: \fBCTEST_GIT_INIT_SUBMODULES\fP
 .UNINDENT
 .TP
 .B \fBGITUpdateCustom\fP
