@@ -66,8 +66,8 @@
 #include "gmock/gmock-more-matchers.h"
 #include "gmock/internal/gmock-internal-utils.h"
 
-namespace testing
-{
+namespace testing {
+
 // Declares Google Mock flags that we want a user to use programmatically.
 GMOCK_DECLARE_bool_(catch_leaked_mocks);
 GMOCK_DECLARE_string_(verbose);
@@ -89,6 +89,6 @@ GTEST_API_ void InitGoogleMock(int* argc, char** argv);
 // UNICODE mode.
 GTEST_API_ void InitGoogleMock(int* argc, wchar_t** argv);
 
-} // namespace testing
+}  // namespace testing
 
-#endif // GMOCK_INCLUDE_GMOCK_GMOCK_H_
+#endif  // GMOCK_INCLUDE_GMOCK_GMOCK_H_
