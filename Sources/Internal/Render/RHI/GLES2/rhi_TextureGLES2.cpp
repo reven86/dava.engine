@@ -58,18 +58,28 @@ RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor)
 typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
-TextureGLES2_t::TextureGLES2_t()
-    : uid(0)
-    , uid2(0)
-    , fbo(0)
-    , width(0)
-    , height(0)
-    , isMapped(0)
-    , updatePending(0)
-    , isCubeMap(false)
-    , isRenderTarget(false)
-    , isRenderBuffer(false)
-    , forceSetSamplerState(true)
+TextureGLES2_t::TextureGLES2_t() //-V730 no need to init mapping info, format is initialized in create
+: uid(0)
+  ,
+  uid2(0)
+  ,
+  fbo(0)
+  ,
+  width(0)
+  ,
+  height(0)
+  ,
+  isMapped(0)
+  ,
+  updatePending(0)
+  ,
+  isCubeMap(false)
+  ,
+  isRenderTarget(false)
+  ,
+  isRenderBuffer(false)
+  ,
+  forceSetSamplerState(true)
 {
 }
 
@@ -766,7 +776,9 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     uint32 sampler_i = (base_i == DAVA::InvalidIndex) ? unit_i : base_i + unit_i;
     GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-    const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
+    const SamplerState::Descriptor::Sampler* sampler = nullptr;
+    if (_CurSamplerState)
+        sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
 
     if (uint32(_GLES2_LastActiveTexture) != GL_TEXTURE0 + sampler_i)
     {
@@ -783,7 +795,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         _GLES2_LastSetTex0Target = target;
     }
 
-    if (_CurSamplerState && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
+    if (sampler && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
     {
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMinMipFilterGLES2(TextureFilter(sampler->minFilter), TextureMipFilter(sampler->mipFilter))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));

@@ -167,7 +167,7 @@ private:
         FontTextureSize = 128
     };
 
-    bool _permanent_text_small;
+    bool _permanent_text_small = true;
 
     rhi::HPipelineState _ptc_pipeline_state;
     rhi::HConstBuffer _ptc_const;

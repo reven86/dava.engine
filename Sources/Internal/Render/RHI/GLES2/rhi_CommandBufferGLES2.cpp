@@ -918,6 +918,7 @@ gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
+    , usingDefaultFrameBuffer(true)
     , text(nullptr)
     ,
 #if RHI_GLES2__USE_CMDBUF_PACKING

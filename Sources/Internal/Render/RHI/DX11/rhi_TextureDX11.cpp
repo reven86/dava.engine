@@ -49,17 +49,26 @@ public:
     unsigned lastUnit;
 };
 
-TextureDX11_t::TextureDX11_t()
-    : width(0)
-    , height(0)
-    , arraySize(1)
-    , tex2d(nullptr)
-    , tex2d_copy(nullptr)
-    , tex2d_srv(nullptr)
-    , tex2d_dsv(nullptr)
-    , isMapped(false)
-    , cpuAccessRead(false)
-    , lastUnit(DAVA::InvalidIndex)
+TextureDX11_t::TextureDX11_t() //-V730 no need to init mapping info, format and miplevelcount is initialized in create
+: width(0)
+  ,
+  height(0)
+  ,
+  arraySize(1)
+  ,
+  tex2d(nullptr)
+  ,
+  tex2d_copy(nullptr)
+  ,
+  tex2d_srv(nullptr)
+  ,
+  tex2d_dsv(nullptr)
+  ,
+  isMapped(false)
+  ,
+  cpuAccessRead(false)
+  ,
+  lastUnit(DAVA::InvalidIndex)
 {
 }
 
