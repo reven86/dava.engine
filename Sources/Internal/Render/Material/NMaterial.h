@@ -169,8 +169,8 @@ public:
     const FastName& GetConfigName(uint32 index) const;
     void SetConfigName(uint32 index, const FastName& name);
     uint32 FindConfigByName(const FastName& name) const; //return size if config not found!
-    const DAVA::FastName& GetCurrentConfigName() const;
-    void SetCurrentConfigName(const DAVA::FastName& newName);
+    const FastName& GetCurrentConfigName() const;
+    void SetCurrentConfigName(const FastName& newName);
 
     void ReleaseConfigTextures(uint32 index);
 
@@ -184,7 +184,7 @@ public:
     // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
     void PreCacheFX();
     void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
-    void PreCacheFXVariations(const DAVA::Vector<FastName>& fxNames, const DAVA::Vector<FastName>& flags);
+    void PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags);
 
     static const float32 DEFAULT_LIGHTMAP_SIZE;
 

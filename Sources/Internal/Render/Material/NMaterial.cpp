@@ -569,12 +569,12 @@ uint32 NMaterial::GetConfigCount() const
     return static_cast<uint32>(materialConfigs.size());
 }
 
-const DAVA::FastName& NMaterial::GetCurrentConfigName() const
+const FastName& NMaterial::GetCurrentConfigName() const
 {
     return GetCurrentConfig().name;
 }
 
-void NMaterial::SetCurrentConfigName(const DAVA::FastName& newName)
+void NMaterial::SetCurrentConfigName(const FastName& newName)
 {
     GetMutableCurrentConfig().name = newName;
 }
@@ -601,7 +601,7 @@ void NMaterial::ReleaseConfigTextures(uint32 index)
         InvalidateTextureBindings();
 }
 
-const DAVA::FastName& NMaterial::GetConfigName(uint32 index) const
+const FastName& NMaterial::GetConfigName(uint32 index) const
 {
     return GetConfig(index).name;
 }
@@ -639,7 +639,7 @@ void NMaterial::RemoveConfig(uint32 index)
         InvalidateRenderVariants();
     }
 
-    currentConfig = DAVA::Min(currentConfig, static_cast<DAVA::uint32>(materialConfigs.size()) - 1);
+    currentConfig = Min(currentConfig, static_cast<uint32>(materialConfigs.size()) - 1);
 }
 
 void NMaterial::InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer)
@@ -717,16 +717,16 @@ void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, 
     FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
 }
 
-void NMaterial::PreCacheFXVariations(const DAVA::Vector<FastName>& fxNames, const DAVA::Vector<FastName>& flags)
+void NMaterial::PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags)
 {
-    DAVA::uint32 flagsCount = static_cast<DAVA::uint32>(flags.size());
-    DAVA::uint32 variations = 1u << flagsCount;
-    for (const DAVA::FastName& fxName : fxNames)
+    uint32 flagsCount = static_cast<uint32>(flags.size());
+    uint32 variations = 1u << flagsCount;
+    for (const FastName& fxName : fxNames)
     {
-        for (DAVA::uint32 i = 0; i < variations; ++i)
+        for (uint32 i = 0; i < variations; ++i)
         {
-            DAVA::HashMap<DAVA::FastName, int32> enabledFlags;
-            for (DAVA::uint32 f = 0; f < flagsCount; ++f)
+            HashMap<FastName, int32> enabledFlags;
+            for (uint32 f = 0; f < flagsCount; ++f)
             {
                 enabledFlags[flags[f]] = static_cast<int32>((i & (1 << f)) != 0);
             }
