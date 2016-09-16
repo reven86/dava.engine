@@ -66,7 +66,7 @@ public slots:
     void TabBarCloseRequest(int index);
     void TabBarCloseCurrentRequest();
     void TabBarDataDropped(const QMimeData* data);
-    void OnRenderWidgetResized(DAVA::int32 width, DAVA::int32 height);
+    void OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height);
 
     // scene signals
     void MouseOverSelectedEntities(SceneEditor2* scene, const SelectableGroup* objects);

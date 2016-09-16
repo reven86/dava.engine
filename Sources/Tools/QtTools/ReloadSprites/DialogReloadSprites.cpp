@@ -10,7 +10,6 @@
 #include "TextureCompression/TextureConverter.h"
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
-#include <QSettings>
 #include <QTimer>
 POP_QT_WARNING_SUPRESSOR
 

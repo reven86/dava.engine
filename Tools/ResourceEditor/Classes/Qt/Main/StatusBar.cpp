@@ -103,7 +103,7 @@ void StatusBar::UpdateByTimer()
     UpdateFPS();
 }
 
-void StatusBar::OnSceneGeometryChaged(DAVA::int32 width, DAVA::int32 height)
+void StatusBar::OnSceneGeometryChaged(DAVA::uint32 width, DAVA::uint32 height)
 {
     sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
 }

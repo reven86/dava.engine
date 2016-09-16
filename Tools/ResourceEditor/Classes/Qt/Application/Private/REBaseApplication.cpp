@@ -34,10 +34,6 @@ REBaseApplication::REBaseApplication()
 
 void REBaseApplication::OnLoopStarted()
 {
-    QApplication* app = engine.GetNativeService()->GetApplication();
-    app->setOrganizationName("DAVA");
-    app->setApplicationName("Resource Editor");
-
     config = new EditorConfig();
     settingsManager = new SettingsManager();
     sceneValidator = new SceneValidator();

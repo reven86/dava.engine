@@ -58,12 +58,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 #ifdef __DAVAENGINE_COREV2__
         // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
         // access Engine object after it has beem destroyed
-        IPackManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
-        pm = context->packManager;
+        IPackManager* pm = context->packManager;
 #else
         IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif

@@ -21,6 +21,7 @@
 #include <QShortcut>
 #include <QDebug>
 #include <QTimer>
+#include <QtGlobal>
 
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
@@ -432,7 +433,7 @@ void SceneTabWidget::SceneModifyStatusChanged(SceneEditor2* scene, bool modified
     }
 }
 
-void SceneTabWidget::OnRenderWidgetResized(DAVA::int32 width, DAVA::int32 height)
+void SceneTabWidget::OnRenderWidgetResized(DAVA::uint32 width, DAVA::uint32 height)
 {
     davaUIScreen->SetSize(DAVA::Vector2(width, height));
     dava3DView->SetSize(DAVA::Vector2(width - 2 * dava3DViewMargin, height - 2 * dava3DViewMargin));
@@ -467,10 +468,9 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
 
     if (curScene != nullptr)
     {
-        QList<QUrl> urls = data->urls();
-        for (int i = 0; i < urls.size(); ++i)
+        foreach (const QUrl& url, data->urls())
         {
-            QString path = urls[i].toLocalFile();
+            QString path = url.toLocalFile();
             if (QFileInfo(path).suffix() == "sc2")
             {
                 DAVA::Vector3 pos;

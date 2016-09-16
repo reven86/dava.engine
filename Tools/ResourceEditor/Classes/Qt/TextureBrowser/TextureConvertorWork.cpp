@@ -158,6 +158,12 @@ JobWatcher::JobWatcher(DAVA::JobManager* manager_)
     DVASSERT(manager != nullptr);
 }
 
+JobWatcher::~JobWatcher()
+{
+    DVASSERT(impl != nullptr);
+    impl->Deinit();
+}
+
 void JobWatcher::Init(const TJobFunction& convertFunction_, const TReadyCallback& readyCallback_)
 {
     convertFunction = convertFunction_;

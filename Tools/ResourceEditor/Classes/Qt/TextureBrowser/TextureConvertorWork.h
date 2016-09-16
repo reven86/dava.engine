@@ -55,6 +55,7 @@ public:
     using TReadyCallback = DAVA::Function<void(const TextureInfo&, const JobItem*)>;
 
     JobWatcher(DAVA::JobManager* manager);
+    ~JobWatcher();
 
     void Init(const TJobFunction& convertFunction, const TReadyCallback& readyCallback);
 
