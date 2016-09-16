@@ -11,7 +11,7 @@
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 
 #include "Project/Project.h"
-#include "QtTools/FileDialogs/FindFileInPackageDialog.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QClipboard>
@@ -114,7 +114,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
     connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
-    findInFilesAction = FindFileInPackageDialog::CreateFindInFilesAction(parent);
+    findInFilesAction = FindFileDialog::CreateFindInFilesAction(parent);
     connect(findInFilesAction, &QAction::triggered, this, &FileSystemDockWidget::FindInFiles);
     addAction(findInFilesAction);
 
@@ -157,7 +157,7 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
 
 void FileSystemDockWidget::FindInFiles()
 {
-    QString filePath = FindFileInPackageDialog::GetFilePath(projectStructure.get(), "yaml", parentWidget());
+    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", parentWidget());
     if (filePath.isEmpty())
     {
         return;

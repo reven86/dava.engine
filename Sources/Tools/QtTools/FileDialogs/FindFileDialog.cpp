@@ -1,5 +1,5 @@
-#include "QtTools/FileDialogs/FindFileInPackageDialog.h"
-#include "ui_FindFileInPackageDialog.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
+#include "ui_FindFileDialog.h"
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
@@ -14,24 +14,24 @@
 #include <QAbstractItemView>
 #include <QKeyEvent>
 
-QString FindFileInPackageDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
+QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
 {
     DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
     DVASSERT(!files.empty());
 
-    FindFileInPackageDialog dialog(files, parent, Qt::Popup);
+    FindFileDialog dialog(files, parent, Qt::Popup);
     if (dialog.exec() == QDialog::Accepted)
     {
         QString filePath = dialog.ui->lineEdit->text();
         QString absFilePath = dialog.prefix + filePath;
         QFileInfo fileInfo(absFilePath);
-        DVASSERT(fileInfo.isFile() && fileInfo.suffix() == QString::fromStdString(suffix));
+        DVASSERT(fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(suffix).toLower());
         return absFilePath;
     }
     return QString();
 }
 
-QAction* FindFileInPackageDialog::CreateFindInFilesAction(QWidget* parent)
+QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
 {
     QAction* findInFilesAction = new QAction(tr("Find file in project"), parent);
     findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
@@ -44,9 +44,9 @@ QAction* FindFileInPackageDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent, Qt::WindowFlags flags)
+FindFileDialog::FindFileDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)
-    , ui(new Ui::FindFileInPackageDialog())
+    , ui(new Ui::FindFileDialog())
 {
     ui->setupUi(this);
     ui->lineEdit->setFocus();
@@ -57,7 +57,7 @@ FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePa
     Init(files);
 }
 
-void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
+void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
 {
     //collect all items in short form
     QStringList stringsToDisplay;
@@ -65,7 +65,7 @@ void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
     for (const DAVA::FilePath& filePath : files)
     {
         QString absPath = QString::fromStdString(filePath.GetAbsolutePathname());
-        const int relPathSize(absPath.size() - prefixSize);
+        const int relPathSize = absPath.size() - prefixSize;
         stringsToDisplay << absPath.right(relPathSize);
     }
 
@@ -81,7 +81,7 @@ void FindFileInPackageDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
     ui->lineEdit->setCompleter(completer);
 }
 
-bool FindFileInPackageDialog::eventFilter(QObject* obj, QEvent* event)
+bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type() == QEvent::KeyPress)
     {

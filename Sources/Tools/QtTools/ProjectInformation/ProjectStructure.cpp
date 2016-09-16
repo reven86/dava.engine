@@ -67,7 +67,7 @@ ProjectStructure::Impl::Impl(const Vector<String>& supportedExtensions_)
     QObject::connect(&watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
     for (const String& extension : supportedExtensions_)
     {
-        supportedExtensions << QString::fromStdString(extension);
+        supportedExtensions << QString::fromStdString(extension).toLower();
     }
 }
 
@@ -101,7 +101,7 @@ Vector<FilePath> ProjectStructure::Impl::GetFiles(const String& extension) const
     QString extensionStr = QString::fromStdString(extension);
     for (const QFileInfo& fileInfo : projectFiles)
     {
-        if (fileInfo.suffix() == extensionStr)
+        if (fileInfo.suffix().toLower() == extensionStr.toLower())
         {
             files.push_back(fileInfo.absoluteFilePath().toStdString());
         }
@@ -172,7 +172,7 @@ void ProjectStructure::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
             watcher.addPath(absFilePath);
             watchedDirectories.append(absFilePath);
         }
-        if (fileInfo.isFile() && supportedExtensions.contains(fileInfo.suffix()))
+        if (fileInfo.isFile() && supportedExtensions.contains(fileInfo.suffix().toLower()))
         {
             projectFiles.insert(fileInfo);
         }
