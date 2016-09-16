@@ -150,7 +150,8 @@ public:
     int32 GetEffectiveFlagValue(const FastName& flagName);
 
     void SetParent(NMaterial* parent);
-    NMaterial* GetParent();
+    NMaterial* GetParent() const;
+    NMaterial* GetTopLevelParent() const;
     const Vector<NMaterial*>& GetChildren() const;
 
     inline uint32 GetRenderLayerID() const;
@@ -183,6 +184,7 @@ public:
     // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
     void PreCacheFX();
     void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
+    void PreCacheFXVariations(const DAVA::Vector<FastName>& fxNames, const DAVA::Vector<FastName>& flags);
 
     static const float32 DEFAULT_LIGHTMAP_SIZE;
 

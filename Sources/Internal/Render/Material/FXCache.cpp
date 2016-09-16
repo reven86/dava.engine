@@ -64,8 +64,7 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
         return defaultFX;
     }
 
-    Vector<int32> key;
-    ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
+    Vector<int32> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
 
     if (quality.IsValid()) //quality made as part of fx key
         key.push_back(quality.Index());

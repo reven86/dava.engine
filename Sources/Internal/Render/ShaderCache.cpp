@@ -21,6 +21,7 @@ namespace
 Map<Vector<int32>, ShaderDescriptor*> shaderDescriptors;
 Map<FastName, ShaderSourceCode> shaderSourceCodes;
 Mutex shaderCacheMutex;
+bool loadingNotifyEnabled = false;
 bool initialized = false;
 }
 
@@ -64,16 +65,26 @@ void ClearDynamicBindigs()
     }
 }
 
-void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines, Vector<int32>& key)
+Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines)
 {
-    key.clear();
+    Vector<int32> key;
     key.reserve(defines.size() * 2 + 1);
-    for (auto& define : defines)
+    for (const auto& define : defines)
     {
         key.push_back(define.first.Index());
         key.push_back(define.second);
     }
+
+    // sort defines
+    using DefinePair = std::pair<int32, int32>;
+    DefinePair* begin = reinterpret_cast<DefinePair*>(key.data());
+    DefinePair* end = begin + key.size() / 2;
+    std::sort(begin, end, [](const DefinePair& l, const DefinePair& r) {
+        return l.first < r.first;
+    });
+
     key.push_back(name.Index());
+    return key;
 }
 
 ShaderSourceCode LoadFromSource(const String& source)
@@ -161,19 +172,33 @@ ShaderSourceCode GetSourceCode(const FastName& name)
     }
 }
 
+void SetLoadingNotifyEnabled(bool enable)
+{
+    loadingNotifyEnabled = enable;
+}
+
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
 {
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
-    /*key*/
-    Vector<int32> key;
-    BuildFlagsKey(name, defines, key);
+    Vector<int32> key = BuildFlagsKey(name, defines);
 
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
+
+    if (loadingNotifyEnabled)
+    {
+        String flags;
+        flags.reserve(16 * defines.size());
+        for (const auto& define : defines)
+        {
+            flags += DAVA::Format("%s=%d;", define.first.c_str(), define.second);
+        }
+        DAVA::Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
+    }
 
     //not found - create new shader
     Vector<String> progDefines;

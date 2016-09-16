@@ -531,9 +531,19 @@ void NMaterial::SetParent(NMaterial* _parent)
     InvalidateRenderVariants();
 }
 
-NMaterial* NMaterial::GetParent()
+NMaterial* NMaterial::GetParent() const
 {
     return parent;
+}
+
+NMaterial* NMaterial::GetTopLevelParent() const
+{
+    NMaterial* result = GetParent();
+    while (result->GetParent() != nullptr)
+    {
+        result = result->GetParent();
+    }
+    return result;
 }
 
 const Vector<NMaterial*>& NMaterial::GetChildren() const
@@ -705,6 +715,24 @@ void NMaterial::PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, 
             flags[it.first] = it.second;
     }
     FXCache::GetFXDescriptor(extraFxName.IsValid() ? extraFxName : GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+}
+
+void NMaterial::PreCacheFXVariations(const DAVA::Vector<FastName>& fxNames, const DAVA::Vector<FastName>& flags)
+{
+    DAVA::uint32 flagsCount = static_cast<DAVA::uint32>(flags.size());
+    DAVA::uint32 variations = 1u << flagsCount;
+    for (const DAVA::FastName& fxName : fxNames)
+    {
+        for (DAVA::uint32 i = 0; i < variations; ++i)
+        {
+            DAVA::HashMap<DAVA::FastName, int32> enabledFlags;
+            for (DAVA::uint32 f = 0; f < flagsCount; ++f)
+            {
+                enabledFlags[flags[f]] = static_cast<int32>((i & (1 << f)) != 0);
+            }
+            PreCacheFXWithFlags(enabledFlags, fxName);
+        }
+    }
 }
 
 void NMaterial::RebuildRenderVariants()
