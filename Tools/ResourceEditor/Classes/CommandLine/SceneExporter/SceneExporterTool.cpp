@@ -221,7 +221,7 @@ bool SceneExporterTool::InitializeInternal()
 
 void SceneExporterTool::ProcessInternal()
 {
-    AssetCacheClient cacheClient(true);
+    AssetCacheClient cacheClient;
 
     SceneExporter::Params exportingParams;
     exportingParams.dataFolder = outFolder;

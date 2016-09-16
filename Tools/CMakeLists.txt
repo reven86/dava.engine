@@ -23,14 +23,17 @@ endmacro ()
 
 macro ( init_project )
 
-	message("Creating " ${PROJECT_NAME} )
+    message("Creating " ${PROJECT_NAME} )
 
-	set 	( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-	set     ( DAVA_USE_QT_WIDGETS true )
+    set     ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
+    set     ( DAVA_USE_QT_WIDGETS true )
     set     ( DAVA_USE_RENDERSTATS true )
-	set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
-	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+    set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     set     ( JOIN_PROJECT_NAME 1 )
+    set     ( DAVA_COREV2 1 )
+
+    add_definitions (-D__DAVAENGINE_COREV2__)
 
 	include ( CMake-common )
 

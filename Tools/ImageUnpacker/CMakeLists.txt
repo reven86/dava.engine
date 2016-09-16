@@ -6,12 +6,10 @@ set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_
 include               ( CMake-common )
 
 set ( DAVA_COREV2 1 )
-set ( DAVA_COMPONENTS "Sound")
-
 add_definitions ( -D__DAVAENGINE_COREV2__ 
                              -DCONSOLE)
 
-find_package          ( DavaFramework REQUIRED ${DAVA_COMPONENTS})
+find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )

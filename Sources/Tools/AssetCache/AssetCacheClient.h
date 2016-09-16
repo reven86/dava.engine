@@ -26,7 +26,7 @@ public:
                       )
     };
 
-    AssetCacheClient(bool emulateNetworkLoop);
+    AssetCacheClient();
     ~AssetCacheClient() override;
 
     AssetCache::Error ConnectSynchronously(const ConnectionParams& connectionParams);
@@ -41,11 +41,10 @@ public:
     bool IsConnected() const;
 
 private:
-    void ProcessNetwork();
-
     AssetCache::Error WaitRequest();
 
     AssetCache::Error CheckStatusSynchronously();
+    void PollNetworkIfSutable();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;
@@ -101,9 +100,6 @@ private:
     Request request;
 
     std::atomic<bool> isActive;
-    std::atomic<bool> isJobStarted;
-
-    bool emulateNetworkLoop = false;
 };
 
 inline uint64 AssetCacheClient::GetTimeoutMs() const

@@ -12,7 +12,7 @@
 #include "MaterialEditor/MaterialAssignSystem.h"
 
 #include "Platform/SystemTimer.h"
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>

@@ -1,5 +1,4 @@
-#ifndef __GAMECORE_H__
-#define __GAMECORE_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "TeamCityTestsOutput.h"
@@ -10,32 +9,29 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-#include <fstream>
+namespace DAVA
+{
+class Engine;
+}
 
-class GameCore : public ApplicationCore
+class GameCore
 {
 public:
-    GameCore();
+    GameCore(DAVA::Engine& e);
 
     static GameCore* Instance()
     {
-        return (GameCore*)DAVA::Core::GetApplicationCore();
+        return instance;
     };
 
-    void OnAppStarted() override;
-    void OnAppFinished() override;
+    void OnAppStarted();
+    void OnAppFinished();
 
-    void OnSuspend() override;
-    void OnResume() override;
-    
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    void OnBackground() override;
-    void OnForeground() override;
-    void OnDeviceLocked() override;
-#endif
+    void OnSuspend();
+    void OnResume();
 
-    void BeginFrame() override;
-    void EndFrame() override;
+    void BeginFrame();
+    void EndFrame();
 
     void Quit();
 
@@ -52,8 +48,7 @@ private:
 
     TeamcityPerformanceTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;
+
+    DAVA::Engine& engine;
+    static GameCore* instance;
 };
-
-
-
-#endif // __GAMECORE_H__

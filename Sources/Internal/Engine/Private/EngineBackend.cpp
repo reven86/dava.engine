@@ -620,6 +620,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
+    else
+    {
+        context->logger->EnableConsoleMode();
+    }
 }
 
 void EngineBackend::DestroySubsystems()

@@ -1,6 +1,6 @@
 #include "EditorSystems/CursorSystem.h"
 #include <QApplication>
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"

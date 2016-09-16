@@ -1,4 +1,4 @@
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "EditorCore.h"
 
 DAVA::KeyedArchive* CreateOptions()

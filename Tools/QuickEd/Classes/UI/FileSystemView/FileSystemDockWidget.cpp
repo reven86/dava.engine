@@ -20,6 +20,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
 #include "Project/Project.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
@@ -293,7 +294,7 @@ void FileSystemDockWidget::onDeleteFile()
 void FileSystemDockWidget::OnShowInExplorer()
 {
     auto pathIn = GetPathByCurrentPos(AnyPath);
-    ShowFileInExplorer(pathIn);
+    QtHelpers::ShowInOSFileManager(pathIn);
 }
 
 void FileSystemDockWidget::OnRename()

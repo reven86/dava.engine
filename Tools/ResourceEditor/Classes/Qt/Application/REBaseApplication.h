@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 #ifdef __DAVAENGINE_BEAST__
 class BeastProxyImpl;

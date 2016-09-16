@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"

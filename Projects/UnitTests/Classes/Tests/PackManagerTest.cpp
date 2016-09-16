@@ -8,6 +8,7 @@
 #include <Concurrency/Thread.h>
 
 #include "UnitTests/UnitTests.h"
+#include "Engine/Engine.h"
 
 class GameClient
 {
@@ -83,7 +84,11 @@ DAVA_TESTCLASS (PackManagerTest)
             throw std::runtime_error("unknown gpu family");
         }
 
+#if defined(__DAVAENGINE_COREV2__)
+        IPackManager& packManager = *Engine::Instance()->GetContext()->packManager;
+#else
         IPackManager& packManager = Core::Instance()->GetPackManager();
+#endif
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 

@@ -87,12 +87,6 @@ if (ANDROID AND DAVA_COREV2)
 endif()
 
 setup_main_executable()
-if (DAVA_COREV2 AND NOT DAVA_PLATFORM_QT)
-    if (WIN32)
-        set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-    endif()
-endif()
-
 convert_graphics()
 
 if (IOS)

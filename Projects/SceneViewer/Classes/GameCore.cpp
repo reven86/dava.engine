@@ -2,6 +2,8 @@
 #include "SelectSceneScreen.h"
 #include "ViewSceneScreen.h"
 
+#include "Engine/Engine.h"
+
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/dbg_Draw.h"
 #include "Render/RHI/Common/dbg_StatSet.h"
@@ -11,17 +13,30 @@
 
 using namespace DAVA;
 
-GameCore::GameCore()
+GameCore::GameCore(Engine& e)
+    : engine(e)
 {
+    DVASSERT(instance == nullptr);
+    instance = this;
+
     selectSceneScreen = NULL;
     viewSceneScreen = NULL;
-}
 
-GameCore::~GameCore()
-{
+    engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.suspended.Connect(this, &GameCore::OnSuspend);
+    engine.resumed.Connect(this, &GameCore::OnResume);
+    engine.beginFrame.Connect(this, &GameCore::BeginFrame);
+    engine.draw.Connect(this, &GameCore::Draw);
+    engine.endFrame.Connect(this, &GameCore::EndFrame);
 }
 
 void GameCore::OnAppStarted()
+{
+}
+
+void GameCore::OnWindowCreated(DAVA::Window& /*w*/)
 {
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
@@ -82,33 +97,11 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnSuspend()
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
 }
 
 void GameCore::OnResume()
 {
-    ApplicationCore::OnResume();
 }
-
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-void GameCore::OnDeviceLocked()
-{
-    Core::Instance()->Quit();
-}
-
-void GameCore::OnBackground()
-{
-}
-
-void GameCore::OnForeground()
-{
-    ApplicationCore::OnForeground();
-}
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
 void GameCore::BeginFrame()
 {
@@ -155,11 +148,9 @@ void GameCore::BeginFrame()
         rhi::SetFramePerfQuerySet(perfQuerySet);
         perfQuerySetFired = true;
     }
-
-    ApplicationCore::BeginFrame();
 }
 
-void GameCore::EndFrame()
+void GameCore::Draw()
 {
 #if 0
     rhi::RenderPassConfig pass_desc;
@@ -181,7 +172,10 @@ void GameCore::EndFrame()
     rhi::EndPacketList(pl);
     rhi::EndRenderPass(pass);
 #endif
-    ApplicationCore::EndFrame();
+}
+
+void GameCore::EndFrame()
+{
 #if 0
     // stats must be obtained and reset AFTER frame is finished (and Present called)
 
@@ -218,4 +212,78 @@ void GameCore::EndFrame()
 
     StatSet::ResetAll();
 #endif
+}
+
+GameCore* GameCore::instance = nullptr;
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+KeyedArchive* CreateOptions()
+{
+    KeyedArchive* appOptions = new KeyedArchive();
+    const uint32 defaultWidth = 1024;
+    const uint32 defaultHeight = 768;
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    //appOptions->SetInt32("renderer", rhi::RHI_METAL);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+    appOptions->SetInt32("width", defaultWidth);
+    appOptions->SetInt32("height", defaultHeight);
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("width", DeviceInfo::GetScreenInfo().width);
+    appOptions->SetInt32("height", DeviceInfo::GetScreenInfo().height);
+
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetString(String("title"), String("Scene Viewer"));
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+
+#else
+#if defined(__DAVAENGINE_WIN32__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    //appOptions->SetInt32("renderer", rhi::RHI_DX9);
+    //appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+#elif defined(__DAVAENGINE_MACOS__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+    appOptions->SetInt32("width", defaultWidth);
+    appOptions->SetInt32("height", defaultHeight);
+
+    //appOptions->SetInt("fullscreen.width",	1280);
+    //appOptions->SetInt("fullscreen.height", 800);
+
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetString(String("title"), String("Scene Viewer"));
+#endif
+
+    return appOptions;
+}
+
+int GameMain(DAVA::Vector<DAVA::String> cmdline)
+{
+    Vector<String> modules =
+    {
+      "JobManager",
+      "NetCore",
+      "LocalizationSystem",
+      "SoundSystem",
+      "DownloadManager",
+    };
+    DAVA::Engine e;
+    {
+        ScopedPtr<KeyedArchive> options(CreateOptions());
+        e.SetOptions(options);
+    }
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules);
+
+    GameCore core(e);
+    return e.Run();
 }

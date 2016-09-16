@@ -80,8 +80,8 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Engine.h"
+#include "Engine/Qt/RenderWidget.h"
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"

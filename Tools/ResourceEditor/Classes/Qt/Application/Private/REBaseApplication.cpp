@@ -9,13 +9,13 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
-#include "QtTools/RunGuard/RunGuard.h"
+#include "QtHelpers/RunGuard.h"
 
 #include "TextureCompression/PVRConverter.h"
 #include "Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/NativeService.h"
-#include "Engine/Public/EngineContext.h"
+#include "Engine/Engine.h"
+#include "Engine/NativeService.h"
+#include "Engine/EngineContext.h"
 
 #include "Core/PerformanceSettings.h"
 
@@ -143,7 +143,7 @@ int REBaseApplication::Run()
 
         const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
         const QString appUidPath = QCryptographicHash::hash((appUid + appFileInfo.absoluteDir().absolutePath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-        RunGuard runGuard(appUidPath);
+        QtHelpers::RunGuard runGuard(appUidPath);
         if (!runGuard.tryToRun())
             return 0;
     }

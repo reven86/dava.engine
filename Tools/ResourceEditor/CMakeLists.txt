@@ -42,12 +42,12 @@ endif()
 
 set ( DAVA_COREV2 1 )
 set ( DAVA_PLATFORM_QT 1 )
-set ( DAVA_COMPONENTS "Sound")
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
 
 find_package( QT5 REQUIRED)
-find_package( DavaFramework REQUIRED ${DAVA_COMPONENTS})
-find_package( DavaTools  REQUIRED )
+find_package( DavaFramework REQUIRED )
+find_package( DavaTools REQUIRED )
+find_package( QtHelpers REQUIRED )
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )

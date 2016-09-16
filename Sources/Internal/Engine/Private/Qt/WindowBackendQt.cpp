@@ -6,7 +6,7 @@
 
 #include "Engine/Window.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"

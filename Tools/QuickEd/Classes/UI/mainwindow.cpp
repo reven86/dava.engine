@@ -4,7 +4,7 @@
 #include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 
 #include "Helpers/ResourcesManageHelper.h"
 

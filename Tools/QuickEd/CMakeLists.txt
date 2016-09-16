@@ -10,7 +10,6 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-set                   ( DAVA_COMPONENTS "Sound")
 
 include               ( CMake-common )
 
@@ -35,12 +34,12 @@ add_definitions       (
  
 set ( DAVA_COREV2 1 )
 set ( DAVA_PLATFORM_QT 1 )
-set ( DAVA_COMPONENTS "Sound")
 set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
  
 find_package( QT5 REQUIRED)
-find_package( DavaFramework REQUIRED ${DAVA_COMPONENTS})
-find_package( DavaTools  REQUIRED )
+find_package( DavaFramework REQUIRED )
+find_package( DavaTools REQUIRED )
+find_package( QtHelpers REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

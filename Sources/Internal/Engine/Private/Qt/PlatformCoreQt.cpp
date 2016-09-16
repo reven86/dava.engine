@@ -8,7 +8,7 @@
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
-#include "Engine/Public/Window.h"
+#include "Engine/Window.h"
 
 #include <QTimer>
 #include <QApplication>

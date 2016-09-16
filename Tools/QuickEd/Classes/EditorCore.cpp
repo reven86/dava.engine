@@ -1,9 +1,9 @@
 #include "EditorCore.h"
 
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/EngineContext.h"
-#include "Engine/Public/Qt/RenderWidget.h"
-#include "Engine/Public/NativeService.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Qt/RenderWidget.h"
+#include "Engine/NativeService.h"
 
 #include "Logger/Logger.h"
 #include "Particles/ParticleEmitter.h"
@@ -433,7 +433,7 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
 void EditorCore::EnableCacheClient()
 {
     DisableCacheClient();
-    cacheClient.reset(new AssetCacheClient(true));
+    cacheClient.reset(new AssetCacheClient());
     AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
     if (connected != AssetCache::Error::NO_ERRORS)
     {

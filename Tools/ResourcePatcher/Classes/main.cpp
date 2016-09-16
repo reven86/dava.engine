@@ -1,15 +1,10 @@
+#include "Engine/Engine.h"
 #include "DLC/Patcher/PatchFile.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/VariantType.h"
 #include "CommandLine/ProgramOptions.h"
 
-void FrameworkDidLaunched()
-{
-}
-
-void FrameworkWillTerminate()
-{
-}
+using namespace DAVA;
 
 void PrintError(DAVA::PatchFileReader::PatchError error)
 {
@@ -61,7 +56,7 @@ int DoPatch(DAVA::PatchFileReader* reader, const DAVA::FilePath& origBase, const
     return ret;
 }
 
-int main(int argc, char* argv[])
+int Process(Engine& e)
 {
     int ret = 0;
 
@@ -96,20 +91,21 @@ int main(int argc, char* argv[])
     applyAllOptions.AddOption("-t", DAVA::VariantType(false), "Truncate patch file, when applying it.");
     applyAllOptions.AddOption("-v", DAVA::VariantType(false), "Verbose output.");
 
-    new DAVA::FileSystem;
+    FileSystem* fileSystem = e.GetContext()->fileSystem;
 
-    DAVA::FileSystem::Instance()->SetDefaultDocumentsDirectory();
-    DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
+    fileSystem->SetDefaultDocumentsDirectory();
+    fileSystem->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
+    const Vector<String>& cmdLine = e.GetCommandLine();
 
     bool paramsOk = false;
-    if (argc > 1)
+    if (cmdLine.size() > 1)
     {
         //DAVA::String command = DAVA::CommandLineParser::Instance()->GetCommand(0);
 
-        const char* command = argv[1];
+        const String& command = cmdLine[1];
         if (command == writeOptions.GetCommand())
         {
-            paramsOk = writeOptions.Parse(argc, argv);
+            paramsOk = writeOptions.Parse(cmdLine);
             if (paramsOk)
             {
                 DAVA::PatchFileWriter::WriterMode writeMode = DAVA::PatchFileWriter::WRITE;
@@ -158,7 +154,7 @@ int main(int argc, char* argv[])
         }
         else if (command == listOptions.GetCommand())
         {
-            paramsOk = listOptions.Parse(argc, argv);
+            paramsOk = listOptions.Parse(cmdLine);
             if (paramsOk)
             {
                 DAVA::uint32 index = 0;
@@ -205,7 +201,7 @@ int main(int argc, char* argv[])
         }
         else if (command == applyOptions.GetCommand())
         {
-            paramsOk = applyOptions.Parse(argc, argv);
+            paramsOk = applyOptions.Parse(cmdLine);
             if (paramsOk)
             {
                 DAVA::uint32 indexToApply = 0;
@@ -284,7 +280,7 @@ int main(int argc, char* argv[])
         }
         else if (command == applyAllOptions.GetCommand())
         {
-            paramsOk = applyAllOptions.Parse(argc, argv);
+            paramsOk = applyAllOptions.Parse(cmdLine);
             if (paramsOk)
             {
                 DAVA::FilePath patchPath = applyAllOptions.GetArgument("PatchFile");
@@ -359,6 +355,17 @@ int main(int argc, char* argv[])
         printf("%s\n\n", applyAllOptions.GetUsageString().c_str());
     }
 
-    DAVA::FileSystem::Instance()->Release();
     return ret;
+}
+
+int GameMain(Vector<String> cmdLine)
+{
+    Engine e;
+    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    e.update.Connect([&e](float32)
+                     {
+                         int retCode = Process(e);
+                         e.Quit(retCode);
+                     });
+    return e.Run();
 }
