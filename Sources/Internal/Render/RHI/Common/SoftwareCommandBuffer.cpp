@@ -8,7 +8,6 @@ void SoftwareCommandBuffer::Begin()
     curUsedSize = 0;
 }
 
-
 void SoftwareCommandBuffer::End()
 {
 }
@@ -17,7 +16,6 @@ void SoftwareCommandBufferUnpacked::Begin()
 {
     _cmd.clear();
 }
-
 
 void SoftwareCommandBufferUnpacked::End()
 {
@@ -28,7 +26,6 @@ void SoftwareCommandBufferUnpacked::Command(uint64 cmd)
 {
     _cmd.push_back(cmd);
 }
-
 
 void SoftwareCommandBufferUnpacked::Command(uint64 cmd, uint64 arg1)
 {

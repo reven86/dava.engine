@@ -90,8 +90,6 @@ static IDirect3DIndexBuffer9* _DX9_SequentialIB()
     return ib;
 }
 
-
-
 class
 RenderPassDX9_t
 {
@@ -128,7 +126,6 @@ typedef ResourcePool<SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descript
 RHI_IMPL_POOL(CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false);
 RHI_IMPL_POOL(RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX9_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
-
 
 static Handle
 dx9_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
@@ -419,7 +416,6 @@ CommandBufferDX9_t::CommandBufferDX9_t()
     , sync(InvalidHandle)
 {
 }
-
 
 void CommandBufferDX9_t::Execute()
 {

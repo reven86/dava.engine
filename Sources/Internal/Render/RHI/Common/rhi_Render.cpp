@@ -13,7 +13,6 @@
 
 namespace rhi
 {
-
 static Handle CurFramePerfQuerySet = InvalidHandle;
 
 struct PacketList_t
@@ -345,7 +344,6 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 
 /**/
 
-
 void Present()
 {
     RenderLoop::Present();
@@ -396,7 +394,5 @@ void Uninitialize()
 {
     RenderLoop::UninitializeRenderLoop();
 }
-
-
 
 } //namespace rhi

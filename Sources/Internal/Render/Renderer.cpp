@@ -30,7 +30,6 @@ RenderStats stats;
 rhi::ResetParam resetParams;
 }
 
-
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!initialized);

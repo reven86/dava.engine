@@ -1640,8 +1640,6 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PresntBuffer = &dx11_PresentBuffer;
     dispatch->impl_FinishFrame = &dx11_EndFrame;
 }
-
-
 }
 
 //==============================================================================

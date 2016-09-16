@@ -27,7 +27,4 @@ void InitTextreSetPool(uint32 maxCount)
     TextureSetPool::Reserve(maxCount);
 }
 }
-
-
-
 }

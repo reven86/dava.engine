@@ -653,8 +653,6 @@ void HandleDeviceLost()
     //     }
 }
 
-
-
 void init_device_and_swapchain_uap(void* panel)
 {
     using ::Windows::UI::Xaml::Controls::SwapChainPanel;
