@@ -54,23 +54,10 @@ bool Vector2PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variantType;
-
-    QStringList tokens = editor->text().split("; ", QString::SkipEmptyParts);
-    if (tokens.length() == 1) // try to split by space
-    {
-        tokens = editor->text().split(" ", QString::SkipEmptyParts);
-    }
-
-    Vector2 val;
-    int count = Min(tokens.size(), 2);
-    for (int i = 0; i < count; i++)
-    {
-        val.data[i] = tokens[i].toFloat();
-    }
+    Vector2 vector = StringToVector<Vector2>(editor->text());
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(VariantType(val));
+    variant.setValue<DAVA::VariantType>(VariantType(vector));
 
     return model->setData(index, variant, Qt::EditRole);
 }
