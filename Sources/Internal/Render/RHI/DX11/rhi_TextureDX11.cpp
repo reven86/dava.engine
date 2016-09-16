@@ -137,7 +137,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     desc2d.SampleDesc.Count = desc.sampleCount;
     desc2d.SampleDesc.Quality = 0;
     desc2d.Usage = D3D11_USAGE_DEFAULT;
-    desc2d.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc2d.BindFlags = (desc.sampleCount > 1) ? D3D11_BIND_RENDER_TARGET : D3D11_BIND_SHADER_RESOURCE;
     desc2d.CPUAccessFlags = 0; //D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags = 0;
 
@@ -157,6 +157,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
     if (desc.isRenderTarget)
     {
+        need_srv = (desc.sampleCount == 1);
         desc2d.BindFlags |= D3D11_BIND_RENDER_TARGET;
         desc2d.MipLevels = 1;
     }
@@ -518,7 +519,7 @@ void SetupDispatch(Dispatch* dispatch)
 void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
-
+    DVASSERT(self->tex2d_srv != nullptr);
     context->PSSetShaderResources(unit_i, 1, &(self->tex2d_srv));
     self->lastUnit = unit_i;
 }
@@ -526,7 +527,7 @@ void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
 void SetToRHIVertex(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
-
+    DVASSERT(self->tex2d_srv != nullptr);
     context->VSSetShaderResources(unit_i, 1, &(self->tex2d_srv));
 }
 
@@ -565,9 +566,7 @@ void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context)
     TextureDX11_t* fromTexture = TextureDX11Pool::Get(from);
     DVASSERT(fromTexture != nullptr);
 
-    ID3D11Resource* fromResource = nullptr;
-    fromTexture->tex2d_srv->GetResource(&fromResource);
-
+    ID3D11Resource* fromResource = fromTexture->tex2d;
     DXGI_FORMAT fromFormat = DX11_TextureFormat(fromTexture->descriptor.format);
 
     ID3D11Resource* toResource = nullptr;
