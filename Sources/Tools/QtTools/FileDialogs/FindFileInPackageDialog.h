@@ -27,7 +27,7 @@ public:
     static QAction* CreateFindInFilesAction(QWidget* parent);
 
 private:
-    explicit FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent = nullptr);
+    explicit FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
     void Init(const DAVA::Vector<DAVA::FilePath>& files);
 

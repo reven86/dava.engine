@@ -19,7 +19,7 @@ QString FindFileInPackageDialog::GetFilePath(const ProjectStructure* projectStru
     DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
     DVASSERT(!files.empty());
 
-    FindFileInPackageDialog dialog(files, parent);
+    FindFileInPackageDialog dialog(files, parent, Qt::Popup);
     if (dialog.exec() == QDialog::Accepted)
     {
         QString filePath = dialog.ui->lineEdit->text();
@@ -44,8 +44,8 @@ QAction* FindFileInPackageDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent)
-    : QDialog(parent)
+FindFileInPackageDialog::FindFileInPackageDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent, Qt::WindowFlags flags)
+    : QDialog(parent, flags)
     , ui(new Ui::FindFileInPackageDialog())
 {
     ui->setupUi(this);
