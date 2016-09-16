@@ -394,16 +394,15 @@ Rect RenderSystem2D::TransformClipRect(const Rect& rect, const Matrix4& transfor
     Vector3 clipBottomRightCorner(rect.x + rect.dx, rect.y + rect.dy, 0.f);
     clipTopLeftCorner = clipTopLeftCorner * transformMatrix;
     clipBottomRightCorner = clipBottomRightCorner * transformMatrix;
-    Rect resRect = Rect(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
-    if (resRect.x < 0.f)
+    if (clipTopLeftCorner.x < 0.f)
     {
-        resRect.x = 0;
+        clipTopLeftCorner.x = 0;
     }
-    if (resRect.y < 0.f)
+    if (clipTopLeftCorner.y < 0.f)
     {
-        resRect.y = 0;
+        clipTopLeftCorner.y = 0;
     }
-    return resRect;
+    return Rect(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)
@@ -480,6 +479,8 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
         const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
+        if (transformedClipRect.dx <= 0.f || transformedClipRect.dy <= 0.f)
+            return;
         packet.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
         packet.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
         packet.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
@@ -706,18 +707,18 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
 
+        currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
             const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = static_cast<int16>(floorf(transformedClipRect.x));
-            currentPacket.scissorRect.y = static_cast<int16>(floorf(transformedClipRect.y));
-            currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
-            currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
-            currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
-        }
-        else
-        {
-            currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
+            if (transformedClipRect.dx > 0.f || transformedClipRect.dy > 0.f)
+            {
+                currentPacket.scissorRect.x = static_cast<int16>(floorf(transformedClipRect.x));
+                currentPacket.scissorRect.y = static_cast<int16>(floorf(transformedClipRect.y));
+                currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
+                currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
+                currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
+            }
         }
         lastClip = currentClip;
 

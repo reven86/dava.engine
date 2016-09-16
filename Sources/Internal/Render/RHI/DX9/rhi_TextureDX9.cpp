@@ -62,10 +62,12 @@ D3DCUBEMAP_FACES textureFaceToD3DFace[] =
   D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z
 };
 
-TextureDX9_t::TextureDX9_t()
-    : isMapped(0)
-    , isRenderTarget(0)
-    , isDepthStencil(0)
+TextureDX9_t::TextureDX9_t() //-V730 format is initialized in create
+: isMapped(0)
+  ,
+  isRenderTarget(0)
+  ,
+  isDepthStencil(0)
 {
 }
 
