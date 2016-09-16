@@ -1,6 +1,7 @@
 #include "_dx11.h"
 #include "rhi_DX11.h"
 #include "../rhi_Public.h"
+#include "../Common/rhi_Utils.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 

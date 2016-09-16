@@ -2,6 +2,7 @@
 
 namespace rhi
 {
+const uint64 SoftwareCommandBufferUnpacked::EndCmd = 0xFFFFFFFF;
 void SoftwareCommandBuffer::Begin()
 {
     curUsedSize = 0;

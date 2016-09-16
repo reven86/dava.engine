@@ -14,6 +14,7 @@ using DAVA::Logger;
 #include <vector>
 #include "../Common/rhi_CommonImpl.h"
 #include "../Common/RenderLoop.h"
+#include "../Common/FrameLoop.h"
 
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
@@ -35,32 +36,28 @@ static DAVA::Mutex resetParamsSync;
 
 //------------------------------------------------------------------------------
 
-static Api
-dx11_HostApi()
+static Api dx11_HostApi()
 {
     return RHI_DX11;
 }
 
 //------------------------------------------------------------------------------
 
-static const RenderDeviceCaps&
-dx11_DeviceCaps()
+static const RenderDeviceCaps& dx11_DeviceCaps()
 {
     return _DeviceCapsDX11;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_NeedRestoreResources()
+static bool dx11_NeedRestoreResources()
 {
     return false;
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_TextureFormatSupported(TextureFormat format)
+static bool dx11_TextureFormatSupported(TextureFormat format)
 {
     bool supported = false;
 
@@ -84,8 +81,7 @@ dx11_TextureFormatSupported(TextureFormat format)
 
 //------------------------------------------------------------------------------
 
-static bool
-_IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
+static bool _IsValidIntelCardDX11(unsigned vendor_id, unsigned device_id)
 {
     return ((vendor_id == 0x8086) && // Intel Architecture
 
@@ -171,7 +167,6 @@ static void dx11_Reset(const ResetParam& param)
 static void dx11_SuspendRendering()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    //HACK, if seen on review please tell me
     FrameLoop::RejectFrames();
 
     IDXGIDevice3* dxgiDevice3 = NULL;
