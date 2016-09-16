@@ -223,6 +223,11 @@ bool DeviceInfoPrivate::IsTouchPresented()
 {
     return false;
 }
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return "Not supported";
+}
 }
 
 #endif

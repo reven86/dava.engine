@@ -1,9 +1,6 @@
-#include "Engine/Public/UWP/NativeServiceUWP.h"
+#include "Engine/UWP/NativeServiceUWP.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-
-#include "Engine/Public/UWP/WindowNativeServiceUWP.h"
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/UWP/PlatformCoreUWP.h"

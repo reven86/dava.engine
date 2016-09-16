@@ -40,6 +40,8 @@ macro( setup_main_executable )
 include      ( PlatformSettings )
 
 load_property( PROPERTY_LIST 
+        DEFINITIONS                
+        DEFINITIONS_${DAVA_PLATFORM_CURENT}
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -57,12 +59,26 @@ load_property( PROPERTY_LIST
         INCLUDES_${DAVA_PLATFORM_CURENT}
     )
 
+if( COVERAGE )
+    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+endif()
+
 if( INCLUDES )
     include_directories( ${INCLUDES})
 endif()
 
 if( INCLUDES_${DAVA_PLATFORM_CURENT} )
     include_directories( ${INCLUDES_${DAVA_PLATFORM_CURENT}} )
+endif()
+
+if( DEFINITIONS )
+   add_definitions( ${DEFINITIONS} )
+endif()
+
+if( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+    add_definitions( ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ) 
 endif()
 
 add_definitions( -DDAVA_ENGINE_EXPORTS ) 
@@ -450,12 +466,25 @@ if ( QT5_FOUND )
 
 endif()
 
-
 if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
     set( ANDROID_TARGET_SDK_VERSION  ${ANDROID_TARGET_API_LEVEL} )
+
+    if (DAVA_COREV2)
+        # In core v2 application should specify under meta-data tag in AndroidManifest.xml which library modules should be
+        # loaded and which classes should be instantiated at startup
+        # ANDROID_BOOT_MODULES variable should contain semicolon delimited list of library names
+        # ANDROID_BOOT_CLASSES variable should contain semicolon delimited list of class names
+        # Both ANDROID_BOOT_MODULES and ANDROID_BOOT_CLASSES are not required to be set in CMakeLists.txt
+        if (ANDROID_BOOT_MODULES)
+            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"boot_modules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
+        endif()
+        if (ANDROID_BOOT_CLASSES)
+            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"boot_classes\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
+        endif()
+    endif()
 
     if (DAVA_COREV2)
         configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AndroidManifest_v2.in

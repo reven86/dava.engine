@@ -4,9 +4,15 @@
 
 namespace DAVA
 {
-WebViewControl::WebViewControl(UIWebView&)
+#if defined(__DAVAENGINE_COREV2__)
+WebViewControl::WebViewControl(Window* /*w*/, UIWebView* /*uiWebView*/)
 {
 }
+#else
+WebViewControl::WebViewControl(UIWebView*)
+{
+}
+#endif
 
 void WebViewControl::Initialize(const Rect&)
 {

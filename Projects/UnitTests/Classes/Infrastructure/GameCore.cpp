@@ -240,56 +240,88 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
 }
 
+void GameCore::ProcessTestCoverage()
+{
+#if defined(TEST_COVERAGE)
+    // Output test coverage for sample
+    Map<String, DAVA::UnitTests::TestCoverageInfo> map = UnitTests::TestCore::Instance()->GetTestCoverage();
+    Logger::Info("Test coverage");
+
+    for (const auto& x : map)
+    {
+        Logger::Info("  %s:", x.first.c_str());
+        const Vector<String>& v = x.second.testFiles;
+        for (const String& s : v)
+        {
+            Logger::Info("        %s", s.c_str());
+        }
+    }
+
+    RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
+    DVASSERT(coverageFile);
+
+    auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
+
+    toJson("{ \n");
+    
+#if defined(DAVA_UNITY_FOLDER)
+    toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
+#endif
+
+    toJson("    \"Coverage\":  {\n");
+
+    for (const auto& x : map)
+    {
+        toJson("         \"" + x.first + "\": \"");
+
+        const Vector<String>& v = x.second.testFiles;
+        for (const String& s : v)
+        {
+            toJson(s + (&s != &*v.rbegin() ? " " : ""));
+        }
+
+        toJson(x.first != map.rbegin()->first ? "\",\n" : "\"\n");
+    }
+
+    toJson("     },\n");
+
+    toJson("    \"CoverageFolders\":  {\n");
+
+    for (const auto& x : map)
+    {
+        const Vector<String>& v = x.second.testFiles;
+        for (const String& s : v)
+        {
+            toJson("         \"" + s + "\": \"");
+
+            auto mapTargetFolders = x.second.targetFolders;
+            auto it = mapTargetFolders.find(s);
+            String strPast;
+            if (it != mapTargetFolders.end())
+            {
+                strPast = it->second;
+            }
+            else
+            {
+                strPast = mapTargetFolders.find("all")->second;
+            }
+            toJson(strPast);
+            toJson(x.first != map.rbegin()->first || s != *v.rbegin() ? "\",\n" : "\"\n");
+        }
+    }
+
+    toJson("     }\n");
+
+    toJson("}\n");
+    
+#endif // TEST_COVERAGE
+}
+
 void GameCore::ProcessTests(float32 timeElapsed)
 {
     if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
     {
-        // Output test coverage for sample
-        Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
-        Logger::Info("Test coverage");
-
-        for (const auto& x : map)
-        {
-            Logger::Info("  %s:", x.first.c_str());
-            const Vector<String>& v = x.second;
-            for (const String& s : v)
-            {
-                Logger::Info("        %s", s.c_str());
-            }
-        }
-
-#if defined(TEST_COVERAGE)
-        RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
-        DVASSERT(coverageFile);
-
-        auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
-
-        toJson("{ \n    \"ProjectFolders\": \"" + DAVA::String(DAVA_FOLDERS) + "\",\n");
-
-#if defined(DAVA_UNITY_FOLDER)
-        toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
-#endif
-
-        toJson("    \"Coverage\":  {\n");
-
-        for (const auto& x : map)
-        {
-            toJson("         \"" + x.first + "\": \"");
-
-            const Vector<String>& v = x.second;
-            for (const String& s : v)
-            {
-                toJson(s + (&s != &*v.rbegin() ? " " : ""));
-            }
-
-            toJson(x.first != map.rbegin()->first ? "\",\n" : "\"\n");
-        }
-
-        toJson("     }\n");
-        toJson("}\n");
-
-#endif // TEST_COVERAGE
-
+        ProcessTestCoverage();
         FinishTests();
     }
 }
