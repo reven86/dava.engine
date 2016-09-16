@@ -165,7 +165,11 @@ private:
     Vector2 cacheFinalSize;
     Vector2 cacheSpriteOffset;
     Vector2 cacheTextSize;
-    Vector2 cachePreferredSize;
+    struct
+    {
+        Vector2 size;
+        float32 width;
+    } cachedPreferredData;
 
     float32 renderSize;
 
@@ -217,15 +221,6 @@ private:
 
 public:
 };
-
-inline void TextBlock::CalculateCacheParamsIfNeed()
-{
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-        cachePreferredSize = Vector2(-1.0f, -1.0f);
-    }
-}
 
 inline void TextBlock::SetPosition(const Vector2& _position)
 {

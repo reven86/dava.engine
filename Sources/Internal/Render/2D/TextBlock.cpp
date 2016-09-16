@@ -14,6 +14,12 @@ namespace DAVA
 {
 #define NEW_RENDER 1
 
+namespace TextBlock_local
+{
+    static const float32 INVALID_WIDTH = -1.0f;
+    static const Vector2 INVALID_VECTOR = Vector2(-1.0f, -1.0f);
+}
+
 bool TextBlock::isBiDiSupportEnabled = false;
 Set<TextBlock*> TextBlock::registredTextBlocks;
 Mutex TextBlock::textblockListMutex;
@@ -66,7 +72,7 @@ TextBlock::TextBlock()
     , scale(1.f, 1.f)
     , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f, 0.f)
-    , cachePreferredSize(-1.f, -1.f)
+    , cachedPreferredData({ TextBlock_local::INVALID_VECTOR, TextBlock_local::INVALID_WIDTH })
     , renderSize(1.f)
     , cacheDx(0)
     , cacheDy(0)
@@ -121,7 +127,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , cacheOy(src.cacheOy)
     , cacheSpriteOffset(src.cacheSpriteOffset)
     , cacheTextSize(src.cacheTextSize)
-    , cachePreferredSize(src.cachePreferredSize)
+    , cachedPreferredData(src.cachedPreferredData)
     , renderSize(src.renderSize)
     , multilineStrings(src.multilineStrings)
     , stringSizes(src.stringSizes)
@@ -351,20 +357,23 @@ bool TextBlock::IsVisualTextCroped()
 
 Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 {
+    using namespace TextBlock_local;
+
     if (!font)
         return Vector2();
 
     if (!NeedCalculateCacheParams() &&
-        cachePreferredSize.x != -1.0f &&
-        cachePreferredSize.y != -1.0f)
+        cachedPreferredData.size != INVALID_VECTOR &&
+        cachedPreferredData.width == width)
     {
-        return cachePreferredSize;
+        return cachedPreferredData.size;
     }
 
     if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == 0)
     {
         CalculateCacheParamsIfNeed();
-        cachePreferredSize = cacheTextSize;
+        cachedPreferredData.size = cacheTextSize;
+        cachedPreferredData.width = width;
     }
     else
     {
@@ -377,7 +386,8 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         fittingType = 0;
         CalculateCacheParams();
 
-        cachePreferredSize = cacheTextSize;
+        cachedPreferredData.size = cacheTextSize;
+        cachedPreferredData.width = width;
         rectSize = oldSize;
 
         requestedSize = oldRequestedSize;
@@ -385,7 +395,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         CalculateCacheParams();
     }
 
-    return cachePreferredSize;
+    return cachedPreferredData.size;
 }
 
 Sprite* TextBlock::GetSprite()
@@ -986,6 +996,17 @@ void TextBlock::CalculateCacheParams()
 
     // Restore font size
     font->SetSize(originalFontSize);
+}
+
+void TextBlock::CalculateCacheParamsIfNeed()
+{
+    using namespace TextBlock_local;
+    if (needCalculateCacheParams)
+    {
+        CalculateCacheParams();
+        cachedPreferredData.size = INVALID_VECTOR;
+        cachedPreferredData.width = INVALID_WIDTH;
+    }
 }
 
 void TextBlock::PreDraw()
