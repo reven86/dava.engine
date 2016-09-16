@@ -45,6 +45,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
             materialGroups.clear();
             soundQualities.clear();
             landscapeQualities.clear();
+            msaaQualities.clear();
 
             // materials
             const YamlNode* materialGroupsNode = rootNode->Get("materials");
