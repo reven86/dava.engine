@@ -134,7 +134,7 @@ inline void DavaDebugBreak()
                                        "Callstack:\n" \
                                        "%s", \
                                        assertType, expr, msg, file, line, \
-                                       DAVA::Debug::GetBacktraceString(backtrace.data(), DVASSERT_UI_BACKTRACE_DEPTH).c_str())
+                                       DAVA::Debug::GetBacktraceString(backtrace, DVASSERT_UI_BACKTRACE_DEPTH).c_str())
 #else //ENABLE_ASSERT_MESSAGE
 #define MessageFunction(messagetype, assertType, expr, msg, file, line, backtrace) \
     false
