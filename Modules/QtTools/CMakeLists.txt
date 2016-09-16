@@ -12,7 +12,6 @@ qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB_RECURSE RCC_LIST "*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-set(UNITY_IGNORE_LIST_APPLE *.mm)
 set(HPP_FILES_RECURSE *.h *.hpp)
 set(CPP_FILES_RECURSE *.cpp *.mm)
 set(HPP_FILES ${UI_APP_HDRS})
