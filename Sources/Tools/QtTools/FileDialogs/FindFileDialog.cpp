@@ -35,11 +35,11 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
 {
     QAction* findInFilesAction = new QAction(tr("Find file in project"), parent);
     findInFilesAction->setShortcutContext(Qt::ApplicationShortcut);
+
     QList<QKeySequence> keySequences;
     keySequences << Qt::CTRL + Qt::SHIFT + Qt::Key_O;
-#ifdef Q_OS_WIN
     keySequences << Qt::ALT + Qt::SHIFT + Qt::Key_O;
-#endif //Q_OS_WIN
+
     findInFilesAction->setShortcuts(keySequences);
     return findInFilesAction;
 }
