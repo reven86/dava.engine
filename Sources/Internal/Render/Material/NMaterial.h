@@ -151,7 +151,7 @@ public:
 
     void SetParent(NMaterial* parent);
     NMaterial* GetParent() const;
-    NMaterial* GetTopLevelParent() const;
+    NMaterial* GetTopLevelParent();
     const Vector<NMaterial*>& GetChildren() const;
 
     inline uint32 GetRenderLayerID() const;

@@ -536,9 +536,9 @@ NMaterial* NMaterial::GetParent() const
     return parent;
 }
 
-NMaterial* NMaterial::GetTopLevelParent() const
+NMaterial* NMaterial::GetTopLevelParent()
 {
-    NMaterial* result = GetParent();
+    NMaterial* result = this;
     while (result->GetParent() != nullptr)
     {
         result = result->GetParent();
