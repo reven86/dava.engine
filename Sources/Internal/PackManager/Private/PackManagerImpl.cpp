@@ -796,6 +796,50 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
     throw std::runtime_error("can't process request initialization not finished");
 }
 
+void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
+{
+    if (!relativePathDir.IsDirectoryPathname())
+    {
+        Logger::Error("can't list not directory path: %s", relativePathDir.GetStringValue().c_str());
+        return;
+    }
+
+    Set<String> addedDirectory;
+
+    String relative = relativePathDir.GetRelativePathname("~res:/");
+
+    auto filterMountedPacks = [&](const String& path, const String& pack)
+    {
+        try
+        {
+            const Pack& p = FindPack(pack);
+            if (p.state == Pack::Status::Mounted)
+            {
+                size_type index = path.find_first_of("/", relative.size());
+                if (String::npos != index)
+                {
+                    String directoryName = path.substr(relative.size(), index - relative.size() + 1);
+                    if (addedDirectory.find(directoryName) == end(addedDirectory))
+                    {
+                        addedDirectory.insert(directoryName);
+                        fn("~res:/" + relative + "/" + directoryName, pack);
+                    }
+                }
+                else
+                {
+                    fn("~res:/" + path, pack);
+                }
+            }
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("error while list files in pack: %s", ex.what());
+        }
+    };
+
+    db->ListFiles(relative, filterMountedPacks);
+}
+
 const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
 {
     try

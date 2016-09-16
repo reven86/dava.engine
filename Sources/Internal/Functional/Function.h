@@ -1,5 +1,4 @@
-#ifndef __DAVA_FUNCTION_H__
-#define __DAVA_FUNCTION_H__
+#pragma once
 
 #include <new>
 #include <memory>
@@ -580,5 +579,3 @@ void swap(DAVA::Function<F>& lf, DAVA::Function<F>& rf)
 }
 
 } // namespace std
-
-#endif // __DAVA_FUNCTION_H__

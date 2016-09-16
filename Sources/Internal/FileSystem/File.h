@@ -37,11 +37,6 @@ public:
         SEEK_FROM_CURRENT = 3, //! Seek from current file position relatively
     };
 
-protected:
-    File() = default;
-    virtual ~File();
-
-public:
     /**
 		\brief function to create a file instance with give attributes.
         Use framework notation for paths.
@@ -172,6 +167,9 @@ public:
     static String GetModificationDate(const FilePath& filePathname);
 
 protected:
+    File() = default;
+    virtual ~File();
+
     FilePath filename;
 
 private:

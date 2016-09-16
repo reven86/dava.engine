@@ -2,6 +2,7 @@
 
 #include "Functional/Signal.h"
 #include "DLC/Downloader/DownloaderCommon.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -98,7 +99,6 @@ public:
     struct Hints
     {
         bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
-        // TODO do we need bool firstLoadFromAssetsOnAndroid = true;?
     };
 
     /// you can call after in GameCore::OnAppStarted (throw exception on error)
@@ -143,6 +143,11 @@ public:
 
     /// thow exception if can't find pack
     virtual const Pack& RequestPack(const String& packName) = 0;
+
+    /// list all files from DB for every pack, and call callback function
+    /// for every found path with
+    /// two params first - relative file path, second pack name
+    virtual void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) = 0;
 
     /// return request contains pack or nullptr
     /// requestedPackName - previous requested pack currently in downloading

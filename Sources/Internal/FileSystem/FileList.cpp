@@ -1,6 +1,8 @@
 #include "FileSystem/FileList.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
+#include "PackManager/PackManager.h"
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
@@ -27,6 +29,44 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
 
     path = filepath;
 
+// first check if required files inside DVPK archives
+#ifdef __DAVAENGINE_COREV2__
+    // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+    // access Engine object after it has beem destroyed
+    IPackManager* pm = nullptr;
+    Engine* e = Engine::Instance();
+    DVASSERT(e != nullptr);
+    EngineContext* context = e->GetContext();
+    DVASSERT(context != nullptr);
+    pm = context->packManager;
+#else
+    IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+    if (nullptr != pm && pm->IsInitialized())
+    {
+        if (filepath.GetType() == FilePath::PATH_IN_RESOURCES)
+        {
+            auto listFiles = [&](const FilePath& path, const String& pack)
+            {
+                FileEntry entry;
+                entry.path = path;
+                entry.name = path.IsDirectoryPathname() ? path.GetLastDirectoryName() : path.GetFilename();
+
+                uint64 fileSize = 0;
+                FileSystem::Instance()->GetFileSize(path, fileSize);
+
+                entry.size = static_cast<uint32>(fileSize);
+                entry.isHidden = false;
+                entry.isDirectory = entry.path.IsDirectoryPathname();
+
+                fileList.push_back(entry);
+            };
+            pm->ListFilesInPacks(filepath, listFiles);
+        }
+    }
+
+// now check native FS for files
 #if defined(__DAVAENGINE_WINDOWS__)
 
     struct _wfinddata_t c_file;

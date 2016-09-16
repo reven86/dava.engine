@@ -47,6 +47,8 @@ public:
 
     const Pack& RequestPack(const String& packName) override;
 
+    void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) override;
+
     const IRequest* FindRequest(const String& pack) const override;
 
     void SetRequestOrder(const String& packName, float newPriority) override;
@@ -58,7 +60,7 @@ public:
 
     void MountPacks(const Set<FilePath>& basePacks);
 
-    void DeletePack(const String& packName);
+    void DeletePack(const String& packName) override;
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
@@ -66,7 +68,7 @@ public:
 
     const FilePath& GetLocalPacksDirectory() const override;
 
-    const String& GetSuperPackUrl() const;
+    const String& GetSuperPackUrl() const override;
 
     const PackFormat::PackFile::FooterBlock& GetInitFooter() const
     {

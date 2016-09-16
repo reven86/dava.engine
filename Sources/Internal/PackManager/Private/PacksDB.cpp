@@ -117,6 +117,23 @@ const String& PacksDB::FindPack(const FilePath& relativeFilePath) const
     return result;
 }
 
+void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const String&, const String&)>& fn)
+{
+    try
+    {
+        data->GetDB() << "SELECT path, pack FROM files WHERE path LIKE ?"
+                      << relativePathDir + "%"
+        >> [&](std::string path, std::string pack)
+        {
+            fn(path, pack);
+        };
+    }
+    catch (sqlite::sqlite_exception& ex)
+    {
+        Logger::Error("error while executing query to DB ListFiles: %s", ex.what());
+    }
+}
+
 void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
