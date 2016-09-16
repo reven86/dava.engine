@@ -316,7 +316,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         DVASSERT(nullptr != impl); \
         try \
         { \
-            impl->Set(keyStr, value.Get<T>()); \
+            impl->Set(key, value.Get<T>()); \
         } \
         catch (const Any::Exception& exception) \
         { \
