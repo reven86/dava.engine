@@ -55,6 +55,7 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnFrame();
+    Q_SLOT void OnActiveFocusItemChanged();
 
 private:
     bool initialized = false;
