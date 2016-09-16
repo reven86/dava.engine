@@ -1,4 +1,5 @@
 #include "TArcCore/ClientModule.h"
+#include "TArcCore/Private/CoreInterface.h"
 
 #include "Debug/DVAssert.h"
 
@@ -8,8 +9,8 @@ namespace TArc
 {
 ContextAccessor& ClientModule::GetAccessor()
 {
-    DVASSERT(contextAccessor != nullptr);
-    return *contextAccessor;
+    DVASSERT(coreInterface != nullptr);
+    return *coreInterface;
 }
 
 UI& ClientModule::GetUI()
@@ -18,11 +19,11 @@ UI& ClientModule::GetUI()
     return *ui;
 }
 
-void ClientModule::Init(ContextAccessor* contextAccessor_, UI* ui_)
+void ClientModule::Init(CoreInterface* coreInterface_, UI* ui_)
 {
-    DVASSERT(contextAccessor == nullptr);
+    DVASSERT(coreInterface == nullptr);
     DVASSERT(ui == nullptr);
-    contextAccessor = contextAccessor_;
+    coreInterface = coreInterface_;
     ui = ui_;
 }
 } // namespace TArc

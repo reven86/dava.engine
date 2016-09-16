@@ -1,4 +1,4 @@
-#include "Engine/Public/Android/WindowNativeServiceAndroid.h"
+#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -13,6 +13,11 @@ namespace DAVA
 WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
     : windowBackend(wbackend)
 {
+}
+
+jobject WindowNativeService::CreateNativeControl(const char8* controlClassName, void* backendPointer)
+{
+    return windowBackend->CreateNativeControl(controlClassName, backendPointer);
 }
 
 } // namespace DAVA
