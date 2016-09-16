@@ -7,6 +7,10 @@ import glob
 import shutil
 
 def download(url, file_name):
+	path = os.path.dirname(file_name)
+	if not os.path.exists(path):
+		os.makedirs(path)
+
 	u = urllib2.urlopen(url)
 	f = open(file_name, 'wb')
 	meta = u.info()
@@ -34,10 +38,10 @@ def download_if_doesnt_exist(url, file_name):
 	if not os.path.exists(file_name):
 		download(url, file_name)
 
-def unzip_inplace(file):
-	print "Unzipping %s ..." % (file)
-	zip_ref = zipfile.ZipFile(file, 'r')
-	zip_ref.extractall("./")
+def unzip_inplace(path):
+	print "Unzipping %s ..." % (path)
+	zip_ref = zipfile.ZipFile(path, 'r')
+	zip_ref.extractall(os.path.dirname(path))
 	zip_ref.close()
 	print "Unzipping OK"
 
@@ -53,7 +57,7 @@ def apply_patch(patch):
 
 def build_vs(project, configuration, platform='Win32', target = None):
 	print "Building %s for %s ..." % (project, configuration)
-	args = ["c:/Program Files (x86)\MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration]
+	args = ["c:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration]
 	if (not target is None):
 		args.append('/target:' + target)
 	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -116,3 +120,12 @@ def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator
 	cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
 	build_vs(os.path.join(output_folder_path, sln_name), 'Debug', configuration, target)
 	build_vs(os.path.join(output_folder_path, sln_name), 'Release', configuration, target)
+
+def build_android_ndk(project_path, output_path, debug):
+	cmd = ['ndk-build', 'NDK_OUT=' + output_path]
+	if debug:
+		cmd.append('NDK_DEBUG=1')
+	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=project_path, shell=True)
+	for line in sp.stdout:
+		print line
+	sp.wait()

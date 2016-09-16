@@ -10,22 +10,23 @@ import build_utils
 
 # Download & extract
 
-zlib_sources_filename = 'zlib_sources.zip'
-build_utils.download_if_doesnt_exist('http://zlib.net/zlib128.zip', zlib_sources_filename)
-build_utils.unzip_inplace(zlib_sources_filename)
+zlib_sources_filepath = 'tmp/zlib_source.zip'
+build_utils.download_if_doesnt_exist('http://zlib.net/zlib128.zip', zlib_sources_filepath)
+build_utils.unzip_inplace(zlib_sources_filepath)
+shutil.move('tmp/zlib-1.2.8', 'tmp/zlib_source')
 
 if sys.platform == "win32":
 	# Build
 
-	build_x86_folder = 'build_x86'
-	build_x64_folder = 'build_x64'
-	build_win10_x86_folder = 'build_win10_x86'
-	build_win10_x64_folder = 'build_win10_x64'
-	build_win10_arm_folder = 'build_win10_arm'
+	build_x86_folder = 'tmp/gen/build_x86'
+	build_x64_folder = 'tmp/gen/build_x64'
+	build_win10_x86_folder = 'tmp/gen/build_win10_x86'
+	build_win10_x64_folder = 'tmp/gen/build_win10_x64'
+	build_win10_arm_folder = 'tmp/gen/build_win10_arm'
 
 	solution_name = 'zlib.sln'
 	target_name = 'zlibstatic'
-	cmake_src_dir = '../zlib-1.2.8'
+	cmake_src_dir = '../../zlib_source'
 	cmake_win10_flags = ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0']
 
 	build_utils.cmake_generate_build_vs(build_x86_folder, cmake_src_dir, 'Visual Studio 12', solution_name, target_name, 'Win32')
@@ -35,7 +36,7 @@ if sys.platform == "win32":
 	build_utils.cmake_generate_build_vs(build_win10_arm_folder, cmake_src_dir, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
 
 	# Copy created configuration header to root folder
-	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), 'zlib-1.2.8/zconf.h')
+	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), 'tmp/zlib_source/zconf.h')
 
 	# Rename libraries to zlib.lib
 
