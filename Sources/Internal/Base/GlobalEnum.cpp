@@ -19,6 +19,7 @@
 #include "Logger/Logger.h"
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
+#include "Render/Highlevel/BillboardRenderObject.h"
 
 using namespace DAVA;
 
@@ -411,17 +412,9 @@ ENUM_DECLARE(eGradientBlendMode)
     ENUM_ADD_DESCR(GRADIENT_SCREEN, "Screen");
     ENUM_ADD_DESCR(GRADIENT_OVERLAY, "Overlay");
 };
-/*
-void f()
+
+ENUM_DECLARE(BillboardRenderObject::BillboardType)
 {
+    ENUM_ADD_DESCR(BillboardRenderObject::BILLBOARD_SPHERICAL, "Spherical");
+    ENUM_ADD_DESCR(BillboardRenderObject::BILLBOARD_CYLINDRICAL, "Cylindrical");
 }
-
-GlobalEnum *globalEnum = GlobalEnum::Instance();
-f();
-*/
-/*
-->Add(DAVA::MetaInfo::Instance<DAVA::Texture::TextureWrap>(), DAVA::Texture::WRAP_CLAMP_TO_EDGE, "WRAP_CLAMP_TO_EDGE");
-
-ENUM_ADD(DAVA::Texture::TextureWrap, DAVA::Texture::WRAP_CLAMP_TO_EDGE, "WRAP_CLAMP_TO_EDGE");
-ENUM_ADD(DAVA::Texture::TextureWrap, DAVA::Texture::WRAP_REPEAT, "WRAP_REPEAT");
-*/

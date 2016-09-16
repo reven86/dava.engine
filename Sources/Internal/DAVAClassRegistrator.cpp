@@ -51,6 +51,7 @@ REGISTER_CLASS(UIMovieView);
 REGISTER_CLASS(UIParticles);
 REGISTER_CLASS(UIJoypad);
 REGISTER_CLASS(VegetationRenderObject);
+REGISTER_CLASS(BillboardRenderObject);
 REGISTER_CLASS(SpriteObject);
 REGISTER_CLASS(UI3DView);
 REGISTER_CLASS(AnimationComponent);
