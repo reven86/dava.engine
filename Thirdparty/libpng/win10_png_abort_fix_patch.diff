@@ -1,0 +1,12 @@
+--- "lpng1625_original\\pngpriv.h"	2016-08-31 22:26:44.000000000 +0300
++++ "lpng1625\\pngpriv.h"	2016-09-16 12:35:07.038522900 +0300
+@@ -486,7 +486,8 @@
+ 
+ /* Memory model/platform independent fns */
+ #ifndef PNG_ABORT
+-#  ifdef _WINDOWS_
++// PATCHED: ExitProcess doesn't exist in UWP
++#  if defined _WINDOWS_ & WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+ #    define PNG_ABORT() ExitProcess(0)
+ #  else
+ #    define PNG_ABORT() abort()

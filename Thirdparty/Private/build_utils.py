@@ -43,7 +43,7 @@ def unzip_inplace(file):
 
 def apply_patch(patch):
 	print "Applying patch %s" % patch
-	proc = subprocess.Popen(["git", "apply", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	proc.communicate()
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode

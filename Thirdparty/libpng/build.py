@@ -12,6 +12,9 @@ libpng_sources_filename = 'libpng_sources.zip'
 build_utils.download_if_doesnt_exist('ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/lpng1625.zip', libpng_sources_filename)
 build_utils.unzip_inplace(libpng_sources_filename)
 
+build_utils.apply_patch('win10_arm_fix_patch.diff')
+build_utils.apply_patch('win10_png_abort_fix_patch.diff')
+
 # Add configuration file
 shutil.copyfile('pngusr.dfa', os.path.join('lpng1625', 'pngusr.dfa'))
 
