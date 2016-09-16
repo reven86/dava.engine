@@ -1,8 +1,8 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Window.h"
+#include "Engine/Window.h"
 
-#include "Engine/Public/EngineContext.h"
+#include "Engine/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/WindowBackend.h"
@@ -504,6 +504,7 @@ void Window::HandlePendingSizeChanging()
     {
         virtualCoordSystem->SetInputScreenAreaSize(w, h);
         virtualCoordSystem->SetPhysicalScreenSize(physW, physH);
+        virtualCoordSystem->SetVirtualScreenSize(w, h);
         virtualCoordSystem->UnregisterAllAvailableResourceSizes();
         virtualCoordSystem->RegisterAvailableResourceSize(w, h, "Gfx");
         virtualCoordSystem->ScreenSizeChanged();

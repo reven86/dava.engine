@@ -1,9 +1,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
-#include "Engine/Public/EngineContext.h"
-#include "Engine/Public/Window.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -554,8 +554,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->fileSystem = new FileSystem();
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager = new AssetsManager();
-    context->assetsManager->Init(AndroidBridge::GetApplicatiionPath());
+    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
 #endif
 
     // Naive implementation of on demand module creation

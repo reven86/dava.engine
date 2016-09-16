@@ -32,6 +32,8 @@ public:
     void InitArgs();
     void Quit() override;
 
+    void* GetNativeWindow() const override;
+
 private:
     DisplayMode currentMode;
     DisplayMode fullscreenMode;

@@ -26,7 +26,6 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
         }
     }
 
-    DAVA::AABBox3 boundingBox;
     bool anyPolygonAdded = false;
     for (DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
     {
@@ -67,24 +66,20 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
                                              btVector3(v1.x, v1.y, v1.z),
                                              btVector3(v2.x, v2.y, v2.z), false);
                 }
-
-                // save original bbox
-                boundingBox.AddAABBox(pg->GetBoundingBox());
             }
         }
     }
 
     if (anyPolygonAdded)
     {
-        // increase bbox a little bit
-        boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
-        boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
-
         btShape = new btBvhTriangleMeshShape(btTriangles, true, true);
         btObject = new btCollisionObject();
         btObject->setCollisionShape(btShape);
         btWord->addCollisionObject(btObject);
 
+        DAVA::AABBox3 boundingBox = renderObject->GetBoundingBox();
+        boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
+        boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
         object.SetBoundingBox(boundingBox);
     }
 }

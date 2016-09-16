@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDEROBJECT_H__
-#define __DAVAENGINE_SCENE3D_RENDEROBJECT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -11,34 +10,13 @@
 
 namespace DAVA
 {
-/*
-class RenderCallInstance
-{
-public:
-    VBO *
-    IBO *
-    NMaterial *
-    uint32 start;
-    uint32 count;
-    uint32 primitiveType;
-};
-*/
-
-/*
-    Types of possible render objects
- 
-    
-    - Mesh(Static)
-    - Mesh(Skinned)
- 
- */
 const static uint16 INVALID_STATIC_OCCLUSION_INDEX = uint16(-1);
 
 class RenderBatch;
 class RenderObject : public AnimatedObject
 {
 public:
-    enum eType
+    enum eType : uint32
     {
         TYPE_RENDEROBJECT = 0, // Base Render Object
         TYPE_MESH, // Normal mesh
@@ -49,7 +27,8 @@ public:
         TYPE_PARTICLE_EMTITTER, // Particle Emitter
         TYPE__DELETED__SKYBOX, //keept for legasy, skybox removed in RHI
         TYPE_VEGETATION,
-        TYPE_SPEED_TREE
+        TYPE_SPEED_TREE,
+        TYPE_BILLBOARD,
     };
 
     enum eFlags
@@ -133,7 +112,6 @@ public:
 
     inline void SetAABBox(const AABBox3& bbox);
     inline void SetWorldAABBox(const AABBox3& bbox);
-    inline void SetBSphere(const Sphere& sphere);
 
     inline const AABBox3& GetBoundingBox() const;
     inline const AABBox3& GetWorldBoundingBox() const;
@@ -176,8 +154,6 @@ public:
     int32 GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const;
     int32 GetMaxSwitchIndex() const;
 
-    uint8 startClippingPlane;
-
     inline bool GetReflectionVisible() const;
     inline void SetReflectionVisible(bool visible);
     inline bool GetRefractionVisible() const;
@@ -188,54 +164,43 @@ public:
     inline void SetLight(uint32 index, Light* light);
     inline Light* GetLight(uint32 index);
 
+    uint8 startClippingPlane = 0;
+
 protected:
-    //    eType type; //TODO: waiting for enums at introspection
-    RenderSystem* renderSystem;
-    uint32 type;
-
-    uint32 flags;
-    uint32 debugFlags;
-    uint32 removeIndex;
-    uint16 treeNodeIndex;
-    uint16 staticOcclusionIndex;
-    AABBox3 bbox;
-    AABBox3 worldBBox;
-
-    Matrix4* worldTransform; // temporary - this should me moved directly to matrix uniforms
-    FastName ownerDebugInfo;
-    int32 lodIndex;
-    int32 switchIndex;
-
-    static const uint32 MAX_LIGHT_COUNT = 2;
-    Light* lights[MAX_LIGHT_COUNT];
-
-    //    Sphere bsphere;
+    void UpdateActiveRenderBatches();
 
     struct IndexedRenderBatch : public InspBase
     {
-        IndexedRenderBatch()
-            : renderBatch(0)
-            ,
-            lodIndex(-2)
-            ,
-            switchIndex(-1)
-        {
-        }
-
-        RenderBatch* renderBatch;
-        int32 lodIndex;
-        int32 switchIndex;
+        RenderBatch* renderBatch = nullptr;
+        int32 lodIndex = -2;
+        int32 switchIndex = -1;
 
         INTROSPECTION(IndexedRenderBatch,
                       MEMBER(renderBatch, "Render Batch", I_SAVE | I_VIEW)
                       MEMBER(lodIndex, "Lod Index", I_SAVE | I_VIEW)
-                      MEMBER(switchIndex, "Switch Index", I_SAVE | I_VIEW)
-                      );
+                      MEMBER(switchIndex, "Switch Index", I_SAVE | I_VIEW));
     };
 
-    void UpdateActiveRenderBatches();
+    static const int32 DEFAULT_RENDEROBJECT_FLAGS = eFlags::VISIBLE | eFlags::VISIBLE_STATIC_OCCLUSION | eFlags::VISIBLE_QUALITY;
+    static const uint32 MAX_LIGHT_COUNT = 2;
+
+protected:
     Vector<IndexedRenderBatch> renderBatchArray;
     Vector<RenderBatch*> activeRenderBatchArray;
+    Light* lights[MAX_LIGHT_COUNT];
+    RenderSystem* renderSystem = nullptr;
+    Matrix4* worldTransform = nullptr; // temporary - this should me moved directly to matrix uniforms
+    FastName ownerDebugInfo;
+    AABBox3 bbox;
+    AABBox3 worldBBox;
+    int32 lodIndex = -1;
+    int32 switchIndex = -1;
+    uint32 type = eType::TYPE_RENDEROBJECT;
+    uint32 flags = DEFAULT_RENDEROBJECT_FLAGS;
+    uint32 debugFlags = 0;
+    uint32 removeIndex = static_cast<uint32>(-1);
+    uint16 treeNodeIndex = INVALID_TREE_NODE_INDEX;
+    uint16 staticOcclusionIndex = INVALID_STATIC_OCCLUSION_INDEX;
 
 public:
     INTROSPECTION_EXTEND(RenderObject, AnimatedObject,
@@ -357,6 +322,7 @@ inline uint16 RenderObject::GetStaticOcclusionIndex() const
 {
     return staticOcclusionIndex;
 }
+
 inline void RenderObject::SetStaticOcclusionIndex(uint16 _index)
 {
     staticOcclusionIndex = _index;
@@ -366,6 +332,7 @@ inline bool RenderObject::GetReflectionVisible() const
 {
     return (flags & VISIBLE_REFLECTION) == VISIBLE_REFLECTION;
 }
+
 inline void RenderObject::SetReflectionVisible(bool visible)
 {
     if (visible)
@@ -378,6 +345,7 @@ inline bool RenderObject::GetRefractionVisible() const
 {
     return (flags & VISIBLE_REFRACTION) == VISIBLE_REFRACTION;
 }
+
 inline void RenderObject::SetRefractionVisible(bool visible)
 {
     if (visible)
@@ -385,7 +353,4 @@ inline void RenderObject::SetRefractionVisible(bool visible)
     else
         flags &= ~VISIBLE_REFRACTION;
 }
-
-} // ns
-
-#endif /* __DAVAENGINE_SCENE3D_RENDEROBJECT_H__ */
+}

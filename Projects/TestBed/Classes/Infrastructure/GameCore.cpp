@@ -271,7 +271,8 @@ void GameCore::RegisterTests()
     new FloatingPointExceptionTest(this);
 #if !defined(__DAVAENGINE_COREV2__)
     new PackManagerTest(this);
-#endif // !__DAVAENGINE_COREV2__    //$UNITTEST_CTOR
+#endif // !__DAVAENGINE_COREV2__
+    //$UNITTEST_CTOR
 }
 
 void GameCore::RegisterScreen(BaseScreen* screen)

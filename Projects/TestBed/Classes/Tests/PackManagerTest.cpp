@@ -271,7 +271,6 @@ void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& reques
 
 void PackManagerTest::OnInitChange(IPackManager& packManager)
 {
-#if !defined(__DAVAENGINE_COREV2__)
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     StringStream ss;
@@ -292,7 +291,6 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)

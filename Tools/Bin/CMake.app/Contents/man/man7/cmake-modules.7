@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-MODULES" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-MODULES" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-modules \- CMake Modules Reference
 .
@@ -99,6 +99,9 @@ fix each one up according to its own list of prerequisites.
 .sp
 Then clear all the keys and call verify_app on the final bundle to
 ensure that it is truly standalone.
+.sp
+As an optional parameter (IGNORE_ITEM) a list of file names can be passed,
+which are then ignored (e.g. IGNORE_ITEM "vcredist_x86.exe;vcredist_x64.exe")
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -126,6 +129,9 @@ VERIFY_APP(<app>)
 Verifies that an application <app> appears valid based on running
 analysis tools on it.  Calls "message(FATAL_ERROR" if the application
 is not verified.
+.sp
+As an optional parameter (IGNORE_ITEM) a list of file names can be passed,
+which are then ignored (e.g. IGNORE_ITEM "vcredist_x86.exe;vcredist_x64.exe")
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -247,6 +253,9 @@ given as extra <libs>) and accumulate a list of keys representing
 them.  Set values associated with each key such that we can loop over
 all of them and copy prerequisite libs into the bundle and then do
 appropriate install_name_tool fixups.
+.sp
+As an optional parameter (IGNORE_ITEM) a list of file names can be passed,
+which are then ignored (e.g. IGNORE_ITEM "vcredist_x86.exe;vcredist_x64.exe")
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -327,6 +336,9 @@ VERIFY_BUNDLE_PREREQUISITES(<bundle> <result_var> <info_var>)
 Verifies that the sum of all prerequisites of all files inside the
 bundle are contained within the bundle or are "system" libraries,
 presumed to exist everywhere.
+.sp
+As an optional parameter (IGNORE_ITEM) a list of file names can be passed,
+which are then ignored (e.g. IGNORE_ITEM "vcredist_x86.exe;vcredist_x64.exe")
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -1388,9 +1400,7 @@ if TRUE, don\(aqt print anything
 .UNINDENT
 .SS CMakeForceCompiler
 .sp
-Discouraged.  Avoid using this module if possible.  It will be deprecated
-by a future version of CMake once alternatives have been provided for all
-toolchain file use cases.
+Deprecated.  Do not use.
 .sp
 The macros provided by this module were once intended for use by
 cross\-compiling toolchain files when CMake was not able to automatically
@@ -1400,11 +1410,11 @@ taught to recognize any compiler.  Furthermore, the suite of information
 CMake detects from a compiler is now too extensive to be provided by
 toolchain files using these macros.
 .sp
-The only known remaining use case for these macros is to write toolchain
-files for cross\-compilers that cannot link binaries without special flags or
-custom linker scripts.  These macros cause CMake to skip checks it normally
-performs as part of enabling a language and introspecting the toolchain.
-However, skipping these checks may limit some generation functionality.
+One common use case for this module was to skip CMake\(aqs checks for a
+working compiler when using a cross\-compiler that cannot link binaries
+without special flags or custom linker scripts.  This case is now supported
+by setting the \fBCMAKE_TRY_COMPILE_TARGET_TYPE\fP variable in the
+toolchain file instead.
 
 .sp
 .ce
@@ -1945,8 +1955,8 @@ This module defines three macros: CMAKE_PUSH_CHECK_STATE()
 CMAKE_POP_CHECK_STATE() and CMAKE_RESET_CHECK_STATE() These macros can
 be used to save, restore and reset (i.e., clear contents) the state of
 the variables CMAKE_REQUIRED_FLAGS, CMAKE_REQUIRED_DEFINITIONS,
-CMAKE_REQUIRED_LIBRARIES and CMAKE_REQUIRED_INCLUDES used by the
-various Check\-files coming with CMake, like e.g.
+CMAKE_REQUIRED_LIBRARIES, CMAKE_REQUIRED_INCLUDES and CMAKE_EXTRA_INCLUDE_FILES
+used by the various Check\-files coming with CMake, like e.g.
 check_function_exists() etc.  The variable contents are pushed on a
 stack, pushing multiple times is supported.  This is useful e.g.  when
 executing such tests in a Find\-module, where they have to be set, but
@@ -1979,12 +1989,12 @@ cmake_pop_check_state()
 .sp
 CMakeVerifyManifest.cmake
 .sp
-This script is used to verify that embeded manifests and side by side
+This script is used to verify that embedded manifests and side by side
 manifests for a project match.  To run this script, cd to a directory
 and run the script with cmake \-P.  On the command line you can pass in
 versions that are OK even if not found in the .manifest files.  For
 example, cmake \-Dallow_versions=8.0.50608.0
-\-PCmakeVerifyManifest.cmake could be used to allow an embeded manifest
+\-PCmakeVerifyManifest.cmake could be used to allow an embedded manifest
 of 8.0.50608.0 to be used in a project even if that version was not
 found in the .manifest file.
 .SS CPackBundle
@@ -2403,27 +2413,53 @@ The Cygwin build script.  FIXME: This documentation is incomplete.
 .UNINDENT
 .SS CPackDeb
 .sp
-The builtin (binary) CPack Deb generator (Unix only)
+The built in (binary) CPack Deb generator (Unix only)
 .SS Variables specific to CPack Debian (DEB) generator
 .sp
-CPackDeb may be used to create Deb package using CPack.
-CPackDeb is a CPack generator thus it uses the \fBCPACK_XXX\fP variables
-used by CPack : \fI\%https://cmake.org/Wiki/CMake:CPackConfiguration\fP\&.
-CPackDeb generator should work on any linux host but it will produce
-better deb package when Debian specific tools \(aqdpkg\-xxx\(aq are usable on
+CPackDeb may be used to create Deb package using \fBCPack\fP\&.
+CPackDeb is a \fBCPack\fP generator thus it uses the \fBCPACK_XXX\fP
+variables used by \fBCPack\fP\&.
+.sp
+CPackDeb generator should work on any Linux host but it will produce
+better deb package when Debian specific tools \fBdpkg\-xxx\fP are usable on
 the build system.
 .sp
 CPackDeb has specific features which are controlled by the specifics
 \fBCPACK_DEBIAN_XXX\fP variables.
 .sp
 \fBCPACK_DEBIAN_<COMPONENT>_XXXX\fP variables may be used in order to have
-\fBcomponent\fP specific values.  Note however that \fB<COMPONENT>\fP refers to the
-\fBgrouping name\fP written in upper case. It may be either a component name or
-a component GROUP name.
+\fBcomponent\fP specific values.  Note however that \fB<COMPONENT>\fP refers to
+the \fBgrouping name\fP written in upper case. It may be either a component name
+or a component GROUP name.
 .sp
-You\(aqll find a detailed usage on the wiki:
-\fI\%https://cmake.org/Wiki/CMake:CPackPackageGenerators#DEB_.28UNIX_only.29\fP .
-However as a handy reminder here comes the list of specific variables:
+Here are some CPackDeb wiki resources that are here for historic reasons and
+are no longer maintained but may still prove useful:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+\fI\%https://cmake.org/Wiki/CMake:CPackConfiguration\fP
+.IP \(bu 2
+\fI\%https://cmake.org/Wiki/CMake:CPackPackageGenerators#DEB_.28UNIX_only.29\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+List of CPackRPM specific variables:
+.INDENT 0.0
+.TP
+.B CPACK_DEB_PACKAGE_COMPONENT
+Enable component packaging for CPackRPM
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : OFF
+.UNINDENT
+.sp
+If enabled (ON) multiple packages are generated. By default a single package
+containing files of all components is generated.
+.UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_DEBIAN_PACKAGE_NAME
@@ -2450,6 +2486,52 @@ See \fI\%https://www.debian.org/doc/debian\-policy/ch\-controlfields.html#s\-f\-
 .UNINDENT
 .INDENT 0.0
 .TP
+.B CPACK_DEBIAN_FILE_NAME
+.TP
+.B CPACK_DEBIAN_<COMPONENT>_FILE_NAME
+Package file name.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : YES
+.IP \(bu 2
+Default   : \fB<CPACK_PACKAGE_FILE_NAME>[\-<component>].deb\fP
+.UNINDENT
+.sp
+This may be set to \fBDEB\-DEFAULT\fP to allow CPackDeb to generate package file
+name by itself in deb format:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+<PackageName>_<VersionNumber>\-<DebianRevisionNumber>_<DebianArchitecture>.deb
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Alternatively provided package file name must end with \fB\&.deb\fP suffix.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+Preferred setting of this variable is \fBDEB\-DEFAULT\fP but for backward
+compatibility with CPackDeb in CMake prior to version 3.6 this feature
+is disabled by default.
+.UNINDENT
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+By using non default filenames duplicate names may occur. Duplicate files
+get overwritten and it is up to the packager to set the variables in a
+manner that will prevent such errors.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
 .B CPACK_DEBIAN_PACKAGE_VERSION
 The Debian package version
 .INDENT 7.0
@@ -2461,7 +2543,26 @@ Default   : \fBCPACK_PACKAGE_VERSION\fP
 .UNINDENT
 .INDENT 0.0
 .TP
+.B CPACK_DEBIAN_PACKAGE_RELEASE
+The Debian package release \- Debian revision number.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : YES
+.IP \(bu 2
+Default   : 1
+.UNINDENT
+.sp
+This is the numbering of the DEB package itself, i.e. the version of the
+packaging and not the version of the content (see
+\fI\%CPACK_DEBIAN_PACKAGE_VERSION\fP). One may change the default value
+if the previous packaging was buggy and/or you want to put here a fancy Linux
+distro specific numbering.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B CPACK_DEBIAN_PACKAGE_ARCHITECTURE
+.TP
+.B CPACK_DEBIAN_<COMPONENT>_PACKAGE_ARCHITECTURE
 The Debian package architecture
 .INDENT 7.0
 .IP \(bu 2
@@ -2519,6 +2620,18 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1\-6), libc6 (< 2.4)")
 .UNINDENT
 .INDENT 0.0
 .TP
+.B CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS
+Sets inter component dependencies if listed with
+\fBCPACK_COMPONENT_<compName>_DEPENDS\fP variables.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : \-
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
 .B CPACK_DEBIAN_PACKAGE_MAINTAINER
 The Debian package maintainer
 .INDENT 7.0
@@ -2557,7 +2670,7 @@ Set Section control field e.g. admin, devel, doc, ...
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : \(aqdevel\(aq
+Default   : "devel"
 .UNINDENT
 .sp
 See \fI\%https://www.debian.org/doc/debian\-policy/ch\-archive.html#s\-subsections\fP
@@ -2566,12 +2679,23 @@ See \fI\%https://www.debian.org/doc/debian\-policy/ch\-archive.html#s\-subsectio
 .TP
 .B CPACK_DEBIAN_COMPRESSION_TYPE
 The compression used for creating the Debian package.
-Possible values are: lzma, xz, bzip2 and gzip.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : \(aqgzip\(aq
+Default   : "gzip"
+.UNINDENT
+.sp
+Possible values are:
+.INDENT 7.0
+.IP \(bu 2
+lzma
+.IP \(bu 2
+xz
+.IP \(bu 2
+bzip2
+.IP \(bu 2
+gzip
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
@@ -2585,7 +2709,7 @@ extra
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : \(aqoptional\(aq
+Default   : "optional"
 .UNINDENT
 .sp
 See \fI\%https://www.debian.org/doc/debian\-policy/ch\-archive.html#s\-priorities\fP
@@ -2865,6 +2989,44 @@ See \fI\%http://www.debian.org/doc/debian\-policy/ch\-relationships.html#s\-bina
 .UNINDENT
 .INDENT 0.0
 .TP
+.B CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : OFF
+.UNINDENT
+.sp
+Allows to generate shlibs control file automatically. Compatibility is defined by
+\fI\%CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY\fP variable value.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+Libraries are only considered if they have both library name and version
+set. This can be done by setting SOVERSION property with
+\fBset_target_properties()\fP command.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY
+Compatibility policy for auto\-generated shlibs control file.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : "="
+.UNINDENT
+.sp
+Defines compatibility policy for auto\-generated shlibs control file.
+Possible values: "=", ">="
+.sp
+See \fI\%https://www.debian.org/doc/debian\-policy/ch\-sharedlibs.html#s\-sharedlibs\-shlibdeps\fP
+.UNINDENT
+.INDENT 0.0
+.TP
 .B CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
 .TP
 .B CPACK_DEBIAN_<COMPONENT>_PACKAGE_CONTROL_EXTRA
@@ -2989,7 +3151,7 @@ CPACK_PACKAGE_FILE_NAME.
 .B CPACK_DMG_FORMAT
 The disk image format. Common values are UDRO (UDIF read\-only), UDZO (UDIF
 zlib\-compressed) or UDBZ (UDIF bzip2\-compressed). Refer to hdiutil(1) for
-more information on other available formats.
+more information on other available formats. Defaults to UDZO.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3018,6 +3180,12 @@ copied to .background/background.<ext>, where ext is the original image file
 extension.  The background image is installed into the image before
 CPACK_DMG_DS_STORE_SETUP_SCRIPT is executed or CPACK_DMG_DS_STORE is
 installed.  By default no background image is set.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_DMG_DISABLE_APPLICATIONS_SYMLINK
+Default behaviour is to include a symlink to \fB/Applications\fP in the DMG.
+Set this option to \fBON\fP to avoid adding the symlink.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3085,8 +3253,8 @@ specify its location if the auto\-detection fails to find it.)
 .UNINDENT
 .SS CPackIFW
 .sp
-This module looks for the location of the command line utilities supplied with
-the Qt Installer Framework (\fI\%QtIFW\fP).
+This module looks for the location of the command line utilities supplied
+with the Qt Installer Framework (\fI\%QtIFW\fP).
 .sp
 The module also defines several commands to control the behavior of the
 CPack \fBIFW\fP generator.
@@ -3107,7 +3275,8 @@ If you don\(aqt use a default path for the installation, please set
 the used path in the variable \fBQTIFWDIR\fP\&.
 .SS Variables
 .sp
-You can use the following variables to change behavior of CPack \fBIFW\fP generator.
+You can use the following variables to change behavior of CPack \fBIFW\fP
+generator.
 .SS Debug
 .INDENT 0.0
 .TP
@@ -3142,7 +3311,8 @@ Filename for a custom installer icon. The actual file is \(aq.icns\(aq (Mac OS X
 .INDENT 0.0
 .TP
 .B CPACK_IFW_PACKAGE_WINDOW_ICON
-Filename for a custom window icon in PNG format for the Installer application.
+Filename for a custom window icon in PNG format for the Installer
+application.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3160,7 +3330,8 @@ By default used \fI\%CPACK_IFW_PACKAGE_NAME\fP\&.
 .TP
 .B CPACK_IFW_TARGET_DIRECTORY
 Default target directory for installation.
-By default used "@ApplicationsDir@/\fBCPACK_PACKAGE_INSTALL_DIRECTORY\fP"
+By default used
+"@ApplicationsDir@/\fBCPACK_PACKAGE_INSTALL_DIRECTORY\fP"
 .sp
 You can use predefined variables.
 .UNINDENT
@@ -3223,6 +3394,7 @@ The list of remote repositories.
 .sp
 The default value of this variable is computed by CPack and contains
 all repositories added with command \fI\%cpack_ifw_add_repository()\fP
+or updated with command \fI\%cpack_ifw_update_repository()\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3284,7 +3456,7 @@ Sets the arguments specific to the CPack IFW generator.
 .sp
 .nf
 .ft C
-cpack_ifw_configure_component(<compname> [COMMON]
+cpack_ifw_configure_component(<compname> [COMMON] [ESSENTIAL]
                     [NAME <name>]
                     [VERSION <version>]
                     [SCRIPT <script>]
@@ -3296,19 +3468,22 @@ cpack_ifw_configure_component(<compname> [COMMON]
 .UNINDENT
 .UNINDENT
 .sp
-This command should be called after cpack_add_component command.
+This command should be called after \fBcpack_add_component()\fP command.
 .sp
 \fBCOMMON\fP if set, then the component will be packaged and installed as part
 of a group to which it belongs.
+.sp
+\fBESSENTIAL\fP if set, then the package manager stays disabled until that
+component is updated.
+.sp
+\fBNAME\fP is used to create domain\-like identification for this component.
+By default used origin component name.
 .sp
 \fBVERSION\fP is version of component.
 By default used \fBCPACK_PACKAGE_VERSION\fP\&.
 .sp
 \fBSCRIPT\fP is a relative or absolute path to operations script
 for this component.
-.sp
-\fBNAME\fP is used to create domain\-like identification for this component.
-By default used origin component name.
 .sp
 \fBPRIORITY\fP is priority of the component in the tree.
 .sp
@@ -3334,9 +3509,9 @@ Sets the arguments specific to the CPack IFW generator.
 .sp
 .nf
 .ft C
-cpack_ifw_configure_component_group(<grpname>
-                    [VERSION <version>]
+cpack_ifw_configure_component_group(<groupname>
                     [NAME <name>]
+                    [VERSION <version>]
                     [SCRIPT <script>]
                     [PRIORITY <priority>]
                     [LICENSES <display_name> <file_path> ...])
@@ -3345,13 +3520,15 @@ cpack_ifw_configure_component_group(<grpname>
 .UNINDENT
 .UNINDENT
 .sp
-This command should be called after cpack_add_component_group command.
+This command should be called after \fBcpack_add_component_group()\fP
+command.
+.sp
+\fBNAME\fP is used to create domain\-like identification for this component
+group.
+By default used origin component group name.
 .sp
 \fBVERSION\fP is version of component group.
 By default used \fBCPACK_PACKAGE_VERSION\fP\&.
-.sp
-\fBNAME\fP is used to create domain\-like identification for this component group.
-By default used origin component group name.
 .sp
 \fBSCRIPT\fP is a relative or absolute path to operations script
 for this component group.
@@ -3372,7 +3549,7 @@ component group. You can specify more then one license.
 .B cpack_ifw_add_repository
 .UNINDENT
 .sp
-Add \fI\%QtIFW\fP specific remote repository.
+Add \fI\%QtIFW\fP specific remote repository to binary installer.
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -3388,12 +3565,55 @@ cpack_ifw_add_repository(<reponame> [DISABLED]
 .UNINDENT
 .UNINDENT
 .sp
-This macro will also add the <reponame> repository
-to a variable \fI\%CPACK_IFW_REPOSITORIES_ALL\fP
+This command will also add the <reponame> repository
+to a variable \fI\%CPACK_IFW_REPOSITORIES_ALL\fP\&.
 .sp
 \fBDISABLED\fP if set, then the repository will be disabled by default.
 .sp
 \fBURL\fP is points to a list of available components.
+.sp
+\fBUSERNAME\fP is used as user on a protected repository.
+.sp
+\fBPASSWORD\fP is password to use on a protected repository.
+.sp
+\fBDISPLAY_NAME\fP is string to display instead of the URL.
+
+.sp
+.ce
+----
+
+.ce 0
+.sp
+.INDENT 0.0
+.TP
+.B cpack_ifw_update_repository
+.UNINDENT
+.sp
+Update \fI\%QtIFW\fP specific repository from remote repository.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cpack_ifw_update_repository(<reponame>
+                    [[ADD|REMOVE] URL <url>]|
+                     [REPLACE OLD_URL <old_url> NEW_URL <new_url>]]
+                    [USERNAME <username>]
+                    [PASSWORD <password>]
+                    [DISPLAY_NAME <display_name>])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This command will also add the <reponame> repository
+to a variable \fI\%CPACK_IFW_REPOSITORIES_ALL\fP\&.
+.sp
+\fBURL\fP is points to a list of available components.
+.sp
+\fBOLD_URL\fP is points to a list that will replaced.
+.sp
+\fBNEW_URL\fP is points to a list that will replace to.
 .sp
 \fBUSERNAME\fP is used as user on a protected repository.
 .sp
@@ -3461,6 +3681,9 @@ Qt Installer Framework Manual:
 .TP
 .B Predefined Variables
 \fI\%http://doc.qt.io/qtinstallerframework/scripting.html#predefined\-variables\fP
+.TP
+.B Promoting Updates
+\fI\%http://doc.qt.io/qtinstallerframework/ifw\-updates.html\fP
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -3645,35 +3868,67 @@ later versions of Mac OS X.
 .UNINDENT
 .SS CPackRPM
 .sp
-The builtin (binary) CPack RPM generator (Unix only)
+The built in (binary) CPack RPM generator (Unix only)
 .SS Variables specific to CPack RPM generator
 .sp
-CPackRPM may be used to create RPM package using CPack.  CPackRPM is a
-CPack generator thus it uses the CPACK_XXX variables used by CPack :
-\fI\%https://cmake.org/Wiki/CMake:CPackConfiguration\fP
+CPackRPM may be used to create RPM packages using \fBCPack\fP\&.
+CPackRPM is a \fBCPack\fP generator thus it uses the \fBCPACK_XXX\fP
+variables used by \fBCPack\fP\&.
 .sp
-However CPackRPM has specific features which are controlled by the
-specifics CPACK_RPM_XXX variables.  CPackRPM is a component aware
-generator so when CPACK_RPM_COMPONENT_INSTALL is ON some more
-CPACK_RPM_<ComponentName>_XXXX variables may be used in order to have
-component specific values.  Note however that <componentName> refers
-to the \fBgrouping name\fP\&.  This may be either a component name or a
-component GROUP name.  Usually those vars correspond to RPM spec file
-entities, one may find information about spec files here
-\fI\%http://www.rpm.org/wiki/Docs\fP\&.  You\(aqll find a detailed usage of
-CPackRPM on the wiki:
+CPackRPM has specific features which are controlled by the specifics
+\fBCPACK_RPM_XXX\fP variables.
+.sp
+\fBCPACK_RPM_<COMPONENT>_XXXX\fP variables may be used in order to have
+\fBcomponent\fP specific values.  Note however that \fB<COMPONENT>\fP refers to the
+\fBgrouping name\fP written in upper case. It may be either a component name or
+a component GROUP name. Usually those variables correspond to RPM spec file
+entities. One may find information about spec files here
+\fI\%http://www.rpm.org/wiki/Docs\fP
+.sp
+\fBNOTE:\fP
 .INDENT 0.0
 .INDENT 3.5
-.sp
-.nf
-.ft C
-https://cmake.org/Wiki/CMake:CPackPackageGenerators#RPM_.28Unix_Only.29
-.ft P
-.fi
+\fI<COMPONENT>\fP part of variables is preferred to be in upper case (for e.g. if
+component is named \fIfoo\fP then use \fICPACK_RPM_FOO_XXXX\fP variable name format)
+as is with other \fICPACK_<COMPONENT>_XXXX\fP variables.
+For the purposes of back compatibility (CMake/CPack version 3.5 and lower)
+support for same cased component (e.g. \fIfOo\fP would be used as
+\fICPACK_RPM_fOo_XXXX\fP) is still supported for variables defined in older
+versions of CMake/CPack but is not guaranteed for variables that
+will be added in the future. For the sake of back compatibility same cased
+component variables also override upper cased versions where both are
+present.
 .UNINDENT
 .UNINDENT
 .sp
-However as a handy reminder here comes the list of specific variables:
+Here are some CPackRPM wiki resources that are here for historic reasons and
+are no longer maintained but may still prove useful:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+\fI\%https://cmake.org/Wiki/CMake:CPackConfiguration\fP
+.IP \(bu 2
+\fI\%https://cmake.org/Wiki/CMake:CPackPackageGenerators#RPM_.28Unix_Only.29\fP
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+List of CPackRPM specific variables:
+.INDENT 0.0
+.TP
+.B CPACK_RPM_PACKAGE_COMPONENT
+Enable component packaging for CPackRPM
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : OFF
+.UNINDENT
+.sp
+If enabled (ON) multiple packages are generated. By default a single package
+containing files of all components is generated.
+.UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_PACKAGE_SUMMARY
@@ -3684,7 +3939,7 @@ The RPM package summary.
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : CPACK_PACKAGE_DESCRIPTION_SUMMARY
+Default   : \fBCPACK_PACKAGE_DESCRIPTION_SUMMARY\fP
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
@@ -3697,7 +3952,43 @@ The RPM package name.
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : CPACK_PACKAGE_NAME
+Default   : \fBCPACK_PACKAGE_NAME\fP
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_FILE_NAME
+.TP
+.B CPACK_RPM_<component>_FILE_NAME
+Package file name.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : YES
+.IP \(bu 2
+.INDENT 2.0
+.TP
+.B Default
+\fB<CPACK_PACKAGE_FILE_NAME>[\-<component>].rpm\fP with spaces
+replaced by \(aq\-\(aq
+.UNINDENT
+.UNINDENT
+.sp
+This may be set to \fBRPM\-DEFAULT\fP to allow rpmbuild tool to generate package
+file name by itself.
+Alternatively provided package file name must end with \fB\&.rpm\fP suffix.
+.sp
+\fBNOTE:\fP
+.INDENT 7.0
+.INDENT 3.5
+By using user provided spec file, rpm macro extensions such as for
+generating debuginfo packages or by simply using multiple components more
+than one rpm file may be generated, either from a single spec file or from
+multiple spec files (each component execution produces it\(aqs own spec file).
+In such cases duplicate file names may occur as a result of this variable
+setting or spec file content structure. Duplicate files get overwritten
+and it is up to the packager to set the variables in a manner that will
+prevent such errors.
+.UNINDENT
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
@@ -3708,7 +3999,7 @@ The RPM package version.
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : CPACK_PACKAGE_VERSION
+Default   : \fBCPACK_PACKAGE_VERSION\fP
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
@@ -3721,10 +4012,10 @@ The RPM package architecture.
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default   : Native architecture output by "uname \-m"
+Default   : Native architecture output by \fBuname \-m\fP
 .UNINDENT
 .sp
-This may be set to "noarch" if you know you are building a noarch package.
+This may be set to \fBnoarch\fP if you know you are building a noarch package.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3739,9 +4030,33 @@ Default   : 1
 .sp
 This is the numbering of the RPM package itself, i.e. the version of the
 packaging and not the version of the content (see
-CPACK_RPM_PACKAGE_VERSION). One may change the default value if the
-previous packaging was buggy and/or you want to put here a fancy Linux
+\fI\%CPACK_RPM_PACKAGE_VERSION\fP). One may change the default value if
+the previous packaging was buggy and/or you want to put here a fancy Linux
 distro specific numbering.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+This is the string that goes into the RPM \fBRelease:\fP field. Some distros
+(e.g. Fedora, CentOS) require \fB1%{?dist}\fP format and not just a number.
+\fB%{?dist}\fP part can be added by setting \fI\%CPACK_RPM_PACKAGE_RELEASE_DIST\fP\&.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_PACKAGE_RELEASE_DIST
+The dist tag that is added  RPM \fBRelease:\fP field.
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : OFF
+.UNINDENT
+.sp
+This is the reported \fB%{dist}\fP tag from the current distribution or empty
+\fB%{dist}\fP if RPM macro is not set. If this variable is set then RPM
+\fBRelease:\fP field value is set to \fB${CPACK_RPM_PACKAGE_RELEASE}%{?dist}\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3801,9 +4116,9 @@ RPM package description.
 .IP \(bu 2
 Mandatory : YES
 .IP \(bu 2
-Default : CPACK_COMPONENT_<compName>_DESCRIPTION (component based installers
-only) if set, CPACK_PACKAGE_DESCRIPTION_FILE if set or "no package
-description available"
+Default : \fBCPACK_COMPONENT_<compName>_DESCRIPTION\fP (component
+based installers only) if set, \fBCPACK_PACKAGE_DESCRIPTION_FILE\fP
+if set or "no package description available"
 .UNINDENT
 .UNINDENT
 .INDENT 0.0
@@ -3819,8 +4134,20 @@ Default   : \-
 .sp
 May be used to override RPM compression type to be used to build the
 RPM. For example some Linux distribution now default to lzma or xz
-compression whereas older cannot use such RPM.  Using this one can enforce
-compression type to be used.  Possible value are: lzma, xz, bzip2 and gzip.
+compression whereas older cannot use such RPM. Using this one can enforce
+compression type to be used.
+.sp
+Possible values are:
+.INDENT 7.0
+.IP \(bu 2
+lzma
+.IP \(bu 2
+xz
+.IP \(bu 2
+bzip2
+.IP \(bu 2
+gzip
+.UNINDENT
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -3841,7 +4168,7 @@ dependency detection. Dependencies are added to requires list.
 \fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
-By defalut automatic dependency detection is enabled by rpm generator.
+By default automatic dependency detection is enabled by rpm generator.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -3865,7 +4192,7 @@ provides list.
 \fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
-By defalut automatic provides detection is enabled by rpm generator.
+By default automatic provides detection is enabled by rpm generator.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -3889,7 +4216,7 @@ for more details.
 \fBNOTE:\fP
 .INDENT 7.0
 .INDENT 3.5
-By defalut automatic detection feature is enabled by rpm.
+By default automatic detection feature is enabled by rpm.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -3906,7 +4233,7 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM dependencies (requires).  Note that you must enclose
+May be used to set RPM dependencies (requires). Note that you must enclose
 the complete requires string between quotes, for example:
 .INDENT 7.0
 .INDENT 3.5
@@ -3944,8 +4271,8 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set negative RPM dependencies (conflicts). Note that you must enclose
-the complete requires string between quotes, for example:
+May be used to set negative RPM dependencies (conflicts). Note that you must
+enclose the complete requires string between quotes, for example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -3982,8 +4309,8 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM preinstall dependencies (requires(pre)).  Note that you must enclose
-the complete requires string between quotes, for example:
+May be used to set RPM preinstall dependencies (requires(pre)). Note that
+you must enclose the complete requires string between quotes, for example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -4008,8 +4335,8 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM postinstall dependencies (requires(post)).  Note that you must enclose
-the complete requires string between quotes, for example:
+May be used to set RPM postinstall dependencies (requires(post)). Note that
+you must enclose the complete requires string between quotes, for example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -4034,8 +4361,9 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM postuninstall dependencies (requires(postun)).  Note that you must enclose
-the complete requires string between quotes, for example:
+May be used to set RPM postuninstall dependencies (requires(postun)). Note
+that you must enclose the complete requires string between quotes, for
+example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -4060,8 +4388,8 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM preuninstall dependencies (requires(preun)).  Note that you must enclose
-the complete requires string between quotes, for example:
+May be used to set RPM preuninstall dependencies (requires(preun)). Note that
+you must enclose the complete requires string between quotes, for example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -4086,7 +4414,7 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set weak RPM dependencies (suggests).  Note that you must
+May be used to set weak RPM dependencies (suggests). Note that you must
 enclose the complete requires string between quotes.
 .UNINDENT
 .INDENT 0.0
@@ -4102,7 +4430,7 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to set RPM dependencies (provides).  The provided package list
+May be used to set RPM dependencies (provides). The provided package list
 of an RPM file could be printed with:
 .INDENT 7.0
 .INDENT 3.5
@@ -4155,14 +4483,15 @@ rpm \-\-prefix or \-\-relocate
 .UNINDENT
 .UNINDENT
 .sp
-in order to install it at an alternate place see rpm(8).  Note that
-currently this may fail if CPACK_SET_DESTDIR is set to ON.  If
-CPACK_SET_DESTDIR is set then you will get a warning message but if there
-is file installed with absolute path you\(aqll get unexpected behavior.
+in order to install it at an alternate place see rpm(8). Note that
+currently this may fail if \fBCPACK_SET_DESTDIR\fP is set to \fBON\fP\&. If
+\fBCPACK_SET_DESTDIR\fP is set then you will get a warning message but
+if there is file installed with absolute path you\(aqll get unexpected behavior.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_SPEC_INSTALL_POST
+Deprecated \- use \fI\%CPACK_RPM_POST_INSTALL_SCRIPT_FILE\fP instead.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4173,9 +4502,9 @@ Deprecated: YES
 .UNINDENT
 .sp
 This way of specifying post\-install script is deprecated, use
-CPACK_RPM_POST_INSTALL_SCRIPT_FILE.
+\fI\%CPACK_RPM_POST_INSTALL_SCRIPT_FILE\fP\&.
 May be used to set an RPM post\-install command inside the spec file.
-For example setting it to "/bin/true" may be used to prevent
+For example setting it to \fB/bin/true\fP may be used to prevent
 rpmbuild to strip binaries.
 .UNINDENT
 .INDENT 0.0
@@ -4189,7 +4518,7 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to add any %define lines to the generated spec file.
+May be used to add any \fB%define\fP lines to the generated spec file.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -4218,6 +4547,8 @@ cpack \-D CPACK_RPM_PACKAGE_DEBUG=1 \-G RPM
 .INDENT 0.0
 .TP
 .B CPACK_RPM_USER_BINARY_SPECFILE
+.TP
+.B CPACK_RPM_<componentName>_USER_BINARY_SPECFILE
 A user provided spec file.
 .INDENT 7.0
 .IP \(bu 2
@@ -4229,8 +4560,6 @@ Default   : \-
 May be set by the user in order to specify a USER binary spec file
 to be used by CPackRPM instead of generating the file.
 The specified file will be processed by configure_file( @ONLY).
-One can provide a component specific file by setting
-CPACK_RPM_<componentName>_USER_BINARY_SPECFILE.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -4257,13 +4586,15 @@ cpack \-D CPACK_RPM_GENERATE_USER_BINARY_SPECFILE_TEMPLATE=1 \-G RPM
 .UNINDENT
 .sp
 The user may then use this file in order to hand\-craft is own
-binary spec file which may be used with CPACK_RPM_USER_BINARY_SPECFILE.
+binary spec file which may be used with
+\fI\%CPACK_RPM_USER_BINARY_SPECFILE\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_PRE_INSTALL_SCRIPT_FILE
 .TP
 .B CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE
+Path to file containing pre (un)install script.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4272,12 +4603,12 @@ Default   : \-
 .UNINDENT
 .sp
 May be used to embed a pre (un)installation script in the spec file.
-The refered script file(s) will be read and directly
-put after the %pre or %preun section
-If CPACK_RPM_COMPONENT_INSTALL is set to ON the (un)install script for
-each component can be overridden with
-CPACK_RPM_<COMPONENT>_PRE_INSTALL_SCRIPT_FILE and
-CPACK_RPM_<COMPONENT>_PRE_UNINSTALL_SCRIPT_FILE.
+The referred script file (or both) will be read and directly
+put after the \fB%pre\fP or \fB%preun\fP section
+If \fI\%CPACK_RPM_PACKAGE_COMPONENT\fP is set to ON the (un)install
+script for each component can be overridden with
+\fBCPACK_RPM_<COMPONENT>_PRE_INSTALL_SCRIPT_FILE\fP and
+\fBCPACK_RPM_<COMPONENT>_PRE_UNINSTALL_SCRIPT_FILE\fP\&.
 One may verify which scriptlet has been included with:
 .INDENT 7.0
 .INDENT 3.5
@@ -4295,6 +4626,7 @@ rpm \-qp \-\-scripts  package.rpm
 .B CPACK_RPM_POST_INSTALL_SCRIPT_FILE
 .TP
 .B CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE
+Path to file containing post (un)install script.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4303,12 +4635,12 @@ Default   : \-
 .UNINDENT
 .sp
 May be used to embed a post (un)installation script in the spec file.
-The refered script file(s) will be read and directly
-put after the %post or %postun section.
-If CPACK_RPM_COMPONENT_INSTALL is set to ON the (un)install script for
-each component can be overridden with
-CPACK_RPM_<COMPONENT>_POST_INSTALL_SCRIPT_FILE and
-CPACK_RPM_<COMPONENT>_POST_UNINSTALL_SCRIPT_FILE.
+The referred script file (or both) will be read and directly
+put after the \fB%post\fP or \fB%postun\fP section.
+If \fI\%CPACK_RPM_PACKAGE_COMPONENT\fP is set to ON the (un)install
+script for each component can be overridden with
+\fBCPACK_RPM_<COMPONENT>_POST_INSTALL_SCRIPT_FILE\fP and
+\fBCPACK_RPM_<COMPONENT>_POST_UNINSTALL_SCRIPT_FILE\fP\&.
 One may verify which scriptlet has been included with:
 .INDENT 7.0
 .INDENT 3.5
@@ -4333,11 +4665,11 @@ Mandatory : NO
 Default   : \-
 .UNINDENT
 .sp
-May be used to explicitly specify %(<directive>) file line
-in the spec file. Like %config(noreplace) or any other directive
-that be found in the %files section. Since CPackRPM is generating
+May be used to explicitly specify \fB%(<directive>)\fP file line
+in the spec file. Like \fB%config(noreplace)\fP or any other directive
+that be found in the \fB%files\fP section. Since CPackRPM is generating
 the list of files (and directories) the user specified files of
-the CPACK_RPM_<COMPONENT>_USER_FILELIST list will be removed from
+the \fBCPACK_RPM_<COMPONENT>_USER_FILELIST\fP list will be removed from
 the generated list.
 .UNINDENT
 .INDENT 0.0
@@ -4352,7 +4684,7 @@ Default   : \-
 .UNINDENT
 .sp
 May be used to embed a changelog in the spec file.
-The refered file will be read and directly put after the %changelog
+The referred file will be read and directly put after the \fB%changelog\fP
 section.
 .UNINDENT
 .INDENT 0.0
@@ -4370,8 +4702,8 @@ May be used to exclude path (directories or files) from the auto\-generated
 list of paths discovered by CPack RPM. The defaut value contains a
 reasonable set of values if the variable is not defined by the user. If the
 variable is defined by the user then CPackRPM will NOT any of the default
-path.  If you want to add some path to the default list then you can use
-CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION variable.
+path. If you want to add some path to the default list then you can use
+\fI\%CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION\fP variable.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -4385,11 +4717,13 @@ Default   : \-
 .UNINDENT
 .sp
 May be used to add more exclude path (directories or files) from the initial
-default list of excluded paths. See CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST.
+default list of excluded paths. See
+\fI\%CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST\fP\&.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_RELOCATION_PATHS
+Packages relocation paths list.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4399,22 +4733,24 @@ Default   : \-
 .sp
 May be used to specify more than one relocation path per relocatable RPM.
 Variable contains a list of relocation paths that if relative are prefixed
-by the value of CPACK_RPM_<COMPONENT>_PACKAGE_PREFIX or by the value of
-CPACK_PACKAGING_INSTALL_PREFIX if the component version is not provided.
+by the value of \fI\%CPACK_RPM_<COMPONENT>_PACKAGE_PREFIX\fP or by the
+value of \fBCPACK_PACKAGING_INSTALL_PREFIX\fP if the component version
+is not provided.
 Variable is not component based as its content can be used to set a different
 path prefix for e.g. binary dir and documentation dir at the same time.
 Only prefixes that are required by a certain component are added to that
 component \- component must contain at least one file/directory/symbolic link
-with CPACK_RPM_RELOCATION_PATHS prefix for a certain relocation path
-to be added. Package will not contain any relocation paths if there are no
-files/directories/symbolic links on any of the provided prefix locations.
+with \fI\%CPACK_RPM_RELOCATION_PATHS\fP prefix for a certain relocation
+path to be added. Package will not contain any relocation paths if there are
+no files/directories/symbolic links on any of the provided prefix locations.
 Packages that either do not contain any relocation paths or contain
 files/directories/symbolic links that are outside relocation paths print
-out an AUTHOR_WARNING that RPM will be partially relocatable.
+out an \fBAUTHOR_WARNING\fP that RPM will be partially relocatable.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_<COMPONENT>_PACKAGE_PREFIX
+Per component relocation path install prefix.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4422,14 +4758,15 @@ Mandatory : NO
 Default   : CPACK_PACKAGING_INSTALL_PREFIX
 .UNINDENT
 .sp
-May be used to set per component CPACK_PACKAGING_INSTALL_PREFIX for
-relocatable RPM packages.
+May be used to set per component \fBCPACK_PACKAGING_INSTALL_PREFIX\fP
+for relocatable RPM packages.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CPACK_RPM_NO_INSTALL_PREFIX_RELOCATION
 .TP
 .B CPACK_RPM_NO_<COMPONENT>_INSTALL_PREFIX_RELOCATION
+Removal of default install prefix from relocation paths list.
 .INDENT 7.0
 .IP \(bu 2
 Mandatory : NO
@@ -4489,6 +4826,93 @@ RPM macro:
 /usr/lib/.*/man/man.*
 .UNINDENT
 .UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_DEFAULT_USER
+.TP
+.B CPACK_RPM_<compName>_DEFAULT_USER
+default user ownership of RPM content
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : root
+.UNINDENT
+.sp
+Value should be user name and not UID.
+Note that <compName> must be in upper\-case.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_DEFAULT_GROUP
+.TP
+.B CPACK_RPM_<compName>_DEFAULT_GROUP
+default group ownership of RPM content
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : root
+.UNINDENT
+.sp
+Value should be group name and not GID.
+Note that <compName> must be in upper\-case.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_DEFAULT_FILE_PERMISSIONS
+.TP
+.B CPACK_RPM_<compName>_DEFAULT_FILE_PERMISSIONS
+default permissions used for packaged files
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : \- (system default)
+.UNINDENT
+.sp
+Accepted values are lists with \fBPERMISSIONS\fP\&. Valid permissions
+are:
+.INDENT 7.0
+.IP \(bu 2
+OWNER_READ
+.IP \(bu 2
+OWNER_WRITE
+.IP \(bu 2
+OWNER_EXECUTE
+.IP \(bu 2
+GROUP_READ
+.IP \(bu 2
+GROUP_WRITE
+.IP \(bu 2
+GROUP_EXECUTE
+.IP \(bu 2
+WORLD_READ
+.IP \(bu 2
+WORLD_WRITE
+.IP \(bu 2
+WORLD_EXECUTE
+.UNINDENT
+.sp
+Note that <compName> must be in upper\-case.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CPACK_RPM_DEFAULT_DIR_PERMISSIONS
+.TP
+.B CPACK_RPM_<compName>_DEFAULT_DIR_PERMISSIONS
+default permissions used for packaged directories
+.INDENT 7.0
+.IP \(bu 2
+Mandatory : NO
+.IP \(bu 2
+Default   : \- (system default)
+.UNINDENT
+.sp
+Accepted values are lists with PERMISSIONS. Valid permissions
+are the same as for \fI\%CPACK_RPM_DEFAULT_FILE_PERMISSIONS\fP\&.
+Note that <compName> must be in upper\-case.
+.UNINDENT
 .SS Packaging of Symbolic Links
 .sp
 CPackRPM supports packaging of symbolic links:
@@ -4516,10 +4940,11 @@ those locations will be treated as if they were a part of the package
 while determining if symlink should be either created or present in a
 post install script \- depending on relocation paths.
 .sp
-Currenty there are a few limitations though:
+Symbolic links that point to locations outside packaging path produce a
+warning and are treated as non relocatable permanent symbolic links.
+.sp
+Currently there are a few limitations though:
 .INDENT 0.0
-.IP \(bu 2
-Only symbolic links with relative path can be packaged.
 .IP \(bu 2
 For component based packaging component interdependency is not checked
 when processing symbolic links. Symbolic links pointing to content of
@@ -5160,7 +5585,7 @@ ARPHELPLINK \- Help and support information URL
 .IP \(bu 2
 ARPURLINFOABOUT \- General information URL
 .IP \(bu 2
-URLUPDATEINFO \- Update information URL
+ARPURLUPDATEINFO \- Update information URL
 .IP \(bu 2
 ARPHELPTELEPHONE \- Help and support telephone number
 .IP \(bu 2
@@ -5247,14 +5672,23 @@ set(CTEST_USE_LAUNCHERS 1)
 in the \fBCTestConfig.cmake\fP file.
 .SS CTestCoverageCollectGCOV
 .sp
-This module provides the function \fBctest_coverage_collect_gcov\fP\&.
-The function will run gcov on the .gcda files in a binary tree and then
-package all of the .gcov files into a tar file with a data.json that
-contains the source and build directories for CDash to use in parsing
-the coverage data. In addtion the Labels.json files for targets that
-have coverage information are also put in the tar file for CDash to
-asign the correct labels. This file can be sent to a CDash server for
-display with the
+This module provides the \fBctest_coverage_collect_gcov\fP function.
+.sp
+This function runs gcov on all .gcda files found in the binary tree
+and packages the resulting .gcov files into a tar file.
+This tarball also contains the following:
+.INDENT 0.0
+.IP \(bu 2
+\fIdata.json\fP defines the source and build directories for use by CDash.
+.IP \(bu 2
+\fILabels.json\fP indicates any \fBLABELS\fP that have been set on the
+source files.
+.IP \(bu 2
+The \fIuncovered\fP directory holds any uncovered files found by
+\fBCTEST_EXTRA_COVERAGE_GLOB\fP\&.
+.UNINDENT
+.sp
+After generating this tar file, it can be sent to CDash for display with the
 \fBctest_submit(CDASH_UPLOAD)\fP command.
 .INDENT 0.0
 .TP
@@ -5298,6 +5732,13 @@ Default is the value of \fBCTEST_COVERAGE_COMMAND\fP\&.
 Specify options to be passed to gcov.  The \fBgcov\fP command
 is run as \fBgcov <options>... \-o <gcov\-dir> <file>.gcda\fP\&.
 If not specified, the default option is just \fB\-b\fP\&.
+.TP
+.B \fBGLOB\fP
+Recursively search for .gcda files in build_dir rather than
+determining search locations by reading TargetDirectories.txt.
+.TP
+.B \fBDELETE\fP
+Delete coverage files after they\(aqve been packaged into the .tar.
 .TP
 .B \fBQUIET\fP
 Suppress non\-error messages that otherwise would have been
@@ -5967,6 +6408,11 @@ The optional name of the remote, default to \fBorigin\fP
 .B \fBGIT_SUBMODULES <module>...\fP
 Git submodules that shall be updated, all if empty
 .TP
+.B \fBGIT_SHALLOW 1\fP
+Tell Git to clone with \fB\-\-depth 1\fP\&.   Use when \fBGIT_TAG\fP is not
+specified or when it names a branch in order to download only the
+tip of the branch without the rest of its history.
+.TP
 .B \fBHG_REPOSITORY <url>\fP
 URL of mercurial repo
 .TP
@@ -5990,6 +6436,10 @@ Path to a certificate authority file
 .TP
 .B \fBTIMEOUT <seconds>\fP
 Time allowed for file download operations
+.TP
+.B \fBDOWNLOAD_NO_EXTRACT 1\fP
+Just download the file and do not extract it; the full path to the
+downloaded file is available as \fB<DOWNLOADED_FILE>\fP\&.
 .UNINDENT
 .sp
 Update/Patch step options are:
@@ -6039,7 +6489,7 @@ Arguments may use
 .B \fBCMAKE_CACHE_ARGS <arg>...\fP
 Initial cache arguments, of the form \fB\-Dvar:string=on\fP\&.
 These arguments are written in a pre\-load a script that populates
-CMake cache, see also \fBcmake \-C\fP\&. This allows to
+CMake cache, see also \fBcmake \-C\fP\&. This allows one to
 overcome command line length limits.
 These arguments are \fBset()\fP using the \fBFORCE\fP argument,
 and therefore cannot be changed by the user.
@@ -6049,7 +6499,7 @@ Arguments may use
 .B \fBCMAKE_CACHE_DEFAULT_ARGS <arg>...\fP
 Initial default cache arguments, of the form \fB\-Dvar:string=on\fP\&.
 These arguments are written in a pre\-load a script that populates
-CMake cache, see also \fBcmake \-C\fP\&. This allows to
+CMake cache, see also \fBcmake \-C\fP\&. This allows one to
 overcome command line length limits.
 These arguments can be used as default value that will be set if no
 previous value is found in the cache, and that the user can change
@@ -6213,7 +6663,7 @@ tarball, or refer to a remote tarball (e.g. \fBhttp://.../src.tgz\fP).
 If \fBUPDATE_DISCONNECTED\fP is set, the update step is not executed
 automatically when building the main target. The update step can still
 be added as a step target and called manually. This is useful if you
-want to allow to build the project when you are disconnected from the
+want to allow one to build the project when you are disconnected from the
 network (you might still need the network for the download step).
 This is disabled by default.
 The directory property \fBEP_UPDATE_DISCONNECTED\fP can be used to change
@@ -6979,9 +7429,9 @@ BLA_F95     if set on tries to find the f95 interfaces for BLAS/LAPACK
 .UNINDENT
 .sp
 ######### ## List of vendors (BLA_VENDOR) valid in this module #
-Goto,ATLAS PhiPACK,CXML,DXML,SunPerf,SCSL,SGIMATH,IBMESSL,Intel10_32
-(intel mkl v10 32 bit),Intel10_64lp (intel mkl v10 64 bit,lp thread
-model, lp64 model), # Intel10_64lp_seq (intel mkl v10 64
+Goto,OpenBLAS,ATLAS PhiPACK,CXML,DXML,SunPerf,SCSL,SGIMATH,IBMESSL,
+Intel10_32 (intel mkl v10 32 bit),Intel10_64lp (intel mkl v10 64 bit,
+lp thread model, lp64 model), # Intel10_64lp_seq (intel mkl v10 64
 bit,sequential code, lp64 model), # Intel( older versions of mkl 32
 and 64 bit), ACML,ACML_MP,ACML_GPU,Apple, NAS, Generic C/CXX should be
 enabled to use Intel mkl
@@ -7515,7 +7965,7 @@ CUDA_HOST_COMPILER (Default CMAKE_C_COMPILER, $(VCInstallDir)/bin for VS)
    \-\-compiler\-bindir is already present in the CUDA_NVCC_FLAGS or
    CUDA_NVCC_FLAGS_<CONFIG> variables.  For Visual Studio targets
    $(VCInstallDir)/bin is a special value that expands out to the path when
-   the command is run from withing VS.
+   the command is run from within VS.
 
 CUDA_NVCC_FLAGS
 CUDA_NVCC_FLAGS_<CONFIG>
@@ -7657,7 +8107,7 @@ CUDA_WRAP_SRCS ( cuda_target format generated_files file0 file1 ...
    The arguments passed in after OPTIONS are extra command line options to
    give to nvcc.  You can also specify per configuration options by
    specifying the name of the configuration followed by the options.  General
-   options must preceed configuration specific options.  Not all
+   options must precede configuration specific options.  Not all
    configurations need to be specified, only the ones provided will be used.
 
       OPTIONS \-DFLAG=2 "\-DFLAG_OTHER=space in flag"
@@ -7712,6 +8162,7 @@ CUDA_VERSION_MAJOR    \-\- The major version of cuda as reported by nvcc.
 CUDA_VERSION_MINOR    \-\- The minor version.
 CUDA_VERSION
 CUDA_VERSION_STRING   \-\- CUDA_VERSION_MAJOR.CUDA_VERSION_MINOR
+CUDA_HAS_FP16         \-\- Whether a short float (float16,fp16) is supported.
 
 CUDA_TOOLKIT_ROOT_DIR \-\- Path to the CUDA Toolkit (defined if not set).
 CUDA_SDK_ROOT_DIR     \-\- Path to the CUDA SDK.  Use this to find files in the
@@ -8896,7 +9347,7 @@ help this module find the correct files:
 .sp
 .nf
 .ft C
-GSL_CLBAS_LIBRARY       \- Location of the GSL CBLAS library.
+GSL_CBLAS_LIBRARY       \- Location of the GSL CBLAS library.
 GSL_CBLAS_LIBRARY_DEBUG \- Location of the debug GSL CBLAS library (if any).
 GSL_CONFIG_EXECUTABLE   \- Location of the \(ga\(gagsl\-config\(ga\(ga script (if any).
 GSL_LIBRARY             \- Location of the GSL library.
@@ -9005,8 +9456,7 @@ a list of source files to search for tests and test fixtures.  Or
 .UNINDENT
 .sp
 However, note that this macro will slow down your tests by running
-an executable for each test and test fixture.  You will also have to
-re\-run CMake after adding or removing tests or test fixtures.
+an executable for each test and test fixture.
 .sp
 Example usage:
 .INDENT 0.0
@@ -9219,28 +9669,57 @@ This module will define the following variables:
 .sp
 .nf
 .ft C
+HDF5_FOUND \- true if HDF5 was found on the system
+HDF5_VERSION \- HDF5 version in format Major.Minor.Release
 HDF5_INCLUDE_DIRS \- Location of the hdf5 includes
 HDF5_INCLUDE_DIR \- Location of the hdf5 includes (deprecated)
 HDF5_DEFINITIONS \- Required compiler definitions for HDF5
-HDF5_C_LIBRARIES \- Required libraries for the HDF5 C bindings.
+HDF5_LIBRARIES \- Required libraries for all requested bindings
+HDF5_HL_LIBRARIES \- Required libraries for the HDF5 high level API for all
+                    bindings, if the HL component is enabled
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Available components are: C CXX Fortran and HL.  For each enabled language
+binding, a corresponding HDF5_${LANG}_LIBRARIES variable will be defined.
+If the HL component is enabled, then an HDF5_${LANG}_HL_LIBRARIES will
+also be defined.  With all components enabled, the following variables will be defined:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+HDF5_C_LIBRARIES \- Required libraries for the HDF5 C bindings
 HDF5_CXX_LIBRARIES \- Required libraries for the HDF5 C++ bindings
 HDF5_Fortran_LIBRARIES \- Required libraries for the HDF5 Fortran bindings
-HDF5_HL_LIBRARIES \- Required libraries for the HDF5 high level API
+HDF5_C_HL_LIBRARIES \- Required libraries for the high level C bindings
+HDF5_CXX_HL_LIBRARIES \- Required libraries for the high level C++ bindings
 HDF5_Fortran_HL_LIBRARIES \- Required libraries for the high level Fortran
                             bindings.
-HDF5_LIBRARIES \- Required libraries for all requested bindings
-HDF5_FOUND \- true if HDF5 was found on the system
-HDF5_VERSION \- HDF5 version in format Major.Minor.Release
-HDF5_LIBRARY_DIRS \- the full set of library directories
+
 HDF5_IS_PARALLEL \- Whether or not HDF5 was found with parallel IO support
 HDF5_C_COMPILER_EXECUTABLE \- the path to the HDF5 C wrapper compiler
 HDF5_CXX_COMPILER_EXECUTABLE \- the path to the HDF5 C++ wrapper compiler
 HDF5_Fortran_COMPILER_EXECUTABLE \- the path to the HDF5 Fortran wrapper compiler
+HDF5_C_COMPILER_EXECUTABLE_NO_INTERROGATE \- path to the primary C compiler
+                                            which is also the HDF5 wrapper
+HDF5_CXX_COMPILER_EXECUTABLE_NO_INTERROGATE \- path to the primary C++
+                                              compiler which is also
+                                              the HDF5 wrapper
+HDF5_Fortran_COMPILER_EXECUTABLE_NO_INTERROGATE \- path to the primary
+                                                  Fortran compiler which
+                                                  is also the HDF5 wrapper
 HDF5_DIFF_EXECUTABLE \- the path to the HDF5 dataset comparison tool
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
+.sp
+The following variable can be set to guide the search for HDF5 libraries and includes:
+.sp
+HDF5_ROOT
 .SS FindHg
 .sp
 Extract information from a mercurial working copy.
@@ -9767,7 +10246,7 @@ This module sets the following result variables:
 Java_JAVA_EXECUTABLE      = the full path to the Java runtime
 Java_JAVAC_EXECUTABLE     = the full path to the Java compiler
 Java_JAVAH_EXECUTABLE     = the full path to the Java header generator
-Java_JAVADOC_EXECUTABLE   = the full path to the Java documention generator
+Java_JAVADOC_EXECUTABLE   = the full path to the Java documentation generator
 Java_IDLJ_EXECUTABLE      = the full path to the Java idl compiler
 Java_JAR_EXECUTABLE       = the full path to the Java archiver
 Java_JARSIGNER_EXECUTABLE = the full path to the Java jar signer
@@ -10117,7 +10596,7 @@ BLA_F95     if set on tries to find the f95 interfaces for BLAS/LAPACK
 .UNINDENT
 .sp
 ## List of vendors (BLA_VENDOR) valid in this module # Intel(mkl),
-ACML,Apple, NAS, Generic
+OpenBLAS, ACML,Apple, NAS, Generic
 .SS FindLATEX
 .sp
 Find Latex
@@ -10281,6 +10760,40 @@ Link to these if you need to link against the exslt library.
 .TP
 .B \fBLIBXSLT_XSLTPROC_EXECUTABLE\fP
 Contains the full path to the xsltproc executable if found.
+.UNINDENT
+.SS FindLTTngUST
+.sp
+This module finds the \fI\%LTTng\-UST\fP library.
+.SS Imported target
+.sp
+This module defines the following \fBIMPORTED\fP target:
+.INDENT 0.0
+.TP
+.B \fBLTTng::UST\fP
+The LTTng\-UST library, if found
+.UNINDENT
+.SS Result variables
+.sp
+This module sets the following
+.INDENT 0.0
+.TP
+.B \fBLTTNGUST_FOUND\fP
+\fBTRUE\fP if system has LTTng\-UST
+.TP
+.B \fBLTTNGUST_INCLUDE_DIRS\fP
+The LTTng\-UST include directories
+.TP
+.B \fBLTTNGUST_LIBRARIES\fP
+The libraries needed to use LTTng\-UST
+.TP
+.B \fBLTTNGUST_VERSION_STRING\fP
+The LTTng\-UST version
+.TP
+.B \fBLTTNGUST_HAS_TRACEF\fP
+\fBTRUE\fP if the \fBtracef()\fP API is available in the system\(aqs LTTng\-UST
+.TP
+.B \fBLTTNGUST_HAS_TRACELOG\fP
+\fBTRUE\fP if the \fBtracelog()\fP API is available in the system\(aqs LTTng\-UST
 .UNINDENT
 .SS FindLua50
 .sp
@@ -10572,7 +11085,7 @@ useful for the searching all possible Matlab installation.
 .TP
 .B \fI\%matlab_get_mex_suffix()\fP
 returns the suffix to be used for the mex files
-(platform/architecture dependant)
+(platform/architecture dependent)
 .TP
 .B \fI\%matlab_get_version_from_matlab_run()\fP
 returns the version of Matlab, given the full directory of the Matlab
@@ -11009,8 +11522,7 @@ typically deployed on a cluster.  MPI is a standard interface (defined
 by the MPI forum) for which many implementations are available.  All
 of them have somewhat different include paths, libraries to link
 against, etc., and this module tries to smooth out those differences.
-.sp
-=== Variables ===
+.SS Variables
 .sp
 This module will set the following variables per language in your
 project, where <lang> is one of C, CXX, or Fortran:
@@ -11047,12 +11559,11 @@ MPIEXEC_POSTFLAGS          Flags to pass to MPIEXEC after other flags
 .fi
 .UNINDENT
 .UNINDENT
-.sp
-=== Usage ===
+.SS Usage
 .sp
 To use this module, simply call FindMPI from a CMakeLists.txt file, or
-run find_package(MPI), then run CMake.  If you are happy with the
-auto\- detected configuration for your language, then you\(aqre done.  If
+run \fBfind_package(MPI)\fP, then run CMake.  If you are happy with the
+auto\-detected configuration for your language, then you\(aqre done.  If
 not, you have two options:
 .INDENT 0.0
 .INDENT 3.5
@@ -11072,13 +11583,13 @@ not, you have two options:
 .UNINDENT
 .UNINDENT
 .sp
-When configuration is successful, MPI_<lang>_COMPILER will be set to
-the compiler wrapper for <lang>, if it was found.  MPI_<lang>_FOUND
+When configuration is successful, \fBMPI_<lang>_COMPILER\fP will be set to
+the compiler wrapper for <lang>, if it was found.  \fBMPI_<lang>_FOUND\fP
 and other variables above will be set if any MPI implementation was
 found for <lang>, regardless of whether a compiler was found.
 .sp
-When using MPIEXEC to execute MPI applications, you should typically
-use all of the MPIEXEC flags as follows:
+When using \fBMPIEXEC\fP to execute MPI applications, you should typically
+use all of the \fBMPIEXEC\fP flags as follows:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -11091,11 +11602,10 @@ ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} PROCS
 .UNINDENT
 .UNINDENT
 .sp
-where PROCS is the number of processors on which to execute the
-program, EXECUTABLE is the MPI program, and ARGS are the arguments to
+where \fBPROCS\fP is the number of processors on which to execute the
+program, \fBEXECUTABLE\fP is the MPI program, and \fBARGS\fP are the arguments to
 pass to the MPI program.
-.sp
-=== Backward Compatibility ===
+.SS Backward Compatibility
 .sp
 For backward compatibility with older versions of FindMPI, these
 variables are set, but deprecated:
@@ -11112,7 +11622,7 @@ MPI_LINK_FLAGS      MPI_LIBRARIES
 .UNINDENT
 .UNINDENT
 .sp
-In new projects, please use the MPI_<lang>_XXX equivalents.
+In new projects, please use the \fBMPI_<lang>_XXX\fP equivalents.
 .SS FindOpenAL
 .sp
 Locate OpenAL This module defines OPENAL_LIBRARY OPENAL_FOUND, if
@@ -12274,6 +12784,7 @@ Checks for all the given modules.
 .ft C
 pkg_check_modules(<PREFIX> [REQUIRED] [QUIET]
                   [NO_CMAKE_PATH] [NO_CMAKE_ENVIRONMENT_PATH]
+                  [IMPORTED_TARGET]
                   <MODULE> [<MODULE>]*)
 .ft P
 .fi
@@ -12293,6 +12804,9 @@ be added to \fBpkg\-config\fP search path.
 The \fBNO_CMAKE_PATH\fP and \fBNO_CMAKE_ENVIRONMENT_PATH\fP arguments
 disable this behavior for the cache variables and the environment
 variables, respectively.
+The \fBIMPORTED_TARGET\fP argument will create an imported target named
+PkgConfig::<PREFIX>> that can be passed directly as an argument to
+\fBtarget_link_libraries()\fP\&.
 .sp
 It sets the following variables:
 .INDENT 7.0
@@ -12459,6 +12973,7 @@ modules and uses the first working one.
 .ft C
 pkg_search_module(<PREFIX> [REQUIRED] [QUIET]
                   [NO_CMAKE_PATH] [NO_CMAKE_ENVIRONMENT_PATH]
+                  [IMPORTED_TARGET]
                   <MODULE> [<MODULE>]*)
 .ft P
 .fi
@@ -12590,63 +13105,69 @@ Locate and configure the Google Protocol Buffers library.
 The following variables can be set and are optional:
 .INDENT 0.0
 .TP
-.B \fBPROTOBUF_SRC_ROOT_FOLDER\fP
+.B \fBProtobuf_SRC_ROOT_FOLDER\fP
 When compiling with MSVC, if this cache variable is set
 the protobuf\-default VS project build locations
 (vsprojects/Debug and vsprojects/Release
 or vsprojects/x64/Debug and vsprojects/x64/Release)
 will be searched for libraries and binaries.
 .TP
-.B \fBPROTOBUF_IMPORT_DIRS\fP
+.B \fBProtobuf_IMPORT_DIRS\fP
 List of additional directories to be searched for
 imported .proto files.
+.TP
+.B \fBProtobuf_DEBUG\fP
+Show debug messages.
 .UNINDENT
 .sp
 Defines the following variables:
 .INDENT 0.0
 .TP
-.B \fBPROTOBUF_FOUND\fP
+.B \fBProtobuf_FOUND\fP
 Found the Google Protocol Buffers library
 (libprotobuf & header files)
 .TP
-.B \fBPROTOBUF_INCLUDE_DIRS\fP
+.B \fBProtobuf_VERSION\fP
+Version of package found.
+.TP
+.B \fBProtobuf_INCLUDE_DIRS\fP
 Include directories for Google Protocol Buffers
 .TP
-.B \fBPROTOBUF_LIBRARIES\fP
+.B \fBProtobuf_LIBRARIES\fP
 The protobuf libraries
 .TP
-.B \fBPROTOBUF_PROTOC_LIBRARIES\fP
+.B \fBProtobuf_PROTOC_LIBRARIES\fP
 The protoc libraries
 .TP
-.B \fBPROTOBUF_LITE_LIBRARIES\fP
+.B \fBProtobuf_LITE_LIBRARIES\fP
 The protobuf\-lite libraries
 .UNINDENT
 .sp
 The following cache variables are also available to set or use:
 .INDENT 0.0
 .TP
-.B \fBPROTOBUF_LIBRARY\fP
+.B \fBProtobuf_LIBRARY\fP
 The protobuf library
 .TP
-.B \fBPROTOBUF_PROTOC_LIBRARY\fP
+.B \fBProtobuf_PROTOC_LIBRARY\fP
 The protoc library
 .TP
-.B \fBPROTOBUF_INCLUDE_DIR\fP
+.B \fBProtobuf_INCLUDE_DIR\fP
 The include directory for protocol buffers
 .TP
-.B \fBPROTOBUF_PROTOC_EXECUTABLE\fP
+.B \fBProtobuf_PROTOC_EXECUTABLE\fP
 The protoc compiler
 .TP
-.B \fBPROTOBUF_LIBRARY_DEBUG\fP
+.B \fBProtobuf_LIBRARY_DEBUG\fP
 The protobuf library (debug)
 .TP
-.B \fBPROTOBUF_PROTOC_LIBRARY_DEBUG\fP
+.B \fBProtobuf_PROTOC_LIBRARY_DEBUG\fP
 The protoc library (debug)
 .TP
-.B \fBPROTOBUF_LITE_LIBRARY\fP
+.B \fBProtobuf_LITE_LIBRARY\fP
 The protobuf lite library
 .TP
-.B \fBPROTOBUF_LITE_LIBRARY_DEBUG\fP
+.B \fBProtobuf_LITE_LIBRARY_DEBUG\fP
 The protobuf lite library (debug)
 .UNINDENT
 .sp
@@ -12657,12 +13178,12 @@ Example:
 .nf
 .ft C
 find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS foo.proto)
 protobuf_generate_python(PROTO_PY foo.proto)
 add_executable(bar bar.cc ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries(bar ${PROTOBUF_LIBRARIES})
+target_link_libraries(bar ${Protobuf_LIBRARIES})
 .ft P
 .fi
 .UNINDENT
@@ -12761,9 +13282,10 @@ of version numbers that should be taken into account when searching
 for Python.  You need to set this variable before calling
 find_package(PythonInterp).
 .sp
-If also calling find_package(PythonLibs), call find_package(PythonInterp)
-first to get the currently active Python version by default with a consistent
-version of PYTHON_LIBRARIES.
+If calling both \fBfind_package(PythonInterp)\fP and
+\fBfind_package(PythonLibs)\fP, call \fBfind_package(PythonInterp)\fP first to
+get the currently active Python version by default with a consistent version
+of PYTHON_LIBRARIES.
 .SS FindPythonLibs
 .sp
 Find python libraries
@@ -12806,9 +13328,10 @@ PYTHON_INCLUDE_DIR         \- path to where Python.h is found
 .UNINDENT
 .UNINDENT
 .sp
-If also calling find_package(PythonInterp), call find_package(PythonInterp)
-first to get the currently active Python version by default with a consistent
-version of PYTHON_LIBRARIES.
+If calling both \fBfind_package(PythonInterp)\fP and
+\fBfind_package(PythonLibs)\fP, call \fBfind_package(PythonInterp)\fP first to
+get the currently active Python version by default with a consistent version
+of PYTHON_LIBRARIES.
 .SS FindQt3
 .sp
 Locate Qt include paths and libraries
@@ -13164,6 +13687,9 @@ The QAxServer target (Windows only)
 .B \fBQt4::QtDBus\fP
 The QtDBus target
 .TP
+.B \fBQt4::QtDeclarative\fP
+The QtDeclarative target
+.TP
 .B \fBQt4::QtDesigner\fP
 The QtDesigner target
 .TP
@@ -13387,7 +13913,7 @@ SDL_IMAGE_VERSION_STRING \- human\-readable string containing the
 .UNINDENT
 .UNINDENT
 .sp
-For backward compatiblity the following variables are also set:
+For backward compatibility the following variables are also set:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -13427,7 +13953,7 @@ SDL_MIXER_VERSION_STRING \- human\-readable string containing the
 .UNINDENT
 .UNINDENT
 .sp
-For backward compatiblity the following variables are also set:
+For backward compatibility the following variables are also set:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -13466,7 +13992,7 @@ SDL_NET_VERSION_STRING \- human\-readable string containing the version of SDL_n
 .UNINDENT
 .UNINDENT
 .sp
-For backward compatiblity the following variables are also set:
+For backward compatibility the following variables are also set:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -13664,7 +14190,7 @@ SDL_TTF_VERSION_STRING \- human\-readable string containing the version of SDL_t
 .UNINDENT
 .UNINDENT
 .sp
-For backward compatiblity the following variables are also set:
+For backward compatibility the following variables are also set:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -13865,7 +14391,7 @@ The module defines the following variables:
 Subversion_SVN_EXECUTABLE \- path to svn command line client
 Subversion_VERSION_SVN \- version of svn command line client
 Subversion_FOUND \- true if the command line client was found
-SUBVERSION_FOUND \- same as Subversion_FOUND, set for compatiblity reasons
+SUBVERSION_FOUND \- same as Subversion_FOUND, set for compatibility reasons
 .ft P
 .fi
 .UNINDENT
@@ -14139,7 +14665,7 @@ CMAKE_THREAD_PREFER_PTHREAD
 .UNINDENT
 .UNINDENT
 .sp
-If the use of the \-pthread compiler and linker flag is prefered then the
+If the use of the \-pthread compiler and linker flag is preferred then the
 caller can set
 .INDENT 0.0
 .INDENT 3.5
@@ -14793,23 +15319,79 @@ module where to look.
 Fortran/C Interface Detection
 .sp
 This module automatically detects the API by which C and Fortran
-languages interact.  Variables indicate if the mangling is found:
-.INDENT 0.0
-.INDENT 3.5
+languages interact.
+.SS Module Variables
 .sp
-.nf
-.ft C
-FortranCInterface_GLOBAL_FOUND = Global subroutines and functions
-FortranCInterface_MODULE_FOUND = Module subroutines and functions
-                                 (declared by "MODULE PROCEDURE")
-.ft P
-.fi
-.UNINDENT
+Variables that indicate if the mangling is found:
+.INDENT 0.0
+.TP
+.B \fBFortranCInterface_GLOBAL_FOUND\fP
+Global subroutines and functions.
+.TP
+.B \fBFortranCInterface_MODULE_FOUND\fP
+Module subroutines and functions (declared by "MODULE PROCEDURE").
 .UNINDENT
 .sp
-A function is provided to generate a C header file containing macros
-to mangle symbol names:
+This module also provides the following variables to specify
+the detected mangling, though a typical use case does not need
+to reference them and can use the \fI\%Module Functions\fP below.
 .INDENT 0.0
+.TP
+.B \fBFortranCInterface_GLOBAL_PREFIX\fP
+Prefix for a global symbol without an underscore.
+.TP
+.B \fBFortranCInterface_GLOBAL_SUFFIX\fP
+Suffix for a global symbol without an underscore.
+.TP
+.B \fBFortranCInterface_GLOBAL_CASE\fP
+The case for a global symbol without an underscore,
+either \fBUPPER\fP or \fBLOWER\fP\&.
+.TP
+.B \fBFortranCInterface_GLOBAL__PREFIX\fP
+Prefix for a global symbol with an underscore.
+.TP
+.B \fBFortranCInterface_GLOBAL__SUFFIX\fP
+Suffix for a global symbol with an underscore.
+.TP
+.B \fBFortranCInterface_GLOBAL__CASE\fP
+The case for a global symbol with an underscore,
+either \fBUPPER\fP or \fBLOWER\fP\&.
+.TP
+.B \fBFortranCInterface_MODULE_PREFIX\fP
+Prefix for a module symbol without an underscore.
+.TP
+.B \fBFortranCInterface_MODULE_MIDDLE\fP
+Middle of a module symbol without an underscore that appears
+between the name of the module and the name of the symbol.
+.TP
+.B \fBFortranCInterface_MODULE_SUFFIX\fP
+Suffix for a module symbol without an underscore.
+.TP
+.B \fBFortranCInterface_MODULE_CASE\fP
+The case for a module symbol without an underscore,
+either \fBUPPER\fP or \fBLOWER\fP\&.
+.TP
+.B \fBFortranCInterface_MODULE__PREFIX\fP
+Prefix for a module symbol with an underscore.
+.TP
+.B \fBFortranCInterface_MODULE__MIDDLE\fP
+Middle of a module symbol with an underscore that appears
+between the name of the module and the name of the symbol.
+.TP
+.B \fBFortranCInterface_MODULE__SUFFIX\fP
+Suffix for a module symbol with an underscore.
+.TP
+.B \fBFortranCInterface_MODULE__CASE\fP
+The case for a module symbol with an underscore,
+either \fBUPPER\fP or \fBLOWER\fP\&.
+.UNINDENT
+.SS Module Functions
+.INDENT 0.0
+.TP
+.B FortranCInterface_HEADER
+The \fBFortranCInterface_HEADER\fP function is provided to generate a
+C header file containing macros to mangle symbol names:
+.INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
@@ -14823,8 +15405,8 @@ FortranCInterface_HEADER(<file>
 .UNINDENT
 .UNINDENT
 .sp
-It generates in <file> definitions of the following macros:
-.INDENT 0.0
+It generates in \fB<file>\fP definitions of the following macros:
+.INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
@@ -14839,28 +15421,30 @@ It generates in <file> definitions of the following macros:
 .UNINDENT
 .sp
 These macros mangle four categories of Fortran symbols, respectively:
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-\- Global symbols without \(aq_\(aq: call mysub()
-\- Global symbols with \(aq_\(aq   : call my_sub()
-\- Module symbols without \(aq_\(aq: use mymod; call mysub()
-\- Module symbols with \(aq_\(aq   : use mymod; call my_sub()
-.ft P
-.fi
-.UNINDENT
+.INDENT 7.0
+.IP \(bu 2
+Global symbols without \(aq_\(aq: \fBcall mysub()\fP
+.IP \(bu 2
+Global symbols with \(aq_\(aq   : \fBcall my_sub()\fP
+.IP \(bu 2
+Module symbols without \(aq_\(aq: \fBuse mymod; call mysub()\fP
+.IP \(bu 2
+Module symbols with \(aq_\(aq   : \fBuse mymod; call my_sub()\fP
 .UNINDENT
 .sp
 If mangling for a category is not known, its macro is left undefined.
-All macros require raw names in both lower case and upper case.  The
-MACRO_NAMESPACE option replaces the default "\fI\%FortranCInterface\fP"
-prefix with a given namespace "<macro\-ns>".
+All macros require raw names in both lower case and upper case.
 .sp
-The SYMBOLS option lists symbols to mangle automatically with C
-preprocessor definitions:
-.INDENT 0.0
+The options are:
+.INDENT 7.0
+.TP
+.B \fBMACRO_NAMESPACE\fP
+Replace the default \fBFortranCInterface_\fP prefix with a given
+namespace \fB<macro\-ns>\fP\&.
+.TP
+.B \fBSYMBOLS\fP
+List symbols to mangle automatically with C preprocessor definitions:
+.INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
@@ -14873,11 +15457,39 @@ preprocessor definitions:
 .UNINDENT
 .sp
 If the mangling for some symbol is not known then no preprocessor
-definition is created, and a warning is displayed.  The
-SYMBOL_NAMESPACE option prefixes all preprocessor definitions
-generated by the SYMBOLS option with a given namespace "<ns>".
+definition is created, and a warning is displayed.
+.TP
+.B \fBSYMBOL_NAMESPACE\fP
+Prefix all preprocessor definitions generated by the \fBSYMBOLS\fP
+option with a given namespace \fB<ns>\fP\&.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B FortranCInterface_VERIFY
+The \fBFortranCInterface_VERIFY\fP function is provided to verify
+that the Fortran and C/C++ compilers work together:
+.INDENT 7.0
+.INDENT 3.5
 .sp
-Example usage:
+.nf
+.ft C
+FortranCInterface_VERIFY([CXX] [QUIET])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+It tests whether a simple test executable using Fortran and C (and C++
+when the CXX option is given) compiles and links successfully.  The
+result is stored in the cache entry \fBFortranCInterface_VERIFIED_C\fP
+(or \fBFortranCInterface_VERIFIED_CXX\fP if \fBCXX\fP is given) as a boolean.
+If the check fails and \fBQUIET\fP is not given the function terminates with a
+fatal error message describing the problem.  The purpose of this check
+is to stop a build early for incompatible compiler combinations.  The
+test is built in the \fBRelease\fP configuration.
+.UNINDENT
+.SS Example Usage
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -14890,10 +15502,8 @@ FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
 .UNINDENT
 .UNINDENT
 .sp
-This creates a "FC.h" header that defines mangling macros FC_GLOBAL(),
-FC_GLOBAL_(), FC_MODULE(), and FC_MODULE_().
-.sp
-Example usage:
+This creates a "FC.h" header that defines mangling macros \fBFC_GLOBAL()\fP,
+\fBFC_GLOBAL_()\fP, \fBFC_MODULE()\fP, and \fBFC_MODULE_()\fP\&.
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -14909,35 +15519,14 @@ FortranCInterface_HEADER(FCMangle.h
 .UNINDENT
 .UNINDENT
 .sp
-This creates a "FCMangle.h" header that defines the same FC_*()
+This creates a "FCMangle.h" header that defines the same \fBFC_*()\fP
 mangling macros as the previous example plus preprocessor symbols
-FC_mysub and FC_mymod_my_sub.
+\fBFC_mysub\fP and \fBFC_mymod_my_sub\fP\&.
+.SS Additional Manglings
 .sp
-Another function is provided to verify that the Fortran and C/C++
-compilers work together:
-.INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-FortranCInterface_VERIFY([CXX] [QUIET])
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-It tests whether a simple test executable using Fortran and C (and C++
-when the CXX option is given) compiles and links successfully.  The
-result is stored in the cache entry FortranCInterface_VERIFIED_C (or
-FortranCInterface_VERIFIED_CXX if CXX is given) as a boolean.  If the
-check fails and QUIET is not given the function terminates with a
-FATAL_ERROR message describing the problem.  The purpose of this check
-is to stop a build early for incompatible compiler combinations.  The
-test is built in the Release configuration.
-.sp
-FortranCInterface is aware of possible GLOBAL and MODULE manglings for
-many Fortran compilers, but it also provides an interface to specify
-new possible manglings.  Set the variables
+FortranCInterface is aware of possible \fBGLOBAL\fP and \fBMODULE\fP manglings
+for many Fortran compilers, but it also provides an interface to specify
+new possible manglings.  Set the variables:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -14951,8 +15540,8 @@ FortranCInterface_MODULE_SYMBOLS
 .UNINDENT
 .sp
 before including FortranCInterface to specify manglings of the symbols
-"MySub", "My_Sub", "MyModule:MySub", and "My_Module:My_Sub".  For
-example, the code:
+\fBMySub\fP, \fBMy_Sub\fP, \fBMyModule:MySub\fP, and \fBMy_Module:My_Sub\fP\&.
+For example, the code:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -14969,7 +15558,7 @@ include(FortranCInterface)
 .UNINDENT
 .UNINDENT
 .sp
-tells FortranCInterface to try given GLOBAL and MODULE manglings.
+tells FortranCInterface to try given \fBGLOBAL\fP and \fBMODULE\fP manglings.
 (The carets point at raw symbol names for clarity in this example but
 are not needed.)
 .SS GenerateExportHeader
@@ -15603,6 +16192,11 @@ with MSVC tools.
 Set to TRUE to install only the debug runtime libraries with MSVC
 tools even if the release runtime libraries are also available.
 .TP
+.B \fBCMAKE_INSTALL_UCRT_LIBRARIES\fP
+Set to TRUE to install the Windows Universal CRT libraries for
+app\-local deployment (e.g. to Windows XP).  This is meaningful
+only with MSVC from Visual Studio 2015 or higher.
+.TP
 .B \fBCMAKE_INSTALL_MFC_LIBRARIES\fP
 Set to TRUE to install the MSVC MFC runtime libraries.
 .TP
@@ -16093,7 +16687,7 @@ Target Properties:
 .sp
 .nf
 .ft C
-The add_jar() functions sets some target properties. You can get these
+The add_jar() function sets some target properties. You can get these
 properties with the
    get_property(TARGET <target_name> PROPERTY <propery_name>)
 command.
@@ -16302,7 +16896,7 @@ Create C header files from java classes. These files provide the connective glue
 that allow your Java and C code to interact.
 .sp
 There are two main signatures for create_javah.  The first signature
-returns generated files throught variable specified by GENERATED_FILES option:
+returns generated files through variable specified by GENERATED_FILES option:
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -16601,7 +17195,7 @@ write_compiler_detection_header(
   PREFIX ClimbingStats
   OUTPUT_FILES_VAR support_files
   OUTPUT_DIR compilers
-  COMPILERS GNU Clang MSVC
+  COMPILERS GNU Clang MSVC Intel
   FEATURES cxx_variadic_templates
 )
 install(FILES
@@ -16624,7 +17218,7 @@ to the version of CMake that introduced the given API and less
 than the version of CMake that introduced its succeeding API.
 The value of the \fBCMAKE_MINIMUM_REQUIRED_VERSION\fP
 variable is used if no explicit version is specified.
-(As of CMake version 3.5.0\-rc3 there is only one API version.)
+(As of CMake version 3.6.2 there is only one API version.)
 .sp
 \fBPROLOG\fP may be specified as text content to write at the start of the
 header. \fBEPILOG\fP may be specified as text content to write at the end
@@ -16668,7 +17262,7 @@ feature:
 write_compiler_detection_header(
   FILE climbingstats_compiler_detection.h
   PREFIX ClimbingStats
-  COMPILERS GNU Clang AppleClang MSVC
+  COMPILERS GNU Clang AppleClang MSVC Intel
   FEATURES cxx_variadic_templates
 )
 .ft P

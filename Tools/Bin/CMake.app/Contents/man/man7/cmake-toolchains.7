@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-TOOLCHAINS" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-TOOLCHAINS" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-toolchains \- CMake Toolchains Reference
 .
@@ -172,9 +172,10 @@ a path on the host to install to. The \fBCMAKE_INSTALL_PREFIX\fP is always
 the runtime installation location, even when cross\-compiling.
 .sp
 The \fBCMAKE_<LANG>_COMPILER\fP variables may be set to full paths, or to
-names of compilers to search for in standard locations. In cases where CMake does
-not have enough information to extract information from the compiler, the
-\fBCMakeForceCompiler\fP module can be used to bypass some of the checks.
+names of compilers to search for in standard locations.   For toolchains that
+do not support linking binaries without custom flags or scripts one may set
+the \fBCMAKE_TRY_COMPILE_TARGET_TYPE\fP variable to \fBSTATIC_LIBRARY\fP
+to tell CMake not to try to link executables during its checks.
 .sp
 CMake \fBfind_*\fP commands will look in the sysroot, and the \fBCMAKE_FIND_ROOT_PATH\fP
 entries by default in all cases, as well as looking in the host system root prefix.

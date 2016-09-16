@@ -8,7 +8,7 @@
 
 #import <AppKit/NSApplication.h>
 
-#include "Engine/Public/OsX/NativeServiceOsX.h"
+#include "Engine/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"

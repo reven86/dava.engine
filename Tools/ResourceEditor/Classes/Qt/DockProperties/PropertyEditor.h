@@ -90,6 +90,7 @@ public slots:
     void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
+    void OnConvertRenderObjectToBillboard();
 
     void ConvertToShadow();
 
