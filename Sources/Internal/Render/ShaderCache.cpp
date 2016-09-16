@@ -195,9 +195,9 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         flags.reserve(16 * defines.size());
         for (const auto& define : defines)
         {
-            flags += DAVA::Format("%s=%d;", define.first.c_str(), define.second);
+            flags += Format("%s=%d;", define.first.c_str(), define.second);
         }
-        DAVA::Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
+        Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
     }
 
     //not found - create new shader
@@ -214,7 +214,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
             if (strcmp(it.first.c_str(), progDefines[i].c_str()) < 0)
             {
                 progDefines.insert(progDefines.begin() + i, String(it.first.c_str()));
-                progDefines.insert(progDefines.begin() + i + 1, DAVA::Format("%d", it.second));
+                progDefines.insert(progDefines.begin() + i + 1, Format("%d", it.second));
                 doAdd = false;
                 break;
             }
@@ -223,7 +223,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         if (doAdd)
         {
             progDefines.push_back(String(it.first.c_str()));
-            progDefines.push_back(DAVA::Format("%d", it.second));
+            progDefines.push_back(Format("%d", it.second));
         }
     }
 
@@ -328,7 +328,7 @@ void RelaoadShaders()
         for (auto& it : shader->defines)
         {
             progDefines.push_back(String(it.first.c_str()));
-            progDefines.push_back(DAVA::Format("%d", it.second));
+            progDefines.push_back(Format("%d", it.second));
         }
         vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
         fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
