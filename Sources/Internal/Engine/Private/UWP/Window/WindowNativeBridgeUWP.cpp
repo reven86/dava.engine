@@ -34,7 +34,8 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
     float32 h = xamlWindow->Bounds.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    windowBackend->PostWindowCreated(w, h, scaleX, scaleY);
+    float32 dpi = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->RawDpiX;
+    windowBackend->PostWindowCreated(w, h, scaleX, scaleY, dpi);
 
     xamlWindow->Activate();
 }
@@ -156,7 +157,11 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
     float32 h = arg->NewSize.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    windowBackend->PostSizeChanged(w, h, scaleX, scaleY);
+
+    Windows::Graphics::Display::DisplayInformation ^ di = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+
+    float32 dpi = di->LogicalDpi;
+    windowBackend->PostSizeChanged(w, h, scaleX, scaleY, dpi);
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
@@ -165,7 +170,11 @@ void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    windowBackend->PostSizeChanged(w, h, scaleX, scaleY);
+
+    Windows::Graphics::Display::DisplayInformation ^ di = ::Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+
+    float32 dpi = di->LogicalDpi;
+    windowBackend->PostSizeChanged(w, h, scaleX, scaleY, dpi);
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)

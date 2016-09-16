@@ -20,7 +20,7 @@ struct MainDispatcherEvent final
         WINDOW_DESTROYED,
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,
-        WINDOW_SIZE_SCALE_CHANGED,
+        WINDOW_SIZE_CHANGED,
 
         MOUSE_BUTTON_DOWN,
         MOUSE_BUTTON_UP,
@@ -78,6 +78,7 @@ struct MainDispatcherEvent final
         float32 height;
         float32 scaleX;
         float32 scaleY;
+        float32 dpi;
     };
 
     /// Parameter for events:

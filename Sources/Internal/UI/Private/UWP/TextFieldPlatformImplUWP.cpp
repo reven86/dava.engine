@@ -363,15 +363,7 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    float32 fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(virtualFontSize);
-    fontSize /= scaleFactor;
-
-    properties.fontSize = fontSize;
+    properties.fontSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
     properties.fontSizeChanged = true;
     properties.fontSizeAssigned = true;
     properties.anyPropertyChanged = true;
@@ -1187,45 +1179,13 @@ bool TextFieldPlatformImpl::IsMultiline() const
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-// 2. map physical to window
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-
-    Rect rect = srcRect;
-#if defined(__DAVAENGINE_COREV2__)
-    // 1. map window to physical
-    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
-#else
-    // 1. map window to physical
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x *= scaleFactor;
-    rect.y *= scaleFactor;
-    rect.dx *= scaleFactor;
-    rect.dy *= scaleFactor;
-
-    // 2. map physical to virtual
-    rect = coordSystem->ConvertPhysicalToVirtual(rect);
-    rect -= coordSystem->GetPhysicalDrawOffset();
-    return rect;
+    return coordSystem->ConvertInputToVirtual(srcRect);
 }
 
 void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)

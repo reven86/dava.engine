@@ -40,7 +40,7 @@ void WindowBackendBase::PostClose(bool detach)
     uiDispatcher.PostEvent(e);
 }
 
-void WindowBackendBase::PostWindowCreated(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void WindowBackendBase::PostWindowCreated(float32 width, float32 height, float32 scaleX, float32 scaleY, float32 dpi)
 {
     MainDispatcherEvent e(MainDispatcherEvent::WINDOW_CREATED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -48,6 +48,7 @@ void WindowBackendBase::PostWindowCreated(float32 width, float32 height, float32
     e.sizeEvent.height = height;
     e.sizeEvent.scaleX = scaleX;
     e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.dpi = dpi;
     mainDispatcher.PostEvent(e);
 }
 
@@ -74,14 +75,15 @@ void WindowBackendBase::PostVisibilityChanged(bool visibilityState)
     mainDispatcher.PostEvent(e);
 }
 
-void WindowBackendBase::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY)
+void WindowBackendBase::PostSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY, float32 dpi)
 {
-    MainDispatcherEvent e(MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED, window);
+    MainDispatcherEvent e(MainDispatcherEvent::WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.sizeEvent.width = width;
     e.sizeEvent.height = height;
     e.sizeEvent.scaleX = scaleX;
     e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.dpi = dpi;
     mainDispatcher.PostEvent(e);
 }
 

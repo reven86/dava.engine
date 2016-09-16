@@ -583,23 +583,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
-#else
-    // 2. map physical to window
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 void WebViewControl::RenderToTexture()

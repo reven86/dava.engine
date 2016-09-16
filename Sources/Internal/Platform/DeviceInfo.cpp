@@ -90,6 +90,20 @@ DeviceInfo::ScreenInfo& DeviceInfo::GetScreenInfo()
     return GetPrivateImpl()->GetScreenInfo();
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
+void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    // Special implementation for WinUAP to get rid of blocking call to UI thread in impl::InitializeScreenInfo
+    GetPrivateImpl()->InitializeScreenInfo(screenInfo, fullInit);
+#else
+    (void)screenInfo;
+    (void)fullInit;
+    GetPrivateImpl()->InitializeScreenInfo();
+#endif
+}
+#endif
+
 int32 DeviceInfo::GetZBufferSize()
 {
     return GetPrivateImpl()->GetZBufferSize();
@@ -113,18 +127,6 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 int32 DeviceInfo::GetCpuCount()
 {
     return GetPrivateImpl()->GetCpuCount();
-}
-
-void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
-{
-#if defined(__DAVAENGINE_WIN_UAP__)
-    // Special implementation for WinUAP to get rid of blocking call to UI thread in impl::InitializeScreenInfo
-    GetPrivateImpl()->InitializeScreenInfo(screenInfo, fullInit);
-#else
-    (void)screenInfo;
-    (void)fullInit;
-    GetPrivateImpl()->InitializeScreenInfo();
-#endif
 }
 
 bool DeviceInfo::IsTouchPresented()

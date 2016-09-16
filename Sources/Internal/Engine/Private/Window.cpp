@@ -112,7 +112,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::KEY_CHAR:
         HandleKeyChar(e);
         break;
-    case MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED:
+    case MainDispatcherEvent::WINDOW_SIZE_CHANGED:
         HandleSizeChanged(e);
         break;
     case MainDispatcherEvent::WINDOW_FOCUS_CHANGED:
@@ -151,6 +151,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     size.dy = e.sizeEvent.height;
     physicalSize.dx = size.dx * e.sizeEvent.scaleX;
     physicalSize.dy = size.dy * e.sizeEvent.scaleY;
+    dpi = e.sizeEvent.dpi;
 
     pendingInitRender = true;
     pendingSizeChanging = true;
@@ -180,6 +181,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
     size.dy = e.sizeEvent.height;
     physicalSize.dx = size.dx * e.sizeEvent.scaleX;
     physicalSize.dy = size.dy * e.sizeEvent.scaleY;
+    dpi = e.sizeEvent.dpi;
     pendingSizeChanging = true;
 }
 

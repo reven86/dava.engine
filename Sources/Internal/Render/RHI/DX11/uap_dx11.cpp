@@ -504,12 +504,12 @@ void CreateWindowSizeDependentResources()
     ComPtr<IDXGISwapChain2> spSwapChain2;
     ThrowIfFailed(m_swapChain.As<IDXGISwapChain2>(&spSwapChain2));
 
-    DXGI_MATRIX_3X2_F inverseScale = { 0 };
+    DXGI_MATRIX_3X2_F compositionScale = { 0 };
 
-    inverseScale._11 = 1.0f / m_backbufferScale.Width;
-    inverseScale._22 = 1.0f / m_backbufferScale.Height;
+    compositionScale._11 = m_backbufferScale.Width;
+    compositionScale._22 = m_backbufferScale.Height;
 
-    ThrowIfFailed(spSwapChain2->SetMatrixTransform(&inverseScale));
+    ThrowIfFailed(spSwapChain2->SetMatrixTransform(&compositionScale));
 
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(

@@ -389,22 +389,7 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
 Rect MovieViewControl::VirtualToWindow(const Rect& srcRect) const
 {
     VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-
-// 2. map physical to window
-#if defined(__DAVAENGINE_COREV2__)
-    const float32 scaleFactor = 1.0f; // window->GetRenderSurfaceScaleX();
-#else
-    const float32 scaleFactor = core->GetScreenScaleFactor();
-#endif
-    rect.x /= scaleFactor;
-    rect.y /= scaleFactor;
-    rect.dx /= scaleFactor;
-    rect.dy /= scaleFactor;
-    return rect;
+    return coordSystem->ConvertVirtualToInput(srcRect);
 }
 
 void MovieViewControl::TellPlayingStatus(bool playing)

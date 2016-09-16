@@ -8,6 +8,7 @@
 
 #include "UI/UIEvent.h"
 
+#include "Engine/WindowArea.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -39,33 +40,9 @@ public:
     bool IsVisible() const;
     bool HasFocus() const;
 
-    /*
-    // Window size in logical pixels
-    float32 GetWidth() const;
-    float32 GetHeight() const;
-    // Window's render surface size in pixels
-    float32 GetRenderSurfaceWidth() const;
-    float32 GetRenderSurfaceHeight() const;
-
-    // Window scale factors
-    float32 GetScaleX() const;
-    float32 GetScaleY() const;
-    // Additional user scale factor
-    float32 GetUserScale() const;
-    // Window's render surface scale factors
-    float32 GetRenderSurfaceScaleX() const;
-    float32 GetRenderSurfaceScaleY() const;
-
-    Vector2 GetSize() const;
-    Vector2 GetScale() const;
-
-    void Resize(float32 w, float32 h);
-    void Resize(Vector2 size);
-    */
-
-    uint32 GetDPI() const;
-    Size2f GetPhysicalSize() const;
+    float32 GetDPI() const;
     Size2f GetSize() const;
+    Size2f GetPhysicalSize() const;
 
     void Resize(const Size2f& size);
     void Close();
@@ -135,14 +112,7 @@ private:
     bool isVisible = false;
     bool hasFocus = false;
 
-    /*
-    float32 width = 0.0f;
-    float32 height = 0.0f;
-    float32 scaleX = 1.0f;
-    float32 scaleY = 1.0f;
-    float32 userScale = 1.0f;
-    */
-
+    float32 dpi = 0;
     Size2f size = { 0.0f, 0.0f };
     Size2f physicalSize = { 0.0f, 0.0f };
 
@@ -228,6 +198,11 @@ inline void Window::Resize(Vector2 size)
     Resize(size.dx, size.dy);
 }
 */
+
+inline float32 Window::GetDPI() const
+{
+    return dpi;
+}
 
 inline Size2f Window::GetSize() const
 {

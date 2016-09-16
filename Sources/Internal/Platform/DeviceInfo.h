@@ -16,6 +16,7 @@ public:
 
     struct ScreenInfo
     {
+#if !defined(__DAVAENGINE_COREV2__)
         int32 width;
         int32 height;
         float32 scale;
@@ -33,6 +34,10 @@ public:
             height = h;
             scale = _scale;
         }
+#else
+        int32 width = 0;
+        int32 height = 0;
+#endif
     };
 
     enum ePlatform
@@ -141,12 +146,15 @@ public:
     static NetworkInfo GetNetworkInfo();
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
-    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
     static String GetCarrierName();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
+
+#if !defined(__DAVAENGINE_COREV2__)
+    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
+#endif
 
     // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID

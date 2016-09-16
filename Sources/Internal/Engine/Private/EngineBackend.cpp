@@ -149,8 +149,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
 
     if (!IsConsoleMode())
     {
-        DeviceInfo::InitializeScreenInfo();
-
         context->uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
         context->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
@@ -505,8 +503,8 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 
         rendererParams.width = static_cast<int32>(physicalSize.dx);
         rendererParams.height = static_cast<int32>(physicalSize.dy);
-        rendererParams.scaleX = physicalSize.dx / size.dx;
-        rendererParams.scaleY = physicalSize.dy / size.dy;
+        rendererParams.scaleX = size.dx / physicalSize.dx;
+        rendererParams.scaleY = size.dy / physicalSize.dy;
     }
     Renderer::Reset(rendererParams);
 }
