@@ -24,7 +24,7 @@ public:
     ~Core();
 
     template<typename T, typename... Args>
-    void CreateModule(const Args&... args)
+    void CreateModule(Args&&... args)
     {
         static_assert(std::is_base_of<ConsoleModule, T>::value ||
                         std::is_base_of<ClientModule, T>::value ||
@@ -45,7 +45,7 @@ public:
             return;
         }
 
-        AddModule(new T(args...));
+        AddModule(new T(std::forward<Args>(args)...));
     }
 
 private:

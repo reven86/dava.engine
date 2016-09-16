@@ -32,15 +32,10 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     e.SetOptions(appOptions);
 
     bool isConsoleMode = cmdline.size() > 1;
-    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE :DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE : DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
     DAVA::TArc::Core core(e);
 
-    if (!isConsoleMode)
-    {
-        core.CreateModule<LibraryModule>();
-        core.CreateModule<SceneViewModule>();
-    }
-    else
+    if (isConsoleMode)
     {
         int argv = static_cast<int>(cmdline.size());
         int currentArg = 1;
@@ -55,5 +50,11 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
             ++currentArg;
         }
     }
+    else
+    {
+        core.CreateModule<LibraryModule>();
+        core.CreateModule<SceneViewModule>();
+    }
+
     return e.Run();
 }
