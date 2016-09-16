@@ -5,7 +5,6 @@ using namespace DAVA;
 
 void FrameworkDidLaunched()
 {
-    
 }
 
 void FrameworkWillTerminate()
