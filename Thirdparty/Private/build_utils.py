@@ -6,6 +6,7 @@ import subprocess
 import glob
 import shutil
 import tarfile
+import sys
 
 def download(url, file_name):
 	path = os.path.dirname(file_name)
@@ -144,7 +145,12 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
 
 	print 'Running ndk-build: {}, working directory: {}'.format(' '.join(cmd), project_path)
 
-	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=project_path, shell=True)
+	if sys.platform == 'win32':
+		sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=project_path, shell=True)
+	else:
+		# To avoid swallowing arguments by shell on macOS
+		sp = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, cwd=project_path, shell=True)
+
 	for line in sp.stdout:
 		print line
 	sp.wait()

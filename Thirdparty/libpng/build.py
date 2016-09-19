@@ -122,19 +122,29 @@ def build(output_folder_path, root_project_path):
 
 		build_folder_macos = os.path.join(output_folder_path, 'gen/build_macos')
 		build_folder_ios = os.path.join(output_folder_path, 'gen/build_ios')
+		build_android_folder = os.path.join(output_folder_path, 'gen/build_android')
 
 		# Generate & build XCode projects for macOS and iOS
 
 		build_utils.cmake_generate_build_xcode(build_folder_macos, libpng_source_folder_path, 'Xcode', 'libpng.xcodeproj', 'png_static')
 		build_utils.cmake_generate_build_xcode(build_folder_ios, libpng_source_folder_path, 'Xcode', 'libpng.xcodeproj', 'png_static', [ '-DCMAKE_TOOLCHAIN_FILE=' + os.path.join(root_project_path, 'Sources/CMake/Toolchains/ios.toolchain.cmake') ])
 
+		# Copy created configuration header to root folder (required to build library for Android)
+		shutil.copyfile(os.path.join(build_folder_macos, 'pnglibconf.h'), os.path.join(libpng_source_folder_path, 'pnglibconf.h'))
+
+		build_utils.build_android_ndk('./android_ndk_project', build_android_folder, debug=False, ndk_additional_args = [ 'SRC_PATH=' + os.path.join('../../', libpng_source_folder_path) ])
+
 		# Move built files into Libs/lib_CMake
 		# TODO: update pathes after switching to new folders structure
 		
 		lib_path_macos_release = os.path.join(build_folder_macos, 'Release/libpng16.a')
 		lib_path_ios_release = os.path.join(build_folder_ios, 'Release-iphoneos/libpng16.a')
+		lib_path_android_armeabiv7a = os.path.join(build_android_folder, 'local/armeabi-v7a/libpng.a')
+		lib_path_android_x86 = os.path.join(build_android_folder, 'local/x86/libpng.a')
 
 		shutil.copyfile(lib_path_macos_release, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libpng_macos.a'))
 		shutil.copyfile(lib_path_ios_release, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libpng_ios.a'))
+		shutil.copyfile(lib_path_android_armeabiv7a, os.path.join(root_project_path, 'Libs/lib_CMake/android/armeabi-v7a/libpng.a'))
+		shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libpng.a'))
 
 	return True
