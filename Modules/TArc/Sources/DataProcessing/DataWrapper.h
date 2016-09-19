@@ -13,7 +13,7 @@ class DataListener;
 class DataWrapper
 {
 public:
-    using DataAccessor = DAVA::Function<DAVA::Reflection(const DataContext&)>;
+    using DataAccessor = Function<Reflection(const DataContext&)>;
 
     DataWrapper() = default;
     DataWrapper(const DataWrapper& other) = default;
@@ -33,14 +33,14 @@ private:
     friend class Core;
     friend class QtReflected;
     template<typename T> friend class DataEditor;
-    DataWrapper(const DAVA::ReflectedType* type);
+    DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
 
     void Sync(bool notifyListeners);
-    void NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields = DAVA::Set<DAVA::String>());
-    DAVA::Reflection GetData() const;
+    void NotifyListeners(bool sendNotify, const Set<String>& fields = Set<String>());
+    Reflection GetData() const;
 
 private:
     struct Impl;
@@ -51,7 +51,7 @@ template<typename T>
 class DataEditor final
 {
 public:
-    DataEditor(DataWrapper& holder, DAVA::Reflection reflection);
+    DataEditor(DataWrapper& holder, Reflection reflection);
     ~DataEditor();
     
     DataEditor(const DataEditor& other) = delete;
@@ -63,7 +63,7 @@ public:
     T* operator->();
     
 private:
-    DAVA::Reflection reflection;
+    Reflection reflection;
     T* dataPtr = nullptr;
     DataWrapper holder;
 };
