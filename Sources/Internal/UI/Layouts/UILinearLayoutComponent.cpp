@@ -122,7 +122,7 @@ float32 UILinearLayoutComponent::GetSpacing() const
 
 void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
 {
-    if(spacing == newSpacing)
+    if (spacing == newSpacing)
     {
         return;
     }
