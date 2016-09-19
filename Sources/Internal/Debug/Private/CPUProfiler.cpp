@@ -183,7 +183,7 @@ void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::os
         if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
         {
             if (lastDumpedCounter)
-                stream << "=== Non-tracked time [" << (lastDumpedCounter->endTime - it->startTime) << " us] ===" << std::endl;
+                stream << "=== Non-tracked time [" << (lastDumpedCounter->startTime - it->endTime) << " us] ===" << std::endl;
             lastDumpedCounter = &(*it);
 
             CPUProfilerDetails::CounterTreeNode* treeRoot = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
@@ -213,7 +213,7 @@ void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std:
     CPUProfilerDetails::CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
-        if (it->endTime != 0 && (strcmp(counterName, it->name)))
+        if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
         {
             CPUProfilerDetails::CounterTreeNode* node = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
 
