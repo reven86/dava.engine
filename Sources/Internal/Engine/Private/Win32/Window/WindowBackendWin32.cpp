@@ -299,7 +299,7 @@ bool WindowBackend::OnClose()
 {
     if (!closeRequestByApp)
     {
-        PostWindowCloseRequest();
+        PostUserCloseRequest();
     }
     return closeRequestByApp;
 }

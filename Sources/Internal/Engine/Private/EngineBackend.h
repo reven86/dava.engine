@@ -70,7 +70,7 @@ public:
     int Run();
     void Quit(int32 exitCode);
 
-    void SetShouldWindowCloseHandler(const Function<bool(Window&)>& handler);
+    void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
     void PostAppTerminate(bool triggeredBySystem);
 
@@ -98,11 +98,11 @@ private:
 
     void EventHandler(const MainDispatcherEvent& e);
     void HandleWindowCreated(const MainDispatcherEvent& e);
-    void HandleWindowCloseRequest(const MainDispatcherEvent& e);
     void HandleWindowDestroyed(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
+    void HandleUserCloseRequest(const MainDispatcherEvent& e);
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
@@ -121,8 +121,8 @@ private:
     Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
-    // Function object which is invoked when user is trying to close window
-    Function<bool(Window&)> shouldWindowCloseHandler;
+    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool quitConsole = false;

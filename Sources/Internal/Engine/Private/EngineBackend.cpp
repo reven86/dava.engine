@@ -191,9 +191,9 @@ void EngineBackend::Quit(int exitCode)
     }
 }
 
-void EngineBackend::SetShouldWindowCloseHandler(const Function<bool(Window&)>& handler)
+void EngineBackend::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
 {
-    shouldWindowCloseHandler = handler;
+    closeRequestHandler = handler;
 }
 
 void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool blocking)
@@ -356,9 +356,6 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CREATED:
         HandleWindowCreated(e);
         break;
-    case MainDispatcherEvent::WINDOW_CLOSE_REQUEST:
-        HandleWindowCloseRequest(e);
-        break;
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
@@ -367,6 +364,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
         break;
     case MainDispatcherEvent::APP_RESUMED:
         HandleAppResumed(e);
+        break;
+    case MainDispatcherEvent::USER_CLOSE_REQUEST:
+        HandleUserCloseRequest(e);
         break;
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
@@ -394,19 +394,6 @@ void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
     }
 
     engine->windowCreated.Emit(*e.window);
-}
-
-void EngineBackend::HandleWindowCloseRequest(const MainDispatcherEvent& e)
-{
-    bool closeWindow = true;
-    if (shouldWindowCloseHandler != nullptr)
-    {
-        closeWindow = shouldWindowCloseHandler(*e.window);
-    }
-    if (closeWindow)
-    {
-        e.window->Close();
-    }
 }
 
 void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
@@ -457,6 +444,27 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
         if (Renderer::IsInitialized())
             rhi::ResumeRendering();
         engine->resumed.Emit();
+    }
+}
+
+void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
+{
+    bool satisfyCloseRequest = true;
+    if (closeRequestHandler != nullptr)
+    {
+        satisfyCloseRequest = closeRequestHandler(e.window);
+    }
+
+    if (satisfyCloseRequest)
+    {
+        if (e.window != nullptr)
+        {
+            e.window->Close();
+        }
+        else
+        {
+            Quit(0);
+        }
     }
 }
 
