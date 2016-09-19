@@ -140,7 +140,6 @@ void REApplication::RunWindow()
     REAppDetails::FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
-    Themes::InitFromQApplication();
 
     ToolsAssetGuard::Instance()->Init();
 
@@ -179,6 +178,7 @@ void REApplication::RunWindow()
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
     mainWindow->show();
+    Themes::InitFromQApplication();
     exec();
 
     DAVA::SafeDelete(mainWindow);
