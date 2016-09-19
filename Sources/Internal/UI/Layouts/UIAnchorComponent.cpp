@@ -220,5 +220,4 @@ void UIAnchorComponent::SetFlag(eFlags flag, bool enabled)
         SetLayoutDirty();
     }
 }
-
 }
