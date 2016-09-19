@@ -72,7 +72,7 @@ bool UIAnchorComponent::IsHCenterAnchorEnabled() const
 
 void UIAnchorComponent::SetHCenterAnchorEnabled(bool enabled)
 {
-    SetFlag(FLAG_ENABLED, enabled);
+    SetFlag(FLAG_HCENTER_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetHCenterAnchor() const
