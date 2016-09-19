@@ -72,7 +72,7 @@ TextBlock::TextBlock()
     , scale(1.f, 1.f)
     , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f, 0.f)
-    , cachedPreferredData({ TextBlockDetail::INVALID_VECTOR, TextBlockDetail::INVALID_WIDTH })
+    , cachedLayoutData({ TextBlockDetail::INVALID_VECTOR, TextBlockDetail::INVALID_WIDTH })
     , renderSize(1.f)
     , cacheDx(0)
     , cacheDy(0)
@@ -127,7 +127,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , cacheOy(src.cacheOy)
     , cacheSpriteOffset(src.cacheSpriteOffset)
     , cacheTextSize(src.cacheTextSize)
-    , cachedPreferredData(src.cachedPreferredData)
+    , cachedLayoutData(src.cachedLayoutData)
     , renderSize(src.renderSize)
     , multilineStrings(src.multilineStrings)
     , stringSizes(src.stringSizes)
@@ -363,17 +363,17 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         return Vector2();
 
     if (!NeedCalculateCacheParams() &&
-        cachedPreferredData.size != INVALID_VECTOR &&
-        cachedPreferredData.width == width)
+        cachedLayoutData.size != INVALID_VECTOR &&
+        cachedLayoutData.width == width)
     {
-        return cachedPreferredData.size;
+        return cachedLayoutData.size;
     }
 
     if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == 0)
     {
         CalculateCacheParamsIfNeed();
-        cachedPreferredData.size = cacheTextSize;
-        cachedPreferredData.width = width;
+        cachedLayoutData.size = cacheTextSize;
+        cachedLayoutData.width = width;
     }
     else
     {
@@ -386,8 +386,8 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         fittingType = 0;
         CalculateCacheParams();
 
-        cachedPreferredData.size = cacheTextSize;
-        cachedPreferredData.width = width;
+        cachedLayoutData.size = cacheTextSize;
+        cachedLayoutData.width = width;
         rectSize = oldSize;
 
         requestedSize = oldRequestedSize;
@@ -395,7 +395,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         CalculateCacheParams();
     }
 
-    return cachedPreferredData.size;
+    return cachedLayoutData.size;
 }
 
 Sprite* TextBlock::GetSprite()
@@ -427,7 +427,6 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
-    needCalculateCacheParams = false;
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -1003,9 +1002,10 @@ void TextBlock::CalculateCacheParamsIfNeed()
     using namespace TextBlockDetail;
     if (needCalculateCacheParams)
     {
+        needCalculateCacheParams = false;
         CalculateCacheParams();
-        cachedPreferredData.size = INVALID_VECTOR;
-        cachedPreferredData.width = INVALID_WIDTH;
+        cachedLayoutData.size = INVALID_VECTOR;
+        cachedLayoutData.width = INVALID_WIDTH;
     }
 }
 

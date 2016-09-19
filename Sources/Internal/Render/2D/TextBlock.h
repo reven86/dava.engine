@@ -169,7 +169,7 @@ private:
     {
         Vector2 size;
         float32 width;
-    } cachedPreferredData;
+    } cachedLayoutData;
 
     float32 renderSize;
 
