@@ -178,6 +178,7 @@ void REApplication::RunWindow()
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
     mainWindow->show();
+    // Init themes after window has been shown to avoid font size changing in QTreeView for elided and full text
     Themes::InitFromQApplication();
     exec();
 
