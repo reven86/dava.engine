@@ -6,7 +6,7 @@ namespace DAVA
 {
 namespace TArc
 {
-QUrl TArc::CreateMenuPoint(const QString& path)
+QUrl CreateMenuPoint(const QString& path)
 {
     QUrl url;
     url.setPath(path);
@@ -24,7 +24,7 @@ QUrl CreateToolbarPoint(const QString& toolbarName)
     return url;
 }
 
-QUrl CreateStatusbarPoint(bool isPermanent, DAVA::uint32 stretchFactor)
+QUrl CreateStatusbarPoint(bool isPermanent, uint32 stretchFactor)
 {
     QUrl url;
     url.setScheme(statusbarScheme);
