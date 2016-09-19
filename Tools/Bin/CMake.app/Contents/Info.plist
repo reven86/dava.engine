@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>CMakeSetup.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string></string>
+	<string>org.cmake.cmake</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.5.0</string>
+	<string>3.6.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>

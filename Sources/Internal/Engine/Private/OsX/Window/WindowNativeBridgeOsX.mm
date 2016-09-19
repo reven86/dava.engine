@@ -9,7 +9,7 @@
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
-#include "Engine/Public/Window.h"
+#include "Engine/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/Window/RenderViewOsX.h"

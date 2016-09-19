@@ -1,9 +1,9 @@
-#include "ControllerModule.h"
-#include "DataChangerModule.h"
+#include "SceneViewModule.h"
+#include "LibraryModule.h"
 
 #include "TArcCore/TArcCore.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"
@@ -24,13 +24,13 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "NetCore",
         "LocalizationSystem",
         "SoundSystem",
-        "DownloadManager",
+        "DownloadManager"
     };
 
     DAVA::Engine e;
     DAVA::TArc::Core core(e);
-    core.CreateModule<TemplateControllerModule>();
-    core.CreateModule<DataChangerModule>();
+    core.CreateModule<LibraryModule>();
+    core.CreateModule<SceneViewModule>();
 
     e.SetOptions(appOptions);
     e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);

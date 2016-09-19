@@ -906,11 +906,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    //TODO: Add system scale
-    float32 scaleX = 1.f;
-    float32 scaleY = 1.f;
-    scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
+
     RECT rect;
+
+    // win32 app don't have ui-scaling option,
+    // so hard-code default
+    float32 uiScale = 1.0;
 
     if (IsMouseInputEvent(message, GetMessageExtraInfo()))
     {
@@ -926,9 +927,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     }
     switch (message)
     {
+    case WM_DPICHANGED:
+        core->ApplyWindowSize();
+        break;
     case WM_SIZE:
         GetClientRect(hWnd, &rect);
-        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), uiScale, uiScale);
         break;
     case WM_ERASEBKGND:
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
@@ -1144,6 +1148,11 @@ void CoreWin32Platform::InitArgs()
 void CoreWin32Platform::Quit()
 {
     PostQuitMessage(0);
+}
+
+void* CoreWin32Platform::GetNativeWindow() const
+{
+    return hWindow;
 }
 
 bool AlreadyRunning()
