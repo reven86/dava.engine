@@ -174,7 +174,7 @@ protected:
 
 private:
     static File* LoadFileFromMountedArchive(const String& packName, const String& relative);
-    static bool File::IsFileInMountedArchive(const String& packName, const String& relative);
+    static bool IsFileInMountedArchive(const String& packName, const String& relative);
     /**
     \brief funciton to create a file instance with give attributes
     this function must be used for opening existing files also
