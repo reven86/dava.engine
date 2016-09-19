@@ -20,7 +20,7 @@ struct Params
     DAVA::RefPtr<SceneEditor2> scene;
     DAVA::RefPtr<DAVA::Camera> cameraToGrab;
     DAVA::Size2i imageSize;
-    DAVA::FilePath outputPath;
+    DAVA::FilePath outputFile;
     DAVA::Function<void()> readyCallback;
     bool processInDAVAFrame = true;
 };

@@ -68,7 +68,7 @@ void SceneImageDump::ProcessInternal()
         params.scene = scene;
         params.cameraToGrab = camera;
         params.imageSize = DAVA::Size2i(width, height);
-        params.outputPath = DAVA::FilePath(outputFile);
+        params.outputFile = DAVA::FilePath(outputFile);
         params.processInDAVAFrame = false;
         params.readyCallback = [&grabFinished]()
         {

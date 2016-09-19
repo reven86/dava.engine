@@ -1567,7 +1567,7 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
             DAVA::Entity* entity = obj.AsEntity();
             if (entity != nullptr)
             {
-                DAVA::RenderComponent* component = GetRenderComponent(entity);
+                DAVA::RenderComponent* component = DAVA::GetRenderComponent(entity);
                 if (component != nullptr)
                 {
                     DAVA::RenderObject* ro = component->GetRenderObject();

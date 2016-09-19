@@ -335,7 +335,7 @@ private:
     {
         Connect(menu.addAction(SharedIcon(":/QtIcons/eye.png"), QStringLiteral("Look from")), this, &EntityContextMenu::SetCurrentCamera);
         Connect(menu.addAction(SharedIcon(":/QtIcons/camera.png"), QStringLiteral("Set custom draw camera")), this, &EntityContextMenu::SetCustomDrawCamera);
-        Connect(menu.addAction(SharedIcon(":/QtIcons/camera.png"), QStringLiteral("Grab image")), this, &EntityContextMenu::GrabImage);
+        Connect(menu.addAction(SharedIcon(":/QtIcons/grab-image.png"), QStringLiteral("Grab image")), this, &EntityContextMenu::GrabImage);
     }
 
     void SaveEntityAs()
@@ -486,7 +486,7 @@ private:
         QString filePath = FileDialog::getSaveFileName(GetParentWidget()->globalOperations->GetGlobalParentWidget(),
                                                        "Save Scene Image",
                                                        scenePath.GetDirectory().GetAbsolutePathname().c_str(),
-                                                       "Png (*.png)");
+                                                       PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if (filePath.isEmpty())
             return;
@@ -494,9 +494,10 @@ private:
         SceneImageGrabber::Params params;
         params.scene = scene;
         params.cameraToGrab = GetCamera(entityItem->GetEntity());
+        DVASSERT(params.cameraToGrab != nullptr);
         params.imageSize = DAVA::Size2i(SettingsManager::GetValue(Settings::Scene_Grab_Size_Width).AsInt32(),
                                         SettingsManager::GetValue(Settings::Scene_Grab_Size_Height).AsInt32());
-        params.outputPath = filePath.toStdString();
+        params.outputFile = filePath.toStdString();
 
         SceneImageGrabber::GrabImage(params);
     }

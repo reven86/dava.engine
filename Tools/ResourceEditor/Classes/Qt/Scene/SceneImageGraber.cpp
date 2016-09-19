@@ -22,20 +22,21 @@ struct InternalParams
     DAVA::RefPtr<DAVA::Texture> renderTarget;
 };
 
-void GrabImage(Params params)
+void GrabImage(Params inputParams)
 {
     InternalParams internalParams;
-    internalParams.inputParams = std::move(params);
+    internalParams.inputParams = std::move(inputParams);
 
-    DAVA::int32 maxSize = std::max(params.imageSize.dx, params.imageSize.dy);
+    DAVA::Size2i imageSize = internalParams.inputParams.imageSize;
+    DAVA::int32 maxSize = std::max(imageSize.dx, imageSize.dy);
     internalParams.renderTarget = DAVA::Texture::CreateFBO(maxSize, maxSize, DAVA::PixelFormat::FORMAT_RGBA8888, true);
 
     DAVA::float32 cameraAspect = internalParams.inputParams.cameraToGrab->GetAspect();
-    internalParams.inputParams.cameraToGrab->SetAspect(static_cast<DAVA::float32>(params.imageSize.dx) / params.imageSize.dy);
-    internalParams.inputParams.scene->renderSystem->SetDrawCamera(params.cameraToGrab.Get());
-    internalParams.inputParams.scene->renderSystem->SetMainCamera(params.cameraToGrab.Get());
+    internalParams.inputParams.cameraToGrab->SetAspect(static_cast<DAVA::float32>(imageSize.dx) / imageSize.dy);
+    internalParams.inputParams.scene->renderSystem->SetDrawCamera(internalParams.inputParams.cameraToGrab.Get());
+    internalParams.inputParams.scene->renderSystem->SetMainCamera(internalParams.inputParams.cameraToGrab.Get());
 
-    rhi::RenderPassConfig& config = params.scene->GetMainPassConfig();
+    rhi::RenderPassConfig& config = internalParams.inputParams.scene->GetMainPassConfig();
     config.colorBuffer[0].texture = internalParams.renderTarget->handle;
     config.depthStencilBuffer.texture = internalParams.renderTarget->handleDepthStencil;
     config.priority = PRIORITY_SERVICE_2D;
@@ -44,14 +45,14 @@ void GrabImage(Params params)
     config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
 
-    Rect viewportRect(0, 0, params.imageSize.dx, params.imageSize.dy);
-    params.scene->SetMainPassViewport(viewportRect);
-    params.scene->Draw();
-    params.cameraToGrab->SetAspect(cameraAspect);
+    Rect viewportRect(0, 0, imageSize.dx, imageSize.dy);
+    internalParams.inputParams.scene->SetMainPassViewport(viewportRect);
+    internalParams.inputParams.scene->Draw();
+    internalParams.inputParams.cameraToGrab->SetAspect(cameraAspect);
 
     DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
                                                 {
-                                                    DAVA::FilePath filePath = internalParams.inputParams.outputPath;
+                                                    DAVA::FilePath filePath = internalParams.inputParams.outputFile;
                                                     if (filePath.IsEmpty())
                                                     {
                                                         filePath = internalParams.inputParams.scene->GetScenePath().GetDirectory();
