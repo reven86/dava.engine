@@ -7,7 +7,7 @@
 
 vertex_in
 {    
-    float4 position : POSITION;
+    float3 position : POSITION;
     
     #if VERTEX_LIT || PIXEL_LIT
     float3 normal : NORMAL;

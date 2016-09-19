@@ -163,20 +163,24 @@ bool MSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName
       "#include <metal_texture>",
       "using namespace metal;",
 
+      "#define lerp(a,b,t) mix( (a), (b), (t) )",
+
       "inline vector_float4 mul( vector_float4 v, float4x4 m ) { return m*v; }",
       "inline vector_float4 mul( float4x4 m, vector_float4 v ) { return v*m; }",
       "inline vector_float3 mul( vector_float3 v, float3x3 m ) { return m*v; }",
-
+      /*
       "inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }",
       "inline vector_float2 lerp( vector_float2 a, vector_float2 b, float t ) { return mix( a, b, t ); }",
       "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float t ) { return mix( a, b, t ); }",
       "inline vector_float4 lerp( vector_float4 a, vector_float4 b, float t ) { return mix( a, b, t ); }",
 
+      "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float3 t ) { return mix( a, b, t ); }",
+
       "inline half  lerp( half a, half b, half t ) { return mix( a, b, t ); }",
       "inline vector_half2 lerp( vector_half2 a, vector_half2 b, half t ) { return mix( a, b, t ); }",
       "inline vector_half3 lerp( vector_half3 a, vector_half3 b, half t ) { return mix( a, b, t ); }",
       "inline vector_half4 lerp( vector_half4 a, vector_half4 b, half t ) { return mix( a, b, t ); }",
-
+*/
       "#define FP_A8(t) (t).a",
 
       ""
@@ -330,7 +334,7 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
     else if (expression->nodeType == HLSLNodeType_BinaryExpression)
     {
         HLSLBinaryExpression* binaryExpression = static_cast<HLSLBinaryExpression*>(expression);
-        //        m_writer.Write("(");
+        m_writer.Write("(");
         OutputExpression(binaryExpression->expression1);
         const char* op = "?";
         switch (binaryExpression->binaryOp)
@@ -391,7 +395,7 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
         }
         m_writer.Write("%s", op);
         OutputExpression(binaryExpression->expression2);
-        //        m_writer.Write(")");
+        m_writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConditionalExpression)
     {
@@ -621,10 +625,10 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                           { "SV_TARGET", rhi::VATTR_COLOR_0, "color0", "color(0)" },
                           { "SV_TARGET0", rhi::VATTR_COLOR_0, "color0", "color(0)" },
                           { "SV_TARGET1", rhi::VATTR_COLOR_1, "color1", "color(1)" },
-                          { "TANGENT", rhi::VATTR_TANGENT, "", "" },
-                          { "BINORMAL", rhi::VATTR_BINORMAL, "", "" },
-                          { "BLENDWEIGHT", rhi::VATTR_BLENDWEIGHT, "", "" },
-                          { "BLENDINDICES", rhi::VATTR_BLENDINDEX, "", "" }
+                          { "TANGENT", rhi::VATTR_TANGENT, "tangent", "" },
+                          { "BINORMAL", rhi::VATTR_BINORMAL, "binormal", "" },
+                          { "BLENDWEIGHT", rhi::VATTR_BLENDWEIGHT, "blend_weight", "" },
+                          { "BLENDINDICES", rhi::VATTR_BLENDINDEX, "blend_index", "" }
                         };
 
                         for (unsigned i = 0; i != countof(attr); ++i)
@@ -664,7 +668,7 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             indent, buffer->fileName, buffer->line,
             "struct __%s { packed_float4 data[%i]; };",
             buffer->name,
-            arr_sz->iValue
+            buffer->registerCount
             );
         }
         else if (statement->nodeType == HLSLNodeType_Function)
@@ -734,8 +738,15 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                         if (decl->type.flags & HLSLTypeFlag_Property)
                         {
                             m_writer.BeginLine(indent + 1);
-                            OutputDeclarationType(decl->type);
-                            OutputDeclarationBody(decl->type, decl->name, decl->semantic, decl->registerName, decl->assignment);
+                            if (decl->type.array)
+                            {
+                                m_writer.Write("constant vector_float4* %s = (constant vector_float4*)%s", decl->name, decl->registerName);
+                            }
+                            else
+                            {
+                                OutputDeclarationType(decl->type);
+                                OutputDeclarationBody(decl->type, decl->name, decl->semantic, decl->registerName, decl->assignment);
+                            }
                             m_writer.Write(";");
                             m_writer.EndLine();
                         }

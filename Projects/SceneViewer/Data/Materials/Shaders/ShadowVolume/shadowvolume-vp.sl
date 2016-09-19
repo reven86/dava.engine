@@ -2,7 +2,7 @@
 
 vertex_in
 {
-    float4  pos     : POSITION;
+    float3  pos     : POSITION;
     float3  normal  : NORMAL;
 
     #if SKINNING
@@ -23,8 +23,8 @@ vertex_out
 [dynamic][instance] property float4 lightPosition0;
 
 #if SKINNING
-[dynamic][skin1][bigarray] property float4 jointPositions[MAX_JOINTS]; // (x, y, z, scale)
-[dynamic][skin2][bigarray] property float4 jointQuaternions[MAX_JOINTS];
+[dynamic][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray"; // (x, y, z, scale)
+[dynamic][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
 #endif
 
 inline float3

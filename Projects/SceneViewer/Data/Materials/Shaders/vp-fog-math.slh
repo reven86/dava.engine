@@ -61,8 +61,8 @@
         #if FOG_ATMOSPHERE_NO_ATTENUATION
             FOG_result.xyz = atmosphereColor;
         #else
-            min10float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
-            FOG_result.xyz = lerp(fogColor, atmosphereColor, fogAtmosphereAttenuation);
+            half fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+            FOG_result.xyz = lerp(fogColor, atmosphereColor, float(fogAtmosphereAttenuation) );
         #endif
 
     #else

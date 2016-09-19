@@ -346,7 +346,7 @@ fp_main( fragment_in input )
                         color = textureColor1.rgb; 
                     #endif
                 #else
-                    color += input.varDiffuseColor * lightColor0;
+                    color += half3(input.varDiffuseColor * lightColor0);
                 #endif
             #endif
         
@@ -363,7 +363,7 @@ fp_main( fragment_in input )
             #if VIEW_SPECULAR
                 float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
                 float specularNorm = (glossiness + 2.0) / 8.0;
-                float3 spec = float3(input.varSpecularColor.xyz * pow(input.varSpecularColor.w, glossiness) * specularNorm);
+                float3 spec = float3(input.varSpecularColor.xyz * pow(float(input.varSpecularColor.w), glossiness) * specularNorm);
                                                      
                 #if MATERIAL_LIGHTMAP
                     color += half3(spec * (textureColor1.rgb / 2.0) * lightColor0);

@@ -1,6 +1,6 @@
 vertex_in
 {
-    float4  pos : POSITION;
+    float3  pos : POSITION;
 };
 
 vertex_out

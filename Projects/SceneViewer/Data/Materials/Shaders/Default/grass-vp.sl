@@ -2,7 +2,7 @@
 
 vertex_in
 {
-    float4  position    : POSITION;
+    float3  position    : POSITION;
     float2  uv0         : TEXCOORD0;
     float3  uv1         : TEXCOORD1;
     float3  uv2         : TEXCOORD2;

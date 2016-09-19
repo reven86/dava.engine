@@ -104,9 +104,9 @@ fragment_out
 
 
 inline float 
-FresnelShlick(float NdotL, float fresnelBias, float fresnelPow)
+FresnelShlick(float _NdotL, float _fresnelBias, float _fresnelPow)
 {
-    return fresnelBias + (1.0 - fresnelBias) * pow(1.0 - NdotL, fresnelPow);
+    return _fresnelBias + (1.0 - _fresnelBias) * pow(1.0 - _NdotL, _fresnelPow);
 }
 
 
@@ -147,7 +147,7 @@ fp_main( fragment_in input )
     
     
 //compute fresnel    
-    float3 cameraToPointInTangentSpaceNorm = normalize(input.cameraToPointInTangentSpace);    
+    float3 cameraToPointInTangentSpaceNorm = float3(normalize(input.cameraToPointInTangentSpace));    
     float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
     float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
     

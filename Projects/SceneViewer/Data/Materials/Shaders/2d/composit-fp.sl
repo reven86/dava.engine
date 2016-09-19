@@ -16,7 +16,7 @@ fragment_in
     float2  uvDetail    : TEXCOORD1;
     float2  uvGradient  : TEXCOORD2;
     float2  uvContour   : TEXCOORD3;
-    float4  color       : COLOR0;
+    half4   color       : COLOR0;
 };
 
 fragment_out

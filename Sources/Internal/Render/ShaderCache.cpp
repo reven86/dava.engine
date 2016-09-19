@@ -267,13 +267,18 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     std::string bin;
 
+#if 0
     Logger::Info("\n\n%s", vProgUid.c_str());
     vSource->Dump();
+#endif
     vSource->GetSourceCode(rhi::HostApi(), &bin);
     rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, bin.c_str(), bin.length());
+#if 0
     Logger::Info("\n\n%s", fProgUid.c_str());
     fSource->Dump();
+#endif
     fSource->GetSourceCode(rhi::HostApi(), &bin);
+
     rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, bin.c_str(), bin.length());
 
     //ShaderDescr

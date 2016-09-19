@@ -13,7 +13,7 @@
 
 vertex_in
 {
-    float4  position    : POSITION;    
+    float3  position    : POSITION;    
     float3  normal      : NORMAL;
     float3  tangent     : TANGENT;
     
@@ -33,7 +33,7 @@ vertex_out
         float2  uv1 : TEXCOORD1;
     #endif
     #if SHADING == SHADING_PERPIXEL
-        float3  cameraToPointInTangentSpace : TEXCOORD2;
+        half3  cameraToPointInTangentSpace : TEXCOORD2;
         #if REAL_REFLECTION
             float3  eyeDist           : TEXCOORD3;
             float4  normalizedFragPos : TEXCOORD4;
@@ -173,7 +173,7 @@ vp_main( vertex_in input )
         v.x = dot (eyeCoordsPosition, t);
         v.y = dot (eyeCoordsPosition, b);
         v.z = dot (eyeCoordsPosition, n);
-        output.cameraToPointInTangentSpace = v;                
+        output.cameraToPointInTangentSpace = half3(v);                
 
         #if REAL_REFLECTION
             output.eyeDist = eyeCoordsPosition;
