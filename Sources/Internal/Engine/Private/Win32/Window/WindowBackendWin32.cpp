@@ -79,6 +79,7 @@ void WindowBackend::Resize(float32 width, float32 height)
 
 void WindowBackend::Close()
 {
+    closeRequestByApp = true;
     DoCloseWindow();
 }
 
@@ -294,6 +295,15 @@ LRESULT WindowBackend::OnCreate()
     return 0;
 }
 
+bool WindowBackend::OnClose()
+{
+    if (!closeRequestByApp)
+    {
+        PostWindowCloseRequest();
+    }
+    return closeRequestByApp;
+}
+
 LRESULT WindowBackend::OnDestroy()
 {
     if (!isMinimized)
@@ -374,6 +384,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_CREATE)
     {
         lresult = OnCreate();
+    }
+    else if (message == WM_CLOSE)
+    {
+        isHandled = !OnClose();
     }
     else if (message == WM_DESTROY)
     {

@@ -34,6 +34,7 @@ public:
 
     // Utility methods to dispatch events to DAVA main thread, usually from window UI thread
     void PostWindowCreated(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    void PostWindowCloseRequest();
     void DispatchWindowDestroyed(bool blocking);
 
     void PostFocusChanged(bool focusState);

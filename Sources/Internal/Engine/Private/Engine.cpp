@@ -85,6 +85,11 @@ void Engine::Quit(int exitCode)
     engineBackend->Quit(exitCode);
 }
 
+void Engine::SetShouldWindowCloseHandler(const Function<bool(Window&)>& handler)
+{
+    engineBackend->SetShouldWindowCloseHandler(handler);
+}
+
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, false);

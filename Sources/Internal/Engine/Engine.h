@@ -37,6 +37,18 @@ public:
     int Run();
     void Quit(int exitCode = 0);
 
+    /// \brief Set handler which is invoked when user is trying to close window.
+    ///
+    /// Handler can prevent window closing by returning false. This ability is
+    /// supported only on some desktop platforms: win32 and macOS.
+    /// Typical usage is to return false in handler to prevent immediate window closing
+    /// and show dialog asking user whether she wants to close window. If she chooses to
+    /// close window then application should call Window::Close.
+    /// Handler is only invoked if window is closing by user request: by pressing Alt+F4 or
+    /// by clicking mouse on window close button.
+    ///
+    /// \param handler - function object which takes Window& as parameter and returns bool
+    void SetShouldWindowCloseHandler(const Function<bool(Window&)>& handler);
     void RunAsyncOnMainThread(const Function<void()>& task);
     void RunAndWaitOnMainThread(const Function<void()>& task);
 

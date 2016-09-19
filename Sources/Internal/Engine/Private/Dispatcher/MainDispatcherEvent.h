@@ -17,6 +17,7 @@ struct MainDispatcherEvent final
     {
         DUMMY = 0,
         WINDOW_CREATED,
+        WINDOW_CLOSE_REQUEST,
         WINDOW_DESTROYED,
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,

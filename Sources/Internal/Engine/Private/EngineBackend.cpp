@@ -191,6 +191,11 @@ void EngineBackend::Quit(int exitCode)
     }
 }
 
+void EngineBackend::SetShouldWindowCloseHandler(const Function<bool(Window&)>& handler)
+{
+    shouldWindowCloseHandler = handler;
+}
+
 void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool blocking)
 {
     MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
@@ -351,6 +356,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CREATED:
         HandleWindowCreated(e);
         break;
+    case MainDispatcherEvent::WINDOW_CLOSE_REQUEST:
+        HandleWindowCloseRequest(e);
+        break;
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
@@ -386,6 +394,19 @@ void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
     }
 
     engine->windowCreated.Emit(*e.window);
+}
+
+void EngineBackend::HandleWindowCloseRequest(const MainDispatcherEvent& e)
+{
+    bool closeWindow = true;
+    if (shouldWindowCloseHandler != nullptr)
+    {
+        closeWindow = shouldWindowCloseHandler(*e.window);
+    }
+    if (closeWindow)
+    {
+        e.window->Close();
+    }
 }
 
 void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
