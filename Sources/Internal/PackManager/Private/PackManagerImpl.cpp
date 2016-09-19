@@ -806,7 +806,7 @@ void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Fu
 
     Set<String> addedDirectory;
 
-    String relative = relativePathDir.GetRelativePathname("~res:/");
+    const String relative = relativePathDir.GetRelativePathname("~res:/");
 
     auto filterMountedPacks = [&](const String& path, const String& pack)
     {
@@ -818,11 +818,11 @@ void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Fu
                 size_type index = path.find_first_of("/", relative.size());
                 if (String::npos != index)
                 {
-                    String directoryName = path.substr(relative.size(), index - relative.size() + 1);
+                    String directoryName = path.substr(relative.size(), index - relative.size());
                     if (addedDirectory.find(directoryName) == end(addedDirectory))
                     {
                         addedDirectory.insert(directoryName);
-                        fn("~res:/" + relative + "/" + directoryName, pack);
+                        fn("~res:/" + relative + "/" + directoryName + "/", pack);
                     }
                 }
                 else

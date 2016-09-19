@@ -53,16 +53,28 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
                 entry.path = path;
                 entry.name = path.IsDirectoryPathname() ? path.GetLastDirectoryName() : path.GetFilename();
 
-                uint64 fileSize = 0;
-                FileSystem::Instance()->GetFileSize(path, fileSize);
-
-                entry.size = static_cast<uint32>(fileSize);
                 entry.isHidden = false;
                 entry.isDirectory = entry.path.IsDirectoryPathname();
+
+                uint64 fileSize = 0;
+                if (!entry.isDirectory)
+                {
+                    FileSystem::Instance()->GetFileSize(path, fileSize);
+                    ++fileCount;
+                }
+                else
+                {
+                    ++directoryCount;
+                }
+                entry.size = static_cast<uint32>(fileSize);
 
                 fileList.push_back(entry);
             };
             pm->ListFilesInPacks(filepath, listFiles);
+        }
+        if (!fileList.empty())
+        {
+            return;
         }
     }
 
