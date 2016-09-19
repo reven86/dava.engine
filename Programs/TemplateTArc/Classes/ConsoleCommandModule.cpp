@@ -67,7 +67,7 @@ DAVA::TArc::ConsoleModule::eFrameResult ConsoleCommandModule::OnFrame()
         Renderer::EndFrame();
     }
 
-    return data.buildSystem->IsInBuild() ? ConsoleModule::eFrameResult::CONTINUE : ConsoleModule::eFrameResult::JOB_FINISHED;
+    return data.buildSystem->IsInBuild() ? ConsoleModule::eFrameResult::CONTINUE : ConsoleModule::eFrameResult::FINISHED;
 }
 
 void ConsoleCommandModule::BeforeDestroyed()

@@ -259,7 +259,7 @@ public:
     {
         context->makeCurrent(surface);
         Impl::OnFrame(delta);
-        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::JOB_FINISHED)
+        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
         {
             modules.front()->BeforeDestroyed();
             modules.pop_front();

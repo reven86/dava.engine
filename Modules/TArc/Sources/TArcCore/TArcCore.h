@@ -50,6 +50,8 @@ public:
 
 private:
     bool IsConsoleMode() const;
+    // Don't put AddModule methods into public sections.
+    // There is only one orthodox way to inject Module into TArcCore : CreateModule
     void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);

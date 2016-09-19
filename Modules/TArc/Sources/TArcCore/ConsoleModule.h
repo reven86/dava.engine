@@ -14,7 +14,7 @@ protected:
     enum class eFrameResult
     {
         CONTINUE,
-        JOB_FINISHED
+        FINISHED
     };
     virtual void PostInit() = 0;
     virtual eFrameResult OnFrame() = 0;
