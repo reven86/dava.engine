@@ -94,22 +94,19 @@ static void InitScreenSizeInfo()
     using ::Windows::UI::Xaml::Window;
     using ::Windows::Graphics::Display::DisplayInformation;
     using ::Windows::Graphics::Display::DisplayOrientations;
+    using ::Windows::UI::ViewManagement::ApplicationView;
+    using ::Windows::Foundation::Rect;
 
     // http://stackoverflow.com/questions/31936154/get-screen-resolution-in-win10-uwp-app
     DeviceInfo::ScreenInfo screenInfo;
 
-    CoreWindow ^ coreWindow = Window::Current->CoreWindow;
+    Rect bounds = ApplicationView::GetForCurrentView()->VisibleBounds;
     DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
     DisplayOrientations orientation = displayInfo->CurrentOrientation;
 
-    screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
-    screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
+    screenInfo.width = static_cast<int32>(bounds.Width);
+    screenInfo.height = static_cast<int32>(bounds.Height);
     screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-
-    if (DisplayOrientations::Portrait == orientation || DisplayOrientations::PortraitFlipped == orientation)
-    {
-        std::swap(screenInfo.width, screenInfo.height);
-    }
 
     DeviceInfo::InitializeScreenInfo(screenInfo, false);
 }

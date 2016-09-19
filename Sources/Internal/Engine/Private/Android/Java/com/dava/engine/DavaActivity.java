@@ -25,7 +25,7 @@ public final class DavaActivity extends Activity
     public static final String LOG_TAG = "DAVA";
 
     private static DavaActivity activitySingleton;
-    public static Thread davaMainThread;
+    protected static Thread davaMainThread;
 
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
@@ -110,7 +110,7 @@ public final class DavaActivity extends Activity
         layout.addView(primarySurfaceView);
     }
     
-    public void onFinishCollectDeviceInfo()
+    protected void onFinishCollectDeviceInfo()
     {
         runOnUiThread(new Runnable(){
             @Override
@@ -129,6 +129,7 @@ public final class DavaActivity extends Activity
                 startDavaMainThreadIfNotRunning();
                 handleResume();
                 layout.removeView(splashView);
+                splashView = null;
             }
         });
     }

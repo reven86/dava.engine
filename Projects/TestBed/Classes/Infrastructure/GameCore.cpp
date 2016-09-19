@@ -57,11 +57,9 @@ void CheckDeviceInfoValid()
 
     auto manufacturer = DeviceInfo::GetManufacturer();
     Logger::Info("manufacturer: %s", manufacturer.c_str());
-    DVASSERT(manufacturer != "" || true);
 
     auto model = DeviceInfo::GetModel();
     Logger::Info("model: %s", model.c_str());
-    DVASSERT(model != "" || true);
 
     auto locale = DeviceInfo::GetLocale();
     Logger::Info("locale: %s", locale.c_str());
@@ -80,7 +78,7 @@ void CheckDeviceInfoValid()
     DVASSERT(udid != "");
 
     auto name = DeviceInfo::GetName();
-    Logger::Info("name: %s", name.c_str());
+    Logger::Info("name: %s", UTF8Utils::EncodeToUTF8(name).c_str());
     DVASSERT(name != L"");
 
     auto httpProxyHost = DeviceInfo::GetHTTPProxyHost();
@@ -103,7 +101,7 @@ void CheckDeviceInfoValid()
 
     auto zbufferSize = DeviceInfo::GetZBufferSize();
     Logger::Info("zbuffer_size: %d", zbufferSize);
-    DVASSERT(zbufferSize == 24);
+    DVASSERT(zbufferSize == 16 || zbufferSize == 24);
 
     auto gpuFamily = DeviceInfo::GetGPUFamily();
     Logger::Info("gpu_family enum index: %d", gpuFamily);
@@ -111,8 +109,6 @@ void CheckDeviceInfoValid()
 
     auto networkInfo = DeviceInfo::GetNetworkInfo();
     Logger::Info("network: type=%d signal_strength=%d", networkInfo.networkType, networkInfo.signalStrength);
-    DVASSERT(networkInfo.networkType != DeviceInfo::NETWORK_TYPE_UNKNOWN || true);
-    DVASSERT(networkInfo.signalStrength >= 0 || true);
 
     List<DeviceInfo::StorageInfo> storageInfo = DeviceInfo::GetStoragesList();
     for (const auto& info : storageInfo)
@@ -120,7 +116,6 @@ void CheckDeviceInfoValid()
         Logger::Info("storage info: type=%d total_space=%lld free_space=%lld, read_only=%d, removable=%d, emulated=%d",
                      info.type, info.totalSpace, info.freeSpace, info.readOnly, info.removable, info.emulated);
     }
-    DVASSERT(storageInfo.empty() || true);
 
     uint32 cpuCount = DeviceInfo::GetCpuCount();
     Logger::Info("cpu_count: %d", cpuCount);

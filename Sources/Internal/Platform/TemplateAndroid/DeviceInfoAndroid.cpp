@@ -173,7 +173,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    CorePlatformAndroid* core = dynamic_cast<CorePlatformAndroid*>(Core::Instance());
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
     screenInfo.scale = 1;
