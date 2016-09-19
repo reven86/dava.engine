@@ -74,7 +74,7 @@ inline T* ReflectedObject::GetPtr() const
 
     assert(reqType == type
            || reqType->Decay() == type
-           || TypeCast::CanCast(reqType, type)
+           || TypeCast::CanCast(reqType->Deref(), type->Deref())
            );
 
     return static_cast<T*>(ptr);

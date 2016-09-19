@@ -866,37 +866,60 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                             uint32 actualSizeFromFile = 0;
                             do
                             {
-                                File* justWritten = File::Create(tmpNewPath, File::OPEN | File::READ);
-                                if (!justWritten)
+                                bool canContinue = true;
+
+                                ScopedPtr<File> justWrittenFile(File::Create(tmpNewPath, File::OPEN | File::READ));
+                                if (!justWrittenFile)
                                 {
                                     Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] can't open just written file: %s", tmpNewPath.GetAbsolutePathname().c_str());
+                                    canContinue = false;
                                 }
-                                actualSizeFromFile = static_cast<uint32>(justWritten->GetSize());
-                                Vector<char> content(actualSizeFromFile);
-                                uint32 bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
-                                if (bytesRead != curInfo.newSize)
+
+                                if (canContinue)
                                 {
-                                    Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] size not match: %d != %d ", bytesRead, curInfo.newSize);
-                                    content.resize(curInfo.newSize);
-                                    bytesRead = justWritten->Read(content.data(), static_cast<uint32>(content.size()));
-                                    if (bytesRead != curInfo.newSize)
+                                    actualSizeFromFile = static_cast<uint32>(justWrittenFile->GetSize());
+                                    if (actualSizeFromFile != curInfo.newSize)
                                     {
-                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] second try size not match: %d != %d ", bytesRead, curInfo.newSize);
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] file size not match: %d != %d ", actualSizeFromFile, curInfo.newSize);
+                                        canContinue = false;
                                     }
                                 }
 
-                                actualCRC = CRC32::ForBuffer(content.data(), static_cast<uint32>(content.size()));
-                                if (counter > 0)
+                                Vector<char> content;
+
+                                if (canContinue)
                                 {
+                                    content.resize(actualSizeFromFile);
+                                    uint32 bytesRead = justWrittenFile->Read(content.data(), static_cast<uint32>(content.size()));
+                                    if (bytesRead != curInfo.newSize)
+                                    {
+                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] read size not match: %d != %d ", bytesRead, curInfo.newSize);
+                                        canContinue = false;
+                                    }
+                                }
+
+                                if (canContinue)
+                                {
+                                    actualCRC = CRC32::ForBuffer(content.data(), static_cast<uint32>(content.size()));
                                     if (curInfo.newCRC != actualCRC)
                                     {
-                                        Logger::ErrorToFile(logFilePath, "[PatchFileReader::Apply] New file crc doesn't matches to expected."
-                                                                         " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
-                                                            tmpNewPath.GetAbsolutePathname().c_str(), counter, actualCRC, curInfo.newCRC, actualSizeFromFile, curInfo.newSize);
+                                        Logger::ErrorToFile(logFilePath,
+                                                            "[PatchFileReader::Apply] New file crc32 doesn't matches to expected."
+                                                            " %s counter=%d actual_crc=0x%X expected_crc=0x%X, actual_size=%d expected_size=%d",
+                                                            tmpNewPath.GetAbsolutePathname().c_str(),
+                                                            counter, actualCRC,
+                                                            curInfo.newCRC,
+                                                            actualSizeFromFile,
+                                                            curInfo.newSize);
+                                        canContinue = false;
                                     }
+                                }
+
+                                if (!canContinue)
+                                {
+                                    // wait a little bit, let OS to update file
                                     Thread::Sleep(500);
                                 }
-                                justWritten->Release();
                             } while (++counter < 10 && curInfo.newCRC != actualCRC);
 
                             if (curInfo.newCRC != actualCRC)
@@ -973,7 +996,7 @@ bool PatchFileReader::Apply(const FilePath& _origBase, const FilePath& _origPath
                 // don't try to delete file or folder if it is not exists in permissive mode
                 // try to delete anyway if permissive mode is not enabled
                 bool isFileExists = FileSystem::Instance()->Exists(newPathToDelete);
-                bool shouldToTtryToDelete = !isPermissiveMode || (isPermissiveMode && isFileExists);
+                bool shouldToTtryToDelete = !isPermissiveMode || isFileExists;
                 if (shouldToTtryToDelete)
                 {
                     if (newPathToDelete.IsDirectoryPathname())
