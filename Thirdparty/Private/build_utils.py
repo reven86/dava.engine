@@ -5,6 +5,7 @@ import os
 import subprocess
 import glob
 import shutil
+import tarfile
 
 def download(url, file_name):
 	path = os.path.dirname(file_name)
@@ -20,15 +21,15 @@ def download(url, file_name):
 	file_size_dl = 0
 	block_sz = 65536
 	while True:
-	    buffer = u.read(block_sz)
-	    if not buffer:
-	        break
+		buffer = u.read(block_sz)
+		if not buffer:
+			break
 
-	    file_size_dl += len(buffer)
-	    f.write(buffer)
-	    status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-	    status = status + chr(8)*(len(status)+1)
-	    print status,
+		file_size_dl += len(buffer)
+		f.write(buffer)
+		status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+		status = status + chr(8)*(len(status)+1)
+		print status,
 
 	f.close()
 
@@ -39,15 +40,20 @@ def download_if_doesnt_exist(url, file_name):
 		download(url, file_name)
 
 def unzip_inplace(path):
-	print "Unzipping %s ..." % (path)
-	zip_ref = zipfile.ZipFile(path, 'r')
-	zip_ref.extractall(os.path.dirname(path))
-	zip_ref.close()
-	print "Unzipping OK"
+	print "Unarchiving %s ..." % (path)
 
-def apply_patch(patch):
+	extension = os.path.splitext(path)[1]
+	if extension == '.zip':
+		ref = zipfile.ZipFile(path, 'r')
+	elif extension == '.gz':
+		ref = tarfile.open(path, 'r')
+	ref.extractall(os.path.dirname(path))
+	ref.close()
+	print "Unarchiving OK"
+
+def apply_patch(patch, working_dir = '.'):
 	print "Applying patch %s" % patch
-	proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = working_dir)
 	proc.communicate()
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode
@@ -120,6 +126,11 @@ def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator
 	cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
 	build_vs(os.path.join(output_folder_path, sln_name), 'Debug', configuration, target)
 	build_vs(os.path.join(output_folder_path, sln_name), 'Release', configuration, target)
+
+def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_generator, project, target, cmake_additional_args = []):
+	cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
+	build_xcode_target(os.path.join(output_folder_path, project), target, 'Debug')
+	build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
 def build_android_ndk(project_path, output_path, debug):
 	cmd = ['ndk-build', 'NDK_OUT=' + output_path]

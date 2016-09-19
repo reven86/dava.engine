@@ -1,6 +1,6 @@
-diff -ur tmp/libpng_source_original/pngpriv.h tmp/libpng_source/pngpriv.h
---- ./tmp/libpng_source_original/pngpriv.h	2016-08-31 22:26:44.000000000 +0300
-+++ ./tmp/libpng_source/pngpriv.h	2016-09-16 16:57:16.890666000 +0300
+diff -ur ./libpng_source_original/pngpriv.h ./libpng_source/pngpriv.h
+--- ./libpng_source_original/pngpriv.h	2016-08-31 22:26:44.000000000 +0300
++++ ./libpng_source/pngpriv.h	2016-09-16 16:57:16.890666000 +0300
 @@ -486,11 +486,8 @@
  
  /* Memory model/platform independent fns */
@@ -15,9 +15,9 @@ diff -ur tmp/libpng_source_original/pngpriv.h tmp/libpng_source/pngpriv.h
  #endif
  
  /* These macros may need to be architecture dependent. */
-diff -ur tmp/libpng_source_original/scripts/genout.cmake.in tmp/libpng_source/scripts/genout.cmake.in
---- ./tmp/libpng_source_original/scripts/genout.cmake.in	2016-05-04 10:34:50.000000000 +0300
-+++ ./tmp/libpng_source/scripts/genout.cmake.in	2016-09-16 16:56:32.971145500 +0300
+diff -ur ./libpng_source_original/scripts/genout.cmake.in ./libpng_source/scripts/genout.cmake.in
+--- ./libpng_source_original/scripts/genout.cmake.in	2016-05-04 10:34:50.000000000 +0300
++++ ./libpng_source/scripts/genout.cmake.in	2016-09-16 16:56:32.971145500 +0300
 @@ -34,6 +34,13 @@
    endif()
  endif()
