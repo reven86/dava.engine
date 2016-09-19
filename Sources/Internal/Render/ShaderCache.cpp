@@ -71,15 +71,14 @@ Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>
     key.reserve(defines.size() * 2 + 1);
     for (const auto& define : defines)
     {
-        key.push_back(define.first.Index());
-        key.push_back(define.second);
+        key.emplace_back(define.first.Index());
+        key.emplace_back(define.second);
     }
 
-    // sort defines
-    using DefinePair = std::pair<int32, int32>;
-    DefinePair* begin = reinterpret_cast<DefinePair*>(key.data());
-    DefinePair* end = begin + key.size() / 2;
-    std::sort(begin, end, [](const DefinePair& l, const DefinePair& r) {
+    // reinterpret cast to pairs and sort them
+    using Int32Pair = std::pair<int32, int32>;
+    Int32Pair* begin = reinterpret_cast<Int32Pair*>(key.data());
+    std::sort(begin, begin + key.size() / 2, [](const Int32Pair& l, const Int32Pair& r) {
         return l.first < r.first;
     });
 

@@ -1322,11 +1322,19 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         RebuildTangentSpace(rootNode);
     }
 
-    RemoveDeprecatedMaterialFlags(rootNode);
+    if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
+    }
 
     if (header.version < ALPHATEST_VALUE_FLAG_SCENE_VERSION)
     {
         ConvertAlphatestValueMaterials(rootNode);
+    }
+
+    if (header.version < OLD_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
