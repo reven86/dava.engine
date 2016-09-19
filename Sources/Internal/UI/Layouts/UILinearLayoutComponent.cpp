@@ -78,15 +78,8 @@ void UILinearLayoutComponent::SetOrientation(eOrientation direction)
         break;
     }
 
-    if (flags.test(FLAG_ORIENTATION_VERTICAL) == vertical &&
-        flags.test(FLAG_ORIENTATION_INVERSE) == inverse)
-    {
-        return;
-    }
-
-    flags.set(FLAG_ORIENTATION_VERTICAL, vertical);
-    flags.set(FLAG_ORIENTATION_INVERSE, inverse);
-    SetLayoutDirty();
+    SetFlag(FLAG_ORIENTATION_VERTICAL, vertical);
+    SetFlag(FLAG_ORIENTATION_INVERSE, inverse);
 }
 
 Vector2::eAxis UILinearLayoutComponent::GetAxis() const
@@ -138,13 +131,7 @@ bool UILinearLayoutComponent::IsDynamicPadding() const
 
 void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
 {
-    if (flags.test(FLAG_DYNAMIC_PADDING) == dynamic)
-    {
-        return;
-    }
-
-    flags.set(FLAG_DYNAMIC_PADDING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_PADDING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsDynamicSpacing() const
@@ -154,13 +141,7 @@ bool UILinearLayoutComponent::IsDynamicSpacing() const
 
 void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
-    if (flags.test(FLAG_DYNAMIC_SPACING) == dynamic)
-    {
-        return;
-    }
-
-    flags.set(FLAG_DYNAMIC_SPACING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_SPACING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsSkipInvisibleControls() const
@@ -170,13 +151,7 @@ bool UILinearLayoutComponent::IsSkipInvisibleControls() const
 
 void UILinearLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
-    if (flags.test(FLAG_SKIP_INVISIBLE_CONTROLS) == skip)
-    {
-        return;
-    }
-
-    flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
-    SetLayoutDirty();
+    SetFlag(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
 }
 
 bool UILinearLayoutComponent::IsUseRtl() const
@@ -186,13 +161,7 @@ bool UILinearLayoutComponent::IsUseRtl() const
 
 void UILinearLayoutComponent::SetUseRtl(bool use)
 {
-    if (flags.test(FLAG_RTL) == use)
-    {
-        return;
-    }
-
-    flags.set(FLAG_RTL, use);
-    SetLayoutDirty();
+    SetFlag(FLAG_RTL, use);
 }
 
 int32 UILinearLayoutComponent::GetOrientationAsInt() const
@@ -210,6 +179,15 @@ void UILinearLayoutComponent::SetLayoutDirty()
     if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
+    }
+}
+
+void UILinearLayoutComponent::SetFlag(eFlags flag, bool enabled)
+{
+    if (flags.test(flag) != enabled)
+    {
+        flags.set(flag, enabled);
+        SetLayoutDirty();
     }
 }
 }

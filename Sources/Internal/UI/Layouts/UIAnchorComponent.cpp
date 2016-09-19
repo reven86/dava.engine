@@ -36,13 +36,7 @@ bool UIAnchorComponent::IsEnabled() const
 
 void UIAnchorComponent::SetEnabled(bool enabled)
 {
-    if (flags.test(FLAG_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 bool UIAnchorComponent::IsLeftAnchorEnabled() const
@@ -52,13 +46,7 @@ bool UIAnchorComponent::IsLeftAnchorEnabled() const
 
 void UIAnchorComponent::SetLeftAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_LEFT_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_LEFT_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_LEFT_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetLeftAnchor() const
@@ -84,13 +72,7 @@ bool UIAnchorComponent::IsHCenterAnchorEnabled() const
 
 void UIAnchorComponent::SetHCenterAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_HCENTER_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_HCENTER_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetHCenterAnchor() const
@@ -115,13 +97,7 @@ bool UIAnchorComponent::IsRightAnchorEnabled() const
 
 void UIAnchorComponent::SetRightAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_RIGHT_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_RIGHT_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_RIGHT_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetRightAnchor() const
@@ -147,13 +123,7 @@ bool UIAnchorComponent::IsTopAnchorEnabled() const
 
 void UIAnchorComponent::SetTopAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_TOP_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_TOP_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_TOP_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetTopAnchor() const
@@ -179,13 +149,7 @@ bool UIAnchorComponent::IsVCenterAnchorEnabled() const
 
 void UIAnchorComponent::SetVCenterAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_VCENTER_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_VCENTER_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_VCENTER_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetVCenterAnchor() const
@@ -211,13 +175,7 @@ bool UIAnchorComponent::IsBottomAnchorEnabled() const
 
 void UIAnchorComponent::SetBottomAnchorEnabled(bool enabled)
 {
-    if (flags.test(FLAG_BOTTOM_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_BOTTOM_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_BOTTOM_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetBottomAnchor() const
@@ -243,13 +201,7 @@ bool UIAnchorComponent::IsUseRtl() const
 
 void UIAnchorComponent::SetUseRtl(bool use)
 {
-    if (flags.test(FLAG_USE_RTL) == use)
-    {
-        return;
-    }
-
-    flags.set(FLAG_USE_RTL, use);
-    SetLayoutDirty();
+    SetFlag(FLAG_USE_RTL, use);
 }
 
 void UIAnchorComponent::SetLayoutDirty()
@@ -259,4 +211,14 @@ void UIAnchorComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
+
+void UIAnchorComponent::SetFlag(eFlags flag, bool enabled)
+{
+    if (flags.test(flag) != enabled)
+    {
+        flags.set(flag, enabled);
+        SetLayoutDirty();
+    }
+}
+
 }

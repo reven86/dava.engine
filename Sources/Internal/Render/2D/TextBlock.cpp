@@ -14,7 +14,7 @@ namespace DAVA
 {
 #define NEW_RENDER 1
 
-namespace TextBlock_local
+namespace TextBlockDetail
 {
 static const float32 INVALID_WIDTH = -2.0f;
 static const Vector2 INVALID_VECTOR = Vector2(-1.0f, -1.0f);
@@ -72,7 +72,7 @@ TextBlock::TextBlock()
     , scale(1.f, 1.f)
     , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f, 0.f)
-    , cachedPreferredData({ TextBlock_local::INVALID_VECTOR, TextBlock_local::INVALID_WIDTH })
+    , cachedPreferredData({ TextBlockDetail::INVALID_VECTOR, TextBlockDetail::INVALID_WIDTH })
     , renderSize(1.f)
     , cacheDx(0)
     , cacheDy(0)
@@ -357,7 +357,7 @@ bool TextBlock::IsVisualTextCroped()
 
 Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 {
-    using namespace TextBlock_local;
+    using namespace TextBlockDetail;
 
     if (!font)
         return Vector2();
@@ -1000,7 +1000,7 @@ void TextBlock::CalculateCacheParams()
 
 void TextBlock::CalculateCacheParamsIfNeed()
 {
-    using namespace TextBlock_local;
+    using namespace TextBlockDetail;
     if (needCalculateCacheParams)
     {
         CalculateCacheParams();
