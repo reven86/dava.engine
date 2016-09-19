@@ -38,18 +38,13 @@ struct AndroidBridge final
     static const String& GetApplicatiionPath();
     static const String& GetPackageName();
 
-    static int32 GetDefaultDisplayWidth();
-    static int32 GetDefaultDisplayHeight();
-
     static void AttachPlatformCore(PlatformCore* platformCore);
 
     void InitializeEngine(String externalFilesDir,
                           String internalFilesDir,
                           String sourceDir,
                           String apkName,
-                          String cmdline,
-                          int32 screenWidth,
-                          int32 screenHeight);
+                          String cmdline);
     void ShutdownEngine();
 
     WindowBackend* ActivityOnCreate();
@@ -79,9 +74,6 @@ struct AndroidBridge final
     String internalDocumentsDir;
     String appPath;
     String packageName;
-
-    int defaultDisplayWidth = 0;
-    int defaultDisplayHeight = 0;
 };
 
 } // namespace Private

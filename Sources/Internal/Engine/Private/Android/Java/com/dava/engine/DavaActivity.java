@@ -19,15 +19,13 @@ import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.dava.framework.JNIDeviceInfo;
-
 public final class DavaActivity extends Activity
                                 implements View.OnSystemUiVisibilityChangeListener
 {
     public static final String LOG_TAG = "DAVA";
 
     private static DavaActivity activitySingleton;
-    private static Thread davaMainThread;
+    public static Thread davaMainThread;
 
     protected boolean isPaused = true;
     protected boolean hasFocus = false;
@@ -37,9 +35,6 @@ public final class DavaActivity extends Activity
     protected String sourceDir;
     protected String packageName;
     protected String cmdline;
-    
-    private int displayWidth = 0;
-    private int displayHeight = 0;
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
@@ -54,9 +49,7 @@ public final class DavaActivity extends Activity
                                                      String internalFilesDir,
                                                      String appPath,
                                                      String packageName,
-                                                     String cmdline,
-                                                     int defaultDisplayWidth,
-                                                     int defaultDisplayHeight);
+                                                     String cmdline);
     public static native void nativeShutdownEngine();
     public static native long nativeOnCreate();
     public static native void nativeOnResume();
@@ -110,10 +103,7 @@ public final class DavaActivity extends Activity
         // in AndroidManifest.xml with names boot_modules and boot_classes accordingly
         bootstrap();
         
-        displayWidth = JNIDeviceInfo.GetDefaultDisplayWidth();
-        displayHeight = JNIDeviceInfo.GetDefaultDisplayHeight();
-        
-        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline, displayWidth, displayHeight);
+        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
         long primaryWindowBackendPointer = nativeOnCreate();
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);

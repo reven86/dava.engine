@@ -45,7 +45,6 @@
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
-#include "PackManager/Private/PackManagerImpl.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"

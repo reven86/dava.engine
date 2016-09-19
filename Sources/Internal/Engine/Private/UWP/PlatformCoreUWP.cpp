@@ -95,6 +95,7 @@ static void InitScreenSizeInfo()
     using ::Windows::Graphics::Display::DisplayInformation;
     using ::Windows::Graphics::Display::DisplayOrientations;
 
+    // http://stackoverflow.com/questions/31936154/get-screen-resolution-in-win10-uwp-app
     DeviceInfo::ScreenInfo screenInfo;
 
     CoreWindow ^ coreWindow = Window::Current->CoreWindow;
@@ -117,7 +118,12 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
-    InitScreenSizeInfo();
+    static bool firstTimeMainWindowsCreated = true;
+    if (firstTimeMainWindowsCreated)
+    {
+        InitScreenSizeInfo();
+        firstTimeMainWindowsCreated = false;
+    }
 
     WindowBackend* backendWindow = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
     backendWindow->BindXamlWindow(xamlWindow);
