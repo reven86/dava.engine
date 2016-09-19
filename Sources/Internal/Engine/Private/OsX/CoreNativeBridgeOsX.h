@@ -51,6 +51,7 @@ struct CoreNativeBridge final
     FrameTimer* frameTimer = nullptr;
 
     bool quitSent = false;
+    bool closeRequestByApp = false;
     int32 curFps = 0;
 };
 

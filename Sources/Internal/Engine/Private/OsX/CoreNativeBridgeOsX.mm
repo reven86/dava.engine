@@ -112,6 +112,7 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::Quit()
 {
+    closeRequestByApp = true;
     if (!quitSent)
     {
         quitSent = true;
@@ -175,6 +176,12 @@ void CoreNativeBridge::ApplicationDidUnhide()
 
 bool CoreNativeBridge::ApplicationShouldTerminate()
 {
+    if (!closeRequestByApp)
+    {
+        core->engineBackend->PostUserCloseRequest();
+        return false;
+    }
+
     if (!quitSent)
     {
         core->engineBackend->PostAppTerminate(false);

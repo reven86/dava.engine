@@ -126,6 +126,11 @@ void WindowNativeBridge::WindowDidChangeScreen()
 
 bool WindowNativeBridge::WindowShouldClose()
 {
+    if (!windowBackend.closeRequestByApp)
+    {
+        windowBackend.PostUserCloseRequest();
+        return false;
+    }
     return true;
 }
 

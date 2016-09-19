@@ -55,6 +55,7 @@ void WindowBackend::Resize(float32 width, float32 height)
 
 void WindowBackend::Close()
 {
+    closeRequestByApp = true;
     bridge->CloseWindow();
 }
 

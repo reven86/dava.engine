@@ -52,6 +52,7 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool closeRequestByApp = false;
     size_t hideUnhideSignalId = 0;
 
     // Friends

@@ -476,6 +476,14 @@ void EngineBackend::PostAppTerminate(bool triggeredBySystem)
     dispatcher->PostEvent(e);
 }
 
+void EngineBackend::PostUserCloseRequest()
+{
+    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST);
+    e.timestamp = context->systemTimer->FrameStampTimeMS();
+    e.window = nullptr;
+    dispatcher->PostEvent(e);
+}
+
 void EngineBackend::InitRenderer(Window* w)
 {
     rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));

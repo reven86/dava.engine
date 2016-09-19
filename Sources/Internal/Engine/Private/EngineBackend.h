@@ -73,6 +73,7 @@ public:
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
     void PostAppTerminate(bool triggeredBySystem);
+    void PostUserCloseRequest();
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();

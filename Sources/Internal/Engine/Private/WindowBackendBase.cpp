@@ -53,7 +53,7 @@ void WindowBackendBase::PostWindowCreated(float32 width, float32 height, float32
 
 void WindowBackendBase::PostUserCloseRequest()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST);
+    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     mainDispatcher.PostEvent(e);
 }
