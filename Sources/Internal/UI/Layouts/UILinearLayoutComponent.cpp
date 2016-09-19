@@ -33,13 +33,7 @@ bool UILinearLayoutComponent::IsEnabled() const
 
 void UILinearLayoutComponent::SetEnabled(bool enabled)
 {
-    if (flags.test(FLAG_ENABLED) == enabled)
-    {
-        return;
-    }
-
-    flags.set(FLAG_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() const
