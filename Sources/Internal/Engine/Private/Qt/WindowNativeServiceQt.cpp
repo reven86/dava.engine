@@ -1,4 +1,4 @@
-#include "Engine/Public/Qt/WindowNativeServiceQt.h"
+#include "Engine/Qt/WindowNativeServiceQt.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -13,11 +13,6 @@ namespace DAVA
 WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
     : windowBackend(wbackend)
 {
-}
-
-DAVA::RenderWidget* WindowNativeService::GetRenderWidget()
-{
-    return windowBackend->GetRenderWidget();
 }
 
 } // namespace DAVA

@@ -30,10 +30,10 @@ APP_LDFLAGS  := -fsanitize=address
 #LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 
+APP_ABI := armeabi-v7a
+APP_ABI += x86
 # Uncomment to use core v2, do not forget to edit AndroidManifest.xml
 # APP_CFLAGS += -D__DAVAENGINE_COREV2__
-
-APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-14
 
 # we have to use last ndk10e with clang3.6, clang - point to clang3.6 in ndk10e

@@ -38,7 +38,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
 #pragma STDC FENV_ACCESS on
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -60,6 +59,8 @@
 #include "Debug/Profiler.h"
 
 #include "Core.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include <PackManager/Private/PackManagerImpl.h>
 #define PROF__FRAME 0
 #define PROF__FRAME_UPDATE 1
 #define PROF__FRAME_DRAW 2
@@ -241,10 +242,6 @@ void Core::CreateSingletons()
     new VirtualCoordinatesSystem();
     new RenderSystem2D();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    new AssetsManager();
-#endif
-
 #if defined __DAVAENGINE_IPHONE__
 // not used
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -258,7 +255,7 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManager());
+    packManager.reset(new PackManagerImpl());
 
     new LocalNotificationController();
 
@@ -344,8 +341,8 @@ void Core::ReleaseSingletons()
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
 
-#if defined(__DAVAENGINE_ANDROID__)
-    AssetsManager::Instance()->Release();
+#ifdef __DAVAENGINE_ANDROID__
+    AssetsManagerAndroid::Instance()->Release();
 #endif
 
     SystemTimer::Instance()->Release();
@@ -357,7 +354,50 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
 
     options = SafeRetain(archiveOfOptions);
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
+
+    using RotationPrefFn = BOOL(WINAPI*)(_In_ ORIENTATION_PREFERENCE);
+
+    // we are trying to get SetDisplayAutoRotationPreferences with GetProcAddress
+    // because this function is available only on win8 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and SetDisplayAutoRotationPreferences wont be called
+    HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(user32, "SetDisplayAutoRotationPreferences"));
+
+    if (nullptr != fn)
+    {
+        ORIENTATION_PREFERENCE orientationp = ORIENTATION_PREFERENCE_NONE;
+
+        switch (screenOrientation)
+        {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_PORTRAIT | ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED);
+            break;
+        default:
+            break;
+        }
+
+        (*fn)(orientationp);
+    }
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
@@ -967,7 +1007,12 @@ Vector2 Core::GetWindowMinimumSize() const
     return Vector2();
 }
 
-PackManager& Core::GetPackManager()
+void* DAVA::Core::GetNativeWindow() const
+{
+    return nullptr;
+}
+
+IPackManager& Core::GetPackManager()
 {
     DVASSERT(packManager);
     return *packManager;

@@ -190,7 +190,11 @@ bool StbTextEditBridge::Cut()
 
 bool StbTextEditBridge::Paste(const WideString& str)
 {
-    return stb_textedit_paste(this, stb_state, str.c_str(), int(str.length())) != 0;
+    // Because stb_textedit_paste didn't work correctly with selected text
+    // we first cut selection and paste new text after
+    bool hasCutted = stb_textedit_cut(this, stb_state) != 0;
+    bool hasPasted = stb_textedit_paste(this, stb_state, str.c_str(), int(str.length())) != 0;
+    return hasCutted || hasPasted;
 }
 
 void StbTextEditBridge::Click(const Vector2& point)

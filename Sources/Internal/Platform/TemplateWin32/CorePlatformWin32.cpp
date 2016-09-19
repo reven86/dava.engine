@@ -668,9 +668,15 @@ bool IsMouseWheelEvent(UINT message)
     return message == WM_MOUSEWHEEL;
 }
 
-bool IsMouseInputEvent(UINT message)
+bool IsMouseInputEvent(UINT message, LPARAM messageExtraInfo)
 {
-    return (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT;
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
+
+    const LPARAM MI_WP_SIGNATURE = 0xFF515700;
+    const LPARAM SIGNATURE_MASK = 0xFFFFFF00;
+    const bool isTouchOrPen = (messageExtraInfo & SIGNATURE_MASK) == MI_WP_SIGNATURE;
+
+    return !isTouchOrPen && ((WM_MOUSEFIRST <= message && message <= WM_MOUSELAST) || message == WM_INPUT);
 }
 
 bool IsCursorPointInside(HWND hWnd, int xPos, int yPos)
@@ -900,13 +906,14 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    //TODO: Add system scale
-    float32 scaleX = 1.f;
-    float32 scaleY = 1.f;
-    scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
+
     RECT rect;
 
-    if (IsMouseInputEvent(message))
+    // win32 app don't have ui-scaling option,
+    // so hard-code default
+    float32 uiScale = 1.0;
+
+    if (IsMouseInputEvent(message, GetMessageExtraInfo()))
     {
         bool interruptProcessing = core->ProcessMouseInputEvent(hWnd, message, wParam, lParam);
         if (interruptProcessing)
@@ -920,9 +927,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     }
     switch (message)
     {
+    case WM_DPICHANGED:
+        core->ApplyWindowSize();
+        break;
     case WM_SIZE:
         GetClientRect(hWnd, &rect);
-        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), uiScale, uiScale);
         break;
     case WM_ERASEBKGND:
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
@@ -1040,7 +1050,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
                 }
                 else if (input.dwFlags & TOUCHEVENTF_MOVE)
                 {
-                    core->OnTouchEvent(UIEvent::Phase::MOVE, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
+                    core->OnTouchEvent(UIEvent::Phase::DRAG, UIEvent::Device::TOUCH_SURFACE, input.dwID, x_pixel, y_pixel, 1.0f);
                 }
                 else if (input.dwFlags & TOUCHEVENTF_UP)
                 {
@@ -1138,6 +1148,11 @@ void CoreWin32Platform::InitArgs()
 void CoreWin32Platform::Quit()
 {
     PostQuitMessage(0);
+}
+
+void* CoreWin32Platform::GetNativeWindow() const
+{
+    return hWindow;
 }
 
 bool AlreadyRunning()

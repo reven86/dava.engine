@@ -15,7 +15,7 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 
 include      ( CMake-common )
 
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS "Sound" )
 find_package( DavaTools     REQUIRED )
 
 include_directories (Classes)
@@ -26,10 +26,11 @@ define_source ( SOURCE  "Classes"  )
 set( MAC_DISABLE_BUNDLE     true)
 set( DISABLE_SOUNDS         true)
 
+
 setup_main_executable()
 
 if( MSVC )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE " /SUBSYSTEM:CONSOLE" )
+	set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
 endif()
 
 install ( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DAVA_TOOLS_BIN_DIR} CONFIGURATIONS Release )

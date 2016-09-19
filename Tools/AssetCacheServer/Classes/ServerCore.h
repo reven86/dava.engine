@@ -6,6 +6,7 @@
 #include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
+#include "SharedDataRequester.h"
 
 #include <atomic>
 #include <QObject>
@@ -19,9 +20,10 @@ class ServerCore : public QObject,
 {
     Q_OBJECT
 
-    static const DAVA::uint32 UPDATE_INTERVAL_MS = 1;
+    static const DAVA::uint32 UPDATE_INTERVAL_MS = 16;
     static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
     static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 3;
 
 public:
     enum class State
@@ -49,6 +51,9 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
+    void InitiateShareRequest(PoolID poolID, const DAVA::String& serverName);
+    void InitiateUnshareRequest();
+
     void SetApplicationPath(const DAVA::String& path);
 
     void ClearStorage();
@@ -68,14 +73,21 @@ public:
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
     void StorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) const;
-
-public slots:
-    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void ServerShared();
+    void ServerUnshared();
+    void SharedDataUpdated();
 
 private slots:
-    void OnTimerUpdate();
+    void OnServerShared(PoolID poolID, ServerID serverID, const DAVA::String& serverName);
+    void OnServerUnshared();
+    void OnSharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
+    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void OnRefreshTimer();
     void OnConnectTimeout();
     void OnReattemptTimer();
+    void ReconnectAsynchronously();
+    void ReconnectNow();
+    void OnSharedDataUpdateTimer();
 
 private:
     void StartListening();
@@ -85,6 +97,15 @@ private:
     bool VerifyRemote();
     void DisconnectRemote();
     void ReconnectRemoteLater();
+    void UseNextRemote();
+    void ResetRemotesList();
+
+    struct CompareResult
+    {
+        bool listsAreTotallyEqual = false;
+        bool listsAreEqualAtLeastTillCurrentIndex = false;
+    };
+    CompareResult CompareWithRemoteList(const DAVA::List<RemoteServerParams>& updatedRemotesList);
 
 private:
     AssetCacheHttpServer httpServer;
@@ -100,11 +121,17 @@ private:
 
     DAVA::String appPath;
 
-    RemoteServerParams remoteServerData;
+    DAVA::Vector<RemoteServerParams> remoteServers;
+    size_t remoteServerIndex = 0;
+    bool remoteServerIndexIsValid = false;
+    RemoteServerParams currentRemoteServer;
 
-    QTimer* updateTimer;
-    QTimer* connectTimer;
-    QTimer* reconnectWaitTimer;
+    SharedDataRequester sharedDataRequester;
+
+    QTimer* updateTimer = nullptr;
+    QTimer* connectTimer = nullptr;
+    QTimer* reconnectWaitTimer = nullptr;
+    QTimer* sharedDataUpdateTimer = nullptr;
 };
 
 inline ServerCore::State ServerCore::GetState() const

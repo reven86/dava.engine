@@ -6,8 +6,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/Public/Window.h"
-#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
+#include "Engine/Window.h"
+#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/PlatformCoreWin32.h"

@@ -13,7 +13,7 @@ macro(grab_libs OUTPUT_LIST_VAR LIB_LIST EXCLUDE_LIBS ADDITIONAL_LIBS)
 endmacro()
 
 
-set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_ios_release.a
+set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_ios.a
@@ -23,7 +23,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_ios.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_ios_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_ios.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_ios.a
@@ -35,7 +35,7 @@ set( DAVA_STATIC_LIBRARIES_IOS      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto
 
 set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColladaS.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libPVRTexLib.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto_macos_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype_macos.a
@@ -46,7 +46,7 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpsd.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl_macos_release.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_macos.a
@@ -55,7 +55,7 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a 
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_macos.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a"
@@ -212,6 +212,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/icucommon.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/jpeg_d.lib"            
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl_a_debug.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static.lib"
@@ -225,6 +226,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/lua_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/pnglib_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"

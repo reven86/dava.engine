@@ -8,10 +8,10 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( NO_CEF true)
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+set                   ( DAVA_COMPONENTS "Sound")
 
 include               ( CMake-common )
 include               ( CopyDataMacro )
@@ -32,8 +32,10 @@ add_definitions       (
 -DQT_QML_DEBUG_NO_WARNING
 )
 
+
+
 find_package          ( QT5           REQUIRED )
-find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaFramework REQUIRED ${DAVA_COMPONENTS} )
 find_package          ( DavaTools     REQUIRED )
 
 

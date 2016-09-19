@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Library.qml</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>openscene.png</file>
+        <file>appIcon.ico</file>
+    </qresource>
+</RCC>

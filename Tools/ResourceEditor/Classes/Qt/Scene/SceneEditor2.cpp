@@ -320,12 +320,22 @@ bool SceneEditor2::CanRedo() const
 
 DAVA::String SceneEditor2::GetUndoText() const
 {
-    return commandStack->GetUndoText();
+    const DAVA::Command* undoCommand = commandStack->GetUndoCommand();
+    if (undoCommand != nullptr)
+    {
+        return undoCommand->GetDescription();
+    }
+    return DAVA::String();
 }
 
 DAVA::String SceneEditor2::GetRedoText() const
 {
-    return commandStack->GetRedoText();
+    const DAVA::Command* redoCommand = commandStack->GetRedoCommand();
+    if (redoCommand != nullptr)
+    {
+        return redoCommand->GetDescription();
+    }
+    return DAVA::String();
 }
 
 void SceneEditor2::Undo()
@@ -476,6 +486,11 @@ void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& comma
     pathSystem->ProcessCommand(commandNotification);
     wayEditSystem->ProcessCommand(commandNotification);
     editorLODSystem->ProcessCommand(commandNotification);
+
+    if (selectionSystem)
+    {
+        selectionSystem->ProcessCommand(commandNotification);
+    }
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)

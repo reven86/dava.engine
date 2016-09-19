@@ -40,7 +40,6 @@ include_directories   ( "Classes/Infrastructure" )
 
 if( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
-
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.entitlements )
@@ -55,6 +54,10 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+
+if (MACOS OR WIN32)
+    set( APP_DATA  ${APP_DATA} "scripts")
+endif()
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed-Info.plist )
 
@@ -74,6 +77,12 @@ set( LIBRARIES                  )
 if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
 endif ()
+
+if (ANDROID AND DAVA_COREV2)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "gnustl_shared;TestBed")
+    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBed")
+endif()
 
 setup_main_executable()
 if (DAVA_COREV2)

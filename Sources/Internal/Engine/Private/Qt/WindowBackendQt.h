@@ -6,7 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Functional/Function.h"
@@ -29,6 +29,7 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
+    void Update();
     RenderWidget* GetRenderWidget();
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -78,6 +79,12 @@ private:
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;
+
+    class OGLContextBinder;
+    friend void AcqureContext();
+    friend void ReleaseContext();
+
+    std::unique_ptr<OGLContextBinder> contextBinder;
 };
 
 inline void* WindowBackend::GetHandle() const

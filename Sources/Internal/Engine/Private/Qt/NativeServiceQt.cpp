@@ -1,4 +1,4 @@
-#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "Engine/Qt/NativeServiceQt.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -18,6 +18,11 @@ NativeService::NativeService(Private::PlatformCore* c)
 QApplication* NativeService::GetApplication()
 {
     return core->GetApplication();
+}
+
+RenderWidget* NativeService::GetRenderWidget()
+{
+    return core->GetRenderWidget();
 }
 
 } // namespace DAVA

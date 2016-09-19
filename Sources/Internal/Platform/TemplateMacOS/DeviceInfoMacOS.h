@@ -34,6 +34,7 @@ public:
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 private:
     DeviceInfo::ScreenInfo screenInfo;

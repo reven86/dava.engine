@@ -4,10 +4,11 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Engine/Qt/NativeServiceQt.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/WindowBackend.h"
-#include "Engine/Public/Qt/NativeServiceQt.h"
-#include "Engine/Public/Qt/RenderWidget.h"
+#include "Engine/Window.h"
 
 #include <QTimer>
 #include <QApplication>
@@ -16,10 +17,6 @@ namespace DAVA
 {
 namespace Private
 {
-std::unique_ptr<QApplication> globalApplication;
-Vector<char*> qtCommandLine;
-int qtArgc = 0;
-
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
     , nativeService(new NativeService(this))
@@ -30,67 +27,48 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    DVASSERT(globalApplication == nullptr);
-    qtCommandLine = engineBackend->GetCommandLineAsArgv();
-    qtArgc = static_cast<int>(qtCommandLine.size());
-    globalApplication.reset(new QApplication(qtArgc, qtCommandLine.data()));
 }
 
 void PlatformCore::Run()
 {
-    DVASSERT(globalApplication);
+    Vector<char*> qtCommandLine = engineBackend->GetCommandLineAsArgv();
+    int qtArgc = static_cast<int>(qtCommandLine.size());
+
+    QApplication app(qtArgc, qtCommandLine.data());
+
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
                          DVASSERT(windowBackend != nullptr);
-                         RenderWidget* widget = windowBackend->GetRenderWidget();
-                         DVASSERT(widget);
-                         QQuickWindow* window = widget->quickWindow();
-                         DVASSERT(window);
-                         if (window->isVisible())
-                         {
-                             window->update();
-                         }
+                         windowBackend->Update();
                      });
 
+    windowBackend = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
     engineBackend->OnGameLoopStarted();
-    windowBackend = CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
-    if (windowBackend == nullptr)
-    {
-        return;
-    }
     timer.start(16.0);
 
-    QObject::connect(globalApplication.get(), &QApplication::aboutToQuit, [this]()
+    QObject::connect(&app, &QApplication::aboutToQuit, [this]()
                      {
                          engineBackend->OnGameLoopStopped();
                          engineBackend->OnBeforeTerminate();
                      });
 
-    globalApplication->exec();
+    app.exec();
 }
 
 void PlatformCore::Quit()
 {
-    DVASSERT(globalApplication);
-    globalApplication->quit();
-}
-
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
-{
-    WindowBackend* backend = new WindowBackend(engineBackend, w);
-    if (!backend->Create(width, height))
-    {
-        delete backend;
-        backend = nullptr;
-    }
-
-    return backend;
+    DVASSERT(false);
 }
 
 QApplication* PlatformCore::GetApplication()
 {
-    return globalApplication.get();
+    return qApp;
+}
+
+RenderWidget* PlatformCore::GetRenderWidget()
+{
+    return windowBackend->GetRenderWidget();
 }
 
 } // namespace Private

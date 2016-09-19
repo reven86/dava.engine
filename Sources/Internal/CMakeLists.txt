@@ -1,14 +1,15 @@
-include ( CMake-common         )
-if( WIN32 AND NOT WINDOWS_UAP  )
+include ( CMake-common )
+if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
-include ( DavaLibs             )
+include ( DavaLibs )
 
-set( NAME_MODULE DavaFramework )
+set( NAME_MODULE ${DAVA_LIBRARY} )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+set( EXTERNAL_MODULES           ${DAVA_MODULES_DIR}/TArc )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -36,7 +37,8 @@ set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics
                                     AssetsLibrary
                                     SystemConfiguration
                                     MediaPlayer 
-                                    ZLIB )
+                                    ZLIB
+                                    CoreTelephony )
 
 set( FIND_SYSTEM_LIBRARY_MACOS      Cocoa
                                     GLUT

@@ -27,8 +27,8 @@ DocumentGroup::DocumentGroup(QObject* parent)
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
     commandStackGroup->canUndoChanged.Connect(this, &DocumentGroup::CanUndoChanged);
     commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
-    commandStackGroup->undoTextChanged.Connect([this](const DAVA::String& text) { emit UndoTextChanged(QString::fromStdString(text)); });
-    commandStackGroup->redoTextChanged.Connect([this](const DAVA::String& text) { emit RedoTextChanged(QString::fromStdString(text)); });
+    commandStackGroup->undoCommandChanged.Connect([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
+    commandStackGroup->redoCommandChanged.Connect([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
 }
 
 DocumentGroup::~DocumentGroup() = default;
@@ -59,12 +59,22 @@ bool DocumentGroup::CanClose() const
 
 QString DocumentGroup::GetUndoText() const
 {
-    return QString::fromStdString(commandStackGroup->GetUndoText());
+    const DAVA::Command* undoCommand = commandStackGroup->GetUndoCommand();
+    if (undoCommand != nullptr)
+    {
+        return QString::fromStdString(undoCommand->GetDescription());
+    }
+    return QString();
 }
 
 QString DocumentGroup::GetRedoText() const
 {
-    return QString::fromStdString(commandStackGroup->GetRedoText());
+    const DAVA::Command* redoCommand = commandStackGroup->GetRedoCommand();
+    if (redoCommand != nullptr)
+    {
+        return QString::fromStdString(redoCommand->GetDescription());
+    }
+    return QString();
 }
 
 void DocumentGroup::AttachUndoAction(QAction* undoAction) const
