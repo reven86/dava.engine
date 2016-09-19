@@ -16,7 +16,7 @@ namespace DAVA
 
 namespace TextBlock_local
 {
-static const float32 INVALID_WIDTH = -1.0f;
+static const float32 INVALID_WIDTH = -2.0f;
 static const Vector2 INVALID_VECTOR = Vector2(-1.0f, -1.0f);
 }
 
