@@ -253,12 +253,14 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     request->ReloadTexturesToGPU(GPU_ORIGIN);
 
     ScopedPtr<Scene> tempScene(new Scene());
-
+    
     tempScene->SetMainRenderTarget(request->targetTexture->handle, request->depthTexture,
                                    clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE, Color::Clear);
 
     tempScene->SetMainPassProperties(PRIORITY_SERVICE_3D, Rect(viewport.x, viewport.y, viewport.width, viewport.height),
                                      request->targetTexture->GetWidth(), request->targetTexture->GetHeight(), request->targetTexture->GetFormat());
+    
+    tempScene->GetRenderSystem()->SetAntialiasingAllowed(false);
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
