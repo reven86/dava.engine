@@ -93,17 +93,10 @@ DAVA_TESTCLASS (PackManagerTest)
 
         try
         {
-            Logger::Info("init common packs");
-            packManager.InitLocalCommonPacks(readOnlyPacksDir,
-                                             downloadedPacksDir,
-                                             IPackManager::Hints());
-
-            Logger::Info("init gpu packs");
+            Logger::Info("init pack manager");
             FileSystem::Instance()->DeleteFile("~doc:/" + dbFileName);
-            packManager.InitLocalGpuPacks(architecture, dbFileName);
 
-            Logger::Info("sync with server");
-            packManager.InitRemotePacks(superPackUrl);
+            packManager.Initialize(architecture, downloadedPacksDir, dbFileName, superPackUrl, IPackManager::Hints());
 
             Logger::Info("create game client");
 

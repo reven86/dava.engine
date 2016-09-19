@@ -70,10 +70,10 @@ File* File::LoadFileFromMountedArchive(const String& packName, const String& rel
         auto it = fs->resArchiveMap.find(packName);
         if (it != end(fs->resArchiveMap))
         {
-            Vector<uint8> contentAndSize;
-            if (it->second.archive->LoadFile(relative, contentAndSize))
+            Vector<uint8> fileContent;
+            if (it->second.archive->LoadFile(relative, fileContent))
             {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, "~res:/" + relative);
+                return DynamicMemoryFile::Create(std::move(fileContent), READ, "~res:/" + relative);
             }
         }
         return nullptr;

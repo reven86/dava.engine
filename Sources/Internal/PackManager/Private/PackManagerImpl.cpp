@@ -57,7 +57,9 @@ void PackManagerImpl::Initialize(const String& architecture_,
     // copy localPackDB from Data to ~doc:/ if not exist
     FileSystem* fs = FileSystem::Instance();
 
-    if (!fs->IsFile(dbInDoc) || !fs->IsFile(dbZipInDoc))
+    bool isOk = fs->IsFile(dbInDoc) && fs->IsFile(dbZipInDoc);
+
+    if (!isOk)
     {
         fs->DeleteFile(dbInDoc);
         fs->DeleteFile(dbZipInDoc);

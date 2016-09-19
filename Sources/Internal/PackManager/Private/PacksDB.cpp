@@ -123,7 +123,7 @@ void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const
     {
         data->GetDB() << "SELECT path, pack FROM files WHERE path LIKE ?"
                       << relativePathDir + "%"
-        >> [&](std::string path, std::string pack)
+        >> [&](String path, String pack)
         {
             fn(path, pack);
         };

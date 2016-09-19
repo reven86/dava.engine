@@ -238,10 +238,6 @@ public:
     */
     virtual bool IsMounted(const FilePath& archiveName) const;
 
-    /// Loads content of file from mounted packs
-    /// thread safe
-    virtual File* LoadFromMountedPacks(const FilePath& file) const;
-
     /**
 	 \brief Invokes the command processor to execute a command
 	 \param[in] command contains the system command to be executed

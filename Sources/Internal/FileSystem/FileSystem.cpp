@@ -908,12 +908,6 @@ bool FileSystem::IsMounted(const FilePath& archiveName) const
     return resArchiveMap.find(archiveName.GetBasename()) != end(resArchiveMap);
 }
 
-File* FileSystem::LoadFromMountedPacks(const FilePath& file) const
-{
-    // TODO
-    return nullptr;
-}
-
 int32 FileSystem::Spawn(const String& command)
 {
     int32 retCode = 0;
