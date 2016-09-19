@@ -96,7 +96,7 @@ DAVA_TESTCLASS (PackManagerTest)
             Logger::Info("init pack manager");
             FileSystem::Instance()->DeleteFile("~doc:/" + dbFileName);
 
-            packManager.Initialize(architecture, downloadedPacksDir, dbFileName, superPackUrl, IPackManager::Hints());
+            packManager.Initialize(architecture, downloadedPacksDir, "~res:/TestData/PackManagerTest/packs/" + dbFileName, superPackUrl, IPackManager::Hints());
 
             Logger::Info("create game client");
 
