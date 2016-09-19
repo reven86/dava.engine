@@ -20,17 +20,18 @@ public:
     int qt_metacall(QMetaObject::Call c, int id, void **argv) override;
     void Init();
 
-    DAVA::Signal<> metaObjectCreated;
+    Signal<> metaObjectCreated;
 
 private:
     friend class QtReflectionBridge;
     QtReflected(QtReflectionBridge* reflectionBridge, DataWrapper&& wrapper, QObject* parent);
 
-    void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) override;
+    void OnDataChanged(const DataWrapper& wrapper, const Set<String>& fields) override;
     void CreateMetaObject();
 
-    void FirePropertySignal(const DAVA::String& propertyName);
+    void FirePropertySignal(const String& propertyName);
     void FirePropertySignal(int signalId);
+    void CallMethod(int id, void** argv);
 
 private:
     QPointer<QtReflectionBridge> reflectionBridge;
@@ -41,12 +42,18 @@ private:
 class QtReflectionBridge final: public QObject
 {
 public:
+    QtReflectionBridge();
     ~QtReflectionBridge();
     QtReflected* CreateQtReflected(DataWrapper&& wrapper, QObject* parent);
 
 private:
+    QVariant Convert(const Any& value);
+    Any Convert(const QVariant& value);
     friend class QtReflected;
-    DAVA::UnorderedMap<const DAVA::ReflectedType*, QMetaObject*> metaObjects;
+    UnorderedMap<const ReflectedType*, QMetaObject*> metaObjects;
+
+    UnorderedMap<const Type*, QVariant(*)(const Any&)> anyToQVariant;
+    UnorderedMap<int, Any(*)(const QVariant&)> qvariantToAny;
 };
 } // namespace TArc
 } // namespace DAVA
