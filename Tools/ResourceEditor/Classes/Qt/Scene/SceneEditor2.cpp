@@ -486,6 +486,11 @@ void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& comma
     pathSystem->ProcessCommand(commandNotification);
     wayEditSystem->ProcessCommand(commandNotification);
     editorLODSystem->ProcessCommand(commandNotification);
+
+    if (selectionSystem)
+    {
+        selectionSystem->ProcessCommand(commandNotification);
+    }
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)

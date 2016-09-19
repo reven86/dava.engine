@@ -56,10 +56,6 @@ FPROG_IN_BEGIN
         
     #endif
     
-    #if FLOWMAP
-        FPROG_IN_TEXCOORD4(varFlowData, 3) //(phase0 phase1 blend)
-    #endif
-    
     #if VERTEX_COLOR || SPHERICAL_LIT
         FPROG_IN_COLOR1_LOW(varVertexColor,4)
     #endif
@@ -70,6 +66,10 @@ FPROG_IN_BEGIN
 
     #if FRAME_BLEND
         FPROG_IN_TEXCOORD3_LOW(varTime, 1)
+    #endif
+    
+    #if FLOWMAP
+        FPROG_IN_TEXCOORD4(varFlowData, 3) //(phase0 phase1 blend)
     #endif
 
 

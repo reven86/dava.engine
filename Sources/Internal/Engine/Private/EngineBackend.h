@@ -126,7 +126,7 @@ private:
     int32 exitCode = 0;
 
     KeyedArchive* options = nullptr;
-    uint32 globalFrameIndex = 0;
+    uint32 globalFrameIndex = 1;
 
     static EngineBackend* instance;
 };
