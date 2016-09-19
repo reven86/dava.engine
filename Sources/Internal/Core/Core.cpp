@@ -1026,7 +1026,12 @@ const ModuleManager& Core::GetModuleManager()
 {
     return moduleManager;
 }
-
+    
+const ModuleManager& Core::GetModuleManager() const
+{
+    return moduleManager;
+}
+    
 } // namespace DAVA
 
 #endif //!__DAVAENGINE_COREV2__
