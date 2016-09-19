@@ -12,31 +12,41 @@ def get_supported_build_platforms():
 	return ['win32']
 
 def build(output_folder_path, root_project_path):
-	zlib_tmp_source_filepath = os.path.join(output_folder_path, 'zlib_source.zip')
+	# Path to downloaded archive
+	zlib_source_archive_filepath = os.path.join(output_folder_path, 'zlib_source.zip')
+
+	# Path to extracted source folder
 	zlib_source_folder_path = os.path.join(output_folder_path, 'zlib_source')
 
-	build_utils.download_if_doesnt_exist('http://zlib.net/zlib128.zip', zlib_tmp_source_filepath)
-	build_utils.unzip_inplace(zlib_tmp_source_filepath)
+	# Download & extract
+	build_utils.download_if_doesnt_exist('http://zlib.net/zlib128.zip', zlib_source_archive_filepath)
+	build_utils.unzip_inplace(zlib_source_archive_filepath)
+
+	# Rename version-dependent folder name to simpler one
+	# In case other builder will need to use this folder
 	shutil.move(os.path.join(output_folder_path, 'zlib-1.2.8'), zlib_source_folder_path)
 	
-	build_x86_folder = os.path.join(output_folder_path, 'gen/build_x86')
-	build_x64_folder = os.path.join(output_folder_path, 'gen/build_x64')
+	# Folders for library to be built into
+
+	build_x86_folder = os.path.join(output_folder_path, 'gen/build_win32_x86')
+	build_x64_folder = os.path.join(output_folder_path, 'gen/build_win32_x64')
 	build_win10_x86_folder = os.path.join(output_folder_path, 'gen/build_win10_x86')
 	build_win10_x64_folder = os.path.join(output_folder_path, 'gen/build_win10_x64')
 	build_win10_arm_folder = os.path.join(output_folder_path, 'gen/build_win10_arm')
 
+	# VS variables
 	solution_name = 'zlib.sln'
 	target_name = 'zlibstatic'
-	cmake_src_dir = os.path.abspath(zlib_source_folder_path)
 	cmake_win10_flags = ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0']
 
-	build_utils.cmake_generate_build_vs(build_x86_folder, cmake_src_dir, 'Visual Studio 12', solution_name, target_name, 'Win32')
-	build_utils.cmake_generate_build_vs(build_x64_folder, cmake_src_dir, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64')
-	build_utils.cmake_generate_build_vs(build_win10_x86_folder, cmake_src_dir, 'Visual Studio 14 2015', solution_name, target_name, 'Win32', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_x64_folder, cmake_src_dir, 'Visual Studio 14 2015 Win64', solution_name, target_name, 'Win64', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_arm_folder, cmake_src_dir, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
+	build_utils.cmake_generate_build_vs(build_x86_folder, zlib_source_folder_path, 'Visual Studio 12', solution_name, target_name, 'Win32')
+	build_utils.cmake_generate_build_vs(build_x64_folder, zlib_source_folder_path, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64')
+	build_utils.cmake_generate_build_vs(build_win10_x86_folder, zlib_source_folder_path, 'Visual Studio 14 2015', solution_name, target_name, 'Win32', cmake_win10_flags)
+	build_utils.cmake_generate_build_vs(build_win10_x64_folder, zlib_source_folder_path, 'Visual Studio 14 2015 Win64', solution_name, target_name, 'Win64', cmake_win10_flags)
+	build_utils.cmake_generate_build_vs(build_win10_arm_folder, zlib_source_folder_path, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
 
 	# Copy created configuration header to root folder
+	# Required to use source folder as include path
 	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), os.path.join(zlib_source_folder_path, 'zconf.h'))
 
 	# Rename libraries to zlib.lib

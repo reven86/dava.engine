@@ -117,6 +117,9 @@ def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_a
 
 	cmd = ['cmake', '-G', cmake_generator, src_folder_path]
 	cmd.extend(cmake_additional_args)
+
+	print 'Running CMake: {}, working directory: {}'.format(' '.join(cmd), output_folder_path)
+
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=output_folder_path)
 	for line in sp.stdout:
 		print line
@@ -132,10 +135,15 @@ def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_genera
 	build_xcode_target(os.path.join(output_folder_path, project), target, 'Debug')
 	build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
-def build_android_ndk(project_path, output_path, debug):
+def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []):
 	cmd = ['ndk-build', 'NDK_OUT=' + output_path]
+	cmd.extend(ndk_additional_args)
+
 	if debug:
 		cmd.append('NDK_DEBUG=1')
+
+	print 'Running ndk-build: {}, working directory: {}'.format(' '.join(cmd), project_path)
+
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=project_path, shell=True)
 	for line in sp.stdout:
 		print line

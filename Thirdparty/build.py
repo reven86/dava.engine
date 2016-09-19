@@ -47,14 +47,15 @@ def build_library(name):
 
 	# Build
 
-	output_path = os.path.join('output', name)
+	output_path = os.path.abspath(os.path.join('output', name))
+	project_root_path = os.path.abspath('..')
 	if not os.path.exists(output_path):
 		os.makedirs(output_path)
 
 	os.chdir(name)
 
 	try:
-		result = builder.build(os.path.join('..', output_path), '../..')
+		result = builder.build(output_path, project_root_path)
 	except Exception:
 		print 'Couldn\'t build library {}. Exception details:'.format(name)
 		traceback.print_exc()
