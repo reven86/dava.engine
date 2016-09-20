@@ -23,7 +23,11 @@ uint32 DPIHelper::GetScreenDPI()
     HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
     MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
 
+#if !defined(__DAVAENGINE_COREV2__)
     void* nativeWindow = Core::Instance()->GetNativeWindow();
+#else
+    void* nativeWindow = Engine::Instance()->PrimaryWindow()->GetNativeHandle();
+#endif
     if (nullptr != fn && nullptr != nativeWindow)
     {
         HWND hwnd = static_cast<HWND>(nativeWindow);

@@ -50,6 +50,10 @@ Engine* Window::GetEngine() const
 void* Window::GetNativeHandle() const
 {
     DVASSERT(windowBackend != nullptr);
+    if (nullptr == windowBackend)
+    {
+        return nullptr;
+    }
     return windowBackend->GetHandle();
 }
 

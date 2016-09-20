@@ -330,13 +330,39 @@ LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
     return 0;
 }
 
+LRESULT WindowBackend::OnMouseHoverEvent()
+{
+    mouseTracking = FALSE; // tracking now cancelled
+    // set up leave tracking
+    TRACKMOUSEEVENT tme;
+    tme.cbSize = sizeof(TRACKMOUSEEVENT);
+    tme.dwFlags = TME_LEAVE;
+    tme.hwndTrack = hwnd;
+    mouseTracking = ::TrackMouseEvent(&tme);
+
+    ::SetCursor(NULL);
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseLeaveEvent()
+{
+    mouseTracking = FALSE; // tracking now cancelled
+    return 0;
+}
+
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    if (!mouseVisibled)
+    if (!mouseTracking && eMouseMode::HIDE == uicaptureMode)
     {
-        // need hide, because windows recreate cursor
-        ::SetCursor(NULL);
+        // start tracking if we aren't already
+        TRACKMOUSEEVENT tme;
+        tme.cbSize = sizeof(TRACKMOUSEEVENT);
+        tme.dwFlags = TME_HOVER | TME_LEAVE;
+        tme.hwndTrack = hwnd;
+        tme.dwHoverTime = HOVER_DEFAULT;
+        mouseTracking = ::TrackMouseEvent(&tme);
     }
+
     if (mouseCaptured)
     {
         RECT clientRect;
@@ -358,6 +384,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         }
         else
         {
+            // skip mouse moveEvent, which generate SetCursorPos
             return 0;
         }
     }
@@ -548,6 +575,14 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
     {
     }
+    else if (message == WM_MOUSEHOVER)
+    {
+        lresult = OnMouseHoverEvent();
+    }
+    else if (message == WM_MOUSELEAVE)
+    {
+        lresult = OnMouseLeaveEvent();
+    }
     else if (message == WM_MOUSEMOVE)
     {
         uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
@@ -600,6 +635,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else
     {
+        //Logger::Info("!!!!!! unhandled %d", message);
         isHandled = false;
     }
     return lresult;

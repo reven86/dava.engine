@@ -71,6 +71,8 @@ private:
 
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnSetKillFocus(bool gotFocus);
+    LRESULT OnMouseHoverEvent();
+    LRESULT OnMouseLeaveEvent();
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
     LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
@@ -90,6 +92,7 @@ private:
     Window* window = nullptr;
 
     bool isMinimized = false;
+    bool mouseTracking = false;
 
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
