@@ -73,8 +73,7 @@ def build_library(name, targets, skip_dependencies):
 
 	try:
 		for target in targets:
-			if target in builder.get_supported_targets_for_build_platform(sys.platform):
-				result = builder.build_for_target(target, library_working_dir, project_root_path)
+			result = builder.build_for_target(target, library_working_dir, project_root_path)
 	except Exception:
 		print 'Couldn\'t build library {}. Exception details:'.format(name)
 		traceback.print_exc()
@@ -107,7 +106,10 @@ def print_info(library, targets):
 	print 'Library: {}\nDownload url: {}\nSupported targets: {}\nSupported build platforms: {}\nDependencies: {}\n'.format(library, download_url, supported_targets, supported_build_platforms, dependencies)
 
 if __name__ == "__main__":
-	all_targets = ['win32', 'win10', 'ios', 'macos', 'android']
+	if sys.platform == 'win32':
+		all_targets = ['win32', 'win10', 'android']
+	else:
+		all_targets = ['ios', 'macos', 'android']
 
 	# Setup and parse arguments
 

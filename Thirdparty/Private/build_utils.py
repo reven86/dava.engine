@@ -151,11 +151,10 @@ def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_file
 		print line
 	sp.wait()
 
-	if (sys.platform == 'win32'):
-		sp = subprocess.Popen(['cmake', '--build', '.'], stdout=subprocess.PIPE, cwd=output_folder_path)
-		for line in sp.stdout:
-			print line
-		sp.wait()
+	sp = subprocess.Popen(['cmake', '--build', '.'], stdout=subprocess.PIPE, cwd=output_folder_path)
+	for line in sp.stdout:
+		print line
+	sp.wait()
 
 def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []):
 	cmd = ['ndk-build', 'NDK_OUT=' + output_path]
