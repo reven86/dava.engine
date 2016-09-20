@@ -816,8 +816,8 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& pa
         precomputedAngle = angle;
         if (precomputedAngle != parentState.angle)
         {
-            cosA = cosf(precomputedAngle);
-            sinA = sinf(precomputedAngle);
+            cosA = std::cos(precomputedAngle);
+            sinA = std::sin(precomputedAngle);
         }
         else
         {

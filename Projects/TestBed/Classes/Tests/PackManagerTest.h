@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
@@ -67,4 +65,3 @@ private:
     DAVA::UITextField* dirToListFiles = nullptr;
     DAVA::UIButton* lsDirFromPacks = nullptr;
 };
-#endif // !__DAVAENGINE_COREV2__
