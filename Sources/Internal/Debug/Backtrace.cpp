@@ -214,17 +214,27 @@ String GetSymbolFromAddr(void* addr, bool demangle)
         static Mutex mutex;
         LockGuard<Mutex> lock(mutex);
         if (SymFromAddr(GetCurrentProcess(), reinterpret_cast<DWORD64>(addr), nullptr, symInfo))
+        {
             result = symInfo->Name;
+        }
     }
 
 #elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
     Dl_info dlinfo;
     if (dladdr(addr, &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
     {
+        // Include SO name
+        if (dlinfo.dli_fname != nullptr)
+        {
+            result = dlinfo.dli_fname;
+            result += '!';
+        }
+
         if (demangle)
-            result = DemangleSymbol(dlinfo.dli_sname);
-        if (result.empty())
-            result = dlinfo.dli_sname;
+        {
+            String demSym = DemangleSymbol(dlinfo.dli_sname);
+            result += demSym.empty() ? dlinfo.dli_sname : demSym;
+        }
     }
 #endif
     return result;

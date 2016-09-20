@@ -177,7 +177,7 @@ void REApplication::RunWindow()
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     mainWindow->show();
     exec();
 
