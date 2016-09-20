@@ -251,7 +251,6 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager() const;
-    const ModuleManager& GetModuleManager();
     const ModuleManager& GetModuleManager() const;
 
 protected:

@@ -1022,11 +1022,6 @@ IPackManager& Core::GetPackManager() const
     return *packManager;
 }
 
-const ModuleManager& Core::GetModuleManager()
-{
-    return moduleManager;
-}
-
 const ModuleManager& Core::GetModuleManager() const
 {
     return moduleManager;
