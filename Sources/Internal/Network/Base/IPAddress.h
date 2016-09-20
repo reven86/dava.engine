@@ -42,16 +42,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline IPAddress::IPAddress(uint32 address)
-    : addr(htonl(address))
-{
-}
-
-inline uint32 IPAddress::ToUInt() const
-{
-    return ntohl(addr);
-}
-
 inline bool IPAddress::IsUnspecified() const
 {
     return 0 == addr;
