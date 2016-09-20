@@ -7,6 +7,7 @@ import glob
 import shutil
 import tarfile
 import sys
+import build_config
 
 verbose = False
 
@@ -211,3 +212,74 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 		shutil.move(os.path.join(working_directory_path, inner_dir_name), result_folder_path)
 
 	download_and_extract.cache.append(download_data)
+
+# Default builders
+
+def build_and_copy_libraries_win32_cmake(
+		gen_folder_path, source_folder_path, root_project_path,
+		solution_name, target_name,
+		built_lib_name_debug, built_lib_name_release,
+		result_lib_name_x86_debug, result_lib_name_x86_release,
+		result_lib_name_x64_debug, result_lib_name_x64_release,
+		cmake_additional_args = []):
+	# Folders for the library to be built into
+	build_x86_folder = os.path.join(gen_folder_path, 'build_win32_x86')
+	build_x64_folder = os.path.join(gen_folder_path, 'build_win32_x64')
+
+	# Generate & build
+	cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
+	cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_additional_args)
+	
+	# Copy .lib files
+	# TODO: update pathes after switching to new folders structure
+
+	lib_path_x86_debug = os.path.join(build_x86_folder, os.path.join('Debug', built_lib_name_debug))
+	lib_path_x86_release = os.path.join(build_x86_folder, os.path.join('Release', built_lib_name_release))
+	lib_path_x64_debug = os.path.join(build_x64_folder, os.path.join('Debug', built_lib_name_debug))
+	lib_path_x64_release = os.path.join(build_x64_folder, os.path.join('Release', built_lib_name_release))
+
+	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x86/Debug', result_lib_name_x86_debug)))
+	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x86/Release', result_lib_name_x86_release)))
+	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x64/Debug', result_lib_name_x64_debug)))
+	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x64/Release', result_lib_name_x64_release)))
+	
+	return (build_x86_folder, build_x64_folder)
+
+def build_and_copy_libraries_win10_cmake(
+		gen_folder_path, source_folder_path, root_project_path,
+		solution_name, target_name,
+		built_lib_name_debug, built_lib_name_release,
+		result_lib_name_x86_debug, result_lib_name_x86_release,
+		result_lib_name_x64_debug, result_lib_name_x64_release,
+		result_lib_name_arm_debug, result_lib_name_arm_release,
+		cmake_additional_args = []):
+	# Folders for the library to be built into
+	build_win10_x86_folder = os.path.join(gen_folder_path, 'build_win10_x86')
+	build_win10_x64_folder = os.path.join(gen_folder_path, 'build_win10_x64')
+	build_win10_arm_folder = os.path.join(gen_folder_path, 'build_win10_arm')
+
+	cmake_win10_flags = ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0']
+	cmake_additional_args.extend(cmake_win10_flags)
+
+	# Generate & build
+	cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, build_config.win10_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
+	cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, build_config.win10_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_additional_args)
+	cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, build_config.win10_arm_cmake_generator, solution_name, target_name, 'ARM', cmake_additional_args)
+
+	lib_path_win10_x86_debug = os.path.join(build_win10_x86_folder, os.path.join('Debug', built_lib_name_debug))
+	lib_path_win10_x86_release = os.path.join(build_win10_x86_folder, os.path.join('Release', built_lib_name_release))
+	lib_path_win10_x64_debug = os.path.join(build_win10_x64_folder, os.path.join('Debug', built_lib_name_debug))
+	lib_path_win10_x64_release = os.path.join(build_win10_x64_folder, os.path.join('Release', built_lib_name_release))
+	lib_path_win10_arm_debug = os.path.join(build_win10_arm_folder, os.path.join('Debug', built_lib_name_debug))
+	lib_path_win10_arm_release = os.path.join(build_win10_arm_folder, os.path.join('Release', built_lib_name_release))
+
+	# Move built files into Libs/lib_CMake
+	# TODO: update pathes after switching to new folders structure	
+	shutil.copyfile(lib_path_win10_x86_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/Win32/Debug', result_lib_name_x86_debug)))
+	shutil.copyfile(lib_path_win10_x86_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/Win32/Release', result_lib_name_x86_release)))
+	shutil.copyfile(lib_path_win10_x64_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/x64/Debug', result_lib_name_x64_debug)))
+	shutil.copyfile(lib_path_win10_x64_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/x64/Release', result_lib_name_x64_release)))
+	shutil.copyfile(lib_path_win10_arm_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/arm/Debug', result_lib_name_arm_debug)))
+	shutil.copyfile(lib_path_win10_arm_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win10/arm/Release', result_lib_name_arm_release)))
+
+	return (build_win10_x86_folder, build_win10_x64_folder, build_win10_arm_folder)

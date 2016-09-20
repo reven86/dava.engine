@@ -83,31 +83,15 @@ def __build_win32(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	build_x86_folder = os.path.join(working_directory_path, 'gen/build_win32_x86')
-	build_x64_folder = os.path.join(working_directory_path, 'gen/build_win32_x64')
-
-	# Build params
-	# TODO: Do not use temporary zlib output, switch to repo/Libs/ instead
-	solution_name = 'libpng.sln'
-	target_name = 'png_static'
 	cmake_flags =  [ '-DZLIB_LIBRARY=' + os.path.join(working_directory_path, '../zlib/gen/build_win32_x86/Release/zlib.lib'), '-DZLIB_INCLUDE_DIR=' + os.path.join(working_directory_path, '../zlib/zlib_source/') ]
 
-	# Build all VS projects
-	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_flags)
-	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_flags)
-
-	# Move built files into Libs/lib_CMake
-	# TODO: update pathes after switching to new folders structure
-
-	lib_path_x86_debug = os.path.join(build_x86_folder, 'Debug/libpng16_staticd.lib')
-	lib_path_x86_release = os.path.join(build_x86_folder, 'Release/libpng16_static.lib')
-	lib_path_x64_debug = os.path.join(build_x64_folder, 'Debug/libpng16_staticd.lib')
-	lib_path_x64_release = os.path.join(build_x64_folder, 'Release/libpng16_static.lib')
-
-	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/pnglib_wind.lib'))
-	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/pnglib_win.lib'))
-	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Debug/pnglib_wind.lib'))
-	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/pnglib_win.lib'))
+	build_utils.build_and_copy_libraries_win32_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'libpng.sln', 'png_static',
+		'libpng16_staticd.lib', 'libpng16_static.lib',
+		'pnglib_wind.lib', 'pnglib_win.lib',
+		'pnglib_wind.lib', 'pnglib_win.lib',
+		cmake_flags)
 
 	return True
 
@@ -115,38 +99,16 @@ def __build_win10(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	build_win10_x86_folder = os.path.join(working_directory_path, 'gen/build_win10_x86')
-	build_win10_x64_folder = os.path.join(working_directory_path, 'gen/build_win10_x64')
-	build_win10_arm_folder = os.path.join(working_directory_path, 'gen/build_win10_arm')
-
-	# Build params
-	# TODO: Do not use temporary zlib output, switch to repo/Libs/ instead
-	solution_name = 'libpng.sln'
-	target_name = 'png_static'
 	cmake_flags =  [ '-DZLIB_LIBRARY=' + os.path.join(working_directory_path, '../zlib/gen/build_win10_x86/Release/zlib.lib'), '-DZLIB_INCLUDE_DIR=' + os.path.join(working_directory_path, '../zlib/zlib_source/') ]
-	cmake_win10_flags = cmake_flags + ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0' ]
 
-	# Build all VS projects
-	build_utils.cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, 'Visual Studio 14 2015', solution_name, target_name, 'Win32', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, 'Visual Studio 14 2015 Win64', solution_name, target_name, 'Win64', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
-
-	# Move built files into Libs/lib_CMake
-	# TODO: update pathes after switching to new folders structure
-
-	lib_path_win10_x86_debug = os.path.join(build_win10_x86_folder, 'Debug/libpng16_staticd.lib')
-	lib_path_win10_x86_release = os.path.join(build_win10_x86_folder, 'Release/libpng16_static.lib')
-	lib_path_win10_x64_debug = os.path.join(build_win10_x64_folder, 'Debug/libpng16_staticd.lib')
-	lib_path_win10_x64_release = os.path.join(build_win10_x64_folder, 'Release/libpng16_static.lib')
-	lib_path_win10_arm_debug = os.path.join(build_win10_arm_folder, 'Debug/libpng16_staticd.lib')
-	lib_path_win10_arm_release = os.path.join(build_win10_arm_folder, 'Release/libpng16_static.lib')
-
-	shutil.copyfile(lib_path_win10_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Debug/pnglib_wind.lib'))
-	shutil.copyfile(lib_path_win10_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/pnglib_win.lib'))
-	shutil.copyfile(lib_path_win10_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Debug/pnglib_wind.lib'))
-	shutil.copyfile(lib_path_win10_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Release/pnglib_win.lib'))
-	shutil.copyfile(lib_path_win10_arm_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/pnglib_wind.lib'))
-	shutil.copyfile(lib_path_win10_arm_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/pnglib_win.lib'))
+	build_utils.build_and_copy_libraries_win10_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'libpng.sln', 'png_static',
+		'libpng16_staticd.lib', 'libpng16_static.lib',
+		'pnglib_wind.lib', 'pnglib_win.lib',
+		'pnglib_wind.lib', 'pnglib_win.lib',
+		'pnglib_wind.lib', 'pnglib_win.lib',
+		cmake_flags)
 
 	return True
 
