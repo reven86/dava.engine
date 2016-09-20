@@ -4,88 +4,145 @@ import shutil
 import subprocess
 import build_utils
 
-def get_internal_dependencies_for_platform(platform):
+def get_supported_targets_for_build_platform(platform):
+	if platform == 'win32':
+		return ['win32', 'win10']
+	else:
+		return []
+
+def get_dependencies_for_target(target):
 	return []
 
 def get_supported_build_platforms():
 	# Shouldn't be built on macOS since it's already bundled in macOS sdk, iOS sdk, Android sdk
 	return ['win32']
 
-def build(output_folder_path, root_project_path):
-	# Path to downloaded archive
-	zlib_source_archive_filepath = os.path.join(output_folder_path, 'zlib_source.zip')
+def build_for_target(target, working_directory_path, root_project_path):
+	if target == 'all':
+		__build_all_on_current_platform(working_directory_path, root_project_path)
+	elif target == 'win32':
+		__build_win32(working_directory_path, root_project_path)
+	elif target == 'win10':
+		__build_win10(working_directory_path, root_project_path)
+	else:
+		return
 
+def get_download_url():
+	return 'http://zlib.net/zlib128.zip'
+
+def __get_downloaded_archive_inner_dir():
+	return 'zlib-1.2.8'
+
+def __download_and_extract(working_directory_path):
 	# Path to extracted source folder
-	zlib_source_folder_path = os.path.join(output_folder_path, 'zlib_source')
+	source_folder_path = os.path.join(working_directory_path, 'zlib_source')
+
+	# Skip if we've already did the job once
+	try:
+		if __download_and_extract.did:
+			return source_folder_path
+	except AttributeError:
+		pass
+
+	# Download otherwise
+
+	# Link to download from
+	download_link  = get_download_url()
+
+	# Archive's inner directory name
+	inner_dir_name = __get_downloaded_archive_inner_dir()
+
+	# Path to downloaded archive
+	source_archive_filepath = os.path.join(working_directory_path, 'zlib_source.zip')
 
 	# Download & extract
-	build_utils.download_if_doesnt_exist('http://zlib.net/zlib128.zip', zlib_source_archive_filepath)
-	build_utils.unzip_inplace(zlib_source_archive_filepath)
+	build_utils.download_if_doesnt_exist(download_link, source_archive_filepath)
+	build_utils.unzip_inplace(source_archive_filepath)
 
 	# Rename version-dependent folder name to simpler one
 	# In case other builder will need to use this folder
-	shutil.move(os.path.join(output_folder_path, 'zlib-1.2.8'), zlib_source_folder_path)
-	
-	# Folders for library to be built into
+	shutil.move(os.path.join(working_directory_path, inner_dir_name), source_folder_path)
 
-	build_x86_folder = os.path.join(output_folder_path, 'gen/build_win32_x86')
-	build_x64_folder = os.path.join(output_folder_path, 'gen/build_win32_x64')
-	build_win10_x86_folder = os.path.join(output_folder_path, 'gen/build_win10_x86')
-	build_win10_x64_folder = os.path.join(output_folder_path, 'gen/build_win10_x64')
-	build_win10_arm_folder = os.path.join(output_folder_path, 'gen/build_win10_arm')
+	__download_and_extract.did = True
 
-	# VS variables
+	return source_folder_path
+
+def __build_all_on_current_platform(working_directory_path, root_project_path):
+	if sys.platform == 'win32':
+		__build_win32(working_directory_path, root_project_path)
+		__build_win10(working_directory_path, root_project_path)
+
+def __build_win32(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+
+	# Folders for the library to be built into
+	build_x86_folder = os.path.join(working_directory_path, 'gen/build_win32_x86')
+	build_x64_folder = os.path.join(working_directory_path, 'gen/build_win32_x64')
+
+	# Build params
 	solution_name = 'zlib.sln'
 	target_name = 'zlibstatic'
-	cmake_win10_flags = ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0']
 
-	build_utils.cmake_generate_build_vs(build_x86_folder, zlib_source_folder_path, 'Visual Studio 12', solution_name, target_name, 'Win32')
-	build_utils.cmake_generate_build_vs(build_x64_folder, zlib_source_folder_path, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64')
-	build_utils.cmake_generate_build_vs(build_win10_x86_folder, zlib_source_folder_path, 'Visual Studio 14 2015', solution_name, target_name, 'Win32', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_x64_folder, zlib_source_folder_path, 'Visual Studio 14 2015 Win64', solution_name, target_name, 'Win64', cmake_win10_flags)
-	build_utils.cmake_generate_build_vs(build_win10_arm_folder, zlib_source_folder_path, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
-
-	# Copy created configuration header to root folder
-	# Required to use source folder as include path
-	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), os.path.join(zlib_source_folder_path, 'zconf.h'))
-
-	# Rename libraries to zlib.lib
-
-	lib_path_x86_debug = os.path.join(build_x86_folder, 'Debug/zlib.lib')
-	lib_path_x86_release = os.path.join(build_x86_folder, 'Release/zlib.lib')
-	lib_path_x64_debug = os.path.join(build_x64_folder, 'Debug/zlib.lib')
-	lib_path_x64_release = os.path.join(build_x64_folder, 'Release/zlib.lib')
-	lib_path_win10_x86_debug = os.path.join(build_win10_x86_folder, 'Debug/zlib.lib')
-	lib_path_win10_x86_release = os.path.join(build_win10_x86_folder, 'Release/zlib.lib')
-	lib_path_win10_x64_debug = os.path.join(build_win10_x64_folder, 'Debug/zlib.lib')
-	lib_path_win10_x64_release = os.path.join(build_win10_x64_folder, 'Release/zlib.lib')
-	lib_path_win10_arm_debug = os.path.join(build_win10_arm_folder, 'Debug/zlib.lib')
-	lib_path_win10_arm_release = os.path.join(build_win10_arm_folder, 'Release/zlib.lib')
-
-	shutil.move(os.path.join(build_x86_folder, 'Debug/zlibstaticd.lib'), lib_path_x86_debug)
-	shutil.move(os.path.join(build_x86_folder, 'Release/zlibstatic.lib'), lib_path_x86_release)
-	shutil.move(os.path.join(build_x64_folder, 'Debug/zlibstaticd.lib'), lib_path_x64_debug)
-	shutil.move(os.path.join(build_x64_folder, 'Release/zlibstatic.lib'), lib_path_x64_release)
-	shutil.move(os.path.join(build_win10_x86_folder, 'Debug/zlibstaticd.lib'), lib_path_win10_x86_debug)
-	shutil.move(os.path.join(build_win10_x86_folder, 'Release/zlibstatic.lib'), lib_path_win10_x86_release)
-	shutil.move(os.path.join(build_win10_x64_folder, 'Debug/zlibstaticd.lib'), lib_path_win10_x64_debug)
-	shutil.move(os.path.join(build_win10_x64_folder, 'Release/zlibstatic.lib'), lib_path_win10_x64_release)
-	shutil.move(os.path.join(build_win10_arm_folder, 'Debug/zlibstaticd.lib'), lib_path_win10_arm_debug)
-	shutil.move(os.path.join(build_win10_arm_folder, 'Release/zlibstatic.lib'), lib_path_win10_arm_release)
-
-	# Move built files into Libs/lib_CMake
+	# Generate & build
+	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, 'Visual Studio 12', solution_name, target_name, 'Win32')
+	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64')
+	
+	# Copy .lib files
 	# TODO: update pathes after switching to new folders structure
 	# TODO: change z.lib to zlib.lib for win-x64
+	lib_path_x86_debug = os.path.join(build_x86_folder, 'Debug/zlibstaticd.lib')
+	lib_path_x86_release = os.path.join(build_x86_folder, 'Release/zlibstatic.lib')
+	lib_path_x64_debug = os.path.join(build_x64_folder, 'Debug/zlibstaticd.lib')
+	lib_path_x64_release = os.path.join(build_x64_folder, 'Release/zlibstatic.lib')
 
 	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/zlib.lib'))
 	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/zlib.lib'))
 	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Debug/z.lib'))
 	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/z.lib'))
+
+	# Copy created configuration header to root folder
+	# Required to use source folder as include path
+	# TODO: get rid of this and copy to Libs/Include directly
+	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), os.path.join(source_folder_path, 'zconf.h'))
+	
+def __build_win10(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	
+	# Folders for the library to be built into
+	build_win10_x86_folder = os.path.join(working_directory_path, 'gen/build_win10_x86')
+	build_win10_x64_folder = os.path.join(working_directory_path, 'gen/build_win10_x64')
+	build_win10_arm_folder = os.path.join(working_directory_path, 'gen/build_win10_arm')
+
+	# Build params
+	solution_name = 'zlib.sln'
+	target_name = 'zlibstatic'
+	cmake_win10_flags = ['-DCMAKE_SYSTEM_NAME=WindowsStore', '-DCMAKE_SYSTEM_VERSION=10.0']
+
+	# Generate & build
+	build_utils.cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, 'Visual Studio 14 2015', solution_name, target_name, 'Win32', cmake_win10_flags)
+	build_utils.cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, 'Visual Studio 14 2015 Win64', solution_name, target_name, 'Win64', cmake_win10_flags)
+	build_utils.cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, 'Visual Studio 14 2015 ARM', solution_name, target_name, 'ARM', cmake_win10_flags)
+
+	# Rename libraries to zlib.lib
+	lib_path_win10_x86_debug = os.path.join(build_win10_x86_folder, 'Debug/zlibstaticd.lib')
+	lib_path_win10_x86_release = os.path.join(build_win10_x86_folder, 'Release/zlibstatic.lib')
+	lib_path_win10_x64_debug = os.path.join(build_win10_x64_folder, 'Debug/zlibstaticd.lib')
+	lib_path_win10_x64_release = os.path.join(build_win10_x64_folder, 'Release/zlibstatic.lib')
+	lib_path_win10_arm_debug = os.path.join(build_win10_arm_folder, 'Debug/zlibstaticd.lib')
+	lib_path_win10_arm_release = os.path.join(build_win10_arm_folder, 'Release/zlibstatic.lib')
+
+	# Move built files into Libs/lib_CMake
+	# TODO: update pathes after switching to new folders structure	
 	shutil.copyfile(lib_path_win10_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Debug/zlib.lib'))
 	shutil.copyfile(lib_path_win10_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/zlib.lib'))
 	shutil.copyfile(lib_path_win10_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Debug/zlib.lib'))
 	shutil.copyfile(lib_path_win10_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Release/zlib.lib'))
 	shutil.copyfile(lib_path_win10_arm_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/zlib.lib'))
 	shutil.copyfile(lib_path_win10_arm_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/zlib.lib'))
+
+	# Copy created configuration header to root folder
+	# Required to use source folder as include path
+	# TODO: get rid of this and copy to Libs/Include directly
+	shutil.copyfile(os.path.join(build_win10_x86_folder, 'zconf.h'), os.path.join(source_folder_path, 'zconf.h'))
 
 	return True

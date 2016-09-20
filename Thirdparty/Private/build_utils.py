@@ -136,6 +136,27 @@ def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_genera
 	build_xcode_target(os.path.join(output_folder_path, project), target, 'Debug')
 	build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
+def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi):
+	if not os.path.exists(output_folder_path):
+		os.makedirs(output_folder_path)
+ 
+	cmd = ['cmake', '-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath, '-DANDROID_NDK=' + android_ndk_path, '-DCMAKE_BUILD_TYPE=Release', '-DANDROID_ABI=' + abi]
+	if (sys.platform == 'win32'):
+		cmd.extend(['-G', 'MinGW Makefiles', '-DCMAKE_MAKE_PROGRAM=' + os.path.join(android_ndk_path, 'prebuilt\\windows-x86_64\\bin\\make.exe')])
+
+	cmd.append(src_folder_path)
+
+	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=output_folder_path)
+	for line in sp.stdout:
+		print line
+	sp.wait()
+
+	if (sys.platform == 'win32'):
+		sp = subprocess.Popen(['cmake', '--build', '.'], stdout=subprocess.PIPE, cwd=output_folder_path)
+		for line in sp.stdout:
+			print line
+		sp.wait()
+
 def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []):
 	cmd = ['ndk-build', 'NDK_OUT=' + output_path]
 	cmd.extend(ndk_additional_args)
@@ -154,3 +175,13 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
 	for line in sp.stdout:
 		print line
 	sp.wait()
+
+def get_android_ndk_folder_path(root_project_path):
+	config_file_path = os.path.join(root_project_path, 'DavaConfig.in')
+	for line in open(config_file_path):
+		splitted = line.strip().split('=')
+		key = splitted[0].strip()
+		if key == 'ANDROID_NDK':
+			return splitted[1].strip()
+
+	return None
