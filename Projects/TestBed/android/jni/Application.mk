@@ -1,7 +1,5 @@
-APP_STL := gnustl_shared
+APP_STL := c++_shared
 APP_CPPFLAGS := -frtti -fexceptions
-
-#APP_CFLAGS := -marm
 
 # debug
 # not forget to build: "ndk-build NDK_DEBUG=1"
@@ -21,7 +19,7 @@ APP_CPPFLAGS += -Qunused-arguments
 # Uncomment to use core v2, do not forget to edit AndroidManifest.xml
 #APP_CPPFLAGS += -D__DAVAENGINE_COREV2__
 
-APP_ABI := armeabi-v7a
+APP_ABI += armeabi-v7a
 APP_ABI += x86
 APP_PLATFORM := android-14
 
