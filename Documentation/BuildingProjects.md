@@ -39,9 +39,9 @@ CMake projects
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
--   Android-NDK-r10e
+-   Crystax NDK 10.3.2
 
--   Android-SDK API Level: 21
+-   Android-SDK API Level: 23
 
 **Для windows 10:**
 
@@ -73,9 +73,9 @@ CMake projects
 
 -   Eclipse + ADT Plugin (для сборки юнит тестов)
 
--   Android-NDK-r9 -  Android-NDK-r10
+-   Crystax NDK 10.3.2
 
--   Android-SDK API Level: 21
+-   Android-SDK API Level: 23
 
 ### Установка CMAKE
 
@@ -130,11 +130,11 @@ Qt 5 можно установить через online installer (рекомен
 > QT\_PATH = [path\_to\_qt5.6] (например c:\\Qt\\5.6\\msvc2013\_64)
 >
 > ANDROID\_ANT  = d:\\apache-ant-1.9.4  
-> ANDROID\_NDK  = d:\\android-ndk-r10
+> ANDROID\_NDK  = d:\\crystax-ndk-10.3.2
 > ANDROID\_SDK  = d:\\android\_sdk
 > ANDROID\_ABI   = armeabi-v7a
-> ANDROID\_NATIVE\_API\_LEVEL = 17
-> ANDROID\_TARGET\_API\_LEVEL = 21
+> ANDROID\_NATIVE\_API\_LEVEL = 14
+> ANDROID\_TARGET\_API\_LEVEL = 23
 >
 > Файл "DavaConfig.in" не коммитить.
 
