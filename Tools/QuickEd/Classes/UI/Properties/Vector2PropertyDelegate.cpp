@@ -4,6 +4,7 @@
 #include <QLayout>
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 #include "Utils/Utils.h"
 #include "PropertiesTreeItemDelegate.h"
 

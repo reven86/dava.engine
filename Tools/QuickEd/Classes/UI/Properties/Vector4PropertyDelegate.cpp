@@ -4,6 +4,7 @@
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Utils/Utils.h"
+#include "QtTools/Utils/Utils.h"
 #include "PropertiesTreeItemDelegate.h"
 
 using namespace DAVA;
