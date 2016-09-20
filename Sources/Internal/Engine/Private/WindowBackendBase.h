@@ -43,6 +43,8 @@ public:
     void PostKeyDown(uint32 key, bool isRepeated);
     void PostKeyUp(uint32 key);
     void PostKeyChar(uint32 key, bool isRepeated);
+    void PostMouseDown(uint32 button, float32 x, float32 y, uint32 clicks);
+    void PostMouseUp(uint32 button, float32 x, float32 y);
     void PostMouseMove(float32 x, float32 y);
     void PostMouseWheel(float32 x, float32 y, float32 deltaX, float32 deltaY);
     void PostTouchDown(uint32 touchId, float32 x, float32 y);

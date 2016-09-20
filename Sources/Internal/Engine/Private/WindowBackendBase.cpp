@@ -119,6 +119,28 @@ void WindowBackendBase::PostKeyChar(uint32 key, bool isRepeated)
     mainDispatcher.PostEvent(e);
 }
 
+void WindowBackendBase::PostMouseDown(uint32 button, float32 x, float32 y, uint32 clicks)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::MOUSE_BUTTON_DOWN, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.mclickEvent.clicks = clicks;
+    e.mclickEvent.button = button;
+    e.mclickEvent.x = x;
+    e.mclickEvent.y = y;
+    mainDispatcher.PostEvent(e);
+}
+
+void WindowBackendBase::PostMouseUp(uint32 button, float32 x, float32 y)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::MOUSE_BUTTON_UP, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.mclickEvent.clicks = 1;
+    e.mclickEvent.button = button;
+    e.mclickEvent.x = x;
+    e.mclickEvent.y = y;
+    mainDispatcher.PostEvent(e);
+}
+
 void WindowBackendBase::PostMouseMove(float32 x, float32 y)
 {
     MainDispatcherEvent e(MainDispatcherEvent::MOUSE_MOVE, window);
