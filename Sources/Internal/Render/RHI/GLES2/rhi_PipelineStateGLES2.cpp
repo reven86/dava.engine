@@ -478,7 +478,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
     {
         DAVA::FileSystem::Instance()->CreateDirectory("~doc:/ShaderSources");
 
-        DAVA::File* vfile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.vsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        DAVA::File* vfile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/vertex-prog-%03d.sl", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
         if (vfile)
         {
             vfile->Write("//", 2);
@@ -488,7 +488,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
             SafeRelease(vfile);
         }
 
-        DAVA::File* ffile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/prog%d.fsh", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
+        DAVA::File* ffile = DAVA::File::Create(DAVA::Format("~doc:/ShaderSources/fragment-prog-%03d.sl", progIndex), DAVA::File::CREATE | DAVA::File::WRITE);
         if (ffile)
         {
             ffile->Write("//", 2);
