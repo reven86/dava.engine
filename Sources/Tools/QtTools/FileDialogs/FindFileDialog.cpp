@@ -16,11 +16,23 @@
 
 QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
 {
+    //Qt::Popup do not prevent us to show another dialog
+    static bool shown;
+    if (shown)
+    {
+        return QString();
+    }
+    shown = true;
+
     DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
     DVASSERT(!files.empty());
 
     FindFileDialog dialog(files, parent, Qt::Popup);
-    if (dialog.exec() == QDialog::Accepted)
+    dialog.setModal(true);
+    int retCode = dialog.exec();
+
+    shown = false;
+    if (retCode == QDialog::Accepted)
     {
         QString filePath = dialog.ui->lineEdit->text();
         QString absFilePath = dialog.prefix + filePath;
