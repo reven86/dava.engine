@@ -79,6 +79,9 @@ public:
     void OnGameLoopStopped();
     void OnBeforeTerminate();
 
+    void OnWindowCreated(Window* window);
+    void OnWindowDestroyed(Window* window);
+
     int32 OnFrame();
 
     void InitRenderer(Window* w);
@@ -98,8 +101,6 @@ private:
     void OnEndFrame();
 
     void EventHandler(const MainDispatcherEvent& e);
-    void HandleWindowCreated(const MainDispatcherEvent& e);
-    void HandleWindowDestroyed(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);

@@ -168,10 +168,27 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         }
     }
 
-    PostSizeChanged(static_cast<float32>(width),
-                    static_cast<float32>(height),
-                    1.0f,
-                    1.0f);
+    if (!isEnteredSizingModalLoop)
+    {
+        float32 w = static_cast<float32>(width);
+        float32 h = static_cast<float32>(height);
+        PostSizeChanged(w, h, 1.0f, 1.0f);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnEnterExitSizeMove(bool enter)
+{
+    isEnteredSizingModalLoop = enter;
+    if (!enter)
+    {
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        float32 w = static_cast<float32>(rc.right - rc.left);
+        float32 h = static_cast<float32>(rc.bottom - rc.top);
+        PostSizeChanged(w, h, 1.0f, 1.0f);
+    }
     return 0;
 }
 
@@ -285,12 +302,9 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     GetClientRect(hwnd, &rc);
 
-    void* p = GetHandle();
-
-    PostWindowCreated(static_cast<float32>(rc.right - rc.left),
-                      static_cast<float32>(rc.bottom - rc.top),
-                      1.0f,
-                      1.0f);
+    float32 w = static_cast<float32>(rc.right - rc.left);
+    float32 h = static_cast<float32>(rc.bottom - rc.top);
+    PostWindowCreated(w, h, 1.0f, 1.0f);
     PostVisibilityChanged(true);
     return 0;
 }
@@ -324,6 +338,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
+    }
+    else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
+    {
+        lresult = OnEnterExitSizeMove(message == WM_ENTERSIZEMOVE);
     }
     else if (message == WM_ERASEBKGND)
     {

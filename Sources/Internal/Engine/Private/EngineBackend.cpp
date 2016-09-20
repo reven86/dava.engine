@@ -235,6 +235,12 @@ void EngineBackend::OnGameLoopStopped()
         DoEvents();
     }
 
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+
     engine->gameLoopStopped.Emit();
     if (!IsConsoleMode())
     {
@@ -346,18 +352,44 @@ void EngineBackend::OnEndFrame()
     Renderer::EndFrame();
 }
 
+void EngineBackend::OnWindowCreated(Window* window)
+{
+    {
+        // Place window into alive window list
+        size_t nerased = justCreatedWindows.erase(window);
+        DVASSERT(nerased == 1);
+
+        auto result = aliveWindows.insert(window);
+        DVASSERT(result.second == true);
+    }
+    engine->windowCreated.Emit(*window);
+}
+
+void EngineBackend::OnWindowDestroyed(Window* window)
+{
+    engine->windowDestroyed.Emit(*window);
+
+    if (window->IsPrimary())
+    {
+        primaryWindow = nullptr;
+        // If primary window is destroyed then terminate application
+        PostAppTerminate(false);
+    }
+
+    // Remove window from alive window list and delete
+    size_t nerased = aliveWindows.erase(window);
+    DVASSERT(nerased == 1);
+
+    // Place window into dying window list and delete them later
+    dyingWindows.insert(window);
+}
+
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 {
     switch (e.type)
     {
     case MainDispatcherEvent::FUNCTOR:
         e.functor();
-        break;
-    case MainDispatcherEvent::WINDOW_CREATED:
-        HandleWindowCreated(e);
-        break;
-    case MainDispatcherEvent::WINDOW_DESTROYED:
-        HandleWindowDestroyed(e);
         break;
     case MainDispatcherEvent::APP_SUSPENDED:
         HandleAppSuspended(e);
@@ -378,40 +410,6 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
         }
         break;
     }
-}
-
-void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-
-    {
-        // Place window into alive window list
-        DVASSERT(justCreatedWindows.find(e.window) != justCreatedWindows.end());
-        DVASSERT(aliveWindows.find(e.window) == aliveWindows.end());
-
-        justCreatedWindows.erase(e.window);
-        aliveWindows.insert(e.window);
-    }
-
-    engine->windowCreated.Emit(*e.window);
-}
-
-void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-    engine->windowDestroyed.Emit(*e.window);
-
-    if (e.window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-        // If primary window is destroyed then terminate application
-        PostAppTerminate(false);
-    }
-
-    // Remove window from alive window list and delete
-    size_t nerased = aliveWindows.erase(e.window);
-    DVASSERT(nerased == 1);
-    delete e.window;
 }
 
 void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)

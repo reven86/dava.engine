@@ -37,6 +37,7 @@ public:
     void PostEvent(const T& e);
     void SendEvent(const T& e);
     void ProcessEvents();
+    void ViewEventQueue(const Function<void(const T&)>& viewer);
 
 private:
     struct EventWrapper
@@ -52,10 +53,11 @@ private:
     };
     using EventType = EventWrapper;
 
-private:
     mutable Mutex mutex; // Mutex to guard event queue
     Vector<EventType> eventQueue;
+    Vector<EventType> readyEvents;
     Function<void(const T&)> eventHandler;
+    size_t curEventIndex = 0;
 
     static const int poolSize = 4;
 
@@ -156,12 +158,12 @@ void Dispatcher<T>::SendEvent(const T& e)
 template <typename T>
 void Dispatcher<T>::ProcessEvents()
 {
-    Vector<EventType> readyEvents;
     {
         LockGuard<Mutex> lock(mutex);
         eventQueue.swap(readyEvents);
     }
 
+    curEventIndex = 0;
     for (const EventType& w : readyEvents)
     {
         eventHandler(w.e);
@@ -169,6 +171,17 @@ void Dispatcher<T>::ProcessEvents()
         {
             w.signalEvent->Signal();
         }
+        curEventIndex += 1;
+    }
+    readyEvents.clear();
+}
+
+template <typename T>
+void Dispatcher<T>::ViewEventQueue(const Function<void(const T&)>& viewer)
+{
+    for (size_t i = curEventIndex + 1, n = readyEvents.size(); i < n; ++i)
+    {
+        viewer(readyEvents[i].e);
     }
 }
 

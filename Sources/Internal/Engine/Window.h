@@ -107,12 +107,12 @@ private:
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
-    void HandlePendingSizeChanging();
-
+    void UpdateVirtualCoordinatesSystem();
     void ClearMouseButtons();
 
 private:
-    Private::EngineBackend* engineBackend = nullptr;
+    Private::EngineBackend& engineBackend;
+    Private::MainDispatcher& mainDispatcher;
     // TODO: unique_ptr
     Private::WindowBackend* windowBackend = nullptr;
 
@@ -128,9 +128,7 @@ private:
     float32 scaleX = 1.0f;
     float32 scaleY = 1.0f;
     float32 userScale = 1.0f;
-
-    bool pendingInitRender = false;
-    bool pendingSizeChanging = false;
+    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 

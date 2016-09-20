@@ -55,6 +55,7 @@ private:
     void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
+    LRESULT OnEnterExitSizeMove(bool enter);
     LRESULT OnSetKillFocus(bool gotFocus);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
@@ -73,6 +74,7 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
 
     static bool windowClassRegistered;
