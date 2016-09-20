@@ -9,8 +9,8 @@ public:
     ProjectStructure(const DAVA::Vector<DAVA::String>& supportedExtensions);
     ~ProjectStructure();
 
-    void AddProjectDirectory(const DAVA::FilePath& directory);
-    void ClearProjectDirectories();
+    void SetProjectDirectory(const DAVA::FilePath& directory);
+    DAVA::FilePath GetProjectDirectory() const;
 
     DAVA::Vector<DAVA::FilePath> GetFiles(const DAVA::String& extension) const;
 

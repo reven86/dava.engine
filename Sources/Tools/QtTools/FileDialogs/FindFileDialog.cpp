@@ -24,10 +24,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
     }
     shown = true;
 
-    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
-    DVASSERT(!files.empty());
-
-    FindFileDialog dialog(files, parent, Qt::Popup);
+    FindFileDialog dialog(projectStructure, suffix, parent);
     dialog.setModal(true);
     int retCode = dialog.exec();
 
@@ -35,11 +32,11 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
     if (retCode == QDialog::Accepted)
     {
         QString filePath = dialog.ui->lineEdit->text();
-        QString absFilePath = dialog.prefix + filePath;
-        QFileInfo fileInfo(absFilePath);
+        filePath = dialog.FromShortName(filePath);
+        QFileInfo fileInfo(filePath);
         if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(suffix).toLower())
         {
-            return absFilePath;
+            return filePath;
         }
     }
     return QString();
@@ -58,10 +55,16 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileDialog::FindFileDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent, Qt::WindowFlags flags)
-    : QDialog(parent, flags)
+FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
+    : QDialog(parent, Qt::Popup)
     , ui(new Ui::FindFileDialog())
 {
+    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
+    DVASSERT(!files.empty());
+
+    DAVA::String prefixStr = projectStructure->GetProjectDirectory().GetAbsolutePathname();
+    prefix = QString::fromStdString(prefixStr);
+
     ui->setupUi(this);
     ui->lineEdit->setFocus();
 
@@ -75,12 +78,10 @@ void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
 {
     //collect all items in short form
     QStringList stringsToDisplay;
-    const int prefixSize = prefix.size();
     for (const DAVA::FilePath& filePath : files)
     {
-        QString absPath = QString::fromStdString(filePath.GetAbsolutePathname());
-        const int relPathSize = absPath.size() - prefixSize;
-        stringsToDisplay << absPath.right(relPathSize);
+        QString path = QString::fromStdString(filePath.GetAbsolutePathname());
+        stringsToDisplay << ToShortName(path);
     }
     stringsToDisplay.sort(Qt::CaseInsensitive);
     //the only way to not create model and use stringlist is a pass stringlist to the QCompleter c-tor :(
@@ -121,4 +122,32 @@ bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
         }
     }
     return QDialog::eventFilter(obj, event);
+}
+
+namespace FindFileDialogDetails
+{
+QString newPrefix = "...";
+}
+
+QString FindFileDialog::ToShortName(const QString& name) const
+{
+    if (!prefix.isEmpty())
+    {
+        const int prefixSize = prefix.size();
+        const int relPathSize = name.size() - prefixSize;
+        return FindFileDialogDetails::newPrefix + name.right(relPathSize);
+    }
+    else
+    {
+        return name;
+    }
+}
+
+QString FindFileDialog::FromShortName(const QString& name) const
+{
+    if (!prefix.isEmpty())
+    {
+        return prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size());
+    }
+    return name;
 }

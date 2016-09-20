@@ -27,13 +27,16 @@ public:
     static QAction* CreateFindInFilesAction(QWidget* parent);
 
 private:
-    explicit FindFileDialog(const DAVA::Vector<DAVA::FilePath>& files, QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+    explicit FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent = nullptr);
 
     void Init(const DAVA::Vector<DAVA::FilePath>& files);
 
     bool eventFilter(QObject* obj, QEvent* event);
 
     std::unique_ptr<Ui::FindFileDialog> ui;
+
+    QString ToShortName(const QString& name) const;
+    QString FromShortName(const QString& name) const;
 
     QString prefix;
     QCompleter* completer = nullptr;

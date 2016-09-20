@@ -140,18 +140,19 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
     {
         QDir dir(path);
         QString uiPath = dir.path() + Project::GetScreensRelativePath();
+
         auto index = model->setRootPath(uiPath);
         ui->treeView->setRootIndex(index);
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
 
-        projectStructure->AddProjectDirectory(uiPath.toStdString());
+        projectStructure->SetProjectDirectory(uiPath.toStdString());
     }
     else
     {
         ui->treeView->hideColumn(0);
 
-        projectStructure->ClearProjectDirectories();
+        projectStructure->SetProjectDirectory(DAVA::FilePath());
     }
 }
 

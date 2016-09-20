@@ -21,8 +21,8 @@ uint qHash(const QFileInfo& fi, uint seed)
 struct ProjectStructure::Impl : public QObject
 {
     Impl(const Vector<String>& supportedExtensions);
-    void AddProjectDirectory(const FilePath& directory);
-    void ClearProjectDirectories();
+    void SetProjectDirectory(const FilePath& directory);
+    FilePath GetProjectDirectory() const;
 
     Vector<FilePath> GetFiles(const String& extension) const;
 
@@ -36,6 +36,7 @@ private:
     QSet<QFileInfo> projectFiles;
     QFileSystemWatcher watcher;
     QStringList supportedExtensions;
+    QFileInfo projectDirFileInfo;
 };
 
 ProjectStructure::ProjectStructure(const Vector<String>& supportedExtensions)
@@ -45,14 +46,14 @@ ProjectStructure::ProjectStructure(const Vector<String>& supportedExtensions)
 
 ProjectStructure::~ProjectStructure() = default;
 
-void ProjectStructure::AddProjectDirectory(const FilePath& directory)
+void ProjectStructure::SetProjectDirectory(const FilePath& directory)
 {
-    impl->AddProjectDirectory(directory);
+    impl->SetProjectDirectory(directory);
 }
 
-void ProjectStructure::ClearProjectDirectories()
+FilePath ProjectStructure::GetProjectDirectory() const
 {
-    impl->ClearProjectDirectories();
+    return impl->GetProjectDirectory();
 }
 
 DAVA::Vector<DAVA::FilePath> ProjectStructure::GetFiles(const DAVA::String& extension) const
@@ -71,20 +72,7 @@ ProjectStructure::Impl::Impl(const Vector<String>& supportedExtensions_)
     }
 }
 
-void ProjectStructure::Impl::AddProjectDirectory(const FilePath& directory)
-{
-    DVASSERT(!directory.IsEmpty());
-    QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
-    QFileInfo projectDirFileInfo(directoryStr);
-    DVASSERT(projectDirFileInfo.isDir());
-    if (!watcher.directories().contains(directoryStr))
-    {
-        watcher.addPath(directoryStr);
-        AddFilesRecursively(projectDirFileInfo);
-    }
-}
-
-void ProjectStructure::Impl::ClearProjectDirectories()
+void ProjectStructure::Impl::SetProjectDirectory(const FilePath& directory)
 {
     projectFiles.clear();
     const QStringList& directories = watcher.directories();
@@ -93,6 +81,23 @@ void ProjectStructure::Impl::ClearProjectDirectories()
         watcher.removePaths(directories);
     }
     DVASSERT(watcher.files().isEmpty());
+
+    if (!directory.IsEmpty())
+    {
+        QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
+        projectDirFileInfo = QFileInfo(directoryStr);
+        DVASSERT(projectDirFileInfo.isDir());
+        DVASSERT(!watcher.directories().contains(directoryStr))
+
+        watcher.addPath(directoryStr);
+        AddFilesRecursively(projectDirFileInfo);
+    }
+}
+
+FilePath ProjectStructure::Impl::GetProjectDirectory() const
+{
+    QString absPath = projectDirFileInfo.absoluteFilePath();
+    return FilePath(absPath.toStdString());
 }
 
 Vector<FilePath> ProjectStructure::Impl::GetFiles(const String& extension) const
