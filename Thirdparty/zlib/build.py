@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import build_utils
+import build_config
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
@@ -84,8 +85,8 @@ def __build_win32(working_directory_path, root_project_path):
 	target_name = 'zlibstatic'
 
 	# Generate & build
-	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, 'Visual Studio 12', solution_name, target_name, 'Win32')
-	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64')
+	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32')
+	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'Win64')
 	
 	# Copy .lib files
 	# TODO: update pathes after switching to new folders structure

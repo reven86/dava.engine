@@ -26,25 +26,16 @@ def build_library(name, targets, skip_dependencies):
 	# Check if we already invoked builder for this library
 	# (it could be declared as a dependency for another library)
 	# Return None in this case since we didn't remember the result
-
 	if name in invoked_builders:
 		return None
 
-	print 'Started building library: {}...'.format(name)
+	print 'Started processing library: {}...'.format(name)
 	invoked_builders.append(name)
 
 	# Load builder module
-
-	builder_file_path = os.path.join(name, 'build.py')
-	try:
-		builder = imp.load_source('dava_builder_' + name, builder_file_path)
-	except Exception as e:
-		print 'Couldn\'t load builder file at path {}. Exception details:'.format(builder_file_path)
-		traceback.print_exc()
-		return False
+	builder = import_library_builder_module(name)
 
 	# Check if it should be built on current platform
-	
 	current_platform = sys.platform
 	library_platforms = builder.get_supported_build_platforms()
 	if not current_platform in library_platforms:
@@ -52,12 +43,10 @@ def build_library(name, targets, skip_dependencies):
 		return False
 
 	# Check dependencies
-
 	if not skip_dependencies:
 		dependencies = get_dependencies_for_library(builder, targets)
-
 		for dependency in dependencies:
-			print 'Building declared dependency: {}'.format(dependency)
+			print 'Found dependency: {}'.format(dependency)
 			if build_library(dependency, targets, skip_dependencies) == False:
 				print 'Skipping library {} since its dependency ({}) couldn\' be built'.format(name, dependency)
 				return False;
@@ -103,9 +92,11 @@ def print_info(library, targets):
 	supported_targets = { 'win32' : builder.get_supported_targets_for_build_platform('win32'), 'darwin' : builder.get_supported_targets_for_build_platform('darwin') }
 	supported_build_platforms = builder.get_supported_build_platforms()
 	dependencies = get_dependencies_for_library(import_library_builder_module(library), targets)
-	print 'Library: {}\nDownload url: {}\nSupported targets: {}\nSupported build platforms: {}\nDependencies: {}\n'.format(library, download_url, supported_targets, supported_build_platforms, dependencies)
+	print '{}\nDownload url: {}\nSupported targets: {}\nSupported build platforms: {}\nDependencies: {}\n'.format(library, download_url, supported_targets, supported_build_platforms, dependencies)
 
 if __name__ == "__main__":
+	# List of all targets
+	# Different on Windows and macOS
 	if sys.platform == 'win32':
 		all_targets = ['win32', 'win10', 'android']
 	else:
@@ -126,7 +117,7 @@ if __name__ == "__main__":
 	targets_to_process = all_targets if args.target == 'all' else [ args.target ]
 	if 'android' in targets_to_process:
 		ndk_path = build_utils.get_android_ndk_folder_path('..')
-		if ndk_path is None:
+		if ndk_path is None or not os.path.isdir(ndk_path):
 			print 'Android target is specified, but Android NDK folder couldn\'t be found (required for CMake). Did you forget to put it into DavaConfig.in?\nAborting'
 			sys.exit()
 
@@ -138,9 +129,12 @@ if __name__ == "__main__":
 			print 'Couldn\'t import builder module for library named \'{}\', misprint?\nAborting'.format(lib)
 			sys.exit()
 
+	build_utils.verbose = args.verbose
+
 	# Process
 
 	if args.info:
+		print 'Libraries:\n'
 		for lib in libraries_to_process:
 			print_info(lib, targets_to_process)
 	else:

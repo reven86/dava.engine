@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import build_utils
+import build_config
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
@@ -118,8 +119,8 @@ def __build_win32(working_directory_path, root_project_path):
 	cmake_flags =  [ '-DZLIB_LIBRARY=' + os.path.join(working_directory_path, '../zlib/gen/build_win32_x86/Release/zlib.lib'), '-DZLIB_INCLUDE_DIR=' + os.path.join(working_directory_path, '../zlib/zlib_source/') ]
 
 	# Build all VS projects
-	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, 'Visual Studio 12', solution_name, target_name, 'Win32', cmake_flags)
-	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, 'Visual Studio 12 Win64', solution_name, target_name, 'Win64', cmake_flags)
+	build_utils.cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_flags)
+	build_utils.cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_flags)
 
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure

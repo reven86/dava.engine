@@ -8,6 +8,12 @@ import shutil
 import tarfile
 import sys
 
+verbose = False
+
+def print_verbose(msg):
+	if verbose:
+		print msg
+
 def download(url, file_name):
 	path = os.path.dirname(file_name)
 	if not os.path.exists(path):
@@ -34,8 +40,6 @@ def download(url, file_name):
 
 	f.close()
 
-	print "Download OK"
-
 def download_if_doesnt_exist(url, file_name):
 	if not os.path.exists(file_name):
 		download(url, file_name)
@@ -50,17 +54,16 @@ def unzip_inplace(path):
 		ref = tarfile.open(path, 'r')
 	ref.extractall(os.path.dirname(path))
 	ref.close()
-	print "Unarchiving OK"
 
 def apply_patch(patch, working_dir = '.'):
 	print "Applying patch %s" % patch
 	proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = working_dir)
-	proc.communicate()
+	for line in proc.stdout:
+		print_verbose(line)
+	proc.wait()
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode
-		raise 
-	else:
-		print "Applying patch OK"
+		raise
 
 def build_vs(project, configuration, platform='Win32', target = None):
 	print "Building %s for %s ..." % (project, configuration)
@@ -68,49 +71,47 @@ def build_vs(project, configuration, platform='Win32', target = None):
 	if (not target is None):
 		args.append('/target:' + target)
 	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	proc.communicate()
+	for line in proc.stdout:
+		print_verbose(line)
+	proc.wait()
+
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode
-		raise 
-	else:
-		print "Build OK"
+		raise
 
 def build_xcode_target(project, target, configuration):
 	print "Building %s for %s ..." % (project, configuration)
 	proc = subprocess.Popen(["xcodebuild", "-project", project, "-target", target, "-configuration", configuration, "build"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	proc.communicate()
+	for line in proc.stdout:
+		print_verbose(line)
+	proc.wait()
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode
 		raise
-	else:
-		print "Build OK"
 
 def build_xcode_alltargets(project, configuration):
 	print "Building %s for %s ..." % (project, configuration)
 	proc = subprocess.Popen(["xcodebuild", "-project", project, "-alltargets", "-configuration", configuration, "build"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	proc.communicate()
+	for line in proc.stdout:
+		print_verbose(line)
+	proc.wait()
 	if proc.returncode != 0:
 		print "Failed with return code %s" % proc.returncode
 		raise
-	else:
-		print "Build OK"
 
 def copy_files(from_dir, to_dir, wildcard):
 	print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
 	for file in glob.glob(from_dir+"/"+wildcard):
 		shutil.copy(file, to_dir)
-	print "Copying OK"
 
 def clean_copy_includes(from_dir, to_dir):
 	print "Copying includes from %s to %s" % (from_dir, to_dir)
 	shutil.rmtree(to_dir)
 	shutil.copytree(from_dir, to_dir)
-	print "Copying includes OK"
 
 def clear_files(dir, wildcard):
 	print "Deleting %s in %s" % (wildcard, dir)
 	map(os.remove, glob.glob(wildcard))
-	print "Deleting OK"
 
 def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args = []):
 	if not os.path.exists(output_folder_path):
@@ -123,7 +124,7 @@ def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_a
 
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=output_folder_path)
 	for line in sp.stdout:
-		print line
+		print_verbose(line)
 	sp.wait()
 
 def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator, sln_name, target, configuration, cmake_additional_args = []):
@@ -148,12 +149,12 @@ def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_file
 
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=output_folder_path)
 	for line in sp.stdout:
-		print line
+		print_verbose(line)
 	sp.wait()
 
 	sp = subprocess.Popen(['cmake', '--build', '.'], stdout=subprocess.PIPE, cwd=output_folder_path)
 	for line in sp.stdout:
-		print line
+		print_verbose(line)
 	sp.wait()
 
 def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []):
@@ -172,7 +173,7 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
 		sp = subprocess.Popen(' '.join(cmd), stdout=subprocess.PIPE, cwd=project_path, shell=True)
 
 	for line in sp.stdout:
-		print line
+		print_verbose(line)
 	sp.wait()
 
 def get_android_ndk_folder_path(root_project_path):
