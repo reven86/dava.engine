@@ -1,5 +1,4 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include <iostream>
 
@@ -300,5 +299,3 @@ DAVA_TESTCLASS (TypeReflection)
         }
     }
 };
-
-#endif
