@@ -25,8 +25,10 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
         QString filePath = dialog.ui->lineEdit->text();
         QString absFilePath = dialog.prefix + filePath;
         QFileInfo fileInfo(absFilePath);
-        DVASSERT(fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(suffix).toLower());
-        return absFilePath;
+        if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(suffix).toLower())
+        {
+            return absFilePath;
+        }
     }
     return QString();
 }
