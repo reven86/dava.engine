@@ -4,7 +4,6 @@ import com.dava.engine.DavaActivity;
 
 import android.content.Context;
 import android.telephony.PhoneStateListener;
-import android.util.Log;
 import android.telephony.TelephonyManager;
 
 public class DataConnectionStateListener extends PhoneStateListener {
