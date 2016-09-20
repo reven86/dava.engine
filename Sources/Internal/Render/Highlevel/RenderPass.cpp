@@ -325,7 +325,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     PrepareVisibilityArrays(mainCamera, renderSystem);
     TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "MainForward3D");
+    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "Main3D");
     if (BeginRenderPass())
     {
         TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
@@ -425,6 +425,7 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
+    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "WaterReflection");
     if (BeginRenderPass())
     {
         DrawLayers(currMainCamera);
@@ -483,6 +484,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
+    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "WaterRefraction");
     if (BeginRenderPass())
     {
         DrawLayers(currMainCamera);
