@@ -9,10 +9,12 @@
 StringPropertyDelegate::StringPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
 {
-}
-
-StringPropertyDelegate::~StringPropertyDelegate()
-{
+    escapeSequences = {
+        { '\\', "\\\\" },
+        { '\n', "\\n" },
+        { '\r', "\\r" },
+        { '\t', "\\t" },
+    };
 }
 
 QWidget* StringPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -38,6 +40,12 @@ void StringPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex
     {
         stringValue = WideStringToQString(variant.AsWideString());
     }
+    //convert invisible symbols to the visible ones
+    for (const auto& pair : escapeSequences)
+    {
+        stringValue.replace(pair.first, pair.second);
+    }
+
     editor->blockSignals(true);
     editor->setText(stringValue);
     editor->blockSignals(false);
@@ -52,13 +60,19 @@ bool StringPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
 
+    QString stringValue = editor->text();
+    for (const auto& pair : escapeSequences)
+    {
+        stringValue.replace(pair.second, pair.first);
+    }
+
     if (variantType.GetType() == DAVA::VariantType::TYPE_STRING)
     {
-        variantType.SetString(QStringToString(editor->text()));
+        variantType.SetString(QStringToString(stringValue));
     }
     else
     {
-        variantType.SetWideString(QStringToWideString(editor->text()));
+        variantType.SetWideString(QStringToWideString(stringValue));
     }
 
     QVariant variant;

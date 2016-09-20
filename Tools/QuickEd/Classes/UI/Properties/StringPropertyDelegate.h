@@ -1,22 +1,23 @@
-#ifndef __ITEMDELEGATEFORSTRING_H__
-#define __ITEMDELEGATEFORSTRING_H__
+#pragma once
 
 #include "BasePropertyDelegate.h"
+#include "Base/BaseTypes.h"
 
-class StringPropertyDelegate : public BasePropertyDelegate
+class StringPropertyDelegate final : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
     explicit StringPropertyDelegate(PropertiesTreeItemDelegate* delegate);
-    ~StringPropertyDelegate();
+    ~StringPropertyDelegate() override = default;
 
-    virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
-    virtual void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    virtual bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
 private slots:
     void OnEditingFinished();
+
+private:
+    //we need to store sequence in order
+    DAVA::Vector<std::pair<QChar, QString>> escapeSequences;
 };
-
-
-#endif // __ITEMDELEGATEFORSTRING_H__

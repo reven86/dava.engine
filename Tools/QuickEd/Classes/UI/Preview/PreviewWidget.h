@@ -27,6 +27,7 @@ class QDragMoveEvent;
 class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
+class QMenu;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -37,7 +38,6 @@ public:
     DavaGLWidget* GetGLWidget() const;
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
-    ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
 signals:
     void DeleteRequested();
@@ -79,6 +79,11 @@ protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
+    void ShowMenu(const QPoint& pos);
+    QMenu* CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& pos);
+    bool CanChangeTextInControl(const ControlNode* node);
+    void ChangeControlText(ControlNode* node);
+
     void LoadContext();
     void SaveContext();
 
@@ -88,6 +93,7 @@ private:
     void OnNativeGuestureEvent(QNativeGestureEvent* event);
     void OnPressEvent(QMouseEvent* event);
     void OnReleaseEvent(QMouseEvent* event);
+    void OnDoubleClickEvent(QMouseEvent* event);
     void OnMoveEvent(QMouseEvent* event);
     void OnDragMoveEvent(QDragMoveEvent* event);
     bool ProcessDragMoveEvent(QDropEvent* event);
@@ -95,6 +101,7 @@ private:
     void OnDropEvent(QDropEvent* event);
     void OnKeyPressed(QKeyEvent* event);
     void OnKeyReleased(QKeyEvent* event);
+
     void OnTransformStateChanged(bool inTransformState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 

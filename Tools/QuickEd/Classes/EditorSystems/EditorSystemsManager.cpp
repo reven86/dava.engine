@@ -161,6 +161,11 @@ void EditorSystemsManager::ClearSelection()
     selectionSystemPtr->ClearSelection();
 }
 
+void EditorSystemsManager::SelectNode(ControlNode* node)
+{
+    selectionSystemPtr->SelectNode(node);
+}
+
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
