@@ -1,0 +1,13 @@
+diff -ur ./libfreetype_source_original/CMakeLists.txt ./libfreetype_source/CMakeLists.txt
+--- ./libfreetype_source_original/CMakeLists.txt	2016-09-08 09:34:15.000000000 +0300
++++ ./libfreetype_source/CMakeLists.txt	2016-09-20 16:15:14.909686700 +0300
+@@ -449,4 +449,9 @@
+   add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+ endif ()
+ 
++# PATCHED: Removes compiler errors when building for UWP
++if (WIN32)
++  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
++endif()
++
+ # eof

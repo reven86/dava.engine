@@ -22,60 +22,34 @@ def get_supported_build_platforms():
 
 def build_for_target(target, working_directory_path, root_project_path):
 	if target == 'all':
-		__build_all_on_current_platform(working_directory_path, root_project_path)
+		return __build_all_on_current_platform(working_directory_path, root_project_path)
 	elif target == 'win32':
-		__build_win32(working_directory_path, root_project_path)
+		return __build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
-		__build_win10(working_directory_path, root_project_path)
+		return __build_win10(working_directory_path, root_project_path)
 	elif target == 'macos':
-		__build_macos(working_directory_path, root_project_path)
+		return __build_macos(working_directory_path, root_project_path)
 	elif target == 'ios':
-		__build_ios(working_directory_path, root_project_path)
+		return __build_ios(working_directory_path, root_project_path)
 	elif target == 'android':
-		__build_android(working_directory_path, root_project_path)
+		return __build_android(working_directory_path, root_project_path)
 
 def get_download_url():
 	return {'win32' : 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/lpng1625.zip', 'others' : 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.25.tar.gz'}
 
-def __get_download_archive_inner_dir():
+def __get_downloaded_archive_inner_dir():
 	if sys.platform == 'win32':
 		return 'lpng1625'
 	else:
 		return 'libpng-1.6.25'
 
 def __download_and_extract(working_directory_path):
-	# Path to extracted source folder
 	source_folder_path = os.path.join(working_directory_path, 'libpng_source')
-
-	# Skip if we've already did the job once
-	try:
-		if __download_and_extract.did:
-			return source_folder_path
-	except AttributeError:
-		pass
-
-	# Download otherwise
-
 	if sys.platform == 'win32':
 		download_link = get_download_url()['win32']
 	else:
 		download_link = get_download_url()['others']
-
-	sources_filename = download_link.split('/')[-1]
-
-	# Path to downloaded archive
-	source_archive_filepath = os.path.join(working_directory_path, sources_filename)
-
-	# Download & unarchive
-	build_utils.download_if_doesnt_exist(download_link, source_archive_filepath)
-	build_utils.unzip_inplace(source_archive_filepath)
-
-	# Rename version-dependent folder name to simpler one
-	# In case other builder will need to use this folder
-	shutil.move(os.path.join(working_directory_path, __get_download_archive_inner_dir()), source_folder_path)
-
-	__download_and_extract.did = True
-
+	build_utils.download_and_extract(download_link, working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())
 	return source_folder_path
 
 def __patch_sources(source_folder_path, working_directory_path):
@@ -97,13 +71,13 @@ def __patch_sources(source_folder_path, working_directory_path):
 
 def __build_all_on_current_platform(working_directory_path, root_project_path):
 	if sys.platform == 'win32':
-		__build_win32(working_directory_path, root_project_path)
-		__build_win10(working_directory_path, root_project_path)
-		__build_android(working_directory_path, root_project_path)
+		return (__build_win32(working_directory_path, root_project_path) and
+				__build_win10(working_directory_path, root_project_path) and
+				__build_android(working_directory_path, root_project_path))
 	else:
-		__build_macos(working_directory_path, root_project_path)
-		__build_ios(working_directory_path, root_project_path)
-		__build_android(working_directory_path, root_project_path)
+		return (__build_macos(working_directory_path, root_project_path) and
+				__build_ios(working_directory_path, root_project_path) and
+				__build_android(working_directory_path, root_project_path))
 
 def __build_win32(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
@@ -174,6 +148,8 @@ def __build_win10(working_directory_path, root_project_path):
 	shutil.copyfile(lib_path_win10_arm_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/pnglib_wind.lib'))
 	shutil.copyfile(lib_path_win10_arm_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/pnglib_win.lib'))
 
+	return True
+
 def __build_macos(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
@@ -188,6 +164,8 @@ def __build_macos(working_directory_path, root_project_path):
 	lib_path_macos_release = os.path.join(build_folder_macos, 'Release/libpng16.a')
 
 	shutil.copyfile(lib_path_macos_release, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libpng_macos.a'))
+
+	return True
 
 def __build_ios(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
@@ -205,6 +183,8 @@ def __build_ios(working_directory_path, root_project_path):
 	lib_path_ios_release = os.path.join(build_folder_ios, 'Release-iphoneos/libpng16.a')
 
 	shutil.copyfile(lib_path_ios_release, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libpng_ios.a'))
+
+	return True
 
 def __build_android(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
@@ -227,3 +207,5 @@ def __build_android(working_directory_path, root_project_path):
 
 	shutil.copyfile(lib_path_android_armeabiv7a, os.path.join(root_project_path, 'Libs/lib_CMake/android/armeabi-v7a/libpng.a'))
 	shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libpng.a'))
+
+	return True

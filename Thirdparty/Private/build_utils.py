@@ -185,3 +185,29 @@ def get_android_ndk_folder_path(root_project_path):
 			return splitted[1].strip()
 
 	return None
+
+def download_and_extract(download_url, working_directory_path, result_folder_path, inner_dir_name = None):
+	download_data = (download_url, result_folder_path)
+
+	try:		
+		if download_data in download_and_extract.cache:
+			return result_folder_path
+	except AttributeError:
+		download_and_extract.cache = []
+
+	# Download otherwise
+
+	# Path to downloaded archive
+	sources_filename = download_url.split('/')[-1]
+	source_archive_filepath = os.path.join(working_directory_path, sources_filename)
+
+	# Download & extract
+	download_if_doesnt_exist(download_url, source_archive_filepath)
+	unzip_inplace(source_archive_filepath)
+
+	# Rename version-dependent folder name to simpler one
+	# In case other builder will need to use this folder
+	if inner_dir_name is not None:
+		shutil.move(os.path.join(working_directory_path, inner_dir_name), result_folder_path)
+
+	download_and_extract.cache.append(download_data)
