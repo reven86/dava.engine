@@ -180,6 +180,11 @@ macro( setup_main_module )
         #"FIND PACKAGE"
         foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
             find_package( ${NAME} )
+            if (PACKAGE_${NAME}_INCLUDES)
+                foreach( PACKAGE_INCLUDE ${PACKAGE_${NAME}_INCLUDES} )
+                    include_directories(${${PACKAGE_INCLUDE}})
+                endforeach()
+            endif()
         endforeach()
 
         #"ERASE FILES"
