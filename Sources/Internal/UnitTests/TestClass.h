@@ -15,6 +15,12 @@ struct TestClassTypeKeeper
     using TestClassType = T;
 };
 
+struct TestCoverageInfo
+{
+    Vector<String> testFiles;
+    Map<String, String> targetFolders;
+};
+
 class TestClass
 {
 public:
@@ -25,7 +31,7 @@ public:
     virtual void TearDown(const String& testName);
     virtual void Update(float32 timeElapsed, const String& testName);
     virtual bool TestComplete(const String& testName) const;
-    virtual Vector<String> FilesCoveredByTests() const;
+    virtual TestCoverageInfo FilesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;

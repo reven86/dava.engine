@@ -6,10 +6,9 @@
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/Window.h"
-#include "Engine/Public/NativeService.h"
-#include "Engine/Public/EngineContext.h"
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
+#include "Engine/NativeService.h"
 #include "Functional/Function.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"

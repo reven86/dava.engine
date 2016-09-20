@@ -110,6 +110,8 @@ public:
 private:
     void ProcessCommandLine();
     void ProcessTests(DAVA::float32 timeElapsed);
+    void ProcessTestCoverage();
+
     void FinishTests();
 
     void OnError();

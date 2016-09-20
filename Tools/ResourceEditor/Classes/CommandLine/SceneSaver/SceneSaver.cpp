@@ -376,7 +376,7 @@ void SceneSaver::CopyCustomColorTexture(Scene* scene, const FilePath& sceneFolde
 void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder) const
 {
     ScopedPtr<FileList> fileList(new FileList(folder));
-    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         const FilePath& pathname = fileList->GetPathname(i);
         if (fileList->IsDirectory(i))

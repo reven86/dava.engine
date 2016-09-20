@@ -181,12 +181,12 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     }
 }
 
-Map<String, Vector<String>> TestCore::GetTestCoverage()
+Map<String, TestCoverageInfo> TestCore::GetTestCoverage()
 {
-    Map<String, Vector<String>> result;
+    Map<String, TestCoverageInfo> result;
     for (TestClassInfo& x : testClasses)
     {
-        if (!x.testedFiles.empty())
+        if (!x.testedFiles.testFiles.empty())
         {
             result.emplace(x.name, std::move(x.testedFiles));
         }

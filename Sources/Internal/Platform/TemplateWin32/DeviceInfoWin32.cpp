@@ -8,6 +8,7 @@
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 #include "Platform/TemplateWin32/DeviceInfoWin32.h"
+#include "Platform/DPIHelper.h"
 #include "Base/GlobalEnum.h"
 #include "winsock2.h"
 #include "Iphlpapi.h"
@@ -150,6 +151,15 @@ int32 DeviceInfoPrivate::GetHTTPProxyPort()
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
+    // default win32 dpi is 96 = 100% scaling
+    // we should get current and update screen scale
+    // in case if application is DPI-Aware
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/dn469266(v=vs.85).aspx
+    float32 defaultDPI = 96.0f;
+    float32 currDPI = static_cast<float32>(DPIHelper::GetScreenDPI());
+
+    screenInfo.scale = currDPI / defaultDPI;
+
     return screenInfo;
 }
 
@@ -300,6 +310,11 @@ bool DeviceInfoPrivate::IsTouchPresented()
 {
     //TODO: remove this empty realization and implement detection touch
     return false;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return "Not supported";
 }
 }
 

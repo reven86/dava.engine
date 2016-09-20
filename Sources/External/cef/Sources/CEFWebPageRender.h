@@ -15,7 +15,11 @@ class CEFWebPageRender : public CefRenderHandler
     IMPLEMENT_REFCOUNTING(CEFWebPageRender);
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    CEFWebPageRender(Window* w);
+#else
     CEFWebPageRender();
+#endif
     ~CEFWebPageRender();
 
     void ClearRenderSurface();

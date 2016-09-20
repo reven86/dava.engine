@@ -244,6 +244,12 @@ macro( setup_main_module )
 
         set_project_files_properties( "${ALL_SRC}" )
 
+        if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} AND  NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+            string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+            string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+            list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+        endif()
+
         #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
                 DEFINITIONS
@@ -279,7 +285,6 @@ macro( setup_main_module )
                 INCLUDES_PRIVATE
                 INCLUDES_PRIVATE_${DAVA_PLATFORM_CURENT}                  
                 )
-
 
         #"DEFINITIONS"
         if( DEFINITIONS )

@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
@@ -12,13 +13,6 @@
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
-
-#include <android/log.h>
-
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "DAVA", __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "DAVA", __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, "DAVA", __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "DAVA", __VA_ARGS__)
 
 extern DAVA::Private::AndroidBridge* androidBridge;
 
@@ -33,12 +27,12 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeInitializeEngine(
                                                                                 jstring packageName,
                                                                                 jstring cmdline)
 {
-    using DAVA::Private::AndroidBridge;
-    androidBridge->InitializeEngine(AndroidBridge::JavaStringToString(externalFilesDir, env),
-                                    AndroidBridge::JavaStringToString(internalFilesDir, env),
-                                    AndroidBridge::JavaStringToString(sourceDir, env),
-                                    AndroidBridge::JavaStringToString(packageName, env),
-                                    AndroidBridge::JavaStringToString(cmdline, env));
+    using namespace DAVA::JNI;
+    androidBridge->InitializeEngine(JavaStringToString(externalFilesDir, env),
+                                    JavaStringToString(internalFilesDir, env),
+                                    JavaStringToString(sourceDir, env),
+                                    JavaStringToString(packageName, env),
+                                    JavaStringToString(cmdline, env));
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeShutdownEngine(JNIEnv* env, jclass jclazz)
@@ -86,6 +80,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnP
     androidBridge->SurfaceViewOnPause(wbackend);
 }
 
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceCreated(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject jsurfaceView)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    androidBridge->SurfaceViewOnSurfaceCreated(wbackend, env, jsurfaceView);
+}
+
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
 {
     using DAVA::Private::WindowBackend;
@@ -98,6 +99,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnS
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
     androidBridge->SurfaceViewOnSurfaceDestroyed(wbackend, env);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewProcessEvents(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    androidBridge->SurfaceViewOnProcessProperties(wbackend);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
@@ -118,11 +126,68 @@ AndroidBridge::AndroidBridge(JavaVM* jvm)
 {
 }
 
+void AndroidBridge::InitializeJNI(JNIEnv* env)
+{
+    ANDROID_LOG_INFO("======================= Initializing JNI...");
+
+    // Get Object.toString method to get string representation of Object
+    try
+    {
+        jclass jclassObject = env->FindClass("java/lang/Object");
+        JNI::CheckJavaException(env, true);
+
+        methodObject_toString = env->GetMethodID(jclassObject, "toString", "()Ljava/lang/String;");
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("InitializeJNI: failed to get Object.toString method: %s", e.what());
+    }
+
+    // Cache Java ClassLoader
+    try
+    {
+        // Get com.dava.engine.DavaActivity class which will be used to obtain ClassLoader instance
+        jclass jclassDavaActivity = env->FindClass("com/dava/engine/DavaActivity");
+        JNI::CheckJavaException(env, true);
+
+        // Get java.lang.Class<com.dava.engine.DavaActivity>
+        jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
+        JNI::CheckJavaException(env, true);
+
+        // Get Class<java.lang.Class>.getClassLoader method
+        jmethodID jmethodClass_getClassLoader = env->GetMethodID(jclassClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+        JNI::CheckJavaException(env, true);
+
+        // Obtain ClassLoader instance
+        classLoader = env->CallObjectMethod(jclassDavaActivity, jmethodClass_getClassLoader);
+        JNI::CheckJavaException(env, true);
+
+        // Get java.lang.ClassLoader class
+        jclass jclassClassLoader = env->FindClass("java/lang/ClassLoader");
+        JNI::CheckJavaException(env, true);
+
+        // Get ClassLoader.loadClass method
+        methodClassLoader_loadClass = env->GetMethodID(jclassClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+        JNI::CheckJavaException(env, true);
+
+        // Create new global reference on ClassLoader instance
+        // jobject obtained in CallObjectMethod call is a local reference which will be deleted by java
+        classLoader = env->NewGlobalRef(classLoader);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_FATAL("InitializeJNI: failed to cache ClassLoader instance: %s", e.what());
+        env->FatalError("InitializeJNI: failed to cache ClassLoader instance");
+    }
+}
+
 void AndroidBridge::AttachPlatformCore(PlatformCore* platformCore)
 {
     if (platformCore == nullptr || androidBridge->core != nullptr)
     {
-        LOGE("=========== AndroidBridge::AttachPlatformCore: platformCore is already set !!!! ===========");
+        ANDROID_LOG_FATAL("=========== AndroidBridge::AttachPlatformCore: platformCore is already set !!!! ===========");
         abort();
     }
     androidBridge->core = platformCore;
@@ -136,7 +201,7 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
 {
     if (engineBackend != nullptr)
     {
-        LOGE("=========== AndroidBridge::InitializeEngine: engineBackend is not null !!!! ===========");
+        ANDROID_LOG_FATAL("=========== AndroidBridge::InitializeEngine: engineBackend is not null !!!! ===========");
         abort();
     }
 
@@ -197,6 +262,11 @@ void AndroidBridge::SurfaceViewOnPause(WindowBackend* wbackend)
     wbackend->OnPause();
 }
 
+void AndroidBridge::SurfaceViewOnSurfaceCreated(WindowBackend* wbackend, JNIEnv* env, jobject jsurfaceView)
+{
+    wbackend->SurfaceCreated(env, jsurfaceView);
+}
+
 void AndroidBridge::SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height)
 {
     wbackend->SurfaceChanged(env, surface, width, height);
@@ -205,6 +275,11 @@ void AndroidBridge::SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv*
 void AndroidBridge::SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env)
 {
     wbackend->SurfaceDestroyed();
+}
+
+void AndroidBridge::SurfaceViewOnProcessProperties(WindowBackend* wbackend)
+{
+    wbackend->ProcessProperties();
 }
 
 void AndroidBridge::SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y)
@@ -246,69 +321,34 @@ bool AndroidBridge::DetachCurrentThreadFromJavaVM()
     return false;
 }
 
-bool AndroidBridge::HandleJavaException(JNIEnv* env)
+jclass AndroidBridge::LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException)
 {
-    jthrowable e = env->ExceptionOccurred();
-    if (e != nullptr)
+    jstring name = JNI::CStrToJavaString(className);
+    if (name != nullptr)
     {
-#if defined(__DAVAENGINE_DEBUG__)
-        env->ExceptionDescribe();
-#endif
-        env->ExceptionClear();
-
-        // TODO: log java exception description
-        //if (androidBridge->jobject_toString != nullptr)
-        //{
-        //    jstring jstr = (jstring)env->CallObjectMethod(e, androidBridge->jobject_toString);
-        //    const char* cstr = env->GetStringUTFChars(jstr, nullptr);
-        //    LOGE("[java exception] %s", cstr);
-        //    env->ReleaseStringUTFChars(jstr, cstr);
-        //}
-        return true;
-    }
-    return false;
-}
-
-String AndroidBridge::JavaStringToString(jstring string, JNIEnv* jniEnv)
-{
-    String result;
-    if (string != nullptr)
-    {
-        if (jniEnv == nullptr)
+        jobject obj = env->CallObjectMethod(androidBridge->classLoader, androidBridge->methodClassLoader_loadClass, name);
+        env->DeleteLocalRef(name);
+        if (obj != nullptr)
         {
-            jniEnv = AndroidBridge::GetEnv();
+            jclass result = static_cast<jclass>(env->NewGlobalRef(obj));
+            env->DeleteLocalRef(obj);
+            return result;
         }
-
-        if (jniEnv != nullptr)
-        {
-            const char* rawString = jniEnv->GetStringUTFChars(string, nullptr);
-            if (rawString != nullptr)
-            {
-                result = rawString;
-                jniEnv->ReleaseStringUTFChars(string, rawString);
-            }
-        }
-    }
-    return result;
-}
-
-WideString AndroidBridge::JavaStringToWideString(jstring string, JNIEnv* jniEnv)
-{
-    return UTF8Utils::EncodeToWideString(JavaStringToString(string, jniEnv));
-}
-
-jstring AndroidBridge::WideStringToJavaString(const WideString& string, JNIEnv* jniEnv)
-{
-    if (jniEnv == nullptr)
-    {
-        jniEnv = AndroidBridge::GetEnv();
-    }
-
-    if (jniEnv != nullptr)
-    {
-        return jniEnv->NewStringUTF(UTF8Utils::EncodeToUTF8(string).c_str());
+        JNI::CheckJavaException(env, throwJniException);
     }
     return nullptr;
+}
+
+String AndroidBridge::toString(JNIEnv* env, jobject object)
+{
+    String result;
+    if (androidBridge->methodObject_toString != nullptr && object != nullptr)
+    {
+        jstring jstr = static_cast<jstring>(env->CallObjectMethod(object, androidBridge->methodObject_toString));
+        JNI::CheckJavaException(env, false);
+        result = JNI::JavaStringToString(jstr, env);
+    }
+    return result;
 }
 
 const String& AndroidBridge::GetExternalDocumentsDir()

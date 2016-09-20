@@ -37,6 +37,7 @@ public:
     AssetCache::Error RemoveFromCacheSynchronously(const AssetCache::CacheItemKey& key);
     AssetCache::Error ClearCacheSynchronously();
 
+    uint64 GetTimeoutMs() const;
     bool IsConnected() const;
 
 private:
@@ -104,6 +105,11 @@ private:
 
     bool emulateNetworkLoop = false;
 };
+
+inline uint64 AssetCacheClient::GetTimeoutMs() const
+{
+    return timeoutms;
+}
 
 } //END of DAVA
 

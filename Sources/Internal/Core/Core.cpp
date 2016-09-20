@@ -354,7 +354,50 @@ void Core::SetOptions(KeyedArchive* archiveOfOptions)
 
     options = SafeRetain(archiveOfOptions);
 
-#if defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
+    screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
+
+    using RotationPrefFn = BOOL(WINAPI*)(_In_ ORIENTATION_PREFERENCE);
+
+    // we are trying to get SetDisplayAutoRotationPreferences with GetProcAddress
+    // because this function is available only on win8 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and SetDisplayAutoRotationPreferences wont be called
+    HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+    RotationPrefFn fn = reinterpret_cast<RotationPrefFn>(GetProcAddress(user32, "SetDisplayAutoRotationPreferences"));
+
+    if (nullptr != fn)
+    {
+        ORIENTATION_PREFERENCE orientationp = ORIENTATION_PREFERENCE_NONE;
+
+        switch (screenOrientation)
+        {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            orientationp |= ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            orientationp |= ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            orientationp |= (ORIENTATION_PREFERENCE_PORTRAIT | ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED);
+            break;
+        default:
+            break;
+        }
+
+        (*fn)(orientationp);
+    }
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
     screenOrientation = static_cast<eScreenOrientation>(options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE));
 #elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
     //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view
@@ -962,6 +1005,11 @@ void Core::SetWindowMinimumSize(float32 /*width*/, float32 /*height*/)
 Vector2 Core::GetWindowMinimumSize() const
 {
     return Vector2();
+}
+
+void* DAVA::Core::GetNativeWindow() const
+{
+    return nullptr;
 }
 
 IPackManager& Core::GetPackManager()
