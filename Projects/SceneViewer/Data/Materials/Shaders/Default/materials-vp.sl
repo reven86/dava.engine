@@ -55,11 +55,6 @@ vertex_in
     #if FRAME_BLEND
     float texcoord3 : TEXCOORD3;
     #endif
-
-    #if FLOWMAP
-        float3 varFlowData : TEXCOORD4;
-    #endif
-
 };
 
 
