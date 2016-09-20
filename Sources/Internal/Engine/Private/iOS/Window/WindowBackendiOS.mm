@@ -87,6 +87,10 @@ void WindowBackend::ProcessPlatformEvents()
     platformDispatcher.ProcessEvents();
 }
 
+void WindowBackend::SetMouseMode(eMouseMode mode)
+{
+}
+
 void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)

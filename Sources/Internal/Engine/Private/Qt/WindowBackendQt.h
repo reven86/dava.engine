@@ -44,6 +44,8 @@ public:
     void TriggerPlatformEvents();
     void InitCustomRenderParams(rhi::InitParam& params);
 
+    void SetMouseMode(eMouseMode mode);
+
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
     void DoResizeWindow(float32 width, float32 height);

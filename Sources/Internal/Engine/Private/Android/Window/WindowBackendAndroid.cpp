@@ -89,6 +89,10 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
     return object;
 }
 
+void WindowBackend::SetMouseMode(eMouseMode mode)
+{
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
 }
