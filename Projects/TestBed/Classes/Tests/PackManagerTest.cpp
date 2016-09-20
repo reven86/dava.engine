@@ -516,7 +516,7 @@ void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, 
 
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
-        FilePath nextPath = fileList->GetPathname(i);
+        const FilePath& nextPath = fileList->GetPathname(i);
         ss << nextPath.GetStringValue() << '\n';
     }
 
