@@ -23,10 +23,6 @@ using DAVA::Logger;
 #include <atomic>
 #include <thread>
 
-namespace rhi
-{
-extern void _InitDX9();
-}
 
 namespace rhi
 {
@@ -98,7 +94,7 @@ public:
     int priority;
 };
 
-class CommandBufferDX9_t : public SoftwareCommandBufferUnpacked
+class CommandBufferDX9_t : public SoftwareCommandBuffer
 {
 public:
     CommandBufferDX9_t();
@@ -178,184 +174,235 @@ void SetupDispatch(Dispatch* dispatch)
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_Begin(Handle cmdBuf)
+static void dx9_CommandBuffer_Begin(Handle cmdBuf)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_BEGIN);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    cb->Begin();
+    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
+static void dx9_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_END, syncObject);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
+    cmd->syncObject = syncObject;
+    cb->End();
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
+static void dx9_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint32 vdecl)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_PIPELINE_STATE, ps, vdecl);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetPipelineState* cmd = cb->allocCmd<SWCommand_SetPipelineState>();
+    cmd->vdecl = uint16(vdecl);
+    cmd->ps = ps;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
+static void dx9_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_CULL_MODE, mode);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetCullMode* cmd = cb->allocCmd<SWCommand_SetCullMode>();
+    cmd->mode = mode;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
+static void dx9_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetScissorRect* cmd = cb->allocCmd<SWCommand_SetScissorRect>();
+    cmd->x = rect.x;
+    cmd->y = rect.y;
+    cmd->width = rect.width;
+    cmd->height = rect.height;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
+static void dx9_CommandBuffer_SetViewport(Handle cmdBuf, Viewport vp)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetViewport* cmd = cb->allocCmd<SWCommand_SetViewport>();
+    cmd->x = uint16(vp.x);
+    cmd->y = uint16(vp.y);
+    cmd->width = uint16(vp.width);
+    cmd->height = uint16(vp.height);
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
+static void dx9_CommandBuffer_SetFillMode(Handle cmdBuf, FillMode mode)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_FILLMODE, mode);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetFillMode* cmd = cb->allocCmd<SWCommand_SetFillMode>();
+    cmd->mode = mode;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
+static void dx9_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_VERTEX_DATA, vb, streamIndex);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetVertexData* cmd = cb->allocCmd<SWCommand_SetVertexData>();
+    cmd->vb = vb;
+    cmd->streamIndex = uint16(streamIndex);
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
+static void dx9_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
+{
+    //    L_ASSERT(buffer);
+    DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
+    if (buffer != DAVA::InvalidIndex)
+    {
+        CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+        SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
+        cmd->buffer = buffer;
+        cmd->bufIndex = bufIndex;
+        cmd->inst = ConstBufferDX9::Instance(buffer);
+    }
+}
+
+//------------------------------------------------------------------------------
+
+static void dx9_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
+{
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetVertexTexture* cmd = cb->allocCmd<SWCommand_SetVertexTexture>();
+    cmd->unitIndex = unitIndex;
+    cmd->tex = tex;
+}
+
+//------------------------------------------------------------------------------
+
+static void dx9_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
+{
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetIndices* cmd = cb->allocCmd<SWCommand_SetIndices>();
+    cmd->ib = ib;
+}
+
+//------------------------------------------------------------------------------
+
+static void dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
+{
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetQueryIndex* cmd = cb->allocCmd<SWCommand_SetQueryIndex>();
+    cmd->objectIndex = objectIndex;
+}
+
+//------------------------------------------------------------------------------
+
+static void dx9_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
+{
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetQueryBuffer* cmd = cb->allocCmd<SWCommand_SetQueryBuffer>();
+    cmd->queryBuf = queryBuf;
+}
+
+//------------------------------------------------------------------------------
+
+static void dx9_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
     //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != DAVA::InvalidIndex)
-        CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
+    {
+        CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+        SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
+        cmd->bufIndex = bufIndex;
+        cmd->buffer = buffer;
+        cmd->inst = ConstBufferDX9::Instance(buffer);
+    }
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetVertexTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
+static void dx9_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_VERTEX_TEXTURE, D3DDMAPSAMPLER + 1 + unitIndex, (uint64)(tex));
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetFragmentTexture* cmd = cb->allocCmd<SWCommand_SetFragmentTexture>();
+    cmd->unitIndex = unitIndex;
+    cmd->tex = tex;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetIndices(Handle cmdBuf, Handle ib)
+static void dx9_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_INDICES, ib);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetDepthStencilState* cmd = cb->allocCmd<SWCommand_SetDepthStencilState>();
+    cmd->depthStencilState = depthStencilState;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetQueryIndex(Handle cmdBuf, uint32 objectIndex)
+static void dx9_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_QUERY_INDEX, objectIndex);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
+    cmd->samplerState = samplerState;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
+static void dx9_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_QUERY_BUFFER, queryBuf);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
+    cmd->mode = _DX9_PrimitiveType(type);
+    cmd->vertexCount = count;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
+static void dx9_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
 {
-    //    L_ASSERT(buffer);
-    DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
-
-    if (buffer != DAVA::InvalidIndex)
-        CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX9::InstData(buffer)));
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_DrawIndexedPrimitiveRanged* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitiveRanged>();
+    cmd->mode = _DX9_PrimitiveType(type);
+    cmd->indexCount = count;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+    cmd->vertexCount = vertexCount;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetFragmentTexture(Handle cmdBuf, uint32 unitIndex, Handle tex)
+static void dx9_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_FRAGMENT_TEXTURE, unitIndex, (uint64)(tex));
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
+    cmd->mode = _DX9_PrimitiveType(type);
+    cmd->vertexCount = count;
+    cmd->instanceCount = instCount;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depthStencilState)
+static void dx9_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
 {
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_DEPTHSTENCIL_STATE, depthStencilState);
+    CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
+    SWCommand_DrawInstancedIndexedPrimitiveRanged* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitiveRanged>();
+    cmd->mode = _DX9_PrimitiveType(type);
+    cmd->indexCount = count;
+    cmd->firstVertex = firstVertex;
+    cmd->startIndex = startIndex;
+    cmd->vertexCount = vertexCount;
+    cmd->instanceCount = instCount;
+    cmd->baseInstance = baseInstance;
 }
 
 //------------------------------------------------------------------------------
 
-static void
-dx9_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
-{
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_SET_SAMPLER_STATE, samplerState);
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx9_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
-{
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_DRAW_PRIMITIVE, _DX9_PrimitiveType(type), count);
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx9_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
-{
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_DRAW_INSTANCED_PRIMITIVE, _DX9_PrimitiveType(type), instCount, count);
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx9_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex)
-{
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_DRAW_INDEXED_PRIMITIVE, _DX9_PrimitiveType(type), count, vertexCount, firstVertex, startIndex);
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx9_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
-{
-    CommandBufferPoolDX9::Get(cmdBuf)->Command(CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE, _DX9_PrimitiveType(type), instCount, count, vertexCount, firstVertex, startIndex, baseInstance);
-}
-
-//------------------------------------------------------------------------------
-
-static void
-dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
+static void dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
     CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
 
@@ -371,7 +418,8 @@ dx9_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
     memcpy(txt, text, len);
     txt[len] = '\0';
 
-    cb->Command(CMD_SET_MARKER, (uint64)(txt));
+    SWCommand_SetMarker* cmd = cb->allocCmd<SWCommand_SetMarker>();
+    cmd->text = text;
 }
 
 //------------------------------------------------------------------------------
@@ -432,15 +480,13 @@ void CommandBufferDX9_t::Execute()
 
     sync = InvalidHandle;
 
-    for (std::vector<uint64>::const_iterator c = _cmd.begin(), c_end = _cmd.end(); c != c_end; ++c)
+    int immediate_cmd_ttw = 10;
+
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const uint64 cmd = *c;
-        std::vector<uint64>::const_iterator arg = c + 1;
+        const SWCommand* cmd = (const SWCommand*)c;
 
-        if (cmd == EndCmd)
-            break;
-
-        switch (cmd)
+        switch (SoftwareCommandType(cmd->type))
         {
         case CMD_BEGIN:
         {
@@ -513,7 +559,7 @@ void CommandBufferDX9_t::Execute()
 
         case CMD_END:
         {
-            sync = Handle(arg[0]);
+            sync = (static_cast<const SWCommand_End*>(cmd))->syncObject;
 
             if (isLastInPass)
             {
@@ -534,60 +580,51 @@ void CommandBufferDX9_t::Execute()
                     _D3D9_DepthBuf = nullptr;
                 }
             }
-
-            c += 1;
         }
         break;
 
         case CMD_SET_VERTEX_DATA:
         {
             DVASSERT(cur_pipelinestate != InvalidHandle);
-            unsigned stream = unsigned(arg[1]);
-            unsigned stride = (cur_stride[stream])
-            ?
-            cur_stride[stream]
-            :
-            PipelineStateDX9::VertexLayoutStride(cur_pipelinestate, stream);
-
-            VertexBufferDX9::SetToRHI((Handle)(arg[0]), stream, 0, stride);
+            Handle vb = (static_cast<const SWCommand_SetVertexData*>(cmd))->vb;
+            unsigned stream = (static_cast<const SWCommand_SetVertexData*>(cmd))->streamIndex;
+            unsigned stride = (cur_stride[stream]) ? cur_stride[stream] : PipelineStateDX9::VertexLayoutStride(cur_pipelinestate, stream);
+            VertexBufferDX9::SetToRHI(vb, stream, 0, stride);
 
             StatSet::IncStat(stat_SET_VB, 1);
-
-            c += 2;
         }
         break;
 
         case CMD_SET_INDICES:
         {
-            IndexBufferDX9::SetToRHI((Handle)(arg[0]));
+            Handle ib = (static_cast<const SWCommand_SetIndices*>(cmd))->ib;
+            IndexBufferDX9::SetToRHI(ib);
 
             StatSet::IncStat(stat_SET_IB, 1);
-
-            c += 1;
         }
         break;
 
         case CMD_SET_QUERY_BUFFER:
         {
             DVASSERT(cur_query_buf == InvalidHandle);
-            cur_query_buf = (Handle)(arg[0]);
-            c += 1;
+            cur_query_buf = (static_cast<const SWCommand_SetQueryBuffer*>(cmd))->queryBuf;
         }
         break;
 
         case CMD_SET_QUERY_INDEX:
         {
             if (cur_query_buf != InvalidHandle)
-                QueryBufferDX9::SetQueryIndex(cur_query_buf, uint32(arg[0]));
-            c += 1;
+                QueryBufferDX9::SetQueryIndex(cur_query_buf, (static_cast<const SWCommand_SetQueryIndex*>(cmd))->objectIndex);
         }
         break;
 
         case CMD_SET_PIPELINE_STATE:
         {
-            uint32 vd_uid = (uint32)(arg[1]);
+            Handle ps = (static_cast<const SWCommand_SetPipelineState*>(cmd))->ps;
+            uint32 vd_uid = (static_cast<const SWCommand_SetPipelineState*>(cmd))->vdecl;
+
             const VertexLayout* vdecl = (vd_uid == VertexLayout::InvalidUID) ? nullptr : VertexLayout::Get(vd_uid);
-            cur_pipelinestate = (Handle)(arg[0]);
+            cur_pipelinestate = ps; //todo: cache optimization
             cur_vd_uid = vd_uid;
 
             if (vdecl)
@@ -603,15 +640,13 @@ void CommandBufferDX9_t::Execute()
             PipelineStateDX9::SetToRHI(cur_pipelinestate, vd_uid);
 
             StatSet::IncStat(stat_SET_PS, 1);
-            c += 2;
         }
         break;
 
         case CMD_SET_CULL_MODE:
         {
             DWORD mode = D3DCULL_CCW;
-
-            switch (CullMode(arg[0]))
+            switch (CullMode((static_cast<const SWCommand_SetCullMode*>(cmd))->mode))
             {
             case CULL_NONE:
                 mode = D3DCULL_NONE;
@@ -625,16 +660,15 @@ void CommandBufferDX9_t::Execute()
             }
 
             _D3D9_Device->SetRenderState(D3DRS_CULLMODE, mode);
-            c += 1;
         }
         break;
 
         case CMD_SET_SCISSOR_RECT:
         {
-            int x = int(arg[0]);
-            int y = int(arg[1]);
-            int w = int(arg[2]);
-            int h = int(arg[3]);
+            int32 x = (static_cast<const SWCommand_SetScissorRect*>(cmd))->x;
+            int32 y = (static_cast<const SWCommand_SetScissorRect*>(cmd))->y;
+            int32 w = (static_cast<const SWCommand_SetScissorRect*>(cmd))->width;
+            int32 h = (static_cast<const SWCommand_SetScissorRect*>(cmd))->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -647,17 +681,15 @@ void CommandBufferDX9_t::Execute()
             {
                 _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
             }
-
-            c += 4;
         }
         break;
 
         case CMD_SET_VIEWPORT:
         {
-            int x = int(arg[0]);
-            int y = int(arg[1]);
-            int w = int(arg[2]);
-            int h = int(arg[3]);
+            int32 x = (static_cast<const SWCommand_SetViewport*>(cmd))->x;
+            int32 y = (static_cast<const SWCommand_SetViewport*>(cmd))->y;
+            int32 w = (static_cast<const SWCommand_SetViewport*>(cmd))->width;
+            int32 h = (static_cast<const SWCommand_SetViewport*>(cmd))->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -676,16 +708,13 @@ void CommandBufferDX9_t::Execute()
             {
                 _D3D9_Device->SetViewport(&def_viewport);
             }
-
-            c += 4;
         }
         break;
 
         case CMD_SET_FILLMODE:
         {
             DWORD mode = D3DFILL_SOLID;
-
-            switch (FillMode(arg[0]))
+            switch (FillMode((static_cast<const SWCommand_SetFillMode*>(cmd))->mode))
             {
             case FILLMODE_SOLID:
                 mode = D3DFILL_SOLID;
@@ -696,56 +725,69 @@ void CommandBufferDX9_t::Execute()
             }
 
             _D3D9_Device->SetRenderState(D3DRS_FILLMODE, mode);
-            c += 1;
         }
         break;
 
         case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateDX9::SetToRHI((Handle)(arg[0]));
-            c += 1;
+            Handle state = (static_cast<const SWCommand_SetDepthStencilState*>(cmd))->depthStencilState;
+            DepthStencilStateDX9::SetToRHI(state);
         }
         break;
 
         case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateDX9::SetToRHI((Handle)(arg[0]));
+            Handle state = (static_cast<const SWCommand_SetSamplerState*>(cmd))->samplerState;
+            SamplerStateDX9::SetToRHI(state);
             StatSet::IncStat(stat_SET_SS, 1);
-            c += 1;
         }
         break;
 
         case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-            ConstBufferDX9::SetToRHI((Handle)(arg[1]), (const void*)(arg[2]));
+            Handle buffer = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->buffer;
+            const void* inst = (static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd))->inst;
+            ConstBufferDX9::SetToRHI(buffer, inst);
             StatSet::IncStat(stat_SET_CB, 1);
-            c += 3;
         }
         break;
 
         case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-            ConstBufferDX9::SetToRHI((Handle)(arg[1]), (const void*)(arg[2]));
+            Handle buffer = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->buffer;
+            const void* inst = (static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd))->inst;
+            ConstBufferDX9::SetToRHI(buffer, inst);
             StatSet::IncStat(stat_SET_CB, 1);
-            c += 3;
         }
         break;
 
         case CMD_SET_VERTEX_TEXTURE:
+        {
+            Handle tex = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->tex;
+            uint32 unit_i = (static_cast<const SWCommand_SetVertexTexture*>(cmd))->unitIndex;
+            unit_i += D3DDMAPSAMPLER + 1;
+            TextureDX9::SetToRHI(tex, unit_i);
+            StatSet::IncStat(stat_SET_TEX, 1);
+        }
+        break;
+
         case CMD_SET_FRAGMENT_TEXTURE:
         {
-            TextureDX9::SetToRHI((Handle)(arg[1]), (unsigned)(arg[0]));
+            Handle tex = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->tex;
+            unsigned unit_i = (static_cast<const SWCommand_SetFragmentTexture*>(cmd))->unitIndex;
+            TextureDX9::SetToRHI(tex, unit_i);
             StatSet::IncStat(stat_SET_TEX, 1);
-            c += 2;
         }
         break;
 
         case CMD_DRAW_PRIMITIVE:
         {
-            DX9_CALL(_D3D9_Device->DrawPrimitive((D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/ 0, UINT(arg[1])), "DrawPrimitive");
+            uint32 v_cnt = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->vertexCount;
+            uint8 mode = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->mode;
+            DX9_CALL(_D3D9_Device->DrawPrimitive((D3DPRIMITIVETYPE)(mode), /*base_vertex*/ 0, UINT(v_cnt)), "DrawPrimitive");
 
             StatSet::IncStat(stat_DP, 1);
-            switch (arg[0])
+            switch (mode)
             {
             case D3DPT_TRIANGLELIST:
                 StatSet::IncStat(stat_DTL, 1);
@@ -762,18 +804,16 @@ void CommandBufferDX9_t::Execute()
             default:
                 break;
             }
-
-            c += 2;
         }
         break;
 
-        case CMD_DRAW_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INDEXED_PRIMITIVE_RANGED:
         {
-            D3DPRIMITIVETYPE type = (D3DPRIMITIVETYPE)(arg[0]);
-            uint32 primCount = uint32(arg[1]);
-            uint32 vertexCount = uint32(arg[2]);
-            uint32 firstVertex = uint32(arg[3]);
-            uint32 startIndex = uint32(arg[4]);
+            D3DPRIMITIVETYPE type = (D3DPRIMITIVETYPE)((static_cast<const SWCommand_DrawIndexedPrimitiveRanged*>(cmd))->mode);
+            uint32 primCount = uint32((static_cast<const SWCommand_DrawIndexedPrimitiveRanged*>(cmd))->indexCount);
+            uint32 vertexCount = uint32((static_cast<const SWCommand_DrawIndexedPrimitiveRanged*>(cmd))->vertexCount);
+            uint32 firstVertex = uint32((static_cast<const SWCommand_DrawIndexedPrimitiveRanged*>(cmd))->firstVertex);
+            uint32 startIndex = uint32((static_cast<const SWCommand_DrawIndexedPrimitiveRanged*>(cmd))->startIndex);
 
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
 
@@ -795,16 +835,14 @@ void CommandBufferDX9_t::Execute()
             default:
                 break;
             }
-
-            c += 5;
         }
         break;
 
         case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            D3DPRIMITIVETYPE primType = D3DPRIMITIVETYPE(arg[0]);
-            uint32 instCount = uint32(arg[1]);
-            uint32 primCount = uint32(arg[2]);
+            D3DPRIMITIVETYPE primType = D3DPRIMITIVETYPE((static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->mode);
+            uint32 instCount = uint32((static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->instanceCount);
+            uint32 primCount = uint32((static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd))->vertexCount);
 
             DVASSERT(primType == D3DPT_TRIANGLELIST);
             DVASSERT(primCount / 3 < 0xFFFF);
@@ -812,7 +850,7 @@ void CommandBufferDX9_t::Execute()
             DX9_CALL(_D3D9_Device->SetIndices(_DX9_SequentialIB()), "SetIndices");
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(primType, 0, 0, primCount * 3, 0, primCount), "DrawInstancedIndexedPrimitive");
             StatSet::IncStat(stat_DIP, 1);
-            switch (arg[0])
+            switch (primType)
             {
             case D3DPT_TRIANGLELIST:
                 StatSet::IncStat(stat_DTL, 1);
@@ -829,22 +867,20 @@ void CommandBufferDX9_t::Execute()
             default:
                 break;
             }
-
-            c += 3;
         }
         break;
 
-        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
+        case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE_RANGED:
         {
-            D3DPRIMITIVETYPE type = (D3DPRIMITIVETYPE)(arg[0]);
-            uint32 instCount = uint32(arg[1]);
-            uint32 primCount = uint32(arg[2]);
-            uint32 vertexCount = uint32(arg[3]);
-            uint32 firstVertex = uint32(arg[4]);
-            uint32 startIndex = uint32(arg[5]);
-            uint32 baseinst = uint32(arg[6]);
+            uint32 primCount = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->indexCount;
+            D3DPRIMITIVETYPE type = (D3DPRIMITIVETYPE)((static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->mode);
+            uint32 instCount = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->instanceCount;
+            uint32 firstVertex = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->firstVertex;
+            uint32 vertexCount = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->vertexCount;
+            uint32 startIndex = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->startIndex;
+            uint32 baseInst = (static_cast<const SWCommand_DrawInstancedIndexedPrimitiveRanged*>(cmd))->baseInstance;
 
-            PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, unsigned(arg[1]));
+            PipelineStateDX9::SetupVertexStreams(cur_pipelinestate, cur_vd_uid, instCount);
             DX9_CALL(_D3D9_Device->DrawIndexedPrimitive(type, firstVertex, 0, vertexCount, startIndex, primCount), "DrawIndexedPrimitive");
 
             StatSet::IncStat(stat_DIP, 1);
@@ -865,16 +901,15 @@ void CommandBufferDX9_t::Execute()
             default:
                 break;
             }
-
-            c += 7;
         }
         break;
 
         case CMD_SET_MARKER:
         {
+            const char* text = (static_cast<const SWCommand_SetMarker*>(cmd))->text;
             wchar_t txt[128];
 
-            ::MultiByteToWideChar(CP_ACP, 0, (const char*)(arg[0]), -1, txt, countof(txt));
+            ::MultiByteToWideChar(CP_ACP, 0, (const char*)(text), -1, txt, countof(txt));
             ::D3DPERF_SetMarker(D3DCOLOR_ARGB(0xFF, 0x40, 0x40, 0x80), txt);
         }
         break;
@@ -882,9 +917,18 @@ void CommandBufferDX9_t::Execute()
         default:
             DVASSERT("unknown DX9 render-command");
         }
-    }
 
-    _cmd.clear();
+        if (--immediate_cmd_ttw <= 0)
+        {
+            RenderLoop::CheckImmediateCommand();
+            immediate_cmd_ttw = 10;
+        }
+
+        if (cmd->type == CMD_END)
+            break;
+
+        c += cmd->size;
+    }
 }
 
 static void _DX9_InvalidateFrameCache()
@@ -913,7 +957,6 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
                 s->is_signaled = true;
                 s->is_used = true;
             }
-            cc->_cmd.clear();
             CommandBufferPoolDX9::Free(*c);
         }
 

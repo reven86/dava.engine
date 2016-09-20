@@ -62,7 +62,7 @@ namespace ConstBufferDX9
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void InitializeRingBuffer(uint32 size);
-const void* InstData(Handle cb);
+const void* Instance(Handle cb);
 void SetToRHI(Handle cb, const void* instData);
 void InvalidateAllConstBufferInstances();
 }

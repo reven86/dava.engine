@@ -30,8 +30,10 @@ enum SoftwareCommandType
 
     CMD_DRAW_PRIMITIVE = 41,
     CMD_DRAW_INDEXED_PRIMITIVE = 42,
-    CMD_DRAW_INSTANCED_PRIMITIVE = 43,
-    CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE = 44,
+    CMD_DRAW_INDEXED_PRIMITIVE_RANGED = 43,
+    CMD_DRAW_INSTANCED_PRIMITIVE = 46,
+    CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE = 47,
+    CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE_RANGED = 48,
 
     CMD_SET_MARKER = 51,
 
@@ -198,12 +200,32 @@ struct SWCommand_DrawIndexedPrimitive : public SWCommandImpl<SWCommand_DrawIndex
     uint32 startIndex;
 } DV_ATTR_PACKED;
 
+struct SWCommand_DrawIndexedPrimitiveRanged : public SWCommandImpl<SWCommand_DrawIndexedPrimitiveRanged, CMD_DRAW_INDEXED_PRIMITIVE_RANGED>
+{
+    uint8 mode;
+    uint32 indexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+    uint32 vertexCount;
+} DV_ATTR_PACKED;
+
 struct SWCommand_DrawInstancedIndexedPrimitive : public SWCommandImpl<SWCommand_DrawInstancedIndexedPrimitive, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE>
 {
     uint8 mode;
     uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
+    uint16 instanceCount;
+    uint16 baseInstance;
+} DV_ATTR_PACKED;
+
+struct SWCommand_DrawInstancedIndexedPrimitiveRanged : public SWCommandImpl<SWCommand_DrawInstancedIndexedPrimitiveRanged, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE_RANGED>
+{
+    uint8 mode;
+    uint32 indexCount;
+    uint32 firstVertex;
+    uint32 startIndex;
+    uint32 vertexCount;
     uint16 instanceCount;
     uint16 baseInstance;
 } DV_ATTR_PACKED;

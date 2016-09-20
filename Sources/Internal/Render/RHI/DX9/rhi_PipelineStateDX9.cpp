@@ -1048,8 +1048,7 @@ void InitializeRingBuffer(uint32 size)
     _DX9_DefConstRingBuf.Initialize(size);
 }
 
-const void*
-InstData(Handle cb)
+const void* Instance(Handle cb)
 {
     PipelineStateDX9_t::ConstBuf* cb9 = ConstBufDX9Pool::Get(cb);
 
