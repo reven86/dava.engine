@@ -1,19 +1,20 @@
 #include "rhi_DX11.h"
-    #include "../Common/rhi_Impl.h"
-    
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Core/Core.h"
+#include "../Common/rhi_Impl.h"
+
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
-    #include "_dx11.h"
-    #include "../rhi_Type.h"
-    #include "../Common/dbg_StatSet.h"
+#include "_dx11.h"
+#include "../rhi_Type.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include <vector>
+#include <vector>
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-	#include "uap_dx11.h"
+#include "uap_dx11.h"
+#include "Platform/DeviceInfo.h"
 #endif
 
 namespace rhi
@@ -380,7 +381,18 @@ void dx11_Initialize(const InitParam& param)
     MutableDeviceCaps::Get().isCenterPixelMapping = false;
     MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
-    MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
+    {
+        // explicitly disable multisampling support on win phones
+        MutableDeviceCaps::Get().maxSamples = 1;
+    }
+    else 
+#endif
+    {
+        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+    }
 }
 
 //==============================================================================
