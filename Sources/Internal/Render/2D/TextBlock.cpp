@@ -838,7 +838,7 @@ void TextBlock::CalculateCacheParams()
         int32 linesCount = int32(lines.size());
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
-            int32 needLines = Min(linesCount, int32(ceilf(drawSize.y / fontHeight)) + 1);
+            int32 needLines = Min(linesCount, int32(std::ceil(drawSize.y / fontHeight)) + 1);
             // For align & ALIGN_TOP do nothing
             if (visualAlign & ALIGN_VCENTER)
             {

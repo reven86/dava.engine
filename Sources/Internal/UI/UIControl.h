@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UI_CONTROL_H__
-#define __DAVAENGINE_UI_CONTROL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
@@ -65,8 +64,8 @@ public:
         {
             if (angle != data.angle)
             {
-                cosA = cosf(angle);
-                sinA = sinf(angle);
+                cosA = std::cos(angle);
+                sinA = std::sin(angle);
             }
             else
             {
@@ -97,8 +96,8 @@ public:
         // well it must be here otherwise there is a bug!
         if (calculatedAngle != angle)
         {
-            cosA = cosf(angle);
-            sinA = sinf(angle);
+            cosA = std::cos(angle);
+            sinA = std::sin(angle);
             calculatedAngle = angle;
         }
         Matrix3 rotateMatr;
@@ -1481,6 +1480,3 @@ void UIControl::SetWheelSensitivity(float32 newSens)
     wheelSensitivity = newSens;
 }
 };
-
-
-#endif
