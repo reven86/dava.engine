@@ -1,8 +1,8 @@
 #include "Testing/TArcTestClass.h"
 #include "TArcCore/ControllerModule.h"
 
-#include "Engine/Public/Engine.h"
-#include "Engine/Public/Qt/NativeServiceQt.h"
+#include "Engine/Engine.h"
+#include "Engine/NativeService.h"
 #include "UnitTests/UnitTests.h"
 
 #include <QTimer>

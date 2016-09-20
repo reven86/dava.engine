@@ -39,7 +39,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         return e.Run();
     }
 
-    bool isConsoleMode = cmdline.size() > 1;
+    bool isConsoleMode = cmdline.size() == 2;
     e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE :DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
     DAVA::TArc::Core core(e);
 

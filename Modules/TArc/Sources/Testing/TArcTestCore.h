@@ -24,6 +24,7 @@ private:
     void Update(float32 delta);
 
     void ProcessCommandLine();
+    void ProcessTestCoverage();
     void OnError();
     void OnTestClassStarted(const DAVA::String& testClassName);
     void OnTestClassFinished(const DAVA::String& testClassName);

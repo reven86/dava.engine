@@ -32,9 +32,10 @@ public:
 
 DAVA_TARC_TESTCLASS(ContextHierarchyTest)
 {
-    BEGIN_CLASSES_COVERED_BY_TESTS()
-        DECLARE_COVERED_FILES("DataContext")
-        DECLARE_COVERED_FILES("TArcCore")
+    BEGIN_FILES_COVERED_BY_TESTS()
+        FIND_FILES_IN_TARGET("TArc")
+        DECLARE_COVERED_FILES("DataContext.cpp")
+        DECLARE_COVERED_FILES("TArcCore.cpp")
     END_FILES_COVERED_BY_TESTS()
     
     DAVA_TEST(GlobalContexHasDataTest)
