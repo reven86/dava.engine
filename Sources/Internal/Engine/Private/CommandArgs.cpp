@@ -48,7 +48,7 @@ Vector<String> GetCommandArgs()
         cmdargs.reserve(nargs);
         for (int i = 0; i < nargs; ++i)
         {
-            cmdargs.push_back(WStringToString(arglist[i]));
+            cmdargs.push_back(UTF8Utils::EncodeToUTF8(arglist[i]));
         }
         ::LocalFree(arglist);
     }

@@ -528,17 +528,23 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    if( NOT CMAKE_EXTRA_GENERATOR )
-        add_custom_target( ant-configure ALL
-            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
-            COMMAND  ${ANT_COMMAND} release
-        )
+    if ( NOT ANDROID_BUILD_NO_PACKAGE )
+        if( NOT CMAKE_EXTRA_GENERATOR )
+            
+            if ( NOT ANDROID_PACKAGE_CONFIG )
+                set ( ANDROID_PACKAGE_CONFIG "release" )
+            endif ()
+        
+            add_custom_target( ant-configure ALL
+                COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
+                COMMAND  ${ANT_COMMAND} ${ANDROID_PACKAGE_CONFIG}
+            )
 
-        add_dependencies( ant-configure ${PROJECT_NAME} )
-    else()
-        execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
+            add_dependencies( ant-configure ${PROJECT_NAME} )
+        else()
+            execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
+        endif()
     endif()
-
 
 elseif( IOS )
     set_target_properties( ${PROJECT_NAME} PROPERTIES
@@ -676,8 +682,54 @@ if( TARGET_FILE_TREE_FOUND )
 
 endif()
 
-
 if( ANDROID )
+
+    if ( CMAKE_LIBRARY_OUTPUT_DIRECTORY )
+        set ( DAVA_LIBRARY_OUTPUT "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" )
+    else ()
+        set ( DAVA_LIBRARY_OUTPUT "${LIBRARY_OUTPUT_PATH}" )
+    endif ()
+
+    # Copy STL .so to output dir on Android
+    if ( DEFINED ANDROID_NDK AND DEFINED ANDROID_STL_SO_PATH )
+        
+        get_filename_component ( ANDROID_STL_SO_NAME "${ANDROID_STL_SO_PATH}" NAME )        
+        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${ANDROID_STL_SO_PATH}" "${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}" RESULT_VARIABLE RESULT )
+        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}")
+            message( FATAL_ERROR "Failed copying of ${ANDROID_STL_SO_PATH} to the ${DAVA_LIBRARY_OUTPUT}/${ANDROID_STL_SO_NAME}" )
+        endif()
+        
+    endif ()
+    
+    # Copy Crystax .so to output dir on Android
+    if ( DEFINED ANDROID_NDK AND CRYSTAX_NDK )
+    
+        get_filename_component ( CRYSTAX_SO_NAME "${CRYSTAX_SO_PATH}" NAME )
+        execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CRYSTAX_SO_PATH}" "${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}" RESULT_VARIABLE RESULT )
+        if( NOT RESULT EQUAL 0 OR NOT EXISTS "${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}")
+            message( FATAL_ERROR "Failed copying of ${CRYSTAX_SO_PATH} to the ${DAVA_LIBRARY_OUTPUT}/${CRYSTAX_SO_NAME}" )
+        endif()
+    
+    endif()
+    
+    # copy binary files (*.a, *.so, *.o) as post-build step
+    message ("LIBRARY_OUTPUT_PATH: ${LIBRARY_OUTPUT_PATH}")
+    if ( DAVA_ANDROID_BINARY_FILES_OUTPUT )
+        add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/android_copy_binary_files.py ${LIBRARY_OUTPUT_PATH} ${DAVA_ANDROID_BINARY_FILES_OUTPUT}
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/android_copy_binary_files.py ${CMAKE_BINARY_DIR} ${DAVA_ANDROID_BINARY_FILES_OUTPUT}
+        )
+    endif ()
+    
+    # add custom target to strip symbols from shared library
+    # strip symbols only if needed
+    if ( ANDROID_STRIP_SYMBOLS )
+        add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/strip_symbols_unix.py ${CMAKE_STRIP} ${LIBRARY_OUTPUT_PATH}
+        )
+    endif ()
+
+    # link libraries
     set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
     set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
 
@@ -689,7 +741,15 @@ if( ANDROID )
             endif()
         endforeach()
     endforeach()
-
+    
+    # to avoid of unwind's symbol overriding by other SO, need to link it as whole archive
+    set ( LIB_UNWIND_NAME "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libunwind.a" )
+    string ( FIND "${CMAKE_CXX_STANDARD_LIBRARIES}" "${LIB_UNWIND_NAME}" LIB_UNWIND_NAME_POS )
+    if ( NOT LIB_UNWIND_NAME_POS STREQUAL "-1" )
+        string ( REPLACE "${LIB_UNWIND_NAME}" "" CMAKE_CXX_STANDARD_LIBRARIES ${CMAKE_CXX_STANDARD_LIBRARIES} )
+        target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_UNWIND_NAME} )
+    endif ()
+    
 endif() 
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )

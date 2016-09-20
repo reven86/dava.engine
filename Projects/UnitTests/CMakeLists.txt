@@ -4,6 +4,10 @@ project ( UnitTests )
 
 set( DAVA_DISABLE_AUTOTESTS true )
 
+if ( ANDROID )
+    set( DISABLE_MEMORY_PROFILER true )
+endif ()
+
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
