@@ -116,16 +116,11 @@ def __build_macos(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	build_folder_macos = os.path.join(working_directory_path, 'gen/build_macos')
-
-	build_utils.cmake_generate_build_xcode(build_folder_macos, source_folder_path, 'Xcode', 'libpng.xcodeproj', 'png_static')
-
-	# Move built files into Libs/lib_CMake
-	# TODO: update pathes after switching to new folders structure
-
-	lib_path_macos_release = os.path.join(build_folder_macos, 'Release/libpng16.a')
-
-	shutil.copyfile(lib_path_macos_release, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libpng_macos.a'))
+	build_utils.build_and_copy_libraries_macos_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'libpng.xcodeproj', 'png_static',
+		'libpng16.a',
+		'libpng_macos.a')
 
 	return True
 
@@ -133,18 +128,11 @@ def __build_ios(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	build_folder_ios = os.path.join(working_directory_path, 'gen/build_ios')
-
-	toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/ios.toolchain.cmake')
-
-	build_utils.cmake_generate_build_xcode(build_folder_ios, source_folder_path, 'Xcode', 'libpng.xcodeproj', 'png_static', [ '-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath ])
-	
-	# Move built files into Libs/lib_CMake
-	# TODO: update pathes after switching to new folders structure
-
-	lib_path_ios_release = os.path.join(build_folder_ios, 'Release-iphoneos/libpng16.a')
-
-	shutil.copyfile(lib_path_ios_release, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libpng_ios.a'))
+	build_utils.build_and_copy_libraries_ios_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'libpng.xcodeproj', 'png_static',
+		'libpng16.a',
+		'libpng_ios.a')
 
 	return True
 
@@ -152,22 +140,9 @@ def __build_android(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	build_android_armeabiv7a_folder = os.path.join(working_directory_path, 'gen/build_android_armeabiv7a')
-	build_android_x86_folder = os.path.join(working_directory_path, 'gen/build_android_x86')
-
-	toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/android.toolchain.cmake')
-	android_ndk_folder_path = build_utils.get_android_ndk_folder_path(root_project_path)
-
-	build_utils.cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'armeabi-v7a')
-	build_utils.cmake_generate_build_ndk(build_android_x86_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'x86')
-
-	# Move built files into Libs/lib_CMake
-	# TODO: update pathes after switching to new folders structure
-
-	lib_path_android_armeabiv7a = os.path.join(build_android_armeabiv7a_folder, 'libpng16.a')
-	lib_path_android_x86 = os.path.join(build_android_x86_folder, 'libpng16.a')
-
-	shutil.copyfile(lib_path_android_armeabiv7a, os.path.join(root_project_path, 'Libs/lib_CMake/android/armeabi-v7a/libpng.a'))
-	shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libpng.a'))
+	build_utils.build_and_copy_libraries_android_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'libpng16.a',
+		'libpng.a')
 
 	return True
