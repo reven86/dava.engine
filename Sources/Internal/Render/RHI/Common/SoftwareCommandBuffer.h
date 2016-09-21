@@ -155,7 +155,6 @@ struct SWCommand_SetVertexProgConstBuffer : public SWCommandImpl<SWCommand_SetVe
     uint8 bufIndex;
     Handle buffer;
     const void* inst;
-    uint32 instOffset;
 } DV_ATTR_PACKED;
 
 struct SWCommand_SetFragmentProgConstBuffer : public SWCommandImpl<SWCommand_SetFragmentProgConstBuffer, CMD_SET_FRAGMENT_PROG_CONST_BUFFER>
@@ -163,7 +162,6 @@ struct SWCommand_SetFragmentProgConstBuffer : public SWCommandImpl<SWCommand_Set
     uint8 bufIndex;
     Handle buffer;
     const void* inst;
-    uint32 instOffset;
 } DV_ATTR_PACKED;
 
 struct SWCommand_SetVertexTexture : public SWCommandImpl<SWCommand_SetVertexTexture, CMD_SET_VERTEX_TEXTURE>

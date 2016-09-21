@@ -284,7 +284,8 @@ CommandBufferMetal_t::Execute()
         {
             Handle buffer = ((SWCommand_SetVertexProgConstBuffer*)cmd)->buffer;
             unsigned index = ((SWCommand_SetVertexProgConstBuffer*)cmd)->bufIndex;
-            unsigned instOffset = ((SWCommand_SetVertexProgConstBuffer*)cmd)->instOffset;
+            uintptr_t inst = reinterpret_cast<uintptr_t>(((SWCommand_SetVertexProgConstBuffer*)cmd)->inst);
+            unsigned instOffset = static_cast<unsigned>(inst);
 
             ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
         }
@@ -329,8 +330,8 @@ CommandBufferMetal_t::Execute()
         {
             Handle buffer = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->buffer;
             unsigned index = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->bufIndex;
-            unsigned instOffset = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->instOffset;
-
+            uintptr_t inst = reinterpret_cast<uintptr_t>(((SWCommand_SetFragmentProgConstBuffer*)cmd)->inst);
+            unsigned instOffset = static_cast<unsigned>(inst);
             ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
         }
         break;
@@ -1054,7 +1055,8 @@ metal_CommandBuffer_SetVertexConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle 
     SWCommand_SetVertexProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetVertexProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
-    cmd->instOffset = ConstBufferMetal::Instance(buffer);
+    uintptr_t instOffset = static_cast<uintptr_t>(ConstBufferMetal::Instance(buffer));
+    cmd->inst = reinterpret_cast<void*>(instOffset);
 #endif
 }
 
@@ -1137,7 +1139,8 @@ metal_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handl
     SWCommand_SetFragmentProgConstBuffer* cmd = cb->allocCmd<SWCommand_SetFragmentProgConstBuffer>();
     cmd->bufIndex = bufIndex;
     cmd->buffer = buffer;
-    cmd->instOffset = ConstBufferMetal::Instance(buffer);
+    uintptr_t instOffset = static_cast<uintptr_t>(ConstBufferMetal::Instance(buffer));
+    cmd->inst = reinterpret_cast<void*>(instOffset);
 #endif
 }
 
