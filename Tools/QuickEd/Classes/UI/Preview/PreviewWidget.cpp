@@ -550,7 +550,7 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node)
     return staticText != nullptr;
 }
 
-void PreviewWidget::ChangeControlText(ControlNode* node)
+void PreviewWidget::ChangeControlText(ControlNode* node) const
 {
     DVASSERT(node != nullptr);
 

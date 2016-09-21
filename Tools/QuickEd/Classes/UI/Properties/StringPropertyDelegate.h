@@ -16,8 +16,4 @@ public:
 
 private slots:
     void OnEditingFinished();
-
-private:
-    //we need to store sequence in order
-    DAVA::Vector<std::pair<QChar, QString>> escapeSequences;
 };
