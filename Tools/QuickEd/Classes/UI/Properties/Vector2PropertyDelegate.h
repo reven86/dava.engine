@@ -16,4 +16,3 @@ public:
 private slots:
     void OnEditingFinished();
 };
-
