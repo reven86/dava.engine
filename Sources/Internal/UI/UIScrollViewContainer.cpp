@@ -154,7 +154,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 {
     if (!GetInputEnabled() || !visible || (controlState & STATE_DISABLED))
     {
-        return false;
+        return UIControl::SystemInput(currentTouch);
     }
 
     if (currentTouch->touchLocker != this)

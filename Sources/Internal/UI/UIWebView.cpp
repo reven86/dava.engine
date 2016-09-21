@@ -3,6 +3,8 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 
+#include "Engine/Engine.h"
+
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
 #elif defined(ENABLE_CEF_WEBVIEW)
@@ -11,10 +13,8 @@
 #include "UI/Private/OSX/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "UI/Private/iOS/WebViewControliOS.h"
-#elif defined(__DAVAENGINE_WIN32__)
-#include "UI/Private/Win32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "UI/Private/UWP/WebViewControlWinUAP.h"
+#include "UI/Private/UWP/WebViewControlUWP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #else
@@ -25,7 +25,11 @@ namespace DAVA
 {
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
-    , webViewControl(new WebViewControl(*this))
+#if defined(__DAVAENGINE_COREV2__)
+    , webViewControl(std::make_shared<WebViewControl>(Engine::Instance()->PrimaryWindow(), this))
+#else
+    , webViewControl(std::make_shared<WebViewControl>(this))
+#endif
     , isNativeControlVisible(false)
 {
     Rect newRect = GetAbsoluteRect();
@@ -36,7 +40,10 @@ UIWebView::UIWebView(const Rect& rect)
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
-UIWebView::~UIWebView() = default;
+UIWebView::~UIWebView()
+{
+    webViewControl->OwnerIsDying();
+}
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {

@@ -4,6 +4,7 @@
 
 #include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
+#include "Utils/NsStringUtils.h"
 #include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
@@ -11,12 +12,44 @@
 #import <Foundation/NSLocale.h>
 #import <sys/utsname.h>
 #import <AdSupport/ASIdentifierManager.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
 
 #import "Platform/Reachability.h"
 
 namespace DAVA
 {
+struct DeviceInfoPrivate::DeviceInfoObjcBridge final
+{
+    void OnCarrierChange(CTCarrier* carrier)
+    {
+        NSString* newCarrier = [carrier carrierName];
+        if (![newCarrier isEqualToString:carrierName])
+        {
+            carrierName = [carrier carrierName];
+            DeviceInfo::carrierNameChanged.Emit(StringFromNSString(carrierName));
+        }
+    }
+    CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
+    NSString* carrierName = nullptr;
+};
+
 DeviceInfoPrivate::DeviceInfoPrivate()
+    : bridge(new DeviceInfoObjcBridge)
+{
+    bridge->telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier* phoneCarrier = [bridge->telephonyNetworkInfo subscriberCellularProvider];
+    bridge->carrierName = [phoneCarrier carrierName];
+    if (bridge->carrierName == nil)
+    {
+        bridge->carrierName = @"";
+    }
+    bridge->telephonyNetworkInfo.subscriberCellularProviderDidUpdateNotifier = [this](CTCarrier* carrier) {
+        bridge->OnCarrierChange(carrier);
+    };
+}
+
+DeviceInfoPrivate::~DeviceInfoPrivate()
 {
 }
 
@@ -287,13 +320,13 @@ WideString DeviceInfoPrivate::GetName()
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
@@ -392,6 +425,10 @@ bool DeviceInfoPrivate::IsTouchPresented()
     //TODO: remove this empty realization and implement detection touch
     return true;
 }
-}
 
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return StringFromNSString(bridge->carrierName);
+}
+}
 #endif

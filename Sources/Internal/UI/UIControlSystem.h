@@ -288,6 +288,7 @@ public:
 
     void UI3DViewAdded();
     void UI3DViewRemoved();
+    int32 GetUI3DViewCount();
 
     Signal<float32> update;
 

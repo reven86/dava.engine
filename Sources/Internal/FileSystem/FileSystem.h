@@ -147,6 +147,11 @@ public:
     bool IsDirectory(const FilePath& pathToCheck) const;
 
     /**
+        \brief Function checks if specifed path or dir is hidden
+    */
+    bool IsHidden(const FilePath& pathToCheck) const;
+
+    /**
      \brief Function sets/removes exclusive lock to/from file.
      \param[in] filePath The name of the file to be locked/unlocked.
      \param[in] isLock true to lock file, false to unlock.

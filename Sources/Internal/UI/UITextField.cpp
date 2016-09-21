@@ -5,14 +5,20 @@
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 
+#include "Engine/Engine.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+#include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
+#else
 #include "UITextFieldAndroid.h"
+#endif
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/UITextFieldiPhone.h"
+#include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #elif defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
-#include "UI/UITextFieldWinUAP.h"
+#include "UI/Private/UWP/TextFieldPlatformImplUWP.h"
 #elif defined(__DAVAENGINE_MACOS__) && !defined(DISABLE_NATIVE_TEXTFIELD)
-#include "UI/UITextFieldMacOS.h"
+#include "UI/Private/OSX/TextFieldPlatformImplMacOs.h"
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
@@ -21,20 +27,44 @@ namespace DAVA
 class TextFieldPlatformImpl : public TextFieldStbImpl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    TextFieldPlatformImpl(Window* /*w*/, UITextField* uiTextField)
+        : TextFieldStbImpl(uiTextField)
+    {
+    }
+#else
     TextFieldPlatformImpl(UITextField* control)
         : TextFieldStbImpl(control)
     {
     }
+#endif
+    void Initialize()
+    {
+    }
+    void OwnerIsDying()
+    {
+    }
+    void SetDelegate(UITextFieldDelegate*)
+    {
+    }
 };
-}
+} // namespace DAVA
 #endif
 
 namespace DAVA
 {
 UITextField::UITextField(const Rect& rect)
     : UIControl(rect)
+#if defined(__DAVAENGINE_COREV2__)
+    , textFieldImpl(std::make_shared<TextFieldPlatformImpl>(Engine::Instance()->PrimaryWindow(), this))
+#else
+    , textFieldImpl(std::make_shared<TextFieldPlatformImpl>(this))
+#endif
 {
-    textFieldImpl = new TextFieldPlatformImpl(this);
+    // Additional step to do impl initialization which cannot be done in impl constructor, e.g.
+    // call shared_from_this() to create std::weak_ptr from std::shared_ptr
+    textFieldImpl->Initialize();
+
     textFieldImpl->SetVisible(false);
 
     SetupDefaults();
@@ -67,7 +97,9 @@ void UITextField::SetupDefaults()
 
 UITextField::~UITextField()
 {
-    SafeDelete(textFieldImpl);
+    // Tell impl that owner is dying to prevent calling delegate's methods
+    textFieldImpl->OwnerIsDying();
+
     UIControl::RemoveAllControls();
 }
 
@@ -237,7 +269,7 @@ void UITextField::SetFontSize(float32 size)
 void UITextField::SetDelegate(UITextFieldDelegate* _delegate)
 {
     delegate = _delegate;
-#if defined(__DAVAENGINE_WIN_UAP__) && !defined(DISABLE_NATIVE_TEXTFIELD)
+#if !defined(DISABLE_NATIVE_TEXTFIELD)
     textFieldImpl->SetDelegate(_delegate);
 #endif
 }
@@ -401,7 +433,7 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
     UITextField* t = static_cast<UITextField*>(srcControl);
 
 #if defined(DAVA_TEXTFIELD_USE_STB)
-    textFieldImpl->CopyDataFrom(t->textFieldImpl);
+    textFieldImpl->CopyDataFrom(t->textFieldImpl.get());
 #endif
     isPassword = t->isPassword;
     cursorBlinkingTime = t->cursorBlinkingTime;

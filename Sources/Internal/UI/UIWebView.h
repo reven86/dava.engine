@@ -92,7 +92,10 @@ protected:
     void UpdateControlRect();
 
     // Platform-specific implementation of the Web View Control.
-    std::unique_ptr<IWebViewControl> webViewControl;
+    // Make impl to be controlled by std::shared_ptr as on some platforms (e.g. uwp, android)
+    // impl can live longer than its owner: native control can queue callback in UI thread
+    // but impl's owner is already dead
+    std::shared_ptr<IWebViewControl> webViewControl;
 
 private:
     void Update(float32 timeElapsed);

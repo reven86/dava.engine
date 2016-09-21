@@ -12,7 +12,7 @@ UIMovieTest::UIMovieTest(GameCore* g)
 
 void UIMovieTest::LoadResources()
 {
-    movieView = new UIMovieView(Rect(10, 10, 940, 600));
+    movieView = new UIMovieView(Rect(100, 10, 940, 600));
     movieView->OpenMovie(path, OpenMovieParams());
 
     movieView->SetDebugDraw(true);

@@ -22,7 +22,7 @@ Qt::ConnectionType GetConnectionType()
 } // namespace WaitDialogDetail
 
 WaitDialog::WaitDialog(const WaitDialogParams& params, QWidget* parent)
-    : dlg(new QDialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint))
+    : dlg(new QDialog(parent, Qt::WindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint)))
 {
     label = new QLabel(params.message, dlg.data());
     label->setAlignment(Qt::AlignCenter);
@@ -68,7 +68,7 @@ void WaitDialog::SetMessage(const QString& msg)
     }
 }
 
-void WaitDialog::SetRange(DAVA::uint32 min, DAVA::uint32 max)
+void WaitDialog::SetRange(uint32 min, uint32 max)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {
@@ -77,7 +77,7 @@ void WaitDialog::SetRange(DAVA::uint32 min, DAVA::uint32 max)
     }
 }
 
-void WaitDialog::SetProgressValue(DAVA::uint32 progress)
+void WaitDialog::SetProgressValue(uint32 progress)
 {
     if (dlg != nullptr && progressBar != nullptr)
     {

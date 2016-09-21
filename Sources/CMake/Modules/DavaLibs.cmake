@@ -55,7 +55,7 @@ set( DAVA_STATIC_LIBRARIES_MACOS    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libFColla
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a 
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml_macos.a
                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml_macos.a
-                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3_macos.a
+                                    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a
                                     )
 
 set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a"
@@ -80,11 +80,18 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a
                                     "-llog"
                                     "-landroid"
                                     "-lGLESv2"
-                                    "-lstdc++" 
                                     "-latomic" 
-                                    )         
-
-
+                                    )
+                                    
+if( DEFINED ANDROID_NDK 
+	AND DEFINED ANDROID_STL_PREFIX 
+	AND DEFINED ANDROID_ABI 
+	AND ANDROID_STL STREQUAL c++_shared)
+# Add c++abi lib for c++_shared STL
+set( DAVA_STATIC_LIBRARIES_ANDROID ${DAVA_STATIC_LIBRARIES_ANDROID}
+                                   ${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libc++abi.a 
+                                   )
+endif()
 
 if( WIN ) 
 
@@ -212,6 +219,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/icucommon.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/jpeg_d.lib"            
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl_a_debug.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static.lib"
@@ -225,6 +233,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/lua_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/pnglib_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"

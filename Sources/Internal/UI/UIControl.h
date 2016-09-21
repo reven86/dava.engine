@@ -64,8 +64,8 @@ public:
         {
             if (angle != data.angle)
             {
-                cosA = cosf(angle);
-                sinA = sinf(angle);
+                cosA = std::cos(angle);
+                sinA = std::sin(angle);
             }
             else
             {
@@ -96,8 +96,8 @@ public:
         // well it must be here otherwise there is a bug!
         if (calculatedAngle != angle)
         {
-            cosA = cosf(angle);
-            sinA = sinf(angle);
+            cosA = std::cos(angle);
+            sinA = std::sin(angle);
             calculatedAngle = angle;
         }
         Matrix3 rotateMatr;

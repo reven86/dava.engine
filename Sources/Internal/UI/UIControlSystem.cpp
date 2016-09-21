@@ -714,9 +714,15 @@ void UIControlSystem::UI3DViewAdded()
 {
     ui3DViewCount++;
 }
+
 void UIControlSystem::UI3DViewRemoved()
 {
     DVASSERT(ui3DViewCount);
     ui3DViewCount--;
+}
+
+int32 UIControlSystem::GetUI3DViewCount()
+{
+    return ui3DViewCount;
 }
 };
