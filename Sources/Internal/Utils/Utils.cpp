@@ -10,25 +10,7 @@ namespace DAVA
 {
 WideString WcharToWString(const wchar_t* s)
 {
-    //	Logger::Info("[WcharToWString] s = %s", s);
-
-    WideString temp;
-    if (s)
-    {
-        wchar_t c = 0;
-        int size = 0;
-        do
-        {
-            c = s[size];
-            ++size;
-            //			Logger::Info("[WcharToWString] c = %d, size = %d", c, size);
-
-            if (c)
-                temp.append(1, c);
-        } while (c);
-    }
-
-    return temp;
+    return WideString(s);
 }
 
 void Split(const String& inputString, const String& delims, Vector<String>& tokens, bool skipDuplicated /* = false*/, bool addEmptyTokens /* = false*/, bool integralDelim /* = false*/)
@@ -144,7 +126,7 @@ void DisableSleepTimer()
 void EnableSleepTimer()
 {
 }
-    
+
 #endif
 
 #ifdef __DAVAENGINE_WIN32__

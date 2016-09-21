@@ -1,8 +1,6 @@
 #pragma once
 #include "Reflection/Private/ValueWrapperDefault.h"
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 template <typename T>
@@ -36,5 +34,3 @@ protected:
 };
 
 } // namespace DAVA
-
-#endif

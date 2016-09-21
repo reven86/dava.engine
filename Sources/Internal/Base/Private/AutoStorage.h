@@ -79,15 +79,8 @@ public:
     {
         static const bool value =
         (sizeof(T) <= sizeof(StorageT))
-#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
-        // android old-style way
-        && std::has_trivial_copy_constructor<T>::value
-        && std::has_trivial_copy_assign<T>::value
-#else
-        // standard c++14 way
         && std::is_trivially_copy_constructible<T>::value
         && std::is_trivially_copy_assignable<T>::value
-#endif
         && std::is_trivially_destructible<T>::value;
     };
 

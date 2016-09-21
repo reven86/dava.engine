@@ -8,7 +8,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 # set module name
-LOCAL_MODULE := libunibreak_android
+LOCAL_MODULE := libunibreak
 
 # set path for includes
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
