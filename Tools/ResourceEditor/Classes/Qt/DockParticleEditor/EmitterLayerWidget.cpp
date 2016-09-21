@@ -7,7 +7,7 @@
 #include "Project/ProjectManager.h"
 #include "ImageTools/ImageTools.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
