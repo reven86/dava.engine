@@ -1,9 +1,7 @@
 import sys
 import os
 import shutil
-import subprocess
 import build_utils
-import build_config
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':

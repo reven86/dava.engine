@@ -24,6 +24,7 @@ def download(url, file_name):
 	f = open(file_name, 'wb')
 	meta = u.info()
 	file_size = int(meta.getheaders("Content-Length")[0])
+
 	print "Downloading %s (%s bytes) from %s ..." % (file_name, file_size, url)
 
 	file_size_dl = 0
@@ -212,6 +213,24 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 		shutil.move(os.path.join(working_directory_path, inner_dir_name), result_folder_path)
 
 	download_and_extract.cache.append(download_data)
+
+def run_process(args, process_cwd='.'):
+	print 'running process: ' + ' '.join(args)
+	for output_line in __run_process_iter(args, process_cwd):
+		print_verbose(output_line)
+
+def __run_process_iter(args, process_cwd='.'):
+	sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
+
+	stdout_lines = iter(sp.stdout.readline, '')
+	for stdout_line in stdout_lines:
+		yield stdout_line
+
+	sp.stdout.close()
+	return_code = sp.wait()
+
+	if return_code != 0:
+		raise subprocess.CalledProcessError(return_code, args)
 
 # Default builders
 
