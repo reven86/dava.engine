@@ -22,13 +22,13 @@ public:
     Core(Engine& engine_);
     ~Core();
 
-    template<typename T, typename... Args>
+    template <typename T, typename... Args>
     void CreateModule(Args&&... args)
     {
         static_assert(std::is_base_of<ConsoleModule, T>::value ||
-                        std::is_base_of<ClientModule, T>::value ||
-                        std::is_base_of<ControllerModule, T>::value,
-                        "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+                      std::is_base_of<ClientModule, T>::value ||
+                      std::is_base_of<ControllerModule, T>::value,
+                      "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
 
         bool isConsoleMode = IsConsoleMode();
         bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;

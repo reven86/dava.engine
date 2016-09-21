@@ -58,7 +58,7 @@ public:
         DVASSERT(false);
     }
 
-    bool IsConsoleMode() const 
+    bool IsConsoleMode() const
     {
         return engine.IsConsoleMode();
     }
@@ -85,9 +85,11 @@ public:
         }
     }
 
-    virtual void OnWindowCreated(DAVA::Window& w) {}
+    virtual void OnWindowCreated(DAVA::Window& w)
+    {
+    }
 
-    void ForEachContext(const Function<void(DataContext&) >& functor) override
+    void ForEachContext(const Function<void(DataContext&)>& functor) override
     {
         for (std::unique_ptr<DataContext>& context : contexts)
         {
@@ -103,9 +105,9 @@ public:
     DataContext& GetContext(DataContext::ContextID contextID) override
     {
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -175,7 +177,7 @@ protected:
     std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
-class Core::ConsoleImpl: public Core::Impl
+class Core::ConsoleImpl : public Core::Impl
 {
 public:
     ConsoleImpl(Engine& engine, Core* core)
@@ -211,13 +213,12 @@ public:
             throw std::runtime_error("MakeCurrent for offscreen surface failed");
         }
 
-
         rhi::Api renderer = rhi::RHI_GLES2;
         rhi::InitParam rendererParams;
         rendererParams.threadedRenderFrameCount = 1;
         rendererParams.threadedRenderEnabled = false;
-        rendererParams.acquireContextFunc = [](){};
-        rendererParams.releaseContextFunc = [](){};
+        rendererParams.acquireContextFunc = []() {};
+        rendererParams.releaseContextFunc = []() {};
 
         rendererParams.maxIndexBufferCount = 0;
         rendererParams.maxVertexBufferCount = 0;
@@ -306,23 +307,46 @@ public:
     }
 
 private:
-    void RegisterOperation(int operationID, AnyFn&& fn) override {}
+    void RegisterOperation(int operationID, AnyFn&& fn) override
+    {
+    }
     DataContext::ContextID CreateContext() override
     {
         DVASSERT(false);
         return DataContext::ContextID();
     }
-    void DeleteContext(DataContext::ContextID contextID) override {}
-    void ActivateContext(DataContext::ContextID contextID) override {}
-    RenderWidget* GetRenderWidget() const override { return nullptr; }
+    void DeleteContext(DataContext::ContextID contextID) override
+    {
+    }
+    void ActivateContext(DataContext::ContextID contextID) override
+    {
+    }
+    RenderWidget* GetRenderWidget() const override
+    {
+        return nullptr;
+    }
 
-    void Invoke(int operationId) override {}
-    void Invoke(int operationId, const Any& a) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override {}
+    void Invoke(int operationId) override
+    {
+    }
+    void Invoke(int operationId, const Any& a) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override
+    {
+    }
 
 private:
     DAVA::Deque<std::unique_ptr<ConsoleModule>> modules;
@@ -333,7 +357,7 @@ private:
     Vector<char*> argv;
 };
 
-class Core::GuiImpl: public Core::Impl, public UIManager::Delegate
+class Core::GuiImpl : public Core::Impl, public UIManager::Delegate
 {
 public:
     GuiImpl(Engine& engine, Core* core)
@@ -438,9 +462,9 @@ public:
     void DeleteContext(DataContext::ContextID contextID) override
     {
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -474,9 +498,9 @@ public:
         }
 
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -525,7 +549,7 @@ public:
         InvokeImpl(operationId, a1, a2, a3, a4, a5, a6);
     }
 
-    template<typename... Args>
+    template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args)
     {
         AnyFn fn = FindOperation(operationId);
@@ -576,9 +600,9 @@ public:
     void OnWindowClosed(const WindowKey& key) override
     {
         std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
-        {
-            module->OnWindowClosed(key);
-        });
+                      {
+                          module->OnWindowClosed(key);
+                      });
     }
 
 private:

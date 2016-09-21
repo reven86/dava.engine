@@ -320,10 +320,10 @@ protected:
             DVASSERT(window);
 
             auto iter = std::find_if(windows.begin(), windows.end(), [window](const std::pair<WindowKey, UIManagerDetail::MainWindowInfo>& w)
-            {
-                return window == w.second.window;
-            });
-            
+                                     {
+                                         return window == w.second.window;
+                                     });
+
             // When user close application on MacOS by pressing Cmd+Q, Qt somewhy sends CloseEvent twice.
             // So "iter == windows.end()" means that we have already got one CloseEvent for this window
             if (iter != windows.end())

@@ -6,7 +6,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 class ContextAccessor;
 class ConsoleModule
 {
