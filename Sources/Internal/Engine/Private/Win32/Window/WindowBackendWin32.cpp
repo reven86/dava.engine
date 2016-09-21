@@ -150,7 +150,7 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             deferredMouseMode = false;
             SetMouseVisibility(false);
-            if (eMouseMode::PINING == uicaptureMode)
+            if (eMouseMode::PINING == nativeMouseMode)
             {
                 SetMouseCaptured(false);
             }
@@ -167,7 +167,7 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == uicaptureMode)
+                if (eMouseMode::PINING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                 }
@@ -181,7 +181,7 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
 
 void WindowBackend::SetMouseMode(eMouseMode newMode)
 {
-    uicaptureMode = newMode;
+    nativeMouseMode = newMode;
     deferredMouseMode = false;
     switch (newMode)
     {
@@ -314,13 +314,13 @@ LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
     if (!gotFocus)
     {
         focusChanged = true;
-        if (eMouseMode::PINING == uicaptureMode)
+        if (eMouseMode::PINING == nativeMouseMode)
         {
             SetMouseVisibility(true);
             SetMouseCaptured(false);
             deferredMouseMode = true;
         }
-        else if (eMouseMode::HIDE == uicaptureMode)
+        else if (eMouseMode::HIDE == nativeMouseMode)
         {
             SetMouseVisibility(true);
             deferredMouseMode = true;
@@ -352,7 +352,7 @@ LRESULT WindowBackend::OnMouseLeaveEvent()
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    if (!mouseTracking && eMouseMode::HIDE == uicaptureMode)
+    if (!mouseTracking && eMouseMode::HIDE == nativeMouseMode)
     {
         // start tracking if we aren't already
         TRACKMOUSEEVENT tme;
@@ -479,7 +479,6 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
     }
     if (!DeferredMouseMode(e))
     {
-        Logger::Info("!!!!! dispatcher->PostEvent WM_MBUTTON");
         dispatcher->PostEvent(e);
     }
     return 0;
@@ -635,7 +634,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else
     {
-        //Logger::Info("!!!!!! unhandled %d", message);
         isHandled = false;
     }
     return lresult;

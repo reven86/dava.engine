@@ -39,16 +39,7 @@ private:
     void SetMouseVisibility(bool visible);
     void SetMouseCaptured(bool capture);
     bool DeferredMouseMode(const MainDispatcherEvent& e);
-    bool mouseCaptured = false;
-    bool mouseVisibled = true;
-    bool deferredMouseMode = false;
-    eMouseMode uicaptureMode = eMouseMode::OFF;
-    bool hasFocus = false;
-    bool focusChanged = false;
-    uint32 skipMouseMoveEvents = 0;
-    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 
-private:
     void OnTriggerPlatformEvents();
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
@@ -99,6 +90,15 @@ private:
 
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
+
+    bool mouseCaptured = false;
+    bool mouseVisibled = true;
+    bool deferredMouseMode = false;
+    eMouseMode nativeMouseMode = eMouseMode::OFF;
+    bool hasFocus = false;
+    bool focusChanged = false;
+    uint32 skipMouseMoveEvents = 0;
+    const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 
 inline void* WindowNativeBridge::GetHandle() const

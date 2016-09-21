@@ -120,13 +120,13 @@ void WindowNativeBridge::WindowDidResignKey()
 {
     hasFocus = false;
     focusChanged = true;
-    if (eMouseMode::PINING == uicaptureMode)
+    if (eMouseMode::PINING == nativeMouseMode)
     {
         SetMouseVisibility(true);
         SetMouseCaptured(false);
         deferredMouseMode = true;
     }
-    else if (eMouseMode::HIDE == uicaptureMode)
+    else if (eMouseMode::HIDE == nativeMouseMode)
     {
         SetMouseVisibility(true);
         deferredMouseMode = true;
@@ -299,7 +299,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
-    if (uicaptureMode == eMouseMode::HIDE)
+    if (nativeMouseMode == eMouseMode::HIDE)
     {
         SetMouseVisibility(false);
         deferredMouseMode = false;
@@ -308,7 +308,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
-    if (uicaptureMode == eMouseMode::HIDE)
+    if (nativeMouseMode == eMouseMode::HIDE)
     {
         SetMouseVisibility(true);
         deferredMouseMode = false;
@@ -317,7 +317,7 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 
 void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
 {
-    uicaptureMode = newMode;
+    nativeMouseMode = newMode;
     deferredMouseMode = false;
     switch (newMode)
     {
@@ -410,7 +410,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             deferredMouseMode = false;
             SetMouseVisibility(false);
-            if (eMouseMode::PINING == uicaptureMode)
+            if (eMouseMode::PINING == nativeMouseMode)
             {
                 SetMouseCaptured(true);
                 skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -427,7 +427,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == uicaptureMode)
+                if (eMouseMode::PINING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                     skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;

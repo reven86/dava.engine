@@ -86,7 +86,7 @@ private:
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;
-    eMouseMode uicaptureMode = eMouseMode::OFF;
+    eMouseMode nativeMouseMode = eMouseMode::OFF;
     bool hasFocus = false;
     bool focusChanged = false;
     // If mouse pointer was outside window rectangle when enabling pinning mode then

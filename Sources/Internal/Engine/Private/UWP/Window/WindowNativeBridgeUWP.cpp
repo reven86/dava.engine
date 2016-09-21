@@ -104,7 +104,7 @@ void WindowNativeBridge::DoCloseWindow()
 void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
 {
     auto task = [this, newMode]() {
-        uicaptureMode = newMode;
+        nativeMouseMode = newMode;
         deferredMouseMode = false;
         switch (newMode)
         {
@@ -196,7 +196,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             deferredMouseMode = false;
             SetMouseVisibility(false);
-            if (eMouseMode::PINING == uicaptureMode)
+            if (eMouseMode::PINING == nativeMouseMode)
             {
                 SetMouseCaptured(true);
                 skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -214,7 +214,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == uicaptureMode)
+                if (eMouseMode::PINING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                     skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -239,13 +239,13 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     if (!hasFocus)
     {
         focusChanged = true;
-        if (eMouseMode::PINING == uicaptureMode)
+        if (eMouseMode::PINING == nativeMouseMode)
         {
             SetMouseVisibility(true);
             SetMouseCaptured(false);
             deferredMouseMode = true;
         }
-        else if (eMouseMode::HIDE == uicaptureMode)
+        else if (eMouseMode::HIDE == nativeMouseMode)
         {
             SetMouseVisibility(true);
             deferredMouseMode = true;
@@ -286,7 +286,6 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
         {
             uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         }
-        //uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         break;
     }
     case CoreAcceleratorKeyEventType::KeyUp:
@@ -298,7 +297,6 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
         {
             uwpWindow->GetWindow()->PostKeyUp(key);
         }
-        //uwpWindow->GetWindow()->PostKeyUp(key);
         break;
     }
     default:
@@ -468,7 +466,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (uwpWindow->GetWindow()->GetMouseMode() != eMouseMode::PINING)
+    if (eMouseMode::PINING != nativeMouseMode)
     {
         return;
     }

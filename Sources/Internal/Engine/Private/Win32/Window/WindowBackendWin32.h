@@ -55,7 +55,7 @@ private:
     bool SetMouseVisibility(bool visible);
     void SetCursorInCenter();
     Point2i lastCursorPosition;
-    eMouseMode uicaptureMode = eMouseMode::OFF;
+    eMouseMode nativeMouseMode = eMouseMode::OFF;
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;
