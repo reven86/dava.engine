@@ -1,5 +1,6 @@
 #include "Debug/ProfilerOverlay.h"
 #include "Debug/DVAssert.h"
+#include "Debug/DebugColors.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include <ostream>
@@ -158,44 +159,6 @@ void MarkerChart::AddValue(uint64 value)
 
 //==============================================================================
 
-void DrawOverlay()
-{
-    DbgDraw::EnsureInited();
-    DbgDraw::SetScreenSize(uint32(Renderer::GetFramebufferWidth()), uint32(Renderer::GetFramebufferHeight()));
-    DbgDraw::SetNormalTextSize();
-
-    Rect2i chartRect(0, 0, Renderer::GetFramebufferWidth(), MARKER_CHART_HEIGHT);
-    for (const MarkerChart& chart : gpuCharts)
-    {
-        chart.Draw(chartRect);
-        chartRect.y += chartRect.dy;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    rhi::RenderPassConfig passConfig;
-    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
-    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
-    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    passConfig.priority = PRIORITY_MAIN_2D - 10;
-    passConfig.viewport.x = 0;
-    passConfig.viewport.y = 0;
-    passConfig.viewport.width = Renderer::GetFramebufferWidth();
-    passConfig.viewport.height = Renderer::GetFramebufferHeight();
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, OVERLAY_PASS_MARKER_NAME);
-
-    rhi::HPacketList packetList;
-    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
-    rhi::BeginRenderPass(pass);
-    rhi::BeginPacketList(packetList);
-
-    DbgDraw::FlushBatched(packetList);
-
-    rhi::EndPacketList(packetList);
-    rhi::EndRenderPass(pass);
-}
-
 void UpdateGPUStatistic()
 {
     const GPUProfiler::FrameInfo& frameInfo = GPUProfiler::globalProfiler->GetLastFrame();
@@ -240,7 +203,173 @@ void UpdateGPUStatistic()
     }
 }
 
-//CPU Statistic
+void DrawTrace(const Vector<TraceEvent>& trace, const char* traceHead, const Rect2i& rect)
+{
+    static const int32 MARGIN = 3;
+    static const int32 PADDING = 4;
+    static const int32 LEGEND_ICON_SIZE = DbgDraw::NormalCharH;
+    static const int32 TRACE_LINE_HEIGHT = DbgDraw::NormalCharH;
+    static const int32 DURATION_TEXT_WIDTH_CHARS = 13;
+
+    static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
+    static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
+    static const uint32 LINE_COLOR = rhi::NativeColorRGBA(.5f, 0.f, 0.f, 1.f);
+
+    static FastNameMap<uint32> traceColors;
+
+    Rect2i drawRect(rect);
+    drawRect.x += PADDING;
+    drawRect.y += PADDING;
+    drawRect.dx -= 2 * PADDING;
+    drawRect.dy -= 2 * PADDING;
+
+    DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, BACKGROUND_COLOR);
+
+    if (!trace.size())
+        return;
+
+    uint32 maxNameLen = 0;
+    uint64 maxTimestamp = 0;
+    uint64 minTimestamp = uint64(-1);
+    FastNameMap<uint64> eventsDuration;
+    for (const TraceEvent& e : trace)
+    {
+        minTimestamp = Min(minTimestamp, e.timestamp);
+        maxTimestamp = (e.phase == TraceEvent::PHASE_DURATION) ? Max(maxTimestamp, e.timestamp + e.duration) : Max(maxTimestamp, e.timestamp);
+
+        maxNameLen = Max(maxNameLen, strlen(e.name.c_str()));
+
+        if (e.phase == TraceEvent::PHASE_DURATION)
+            eventsDuration[e.name] += e.duration;
+        else if (e.phase == TraceEvent::PHASE_BEGIN)
+            eventsDuration[e.name] -= e.timestamp;
+        else if (e.phase == TraceEvent::PHASE_END)
+            eventsDuration[e.name] += e.timestamp;
+
+        if (traceColors.count(e.name) == 0)
+        {
+            static uint32 colorIndex = 0;
+            traceColors.Insert(e.name, rhi::NativeColorRGBA(CIEDE2000Colors[colorIndex % CIEDE2000_COLORS_COUNT]));
+            ++colorIndex;
+        }
+    }
+
+    int32 x0, x1, y0, y1;
+
+    //Draw Head
+    x0 = drawRect.x + MARGIN;
+    y0 = drawRect.y + MARGIN;
+    DbgDraw::Text2D(x0, y0, TEXT_COLOR, traceHead);
+
+    //Draw Legend (color rects + event name) and total events duration
+    int32 legentWidth = LEGEND_ICON_SIZE + DbgDraw::NormalCharW + maxNameLen * DbgDraw::NormalCharW + DbgDraw::NormalCharW;
+    y0 += DbgDraw::NormalCharH + MARGIN;
+    x1 = x0 + LEGEND_ICON_SIZE;
+
+    char strbuf[256];
+    for (FastNameMap<uint64>::iterator it = eventsDuration.begin(); it != eventsDuration.end(); ++it)
+    {
+        y1 = y0 + LEGEND_ICON_SIZE;
+
+        DbgDraw::FilledRect2D(x0, y0, x1, y1, traceColors[(*it).first]);
+        DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, TEXT_COLOR, (*it).first.c_str());
+
+        sprintf(strbuf, "[%*d mcs]", DURATION_TEXT_WIDTH_CHARS - 6, (*it).second);
+        DbgDraw::Text2D(x0 + legentWidth, y0, TEXT_COLOR, strbuf);
+
+        y0 += LEGEND_ICON_SIZE + 1;
+    }
+
+    //Draw separator
+    int32 durationTextWidth = DURATION_TEXT_WIDTH_CHARS * DbgDraw::NormalCharW;
+    x0 = drawRect.x + MARGIN + legentWidth + durationTextWidth + MARGIN;
+    x1 = x0;
+    y0 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
+    y1 = drawRect.y + drawRect.dy - MARGIN;
+    DbgDraw::Line2D(x0, y0, x1, y1, LINE_COLOR);
+
+    //Draw trace rects
+    int32 x0trace = drawRect.x + MARGIN + legentWidth + durationTextWidth + MARGIN * 2;
+    int32 y0trace = drawRect.y + MARGIN + DbgDraw::NormalCharH;
+    int32 traceWidth = drawRect.dx - x0trace - MARGIN;
+    float32 dt = float32(traceWidth) / (maxTimestamp - minTimestamp);
+
+    Vector<std::pair<uint64, uint64>> timestampsStack;
+    for (const TraceEvent& e : trace)
+    {
+        while (timestampsStack.size() && (timestampsStack.back().second != 0) && (e.timestamp >= timestampsStack.back().second))
+            timestampsStack.pop_back();
+
+        if (e.phase == TraceEvent::PHASE_DURATION)
+        {
+            timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, e.timestamp + e.duration));
+        }
+        else if (e.phase == TraceEvent::PHASE_BEGIN)
+        {
+            timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, 0));
+        }
+        else if (e.phase == TraceEvent::PHASE_END)
+        {
+            timestampsStack.back().second = e.timestamp;
+        }
+
+        if (e.phase == TraceEvent::PHASE_END || e.phase == TraceEvent::PHASE_DURATION)
+        {
+            x0 = x0trace + int32((timestampsStack.back().first - trace.front().timestamp) * dt);
+            x1 = x0 + int32((timestampsStack.back().second - timestampsStack.back().first) * dt);
+            y0 = y0trace + int32(timestampsStack.size() * TRACE_LINE_HEIGHT);
+            y1 = y0 + TRACE_LINE_HEIGHT;
+            DbgDraw::FilledRect2D(x0, y0, x1, y1, traceColors[e.name]);
+        }
+    }
+}
+
+void DrawOverlay()
+{
+    DbgDraw::EnsureInited();
+    DbgDraw::SetScreenSize(uint32(Renderer::GetFramebufferWidth()), uint32(Renderer::GetFramebufferHeight()));
+    DbgDraw::SetNormalTextSize();
+
+    Rect2i chartRect(0, 0, Renderer::GetFramebufferWidth() / 2, MARKER_CHART_HEIGHT);
+    for (const MarkerChart& chart : gpuCharts)
+    {
+        chart.Draw(chartRect);
+        chartRect.y += chartRect.dy;
+        if ((chartRect.y + chartRect.dy) > 3 * Renderer::GetFramebufferHeight() / 4)
+        {
+            chartRect.x = Renderer::GetFramebufferWidth() / 2;
+            chartRect.y = 0;
+        }
+    }
+
+    DrawTrace(lastGPUFrame.GetTrace(), Format("Frame %d", lastGPUFrame.frameIndex).c_str(),
+              Rect2i(0, 3 * Renderer::GetFramebufferHeight() / 4, Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight() / 4));
+
+    //////////////////////////////////////////////////////////////////////////
+
+    rhi::RenderPassConfig passConfig;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    passConfig.priority = PRIORITY_MAIN_2D - 10;
+    passConfig.viewport.x = 0;
+    passConfig.viewport.y = 0;
+    passConfig.viewport.width = Renderer::GetFramebufferWidth();
+    passConfig.viewport.height = Renderer::GetFramebufferHeight();
+    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, OVERLAY_PASS_MARKER_NAME);
+
+    rhi::HPacketList packetList;
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(pass);
+    rhi::BeginPacketList(packetList);
+
+    DbgDraw::FlushBatched(packetList);
+
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(pass);
+}
+
 }; //ns Details
 
 //==============================================================================

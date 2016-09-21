@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/RHI/rhi_Public.h"
-#include <iosfwd>
+#include "Debug/TraceEvent.h"
 
 #define GPU_PROFILER_ENABLED 1
 
@@ -35,7 +35,7 @@ public:
         uint64 endTime = 0;
         Vector<MarkerInfo> markers;
 
-        void Dump(std::ostream& stream) const;
+        Vector<TraceEvent> GetTrace() const;
     };
 
     static GPUProfiler* const globalProfiler;
@@ -44,7 +44,7 @@ public:
     uint32 GetFramesCount() const;
     void OnFrameEnd(); //should be called before rhi::Present();
 
-    void DumpJSON(std::ostream& stream) const;
+    Vector<TraceEvent> GetTrace();
 
     void AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName);
 

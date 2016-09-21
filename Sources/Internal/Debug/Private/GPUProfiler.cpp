@@ -28,15 +28,25 @@ void GPUProfiler::PerfQueryPair::GetTimestamps(uint64& t0, uint64& t1)
     t1 = query[1].IsValid() ? rhi::PerfQueryTimeStamp(query[1]) : 0;
 }
 
-void GPUProfiler::FrameInfo::Dump(std::ostream& stream) const
+Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
 {
-    stream << "================================================" << std::endl;
-    stream << "Frame " << frameIndex << ": " << endTime - startTime << " mcs" << std::endl;
-    for (const MarkerInfo& m : markers)
+    Vector<const GPUProfiler::MarkerInfo*> sortedMarkers;
+    sortedMarkers.clear();
+    for (const GPUProfiler::MarkerInfo& m : markers)
+        sortedMarkers.push_back(&m);
+
+    std::stable_sort(sortedMarkers.begin(), sortedMarkers.end(), [](const GPUProfiler::MarkerInfo* l, const GPUProfiler::MarkerInfo* r) {
+        return l->startTime < r->startTime;
+    });
+
+    Vector<TraceEvent> trace;
+    trace.emplace_back(TraceEvent(FastName("GPUframe"), 0, 0, startTime, endTime - startTime, TraceEvent::PHASE_DURATION));
+    for (const MarkerInfo* m : sortedMarkers)
     {
-        stream << m.name << "[" << m.endTime - m.startTime << " mcs]" << std::endl;
+        trace.emplace_back(TraceEvent(FastName(m->name), 0, 0, m->startTime, m->endTime - m->startTime, TraceEvent::PHASE_DURATION));
     }
-    stream << "================================================" << std::endl;
+
+    return trace;
 }
 
 void GPUProfiler::Frame::Reset()
@@ -149,32 +159,20 @@ void GPUProfiler::OnFrameEnd()
     }
 }
 
-void GPUProfiler::DumpJSON(std::ostream& stream) const
+Vector<TraceEvent> GPUProfiler::GetTrace()
 {
-    stream << "{ \"traceEvents\": [" << std::endl;
-
+    Vector<TraceEvent> trace, frameTrace;
     for (uint32 fi = 0; fi < framesInfoCount; ++fi)
     {
         const FrameInfo& frameInfo = framesInfo[(framesInfoHead + fi + 1) % framesInfoCount];
+        if (frameInfo.frameIndex == 0)
+            continue;
 
-        stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << frameInfo.startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"frame " << frameInfo.frameIndex << "\" }," << std::endl;
-        stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << frameInfo.endTime << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"frame " << frameInfo.frameIndex << "\" }";
-
-        for (const MarkerInfo& m : frameInfo.markers)
-        {
-            stream << "," << std::endl;
-            stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << m.startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << m.name << "\" }," << std::endl;
-            stream << "{ \"pid\":0, \"tid\":0, \"ts\":" << m.endTime << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << m.name << "\" }";
-        }
-
-        if (fi < (framesInfoCount - 1))
-            stream << ",";
-        stream << std::endl;
+        frameTrace = frameInfo.GetTrace();
+        trace.insert(trace.end(), frameTrace.begin(), frameTrace.end());
     }
 
-    stream << "] }" << std::endl;
-
-    stream.flush();
+    return trace;
 }
 
 void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName)

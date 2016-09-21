@@ -859,6 +859,7 @@ ScissorRect
 //------------------------------------------------------------------------------
 
 uint32 NativeColorRGBA(float r, float g, float b, float a = 1.0f);
+uint32 NativeColorRGBA(uint32 color); //0xAABBGGRR to api-native;
 
 } // namespace rhi
 

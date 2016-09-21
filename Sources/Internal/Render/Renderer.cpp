@@ -161,8 +161,8 @@ void BeginFrame()
 void EndFrame()
 {
     DynamicBufferAllocator::EndFrame();
-    GPUProfiler::globalProfiler->OnFrameEnd();
     ProfilerOverlay::OnFrameEnd();
+    GPUProfiler::globalProfiler->OnFrameEnd();
     rhi::Present();
 
     stats.drawIndexedPrimitive = StatSet::StatValue(rhi::stat_DIP);

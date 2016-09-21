@@ -1017,6 +1017,27 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     return color;
 }
 
+uint32
+NativeColorRGBA(uint32 color)
+{
+    uint32 c = 0;
+
+    switch (HostApi())
+    {
+    case RHI_DX9:
+        c = (color & 0xff000000) | ((color & 0x000000ff) << 16) | (color & 0x0000ff00) | ((color & 0x00ff0000) >> 16);
+        break;
+
+    case RHI_DX11:
+    case RHI_GLES2:
+    case RHI_METAL:
+        c = color;
+        break;
+    }
+
+    return color;
+}
+
 } //namespace rhi
 
 //------------------------------------------------------------------------------
