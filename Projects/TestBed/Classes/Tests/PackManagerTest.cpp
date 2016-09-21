@@ -1,20 +1,23 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "Tests/PackManagerTest.h"
+
+#ifdef __DAVAENGINE_COREV2__
+#include <Engine/Engine.h>
+#endif
+
+#include <typeinfo>
+
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
-#include <typeinfo>
-
-using namespace DAVA;
 
 PackManagerTest::PackManagerTest(GameCore* g)
     : BaseScreen(g, "PackManagerTest")
 {
 }
 
-void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
+void PackManagerTest::TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/)
 {
+    using namespace DAVA;
     if (url == textField)
     {
         urlToServerSuperpack = UTF8Utils::EncodeToUTF8(newText);
@@ -24,6 +27,7 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
 
 void PackManagerTest::UpdateDescription()
 {
+    using namespace DAVA;
     String message = DAVA::Format("type name of pack you want to download\n"
                                   "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n",
                                   folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
@@ -33,6 +37,7 @@ void PackManagerTest::UpdateDescription()
 
 void PackManagerTest::LoadResources()
 {
+    using namespace DAVA;
     BaseScreen::LoadResources();
 
     eGPUFamily gpu = DeviceInfo::GetGPUFamily();
@@ -214,6 +219,7 @@ void PackManagerTest::LoadResources()
 
 void PackManagerTest::UnloadResources()
 {
+    using namespace DAVA;
     SafeRelease(loadNext);
     SafeRelease(packNextInput);
     SafeRelease(lsDvpks);
@@ -237,6 +243,7 @@ void PackManagerTest::UnloadResources()
 
 void PackManagerTest::OnPackStateChange(const DAVA::IPackManager::Pack& pack)
 {
+    using namespace DAVA;
     if (pack.state == IPackManager::Pack::Status::Mounted)
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name + " done!"));
@@ -254,11 +261,13 @@ void PackManagerTest::OnPackStateChange(const DAVA::IPackManager::Pack& pack)
 
 void PackManagerTest::OnPackDownloadChange(const DAVA::IPackManager::Pack& pack)
 {
+    using namespace DAVA;
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + pack.name));
 }
 
 void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& request)
 {
+    using namespace DAVA;
     // change total download progress
     uint64 total = request.GetFullSizeWithDependencies();
     uint64 current = request.GetDownloadedSize();
@@ -269,8 +278,9 @@ void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& reques
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnInitChange(IPackManager& packManager)
+void PackManagerTest::OnInitChange(DAVA::IPackManager& packManager)
 {
+    using namespace DAVA;
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     StringStream ss;
@@ -295,7 +305,12 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     if (pm.IsRequestingEnabled())
     {
@@ -325,14 +340,24 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     packNameLoading->SetText(L"done: start sync");
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     pm.InitRemotePacks(urlToServerSuperpack);
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
@@ -351,7 +376,12 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     std::stringstream ss;
 
@@ -373,10 +403,15 @@ void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
-    // on MacOS slowly connect and then fast downloading
+    using namespace DAVA;
+// To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+// on MacOS slowly connect and then fast downloading
 
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
 
     if (pm.GetInitState() < IPackManager::InitState::MountingReadOnlyPacks)
     {
@@ -403,7 +438,12 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+#ifdef __DAVAENGINE_COREV2__
+    IPackManager& pm = *Engine::Instance()->GetContext()->packManager;
+#else
     IPackManager& pm = Core::Instance()->GetPackManager();
+#endif
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();
@@ -426,6 +466,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     if (sender == startServerButton)
     {
         if (gpuArchitecture == "dx11")
@@ -470,14 +511,15 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
 
 void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    DAVA::WideString text = filePathField->GetText();
-    DAVA::String fileName = UTF8Utils::EncodeToUTF8(text);
+    using namespace DAVA;
+    WideString text = filePathField->GetText();
+    String fileName = UTF8Utils::EncodeToUTF8(text);
 
     FilePath path(fileName);
 
     ScopedPtr<File> f(File::Create(path, File::OPEN | File::READ));
     // if we read file from pack - it will be DynamicMemoryFile
-    if (f && typeid(*f) == typeid(DynamicMemoryFile))
+    if (f && typeid(f.get()) == typeid(DynamicMemoryFile))
     {
         packNameLoading->SetText(L"file loaded successfully");
     }
@@ -486,4 +528,3 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
         packNameLoading->SetText(L"can't load file");
     }
 }
-#endif // !__DAVAENGINE_COREV2__

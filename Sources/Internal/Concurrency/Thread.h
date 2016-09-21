@@ -56,7 +56,7 @@ class Thread : public ThreadTraits, public BaseObject
     friend void* PthreadMain(void* param);
 #endif
 public:
-    using Procedure = std::function<void()>;
+    using Procedure = Function<void()>;
 
     enum eThreadPriority
     {
