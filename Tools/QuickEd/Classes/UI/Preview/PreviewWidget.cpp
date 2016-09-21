@@ -537,7 +537,7 @@ QMenu* PreviewWidget::CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& po
     return selectionMenu;
 }
 
-bool PreviewWidget::CanChangeTextInControl(const ControlNode* node)
+bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
 {
     if (node == nullptr)
     {
@@ -550,7 +550,7 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node)
     return staticText != nullptr;
 }
 
-void PreviewWidget::ChangeControlText(ControlNode* node) const
+void PreviewWidget::ChangeControlText(ControlNode* node)
 {
     DVASSERT(node != nullptr);
 
