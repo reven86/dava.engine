@@ -5,9 +5,6 @@
 #include "FileSystem/VariantType.h"
 #include "qmetatype.h"
 
-#include <QString>
-#include <QRegularExpression>
-
 class QString;
 class QColor;
 class QVector2D;
