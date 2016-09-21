@@ -15,6 +15,6 @@ public:
     DAVA::Vector<DAVA::FilePath> GetFiles(const DAVA::String& extension) const;
 
 private:
-    struct Impl;
+    class Impl;
     std::unique_ptr<Impl> impl;
 };

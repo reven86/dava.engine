@@ -18,8 +18,9 @@ uint qHash(const QFileInfo& fi, uint seed)
     return qHash(fi.absoluteFilePath(), seed);
 }
 
-struct ProjectStructure::Impl : public QObject
+class ProjectStructure::Impl : public QObject
 {
+public:
     Impl(const Vector<String>& supportedExtensions);
     void SetProjectDirectory(const FilePath& directory);
     FilePath GetProjectDirectory() const;
@@ -31,12 +32,12 @@ private slots:
     void OnFileChanged(const QString& path);
 
 private:
-    void AddFilesRecursively(const QFileInfo& dirInfo);
+    void AddFilesRecursively(const QDir& dir);
 
     QSet<QFileInfo> projectFiles;
     QFileSystemWatcher watcher;
     QStringList supportedExtensions;
-    QFileInfo projectDirFileInfo;
+    QDir projectDir;
 };
 
 ProjectStructure::ProjectStructure(const Vector<String>& supportedExtensions)
@@ -74,6 +75,7 @@ ProjectStructure::Impl::Impl(const Vector<String>& supportedExtensions_)
 
 void ProjectStructure::Impl::SetProjectDirectory(const FilePath& directory)
 {
+    projectDir = QDir();
     projectFiles.clear();
     const QStringList& directories = watcher.directories();
     if (!directories.isEmpty())
@@ -85,18 +87,18 @@ void ProjectStructure::Impl::SetProjectDirectory(const FilePath& directory)
     if (!directory.IsEmpty())
     {
         QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
-        projectDirFileInfo = QFileInfo(directoryStr);
-        DVASSERT(projectDirFileInfo.isDir());
+        projectDir = QDir(directoryStr);
+        DVASSERT(projectDir.exists());
         DVASSERT(!watcher.directories().contains(directoryStr))
 
         watcher.addPath(directoryStr);
-        AddFilesRecursively(projectDirFileInfo);
+        AddFilesRecursively(projectDir);
     }
 }
 
 FilePath ProjectStructure::Impl::GetProjectDirectory() const
 {
-    QString absPath = projectDirFileInfo.absoluteFilePath();
+    QString absPath = projectDir.absolutePath();
     return FilePath(absPath.toStdString());
 }
 
@@ -130,8 +132,7 @@ void ProjectStructure::Impl::OnFileChanged(const QString& path)
 
 void ProjectStructure::Impl::OnDirChanged(const QString& path)
 {
-    QFileInfo changedDirInfo(path);
-    DVASSERT(changedDirInfo.isDir());
+    QDir changedDir(path);
     QMutableSetIterator<QFileInfo> iter(projectFiles);
     while (iter.hasNext())
     {
@@ -153,18 +154,18 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
         }
     }
 
-    if (changedDirInfo.exists())
+    if (changedDir.exists())
     {
-        AddFilesRecursively(changedDirInfo);
+        AddFilesRecursively(changedDir);
     }
 }
 
-void ProjectStructure::Impl::AddFilesRecursively(const QFileInfo& dirInfo)
+void ProjectStructure::Impl::AddFilesRecursively(const QDir& dir)
 {
-    DVASSERT(dirInfo.isDir());
+    DVASSERT(dir.exists());
     QStringList watchedDirectories = watcher.directories();
 
-    QString absDirPath(dirInfo.absoluteFilePath());
+    QString absDirPath(dir.absolutePath());
     QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden, QDirIterator::Subdirectories);
     while (dirIterator.hasNext())
     {

@@ -14,17 +14,17 @@
 #include <QAbstractItemView>
 #include <QKeyEvent>
 
-QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
+QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
 {
     //Qt::Popup do not prevent us to show another dialog
-    static bool shown;
+    static bool shown = false;
     if (shown)
     {
         return QString();
     }
     shown = true;
 
-    FindFileDialog dialog(projectStructure, suffix, parent);
+    FindFileDialog dialog(projectStructure, extension, parent);
     dialog.setModal(true);
     int retCode = dialog.exec();
 
@@ -34,7 +34,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
         QString filePath = dialog.ui->lineEdit->text();
         filePath = dialog.FromShortName(filePath);
         QFileInfo fileInfo(filePath);
-        if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(suffix).toLower())
+        if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(extension).toLower())
         {
             return filePath;
         }
@@ -55,12 +55,11 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& suffix, QWidget* parent)
+FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
     : QDialog(parent, Qt::Popup)
     , ui(new Ui::FindFileDialog())
 {
-    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(suffix);
-    DVASSERT(!files.empty());
+    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(extension);
 
     DAVA::String prefixStr = projectStructure->GetProjectDirectory().GetAbsolutePathname();
     prefix = QString::fromStdString(prefixStr);
@@ -72,6 +71,12 @@ FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const D
     ui->lineEdit->installEventFilter(this);
 
     Init(files);
+
+    if (files.empty())
+    {
+        QString extension_ = QString::fromStdString(extension_)
+                             ui->lineEdit->setPlaceholderText(tr("Project not contains files with extension %1").arg(extension));
+    }
 }
 
 void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
@@ -126,7 +131,7 @@ bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
 
 namespace FindFileDialogDetails
 {
-QString newPrefix = "...";
+QString newPrefix = QStringLiteral("...");
 }
 
 QString FindFileDialog::ToShortName(const QString& name) const
