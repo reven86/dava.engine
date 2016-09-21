@@ -21,13 +21,13 @@ public:
 
     void CreateData(std::unique_ptr<DataNode>&& node);
 
-    template<typename T>
+    template <typename T>
     bool HasData() const;
 
-    template<typename T>
+    template <typename T>
     T& GetData() const; // throw std::runtime_exception if T not exists
 
-    template<typename T>
+    template <typename T>
     void DeleteData();
 
     bool HasData(const ReflectedType* type) const;

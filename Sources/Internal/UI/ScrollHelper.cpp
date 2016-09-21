@@ -1,7 +1,7 @@
 #include "UI/ScrollHelper.h"
 #include "Logger/Logger.h"
 #include "Math/Math2D.h"
-#include <math.h>
+#include <cmath>
 
 namespace DAVA
 {
@@ -291,7 +291,7 @@ void ScrollHelper::ScrollToPosition(float32 newPos, float32 scrollTimeSec /* = 0
     speed = 0.f;
     totalDeltaMove = 0.f;
     scrollToAcc = (dist * 2.f) / (halfTime * halfTime);
-    scrollToTopSpeed = sqrtf(2.f * scrollToAcc * dist);
+    scrollToTopSpeed = std::sqrt(2.f * scrollToAcc * dist);
     if (scrollToAcc < 0.f)
     {
         scrollToTopSpeed = -scrollToTopSpeed;

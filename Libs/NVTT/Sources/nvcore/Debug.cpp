@@ -7,6 +7,7 @@
 
 #ifdef ANDROID
 	#include <sys/syscall.h>
+    #include <unistd.h>
 #endif
 
 // Extern
