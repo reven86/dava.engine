@@ -152,11 +152,10 @@ void EntityCache::Clear(const FilePath& path)
 
 void EntityCache::ClearAll()
 {
-    for (auto i : cachedEntities)
+    for (auto& i : cachedEntities)
     {
         SafeRelease(i.second);
     }
-
     cachedEntities.clear();
 }
 
@@ -216,14 +215,19 @@ void Scene::SetGlobalMaterial(NMaterial* globalMaterial)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
 }
 
-rhi::RenderPassConfig& Scene::GetMainPassConfig()
+void Scene::SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format)
 {
-    return renderSystem->GetMainRenderPass()->GetPassConfig();
+    renderSystem->SetMainPassProperties(priority, viewport, width, height, format);
 }
 
-void Scene::SetMainPassViewport(const Rect& viewport)
+void Scene::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor)
 {
-    renderSystem->GetMainRenderPass()->SetViewport(viewport);
+    renderSystem->SetMainRenderTarget(color, depthStencil, colorLoadAction, clearColor);
+}
+
+rhi::RenderPassConfig& Scene::GetMainPassConfig()
+{
+    return renderSystem->GetMainPassConfig();
 }
 
 void Scene::CreateSystems()

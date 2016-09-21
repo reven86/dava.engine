@@ -21,7 +21,7 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Qt/GlobalOperations.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
