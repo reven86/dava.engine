@@ -524,7 +524,9 @@ int DocumentGroup::GetIndexByPackagePath(const QString& path) const
 {
     for (int index = 0; index < documents.size(); ++index)
     {
-        if (documents.at(index)->GetPackageAbsolutePath() == path)
+        QString absPath = documents.at(index)->GetPackageAbsolutePath();
+        QString normalizedAbsPath = absPath.normalized(QString::NormalizationForm_C);
+        if (absPath == path || normalizedAbsPath == path)
         {
             return index;
         }
