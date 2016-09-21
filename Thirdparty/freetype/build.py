@@ -34,7 +34,7 @@ def __get_downloaded_archive_inner_dir():
 	return 'freetype-2.7'
 
 def __download_and_extract(working_directory_path):
-	source_folder_path = os.path.join(working_directory_path, 'libfreetype_source')
+	source_folder_path = os.path.join(working_directory_path, 'freetype_source')
 	build_utils.download_and_extract(get_download_url(), working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())	
 	return source_folder_path
 
