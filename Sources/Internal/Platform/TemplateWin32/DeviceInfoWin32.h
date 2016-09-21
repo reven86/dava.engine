@@ -1,5 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO_WIN32__
-#define __FRAMEWORK__DEVICEINFO_WIN32__
+#pragma once
 
 #include "Base/Platform.h"
 
@@ -42,5 +41,3 @@ private:
 };
 
 #endif //  defined(__DAVAENGINE_WIN32__)
-
-#endif //  defined(__FRAMEWORK__DEVICEINFO_WIN32__)

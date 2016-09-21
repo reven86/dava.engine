@@ -67,6 +67,9 @@ private:
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
     Function<jstring()> getCarrierName;
+    Function<jint()> getDefaultDisplayWidth;
+    Function<jint()> getDefaultDisplayHeight;
+    Function<jbyte()> getGpuFamily;
 
     DeviceInfo::ScreenInfo screenInfo;
 };
