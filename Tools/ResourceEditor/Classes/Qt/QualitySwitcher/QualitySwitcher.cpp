@@ -40,7 +40,7 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
         QComboBox* comboTx = new QComboBox(texturesGroup);
         comboTx->setObjectName("TexturesCombo");
 
-        QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnTxQualitySelect(int)));
+        QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
 
         texturesLayout->addWidget(labTx, 0, 0);
         texturesLayout->addWidget(comboTx, 0, 1);
@@ -65,7 +65,7 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
 
             QComboBox* comboAn = new QComboBox(texturesGroup);
             comboAn->setObjectName("AnisotropyCombo");
-            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnAnQualitySelect(int)));
+            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
             texturesLayout->addWidget(comboAn, 1, 1);
 
             DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
@@ -76,6 +76,28 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
                 if (anQualityName == curAnQuality)
                 {
                     comboAn->setCurrentIndex(comboAn->count() - 1);
+                }
+            }
+        }
+
+        if (DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount() > 0)
+        {
+            QLabel* lab = new QLabel("Multisampling:", texturesGroup);
+            texturesLayout->addWidget(lab, 2, 0);
+
+            QComboBox* combo = new QComboBox(texturesGroup);
+            combo->setObjectName("MSAACombo");
+            QObject::connect(combo, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
+            texturesLayout->addWidget(combo, 2, 1);
+
+            DAVA::FastName curQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount(); ++i)
+            {
+                DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityName(i);
+                combo->addItem(qualityName.c_str());
+                if (qualityName == curQuality)
+                {
+                    combo->setCurrentIndex(combo->count() - 1);
                 }
             }
         }
@@ -99,7 +121,7 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
             QComboBox* comboMa = new QComboBox(materialsGroup);
             comboMa->setObjectName(QString(groupName.c_str()) + "Combo");
 
-            QObject::connect(comboMa, SIGNAL(activated(int)), this, SLOT(OnMaQualitySelect(int)));
+            QObject::connect(comboMa, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
 
             materialsLayout->addWidget(labMa, static_cast<int>(i), 0);
             materialsLayout->addWidget(comboMa, static_cast<int>(i), 1);
@@ -148,7 +170,7 @@ QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& global
 
         particlesLayout->addWidget(labQuality, 0, 0);
         particlesLayout->addWidget(comboQuality, 0, 1);
-        connect(comboQuality, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &QualitySwitcher::OnParticlesQualityChanged);
+        connect(comboQuality, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &QualitySwitcher::OnSetSettingsDirty);
 
         QLabel* labTagsCloud = new QLabel("Tags cloud:", particlesGroup);
         QLineEdit* editTagsCloud = new QLineEdit(particlesGroup);
@@ -345,10 +367,21 @@ void QualitySwitcher::ApplySettings()
             }
         }
 
+        combo = findChild<QComboBox*>("MSAACombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newQuality(combo->currentText().toLatin1());
+            if (newQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality())
+            {
+                materialSettingsChanged = true;
+                DAVA::QualitySettingsSystem::Instance()->SetCurMSAAQuality(newQuality);
+            }
+        }
+
         for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
             DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
-            QComboBox* combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
+            combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
             if (nullptr != combo)
             {
                 DAVA::FastName newMaQuality(combo->currentText().toLatin1());
@@ -474,22 +507,7 @@ void QualitySwitcher::ShowDialog(std::shared_ptr<GlobalOperations> globalOperati
     switcherDialog->activateWindow();
 }
 
-void QualitySwitcher::OnTxQualitySelect(int index)
-{
-    SetSettingsDirty(true);
-}
-
-void QualitySwitcher::OnAnQualitySelect(int index)
-{
-    SetSettingsDirty(true);
-}
-
-void QualitySwitcher::OnMaQualitySelect(int index)
-{
-    SetSettingsDirty(true);
-}
-
-void QualitySwitcher::OnParticlesQualityChanged(int index)
+void QualitySwitcher::OnSetSettingsDirty(int index)
 {
     SetSettingsDirty(true);
 }

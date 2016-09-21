@@ -15,7 +15,7 @@
 #include "FileSystem/File.h"
 #include "Logger/Logger.h"
 #include "Job/JobManager.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QFileDialog>
 #include <QMenu>
