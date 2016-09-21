@@ -75,7 +75,7 @@ int ArchiveUnpackTool::ProcessInternal()
 
         return unpackResult;
     }
-    catch (std::exception ex)
+    catch (std::exception& ex)
     {
         Logger::Error("Can't open archive %s: %s", packFilename.GetAbsolutePathname().c_str(), ex.what());
         return ResourceArchiverResult::ERROR_CANT_OPEN_ARCHIVE;

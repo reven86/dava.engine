@@ -267,6 +267,7 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
 
 void PackRequest::StartCheckHash()
 {
+    DVASSERT(Thread::IsMainThread());
     DVASSERT(!dependencies.empty());
 
     SubRequest& subRequest = dependencies.at(0);
@@ -373,6 +374,8 @@ void PackRequest::ClearSuperpackData()
 
 void PackRequest::Update()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!IsDone() && !IsError())
     {
         SubRequest& subRequest = dependencies.at(0);

@@ -17,8 +17,8 @@ protected:
 public:
     BaseScreen();
 
-    virtual void LoadResources();
-    virtual void UnloadResources();
+    void LoadResources() override;
+    void UnloadResources() override;
     bool SystemInput(UIEvent* currentInput) override;
     void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 

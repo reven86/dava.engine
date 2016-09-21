@@ -60,7 +60,7 @@ DAVA_TESTCLASS (ResourceArchiverTest)
                 TEST_VERIFY(fileInfo.compressionType == compression || fileInfo.compressionType == Compressor::Type::None);
             }
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             TEST_VERIFY_WITH_MESSAGE(false, Format("Can't open archive %s: %s", archivePath.GetAbsolutePathname().c_str(), ex.what()));
         }
@@ -132,7 +132,7 @@ DAVA_TESTCLASS (ResourceArchiverTest)
             ResourceArchive resourceArchive(archivePath);
             return resourceArchive.HasFile(pathInArchive);
         }
-        catch (std::exception ex)
+        catch (std::exception& ex)
         {
             TEST_VERIFY_WITH_MESSAGE(false, Format("Can't open archive %s: %s", archivePath.GetAbsolutePathname().c_str(), ex.what()));
         }

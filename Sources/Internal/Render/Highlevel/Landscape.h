@@ -128,6 +128,7 @@ public:
 
     RenderMode GetRenderMode() const;
     void SetRenderMode(RenderMode mode);
+    void UpdateMaterialFlags();
 
 protected:
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
