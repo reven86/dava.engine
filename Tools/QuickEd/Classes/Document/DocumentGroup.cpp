@@ -525,6 +525,7 @@ int DocumentGroup::GetIndexByPackagePath(const QString& path) const
     for (int index = 0; index < documents.size(); ++index)
     {
         QString absPath = documents.at(index)->GetPackageAbsolutePath();
+        //normalize file path, because russian letter "й" will be decomposited
         QString normalizedAbsPath = absPath.normalized(QString::NormalizationForm_C);
         if (absPath == path || normalizedAbsPath == path)
         {
