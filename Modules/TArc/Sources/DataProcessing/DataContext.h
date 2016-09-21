@@ -16,6 +16,7 @@ class DataContext
 {
 public:
     DataContext() = default;
+    DataContext(DataContext* parentContext);
     ~DataContext();
 
     void CreateData(std::unique_ptr<DataNode>&& node);
@@ -29,21 +30,22 @@ public:
     template<typename T>
     void DeleteData();
 
-    bool HasData(const DAVA::ReflectedType* type) const;
-    DataNode& GetData(const DAVA::ReflectedType* type) const; // throw std::runtime_exception if T not exists
-    void DeleteData(const DAVA::ReflectedType* type);
+    bool HasData(const ReflectedType* type) const;
+    DataNode& GetData(const ReflectedType* type) const; // throw std::runtime_exception if T not exists
+    void DeleteData(const ReflectedType* type);
 
-    /*void RegisterAction(int id, const DAVA::Function<void(const DAVA::Any& args)>& action);
+    /*void RegisterAction(int id, const Function<void(const Any& args)>& action);
     void UnregisterAction(int id);
-    void CallAction(int id, const DAVA::Any& args);*/
+    void CallAction(int id, const Any& args);*/
 
-    using ContextID = DAVA::uint64;
+    using ContextID = uint64;
     ContextID GetID() const;
 
     static const ContextID Empty = 0;
 
 private:
-    DAVA::UnorderedMap<const DAVA::ReflectedType*, DataNode*> dataMap;
+    DataContext* parentContext = nullptr;
+    UnorderedMap<const ReflectedType*, DataNode*> dataMap;
 };
 } // namespace TArc
 } // namespace DAVA
