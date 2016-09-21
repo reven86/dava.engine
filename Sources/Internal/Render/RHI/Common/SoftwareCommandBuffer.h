@@ -266,24 +266,4 @@ public:
     RingBuffer* text = nullptr;
 };
 
-struct SoftwareCommandBufferUnpacked
-{
-public:
-    void Begin();
-    void End();
-
-    void Command(uint64 cmd);
-    void Command(uint64 cmd, uint64 arg1);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7);
-    void Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6, uint64 arg7, uint64 arg8);
-
-    std::vector<uint64> _cmd;
-    static const uint64 EndCmd;
-    RingBuffer* text = nullptr;
-};
 }
