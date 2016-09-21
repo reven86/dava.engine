@@ -263,5 +263,4 @@ public:
     uint32 curUsedSize = 0;
     RingBuffer* text = nullptr;
 };
-
 }

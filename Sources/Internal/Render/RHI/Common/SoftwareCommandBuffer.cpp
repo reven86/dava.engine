@@ -10,6 +10,4 @@ void SoftwareCommandBuffer::Begin()
 void SoftwareCommandBuffer::End()
 {
 }
-
-
 }

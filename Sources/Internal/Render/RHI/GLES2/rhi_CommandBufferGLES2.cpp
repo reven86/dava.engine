@@ -291,7 +291,7 @@ static void gles2_CommandBuffer_SetDepthStencilState(Handle cmdBuf, Handle depth
 
 static void gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samplerState)
 {
-// NOTE: expected to be called BEFORE SetFragmentTexture
+    // NOTE: expected to be called BEFORE SetFragmentTexture
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_SetSamplerState* cmd = cb->allocCmd<SWCommand_SetSamplerState>();
     cmd->samplerState = samplerState;
@@ -513,12 +513,12 @@ void CommandBufferGLES2_t::Execute()
 
     sync = InvalidHandle;
 
-//unsigned    cmd_cnt=0;
-//unsigned    dip_cnt=0;
-//unsigned    stcb_cnt=0;
-//unsigned    sttx_cnt=0;
+    //unsigned    cmd_cnt=0;
+    //unsigned    dip_cnt=0;
+    //unsigned    stcb_cnt=0;
+    //unsigned    sttx_cnt=0;
 
-    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)     
+    for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
         const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
         switch (cmd->type)
@@ -833,8 +833,8 @@ void CommandBufferGLES2_t::Execute()
 
         case CMD_DRAW_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DP")}
+            //++dip_cnt;
+            //{SCOPED_NAMED_TIMING("gl.DP")}
             unsigned v_cnt = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->mode;
 
@@ -883,8 +883,8 @@ void CommandBufferGLES2_t::Execute()
 
         case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DIP")}
+            //++dip_cnt;
+            //{SCOPED_NAMED_TIMING("gl.DIP")}
             unsigned v_cnt = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->indexCount;
             int mode = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->mode;
             uint32 firstVertex = (static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd))->firstVertex;
@@ -1099,7 +1099,7 @@ void CommandBufferGLES2_t::Execute()
         c += cmd->size;
     }
 
-//Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
+    //Logger::Info("exec cb  = %.2f Kb  in %u cmds (DIP=%u  STCB=%u  STTX=%u)",float(curUsedSize)/1024.0f,cmd_cnt,dip_cnt,stcb_cnt,sttx_cnt);
 }
 
 //------------------------------------------------------------------------------

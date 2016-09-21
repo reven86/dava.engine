@@ -23,7 +23,6 @@ using DAVA::Logger;
 #include <atomic>
 #include <thread>
 
-
 namespace rhi
 {
 //==============================================================================
