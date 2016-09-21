@@ -15,7 +15,7 @@ using namespace DAVA;
 //this function is reimplemented for QSet<QFileInfo> in the class Impl
 uint qHash(const QFileInfo& fi, uint seed)
 {
-    return qHash(fi.absoluteFilePath(), seed);
+    return qHash(fi.absoluteFilePath().toLower(), seed);
 }
 
 class ProjectStructure::Impl : public QObject
