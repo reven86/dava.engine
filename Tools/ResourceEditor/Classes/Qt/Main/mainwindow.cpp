@@ -18,6 +18,7 @@
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
@@ -474,7 +475,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
     if (SaveTilemask())
     {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(gpu)));
-        DAVA::Texture::SetDefaultGPU(gpu);
+        DAVA::Texture::SetGPULoadingOrder({ gpu });
 
         SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MATRIX_H__
-#define __DAVAENGINE_MATRIX_H__
+#pragma once
 
 #include "Neon/NeonMath.h"
 #include "Math/Matrix3.h"
@@ -260,8 +259,8 @@ inline void Matrix4::BuildProjectionFovLH(float32 _fovY, float32 _aspect, float3
     // DX9 formula
     Zero();
 
-    float32 sinF2 = sinf(_fovY / 2.0f);
-    float32 cosF2 = cosf(_fovY / 2.0f);
+    float32 sinF2 = std::sin(_fovY / 2.0f);
+    float32 cosF2 = std::cos(_fovY / 2.0f);
 
     float h = cosF2 / sinF2;
     float w = h / _aspect;
@@ -559,13 +558,13 @@ inline bool Matrix4::Decomposition(Vector3& position, Vector3& scale, Vector3& o
 		DVASSERT((fabs(_10*_20+_11*_21+_12*_22)<0.001f) && "Only orthoganal basis accepted");
 		DVASSERT((fabs(_20*_00+_21*_01+_22*_02)<0.001f) && "Only orthoganal basis accepted");*/
 
-        scale.x = sqrtf(_00 * _00 + _01 * _01 + _02 * _02);
-        scale.y = sqrtf(_10 * _10 + _11 * _11 + _12 * _12);
-        scale.z = sqrtf(_20 * _20 + _21 * _21 + _22 * _22);
+        scale.x = std::sqrt(_00 * _00 + _01 * _01 + _02 * _02);
+        scale.y = std::sqrt(_10 * _10 + _11 * _11 + _12 * _12);
+        scale.z = std::sqrt(_20 * _20 + _21 * _21 + _22 * _22);
 
-        orientation.x = atan2(_21, _22);
-        orientation.y = atan2(-_20, sqrtf(_21 * _21 + _22 * _22));
-        orientation.z = atan2(_10, _00);
+        orientation.x = std::atan2(_21, _22);
+        orientation.y = std::atan2(-_20, std::sqrt(_21 * _21 + _22 * _22));
+        orientation.z = std::atan2(_10, _00);
 
         position = Vector3(_data[0][3], _data[1][3], _data[2][3]);
 
@@ -614,8 +613,8 @@ inline const Matrix4& Matrix4::operator*=(const Matrix4& m)
 
 inline void Matrix4::CreateRotation(const Vector3& r, float32 angleInRadians)
 {
-    float32 cosA = cosf(angleInRadians);
-    float32 sinA = sinf(angleInRadians);
+    float32 cosA = std::cos(angleInRadians);
+    float32 sinA = std::sin(angleInRadians);
     Identity();
     _data[0][0] = cosA + (1 - cosA) * r.x * r.x;
     _data[0][1] = (1 - cosA) * r.x * r.y - r.z * sinA;
@@ -742,7 +741,3 @@ inline bool Matrix4::operator!=(const Matrix4& _m) const
 }
 
 }; // end of namespace DAVA
-
-
-
-#endif // __DAVAENGINE_MATRIX_H__

@@ -1,8 +1,6 @@
 #pragma once
 #include "Reflection/Public/Wrappers.h"
 
-#if !defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 template <typename GetT, typename SetT>
@@ -87,5 +85,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif

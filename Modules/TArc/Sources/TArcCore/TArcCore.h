@@ -4,7 +4,6 @@
 #include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
-
 #include <memory>
 
 namespace DAVA

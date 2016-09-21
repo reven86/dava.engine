@@ -44,7 +44,6 @@
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
-#include "PackManager/PackManager.h"
 #include "PackManager/Private/PackManagerImpl.h"
 
 #if defined(__DAVAENGINE_ANDROID__)

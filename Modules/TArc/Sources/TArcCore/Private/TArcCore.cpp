@@ -3,6 +3,8 @@
 #include "TArcCore/ClientModule.h"
 #include "TArcCore/ConsoleModule.h"
 #include "TArcCore/Private/MacOSUtils.h"
+
+#include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
@@ -11,6 +13,7 @@
 #include "Engine/NativeService.h"
 #include "Engine/EngineContext.h"
 #include "Functional/Function.h"
+#include "FileSystem/FileSystem.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
@@ -62,7 +65,9 @@ public:
 
     virtual void OnLoopStarted()
     {
-        ToolsAssetGuard::Instance()->Init();
+        FileSystem* fileSystem = GetEngineContext().fileSystem;
+        DVASSERT(fileSystem != nullptr);
+        propertiesHolder.reset(new PropertiesHolder("TArcProperties", fileSystem->GetCurrentDocumentsDirectory()));
     }
 
     virtual void OnLoopStopped()
@@ -166,6 +171,8 @@ protected:
     Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
     Vector<DataWrapper> wrappers;
+
+    std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
 class Core::ConsoleImpl: public Core::Impl
@@ -188,6 +195,7 @@ public:
 
     void OnLoopStarted() override
     {
+        Impl::OnLoopStarted();
         application = new QGuiApplication(argc, argv.data());
         surface = new QOffscreenSurface();
         surface->create();
@@ -241,7 +249,7 @@ public:
         engineContext->virtualCoordSystem->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
         engineContext->virtualCoordSystem->ScreenSizeChanged();
 
-        Texture::SetDefaultGPU(eGPUFamily::GPU_ORIGIN);
+        Texture::SetGPULoadingOrder({ GPU_ORIGIN });
 
         ActivateContextImpl(globalContext.get());
         for (std::unique_ptr<ConsoleModule>& module : modules)
@@ -288,6 +296,8 @@ public:
 
         context->doneCurrent();
         surface->destroy();
+
+        Impl::OnLoopStopped();
     }
 
     void AddModule(ConsoleModule* module) override
@@ -356,8 +366,10 @@ public:
     {
         Impl::OnLoopStarted();
 
+        ToolsAssetGuard::Instance()->Init();
+
         engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
-        uiManager.reset(new UIManager(this));
+        uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
         DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
