@@ -1,9 +1,9 @@
+#ifdef DAVA_FMOD
+
 #include "FMODSoundStream.h"
 #include "SoundStream.h"
 #include "Sound/FMODSoundStream.h"
 #include "Sound/SoundSystem.h"
-
-#ifdef DAVA_FMOD
 
 namespace DAVA
 {

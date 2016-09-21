@@ -1,6 +1,7 @@
 #include "TArcCore/TArcCore.h"
 #include "TArcCore/ControllerModule.h"
 #include "TArcCore/ClientModule.h"
+#include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
@@ -8,6 +9,7 @@
 #include "Engine/Window.h"
 #include "Engine/NativeService.h"
 #include "Functional/Function.h"
+#include "FileSystem/FileSystem.h"
 
 #include "Debug/DVAssert.h"
 
@@ -63,8 +65,10 @@ void Core::OnLoopStarted()
 {
     ToolsAssetGuard::Instance()->Init();
     engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
-
-    uiManager.reset(new UIManager(this));
+    FileSystem* fileSystem = GetEngineContext().fileSystem;
+    DVASSERT(fileSystem != nullptr);
+    propertiesHolder.reset(new PropertiesHolder("TArcProperties", fileSystem->GetCurrentDocumentsDirectory()));
+    uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
     DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
 
     for (std::unique_ptr<ClientModule>& module : modules)
@@ -114,9 +118,9 @@ DataContext& Core::GetGlobalContext()
 DataContext& Core::GetContext(DataContext::ContextID contextID)
 {
     auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-    {
-        return context->GetID() == contextID;
-    });
+                             {
+                                 return context->GetID() == contextID;
+                             });
 
     if (iter == contexts.end())
     {
@@ -144,7 +148,7 @@ bool Core::HasActiveContext() const
 DataWrapper Core::CreateWrapper(const ReflectedType* type)
 {
     DataWrapper wrapper(type);
-    wrapper.SetContext(activeContext != nullptr ? activeContext :globalContext.get());
+    wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
     wrappers.push_back(wrapper);
     return wrapper;
 }
@@ -179,9 +183,9 @@ DataContext::ContextID Core::CreateContext()
 void Core::DeleteContext(DataContext::ContextID contextID)
 {
     auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-    {
-        return context->GetID() == contextID;
-    });
+                             {
+                                 return context->GetID() == contextID;
+                             });
 
     if (iter == contexts.end())
     {
@@ -215,9 +219,9 @@ void Core::ActivateContext(DataContext::ContextID contextID)
     }
 
     auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-    {
-        return context->GetID() == contextID;
-    });
+                             {
+                                 return context->GetID() == contextID;
+                             });
 
     if (iter == contexts.end())
     {
@@ -331,9 +335,9 @@ bool Core::WindowCloseRequested(const WindowKey& key)
 void Core::WindowClosed(const WindowKey& key)
 {
     std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
-    {
-        module->OnWindowClosed(key);
-    });
+                  {
+                      module->OnWindowClosed(key);
+                  });
 }
 
 } // namespace TArc

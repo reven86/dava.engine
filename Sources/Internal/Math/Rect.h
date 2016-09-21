@@ -1,7 +1,5 @@
-#ifndef __DAVAENGINE_RECT_H__
-#define __DAVAENGINE_RECT_H__
-
-#include <math.h>
+#pragma once
+#include <cmath>
 
 #include "Vector.h"
 
@@ -265,4 +263,3 @@ inline Rect Rect::operator-(const Vector2& pt) const
 }
 
 }; // end of namespace DAVA
-#endif // __DAVAENGINE_MATH2DBASE_H__

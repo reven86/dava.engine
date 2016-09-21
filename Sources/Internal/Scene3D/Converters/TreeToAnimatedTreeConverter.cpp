@@ -34,7 +34,7 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* obje
                 float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
 
                 float32 x = vxPosition.z / treeHeight;
-                float32 flexebility = logf((expf(1.0) - 1) * x + 1);
+                float32 flexebility = std::log((std::exp(1.0f) - 1) * x + 1);
 
                 pg->SetFlexibility(i, flexebility * TRUNK_AMPLITUDE_USERFRIENDLY_FACTOR);
 
@@ -42,8 +42,8 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* obje
                 {
                     float32 leafHeightOscillationCoeff = (.5f + x / 2);
                     //leafAngle: x: cos(T0);  y: sin(T0)
-                    Vector2 leafAngle(cosf(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
-                                      sinf(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
+                    Vector2 leafAngle(std::cos(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
+                                      std::sin(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
 
                     pg->SetAngle(i, leafAngle);
                 }

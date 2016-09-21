@@ -9,10 +9,6 @@ const DAVA::FastName LandscapeProxy::LANSDCAPE_FLAG_TOOL_MIX("LANDSCAPE_TOOL_MIX
 const DAVA::FastName LandscapeProxy::LANDSCAPE_PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
 LandscapeProxy::LandscapeProxy(DAVA::Landscape* landscape, DAVA::Entity* node)
-    : tilemaskImageCopy(NULL)
-    , tilemaskWasChanged(0)
-    , mode(MODE_ORIGINAL_LANDSCAPE)
-    , cursorTexture(NULL)
 {
     DVASSERT(landscape != NULL);
 

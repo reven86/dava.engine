@@ -112,7 +112,6 @@ void SceneViewModule::OpenScene()
     {
         OpenScene(path.toStdString());
     }
-
 }
 
 void SceneViewModule::OpenScene(const DAVA::String& scenePath)

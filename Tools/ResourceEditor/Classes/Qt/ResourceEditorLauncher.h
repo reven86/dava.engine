@@ -43,8 +43,7 @@ inline void ResourceEditorLauncher::OnProjectOpened(const QString&)
     disconnect(ProjectManager::Instance(), &ProjectManager::ProjectOpened, this, &ResourceEditorLauncher::OnProjectOpened);
 
     DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
-    DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
+    DAVA::Texture::SetGPULoadingOrder({ static_cast<DAVA::eGPUFamily>(val) });
 
     emit LaunchFinished();
 }

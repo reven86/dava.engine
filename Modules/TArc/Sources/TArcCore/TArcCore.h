@@ -4,7 +4,6 @@
 #include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
-
 #include <memory>
 
 namespace DAVA
@@ -15,6 +14,7 @@ namespace TArc
 {
 class ClientModule;
 class ControllerModule;
+class PropertiesHolder;
 
 class Core final : private CoreInterface, private UIManager::Delegate
 {
@@ -22,7 +22,7 @@ public:
     Core(Engine& engine_);
     ~Core();
 
-    template<typename T>
+    template <typename T>
     void CreateModule()
     {
         static_assert(std::is_base_of<TArc::ClientModule, T>::value ||
@@ -68,7 +68,7 @@ private:
     void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override;
     void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override;
 
-    template<typename... Args>
+    template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args);
 
     // Inherited via UIManager::Delegate
@@ -92,9 +92,10 @@ private:
     UnorderedMap<int, AnyFn> globalOperations;
 
     std::unique_ptr<UIManager> uiManager;
+    std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
-template<typename... Args>
+template <typename... Args>
 void Core::InvokeImpl(int operationId, const Args&... args)
 {
     AnyFn fn = FindOperation(operationId);

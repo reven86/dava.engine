@@ -307,7 +307,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
     //if stack size is not set, app will crash
     DAVA_TEST (StackHurtTest)
     {
-        auto stackHurtThread = RefPtr<Thread>(Thread::Create(StackHurtFunc));
+        auto stackHurtThread = RefPtr<Thread>(Thread::Create(&StackHurtFunc));
         stackHurtThread->SetStackSize(2 * 1024 * 1024); //2 MB
         stackHurtThread->Start();
         stackHurtThread->Join();
