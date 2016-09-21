@@ -3,10 +3,12 @@
 #include "Base/BaseTypes.h"
 #include "Math/Color.h"
 #include "FileSystem/FilePath.h"
+#include "Debug/DVAssert.h"
 
 #include <QString>
 #include <QPixmap>
 #include <QColor>
+#include <QRegularExpression>
 
 // Different string utilities.
 // Truncate the file extension.
@@ -47,7 +49,7 @@ T StringToVector(const QString& str)
         }
     }
     T vector;
-    int count = Min(floatList.size(), static_cast<int>(T::AXIS_COUNT));
+    int count = DAVA::Min(floatList.size(), static_cast<int>(T::AXIS_COUNT));
     for (int i = 0; i < count; i++)
     {
         vector.data[i] = floatList[i];

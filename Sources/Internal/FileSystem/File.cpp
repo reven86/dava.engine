@@ -97,8 +97,6 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
-    FileSystem* fileSystem = FileSystem::Instance();
-
     if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
@@ -183,7 +181,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 #ifdef __DAVAENGINE_DEBUG__
             // this is a last place where we search for file, so help
             // developers a litle and add some logs
+#ifdef __DAVAENGINE_WINDOWS__
             String p = UTF8Utils::EncodeToUTF8(path);
+#else
+            String p = path;
+#endif //platform
             Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
 #endif
             return nullptr;
