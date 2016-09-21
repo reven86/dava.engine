@@ -9,11 +9,6 @@ class BaseScreen : public UIScreen
 {
     static int32 screensCount;
 
-protected:
-    virtual ~BaseScreen()
-    {
-    }
-
 public:
     BaseScreen();
 
