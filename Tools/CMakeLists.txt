@@ -58,7 +58,7 @@ macro ( init_project )
 
 endmacro()
 
-set(TARGETS "all" CACHE STRING "")
+set( TARGETS "all" CACHE STRING "" )
 
 if(TARGETS STREQUAL "all")
 
@@ -68,9 +68,13 @@ if(TARGETS STREQUAL "all")
 	set          ( DAVA_MEGASOLUTION      1 )
 
 ## tools
-	add_tool     ( ResourceEditor   )
-	add_tool     ( QuickEd          )
-	#[[add_tool     ( ResourcePacker   )
+    set( MAC_DISABLE_BUNDLE true )
+	add_tool     ( ResourceEditor  )
+	add_tool     ( QuickEd         )
+    set( MAC_DISABLE_BUNDLE )
+
+##
+	add_tool     ( ResourcePacker   )
 	add_tool     ( ResourcePatcher  )
 	add_tool     ( ImageUnpacker    )
 	add_tool     ( AssetCacheClient )
@@ -87,7 +91,7 @@ if(TARGETS STREQUAL "all")
 	if ( WIN32 )
 	    add_tool ( UWPRunner )
 	endif ()
-]]
+
 elseif(TARGETS STREQUAL "tools")	
 
 	project      ( Tools )
@@ -108,6 +112,7 @@ else()
 
 endif()
 
+processing_mix_data()
 
 
 

@@ -9,12 +9,10 @@ get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLU
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
-set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 set                   ( DAVA_COMPONENTS "Sound")
 
 include               ( CMake-common )
-include               ( CopyDataMacro )
 
 if (DEPLOY)
     set (DEPLOY_ROOT ${DEPLOY_DIR})
@@ -31,8 +29,6 @@ add_definitions       (
 -DDISABLE_NATIVE_TEXTFIELD 
 -DQT_QML_DEBUG_NO_WARNING
 )
-
-
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED ${DAVA_COMPONENTS} )
@@ -71,7 +67,10 @@ set                           ( Generated    ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 set                           ( UiList       ${UI_LIST} )
 
 define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
- 
+
+set( MIX_APP_DATA         "Data : ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} : ${CMAKE_CURRENT_LIST_DIR}/Data" )
+
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC                  ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST})
@@ -80,18 +79,8 @@ set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
-list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")
-
-set ( MAC_DISABLE_BUNDLE true )
-
-setup_main_executable()
-
-copy_at_post_build( ${DAVA_ROOT_DIR}/Tools/Data ${TOOL_OUTPUT_DIR}/Data )
-copy_at_post_build( ${CMAKE_CURRENT_LIST_DIR}/Data ${TOOL_OUTPUT_DIR}/Data/${PROJECT_NAME} )
-if (MACOS)
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodevent.dylib ${TOOL_OUTPUT_DIR} )
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodex.dylib ${TOOL_OUTPUT_DIR} )
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libTextureConverter.dylib ${TOOL_OUTPUT_DIR} )
-endif()
+list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")#Зачем это сделали ?
 
 convert_graphics()
+setup_main_executable()
+

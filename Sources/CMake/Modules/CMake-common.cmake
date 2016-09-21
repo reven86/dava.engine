@@ -67,7 +67,49 @@ macro (enable_pch)
         endforeach ()
     endif ()
 endmacro ()
+#
+macro( processing_mix_data )
+    cmake_parse_arguments ( ARG "NOT_DATA_COPY"  "" "" ${ARGN} )
 
+    load_property( PROPERTY_LIST MIX_APP_DATA )
+    if( DEPLOY )
+        set( MIX_APP_DIR ${DEPLOY_DIR} )        
+    else()
+        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+    endif()
+
+    foreach( ITEM ${MIX_APP_DATA} )
+        string( REGEX REPLACE " " "" ITEM ${ITEM} )
+        string( REGEX REPLACE ":" ";" ITEM ${ITEM} )
+
+        list(GET ITEM 0 GROUP_PATH )
+        list(GET ITEM 1 DATA_PATH )
+
+        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
+        if( NOT ARG_NOT_DATA_COPY )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+        endif()
+
+    endforeach()
+
+    if( NOT DEPLOY )
+        file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
+        foreach( ITEM ${LIST_FOLDER_ITEM} )
+            if( IS_DIRECTORY ${ITEM} )
+                list( APPEND RESOURCES_LIST  ${ITEM}  )
+                get_filename_component( FOLDER_NAME ${ITEM}  NAME     )
+
+                if( MACOS AND NOT ARG_NOT_DATA_COPY )
+                    foreach( CONFIGURATION ${CMAKE_CONFIGURATION_TYPES} )
+                        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CONFIGURATION} )
+                        execute_process( COMMAND ln -s ${MIX_APP_DIR}/${FOLDER_NAME} ${CMAKE_BINARY_DIR}/${CONFIGURATION}/${FOLDER_NAME}  )
+                    endforeach()
+                endif()
+                
+            endif()
+        endforeach()
+    endif()
+endmacro ()
 
 ##
 #in

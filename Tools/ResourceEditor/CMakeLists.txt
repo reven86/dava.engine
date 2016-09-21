@@ -10,21 +10,9 @@ set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( DAVA_USE_QT_WIDGETS    true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
-set                   ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-set                   ( TOOL_OUTPUT_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}" )
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 include ( CMake-common )
-include ( CopyDataMacro )
-
-if (DEPLOY)
-    set (DEPLOY_ROOT ${DEPLOY_DIR})
-
-    if ( WIN32 )
-        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-        set(DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME})
-    endif()
-    set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
-endif()
 
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
@@ -57,6 +45,7 @@ include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH} )
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/bullet  )
 
 include_directories   (.)
+include_directories   ( "../TextureTools" )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/CubemapEditor" )
@@ -127,6 +116,9 @@ set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources "DataQt"
                 GROUP_SOURCE Generated )
 
+set( MIX_APP_DATA         "Data : ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} : ${CMAKE_CURRENT_LIST_DIR}/Data" )
+
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS} ${QML_LIST} )
@@ -138,19 +130,10 @@ ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 set( UNIFIED_IGNORE_LIST "Classes/Collada" )
 
-set ( MAC_DISABLE_BUNDLE true )
+convert_graphics()
 
 setup_main_executable()
 
-convert_graphics()
-
-copy_at_post_build( ${DAVA_ROOT_DIR}/Tools/Data ${TOOL_OUTPUT_DIR}/Data )
-copy_at_post_build( ${CMAKE_CURRENT_LIST_DIR}/Data ${TOOL_OUTPUT_DIR}/Data/${PROJECT_NAME} )
-if (MACOS)
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodevent.dylib ${TOOL_OUTPUT_DIR} )
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libfmodex.dylib ${TOOL_OUTPUT_DIR} )
-  copy_at_post_build( ${DAVA_ROOT_DIR}/Libs/lib_CMake/mac/libTextureConverter.dylib ${TOOL_OUTPUT_DIR} )
-endif()
 
 DEPLOY_SCRIPT (            COPY_WIN32  ${BEAST_DLL}
                            COPY_WIN64  ${BEAST_DLL}

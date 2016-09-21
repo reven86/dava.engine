@@ -331,6 +331,19 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( DAVA_MEGASOLUTION )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
 
 ###
 
@@ -566,17 +579,11 @@ elseif( MACOS )
 
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
-    if( DEPLOY )
-        set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
-
-    else()
-        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
-    endif()
-
-    set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
-
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks")
+        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks @executable_path/Libs")
+        if( NOT DEPLOY )
+            set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
+        endif()
         set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
@@ -739,7 +746,7 @@ if( ANDROID )
         endforeach()
     endforeach()
     
-    # to avoid of unwind's symbol overriding by other SO, need to link it as whole archive
+    # "to avoid of unwind's symbol overriding by other SO, need to link it as whole archive"
     set ( LIB_UNWIND_NAME "${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libunwind.a" )
     string ( FIND "${CMAKE_CXX_STANDARD_LIBRARIES}" "${LIB_UNWIND_NAME}" LIB_UNWIND_NAME_POS )
     if ( NOT LIB_UNWIND_NAME_POS STREQUAL "-1" )
@@ -840,6 +847,14 @@ if( DEPLOY )
 
             add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
 
+        endif()
+
+        if( MACOS AND MAC_DISABLE_BUNDLE )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/Libs )
+
+            foreach ( ITEM ${DYLIB_FILES})
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${DEPLOY_DIR}/Libs )
+            endforeach ()
         endif()
 
     endif()
