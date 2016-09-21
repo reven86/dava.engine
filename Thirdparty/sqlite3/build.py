@@ -51,6 +51,34 @@ def __patch_sources(source_folder_path, working_directory_path):
 
 	__patch_sources.did = True
 
+def __build_win32(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_win32_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'sqlite3.sln', 'sqlite3',
+		'sqlite3.lib', 'sqlite3.lib',
+		'sqlite3.lib', 'sqlite3.lib',
+		'sqlite3.lib', 'sqlite3.lib')
+
+	return True
+
+def __build_win10(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_win10_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'sqlite3.sln', 'sqlite3',
+		'sqlite3.lib', 'sqlite3.lib',
+		'sqlite3_uap.lib', 'sqlite3_uap.lib',
+		'sqlite3_uap.lib', 'sqlite3_uap.lib',
+		'sqlite3_uap.lib', 'sqlite3_uap.lib',
+		['-DWIN_UWP=1'])
+
+	return True
+
 def __build_macos(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
