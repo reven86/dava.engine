@@ -58,7 +58,6 @@ private:
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
-
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const
