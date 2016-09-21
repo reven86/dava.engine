@@ -74,8 +74,8 @@ FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const D
 
     if (files.empty())
     {
-        QString extension_ = QString::fromStdString(extension_)
-                             ui->lineEdit->setPlaceholderText(tr("Project not contains files with extension %1").arg(extension));
+        QString extension_ = QString::fromStdString(extension);
+        ui->lineEdit->setPlaceholderText(tr("Project not contains files with extension %1").arg(extension_));
     }
 }
 
