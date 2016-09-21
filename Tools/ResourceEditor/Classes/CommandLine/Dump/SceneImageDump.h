@@ -2,6 +2,7 @@
 
 #include "CommandLine/CommandLineTool.h"
 #include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -27,6 +28,7 @@ private:
     DAVA::FastName cameraName;
     DAVA::int32 width;
     DAVA::int32 height;
+    DAVA::eGPUFamily gpuFamily = DAVA::GPU_ORIGIN;
     DAVA::FilePath outputFile;
     DAVA::FilePath qualityConfigPath;
 };

@@ -36,18 +36,18 @@ void GrabImage(Params inputParams)
     internalParams.inputParams.scene->renderSystem->SetDrawCamera(internalParams.inputParams.cameraToGrab.Get());
     internalParams.inputParams.scene->renderSystem->SetMainCamera(internalParams.inputParams.cameraToGrab.Get());
 
-    rhi::RenderPassConfig& config = internalParams.inputParams.scene->GetMainPassConfig();
-    config.colorBuffer[0].texture = internalParams.renderTarget->handle;
-    config.depthStencilBuffer.texture = internalParams.renderTarget->handleDepthStencil;
-    config.priority = PRIORITY_SERVICE_2D;
-    config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-
     Rect viewportRect(0, 0, imageSize.dx, imageSize.dy);
-    internalParams.inputParams.scene->SetMainPassViewport(viewportRect);
+    internalParams.inputParams.scene->SetMainRenderTarget(internalParams.renderTarget->handle,
+                                                          internalParams.renderTarget->handleDepthStencil,
+                                                          rhi::LOADACTION_CLEAR, DAVA::Color::Clear);
+    internalParams.inputParams.scene->SetMainPassProperties(PRIORITY_SERVICE_2D, viewportRect,
+                                                            internalParams.renderTarget->GetWidth(),
+                                                            internalParams.renderTarget->GetHeight(),
+                                                            DAVA::PixelFormat::FORMAT_RGBA8888);
     internalParams.inputParams.scene->Draw();
+
+    RenderSystem2D::Instance()->FillRect(viewportRect, Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+
     internalParams.inputParams.cameraToGrab->SetAspect(cameraAspect);
 
     DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
