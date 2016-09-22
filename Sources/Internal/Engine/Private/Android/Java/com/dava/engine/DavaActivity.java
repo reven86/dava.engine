@@ -105,7 +105,7 @@ public final class DavaActivity extends Activity
         
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
         
-        long primaryWindowBackendPointer = nativeOnCreate();
+        long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         layout.addView(primarySurfaceView);
     }

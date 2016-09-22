@@ -23,6 +23,8 @@ public:
     Dispatcher(const Function<void(const T&)>& handler);
     ~Dispatcher() = default;
 
+    // Explicitly delete copy and move assignment only for msvc 2013
+    // as it does not fully conform c++11
     Dispatcher(const Dispatcher&) = delete;
     Dispatcher& operator=(const Dispatcher&) = delete;
 

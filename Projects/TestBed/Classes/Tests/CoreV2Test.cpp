@@ -197,13 +197,13 @@ void CoreV2Test::OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* calle
 void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
 {
     dispatcher->LinkToCurrentThread();
-    Logger::Debug("###### CoreV2Test::DispatcherThread enter: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+    Logger::Debug("###### CoreV2Test::DispatcherThread enter: thread=%llu, index=%d", Thread::GetCurrentIdAsUInt64(), index);
     while (!stopDispatchers)
     {
         dispatcher->ProcessEvents();
         Thread::Sleep(50);
     }
-    Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+    Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", Thread::GetCurrentIdAsUInt64(), index);
 }
 
 void CoreV2Test::DispatcherEventHandler(int type)

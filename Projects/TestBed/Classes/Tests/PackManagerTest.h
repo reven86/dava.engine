@@ -32,6 +32,8 @@ private:
     void OnRequestChange(const DAVA::IPackManager::IRequest& request);
     void OnInitChange(DAVA::IPackManager& init);
 
+    DAVA::Engine& engine;
+
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
     DAVA::FilePath readOnlyDirWithPacks = "~res:/TestData/PackManagerTest/packs/read_only_packs/";
