@@ -19,14 +19,15 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* e);
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
     NativeService* GetNativeService() const;
 
     void Init();
     void Run();
-    void Quit(bool triggeredBySystem);
+    void PrepareToQuit();
+    void Quit();
 
     // Through this signal WindowOsX gets notified about application hidden/unhidden state has changed
     // to update its visibility state
@@ -40,7 +41,7 @@ private:
     static WindowBackend* GetWindowBackend(Window* window);
 
 private:
-    EngineBackend* engineBackend = nullptr;
+    EngineBackend& engineBackend;
 
     std::unique_ptr<CoreNativeBridge> bridge;
     std::unique_ptr<NativeService> nativeService;

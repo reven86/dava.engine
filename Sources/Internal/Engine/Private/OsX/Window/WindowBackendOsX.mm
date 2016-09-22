@@ -22,8 +22,8 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , engineBackend(engineBackend)
     , bridge(new WindowNativeBridge(this))
@@ -50,19 +50,13 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResize(width, height);
+    PostResizeOnUIThread(width, height);
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
     closeRequestByApp = true;
-    bridge->CloseWindow();
-}
-
-void WindowBackend::Detach()
-{
-    // On mac detach is similar to close
-    Close();
+    PostCloseOnUIThread();
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -86,6 +80,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
         bridge->ResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        break;
+    case UIDispatcherEvent::CLOSE_WINDOW:
+        bridge->CloseWindow();
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

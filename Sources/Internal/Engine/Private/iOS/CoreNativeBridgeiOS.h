@@ -22,7 +22,7 @@ namespace Private
 // CoreNativeBridge is friend of iOS's PlatformCore
 struct CoreNativeBridge final
 {
-    CoreNativeBridge(PlatformCore* c);
+    CoreNativeBridge(PlatformCore* core);
     ~CoreNativeBridge();
 
     void Run();
@@ -38,7 +38,7 @@ struct CoreNativeBridge final
     void ApplicationWillTerminate();
     void ApplicationDidReceiveMemoryWarning();
 
-    PlatformCore* core = nullptr;
+    PlatformCore& core;
     FrameTimer* frameTimer = nullptr;
 };
 

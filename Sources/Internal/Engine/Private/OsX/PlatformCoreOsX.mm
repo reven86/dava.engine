@@ -18,8 +18,8 @@ namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore(EngineBackend* e)
-    : engineBackend(e)
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(*engineBackend)
     , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
@@ -29,7 +29,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    engineBackend->InitializePrimaryWindow();
+    engineBackend.InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -37,14 +37,19 @@ void PlatformCore::Run()
     bridge->Run();
 }
 
-void PlatformCore::Quit(bool /*triggeredBySystem*/)
+void PlatformCore::PrepareToQuit()
+{
+    engineBackend.PostAppTerminate(true);
+}
+
+void PlatformCore::Quit()
 {
     bridge->Quit();
 }
 
 int32 PlatformCore::OnFrame()
 {
-    return engineBackend->OnFrame();
+    return engineBackend.OnFrame();
 }
 
 WindowBackend* PlatformCore::GetWindowBackend(Window* window)

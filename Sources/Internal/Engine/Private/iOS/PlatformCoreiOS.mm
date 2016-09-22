@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Engine/Window.h"
 #include "Engine/iOS/NativeServiceiOS.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -13,9 +14,9 @@ namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore(EngineBackend* e)
-    : engineBackend(e)
-    , dispatcher(e->GetDispatcher())
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(*engineBackend)
+    , dispatcher(*engineBackend->GetDispatcher())
     , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
@@ -25,6 +26,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    engineBackend.InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -32,25 +34,24 @@ void PlatformCore::Run()
     bridge->Run();
 }
 
-void PlatformCore::Quit(bool /*triggeredBySystem*/)
+void PlatformCore::PrepareToQuit()
+{
+    // As quit is not supported on iOS so do nothing
+}
+
+void PlatformCore::Quit()
 {
     // Quit is not supported on iOS
 }
 
 int32 PlatformCore::OnFrame()
 {
-    return engineBackend->OnFrame();
+    return engineBackend.OnFrame();
 }
 
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
+WindowBackend* PlatformCore::GetWindowBackend(Window* window)
 {
-    WindowBackend* wbackend = new WindowBackend(engineBackend, w);
-    if (!wbackend->Create(width, height))
-    {
-        delete wbackend;
-        wbackend = nullptr;
-    }
-    return wbackend;
+    return window->GetBackend();
 }
 
 } // namespace Private

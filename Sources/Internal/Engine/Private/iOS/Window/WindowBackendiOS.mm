@@ -18,8 +18,8 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , engineBackend(engineBackend)
     , bridge(new WindowNativeBridge(this))
@@ -39,7 +39,7 @@ void* WindowBackend::GetHandle() const
     return bridge->GetHandle();
 }
 
-bool WindowBackend::Create(float32 /*width*/, float32 /*height*/)
+bool WindowBackend::Create()
 {
     // iOS windows are always created with size same as screen size
     if (bridge->CreateWindow())
@@ -59,13 +59,17 @@ void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
     // iOS windows are always stretched to screen size
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool appIsTerminating)
 {
     // iOS windows cannot be closed
-}
+    // TODO: later add ability to close secondary windows
 
-void WindowBackend::Detach()
-{
+    if (appIsTerminating)
+    {
+        // If application is terminating then send event as if window has been destroyed.
+        // Engine ensures that Close with appIsTerminating with true value is always called on termination.
+        DispatchWindowDestroyed(true);
+    }
 }
 
 bool WindowBackend::IsWindowReadyForRender() const

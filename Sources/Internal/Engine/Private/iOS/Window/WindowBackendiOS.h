@@ -26,10 +26,9 @@ public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
-    bool Create(float32 width, float32 height);
+    bool Create();
     void Resize(float32 width, float32 height);
-    void Close();
-    void Detach();
+    void Close(bool appIsTerminating);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
