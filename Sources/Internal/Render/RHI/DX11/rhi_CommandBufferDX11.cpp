@@ -11,10 +11,8 @@
 #include "Logger/Logger.h"
 
 #include "Core/Core.h"
-#include "Debug/Profiler.h"
-#include "Concurrency/Thread.h"
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/AutoResetEvent.h"
+#include "Debug/CPUProfiler.h"
+
 #include "../Common/SoftwareCommandBuffer.h"
 #include "../Common/RenderLoop.h"
 #include "../Common/rhi_CommonImpl.h"
@@ -787,6 +785,8 @@ dx11_SyncObject_IsSignaled(Handle obj)
 
 static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
+
     StatSet::ResetAll();
 
     Trace("rhi-dx11.exec-queued-cmd\n");
@@ -877,10 +877,7 @@ static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         {
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(cb_h);
-
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
             cb->Execute();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
 
             if (cb->sync != InvalidHandle)
             {
@@ -919,11 +916,7 @@ static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 bool dx11_PresentBuffer()
 {
     // do present
-
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
     HRESULT hr = _D3D11_SwapChain->Present(1, 0);
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "SwapChain::Present");
-
     CHECK_HR(hr)
     if (hr == DXGI_ERROR_DEVICE_REMOVED)
     {
@@ -1031,7 +1024,6 @@ static void dx11_RejectFrame(CommonImpl::Frame&& frame)
                     cb->contextAnnotation->Release();
                     cb->contextAnnotation = nullptr;
                 }
-
                 cb->context->Release();
                 cb->context = nullptr;
             }
@@ -1042,7 +1034,6 @@ static void dx11_RejectFrame(CommonImpl::Frame&& frame)
                 cb->commandList = nullptr;
             }
 #endif
-
             CommandBufferPoolDX11::Free(*b);
         }
         RenderPassPoolDX11::Free(*p);
@@ -1179,7 +1170,7 @@ void CommandBufferDX11_t::_ApplyConstBuffers()
 
 void CommandBufferDX11_t::Execute()
 {
-    SCOPED_FUNCTION_TIMING();
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DVASSERT(isComplete);

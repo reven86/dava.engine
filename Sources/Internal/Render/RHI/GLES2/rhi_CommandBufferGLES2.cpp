@@ -13,13 +13,14 @@
 #include "Logger/Logger.h"
 
 using DAVA::Logger;
+
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/ManualResetEvent.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #include "_gl.h"
 
@@ -481,7 +482,8 @@ CommandBufferGLES2_t::~CommandBufferGLES2_t()
 
 void CommandBufferGLES2_t::Execute()
 {
-    //SCOPED_NAMED_TIMING("gl.exec");
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
     uint32 cur_base_vert = 0;
@@ -858,7 +860,6 @@ void CommandBufferGLES2_t::Execute()
             //{SCOPED_NAMED_TIMING("gl.DP")}
             unsigned v_cnt = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const SWCommand_DrawPrimitive*>(cmd))->mode;
-
             if (last_ps != cur_ps)
             {
                 PipelineStateGLES2::SetToRHI(cur_ps);
@@ -1205,9 +1206,7 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
             cb->Execute();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
 
             if (cb->sync != InvalidHandle)
             {
@@ -1224,7 +1223,7 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
     for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
         RenderPassPoolGLES2::Free(*p);
 
-    //update sync objects for gl
+    //update sync objects
     _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
@@ -1282,6 +1281,8 @@ void _GLES2_FinishFrame()
 
 static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
+
     int err = GL_NO_ERROR;
 
 #if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)

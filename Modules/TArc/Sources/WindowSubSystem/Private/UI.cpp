@@ -1,5 +1,6 @@
 #include "WindowSubSystem/UI.h"
 #include "WindowSubSystem/ActionUtils.h"
+
 #include <QUrl>
 
 namespace DAVA
@@ -42,8 +43,8 @@ PanelKey::PanelKey(const QString& viewName_, const CentralPanelInfo& info_)
 }
 
 PanelKey::PanelKey(Type t, const QString& viewName_, const Any& info_)
-    : type(t)
-    , viewName(viewName_)
+    : viewName(viewName_)
+    , type(t)
     , info(info_)
 {
 }

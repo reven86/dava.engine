@@ -6,7 +6,7 @@
 
 #include "Core/Core.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #include "RenderLoop.h"
 #include "FrameLoop.h"
@@ -177,7 +177,8 @@ void EndPacketList(HPacketList packetList, HSyncObject syncObject)
 
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount)
 {
-    SCOPED_NAMED_TIMING("rhi.AddPackets");
+    //PROFILER_TIMING("rhi::AddPackets");
+
     PacketList_t* pl = PacketListPool::Get(packetList);
     Handle cmdBuf = pl->cmdBuf;
 
@@ -342,8 +343,6 @@ void AddPacket(HPacketList packetList, const Packet& packet)
     AddPackets(packetList, &packet, 1);
 }
 
-/**/
-
 void Present()
 {
     RenderLoop::Present();
@@ -387,7 +386,13 @@ void Initialize(Api api, const InitParam& param)
     }
     //end of temporary
 
+<<<<<<< HEAD
     RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
+=======
+    ProcessScheduledDelete();
+
+    scheduledDeleteMutex.Unlock();
+>>>>>>> development
 }
 
 void Uninitialize()

@@ -10,7 +10,7 @@
 using DAVA::Logger;
 
 #include "Core/Core.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 
@@ -467,7 +467,8 @@ CommandBufferDX9_t::CommandBufferDX9_t()
 
 void CommandBufferDX9_t::Execute()
 {
-    SCOPED_FUNCTION_TIMING();
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
     uint32 cur_stride[MAX_VERTEX_STREAM_COUNT];
@@ -944,10 +945,8 @@ void CommandBufferDX9_t::Execute()
             RenderLoop::CheckImmediateCommand();
             immediate_cmd_ttw = 10;
         }
-
         if (cmd->type == CMD_END)
             break;
-
         c += cmd->size;
     }
 }
@@ -1042,7 +1041,6 @@ static void _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         sync->is_signaled = false;
         sync->is_used = true;
     }
-
     for (RenderPassDX9_t* pp : pass)
     {
         for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
@@ -1085,6 +1083,7 @@ bool _DX9_PresentBuffer()
         {
             result = false;
         }
+
         else if (hr == 0x88760872)
         {
             // ignore undocumented error

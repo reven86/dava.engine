@@ -4,6 +4,7 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -47,6 +48,8 @@ void SkeletonSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SkeletonSystem::Process(float32 timeElapsed)
 {
+    DAVA_CPU_PROFILER_SCOPE("SkeletonSystem::Process")
+
     for (int32 i = 0, sz = static_cast<int32>(entities.size()); i < sz; ++i)
     {
         SkeletonComponent* component = GetSkeletonComponent(entities[i]);

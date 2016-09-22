@@ -5,7 +5,7 @@
 #include "../rhi_Public.h"
 #include "rhi_GLES2.h"
 #include "Debug/DVAssert.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Logger/Logger.h"
 #include "_gl.h"
 

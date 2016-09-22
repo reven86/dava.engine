@@ -6,11 +6,11 @@
 #include "rhi_ProgGLES2.h"
 #include "rhi_GLES2.h"
 
+#include "Debug/CPUProfiler.h"
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 using DAVA::Logger;
-#include "Debug/Profiler.h"
 
 #include "_gl.h"
 
@@ -218,7 +218,6 @@ VertexDeclGLES2
             {
                 if (vattr[i].enabled)
                 {
-                    //{SCOPED_NAMED_TIMING("gl-DisableVertexAttribArray")}
                     GL_CALL(glDisableVertexAttribArray(i));
                     vattr[i].enabled = false;
                 }
@@ -247,14 +246,12 @@ VertexDeclGLES2
                 //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                 if (!vattr[idx].enabled)
                 {
-                    //{SCOPED_NAMED_TIMING("gl-EnableVertexAttribArray")}
                     GL_CALL(glEnableVertexAttribArray(idx));
                     vattr[idx].enabled = true;
                 }
 
                 if (!VAttrCacheValid || vattr[idx].size != elem[i].count || vattr[idx].type != elem[i].type || vattr[idx].normalized != GLboolean(elem[i].normalized) || cur_stride[stream] != stride[stream] || vattr[idx].pointer != static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset)))
                 {
-                    //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
                     GL_CALL(glVertexAttribPointer(idx, elem[i].count, elem[i].type, GLboolean(elem[i].normalized), stride[stream], static_cast<const GLvoid*>(base[stream] + static_cast<uint8_t*>(elem[i].offset))));
 
                     vattr[idx].size = elem[i].count;
@@ -718,8 +715,6 @@ void SetToRHI(Handle ps)
 
     if (ps2->prog.glProg != cachedProgram)
     {
-        SCOPED_NAMED_TIMING("gl-UseProgram");
-        //Trace("  SetProg \"%s\"\n",ps2->prog.vprog->uid.c_str());
         GL_CALL(glUseProgram(ps2->prog.glProg));
         cachedProgram = ps2->prog.glProg;
         VertexDeclGLES2::InvalidateVAttrCache();

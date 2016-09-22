@@ -3,7 +3,7 @@
 #include "../rhi_Public.h"
 #include "rhi_Private.h"
 #include "rhi_CommonImpl.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 
 namespace rhi
@@ -37,8 +37,6 @@ void RejectFrames()
 
 void ProcessFrame()
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
-
     bool presentResult = false;
     if (NeedRestoreResources())
     {
@@ -47,23 +45,24 @@ void ProcessFrame()
     }
     else
     {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-        frameSync.Lock();
-        CommonImpl::Frame currFrame = std::move(frames.front());
-        frames.erase(frames.begin());
-        frameSync.Unlock();
-        currFrame.frameNumber = currFrameNumber++;
-        DispatchPlatform::ExecuteFrame(std::move(currFrame));
+        {
+            DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteFrame");
+            frameSync.Lock();
+            CommonImpl::Frame currFrame = std::move(frames.front());
+            frames.erase(frames.begin());
+            frameSync.Unlock();
+            currFrame.frameNumber = currFrameNumber++;
+            DispatchPlatform::ExecuteFrame(std::move(currFrame));
 
-        frameSync.Lock();
-        frameCount--;
-        frameSync.Unlock();
+            frameSync.Lock();
+            frameCount--;
+            frameSync.Unlock();
+        }
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ExecuteFrameCommands");
-
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
-        presentResult = DispatchPlatform::PresntBuffer();
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "PresntBuffer");
+        {
+            DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
+            presentResult = DispatchPlatform::PresntBuffer();
+        }
     }
 
     if (!presentResult)
@@ -71,8 +70,6 @@ void ProcessFrame()
         RejectFrames();
         DispatchPlatform::ResetBlock();
     }
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "ProcessFrame");
 }
 
 bool FinishFrame(Handle sync)

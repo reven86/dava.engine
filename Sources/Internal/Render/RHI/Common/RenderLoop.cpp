@@ -6,7 +6,7 @@
 #include "../rhi_Type.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/Concurrency.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Logger/Logger.h"
 #include <atomic>
 
@@ -48,8 +48,7 @@ static void ProcessScheduledDelete();
 
 void Present() // called from main thread
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
-
+    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
     scheduledDeleteMutex.Lock();
     if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
@@ -81,10 +80,10 @@ void Present() // called from main thread
     }
     else //wait for render thread if needed
     {
+        DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
         if (!renderThreadSuspended)
             framePreparedEvent.Signal();
 
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
         do
         {
             frame_cnt = FrameLoop::FramesCount();
@@ -92,11 +91,7 @@ void Present() // called from main thread
                 frameDoneEvent.Wait();
 
         } while (frame_cnt >= renderThreadFrameCount);
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
     }
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 
     ProcessScheduledDelete();
 }
@@ -112,8 +107,7 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
     while (!renderThreadExitPending)
     {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
-
+        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
         if (renderThreadSuspended.load())
         {
             DispatchPlatform::FinishRendering();
@@ -122,24 +116,24 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
         }
 
         DispatchPlatform::ValidateSurface();
-
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
         bool frameReady = false;
-        while ((!frameReady) && (!resetPending))
         {
-            //exit or suspend should leave frame loop
-            if (renderThreadExitPending || renderThreadSuspended.load(std::memory_order_relaxed))
-                break;
-
-            CheckImmediateCommand();
-            frameReady = FrameLoop::FrameReady();
-
-            if (!frameReady)
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
+            while ((!frameReady) && (!resetPending))
             {
-                framePreparedEvent.Wait();
+                //exit or suspend should leave frame loop
+                if (renderThreadExitPending || renderThreadSuspended.load(std::memory_order_relaxed))
+                    break;
+
+                CheckImmediateCommand();
+                frameReady = FrameLoop::FrameReady();
+
+                if (!frameReady)
+                {
+                    framePreparedEvent.Wait();
+                }
             }
         }
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
 
         if (resetPending.load(std::memory_order_relaxed))
         {
@@ -157,8 +151,6 @@ static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
             FrameLoop::ProcessFrame();
             frameDoneEvent.Signal();
         }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
     }
 
     Logger::Info("[RHI] render-thread finished");
@@ -252,6 +244,7 @@ void SetResetPending()
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
     if (command->forceImmediate || (renderThreadFrameCount == 0))
     {
         DispatchPlatform::ProcessImmediateCommand(command);
@@ -262,7 +255,6 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
         bool executed = false;
 
         // CRAP: busy-wait
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
 
         while (!scheduled)
         {
@@ -288,8 +280,6 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
                 DAVA::Thread::Yield();
             }
         }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
 }
 void CheckImmediateCommand()
@@ -299,6 +289,7 @@ void CheckImmediateCommand()
         CommonImpl::ImmediateCommand* cmd = pendingImmediateCmd.load();
         if (cmd != nullptr)
         {
+            DAVA_CPU_PROFILER_SCOPE("ProcessImmediateCommand");
             DispatchPlatform::ProcessImmediateCommand(cmd);
             pendingImmediateCmd = nullptr;
         }
@@ -314,7 +305,7 @@ void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
 
 void ProcessScheduledDelete()
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
+    DAVA_CPU_PROFILER_SCOPE("rhi::ProcessScheduledDelete")
     scheduledDeleteMutex.Lock();
     for (int i = 0; i < frameSyncObjectsCount; i++)
     {
@@ -362,7 +353,6 @@ void ProcessScheduledDelete()
         }
     }
     scheduledDeleteMutex.Unlock();
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
 }
 
 HSyncObject GetCurrentFrameSyncObject()
