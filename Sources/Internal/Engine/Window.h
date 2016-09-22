@@ -80,8 +80,6 @@ public:
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
     Private::WindowBackend* GetBackend() const;
-    /// Detach from native window, used on exit when alive windows still exist
-    void Detach();
 
     /// Initialize platform specific render params, e.g. acquire/release context functions for Qt platform
     void InitCustomRenderParams(rhi::InitParam& params);

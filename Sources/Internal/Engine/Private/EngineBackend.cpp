@@ -5,6 +5,7 @@
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
@@ -224,17 +225,6 @@ void EngineBackend::OnGameLoopStopped()
 {
     DVASSERT(justCreatedWindows.empty());
 
-    // Detach alive windows if any
-    for (Window* w : aliveWindows)
-    {
-        w->Detach();
-    }
-
-    while (!aliveWindows.empty())
-    {
-        DoEvents();
-    }
-
     for (Window* w : dyingWindows)
     {
         delete w;
@@ -369,19 +359,24 @@ void EngineBackend::OnWindowDestroyed(Window* window)
 {
     engine->windowDestroyed.Emit(*window);
 
+    // Remove window from alive window list and place it into dying window list to delete later
+    size_t nerased = aliveWindows.erase(window);
+    DVASSERT(nerased == 1);
+    dyingWindows.insert(window);
+
     if (window->IsPrimary())
     {
         primaryWindow = nullptr;
-        // If primary window is destroyed then terminate application
-        PostAppTerminate(false);
     }
 
-    // Remove window from alive window list and delete
-    size_t nerased = aliveWindows.erase(window);
-    DVASSERT(nerased == 1);
-
-    // Place window into dying window list and delete them later
-    dyingWindows.insert(window);
+    if (aliveWindows.empty())
+    { // No alive windows left, exit application
+        platformCore->Quit();
+    }
+    else if (window->IsPrimary() && !IsEmbeddedGUIMode())
+    { // Initiate app termination if primary window is destroyed, except embedded mode
+        PostAppTerminate(false);
+    }
 }
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
@@ -414,12 +409,42 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 
 void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
 {
-    if (!appIsTerminating)
+    // Application can be terminated by several ways:
+    //  1. application calls Engine::Quit
+    //  2. application calls Window::Close for primary window
+    //  3. user closes primary window (e.g. Alt+F4 key combination or mouse press on close button)
+    //  4. system delivers unconditional termination request (e.g, android on activity finishing)
+    //
+    // EngineBackend receives termination request through MainDispatcherEvent::APP_TERMINATE event with
+    // parameter triggeredBySystem which denotes termination request source: system (value 1) or user (value 0).
+    // If termination request originates from user then EngineBackend calls PlatformCore to prepare for quit
+    // (e.g. android implementation triggers activity finishing which in turn sends system termination request,
+    // other platforms may simply repost termination request as if initiated by system).
+    // If termination request originates from system then EngineBackend closes all active windows and waits
+    // till all windows are closed. When last window is closed EngineBackend tells PlatformCore to quit which
+    // usually means simply to exit game loop.
+    // This sequence is invented for unification purpose.
+
+    if (e.terminateEvent.triggeredBySystem != 0)
     {
-        // Prevent handling multiple Quit from user code
-        // System request to terminate should come only once
-        appIsTerminating = e.terminateEvent.triggeredBySystem != 0;
-        platformCore->Quit(appIsTerminating);
+        appIsTerminating = true;
+
+        // Usually windows send blocking event about destruction and aliveWindows can be
+        // modified while iterating over windows, so use such while construction.
+        auto it = aliveWindows.begin();
+        while (it != aliveWindows.end())
+        {
+            Window* w = *it;
+            ++it;
+
+            // Directly call Close for WindowBackend to tell important information that application is terminating
+            w->GetBackend()->Close(true);
+        }
+    }
+    else if (!appIsTerminating)
+    {
+        appIsTerminating = true;
+        platformCore->PrepareToQuit();
     }
 }
 

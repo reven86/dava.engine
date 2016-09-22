@@ -23,8 +23,8 @@ bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
@@ -74,19 +74,13 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResize(width, height);
+    PostResizeOnUIThread(width, height);
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
     closeRequestByApp = true;
-    DoCloseWindow();
-}
-
-void WindowBackend::Detach()
-{
-    // On Win32 detach is similar to close
-    Close();
+    PostCloseOnUIThread();
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -324,8 +318,8 @@ LRESULT WindowBackend::OnDestroy()
     {
         PostVisibilityChanged(false);
     }
+    DispatchWindowDestroyed(true);
     hwnd = nullptr;
-    DispatchWindowDestroyed(false);
     return 0;
 }
 

@@ -86,7 +86,7 @@ void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
     appView->TryResizeView(Size(width, height));
 }
 
-void WindowNativeBridge::DoCloseWindow(bool detach)
+void WindowNativeBridge::DoCloseWindow()
 {
     // WinRT does not permit to close main window, so for primary window pretend that window has been closed.
     // For secondary window invoke Close() method, and also do not wait Closed event as stated in MSDN:
@@ -99,7 +99,7 @@ void WindowNativeBridge::DoCloseWindow(bool detach)
     UninstallEventHandlers();
     windowBackend->PostFocusChanged(false);
     windowBackend->PostVisibilityChanged(false);
-    windowBackend->DispatchWindowDestroyed(false);
+    windowBackend->DispatchWindowDestroyed(true);
 }
 
 void WindowNativeBridge::OnTriggerPlatformEvents()

@@ -29,7 +29,7 @@ ref struct WindowNativeBridge sealed
     void TriggerPlatformEvents();
 
     void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow(bool detach);
+    void DoCloseWindow();
 
 private:
     void OnTriggerPlatformEvents();

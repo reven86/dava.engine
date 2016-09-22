@@ -26,11 +26,6 @@ struct UIDispatcherEvent final
         float32 height;
     };
 
-    struct CloseEvent
-    {
-        uint32 detach;
-    };
-
     UIDispatcherEvent() = default;
     UIDispatcherEvent(eType type)
         : type(type)
@@ -42,7 +37,6 @@ struct UIDispatcherEvent final
     union
     {
         ResizeEvent resizeEvent;
-        CloseEvent closeEvent;
     };
 };
 

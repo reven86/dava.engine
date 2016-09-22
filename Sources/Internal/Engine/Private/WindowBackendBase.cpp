@@ -1,6 +1,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/WindowBackendBase.h"
+#include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Platform/SystemTimer.h"
@@ -9,11 +10,12 @@ namespace DAVA
 {
 namespace Private
 {
-WindowBackendBase::WindowBackendBase(Window& window,
-                                     MainDispatcher& mainDispatcher,
+WindowBackendBase::WindowBackendBase(EngineBackend& engineBackend,
+                                     Window& window,
                                      const Function<void(const UIDispatcherEvent&)>& uiEventHandler)
-    : window(window)
-    , mainDispatcher(mainDispatcher)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(*engineBackend.GetDispatcher())
     , uiDispatcher(uiEventHandler)
 {
 }
@@ -25,7 +27,7 @@ void WindowBackendBase::RunAsyncOnUIThread(const Function<void()>& task)
     uiDispatcher.PostEvent(e);
 }
 
-void WindowBackendBase::PostResize(float32 width, float32 height)
+void WindowBackendBase::PostResizeOnUIThread(float32 width, float32 height)
 {
     UIDispatcherEvent e(UIDispatcherEvent::RESIZE_WINDOW);
     e.resizeEvent.width = width;
@@ -33,10 +35,9 @@ void WindowBackendBase::PostResize(float32 width, float32 height)
     uiDispatcher.PostEvent(e);
 }
 
-void WindowBackendBase::PostClose(bool detach)
+void WindowBackendBase::PostCloseOnUIThread()
 {
     UIDispatcherEvent e(UIDispatcherEvent::CLOSE_WINDOW);
-    e.closeEvent.detach = detach;
     uiDispatcher.PostEvent(e);
 }
 

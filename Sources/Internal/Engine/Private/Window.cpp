@@ -25,7 +25,6 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
 
 Window::~Window()
 {
-    Logger::Debug("===================================== Window::~Window");
     delete windowBackend;
     windowBackend = nullptr;
 }
@@ -37,7 +36,7 @@ void Window::Resize(float32 w, float32 h)
 
 void Window::Close()
 {
-    windowBackend->Close();
+    windowBackend->Close(false);
 }
 
 Engine* Window::GetEngine() const
@@ -58,11 +57,6 @@ WindowNativeService* Window::GetNativeService() const
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
     windowBackend->RunAsyncOnUIThread(task);
-}
-
-void Window::Detach()
-{
-    windowBackend->Detach();
 }
 
 void Window::InitCustomRenderParams(rhi::InitParam& params)

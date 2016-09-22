@@ -19,35 +19,45 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
 }
 
-WindowBackend::~WindowBackend() = default;
-
-void WindowBackend::Detach()
+WindowBackend::~WindowBackend()
 {
-    if (surfaceView != nullptr)
+    DVASSERT(surfaceView == nullptr);
+}
+
+void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
+{
+    // Android windows are always stretched to display size
+}
+
+void WindowBackend::Close(bool appIsTerminating)
+{
+    if (appIsTerminating)
     {
-        JNIEnv* env = JNI::GetEnv();
-        env->DeleteGlobalRef(surfaceView);
-        surfaceView = nullptr;
+        // If application is terminating then free window resources on C++ side and send event
+        // as if window has been destroyed. Engine ensures that Close with appIsTerminating with
+        // true value is always called on termination.
+        if (surfaceView != nullptr)
+        {
+            DispatchWindowDestroyed(true);
 
-        DispatchWindowDestroyed(false);
+            JNIEnv* env = JNI::GetEnv();
+            env->DeleteGlobalRef(surfaceView);
+            surfaceView = nullptr;
+        }
     }
-}
-
-void WindowBackend::Resize(float32 width, float32 height)
-{
-    // Android windows are always stretched to screen size
-}
-
-void WindowBackend::Close()
-{
-    // For now android windows cannot be closed. Later add ability to close non-primary windows
+    else if (window.IsPrimary())
+    {
+        // Primary android window cannot be closed, instead quit application according to Engine rules.
+        // TODO: later add ability to close secondary windows.
+        engineBackend.Quit(0);
+    }
 }
 
 bool WindowBackend::IsWindowReadyForRender() const

@@ -22,8 +22,8 @@ namespace Private
 {
 HINSTANCE PlatformCore::hinstance = nullptr;
 
-PlatformCore::PlatformCore(EngineBackend* ebackend)
-    : engineBackend(ebackend)
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(*engineBackend)
     , nativeService(new NativeService(this))
 {
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
@@ -33,7 +33,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    engineBackend->InitializePrimaryWindow();
+    engineBackend.InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -41,9 +41,9 @@ void PlatformCore::Run()
     MSG msg;
     bool quitLoop = false;
 
-    engineBackend->OnGameLoopStarted();
+    engineBackend.OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = engineBackend->GetPrimaryWindow()->GetBackend();
+    WindowBackend* primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
     primaryWindowBackend->Create(640.0f, 480.0f);
 
     for (;;)
@@ -60,7 +60,7 @@ void PlatformCore::Run()
             ::DispatchMessage(&msg);
         }
 
-        int32 fps = engineBackend->OnFrame();
+        int32 fps = engineBackend.OnFrame();
         uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
         uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
 
@@ -76,13 +76,18 @@ void PlatformCore::Run()
         if (quitLoop)
             break;
     }
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnBeforeTerminate();
+    engineBackend.OnGameLoopStopped();
+    engineBackend.OnBeforeTerminate();
 }
 
-void PlatformCore::Quit(bool /*triggeredBySystem*/)
+void PlatformCore::PrepareToQuit()
 {
-    ::PostQuitMessage(engineBackend->GetExitCode());
+    engineBackend.PostAppTerminate(true);
+}
+
+void PlatformCore::Quit()
+{
+    ::PostQuitMessage(engineBackend.GetExitCode());
 }
 
 } // namespace Private
