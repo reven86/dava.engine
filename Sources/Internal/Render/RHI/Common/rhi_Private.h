@@ -202,6 +202,12 @@ void ResetBlock();
 
 void InitializeImplementation(Api api, const InitParam& param);
 
+struct RenderDeviceCaps;
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get();
+}
+
 void BeginFreqMeasurement(Handle pqset);
 void EndFreqMeasurement(Handle pqset);
 

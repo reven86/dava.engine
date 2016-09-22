@@ -10,7 +10,7 @@ namespace DAVA
 {
 namespace TArc
 {
-template<typename T>
+template <typename T>
 DataEditor<T>::DataEditor(DataWrapper& holder_, Reflection reflection_)
     : reflection(reflection_)
     , holder(holder_)
@@ -19,13 +19,13 @@ DataEditor<T>::DataEditor(DataWrapper& holder_, Reflection reflection_)
     dataPtr = refObject.GetPtr<T>();
 }
 
-template<typename T>
+template <typename T>
 DataEditor<T>::~DataEditor()
 {
     holder.Sync(false);
 }
 
-template<typename T>
+template <typename T>
 DataEditor<T>::DataEditor(DataEditor<T>&& other)
     : reflection(std::move(other.reflection))
     , dataPtr(std::move(other.dataPtr))
@@ -34,7 +34,7 @@ DataEditor<T>::DataEditor(DataEditor<T>&& other)
     other.holder = nullptr;
 }
 
-template<typename T>
+template <typename T>
 DataEditor<T>& DataEditor<T>::operator=(DataEditor<T>&& other)
 {
     if (&other == this)
@@ -48,13 +48,13 @@ DataEditor<T>& DataEditor<T>::operator=(DataEditor<T>&& other)
     return *this;
 }
 
-template<typename T>
+template <typename T>
 T* DataEditor<T>::operator->()
 {
     return dataPtr;
 }
 
-template<typename T>
+template <typename T>
 DataEditor<T> DataWrapper::CreateEditor()
 {
     if (HasData())

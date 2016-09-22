@@ -56,9 +56,9 @@ public:
 void ToolsAssetGuard::Init()
 {
     DVAssertMessage::SetShowInnerOverride([](DVAssertMessage::eModalType type, const char8* message)
-                                                {
-                                                    return ToolsAssetGuard::Instance()->InnerShow(type, message);
-                                                });
+                                          {
+                                              return ToolsAssetGuard::Instance()->InnerShow(type, message);
+                                          });
 }
 
 bool ToolsAssetGuard::InnerShow(DVAssertMessage::eModalType modalType, const char8* message)

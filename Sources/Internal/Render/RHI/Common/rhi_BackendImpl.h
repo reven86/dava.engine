@@ -7,7 +7,6 @@
 namespace rhi
 {
 struct ResetParam;
-struct RenderDeviceCaps;
 
 struct Dispatch
 {
@@ -18,8 +17,6 @@ struct Dispatch
     bool (*impl_TextureFormatSupported)(TextureFormat);
 
     void (*impl_InvalidateCache)();
-
-    const RenderDeviceCaps& (*impl_DeviceCaps)();
 
     void (*impl_InitContext)();
     void (*impl_ValidateSurface)(); //TODO - may be this should be part of opengl only?

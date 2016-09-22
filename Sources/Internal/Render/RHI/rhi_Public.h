@@ -96,6 +96,7 @@ struct ResetParam
 struct RenderDeviceCaps
 {
     uint32 maxAnisotropy = 1;
+    uint32 maxSamples = 1;
     char deviceDescription[128];
 
     bool is32BitIndicesSupported = false;
@@ -114,6 +115,21 @@ struct RenderDeviceCaps
     bool isAnisotropicFilteringSupported() const
     {
         return maxAnisotropy > 1;
+    }
+
+    bool SupportsAntialiasingType(AntialiasingType type) const
+    {
+        switch (type)
+        {
+        case AntialiasingType::MSAA_2X:
+            return (maxSamples >= 2);
+
+        case AntialiasingType::MSAA_4X:
+            return (maxSamples >= 4);
+
+        default:
+            return true;
+        }
     }
 };
 

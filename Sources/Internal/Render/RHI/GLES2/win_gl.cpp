@@ -134,4 +134,51 @@ void win32_gl_release_context()
     wglMakeCurrent(NULL, NULL);
 }
 
+void GLAPIENTRY win32_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
+{
+    /*
+    const char* ssource     = "unknown";
+    const char* stype       = "unknown";
+    const char* sseverity   = "unknown";
+
+    switch( source )
+    {
+    case GL_DEBUG_SOURCE_API                : ssource = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM      : ssource = "window system"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER    : ssource = "shader compiler"; break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY        : ssource = "third party"; break;
+    case GL_DEBUG_SOURCE_APPLICATION        : ssource = "application"; break;
+    case GL_DEBUG_SOURCE_OTHER              : ssource = "other"; break;
+    default                                 : ssource= "unknown"; break;
+    }
+
+    switch( type )
+    {
+    case GL_DEBUG_TYPE_ERROR                : stype = "error"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR  : stype = "deprecated behaviour"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR   : stype = "undefined behaviour"; break;
+    case GL_DEBUG_TYPE_PORTABILITY          : stype = "portabiliy"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE          : stype = "performance"; break;
+    case GL_DEBUG_TYPE_OTHER                : stype = "other"; break;
+    default                                 : stype = "unknown"; break;
+    }
+
+    switch( severity )
+    {
+    case GL_DEBUG_SEVERITY_HIGH             : sseverity = "high"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM           : sseverity = "medium"; break;
+    case GL_DEBUG_SEVERITY_LOW              : sseverity = "low"; break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION     : sseverity = "notification"; break;
+    default                                 : sseverity = "unknown"; break;
+    }
+    */
+    if (type == GL_DEBUG_TYPE_PERFORMANCE)
+        Trace("[gl.warning] %s\n", message);
+    else if (type == GL_DEBUG_TYPE_ERROR)
+        Trace("[gl.error] %s\n", message);
+    //    else
+    //        Logger::Info( "[gl] %s\n", message );
+}
+
+
 #endif

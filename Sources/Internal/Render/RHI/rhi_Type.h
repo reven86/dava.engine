@@ -81,6 +81,27 @@ enum
     MAX_VERTEX_STREAM_COUNT = 4
 };
 
+//------------------------------------------------------------------------------
+enum class AntialiasingType : DAVA::uint32
+{
+    NONE,
+    MSAA_2X,
+    MSAA_4X,
+};
+
+inline DAVA::uint32 TextureSampleCountForAAType(AntialiasingType type)
+{
+    switch (type)
+    {
+    case AntialiasingType::MSAA_2X:
+        return 2;
+    case AntialiasingType::MSAA_4X:
+        return 4;
+    default:
+        return 1;
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // vertex-pipeline
 
@@ -407,8 +428,8 @@ enum LoadAction
 enum StoreAction
 {
     STOREACTION_NONE = 0,
-    STOREACTION_STORE = 1
-    //    STOREACTION_RESOLVE    = 2
+    STOREACTION_STORE = 1,
+    STOREACTION_RESOLVE = 2
 };
 
 namespace VertexBuffer
@@ -465,11 +486,12 @@ namespace Texture
 {
 struct Descriptor
 {
-    TextureType type;
-    uint32 width;
-    uint32 height;
-    TextureFormat format;
-    uint32 levelCount;
+    TextureType type = TEXTURE_TYPE_2D;
+    uint32 width = 0;
+    uint32 height = 0;
+    TextureFormat format = TEXTURE_FORMAT_R8G8B8A8;
+    uint32 levelCount = 1;
+    uint32 sampleCount = 1;
     void* initialData[128]; // it must be writable!
     uint32 isRenderTarget : 1;
     uint32 autoGenMipmaps : 1;
@@ -478,11 +500,9 @@ struct Descriptor
     uint32 cpuAccessWrite : 1;
 
     Descriptor(uint32 w, uint32 h, TextureFormat fmt)
-        : type(TEXTURE_TYPE_2D)
-        , width(w)
+        : width(w)
         , height(h)
         , format(fmt)
-        , levelCount(1)
         , isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
@@ -491,13 +511,9 @@ struct Descriptor
     {
         memset(initialData, 0, sizeof(initialData));
     }
+
     Descriptor()
-        : type(TEXTURE_TYPE_2D)
-        , width(0)
-        , height(0)
-        , format(TEXTURE_FORMAT_R8G8B8A8)
-        , levelCount(1)
-        , isRenderTarget(false)
+        : isRenderTarget(false)
         , autoGenMipmaps(false)
         , needRestore(true)
         , cpuAccessRead(false)
@@ -740,19 +756,15 @@ struct RenderPassConfig
 {
     struct ColorBuffer
     {
-        Handle texture;
-        TextureFace textureFace;
-        uint32 textureLevel;
-        LoadAction loadAction;
-        StoreAction storeAction;
+        Handle texture = InvalidHandle;
+        Handle multisampleTexture = InvalidHandle;
+        TextureFace textureFace = TEXTURE_FACE_POSITIVE_X;
+        uint32 textureLevel = 0;
+        LoadAction loadAction = LOADACTION_CLEAR;
+        StoreAction storeAction = STOREACTION_NONE;
         float clearColor[4];
 
         ColorBuffer()
-            : texture(InvalidHandle)
-            , textureFace(TEXTURE_FACE_NEGATIVE_X)
-            , textureLevel(0)
-            , loadAction(LOADACTION_CLEAR)
-            , storeAction(STOREACTION_NONE)
         {
             clearColor[0] = 0;
             clearColor[1] = 0;
@@ -763,40 +775,46 @@ struct RenderPassConfig
 
     struct DepthStencilBuffer
     {
-        Handle texture;
-        LoadAction loadAction;
-        StoreAction storeAction;
-        float clearDepth;
-        uint32 clearStencil;
-
-        DepthStencilBuffer()
-            : texture(DefaultDepthBuffer)
-            , loadAction(LOADACTION_CLEAR)
-            , storeAction(STOREACTION_NONE)
-            , clearDepth(1.0f)
-            , clearStencil(0)
-        {
-        }
+        Handle texture = DefaultDepthBuffer;
+        Handle multisampleTexture = InvalidHandle;
+        LoadAction loadAction = LOADACTION_CLEAR;
+        StoreAction storeAction = STOREACTION_NONE;
+        float clearDepth = 1.0f;
+        uint32 clearStencil = 0;
     };
 
     ColorBuffer colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer depthStencilBuffer;
 
-    Handle queryBuffer;
-    uint32 PerfQueryIndex0;
-    uint32 PerfQueryIndex1;
+    AntialiasingType antialiasingType = AntialiasingType::NONE;
+
     Viewport viewport;
+    Handle queryBuffer = InvalidHandle;
+    uint32 PerfQueryIndex0 = DAVA::InvalidIndex;
+    uint32 PerfQueryIndex1 = DAVA::InvalidIndex;
+    uint32 priority = 0;
+    uint32 invertCulling = 0;
 
-    int priority;
-    uint32 invertCulling : 1;
-
-    RenderPassConfig()
-        : queryBuffer(InvalidHandle)
-        , PerfQueryIndex0(DAVA::InvalidIndex)
-        , PerfQueryIndex1(DAVA::InvalidIndex)
-        , priority(0)
-        , invertCulling(0)
+    bool IsValid() const
     {
+        if (depthStencilBuffer.storeAction == STOREACTION_RESOLVE)
+            return false;
+
+        bool usingResolve = colorBuffer[0].storeAction == STOREACTION_RESOLVE;
+        bool hasMSTexture = colorBuffer[0].multisampleTexture != InvalidHandle;
+
+        if (UsingMSAA() && !(usingResolve || hasMSTexture))
+            return false;
+
+        if (usingResolve && !(UsingMSAA() || hasMSTexture))
+            return false;
+
+        return true;
+    }
+
+    bool UsingMSAA() const
+    {
+        return (antialiasingType == AntialiasingType::MSAA_2X) || (antialiasingType == AntialiasingType::MSAA_4X);
     }
 };
 

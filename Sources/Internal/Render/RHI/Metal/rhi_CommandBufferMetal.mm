@@ -60,6 +60,7 @@ public:
     unsigned cur_vstream_count;
     Handle cur_vb[MAX_VERTEX_STREAM_COUNT];
     uint32 cur_stride;
+    uint32 sampleCount;
     bool ds_used;
 #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
     bool do_commit_on_end;
@@ -154,7 +155,7 @@ CommandBufferMetal_t::Execute()
             Handle ps = ((SWCommand_SetPipelineState*)cmd)->ps;
             unsigned layoutUID = ((SWCommand_SetPipelineState*)cmd)->vdecl;
 
-            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder);
+            cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder, sampleCount);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
             StatSet::IncStat(stat_SET_PS, 1);
         }
@@ -376,7 +377,6 @@ CommandBufferMetal_t::Execute()
             unsigned firstVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->firstVertex;
             unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
 
-            unsigned i_cnt = 0;
             unsigned ib_base = 0;
             id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cur_ib, &ib_base);
             MTLIndexType i_type = IndexBufferMetal::GetType(cur_ib);
@@ -405,9 +405,7 @@ CommandBufferMetal_t::Execute()
             unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
             unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
             unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instanceCount;
-            unsigned baseInst = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->baseInstance;
 
-            unsigned i_cnt = 0;
             unsigned ib_base = 0;
             id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cur_ib, &ib_base);
             MTLIndexType i_type = IndexBufferMetal::GetType(cur_ib);
@@ -432,6 +430,115 @@ CommandBufferMetal_t::Execute()
 #endif
 
 //------------------------------------------------------------------------------
+
+void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassConfig& cfg, bool& ds_used)
+
+{
+    bool usingMSAA = cfg.UsingMSAA();
+
+    const RenderPassConfig::ColorBuffer& color0 = cfg.colorBuffer[0];
+    if (color0.texture == InvalidHandle)
+    {
+        if (usingMSAA)
+        {
+            DVASSERT(color0.multisampleTexture != InvalidHandle);
+            TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
+            desc.colorAttachments[0].resolveTexture = _Metal_Frame.back().drawable.texture;
+        }
+        else
+
+        {
+            desc.colorAttachments[0].texture = currentDrawable.texture;
+        }
+    }
+    else if (usingMSAA)
+    {
+        TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
+        TextureMetal::SetAsResolveRenderTarget(color0.texture, desc);
+    }
+    else
+    {
+        TextureMetal::SetAsRenderTarget(color0.texture, desc);
+    }
+
+    switch (color0.loadAction)
+    {
+    case LOADACTION_CLEAR:
+        desc.colorAttachments[0].loadAction = MTLLoadActionClear;
+        break;
+    case LOADACTION_LOAD:
+        desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
+        break;
+    default:
+        desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+    }
+
+    desc.colorAttachments[0].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
+    desc.colorAttachments[0].clearColor = MTLClearColorMake(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]);
+
+    if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
+    {
+        if (usingMSAA)
+        {
+            TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.multisampleTexture, desc);
+            desc.depthAttachment.resolveTexture = _Metal_DefDepthBuf;
+            desc.stencilAttachment.resolveTexture = _Metal_DefStencilBuf;
+        }
+        else
+        {
+            desc.depthAttachment.texture = _Metal_DefDepthBuf;
+            desc.stencilAttachment.texture = _Metal_DefStencilBuf;
+        }
+        ds_used = true;
+    }
+    else if (cfg.depthStencilBuffer.texture != rhi::InvalidHandle)
+    {
+        if (usingMSAA)
+        {
+            TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.multisampleTexture, desc);
+            TextureMetal::SetAsResolveDepthStencil(cfg.depthStencilBuffer.texture, desc);
+        }
+        else
+        {
+            TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.texture, desc);
+        }
+        ds_used = true;
+    }
+
+    if (ds_used)
+    {
+        desc.depthAttachment.loadAction = (cfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        desc.stencilAttachment.loadAction = (cfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        desc.depthAttachment.clearDepth = cfg.depthStencilBuffer.clearDepth;
+        desc.stencilAttachment.clearStencil = cfg.depthStencilBuffer.clearStencil;
+
+        switch (cfg.depthStencilBuffer.storeAction)
+        {
+        case STOREACTION_STORE:
+            DVASSERT(!usingMSAA);
+            desc.depthAttachment.storeAction = MTLStoreActionStore;
+            desc.stencilAttachment.storeAction = MTLStoreActionStore;
+            break;
+
+        case STOREACTION_NONE:
+            desc.depthAttachment.storeAction = MTLStoreActionDontCare;
+            desc.depthAttachment.resolveTexture = nil;
+            desc.stencilAttachment.storeAction = MTLStoreActionDontCare;
+            desc.stencilAttachment.resolveTexture = nil;
+            break;
+
+        case STOREACTION_RESOLVE:
+            DVASSERT(usingMSAA);
+            desc.depthAttachment.storeAction = MTLStoreActionMultisampleResolve;
+            desc.stencilAttachment.storeAction = MTLStoreActionMultisampleResolve;
+            break;
+
+        default:
+            DVASSERT_MSG(0, "Invalid store action specified.");
+            break;
+        }
+    }
+}
 
 #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 
@@ -466,48 +573,7 @@ bool RenderPassMetal_t::Initialize()
 
     desc = [MTLRenderPassDescriptor renderPassDescriptor];
 
-    if (cfg.colorBuffer[0].texture == InvalidHandle)
-        desc.colorAttachments[0].texture = currentDrawable.texture;
-    else
-        TextureMetal::SetAsRenderTarget(cfg.colorBuffer[0].texture, desc);
-
-    switch (cfg.colorBuffer[0].loadAction)
-    {
-    case LOADACTION_CLEAR:
-        desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        break;
-    case LOADACTION_LOAD:
-        desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-        break;
-    default:
-        desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-    }
-
-    desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    desc.colorAttachments[0].clearColor = MTLClearColorMake(cfg.colorBuffer[0].clearColor[0], cfg.colorBuffer[0].clearColor[1], cfg.colorBuffer[0].clearColor[2], cfg.colorBuffer[0].clearColor[3]);
-
-    if (cfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
-    {
-        desc.depthAttachment.texture = _Metal_DefDepthBuf;
-        desc.stencilAttachment.texture = _Metal_DefStencilBuf;
-        ds_used = true;
-    }
-    else if (cfg.depthStencilBuffer.texture != rhi::InvalidHandle)
-    {
-        TextureMetal::SetAsDepthStencil(cfg.depthStencilBuffer.texture, desc);
-        ds_used = true;
-    }
-
-    if (ds_used)
-    {
-        desc.depthAttachment.loadAction = (cfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        desc.depthAttachment.storeAction = (cfg.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        desc.depthAttachment.clearDepth = cfg.depthStencilBuffer.clearDepth;
-
-        desc.stencilAttachment.loadAction = (cfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        desc.stencilAttachment.storeAction = (cfg.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        desc.stencilAttachment.clearStencil = cfg.depthStencilBuffer.clearStencil;
-    }
+    SetRenderPassAttachments(desc, cfg, ds_used);
 
     if (cfg.queryBuffer != InvalidHandle)
     {
@@ -534,6 +600,7 @@ bool RenderPassMetal_t::Initialize()
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
+        cb->sampleCount = rhi::TextureSampleCountForAAType(cfg.antialiasingType);
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
@@ -561,6 +628,7 @@ bool RenderPassMetal_t::Initialize()
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
+            cb->sampleCount = rhi::TextureSampleCountForAAType(cfg.antialiasingType);
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 
@@ -579,6 +647,7 @@ bool RenderPassMetal_t::Initialize()
 
 static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
+    DVASSERT(passConf.IsValid());
     DVASSERT(cmdBufCount);
     
 
@@ -612,48 +681,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
     bool ds_used = false;
     pass->desc = [MTLRenderPassDescriptor renderPassDescriptor];
 
-    if (passConf.colorBuffer[0].texture == InvalidHandle)
-        pass->desc.colorAttachments[0].texture = currentDrawable.texture;
-    else
-        TextureMetal::SetAsRenderTarget(passConf.colorBuffer[0].texture, pass->desc);
-
-    switch (passConf.colorBuffer[0].loadAction)
-    {
-    case LOADACTION_CLEAR:
-        pass->desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        break;
-    case LOADACTION_LOAD:
-        pass->desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-        break;
-    default:
-        pass->desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-    }
-
-    pass->desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    pass->desc.colorAttachments[0].clearColor = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0], passConf.colorBuffer[0].clearColor[1], passConf.colorBuffer[0].clearColor[2], passConf.colorBuffer[0].clearColor[3]);
-
-    if (passConf.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
-    {
-        pass->desc.depthAttachment.texture = _Metal_DefDepthBuf;
-        pass->desc.stencilAttachment.texture = _Metal_DefStencilBuf;
-        ds_used = true;
-    }
-    else if (passConf.depthStencilBuffer.texture != rhi::InvalidHandle)
-    {
-        TextureMetal::SetAsDepthStencil(passConf.depthStencilBuffer.texture, pass->desc);
-        ds_used = true;
-    }
-
-    if (ds_used)
-    {
-        pass->desc.depthAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        pass->desc.depthAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        pass->desc.depthAttachment.clearDepth = passConf.depthStencilBuffer.clearDepth;
-
-        pass->desc.stencilAttachment.loadAction = (passConf.depthStencilBuffer.loadAction == LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-        pass->desc.stencilAttachment.storeAction = (passConf.depthStencilBuffer.storeAction == STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-        pass->desc.stencilAttachment.clearStencil = passConf.depthStencilBuffer.clearStencil;
-    }
+    SetRenderPassAttachments(pass->desc, passConf, ds_used);
 
     if (passConf.queryBuffer != InvalidHandle)
     {
@@ -672,7 +700,6 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         CommandBufferMetal_t* cb = CommandBufferPool::Get(cb_h);
 
         pass->encoder = nil;
-        //pass->buf = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
         pass->buf = [_Metal_DefCmdQueue commandBuffer];
         [pass->buf retain];
 
@@ -685,6 +712,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         cb->ds_used = ds_used;
         cb->cur_ib = InvalidHandle;
         cb->cur_vstream_count = 0;
+        cb->sampleCount = passConf.sampleCount;
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
@@ -719,6 +747,7 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
             cb->ds_used = ds_used;
             cb->cur_ib = InvalidHandle;
             cb->cur_vstream_count = 0;
+            cb->sampleCount = passConf.sampleCount;
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
             
@@ -812,7 +841,7 @@ static void metal_CommandBuffer_Begin(Handle cmdBuf)
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
 #else
     cb->curUsedSize = 0;
-    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
+    cb->allocCmd<SWCommand_Begin>();
 #endif
 }
 
@@ -855,7 +884,7 @@ static void metal_CommandBuffer_SetPipelineState(Handle cmdBuf, Handle ps, uint3
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->color_fmt, cb->ds_used, cb->encoder);
+    cb->cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, cb->color_fmt, cb->ds_used, cb->encoder, cb->sampleCount);
     cb->cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
     StatSet::IncStat(stat_SET_PS, 1);
 #else
@@ -899,10 +928,9 @@ static void metal_CommandBuffer_SetCullMode(Handle cmdBuf, CullMode mode)
 static void metal_CommandBuffer_SetScissorRect(Handle cmdBuf, ScissorRect rect)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
-    MTLScissorRect rc;
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-
+    MTLScissorRect rc;
     if (!(rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0))
     {
         unsigned max_x = (cb->rt) ? unsigned(cb->rt.width) : unsigned(_Metal_DefFrameBuf.width);
@@ -966,10 +994,9 @@ static void
 metal_CommandBuffer_SetViewport(Handle cmdBuf, Viewport viewport)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
-    MTLViewport vp;
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
-
+    MTLViewport vp;
     if (!(viewport.x == 0 && viewport.y == 0 && viewport.width == 0 && viewport.height == 0))
     {
         vp.originX = viewport.x;
@@ -1444,14 +1471,11 @@ metal_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType t
 static void
 metal_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 {
-    CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
-    
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     NSString* txt = [[NSString alloc] initWithUTF8String:text];
-
+    CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
     [cb->encoder insertDebugSignpost:txt];
     [txt release];
-#else
 #endif
 }
 
@@ -1622,9 +1646,14 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 
     if (pass.size())
     {
+<<<<<<< HEAD
         MTL_TRACE("  -mtl.present-drawable %p", (void*)(currentDrawable));
         MTL_TRACE("   drawable= %p %i %s", (void*)(currentDrawable), [currentDrawable retainCount], NSStringFromClass([currentDrawable class]).UTF8String);
         [pbuf presentDrawable:currentDrawable];
+=======
+        Handle last_cb_h = pass.back()->cmdBuf.back();
+        CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
+>>>>>>> development
 
         unsigned f = frame_n;
         if (syncObject != InvalidHandle)

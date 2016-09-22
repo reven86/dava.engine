@@ -42,6 +42,7 @@ namespace rhi
 struct InitParam;
 
 DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
+uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 
 extern ID3D11Device* _D3D11_Device;
 extern IDXGISwapChain* _D3D11_SwapChain;

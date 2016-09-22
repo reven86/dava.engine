@@ -37,12 +37,14 @@ namespace TextureMetal
 void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce);
 void SetToRHIVertex(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce);
 void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc);
+void SetAsResolveRenderTarget(Handle tex, MTLRenderPassDescriptor* desc);
 void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc);
+void SetAsResolveDepthStencil(Handle tex, MTLRenderPassDescriptor* desc);
 }
 
 namespace PipelineStateMetal
 {
-uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce);
+uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 sampleCount);
 uint32 VertexStreamCount(Handle ps);
 }
 
