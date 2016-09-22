@@ -94,7 +94,6 @@ void ios_gl_reset(void* nativeLayer)
 
 void ios_gl_end_frame()
 {
-
     glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
 
