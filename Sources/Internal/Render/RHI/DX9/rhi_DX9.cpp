@@ -203,8 +203,30 @@ void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
     }
 }
 
-bool dx9_SelectAdapter(const DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_processing, UINT& indexInVector)
+bool dx9_SelectAdapter(DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_processing, UINT& indexInVector)
 {
+    // sort adapters by preferred vendor id
+    std::sort(adapters.begin(), adapters.end(), [](const AdapterInfo& l, const AdapterInfo& r) {
+        static const UINT preferredVendorIds[] =
+        {
+          0x10DE, // nVIDIA
+          0x1002, // ATI
+          0x8086, // Intel
+        };
+        UINT leftId = UINT(-1);
+        UINT rightId = UINT(-1);
+        for (UINT i = 0; i < countof(preferredVendorIds); ++i)
+        {
+            if (preferredVendorIds[i] == l.info.VendorId)
+                leftId = i;
+            if (preferredVendorIds[i] == r.info.VendorId)
+                rightId = i;
+        }
+        return leftId < rightId;
+    });
+
+    // now go through sorted (by preferred vendor) adapters
+    // and find one with hadrware vertex processing
     indexInVector = 0;
     vertex_processing = E_FAIL;
     for (const AdapterInfo& adapter : adapters)
@@ -270,12 +292,9 @@ void _InitDX9()
             Memcpy(MutableDeviceCaps::Get().deviceDescription, adapter.info.Description,
                    DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(adapter.info.Description) + 1));
 
-            Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", _D3D9_Adapter, adapter.info.DeviceName, adapter.info.Description);
-            Logger::Info("  Driver %u.%u.%u.%u",
-                         HIWORD(adapter.info.DriverVersion.HighPart),
-                         LOWORD(adapter.info.DriverVersion.HighPart),
-                         HIWORD(adapter.info.DriverVersion.LowPart),
-                         LOWORD(adapter.info.DriverVersion.LowPart));
+            Logger::Info("Adapter [%u]: %s (%s), driver: %u.%u.%u.%u", _D3D9_Adapter, adapter.info.Description, adapter.info.DeviceName,
+                         HIWORD(adapter.info.DriverVersion.HighPart), LOWORD(adapter.info.DriverVersion.HighPart),
+                         HIWORD(adapter.info.DriverVersion.LowPart), LOWORD(adapter.info.DriverVersion.LowPart));
         }
         else
         {
