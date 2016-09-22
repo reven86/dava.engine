@@ -77,6 +77,30 @@ def __build_win10(working_directory_path, root_project_path):
 
 	return True
 
+def __build_macos(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_macos_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'yaml.xcodeproj', 'yaml',
+		'libyaml.a',
+		'libyaml_macos.a')
+
+	return True
+
+def __build_ios(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_ios_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'yaml.xcodeproj', 'yaml',
+		'libyaml.a',
+		'libyaml_ios.a')
+
+	return True
+
 def __build_android(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
