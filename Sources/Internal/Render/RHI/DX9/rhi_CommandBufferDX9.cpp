@@ -10,7 +10,7 @@
 using DAVA::Logger;
 
 #include "Core/Core.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 
@@ -531,7 +531,8 @@ void CommandBufferDX9_t::End()
 
 void CommandBufferDX9_t::Execute()
 {
-    SCOPED_FUNCTION_TIMING();
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
     uint32 cur_stride[MAX_VERTEX_STREAM_COUNT];
@@ -1024,6 +1025,8 @@ void CommandBufferDX9_t::Execute()
 static void
 dx9_Present(Handle sync)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
+
     if (_DX9_RenderThreadFrameCount)
     {
         Trace("rhi-dx9.present\n");
@@ -1042,16 +1045,19 @@ dx9_Present(Handle sync)
 
         size_t frame_cnt = 0;
 
-        for (;;)
         {
-            _DX9_FrameSync.Lock();
-            frame_cnt = _DX9_Frame.size();
-            _DX9_FrameSync.Unlock();
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
+            for (;;)
+            {
+                _DX9_FrameSync.Lock();
+                frame_cnt = _DX9_Frame.size();
+                _DX9_FrameSync.Unlock();
 
-            if (frame_cnt < _DX9_RenderThreadFrameCount)
-                break;
+                if (frame_cnt < _DX9_RenderThreadFrameCount)
+                    break;
 
-            WaitForSingleObject(_DX9_FrameDoneEvent, INFINITE);
+                WaitForSingleObject(_DX9_FrameDoneEvent, INFINITE);
+            }
         }
     }
     else
@@ -1150,6 +1156,8 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
 static void
 _DX9_ExecuteQueuedCommands()
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
+
     StatSet::ResetAll();
 
     unsigned frame_n = 0;
@@ -1217,7 +1225,11 @@ _DX9_ExecuteQueuedCommands()
             }
         }
 
-        HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+        HRESULT hr;
+        {
+            DAVA_CPU_PROFILER_SCOPE("D3D9Device::Present");
+            hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+        }
 
         if (FAILED(hr))
         {
@@ -1720,6 +1732,8 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
         bool scheduled = false;
         bool executed = false;
 
+        DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
+
         // CRAP: busy-wait
         do
         {
@@ -1767,6 +1781,8 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
 
     while (_DX9_RenderThreadRunning)
     {
+        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
+
         _DX9_PendingImmediateCmdSync.Lock();
         if (_DX9_PendingImmediateCmd)
         {
@@ -1788,6 +1804,8 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         }
         else
         {
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
+
             WaitForSingleObject(_DX9_FramePreparedEvent, INFINITE);
         }
 

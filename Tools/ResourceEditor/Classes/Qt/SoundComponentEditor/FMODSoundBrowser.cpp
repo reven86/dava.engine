@@ -189,3 +189,9 @@ void FMODSoundBrowser::FillEventsTree(const DAVA::Vector<DAVA::String>& names)
         }
     }
 }
+
+void FMODSoundBrowser::SetCurrentEvent(const DAVA::String& eventPath)
+{
+    ui->treeWidget->collapseAll();
+    SelectItemAndExpandTreeByEventName(eventPath);
+}
