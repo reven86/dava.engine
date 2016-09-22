@@ -103,6 +103,11 @@ void WindowNativeBridge::DoCloseWindow()
 
 void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
 {
+    if (mouseMode == newMode)
+    {
+        return;
+    }
+    mouseMode = newMode;
     auto task = [this, newMode]() {
         nativeMouseMode = newMode;
         deferredMouseMode = false;
@@ -113,7 +118,7 @@ void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
             SetMouseCaptured(false);
             SetMouseVisibility(true);
             break;
-        case DAVA::eMouseMode::PINING:
+        case DAVA::eMouseMode::PINNING:
         {
             if (hasFocus && !focusChanged)
             {
@@ -141,6 +146,11 @@ void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
         }
     };
     uwpWindow->RunAsyncOnUIThread(task);
+}
+
+void WindowNativeBridge::GetMouseMode() const
+{
+    return mouseMode;
 }
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)
@@ -196,7 +206,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             deferredMouseMode = false;
             SetMouseVisibility(false);
-            if (eMouseMode::PINING == nativeMouseMode)
+            if (eMouseMode::PINNING == nativeMouseMode)
             {
                 SetMouseCaptured(true);
                 skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -214,7 +224,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == nativeMouseMode)
+                if (eMouseMode::PINNING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                     skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -239,7 +249,7 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     if (!hasFocus)
     {
         focusChanged = true;
-        if (eMouseMode::PINING == nativeMouseMode)
+        if (eMouseMode::PINNING == nativeMouseMode)
         {
             SetMouseVisibility(true);
             SetMouseCaptured(false);
@@ -466,7 +476,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (eMouseMode::PINING != nativeMouseMode)
+    if (eMouseMode::PINNING != nativeMouseMode)
     {
         return;
     }

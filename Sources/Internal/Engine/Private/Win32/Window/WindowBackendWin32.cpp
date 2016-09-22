@@ -117,7 +117,7 @@ void WindowBackend::SetCursorInCenter()
     ::SetCursor(NULL);
 }
 
-bool WindowBackend::SetMouseVisibility(bool visible)
+void WindowBackend::SetMouseVisibility(bool visible)
 {
     if (mouseVisibled != visible)
     {
@@ -150,7 +150,7 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             deferredMouseMode = false;
             SetMouseVisibility(false);
-            if (eMouseMode::PINING == nativeMouseMode)
+            if (eMouseMode::PINNING == nativeMouseMode)
             {
                 SetMouseCaptured(false);
             }
@@ -167,7 +167,7 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == nativeMouseMode)
+                if (eMouseMode::PINNING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                 }
@@ -177,6 +177,11 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
         return true;
     }
     return false;
+}
+
+eMouseMode WindowBackend::GetMouseMode() const
+{
+    return nativeMouseMode;
 }
 
 void WindowBackend::SetMouseMode(eMouseMode newMode)
@@ -190,7 +195,7 @@ void WindowBackend::SetMouseMode(eMouseMode newMode)
         SetMouseCaptured(false);
         SetMouseVisibility(true);
         break;
-    case DAVA::eMouseMode::PINING:
+    case DAVA::eMouseMode::PINNING:
     {
         if (hasFocus && !focusChanged)
         {
@@ -314,7 +319,7 @@ LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
     if (!gotFocus)
     {
         focusChanged = true;
-        if (eMouseMode::PINING == nativeMouseMode)
+        if (eMouseMode::PINNING == nativeMouseMode)
         {
             SetMouseVisibility(true);
             SetMouseCaptured(false);

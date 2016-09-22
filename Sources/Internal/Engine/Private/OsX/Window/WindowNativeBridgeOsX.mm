@@ -317,6 +317,10 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 
 void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
 {
+    if (nativeMouseMode == newMode)
+    {
+        return;
+    }
     nativeMouseMode = newMode;
     deferredMouseMode = false;
     switch (newMode)
@@ -352,6 +356,11 @@ void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
         break;
     }
     }
+}
+
+eMouseMode WindowNativeBridge::GetMouseMode()
+{
+    return nativeMouseMode;
 }
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)
@@ -427,7 +436,7 @@ bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
             {
                 deferredMouseMode = false;
                 SetMouseVisibility(false);
-                if (eMouseMode::PINING == nativeMouseMode)
+                if (eMouseMode::PINNING == nativeMouseMode)
                 {
                     SetMouseCaptured(true);
                     skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;

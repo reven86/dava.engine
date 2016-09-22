@@ -1192,7 +1192,7 @@ bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = f
 #if !defined(__DAVAENGINE_COREV2__)
     if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
 #else
-    if (Engine::Instance()->PrimaryWindow()->GetMouseMode() == eMouseMode::PINING)
+    if (Engine::Instance()->PrimaryWindow()->GetMouseMode() == eMouseMode::PINNING)
 #endif // !defined(__DAVAENGINE_COREV2__)
     {
         const Size2i& virtScreenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();

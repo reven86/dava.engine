@@ -57,7 +57,15 @@ public:
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-    // Window's cursor mode
+    /// \brief Set mouse mode
+    ///
+    /// Some platforms grant mouse management
+    /// SetMouseMode implemented on Win32, OsX, WinUWP
+    /// Supports following modes: see more in eMouseMode enum
+    /// SetMouseMode - turn on mouse mode, if could be set, on WinUWP it will be performed on UI thread
+    /// GetMouseMode - gets current mode
+    ///
+    /// \return DAVA::Vector of char pointers to command line arguments.
     void SetMouseMode(eMouseMode mode);
     eMouseMode GetMouseMode() const;
 
@@ -140,7 +148,6 @@ private:
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
-    eMouseMode mouseMode = eMouseMode::OFF;
     // Friends
     friend class Private::EngineBackend;
     friend Private::WindowBackend;

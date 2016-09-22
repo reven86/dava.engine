@@ -43,6 +43,7 @@ public:
     void ProcessPlatformEvents();
 
     void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 private:
     void EventHandler(const UIDispatcherEvent& e);

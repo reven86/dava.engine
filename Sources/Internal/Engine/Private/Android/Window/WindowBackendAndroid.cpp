@@ -93,6 +93,11 @@ void WindowBackend::SetMouseMode(eMouseMode mode)
 {
 }
 
+eMouseMode WindowBackend::GetMouseMode() const
+{
+    return eMouseMode::OFF;
+}
+
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
 {
 }

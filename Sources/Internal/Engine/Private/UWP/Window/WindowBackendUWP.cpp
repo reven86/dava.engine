@@ -101,6 +101,11 @@ void WindowBackend::SetMouseMode(eMouseMode mode)
     bridge->SetMouseMode(mode);
 }
 
+eMouseMode GetMouseMode() const
+{
+    return bridge->GetMouseMode();
+}
+
 } // namespace Private
 } // namespace DAVA
 

@@ -60,6 +60,7 @@ struct WindowNativeBridge final
     void MouseEntered(NSEvent* theEvent);
     void MouseExited(NSEvent* theEvent);
     void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
     //////////////////////////////////////////////////////////////////////////
 

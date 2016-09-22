@@ -71,17 +71,13 @@ void Window::RunAsyncOnUIThread(const Function<void()>& task)
 
 void Window::SetMouseMode(eMouseMode mode)
 {
-    if (mouseMode != mode)
-    {
-        mouseMode = mode;
-        DVASSERT(windowBackend != nullptr);
-        windowBackend->SetMouseMode(mode);
-    }
+    DVASSERT(windowBackend != nullptr);
+    windowBackend->SetMouseMode(mode);
 }
 
 eMouseMode Window::GetMouseMode() const
 {
-    return mouseMode;
+    return windowBackend->GetMouseMode();
 }
 
 void Window::Update(float32 frameDelta)

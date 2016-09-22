@@ -60,7 +60,7 @@ void FullscreenTest::LoadResources()
 #if !defined(__DAVAENGINE_COREV2__)
     btn->SetStateText(0xFF, L"Mouse Capute: Frame");
 #else
-    btn->SetStateText(0xFF, L"Mouse Capute: Hide");
+    btn->SetStateText(0xFF, L"Mouse Mode: Hide");
 #endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(0);
@@ -69,7 +69,7 @@ void FullscreenTest::LoadResources()
 
     btn.reset(new UIButton(Rect(10, 135, 300, 20)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mouse Capute: Pining");
+    btn->SetStateText(0xFF, L"Mouse Mode: Pinning");
     btn->SetDebugDraw(true);
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -304,7 +304,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 #if !defined(__DAVAENGINE_COREV2__)
         InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
 #else
-        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::PINING);
+        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::PINNING);
 #endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
@@ -358,17 +358,17 @@ void FullscreenTest::UpdateMode()
     switch (captureMode)
     {
     case eMouseMode::OFF:
-        pinningText->SetText(L"Mouse capture mode: OFF");
+        pinningText->SetText(L"Mouse Mode mode: OFF");
         pinningMousePosText->SetVisibilityFlag(false);
         break;
 
     case eMouseMode::HIDE:
-        pinningText->SetText(L"Mouse Capture = HIDE, press Mouse Button to turn off");
+        pinningText->SetText(L"Mouse Mode = HIDE, press Middle Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
 
-    case eMouseMode::PINING:
-        pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
+    case eMouseMode::PINNING:
+        pinningText->SetText(L"Mouse Mode = PINNING, press Middle Mouse Button to turn off");
         pinningMousePosText->SetVisibilityFlag(true);
         break;
     }

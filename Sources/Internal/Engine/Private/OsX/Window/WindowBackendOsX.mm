@@ -97,6 +97,11 @@ void WindowBackend::SetMouseMode(eMouseMode mode)
     bridge->SetMouseMode(mode);
 }
 
+eMouseMode WindowBackend::GetMouseMode() const
+{
+    return bridge->GetMouseMode();
+}
+
 void WindowBackend::EventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)

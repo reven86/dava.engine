@@ -48,6 +48,7 @@ public:
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
     void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 private:
     void DoResizeWindow(float32 width, float32 height);

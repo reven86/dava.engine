@@ -48,11 +48,12 @@ public:
     void TriggerPlatformEvents();
 
     void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 private:
     bool DeferredMouseMode(const MainDispatcherEvent& e);
     void SetMouseCaptured(bool capture);
-    bool SetMouseVisibility(bool visible);
+    void SetMouseVisibility(bool visible);
     void SetCursorInCenter();
     Point2i lastCursorPosition;
     eMouseMode nativeMouseMode = eMouseMode::OFF;
