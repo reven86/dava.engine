@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "ModuleManager/ModuleManager.h"
 
 namespace DAVA
 {
@@ -32,6 +31,7 @@ class LocalNotificationController;
 
 class IPackManager;
 class AssetsManagerAndroid;
+class ModuleManager;
 
 namespace Net
 {

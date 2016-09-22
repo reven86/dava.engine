@@ -622,6 +622,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 void EngineBackend::DestroySubsystems()
 {
     context->moduleManager->ResetModules();
+    delete context->moduleManager;
 
     if (context->jobManager != nullptr)
     {
@@ -659,8 +660,6 @@ void EngineBackend::DestroySubsystems()
         context->soundSystem->Release();
     if (context->packManager != nullptr)
         delete context->packManager;
-    if (context->moduleManager != nullptr)
-        delete context->moduleManager;
 
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
