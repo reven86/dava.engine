@@ -8,7 +8,7 @@
 #include "Qt/Main/mainwindow.h"
 #include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "GlobalOperations.h"
 
 using namespace DAVA;

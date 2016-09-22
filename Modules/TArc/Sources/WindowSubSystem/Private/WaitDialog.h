@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class WaitDialog: public WaitHandle
+class WaitDialog : public WaitHandle
 {
 public:
     WaitDialog(const WaitDialogParams& params, QWidget* parent);

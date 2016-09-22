@@ -13,7 +13,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageFormatInterface.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 HeightDeltaTool::HeightDeltaTool(QWidget* p)
     : QWidget(p)
