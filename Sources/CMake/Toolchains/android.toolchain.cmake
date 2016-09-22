@@ -191,13 +191,23 @@ include               ( GlobalVariables )
 
 find_package( PythonInterp   )
 
+# force stl features as default
+if ( NOT ANDROID_STL_FORCE_FEATURES )
+ set ( ANDROID_STL_FORCE_FEATURES true )
+endif ()
+
+# c++shared stl as default
+if ( NOT ANDROID_STL )
+ set ( ANDROID_STL c++_shared )
+endif ()
+    
 if( NOT ANDROID_TOOLCHAIN_NAME )
  if( ANDROID_ABI STREQUAL "x86" )
-  set ( ANDROID_TOOLCHAIN_NAME x86-clang3.6 )
+  set ( ANDROID_TOOLCHAIN_NAME x86-clang3.7 )
  elseif( ANDROID_ABI STREQUAL "armeabi-v7a" )
-  set ( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
+  set ( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.7 )
  else()
-  set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
+  set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.7 )
  endif()
 endif()
 
@@ -433,11 +443,17 @@ if( ANDROID_NDK )
  set( ANDROID_NDK "${ANDROID_NDK}" CACHE INTERNAL "Path of the Android NDK" FORCE )
  set( BUILD_WITH_ANDROID_NDK True )
  if( EXISTS "${ANDROID_NDK}/RELEASE.TXT" )
-  file( STRINGS "${ANDROID_NDK}/RELEASE.TXT" ANDROID_NDK_RELEASE_FULL LIMIT_COUNT 1 REGEX "r[0-9]+[a-z]?" )
+  file( STRINGS "${ANDROID_NDK}/RELEASE.TXT" ANDROID_NDK_RELEASE_FULL LIMIT_COUNT 1 )
   string( REGEX MATCH "r([0-9]+)([a-z]?)" ANDROID_NDK_RELEASE "${ANDROID_NDK_RELEASE_FULL}" )
  else()
-  set( ANDROID_NDK_RELEASE "r1x" )
+  set( ANDROID_NDK_RELEASE "r10e" )
   set( ANDROID_NDK_RELEASE_FULL "unreleased" )
+ endif()
+ # crystax NDK mimic to r10e
+ string ( FIND "${ANDROID_NDK_RELEASE_FULL}" "crystax" __crystaxTag )
+ if( NOT __crystaxTag EQUAL -1 )
+  set( ANDROID_NDK_RELEASE "r10e" )
+  set( CRYSTAX_NDK true CACHE BOOL "Crystax NDK flag" )
  endif()
  string( REGEX REPLACE "r([0-9]+)([a-z]?)" "\\1*1000" ANDROID_NDK_RELEASE_NUM "${ANDROID_NDK_RELEASE}" )
  string( FIND " abcdefghijklmnopqastuvwxyz" "${CMAKE_MATCH_2}" __ndkReleaseLetterNum )
@@ -848,7 +864,7 @@ set( ANDROID_STL_FORCE_FEATURES ON CACHE BOOL "automatically configure rtti and 
 mark_as_advanced( ANDROID_STL ANDROID_STL_FORCE_FEATURES )
 
 if( BUILD_WITH_ANDROID_NDK )
- if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared)$")
+ if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|c\\+\\+_static|c\\+\\+_shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared)$")
   message( FATAL_ERROR "ANDROID_STL is set to invalid value \"${ANDROID_STL}\".
 The possible values are:
   none           -> Do not configure the runtime.
@@ -860,6 +876,8 @@ The possible values are:
   stlport_shared -> Use the STLport runtime as a shared library.
   gnustl_static  -> (default) Use the GNU STL as a static library.
   gnustl_shared  -> Use the GNU STL as a shared library.
+  c++_static     -> Use the LLVM C++ runtime as a static library.
+  c++_shared     -> Use the LLVM C++ runtime as a shared library.
 " )
  endif()
 elseif( BUILD_WITH_STANDALONE_TOOLCHAIN )
@@ -989,9 +1007,15 @@ endif()
 if( BUILD_WITH_ANDROID_NDK )
  set( ANDROID_TOOLCHAIN_ROOT "${ANDROID_NDK_TOOLCHAINS_PATH}/${ANDROID_GCC_TOOLCHAIN_NAME}${ANDROID_NDK_TOOLCHAINS_SUBPATH}" )
  set( ANDROID_SYSROOT "${ANDROID_NDK}/platforms/android-${ANDROID_NATIVE_API_LEVEL}/arch-${ANDROID_ARCH_NAME}" )
-
+ 
  if( ANDROID_STL STREQUAL "none" )
   # do nothing
+ elseif( ANDROID_STL STREQUAL "c++_shared" OR ANDROID_STL STREQUAL "с++_static" )
+  set( ANDROID_EXCEPTIONS       ON )
+  set( ANDROID_RTTI             ON )
+  set( ANDROID_STL_ROOT         "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/${ANDROID_CLANG_VERSION}" )
+  set( ANDROID_STL_INCLUDE_DIRS "${ANDROID_STL_ROOT}/libcxx/include" "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/libcxxabi/include" )
+  set( __libstl                 "${ANDROID_STL_ROOT}/libs/${ANDROID_NDK_ABI_NAME}/libc++_static.a" )
  elseif( ANDROID_STL STREQUAL "system" )
   set( ANDROID_RTTI             OFF )
   set( ANDROID_EXCEPTIONS       OFF )
@@ -1089,7 +1113,10 @@ else()
 endif()
 unset( _ndk_ccache )
 
-
+if( ANDROID_COMPILER_IS_CLANG )
+ set( CMAKE_C_STANDARD_COMPUTED_DEFAULT "11" CACHE PATH "C standard" )
+endif()
+   
 # setup the cross-compiler
 if( NOT CMAKE_C_COMPILER )
  if( NDK_CCACHE AND NOT ANDROID_SYSROOT MATCHES "[ ;\"]" )
@@ -1108,7 +1135,7 @@ if( NOT CMAKE_C_COMPILER )
    set( CMAKE_CXX_COMPILER "${ANDROID_CLANG_TOOLCHAIN_ROOT}/bin/${_clang_name}++${TOOL_OS_SUFFIX}" CACHE PATH "C++ compiler")
   else()
    set( CMAKE_C_COMPILER   "${ANDROID_TOOLCHAIN_ROOT}/bin/${ANDROID_TOOLCHAIN_MACHINE_NAME}-gcc${TOOL_OS_SUFFIX}"    CACHE PATH "C compiler" )
-   set( CMAKE_CXX_COMPILER "${ANDROID_TOOLCHAIN_ROOT}/bin/${ANDROID_TOOLCHAIN_MACHINE_NAME}-g++${TOOL_OS_SUFFIX}"    CACHE PATH "C++ compiler" )
+   set( CMAKE_CXX_COMPILER"${ANDROID_TOOLCHAIN_ROOT}/bin/${ANDROID_TOOLCHAIN_MACHINE_NAME}-g++${TOOL_OS_SUFFIX}"    CACHE PATH "C++ compiler" )
   endif()
  endif()
  set( CMAKE_ASM_COMPILER "${ANDROID_TOOLCHAIN_ROOT}/bin/${ANDROID_TOOLCHAIN_MACHINE_NAME}-gcc${TOOL_OS_SUFFIX}"     CACHE PATH "assembler" )
@@ -1135,7 +1162,6 @@ endif()
 
 # Force set compilers because standard identification works badly for us
 include( CMakeForceCompiler )
-CMAKE_FORCE_C_COMPILER( "${CMAKE_C_COMPILER}" GNU )
 if( ANDROID_COMPILER_IS_CLANG )
  set( CMAKE_C_COMPILER_ID Clang )
 endif()
@@ -1147,7 +1173,6 @@ else()
 endif()
 set( CMAKE_C_HAS_ISYSROOT 1 )
 set( CMAKE_C_COMPILER_ABI ELF )
-CMAKE_FORCE_CXX_COMPILER( "${CMAKE_CXX_COMPILER}" GNU )
 if( ANDROID_COMPILER_IS_CLANG )
  set( CMAKE_CXX_COMPILER_ID Clang)
 endif()
@@ -1199,6 +1224,12 @@ if( ANDROID_SYSROOT MATCHES "[ ;\"]" )
 else()
  set( ANDROID_CXX_FLAGS "--sysroot=${ANDROID_SYSROOT}" )
 endif()
+
+# Generic flags
+set( ANDROID_CXX_FLAGS "${ANDROID_CXX_FLAGS} -g -DANDROID -funwind-tables -fstack-protector-strong" )
+
+# Turn on ld.bfd linker, because ld can fails with big object files
+set ( ANDROID_CXX_FLAGS "${ANDROID_CXX_FLAGS} -fuse-ld=bfd" )
 
 # NDK flags
 if (ARM64_V8A )
@@ -1283,9 +1314,10 @@ endif()
 # STL
 if( EXISTS "${__libstl}" OR EXISTS "${__libsupcxx}" )
  if( EXISTS "${__libstl}" )
-  set( CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \"${__libstl}\"" )
-  set( CMAKE_CXX_CREATE_SHARED_MODULE  "${CMAKE_CXX_CREATE_SHARED_MODULE} \"${__libstl}\"" )
-  set( CMAKE_CXX_LINK_EXECUTABLE       "${CMAKE_CXX_LINK_EXECUTABLE} \"${__libstl}\"" )
+  # small hack: link stl BEFORE all other libraries
+  string( REPLACE "<LINK_LIBRARIES>" "\"${__libstl}\" <LINK_LIBRARIES>" CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY}" )
+  string( REPLACE "<LINK_LIBRARIES>" "\"${__libstl}\" <LINK_LIBRARIES>" CMAKE_CXX_CREATE_SHARED_MODULE "${CMAKE_CXX_CREATE_SHARED_MODULE}" )
+  string( REPLACE "<LINK_LIBRARIES>" "\"${__libstl}\" <LINK_LIBRARIES>" CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" )
  endif()
  if( EXISTS "${__libsupcxx}" )
   set( CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY} \"${__libsupcxx}\"" )
@@ -1307,6 +1339,11 @@ if( EXISTS "${__libstl}" OR EXISTS "${__libsupcxx}" )
   set( CMAKE_CXX_CREATE_SHARED_MODULE  "${CMAKE_CXX_CREATE_SHARED_MODULE} ${ANDROID_LIBM_PATH}" )
   set( CMAKE_CXX_LINK_EXECUTABLE       "${CMAKE_CXX_LINK_EXECUTABLE} ${ANDROID_LIBM_PATH}" )
  endif()
+endif()
+
+# set path to STL so file
+if ( "${__libstl}" MATCHES ".so" )
+ set( ANDROID_STL_SO_PATH "${__libstl}" CACHE PATH "Android STL so file" )
 endif()
 
 # variables controlling optional build flags
@@ -1332,7 +1369,14 @@ set( ANDROID_RELRO                  ${ANDROID_RELRO}                  CACHE BOOL
 mark_as_advanced( ANDROID_NO_UNDEFINED ANDROID_SO_UNDEFINED ANDROID_FUNCTION_LEVEL_LINKING ANDROID_GOLD_LINKER ANDROID_NOEXECSTACK ANDROID_RELRO )
 
 # linker flags
-set( ANDROID_LINKER_FLAGS "" )
+set( ANDROID_LINKER_FLAGS "	-Wl,--build-id -Wl,--warn-shared-textrel -Wl,--fatal-warnings" )
+
+# add search path for crystax
+if( CRYSTAX_NDK )
+ set( CRYSTAX_NDK_LIB_PATH "${ANDROID_NDK}/sources/crystax/libs/${ANDROID_NDK_ABI_NAME}" )
+ set( CRYSTAX_SO_PATH "${CRYSTAX_NDK_LIB_PATH}/libcrystax.so" CACHE PATH "Crystax NDK so lib path" )
+ set( ANDROID_LINKER_FLAGS "${ANDROID_LINKER_FLAGS} -L${CRYSTAX_NDK_LIB_PATH}" )
+endif ()
 
 if( ARMEABI_V7A )
  # this is *required* to use the following linker flags that routes around
@@ -1394,15 +1438,15 @@ if( ANDROID_COMPILER_IS_CLANG )
 endif()
 
 # cache flags
-set( CMAKE_CXX_FLAGS           ""                        CACHE STRING "c++ flags" )
-set( CMAKE_C_FLAGS             ""                        CACHE STRING "c flags" )
-set( CMAKE_CXX_FLAGS_RELEASE   "-O3 -DNDEBUG"            CACHE STRING "c++ Release flags" )
-set( CMAKE_C_FLAGS_RELEASE     "-O3 -DNDEBUG"            CACHE STRING "c Release flags" )
-set( CMAKE_CXX_FLAGS_DEBUG     "-O0 -g -DDEBUG -D_DEBUG" CACHE STRING "c++ Debug flags" )
-set( CMAKE_C_FLAGS_DEBUG       "-O0 -g -DDEBUG -D_DEBUG" CACHE STRING "c Debug flags" )
-set( CMAKE_SHARED_LINKER_FLAGS ""                        CACHE STRING "shared linker flags" )
-set( CMAKE_MODULE_LINKER_FLAGS ""                        CACHE STRING "module linker flags" )
-set( CMAKE_EXE_LINKER_FLAGS    "-Wl,-z,nocopyreloc"      CACHE STRING "executable linker flags" )
+set( CMAKE_CXX_FLAGS           ""                     CACHE STRING "c++ flags" )
+set( CMAKE_C_FLAGS             ""                     CACHE STRING "c flags" )
+set( CMAKE_CXX_FLAGS_RELEASE   "-O2 -DNDEBUG"         CACHE STRING "c++ Release flags" )
+set( CMAKE_C_FLAGS_RELEASE     "-O2 -DNDEBUG"         CACHE STRING "c Release flags" )
+set( CMAKE_CXX_FLAGS_DEBUG     "-O0 -DDEBUG -D_DEBUG" CACHE STRING "c++ Debug flags" )
+set( CMAKE_C_FLAGS_DEBUG       "-O0 -DDEBUG -D_DEBUG" CACHE STRING "c Debug flags" )
+set( CMAKE_SHARED_LINKER_FLAGS ""                     CACHE STRING "shared linker flags" )
+set( CMAKE_MODULE_LINKER_FLAGS ""                     CACHE STRING "module linker flags" )
+set( CMAKE_EXE_LINKER_FLAGS    "-Wl,-z,nocopyreloc"   CACHE STRING "executable linker flags" )
 
 # put flags to cache (for debug purpose only)
 set( ANDROID_CXX_FLAGS         "${ANDROID_CXX_FLAGS}"         CACHE INTERNAL "Android specific c/c++ flags" )
@@ -1441,8 +1485,10 @@ endif()
 if( DEFINED ANDROID_RTTI AND ANDROID_STL_FORCE_FEATURES )
  if( ANDROID_RTTI )
   set( CMAKE_CXX_FLAGS "-frtti ${CMAKE_CXX_FLAGS}" )
+  set( CMAKE_C_FLAGS "-frtti ${CMAKE_C_FLAGS}" )
  else()
   set( CMAKE_CXX_FLAGS "-fno-rtti ${CMAKE_CXX_FLAGS}" )
+  set( CMAKE_C_FLAGS "-fno-rtti ${CMAKE_C_FLAGS}" )
  endif()
 endif()
 
