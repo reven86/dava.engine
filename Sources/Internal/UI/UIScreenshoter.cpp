@@ -104,6 +104,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.depthAttachment = screenshot->handleDepthStencil;
     desc.width = viewport.width ? viewport.width : screenshot->GetWidth();
     desc.height = viewport.height ? viewport.height : screenshot->GetHeight();
+    desc.format = screenshot->GetFormat();
     desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
     desc.clearTarget = false;
     desc.transformVirtualToPhysical = true;

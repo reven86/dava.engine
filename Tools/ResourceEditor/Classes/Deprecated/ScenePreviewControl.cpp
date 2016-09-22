@@ -13,10 +13,9 @@ ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
 {
     SetName(DAVA::FastName("Preview 3D View"));
 
-    SetInputEnabled(true, true);
     SetBasePriority(-100);
-
-    SetClearRequested(false);
+    SetInputEnabled(true, true);
+    SetDrawToFrameBuffer(true);
 }
 
 ScenePreviewControl::~ScenePreviewControl()
@@ -32,7 +31,6 @@ void ScenePreviewControl::RecreateScene()
     DVASSERT(editorScene == nullptr);
 
     editorScene = new DAVA::Scene();
-    editorScene->GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
 
     rotationSystem = new DAVA::RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);

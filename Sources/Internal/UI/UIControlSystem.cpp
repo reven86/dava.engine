@@ -5,7 +5,6 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
-#include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/Layouts/UILayoutSystem.h"
@@ -14,7 +13,7 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
@@ -302,7 +301,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
-    TIME_PROFILE("UIControlSystem::Update");
+    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Update");
 
     updateCounter = 0;
     ProcessScreenLogic();
@@ -336,10 +335,9 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    resizePerFrame = 0;
-    TIME_PROFILE("UIControlSystem::Draw");
+    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Draw");
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
+    resizePerFrame = 0;
 
     drawCounter = 0;
 
@@ -360,8 +358,6 @@ void UIControlSystem::Draw()
     }
 
     GetScreenshoter()->OnFrame();
-
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Draw")
 }
 
 void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)

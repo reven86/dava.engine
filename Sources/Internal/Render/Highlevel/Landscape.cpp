@@ -1,4 +1,3 @@
-#include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
@@ -22,6 +21,7 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/LockGuard.h"
 
 #include "Concurrency/Mutex.h"
@@ -1171,6 +1171,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
 
     RenderObject::PrepareToRender(camera);
 
@@ -1178,8 +1179,6 @@ void Landscape::PrepareToRender(Camera* camera)
     {
         return;
     }
-
-    TIME_PROFILE("Landscape.PrepareToRender");
 
     if (!subdivision->GetLevelCount() || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
@@ -1438,6 +1437,8 @@ void Landscape::SetMaterial(NMaterial* material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+
+    UpdateMaterialFlags();
 }
 
 RenderObject* Landscape::Clone(RenderObject* newObject)
@@ -1540,7 +1541,11 @@ void Landscape::SetRenderMode(RenderMode newRenderMode)
 
     renderMode = newRenderMode;
     RebuildLandscape();
+    UpdateMaterialFlags();
+}
 
+void Landscape::UpdateMaterialFlags()
+{
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
