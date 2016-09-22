@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "ModuleManager/ModuleManager.h"
 
 namespace DAVA
 {
@@ -66,6 +67,7 @@ public:
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;
 
+    ModuleManager* moduleManager = nullptr;
     IPackManager* packManager = nullptr;
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;

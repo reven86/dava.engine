@@ -614,10 +614,16 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
+    
+    context->moduleManager = new ModuleManager();
+    context->moduleManager->InitModules();
+    
 }
 
 void EngineBackend::DestroySubsystems()
 {
+    context->moduleManager->ResetModules();
+    
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
@@ -654,7 +660,9 @@ void EngineBackend::DestroySubsystems()
         context->soundSystem->Release();
     if (context->packManager != nullptr)
         delete context->packManager;
-
+    if (context->moduleManager != nullptr)
+        delete context->moduleManager;
+    
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     if (context->netCore != nullptr)

@@ -5,6 +5,8 @@
 
 using namespace DAVA;
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 DAVA_TESTCLASS (SampleModuleTest)
 {
     DAVA_TEST (CheckStatus)
@@ -19,3 +21,5 @@ DAVA_TESTCLASS (SampleModuleTest)
         TEST_VERIFY(statusList[1] == Test::SampleModule::ES_INIT);
     }
 };
+
+#endif //#if defined(__DAVAENGINE_ANDROID__)
