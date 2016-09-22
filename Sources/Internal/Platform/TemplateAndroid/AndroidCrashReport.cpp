@@ -99,7 +99,7 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
     jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
 
     int* fileLines = new int[chashSteps.size()];
-    for (uint i = 0; i < chashSteps.size(); ++i)
+    for (size_t i = 0; i < chashSteps.size(); ++i)
     {
         env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module));
         env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function));

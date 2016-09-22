@@ -57,6 +57,7 @@ private:
     ~RenderWidget();
 
     Q_SLOT void OnFrame();
+    Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void sceneGraphInvalidated();
 
 private:

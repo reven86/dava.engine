@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ASSERT_H__
-#define __DAVAENGINE_ASSERT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Logger/Logger.h"
@@ -9,13 +8,13 @@
 	\page tutorial_debug Debugging
 	Here you'll learn how to debug your project and find bugs faster.
 
-	\section asserts Assertion macros 
-	For debugging purposes and for easy search of bugs in runtime you can use assert macros. 
+	\section asserts Assertion macros
+	For debugging purposes and for easy search of bugs in runtime you can use assert macros.
 	There are 2 types of macros defined: DVASSERT and DVVERIFY.
 
-	DVASSERT macro designed for situations where you want to check something but in release you want to remove this check at all. 
+	DVASSERT macro designed for situations where you want to check something but in release you want to remove this check at all.
 
-	For example, you have a function SetFrame and frame can't be negative, but you want to check it only in debug, and stop execution if such situation happened. 
+	For example, you have a function SetFrame and frame can't be negative, but you want to check it only in debug, and stop execution if such situation happened.
 	You can write
 	\code
 	void SetFrame(int32 frame)
@@ -26,8 +25,8 @@
 	}
 	\endcode
 
-	In case if you execute some function inside your assertion and want to leave the calls but remove checks you should 
-	use DVVERIFY macro. 
+	In case if you execute some function inside your assertion and want to leave the calls but remove checks you should
+	use DVVERIFY macro.
 
 	\code
 	void SomeFunction(BaseObject * object)
@@ -193,5 +192,3 @@ inline void DavaDebugBreak()
 #define DVVERIFY(expr) DVASSERT(expr)
 
 #endif // ndef __DAVAENGINE_DEBUG__ && ndef ENABLE_ASSERT_MESSAGE
-
-#endif // __LOGENGINE_ASSERT_H__

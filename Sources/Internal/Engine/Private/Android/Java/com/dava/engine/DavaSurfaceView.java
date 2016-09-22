@@ -141,6 +141,12 @@ final class DavaSurfaceView extends SurfaceView
 
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
+        
+        if (DavaActivity.davaMainThread == null)
+        {
+            // continue initialization of game after creating main window
+            DavaActivity.instance().onFinishCreatingMainWindowSurface();
+        }
     }
     
     @Override
@@ -206,7 +212,7 @@ final class DavaSurfaceView extends SurfaceView
     public boolean onKey(View v, int keyCode, KeyEvent event)
     {
         int source = event.getSource();
-        int action = event.getAction();
+
         if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
             (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD)
         {

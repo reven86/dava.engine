@@ -6,9 +6,8 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
-#include "Debug/Stats.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -34,13 +33,13 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 
 void TransformSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("TransformSystem::Process");
-    SCOPED_NAMED_TIMING("TransformSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("TransformSystem::Process");
+
     passedNodes = 0;
     multipliedNodes = 0;
 
     {
-        SCOPED_NAMED_TIMING("TransformSystem::FindNodeThatRequireUpdate");
+        DAVA_CPU_PROFILER_SCOPE("TransformSystem::FindNodeThatRequireUpdate");
         uint32 size = static_cast<uint32>(updatableEntities.size());
         for (uint32 i = 0; i < size; ++i)
         {
@@ -50,7 +49,7 @@ void TransformSystem::Process(float32 timeElapsed)
     }
 
     {
-        SCOPED_NAMED_TIMING("TransformSystem::GroupEvent");
+        DAVA_CPU_PROFILER_SCOPE("TransformSystem::GroupEvent");
         GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
     }
     sendEvent.clear();

@@ -14,6 +14,7 @@
 #include "Concurrency/Thread.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
+#include "Platform/DeviceInfo.h"
 
 extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
 
@@ -93,10 +94,39 @@ void PlatformCore::OnActivated()
     Logger::FrameworkDebug("========== CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
 }
 
+static void InitScreenSizeInfo()
+{
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::UI::Xaml::Window;
+    using ::Windows::Graphics::Display::DisplayInformation;
+    using ::Windows::Graphics::Display::DisplayOrientations;
+    using ::Windows::UI::ViewManagement::ApplicationView;
+    using ::Windows::Foundation::Rect;
+
+    // http://stackoverflow.com/questions/31936154/get-screen-resolution-in-win10-uwp-app
+    DeviceInfo::ScreenInfo screenInfo;
+
+    Rect bounds = ApplicationView::GetForCurrentView()->VisibleBounds;
+    DisplayInformation ^ displayInfo = DisplayInformation::GetForCurrentView();
+    DisplayOrientations orientation = displayInfo->CurrentOrientation;
+
+    screenInfo.width = static_cast<int32>(bounds.Width);
+    screenInfo.height = static_cast<int32>(bounds.Height);
+    screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
+
+    DeviceInfo::InitializeScreenInfo(screenInfo, false);
+}
+
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     Logger::FrameworkDebug("========== CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
+    static bool firstTimeMainWindowsCreated = true;
+    if (firstTimeMainWindowsCreated)
+    {
+        InitScreenSizeInfo();
+        firstTimeMainWindowsCreated = false;
+    }
     // TODO: think about binding XAML window to prior created Window instance
     Window* primaryWindow = engineBackend.GetPrimaryWindow();
     if (primaryWindow == nullptr)

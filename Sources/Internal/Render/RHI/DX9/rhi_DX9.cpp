@@ -19,9 +19,7 @@ namespace rhi
 {
 //==============================================================================
 
-Dispatch DispatchDX9 = { 0 };
-
-static RenderDeviceCaps _DeviceCapsDX9 = {};
+Dispatch DispatchDX9 = {};
 
 //==============================================================================
 
@@ -42,14 +40,6 @@ static Api
 dx9_HostApi()
 {
     return RHI_DX9;
-}
-
-//------------------------------------------------------------------------------
-
-static const RenderDeviceCaps&
-dx9_DeviceCaps()
-{
-    return _DeviceCapsDX9;
 }
 
 //------------------------------------------------------------------------------
@@ -158,6 +148,37 @@ dx9_NeedRestoreResources()
 
 //------------------------------------------------------------------------------
 
+void DX9CheckMultisampleSupport()
+{
+    const _D3DFORMAT formatsToCheck[] = { D3DFMT_A8R8G8B8, D3DFMT_D24S8 };
+    const D3DMULTISAMPLE_TYPE samplesToCheck[] = { D3DMULTISAMPLE_2_SAMPLES, D3DMULTISAMPLE_4_SAMPLES, D3DMULTISAMPLE_8_SAMPLES };
+
+    uint32 sampleCount = 2;
+
+    for (uint32 s = 0; (s < countof(samplesToCheck)) && (sampleCount <= 8); ++s, sampleCount *= 2)
+    {
+        DWORD qualityLevels = 0;
+        for (uint32 f = 0; f < countof(formatsToCheck); ++f)
+        {
+            HRESULT hr = _D3D9->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, formatsToCheck[f], TRUE, samplesToCheck[s], &qualityLevels);
+            if (FAILED(hr))
+            {
+                break;
+            }
+        }
+
+        if (qualityLevels == 0)
+        {
+            DAVA::Logger::Info("DX9 max multisample samples: %u", sampleCount);
+            break;
+        }
+    }
+
+    MutableDeviceCaps::Get().maxSamples = sampleCount / 2;
+}
+
+//------------------------------------------------------------------------------
+
 void _InitDX9()
 {
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
@@ -185,7 +206,7 @@ void _InitDX9()
         {
             if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
             {
-                _DeviceCapsDX9.maxAnisotropy = caps.MaxAnisotropy;
+                MutableDeviceCaps::Get().maxAnisotropy = caps.MaxAnisotropy;
             }
 
             if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
@@ -266,12 +287,8 @@ void _InitDX9()
 
         // TODO: check z-buf formats and create most suitable
 
-        D3DDEVTYPE device = D3DDEVTYPE_HAL;
-        UINT adapter = D3DADAPTER_DEFAULT;
-
         // check if specified display-mode supported
 
-        _D3D9_Adapter = adapter;
         ///        _DetectVideoModes();
         /*
         if( !_PresentParam.Windowed )
@@ -312,18 +329,14 @@ void _InitDX9()
 
         // create device
 
-        if (SUCCEEDED(hr = _D3D9->CreateDevice(adapter,
-                                               device,
-                                               wnd,
-                                               vertex_processing,
-                                               &_DX9_PresentParam,
-                                               &_D3D9_Device)))
+        if (SUCCEEDED(hr = _D3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device)))
         {
             if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
             {
-                Memcpy(_DeviceCapsDX9.deviceDescription, info.Description, DAVA::Min(countof(_DeviceCapsDX9.deviceDescription), strlen(info.Description) + 1));
+                Memcpy(MutableDeviceCaps::Get().deviceDescription, info.Description,
+                       DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(info.Description) + 1));
 
-                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
+                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", D3DADAPTER_DEFAULT, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),
                              LOWORD(info.DriverVersion.HighPart),
@@ -366,7 +379,6 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
-    DispatchDX9.impl_DeviceCaps = &dx9_DeviceCaps;
 
     SetDispatchTable(DispatchDX9);
 
@@ -390,13 +402,14 @@ void dx9_Initialize(const InitParam& param)
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
 
-    _DeviceCapsDX9.is32BitIndicesSupported = true;
-    _DeviceCapsDX9.isFramebufferFetchSupported = true;
-    _DeviceCapsDX9.isVertexTextureUnitsSupported = true;
-    _DeviceCapsDX9.isInstancingSupported = true;
-    _DeviceCapsDX9.isUpperLeftRTOrigin = true;
-    _DeviceCapsDX9.isZeroBaseClipRange = true;
-    _DeviceCapsDX9.isCenterPixelMapping = true;
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+    MutableDeviceCaps::Get().isInstancingSupported = true;
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = true;
+    DX9CheckMultisampleSupport();
 }
 
 //==============================================================================

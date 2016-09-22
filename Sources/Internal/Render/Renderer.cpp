@@ -56,8 +56,18 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     resetParams.fullScreen = params.fullScreen;
 
     initialized = true;
+
     //must be called after setting ininialized in true
-    Texture::SetDefaultGPU(DeviceInfo::GetGPUFamily());
+    Vector<eGPUFamily> gpuLoadingOrder;
+    gpuLoadingOrder.push_back(DeviceInfo::GetGPUFamily());
+#if defined(__DAVAENGINE_ANDROID__)
+    if (gpuLoadingOrder[0] != eGPUFamily::GPU_MALI)
+    {
+        gpuLoadingOrder.push_back(eGPUFamily::GPU_MALI);
+    }
+#endif //android
+
+    Texture::SetGPULoadingOrder(gpuLoadingOrder);
 }
 
 void Uninitialize()
