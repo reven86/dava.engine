@@ -30,9 +30,13 @@ protected:
 
 private:
     void OnQuit(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData);
+
     void OnResize(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnRun(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData);
+
+    void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnWindowCreated(DAVA::Window& w);
     void OnWindowDestroyed(DAVA::Window& w);
@@ -44,6 +48,7 @@ private:
     DAVA::Engine* engine = nullptr;
 
     DAVA::UIButton* buttonQuit = nullptr;
+    DAVA::UIButton* buttonCloseWindow = nullptr;
 
     DAVA::UIButton* buttonResize640x480 = nullptr;
     DAVA::UIButton* buttonResize1024x768 = nullptr;
@@ -58,8 +63,13 @@ private:
     DAVA::UIButton* buttonDispTrigger2000 = nullptr;
     DAVA::UIButton* buttonDispTrigger3000 = nullptr;
 
+    DAVA::UIButton* buttonDisableClose = nullptr;
+    DAVA::UIButton* buttonEnableClose = nullptr;
+
     size_t tokenOnWindowCreated = 0;
     size_t tokenOnWindowDestroyed = 0;
+
+    bool closeDisabled = false;
 
     //////////////////////////////////////////////////////////////////////////
     using TestDispatcher = DAVA::Dispatcher<int>;

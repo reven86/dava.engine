@@ -38,10 +38,11 @@ void CoreV2Test::LoadResources()
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     font->SetSize(12);
 
-    float32 h = 20.0f;
+    float32 h = 60.0f;
     float32 gap = 10.0f;
     float32 y = 10.0f;
     buttonQuit = CreateUIButton(font, Rect(10, y, 200, h), "Quit", &CoreV2Test::OnQuit);
+    buttonCloseWindow = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Close window", &CoreV2Test::OnCloseWindow);
 
     buttonResize640x480 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 640x480", &CoreV2Test::OnResize);
     buttonResize1024x768 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 1024x768", &CoreV2Test::OnResize);
@@ -55,7 +56,26 @@ void CoreV2Test::LoadResources()
     buttonDispTrigger3 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger1000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 1000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger2000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2000", &CoreV2Test::OnDispatcherTest);
-    buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3000", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Raise deadlock", &CoreV2Test::OnDispatcherTest);
+
+    y = 10.0f;
+    buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
+    buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
+
+    engine->SetCloseRequestHandler([this](Window* w) -> bool {
+        if (closeDisabled)
+        {
+            if (w == nullptr)
+            {
+                Logger::Debug("User is trying to close application. Deny");
+            }
+            else
+            {
+                Logger::Debug("User is trying to close window. Deny");
+            }
+        }
+        return !closeDisabled;
+    });
 
     SafeRelease(font);
 }
@@ -66,10 +86,13 @@ void CoreV2Test::UnloadResources()
     engine->windowDestroyed.Disconnect(tokenOnWindowDestroyed);
 
     SafeRelease(buttonQuit);
+    SafeRelease(buttonCloseWindow);
     SafeRelease(buttonResize640x480);
     SafeRelease(buttonResize1024x768);
     SafeRelease(buttonRunOnMain);
     SafeRelease(buttonRunOnUI);
+    SafeRelease(buttonDisableClose);
+    SafeRelease(buttonEnableClose);
 
     SafeRelease(buttonDispTrigger1);
     SafeRelease(buttonDispTrigger2);
@@ -78,12 +101,21 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonDispTrigger2000);
     SafeRelease(buttonDispTrigger3000);
 
+    engine->SetCloseRequestHandler(nullptr);
+
     BaseScreen::UnloadResources();
 }
 
 void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
+    Logger::Info("CoreV2Test: sending quit...");
     engine->Quit(4);
+}
+
+void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    Logger::Info("CoreV2Test: closing primary window...");
+    engine->PrimaryWindow()->Close();
 }
 
 void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -101,6 +133,20 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         h = 768.0f;
     }
     engine->PrimaryWindow()->Resize(w, h);
+}
+
+void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    if (obj == buttonDisableClose)
+    {
+        Logger::Debug("Closing application or window by user is disabled");
+        closeDisabled = true;
+    }
+    else if (obj == buttonEnableClose)
+    {
+        Logger::Debug("Closing application or window by user is enabled");
+        closeDisabled = false;
+    }
 }
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
