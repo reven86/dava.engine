@@ -15,6 +15,7 @@
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
+#include "QtTools/InputDialogs/MultilineTextInputDialog.h"
 
 #include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -473,10 +474,9 @@ bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
 void PreviewWidget::ShowMenu(const QPoint& pos)
 {
     QMenu menu;
-    QMenu* selectionMenu = CreateSelectionSubMenu(&menu, pos);
-    if (selectionMenu != nullptr)
+    //separator must be added by the client code, which call AddSelectionMenuSection function
+    if (AddSelectionMenuSection(&menu, pos))
     {
-        menu.addMenu(selectionMenu);
         menu.addSeparator();
     }
     Vector2 davaPoint(pos.x(), pos.y());
@@ -494,7 +494,7 @@ void PreviewWidget::ShowMenu(const QPoint& pos)
     }
 }
 
-QMenu* PreviewWidget::CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& pos)
+bool PreviewWidget::AddSelectionMenuSection(QMenu* menu, const QPoint& pos)
 {
     Vector<ControlNode*> nodesUnderPoint;
     Vector2 davaPos(pos.x(), pos.y());
@@ -511,21 +511,14 @@ QMenu* PreviewWidget::CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& po
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicateForMenu, stopPredicate);
 
-    if (nodesUnderPoint.empty())
-    {
-        return nullptr;
-    }
-
-    QMenu* selectionMenu = parentMenu->addMenu(tr("Select item"));
-
     //create list of item to select
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
         ControlNode* controlNode = *it;
         QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
-        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), selectionMenu);
+        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), menu);
         action->setCheckable(true);
-        selectionMenu->addAction(action);
+        menu->addAction(action);
         if (selectionContainer.IsSelected(controlNode))
         {
             action->setChecked(true);
@@ -534,7 +527,7 @@ QMenu* PreviewWidget::CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& po
             systemsManager->SelectNode(controlNode);
         });
     }
-    return selectionMenu;
+    return !nodesUnderPoint.empty();
 }
 
 bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
@@ -567,7 +560,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
 
     QString label = tr("Enter new text, please");
     bool ok;
-    QString inputText = QInputDialog::getMultiLineText(this, label, label, QString::fromStdString(text), &ok);
+    QString inputText = MultilineTextInputDialog::GetMultiLineText(this, label, label, QString::fromStdString(text), &ok);
     if (ok)
     {
         DVASSERT(document != nullptr);

@@ -80,7 +80,7 @@ protected:
 
 private:
     void ShowMenu(const QPoint& pos);
-    QMenu* CreateSelectionSubMenu(QMenu* parentMenu, const QPoint& pos);
+    bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;
     void ChangeControlText(ControlNode* node);
 
