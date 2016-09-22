@@ -227,25 +227,23 @@ static void gles_check_GL_extensions()
             }
 
 #ifdef __DAVAENGINE_ANDROID__
-            GET_GL_FUNC(glDrawElementsInstanced);
-            GET_GL_FUNC(glDrawArraysInstanced);
-            GET_GL_FUNC(glVertexAttribDivisor);
+            GET_GL_FUNC(glDrawElementsInstanced, "EXT");
+            GET_GL_FUNC(glDrawArraysInstanced, "EXT");
+            GET_GL_FUNC(glVertexAttribDivisor, "EXT");
 
-            glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
-            if (glRenderbufferStorageMultisample == nullptr)
-                glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
+            GET_GL_FUNC(glRenderbufferStorageMultisample, "EXT");
+            GET_GL_FUNC(glBlitFramebuffer, "EXT");
 
-            glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
-            if (glBlitFramebuffer == nullptr)
-                glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
+            GET_GL_FUNC(glDebugMessageControl, "KHR");
+            GET_GL_FUNC(glDebugMessageCallback, "KHR");
 
-            glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
-            if (glDebugMessageControl == nullptr)
-                glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
-
-            glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
-            if (glDebugMessageCallback == nullptr)
-                glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
+            GET_GL_FUNC(glGenQueries, "EXT");
+            GET_GL_FUNC(glDeleteQueries, "EXT");
+            GET_GL_FUNC(glBeginQuery, "EXT");
+            GET_GL_FUNC(glEndQuery, "EXT");
+            GET_GL_FUNC(glGetQueryObjectuiv, "EXT");
+            GET_GL_FUNC(glQueryCounter, "EXT");
+            GET_GL_FUNC(glGetQueryObjectui64v, "EXT");
 #endif
         }
         else

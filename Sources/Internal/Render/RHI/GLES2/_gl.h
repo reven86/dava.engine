@@ -61,6 +61,14 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+//Valid for clang. For MSVC and GCC should be #func##postfix
+#define GET_GL_FUNC(func, postfix)                                                 \
+{                                                                                  \
+    func = reinterpret_cast<decltype(func)>(eglGetProcAddress(#func));             \
+    if (func == nullptr)                                                            \
+        func = reinterpret_cast<decltype(func)>(eglGetProcAddress(#func postfix)); \
+}
+
 typedef DAVA::uint64 GLuint64;
 
 typedef void(GL_APIENTRY* PFNGLEGL_GLDRAWELEMENTSINSTANCED)(GLenum, GLsizei, GLenum, const void*, GLsizei);
