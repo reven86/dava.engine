@@ -160,7 +160,7 @@ void DX9CheckMultisampleSupport()
         DWORD qualityLevels = 0;
         for (uint32 f = 0; f < countof(formatsToCheck); ++f)
         {
-            HRESULT hr = _D3D9->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, formatsToCheck[f], TRUE, samplesToCheck[s], &qualityLevels);
+            HRESULT hr = _D3D9->CheckDeviceMultiSampleType(_D3D9_Adapter, D3DDEVTYPE_HAL, formatsToCheck[f], TRUE, samplesToCheck[s], &qualityLevels);
             if (FAILED(hr))
             {
                 break;
@@ -179,164 +179,107 @@ void DX9CheckMultisampleSupport()
 
 //------------------------------------------------------------------------------
 
+bool dx9_SelectAdapter(DWORD& vertex_processing, D3DADAPTER_IDENTIFIER9& info)
+{
+    vertex_processing = E_FAIL;
+
+    HRESULT hr = _D3D9->GetAdapterIdentifier(_D3D9_Adapter, 0, &info);
+
+    // check if running on Intel card
+
+    Logger::Info("vendor-id : %04X  device-id : %04X\n", info.VendorId, info.DeviceId);
+
+    D3DCAPS9 caps = {};
+    hr = _D3D9->GetDeviceCaps(_D3D9_Adapter, D3DDEVTYPE_HAL, &caps);
+
+    if (SUCCEEDED(hr))
+    {
+        if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+        {
+            MutableDeviceCaps::Get().maxAnisotropy = caps.MaxAnisotropy;
+        }
+
+        if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+        {
+            vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+        }
+        else
+        {
+            // check vendor and device ID and enable SW vertex processing
+            // for Intel(R) Extreme Graphics cards
+
+            if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
+            {
+                if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
+                {
+                    vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+                }
+                else
+                {
+                    // this is something else
+                    vertex_processing = E_MINSPEC;
+                    Logger::Error("GPU does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required\n");
+                    return false;
+                }
+            }
+        }
+    }
+    else
+    {
+        Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
+
+        if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
+            vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+    }
+
+    if (vertex_processing == E_FAIL)
+    {
+        Logger::Error("failed to identify GPU\n");
+        return false;
+    }
+
+    return true;
+}
+
 void _InitDX9()
 {
     _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
-    if (_D3D9)
+    if (_D3D9 == nullptr)
     {
-        HRESULT hr;
-        HWND wnd = (HWND)_DX9_InitParam.window;
-        unsigned backbuf_width = _DX9_InitParam.width;
-        unsigned backbuf_height = _DX9_InitParam.height;
-        bool use_vsync = _DX9_InitParam.vsyncEnabled;
-        D3DADAPTER_IDENTIFIER9 info = { 0 };
-        D3DCAPS9 caps;
-        DWORD vertex_processing = E_FAIL;
+        Logger::Error("failed to create Direct3D object\n");
+        return;
+    }
 
-        hr = _D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info);
-
-        // check if running on Intel card
-
-        Logger::Info("vendor-id : %04X  device-id : %04X\n", info.VendorId, info.DeviceId);
-
-        hr = _D3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
-
-        if (SUCCEEDED(hr))
-        {
-            if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
-            {
-                MutableDeviceCaps::Get().maxAnisotropy = caps.MaxAnisotropy;
-            }
-
-            if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
-            {
-                vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
-            }
-            else
-            {
-                // check vendor and device ID and enable SW vertex processing
-                // for Intel(R) Extreme Graphics cards
-
-                if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
-                {
-                    if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
-                    {
-                        vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-                    }
-                    else
-                    {
-                        // this is something else
-                        vertex_processing = E_MINSPEC;
-                        Logger::Error("GPU does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required\n");
-                        ///                        return false;
-                        return;
-                    }
-                }
-            }
-        }
-        else
-        {
-            Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
-
-            if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
-                vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-        }
-
-        if (vertex_processing == E_FAIL)
-        {
-            Logger::Error("failed to identify GPU\n");
-            ///            return false;
-            return;
-        }
-
-        // detect debug DirectX runtime
-        /*
-        _debug_dx_runtime = false;
-
-        HKEY    key_direct3d;
-
-        if( ::RegOpenKeyA( HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Direct3D", &key_direct3d ) == ERROR_SUCCESS )
-        {
-            DWORD   type;
-            DWORD   data    = 0;
-            DWORD   data_sz = sizeof(data);
-
-            if( ::RegQueryValueExA( key_direct3d, "LoadDebugRuntime", UNUSED_PARAM, &type, (BYTE*)(&data), &data_sz ) == ERROR_SUCCESS )
-            {
-                _debug_dx_runtime = (data == 1) ? true : false;
-            }
-        }
-        note( "using %s DirectX runtime\n", (_debug_dx_runtime) ? "debug" : "retail" );
-*/
-
-        // create device
-
+    D3DADAPTER_IDENTIFIER9 info = {};
+    DWORD vertex_processing = E_FAIL;
+    if (dx9_SelectAdapter(vertex_processing, info))
+    {
         // CRAP: hardcoded params
+        HWND wnd = (HWND)_DX9_InitParam.window;
 
         _DX9_PresentParam.hDeviceWindow = wnd;
         _DX9_PresentParam.Windowed = TRUE;
         _DX9_PresentParam.BackBufferFormat = D3DFMT_UNKNOWN;
-        _DX9_PresentParam.BackBufferWidth = backbuf_width;
-        _DX9_PresentParam.BackBufferHeight = backbuf_height;
+        _DX9_PresentParam.BackBufferWidth = _DX9_InitParam.width;
+        _DX9_PresentParam.BackBufferHeight = _DX9_InitParam.height;
         _DX9_PresentParam.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        _DX9_PresentParam.BackBufferCount = use_vsync ? 2 : 1;
+        _DX9_PresentParam.BackBufferCount = _DX9_InitParam.vsyncEnabled ? 2 : 1;
         _DX9_PresentParam.EnableAutoDepthStencil = TRUE;
         _DX9_PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
-        _DX9_PresentParam.PresentationInterval = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+        _DX9_PresentParam.PresentationInterval = (_DX9_InitParam.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
         // TODO: check z-buf formats and create most suitable
 
-        // check if specified display-mode supported
-
-        ///        _DetectVideoModes();
-        /*
-        if( !_PresentParam.Windowed )
+        HRESULT hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
+        if (SUCCEEDED(hr))
         {
-            bool    found = false;
-
-            for( unsigned f=0; f<countof(_VideomodeFormat); ++f )
-            {            
-                D3DFORMAT   fmt = _VideomodeFormat[f];
-                
-                for( unsigned m=0; m<_DisplayMode.count(); ++m )
-                {
-                    if(     _DisplayMode[m].width == _PresentParam.BackBufferWidth 
-                        &&  _DisplayMode[m].height == _PresentParam.BackBufferHeight 
-                        &&  _DisplayMode[m].format == fmt
-                      )
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if( found )
-                {
-                    _PresentParam.BackBufferFormat = (D3DFORMAT)fmt;
-                    break;
-                }
-            }
-
-            if( !found )
-            {
-                Log::Error( "rhi.DX9", "invalid/unsuported display mode %ux%u\n", _PresentParam.BackBufferWidth, _PresentParam.BackBufferHeight );
-///                return false;
-                return;
-            }
-        }
-*/
-
-        // create device
-
-        if (SUCCEEDED(hr = _D3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device)))
-        {
-            if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
+            if (SUCCEEDED(_D3D9->GetAdapterIdentifier(_D3D9_Adapter, 0, &info)))
             {
                 Memcpy(MutableDeviceCaps::Get().deviceDescription, info.Description,
                        DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(info.Description) + 1));
 
-                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", D3DADAPTER_DEFAULT, info.DeviceName, info.Description);
+                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", _D3D9_Adapter, info.DeviceName, info.Description);
                 Logger::Info("  Driver %u.%u.%u.%u\n",
                              HIWORD(info.DriverVersion.HighPart),
                              LOWORD(info.DriverVersion.HighPart),
@@ -348,10 +291,6 @@ void _InitDX9()
         {
             Logger::Error("failed to create device:\n%s\n", D3D9ErrorText(hr));
         }
-    }
-    else
-    {
-        Logger::Error("failed to create Direct3D object\n");
     }
 }
 
