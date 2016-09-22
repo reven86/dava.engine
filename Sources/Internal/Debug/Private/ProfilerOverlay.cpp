@@ -22,54 +22,97 @@ static const char* GPU_FRAME_MARKER_NAME = "GPUFrame";
 static const int32 MARKER_CHART_HEIGHT = 100;
 static bool overlayEnabled = false;
 
-class MarkerChart
-{
-public:
-    static const uint32 CHART_HISTORY = 600;
+static const uint32 HISTORY_SIZE = 600;
+static const uint32 NON_FILTERED_COUNT = 10;
 
-    static const int32 MARGIN = 3;
-    static const int32 PADDING = 4;
-    static const int32 TEXT_COLUMN_CHARS = 9;
-    static const int32 TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * TEXT_COLUMN_CHARS;
-    static const uint64 CHART_CEIL_STEP = 500; //mcs
-    static const uint32 NON_FILTERED_COUNT = 10;
+using MarkerHistory = List<std::pair<uint64, float32>>;
+FastNameMap<MarkerHistory> markerHistory;
 
-    MarkerChart(const char* markerName);
-    ~MarkerChart() = default;
-
-    void Draw(const Rect2i& rect) const;
-    void AddValue(uint64 value);
-    const char* GetMarkerName() const
-    {
-        return markerName;
-    }
-
-protected:
-    const char* markerName;
-    Array<uint64, CHART_HISTORY> history = {};
-    Array<float32, CHART_HISTORY> filteredHistory = {};
-    float32 lastFiltered = 0.f;
-    size_t historyHead = 0;
-    uint32 nonfilteredCount = NON_FILTERED_COUNT;
-};
-
-GPUProfiler::FrameInfo lastGPUFrame;
-Vector<MarkerChart> gpuCharts = { MarkerChart(GPU_FRAME_MARKER_NAME) };
+uint32 lastGPUFrameIndex = 0;
+Vector<Vector<TraceEvent>> currentTraces(3);
 
 //==============================================================================
 
-MarkerChart::MarkerChart(const char* _markerName)
-    : markerName(_markerName)
+void UpdateHistory(const Vector<Vector<TraceEvent>>& traces)
 {
+    for (FastNameMap<MarkerHistory>::HashMapItem& i : markerHistory)
+    {
+        MarkerHistory& history = i.second;
+        history.push_back({ 0, 0.f });
+        while (uint32(history.size()) > HISTORY_SIZE)
+            history.pop_front();
+    }
+
+    for (const Vector<TraceEvent>& trace : traces)
+    {
+        Vector<TraceEvent>::const_iterator traceEnd = trace.cend();
+        for (Vector<TraceEvent>::const_iterator it = trace.cbegin(); it != traceEnd; ++it)
+        {
+            const TraceEvent& e = (*it);
+            if (e.phase != TraceEvent::PHASE_BEGIN && e.phase != TraceEvent::PHASE_DURATION)
+                continue;
+
+            MarkerHistory& history = markerHistory[e.name];
+            if (history.size() == 0)
+                history.push_back({ 0, 0.f });
+
+            if (e.phase == TraceEvent::PHASE_DURATION)
+            {
+                markerHistory[e.name].back().first += e.duration;
+            }
+            else if (e.phase)
+            {
+                Vector<TraceEvent>::const_iterator found = std::find_if(it, traceEnd, [&e](const TraceEvent& e1) {
+                    return e.name == e1.name && e1.phase == TraceEvent::PHASE_END;
+                });
+
+                DVASSERT(found != traceEnd);
+
+                markerHistory[e.name].back().first += found->timestamp - e.timestamp;
+            }
+        }
+    }
+
+    for (FastNameMap<MarkerHistory>::HashMapItem& i : markerHistory)
+    {
+        MarkerHistory& history = i.second;
+
+        if (history.size() < NON_FILTERED_COUNT)
+        {
+            history.back().second = float32(history.back().first);
+        }
+        else
+        {
+            history.back().second = (++history.rbegin())->second * 0.99f + history.back().first * 0.01f;
+        }
+    }
 }
 
-void MarkerChart::Draw(const Rect2i& rect) const
+void Update()
+{
+    const GPUProfiler::FrameInfo& frameInfo = GPUProfiler::globalProfiler->GetLastFrame();
+    if (Details::lastGPUFrameIndex != frameInfo.frameIndex)
+    {
+        Details::lastGPUFrameIndex = frameInfo.frameIndex;
+        Details::currentTraces[0] = std::move(frameInfo.GetTrace());
+
+        Details::UpdateHistory(Details::currentTraces);
+    }
+}
+
+void DrawHistory(const MarkerHistory& history, const FastName& name, const Rect2i& rect)
 {
     static const uint32 CHARTRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
     static const uint32 CHART_COLOR = rhi::NativeColorRGBA(.5f, .11f, .11f, 1.f);
     static const uint32 CHART_FILTERED_COLOR = rhi::NativeColorRGBA(1.f, .18f, .18f, 1.f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 LINE_COLOR = rhi::NativeColorRGBA(.5f, 0.f, 0.f, 1.f);
+
+    static const int32 MARGIN = 3;
+    static const int32 PADDING = 4;
+    static const int32 TEXT_COLUMN_CHARS = 9;
+    static const int32 TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * TEXT_COLUMN_CHARS;
+    static const uint64 CHART_CEIL_STEP = 500; //mcs
 
     Rect2i drawRect(rect);
     drawRect.x += PADDING;
@@ -84,8 +127,8 @@ void MarkerChart::Draw(const Rect2i& rect) const
     chartRect.dy -= 2 * MARGIN + DbgDraw::NormalCharH;
 
     uint64 maxValue = 0;
-    for (const uint64& h : history)
-        maxValue = Max(maxValue, h);
+    for (const std::pair<uint64, float32>& h : history)
+        maxValue = Max(maxValue, h.first);
 
     char strbuf[128];
     float32 ceilValue = float32((maxValue / CHART_CEIL_STEP + 1) * CHART_CEIL_STEP);
@@ -103,19 +146,25 @@ void MarkerChart::Draw(const Rect2i& rect) const
 
 #define CHART_VALUE_HEIGHT(value) int32(value* valuescale)
 
-    uint64 value = history[historyHead];
-    float32 filtered = filteredHistory[historyHead];
+    MarkerHistory::const_iterator it = history.begin();
+    uint64 value = it->first;
+    float32 filtered = it->second;
+    ++it;
 
     int32 px = 0;
     int32 py = CHART_VALUE_HEIGHT(value);
     int32 pfy = CHART_VALUE_HEIGHT(filtered);
-    for (size_t v = 1; v < history.size(); ++v)
-    {
-        size_t historyIndex = (historyHead + v) % history.size();
-        value = history[historyIndex];
-        filtered = filteredHistory[historyIndex];
 
-        int32 x = int32(v * chartstep);
+    int32 index = 0;
+    MarkerHistory::const_iterator hend = history.end();
+    for (; it != hend; ++it)
+    {
+        ++index;
+
+        value = it->first;
+        filtered = it->second;
+
+        int32 x = int32(index * chartstep);
         int32 y = CHART_VALUE_HEIGHT(value);
         int32 fy = CHART_VALUE_HEIGHT(filtered);
 
@@ -126,10 +175,9 @@ void MarkerChart::Draw(const Rect2i& rect) const
         py = y;
         pfy = fy;
     }
-
 #undef CHART_VALUE_HEIGHT
 
-    DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", markerName);
+    DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
     const int32 lastvalueIndent = (drawRect.dx - 2 * MARGIN) / DbgDraw::NormalCharW;
     sprintf(strbuf, "%lld [%.1f] mcs", value, filtered);
@@ -138,69 +186,6 @@ void MarkerChart::Draw(const Rect2i& rect) const
     sprintf(strbuf, "%d mcs", int32(ceilValue));
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN + DbgDraw::NormalCharH, TEXT_COLOR, "%*s", TEXT_COLUMN_CHARS, strbuf);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + drawRect.dy - MARGIN - DbgDraw::NormalCharH, TEXT_COLOR, "%*s", TEXT_COLUMN_CHARS, "0 mcs");
-}
-
-void MarkerChart::AddValue(uint64 value)
-{
-    history[historyHead] = value;
-    if (nonfilteredCount)
-    {
-        filteredHistory[historyHead] = float32(value);
-        --nonfilteredCount;
-    }
-    else
-    {
-        filteredHistory[historyHead] = lastFiltered * 0.99f + value * 0.01f;
-    }
-    lastFiltered = filteredHistory[historyHead];
-
-    historyHead = (historyHead + 1) % history.size();
-}
-
-//==============================================================================
-
-void UpdateGPUStatistic()
-{
-    const GPUProfiler::FrameInfo& frameInfo = GPUProfiler::globalProfiler->GetLastFrame();
-    if (lastGPUFrame.frameIndex != frameInfo.frameIndex)
-    {
-        lastGPUFrame = frameInfo;
-
-        Vector<bool> activeMarkers(gpuCharts.size());
-
-        DVASSERT(gpuCharts[0].GetMarkerName() == GPU_FRAME_MARKER_NAME);
-        gpuCharts[0].AddValue(frameInfo.endTime - frameInfo.startTime);
-        activeMarkers[0] = true;
-
-        for (const GPUProfiler::MarkerInfo& m : frameInfo.markers)
-        {
-            auto found = std::find_if(gpuCharts.begin(), gpuCharts.end(), [&m](const MarkerChart& chart) {
-#ifdef __DAVAENGINE_DEBUG__
-                return (strcmp(m.name, chart.GetMarkerName()) == 0);
-#else
-                m.name == chart.GetMarkerName();
-#endif
-            });
-
-            if (found != gpuCharts.end())
-            {
-                (*found).AddValue(m.endTime - m.startTime);
-                activeMarkers[std::distance(gpuCharts.begin(), found)] = true;
-            }
-            else
-            {
-                gpuCharts.push_back(Details::MarkerChart(m.name));
-                gpuCharts.back().AddValue(m.endTime - m.startTime);
-            }
-        }
-
-        DVASSERT(activeMarkers.size() <= gpuCharts.size());
-        for (size_t i = 0; i < activeMarkers.size(); ++i)
-        {
-            if (!activeMarkers[i])
-                gpuCharts[i].AddValue(0);
-        }
-    }
 }
 
 void DrawTrace(const Vector<TraceEvent>& trace, const char* traceHead, const Rect2i& rect)
@@ -331,9 +316,10 @@ void DrawOverlay()
     DbgDraw::SetNormalTextSize();
 
     Rect2i chartRect(0, 0, Renderer::GetFramebufferWidth() / 2, MARKER_CHART_HEIGHT);
-    for (const MarkerChart& chart : gpuCharts)
+    FastNameMap<MarkerHistory>::iterator hend = markerHistory.end();
+    for (FastNameMap<MarkerHistory>::iterator it = markerHistory.begin(); it != hend; ++it)
     {
-        chart.Draw(chartRect);
+        DrawHistory(it->second, it->first, chartRect);
         chartRect.y += chartRect.dy;
         if ((chartRect.y + chartRect.dy) > 3 * Renderer::GetFramebufferHeight() / 4)
         {
@@ -342,7 +328,7 @@ void DrawOverlay()
         }
     }
 
-    DrawTrace(lastGPUFrame.GetTrace(), Format("Frame %d", lastGPUFrame.frameIndex).c_str(),
+    DrawTrace(currentTraces[0], Format("Frame %d", lastGPUFrameIndex).c_str(),
               Rect2i(0, 3 * Renderer::GetFramebufferHeight() / 4, Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight() / 4));
 
     //////////////////////////////////////////////////////////////////////////
@@ -389,7 +375,7 @@ void OnFrameEnd()
     if (!Details::overlayEnabled)
         return;
 
-    Details::UpdateGPUStatistic();
+    Details::Update();
     Details::DrawOverlay();
 }
 }; //ns ProfilerOverlay
