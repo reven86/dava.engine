@@ -1064,6 +1064,9 @@ protected:
 
     void ChangeViewState(eViewState newViewState);
 
+    void AddState(int32 state);
+    void RemoveState(int32 state);
+
 public:
     /**
      \brief Called when this control and his children are loaded.
@@ -1131,8 +1134,6 @@ public:
 
 protected:
     UIControlBackground* background;
-    int32 controlState;
-    int32 prevControlState;
 
     float32 wheelSensitivity = 30.f;
 
@@ -1181,6 +1182,8 @@ protected:
 private:
     int32 tag = 0;
     eViewState viewState = eViewState::INACTIVE;
+    int32 controlState;
+
     bool inputEnabled : 1;
 
     /* Components */
@@ -1319,82 +1322,82 @@ public:
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
 };
 
-Vector2 UIControl::GetPivotPoint() const
+inline Vector2 UIControl::GetPivotPoint() const
 {
     return pivot * size;
 }
 
-const Vector2& UIControl::GetPivot() const
+inline const Vector2& UIControl::GetPivot() const
 {
     return pivot;
 }
 
-const Vector2& UIControl::GetScale() const
+inline const Vector2& UIControl::GetScale() const
 {
     return scale;
 }
 
-void UIControl::SetScale(const Vector2& newScale)
+inline void UIControl::SetScale(const Vector2& newScale)
 {
     scale = newScale;
 }
 
-const Vector2& UIControl::GetSize() const
+inline const Vector2& UIControl::GetSize() const
 {
     return size;
 }
 
-const Vector2& UIControl::GetPosition() const
+inline const Vector2& UIControl::GetPosition() const
 {
     return relativePosition;
 }
 
-float32 UIControl::GetAngle() const
+inline float32 UIControl::GetAngle() const
 {
     return angle;
 }
 
-float32 UIControl::GetAngleInDegrees() const
+inline float32 UIControl::GetAngleInDegrees() const
 {
     return RadToDeg(angle);
 }
 
-const FastName& UIControl::GetName() const
+inline const FastName& UIControl::GetName() const
 {
     return name;
 }
 
-int32 UIControl::GetTag() const
+inline int32 UIControl::GetTag() const
 {
     return tag;
 }
 
-Rect UIControl::GetRect() const
+inline Rect UIControl::GetRect() const
 {
     return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetVisibilityFlag() const
+inline bool UIControl::GetVisibilityFlag() const
 {
     return visible;
 }
 
-bool UIControl::GetInputEnabled() const
+inline bool UIControl::GetInputEnabled() const
 {
     return inputEnabled;
 }
 
-bool UIControl::GetClipContents() const
+inline bool UIControl::GetClipContents() const
 {
     return clipContents;
 }
 
-bool UIControl::GetExclusiveInput() const
+inline bool UIControl::GetExclusiveInput() const
 {
     return exclusiveInput;
 }
 
-bool UIControl::GetMultiInput() const
+inline bool UIControl::GetMultiInput() const
 {
     return multiInput;
 }
@@ -1408,56 +1411,56 @@ inline void UIControl::SortChildren(const T& predicate)
     SetLayoutDirty();
 }
 
-int32 UIControl::GetState() const
+inline int32 UIControl::GetState() const
 {
     return controlState;
 }
 
-bool UIControl::GetEnabled() const
+inline bool UIControl::GetEnabled() const
 {
     return !GetDisabled();
 }
 
-void UIControl::SetEnabledNotHierarchic(bool enabled)
+inline void UIControl::SetEnabledNotHierarchic(bool enabled)
 {
     SetDisabled(!enabled, false);
 }
 
-void UIControl::SetSelectedNotHierarchic(bool selected)
+inline void UIControl::SetSelectedNotHierarchic(bool selected)
 {
     SetSelected(selected, false);
 }
 
-void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
+inline void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
 {
     SetExclusiveInput(enabled, false);
 }
 
-bool UIControl::GetNoInput() const
+inline bool UIControl::GetNoInput() const
 {
     return !GetInputEnabled();
 }
 
-void UIControl::SetNoInput(bool noInput)
+inline void UIControl::SetNoInput(bool noInput)
 {
     SetInputEnabled(!noInput, false);
 }
 
-bool UIControl::GetDebugDraw() const
+inline bool UIControl::GetDebugDraw() const
 {
     return debugDrawEnabled;
 }
 
-void UIControl::SetDebugDrawNotHierarchic(bool val)
+inline void UIControl::SetDebugDrawNotHierarchic(bool val)
 {
     SetDebugDraw(val, false);
 }
 
-float32 UIControl::GetWheelSensitivity() const
+inline float32 UIControl::GetWheelSensitivity() const
 {
     return wheelSensitivity;
 }
-void UIControl::SetWheelSensitivity(float32 newSens)
+inline void UIControl::SetWheelSensitivity(float32 newSens)
 {
     wheelSensitivity = newSens;
 }

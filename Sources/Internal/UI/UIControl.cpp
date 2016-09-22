@@ -57,7 +57,7 @@ UIControl::UIControl(const Rect& rect)
     UpdateFamily();
 
     parent = NULL;
-    prevControlState = controlState = STATE_NORMAL;
+    controlState = STATE_NORMAL;
     visible = true;
     /*
             VB:
@@ -253,7 +253,29 @@ UIControl* UIControl::FindByPath(const String& path)
 
 void UIControl::SetState(int32 state)
 {
-    controlState = state;
+    if (controlState != state)
+    {
+        controlState = state;
+        SetStyleSheetDirty();
+    }
+}
+
+void UIControl::AddState(int32 state)
+{
+    if ((controlState & state) == 0)
+    {
+        controlState |= state;
+        SetStyleSheetDirty();
+    }
+}
+
+void UIControl::RemoveState(int32 state)
+{
+    if ((controlState & state) != 0)
+    {
+        controlState &= ~state;
+        SetStyleSheetDirty();
+    }
 }
 
 Sprite* UIControl::GetSprite() const
@@ -679,14 +701,14 @@ void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
 {
     if (isDisabled)
     {
-        controlState |= STATE_DISABLED;
+        AddState(STATE_DISABLED);
 
         // Cancel all inputs because of DF-2943.
         UIControlSystem::Instance()->CancelInputs(this);
     }
     else
     {
-        controlState &= ~STATE_DISABLED;
+        RemoveState(STATE_DISABLED);
     }
 
     if (hierarchic)
@@ -708,11 +730,11 @@ void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
 {
     if (isSelected)
     {
-        controlState |= STATE_SELECTED;
+        AddState(STATE_SELECTED);
     }
     else
     {
-        controlState &= ~STATE_SELECTED;
+        RemoveState(STATE_SELECTED);
     }
 
     if (hierarchic)
@@ -1214,8 +1236,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
         {
             if (multiInput || !currentInputID)
             {
-                controlState |= STATE_PRESSED_INSIDE;
-                controlState &= ~STATE_NORMAL;
+                AddState(STATE_PRESSED_INSIDE);
+                RemoveState(STATE_NORMAL);
                 ++touchesInside;
                 ++totalTouches;
                 currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
@@ -1267,11 +1289,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             ++touchesInside;
                             if (touchesInside > 0)
                             {
-                                controlState |= STATE_PRESSED_INSIDE;
-                                controlState &= ~STATE_PRESSED_OUTSIDE;
+                                AddState(STATE_PRESSED_INSIDE
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState |= STATE_HOVER;
+                                         | STATE_HOVER
 #endif
+                                         );
+                                RemoveState(STATE_PRESSED_OUTSIDE);
                             }
                         }
                     }
@@ -1283,8 +1306,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             --touchesInside;
                             if (touchesInside == 0)
                             {
-                                controlState |= STATE_PRESSED_OUTSIDE;
-                                controlState &= ~STATE_PRESSED_INSIDE;
+                                AddState(STATE_PRESSED_OUTSIDE);
+                                RemoveState(STATE_PRESSED_INSIDE);
                             }
                         }
                     }
@@ -1315,7 +1338,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
                         if (totalTouches == 0)
                         {
-                            controlState |= STATE_HOVER;
+                            AddState(STATE_HOVER);
                         }
 #endif
                     }
@@ -1333,9 +1356,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         {
                             PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
                         }
-                        controlState &= ~STATE_PRESSED_INSIDE;
-                        controlState &= ~STATE_PRESSED_OUTSIDE;
-                        controlState |= STATE_NORMAL;
+                        AddState(STATE_NORMAL);
+                        RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
                         if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
                         {
                             UIControlSystem::Instance()->SetExclusiveInputLocker(nullptr, -1);
@@ -1343,11 +1365,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     }
                     else if (touchesInside <= 0)
                     {
-                        controlState |= STATE_PRESSED_OUTSIDE;
-                        controlState &= ~STATE_PRESSED_INSIDE;
+                        AddState(STATE_PRESSED_OUTSIDE);
+                        RemoveState(STATE_PRESSED_INSIDE
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        controlState &= ~STATE_HOVER;
+                                    | STATE_HOVER
 #endif
+                                    );
                     }
                 }
             }
@@ -1434,9 +1457,8 @@ void UIControl::SystemInputCancelled(UIEvent* currentInput)
 
     if (touchesInside == 0)
     {
-        controlState &= ~STATE_PRESSED_INSIDE;
-        controlState &= ~STATE_PRESSED_OUTSIDE;
-        controlState |= STATE_NORMAL;
+        RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
+        AddState(STATE_NORMAL);
         if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
         {
             UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
@@ -1455,7 +1477,7 @@ void UIControl::SystemInputCancelled(UIEvent* currentInput)
 
 void UIControl::SystemDidSetHovered()
 {
-    controlState |= STATE_HOVER;
+    AddState(STATE_HOVER);
     PerformEventWithData(EVENT_HOVERED_SET, NULL);
     DidSetHovered();
 }
@@ -1463,7 +1485,7 @@ void UIControl::SystemDidSetHovered()
 void UIControl::SystemDidRemoveHovered()
 {
     PerformEventWithData(EVENT_HOVERED_REMOVED, NULL);
-    controlState &= ~STATE_HOVER;
+    RemoveState(STATE_HOVER);
     DidRemoveHovered();
 }
 

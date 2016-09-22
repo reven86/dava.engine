@@ -29,7 +29,7 @@ UIButton::UIButton(const Rect& rect)
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
 
-    selectedBackground = GetActualBackgroundForState(controlState);
+    selectedBackground = GetActualBackgroundForState(GetState());
 }
 
 UIButton::~UIButton()
@@ -451,11 +451,11 @@ UIControlBackground* UIButton::GetBackground() const
 
 void UIButton::SystemDraw(const UIGeometricData& geometricData)
 {
-    if (oldControlState != controlState)
+    if (oldControlState != GetState())
     {
-        oldControlState = controlState;
-        selectedTextBlock = GetActualTextBlockForState(controlState);
-        selectedBackground = GetActualBackgroundForState(controlState);
+        oldControlState = GetState();
+        selectedTextBlock = GetActualTextBlockForState(GetState());
+        selectedBackground = GetActualBackgroundForState(GetState());
     }
 
     UIControl::SystemDraw(geometricData);
@@ -517,7 +517,7 @@ void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground* ne
     SafeRelease(stateBacks[drawState]);
     stateBacks[drawState] = newBackground;
 
-    selectedBackground = GetActualBackgroundForState(controlState);
+    selectedBackground = GetActualBackgroundForState(GetState());
 }
 
 UIStaticText* UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
@@ -609,7 +609,7 @@ void UIButton::SetTextBlock(eButtonDrawState drawState, UIStaticText* newTextBlo
 {
     SafeRelease(stateTexts[drawState]);
     stateTexts[drawState] = SafeRetain(newTextBlock);
-    selectedTextBlock = GetActualTextBlockForState(controlState);
+    selectedTextBlock = GetActualTextBlockForState(GetState());
 }
 
 void UIButton::UpdateStateTextControlSize()

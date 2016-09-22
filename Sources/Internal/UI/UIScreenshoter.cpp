@@ -112,6 +112,9 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     if (updateControl)
     {
         UIControlSystem::Instance()->UpdateControl(control);
+        // We need update all slots because we don't known
+        // which slots are used in the control's hierarchy
+        UIControlSystem::Instance()->update.Emit(0.f);
     }
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 

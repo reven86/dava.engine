@@ -227,7 +227,7 @@ void UIStyleSheetSystem::DumpStats()
 
 void UIStyleSheetSystem::Update(UIControl* root)
 {
-    if (!needUpdate || !root)
+    if (!(needUpdate || dirty) || !root)
         return;
     UpdateControl(root);
 }

@@ -81,7 +81,7 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
 void UILayoutSystem::Update(UIControl* root)
 {
-    if (!needUpdate || !root)
+    if (!(needUpdate || dirty) || !root)
         return;
     UpdateControl(root);
 }

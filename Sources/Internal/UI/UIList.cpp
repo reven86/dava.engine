@@ -534,7 +534,7 @@ void UIList::Input(UIEvent* currentInput)
 
 bool UIList::SystemInput(UIEvent* currentInput)
 {
-    if (!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
+    if (!GetInputEnabled() || !visible || GetState() & STATE_DISABLED)
     {
         return false;
     }
