@@ -179,66 +179,54 @@ void DX9CheckMultisampleSupport()
 
 //------------------------------------------------------------------------------
 
-bool dx9_SelectAdapter(DWORD& vertex_processing, D3DADAPTER_IDENTIFIER9& info)
+struct AdapterInfo
 {
-    vertex_processing = E_FAIL;
+    UINT index;
+    D3DCAPS9 caps;
+    D3DADAPTER_IDENTIFIER9 info;
+};
 
-    HRESULT hr = _D3D9->GetAdapterIdentifier(_D3D9_Adapter, 0, &info);
-
-    // check if running on Intel card
-
-    Logger::Info("vendor-id : %04X  device-id : %04X\n", info.VendorId, info.DeviceId);
-
-    D3DCAPS9 caps = {};
-    hr = _D3D9->GetDeviceCaps(_D3D9_Adapter, D3DDEVTYPE_HAL, &caps);
-
-    if (SUCCEEDED(hr))
+void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
+{
+    for (UINT i = 0, e = _D3D9->GetAdapterCount(); i < e; ++i)
     {
-        if (caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+        AdapterInfo adapter = { i };
+        HRESULT hr = _D3D9->GetAdapterIdentifier(i, 0, &adapter.info);
+        if (SUCCEEDED(hr))
         {
-            MutableDeviceCaps::Get().maxAnisotropy = caps.MaxAnisotropy;
-        }
-
-        if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
-        {
-            vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
-        }
-        else
-        {
-            // check vendor and device ID and enable SW vertex processing
-            // for Intel(R) Extreme Graphics cards
-
-            if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
+            hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_HAL, &adapter.caps);
+            if (SUCCEEDED(hr))
             {
-                if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
-                {
-                    vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-                }
-                else
-                {
-                    // this is something else
-                    vertex_processing = E_MINSPEC;
-                    Logger::Error("GPU does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required\n");
-                    return false;
-                }
+                adapters.push_back(adapter);
             }
         }
     }
-    else
-    {
-        Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
+}
 
-        if (_IsValidIntelCardDX9(info.VendorId, info.DeviceId))
+bool dx9_SelectAdapter(const DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_processing, UINT& indexInVector)
+{
+    indexInVector = 0;
+    vertex_processing = E_FAIL;
+    for (const AdapterInfo& adapter : adapters)
+    {
+        if (adapter.caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+        {
+            vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+            _D3D9_Adapter = adapter.index;
+            return true;
+        }
+        else if (_IsValidIntelCardDX9(adapter.info.VendorId, adapter.info.DeviceId))
+        {
             vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+            _D3D9_Adapter = adapter.index;
+        }
+        else
+        {
+            Logger::Error("GPU %s does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required", adapter.info.Description);
+        }
+        ++indexInVector;
     }
-
-    if (vertex_processing == E_FAIL)
-    {
-        Logger::Error("failed to identify GPU\n");
-        return false;
-    }
-
-    return true;
+    return (vertex_processing != E_FAIL);
 }
 
 void _InitDX9()
@@ -247,14 +235,19 @@ void _InitDX9()
 
     if (_D3D9 == nullptr)
     {
-        Logger::Error("failed to create Direct3D object\n");
+        Logger::Error("Failed to create Direct3D object");
         return;
     }
 
-    D3DADAPTER_IDENTIFIER9 info = {};
+    DAVA::Vector<AdapterInfo> adapters;
+    dx9_EnumerateAdapters(adapters);
+
+    UINT index = 0;
     DWORD vertex_processing = E_FAIL;
-    if (dx9_SelectAdapter(vertex_processing, info))
+    if (dx9_SelectAdapter(adapters, vertex_processing, index))
     {
+        const AdapterInfo& adapter = adapters.at(index);
+
         // CRAP: hardcoded params
         HWND wnd = (HWND)_DX9_InitParam.window;
 
@@ -274,23 +267,29 @@ void _InitDX9()
         HRESULT hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
         if (SUCCEEDED(hr))
         {
-            if (SUCCEEDED(_D3D9->GetAdapterIdentifier(_D3D9_Adapter, 0, &info)))
-            {
-                Memcpy(MutableDeviceCaps::Get().deviceDescription, info.Description,
-                       DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(info.Description) + 1));
+            Memcpy(MutableDeviceCaps::Get().deviceDescription, adapter.info.Description,
+                   DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(adapter.info.Description) + 1));
 
-                Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", _D3D9_Adapter, info.DeviceName, info.Description);
-                Logger::Info("  Driver %u.%u.%u.%u\n",
-                             HIWORD(info.DriverVersion.HighPart),
-                             LOWORD(info.DriverVersion.HighPart),
-                             HIWORD(info.DriverVersion.LowPart),
-                             LOWORD(info.DriverVersion.LowPart));
-            }
+            Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", _D3D9_Adapter, adapter.info.DeviceName, adapter.info.Description);
+            Logger::Info("  Driver %u.%u.%u.%u",
+                         HIWORD(adapter.info.DriverVersion.HighPart),
+                         LOWORD(adapter.info.DriverVersion.HighPart),
+                         HIWORD(adapter.info.DriverVersion.LowPart),
+                         LOWORD(adapter.info.DriverVersion.LowPart));
         }
         else
         {
-            Logger::Error("failed to create device:\n%s\n", D3D9ErrorText(hr));
+            Logger::Error("Failed to create device: %s", D3D9ErrorText(hr));
         }
+
+        if (adapter.caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+        {
+            MutableDeviceCaps::Get().maxAnisotropy = adapter.caps.MaxAnisotropy;
+        }
+    }
+    else
+    {
+        Logger::Error("Failed to select adapter for D3D9");
     }
 }
 
