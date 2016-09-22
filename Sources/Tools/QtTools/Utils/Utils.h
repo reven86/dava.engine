@@ -10,18 +10,18 @@
 
 // Different string utilities.
 // Truncate the file extension.
-extern QString TruncateFileExtension(const QString& fileName, const QString& extension);
-extern bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
+QString TruncateFileExtension(const QString& fileName, const QString& extension);
+bool FindAndReplace(DAVA::String& str, const DAVA::String& from, const DAVA::String& to);
 
-extern QPixmap CreateIconFromColor(const QColor& color);
+QPixmap CreateIconFromColor(const QColor& color);
 
-extern DAVA::Color QColorToColor(const QColor& qtColor);
+DAVA::Color QColorToColor(const QColor& qtColor);
 
-extern QColor ColorToQColor(const DAVA::Color& davaColor);
+QColor ColorToQColor(const DAVA::Color& davaColor);
 
 void ShowFileInExplorer(const QString& path);
 
 void ConnectApplicationFocus();
 
-QString EscapeString(QString& str);
-QString UnescapeString(QString& str);
+QString EscapeString(const QString& str);
+QString UnescapeString(const QString& str);

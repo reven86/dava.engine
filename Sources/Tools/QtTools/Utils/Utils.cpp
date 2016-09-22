@@ -126,21 +126,23 @@ DAVA::Vector<std::pair<QChar, QString>> escapeSequences = {
 }
 
 //replace strings with escape characters
-QString EscapeString(QString& str)
+QString EscapeString(const QString& str)
 {
+    QString stringToReplace(str);
     for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
     {
-        str.replace(pair.second, pair.first);
+        stringToReplace.replace(pair.second, pair.first);
     }
-    return str;
+    return stringToReplace;
 }
 
 //replace escape characters with their string form
-QString UnescapeString(QString& str)
+QString UnescapeString(const QString& str)
 {
+    QString stringToReplace(str);
     for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
     {
-        str.replace(pair.first, pair.second);
+        stringToReplace.replace(pair.first, pair.second);
     }
-    return str;
+    return stringToReplace;
 }
