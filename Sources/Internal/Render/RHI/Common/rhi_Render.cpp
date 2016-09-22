@@ -5,7 +5,7 @@
     #include "Core/Core.h"
 using DAVA::Logger;
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 
 namespace rhi
@@ -781,7 +781,8 @@ void EndRenderPass(HRenderPass pass)
 
 bool NeedInvertProjection(const RenderPassConfig& passDesc)
 {
-    bool isRT = (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
+    bool isRT =
+    (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
     (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
     (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
 
@@ -863,7 +864,8 @@ void EndPacketList(HPacketList packetList, HSyncObject syncObject)
 
 void AddPackets(HPacketList packetList, const Packet* packet, uint32 packetCount)
 {
-    SCOPED_NAMED_TIMING("rhi.AddPackets");
+    //PROFILER_TIMING("rhi::AddPackets");
+
     PacketList_t* pl = PacketListPool::Get(packetList);
     Handle cmdBuf = pl->cmdBuf;
 
@@ -1038,6 +1040,8 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 
 void ProcessScheduledDelete()
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ProcessScheduledDelete")
+
     for (int i = 0; i < frameSyncObjectsCount; i++)
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
@@ -1099,9 +1103,7 @@ void Present()
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
 
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
     ProcessScheduledDelete();
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::ProcessScheduledDelete")
 
     scheduledDeleteMutex.Unlock();
 }

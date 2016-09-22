@@ -180,6 +180,12 @@ void SetMarker(Handle cmdBuf, const char* text);
 
 } // namespace CommandBuffer
 
+struct RenderDeviceCaps;
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get();
+}
+
 void InitPacketListPool(uint32 maxCount);
 void InitTextreSetPool(uint32 maxCount);
 

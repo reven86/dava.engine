@@ -21,6 +21,10 @@ static ANativeWindow* _nativeWindow = nullptr;
 PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
 PFNGLEGL_GLVERTEXATTRIBDIVISOR glVertexAttribDivisor = nullptr;
+PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC glBlitFramebuffer = nullptr;
+PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE glRenderbufferStorageMultisample = nullptr;
+PFNGL_DEBUGMESSAGECONTROLKHRPROC glDebugMessageControl;
+PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
 
 PFNGLGENQUERIESEXTPROC glGenQueries = nullptr;
 PFNGLDELETEQUERIESEXTPROC glDeleteQueries = nullptr;
@@ -47,6 +51,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 24,
         EGL_STENCIL_SIZE, 8,
         EGL_NONE
@@ -58,6 +63,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 16,
         EGL_STENCIL_SIZE, 8,
         EGL_DEPTH_ENCODING_NV, EGL_DEPTH_ENCODING_NONLINEAR_NV,
@@ -70,6 +76,7 @@ void android_gl_init(void* _window)
         EGL_BLUE_SIZE, 8,
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
+        EGL_BUFFER_SIZE, 32,
         EGL_DEPTH_SIZE, 16,
         EGL_STENCIL_SIZE, 8,
         EGL_NONE
@@ -166,6 +173,26 @@ void android_gl_acquire_context()
 void android_gl_release_context()
 {
     eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                           GLsizei length, const GLchar* message, const void* userdata)
+{
+    if ((message != nullptr) && (length > 1))
+    {
+        DAVA::Logger::Info("OpenGL debug message (%d): %s", length, message);
+    }
+}
+
+void android_gl_enable_debug()
+{
+    DVASSERT(_GLES2_IsDebugSupported);
+
+    DAVA::Logger::Info("Enabling OpenGL debug...");
+
+    GL_CALL(glEnable(GL_DEBUG_OUTPUT));
+    GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
+    GL_CALL(glDebugMessageCallback(&android_gl_debug_callback, nullptr));
 }
 
 #endif

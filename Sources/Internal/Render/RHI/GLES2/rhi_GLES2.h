@@ -58,6 +58,7 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i = DAVA::InvalidIndex);
 void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level);
+void ResolveMultisampling(Handle from, Handle to);
 Size2i Size(Handle tex);
 void ReCreateAll();
 unsigned NeedRestoreCount();

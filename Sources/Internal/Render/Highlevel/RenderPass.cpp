@@ -6,13 +6,14 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 
 #include "Render/Renderer.h"
 #include "Render/Texture.h"
-
 #include "Render/Image/ImageSystem.h"
+#include "Render/PixelFormatDescriptor.h"
+
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/GPUProfiler.h"
 
@@ -42,7 +43,10 @@ RenderPass::~RenderPass()
 {
     ClearLayersArrays();
     for (RenderLayer* layer : renderLayers)
+    {
         SafeDelete(layer);
+    }
+    SafeRelease(multisampledTexture);
 }
 
 void RenderPass::AddRenderLayer(RenderLayer* layer, RenderLayer::eRenderLayerID afterLayer)
@@ -107,6 +111,8 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::PrepareVisibilityArrays")
+
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
@@ -146,6 +152,8 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
 
 void RenderPass::DrawLayers(Camera* camera)
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::DrawLayers")
+
     ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
@@ -196,15 +204,60 @@ void RenderPass::ProcessVisibilityQuery()
 }
 #endif
 
+void RenderPass::SetRenderTargetProperties(uint32 width, uint32 height, PixelFormat format)
+{
+    renderTargetProperties.width = width;
+    renderTargetProperties.height = height;
+    renderTargetProperties.format = format;
+}
+
+void RenderPass::ValidateMultisampledTextures(const rhi::RenderPassConfig& config)
+{
+    uint32 requestedSamples = rhi::TextureSampleCountForAAType(config.antialiasingType);
+
+    bool invalidDescription =
+    (multisampledDescription.sampleCount != requestedSamples) ||
+    (multisampledDescription.format != renderTargetProperties.format) ||
+    (multisampledDescription.width != renderTargetProperties.width) ||
+    (multisampledDescription.height != renderTargetProperties.height);
+
+    if (invalidDescription || (multisampledTexture == nullptr))
+    {
+        SafeRelease(multisampledTexture);
+
+        multisampledDescription.width = renderTargetProperties.width;
+        multisampledDescription.height = renderTargetProperties.height;
+        multisampledDescription.format = renderTargetProperties.format;
+        multisampledDescription.needDepth = true;
+        multisampledDescription.needPixelReadback = false;
+        multisampledDescription.ensurePowerOf2 = false;
+        multisampledDescription.sampleCount = requestedSamples;
+
+        multisampledTexture = Texture::CreateFBO(multisampledDescription);
+    }
+}
+
 bool RenderPass::BeginRenderPass()
 {
     bool success = false;
+
 #if __DAVAENGINE_RENDERSTATS__
     ProcessVisibilityQuery();
     rhi::HQueryBuffer qBuffer = rhi::CreateQueryBuffer(RenderLayer::RENDER_LAYER_ID_COUNT);
     passConfig.queryBuffer = qBuffer;
     queryBuffers.push_back(qBuffer);
 #endif
+
+    DVASSERT(renderTargetProperties.width > 0);
+    DVASSERT(renderTargetProperties.height > 0);
+    DVASSERT(renderTargetProperties.format != PixelFormat::FORMAT_INVALID);
+
+    if (passConfig.antialiasingType != rhi::AntialiasingType::NONE)
+    {
+        ValidateMultisampledTextures(passConfig);
+        passConfig.colorBuffer[0].multisampleTexture = multisampledTexture->handle;
+        passConfig.depthStencilBuffer.multisampleTexture = multisampledTexture->handleDepthStencil;
+    }
 
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     if (renderPass != rhi::InvalidHandle)
@@ -261,6 +314,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
+    reflectionPass->SetRenderTargetProperties(RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_PIXEL_FORMAT);
 
     refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
@@ -270,6 +324,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
+    refractionPass->SetRenderTargetProperties(RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_PIXEL_FORMAT);
 }
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)
@@ -321,16 +376,12 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
     PrepareVisibilityArrays(mainCamera, renderSystem);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
     DAVA_GPU_PROFILER_RENDER_PASS(passConfig, "Main3D");
     if (BeginRenderPass())
     {
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
         DrawLayers(mainCamera);
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
         if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
             PrepareReflectionRefractionTextures(renderSystem);

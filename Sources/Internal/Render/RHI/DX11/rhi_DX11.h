@@ -84,9 +84,10 @@ namespace TextureDX11
 {
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
-void SetToRHIFragment(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
-void SetToRHIVertex(Handle tex, unsigned unitIndex, ID3D11DeviceContext* context);
-void SetRenderTarget(Handle color, Handle depthstencil, unsigned level, TextureFace face, ID3D11DeviceContext* context);
+void SetToRHIFragment(Handle tex, uint32 unitIndex, ID3D11DeviceContext* context);
+void SetToRHIVertex(Handle tex, uint32 unitIndex, ID3D11DeviceContext* context);
+void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFace face, ID3D11DeviceContext* context);
+void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context);
 Size2i Size(Handle tex);
 }
 

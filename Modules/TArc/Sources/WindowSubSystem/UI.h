@@ -36,7 +36,8 @@ public:
     ActionPlacementInfo(const QUrl& url);
 
     void AddPlacementPoint(const QUrl& url);
-    const Vector<QUrl> &GetUrls() const;
+    const Vector<QUrl>& GetUrls() const;
+
 private:
     Vector<QUrl> urls;
 };
@@ -64,7 +65,7 @@ public:
         CentralPanel,
         TypesCount
     };
-    
+
     PanelKey(const QString& viewName, const DockPanelInfo& info);
     PanelKey(const QString& viewName, const CentralPanelInfo& info);
 
@@ -91,7 +92,9 @@ struct WaitDialogParams
 class WaitHandle
 {
 public:
-    virtual ~WaitHandle() {}
+    virtual ~WaitHandle()
+    {
+    }
 
     virtual void SetMessage(const QString& msg) = 0;
     virtual void SetRange(uint32 min, uint32 max) = 0;
@@ -142,7 +145,9 @@ public:
     UI() = default;
     UI(const UI& other) = delete;
     UI& operator=(const UI& other) = delete;
-    virtual ~UI() {}
+    virtual ~UI()
+    {
+    }
 
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) = 0;
@@ -161,7 +166,7 @@ public:
 
 namespace std
 {
-template<>
+template <>
 struct hash<DAVA::TArc::WindowKey>
 {
     std::size_t operator()(const DAVA::TArc::WindowKey& k) const
