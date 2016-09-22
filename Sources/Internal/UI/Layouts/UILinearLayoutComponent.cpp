@@ -33,8 +33,7 @@ bool UILinearLayoutComponent::IsEnabled() const
 
 void UILinearLayoutComponent::SetEnabled(bool enabled)
 {
-    flags.set(FLAG_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() const
@@ -51,25 +50,30 @@ UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() 
 
 void UILinearLayoutComponent::SetOrientation(eOrientation direction)
 {
+    bool vertical = false;
+    bool inverse = false;
     switch (direction)
     {
     case LEFT_TO_RIGHT:
-        flags.set(FLAG_ORIENTATION_VERTICAL, false);
-        flags.set(FLAG_ORIENTATION_INVERSE, false);
+        vertical = false;
+        inverse = false;
         break;
     case RIGHT_TO_LEFT:
-        flags.set(FLAG_ORIENTATION_VERTICAL, false);
-        flags.set(FLAG_ORIENTATION_INVERSE, true);
+        vertical = false;
+        inverse = true;
         break;
     case TOP_DOWN:
-        flags.set(FLAG_ORIENTATION_VERTICAL, true);
-        flags.set(FLAG_ORIENTATION_INVERSE, false);
+        vertical = true;
+        inverse = false;
         break;
     case BOTTOM_UP:
-        flags.set(FLAG_ORIENTATION_VERTICAL, true);
-        flags.set(FLAG_ORIENTATION_INVERSE, true);
+        vertical = true;
+        inverse = true;
         break;
     }
+
+    SetFlag(FLAG_ORIENTATION_VERTICAL, vertical);
+    SetFlag(FLAG_ORIENTATION_INVERSE, inverse);
 }
 
 Vector2::eAxis UILinearLayoutComponent::GetAxis() const
@@ -89,6 +93,11 @@ float32 UILinearLayoutComponent::GetPadding() const
 
 void UILinearLayoutComponent::SetPadding(float32 newPadding)
 {
+    if (padding == newPadding)
+    {
+        return;
+    }
+
     padding = newPadding;
     SetLayoutDirty();
 }
@@ -100,6 +109,11 @@ float32 UILinearLayoutComponent::GetSpacing() const
 
 void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
 {
+    if (spacing == newSpacing)
+    {
+        return;
+    }
+
     spacing = newSpacing;
     SetLayoutDirty();
 }
@@ -111,8 +125,7 @@ bool UILinearLayoutComponent::IsDynamicPadding() const
 
 void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_PADDING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_PADDING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsDynamicSpacing() const
@@ -122,8 +135,7 @@ bool UILinearLayoutComponent::IsDynamicSpacing() const
 
 void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_SPACING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_SPACING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsSkipInvisibleControls() const
@@ -133,8 +145,7 @@ bool UILinearLayoutComponent::IsSkipInvisibleControls() const
 
 void UILinearLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
-    flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
-    SetLayoutDirty();
+    SetFlag(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
 }
 
 bool UILinearLayoutComponent::IsUseRtl() const
@@ -144,8 +155,7 @@ bool UILinearLayoutComponent::IsUseRtl() const
 
 void UILinearLayoutComponent::SetUseRtl(bool use)
 {
-    flags.set(FLAG_RTL, use);
-    SetLayoutDirty();
+    SetFlag(FLAG_RTL, use);
 }
 
 int32 UILinearLayoutComponent::GetOrientationAsInt() const
@@ -163,6 +173,15 @@ void UILinearLayoutComponent::SetLayoutDirty()
     if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
+    }
+}
+
+void UILinearLayoutComponent::SetFlag(eFlags flag, bool enabled)
+{
+    if (flags.test(flag) != enabled)
+    {
+        flags.set(flag, enabled);
+        SetLayoutDirty();
     }
 }
 }

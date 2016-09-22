@@ -212,7 +212,7 @@ void REApplication::RunConsole()
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
-    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
+    DAVA::Texture::SetGPULoadingOrder({ DAVA::eGPUFamily::GPU_ORIGIN });
 
     cmdLineManager->Process();
 }

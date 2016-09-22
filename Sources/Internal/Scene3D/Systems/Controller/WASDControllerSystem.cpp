@@ -12,6 +12,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "Utils/Utils.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -39,6 +40,8 @@ void WASDControllerSystem::RemoveEntity(Entity* entity)
 
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
+    DAVA_CPU_PROFILER_SCOPE("WASDControllerSystem::Process")
+
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
 
     const uint32 size = static_cast<uint32>(entities.size());

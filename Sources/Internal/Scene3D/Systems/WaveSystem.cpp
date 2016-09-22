@@ -8,7 +8,7 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
@@ -61,7 +61,7 @@ void WaveSystem::ImmediateEvent(Component* component, uint32 event)
 
 void WaveSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WaveSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("WaveSystem::Process");
 
     int32 index = 0;
     int32 size = static_cast<int32>(waves.size());
@@ -100,7 +100,7 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3& inPosition) const
 
             DVASSERT(damping >= 0.f);
 
-            float32 distance = sqrtf(distanceSq);
+            float32 distance = std::sqrt(distanceSq);
             direction /= distance;
             float32 dt = Abs(info->currentWaveRadius - distance);
             float32 value = Max(1 - dt / component->GetWaveLenght(), 0.f) * component->GetWaveAmplitude() * component->GetWaveSpeed() * damping; // wave function: A = (1 - x/L) * A0

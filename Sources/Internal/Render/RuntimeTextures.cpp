@@ -1,6 +1,6 @@
 #include "RuntimeTextures.h"
-
 #include "Render/RenderBase.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -73,25 +73,32 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
     switch (semantic)
     {
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION:
+    {
+        const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(REFLECTION_PIXEL_FORMAT);
         descriptor.width = REFLECTION_TEX_SIZE;
         descriptor.height = REFLECTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
+        descriptor.format = formatDescriptor.format;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
+    }
+
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION:
+    {
+        const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(REFLECTION_PIXEL_FORMAT);
         descriptor.width = REFRACTION_TEX_SIZE;
         descriptor.height = REFRACTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
+        descriptor.format = formatDescriptor.format;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
+    }
 
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER:
         size = Max(REFLECTION_TEX_SIZE, REFRACTION_TEX_SIZE);
