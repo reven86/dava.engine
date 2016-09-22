@@ -112,7 +112,6 @@ void SceneViewModule::OpenScene()
     {
         OpenScene(path.toStdString());
     }
-
 }
 
 void SceneViewModule::OpenScene(const DAVA::String& scenePath)
@@ -134,7 +133,7 @@ void SceneViewModule::OpenScene(const DAVA::String& scenePath)
     waitDialogParams.message = QString("Opening scene: %1").arg(scenePath.c_str());
     std::unique_ptr<DAVA::TArc::WaitHandle> wiatHandle = ui.ShowWaitDialog(windowKey, waitDialogParams);
 
-    DAVA::Texture::SetDefaultGPU(DAVA::GPU_ORIGIN);
+    DAVA::Texture::SetGPULoadingOrder({ DAVA::GPU_ORIGIN });
     DAVA::ScopedPtr<DAVA::Scene> scene(new DAVA::Scene());
     data.SetScene(scene);
     scene->LoadScene(DAVA::FilePath(scenePath));

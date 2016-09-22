@@ -31,7 +31,7 @@
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"

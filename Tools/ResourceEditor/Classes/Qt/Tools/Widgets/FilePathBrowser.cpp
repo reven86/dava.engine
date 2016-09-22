@@ -7,7 +7,7 @@
 #include <QFileInfo>
 #include <QKeyEvent>
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 namespace
