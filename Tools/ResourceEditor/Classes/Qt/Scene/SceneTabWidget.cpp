@@ -625,6 +625,7 @@ MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
     : QTabBar(parent)
 {
     setAcceptDrops(true);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 void MainTabBar::dragEnterEvent(QDragEnterEvent* event)

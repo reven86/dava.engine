@@ -10,7 +10,7 @@
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "SpritesPacker/SpritesPackerModule.h"
 

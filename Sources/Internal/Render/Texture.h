@@ -54,9 +54,10 @@ public:
     struct
     FBODescriptor
     {
-        uint32 width;
-        uint32 height;
-        PixelFormat format;
+        uint32 width = 0;
+        uint32 height = 0;
+        uint32 sampleCount = 1;
+        PixelFormat format = PixelFormat::FORMAT_INVALID;
         rhi::TextureType textureType = rhi::TEXTURE_TYPE_2D;
         bool needDepth = false;
         bool needPixelReadback = false;
@@ -170,8 +171,9 @@ public:
 
     uint32 GetDataSize() const;
 
-    static void SetDefaultGPU(eGPUFamily gpuFamily);
-    static eGPUFamily GetDefaultGPU();
+    static void SetGPULoadingOrder(const Vector<eGPUFamily>& gpuLoadingOrder);
+    static const Vector<eGPUFamily>& GetGPULoadingOrder();
+    static eGPUFamily GetPrimaryGPUForLoading();
 
     inline eGPUFamily GetSourceFileGPUFamily() const;
     inline TextureDescriptor* GetDescriptor() const;
@@ -237,7 +239,7 @@ public: // properties for fast access
     static Mutex textureMapMutex;
 
     static TexturesMap textureMap;
-    static eGPUFamily defaultGPU;
+    static Vector<eGPUFamily> gpuLoadingOrder;
 
     static bool pixelizationFlag;
 };

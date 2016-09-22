@@ -16,7 +16,6 @@ void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const
         break;
     case QtCriticalMsg:
         DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-        DVASSERT(false);
         break;
     case QtFatalMsg:
         DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);

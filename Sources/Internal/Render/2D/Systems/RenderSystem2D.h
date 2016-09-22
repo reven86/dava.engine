@@ -136,9 +136,11 @@ public:
 
     struct RenderTargetPassDescriptor
     {
-        rhi::HTexture colorAttachment, depthAttachment;
+        rhi::HTexture colorAttachment;
+        rhi::HTexture depthAttachment;
         uint32 width = 0;
         uint32 height = 0;
+        PixelFormat format = PixelFormat::FORMAT_INVALID;
         Color clearColor = Color::Clear;
         int32 priority = 0; // PRIORITY_SERVICE_2D;
         bool transformVirtualToPhysical = true;

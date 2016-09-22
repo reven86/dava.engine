@@ -10,7 +10,7 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -254,7 +254,8 @@ void ParticleEffectSystem::ImmediateEvent(Component* component, uint32 event)
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("ParticleEffectSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("ParticleEffectSystem::Process");
+
     if (timeElapsed == 0.f)
     {
         timeElapsed = 0.000001f;
@@ -698,7 +699,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
         float32 spl = particle->speed.SquareLength();
         if (spl > EPSILON)
         {
-            particle->speed *= currEmissionPower / sqrtf(spl);
+            particle->speed *= currEmissionPower / std::sqrt(spl);
         }
     }
     else
@@ -717,7 +718,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
 
     //now transform position and speed by emissionVector and worldTransfrom rotations - preserving length
     Matrix3 newTransform(worldTransform);
-    if ((fabs(currEmissionVector.x) < EPSILON) && (fabs(currEmissionVector.y) < EPSILON))
+    if ((std::abs(currEmissionVector.x) < EPSILON) && (std::abs(currEmissionVector.y) < EPSILON))
     {
         if (currEmissionVector.z < 0)
         {
@@ -732,7 +733,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
     {
         Vector3 axis(currEmissionVector.y, -currEmissionVector.x, 0);
         axis.Normalize();
-        float32 angle = acosf(currEmissionVector.z / currEmissionPower);
+        float32 angle = std::acos(currEmissionVector.z / currEmissionPower);
         Matrix3 rotation;
         rotation.CreateRotation(axis, angle);
         //newTransform = rotation*newTransform;
