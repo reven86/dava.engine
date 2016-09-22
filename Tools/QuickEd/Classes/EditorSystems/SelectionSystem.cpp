@@ -173,7 +173,6 @@ void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     {
         SelectNode(selectedNode);
     }
-
 }
 
 void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
