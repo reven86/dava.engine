@@ -23,6 +23,7 @@
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -491,10 +492,10 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
         return QVariant(val.AsFloat64()).toString();
 
     case VariantType::TYPE_STRING:
-        return StringToQString(val.AsString());
+        return UnescapeString(StringToQString(val.AsString()));
 
     case VariantType::TYPE_WIDE_STRING:
-        return WideStringToQString(val.AsWideString());
+        return UnescapeString(WideStringToQString(val.AsWideString()));
 
     case VariantType::TYPE_FASTNAME:
         return StringToQString(val.AsFastName().c_str());

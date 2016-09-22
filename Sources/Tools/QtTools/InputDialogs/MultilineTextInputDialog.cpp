@@ -34,7 +34,7 @@ QString MultilineTextInputDialog::GetMultiLineText(QWidget* parent, const QStrin
     }
 
     int ret = dialog.exec();
-    bool isAccepted = ret == (QDialog::Accepted);
+    bool isAccepted = (ret == QDialog::Accepted);
     if (ok)
         *ok = isAccepted;
     if (isAccepted)

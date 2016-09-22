@@ -22,3 +22,6 @@ extern QColor ColorToQColor(const DAVA::Color& davaColor);
 void ShowFileInExplorer(const QString& path);
 
 void ConnectApplicationFocus();
+
+QString EscapeString(QString& str);
+QString UnescapeString(QString& str);

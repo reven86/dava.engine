@@ -113,3 +113,34 @@ void ConnectApplicationFocus()
                          }
                      });
 }
+
+namespace StringPropertyDelegateLocal
+{
+//we need to store sequence in order
+DAVA::Vector<std::pair<QChar, QString>> escapeSequences = {
+    { '\\', QStringLiteral("\\\\") },
+    { '\n', QStringLiteral("\\n") },
+    { '\r', QStringLiteral("\\r") },
+    { '\t', QStringLiteral("\\t") },
+};
+}
+
+//replace strings with escape characters
+QString EscapeString(QString& str)
+{
+    for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
+    {
+        str.replace(pair.second, pair.first);
+    }
+    return str;
+}
+
+//replace escape characters with their string form
+QString UnescapeString(QString& str)
+{
+    for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
+    {
+        str.replace(pair.first, pair.second);
+    }
+    return str;
+}

@@ -4,36 +4,8 @@
 #include "DAVAEngine.h"
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 #include "PropertiesTreeItemDelegate.h"
-
-namespace StringPropertyDelegateLocal
-{
-//we need to store sequence in order
-DAVA::Vector<std::pair<QChar, QString>> escapeSequences = {
-    { '\\', QStringLiteral("\\\\") },
-    { '\n', QStringLiteral("\\n") },
-    { '\r', QStringLiteral("\\r") },
-    { '\t', QStringLiteral("\\t") },
-};
-
-//replace strings with escape characters
-void EscapeString(QString& str)
-{
-    for (const auto& pair : escapeSequences)
-    {
-        str.replace(pair.second, pair.first);
-    }
-}
-
-//replace escape characters with their string form
-void UnescapeString(QString& str)
-{
-    for (const auto& pair : escapeSequences)
-    {
-        str.replace(pair.first, pair.second);
-    }
-}
-}
 
 StringPropertyDelegate::StringPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
@@ -63,7 +35,7 @@ void StringPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex
     {
         stringValue = WideStringToQString(variant.AsWideString());
     }
-    StringPropertyDelegateLocal::UnescapeString(stringValue);
+    UnescapeString(stringValue);
 
     editor->blockSignals(true);
     editor->setText(stringValue);
@@ -79,9 +51,7 @@ bool StringPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
 
-    QString stringValue = editor->text();
-
-    StringPropertyDelegateLocal::EscapeString(stringValue);
+    QString stringValue = EscapeString(editor->text());
 
     if (variantType.GetType() == DAVA::VariantType::TYPE_STRING)
     {
