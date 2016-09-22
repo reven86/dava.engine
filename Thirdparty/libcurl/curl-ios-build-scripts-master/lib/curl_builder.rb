@@ -31,12 +31,17 @@ module CurlBuilder
   # Defaults
 
   DEFAULT_PROTOCOLS = {
+    "static" => true,
     "http"   => true,
+    "ipv6"   => true,
+    "threaded-resolver" => true,
+    "shared" => false,
     "rtsp"   => false,
     "ftp"    => false,
     "file"   => false,
     "ldap"   => false,
     "ldaps"  => false,
+    "rtsp"   => false,
     "dict"   => false,
     "telnet" => false,
     "tftp"   => false,
@@ -47,12 +52,15 @@ module CurlBuilder
   }
 
   DEFAULT_FLAGS = {
-    "darwinssl" => true,
-    "ssl"       => false,
-    "libssh2"   => false,
-    "librtmp"   => false,
-    "libidn"    => false,
-    "ca-bundle" => false
+    "darwinssl"     => true,
+    "ssl"           => false,
+    "libssh2"       => false,
+    "librtmp"       => false,
+    "libidn"        => false,
+    "ca-bundle"     => false,
+    "enable-ipv6"   => true,
+    "ldap"          => false,
+    
   }
 
   DEFAULT_SETUP = {
