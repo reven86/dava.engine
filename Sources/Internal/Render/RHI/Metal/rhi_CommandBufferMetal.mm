@@ -443,7 +443,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
         {
             DVASSERT(color0.multisampleTexture != InvalidHandle);
             TextureMetal::SetAsRenderTarget(color0.multisampleTexture, desc);
-            desc.colorAttachments[0].resolveTexture = _Metal_Frame.back().drawable.texture;
+            desc.colorAttachments[0].resolveTexture = currentDrawable.texture;
         }
         else
 
@@ -1646,14 +1646,9 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 
     if (pass.size())
     {
-<<<<<<< HEAD
         MTL_TRACE("  -mtl.present-drawable %p", (void*)(currentDrawable));
         MTL_TRACE("   drawable= %p %i %s", (void*)(currentDrawable), [currentDrawable retainCount], NSStringFromClass([currentDrawable class]).UTF8String);
         [pbuf presentDrawable:currentDrawable];
-=======
-        Handle last_cb_h = pass.back()->cmdBuf.back();
-        CommandBufferMetal_t* last_cb = CommandBufferPool::Get(last_cb_h);
->>>>>>> development
 
         unsigned f = frame_n;
         if (syncObject != InvalidHandle)
