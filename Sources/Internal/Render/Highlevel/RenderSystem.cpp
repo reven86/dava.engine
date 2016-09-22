@@ -14,7 +14,7 @@
 #include "Render/ShaderCache.h"
 
 #include "Utils/Utils.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -326,8 +326,6 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 
 void RenderSystem::Render()
 {
-    TIME_PROFILE("RenderSystem::Render");
-
     rhi::RenderPassConfig& config = mainRenderPass->GetPassConfig();
 
     const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();

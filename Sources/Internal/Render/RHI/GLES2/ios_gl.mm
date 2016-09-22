@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 static GLuint colorRenderbuffer = -1;
 static GLuint depthRenderbuffer = -1;
@@ -83,7 +83,6 @@ void ios_gl_init(void* nativeLayer)
 
 void ios_gl_begin_frame()
 {
-    SCOPED_NAMED_TIMING("ios_GL_begin_frame");
 }
 
 void ios_gl_reset(void* nativeLayer)
@@ -95,8 +94,6 @@ void ios_gl_reset(void* nativeLayer)
 
 void ios_gl_end_frame()
 {
-    SCOPED_NAMED_TIMING("ios_GL_end_frame");
-
     glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
 

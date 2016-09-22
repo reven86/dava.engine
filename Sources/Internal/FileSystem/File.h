@@ -156,7 +156,7 @@ public:
         \brief Truncate a file to a specified length
         \param size A size, that file is going to be truncated to
     */
-    bool Truncate(uint64 size);
+    virtual bool Truncate(uint64 size);
 
     /**
         \brief Flushes file buffers to output device
