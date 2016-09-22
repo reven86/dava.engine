@@ -91,7 +91,7 @@ GameCore::GameCore(Engine* e)
 {
     engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
     engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
-    engine->beforeTerminate.Connect(this, &GameCore::OnBeforeTerminate);
+    engine->cleanup.Connect(this, &GameCore::OnEngineCleanup);
 
     engine->suspended.Connect(this, &GameCore::OnSuspended);
     engine->resumed.Connect(this, &GameCore::OnResumed);
@@ -139,9 +139,9 @@ void GameCore::OnGameLoopStopped()
     SafeRelease(testListScreen);
 }
 
-void GameCore::OnBeforeTerminate()
+void GameCore::OnEngineCleanup()
 {
-    Logger::Debug("****** GameCore::OnBeforeTerminate");
+    Logger::Debug("****** GameCore::OnEngineCleanup");
     netLogger.Uninstall();
 }
 

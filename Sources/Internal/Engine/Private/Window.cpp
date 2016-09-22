@@ -31,12 +31,22 @@ Window::~Window()
 
 void Window::Resize(float32 w, float32 h)
 {
-    windowBackend->Resize(w, h);
+    // Window cannot be resized in embedded mode as window lifetime
+    // is controlled by highlevel framework
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->Resize(w, h);
+    }
 }
 
 void Window::Close()
 {
-    windowBackend->Close(false);
+    // Window cannot be close in embedded mode as window lifetime
+    // is controlled by highlevel framework
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->Close(false);
+    }
 }
 
 Engine* Window::GetEngine() const

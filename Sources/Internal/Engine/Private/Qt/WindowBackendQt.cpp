@@ -187,19 +187,13 @@ WindowBackend::~WindowBackend()
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    if (!engineBackend.IsEmbeddedGUIMode())
-    {
-        PostResizeOnUIThread(width, height);
-    }
+    PostResizeOnUIThread(width, height);
 }
 
 void WindowBackend::Close(bool appIsTerminating)
 {
-    if (!engineBackend.IsEmbeddedGUIMode())
-    {
-        closeRequestByApp = true;
-        PostCloseOnUIThread();
-    }
+    closeRequestByApp = true;
+    PostCloseOnUIThread();
 }
 
 bool WindowBackend::IsWindowReadyForRender() const

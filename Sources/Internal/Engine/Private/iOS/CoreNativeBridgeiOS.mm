@@ -168,7 +168,7 @@ void CoreNativeBridge::ApplicationWillTerminate()
     [frameTimer cancel];
 
     core.engineBackend.OnGameLoopStopped();
-    core.engineBackend.OnBeforeTerminate();
+    core.engineBackend.OnEngineCleanup();
 }
 
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()

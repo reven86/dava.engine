@@ -206,7 +206,7 @@ void CoreNativeBridge::ApplicationWillTerminate()
     [frameTimer release];
 
     int exitCode = core.engineBackend.GetExitCode();
-    core.engineBackend.OnBeforeTerminate();
+    core.engineBackend.OnEngineCleanup();
     std::exit(exitCode);
 }
 

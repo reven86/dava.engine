@@ -77,7 +77,7 @@ void PlatformCore::Run()
             break;
     }
     engineBackend.OnGameLoopStopped();
-    engineBackend.OnBeforeTerminate();
+    engineBackend.OnEngineCleanup();
 }
 
 void PlatformCore::PrepareToQuit()

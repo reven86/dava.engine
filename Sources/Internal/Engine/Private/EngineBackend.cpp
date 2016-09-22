@@ -133,7 +133,12 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
 {
     runMode = engineRunMode;
 
-    platformCore->Init();
+    // Do not initialize PlatformCore in console mode as console mode is fully
+    // implemented in EngineBackend
+    if (!IsConsoleMode())
+    {
+        platformCore->Init();
+    }
 
     Thread::InitMainThread();
     // For now only next subsystems/modules are created on demand:
@@ -213,7 +218,7 @@ void EngineBackend::RunConsole()
         Thread::Sleep(1);
     }
     OnGameLoopStopped();
-    OnBeforeTerminate();
+    OnEngineCleanup();
 }
 
 void EngineBackend::OnGameLoopStarted()
@@ -239,9 +244,9 @@ void EngineBackend::OnGameLoopStopped()
     }
 }
 
-void EngineBackend::OnBeforeTerminate()
+void EngineBackend::OnEngineCleanup()
 {
-    engine->beforeTerminate.Emit();
+    engine->cleanup.Emit();
 
     DestroySubsystems();
     delete context;
@@ -268,8 +273,9 @@ void EngineBackend::OnFrameConsole()
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
     DoEvents();
-
     engine->update.Emit(frameDelta);
+
+    globalFrameIndex += 1;
 }
 
 int32 EngineBackend::OnFrame()
@@ -297,6 +303,7 @@ int32 EngineBackend::OnFrame()
         }
     }
 
+    globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
 }
 
@@ -655,7 +662,7 @@ void EngineBackend::DestroySubsystems()
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
-        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::beforeTerminate
+        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::cleanup
         context->jobManager->WaitWorkerJobs();
         context->jobManager->WaitMainJobs();
     }

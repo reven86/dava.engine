@@ -77,7 +77,7 @@ public:
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
-    void OnBeforeTerminate();
+    void OnEngineCleanup();
 
     void OnWindowCreated(Window* window);
     void OnWindowDestroyed(Window* window);
@@ -134,7 +134,7 @@ private:
     int32 exitCode = 0;
 
     KeyedArchive* options = nullptr;
-    uint32 globalFrameIndex = 0;
+    uint32 globalFrameIndex = 1;
 
     static EngineBackend* instance;
 };

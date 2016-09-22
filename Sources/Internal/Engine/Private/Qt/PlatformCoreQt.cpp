@@ -57,7 +57,7 @@ void PlatformCore::Run()
 
     QObject::connect(&app, &QApplication::aboutToQuit, [this]() {
         engineBackend.OnGameLoopStopped();
-        engineBackend.OnBeforeTerminate();
+        engineBackend.OnEngineCleanup();
     });
 
     app.exec();
