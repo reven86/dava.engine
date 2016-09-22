@@ -28,14 +28,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) )
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid -latomic
-
-ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
-LOCAL_ARM_NEON := true
-LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
-LOCAL_ARM_MODE := arm
-endif
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 ifeq ($(MEMORY_SANITIZE), true)
 LOCAL_ARM_MODE := arm

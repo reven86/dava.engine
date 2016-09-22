@@ -8,9 +8,11 @@ namespace DAVA
 {
 namespace TArc
 {
-class DataNode : public DAVA::ReflectedBase
+class DataNode : public ReflectedBase
 {
-    DAVA_VIRTUAL_REFLECTION(DataNode) {}
+    DAVA_VIRTUAL_REFLECTION(DataNode)
+    {
+    }
 
 public:
     virtual ~DataNode() = default;

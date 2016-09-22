@@ -166,7 +166,7 @@ FPROG_BEGIN
         
         FP_OUT_COLOR = float4(resColor, 1.0);
     #else
-        float3x3 tbnToWorldMatrix = float3x3(FP_IN(tbnToWorld0), FP_IN(tbnToWorld1), FP_IN(tbnToWorld2));
+        float3x3 tbnToWorldMatrix = float3x3( float3(FP_IN(tbnToWorld0)), float3(FP_IN(tbnToWorld1)), float3(FP_IN(tbnToWorld2)) );
         float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
         reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
         float3 reflectionVectorInWorldSpace = mul (reflectionVectorInTangentSpace, tbnToWorldMatrix);    

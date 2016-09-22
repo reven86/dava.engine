@@ -4,8 +4,8 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Engine/Public/Window.h"
-#include "Engine/Public/Android/WindowNativeServiceAndroid.h"
+#include "Engine/Window.h"
+#include "Engine/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
@@ -60,6 +60,33 @@ void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 
 void WindowBackend::TriggerPlatformEvents()
 {
+    if (platformDispatcher.HasEvents())
+    {
+        try
+        {
+            triggerPlatformEvents(surfaceView);
+        }
+        catch (const JNI::Exception& e)
+        {
+            Logger::Error("WindowBackend::TriggerPlatformEvents failed: %s", e.what());
+            DVASSERT_MSG(false, e.what());
+        }
+    }
+}
+
+jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
+{
+    jobject object = nullptr;
+    try
+    {
+        jstring className = JNI::CStrToJavaString(controlClassName);
+        object = createNativeControl(surfaceView, className, reinterpret_cast<jlong>(backendPointer));
+    }
+    catch (const JNI::Exception& e)
+    {
+        Logger::Error("[WindowBackend::CreateNativeControl] failed to create native control %s: %s", controlClassName, e.what());
+    }
+    return object;
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -98,6 +125,15 @@ void WindowBackend::OnPause()
     window->PostVisibilityChanged(false);
 }
 
+void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
+{
+    // Here reference to java DavaSurfaceView instance is obtained
+    if (surfaceView == nullptr)
+    {
+        surfaceView = env->NewGlobalRef(surfaceViewInstance);
+    }
+}
+
 void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height)
 {
     {
@@ -116,6 +152,20 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
 
     if (firstTimeSurfaceChanged)
     {
+        platformDispatcher.LinkToCurrentThread();
+
+        try
+        {
+            surfaceViewJavaClass.reset(new JNI::JavaClass("com/dava/engine/DavaSurfaceView"));
+            triggerPlatformEvents = surfaceViewJavaClass->GetMethod<void>("triggerPlatformEvents");
+            createNativeControl = surfaceViewJavaClass->GetMethod<jobject, jstring, jlong>("createNativeControl");
+        }
+        catch (const JNI::Exception& e)
+        {
+            Logger::Error("[WindowBackend] failed to init java bridge: %s", e.what());
+            DVASSERT_MSG(false, e.what());
+        }
+
         MainDispatcherEvent e(MainDispatcherEvent::WINDOW_CREATED, window);
         e.windowCreatedEvent.windowBackend = this;
         e.windowCreatedEvent.size.width = static_cast<float32>(width);
@@ -149,6 +199,11 @@ void WindowBackend::SurfaceDestroyed()
         }
     };
     dispatcher->PostEvent(e);
+}
+
+void WindowBackend::ProcessProperties()
+{
+    platformDispatcher.ProcessEvents();
 }
 
 void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)

@@ -13,6 +13,7 @@ class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
     DeviceInfoPrivate();
+    ~DeviceInfoPrivate();
     DeviceInfo::ePlatform GetPlatform();
     String GetPlatformString();
     String GetVersion();
@@ -34,9 +35,12 @@ public:
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
+    struct DeviceInfoObjcBridge;
+    std::unique_ptr<DeviceInfoObjcBridge> bridge;
 };
 
 }; // namespace DAVA

@@ -147,6 +147,11 @@ public:
     bool IsDirectory(const FilePath& pathToCheck) const;
 
     /**
+        \brief Function checks if specifed path or dir is hidden
+    */
+    bool IsHidden(const FilePath& pathToCheck) const;
+
+    /**
      \brief Function sets/removes exclusive lock to/from file.
      \param[in] filePath The name of the file to be locked/unlocked.
      \param[in] isLock true to lock file, false to unlock.
@@ -213,20 +218,23 @@ public:
 		\param[in] attachPath path we attach our archive
 
         can throw std::runtime_exception in case of error
+        thread safe
 	*/
     virtual void Mount(const FilePath& archiveName, const String& attachPath);
 
     /**
-    \brief Function to detach ResourceArchive from filesystem
+        \brief Function to detach ResourceArchive from filesystem
 
-    \param[in] archiveName pathname or local filename of archive we want to attach
+        \param[in] archiveName pathname or local filename of archive we want to attach
+        thread safe
     */
     virtual void Unmount(const FilePath& arhiveName);
 
     /**
-    \brief Function to check if ResourceArchive is mounted
+        \brief Function to check if ResourceArchive is mounted
 
-    \param[in] archiveName filename of archive we want to attach
+        \param[in] archiveName filename of archive we want to attach
+        thread safe
     */
     virtual bool IsMounted(const FilePath& archiveName) const;
 
@@ -299,6 +307,7 @@ private:
         FilePath archiveFilePath;
     };
 
+    mutable Mutex accessArchiveMap;
     UnorderedMap<String, ResourceArchiveItem> resArchiveMap;
     Map<String, void*> lockedFileHandles;
 

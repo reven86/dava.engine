@@ -21,7 +21,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
 
     if (ret.empty())
     {
-        ret.reserve(22);
+        ret.reserve(24);
 
         ret.emplace_back(NMaterialFlagName::FLAG_VERTEXFOG);
         ret.emplace_back(NMaterialFlagName::FLAG_FOG_LINEAR);

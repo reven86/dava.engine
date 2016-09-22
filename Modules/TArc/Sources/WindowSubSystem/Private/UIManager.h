@@ -9,10 +9,18 @@ namespace DAVA
 {
 namespace TArc
 {
-class UIManager final: public UI
+class PropertiesItem;
+
+class UIManager final : public UI
 {
 public:
-    UIManager();
+    class Delegate
+    {
+    public:
+        virtual bool WindowCloseRequested(const WindowKey& key) = 0;
+        virtual void WindowClosed(const WindowKey& key) = 0;
+    };
+    UIManager(Delegate* delegate, PropertiesItem&& holder);
     ~UIManager();
 
     void InitializationFinished();
@@ -21,8 +29,11 @@ public:
     void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) override;
     void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
 
-    void ShowMessage(const WindowKey& windowKey, const QString& message, DAVA::uint32 duration = 0) override;
+    void ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration = 0) override;
     void ClearMessage(const WindowKey& windowKey) override;
+    ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) override;
+
+    QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params) override;
 
     std::unique_ptr<WaitHandle> ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params = WaitDialogParams()) override;
 

@@ -4,7 +4,7 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
-#include "Engine/Public/WindowNativeService.h"
+#include "Engine/WindowNativeService.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -164,13 +164,11 @@
 
 - (void)setWebViewControl:(DAVA::WebViewControl*)webControl
 {
-    DVASSERT(webControl);
     webViewControl = webControl;
 }
 
 - (void)setUiWebViewControl:(DAVA::UIWebView*)uiWebControl
 {
-    DVASSERT(uiWebControl);
     webView = uiWebControl;
 }
 
@@ -187,12 +185,16 @@ struct WebViewControl::WebViewObjCBridge final
     NSBitmapImageRep* bitmapImageRep = nullptr;
 };
 
-WebViewControl::WebViewControl(UIWebView& uiWebView)
-    : uiWebViewControl(uiWebView)
 #if defined(__DAVAENGINE_COREV2__)
-    , window(Engine::Instance()->PrimaryWindow())
-#endif
+WebViewControl::WebViewControl(Window* w, UIWebView* uiWebView)
+    : uiWebViewControl(*uiWebView)
+    , window(w)
     , bridge(new WebViewObjCBridge)
+#else
+WebViewControl::WebViewControl(UIWebView* uiWebView)
+    : uiWebViewControl(*uiWebView)
+    , bridge(new WebViewObjCBridge)
+#endif
 {
     bridge->controlUIDelegate = [[WebViewControlUIDelegate alloc] init];
     bridge->policyDelegate = [[WebViewPolicyDelegate alloc] init];
@@ -242,16 +244,27 @@ WebViewControl::~WebViewControl()
     [bridge->webView removeFromSuperview];
 #endif
 
+    // It is very important to set WebView's delegates to nil before calling [WebView close] as
+    //  - WebView can invoke didFinishLoadForFrame for unfinished request
+    //  - also WebView can invoke release for delegate
+    // Both cases can lean=d to crash
     [bridge->webView setUIDelegate:nil];
-    [bridge->webView close];
-    [bridge->webView release];
-    bridge->webView = nullptr;
+    [bridge->webView setPolicyDelegate:nil];
+    [bridge->webView setFrameLoadDelegate:nil];
+
+    [bridge->policyDelegate setWebViewControl:nullptr];
+    [bridge->policyDelegate setUiWebViewControl:nullptr];
+    [bridge->policyDelegate setDelegate:nullptr andWebView:nullptr];
 
     [bridge->policyDelegate release];
     bridge->policyDelegate = nullptr;
 
     [bridge->controlUIDelegate release];
     bridge->controlUIDelegate = nullptr;
+
+    [bridge->webView close];
+    [bridge->webView release];
+    bridge->webView = nullptr;
 
     delete bridge;
 }

@@ -1,28 +1,27 @@
 #include "rhi_DX11.h"
-    #include "../Common/rhi_Impl.h"
-    
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
-    #include "Core/Core.h"
+#include "../Common/rhi_Impl.h"
+
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Core/Core.h"
 using DAVA::Logger;
 
-    #include "_dx11.h"
-    #include "../rhi_Type.h"
-    #include "../Common/dbg_StatSet.h"
+#include "_dx11.h"
+#include "../rhi_Type.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include <vector>
+#include <vector>
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-	#include "uap_dx11.h"
+#include "uap_dx11.h"
+#include "Platform/DeviceInfo.h"
 #endif
 
 namespace rhi
 {
 //==============================================================================
 
-static Dispatch DispatchDX11 = { 0 };
-
-static RenderDeviceCaps _DeviceCapsDX11 = {};
+static Dispatch DispatchDX11 = {};
 
 //------------------------------------------------------------------------------
 
@@ -30,14 +29,6 @@ static Api
 dx11_HostApi()
 {
     return RHI_DX11;
-}
-
-//------------------------------------------------------------------------------
-
-static const RenderDeviceCaps&
-dx11_DeviceCaps()
-{
-    return _DeviceCapsDX11;
 }
 
 //------------------------------------------------------------------------------
@@ -115,19 +106,18 @@ dx11_Uninitialize()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_Reset(const ResetParam& param)
+static void dx11_Reset(const ResetParam& param)
 {
     if (_DX11_InitParam.fullScreen != param.fullScreen)
     {
     }
     else
     {
-#if defined(__DAVAENGINE_WIN_UAP__)
+	#if defined(__DAVAENGINE_WIN_UAP__)
         resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
-#else
-//Not implemented
-#endif
+	#else
+// TODO : implement resize
+	#endif
     }
 }
 
@@ -168,7 +158,7 @@ void _InitDX11()
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
-    get_device_description(_DeviceCapsDX11.deviceDescription);
+    get_device_description(MutableDeviceCaps::Get().deviceDescription);
 
 #else
 
@@ -289,9 +279,11 @@ void _InitDX11()
 
                     if (SUCCEEDED(dxgiAdapter->GetDesc(&desc)))
                     {
-                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, _DeviceCapsDX11.deviceDescription, countof(_DeviceCapsDX11.deviceDescription), NULL, NULL);
+                        ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, MutableDeviceCaps::Get().deviceDescription,
+                                              countof(MutableDeviceCaps::Get().deviceDescription), NULL, NULL);
 
-                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", _DeviceCapsDX11.deviceDescription, desc.VendorId, desc.DeviceId);
+                        Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X",
+                                     MutableDeviceCaps::Get().deviceDescription, desc.VendorId, desc.DeviceId);
                     }
                 }
             }
@@ -353,7 +345,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_Reset = &dx11_Reset;
     DispatchDX11.impl_HostApi = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
-    DispatchDX11.impl_DeviceCaps = &dx11_DeviceCaps;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
@@ -382,14 +373,26 @@ void dx11_Initialize(const InitParam& param)
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
-    _DeviceCapsDX11.is32BitIndicesSupported = true;
-    _DeviceCapsDX11.isFramebufferFetchSupported = true;
-    _DeviceCapsDX11.isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
-    _DeviceCapsDX11.isUpperLeftRTOrigin = true;
-    _DeviceCapsDX11.isZeroBaseClipRange = true;
-    _DeviceCapsDX11.isCenterPixelMapping = false;
-    _DeviceCapsDX11.isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
-    _DeviceCapsDX11.maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_10_0);
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = false;
+    MutableDeviceCaps::Get().isInstancingSupported = (_D3D11_FeatureLevel >= D3D_FEATURE_LEVEL_9_2);
+    MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+    if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
+    {
+        // explicitly disable multisampling support on win phones
+        MutableDeviceCaps::Get().maxSamples = 1;
+    }
+    else 
+#endif
+    {
+        MutableDeviceCaps::Get().maxSamples = DX11_GetMaxSupportedMultisampleCount(_D3D11_Device);
+    }
 }
 
 //==============================================================================

@@ -60,6 +60,7 @@ public:
     FilePath inputGfxDirectory;
     FilePath outputGfxDirectory;
     FilePath rootDirectory;
+    FilePath dataSourceDirectory;
     String gfxDirName;
 
     bool outputDirModified = true;

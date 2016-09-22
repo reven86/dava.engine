@@ -139,10 +139,6 @@ SceneEditor2::SceneEditor2()
     selectionSystem->AddDelegate(hoodSystem);
     selectionSystem->AddDelegate(wayEditSystem);
 
-    DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
-    clearColor[0] = clearColor[1] = clearColor[2] = .3f;
-    clearColor[3] = 1.f;
-
     SceneSignals::Instance()->EmitOpened(this);
 
     wasChanged = false;
@@ -486,6 +482,11 @@ void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& comma
     pathSystem->ProcessCommand(commandNotification);
     wayEditSystem->ProcessCommand(commandNotification);
     editorLODSystem->ProcessCommand(commandNotification);
+
+    if (selectionSystem)
+    {
+        selectionSystem->ProcessCommand(commandNotification);
+    }
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)

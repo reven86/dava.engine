@@ -4,6 +4,10 @@ project ( UnitTests )
 
 set( DAVA_DISABLE_AUTOTESTS true )
 
+if ( ANDROID )
+    set( DISABLE_MEMORY_PROFILER true )
+endif ()
+
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
@@ -49,6 +53,7 @@ endif()
 
 define_source                  ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
+set( STEAM_APPID                Win32Specific/steam_appid.txt )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )

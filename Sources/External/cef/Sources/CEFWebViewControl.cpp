@@ -54,14 +54,26 @@ private:
     Map<String, String> cookies;
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+CEFWebViewControl::CEFWebViewControl(Window* w, UIWebView& uiWebView)
+    : window(w)
+    , webView(uiWebView)
+{
+}
+#else
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
 }
+#endif
 
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    webPageRender = new CEFWebPageRender(window);
+#else
     webPageRender = new CEFWebPageRender;
+#endif
 
     CefWindowInfo windowInfo;
     windowInfo.windowless_rendering_enabled = 1;

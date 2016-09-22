@@ -2,24 +2,31 @@ package com.dava.engine;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.util.Log;
+import java.lang.reflect.Constructor;
 
-public final class DavaSurfaceView extends SurfaceView
-                                   implements SurfaceHolder.Callback,
-                                              View.OnTouchListener
+final class DavaSurfaceView extends SurfaceView
+                            implements SurfaceHolder.Callback,
+                                       View.OnTouchListener,
+                                       View.OnKeyListener
 {
     protected long windowBackendPointer = 0;
     
     public static native void nativeSurfaceViewOnResume(long windowBackendPointer);
     public static native void nativeSurfaceViewOnPause(long windowBackendPointer);
+    public static native void nativeSurfaceViewOnSurfaceCreated(long windowBackendPointer, DavaSurfaceView surfaceView);
     public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
+    public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
     
     public DavaSurfaceView(Context context, long windowBackendPtr)
@@ -33,6 +40,52 @@ public final class DavaSurfaceView extends SurfaceView
         setFocusableInTouchMode(true);
         requestFocus();
         setOnTouchListener(this);
+        setOnKeyListener(this);
+    }
+
+    public Object createNativeControl(String className, long backendPointer)
+    {
+        try {
+            Class<?> clazz = Class.forName(className);
+            Constructor<?> ctor = clazz.getConstructor(DavaSurfaceView.class, Long.TYPE);
+            return ctor.newInstance(this, backendPointer);
+        } catch (Throwable e) {
+            Log.e(DavaActivity.LOG_TAG, String.format("DavaSurfaceView.createNativeControl '%s' failed: %s", className, e.toString()));
+            return null;
+        }
+    }
+
+    public void addControl(View control)
+    {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                            FrameLayout.LayoutParams.MATCH_PARENT,
+                                            FrameLayout.LayoutParams.MATCH_PARENT);
+        ((ViewGroup)getParent()).addView(control, params);
+    }
+
+    public void positionControl(View control, float x, float y, float w, float h)
+    {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)control.getLayoutParams();
+        params.leftMargin = (int)x;
+        params.topMargin = (int)y;
+        params.width = (int)w;
+        params.height = (int)h;
+        control.setLayoutParams(params);
+    }
+
+    public void removeControl(View control)
+    {
+        ((ViewGroup)getParent()).removeView(control);
+    }
+
+    public void triggerPlatformEvents()
+    {
+        DavaActivity.commandHandler().sendTriggerProcessEvents(this);
+    }
+
+    public void processEvents()
+    {
+        nativeSurfaceViewProcessEvents(windowBackendPointer);
     }
     
     public void handleResume()
@@ -54,6 +107,7 @@ public final class DavaSurfaceView extends SurfaceView
     public void surfaceCreated(SurfaceHolder holder)
     {
         Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
+        nativeSurfaceViewOnSurfaceCreated(windowBackendPointer, this);
     }
     
     @Override
@@ -87,6 +141,12 @@ public final class DavaSurfaceView extends SurfaceView
 
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
+        
+        if (DavaActivity.davaMainThread == null)
+        {
+            // continue initialization of game after creating main window
+            DavaActivity.instance().onFinishCreatingMainWindowSurface();
+        }
     }
     
     @Override
@@ -96,6 +156,7 @@ public final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnSurfaceDestroyed(windowBackendPointer);
     }
     
+    // View.OnTouchListener interface
     @Override
     public boolean onTouch(View v, MotionEvent event) 
     {
@@ -144,5 +205,23 @@ public final class DavaSurfaceView extends SurfaceView
             }
         }
         return true;
+    }
+
+    // View.OnKeyListener interface
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event)
+    {
+        int source = event.getSource();
+
+        if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+            (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD)
+        {
+            // TODO: implement key press handling
+        }
+        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
+        {
+            // TODO: implement key press handling
+        }
+        return false;
     }
 }
