@@ -386,13 +386,7 @@ void Initialize(Api api, const InitParam& param)
     }
     //end of temporary
 
-<<<<<<< HEAD
     RenderLoop::InitializeRenderLoop(renderTreadFrameCount, priority, bindToProcessor);
-=======
-    ProcessScheduledDelete();
-
-    scheduledDeleteMutex.Unlock();
->>>>>>> development
 }
 
 void Uninitialize()
