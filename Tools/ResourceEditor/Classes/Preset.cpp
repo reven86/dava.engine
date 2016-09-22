@@ -7,7 +7,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Utils/StringFormat.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "Project/ProjectManager.h"
 

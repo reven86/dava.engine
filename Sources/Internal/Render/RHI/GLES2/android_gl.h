@@ -11,6 +11,7 @@ void android_gl_checkSurface();
 bool android_gl_end_frame();
 void android_gl_acquire_context();
 void android_gl_release_context();
+void android_gl_enable_debug();
 
 #endif    
 

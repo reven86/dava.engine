@@ -8,7 +8,8 @@ namespace DAVA
 {
 namespace TArc
 {
-template<typename T> class DataEditor;
+template <typename T>
+class DataEditor;
 class DataListener;
 class DataWrapper
 {
@@ -26,13 +27,14 @@ public:
     void AddListener(DataListener* listener);
     void RemoveListener(DataListener* listener);
 
-    template<typename T>
+    template <typename T>
     DataEditor<T> CreateEditor();
 
 private:
     friend class Core;
     friend class QtReflected;
-    template<typename T> friend class DataEditor;
+    template <typename T>
+    friend class DataEditor;
     DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
@@ -47,21 +49,21 @@ private:
     std::shared_ptr<Impl> impl;
 };
 
-template<typename T>
+template <typename T>
 class DataEditor final
 {
 public:
     DataEditor(DataWrapper& holder, Reflection reflection);
     ~DataEditor();
-    
+
     DataEditor(const DataEditor& other) = delete;
     DataEditor& operator=(const DataEditor& other) = delete;
-    
+
     DataEditor(DataEditor&& other);
     DataEditor& operator=(DataEditor&& other);
-    
+
     T* operator->();
-    
+
 private:
     Reflection reflection;
     T* dataPtr = nullptr;

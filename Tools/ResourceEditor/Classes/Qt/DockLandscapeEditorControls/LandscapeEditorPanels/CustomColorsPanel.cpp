@@ -7,7 +7,7 @@
 #include "Constants.h"
 #include "Main/QtUtils.h"
 #include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include <QLayout>

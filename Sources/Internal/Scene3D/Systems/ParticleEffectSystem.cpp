@@ -699,7 +699,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
         float32 spl = particle->speed.SquareLength();
         if (spl > EPSILON)
         {
-            particle->speed *= currEmissionPower / sqrtf(spl);
+            particle->speed *= currEmissionPower / std::sqrt(spl);
         }
     }
     else
@@ -718,7 +718,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
 
     //now transform position and speed by emissionVector and worldTransfrom rotations - preserving length
     Matrix3 newTransform(worldTransform);
-    if ((fabs(currEmissionVector.x) < EPSILON) && (fabs(currEmissionVector.y) < EPSILON))
+    if ((std::abs(currEmissionVector.x) < EPSILON) && (std::abs(currEmissionVector.y) < EPSILON))
     {
         if (currEmissionVector.z < 0)
         {
@@ -733,7 +733,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle* particle, Particle
     {
         Vector3 axis(currEmissionVector.y, -currEmissionVector.x, 0);
         axis.Normalize();
-        float32 angle = acosf(currEmissionVector.z / currEmissionPower);
+        float32 angle = std::acos(currEmissionVector.z / currEmissionPower);
         Matrix3 rotation;
         rotation.CreateRotation(axis, angle);
         //newTransform = rotation*newTransform;

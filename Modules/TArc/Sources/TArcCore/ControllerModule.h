@@ -2,7 +2,6 @@
 
 #include "TArcCore/ClientModule.h"
 
-
 namespace DAVA
 {
 class Window;

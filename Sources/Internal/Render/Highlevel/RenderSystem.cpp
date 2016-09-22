@@ -6,6 +6,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
@@ -18,17 +19,10 @@
 namespace DAVA
 {
 RenderSystem::RenderSystem()
-    : forceUpdateLights(false)
-    , mainCamera(0)
-    , drawCamera(0)
-    , globalMaterial(NULL)
 {
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
-
     renderHierarchy = new QuadTree(10);
-    hierarchyInitialized = false;
     markedObjects.reserve(100);
-
     debugDrawer = new RenderHelper();
 }
 
@@ -214,11 +208,6 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable* updatable)
     }
 }
 
-//void RenderSystem::MarkForMaterialSort(Material * material)
-//{
-//    //for (FastNameMap<RenderLayer*>::Iterator it = renderLayersMap.Begin(); it != )
-//}
-
 void RenderSystem::FindNearestLights(RenderObject* renderObject)
 {
     Light* nearestLight = 0;
@@ -337,6 +326,45 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 
 void RenderSystem::Render()
 {
+    rhi::RenderPassConfig& config = mainRenderPass->GetPassConfig();
+
+    const FastName& currentMSAA = QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+    rhi::AntialiasingType aaType = currentMSAA.IsValid() ? QualitySettingsSystem::Instance()->GetMSAAQuality(currentMSAA)->type : rhi::AntialiasingType::NONE;
+    config.antialiasingType = (allowAntialiasing && rhi::DeviceCaps().SupportsAntialiasingType(aaType)) ? aaType : rhi::AntialiasingType::NONE;
+
+    config.colorBuffer[0].storeAction = (config.UsingMSAA()) ? rhi::STOREACTION_RESOLVE : rhi::STOREACTION_STORE;
+    config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
     mainRenderPass->Draw(this);
+}
+
+void RenderSystem::SetAntialiasingAllowed(bool allow)
+{
+    allowAntialiasing = allow;
+}
+
+void RenderSystem::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor)
+{
+    rhi::RenderPassConfig& config = mainRenderPass->GetPassConfig();
+    config.colorBuffer[0].texture = color;
+    config.colorBuffer[0].loadAction = colorLoadAction;
+    config.colorBuffer[0].clearColor[0] = clearColor.r;
+    config.colorBuffer[0].clearColor[1] = clearColor.g;
+    config.colorBuffer[0].clearColor[2] = clearColor.b;
+    config.colorBuffer[0].clearColor[3] = clearColor.a;
+    config.depthStencilBuffer.texture = depthStencil;
+}
+
+void RenderSystem::SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format)
+{
+    mainRenderPass->SetViewport(viewport);
+    mainRenderPass->SetRenderTargetProperties(width, height, format);
+    mainRenderPass->GetPassConfig().priority = priority;
+}
+
+rhi::RenderPassConfig& RenderSystem::GetMainPassConfig()
+{
+    return mainRenderPass->GetPassConfig();
 }
 };

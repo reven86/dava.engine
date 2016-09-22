@@ -776,7 +776,8 @@ void EndRenderPass(HRenderPass pass)
 
 bool NeedInvertProjection(const RenderPassConfig& passDesc)
 {
-    bool isRT = (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
+    bool isRT =
+    (passDesc.colorBuffer[0].texture != rhi::InvalidHandle) ||
     (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
     (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
 

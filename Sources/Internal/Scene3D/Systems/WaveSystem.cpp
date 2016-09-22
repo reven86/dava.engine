@@ -100,7 +100,7 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3& inPosition) const
 
             DVASSERT(damping >= 0.f);
 
-            float32 distance = sqrtf(distanceSq);
+            float32 distance = std::sqrt(distanceSq);
             direction /= distance;
             float32 dt = Abs(info->currentWaveRadius - distance);
             float32 value = Max(1 - dt / component->GetWaveLenght(), 0.f) * component->GetWaveAmplitude() * component->GetWaveSpeed() * damping; // wave function: A = (1 - x/L) * A0

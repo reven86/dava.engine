@@ -36,7 +36,8 @@ uint32 stat_SET_CB = DAVA::InvalidIndex;
 uint32 stat_SET_VB = DAVA::InvalidIndex;
 uint32 stat_SET_IB = DAVA::InvalidIndex;
 
-static Dispatch _Impl = { 0 };
+static Dispatch _Impl = {};
+static RenderDeviceCaps renderDeviceCaps = {};
 
 void SetDispatchTable(const Dispatch& dispatch)
 {
@@ -151,7 +152,7 @@ bool TextureFormatSupported(TextureFormat format)
 
 const RenderDeviceCaps& DeviceCaps()
 {
-    return (*_Impl.impl_DeviceCaps)();
+    return renderDeviceCaps;
 }
 
 void SuspendRendering()
@@ -1017,6 +1018,14 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     }
 
     return color;
+}
+
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get()
+{
+    return renderDeviceCaps;
+}
 }
 
 } //namespace rhi

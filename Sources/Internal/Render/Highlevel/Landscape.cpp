@@ -1437,6 +1437,8 @@ void Landscape::SetMaterial(NMaterial* material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+
+    UpdateMaterialFlags();
 }
 
 RenderObject* Landscape::Clone(RenderObject* newObject)
@@ -1539,7 +1541,11 @@ void Landscape::SetRenderMode(RenderMode newRenderMode)
 
     renderMode = newRenderMode;
     RebuildLandscape();
+    UpdateMaterialFlags();
+}
 
+void Landscape::UpdateMaterialFlags()
+{
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     landscapeMaterial->PreBuildMaterial(PASS_FORWARD);

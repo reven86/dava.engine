@@ -2,17 +2,10 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
-
-
-#if defined(__DAVAENGINE_ANDROID__)
-#include "zip/zip.h"
-#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA
 {
-class File;
-
+class FilePath;
 /**
 	\ingroup filesystem
 	\brief class to work with file on disk
@@ -27,7 +20,7 @@ public:
     //! EFA_CREATE | EFA_WRITE
     //! EFA_APPEND | EFA_WRITE
 
-    enum eFileAttributes
+    enum eFileAttributes : uint32
     {
         CREATE = 0x1,
         OPEN = 0x2,
@@ -37,18 +30,13 @@ public:
     };
 
     //! File seek enumeration
-    enum eFileSeek
+    enum eFileSeek : uint32
     {
         SEEK_FROM_START = 1, //! Seek from start of file
         SEEK_FROM_END = 2, //! Seek from end of file
         SEEK_FROM_CURRENT = 3, //! Seek from current file position relatively
     };
 
-protected:
-    File() = default;
-    virtual ~File();
-
-public:
     /**
 		\brief function to create a file instance with give attributes.
         Use framework notation for paths.
@@ -57,11 +45,10 @@ public:
 		\returns file instance
 	 */
     static File* Create(const FilePath& filePath, uint32 attributes);
-
     /**
-		\brief Get this file name
-		\returns name of this file
-	 */
+        \brief Get this file name
+        \returns name of this file
+     */
     virtual const FilePath& GetFilename();
 
     /**
@@ -107,7 +94,7 @@ public:
 
     /**
 		\brief Read [dataSize] bytes from this file to [pointerToData]
-		\param[in, out] destinationBuffer function write data to this pointer
+		\param[in,out] destinationBuffer function write data to this pointer
 		\param[in] dataSize size of data we want to read
 		\return number of bytes actually read
 	*/
@@ -115,7 +102,7 @@ public:
 
     /**
 		\brief Read [sizeof(T)] bytes from this file to [value]
-		\param[in, out] value function write data to this pointer
+		\param[in,out] value function write data to this pointer
 		\return number of bytes actually read
 	 */
     template <class T>
@@ -123,7 +110,7 @@ public:
 
     /**
 		\brief Read one line from text file to [pointerToData] buffer
-		\param[in, out] destinationBuffer function write data to this buffer
+		\param[in,out] destinationBuffer function write data to this buffer
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
@@ -136,7 +123,7 @@ public:
 
     /**
 		\brief Read string line from file to destination buffer with destinationBufferSize
-		\param[in, out] destinationBuffer buffer for the data
+		\param[in,out] destinationBuffer buffer for the data
 		\param[in] destinationBufferSize size of the destinationBuffer, for security reasons
 		\returns actual length of the string that was read
 	 */
@@ -180,9 +167,14 @@ public:
     static String GetModificationDate(const FilePath& filePathname);
 
 protected:
+    File() = default;
+    virtual ~File();
+
     FilePath filename;
 
 private:
+    static File* LoadFileFromMountedArchive(const String& packName, const String& relative);
+    static bool IsFileInMountedArchive(const String& packName, const String& relative);
     /**
     \brief funciton to create a file instance with give attributes
     this function must be used for opening existing files also
@@ -204,6 +196,7 @@ private:
 
     FILE* file = nullptr;
     uint64 size = 0;
+    friend class FileSystem;
 };
 
 template <class T>
