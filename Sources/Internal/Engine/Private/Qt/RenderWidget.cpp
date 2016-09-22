@@ -28,12 +28,10 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::sceneGraphInvalidated, Qt::DirectConnection);
 }
 
-RenderWidget::~RenderWidget()
-{
-    widgetDelegate->OnDestroyed();
-}
+RenderWidget::~RenderWidget() = default;
 
 void RenderWidget::OnFrame()
 {
@@ -51,6 +49,14 @@ void RenderWidget::OnFrame()
     }
 
     widgetDelegate->OnFrame();
+}
+
+void RenderWidget::sceneGraphInvalidated()
+{
+    if (isClosing)
+    {
+        widgetDelegate->OnDestroyed();
+    }
 }
 
 void RenderWidget::resizeEvent(QResizeEvent* e)
@@ -71,6 +77,19 @@ void RenderWidget::hideEvent(QHideEvent* e)
 {
     widgetDelegate->OnVisibilityChanged(false);
     QQuickWidget::hideEvent(e);
+}
+
+void RenderWidget::closeEvent(QCloseEvent* e)
+{
+    if (widgetDelegate->OnUserCloseRequest())
+    {
+        isClosing = true;
+        e->accept();
+    }
+    else
+    {
+        e->ignore();
+    }
 }
 
 void RenderWidget::timerEvent(QTimerEvent* e)
