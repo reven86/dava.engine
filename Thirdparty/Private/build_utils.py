@@ -362,8 +362,8 @@ def build_and_copy_libraries_android_cmake(
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure
 
-	lib_path_android_armeabiv7a = os.path.join(build_android_armeabiv7a_folder, result_lib_name_release)
-	lib_path_android_x86 = os.path.join(build_android_x86_folder, result_lib_name_release)
+	lib_path_android_armeabiv7a = os.path.join(build_android_armeabiv7a_folder, built_lib_name_release)
+	lib_path_android_x86 = os.path.join(build_android_x86_folder, built_lib_name_release)
 
 	shutil.copyfile(lib_path_android_armeabiv7a, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/android/armeabi-v7a', result_lib_name_release)))
 	shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/android/x86', result_lib_name_release)))
