@@ -8,7 +8,6 @@
 #include "Render/RHI/Common/rhi_Private.h"
 #include "Render/ShaderCache.h"
 #include "Render/Material/FXCache.h"
-#include <typeinfo>
 
 using namespace DAVA;
 

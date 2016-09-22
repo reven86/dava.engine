@@ -51,9 +51,6 @@ protected:
     SelectSceneScreen* selectSceneScreen;
     ViewSceneScreen* viewSceneScreen;
 
-    rhi::HPerfQuerySet perfQuerySet;
-    bool perfQuerySetFired;
-
     FilePath scenePath;
 };
 
