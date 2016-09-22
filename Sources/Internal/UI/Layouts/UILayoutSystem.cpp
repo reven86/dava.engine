@@ -14,7 +14,6 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 #include "Concurrency/Thread.h"
-#include "Debug/Profiler.h"
 
 namespace DAVA
 {
@@ -41,8 +40,6 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     if (!IsAutoupdatesEnabled())
         return;
 
-    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
-
     bool dirty = control->IsLayoutDirty();
     bool orderDirty = control->IsLayoutOrderDirty();
     bool positionDirty = control->IsLayoutPositionDirty();
@@ -58,8 +55,6 @@ void UILayoutSystem::ProcessControl(UIControl* control)
         UIControl* container = control->GetParent();
         ApplyLayoutNonRecursive(container);
     }
-
-    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ProcessControl");
 }
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
@@ -79,7 +74,6 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 
 void UILayoutSystem::ApplyLayout(UIControl* control)
 {
-    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     CollectControls(control, true);
@@ -90,12 +84,10 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
     ApplySizesAndPositions();
 
     layoutData.clear();
-    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayout");
 }
 
 void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 {
-    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
     CollectControls(control, false);
@@ -106,12 +98,10 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     ApplyPositions();
 
     layoutData.clear();
-    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::ApplyLayoutNonRecursive");
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
-    UI_TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::FindNotDependentOnChildrenControl");
     UIControl* result = control;
     while (result->GetParent() != nullptr)
     {
@@ -131,7 +121,6 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
         result = result->GetParent();
     }
 
-    UI_TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UILayoutSystem::FindNotDependentOnChildrenControl");
     return result;
 }
 
