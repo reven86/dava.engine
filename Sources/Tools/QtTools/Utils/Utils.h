@@ -34,7 +34,7 @@ T StringToVector(const QString& str)
                   "this function works only for types Vector2, Vector3 and Vector4"
                   );
 
-    QRegularExpression expr("[\\d*]*[.]?[\\d*]+");
+    QRegularExpression expr("[+-]?[\\d*]*[.]?[\\d*]+");
     QRegularExpressionMatchIterator iter = expr.globalMatch(str);
     QList<float> floatList;
     while (iter.hasNext())
