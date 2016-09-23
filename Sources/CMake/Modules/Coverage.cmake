@@ -42,6 +42,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
                     --buildMode     true 
+                    --targetArgs    ${COVERAGE_ARGS}
                     )
 
 

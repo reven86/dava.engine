@@ -11,7 +11,7 @@ public:
 DAVA_TARC_TESTCLASS(DummyTest)
 {
     BEGIN_FILES_COVERED_BY_TESTS()
-        FIND_FILES_IN_TARGET("TemplateTArc")
+        FIND_FILES_IN_TARGET(TemplateTArc)
         DECLARE_COVERED_FILES("LibraryModule.cpp")
     END_FILES_COVERED_BY_TESTS()
 

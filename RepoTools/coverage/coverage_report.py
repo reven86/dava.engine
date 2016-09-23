@@ -129,7 +129,7 @@ class CoverageReport():
         self.tfExec                 = CheckTimeDependence( self.pathExecut, self.pathExecutTime )
 
 
-        self.coverFilePath          = os.path.join    ( self.pathExecutDir,   '{0}.cover'.format( self.executName ) )
+        self.coverFilePath          = os.path.join    ( self.pathExecutDir,   'Tests.cover')
         self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
         self.pathLlvmProfdata       = os.path.join    ( self.pathCoverageDir, 'llvm-profdata')
         self.pathCallLlvmGcov       = os.path.join    ( self.pathCoverageDir, 'llvm-gcov.sh')
@@ -227,6 +227,7 @@ class CoverageReport():
                     fileCover = FileCover( find_list[0], None )
                     self.testsCoverage.setdefault(test, []).append( fileCover )
                     self.testsCoverageFiles +=  [find_list[0]]
+        print 'TRACE OUTPUT ', self.testsCoverageFiles
 
     def __processing_gcda_gcno_files( self ):
         

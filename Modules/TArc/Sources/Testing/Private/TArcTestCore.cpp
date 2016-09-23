@@ -28,7 +28,7 @@ String disableTheseTestClasses = "";
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
-const String TestCoverageFileName = "UnitTests.cover";
+const String TestCoverageFileName = "Tests.cover";
 }
 
 namespace TArc
@@ -138,7 +138,7 @@ void TestCore::ProcessTestCoverage()
         }
     }
     
-    RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
+    RefPtr<File> coverageFile(File::Create(TArcTestCoreDetail::TestCoverageFileName, File::APPEND | File::WRITE));
     DVASSERT(coverageFile);
     
     auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
@@ -196,7 +196,6 @@ void TestCore::ProcessTestCoverage()
     toJson("}\n");
     
 #endif // TEST_COVERAGE
-
 }
 
 void TestCore::ProcessCommandLine()
