@@ -15,7 +15,7 @@ class FilePath;
 class ApplyMaterialPresetCommand : public RECommand
 {
 public:
-    enum eMaterialPart
+    enum eMaterialPart : DAVA::uint32
     {
         NOTHING = 0x0,
 
