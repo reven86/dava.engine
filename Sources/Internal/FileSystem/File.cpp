@@ -181,10 +181,10 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
             return fromAPK; // simpler debugging on android
 #else
 #ifdef __DAVAENGINE_DEBUG__
-            // this is a last place where we search for file, so help
-            // developers a litle and add some logs
-            String p = UTF8Utils::EncodeToUTF8(path);
-            Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
+// this is a last place where we search for file, so help
+// developers a litle and add some logs
+// String p = UTF8Utils::EncodeToUTF8(path);
+// Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
 #endif
             return nullptr;
 #endif

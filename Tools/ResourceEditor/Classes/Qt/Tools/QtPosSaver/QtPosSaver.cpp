@@ -147,11 +147,11 @@ void QtPosSaver::LoadGeometry(QWidget* widget)
         auto helper = WidgetStateHelper::create(widget);
         helper->setTrackedEvents(WidgetStateHelper::ScaleOnDisplayChange);
 
-        const auto normalKey = QString("%1-geometry-%2").arg(attachedWidgetName).arg(widget->objectName());
-        const auto isMaximizedKey = QString("%1-maximized-%2").arg(attachedWidgetName).arg(widget->objectName());
-        const auto mState = Load(isMaximizedKey);
+        QString normalKey = QString("%1-geometry-%2").arg(attachedWidgetName).arg(widget->objectName());
+        QString isMaximizedKey = QString("%1-maximized-%2").arg(attachedWidgetName).arg(widget->objectName());
+        QByteArray mState = Load(isMaximizedKey);
 
-        const auto geometry = Load(normalKey);
+        QByteArray geometry = Load(normalKey);
         widget->restoreGeometry(geometry);
 
         if (!mState.isEmpty() && mState.at(0) != 0)
@@ -263,8 +263,9 @@ QByteArray QtPosSaver::Load(const QString& key)
 
     if (settingsArchiveIsLoaded && !key.isEmpty())
     {
-        const auto sz = settingsArchive->GetByteArraySize(key.toStdString());
-        const auto dt = settingsArchive->GetByteArray(key.toStdString());
+        DAVA::String keyStr = key.toStdString();
+        DAVA::int32 sz = settingsArchive->GetByteArraySize(keyStr);
+        const DAVA::uint8* dt = settingsArchive->GetByteArray(keyStr);
 
         if (nullptr != dt)
         {

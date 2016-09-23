@@ -1164,6 +1164,7 @@ protected:
     bool styleSheetInitialized : 1;
     bool layoutDirty : 1;
     bool layoutPositionDirty : 1;
+    bool layoutOrderDirty : 1;
 
     int32 inputProcessorsCount;
 
@@ -1262,11 +1263,17 @@ public:
     void SetStyleSheetDirty();
     void ResetStyleSheetDirty();
 
+    bool IsLayoutDirty() const;
     void SetLayoutDirty();
     void ResetLayoutDirty();
 
+    bool IsLayoutPositionDirty() const;
     void SetLayoutPositionDirty();
     void ResetLayoutPositionDirty();
+
+    bool IsLayoutOrderDirty() const;
+    void SetLayoutOrderDirty();
+    void ResetLayoutOrderDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
@@ -1416,7 +1423,7 @@ inline void UIControl::SortChildren(const T& predicate)
     children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
 
     isIteratorCorrupted = true;
-    SetLayoutDirty();
+    SetLayoutOrderDirty();
 }
 
 int32 UIControl::GetState() const

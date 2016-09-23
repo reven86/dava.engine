@@ -20,6 +20,7 @@ public:
     explicit FMODSoundBrowser(QWidget* parent = 0);
     virtual ~FMODSoundBrowser();
 
+    void SetCurrentEvent(const DAVA::String& eventPath);
     DAVA::String GetSelectSoundEvent();
 
 private slots:
