@@ -152,7 +152,7 @@ inline void PreferencesSectionProperty::RemoveSection(PreferencesSectionProperty
 
 inline DAVA::uint32 PreferencesSectionProperty::GetCount() const
 {
-    return children.size() + sections.size();
+    return static_cast<DAVA::uint32>(children.size() + sections.size());
 }
 
 inline AbstractProperty* PreferencesSectionProperty::GetProperty(DAVA::int32 index) const

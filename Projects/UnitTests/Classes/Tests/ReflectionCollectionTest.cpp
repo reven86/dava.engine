@@ -1,5 +1,4 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include "Base/Result.h"
 #include "Reflection/Registrator.h"
@@ -269,5 +268,3 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         CollectionSetTestHelper<int>(setField.ref, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
     }
 };
-
-#endif

@@ -196,9 +196,10 @@ void MallocHook::Install()
         if (libc != nullptr)
         {
             fptr = dlsym(libc, "malloc_usable_size");
-            RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
         }
     }
+
+    RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
     if (nullptr == RealMallocSize)
     { // DAVA::Logger in not available yet
         __android_log_print(ANDROID_LOG_ERROR, "DAVA", "!!! malloc_usable_size is not available");

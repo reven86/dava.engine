@@ -1,5 +1,4 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include <iomanip>
 #include <algorithm>
@@ -285,5 +284,3 @@ void Reflection::DumpMethods(std::ostream& out) const
 }
 
 } // namespace DAVA
-
-#endif

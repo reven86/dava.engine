@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ASSERT_H__
-#define __DAVAENGINE_ASSERT_H__
+#pragma once
 
 #include <algorithm>
 #include "Base/BaseTypes.h"
@@ -203,5 +202,3 @@ inline void DavaDebugBreak()
 #define DVVERIFY(expr) DVASSERT(expr)
 
 #endif // ndef __DAVAENGINE_DEBUG__ && ndef ENABLE_ASSERT_MESSAGE
-
-#endif // __LOGENGINE_ASSERT_H__

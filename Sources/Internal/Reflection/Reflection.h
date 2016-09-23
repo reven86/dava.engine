@@ -56,6 +56,7 @@ public:
     /// \brief Gets reflection object.
     /// \return The reflection object.
     ReflectedObject GetValueObject() const;
+    const ReflectedType* GetReflectedType() const;
 
     /// \brief Gets reflection value.
     /// \return Reflection value.
@@ -167,6 +168,7 @@ private:
     const StructureWrapper* sw = nullptr;
     const StructureEditorWrapper* sew = nullptr;
     const ReflectedMeta* meta = nullptr;
+    const ReflectedType* objectType = nullptr;
 
     ReflectedObject object;
 };
