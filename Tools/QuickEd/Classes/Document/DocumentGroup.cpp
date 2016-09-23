@@ -7,7 +7,7 @@
 
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
@@ -524,7 +524,10 @@ int DocumentGroup::GetIndexByPackagePath(const QString& path) const
 {
     for (int index = 0; index < documents.size(); ++index)
     {
-        if (documents.at(index)->GetPackageAbsolutePath() == path)
+        QString absPath = documents.at(index)->GetPackageAbsolutePath();
+        //normalize file path, because russian letter "й" will be decomposited
+        QString normalizedAbsPath = absPath.normalized(QString::NormalizationForm_C);
+        if (absPath == path || normalizedAbsPath == path)
         {
             return index;
         }

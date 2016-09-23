@@ -1,10 +1,14 @@
 #include "WindowSubSystem/Private/UIManager.h"
+
+#include "Base/BaseTypes.h"
+#include "Base/Any.h"
+#include "Debug/DVAssert.h"
+
 #include "WindowSubSystem/ActionUtils.h"
 #include "WindowSubSystem/Private/WaitDialog.h"
 #include "DataProcessing/Private/QtReflectionBridge.h"
+#include "DataProcessing/PropertiesHolder.h"
 
-#include "Base/Any.h"
-#include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
 
 #include <QMainWindow>
@@ -27,31 +31,33 @@ namespace TArc
 {
 namespace UIManagerDetail
 {
+String geometryKey("geometry");
+String stateKey("state");
 
 static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>> buttonsConvertor =
 {
-    std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
-    std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
-    std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
-    std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
-    std::make_pair(QMessageBox::YesToAll, ModalMessageParams::YesToAll),
-    std::make_pair(QMessageBox::No, ModalMessageParams::No),
-    std::make_pair(QMessageBox::NoToAll, ModalMessageParams::NoToAll),
-    std::make_pair(QMessageBox::Discard, ModalMessageParams::Discard),
-    std::make_pair(QMessageBox::Apply, ModalMessageParams::Apply),
-    std::make_pair(QMessageBox::Save, ModalMessageParams::Save),
-    std::make_pair(QMessageBox::SaveAll, ModalMessageParams::SaveAll),
-    std::make_pair(QMessageBox::Abort, ModalMessageParams::Abort),
-    std::make_pair(QMessageBox::Retry, ModalMessageParams::Retry),
-    std::make_pair(QMessageBox::Ignore, ModalMessageParams::Ignore),
-    std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
+  std::make_pair(QMessageBox::Ok, ModalMessageParams::Ok),
+  std::make_pair(QMessageBox::Cancel, ModalMessageParams::Cancel),
+  std::make_pair(QMessageBox::Close, ModalMessageParams::Close),
+  std::make_pair(QMessageBox::Yes, ModalMessageParams::Yes),
+  std::make_pair(QMessageBox::YesToAll, ModalMessageParams::YesToAll),
+  std::make_pair(QMessageBox::No, ModalMessageParams::No),
+  std::make_pair(QMessageBox::NoToAll, ModalMessageParams::NoToAll),
+  std::make_pair(QMessageBox::Discard, ModalMessageParams::Discard),
+  std::make_pair(QMessageBox::Apply, ModalMessageParams::Apply),
+  std::make_pair(QMessageBox::Save, ModalMessageParams::Save),
+  std::make_pair(QMessageBox::SaveAll, ModalMessageParams::SaveAll),
+  std::make_pair(QMessageBox::Abort, ModalMessageParams::Abort),
+  std::make_pair(QMessageBox::Retry, ModalMessageParams::Retry),
+  std::make_pair(QMessageBox::Ignore, ModalMessageParams::Ignore),
+  std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
 };
 
 QMessageBox::StandardButtons Convert(const ModalMessageParams::Buttons& buttons)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
     QMessageBox::StandardButtons ret;
-    for (const ButtonNode& node: buttonsConvertor)
+    for (const ButtonNode& node : buttonsConvertor)
     {
         if (buttons.testFlag(node.second))
         {
@@ -66,9 +72,9 @@ ModalMessageParams::Button Convert(const QMessageBox::StandardButton& button)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
     auto iter = std::find_if(buttonsConvertor.begin(), buttonsConvertor.end(), [button](const ButtonNode& node)
-    {
-        return node.first == button;
-    });
+                             {
+                                 return node.first == button;
+                             });
 
     DVASSERT(iter != buttonsConvertor.end());
     return iter->second;
@@ -79,7 +85,6 @@ struct MainWindowInfo
     QMainWindow* window = nullptr;
     QMenuBar* menuBar = nullptr;
 };
-
 
 void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
 {
@@ -182,29 +187,27 @@ void AddAction(MainWindowInfo& windowInfo, const ActionPlacementInfo& placement,
     }
 }
 
-QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo &mainWindowInfo, QMainWindow *mainWindow)
+QDockWidget* CreateDockWidget(const DockPanelInfo& dockPanelInfo, MainWindowInfo& mainWindowInfo, QMainWindow* mainWindow)
 {
-    const QString &text = dockPanelInfo.title;
+    const QString& text = dockPanelInfo.title;
 
-    QDockWidget *dockWidget = new QDockWidget(text, mainWindow);
+    QDockWidget* dockWidget = new QDockWidget(text, mainWindow);
+    dockWidget->setObjectName(text);
 
-    QAction *dockWidgetAction = dockWidget->toggleViewAction();
-    dockWidgetAction->setCheckable(true);
-    QObject::connect(dockWidgetAction, &QAction::toggled, dockWidget, &QDockWidget::setVisible);
-    QObject::connect(dockWidget, &QDockWidget::visibilityChanged, dockWidgetAction, &QAction::setChecked);
+    QAction* dockWidgetAction = dockWidget->toggleViewAction();
 
-    const ActionPlacementInfo &placement = dockPanelInfo.actionPlacementInfo;
+    const ActionPlacementInfo& placement = dockPanelInfo.actionPlacementInfo;
 
     AddAction(mainWindowInfo, placement, dockWidgetAction);
 
     return dockWidget;
 }
 
-void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* widget)
+void AddDockPanel(const PanelKey& key, MainWindowInfo& mainWindowInfo, QWidget* widget)
 {
     DVASSERT(key.GetType() == PanelKey::DockPanel);
     const DockPanelInfo& info = key.GetInfo().Get<DockPanelInfo>();
-    QMainWindow *mainWindow = mainWindowInfo.window;
+    QMainWindow* mainWindow = mainWindowInfo.window;
     DVASSERT(mainWindow != nullptr);
     QDockWidget* newDockWidget = CreateDockWidget(info, mainWindowInfo, mainWindow);
     newDockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -214,7 +217,7 @@ void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* 
     {
         QList<QDockWidget*> dockWidgets = mainWindow->findChildren<QDockWidget*>();
         QDockWidget* dockToTabbify = nullptr;
-        foreach(QDockWidget* dock, dockWidgets)
+        foreach (QDockWidget* dock, dockWidgets)
         {
             if (mainWindow->dockWidgetArea(dock) == info.area)
             {
@@ -236,11 +239,12 @@ void AddDockPanel(const PanelKey& key, MainWindowInfo &mainWindowInfo, QWidget* 
     {
         mainWindow->addDockWidget(info.area, newDockWidget);
     }
+    mainWindow->restoreDockWidget(newDockWidget);
 }
 
-void AddCentralPanel(const PanelKey& key, const MainWindowInfo &mainWindowInfo, QWidget* widget)
+void AddCentralPanel(const PanelKey& key, const MainWindowInfo& mainWindowInfo, QWidget* widget)
 {
-    QMainWindow *mainWindow = mainWindowInfo.window;
+    QMainWindow* mainWindow = mainWindowInfo.window;
     DVASSERT(mainWindow != nullptr);
     QWidget* centralWidget = mainWindow->centralWidget();
     if (centralWidget == nullptr)
@@ -268,19 +272,17 @@ struct UIManager::Impl : public QObject
     UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
     std::unique_ptr<QQmlEngine> qmlEngine;
     QtReflectionBridge reflectionBridge;
+    PropertiesItem propertiesHolder;
     bool initializationFinished = false;
 
-    Impl(UIManager::Delegate* delegate)
+    Impl(UIManager::Delegate* delegate, PropertiesItem&& givenPropertiesHolder)
         : managerDelegate(delegate)
+        , propertiesHolder(std::move(givenPropertiesHolder))
     {
     }
 
     ~Impl()
     {
-        for (auto& window : windows)
-        {
-            delete window.second.window;
-        }
     }
 
     UIManagerDetail::MainWindowInfo& FindOrCreateWindow(const WindowKey& windowKey)
@@ -294,6 +296,11 @@ struct UIManager::Impl : public QObject
             FastName appId = windowKey.GetAppID();
             window->setWindowTitle(appId.c_str());
             window->setObjectName(appId.c_str());
+
+            PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
+            window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::geometryKey));
+            window->restoreState(ph.Get<QByteArray>(UIManagerDetail::stateKey));
+
             UIManagerDetail::MainWindowInfo info;
             info.window = window;
             auto emplacePair = windows.emplace(windowKey, info);
@@ -313,17 +320,24 @@ protected:
             DVASSERT(window);
 
             auto iter = std::find_if(windows.begin(), windows.end(), [window](const std::pair<WindowKey, UIManagerDetail::MainWindowInfo>& w)
-            {
-                return window == w.second.window;
-            });
-            
+                                     {
+                                         return window == w.second.window;
+                                     });
+
             // When user close application on MacOS by pressing Cmd+Q, Qt somewhy sends CloseEvent twice.
             // So "iter == windows.end()" means that we have already got one CloseEvent for this window
             if (iter != windows.end())
             {
+                const WindowKey& windowKey = iter->first;
                 if (managerDelegate->WindowCloseRequested(iter->first))
                 {
-                    iter->second.window->deleteLater();
+                    QMainWindow* mainWindow = iter->second.window;
+
+                    PropertiesItem ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
+                    ph.Set(UIManagerDetail::stateKey, mainWindow->saveState());
+                    ph.Set(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
+
+                    mainWindow->deleteLater();
                     managerDelegate->OnWindowClosed(iter->first);
                     windows.erase(iter);
                 }
@@ -339,8 +353,8 @@ protected:
     }
 };
 
-UIManager::UIManager(Delegate* delegate)
-    : impl(new Impl(delegate))
+UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
+    : impl(new Impl(delegate, std::move(holder)))
 {
     impl->addFunctions[PanelKey::DockPanel] = MakeFunction(&UIManagerDetail::AddDockPanel);
     impl->addFunctions[PanelKey::CentralPanel] = MakeFunction(&UIManagerDetail::AddCentralPanel);
@@ -370,7 +384,7 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
 
     PanelKey::Type type = panelKey.GetType();
     DVASSERT(impl->addFunctions[type] != nullptr);
-    
+
     impl->addFunctions[type](panelKey, mainWindowInfo, widget);
 
     QMainWindow* window = mainWindowInfo.window;
@@ -400,24 +414,24 @@ QWidget* UIManager::LoadView(const QString& name, const QString& resourceName, D
 
     QPointer<QtReflected> qtReflected = impl->reflectionBridge.CreateQtReflected(std::move(data), view);
     qtReflected->metaObjectCreated.Connect([qtReflected, view, resourceName]()
-    {
-        if (qtReflected != nullptr && view != nullptr)
-        {
-            view->rootContext()->setContextProperty("context", qtReflected);
-            view->setSource(QUrl(resourceName));
+                                           {
+                                               if (qtReflected != nullptr && view != nullptr)
+                                               {
+                                                   view->rootContext()->setContextProperty("context", qtReflected);
+                                                   view->setSource(QUrl(resourceName));
 
-            if (view->status() != QQuickWidget::Ready)
-            {
-                Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
-                foreach(QQmlError error, view->errors())
-                {
-                    Logger::Error("Error : %s", error.toString().toStdString().c_str());
-                }
-            }
-        }
+                                                   if (view->status() != QQuickWidget::Ready)
+                                                   {
+                                                       Logger::Error("!!! QML %s has not been loaded !!!", resourceName.toStdString().c_str());
+                                                       foreach (QQmlError error, view->errors())
+                                                       {
+                                                           Logger::Error("Error : %s", error.toString().toStdString().c_str());
+                                                       }
+                                                   }
+                                               }
 
-        qtReflected->metaObjectCreated.DisconnectAll();
-    });
+                                               qtReflected->metaObjectCreated.DisconnectAll();
+                                           });
     qtReflected->Init();
 
     return view;
@@ -445,7 +459,18 @@ QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogP
 {
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
 
-    return QFileDialog::getOpenFileName(windowInfo.window, params.title, params.dir, params.filters);
+    String dirKey("fileDialogDir");
+    QString dir = params.dir;
+    if (dir.isEmpty())
+    {
+        dir = impl->propertiesHolder.Get<QString>(dirKey, dir);
+    }
+    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
+    if (!filePath.isEmpty())
+    {
+        impl->propertiesHolder.Set(dirKey, filePath);
+    }
+    return filePath;
 }
 
 ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params)

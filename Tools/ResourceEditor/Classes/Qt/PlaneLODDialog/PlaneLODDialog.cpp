@@ -6,7 +6,7 @@
 #include "Qt/Main/QtUtils.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 using namespace DAVA;
 

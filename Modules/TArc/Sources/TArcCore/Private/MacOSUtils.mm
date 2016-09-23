@@ -10,7 +10,7 @@ namespace TArc
 void MakeAppForeground()
 {
     id activeApp = nil;
-    NSArray *runningApps;
+    NSArray* runningApps;
     runningApps = [[NSWorkspace sharedWorkspace] runningApplications];
     for (id currApp in runningApps)
     {
@@ -20,7 +20,7 @@ void MakeAppForeground()
             break;
         }
     }
-    
+
     ProcessSerialNumber psn = { 0, kCurrentProcess };
     TransformProcessType(&psn, kProcessTransformToForegroundApplication);
     [activeApp activateWithOptions:NSApplicationActivateIgnoringOtherApps];

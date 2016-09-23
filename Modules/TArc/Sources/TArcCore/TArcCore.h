@@ -24,13 +24,13 @@ public:
     Core(Engine& engine);
     ~Core();
 
-    template<typename T, typename... Args>
-    void CreateModule(const Args&... args)
+    template <typename T, typename... Args>
+    void CreateModule(Args&&... args)
     {
         static_assert(std::is_base_of<ConsoleModule, T>::value ||
-                        std::is_base_of<ClientModule, T>::value ||
-                        std::is_base_of<ControllerModule, T>::value,
-                        "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+                      std::is_base_of<ClientModule, T>::value ||
+                      std::is_base_of<ControllerModule, T>::value,
+                      "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
 
         bool isConsoleMode = IsConsoleMode();
         bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
@@ -46,7 +46,7 @@ public:
             return;
         }
 
-        AddModule(new T(args...));
+        AddModule(new T(std::forward<Args>(args)...));
     }
 
 private:
@@ -54,6 +54,8 @@ private:
     // TArcTestClass wrap signals and call Core method directly
     Core(Engine& engine, bool connectSignals);
     bool IsConsoleMode() const;
+    // Don't put AddModule methods into public sections.
+    // There is only one orthodox way to inject Module into TArcCore : CreateModule
     void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);

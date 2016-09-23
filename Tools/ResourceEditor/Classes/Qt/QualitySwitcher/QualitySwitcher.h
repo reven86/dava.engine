@@ -25,11 +25,8 @@ protected:
     void ApplySettings();
 
 protected slots:
-    void OnTxQualitySelect(int index);
-    void OnAnQualitySelect(int index);
-    void OnMaQualitySelect(int index);
+    void OnSetSettingsDirty(int index);
     void OnOptionClick(bool);
-    void OnParticlesQualityChanged(int index);
     void OnParticlesTagsCloudChanged(const QString& text);
 
     void OnOkPressed();

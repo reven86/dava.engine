@@ -3,13 +3,18 @@
 #include "TArcCore/ClientModule.h"
 #include "TArcCore/ConsoleModule.h"
 #include "TArcCore/Private/MacOSUtils.h"
+
+#include "DataProcessing/PropertiesHolder.h"
 #include "WindowSubSystem/Private/UIManager.h"
 #include "TArcUtils/AssertGuard.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/NativeService.h"
+
+#include "Engine/EngineContext.h"
 #include "Functional/Function.h"
+#include "FileSystem/FileSystem.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
@@ -54,14 +59,16 @@ public:
         DVASSERT(false);
     }
 
-    bool IsConsoleMode() const 
+    bool IsConsoleMode() const
     {
         return engine.IsConsoleMode();
     }
 
     virtual void OnLoopStarted()
     {
-        ToolsAssetGuard::Instance()->Init();
+        FileSystem* fileSystem = GetEngineContext().fileSystem;
+        DVASSERT(fileSystem != nullptr);
+        propertiesHolder.reset(new PropertiesHolder("TArcProperties", fileSystem->GetCurrentDocumentsDirectory()));
     }
 
     virtual void OnLoopStopped()
@@ -79,9 +86,11 @@ public:
         }
     }
 
-    virtual void OnWindowCreated(DAVA::Window& w) {}
+    virtual void OnWindowCreated(DAVA::Window& w)
+    {
+    }
 
-    void ForEachContext(const Function<void(DataContext&) >& functor) override
+    void ForEachContext(const Function<void(DataContext&)>& functor) override
     {
         for (std::unique_ptr<DataContext>& context : contexts)
         {
@@ -97,9 +106,9 @@ public:
     DataContext& GetContext(DataContext::ContextID contextID) override
     {
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -165,9 +174,11 @@ protected:
     Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
     Vector<DataWrapper> wrappers;
+
+    std::unique_ptr<PropertiesHolder> propertiesHolder;
 };
 
-class Core::ConsoleImpl: public Core::Impl
+class Core::ConsoleImpl : public Core::Impl
 {
 public:
     ConsoleImpl(Engine& engine, Core* core)
@@ -187,6 +198,7 @@ public:
 
     void OnLoopStarted() override
     {
+        Impl::OnLoopStarted();
         application = new QGuiApplication(argc, argv.data());
         surface = new QOffscreenSurface();
         surface->create();
@@ -206,8 +218,8 @@ public:
         rhi::InitParam rendererParams;
         rendererParams.threadedRenderFrameCount = 1;
         rendererParams.threadedRenderEnabled = false;
-        rendererParams.acquireContextFunc = [](){};
-        rendererParams.releaseContextFunc = [](){};
+        rendererParams.acquireContextFunc = []() {};
+        rendererParams.releaseContextFunc = []() {};
 
         rendererParams.maxIndexBufferCount = 0;
         rendererParams.maxVertexBufferCount = 0;
@@ -239,7 +251,7 @@ public:
         engineContext->virtualCoordSystem->RegisterAvailableResourceSize(rendererParams.width, rendererParams.height, "Gfx");
         engineContext->virtualCoordSystem->ScreenSizeChanged();
 
-        Texture::SetDefaultGPU(eGPUFamily::GPU_ORIGIN);
+        Texture::SetGPULoadingOrder({ GPU_ORIGIN });
 
         ActivateContextImpl(globalContext.get());
         for (std::unique_ptr<ConsoleModule>& module : modules)
@@ -257,7 +269,7 @@ public:
     {
         context->makeCurrent(surface);
         Impl::OnFrame(delta);
-        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::JOB_FINISHED)
+        if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
         {
             modules.front()->BeforeDestroyed();
             modules.pop_front();
@@ -286,6 +298,8 @@ public:
 
         context->doneCurrent();
         surface->destroy();
+
+        Impl::OnLoopStopped();
     }
 
     void AddModule(ConsoleModule* module) override
@@ -294,23 +308,46 @@ public:
     }
 
 private:
-    void RegisterOperation(int operationID, AnyFn&& fn) override {}
+    void RegisterOperation(int operationID, AnyFn&& fn) override
+    {
+    }
     DataContext::ContextID CreateContext() override
     {
         DVASSERT(false);
         return DataContext::ContextID();
     }
-    void DeleteContext(DataContext::ContextID contextID) override {}
-    void ActivateContext(DataContext::ContextID contextID) override {}
-    RenderWidget* GetRenderWidget() const override { return nullptr; }
+    void DeleteContext(DataContext::ContextID contextID) override
+    {
+    }
+    void ActivateContext(DataContext::ContextID contextID) override
+    {
+    }
+    RenderWidget* GetRenderWidget() const override
+    {
+        return nullptr;
+    }
 
-    void Invoke(int operationId) override {}
-    void Invoke(int operationId, const Any& a) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override {}
-    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override {}
+    void Invoke(int operationId) override
+    {
+    }
+    void Invoke(int operationId, const Any& a) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) override
+    {
+    }
+    void Invoke(int operationId, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) override
+    {
+    }
 
 private:
     DAVA::Deque<std::unique_ptr<ConsoleModule>> modules;
@@ -321,7 +358,7 @@ private:
     Vector<char*> argv;
 };
 
-class Core::GuiImpl: public Core::Impl, public UIManager::Delegate
+class Core::GuiImpl : public Core::Impl, public UIManager::Delegate
 {
 public:
     GuiImpl(Engine& engine, Core* core)
@@ -354,8 +391,10 @@ public:
     {
         Impl::OnLoopStarted();
 
+        ToolsAssetGuard::Instance()->Init();
+
         engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
-        uiManager.reset(new UIManager(this));
+        uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
         DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
@@ -424,9 +463,9 @@ public:
     void DeleteContext(DataContext::ContextID contextID) override
     {
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -460,9 +499,9 @@ public:
         }
 
         auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
-        {
-            return context->GetID() == contextID;
-        });
+                                 {
+                                     return context->GetID() == contextID;
+                                 });
 
         if (iter == contexts.end())
         {
@@ -511,7 +550,7 @@ public:
         InvokeImpl(operationId, a1, a2, a3, a4, a5, a6);
     }
 
-    template<typename... Args>
+    template <typename... Args>
     void InvokeImpl(int operationId, const Args&... args)
     {
         AnyFn fn = FindOperation(operationId);
@@ -562,9 +601,9 @@ public:
     void OnWindowClosed(const WindowKey& key) override
     {
         std::for_each(modules.begin(), modules.end(), [&key](std::unique_ptr<ClientModule>& module)
-        {
-            module->OnWindowClosed(key);
-        });
+                      {
+                          module->OnWindowClosed(key);
+                      });
     }
 
     bool HasControllerModule() const

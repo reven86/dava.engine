@@ -80,7 +80,7 @@ bool DataWrapper::HasData() const
         Logger::Error(e.what());
         return false;
     }
-    
+
     return reflection.IsValid();
 }
 

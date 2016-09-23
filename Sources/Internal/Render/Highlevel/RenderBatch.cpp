@@ -7,7 +7,6 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"
-#include "Debug/Stats.h"
 
 namespace DAVA
 {
