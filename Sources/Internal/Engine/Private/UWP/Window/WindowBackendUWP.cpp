@@ -35,6 +35,11 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
     PostCloseOnUIThread();
 }
 
+void WindowBackend::SetTitle(const String& title)
+{
+    PostSetTitleOnUIThread(title);
+}
+
 void* WindowBackend::GetHandle() const
 {
     return bridge->GetHandle();
@@ -72,10 +77,14 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        bridge->ResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow();
+        bridge->CloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        bridge->SetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

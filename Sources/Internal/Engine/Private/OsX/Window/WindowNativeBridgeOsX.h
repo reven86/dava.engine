@@ -37,6 +37,7 @@ struct WindowNativeBridge final
     bool CreateWindow(float32 x, float32 y, float32 width, float32 height);
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
+    void SetTitle(const char8* title);
 
     void TriggerPlatformEvents();
 

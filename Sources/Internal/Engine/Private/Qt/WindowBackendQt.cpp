@@ -196,6 +196,11 @@ void WindowBackend::Close(bool appIsTerminating)
     PostCloseOnUIThread();
 }
 
+void WindowBackend::SetTitle(const String& title)
+{
+    PostSetTitleOnUIThread(title);
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return renderWidget != nullptr && renderWidget->initialized;
@@ -222,6 +227,10 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        DoSetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -414,6 +423,11 @@ void WindowBackend::DoResizeWindow(float32 width, float32 height)
 void WindowBackend::DoCloseWindow()
 {
     renderWidget->close();
+}
+
+void WindowBackend::DoSetTitle(const char8* title)
+{
+    renderWidget->setWindowTitle(title);
 }
 
 void WindowBackend::Update()

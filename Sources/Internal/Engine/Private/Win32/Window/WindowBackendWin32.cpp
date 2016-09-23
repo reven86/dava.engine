@@ -13,6 +13,7 @@
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -83,6 +84,11 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
     PostCloseOnUIThread();
 }
 
+void WindowBackend::SetTitle(const String& title)
+{
+    PostSetTitleOnUIThread(title);
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;
@@ -116,6 +122,12 @@ void WindowBackend::DoCloseWindow()
     ::DestroyWindow(hwnd);
 }
 
+void WindowBackend::DoSetTitle(const char8* title)
+{
+    WideString wideTitle = UTF8Utils::EncodeToWideString(title);
+    ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
@@ -134,6 +146,10 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        DoSetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

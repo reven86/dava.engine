@@ -130,6 +130,9 @@ void GameCore::OnGameLoopStarted()
             Logger::Error("******** KABOOM on main thread********");
         });
     }
+
+    Window* window = engine->PrimaryWindow();
+    window->SetTitle("[Testbed] The one who owns a minigun fears not");
 }
 
 void GameCore::OnGameLoopStopped()

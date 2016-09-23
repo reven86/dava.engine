@@ -9,6 +9,7 @@
 #include "Engine/Private/UWP/Window/WindowBackendUWP.h"
 
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -76,7 +77,7 @@ void WindowNativeBridge::TriggerPlatformEvents()
     xamlWindow->Dispatcher->TryRunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(this, &WindowNativeBridge::OnTriggerPlatformEvents));
 }
 
-void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
+void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
     using namespace ::Windows::Foundation;
     using namespace ::Windows::UI::ViewManagement;
@@ -86,7 +87,7 @@ void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
     appView->TryResizeView(Size(width, height));
 }
 
-void WindowNativeBridge::DoCloseWindow()
+void WindowNativeBridge::CloseWindow()
 {
     // WinRT does not permit to close main window, so for primary window pretend that window has been closed.
     // For secondary window invoke Close() method, and also do not wait Closed event as stated in MSDN:
@@ -100,6 +101,14 @@ void WindowNativeBridge::DoCloseWindow()
     windowBackend->PostFocusChanged(false);
     windowBackend->PostVisibilityChanged(false);
     windowBackend->DispatchWindowDestroyed(true);
+}
+
+void WindowNativeBridge::SetTitle(const char8* title)
+{
+    using ::Windows::UI::ViewManagement::ApplicationView;
+
+    WideString wideTitle = UTF8Utils::EncodeToWideString(title);
+    ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
 void WindowNativeBridge::OnTriggerPlatformEvents()

@@ -72,6 +72,11 @@ void WindowBackend::Close(bool appIsTerminating)
     }
 }
 
+void WindowBackend::SetTitle(const String& title)
+{
+    // iOS window does not have title
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;

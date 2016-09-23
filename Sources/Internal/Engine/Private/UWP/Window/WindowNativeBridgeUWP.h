@@ -28,8 +28,9 @@ ref struct WindowNativeBridge sealed
 
     void TriggerPlatformEvents();
 
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    void ResizeWindow(float32 width, float32 height);
+    void CloseWindow();
+    void SetTitle(const char8* title);
 
 private:
     void OnTriggerPlatformEvents();

@@ -33,6 +33,7 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
     void PostResizeOnUIThread(float32 width, float32 height);
     void PostCloseOnUIThread();
+    void PostSetTitleOnUIThread(const String& title);
 
     // Utility methods to dispatch events to DAVA main thread, usually from window UI thread
     void PostWindowCreated(float32 width, float32 height, float32 scaleX, float32 scaleY);

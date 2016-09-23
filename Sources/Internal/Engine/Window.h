@@ -58,6 +58,7 @@ public:
     void Resize(float32 w, float32 h);
     void Resize(Vector2 size);
     void Close();
+    void SetTitle(const String& title);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;

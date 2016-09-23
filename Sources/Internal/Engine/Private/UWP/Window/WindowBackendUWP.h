@@ -26,6 +26,7 @@ public:
 
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;

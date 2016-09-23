@@ -71,6 +71,13 @@ void WindowNativeBridge::CloseWindow()
     [nswindow close];
 }
 
+void WindowNativeBridge::SetTitle(const char8* title)
+{
+    NSString* nsTitle = [NSString stringWithUTF8String:title];
+    [nswindow setTitle];
+    [nsTitle release];
+}
+
 void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {

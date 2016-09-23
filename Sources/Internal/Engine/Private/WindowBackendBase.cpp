@@ -41,6 +41,17 @@ void WindowBackendBase::PostCloseOnUIThread()
     uiDispatcher.PostEvent(e);
 }
 
+void WindowBackendBase::PostSetTitleOnUIThread(const String& title)
+{
+    char8* buf = new char8[title.length() + 1];
+    std::copy(begin(title), end(title), buf);
+    buf[title.length()] = '\0';
+
+    UIDispatcherEvent e(UIDispatcherEvent::SET_TITLE);
+    e.setTitleEvent.title = buf;
+    uiDispatcher.PostEvent(e);
+}
+
 void WindowBackendBase::PostWindowCreated(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     MainDispatcherEvent e(MainDispatcherEvent::WINDOW_CREATED, window);

@@ -60,6 +60,11 @@ void WindowBackend::Close(bool appIsTerminating)
     }
 }
 
+void WindowBackend::SetTitle(const String& title)
+{
+    // Android window does not have title
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;

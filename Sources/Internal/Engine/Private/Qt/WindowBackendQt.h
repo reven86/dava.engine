@@ -34,6 +34,7 @@ public:
 
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -47,6 +48,7 @@ private:
     void UIEventHandler(const UIDispatcherEvent& e);
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoSetTitle(const char8* title);
 
     // RenderWidget::Delegate
     void OnCreated() override;

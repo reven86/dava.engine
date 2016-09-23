@@ -49,6 +49,15 @@ void Window::Close()
     }
 }
 
+void Window::SetTitle(const String& title)
+{
+    // It does not make sense to set window title in embedded mode
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->SetTitle(title);
+    }
+}
+
 Engine* Window::GetEngine() const
 {
     return engineBackend.GetEngine();
