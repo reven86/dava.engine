@@ -678,7 +678,6 @@ void Core::SystemProcessFrame()
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
-//    profiler::DumpAverage();
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_MACOS__)
@@ -860,28 +859,26 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
-    if (!Renderer::IsInitialized())
-        return;
+    if (Renderer::IsInitialized())
+    {
+        screenMetrics.screenMetricsModified = false;
+        int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+        int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
-    screenMetrics.screenMetricsModified = false;
-    DVASSERT(Renderer::IsInitialized());
-    screenMetrics.screenMetricsModified = false;
-    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
-    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+        // render reset
+        rhi::ResetParam params;
+        params.width = physicalWidth;
+        params.height = physicalHeight;
+        params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+        params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
+        params.window = screenMetrics.nativeView;
+        Renderer::Reset(params);
 
-    // render reset
-    rhi::ResetParam params;
-    params.width = physicalWidth;
-    params.height = physicalHeight;
-    params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
-    params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
-    params.window = screenMetrics.nativeView;
-    Renderer::Reset(params);
-
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
-    virtSystem->ScreenSizeChanged();
+        VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+        virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+        virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+        virtSystem->ScreenSizeChanged();
+    }
 }
 
 void Core::SetIsActive(bool _isActive)
