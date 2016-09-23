@@ -4,7 +4,7 @@
 
 #include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
-#include "Utils/NsStringUtils.h"
+#import "Utils/NSStringUtils.h"
 #include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
