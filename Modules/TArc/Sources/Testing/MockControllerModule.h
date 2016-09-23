@@ -6,7 +6,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class MockControllerModule: public ControllerModule
+class MockControllerModule : public ControllerModule
 {
 public:
     MOCK_METHOD1(OnRenderSystemInitialized, void(Window& w));

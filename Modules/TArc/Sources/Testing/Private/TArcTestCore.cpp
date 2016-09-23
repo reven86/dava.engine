@@ -17,7 +17,6 @@
 
 namespace DAVA
 {
-
 namespace TArcTestCoreDetail
 {
 // List of semicolon separated names specifying which test classes should run
@@ -33,7 +32,6 @@ const String TestCoverageFileName = "Tests.cover";
 
 namespace TArc
 {
-
 TestCore::TestCore(Engine& e_)
     : e(e_)
 {
@@ -45,7 +43,7 @@ TestCore::TestCore(Engine& e_)
     e.gameLoopStarted.Connect(this, &TestCore::OnAppStarted);
     e.gameLoopStopped.Connect(this, &TestCore::OnAppFinished);
     e.update.Connect(this, &TestCore::Update);
-    
+
     bool result = AvoidTestsStriping();
     DAVA::Logger::Info("Avoid tests stripint result %d", result);
 }
@@ -120,14 +118,14 @@ void TestCore::Update(float32 delta)
         FinishTests();
     }
 }
-    
+
 void TestCore::ProcessTestCoverage()
 {
 #if defined(TEST_COVERAGE)
     // Output test coverage for sample
     Map<String, DAVA::UnitTests::TestCoverageInfo> map = UnitTests::TestCore::Instance()->GetTestCoverage();
     Logger::Info("Test coverage");
-    
+
     for (const auto& x : map)
     {
         Logger::Info("  %s:", x.first.c_str());
@@ -137,44 +135,44 @@ void TestCore::ProcessTestCoverage()
             Logger::Info("        %s", s.c_str());
         }
     }
-    
+
     RefPtr<File> coverageFile(File::Create(TArcTestCoreDetail::TestCoverageFileName, File::APPEND | File::WRITE));
     DVASSERT(coverageFile);
-    
+
     auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
-    
+
     toJson("{ \n");
     
 #if defined(DAVA_UNITY_FOLDER)
     toJson("    \"UnityFolder\": \"" + DAVA::String(DAVA_UNITY_FOLDER) + "\",\n");
 #endif
-    
+
     toJson("    \"Coverage\":  {\n");
-    
+
     for (const auto& x : map)
     {
         toJson("         \"" + x.first + "\": \"");
-        
+
         const Vector<String>& v = x.second.testFiles;
         for (const String& s : v)
         {
             toJson(s + (&s != &*v.rbegin() ? " " : ""));
         }
-        
+
         toJson(x.first != map.rbegin()->first ? "\",\n" : "\"\n");
     }
-    
+
     toJson("     },\n");
-    
+
     toJson("    \"CoverageFolders\":  {\n");
-    
+
     for (const auto& x : map)
     {
         const Vector<String>& v = x.second.testFiles;
         for (const String& s : v)
         {
             toJson("         \"" + s + "\": \"");
-            
+
             auto mapTargetFolders = x.second.targetFolders;
             auto it = mapTargetFolders.find(s);
             String strPast;
@@ -190,9 +188,9 @@ void TestCore::ProcessTestCoverage()
             toJson(x.first != map.rbegin()->first || s != *v.rbegin() ? "\",\n" : "\"\n");
         }
     }
-    
+
     toJson("     }\n");
-    
+
     toJson("}\n");
     
 #endif // TEST_COVERAGE
@@ -308,9 +306,9 @@ void TestCore::InitNetwork()
     };
 
     NetCore::Instance()->RegisterService(
-        NetCore::SERVICE_LOG,
-        loggerCreate,
-        [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+    NetCore::SERVICE_LOG,
+    loggerCreate,
+    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
 
     eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
     Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
@@ -360,4 +358,3 @@ void TestCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
 
 } // namespace TArc
 } // namespace DAVA
-

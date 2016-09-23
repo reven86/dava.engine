@@ -6,7 +6,7 @@
 #include "Reflection/Public/ReflectedType.h"
 #include "Reflection/Registrator.h"
 
-class DataListenerNode: public DAVA::TArc::DataNode
+class DataListenerNode : public DAVA::TArc::DataNode
 {
 public:
     DAVA::int32 dummyIntField = 0;
@@ -15,22 +15,22 @@ public:
     DAVA_VIRTUAL_REFLECTION(DataListenerNode, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<DataListenerNode>::Begin()
-            .Field("dummyIntField", &DataListenerNode::dummyIntField)
-            .Field("dummyFloatField", &DataListenerNode::dummyFloatField)
-            .End();
+        .Field("dummyIntField", &DataListenerNode::dummyIntField)
+        .Field("dummyFloatField", &DataListenerNode::dummyFloatField)
+        .End();
     }
 };
 
 DAVA_TARC_TESTCLASS(DataListenerTest)
 {
     BEGIN_FILES_COVERED_BY_TESTS()
-        FIND_FILES_IN_TARGET(TArc)
-        DECLARE_COVERED_FILES("DataWrapper.cpp")
-        DECLARE_COVERED_FILES("DataContext.cpp")
-        DECLARE_COVERED_FILES("TArcCore.cpp")
+    FIND_FILES_IN_TARGET(TArc)
+    DECLARE_COVERED_FILES("DataWrapper.cpp")
+    DECLARE_COVERED_FILES("DataContext.cpp")
+    DECLARE_COVERED_FILES("TArcCore.cpp")
     END_FILES_COVERED_BY_TESTS()
 
-    DAVA_TEST(EmptyDataNodeTest)
+    DAVA_TEST (EmptyDataNodeTest)
     {
         using namespace ::testing;
         DAVA::TArc::DataContext& ctx = GetActiveContext();
@@ -49,11 +49,12 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         secondWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
         secondWrapper.AddListener(&secondListener);
 
-        bothWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());;
+        bothWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
+        ;
         bothWrapper.AddListener(&bothListener);
     }
 
-    DAVA_TEST(DataNodeValueChangingTest)
+    DAVA_TEST (DataNodeValueChangingTest)
     {
         using namespace ::testing;
 
@@ -61,25 +62,25 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         TEST_VERIFY(ctx.HasData<DataListenerNode>() == true);
         ctx.GetData<DataListenerNode>().dummyIntField = 1;
 
-        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
-        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
-        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
     }
 
-    DAVA_TEST(CrossDataChangingTest)
+    DAVA_TEST (CrossDataChangingTest)
     {
         using namespace ::testing;
 
         TEST_VERIFY(GetActiveContext().HasData<DataListenerNode>() == true);
-        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField"}));
-        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyFloatField"}));
-        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{"dummyIntField", "dummyFloatField"}));
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField" }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyFloatField" }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Set<DAVA::String>{ "dummyIntField", "dummyFloatField" }));
 
         activeWrapper.CreateEditor<DataListenerNode>()->dummyFloatField = 10.0f;
         secondWrapper.CreateEditor<DataListenerNode>()->dummyIntField = 10;
     }
 
-    DAVA_TEST(DataNodeDeletingTest)
+    DAVA_TEST (DataNodeDeletingTest)
     {
         using namespace ::testing;
         DAVA::TArc::DataContext& ctx = GetActiveContext();

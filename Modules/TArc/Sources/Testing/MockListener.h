@@ -8,8 +8,7 @@ namespace DAVA
 {
 namespace TArc
 {
-
-class MockListener: public DataListener
+class MockListener : public DataListener
 {
 public:
     MOCK_METHOD2(OnDataChanged, void(const DataWrapper& wrapper, const Set<String>& fields));

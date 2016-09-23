@@ -11,7 +11,6 @@ namespace DAVA
 class Engine;
 namespace TArc
 {
-
 class TestCore : ::testing::EmptyTestEventListener
 {
 public:
@@ -49,7 +48,7 @@ private:
     void InitNetwork();
     void UnInitNetwork();
 
-    class LogFlusher: public DAVA::LoggerOutput
+    class LogFlusher : public DAVA::LoggerOutput
     {
     public:
         LogFlusher(DAVA::Net::NetLogger* logger);

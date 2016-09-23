@@ -12,12 +12,11 @@ namespace DAVA
 {
 namespace TArc
 {
-
 const double TestClass::testTimeLimit = 10.0; // seconds
 
 namespace TArcTestClassDetail
 {
-class TestControllerModule: public ControllerModule
+class TestControllerModule : public ControllerModule
 {
 protected:
     void OnRenderSystemInitialized(Window& w) override
@@ -28,7 +27,7 @@ protected:
     {
         return true;
     }
-    
+
     void SaveOnWindowClose(const WindowKey& key) override
     {
     }
@@ -64,10 +63,10 @@ TestClass::~TestClass()
 
     Core* c = core.release();
     QTimer::singleShot(0, [c]()
-    {
-        c->OnLoopStopped();
-        delete c;
-    });
+                       {
+                           c->OnLoopStopped();
+                           delete c;
+                       });
 }
 
 void TestClass::SetUp(const String& testName)
@@ -104,9 +103,9 @@ bool TestClass::TestComplete(const String& testName) const
 {
     DVASSERT(core != nullptr);
     auto iter = std::find_if(tests.begin(), tests.end(), [&testName](const TestInfo& testInfo)
-    {
-        return testInfo.name == testName;
-    });
+                             {
+                                 return testInfo.name == testName;
+                             });
 
     DVASSERT(iter != tests.end());
     using namespace std::chrono;
@@ -134,7 +133,7 @@ DataContext& TestClass::GetActiveContext()
 {
     return core->GetActiveContext();
 }
-    
+
 DataContext& TestClass::GetGlobalContext()
 {
     return core->GetGlobalContext();
