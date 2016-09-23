@@ -1,5 +1,3 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Tests/CoreV2Test.h"
 #include "Infrastructure/GameCore.h"
 
@@ -281,5 +279,3 @@ DAVA::UIButton* CoreV2Test::CreateUIButton(DAVA::Font* font, const DAVA::Rect& r
     AddControl(button);
     return button;
 }
-
-#endif // __DAVAENGINE_COREV2__

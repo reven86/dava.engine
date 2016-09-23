@@ -319,12 +319,7 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = *engine.GetContext()->packManager;
-#else
-    IPackManager& pm = Core::Instance()->GetPackManager();
-#endif
-
     if (pm.IsRequestingEnabled())
     {
         return;
@@ -356,11 +351,7 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = *engine.GetContext()->packManager;
-#else
-    IPackManager& pm = Core::Instance()->GetPackManager();
-#endif
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
@@ -379,12 +370,7 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = *engine.GetContext()->packManager;
-#else
-    IPackManager& pm = Core::Instance()->GetPackManager();
-#endif
-
     std::stringstream ss;
 
     for (auto& pack : pm.GetPacks())
@@ -408,12 +394,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-#if defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = *engine.GetContext()->packManager;
-#else
-    IPackManager& pm = Core::Instance()->GetPackManager();
-#endif
-
     if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
     {
         return;
@@ -439,11 +420,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if defined(__DAVAENGINE_COREV2__)
     IPackManager& pm = *engine.GetContext()->packManager;
-#else
-    IPackManager& pm = Core::Instance()->GetPackManager();
-#endif
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();

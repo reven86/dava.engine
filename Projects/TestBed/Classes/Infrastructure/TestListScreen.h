@@ -1,5 +1,4 @@
-#ifndef __TEST_LIST_SCREEN_H__
-#define __TEST_LIST_SCREEN_H__
+#pragma once
 
 #include "Infrastructure/BaseScreen.h"
 #include <UI/UIList.h>
@@ -31,5 +30,3 @@ private:
     UIList* testsGrid;
     float32 cellHeight;
 };
-
-#endif

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Core/ApplicationCore.h"
-#include "Core/Core.h"
-
 #include "Network/NetCore.h"
 #include "Network/PeerDesription.h"
 #include "Network/Services/NetLogger.h"

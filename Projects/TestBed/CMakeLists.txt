@@ -44,15 +44,13 @@ if( MACOS )
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.entitlements )
-
 elseif( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
 endif()
 
 file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
 
-define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
+define_source ( SOURCE    "Classes" )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
