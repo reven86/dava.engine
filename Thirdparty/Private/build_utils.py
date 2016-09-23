@@ -373,8 +373,8 @@ def build_and_copy_libraries_android_cmake(
 
 	return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
-def build_with_autotools(source_folder_path, configure_args, install_dir, env=None):
-	cmd = ['./config']
+def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure'):
+	cmd = ['./{}'.format(configure_exec_name)]
 	cmd.extend(configure_args)
 	if install_dir is not None:
 		if not os.path.exists(install_dir):
@@ -392,3 +392,11 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
 
 		cmd = ['make', 'clean']
 		run_process(cmd, process_cwd=source_folder_path, environment=env)
+
+def android_ndk_make_toolchain(root_project_path, arch, platform, system, install_dir):
+	android_ndk_root = get_android_ndk_folder_path(root_project_path)
+
+	exec_path = os.path.join(android_ndk_root, 'build/tools')
+
+	cmd = ['sh', 'make-standalone-toolchain.sh', '--arch=' + arch, '--platform=' + platform, '--system=' + system, '--install-dir=' + install_dir, '--ndk-dir=' + android_ndk_root]
+	run_process(cmd, process_cwd=exec_path)

@@ -6,10 +6,11 @@ def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
 		return []
 	else:
-		return ['macos', 'ios']
+		return ['macos', 'ios', 'android']
 
 def get_dependencies_for_target(target):
-	return []
+	if target == 'android':
+		return [ 'openssl' ]
 
 def get_supported_build_platforms():
 	return ['win32', 'darwin']
@@ -29,7 +30,15 @@ def build_for_target(target, working_directory_path, root_project_path):
 		return __build_android(working_directory_path, root_project_path)
 
 def get_download_url():
-	return { 'macos_and_ios': 'maintained by curl-ios-build-scripts (bundled)' }
+	return { 'macos_and_ios': 'maintained by curl-ios-build-scripts (bundled)', 'others': 'https://curl.haxx.se/download/curl-7.50.3.tar.gz' }
+
+def __get_downloaded_archive_inner_dir():
+	return 'curl-7.50.3'
+
+def __download_and_extract(working_directory_path):
+	source_folder_path = os.path.join(working_directory_path, 'libcurl_source')
+	build_utils.download_and_extract(get_download_url()['others'], working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())	
+	return source_folder_path
 
 def __build_macos(working_directory_path, root_project_path):
 	build_curl_run_dir = os.path.join(working_directory_path, 'gen/build_osx')
@@ -64,5 +73,27 @@ def __build_ios(working_directory_path, root_project_path):
 	output_path = os.path.join(build_curl_run_dir, 'curl/ios-appstore/lib/libcurl.a')
 
 	shutil.copyfile(output_path, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/ios/libcurl_ios.a')))
+
+	return True
+
+def __build_android(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+
+	env = os.environ.copy()
+	original_path_var = env["PATH"]
+
+	toolchain_path_arm = os.path.join(working_directory_path, 'gen/ndk_toolchain_arm')
+	build_utils.android_ndk_make_toolchain(root_project_path, 'arm', 'android-14', 'darwin-x86_64', toolchain_path_arm)
+	env['PATH'] = '{}:{}'.format(os.path.join(toolchain_path_arm, 'bin'), original_path_var)
+	install_dir_arm = os.path.join(working_directory_path, 'gen/install_arm')
+	configure_args = [ '--host=arm-linux-androideabi', '--disable-shared', '--with-ssl=' + os.path.abspath(os.path.join(working_directory_path, '../openssl/gen/install_arm/')) ]
+	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, env)
+
+	toolchain_path_x86 = os.path.join(working_directory_path, 'gen/ndk_toolchain_x86')
+	build_utils.android_ndk_make_toolchain(root_project_path, 'x86', 'android-14', 'darwin-x86_64', toolchain_path_x86)
+	env['PATH'] = '{}:{}'.format(os.path.join(toolchain_path_x86, 'bin'), original_path_var)
+	install_dir_arm = os.path.join(working_directory_path, 'gen/install_x86')
+	configure_args = [ '--host=i686-linux-android', '--disable-shared', '--with-ssl=' + os.path.abspath(os.path.join(working_directory_path, '../openssl/gen/install_x86/')) ]
+	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, env)
 
 	return True
