@@ -1,7 +1,6 @@
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 #include "AssetCache/AssetCacheClient.h"
-#include "Debug/Stats.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"

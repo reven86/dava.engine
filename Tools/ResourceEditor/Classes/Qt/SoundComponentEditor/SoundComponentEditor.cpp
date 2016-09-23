@@ -166,6 +166,12 @@ void SoundComponentEditor::OnAddEvent()
     if (component)
     {
         FMODSoundBrowser* browser = FMODSoundBrowser::Instance();
+
+        if (selectedEventIndex != -1)
+        {
+            SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
+            browser->SetCurrentEvent(soundEvent->GetEventName());
+        }
         if (browser->exec() == QDialog::Accepted)
         {
             DAVA::String selectedEventName = browser->GetSelectSoundEvent();
