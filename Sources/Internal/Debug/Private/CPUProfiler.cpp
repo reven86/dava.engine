@@ -246,29 +246,50 @@ void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std:
 
 void CPUProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
+    TraceEvent::DumpJSON(GetTrace(snapshot), stream);
+}
+
+Vector<TraceEvent> CPUProfiler::GetTrace(int32 snapshot)
+{
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before tracing");
 
     CounterArray* array = GetCounterArray(snapshot);
-
-    stream << "{ \"traceEvents\": [" << std::endl;
-
-    CounterArray::iterator it = array->begin(), itEnd = array->end();
-    CounterArray::iterator last(array->rbegin());
-    for (; it != itEnd; it++)
+    Vector<TraceEvent> trace;
+    for (const Counter& c : *array)
     {
-        if (!it->name)
+        if (!c.name)
             continue;
 
-        stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << it->startTime << ", \"ph\":\"B\", \"cat\":\"\", \"name\":\"" << it->name << "\" }," << std::endl;
-        stream << "{ \"pid\":0, \"tid\":" << it->threadID << ", \"ts\":" << (it->endTime ? it->endTime : it->startTime) << ", \"ph\":\"E\", \"cat\":\"\", \"name\":\"" << it->name << "\" }";
-        if (it != last)
-            stream << ",";
-        stream << std::endl;
+        trace.push_back(TraceEvent(FastName(c.name), 0, c.threadID, c.startTime, c.endTime ? (c.endTime - c.startTime) : 0, TraceEvent::PHASE_DURATION));
     }
 
-    stream << "] }" << std::endl;
+    return trace;
+}
 
-    stream.flush();
+Vector<TraceEvent> CPUProfiler::GetTrace(const char* counterName, uint32 counterCount, int32 snapshot)
+{
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before tracing");
+
+    CounterArray* array = GetCounterArray(snapshot);
+    CounterArray::reverse_iterator itr = array->rbegin(), itrEnd = array->rend();
+    for (; itr != itr; itr++)
+    {
+        if (itr->endTime != 0 && (strcmp(counterName, itr->name) == 0))
+            counterCount--;
+
+        if (counterCount == 0)
+            break;
+    }
+
+    CounterArray::iterator it(itr);
+    CounterArray::iterator itEnd = array->end();
+    Vector<TraceEvent> trace;
+    for (; it != itEnd; ++it)
+    {
+        trace.push_back(TraceEvent(FastName(it->name), 0, it->threadID, it->startTime, it->endTime - it->startTime, TraceEvent::PHASE_DURATION));
+    }
+
+    return trace;
 }
 
 CPUProfiler::CounterArray* CPUProfiler::GetCounterArray(int32 snapshot)

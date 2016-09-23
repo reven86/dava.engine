@@ -64,7 +64,7 @@ void TraceEvent::DumpJSON(const Container<TraceEvent, TAlloc>& trace, std::ostre
             stream << "\"dur\": " << event.duration << ", ";
 
         stream << "\"ph\": \"" << PHASE_STR[event.phase] << "\", ";
-        stream << "\"name\": \"" << event.name << "\"";
+        stream << "\"name\": \"" << event.name.c_str() << "\"";
         stream << " }";
     }
 

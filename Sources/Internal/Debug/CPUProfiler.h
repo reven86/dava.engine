@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Debug/TraceEvent.h"
 #include <iosfwd>
 
 #define CPU_PROFILER_ENABLED 1
@@ -45,6 +46,9 @@ public:
     void DumpJSON(std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
     void DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
     void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
+
+    Vector<TraceEvent> GetTrace(int32 snapshot = NO_SNAPSHOT_ID);
+    Vector<TraceEvent> GetTrace(const char* counterName, uint32 counterCount, int32 snapshot = NO_SNAPSHOT_ID);
 
 protected:
     CounterArray* GetCounterArray(int32 snapshot);
