@@ -1,5 +1,4 @@
-#ifndef __DAVA_FUNCTION_H__
-#define __DAVA_FUNCTION_H__
+#pragma once
 
 #include <new>
 #include <memory>
@@ -473,15 +472,8 @@ private:
         Detail<
         trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
         && std::is_trivially_destructible<Fn>::value
-#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
-        // android old-style way
-        && std::has_trivial_copy_constructor<Fn>::value
-        && std::has_trivial_copy_assign<Fn>::value
-#else
-        // standard c++14 way
         && std::is_trivially_copy_constructible<Fn>::value
         && std::is_trivially_copy_assignable<Fn>::value
-#endif
         ,
         Hldr, Fn, Prms...>::Init(this, fn, std::forward<Prms>(params)...);
     }
@@ -580,5 +572,3 @@ void swap(DAVA::Function<F>& lf, DAVA::Function<F>& rf)
 }
 
 } // namespace std
-
-#endif // __DAVA_FUNCTION_H__

@@ -12,6 +12,7 @@ inline Reflection::Reflection(const ReflectedObject& object_, ValueWrapper* vw_,
     : object(object_)
     , vw(vw_)
     , meta(meta_)
+    , objectType(rtype_)
 {
     if (nullptr != rtype_)
     {
@@ -51,6 +52,11 @@ inline const Type* Reflection::GetValueType() const
 inline ReflectedObject Reflection::GetValueObject() const
 {
     return vw->GetValueObject(object);
+}
+
+inline const DAVA::ReflectedType* Reflection::GetReflectedType() const
+{
+    return objectType;
 }
 
 inline Any Reflection::GetValue() const

@@ -51,7 +51,7 @@ void GameCore::OnAppStarted()
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
     //    SetScenePath("~doc:/karelia/karelia.sc2");
-    SetScenePath("~res:/3d/Maps/amigosville/amigosville.sc2");
+    SetScenePath("~res:/3d/Maps/05_amigosville_am/05_amigosville_am.sc2");
     //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
     //SetScenePath("~res:/amigosville/amigosville.sc2");
     //      SetScenePath("~doc:/fort/fort.sc2");

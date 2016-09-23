@@ -215,3 +215,8 @@ else()
 endif()
 
 load_config ( ${DAVA_CONFIG_PATH} )
+
+if( ANDROID_NDK_TYPE )
+    set( ANDROID_NDK  ${ANDROID_NDK_${ANDROID_NDK_TYPE}} )
+endif()
+

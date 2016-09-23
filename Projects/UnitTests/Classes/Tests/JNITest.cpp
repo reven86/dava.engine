@@ -17,7 +17,7 @@ Function<jboolean(jobject)> out;
 Function<jobject(void)> getObjectFromJava;
 }
 
-void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef)
+JNIEXPORT void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef)
 {
     static uint32 i = 0;
 

@@ -3,7 +3,6 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
 #include "Base/Radix/Radix.h"
-#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -70,8 +69,6 @@ RenderLayer::eRenderLayerID RenderLayer::GetLayerIDByName(const FastName& name)
 
 void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::HPacketList packetList)
 {
-    TIME_PROFILE("RenderLayer::Draw");
-
     uint32 size = static_cast<uint32>(batchArray.GetRenderBatchCount());
 
     rhi::Packet packet;

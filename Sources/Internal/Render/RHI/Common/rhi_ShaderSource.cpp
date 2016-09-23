@@ -6,7 +6,7 @@ using DAVA::Logger;
     #include "FileSystem/FileSystem.h"
 using DAVA::DynamicMemoryFile;
     #include "Utils/Utils.h"
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
     #include "Concurrency/Mutex.h"
     #include "Concurrency/LockGuard.h"
 using DAVA::Mutex;
@@ -72,7 +72,6 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
-    //SCOPED_NAMED_TIMING("ShaderSource::Construct");
     bool success = false;
     std::vector<std::string> def;
     const char* argv[128];

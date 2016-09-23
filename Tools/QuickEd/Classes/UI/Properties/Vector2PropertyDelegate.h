@@ -1,5 +1,4 @@
-#ifndef __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__
-#define __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__
+#pragma once
 
 #include "BasePropertyDelegate.h"
 
@@ -10,12 +9,10 @@ public:
     explicit Vector2PropertyDelegate(PropertiesTreeItemDelegate* delegate);
     ~Vector2PropertyDelegate();
 
-    virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
-    virtual void setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    virtual bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
 private slots:
     void OnEditingFinished();
 };
-
-#endif // __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__

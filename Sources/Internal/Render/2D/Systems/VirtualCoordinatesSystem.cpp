@@ -60,9 +60,9 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         {
             allowedSizes[i].toVirtual = float32(virtualScreenSize.dx) / float32(allowedSizes[i].width);
             allowedSizes[i].toPhysical = float32(physicalScreenSize.dx) / float32(allowedSizes[i].width);
-            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD)
+            if (std::abs(allowedSizes[i].toPhysical - 1.0f) < desD)
             {
-                desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
+                desD = std::abs(allowedSizes[i].toPhysical - 1.0f);
                 desirableIndex = i;
             }
         }
@@ -84,16 +84,16 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         {
             allowedSizes[i].toVirtual = virtualScreenSize.dy / float32(allowedSizes[i].height);
             allowedSizes[i].toPhysical = physicalScreenSize.dy / float32(allowedSizes[i].height);
-            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD)
+            if (std::abs(allowedSizes[i].toPhysical - 1.0f) < desD)
             {
-                desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
+                desD = std::abs(allowedSizes[i].toPhysical - 1.0f);
                 desirableIndex = i;
             }
         }
     }
 
-    drawOffset.y = floorf(drawOffset.y);
-    drawOffset.x = floorf(drawOffset.x);
+    drawOffset.y = std::floor(drawOffset.y);
+    drawOffset.x = std::floor(drawOffset.x);
 
     fullVirtualScreenRect = Rect(-Round(drawOffset.x * physicalToVirtual),
                                  -Round(drawOffset.y * physicalToVirtual),
