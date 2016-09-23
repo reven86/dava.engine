@@ -74,7 +74,7 @@ void WindowNativeBridge::CloseWindow()
 void WindowNativeBridge::SetTitle(const char8* title)
 {
     NSString* nsTitle = [NSString stringWithUTF8String:title];
-    [nswindow setTitle];
+    [nswindow setTitle:nsTitle];
     [nsTitle release];
 }
 

@@ -59,7 +59,7 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
     PostCloseOnUIThread();
 }
 
-void SetTitle(const String& title)
+void WindowBackend::SetTitle(const String& title)
 {
     PostSetTitleOnUIThread(title);
 }
