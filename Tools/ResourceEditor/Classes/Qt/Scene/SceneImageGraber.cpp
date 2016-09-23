@@ -46,7 +46,11 @@ void GrabImage(Params inputParams)
                                                             DAVA::PixelFormat::FORMAT_RGBA8888);
     internalParams.inputParams.scene->Draw();
 
-    RenderSystem2D::Instance()->FillRect(viewportRect, Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    RenderSystem2D* renderSystem = RenderSystem2D::Instance();
+
+    renderSystem->BeginRenderTargetPass(internalParams.renderTarget.Get(), false);
+    renderSystem->FillRect(viewportRect, Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    renderSystem->EndRenderTargetPass();
 
     internalParams.inputParams.cameraToGrab->SetAspect(cameraAspect);
 
