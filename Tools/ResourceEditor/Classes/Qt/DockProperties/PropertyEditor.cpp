@@ -401,8 +401,8 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
 
-                    if ((renderObject->GetType() == RenderObject::TYPE_MESH) ||
-                        (renderObject->GetType() == RenderObject::TYPE_RENDEROBJECT))
+                    if ((renderObject->GetType() == DAVA::RenderObject::TYPE_MESH) ||
+                        (renderObject->GetType() == DAVA::RenderObject::TYPE_RENDEROBJECT))
                     {
                         QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/sphere.png"), "Make billboard");
                         QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
@@ -1566,7 +1566,7 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
             DAVA::Entity* entity = obj.AsEntity();
             if (entity != nullptr)
             {
-                RenderComponent* component = GetRenderComponent(entity);
+                DAVA::RenderComponent* component = DAVA::GetRenderComponent(entity);
                 if (component != nullptr)
                 {
                     DAVA::RenderObject* ro = component->GetRenderObject();
