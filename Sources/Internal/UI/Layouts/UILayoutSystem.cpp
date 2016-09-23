@@ -35,6 +35,33 @@ void UILayoutSystem::SetRtl(bool rtl)
     isRtl = rtl;
 }
 
+void UILayoutSystem::ProcessControl(UIControl* control)
+{
+    if (!IsAutoupdatesEnabled())
+        return;
+
+    bool dirty = control->IsLayoutDirty();
+    bool orderDirty = control->IsLayoutOrderDirty();
+    bool positionDirty = control->IsLayoutPositionDirty();
+    control->ResetLayoutDirty();
+
+    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)))
+    {
+        UIControl* container = FindNotDependentOnChildrenControl(control);
+        ApplyLayout(container);
+    }
+    else if (positionDirty && HaveToLayoutAfterReposition(control))
+    {
+        UIControl* container = control->GetParent();
+        ApplyLayoutNonRecursive(container);
+    }
+}
+
+void UILayoutSystem::ManualApplyLayout(UIControl* control)
+{
+    ApplyLayout(control);
+}
+
 bool UILayoutSystem::IsAutoupdatesEnabled() const
 {
     return autoupdatesEnabled;
@@ -45,17 +72,11 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
     autoupdatesEnabled = enabled;
 }
 
-void UILayoutSystem::ApplyLayout(UIControl* control, bool considerDenendenceOnChildren)
+void UILayoutSystem::ApplyLayout(UIControl* control)
 {
     DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
 
-    UIControl* container = control;
-    if (considerDenendenceOnChildren)
-    {
-        container = FindNotDependentOnChildrenControl(container);
-    }
-
-    CollectControls(container, true);
+    CollectControls(control, true);
 
     ProcessAxis(Vector2::AXIS_X);
     ProcessAxis(Vector2::AXIS_Y);
@@ -108,6 +129,45 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
     }
 
     return result;
+}
+
+bool UILayoutSystem::HaveToLayoutAfterReorder(const UIControl* control) const
+{
+    static const uint64 sensitiveComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    if ((control->GetAvailableComponentFlags() & sensitiveComponents) != 0)
+    {
+        return true;
+    }
+
+    UISizePolicyComponent* policy = control->GetComponent<UISizePolicyComponent>();
+    if (policy)
+    {
+        return policy->IsDependsOnChildren(Vector2::AXIS_X) || policy->IsDependsOnChildren(Vector2::AXIS_Y);
+    }
+
+    return false;
+}
+
+bool UILayoutSystem::HaveToLayoutAfterReposition(const UIControl* control) const
+{
+    const UIControl* parent = control->GetParent();
+    if (parent == nullptr)
+    {
+        return false;
+    }
+
+    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) != 0)
+    {
+        return true;
+    }
+
+    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    if ((parent->GetAvailableComponentFlags() & parentComponents) != 0)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
@@ -212,25 +272,7 @@ void UILayoutSystem::ApplyPositions()
 }
 void UILayoutSystem::UpdateControl(UIControl* control)
 {
-    if (!control->IsVisible())
-    {
-        return;
-    }
-
-    if (control->IsLayoutDirty())
-    {
-        if (IsAutoupdatesEnabled())
-        {
-            ApplyLayout(control, true);
-        }
-    }
-    else if (control->IsLayoutPositionDirty())
-    {
-        if (IsAutoupdatesEnabled() && control->GetParent() != nullptr)
-        {
-            ApplyLayoutNonRecursive(control->GetParent());
-        }
-    }
+    ProcessControl(control);
 
     // TODO: For now game has many places where changes in layouts can
     // change hierarchy of controls. In future client want fix this places,
