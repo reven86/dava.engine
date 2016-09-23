@@ -4,9 +4,9 @@ import build_utils
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
-		return ['win32', 'win10', 'android']
+		return []
 	else:
-		return ['macos', 'ios', 'android']
+		return ['macos', 'ios']
 
 def get_dependencies_for_target(target):
 	return []

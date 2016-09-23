@@ -23,6 +23,7 @@ def import_library_builder_module(name):
 invoked_builders = []
 
 def build_library(name, targets, skip_dependencies):
+
 	# Check if we already invoked builder for this library
 	# (it could be declared as a dependency for another library)
 	# Return None in this case since we didn't remember the result
@@ -62,7 +63,10 @@ def build_library(name, targets, skip_dependencies):
 
 	try:
 		for target in targets:
-			result = builder.build_for_target(target, library_working_dir, project_root_path)
+			if target in builder.get_supported_targets_for_build_platform(current_platform):
+				result = builder.build_for_target(target, library_working_dir, project_root_path)
+			else:
+				result = False
 	except Exception:
 		print 'Couldn\'t build library {}. Exception details:'.format(name)
 		traceback.print_exc()

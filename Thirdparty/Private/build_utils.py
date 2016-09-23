@@ -214,13 +214,16 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
 	download_and_extract.cache.append(download_data)
 
-def run_process(args, process_cwd='.'):
+def run_process(args, process_cwd='.', environment=None):
 	print 'running process: ' + ' '.join(args)
-	for output_line in __run_process_iter(args, process_cwd):
+	for output_line in __run_process_iter(args, process_cwd, environment):
 		print_verbose(output_line)
 
-def __run_process_iter(args, process_cwd='.'):
-	sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
+def __run_process_iter(args, process_cwd='.', environment=None):
+	if environment is None:
+		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
+	else:
+		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
 
 	stdout_lines = iter(sp.stdout.readline, '')
 	for stdout_line in stdout_lines:
@@ -369,3 +372,23 @@ def build_and_copy_libraries_android_cmake(
 	shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/android/x86', result_lib_name_release)))
 
 	return (build_android_x86_folder, build_android_armeabiv7a_folder)
+
+def build_with_autotools(source_folder_path, configure_args, install_dir, env=None):
+	cmd = ['./config']
+	cmd.extend(configure_args)
+	if install_dir is not None:
+		if not os.path.exists(install_dir):
+			os.makedirs(install_dir)
+		cmd.append('--prefix=' + install_dir)
+
+	run_process(cmd, process_cwd=source_folder_path, environment=env)
+
+	cmd = ['make', 'all']
+	run_process(cmd, process_cwd=source_folder_path, environment=env)
+
+	if install_dir is not None:
+		cmd = ['make', 'install']
+		run_process(cmd, process_cwd=source_folder_path, environment=env)
+
+		cmd = ['make', 'clean']
+		run_process(cmd, process_cwd=source_folder_path, environment=env)
