@@ -1,6 +1,9 @@
+#include "Base/RingArray.h"
 #include "Debug/ProfilerOverlay.h"
 #include "Debug/DVAssert.h"
 #include "Debug/DebugColors.h"
+#include "Debug/TraceEvent.h"
+#include "Debug/GPUProfiler.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include <ostream>
@@ -25,11 +28,11 @@ static bool overlayEnabled = false;
 static const uint32 HISTORY_SIZE = 600;
 static const uint32 NON_FILTERED_COUNT = 10;
 
-using MarkerHistory = List<std::pair<uint64, float32>>;
-FastNameMap<MarkerHistory> markerHistory;
+using MarkerHistory = RingArray<std::pair<uint64, float32>>;
+FastNameMap<MarkerHistory> markerHistory(256, MarkerHistory(HISTORY_SIZE));
 
 uint32 lastGPUFrameIndex = 0;
-Vector<Vector<TraceEvent>> currentTraces(3);
+Vector<Vector<TraceEvent>> currentTraces(1);
 
 //==============================================================================
 
@@ -37,10 +40,9 @@ void UpdateHistory(const Vector<Vector<TraceEvent>>& traces)
 {
     for (FastNameMap<MarkerHistory>::HashMapItem& i : markerHistory)
     {
-        MarkerHistory& history = i.second;
-        history.push_back({ 0, 0.f });
-        while (uint32(history.size()) > HISTORY_SIZE)
-            history.pop_front();
+        std::pair<uint64, float32>& value = i.second.next();
+        value.first = 0;
+        value.second = 0.f;
     }
 
     for (const Vector<TraceEvent>& trace : traces)
@@ -53,14 +55,11 @@ void UpdateHistory(const Vector<Vector<TraceEvent>>& traces)
                 continue;
 
             MarkerHistory& history = markerHistory[e.name];
-            if (history.size() == 0)
-                history.push_back({ 0, 0.f });
-
             if (e.phase == TraceEvent::PHASE_DURATION)
             {
-                markerHistory[e.name].back().first += e.duration;
+                markerHistory[e.name].rbegin()->first += e.duration;
             }
-            else if (e.phase)
+            else if (e.phase == TraceEvent::PHASE_BEGIN)
             {
                 Vector<TraceEvent>::const_iterator found = std::find_if(it, traceEnd, [&e](const TraceEvent& e1) {
                     return e.name == e1.name && e1.phase == TraceEvent::PHASE_END;
@@ -68,7 +67,7 @@ void UpdateHistory(const Vector<Vector<TraceEvent>>& traces)
 
                 DVASSERT(found != traceEnd);
 
-                markerHistory[e.name].back().first += found->timestamp - e.timestamp;
+                markerHistory[e.name].rbegin()->first += found->timestamp - e.timestamp;
             }
         }
     }
@@ -79,11 +78,11 @@ void UpdateHistory(const Vector<Vector<TraceEvent>>& traces)
 
         if (history.size() < NON_FILTERED_COUNT)
         {
-            history.back().second = float32(history.back().first);
+            history.rbegin()->second = float32(history.crbegin()->first);
         }
         else
         {
-            history.back().second = (++history.rbegin())->second * 0.99f + history.back().first * 0.01f;
+            history.rbegin()->second = (history.crbegin() + 1)->second * 0.99f + history.crbegin()->first * 0.01f;
         }
     }
 }
@@ -146,27 +145,19 @@ void DrawHistory(const MarkerHistory& history, const FastName& name, const Rect2
 
 #define CHART_VALUE_HEIGHT(value) int32(value* valuescale)
 
-    MarkerHistory::const_iterator it = history.begin();
-    uint64 value = it->first;
-    float32 filtered = it->second;
+    MarkerHistory::const_iterator it = history.cbegin();
+    int32 px = 0;
+    int32 py = CHART_VALUE_HEIGHT(it->first);
+    int32 pfy = CHART_VALUE_HEIGHT(it->second);
     ++it;
 
-    int32 px = 0;
-    int32 py = CHART_VALUE_HEIGHT(value);
-    int32 pfy = CHART_VALUE_HEIGHT(filtered);
-
-    int32 index = 0;
-    MarkerHistory::const_iterator hend = history.end();
-    for (; it != hend; ++it)
+    int32 index = 1;
+    MarkerHistory::const_iterator hend = history.cend();
+    for (; it != hend; ++it, ++index)
     {
-        ++index;
-
-        value = it->first;
-        filtered = it->second;
-
         int32 x = int32(index * chartstep);
-        int32 y = CHART_VALUE_HEIGHT(value);
-        int32 fy = CHART_VALUE_HEIGHT(filtered);
+        int32 y = CHART_VALUE_HEIGHT(it->first);
+        int32 fy = CHART_VALUE_HEIGHT(it->second);
 
         DbgDraw::Line2D(chart0x + px, chart0y - py, chart0x + x, chart0y - y, CHART_COLOR);
         DbgDraw::Line2D(chart0x + px, chart0y - pfy, chart0x + x, chart0y - fy, CHART_FILTERED_COLOR);
@@ -175,12 +166,13 @@ void DrawHistory(const MarkerHistory& history, const FastName& name, const Rect2
         py = y;
         pfy = fy;
     }
+
 #undef CHART_VALUE_HEIGHT
 
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
     const int32 lastvalueIndent = (drawRect.dx - 2 * MARGIN) / DbgDraw::NormalCharW;
-    sprintf(strbuf, "%lld [%.1f] mcs", value, filtered);
+    sprintf(strbuf, "%lld [%.1f] mcs", history.crbegin()->first, history.crbegin()->second);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "%*s", lastvalueIndent, strbuf);
 
     sprintf(strbuf, "%d mcs", int32(ceilValue));
