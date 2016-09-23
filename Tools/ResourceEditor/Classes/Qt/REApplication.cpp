@@ -180,6 +180,7 @@ void REApplication::RunWindow()
     mainWindow->show();
     // Init themes after window has been shown to avoid font size changing in QTreeView for elided and full text
     Themes::InitFromQApplication();
+    SceneSignals::Instance()->ThemeChanged();
     exec();
 
     DAVA::SafeDelete(mainWindow);
