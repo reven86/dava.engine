@@ -11,7 +11,7 @@ class GameCore;
 class FullscreenTest : public BaseScreen
 {
 public:
-    FullscreenTest(GameCore* g);
+    FullscreenTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

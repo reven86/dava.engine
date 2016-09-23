@@ -17,7 +17,7 @@ class TextDelegateMulti;
 class MultilineTest : public BaseScreen, public DAVA::UITextFieldDelegate
 {
 public:
-    MultilineTest(GameCore* g);
+    MultilineTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

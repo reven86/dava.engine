@@ -2,8 +2,8 @@
 
 #include <numeric>
 
-FloatingPointExceptionTest::FloatingPointExceptionTest(GameCore* g)
-    : BaseScreen(g, "FloatingPointExceptionTest")
+FloatingPointExceptionTest::FloatingPointExceptionTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "FloatingPointExceptionTest")
 {
 }
 

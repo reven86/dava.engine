@@ -8,9 +8,9 @@
 
 using namespace DAVA;
 
-CoreV2Test::CoreV2Test(GameCore* g)
-    : BaseScreen(g, "CoreV2Test")
-    , engine(g->GetEngine())
+CoreV2Test::CoreV2Test(GameCore& gameCore)
+    : BaseScreen(gameCore, "CoreV2Test")
+    , engine(gameCore.GetEngine())
 {
     dispatchers.reserve(4);
     for (int i = 0; i < 4; ++i)
@@ -21,9 +21,6 @@ CoreV2Test::CoreV2Test(GameCore* g)
         }));
         dispatcherThreads.back()->Start();
     }
-
-    engine->windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
-    engine->windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
 }
 
 CoreV2Test::~CoreV2Test()
@@ -62,28 +59,17 @@ void CoreV2Test::LoadResources()
     buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
     buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
 
-    engine->SetCloseRequestHandler([this](Window* w) -> bool {
-        if (closeDisabled)
-        {
-            if (w == nullptr)
-            {
-                Logger::Debug("User is trying to close application. Deny");
-            }
-            else
-            {
-                Logger::Debug("User is trying to close window. Deny");
-            }
-        }
-        return !closeDisabled;
-    });
+    tokenOnWindowCreated = engine.windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
+    tokenOnWindowDestroyed = engine.windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
+    engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
 
     SafeRelease(font);
 }
 
 void CoreV2Test::UnloadResources()
 {
-    engine->windowCreated.Disconnect(tokenOnWindowCreated);
-    engine->windowDestroyed.Disconnect(tokenOnWindowDestroyed);
+    engine.windowCreated.Disconnect(tokenOnWindowCreated);
+    engine.windowDestroyed.Disconnect(tokenOnWindowDestroyed);
 
     SafeRelease(buttonQuit);
     SafeRelease(buttonCloseWindow);
@@ -101,7 +87,7 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonDispTrigger2000);
     SafeRelease(buttonDispTrigger3000);
 
-    engine->SetCloseRequestHandler(nullptr);
+    engine.SetCloseRequestHandler(nullptr);
 
     BaseScreen::UnloadResources();
 }
@@ -109,13 +95,13 @@ void CoreV2Test::UnloadResources()
 void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: sending quit...");
-    engine->Quit(4);
+    engine.Quit(4);
 }
 
 void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: closing primary window...");
-    engine->PrimaryWindow()->Close();
+    engine.PrimaryWindow()->Close();
 }
 
 void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -132,7 +118,7 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         w = 1024.0f;
         h = 768.0f;
     }
-    engine->PrimaryWindow()->Resize(w, h);
+    engine.PrimaryWindow()->Resize(w, h);
 }
 
 void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -153,13 +139,13 @@ void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     if (obj == buttonRunOnMain)
     {
-        engine->RunAsyncOnMainThread([]() {
+        engine.RunAsyncOnMainThread([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
     else if (obj == buttonRunOnUI)
     {
-        engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
+        engine.PrimaryWindow()->RunAsyncOnUIThread([]() {
             Logger::Error("******** KABOOM on UI thread********");
         });
     }
@@ -258,6 +244,22 @@ void CoreV2Test::DispatcherEventHandler(int type)
 void CoreV2Test::OnWindowCreated(DAVA::Window& w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowCreated");
+}
+
+bool CoreV2Test::OnWindowWantsToClose(DAVA::Window* w)
+{
+    if (closeDisabled)
+    {
+        if (w == nullptr)
+        {
+            Logger::Debug("User is trying to close application. Deny");
+        }
+        else
+        {
+            Logger::Debug("User is trying to close window. Deny");
+        }
+    }
+    return !closeDisabled;
 }
 
 void CoreV2Test::OnWindowDestroyed(DAVA::Window& w)

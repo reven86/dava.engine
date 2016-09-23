@@ -32,7 +32,7 @@ struct DLCCrashTest
 class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
-    DlcTest(GameCore* g);
+    DlcTest(GameCore& gameCore);
 
 protected:
     ~DlcTest() = default;

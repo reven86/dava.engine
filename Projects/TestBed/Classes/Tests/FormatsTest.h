@@ -10,7 +10,7 @@ class GameCore;
 class FormatsTest : public BaseScreen, public UIListDelegate
 {
 public:
-    FormatsTest(GameCore* g);
+    FormatsTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

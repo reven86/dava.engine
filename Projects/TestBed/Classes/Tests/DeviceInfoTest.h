@@ -6,7 +6,7 @@ class GameCore;
 class DeviceInfoTest : public BaseScreen
 {
 public:
-    DeviceInfoTest(GameCore* g);
+    DeviceInfoTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

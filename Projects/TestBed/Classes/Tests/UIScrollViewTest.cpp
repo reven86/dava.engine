@@ -2,8 +2,8 @@
 
 using namespace DAVA;
 
-UIScrollViewTest::UIScrollViewTest(GameCore* g)
-    : BaseScreen(g, "UIScrollViewTest")
+UIScrollViewTest::UIScrollViewTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "UIScrollViewTest")
 {
 }
 

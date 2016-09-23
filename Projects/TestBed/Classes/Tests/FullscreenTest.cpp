@@ -2,8 +2,8 @@
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest(GameCore* g)
-    : BaseScreen(g, "FullscreenTest")
+FullscreenTest::FullscreenTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "FullscreenTest")
 {
 }
 

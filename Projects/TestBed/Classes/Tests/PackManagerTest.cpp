@@ -9,9 +9,9 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(GameCore* g)
-    : BaseScreen(g, "PackManagerTest")
-    , engine(*g->GetEngine())
+PackManagerTest::PackManagerTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "PackManagerTest")
+    , engine(gameCore.GetEngine())
 {
 }
 

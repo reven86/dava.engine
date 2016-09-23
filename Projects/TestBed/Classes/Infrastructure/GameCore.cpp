@@ -23,7 +23,6 @@
 #include "Tests/ClipTest.h"
 #include "Tests/FloatingPointExceptionTest.h"
 #include "Tests/DlcTest.h"
-#include "Tests/CoreTest.h"
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
 #include "Tests/PackManagerTest.h"
@@ -85,36 +84,37 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     CheckDeviceInfoValid();
 
-    GameCore game(&e);
+    GameCore game(e);
     return e.Run();
 }
 
-GameCore::GameCore(Engine* e)
-    : engine(e)
+GameCore::GameCore(Engine& engine)
+    : engine(engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
-    engine->gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
-    engine->gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
-    engine->cleanup.Connect(this, &GameCore::OnEngineCleanup);
+    engine.gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
+    engine.gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
+    engine.cleanup.Connect(this, &GameCore::OnEngineCleanup);
 
-    engine->suspended.Connect(this, &GameCore::OnSuspended);
-    engine->resumed.Connect(this, &GameCore::OnResumed);
+    engine.suspended.Connect(this, &GameCore::OnSuspended);
+    engine.resumed.Connect(this, &GameCore::OnResumed);
 
-    if (engine->IsConsoleMode())
+    if (engine.IsConsoleMode())
     {
-        engine->update.Connect(this, &GameCore::OnUpdateConsole);
+        engine.update.Connect(this, &GameCore::OnUpdateConsole);
     }
     else
     {
-        engine->windowCreated.Connect(this, &GameCore::OnWindowCreated);
-        engine->windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
+        engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+        engine.windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
 
-        Window* w = engine->PrimaryWindow();
+        Window* w = engine.PrimaryWindow();
+        w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
     }
 
-    engine->GetContext()->uiControlSystem->SetClearColor(Color::Black);
+    engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
 }
 
 void GameCore::OnGameLoopStarted()
@@ -124,15 +124,12 @@ void GameCore::OnGameLoopStarted()
     InitNetwork();
     RunOnlyThisTest();
 
-    if (engine->IsConsoleMode())
+    if (engine.IsConsoleMode())
     {
-        engine->RunAsyncOnMainThread([]() {
+        engine.RunAsyncOnMainThread([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
-
-    Window* window = engine->PrimaryWindow();
-    window->SetTitle("[Testbed] The one who owns a minigun fears not");
 }
 
 void GameCore::OnGameLoopStopped()
@@ -191,7 +188,7 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
     if (frameCount >= 100)
     {
         Logger::Debug("****** quit");
-        engine->Quit();
+        engine.Quit();
     }
 }
 
@@ -207,30 +204,29 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
-    new CoreV2Test(this);
-    new DeviceInfoTest(this);
-    new DlcTest(this);
-    new UIScrollViewTest(this);
-    new NotificationScreen(this);
-    new SpeedLoadImagesTest(this);
-    new MultilineTest(this);
-    new StaticTextTest(this);
-    new StaticWebViewTest(this);
-    new MicroWebBrowserTest(this);
-    new UIMovieTest(this);
-    new FontTest(this);
-    new WebViewTest(this);
-    new FunctionSignalTest(this);
-    new KeyboardTest(this);
-    new FullscreenTest(this);
-    new UIBackgroundTest(this);
-    new ClipTest(this);
-    new GPUTest(this);
-    new CoreTest(this);
-    new FormatsTest(this);
-    new AssertTest(this);
-    new FloatingPointExceptionTest(this);
-    new PackManagerTest(this);
+    new CoreV2Test(*this);
+    new DeviceInfoTest(*this);
+    new DlcTest(*this);
+    new UIScrollViewTest(*this);
+    new NotificationScreen(*this);
+    new SpeedLoadImagesTest(*this);
+    new MultilineTest(*this);
+    new StaticTextTest(*this);
+    new StaticWebViewTest(*this);
+    new MicroWebBrowserTest(*this);
+    new UIMovieTest(*this);
+    new FontTest(*this);
+    new WebViewTest(*this);
+    new FunctionSignalTest(*this);
+    new KeyboardTest(*this);
+    new FullscreenTest(*this);
+    new UIBackgroundTest(*this);
+    new ClipTest(*this);
+    new GPUTest(*this);
+    new FormatsTest(*this);
+    new AssertTest(*this);
+    new FloatingPointExceptionTest(*this);
+    new PackManagerTest(*this);
     //$UNITTEST_CTOR
 }
 

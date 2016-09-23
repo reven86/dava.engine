@@ -33,9 +33,9 @@ class GameCore
     };
 
 public:
-    GameCore(DAVA::Engine* e);
+    GameCore(DAVA::Engine& engine);
 
-    DAVA::Engine* GetEngine() const;
+    DAVA::Engine& GetEngine() const;
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
@@ -64,7 +64,7 @@ private:
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    DAVA::Engine* engine = nullptr;
+    DAVA::Engine& engine;
 
     DAVA::String runOnlyThisTest;
 
@@ -91,7 +91,7 @@ private:
     bool loggerInUse = false;
 };
 
-inline DAVA::Engine* GameCore::GetEngine() const
+inline DAVA::Engine& GameCore::GetEngine() const
 {
     return engine;
 }

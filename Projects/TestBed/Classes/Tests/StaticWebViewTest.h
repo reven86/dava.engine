@@ -17,7 +17,7 @@ protected:
     ~StaticWebViewTest(){};
 
 public:
-    StaticWebViewTest(GameCore* g);
+    StaticWebViewTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

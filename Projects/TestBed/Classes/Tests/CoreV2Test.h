@@ -21,7 +21,7 @@ class GameCore;
 class CoreV2Test : public BaseScreen
 {
 public:
-    CoreV2Test(GameCore* g);
+    CoreV2Test(GameCore& gameCore);
     ~CoreV2Test();
 
 protected:
@@ -39,13 +39,14 @@ private:
     void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnWindowCreated(DAVA::Window& w);
+    bool OnWindowWantsToClose(DAVA::Window* w);
     void OnWindowDestroyed(DAVA::Window& w);
 
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
                                    void (CoreV2Test::*onClick)(DAVA::BaseObject*, void*, void*));
 
 private:
-    DAVA::Engine* engine = nullptr;
+    DAVA::Engine& engine;
 
     DAVA::UIButton* buttonQuit = nullptr;
     DAVA::UIButton* buttonCloseWindow = nullptr;

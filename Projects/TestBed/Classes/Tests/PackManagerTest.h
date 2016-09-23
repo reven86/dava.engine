@@ -8,7 +8,7 @@ class GameCore;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest(GameCore* g);
+    PackManagerTest(GameCore& gameCore);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;

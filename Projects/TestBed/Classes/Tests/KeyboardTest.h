@@ -7,7 +7,7 @@ class GameCore;
 class KeyboardTest : public BaseScreen
 {
 public:
-    KeyboardTest(GameCore* g);
+    KeyboardTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

@@ -12,7 +12,7 @@ protected:
     ~SpeedLoadImagesTest() override;
 
 public:
-    SpeedLoadImagesTest(GameCore* g);
+    SpeedLoadImagesTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

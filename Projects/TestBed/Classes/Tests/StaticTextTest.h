@@ -7,7 +7,7 @@ class GameCore;
 class StaticTextTest : public BaseScreen
 {
 public:
-    StaticTextTest(GameCore* g);
+    StaticTextTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;
