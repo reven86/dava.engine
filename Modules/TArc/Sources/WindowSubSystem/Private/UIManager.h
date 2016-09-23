@@ -18,7 +18,7 @@ public:
     {
     public:
         virtual bool WindowCloseRequested(const WindowKey& key) = 0;
-        virtual void WindowClosed(const WindowKey& key) = 0;
+        virtual void OnWindowClosed(const WindowKey& key) = 0;
     };
     UIManager(Delegate* delegate, PropertiesItem&& holder);
     ~UIManager();

@@ -14,6 +14,12 @@ namespace DAVA
 {
 #define NEW_RENDER 1
 
+namespace TextBlockDetail
+{
+static const float32 INVALID_WIDTH = -2.0f;
+static const Vector2 INVALID_VECTOR = Vector2(-1.0f, -1.0f);
+}
+
 bool TextBlock::isBiDiSupportEnabled = false;
 Set<TextBlock*> TextBlock::registredTextBlocks;
 Mutex TextBlock::textblockListMutex;
@@ -66,6 +72,7 @@ TextBlock::TextBlock()
     , scale(1.f, 1.f)
     , cacheFinalSize(0.f, 0.f)
     , cacheTextSize(0.f, 0.f)
+    , cachedLayoutData({ TextBlockDetail::INVALID_VECTOR, TextBlockDetail::INVALID_WIDTH })
     , renderSize(1.f)
     , cacheDx(0)
     , cacheDy(0)
@@ -120,6 +127,7 @@ TextBlock::TextBlock(const TextBlock& src)
     , cacheOy(src.cacheOy)
     , cacheSpriteOffset(src.cacheSpriteOffset)
     , cacheTextSize(src.cacheTextSize)
+    , cachedLayoutData(src.cachedLayoutData)
     , renderSize(src.renderSize)
     , multilineStrings(src.multilineStrings)
     , stringSizes(src.stringSizes)
@@ -349,14 +357,23 @@ bool TextBlock::IsVisualTextCroped()
 
 Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 {
+    using namespace TextBlockDetail;
+
     if (!font)
         return Vector2();
 
-    Vector2 result;
+    if (!NeedCalculateCacheParams() &&
+        cachedLayoutData.size != INVALID_VECTOR &&
+        cachedLayoutData.width == width)
+    {
+        return cachedLayoutData.size;
+    }
+
     if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == 0)
     {
         CalculateCacheParamsIfNeed();
-        result = cacheTextSize;
+        cachedLayoutData.size = cacheTextSize;
+        cachedLayoutData.width = width;
     }
     else
     {
@@ -369,7 +386,8 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         fittingType = 0;
         CalculateCacheParams();
 
-        result = cacheTextSize;
+        cachedLayoutData.size = cacheTextSize;
+        cachedLayoutData.width = width;
         rectSize = oldSize;
 
         requestedSize = oldRequestedSize;
@@ -377,7 +395,7 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
         CalculateCacheParams();
     }
 
-    return result;
+    return cachedLayoutData.size;
 }
 
 Sprite* TextBlock::GetSprite()
@@ -409,7 +427,6 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
-    needCalculateCacheParams = false;
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -980,6 +997,18 @@ void TextBlock::CalculateCacheParams()
     font->SetSize(originalFontSize);
 }
 
+void TextBlock::CalculateCacheParamsIfNeed()
+{
+    using namespace TextBlockDetail;
+    if (needCalculateCacheParams)
+    {
+        needCalculateCacheParams = false;
+        CalculateCacheParams();
+        cachedLayoutData.size = INVALID_VECTOR;
+        cachedLayoutData.width = INVALID_WIDTH;
+    }
+}
+
 void TextBlock::PreDraw()
 {
     CalculateCacheParamsIfNeed();
@@ -1047,15 +1076,5 @@ void TextBlock::CopyDataFrom(TextBlock* block)
     }
 
     SetText(block->GetText(), block->requestedSize);
-}
-
-DAVA::float32 TextBlock::GetFontSize()
-{
-    return renderSize;
-}
-
-void TextBlock::SetFontSize(float32 newSize)
-{
-    renderSize = newSize;
 }
 };

@@ -323,26 +323,30 @@ protected:
                                      {
                                          return window == w.second.window;
                                      });
-            DVASSERT(iter != windows.end());
 
-            const WindowKey& windowKey = iter->first;
-            if (managerDelegate->WindowCloseRequested(windowKey))
+            // When user close application on MacOS by pressing Cmd+Q, Qt somewhy sends CloseEvent twice.
+            // So "iter == windows.end()" means that we have already got one CloseEvent for this window
+            if (iter != windows.end())
             {
-                QMainWindow* mainWindow = iter->second.window;
+                const WindowKey& windowKey = iter->first;
+                if (managerDelegate->WindowCloseRequested(iter->first))
+                {
+                    QMainWindow* mainWindow = iter->second.window;
 
-                PropertiesItem ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
-                ph.Set(UIManagerDetail::stateKey, mainWindow->saveState());
-                ph.Set(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
+                    PropertiesItem ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
+                    ph.Set(UIManagerDetail::stateKey, mainWindow->saveState());
+                    ph.Set(UIManagerDetail::geometryKey, mainWindow->saveGeometry());
 
-                mainWindow->deleteLater();
-                managerDelegate->WindowClosed(windowKey);
-                windows.erase(iter);
+                    mainWindow->deleteLater();
+                    managerDelegate->OnWindowClosed(iter->first);
+                    windows.erase(iter);
+                }
+                else
+                {
+                    e->ignore();
+                }
+                return true;
             }
-            else
-            {
-                e->ignore();
-            }
-            return true;
         }
 
         return false;
