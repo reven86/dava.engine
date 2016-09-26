@@ -134,7 +134,6 @@ void WindowBackend::SetMouseVisibility(bool visible)
             ::SetCursor(NULL);
         }
     }
-    return true;
 }
 
 bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
@@ -160,7 +159,6 @@ bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
         {
             // check, only mouse release event in work rect tern on capture mode
             bool mclickInRect = true;
-            Vector2 virtualPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(Vector2(e.mclickEvent.x, e.mclickEvent.y));
             mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= window->GetWidth());
             mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= window->GetHeight());
             if (mclickInRect && hasFocus)
