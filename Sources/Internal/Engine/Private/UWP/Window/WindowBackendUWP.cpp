@@ -91,8 +91,8 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case UIDispatcherEvent::CHANGE_MOUSE_MODE
-    bridge->DoChangeMouseMode(e.mouseMode);
+    case UIDispatcherEvent::CHANGE_MOUSE_MODE:
+        bridge->DoChangeMouseMode(e.mouseMode);
     break;
     default:
         break;
