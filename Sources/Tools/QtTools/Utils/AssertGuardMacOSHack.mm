@@ -1,7 +1,8 @@
 #include "Base/Platform.h"
-#import "AssertGuardMacOSHack.h"
 
 #if defined(__DAVAENGINE_MACOS__)
+#import "AssertGuardMacOSHack.h"
+
 #import <objc/runtime.h>
 #import <AppKit/NSApplication.h>
 
