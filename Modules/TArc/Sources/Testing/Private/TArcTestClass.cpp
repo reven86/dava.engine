@@ -12,8 +12,6 @@ namespace DAVA
 {
 namespace TArc
 {
-const double TestClass::testTimeLimit = 10.0; // seconds
-
 namespace TArcTestClassDetail
 {
 class TestControllerModule : public ControllerModule
@@ -142,6 +140,10 @@ DataContext& TestClass::GetGlobalContext()
 DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
 {
     return core->CreateWrapper(type);
+}
+
+void TestClass::CreateTestedModules()
+{
 }
 
 } // namespace TArc

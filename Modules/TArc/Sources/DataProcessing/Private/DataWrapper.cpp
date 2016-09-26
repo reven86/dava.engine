@@ -173,7 +173,7 @@ void DataWrapper::Sync(bool notifyListeners)
     }
 }
 
-void DataWrapper::SyncWithEditor(Reflection&& etalonData)
+void DataWrapper::SyncWithEditor(const Reflection& etalonData)
 {
     DVASSERT(impl != nullptr);
     DVASSERT(HasData());

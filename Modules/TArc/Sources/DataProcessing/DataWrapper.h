@@ -41,7 +41,7 @@ private:
     void SetContext(DataContext* context);
 
     void Sync(bool notifyListeners);
-    void SyncWithEditor(Reflection&& etalonData);
+    void SyncWithEditor(const Reflection& etalonData);
     void NotifyListeners(bool sendNotify, const Set<String>& fields = Set<String>());
     Reflection GetData() const;
 

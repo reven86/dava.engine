@@ -10,7 +10,7 @@ namespace TArc
 {
 class TestClass : public UnitTests::TestClass
 {
-    static const double testTimeLimit;
+    constexpr static const double testTimeLimit = 10.0; // seconds
 
 public:
     ~TestClass();
@@ -19,9 +19,7 @@ public:
     void Update(float32 timeElapsed, const String& testName) override;
     bool TestComplete(const String& testName) const override;
 
-    virtual void CreateTestedModules()
-    {
-    }
+    virtual void CreateTestedModules();
 
 protected:
     OperationInvoker* GetMockInvoker();

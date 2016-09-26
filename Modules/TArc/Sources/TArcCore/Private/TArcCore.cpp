@@ -713,17 +713,17 @@ bool Core::HasControllerModule() const
 OperationInvoker* Core::GetMockInvoker()
 {
     return nullptr;
-    //GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
-    //return guiImpl != nullptr && guiImpl->HasControllerModule();
 }
 
 DataContext& Core::GetActiveContext()
 {
+    DVASSERT(impl);
     return impl->GetActiveContext();
 }
 
 DataContext& Core::GetGlobalContext()
 {
+    DVASSERT(impl);
     return impl->GetGlobalContext();
 }
 

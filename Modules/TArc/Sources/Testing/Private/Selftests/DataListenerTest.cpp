@@ -50,7 +50,6 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         secondWrapper.AddListener(&secondListener);
 
         bothWrapper = CreateWrapper(DAVA::ReflectedType::Get<DataListenerNode>());
-        ;
         bothWrapper.AddListener(&bothListener);
     }
 

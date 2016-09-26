@@ -78,6 +78,39 @@
         TEST_VERIFY(CalcSomethingUseful(1) == 42);
     }
  };
+ 
+ ==============================================================================================================
+ 
+ If you need make some additional initialization for custom BaseTestClass, you can implement custom factory for your test classes and use
+ DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY macro to declare it. Custom BaseTestClass should be derived from DAVA::UnitTests::TestClass.
+ Custom factory should be template class and derived from DAVA::UnitTests::TestClassFactoryBase.
+ 
+ class MyBaseTestClass : public DAVA::UnitTests::TestClass
+ {
+ public:
+ void Init() { do some additional initialization }
+ int CalcSomethingUseful(int param) { return 1 * 42; }
+ };
+ 
+ template <typename T>
+ class MyCustomTestClassFactory : public DAVA::UnitTests::TestClassFactoryBase
+ {
+ public:
+     TestClass* CreateTestClass() override
+     {
+        T* testClass = new T();
+        testClass->Init();
+        return testClass;
+     }
+ }
+ 
+ DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY(MyTestClass, MyBaseTestClass, MyCustomTestClassFactory)
+ {
+ DAVA_TEST(Test1)
+ {
+ TEST_VERIFY(CalcSomethingUseful(1) == 42);
+ }
+ };
 
  ==============================================================================================================
 

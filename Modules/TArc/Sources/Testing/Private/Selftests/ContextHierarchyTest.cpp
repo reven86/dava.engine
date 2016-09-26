@@ -50,65 +50,65 @@ TEST_VERIFY(GetActiveContext().HasData<GlobalContextData>() == true);
 }
 
 DAVA_TEST (GlobalContextAccessThroughActiveTest)
-{
-    try
     {
-        GlobalContextData& gd = GetGlobalContext().GetData<GlobalContextData>();
-        GlobalContextData& ad = GetActiveContext().GetData<GlobalContextData>();
-        TEST_VERIFY(&gd == &ad);
-    }
-    catch (std::runtime_error& e)
-    {
-        TEST_VERIFY_WITH_MESSAGE(false, e.what());
-    }
-}
-
-DAVA_TEST (GlobalContextDeleteThroughActiveTest)
-{
-    DataContext& globalContext = GetGlobalContext();
-    DataContext& activeContext = GetActiveContext();
-    TEST_VERIFY(globalContext.HasData<GlobalContextData>() == true);
-    activeContext.DeleteData<GlobalContextData>();
-    TEST_VERIFY(globalContext.HasData<GlobalContextData>() == false);
-    TEST_VERIFY(activeContext.HasData<GlobalContextData>() == false);
-}
-
-DAVA_TEST (BothContainsDataTest)
-{
-    DataContext& globalContext = GetGlobalContext();
-    globalContext.CreateData(std::make_unique<SharedData>());
-
-    DataContext& activeContext = GetActiveContext();
-    activeContext.CreateData(std::make_unique<SharedData>());
-
-    TEST_VERIFY(globalContext.HasData<SharedData>() == true);
-    TEST_VERIFY(activeContext.HasData<SharedData>() == true);
-
-    SharedData& gd = globalContext.GetData<SharedData>();
-    SharedData& ad = activeContext.GetData<SharedData>();
-    TEST_VERIFY(&gd != &ad);
-
-    activeContext.DeleteData<SharedData>();
-    TEST_VERIFY(globalContext.HasData<SharedData>() == true);
-    TEST_VERIFY(activeContext.HasData<SharedData>() == true);
-
-    globalContext.DeleteData<SharedData>();
-    TEST_VERIFY(globalContext.HasData<SharedData>() == false);
-    TEST_VERIFY(activeContext.HasData<SharedData>() == false);
-}
-
-DAVA_TEST (ExceptionOnGetDataTest)
-{
-    try
-    {
-        GetGlobalContext().GetData<SharedData>();
-    }
-    catch (std::runtime_error& e)
-    {
-        return;
+        try
+        {
+            GlobalContextData& gd = GetGlobalContext().GetData<GlobalContextData>();
+            GlobalContextData& ad = GetActiveContext().GetData<GlobalContextData>();
+            TEST_VERIFY(&gd == &ad);
+        }
+        catch (std::runtime_error& e)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, e.what());
+        }
     }
 
-    TEST_VERIFY_WITH_MESSAGE(false, "Exception was not throwed");
-}
-}
-;
+    DAVA_TEST (GlobalContextDeleteThroughActiveTest)
+    {
+        DataContext& globalContext = GetGlobalContext();
+        DataContext& activeContext = GetActiveContext();
+        TEST_VERIFY(globalContext.HasData<GlobalContextData>() == true);
+        activeContext.DeleteData<GlobalContextData>();
+        TEST_VERIFY(globalContext.HasData<GlobalContextData>() == false);
+        TEST_VERIFY(activeContext.HasData<GlobalContextData>() == false);
+    }
+
+    DAVA_TEST (BothContainsDataTest)
+    {
+        DataContext& globalContext = GetGlobalContext();
+        globalContext.CreateData(std::make_unique<SharedData>());
+
+        DataContext& activeContext = GetActiveContext();
+        activeContext.CreateData(std::make_unique<SharedData>());
+
+        TEST_VERIFY(globalContext.HasData<SharedData>() == true);
+        TEST_VERIFY(activeContext.HasData<SharedData>() == true);
+
+        SharedData& gd = globalContext.GetData<SharedData>();
+        SharedData& ad = activeContext.GetData<SharedData>();
+        TEST_VERIFY(&gd != &ad);
+
+        activeContext.DeleteData<SharedData>();
+        TEST_VERIFY(globalContext.HasData<SharedData>() == true);
+        TEST_VERIFY(activeContext.HasData<SharedData>() == true);
+
+        globalContext.DeleteData<SharedData>();
+        TEST_VERIFY(globalContext.HasData<SharedData>() == false);
+        TEST_VERIFY(activeContext.HasData<SharedData>() == false);
+    }
+
+    DAVA_TEST (ExceptionOnGetDataTest)
+    {
+        try
+        {
+            GetGlobalContext().GetData<SharedData>();
+        }
+        catch (std::runtime_error& e)
+        {
+            return;
+        }
+
+        TEST_VERIFY_WITH_MESSAGE(false, "Exception was not throwed");
+    }
+    }
+    ;
