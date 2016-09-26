@@ -50,12 +50,12 @@ def __build_android(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	install_dir_arm = os.path.join(working_directory_path, 'gen/install_arm')
 	configure_args = ['shared', 'no-whirlpool', 'no-asm', 'no-cast', 'no-idea', 'no-camellia', 'no-comp', 'no-hw', 'no-engine']
+
+	install_dir_arm = os.path.join(working_directory_path, 'gen/install_arm')
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, configure_exec_name='config', env=__get_android_env_arm(source_folder_path, root_project_path))
 
 	install_dir_x86 = os.path.join(working_directory_path, 'gen/install_x86')
-	configure_args = ['shared', 'no-whirlpool', 'no-asm', 'no-cast', 'no-idea', 'no-camellia', 'no-comp', 'no-hw', 'no-engine']
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_x86, configure_exec_name='config', env=__get_android_env_x86(source_folder_path, root_project_path))
 
 	libssl_path_android_arm = os.path.join(install_dir_arm, 'lib/libssl.a')

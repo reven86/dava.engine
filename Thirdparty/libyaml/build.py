@@ -56,6 +56,8 @@ def __build_win32(working_directory_path, root_project_path):
 		'libyaml_wind.lib', 'libyaml_win.lib',
 		'libyaml_wind.lib', 'libyaml_win.lib')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_win10(working_directory_path, root_project_path):
@@ -71,6 +73,8 @@ def __build_win10(working_directory_path, root_project_path):
 		'libyaml_wind.lib', 'libyaml_win.lib',
 		['-DWIN10=1'])
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_macos(working_directory_path, root_project_path):
@@ -82,6 +86,8 @@ def __build_macos(working_directory_path, root_project_path):
 		'yaml.xcodeproj', 'yaml',
 		'libyaml.a',
 		'libyaml_macos.a')
+
+	copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -95,6 +101,8 @@ def __build_ios(working_directory_path, root_project_path):
 		'libyaml.a',
 		'libyaml_ios.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_android(working_directory_path, root_project_path):
@@ -106,4 +114,10 @@ def __build_android(working_directory_path, root_project_path):
 		'libyaml.a',
 		'libyaml.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
+
+def copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/yaml')
+	build_utils.copy_files(source_folder_path, include_path, 'include/*.h')

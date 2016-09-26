@@ -58,6 +58,8 @@ def __build_win32(working_directory_path, root_project_path):
 		'lua_wind.lib', 'lua_win.lib',
 		'lua_wind.lib', 'lua_win.lib')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_win10(working_directory_path, root_project_path):
@@ -72,6 +74,8 @@ def __build_win10(working_directory_path, root_project_path):
 		'lua_wind.lib', 'lua_win.lib',
 		'lua_wind.lib', 'lua_win.lib')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_macos(working_directory_path, root_project_path):
@@ -83,6 +87,8 @@ def __build_macos(working_directory_path, root_project_path):
 		'lua.xcodeproj', 'lua',
 		'liblua.a',
 		'liblua_macos.a')
+
+	copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -96,6 +102,8 @@ def __build_ios(working_directory_path, root_project_path):
 		'liblua.a',
 		'liblua_ios.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_android(working_directory_path, root_project_path):
@@ -107,4 +115,10 @@ def __build_android(working_directory_path, root_project_path):
 		'liblua.a',
 		'liblua.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
+
+def copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/lua/include')
+	build_utils.copy_files(source_folder_path, include_path, 'src/*.h')

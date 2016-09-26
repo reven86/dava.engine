@@ -115,6 +115,23 @@ def clear_files(dir, wildcard):
 	print "Deleting %s in %s" % (wildcard, dir)
 	map(os.remove, glob.glob(wildcard))
 
+def copy_folder_recursive(src, dest, ignore=None):
+    if os.path.isdir(src):
+        if not os.path.isdir(dest):
+            os.makedirs(dest)
+        files = os.listdir(src)
+        if ignore is not None:
+            ignored = ignore(src, files)
+        else:
+            ignored = set()
+        for f in files:
+            if f not in ignored:
+                copy_folder_recursive(os.path.join(src, f), 
+                                    os.path.join(dest, f), 
+                                    ignore)
+    else:
+        shutil.copyfile(src, dest)
+
 def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args = []):
 	if not os.path.exists(output_folder_path):
 		os.makedirs(output_folder_path)

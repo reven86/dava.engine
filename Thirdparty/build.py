@@ -124,7 +124,7 @@ if __name__ == "__main__":
 	parser.add_argument('-sd', '--skip-dependencies', action='store_true', help='build without first building dependencies')
 	parser.add_argument('-i', '--info', action='store_true', help='only show information about selected libraries (all if none was specified)')
 	parser.add_argument('-v', '--verbose', action='store_true', help='print additional logs')
-	parser.add_argument('--no-clean', action='store_true', help='do not delete temporary output folder after script invokation')
+	parser.add_argument('--no-clean', action='store_true', help='do not delete temporary output folder after script invocation')
 	args = parser.parse_args()
 
 	# Prepare and verify data

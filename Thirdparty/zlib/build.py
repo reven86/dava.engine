@@ -47,6 +47,8 @@ def __build_win32(working_directory_path, root_project_path):
 		'zlib.lib', 'zlib.lib',
 		'z.lib', 'z.lib')
 
+	copy_headers(source_folder_path, build_x86_folder, root_project_path)
+
 	# Copy created configuration header to root folder
 	# Required to use source folder as include path
 	# TODO: get rid of this and copy to Libs/Include directly
@@ -65,9 +67,16 @@ def __build_win10(working_directory_path, root_project_path):
 		'zlib.lib', 'zlib.lib',
 		'zlib.lib', 'zlib.lib')
 
+	copy_headers(source_folder_path, build_x86_folder, root_project_path)
+	
 	# Copy created configuration header to root folder
 	# Required to use source folder as include path
 	# TODO: get rid of this and copy to Libs/Include directly
 	shutil.copyfile(os.path.join(build_x86_folder, 'zconf.h'), os.path.join(source_folder_path, 'zconf.h'))
 
 	return True
+
+def copy_headers(source_folder_path, build_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/libpng')
+	build_utils.copy_files(source_folder_path, include_path, 'zlib.h')
+	build_utils.copy_files(build_folder_path, include_path, 'zconf.h')

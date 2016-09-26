@@ -73,6 +73,8 @@ def __build_win32(working_directory_path, root_project_path):
 		'pnglib_wind.lib', 'pnglib_win.lib',
 		cmake_flags)
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_win10(working_directory_path, root_project_path):
@@ -90,6 +92,8 @@ def __build_win10(working_directory_path, root_project_path):
 		'pnglib_wind.lib', 'pnglib_win.lib',
 		cmake_flags)
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_macos(working_directory_path, root_project_path):
@@ -101,6 +105,8 @@ def __build_macos(working_directory_path, root_project_path):
 		'libpng.xcodeproj', 'png_static',
 		'libpng16.a',
 		'libpng_macos.a')
+
+	copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -114,6 +120,8 @@ def __build_ios(working_directory_path, root_project_path):
 		'libpng16.a',
 		'libpng_ios.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
 
 def __build_android(working_directory_path, root_project_path):
@@ -125,4 +133,10 @@ def __build_android(working_directory_path, root_project_path):
 		'libpng16.a',
 		'libpng.a')
 
+	copy_headers(source_folder_path, root_project_path)
+
 	return True
+
+def copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/libpng')
+	build_utils.copy_files(source_folder_path, include_path, '*.h')
