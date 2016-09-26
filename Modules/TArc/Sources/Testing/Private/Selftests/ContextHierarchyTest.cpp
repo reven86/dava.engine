@@ -32,24 +32,24 @@ public:
 
 DAVA_TARC_TESTCLASS(ContextHierarchyTest)
 {
-  BEGIN_FILES_COVERED_BY_TESTS()
-  FIND_FILES_IN_TARGET(TArc)
-  DECLARE_COVERED_FILES("DataContext.cpp")
-  DECLARE_COVERED_FILES("TArcCore.cpp")
-  END_FILES_COVERED_BY_TESTS()
+    BEGIN_FILES_COVERED_BY_TESTS()
+    FIND_FILES_IN_TARGET(TArc)
+    DECLARE_COVERED_FILES("DataContext.cpp")
+    DECLARE_COVERED_FILES("TArcCore.cpp")
+    END_FILES_COVERED_BY_TESTS();
 
-  DAVA_TEST (GlobalContexHasDataTest)
-  {
-  DAVA::TArc::DataContext& ctx = GetGlobalContext();
-TEST_VERIFY(ctx.HasData<GlobalContextData>() == false);
-TEST_VERIFY(ctx.HasData<SharedData>() == false);
+    DAVA_TEST (GlobalContexHasDataTest)
+    {
+        DAVA::TArc::DataContext& ctx = GetGlobalContext();
+        TEST_VERIFY(ctx.HasData<GlobalContextData>() == false);
+        TEST_VERIFY(ctx.HasData<SharedData>() == false);
 
-ctx.CreateData(std::make_unique<GlobalContextData>());
-TEST_VERIFY(ctx.HasData<GlobalContextData>() == true);
-TEST_VERIFY(GetActiveContext().HasData<GlobalContextData>() == true);
-}
+        ctx.CreateData(std::make_unique<GlobalContextData>());
+        TEST_VERIFY(ctx.HasData<GlobalContextData>() == true);
+        TEST_VERIFY(GetActiveContext().HasData<GlobalContextData>() == true);
+    }
 
-DAVA_TEST (GlobalContextAccessThroughActiveTest)
+    DAVA_TEST (GlobalContextAccessThroughActiveTest)
     {
         try
         {
@@ -110,5 +110,5 @@ DAVA_TEST (GlobalContextAccessThroughActiveTest)
 
         TEST_VERIFY_WITH_MESSAGE(false, "Exception was not throwed");
     }
-    }
-    ;
+}
+;
