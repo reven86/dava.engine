@@ -4,6 +4,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
+#include "Engine/EngineTypes.h"
 
 namespace DAVA
 {
@@ -18,6 +19,7 @@ struct UIDispatcherEvent final
         CREATE_WINDOW,
         CLOSE_WINDOW,
         FUNCTOR,
+        CHANGE_MOUSE_MODE,
     };
 
     struct ResizeEvent
@@ -31,6 +33,7 @@ struct UIDispatcherEvent final
     union
     {
         ResizeEvent resizeEvent;
+        eMouseMode mouseMode;
     };
 };
 

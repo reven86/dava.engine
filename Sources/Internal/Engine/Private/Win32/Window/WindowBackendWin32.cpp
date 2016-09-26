@@ -109,16 +109,21 @@ void WindowBackend::TriggerPlatformEvents()
 
 void WindowBackend::SetCursorInCenter()
 {
-    RECT wndRect;
-    ::GetWindowRect(hwnd, &wndRect);
-    int centerX = static_cast<int>((wndRect.left + wndRect.right) >> 1);
-    int centerY = static_cast<int>((wndRect.bottom + wndRect.top) >> 1);
-    ::SetCursorPos(centerX, centerY);
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    int clientCenterX = static_cast<int>((clientRect.left + clientRect.right) >> 1);
+    int clientCenterY = static_cast<int>((clientRect.bottom + clientRect.top) >> 1);
+    POINT point;
+    point.x = clientCenterX;
+    point.y = clientCenterY;
+    ::ClientToScreen(hwnd, &point);
+    ::SetCursorPos(point.x, point.y);
     ::SetCursor(NULL);
 }
 
 void WindowBackend::SetMouseVisibility(bool visible)
 {
+    return;
     if (mouseVisibled != visible)
     {
         mouseVisibled = visible;
@@ -182,43 +187,17 @@ eMouseMode WindowBackend::GetMouseMode() const
     return nativeMouseMode;
 }
 
-void WindowBackend::SetMouseMode(eMouseMode newMode)
+void WindowBackend::SetMouseMode(eMouseMode mode)
 {
-    nativeMouseMode = newMode;
-    deferredMouseMode = false;
-    switch (newMode)
+    if (nativeMouseMode == mode)
     {
-    case DAVA::eMouseMode::FRAME:
-        //not implemented
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
-        break;
-    case DAVA::eMouseMode::PINNING:
-    {
-        if (hasFocus && !focusChanged)
-        {
-            SetMouseCaptured(true);
-            SetMouseVisibility(false);
-        }
-        else
-        {
-            deferredMouseMode = true;
-        }
-        break;
+        return;
     }
-    case DAVA::eMouseMode::OFF:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
-        break;
-    }
-    case DAVA::eMouseMode::HIDE:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(false);
-        break;
-    }
-    }
+    nativeMouseMode = mode;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
+    e.mouseMode = mode;
+    platformDispatcher.PostEvent(e);
 }
 
 void WindowBackend::SetMouseCaptured(bool capture)
@@ -228,7 +207,7 @@ void WindowBackend::SetMouseCaptured(bool capture)
         mouseCaptured = capture;
         if (mouseCaptured)
         {
-            SetMouseVisibility(false);
+            //SetMouseVisibility(false);
             POINT p;
             ::GetCursorPos(&p);
             lastCursorPosition.x = p.x;
@@ -258,6 +237,44 @@ void WindowBackend::DoCloseWindow()
     ::DestroyWindow(hwnd);
 }
 
+void WindowBackend::DoChangeMouseMode(eMouseMode mode)
+{
+    deferredMouseMode = false;
+    switch (mode)
+    {
+    case DAVA::eMouseMode::FRAME:
+        //not implemented
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    case DAVA::eMouseMode::PINNING:
+    {
+        if (hasFocus && !focusChanged)
+        {
+            SetMouseCaptured(true);
+            SetMouseVisibility(false);
+        }
+        else
+        {
+            deferredMouseMode = true;
+        }
+        break;
+    }
+    case DAVA::eMouseMode::DEFAULT:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    }
+    case DAVA::eMouseMode::HIDE:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(false);
+        break;
+    }
+    }
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
@@ -280,6 +297,8 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    case UIDispatcherEvent::CHANGE_MOUSE_MODE:
+        DoChangeMouseMode(e.mouseMode);
     default:
         break;
     }
@@ -335,13 +354,13 @@ LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
 
 LRESULT WindowBackend::OnMouseHoverEvent()
 {
-    mouseTracking = FALSE; // tracking now cancelled
+    mouseTracking = false; // tracking now cancelled
     // set up leave tracking
     TRACKMOUSEEVENT tme;
     tme.cbSize = sizeof(TRACKMOUSEEVENT);
     tme.dwFlags = TME_LEAVE;
     tme.hwndTrack = hwnd;
-    mouseTracking = ::TrackMouseEvent(&tme);
+    mouseTracking = (::TrackMouseEvent(&tme) != 0);
 
     ::SetCursor(NULL);
     return 0;
@@ -349,7 +368,7 @@ LRESULT WindowBackend::OnMouseHoverEvent()
 
 LRESULT WindowBackend::OnMouseLeaveEvent()
 {
-    mouseTracking = FALSE; // tracking now cancelled
+    mouseTracking = false; // tracking now cancelled
     return 0;
 }
 
@@ -363,7 +382,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         tme.dwFlags = TME_HOVER | TME_LEAVE;
         tme.hwndTrack = hwnd;
         tme.dwHoverTime = HOVER_DEFAULT;
-        mouseTracking = ::TrackMouseEvent(&tme);
+        mouseTracking = (::TrackMouseEvent(&tme) != 0);
     }
 
     if (mouseCaptured)
@@ -376,12 +395,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         int shiftY = y - clientCenterY;
         if (shiftX != 0 || shiftY != 0)
         {
-            POINT cursorInScreen;
-            ::GetCursorPos(&cursorInScreen);
-            cursorInScreen.x -= shiftX;
-            cursorInScreen.y -= shiftY;
-            ::SetCursorPos(cursorInScreen.x, cursorInScreen.y);
-            ::SetCursor(NULL);
+            SetCursorInCenter();
             x = shiftX;
             y = shiftY;
         }

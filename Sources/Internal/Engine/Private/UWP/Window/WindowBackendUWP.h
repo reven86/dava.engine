@@ -8,7 +8,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Engine/Public/EngineTypes.h"
+#include "Engine/EngineTypes.h"
 
 #include "Functional/Function.h"
 
@@ -59,6 +59,7 @@ private:
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
+    eMouseMode mouseMode = eMouseMode::DEFAULT;
 };
 
 inline MainDispatcher* WindowBackend::GetDispatcher() const

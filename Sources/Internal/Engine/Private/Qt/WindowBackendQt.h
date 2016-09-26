@@ -45,6 +45,7 @@ public:
     void InitCustomRenderParams(rhi::InitParam& params);
 
     void SetMouseMode(eMouseMode mode);
+    eMouseMode GetMouseMode() const;
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);

@@ -241,6 +241,9 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    case UIDispatcherEvent::CHANGE_MOUSE_MODE
+    // not implemented
+    break;
     default:
         break;
     }
@@ -487,6 +490,13 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 
 void WindowBackend::SetMouseMode(eMouseMode mode)
 {
+    // not implemented
+}
+
+eMouseMode WindowBackend::GetMouseMode() const
+{
+    // not implemented
+    return eMouseMode::DEFAULT;
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

@@ -101,56 +101,43 @@ void WindowNativeBridge::DoCloseWindow()
     UninstallEventHandlers();
 }
 
-void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
+void WindowNativeBridge::DoChangeMouseMode(eMouseMode mode)
 {
-    if (mouseMode == newMode)
+    nativeMouseMode = mode;
+    deferredMouseMode = false;
+    switch (mode)
     {
-        return;
-    }
-    mouseMode = newMode;
-    auto task = [this, newMode]() {
-        nativeMouseMode = newMode;
-        deferredMouseMode = false;
-        switch (newMode)
+    case DAVA::eMouseMode::FRAME:
+        //not implemented
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    case DAVA::eMouseMode::PINNING:
+    {
+        if (hasFocus && !focusChanged)
         {
-        case DAVA::eMouseMode::FRAME:
-            //not implemented
-            SetMouseCaptured(false);
-            SetMouseVisibility(true);
-            break;
-        case DAVA::eMouseMode::PINNING:
-        {
-            if (hasFocus && !focusChanged)
-            {
-                SetMouseCaptured(true);
-                SetMouseVisibility(false);
-            }
-            else
-            {
-                deferredMouseMode = true;
-            }
-            break;
-        }
-        case DAVA::eMouseMode::OFF:
-        {
-            SetMouseCaptured(false);
-            SetMouseVisibility(true);
-            break;
-        }
-        case DAVA::eMouseMode::HIDE:
-        {
-            SetMouseCaptured(false);
+            SetMouseCaptured(true);
             SetMouseVisibility(false);
-            break;
         }
+        else
+        {
+            deferredMouseMode = true;
         }
-    };
-    uwpWindow->RunAsyncOnUIThread(task);
-}
-
-void WindowNativeBridge::GetMouseMode() const
-{
-    return mouseMode;
+        break;
+    }
+    case DAVA::eMouseMode::DEFAULT:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(true);
+        break;
+    }
+    case DAVA::eMouseMode::HIDE:
+    {
+        SetMouseCaptured(false);
+        SetMouseVisibility(false);
+        break;
+    }
+    }
 }
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)
@@ -480,18 +467,18 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     {
         return;
     }
-    MainDispatcherEvent e;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
-    e.type = MainDispatcherEvent::MOUSE_MOVE;
-    e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
-    e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
     // after enabled Pinning mode, skip move events, large x, y delta
     if (skipMouseMoveEvents)
     {
         skipMouseMoveEvents--;
         return;
     }
+    MainDispatcherEvent e;
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.window = uwpWindow->GetWindow();
+    e.type = MainDispatcherEvent::MOUSE_MOVE;
+    e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
+    e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
     if (!DeferredMouseMode(e))
     {
         uwpWindow->GetDispatcher()->PostEvent(e);
@@ -598,7 +585,6 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
-    //     tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
 }
 
 void WindowNativeBridge::UninstallEventHandlers()

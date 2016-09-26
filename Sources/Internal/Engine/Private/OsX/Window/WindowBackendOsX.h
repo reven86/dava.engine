@@ -63,6 +63,7 @@ private:
 
     bool isMinimized = false;
     size_t hideUnhideSignalId = 0;
+    eMouseMode mouseMode = eMouseMode::DEFAULT;
 
     // Friends
     friend class PlatformCore;

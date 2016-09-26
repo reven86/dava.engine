@@ -91,11 +91,16 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
 
 void WindowBackend::SetMouseMode(eMouseMode mode)
 {
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
+    e.mouseMode = mode;
+    platformDispatcher.PostEvent(e);
 }
 
 eMouseMode WindowBackend::GetMouseMode() const
 {
-    return eMouseMode::OFF;
+    // not implemented
+    return eMouseMode::DEFAULT;
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -104,6 +109,11 @@ void WindowBackend::DoResizeWindow(float32 width, float32 height)
 
 void WindowBackend::DoCloseWindow()
 {
+}
+
+void WindowBackend::DoChangeMouseMode(eMouseMode mode)
+{
+    // not implemented
 }
 
 void WindowBackend::EventHandler(const UIDispatcherEvent& e)
@@ -116,6 +126,8 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
+        break;
+    case UIDispatcherEvent::CHANGE_MOUSE_MODE:
         break;
     default:
         break;

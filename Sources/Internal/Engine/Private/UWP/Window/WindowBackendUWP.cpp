@@ -91,6 +91,9 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
+    case UIDispatcherEvent::CHANGE_MOUSE_MODE
+    bridge->DoChangeMouseMode(e.mouseMode);
+    break;
     default:
         break;
     }
@@ -98,12 +101,20 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
 
 void WindowBackend::SetMouseMode(eMouseMode mode)
 {
-    bridge->SetMouseMode(mode);
+    if (mouseMode == mode)
+    {
+        return;
+    }
+    mouseMode = mode;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
+    e.mouseMode = mode;
+    platformDispatcher.PostEvent(e);
 }
 
-eMouseMode GetMouseMode() const
+eMouseMode WindowBackend::GetMouseMode() const
 {
-    return bridge->GetMouseMode();
+    return mouseMode;
 }
 
 } // namespace Private

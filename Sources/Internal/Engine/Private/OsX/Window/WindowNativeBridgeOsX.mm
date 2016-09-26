@@ -315,12 +315,8 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
     }
 }
 
-void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
+void WindowNativeBridge::DoChangeMouseMode(eMouseMode newMode)
 {
-    if (nativeMouseMode == newMode)
-    {
-        return;
-    }
     nativeMouseMode = newMode;
     deferredMouseMode = false;
     switch (newMode)
@@ -343,7 +339,7 @@ void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
         }
         break;
     }
-    case DAVA::eMouseMode::OFF:
+    case DAVA::eMouseMode::DEFAULT:
     {
         SetMouseCaptured(false);
         SetMouseVisibility(true);
@@ -356,11 +352,6 @@ void WindowNativeBridge::SetMouseMode(eMouseMode newMode)
         break;
     }
     }
-}
-
-eMouseMode WindowNativeBridge::GetMouseMode()
-{
-    return nativeMouseMode;
 }
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)

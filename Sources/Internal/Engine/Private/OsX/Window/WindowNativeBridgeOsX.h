@@ -38,6 +38,7 @@ struct WindowNativeBridge final
     bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoChangeMouseMode(eMouseMode mode);
 
     void TriggerPlatformEvents();
 
@@ -60,8 +61,6 @@ struct WindowNativeBridge final
     void KeyEvent(NSEvent* theEvent);
     void MouseEntered(NSEvent* theEvent);
     void MouseExited(NSEvent* theEvent);
-    void SetMouseMode(eMouseMode mode);
-    eMouseMode GetMouseMode() const;
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +87,7 @@ private:
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;
-    eMouseMode nativeMouseMode = eMouseMode::OFF;
+    eMouseMode nativeMouseMode = eMouseMode::DEFAULT;
     bool hasFocus = false;
     bool focusChanged = false;
     // If mouse pointer was outside window rectangle when enabling pinning mode then

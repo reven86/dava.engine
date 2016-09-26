@@ -357,7 +357,7 @@ void FullscreenTest::UpdateMode()
     eMouseMode captureMode = primWind->GetMouseMode();
     switch (captureMode)
     {
-    case eMouseMode::OFF:
+    case eMouseMode::DEFAULT:
         pinningText->SetText(L"Mouse Mode mode: OFF");
         pinningMousePosText->SetVisibilityFlag(false);
         break;
@@ -402,14 +402,14 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
 #else
     Window* primWind = Engine::Instance()->PrimaryWindow();
     eMouseMode captureMode = primWind->GetMouseMode();
-    if ((primWind->GetMouseMode() != eMouseMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    if ((primWind->GetMouseMode() != eMouseMode::DEFAULT) && (currentInput->device == UIEvent::Device::MOUSE))
     {
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                primWind->SetMouseMode(eMouseMode::OFF);
+                primWind->SetMouseMode(eMouseMode::DEFAULT);
             }
             break;
 

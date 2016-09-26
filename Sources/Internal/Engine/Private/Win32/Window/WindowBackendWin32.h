@@ -57,7 +57,7 @@ private:
     void SetMouseVisibility(bool visible);
     void SetCursorInCenter();
     Point2i lastCursorPosition;
-    eMouseMode nativeMouseMode = eMouseMode::OFF;
+    eMouseMode nativeMouseMode = eMouseMode::DEFAULT;
     bool mouseCaptured = false;
     bool mouseVisibled = true;
     bool deferredMouseMode = false;
@@ -66,6 +66,7 @@ private:
 
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoChangeMouseMode(eMouseMode mode);
 
     void AdjustWindowSize(int32* w, int32* h);
 
@@ -94,7 +95,7 @@ private:
     Window* window = nullptr;
 
     bool isMinimized = false;
-    BOOL mouseTracking = FALSE;
+    bool mouseTracking = false;
 
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
