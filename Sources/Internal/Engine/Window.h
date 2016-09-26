@@ -65,7 +65,6 @@ public:
     /// SetMouseMode - turn on mouse mode, if could be set, on WinUWP it will be performed on UI thread
     /// GetMouseMode - gets current mode
     ///
-    /// \return DAVA::Vector of char pointers to command line arguments.
     void SetMouseMode(eMouseMode mode);
     eMouseMode GetMouseMode() const;
 

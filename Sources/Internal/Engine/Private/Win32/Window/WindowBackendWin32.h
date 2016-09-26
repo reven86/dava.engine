@@ -93,7 +93,7 @@ private:
     Window* window = nullptr;
 
     bool isMinimized = false;
-    bool mouseTracking = false;
+    BOOL mouseTracking = FALSE;
 
     UIDispatcher platformDispatcher;
     std::unique_ptr<WindowNativeService> nativeService;
