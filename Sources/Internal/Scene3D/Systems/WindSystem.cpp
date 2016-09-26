@@ -9,7 +9,7 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
@@ -70,7 +70,7 @@ void WindSystem::RemoveEntity(Entity* entity)
 
 void WindSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WindSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE("WindSystem::Process")
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;

@@ -6,7 +6,7 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 
 #include "Render/Renderer.h"
@@ -110,6 +110,8 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::PrepareVisibilityArrays")
+
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
@@ -149,6 +151,8 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
 
 void RenderPass::DrawLayers(Camera* camera)
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderPass::DrawLayers")
+
     ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
@@ -371,18 +375,14 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
     Vector4 clip(0, 0, 1, -1);*/
     SetupCameraParams(mainCamera, drawCamera);
 
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
     PrepareVisibilityArrays(mainCamera, renderSystem);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "PrepareVisibilityArrays")
 
     passConfig.PerfQueryIndex0 = PERFQUERY__MAIN_PASS_T0;
     passConfig.PerfQueryIndex1 = PERFQUERY__MAIN_PASS_T1;
 
     if (BeginRenderPass())
     {
-        TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
         DrawLayers(mainCamera);
-        TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "DrawLayers")
 
         if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
             PrepareReflectionRefractionTextures(renderSystem);
