@@ -57,7 +57,7 @@ def __build_win32(working_directory_path, root_project_path):
 		'freetype246MT_D.lib', 'freetype246MT.lib',
 		'freetype.lib', 'freetype.lib')
 
-	copy_headers(source_folder_path, root_project_path)
+	__copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -73,7 +73,7 @@ def __build_win10(working_directory_path, root_project_path):
 		'freetype.lib', 'freetype.lib',
 		'freetype.lib', 'freetype.lib')
 
-	copy_headers(source_folder_path, root_project_path)
+	__copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -87,7 +87,7 @@ def __build_macos(working_directory_path, root_project_path):
 		'libfreetype.a',
 		'libfreetype_macos.a')
 
-	copy_headers(source_folder_path, root_project_path)
+	__copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -101,7 +101,7 @@ def __build_ios(working_directory_path, root_project_path):
 		'libfreetype.a',
 		'libfreetype_ios.a')
 
-	copy_headers(source_folder_path, root_project_path)
+	__copy_headers(source_folder_path, root_project_path)
 
 	return True
 
@@ -114,10 +114,10 @@ def __build_android(working_directory_path, root_project_path):
 		'libfreetype.a',
 		'libfreetype.a')
 
-	copy_headers(source_folder_path, root_project_path)
+	__copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def copy_headers(source_folder_path, root_project_path):
+def __copy_headers(source_folder_path, root_project_path):
 	include_path = os.path.join(root_project_path, 'Libs/include/freetype')
 	build_utils.copy_folder_recursive(os.path.join(source_folder_path, 'include/freetype'), include_path)

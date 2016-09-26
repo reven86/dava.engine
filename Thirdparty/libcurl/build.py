@@ -100,10 +100,10 @@ def __build_android(working_directory_path, root_project_path):
 	configure_args = [ '--host=i686-linux-android', '--disable-shared', '--with-ssl=' + os.path.abspath(os.path.join(working_directory_path, '../openssl/gen/install_x86/')) ]
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, env)
 
-	copy_headers(source_folder_path, root_project_path, 'Others')
+	__copy_headers(source_folder_path, root_project_path, 'Others')
 
 	return True
 
-def copy_headers(source_folder_path, root_project_path, target_folder):
+def __copy_headers(source_folder_path, root_project_path, target_folder):
 	include_path = os.path.join(root_project_path, os.path.join('Libs/include/curl', target_folder))
 	build_utils.copy_files(os.path.join(source_folder_path, 'include/curl'), include_path, '*.h')
