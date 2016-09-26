@@ -101,7 +101,6 @@ def get_dependencies_for_library(builder_module, targets):
 
 def print_info(library, targets):
 	builder = import_library_builder_module(library)
-
 	download_url = builder.get_download_url()
 	supported_targets = { 'win32' : builder.get_supported_targets_for_build_platform('win32'), 'darwin' : builder.get_supported_targets_for_build_platform('darwin') }
 	supported_build_platforms = builder.get_supported_build_platforms()

@@ -262,6 +262,14 @@ def __run_process_iter(args, process_cwd='.', environment=None):
 	if return_code != 0:
 		raise subprocess.CalledProcessError(return_code, args)
 
+def android_ndk_make_toolchain(root_project_path, arch, platform, system, install_dir):
+	android_ndk_root = get_android_ndk_folder_path(root_project_path)
+
+	exec_path = os.path.join(android_ndk_root, 'build/tools')
+
+	cmd = ['sh', 'make-standalone-toolchain.sh', '--arch=' + arch, '--platform=' + platform, '--system=' + system, '--install-dir=' + install_dir, '--ndk-dir=' + android_ndk_root]
+	run_process(cmd, process_cwd=exec_path)
+
 # Default builders
 
 def build_and_copy_libraries_win32_cmake(
@@ -419,11 +427,3 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
 
 		cmd = ['make', 'clean']
 		run_process(cmd, process_cwd=source_folder_path, environment=env)
-
-def android_ndk_make_toolchain(root_project_path, arch, platform, system, install_dir):
-	android_ndk_root = get_android_ndk_folder_path(root_project_path)
-
-	exec_path = os.path.join(android_ndk_root, 'build/tools')
-
-	cmd = ['sh', 'make-standalone-toolchain.sh', '--arch=' + arch, '--platform=' + platform, '--system=' + system, '--install-dir=' + install_dir, '--ndk-dir=' + android_ndk_root]
-	run_process(cmd, process_cwd=exec_path)
