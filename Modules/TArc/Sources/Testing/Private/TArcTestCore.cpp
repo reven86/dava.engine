@@ -56,9 +56,6 @@ TestCore::~TestCore()
 void TestCore::OnAppStarted()
 {
     ProcessCommandLine();
-#if defined(__DAVAENGINE_WIN_UAP__)
-    InitNetwork();
-#endif
 
     if (TArcTestCoreDetail::teamcityOutputEnabled)
     {
@@ -104,10 +101,6 @@ void TestCore::OnAppFinished()
     {
         DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
     }
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-    UnInitNetwork();
-#endif
 }
 
 void TestCore::Update(float32 delta)
@@ -289,72 +282,6 @@ void TestCore::CreateRenderWidget()
     RenderWidget* w = e.GetNativeService()->GetRenderWidget();
     w->show();
 }
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-void TestCore::InitNetwork()
-{
-    using namespace Net;
-
-    auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener*
-    {
-        if (!loggerInUse)
-        {
-            loggerInUse = true;
-            return &netLogger;
-        }
-        return nullptr;
-    };
-
-    NetCore::Instance()->RegisterService(
-    NetCore::SERVICE_LOG,
-    loggerCreate,
-    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
-
-    eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
-    Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
-
-    NetConfig config(role);
-    config.AddTransport(TRANSPORT_TCP, endpoint);
-    config.AddService(NetCore::SERVICE_LOG);
-
-    netController = NetCore::Instance()->CreateController(config, nullptr);
-
-    flusher.reset(new LogFlusher(&netLogger));
-}
-
-void TestCore::UnInitNetwork()
-{
-    netLogger.Uninstall();
-    flusher->FlushLogs();
-    flusher.reset();
-
-    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
-}
-
-TestCore::LogFlusher::LogFlusher(Net::NetLogger* logger)
-    : netLogger(logger)
-{
-    Logger::AddCustomOutput(this);
-}
-
-TestCore::LogFlusher::~LogFlusher()
-{
-    Logger::RemoveCustomOutput(this);
-}
-
-void TestCore::LogFlusher::FlushLogs()
-{
-    while (netLogger->IsChannelOpen() && netLogger->GetMessageQueueSize() != 0)
-    {
-        Net::NetCore::Instance()->Poll();
-    }
-}
-
-void TestCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
-{
-    FlushLogs();
-}
-#endif // __DAVAENGINE_WIN_UAP__
 
 } // namespace TArc
 } // namespace DAVA

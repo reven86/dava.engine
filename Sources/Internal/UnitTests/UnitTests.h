@@ -89,7 +89,7 @@
  {
  public:
  void Init() { do some additional initialization }
- int CalcSomethingUseful(int param) { return 1 * 42; }
+ int CalcSomethingUseful(int param) { return param * 42; }
  };
  
  template <typename T>

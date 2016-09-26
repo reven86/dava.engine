@@ -5,15 +5,18 @@ namespace DAVA
 {
 namespace UnitTests
 {
-void TestClass::SetUp(const String& testName)
+void TestClass::InitTest(const String& testName)
 {
     auto iter = std::find_if(tests.begin(), tests.end(), [&testName](const TestInfo& testInfo)
                              {
                                  return testInfo.name == testName;
                              });
 
-    DVASSERT(iter != tests.end());
     iter->startTime = TestInfo::Clock::now();
+}
+
+void TestClass::SetUp(const String& testName)
+{
 }
 
 void TestClass::TearDown(const String& testName)
