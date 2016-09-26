@@ -6,9 +6,29 @@
 #import <objc/runtime.h>
 #import <AppKit/NSApplication.h>
 
+#include <algorithm>
+
 namespace AssertGuardMacOSHackDetail
 {
 bool stopWasCalled = false;
+
+void SwapMethodImplementation(bool isReversSwap)
+{
+    Class cls = [NSApp class];
+
+    SEL originalSelector = @selector(stop:);
+    SEL swizzledSelector = @selector(nsAppAssertStop:);
+
+    Method originalMethod = class_getInstanceMethod(cls, originalSelector);
+    Method swizzledMethod = class_getInstanceMethod(cls, swizzledSelector);
+
+    if (isReversSwap)
+    {
+        std::swap(originalMethod, swizzledMethod);
+    }
+
+    method_exchangeImplementations(originalMethod, swizzledMethod);
+}
 }
 
 @interface NSApplication (AssertCategory)
@@ -27,29 +47,12 @@ bool stopWasCalled = false;
 MacOSRunLoopGuard::MacOSRunLoopGuard()
 {
     AssertGuardMacOSHackDetail::stopWasCalled = false;
-    Class cls = [NSApp class];
-
-    SEL originalSelector = @selector(stop:);
-    SEL swizzledSelector = @selector(nsAppAssertStop:);
-
-    Method originalMethod = class_getInstanceMethod(cls, originalSelector);
-    Method swizzledMethod = class_getInstanceMethod(cls, swizzledSelector);
-
-    method_exchangeImplementations(originalMethod, swizzledMethod);
+    AssertGuardMacOSHackDetail::SwapMethodImplementation(false);
 }
 
 MacOSRunLoopGuard::~MacOSRunLoopGuard()
 {
-    Class cls = [NSApp class];
-
-    SEL originalSelector = @selector(stop:);
-    SEL swizzledSelector = @selector(nsAppAssertStop:);
-
-    Method originalMethod = class_getInstanceMethod(cls, originalSelector);
-    Method swizzledMethod = class_getInstanceMethod(cls, swizzledSelector);
-
-    method_exchangeImplementations(swizzledMethod, originalMethod);
-
+    AssertGuardMacOSHackDetail::SwapMethodImplementation(true);
     if (AssertGuardMacOSHackDetail::stopWasCalled == true)
     {
         [NSApp stop:NSApp];
