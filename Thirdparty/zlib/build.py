@@ -17,9 +17,7 @@ def get_supported_build_platforms():
 	return ['win32']
 
 def build_for_target(target, working_directory_path, root_project_path):
-	if target == 'all':
-		__build_all_on_current_platform(working_directory_path, root_project_path)
-	elif target == 'win32':
+	if target == 'win32':
 		__build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
 		__build_win10(working_directory_path, root_project_path)
@@ -30,17 +28,14 @@ def get_download_url():
 	return 'http://zlib.net/zlib128.zip'
 
 def __get_downloaded_archive_inner_dir():
+	# Because zlib archive inner folder and archive file name do not match
+	# If you change download link - change this one too
 	return 'zlib-1.2.8'
 
 def __download_and_extract(working_directory_path):
 	source_folder_path = os.path.join(working_directory_path, 'zlib_source')
 	build_utils.download_and_extract(get_download_url(), working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())
 	return source_folder_path
-
-def __build_all_on_current_platform(working_directory_path, root_project_path):
-	if sys.platform == 'win32':
-		return (__build_win32(working_directory_path, root_project_path) and
-				__build_win10(working_directory_path, root_project_path))
 
 def __build_win32(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)

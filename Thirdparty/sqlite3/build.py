@@ -15,9 +15,7 @@ def get_supported_build_platforms():
 	return ['win32', 'darwin']
 
 def build_for_target(target, working_directory_path, root_project_path):
-	if target == 'all':
-		return __build_all_on_current_platform(working_directory_path, root_project_path)
-	elif target == 'win32':
+	if target == 'win32':
 		return __build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
 		return __build_win10(working_directory_path, root_project_path)
@@ -31,12 +29,10 @@ def build_for_target(target, working_directory_path, root_project_path):
 def get_download_url():
 	return 'https://www.sqlite.org/2016/sqlite-amalgamation-3140200.zip'
 
-def __get_downloaded_archive_inner_dir():
-	return 'sqlite-amalgamation-3140200'
-
 def __download_and_extract(working_directory_path):
 	source_folder_path = os.path.join(working_directory_path, 'sqlite3_source')
-	build_utils.download_and_extract(get_download_url(), working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())	
+	url = get_download_url()
+	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
 
 def __patch_sources(source_folder_path, working_directory_path):

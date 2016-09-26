@@ -19,9 +19,7 @@ def get_supported_build_platforms():
 	return ['win32', 'darwin']
 
 def build_for_target(target, working_directory_path, root_project_path):
-	if target == 'all':
-		return __build_all_on_current_platform(working_directory_path, root_project_path)
-	elif target == 'win32':
+	if target == 'win32':
 		return __build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
 		return __build_win10(working_directory_path, root_project_path)
@@ -35,19 +33,13 @@ def build_for_target(target, working_directory_path, root_project_path):
 def get_download_url():
 	return {'win32' : 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/lpng1625.zip', 'others' : 'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.25.tar.gz'}
 
-def __get_downloaded_archive_inner_dir():
-	if sys.platform == 'win32':
-		return 'lpng1625'
-	else:
-		return 'libpng-1.6.25'
-
 def __download_and_extract(working_directory_path):
 	source_folder_path = os.path.join(working_directory_path, 'libpng_source')
 	if sys.platform == 'win32':
-		download_link = get_download_url()['win32']
+		url = get_download_url()['win32']
 	else:
-		download_link = get_download_url()['others']
-	build_utils.download_and_extract(download_link, working_directory_path, source_folder_path, __get_downloaded_archive_inner_dir())
+		url = get_download_url()['others']
+	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))
 	return source_folder_path
 
 def __patch_sources(source_folder_path, working_directory_path):
@@ -66,16 +58,6 @@ def __patch_sources(source_folder_path, working_directory_path):
 	shutil.copyfile('pngusr.dfa', os.path.join(source_folder_path, 'pngusr.dfa'))
 
 	__patch_sources.did = True
-
-def __build_all_on_current_platform(working_directory_path, root_project_path):
-	if sys.platform == 'win32':
-		return (__build_win32(working_directory_path, root_project_path) and
-				__build_win10(working_directory_path, root_project_path) and
-				__build_android(working_directory_path, root_project_path))
-	else:
-		return (__build_macos(working_directory_path, root_project_path) and
-				__build_ios(working_directory_path, root_project_path) and
-				__build_android(working_directory_path, root_project_path))
 
 def __build_win32(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)

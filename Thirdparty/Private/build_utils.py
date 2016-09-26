@@ -188,6 +188,17 @@ def get_android_ndk_folder_path(root_project_path):
 
 	return None
 
+def get_url_file_name(url):
+	return url.split('/')[-1]
+
+def get_url_file_name_no_ext(url):
+	file_name = get_url_file_name(url)
+	parts = file_name.split('.')
+	# Handle special case for .tar.gz
+	# TODO: a better way?
+	last_index = -2 if parts[-1] == 'gz' else -1
+	return '.'.join(parts[:last_index])
+
 def download_and_extract(download_url, working_directory_path, result_folder_path, inner_dir_name = None):
 	download_data = (download_url, result_folder_path)
 
@@ -200,7 +211,7 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 	# Download otherwise
 
 	# Path to downloaded archive
-	sources_filename = download_url.split('/')[-1]
+	sources_filename = get_url_file_name(download_url)
 	source_archive_filepath = os.path.join(working_directory_path, sources_filename)
 
 	# Download & extract
