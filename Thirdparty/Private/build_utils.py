@@ -270,6 +270,24 @@ def android_ndk_make_toolchain(root_project_path, arch, platform, system, instal
 	cmd = ['sh', 'make-standalone-toolchain.sh', '--arch=' + arch, '--platform=' + platform, '--system=' + system, '--install-dir=' + install_dir, '--ndk-dir=' + android_ndk_root]
 	run_process(cmd, process_cwd=exec_path)
 
+def get_xcode_developer_path():
+	sp = subprocess.Popen(['xcode-select', '-print-path'], stdout=subprocess.PIPE)
+	stdout, stderr = sp.communicate()
+	if stderr is None:
+		return stdout.strip()
+	else:
+		print 'Error while getting xcode developer path: ' + stderr
+		return None
+
+def make_fat_darwin_binary(input_files_pathes, output_file_path):
+	output_directory_path = os.path.dirname(output_file_path)
+	if not os.path.exists(output_directory_path):
+		os.makedirs(output_directory_path)
+
+	args = ['lipo', '-output', output_file_path, '-create']
+	args.extend(input_files_pathes)
+	run_process(args)
+
 # Default builders
 
 def build_and_copy_libraries_win32_cmake(

@@ -6,7 +6,7 @@ def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
 		return []
 	else:
-		return ['android']
+		return ['macos', 'ios', 'android']
 
 def get_dependencies_for_target(target):
 	return []
@@ -46,16 +46,58 @@ def __patch_sources(source_folder_path, working_directory_path):
 
 	__patch_sources.did = True
 
-def __build_android(working_directory_path, root_project_path):
+configure_args = ['no-whirlpool', 'no-asm', 'no-cast', 'no-idea', 'no-camellia', 'no-comp', 'no-hw', 'no-engine']
+
+def __build_macos(working_directory_path, root_project_path):
 	source_folder_path = __download_and_extract(working_directory_path)
 	__patch_sources(source_folder_path, working_directory_path)
 
-	configure_args = ['shared', 'no-whirlpool', 'no-asm', 'no-cast', 'no-idea', 'no-camellia', 'no-comp', 'no-hw', 'no-engine']
+	install_dir = os.path.join(working_directory_path, 'gen/install_macos')
+	macos_configure_args = list(configure_args)
+	macos_configure_args.insert(0, 'darwin64-x86_64-cc')
+	build_utils.build_with_autotools(source_folder_path, macos_configure_args, install_dir, configure_exec_name='Configure')
+	
+	libssl_path = os.path.join(install_dir, 'lib/libssl.a')
+	libcrypto_path = os.path.join(install_dir, 'lib/libcrypto.a')
+	shutil.copyfile(libssl_path, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libssl.a'))
+	shutil.copyfile(libcrypto_path, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libcrypto.a'))
 
-	install_dir_arm = os.path.join(working_directory_path, 'gen/install_arm')
+	__copy_headers(install_dir, root_project_path, 'mac')
+
+def __build_ios(working_directory_path, root_project_path):
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	install_dir_armv7 = os.path.join(working_directory_path, 'gen/install_ios_armv7')
+	ios_configure_args = list(configure_args)
+	ios_configure_args.insert(0, 'ios-cross')
+	build_utils.build_with_autotools(source_folder_path, ios_configure_args, install_dir_armv7, configure_exec_name='Configure', env=__get_ios_env())
+
+	install_dir_arm64 = os.path.join(working_directory_path, 'gen/install_ios_arm64')
+	ios_configure_args = list(configure_args)
+	ios_configure_args.insert(0, 'ios64-cross')
+	build_utils.build_with_autotools(source_folder_path, ios_configure_args, install_dir_arm64, configure_exec_name='Configure', env=__get_ios_env())
+
+	libssl_fat_path = os.path.join(working_directory_path, 'gen/fat_ios/libssl.a')
+	libcrypto_fat_path = os.path.join(working_directory_path, 'gen/fat_ios/libcrypto.a')
+	build_utils.make_fat_darwin_binary([os.path.join(install_dir_armv7, 'lib/libssl.a'), os.path.join(install_dir_arm64, 'lib/libssl.a')], libssl_fat_path)
+	build_utils.make_fat_darwin_binary([os.path.join(install_dir_armv7, 'lib/libcrypto.a'), os.path.join(install_dir_arm64, 'lib/libcrypto.a')], libcrypto_fat_path)
+
+	shutil.copyfile(libssl_fat_path, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libssl.a'))
+	shutil.copyfile(libcrypto_fat_path, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libcrypto.a'))
+
+	__copy_headers(install_dir_armv7, root_project_path, 'ios')
+
+def __build_android(working_directory_path, root_project_path):
+	# https://wiki.openssl.org/index.php/Android
+
+	source_folder_path = __download_and_extract(working_directory_path)
+	__patch_sources(source_folder_path, working_directory_path)
+
+	install_dir_arm = os.path.join(working_directory_path, 'gen/install_android_arm')
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, configure_exec_name='config', env=__get_android_env_arm(source_folder_path, root_project_path))
 
-	install_dir_x86 = os.path.join(working_directory_path, 'gen/install_x86')
+	install_dir_x86 = os.path.join(working_directory_path, 'gen/install_android_x86')
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_x86, configure_exec_name='config', env=__get_android_env_x86(source_folder_path, root_project_path))
 
 	libssl_path_android_arm = os.path.join(install_dir_arm, 'lib/libssl.a')
@@ -68,9 +110,19 @@ def __build_android(working_directory_path, root_project_path):
 	shutil.copyfile(libssl_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libssl.a'))
 	shutil.copyfile(libcrypto_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libcrypto.a'))
 
-	__copy_headers(source_folder_path, root_project_path, 'android')
+	__copy_headers(install_dir_arm, root_project_path, 'android')
 
 	return True
+
+def __get_ios_env():
+	xcode_developer_path = build_utils.get_xcode_developer_path()
+
+	env = os.environ.copy()
+	env['CROSS_COMPILE'] = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/')
+	env['CROSS_TOP'] = os.path.join(xcode_developer_path, 'Platforms/iPhoneOS.platform/Developer/')
+	env['CROSS_SDK'] = 'iPhoneOS.sdk'
+
+	return env
 
 def __get_android_env(source_folder_path, root_project_path, android_target, machine, arch, toolchain_folder, cross_compile, crystax_libs_folder):
 	# Python version of setenv.sh from https://wiki.openssl.org/index.php/Android
@@ -99,6 +151,7 @@ def __get_android_env_arm(source_folder_path, root_project_path):
 def __get_android_env_x86(source_folder_path, root_project_path):
 	return __get_android_env(source_folder_path, root_project_path, 'android-9', 'i686', 'x86', 'x86-4.9', 'i686-linux-android-', 'x86')
 
-def __copy_headers(source_folder_path, root_project_path, target_folder):
-	include_path = os.path.join(root_project_path, os.path.join('Libs/openssl/include', target_folder))
-	build_utils.copy_files(os.path.join(source_folder_path, 'include/openssl'), include_path, '*.h')
+def __copy_headers(install_path, root_project_path, target_folder):
+	include_subpath = os.path.join(os.path.join('Libs/openssl/include', target_folder), 'openssl')
+	include_path = os.path.join(root_project_path, include_subpath)
+	build_utils.copy_files(os.path.join(install_path, 'include'), include_path, '*.h')
