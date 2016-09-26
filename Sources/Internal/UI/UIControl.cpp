@@ -20,6 +20,10 @@
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
+#endif
 
 namespace DAVA
 {

@@ -9,6 +9,7 @@
 #include "UI/UIEvent.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/EngineTypes.h"
 
 namespace rhi
 {

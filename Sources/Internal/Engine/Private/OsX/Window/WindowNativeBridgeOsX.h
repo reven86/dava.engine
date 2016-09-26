@@ -9,6 +9,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/EngineTypes.h"
 
 @class NSEvent;
 @class NSWindow;

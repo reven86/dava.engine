@@ -2,6 +2,8 @@
 #include "ShellScalingAPI.h"
 
 //temporary decision
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 
