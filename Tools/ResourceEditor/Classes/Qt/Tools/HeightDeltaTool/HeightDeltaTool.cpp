@@ -13,7 +13,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageFormatInterface.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 HeightDeltaTool::HeightDeltaTool(QWidget* p)
     : QWidget(p)
@@ -45,7 +45,7 @@ void HeightDeltaTool::OnRun()
 {
     DVASSERT(!outputFilePath.isEmpty());
 
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneholder.GetScene();
     DVASSERT(scene);
     DAVA::Landscape* landscapeRO = FindLandscape(scene);
     DVASSERT(landscapeRO);
@@ -75,7 +75,7 @@ void HeightDeltaTool::OnValueChanged(double /*v*/)
 {
     ui->run->setEnabled(false);
 
-    SceneEditor2* scene = QtMainWindow::Instance()->GetCurrentScene();
+    SceneEditor2* scene = sceneholder.GetScene();
     DVASSERT(scene != nullptr);
     DAVA::Landscape* landscape = FindLandscape(scene);
     if (landscape == nullptr)

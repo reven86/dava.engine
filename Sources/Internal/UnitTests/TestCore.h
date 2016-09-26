@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
+#include "UnitTests/TestClass.h"
 
 namespace DAVA
 {
@@ -22,7 +23,7 @@ class TestCore final
         String name;
         bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
-        Vector<String> testedClasses;
+        TestCoverageInfo testedFiles;
     };
 
 public:
@@ -51,7 +52,7 @@ public:
 
     bool ProcessTests(float32 timeElapsed);
 
-    Map<String, Vector<String>> GetTestCoverage();
+    Map<String, TestCoverageInfo> GetTestCoverage();
 
     void TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage);
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);

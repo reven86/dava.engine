@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_MACOS__)
@@ -134,3 +136,5 @@ extern void FrameworkWillTerminate();
 
 @end
 #endif
+
+#endif // !__DAVAENGINE_COREV2__

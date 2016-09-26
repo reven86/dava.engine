@@ -141,9 +141,10 @@ void RenderSystem2D::BeginFrame()
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D + mainTargetDescriptor.priority;
     renderPass2DConfig.colorBuffer[0].texture = mainTargetDescriptor.colorAttachment;
-    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    renderPass2DConfig.colorBuffer[0].loadAction = mainTargetDescriptor.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
     renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment;
+    Memcpy(renderPass2DConfig.colorBuffer[0].clearColor, mainTargetDescriptor.clearColor.color, sizeof(Color));
+    renderPass2DConfig.depthStencilBuffer.texture = mainTargetDescriptor.depthAttachment ? mainTargetDescriptor.depthAttachment : rhi::DefaultDepthBuffer;
     renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
@@ -155,30 +156,51 @@ void RenderSystem2D::BeginFrame()
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
 
-    rhi::BeginRenderPass(pass2DHandle);
-    rhi::BeginPacketList(currentPacketListHandle);
+    if (pass2DHandle != rhi::InvalidHandle)
+    {
+        rhi::BeginRenderPass(pass2DHandle);
+        rhi::BeginPacketList(currentPacketListHandle);
+    }
+    else
+    {
+        pass2DHandle = rhi::HRenderPass(rhi::InvalidHandle);
+        packetList2DHandle = rhi::HPacketList(rhi::InvalidHandle);
+        currentPacketListHandle = rhi::HPacketList(rhi::InvalidHandle);
+    }
 
     Setup2DMatrices();
 }
 
 void RenderSystem2D::EndFrame()
 {
-    Flush();
+    if (pass2DHandle != rhi::InvalidHandle)
+    {
+        Flush();
+        prevFrameErrorsFlags = currFrameErrorsFlags;
+        currFrameErrorsFlags = 0;
+
+        rhi::EndPacketList(currentPacketListHandle);
+        rhi::EndRenderPass(pass2DHandle);
+    }
+
     prevFrameErrorsFlags = currFrameErrorsFlags;
     currFrameErrorsFlags = 0;
 
-    rhi::EndPacketList(currentPacketListHandle);
-    rhi::EndRenderPass(pass2DHandle);
+    pass2DHandle = rhi::HRenderPass(rhi::InvalidHandle);
+    packetList2DHandle = rhi::HPacketList(rhi::InvalidHandle);
+    currentPacketListHandle = rhi::HPacketList(rhi::InvalidHandle);
 }
 
 const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetActiveTargetDescriptor()
 {
     return IsRenderTargetPass() ? renderPassTargetDescriptor : mainTargetDescriptor;
 }
+
 const RenderSystem2D::RenderTargetPassDescriptor& RenderSystem2D::GetMainTargetDescriptor()
 {
     return mainTargetDescriptor;
 }
+
 void RenderSystem2D::SetMainTargetDescriptor(const RenderSystem2D::RenderTargetPassDescriptor& descriptor)
 {
     mainTargetDescriptor = descriptor;
@@ -189,6 +211,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = 
     RenderTargetPassDescriptor desc;
     desc.colorAttachment = target->handle;
     desc.depthAttachment = target->handleDepthStencil;
+    desc.format = target->GetFormat();
     desc.width = target->GetWidth();
     desc.height = target->GetHeight();
     desc.clearColor = clearColor;
@@ -214,12 +237,14 @@ void RenderSystem2D::BeginRenderTargetPass(const RenderTargetPassDescriptor& des
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = desc.clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = desc.clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = desc.clearColor.a;
+    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
+    renderTargetPassConfig.depthStencilBuffer.texture = desc.depthAttachment;
+    renderTargetPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    renderTargetPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderTargetPassConfig.priority = desc.priority;
     renderTargetPassConfig.viewport.width = desc.width;
     renderTargetPassConfig.viewport.height = desc.height;
-    renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
-    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    renderTargetPassConfig.colorBuffer[0].loadAction = desc.clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_LOAD;
 
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
@@ -421,7 +446,7 @@ void RenderSystem2D::Flush()
         return;
     }
 
-    if (currentPacket.primitiveCount > 0)
+    if (currentPacketListHandle != rhi::InvalidHandle && currentPacket.primitiveCount > 0)
     {
         rhi::AddPacket(currentPacketListHandle, currentPacket);
 
@@ -458,11 +483,13 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
         const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
         packet.scissorRect.x = static_cast<int16>(transformedClipRect.x + 0.5f);
         packet.scissorRect.y = static_cast<int16>(transformedClipRect.y + 0.5f);
-        packet.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
-        packet.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
+        packet.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
+        packet.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
         packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
     }
-    rhi::AddPacket(currentPacketListHandle, packet);
+
+    if (currentPacketListHandle != rhi::InvalidHandle)
+        rhi::AddPacket(currentPacketListHandle, packet);
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().packets2d;
@@ -660,7 +687,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     {
         if (currentPacket.primitiveCount > 0)
         {
-            rhi::AddPacket(currentPacketListHandle, currentPacket);
+            if (currentPacketListHandle != rhi::InvalidHandle)
+                rhi::AddPacket(currentPacketListHandle, currentPacket);
             currentPacket.primitiveCount = 0;
 
 #if defined(__DAVAENGINE_RENDERSTATS__)
@@ -682,10 +710,10 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
             const Rect& transformedClipRect = TransformClipRect(currentClip, currentVirtualToPhysicalMatrix);
-            currentPacket.scissorRect.x = static_cast<int16>(floorf(transformedClipRect.x));
-            currentPacket.scissorRect.y = static_cast<int16>(floorf(transformedClipRect.y));
-            currentPacket.scissorRect.width = static_cast<int16>(ceilf(transformedClipRect.dx));
-            currentPacket.scissorRect.height = static_cast<int16>(ceilf(transformedClipRect.dy));
+            currentPacket.scissorRect.x = static_cast<int16>(std::floor(transformedClipRect.x));
+            currentPacket.scissorRect.y = static_cast<int16>(std::floor(transformedClipRect.y));
+            currentPacket.scissorRect.width = static_cast<int16>(std::ceil(transformedClipRect.dx));
+            currentPacket.scissorRect.height = static_cast<int16>(std::ceil(transformedClipRect.dy));
             currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
         else
@@ -942,8 +970,8 @@ void RenderSystem2D::Draw(Sprite* sprite, Sprite::DrawState* drawState, const Co
             //			glPopMatrix();
 
             // Optimized code
-            float32 sinA = sinf(state->angle);
-            float32 cosA = cosf(state->angle);
+            float32 sinA = std::sin(state->angle);
+            float32 cosA = std::cos(state->angle);
             for (int32 k = 0; k < 4; ++k)
             {
                 float32 x = spriteTempVertices[(k << 1)] - state->position.x;
@@ -1492,8 +1520,8 @@ void RenderSystem2D::DrawGrid(const Rect& rect, const Vector2& gridSize, const C
 {
     // TODO! review with Ivan/Victor whether it is not performance problem!
     Vector<float32> gridVertices;
-    int32 verLinesCount = static_cast<int32>(ceilf(rect.dx / gridSize.x));
-    int32 horLinesCount = static_cast<int32>(ceilf(rect.dy / gridSize.y));
+    int32 verLinesCount = static_cast<int32>(std::ceil(rect.dx / gridSize.x));
+    int32 horLinesCount = static_cast<int32>(std::ceil(rect.dy / gridSize.y));
     gridVertices.resize((horLinesCount + verLinesCount) * 4);
 
     float32 curPos = 0;
@@ -1615,8 +1643,8 @@ void RenderSystem2D::DrawCircle(const Vector2& center, float32 radius, const Col
     for (int32 k = 0; k < ptsCount; ++k)
     {
         float32 angle = (float32(k) / (ptsCount - 1)) * 2 * PI;
-        float32 sinA = sinf(angle);
-        float32 cosA = cosf(angle);
+        float32 sinA = std::sin(angle);
+        float32 cosA = std::cos(angle);
         Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
 
         pts.AddPoint(pos);
@@ -1858,9 +1886,9 @@ void TiledDrawData::GenerateAxisData(float32 size, float32 spriteSize, float32 t
 
     if (centerSize > 0.0f)
     {
-        gridSize = int32(ceilf((size - sideSize * 2.0f) / centerSize));
+        gridSize = int32(std::ceil((size - sideSize * 2.0f) / centerSize));
         const float32 tileAreaSize = size - sideSize * 2.0f;
-        partSize = tileAreaSize - floorf(tileAreaSize / centerSize) * centerSize;
+        partSize = tileAreaSize - std::floor(tileAreaSize / centerSize) * centerSize;
     }
 
     if (sideSize > 0.0f)
@@ -2132,7 +2160,7 @@ Vector<TiledMultilayerData::AxisData> TiledMultilayerData::GenerateSingleAxisDat
 {
     Vector<AxisData> result;
 
-    int32 tileCount = static_cast<int32>(ceilf(inSize / inTileSize));
+    int32 tileCount = static_cast<int32>(std::ceil(inSize / inTileSize));
     int32 totalCount = tileCount * 2;
     if (inStratchCap > 0.0f)
         totalCount += 4;

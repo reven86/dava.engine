@@ -1,12 +1,19 @@
-#ifndef __QT_PROPERTY_WIDGET_H__
-#define __QT_PROPERTY_WIDGET_H__
+#pragma once
 
 #include "PropertyEditorStateHelper.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/ActiveSceneHolder.h"
 
+namespace Ui
+{
+class MainWindow;
+}
+
+class GlobalOperations;
 class LazyUpdater;
+class RECommandNotificationObject;
 struct PropEditorUserData : public QtPropertyData::UserData
 {
     enum PropertyType : DAVA::uint32
@@ -45,6 +52,8 @@ public:
     PropertyEditor(QWidget* parent = 0, bool connectToSceneSignals = true);
     ~PropertyEditor();
 
+    void Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<GlobalOperations>& globalOperations);
+
     virtual void SetEntities(const SelectableGroup* selected);
 
     void SetViewMode(eViewMode mode);
@@ -63,7 +72,7 @@ public slots:
     void sceneActivated(SceneEditor2* scene);
     void sceneDeactivated(SceneEditor2* scene);
     void sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected);
-    void CommandExecuted(SceneEditor2* scene, const Command2* command, bool redo);
+    void CommandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification);
 
     void ActionEditComponent();
     void ActionEditMaterial();
@@ -81,6 +90,7 @@ public slots:
     void OnAddVisibilityComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
+    void OnConvertRenderObjectToBillboard();
 
     void ConvertToShadow();
 
@@ -120,7 +130,7 @@ private:
 
     QtPropertyToolButton* CreateButton(QtPropertyData* data, const QIcon& icon, const QString& tooltip);
 
-    QString GetDefaultFilePath();
+    QString GetDefaultFilePath(bool withScenePath = true);
 
     void AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root,
                              std::unique_ptr<QtPropertyData>& curEntityData, bool isFirstInList);
@@ -135,6 +145,6 @@ private:
     DAVA::Vector<std::unique_ptr<QtPropertyData>> favoriteList;
     eViewMode viewMode;
     bool favoritesEditMode;
+    ActiveSceneHolder sceneHolder;
+    std::shared_ptr<GlobalOperations> globalOperations;
 };
-
-#endif // __QT_PROPERTY_WIDGET_H__

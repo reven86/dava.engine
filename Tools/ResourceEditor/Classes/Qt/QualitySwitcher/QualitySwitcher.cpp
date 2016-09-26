@@ -13,8 +13,9 @@
 
 QualitySwitcher* QualitySwitcher::switcherDialog = nullptr;
 
-QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
-    : QDialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint) //https://bugreports.qt.io/browse/QTBUG-34767
+QualitySwitcher::QualitySwitcher(const std::shared_ptr<GlobalOperations>& globalOperations_)
+    : QDialog(globalOperations_->GetGlobalParentWidget(), Qt::Dialog | Qt::WindowStaysOnTopHint) //https://bugreports.qt.io/browse/QTBUG-34767
+    , globalOperations(globalOperations_)
 {
     const int spacing = 5;
     const int minColumnW = 150;
@@ -39,7 +40,7 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
         QComboBox* comboTx = new QComboBox(texturesGroup);
         comboTx->setObjectName("TexturesCombo");
 
-        QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnTxQualitySelect(int)));
+        QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
 
         texturesLayout->addWidget(labTx, 0, 0);
         texturesLayout->addWidget(comboTx, 0, 1);
@@ -54,6 +55,50 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
             if (txQualityName == curTxQuality)
             {
                 comboTx->setCurrentIndex(comboTx->count() - 1);
+            }
+        }
+
+        if (DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount() > 0)
+        {
+            QLabel* labAn = new QLabel("Anisotropy:", texturesGroup);
+            texturesLayout->addWidget(labAn, 1, 0);
+
+            QComboBox* comboAn = new QComboBox(texturesGroup);
+            comboAn->setObjectName("AnisotropyCombo");
+            QObject::connect(comboAn, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
+            texturesLayout->addWidget(comboAn, 1, 1);
+
+            DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityCount(); ++i)
+            {
+                DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
+                comboAn->addItem(anQualityName.c_str());
+                if (anQualityName == curAnQuality)
+                {
+                    comboAn->setCurrentIndex(comboAn->count() - 1);
+                }
+            }
+        }
+
+        if (DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount() > 0)
+        {
+            QLabel* lab = new QLabel("Multisampling:", texturesGroup);
+            texturesLayout->addWidget(lab, 2, 0);
+
+            QComboBox* combo = new QComboBox(texturesGroup);
+            combo->setObjectName("MSAACombo");
+            QObject::connect(combo, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
+            texturesLayout->addWidget(combo, 2, 1);
+
+            DAVA::FastName curQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality();
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityCount(); ++i)
+            {
+                DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityName(i);
+                combo->addItem(qualityName.c_str());
+                if (qualityName == curQuality)
+                {
+                    combo->setCurrentIndex(combo->count() - 1);
+                }
             }
         }
     }
@@ -76,10 +121,10 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
             QComboBox* comboMa = new QComboBox(materialsGroup);
             comboMa->setObjectName(QString(groupName.c_str()) + "Combo");
 
-            QObject::connect(comboMa, SIGNAL(activated(int)), this, SLOT(OnMaQualitySelect(int)));
+            QObject::connect(comboMa, SIGNAL(activated(int)), this, SLOT(OnSetSettingsDirty(int)));
 
-            materialsLayout->addWidget(labMa, i, 0);
-            materialsLayout->addWidget(comboMa, i, 1);
+            materialsLayout->addWidget(labMa, static_cast<int>(i), 0);
+            materialsLayout->addWidget(comboMa, static_cast<int>(i), 1);
 
             for (size_t j = 0; j < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(groupName); ++j)
             {
@@ -125,7 +170,7 @@ QualitySwitcher::QualitySwitcher(QWidget* parent /* = nullptr */)
 
         particlesLayout->addWidget(labQuality, 0, 0);
         particlesLayout->addWidget(comboQuality, 0, 1);
-        connect(comboQuality, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &QualitySwitcher::OnParticlesQualityChanged);
+        connect(comboQuality, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &QualitySwitcher::OnSetSettingsDirty);
 
         QLabel* labTagsCloud = new QLabel("Tags cloud:", particlesGroup);
         QLineEdit* editTagsCloud = new QLineEdit(particlesGroup);
@@ -232,25 +277,22 @@ QualitySwitcher::~QualitySwitcher()
 
 void QualitySwitcher::ApplyTx()
 {
-    QtMainWindow::Instance()->OnReloadTextures();
+    globalOperations->CallAction(GlobalOperations::ReloadTexture, DAVA::Any());
 }
 
 void QualitySwitcher::ApplyMa()
 {
-    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-    for (int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
-    {
-        SceneEditor2* sceneEditor = tabWidget->GetTabScene(tab);
+    globalOperations->ForEachScene([](SceneEditor2* scene)
+                                   {
+                                       const DAVA::Set<DAVA::NMaterial*>& topParents = scene->materialSystem->GetTopParents();
 
-        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
+                                       for (auto material : topParents)
+                                       {
+                                           material->InvalidateRenderVariants();
+                                       }
 
-        for (auto material : topParents)
-        {
-            material->InvalidateRenderVariants();
-        }
-
-        sceneEditor->renderSystem->SetForceUpdateLights();
-    }
+                                       scene->renderSystem->SetForceUpdateLights();
+                                   });
 }
 
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity* e)
@@ -264,14 +306,12 @@ void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity* e)
 
 void QualitySwitcher::UpdateParticlesToQuality()
 {
-    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     SceneSignals* sceneSignals = SceneSignals::Instance();
-    for (DAVA::int32 tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
-    {
-        SceneEditor2* scene = tabWidget->GetTabScene(tab);
-        ReloadEntityEmitters(scene);
-        sceneSignals->EmitStructureChanged(scene, nullptr);
-    }
+    globalOperations->ForEachScene([sceneSignals, this](SceneEditor2* scene)
+                                   {
+                                       ReloadEntityEmitters(scene);
+                                       sceneSignals->EmitStructureChanged(scene, nullptr);
+                                   });
 }
 
 void QualitySwitcher::ReloadEntityEmitters(DAVA::Entity* e)
@@ -297,6 +337,7 @@ void QualitySwitcher::SetSettingsDirty(bool dirty)
 
 void QualitySwitcher::ApplySettings()
 {
+    bool someQualityChanged = false;
     // textures
     {
         QComboBox* combo = findChild<QComboBox*>("TexturesCombo");
@@ -315,10 +356,32 @@ void QualitySwitcher::ApplySettings()
     bool materialSettingsChanged = false;
     bool optionSettingsChanged = false;
     {
+        QComboBox* combo = findChild<QComboBox*>("AnisotropyCombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newAnQuality(combo->currentText().toLatin1());
+            if (newAnQuality != DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality())
+            {
+                materialSettingsChanged = true;
+                DAVA::QualitySettingsSystem::Instance()->SetCurAnisotropyQuality(newAnQuality);
+            }
+        }
+
+        combo = findChild<QComboBox*>("MSAACombo");
+        if (nullptr != combo)
+        {
+            DAVA::FastName newQuality(combo->currentText().toLatin1());
+            if (newQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality())
+            {
+                materialSettingsChanged = true;
+                DAVA::QualitySettingsSystem::Instance()->SetCurMSAAQuality(newQuality);
+            }
+        }
+
         for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
             DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
-            QComboBox* combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
+            combo = findChild<QComboBox*>(QString(groupName.c_str()) + "Combo");
             if (nullptr != combo)
             {
                 DAVA::FastName newMaQuality(combo->currentText().toLatin1());
@@ -371,7 +434,7 @@ void QualitySwitcher::ApplySettings()
             if (settingsChanged)
             {
                 UpdateParticlesToQuality();
-                emit ParticlesQualityChanged();
+                someQualityChanged = true;
             }
         }
     }
@@ -411,31 +474,31 @@ void QualitySwitcher::ApplySettings()
     if (materialSettingsChanged)
     {
         ApplyMa();
-        emit QualityChanged();
+        someQualityChanged = true;
     }
 
     if (materialSettingsChanged || optionSettingsChanged)
     {
-        SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
-        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
-        {
-            DAVA::Scene* scene = tabWidget->GetTabScene(tab);
-            UpdateEntitiesToQuality(scene);
-            scene->foliageSystem->SyncFoliageWithLandscape();
-        }
+        globalOperations->ForEachScene([this](SceneEditor2* scene)
+                                       {
+                                           UpdateEntitiesToQuality(scene);
+                                           scene->foliageSystem->SyncFoliageWithLandscape();
+                                       });
+    }
+
+    if (someQualityChanged)
+    {
+        SceneSignals::Instance()->EmitQualityChanged();
     }
 }
 
-void QualitySwitcher::ShowDialog()
+void QualitySwitcher::ShowDialog(std::shared_ptr<GlobalOperations> globalOperations)
 {
     if (switcherDialog == nullptr)
     {
         //we don't need synchronization because of working in UI thread
-        switcherDialog = new QualitySwitcher(QtMainWindow::Instance());
+        switcherDialog = new QualitySwitcher(globalOperations);
         switcherDialog->setAttribute(Qt::WA_DeleteOnClose, true);
-        connect(switcherDialog, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
-        connect(switcherDialog, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
-        connect(switcherDialog, &QualitySwitcher::ParticlesQualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
 
         switcherDialog->show();
     }
@@ -444,17 +507,7 @@ void QualitySwitcher::ShowDialog()
     switcherDialog->activateWindow();
 }
 
-void QualitySwitcher::OnTxQualitySelect(int index)
-{
-    SetSettingsDirty(true);
-}
-
-void QualitySwitcher::OnMaQualitySelect(int index)
-{
-    SetSettingsDirty(true);
-}
-
-void QualitySwitcher::OnParticlesQualityChanged(int index)
+void QualitySwitcher::OnSetSettingsDirty(int index)
 {
     SetSettingsDirty(true);
 }

@@ -79,6 +79,17 @@ public:
         TOUCH_PAD,
     };
 
+    enum Modifier
+    {
+        NONE = 0, // Used to denote no flags explicitly
+        SHIFT_DOWN = 1 << 0,
+        CONTROL_DOWN = 1 << 1,
+        ALT_DOWN = 1 << 2,
+        COMMAND_DOWN = 1 << 3, // Command on OS X
+
+        LAST = COMMAND_DOWN
+    };
+
     UIEvent() = default;
 
     void SetInputHandledType(eInputHandledType value)
@@ -132,6 +143,7 @@ public:
     uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
+    uint32 modifiers = 0;
 };
 };
 

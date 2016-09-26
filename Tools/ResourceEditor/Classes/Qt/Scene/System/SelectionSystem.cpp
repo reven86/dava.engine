@@ -2,6 +2,7 @@
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -499,11 +500,10 @@ void SceneSelectionSystem::Draw()
     }
 }
 
-void SceneSelectionSystem::ProcessCommand(const Command2* command, bool redo)
+void SceneSelectionSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
-    DVASSERT(command != nullptr);
-    static const DAVA::Vector<DAVA::int32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM };
-    if (command->MatchCommandIDs(commandIds))
+    static const DAVA::Vector<DAVA::uint32> commandIds = { CMDID_ENTITY_REMOVE, CMDID_ENTITY_CHANGE_PARENT, CMDID_TRANSFORM, CMDID_CONVERT_TO_BILLBOARD };
+    if (commandNotification.MatchCommandIDs(commandIds))
     {
         invalidSelectionBoxes = true;
     }
@@ -723,30 +723,24 @@ void SceneSelectionSystem::UpdateHoodPos() const
     }
     else
     {
-        bool modificationEnabled = currentSelection.SupportsTransformType(modificationSystem->GetTransformType());
-        hoodSystem->LockModif(modificationEnabled == false);
+        const SelectableGroup& transformableSelection = modificationSystem->GetTransformableSelection();
+        bool transformableSelectionEmpty = transformableSelection.IsEmpty();
+        hoodSystem->LockModif(transformableSelectionEmpty);
 
-        DAVA::Vector3 hoodCenter;
-        if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
+        if (!transformableSelectionEmpty)
         {
-            hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
-        }
-        else
-        {
-            hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
-        }
-        hoodSystem->SetPosition(hoodCenter);
-
-        bool hasNonTransformableObjects = false;
-        for (const auto& item : currentSelection.GetContent())
-        {
-            if (item.SupportsTransformType(Selectable::TransformType::Disabled) == false)
+            DAVA::Vector3 hoodCenter;
+            if (curPivotPoint == Selectable::TransformPivot::ObjectCenter)
             {
-                hasNonTransformableObjects = true;
-                break;
+                hoodCenter = currentSelection.GetFirst().GetWorldTransform().GetTranslationVector();
             }
+            else
+            {
+                hoodCenter = currentSelection.GetCommonWorldSpaceTranslationVector();
+            }
+            hoodSystem->SetPosition(hoodCenter);
+            hoodSystem->SetVisible(true);
         }
-        hoodSystem->SetVisible(hasNonTransformableObjects == false);
     }
 
     SceneEditor2* sc = static_cast<SceneEditor2*>(GetScene());

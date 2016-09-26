@@ -11,12 +11,10 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Render/GPUFamilyDescriptor.h"
-#include "AssetCache/AssetCache.h"
-#include "AssetCache/AssetCacheConstants.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
 
-#include "AssetCache/AssetCacheClient.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -48,6 +46,7 @@ void ResourcePacker2D::InitFolders(const FilePath& inputPath, const FilePath& ou
     inputGfxDirectory = inputPath;
     outputGfxDirectory = outputPath;
     rootDirectory = inputPath + "../";
+    dataSourceDirectory = inputPath + "../../";
 }
 
 void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
@@ -101,7 +100,11 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
+#if defined(__DAVAENGINE_COREV2__)
+        if (Engine::Instance()->IsConsoleMode())
+#else
         if (Core::Instance()->IsConsoleMode())
+#endif
         {
             Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
         }
@@ -241,6 +244,27 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
     return tokens;
 }
 
+uint32 ResourcePacker2D::GetMaxTextureSize() const
+{
+    uint32 maxTextureSize = TexturePacker::DEFAULT_TEXTURE_SIZE;
+    String tsizeValue = CommandLineParser::Instance()->GetParamForFlag("--tsize");
+    if (!tsizeValue.empty())
+    {
+        uint32 fetchedValue;
+        int fetchedCount = sscanf(tsizeValue.c_str(), "%u", &fetchedValue);
+        if (fetchedCount == 1 && IsPowerOf2(fetchedValue))
+        {
+            maxTextureSize = fetchedValue;
+        }
+        else
+        {
+            Logger::Warning("--tsize value '%s' is incorrect: should be uint of power of 2. Using default value: %u", tsizeValue.c_str(), maxTextureSize);
+        }
+    }
+
+    return maxTextureSize;
+}
+
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
@@ -311,7 +335,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return (found != ignoredFileNames.end());
     };
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (!fileList->IsDirectory(fi))
         {
@@ -344,15 +368,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
             AssetCache::CacheItemKey cacheKey;
             if (IsUsingCache())
             {
-                ScopedPtr<File> md5File(File::Create(processDir + "dir.md5", File::OPEN | File::READ));
-                DVASSERT(md5File);
-                auto read = md5File->Read(cacheKey.data(), MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                MD5::MD5Digest digest;
 
-                md5File = File::Create(processDir + "params.md5", File::OPEN | File::READ);
-                DVASSERT(md5File);
-                read = md5File->Read(cacheKey.data() + MD5::MD5Digest::DIGEST_SIZE, MD5::MD5Digest::DIGEST_SIZE);
-                DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
+                ReadMD5FromFile(processDir + "dir.md5", digest);
+                cacheKey.SetPrimaryKey(digest);
+
+                ReadMD5FromFile(processDir + "params.md5", digest);
+                cacheKey.SetSecondaryKey(digest);
             }
 
             bool needRepack = (false == GetFilesFromCache(cacheKey, inputPath, outputPath));
@@ -370,7 +392,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
                     marginInPixels = 4;
 
-                uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+                uint32 maxTextureSize = GetMaxTextureSize();
+
                 bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
                 bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
                 bool verbose = CommandLineParser::Instance()->GetVerbose();
@@ -382,7 +405,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 DefinitionFile::Collection definitionFileList;
                 definitionFileList.reserve(fileList->GetCount());
-                for (int32 fi = 0; fi < fileList->GetCount() && running; ++fi)
+                for (uint32 fi = 0; fi < fileList->GetCount() && running; ++fi)
                 {
                     if (fileList->IsDirectory(fi))
                         continue;
@@ -430,10 +453,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                         {
                             packer.SetUseOnlySquareTextures();
                         }
-                        if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-                        {
-                            packer.SetMaxTextureSize(4096);
-                        }
+                        packer.SetMaxTextureSize(maxTextureSize);
                     }
 
                     packer.SetTwoSideMargin(useTwoSideMargin);
@@ -458,7 +478,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
                 packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
+#if defined(__DAVAENGINE_COREV2__)
+                if (Engine::Instance()->IsConsoleMode())
+#else
                 if (Core::Instance()->IsConsoleMode())
+#endif
                 {
                     Logger::Info("[%u files packed with flags: %s]", static_cast<uint32>(definitionFileList.size()), mergedFlags.c_str());
                 }
@@ -483,7 +507,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
 
     const auto& flagsToPass = CommandLineParser::Instance()->IsFlagSet("--recursive") ? currentFlags : passedFlags;
 
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < fileList->GetCount(); ++fi)
     {
         if (fileList->IsDirectory(fi))
         {
@@ -529,16 +553,25 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         return false;
     }
 
+    String requestedDataRelativePath = "..." + inputPath.GetRelativePathname(dataSourceDirectory);
+
     AssetCache::CachedItemValue retrievedData;
-    AssetCache::Error requested = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
-    if (requested == AssetCache::Error::NO_ERRORS)
+    AssetCache::Error requestError = cacheClient->RequestFromCacheSynchronously(key, &retrievedData);
+    if (requestError == AssetCache::Error::NO_ERRORS)
     {
+        Logger::Info("%s - retrieved from cache", requestedDataRelativePath.c_str());
         retrievedData.ExportToFolder(outputPath);
         return true;
     }
     else
     {
-        Logger::Info("%s - failed to retrieve from cache(%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(requested).c_str());
+        String errorInfo = AssetCache::ErrorToString(requestError);
+        if (requestError == AssetCache::Error::OPERATION_TIMEOUT)
+        {
+            errorInfo.append(Format(" (%u ms)", cacheClient->GetTimeoutMs()));
+        }
+
+        Logger::Info("%s - can't retrieve from cache: %s", requestedDataRelativePath.c_str(), errorInfo.c_str());
     }
 
     return false;
@@ -559,7 +592,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
     AssetCache::CachedItemValue value;
 
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
-    for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+    for (uint32 fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
@@ -567,29 +600,37 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         }
     }
 
+    String addedDataRelativePath = "..." + inputPath.GetRelativePathname(dataSourceDirectory);
+
     if (!value.IsEmpty())
     {
         value.UpdateValidationData();
         value.SetDescription(cacheItemDescription);
 
-        AssetCache::Error added = cacheClient->AddToCacheSynchronously(key, value);
-        if (added == AssetCache::Error::NO_ERRORS)
+        AssetCache::Error addError = cacheClient->AddToCacheSynchronously(key, value);
+        if (addError == AssetCache::Error::NO_ERRORS)
         {
-            Logger::Info("%s - added to cache", inputPath.GetAbsolutePathname().c_str());
+            Logger::Info("%s - added to cache", addedDataRelativePath.c_str());
             return true;
         }
         else
         {
-            Logger::Info("%s - failed to add to cache (%s)", inputPath.GetAbsolutePathname().c_str(), AssetCache::ErrorToString(added).c_str());
+            String errorInfo = AssetCache::ErrorToString(addError);
+            if (addError == AssetCache::Error::OPERATION_TIMEOUT)
+            {
+                errorInfo.append(Format(" (%u ms)", cacheClient->GetTimeoutMs()));
+            }
+
+            Logger::Info("%s - can't add to cache: %s", addedDataRelativePath.c_str(), errorInfo.c_str());
         }
     }
     else
     {
-        Logger::Info("%s - empty folder", inputPath.GetAbsolutePathname().c_str());
+        Logger::Info("%s - empty folder", addedDataRelativePath.c_str());
     }
 
     return false;
-        
+
 #endif
 }
 

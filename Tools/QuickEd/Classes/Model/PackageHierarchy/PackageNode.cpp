@@ -430,13 +430,13 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
 
     RestoreProperties(root);
     RefreshStyles(root);
-    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(root->GetControl());
+    UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(root->GetControl());
     NotifyPropertyChanged(root);
 }
 
 void PackageNode::RefreshStyles(ControlNode* node)
 {
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl());
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl(), true);
     for (int32 i = 0; i < node->GetCount(); i++)
     {
         RefreshStyles(node->Get(i));

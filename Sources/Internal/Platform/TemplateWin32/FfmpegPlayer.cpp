@@ -1,8 +1,13 @@
-#include "FfmpegPlayer.h"
+#include "Platform/TemplateWin32/FfmpegPlayer.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "Sound/SoundSystem.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -450,7 +455,7 @@ void FfmpegPlayer::UpdateVideo(DecodedFrameBuffer* frameBuffer)
     /* Skip or repeat the frame. Take delay into account
         FFPlay still doesn't "know if this is the best guess." */
     float64 syncThreshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
-    if (fabs(diff) < AV_NOSYNC_THRESHOLD)
+    if (std::abs(diff) < AV_NOSYNC_THRESHOLD)
     {
         if (diff <= -syncThreshold)
         {
@@ -798,4 +803,5 @@ void FfmpegPlayer::Stop()
 }
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

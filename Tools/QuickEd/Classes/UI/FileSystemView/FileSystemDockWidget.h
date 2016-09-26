@@ -1,8 +1,8 @@
-#ifndef __QUICKED_FILE_SYSTEM_DIALOG_H__
-#define __QUICKED_FILE_SYSTEM_DIALOG_H__
+#pragma once
 
 #include <QDockWidget>
 #include <QModelIndex>
+#include <QPersistentModelIndex>
 #include <memory>
 
 namespace Ui
@@ -14,6 +14,7 @@ class QFileSystemModel;
 class QInputDialog;
 class QItemSelection;
 class QMouseEvent;
+class ProjectStructure;
 
 class FileSystemDockWidget : public QDockWidget
 {
@@ -28,6 +29,9 @@ public:
 signals:
     void OpenPackageFile(const QString& path);
 
+public slots:
+    void FindInFiles();
+
 private slots:
     void onDoubleClicked(const QModelIndex& index);
     void setFilterFixedString(const QString& filterStr);
@@ -37,14 +41,24 @@ private slots:
     void OnShowInExplorer();
     void OnRename();
     void OnOpenFile();
+    void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    void OnDirectoryLoaded();
 
 private:
     void RefreshActions();
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
-    QString GetPathByCurrentPos();
+
+    void ShowAndSelectFile(const QString& filePath);
+
+    enum ePathType
+    {
+        AnyPath,
+        DirPath
+    };
+    QString GetPathByCurrentPos(ePathType pathType);
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
     QFileSystemModel* model = nullptr;
@@ -54,7 +68,15 @@ private:
     QAction* showInSystemExplorerAction = nullptr;
     QAction* renameAction = nullptr;
     QAction* openFileAction = nullptr;
-    QPoint menuInvokePos = QPoint(-1, -1);
-};
+    QAction* copyInternalPathToFileAction = nullptr;
 
-#endif // __QUICKED_FILE_SYSTEM_DIALOG_H__
+    QAction* findInFilesAction = nullptr;
+
+    QPoint menuInvokePos = QPoint(-1, -1);
+
+    bool isAvailable = false;
+
+    std::unique_ptr<ProjectStructure> projectStructure;
+    //we set current index asyncronysly, when model emits signal "directoryLoaded"
+    QPersistentModelIndex indexToSetCurrent;
+};

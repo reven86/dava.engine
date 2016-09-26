@@ -5,7 +5,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "UI/UIEvent.h"
 
-#include "Commands2/Base/Command2.h"
 #include "Base/Introspection.h"
 
 class SceneCameraSystem : public DAVA::SceneSystem
@@ -61,7 +60,6 @@ protected:
     void OnKeyboardInput(DAVA::UIEvent* event);
 
     void Draw();
-    void ProcessCommand(const Command2* command, bool redo);
 
     void CreateDebugCameras();
     void RecalcCameraAspect();

@@ -1,4 +1,7 @@
 #include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
+
+#include "Render/GPUFamilyDescriptor.h"
 
 using namespace DAVA;
 
@@ -24,6 +27,7 @@ const FastName Settings::General_LODEditor_LodColor1 = FastName("General/LODEdit
 const FastName Settings::General_LODEditor_LodColor2 = FastName("General/LODEditor/LodColor2");
 const FastName Settings::General_LODEditor_LodColor3 = FastName("General/LODEditor/LodColor3");
 const FastName Settings::General_LODEditor_InactiveColor = FastName("General/LODEditor/InactiveColor");
+const FastName Settings::General_LODEditor_FitSliders = FastName("General/LODEditor/FitSlidersToMaximumDistance");
 
 const FastName Settings::General_HeighMaskTool_Color0 = FastName("General/HeighMaskTool/Color0");
 const FastName Settings::General_HeighMaskTool_Color1 = FastName("General/HeighMaskTool/Color1");
@@ -63,6 +67,8 @@ const FastName Settings::Scene_DefaultCustomColorIndex = FastName("Scene/Default
 const FastName Settings::Scene_Sound_SoundObjectDraw = FastName("Scene/Sound/SoundObjectDraw");
 const FastName Settings::Scene_Sound_SoundObjectBoxColor = FastName("Scene/Sound/SoundObjectBoxColor");
 const FastName Settings::Scene_Sound_SoundObjectSphereColor = FastName("Scene/Sound/SoundObjectSphereColor");
+const FastName Settings::Scene_Grab_Size_Width = FastName("Scene/Grab Scene/Width");
+const FastName Settings::Scene_Grab_Size_Height = FastName("Scene/Grab Scene/Height");
 const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/InvertWheel");
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
 const FastName Settings::InternalGroup = FastName("Internal");
@@ -84,3 +90,8 @@ const FastName Settings::Internal_ImageSplitterPath = FastName("Internal/ImageSp
 const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal/ImageSplitterPath_specular");
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
+
+DAVA::eGPUFamily Settings::GetGPUFormat()
+{
+    return static_cast<DAVA::eGPUFamily>(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
+}

@@ -1,6 +1,4 @@
-#ifndef QUICKED_EDITOR_CORE_H
-#define QUICKED_EDITOR_CORE_H
-
+#pragma once
 
 #include "Base/Introspection.h"
 #include "Project/Project.h"
@@ -31,10 +29,9 @@ public:
     MainWindow* GetMainWindow() const;
     Project* GetProject() const;
     void Start();
-    bool CloseProject();
 
 private slots:
-
+    bool CloseProject();
     void OnReloadSpritesStarted();
     void OnReloadSpritesFinished();
 
@@ -51,6 +48,7 @@ private slots:
 
     void OnExit();
     void OnNewProject();
+    void OnProjectOpenChanged(bool arg);
 
 private:
     void OpenProject(const QString& path);
@@ -70,7 +68,6 @@ private:
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
-    REGISTER_PREFERENCES(EditorCore)
 
 public:
     INTROSPECTION(EditorCore,
@@ -82,5 +79,3 @@ inline EditorFontSystem* GetEditorFontSystem()
 {
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }
-
-#endif // QUICKED_EDITOR_CORE_H

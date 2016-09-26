@@ -1,6 +1,6 @@
-#ifndef __DAVAENGINE_MACOS_APPDELEGATE_H__
-#define __DAVAENGINE_MACOS_APPDELEGATE_H__
+#pragma once
 
+#if !defined(__DAVAENGINE_COREV2__)
 
 #import <Cocoa/Cocoa.h>
 #import "Base/BaseTypes.h"
@@ -11,4 +11,4 @@
 
 @end
 
-#endif // __DAVAENGINE_MACOS_APPDELEGATE_H__
+#endif // !__DAVAENGINE_COREV2__

@@ -1,12 +1,18 @@
-#if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
-
 #include "UI/Private/WebViewControlStub.h"
+
+#if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
 namespace DAVA
 {
-WebViewControl::WebViewControl(UIWebView&)
+#if defined(__DAVAENGINE_COREV2__)
+WebViewControl::WebViewControl(Window* /*w*/, UIWebView* /*uiWebView*/)
 {
 }
+#else
+WebViewControl::WebViewControl(UIWebView*)
+{
+}
+#endif
 
 void WebViewControl::Initialize(const Rect&)
 {

@@ -97,22 +97,47 @@ ResetParam
     }
 };
 
-struct
-RenderDeviceCaps
+struct RenderDeviceCaps
 {
+    uint32 maxAnisotropy = 1;
+    uint32 maxSamples = 1;
+    char deviceDescription[128];
+
     bool is32BitIndicesSupported = false;
     bool isVertexTextureUnitsSupported = false;
     bool isFramebufferFetchSupported = false;
-
     bool isUpperLeftRTOrigin = false;
     bool isZeroBaseClipRange = false;
     bool isCenterPixelMapping = false;
-
     bool isInstancingSupported = false;
 
-    char deviceDescription[128];
+    RenderDeviceCaps()
+    {
+        memset(deviceDescription, 0, sizeof(deviceDescription));
+    }
+
+    bool isAnisotropicFilteringSupported() const
+    {
+        return maxAnisotropy > 1;
+    }
+
+    bool SupportsAntialiasingType(AntialiasingType type) const
+    {
+        switch (type)
+        {
+        case AntialiasingType::MSAA_2X:
+            return (maxSamples >= 2);
+
+        case AntialiasingType::MSAA_4X:
+            return (maxSamples >= 4);
+
+        default:
+            return true;
+        }
+    }
 };
 
+bool ApiIsSupported(Api api);
 void Initialize(Api api, const InitParam& param);
 void Uninitialize();
 void Reset(const ResetParam& param);
@@ -128,8 +153,6 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
-
-void TakeScreenshot(ScreenShotCallback callback);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
@@ -314,6 +337,7 @@ void SetFramePerfQuerySet(HPerfQuerySet hset);
 HRenderPass AllocateRenderPass(const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList);
 void BeginRenderPass(HRenderPass pass);
 void EndRenderPass(HRenderPass pass); // no explicit render-pass 'release' needed
+bool NeedInvertProjection(const RenderPassConfig& passDesc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // rendering

@@ -12,7 +12,6 @@ namespace rhi
 ID3D11Device* _D3D11_Device = nullptr;
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
-ID3D11Texture2D* _D3D11_SwapChainBufferCopy = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
 ID3D11Texture2D* _D3D11_DepthStencilBuffer = nullptr;
 ID3D11DepthStencilView* _D3D11_DepthStencilView = nullptr;
@@ -22,8 +21,6 @@ ID3D11DeviceContext* _D3D11_SecondaryContext = nullptr;
 DAVA::Mutex _D3D11_SecondaryContextSync;
 ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
-ScreenShotCallback _D3D11_PendingScreenshotCallback = nullptr;
-DAVA::Mutex _D3D11_ScreenshotCallbackSync;
 
 InitParam _DX11_InitParam;
 }
@@ -223,6 +220,39 @@ DX11_TextureFormat(TextureFormat format)
     }
 
     return DXGI_FORMAT_UNKNOWN;
+}
+
+uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
+{
+    DXGI_FORMAT depthFormat = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
+    const DXGI_FORMAT formatsToCheck[] = { DXGI_FORMAT_B8G8R8A8_UNORM, depthFormat };
+
+    uint32 sampleCount = 2;
+
+    for (uint32 s = 0; (sampleCount <= 8); ++s, sampleCount *= 2)
+    {
+        UINT numQualityLevels = 0;
+        for (uint32 f = 0; f < countof(formatsToCheck); ++f)
+        {
+            UINT formatSupport = 0;
+            HRESULT hr = device->CheckFormatSupport(formatsToCheck[f], &formatSupport);
+            if (formatSupport & D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
+            {
+                hr = device->CheckMultisampleQualityLevels(formatsToCheck[f], sampleCount, &numQualityLevels);
+                if (FAILED(hr) || (numQualityLevels == 0))
+                {
+                    break;
+                }
+            }
+        }
+        if (numQualityLevels == 0)
+        {
+            DAVA::Logger::Info("DX11 max multisample samples: %u", sampleCount / 2);
+            break;
+        }
+    }
+
+    return sampleCount / 2;
 }
 
 } // namespace rhi

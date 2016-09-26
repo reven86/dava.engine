@@ -87,11 +87,11 @@ void SoundComponentEditor::OnAutoTrigger(bool checked)
         DAVA::uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
         if (checked)
         {
-            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags | DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags | DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER)));
         }
         else
         {
-            scene->Exec(Command2::Create<SetSoundEventFlagsCommand>(entity, selectedEventIndex, flags & ~DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags & ~DAVA::SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER)));
         }
     }
 }
@@ -166,12 +166,18 @@ void SoundComponentEditor::OnAddEvent()
     if (component)
     {
         FMODSoundBrowser* browser = FMODSoundBrowser::Instance();
+
+        if (selectedEventIndex != -1)
+        {
+            SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
+            browser->SetCurrentEvent(soundEvent->GetEventName());
+        }
         if (browser->exec() == QDialog::Accepted)
         {
             DAVA::String selectedEventName = browser->GetSelectSoundEvent();
             DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName(selectedEventName), DAVA::FastName("FX"));
 
-            scene->Exec(Command2::Create<AddSoundEventCommand>(component->GetEntity(), sEvent));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new AddSoundEventCommand(component->GetEntity(), sEvent)));
 
             selectedEventIndex = component->GetEventsCount() - 1;
 
@@ -186,7 +192,7 @@ void SoundComponentEditor::OnRemoveEvent()
 {
     if (selectedEventIndex != -1 && component)
     {
-        scene->Exec(Command2::Create<RemoveSoundEventCommand>(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
+        scene->Exec(std::unique_ptr<DAVA::Command>(new RemoveSoundEventCommand(component->GetEntity(), component->GetSoundEvent(selectedEventIndex))));
     }
 
     OnEventSelected(0);

@@ -1,18 +1,24 @@
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__
+#pragma once
 
 #include "Base/Platform.h"
 
-#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_WIN32__)
+#if defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 
 namespace DAVA
 {
+class Window;
 class MovieViewControl : public IMovieViewControl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    MovieViewControl(Window* /*w*/)
+    {
+    }
+#else
     MovieViewControl() = default;
+#endif
     virtual ~MovieViewControl() = default;
 
     // Initialize the control.
@@ -58,5 +64,4 @@ public:
 
 } // namespace DAVA
 
-#endif // !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
-#endif // __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__
+#endif // DISABLE_NATIVE_MOVIEVIEW

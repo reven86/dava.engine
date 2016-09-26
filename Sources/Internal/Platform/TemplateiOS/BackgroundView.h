@@ -1,11 +1,12 @@
-#ifndef __DAVAENGINE_BACKGROUND_VIEW_H__
-#define __DAVAENGINE_BACKGROUND_VIEW_H__
+#pragma once
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <UIKit/UIKit.h>
-#import "Platform/TemplateiOS/UITextFieldHolder.h"
+#import "UI/Private/iOS/UITextFieldHolder.h"
 
 @interface BackgroundView : UIView
 
@@ -19,5 +20,4 @@
 @end
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)
-
-#endif //__DAVAENGINE_BACKGROUND_VIEW_H__
+#endif // !__DAVAENGINE_COREV2__

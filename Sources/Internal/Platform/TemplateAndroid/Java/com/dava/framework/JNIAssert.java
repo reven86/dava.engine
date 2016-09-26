@@ -15,12 +15,6 @@ public class JNIAssert {
 	public static synchronized boolean Assert(final boolean isModal,
 	        final String message)
 	{
-	    if (!isModal && alreadyShowingNonModalDialog)
-	    {
-	        // skip follow non modal messages while user looking at first
-	        return false;
-	    }
-	    
 		Activity activity = JNIActivity.GetActivity();
 
         if (activity == null || activity.isFinishing())
@@ -29,22 +23,20 @@ public class JNIAssert {
             return false;
         }
 
-		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
 		alertDialog.setMessage(message);
 		if (isModal && !JNIActivity.isPaused && JNIActivity.isFocused)
 		{
 		    waitUserInputOnAssertDialog = true;
-		    
 		    waitUserInput(activity, alertDialog);
-		    
 		    waitUserInputOnAssertDialog = false;
-		    
 		    return breakExecution;
-		} else
+		} 
+		else if (!alreadyShowingNonModalDialog)
 		{
 		    showDialogAndContinue(activity, alertDialog);
-		    return false;
 		}
+		return false;
 	}
 
     private static void showDialogAndContinue(final Activity activity,

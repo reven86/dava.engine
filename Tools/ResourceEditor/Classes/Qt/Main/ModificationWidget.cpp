@@ -1,5 +1,6 @@
 #include "ModificationWidget.h"
 #include "Commands2/TransformCommand.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Math/MathHelpers.h"
 
 #include <QKeyEvent>
@@ -96,15 +97,15 @@ void ModificationWidget::ReloadValues()
         return;
     }
 
-    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
-    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !selection.IsEmpty() && selection.SupportsTransformType(modifMode);
+    const SelectableGroup& modificationGroup = curScene->modifSystem->GetTransformableSelection();
+    bool canModify = (modifMode != Selectable::TransformType::Disabled) && !modificationGroup.IsEmpty();
     if (canModify)
     {
         xAxisModify->showButtons(true);
         yAxisModify->showButtons(true);
         zAxisModify->showButtons(true);
 
-        if (selection.GetSize() > 1)
+        if (modificationGroup.GetSize() > 1)
         {
             groupMode = true;
 
@@ -136,7 +137,7 @@ void ModificationWidget::ReloadValues()
             }
             else
             {
-                const auto& firstObject = selection.GetFirst();
+                const auto& firstObject = modificationGroup.GetFirst();
                 DAVA::Matrix4 localMatrix = firstObject.GetLocalTransform();
                 DAVA::float32 x = 0;
                 DAVA::float32 y = 0;
@@ -207,7 +208,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
         return;
 
     DAVA::Vector3 values(xAxisModify->value(), yAxisModify->value(), zAxisModify->value());
-    SelectableGroup selection = curScene->selectionSystem->GetSelection();
+    SelectableGroup selection = curScene->modifSystem->GetTransformableSelection();
     selection.RemoveObjectsWithDependantTransform();
 
     switch (modifMode)
@@ -236,7 +237,7 @@ void ModificationWidget::ApplyValues(ST_Axis axis)
     ReloadValues();
 }
 
-void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const Command2* command, bool redo)
+void ModificationWidget::OnSceneCommand(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
 {
     if (curScene == scene)
     {
@@ -264,7 +265,7 @@ void ModificationWidget::OnSnapToLandscapeChanged()
     if (curScene == nullptr)
         return;
 
-    const SelectableGroup& selection = curScene->selectionSystem->GetSelection();
+    const SelectableGroup& selection = curScene->modifSystem->GetTransformableSelection();
     if (selection.IsEmpty())
         return;
 
@@ -299,25 +300,16 @@ void ModificationWidget::OnSceneSelectionChanged(SceneEditor2* scene, const Sele
 
 DAVAFloat32SpinBox::DAVAFloat32SpinBox(QWidget* parent /* = 0 */)
     : QAbstractSpinBox(parent)
-    , originalValue(0)
-    , precision(3)
-    , hasButtons(true)
-    , cleared(true)
 {
-    QLineEdit* le = lineEdit();
-
     QRegExp rx("^-?\\d+([\\.,]\\d+){0,1}$");
     QValidator* vd = new QRegExpValidator(rx, this);
 
+    QLineEdit* le = lineEdit();
     le->setValidator(vd);
 
     connect(this, SIGNAL(editingFinished()), this, SLOT(textEditingFinished()));
 
     installEventFilter(this);
-}
-
-DAVAFloat32SpinBox::~DAVAFloat32SpinBox()
-{
 }
 
 DAVA::float32 DAVAFloat32SpinBox::value() const
@@ -332,26 +324,16 @@ void DAVAFloat32SpinBox::showButtons(bool show)
 
 void DAVAFloat32SpinBox::clear()
 {
+    setValue(0);
     QAbstractSpinBox::clear();
-    cleared = true;
 }
 
 void DAVAFloat32SpinBox::setValue(DAVA::float32 val)
 {
-    QLineEdit* le = lineEdit();
-
-    if (originalValue != val || cleared)
+    if (originalValue != val || lineEdit()->text().isEmpty())
     {
-        cleared = false;
-
-        originalString = QString::number((double)val, 'f', precision);
-        le->setText(originalString);
-
-        if (originalValue != val)
-        {
-            originalValue = val;
-            emit valueChanged();
-        }
+        originalValue = val;
+        lineEdit()->setText(QString::number((double)val, 'f', precision));
     }
 }
 
@@ -375,6 +357,7 @@ void DAVAFloat32SpinBox::stepBy(int steps)
     emit valueEdited();
 }
 
+const DAVA::float32 DAVAFloat32SpinBox::eps = 0.001f;
 void DAVAFloat32SpinBox::textEditingFinished()
 {
     // was modified
@@ -383,22 +366,14 @@ void DAVAFloat32SpinBox::textEditingFinished()
         QString newString = lineEdit()->text();
         newString.replace(QChar(','), QChar('.'));
 
-        // current text is different from the originalText
-        if (newString != originalString)
+        bool convertedNew = false;
+        DAVA::float32 newValue = static_cast<DAVA::float32>(newString.toDouble(&convertedNew));
+
+        // current double value is different from the original
+        if (convertedNew && fabs(newValue - originalValue) > eps)
         {
-            bool convertedNew = false;
-            bool convertedOrig = false;
-
-            double newValue = newString.toDouble(&convertedNew);
-            double origValue = originalString.toDouble(&convertedOrig);
-
-            // current double value is different from the original
-            if (convertedNew && convertedOrig && newValue != origValue)
-            {
-                setValue(static_cast<DAVA::float32>(newValue));
-
-                emit valueEdited();
-            }
+            setValue(newValue);
+            emit valueEdited();
         }
     }
 }

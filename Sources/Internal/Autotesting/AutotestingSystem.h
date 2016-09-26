@@ -18,7 +18,7 @@ namespace DAVA
 class Image;
 class AutotestingSystemLuaDelegate;
 class AutotestingSystemLua;
-class AutotestingSystem : public Singleton<AutotestingSystem>, public ScreenShotCallbackDelegate
+class AutotestingSystem : public Singleton<AutotestingSystem>
 {
 public:
     AutotestingSystem();
@@ -38,8 +38,6 @@ public:
     };
 
     void InitLua(AutotestingSystemLuaDelegate* _delegate);
-
-    void OnScreenShot(Image* image) override;
 
     void RunTests();
 
@@ -101,7 +99,8 @@ public:
     static String ResolvePathToAutomation(const String& automationPath);
 
 protected:
-    void OnScreenShotInternal(Image* image);
+    void DrawTouches();
+    void OnScreenShotInternal(Texture* texture);
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
@@ -155,7 +154,10 @@ public:
     Map<int32, UIEvent> touches;
     UIEvent mouseMove;
 
-    String screenShotName;
+    String screenshotName;
+    Texture* screenshotTexture = nullptr;
+    rhi::HSyncObject screenshotSync;
+    bool screenshotRequested = false;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const

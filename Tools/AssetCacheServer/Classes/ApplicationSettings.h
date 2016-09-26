@@ -1,5 +1,4 @@
-#ifndef __APPLICATION_SETTINGS_H__
-#define __APPLICATION_SETTINGS_H__
+#pragma once
 
 #include "AssetCache/AssetCacheConstants.h"
 #include "FileSystem/FilePath.h"
@@ -11,22 +10,91 @@ namespace DAVA
 class KeyedArchive;
 };
 
-using namespace DAVA;
-
-struct ServerData
+struct RemoteServerParams
 {
-    ServerData() = default;
-    ServerData(String _ip, uint16 _port, bool _enabled);
+    RemoteServerParams() = default;
+    RemoteServerParams(DAVA::String _ip, bool _enabled);
 
+    void Clear();
     bool IsEmpty() const;
-    bool EquivalentTo(const DAVA::Net::Endpoint& right) const;
 
-    bool operator==(const ServerData& right) const;
-    bool operator<(const ServerData& right) const;
+    bool operator==(const RemoteServerParams& right) const;
 
-    String ip = "";
-    uint16 port = AssetCache::ASSET_SERVER_PORT;
+    DAVA::String ip = "";
     bool enabled = false;
+};
+
+using ServerID = DAVA::uint64;
+using PoolID = DAVA::uint64;
+
+const ServerID NullServerID = 0;
+const PoolID NullPoolID = 0;
+
+struct SharedPoolParams
+{
+    PoolID poolID;
+    DAVA::String name;
+    DAVA::String description;
+};
+
+struct SharedServerParams
+{
+    ServerID serverID;
+    PoolID poolID;
+    DAVA::String ip;
+    DAVA::uint16 port;
+    DAVA::String name;
+};
+
+struct SharedServer
+{
+    ServerID serverID = NullServerID;
+    PoolID poolID = NullPoolID;
+    DAVA::String serverName;
+    RemoteServerParams remoteParams;
+};
+
+struct SharedPool
+{
+    PoolID poolID = NullPoolID;
+    DAVA::String poolName;
+    DAVA::String poolDescription;
+    bool enabled = false;
+    DAVA::Map<ServerID, SharedServer> servers;
+};
+
+struct EnabledRemote
+{
+    enum Type
+    {
+        POOL,
+        POOL_SERVER,
+        CUSTOM_SERVER,
+        NONE
+    } type = NONE;
+    union
+    {
+        SharedPool* pool = nullptr;
+        SharedServer* server;
+        RemoteServerParams* customServer;
+    };
+
+    EnabledRemote() = default;
+    EnabledRemote(SharedPool* pool)
+        : type(POOL)
+        , pool(pool)
+    {
+    }
+    EnabledRemote(SharedServer* server)
+        : type(POOL_SERVER)
+        , server(server)
+    {
+    }
+    EnabledRemote(RemoteServerParams* server)
+        : type(CUSTOM_SERVER)
+        , customServer(server)
+    {
+    }
 };
 
 //TODO: we need one code for settings in different projects
@@ -37,13 +105,16 @@ class ApplicationSettings : public QObject
     Q_OBJECT
 
 private:
-    static const String DEFAULT_FOLDER;
-    static const float64 DEFAULT_CACHE_SIZE_GB;
-    static const uint32 DEFAULT_FILES_COUNT = 5;
-    static const uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
-    static const uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
-    static const bool DEFAULT_AUTO_START = true;
-    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
+    static const DAVA::String DEFAULT_FOLDER;
+    static const DAVA::float64 DEFAULT_CACHE_SIZE_GB;
+    static const DAVA::uint32 DEFAULT_FILES_COUNT;
+    static const DAVA::uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    static const DAVA::uint16 DEFAULT_PORT;
+    static const DAVA::uint16 DEFAULT_HTTP_PORT;
+    static const bool DEFAULT_AUTO_START;
+    static const bool DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
+    static const bool DEFAULT_RESTART_ON_CRASH;
+    static const bool DEFAULT_SHARED_FOR_OTHERS;
 
 public:
     void Save() const;
@@ -51,20 +122,23 @@ public:
 
     bool IsFirstLaunch() const;
 
-    const FilePath& GetFolder() const;
-    void SetFolder(const FilePath& folder);
+    const DAVA::FilePath& GetFolder() const;
+    void SetFolder(const DAVA::FilePath& folder);
 
-    const float64 GetCacheSizeGb() const;
-    void SetCacheSizeGb(const float64 size);
+    const DAVA::float64 GetCacheSizeGb() const;
+    void SetCacheSizeGb(const DAVA::float64 size);
 
-    const uint32 GetFilesCount() const;
-    void SetFilesCount(const uint32 count);
+    const DAVA::uint32 GetFilesCount() const;
+    void SetFilesCount(const DAVA::uint32 count);
 
-    const uint64 GetAutoSaveTimeoutMin() const;
-    void SetAutoSaveTimeoutMin(const uint64 timeout);
+    const DAVA::uint64 GetAutoSaveTimeoutMin() const;
+    void SetAutoSaveTimeoutMin(const DAVA::uint64 timeout);
 
-    const uint16 GetPort() const;
-    void SetPort(const uint16 port);
+    const DAVA::uint16 GetPort() const;
+    void SetPort(const DAVA::uint16 port);
+
+    const DAVA::uint16 GetHttpPort() const;
+    void SetHttpPort(const DAVA::uint16 port);
 
     const bool IsAutoStart() const;
     void SetAutoStart(bool);
@@ -72,12 +146,35 @@ public:
     const bool IsLaunchOnSystemStartup() const;
     void SetLaunchOnSystemStartup(bool);
 
-    const List<ServerData>& GetServers() const;
-    void ResetServers();
-    void AddServer(const ServerData& server);
-    void RemoveServer(const ServerData& server);
+    const bool IsRestartOnCrash() const;
+    void SetRestartOnCrash(bool);
 
-    ServerData GetCurrentServer() const;
+    bool IsSharedForOthers() const;
+    void SetSharedForOthers(bool);
+
+    ServerID GetOwnID() const;
+    void SetOwnID(ServerID);
+    void ResetOwnID();
+
+    void SetOwnPoolID(PoolID);
+    PoolID GetOwnPoolID() const;
+
+    void SetOwnName(DAVA::String);
+    const DAVA::String& GetOwnName() const;
+
+    void UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
+    const DAVA::Map<PoolID, SharedPool>& GetSharedPools() const;
+    void EnableSharedPool(PoolID poolID);
+    void EnableSharedServer(PoolID poolID, ServerID serverID);
+
+    const DAVA::List<RemoteServerParams>& GetCustomServers() const;
+    void AddCustomServer(const RemoteServerParams& server);
+    void RemoveCustomServer(const RemoteServerParams& server);
+    void ClearCustomServers();
+
+    DAVA::List<RemoteServerParams> GetEnabledRemoteServers();
+    EnabledRemote GetEnabledRemote();
+    void DisableRemote();
 
 signals:
     void SettingsUpdated(const ApplicationSettings* settings) const;
@@ -87,14 +184,22 @@ private:
     void Deserialize(DAVA::KeyedArchive* archieve);
 
 public:
-    FilePath folder = DEFAULT_FOLDER;
-    float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
-    uint32 filesCount = DEFAULT_FILES_COUNT;
-    uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
-    uint16 listenPort = DEFAULT_PORT;
+    DAVA::FilePath folder = DEFAULT_FOLDER;
+    DAVA::float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
+    DAVA::uint32 filesCount = DEFAULT_FILES_COUNT;
+    DAVA::uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    DAVA::uint16 listenPort = DEFAULT_PORT;
+    DAVA::uint16 listenHttpPort = DEFAULT_HTTP_PORT;
     bool autoStart = DEFAULT_AUTO_START;
     bool launchOnSystemStartup = DEFAULT_LAUNCH_ON_SYSTEM_STARTUP;
-    List<ServerData> remoteServers;
+    bool restartOnCrash = DEFAULT_RESTART_ON_CRASH;
+    bool sharedForOthers = DEFAULT_SHARED_FOR_OTHERS;
+    ServerID ownID = 0;
+    PoolID ownPoolID = 0;
+    DAVA::String ownName;
+
+    DAVA::Map<PoolID, SharedPool> sharedPools;
+    DAVA::List<RemoteServerParams> customServers;
 
     bool isFirstLaunch = true;
 };
@@ -103,5 +208,3 @@ inline bool ApplicationSettings::IsFirstLaunch() const
 {
     return isFirstLaunch;
 }
-
-#endif // __APPLICATION_SETTINGS_H__

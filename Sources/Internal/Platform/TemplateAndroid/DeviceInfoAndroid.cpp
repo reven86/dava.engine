@@ -6,7 +6,7 @@
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Render/Renderer.h"
 #include <unistd.h>
 
 namespace DAVA
@@ -29,6 +29,10 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
+    getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
+    getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
+    getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -109,6 +113,9 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     eGPUFamily gpuFamily = GPU_INVALID;
+#ifdef __DAVAENGINE_COREV2__
+    gpuFamily = static_cast<eGPUFamily>(getGpuFamily());
+#else
     if (Renderer::IsInitialized())
     {
         if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_PVRTC_4BPP_RGBA))
@@ -128,6 +135,7 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
             gpuFamily = GPU_MALI;
         }
     }
+#endif
 
     return gpuFamily;
 }
@@ -164,10 +172,16 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+#if !defined(__DAVAENGINE_COREV2__)
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
     screenInfo.scale = 1;
+#else
+    screenInfo.width = getDefaultDisplayWidth();
+    screenInfo.height = getDefaultDisplayHeight();
+    screenInfo.scale = 1;
+#endif
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
@@ -311,6 +325,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     }
 
     return list;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return JNI::ToString(getCarrierName());
 }
 }
 

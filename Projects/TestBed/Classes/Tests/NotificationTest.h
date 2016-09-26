@@ -5,10 +5,11 @@
 
 using namespace DAVA;
 
+class GameCore;
 class NotificationScreen : public BaseScreen
 {
 public:
-    NotificationScreen();
+    NotificationScreen(GameCore* g);
 
 protected:
     ~NotificationScreen()

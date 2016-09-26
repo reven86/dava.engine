@@ -1,15 +1,22 @@
 #pragma once
+
+#include "Base/BaseTypes.h"
+
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 
 #include "UI/IWebViewControl.h"
 
 namespace DAVA
 {
-// Web View Control for Win32.
+class Window;
 class WebViewControl : public IWebViewControl
 {
 public:
-    WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     // Initialize the control.
     void Initialize(const Rect& rect) override;
 

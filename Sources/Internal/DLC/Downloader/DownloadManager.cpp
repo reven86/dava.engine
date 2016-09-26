@@ -7,8 +7,14 @@
 #include "DownloadManager.h"
 #include "Downloader.h"
 
+#include "Engine/EngineModule.h"
+
+#include <atomic>
+
 namespace DAVA
 {
+static std::atomic<uint32> prevId{ 1 };
+
 DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
     : id(_id)
     , status(_status)
@@ -17,8 +23,20 @@ DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
 
 Mutex DownloadManager::currentTaskMutex;
 
+#if defined(__DAVAENGINE_COREV2__)
+DownloadManager::DownloadManager(Engine* e)
+    : engine(e)
+{
+    sigUpdateId = engine->update.Connect(this, &DownloadManager::Update);
+}
+#endif
+
 DownloadManager::~DownloadManager()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    engine->update.Disconnect(sigUpdateId);
+#endif
+
     isThreadStarted = false;
 
     if (currentTask)
@@ -72,7 +90,11 @@ void DownloadManager::StopProcessingThread()
     SafeRelease(thisThread);
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void DownloadManager::Update(float32 frameDelta)
+#else
 void DownloadManager::Update()
+#endif
 {
     if (!currentTask)
     {
@@ -137,8 +159,7 @@ uint32 DownloadManager::Download(const String& srcUrl,
                                                                 downloadOffset,
                                                                 downloadSize);
 
-    static uint32 prevId = 1;
-    task->id = prevId++;
+    task->id = prevId.fetch_add(1);
 
     PlaceToQueue(pendingTaskQueue, task);
 
@@ -156,7 +177,7 @@ uint32 DownloadManager::DownloadRange(const String& srcUrl,
                                       int32 timeout,
                                       int32 retriesCount)
 {
-    return Download(srcUrl, storeToFilePath, FULL, -1, 30, 3, downloadOffset, downloadSize);
+    return Download(srcUrl, storeToFilePath, downloadMode, -1, 30, 3, downloadOffset, downloadSize);
 }
 
 uint32 DownloadManager::DownloadIntoBuffer(const String& srcUrl,
@@ -183,8 +204,7 @@ uint32 DownloadManager::DownloadIntoBuffer(const String& srcUrl,
                                                                 downloadOffset,
                                                                 downloadSize);
 
-    static uint32 prevId = 1;
-    task->id = prevId++;
+    task->id = prevId.fetch_add(1);
 
     PlaceToQueue(pendingTaskQueue, task);
 

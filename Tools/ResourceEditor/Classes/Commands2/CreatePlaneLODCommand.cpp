@@ -5,11 +5,12 @@
 #include "Scene/SceneHelper.h"
 #include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Commands2/RECommandIDs.h"
 
 using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request_)
-    : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
+    : RECommand(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
     , request(request_)
 {
     DVASSERT(GetRenderObject(GetEntity()));
@@ -18,7 +19,21 @@ CreatePlaneLODCommand::CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::
 void CreatePlaneLODCommand::Redo()
 {
     CreateTextureFiles();
-    request->planeBatch->GetMaterial()->GetEffectiveTexture(NMaterialTextureName::TEXTURE_ALBEDO)->Reload();
+
+    ScopedPtr<Texture> fileTexture(Texture::CreateFromFile(request->texturePath));
+    NMaterial* material = request->planeBatch->GetMaterial();
+    if (material != nullptr)
+    {
+        if (material->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
+        {
+            material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+        }
+        else
+        {
+            material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+        }
+        fileTexture->Reload();
+    }
 
     auto entity = GetEntity();
     auto renderObject = DAVA::GetRenderObject(entity);

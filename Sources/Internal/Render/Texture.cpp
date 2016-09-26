@@ -185,11 +185,10 @@ public:
     int fboMemoryUsed;
 };
 
-eGPUFamily Texture::defaultGPU = GPU_ORIGIN;
-
 static TextureMemoryUsageInfo texMemoryUsageInfo;
 
 TexturesMap Texture::textureMap;
+Vector<eGPUFamily> Texture::gpuLoadingOrder;
 
 Mutex Texture::textureMapMutex;
 
@@ -411,9 +410,6 @@ Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
     bool loaded = texture->LoadImages(gpu, images);
     if (!loaded)
     {
-        Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
-                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
-
         SafeDelete(images);
         SafeRelease(texture);
         return nullptr;
@@ -421,6 +417,17 @@ Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
 
     texture->SetParamsFromImages(images);
     texture->FlushDataToRenderer(images);
+
+    if (!texture->singleTextureSet.IsValid())
+    {
+        Logger::Error
+        (
+        "[Texture::CreateFromImage] Cannot create rhi.texture from image. Descriptor: %s, GPU: %s",
+        descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu)
+        );
+        SafeRelease(texture);
+        return nullptr;
+    }
 
     return texture;
 }
@@ -507,32 +514,20 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
             for (uint32 index = baseMipMap; index < singleMipFilesCount; ++index)
             {
                 params.baseMipmap = 0;
-                params.firstMipmapIndex = static_cast<uint32>(images->size());
-                ImageSystem::Load(singleMipFiles[index], *images, params);
+                eErrorCode loadingCode = ImageSystem::Load(singleMipFiles[index], *images, params);
+                if (loadingCode == eErrorCode::SUCCESS)
+                {
+                    ++params.firstMipmapIndex;
+                }
             }
 
             params.baseMipmap = Max(static_cast<int32>(baseMipMap) - static_cast<int32>(singleMipFilesCount), 0);
-            params.firstMipmapIndex += singleMipFilesCount;
         }
 
         FilePath multipleMipPathname = texDescriptor->CreateMultiMipPathnameForGPU(gpu);
         ImageSystem::Load(multipleMipPathname, *images, params);
 
         ImageSystem::EnsurePowerOf2Images(*images);
-        if (images->size() == 1 && texDescriptor->GetGenerateMipMaps())
-        {
-            ImageFormat imFormat = texDescriptor->GetImageFormatForGPU(gpu);
-            if (TextureDescriptor::IsSupportedCompressedFormat(imFormat) == false) //only tga, png, webp, jpeg
-            {
-                Image* img = *images->begin();
-                *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
-                SafeRelease(img);
-            }
-            else
-            {
-                Logger::Error("[Texture::LoadImages] Can't create mipmaps for GPU (%s)", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
-            }
-        }
     }
 
     if (!Validator::AreImagesCorrectForTexture(*images))
@@ -547,6 +542,19 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image*>* images)
 
         ReleaseImages(images);
         return false;
+    }
+
+    if (images->size() == 1 && texDescriptor->GetGenerateMipMaps())
+    {
+        Image* img = *images->begin();
+        *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
+        SafeRelease(img);
+
+        if (images->empty())
+        {
+            Logger::Error("[Texture::LoadImages] Can't create mipmaps for GPU (%s) for %s", GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu), texDescriptor->pathname.GetStringValue().c_str());
+            return false;
+        }
     }
 
     isPink = false;
@@ -636,13 +644,18 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     }
 
     handle = rhi::CreateTexture(descriptor);
-    DVASSERT(handle != rhi::InvalidHandle);
-
-    rhi::TextureSetDescriptor textureSetDesc;
-    textureSetDesc.fragmentTexture[0] = handle;
-    textureSetDesc.fragmentTextureCount = 1;
-    singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
-
+    if (handle != rhi::InvalidHandle)
+    {
+        rhi::TextureSetDescriptor textureSetDesc;
+        textureSetDesc.fragmentTexture[0] = handle;
+        textureSetDesc.fragmentTextureCount = 1;
+        singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+    }
+    else
+    {
+        singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
+    }
+    
 #else
 
     handle = rhi::CreateTexture(descriptor);
@@ -724,13 +737,22 @@ Texture* Texture::PureCreate(const FilePath& pathName, const FastName& group)
         return nullptr;
 
     descriptor->SetQualityGroup(group);
-
-    eGPUFamily gpuForLoading = GetGPUForLoading(defaultGPU, descriptor);
-    texture = CreateFromImage(descriptor, gpuForLoading);
-    if (texture)
+    for (eGPUFamily gpu : gpuLoadingOrder)
     {
-        texture->loadedAsFile = gpuForLoading;
-        AddToMap(texture);
+        eGPUFamily gpuForLoading = GetGPUForLoading(gpu, descriptor);
+        texture = CreateFromImage(descriptor, gpuForLoading);
+        if (texture)
+        {
+            texture->loadedAsFile = gpuForLoading;
+            AddToMap(texture);
+            break;
+        }
+    }
+
+    if (texture == nullptr)
+    {
+        Logger::Error("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
+                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
     }
 
     delete descriptor;
@@ -863,6 +885,7 @@ Texture* Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+    descriptor.sampleCount = fboDesc.sampleCount;
     if (fboDesc.needPixelReadback)
     {
         descriptor.cpuAccessRead = true;
@@ -1081,14 +1104,24 @@ bool Texture::IsPinkPlaceholder()
     return isPink;
 }
 
-void Texture::SetDefaultGPU(eGPUFamily gpuFamily)
+void Texture::SetGPULoadingOrder(const Vector<eGPUFamily>& gpuLoadingOrder_)
 {
-    defaultGPU = gpuFamily;
+    gpuLoadingOrder = gpuLoadingOrder_;
 }
 
-eGPUFamily Texture::GetDefaultGPU()
+const Vector<eGPUFamily>& Texture::GetGPULoadingOrder()
 {
-    return defaultGPU;
+    return gpuLoadingOrder;
+}
+
+eGPUFamily Texture::GetPrimaryGPUForLoading()
+{
+    if (gpuLoadingOrder.empty())
+    {
+        return eGPUFamily::GPU_INVALID;
+    }
+
+    return gpuLoadingOrder[0];
 }
 
 eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)

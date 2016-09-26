@@ -1,13 +1,14 @@
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
+#pragma once
 
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
+
 #if defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
 
 #include "UI/IWebViewControl.h"
 
 namespace DAVA
 {
+class Window;
 class UIControl;
 class FilePath;
 class UIWebView;
@@ -16,7 +17,11 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-    explicit WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     virtual ~WebViewControl();
 
     // Initialize the control.
@@ -64,40 +69,37 @@ public:
 
     void WillDraw() override;
 
+#if !defined(__DAVAENGINE_COREV2__)
     // common ios part to render any UIView* to UIImage*
     // workaroundKeyboardBug - if call during show/hide keyboard - false
     static void* RenderIOSUIViewToImage(void* uiviewPtr);
     // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
     static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
+#endif
 
     void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 
 private:
-    //A pointer to iOS WebView.
-    void* webViewPtr;
-
-    // A pointer to the WebView delegate.
-
-    void* webViewURLDelegatePtr;
-
-    void* rightSwipeGesturePtr;
-    void* leftSwipeGesturePtr;
+    struct WebViewObjcBridge;
+    std::unique_ptr<WebViewObjcBridge> bridge;
+    
+#if defined(__DAVAENGINE_COREV2__)
+    Window* window = nullptr;
+#endif
 
     Map<void*, bool> subviewVisibilityMap;
 
     void HideSubviewImages(void* view);
     void RestoreSubviewImages();
 
-    bool gesturesEnabled;
-    bool isRenderToTexture;
-    bool pendingRenderToTexture;
-    bool isVisible;
-    bool pendingVisible;
+    bool gesturesEnabled = false;
+    bool isRenderToTexture = false;
+    bool pendingRenderToTexture = false;
+    bool isVisible = true;
+    bool pendingVisible = false;
 
     UIWebView& uiWebView;
 };
 };
 
 #endif //defined(__DAVAENGINE_IPHONE__) && !defined(DISABLE_NATIVE_WEBVIEW)
-
-#endif /* defined(__DAVAENGINE_WEBVIEWCONTROL_IOS_H__) */

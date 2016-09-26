@@ -2,6 +2,8 @@
 
 #include "Base/FastName.h"
 
+#include "Render/RenderBase.h"
+
 class Settings
 {
 public:
@@ -28,6 +30,7 @@ public:
     static const DAVA::FastName General_LODEditor_LodColor2;
     static const DAVA::FastName General_LODEditor_LodColor3;
     static const DAVA::FastName General_LODEditor_InactiveColor;
+    static const DAVA::FastName General_LODEditor_FitSliders;
 
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;
@@ -73,6 +76,9 @@ public:
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor;
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor;
 
+    static const DAVA::FastName Scene_Grab_Size_Width;
+    static const DAVA::FastName Scene_Grab_Size_Height;
+
     static const DAVA::FastName General_Mouse_InvertWheel;
     static const DAVA::FastName General_Mouse_WheelMoveCamera;
 
@@ -100,4 +106,5 @@ public:
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
 
+    static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings

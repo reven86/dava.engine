@@ -11,7 +11,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #elif defined(__DAVAENGINE_APPLE__)
 #import <Foundation/NSAutoreleasePool.h>
 #include <mach/thread_policy.h>
@@ -137,6 +137,15 @@ void Thread::Join()
 Thread::Id Thread::GetCurrentId()
 {
     return pthread_self();
+}
+
+uint64 Thread::GetCurrentIdAsUInt64()
+{
+#if defined(__DAVAENGINE_APPLE__)
+    return reinterpret_cast<uint64>(GetCurrentId());
+#elif defined(__DAVAENGINE_ANDROID__)
+    return static_cast<uint64>(GetCurrentId());
+#endif
 }
 
 #if defined(__DAVAENGINE_APPLE__)

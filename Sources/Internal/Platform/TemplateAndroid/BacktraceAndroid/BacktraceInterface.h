@@ -1,5 +1,8 @@
 #ifndef BACKTRACEINTERFACE_H_
 #define BACKTRACEINTERFACE_H_
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 namespace DAVA
@@ -47,4 +50,6 @@ public:
 };
 
 } /* namespace DAVA */
+
+#endif // !__DAVAENGINE_COREV2__
 #endif /* BACKTRACEINTERFACE_H_ */

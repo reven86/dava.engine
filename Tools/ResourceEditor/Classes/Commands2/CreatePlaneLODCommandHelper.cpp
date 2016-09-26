@@ -82,6 +82,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
 
+    DVASSERT(request->targetTexture == nullptr);
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
     request->depthTexture = rhi::CreateTexture(descriptor);
     request->RegisterRenderCallback();
@@ -238,12 +239,9 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     }
     planePG->BuildBuffers();
 
-    Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
-
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
     material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
-    material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
@@ -256,13 +254,13 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
 
     ScopedPtr<Scene> tempScene(new Scene());
 
-    rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
-    renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
-    renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-    renderPassConfig.priority = PRIORITY_SERVICE_3D;
-    renderPassConfig.viewport = viewport;
-    renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
-    memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
+    tempScene->SetMainRenderTarget(request->targetTexture->handle, request->depthTexture,
+                                   clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE, Color::Clear);
+
+    tempScene->SetMainPassProperties(PRIORITY_SERVICE_3D, Rect(viewport.x, viewport.y, viewport.width, viewport.height),
+                                     request->targetTexture->GetWidth(), request->targetTexture->GetHeight(), request->targetTexture->GetFormat());
+
+    tempScene->GetRenderSystem()->SetAntialiasingAllowed(false);
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
@@ -351,6 +349,7 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 {
     completed = true;
 
+    DVASSERT(planeImage == nullptr);
     planeImage = targetTexture->CreateImageFromMemory();
     SafeRelease(targetTexture);
 

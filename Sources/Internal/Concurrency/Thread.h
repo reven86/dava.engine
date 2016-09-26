@@ -56,7 +56,7 @@ class Thread : public ThreadTraits, public BaseObject
     friend void* PthreadMain(void* param);
 #endif
 public:
-    using Procedure = std::function<void()>;
+    using Procedure = Function<void()>;
 
     enum eThreadPriority
     {
@@ -156,6 +156,12 @@ public:
      \returns returns unique current thread identifier.
     */
     static Id GetCurrentId();
+
+    /**
+     \brief 
+     \returns returns current thread identifier as integer
+    */
+    static uint64 GetCurrentIdAsUInt64();
 
     /**
      \returns returns Id of Thread Object.

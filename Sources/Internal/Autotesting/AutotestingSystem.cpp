@@ -17,7 +17,8 @@
 namespace DAVA
 {
 AutotestingSystem::AutotestingSystem()
-    : startTimeMS(0)
+    : luaSystem(nullptr)
+    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -52,7 +53,6 @@ AutotestingSystem::AutotestingSystem()
     , multiplayerName("")
     , waitTimeLeft(0.0f)
     , waitCheckTimeLeft(0.0f)
-    , luaSystem(nullptr)
 {
     new AutotestingDB();
 }
@@ -62,6 +62,8 @@ AutotestingSystem::~AutotestingSystem()
     SafeRelease(luaSystem);
     if (AutotestingDB::Instance())
         AutotestingDB::Instance()->Release();
+
+    SafeRelease(screenshotTexture);
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -137,6 +139,17 @@ void AutotestingSystem::OnAppStarted()
     AutotestingDB::Instance()->WriteLogHeader();
 
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
+
+    Size2i size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+    Texture::FBODescriptor desc;
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = FORMAT_RGBA8888;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+
+    screenshotTexture = Texture::CreateFBO(desc);
 }
 
 void AutotestingSystem::OnAppFinished()
@@ -296,6 +309,16 @@ void AutotestingSystem::Update(float32 timeElapsed)
     {
         return;
     }
+
+    if (screenshotRequested && screenshotSync.IsValid() && rhi::SyncObjectSignaled(screenshotSync))
+    {
+        screenshotRequested = false;
+
+        Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, screenshotTexture);
+        JobManager::Instance()->CreateWorkerJob(fn);
+        isScreenShotSaving = true;
+    }
+
     if (needExitApp)
     {
         timeBeforeExit -= timeElapsed;
@@ -308,7 +331,9 @@ void AutotestingSystem::Update(float32 timeElapsed)
                 AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
             }
             JobManager::Instance()->WaitWorkerJobs();
+#if !defined(__DAVAENGINE_COREV2__)
             Core::Instance()->Quit();
+#endif
         }
         return;
     }
@@ -325,6 +350,44 @@ void AutotestingSystem::Draw()
     {
         return;
     }
+
+    DrawTouches();
+
+    if (screenshotRequested && !screenshotSync.IsValid())
+    {
+        UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
+        if (currentScreen)
+        {
+            screenshotSync = rhi::GetCurrentFrameSyncObject();
+
+            const Size2i& pScreenSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+
+            RenderSystem2D::RenderTargetPassDescriptor desc;
+            desc.colorAttachment = screenshotTexture->handle;
+            desc.depthAttachment = screenshotTexture->handleDepthStencil;
+            desc.format = PixelFormat::FORMAT_RGBA8888;
+            desc.width = uint32(pScreenSize.dx);
+            desc.height = uint32(pScreenSize.dy);
+            desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
+            desc.clearTarget = UIControlSystem::Instance()->GetUI3DViewCount() == 0;
+            desc.clearColor = Color::Black;
+            desc.transformVirtualToPhysical = true;
+
+            RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            DrawTouches();
+            RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+            RenderSystem2D::Instance()->EndRenderTargetPass();
+        }
+        else
+        {
+            Logger::Error("AutotestingSystem::MakeScreenShot no current screen");
+        }
+    }
+}
+
+void AutotestingSystem::DrawTouches()
+{
     if (!touches.empty())
     {
         for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
@@ -351,7 +414,7 @@ void AutotestingSystem::OnError(const String& errorMessage)
 
     MakeScreenShot();
 
-    AutotestingDB::Instance()->Log("ERROR", screenShotName);
+    AutotestingDB::Instance()->Log("ERROR", screenshotName);
 
     if (isDB && isInitMultiplayer)
     {
@@ -364,43 +427,44 @@ void AutotestingSystem::OnError(const String& errorMessage)
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
     DVASSERT_MSG(false, errorMessage.c_str())
+#if !defined(__DAVAENGINE_COREV2__)
     Core::Instance()->Quit();
+#endif
 }
 
 void AutotestingSystem::MakeScreenShot()
 {
     Logger::Info("AutotestingSystem::MakeScreenShot");
     String currentDateTime = GetCurrentTimeString();
-    screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-    String log = Format("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+    screenshotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
+    String log = Format("AutotestingSystem::ScreenShotName %s", screenshotName.c_str());
     AutotestingDB::Instance()->Log("INFO", log.c_str());
-    Renderer::RequestGLScreenShot(this);
+
+    screenshotRequested = true;
+    screenshotSync = rhi::HSyncObject();
 }
 
 const String& AutotestingSystem::GetScreenShotName()
 {
-    Logger::Info("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
-    return screenShotName;
+    Logger::Info("AutotestingSystem::GetScreenShotName %s", screenshotName.c_str());
+    return screenshotName;
 }
 
-void AutotestingSystem::OnScreenShot(Image* image)
+void AutotestingSystem::OnScreenShotInternal(Texture* texture)
 {
-    Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
-    JobManager::Instance()->CreateWorkerJob(fn);
-    isScreenShotSaving = true;
-}
+    DVASSERT(texture);
 
-void AutotestingSystem::OnScreenShotInternal(Image* image)
-{
-    DVASSERT(image);
-
-    Logger::Info("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
+    Logger::Info("AutotestingSystem::OnScreenShot %s", screenshotName.c_str());
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenShotName.c_str())));
+
+    DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
+    const Size2i& size = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
+    image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
+
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
     isScreenShotSaving = false;
-    SafeRelease(image);
 }
 
 void AutotestingSystem::ClickSystemBack()

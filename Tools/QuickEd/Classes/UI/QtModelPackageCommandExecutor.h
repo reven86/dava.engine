@@ -5,12 +5,17 @@
 #include "Base/Result.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Command/Command.h"
+
 #include <QString>
+
+namespace DAVA
+{
+class CommandStack;
+}
 
 class Document;
 class PackageBaseNode;
-class QUndoStack;
-class QUndoCommand;
 
 class ControlNode;
 class StyleSheetNode;
@@ -30,8 +35,7 @@ public:
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, PackageNode* package);
 
-    void ChangeProperty(const DAVA::Vector<ChangePropertyAction>& propertyActions, size_t hash = 0);
-    void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value, size_t hash = 0);
+    void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value);
     void ResetProperty(ControlNode* node, AbstractProperty* property);
 
     void AddComponent(ControlNode* node, DAVA::uint32 componentType);
@@ -57,18 +61,21 @@ public:
     void Remove(const DAVA::Vector<ControlNode*>& controls, const DAVA::Vector<StyleSheetNode*>& styles);
     DAVA::Vector<PackageBaseNode*> Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data);
 
+    void BeginMacro(const QString& name);
+    void EndMacro();
+
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package);
     void InsertControlImpl(ControlNode* control, ControlsContainerNode* dest, DAVA::int32 destIndex);
     void RemoveControlImpl(ControlNode* node);
+    bool MoveControlImpl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 destIndex);
     void AddComponentImpl(ControlNode* node, DAVA::int32 type, DAVA::int32 index, ComponentPropertiesSection* prototypeSection);
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
+    static bool IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2);
 
-    QUndoStack* GetUndoStack() const;
-    void PushCommand(QUndoCommand* cmd);
-    void BeginMacro(const QString& name);
-    void EndMacro();
+    DAVA::CommandStack* GetCommandStack() const;
+    void ExecCommand(std::unique_ptr<DAVA::Command>&& cmd);
 
 private:
     Document* document = nullptr;

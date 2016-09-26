@@ -1,4 +1,8 @@
 #include "FileSystem/File.h"
+
+#include "Engine/Engine.h"
+
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -7,7 +11,8 @@
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Core/Core.h"
+#include "PackManager/PackManager.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -16,7 +21,7 @@
 #endif
 
 #include <sys/stat.h>
-#include <time.h>
+#include <ctime>
 
 namespace DAVA
 {
@@ -32,30 +37,99 @@ File::~File()
     }
 }
 
+static uint64 GetFilePos(FILE* f)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    return _ftelli64(f);
+#else
+    return static_cast<uint64>(ftello(f));
+#endif
+}
+
+static int SetFilePos(FILE* f, int64 position, int32 seekDirection)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    return _fseeki64(f, position, seekDirection);
+#else
+    return fseeko(f, position, seekDirection);
+#endif
+}
+
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
-    File* result = FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    File* result = CreateFromSystemPath(filePath, attributes);
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
+}
+
+File* File::LoadFileFromMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            Vector<uint8> fileContent;
+            if (it->second.archive->LoadFile(relative, fileContent))
+            {
+                return DynamicMemoryFile::Create(std::move(fileContent), READ, "~res:/" + relative);
+            }
+        }
+        return nullptr;
+    }
+}
+
+bool File::IsFileInMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            return it->second.archive->HasFile(relative);
+        }
+        return false;
+    }
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     FileSystem* fileSystem = FileSystem::Instance();
 
-    if (FilePath::PATH_IN_RESOURCES == filename.GetType()) // if start from ~res:/
+    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
     {
         String relative = filename.GetRelativePathname("~res:/");
-
-        // TODO (future improvment) now with PackManager we can improve perfomance by lookup pack name
-        // from DB with all files, then check if such pack mounted and from
-        // mountedPackIndex find by name archive with file or skip to next step
-
         Vector<uint8> contentAndSize;
-        for (FileSystem::ResourceArchiveItem& item : fileSystem->resourceArchiveList)
+
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
+#ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
+        IPackManager* pm = nullptr;
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
+#else
+        IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+        if (nullptr != pm && pm->IsInitialized())
         {
-            if (item.archive->LoadFile(relative, contentAndSize))
+            const String& packName = pm->FindPackName(filename);
+            if (!packName.empty())
             {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
+                File* file = LoadFileFromMountedArchive(packName, relative);
+                if (file != nullptr)
+                {
+                    return file;
+                }
             }
         }
     }
@@ -64,75 +138,29 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 }
 
 #ifdef __DAVAENGINE_ANDROID__
-
-static File* CreateFromAPKAssetsPath(zip* package, const FilePath& filePath, const String& path, uint32 attributes)
-{
-    int index = zip_name_locate(package, path.c_str(), 0);
-    if (-1 == index)
-    {
-        return nullptr;
-    }
-
-    struct zip_stat stat;
-
-    int32 error = zip_stat_index(package, index, 0, &stat);
-    if (-1 == error)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't get file info: %s", path.c_str());
-        return nullptr;
-    }
-
-    zip_file* file = zip_fopen_index(package, index, 0);
-    if (nullptr == file)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Can't open file in the archive: %s", path.c_str());
-        return nullptr;
-    }
-    SCOPE_EXIT
-    {
-        zip_fclose(file);
-    };
-
-    DVASSERT(stat.size >= 0);
-
-    Vector<uint8> data(stat.size, 0);
-
-    if (zip_fread(file, &data[0], stat.size) != stat.size)
-    {
-        Logger::FrameworkDebug("[CreateFromAPKAssetsPath] Error reading file: %s", path.c_str());
-
-        return nullptr;
-    }
-
-    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
-}
-
 static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 {
     static Mutex mutex;
 
     LockGuard<Mutex> guard(mutex);
 
-    AssetsManager* assetsManager = AssetsManager::Instance();
+    AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
     DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
-    zip* package = assetsManager->GetApplicationPackage();
-    if (nullptr == package)
+    Vector<uint8> data;
+    if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))
     {
-        DVASSERT_MSG(false, "[CreateFromAPK] Package file should be initialized.");
         return nullptr;
     }
-    // TODO in future remove ugly HACK with prefix path
-    String assetFileStr = "assets/" + filePath.GetAbsolutePathname();
-    return CreateFromAPKAssetsPath(package, filePath, assetFileStr, attributes);
-}
 
+    return DynamicMemoryFile::Create(std::move(data), attributes, filePath);
+}
 #endif // __DAVAENGINE_ANDROID__
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
-    FILE* file = 0;
-    uint32 size = 0;
+    FILE* file = nullptr;
+    uint64 size = 0;
     FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
@@ -152,12 +180,26 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
             File* fromAPK = CreateFromAPK(filePath, attributes);
             return fromAPK; // simpler debugging on android
 #else
+#ifdef __DAVAENGINE_DEBUG__
+// this is a last place where we search for file, so help
+// developers a litle and add some logs
+// String p = UTF8Utils::EncodeToUTF8(path);
+// Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
+#endif
             return nullptr;
 #endif
         }
-        fseek(file, 0, SEEK_END);
-        size = static_cast<uint32>(ftell(file));
-        fseek(file, 0, SEEK_SET);
+        if (0 != SetFilePos(file, 0, SEEK_END))
+        {
+            Logger::Error("fseek end error");
+        }
+
+        size = GetFilePos(file);
+
+        if (0 != SetFilePos(file, 0, SEEK_SET))
+        {
+            Logger::Error("fseek set error");
+        }
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
@@ -170,8 +212,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)
             return nullptr;
-        fseek(file, 0, SEEK_END);
-        size = static_cast<uint32>(ftell(file));
+        if (0 != SetFilePos(file, 0, SEEK_END))
+        {
+            Logger::Error("fseek set error");
+        }
+        size = GetFilePos(file);
     }
     else
     {
@@ -213,7 +258,7 @@ uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
-    return static_cast<uint32>(fread(pointerToData, 1, dataSize, file));
+    return static_cast<uint32>(fread(pointerToData, 1, static_cast<size_t>(dataSize), file));
 }
 
 uint32 File::ReadString(char8* destinationBuffer, uint32 destinationBufferSize)
@@ -318,7 +363,7 @@ String File::ReadLine()
 
 bool File::GetNextChar(uint8* nextChar)
 {
-    uint32 actuallyRead = Read(nextChar, 1);
+    uint64 actuallyRead = Read(nextChar, 1);
     if (actuallyRead != 1)
     {
         //seems IsEof()
@@ -347,17 +392,17 @@ bool File::GetNextChar(uint8* nextChar)
     }
 }
 
-uint32 File::GetPos() const
+uint64 File::GetPos() const
 {
-    return static_cast<uint32>(ftell(file));
+    return GetFilePos(file);
 }
 
-uint32 File::GetSize() const
+uint64 File::GetSize() const
 {
     return size;
 }
 
-bool File::Seek(int32 position, eFileSeek seekType)
+bool File::Seek(int64 position, eFileSeek seekType)
 {
     int realSeekType = 0;
     switch (seekType)
@@ -375,7 +420,8 @@ bool File::Seek(int32 position, eFileSeek seekType)
         DVASSERT(0 && "Invalid seek type");
         break;
     }
-    return 0 == fseek(file, position, realSeekType);
+
+    return 0 == SetFilePos(file, position, realSeekType);
 }
 
 bool File::Flush()
@@ -388,10 +434,10 @@ bool File::IsEof() const
     return (feof(file) != 0);
 }
 
-bool File::Truncate(int32 size)
+bool File::Truncate(uint64 size)
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    return (0 == _chsize(_fileno(file), size));
+    return (0 == _chsize(_fileno(file), static_cast<long>(size)));
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     return (0 == ftruncate(fileno(file), size));
 #else

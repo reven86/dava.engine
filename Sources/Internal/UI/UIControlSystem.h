@@ -10,6 +10,8 @@
 #include "UI/UIPopup.h"
 #include "Base/FastName.h"
 
+#include "Engine/Private/EnginePrivateFwd.h"
+
 #define FRAME_SKIP 5
 
 /**
@@ -284,6 +286,10 @@ public:
     void SetDefaultTapCountSettings();
     void SetTapCountSettings(float32 time, float32 inch);
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+    int32 GetUI3DViewCount();
+
 private:
     void ProcessScreenLogic();
 
@@ -292,7 +298,11 @@ private:
     bool CheckTimeAndPosition(UIEvent* newEvent);
     int32 CalculatedTapCount(UIEvent* newEvent);
 
+#if defined(__DAVAENGINE_COREV2__)
+    friend class Private::EngineBackend;
+#else
     friend void Core::CreateSingletons();
+#endif
 
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
@@ -331,6 +341,9 @@ private:
         bool lastClickEnded = false;
     };
     LastClickData lastClickData;
+
+    int32 ui3DViewCount = 0;
+    bool needClearMainPass = true;
 };
 };
 

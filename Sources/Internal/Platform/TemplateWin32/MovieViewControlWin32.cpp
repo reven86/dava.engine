@@ -1,8 +1,9 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
-#include "MovieViewControlWin32.h"
+#include "Platform/TemplateWin32/MovieViewControlWin32.h"
 
 #include "Platform/TemplateWin32/FfmpegPlayer.h"
 #include "Render/PixelFormatDescriptor.h"
@@ -10,7 +11,11 @@
 
 namespace DAVA
 {
+#if defined(__DAVAENGINE_COREV2__)
+MovieViewControl::MovieViewControl(Window* /*w*/)
+#else
 MovieViewControl::MovieViewControl()
+#endif
     : ffmpegPlayer(new FfmpegPlayer())
     , videoBackground(new UIControlBackground())
 {
@@ -198,4 +203,5 @@ void MovieViewControl::Draw(const UIGeometricData& parentGeometricData)
 }
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

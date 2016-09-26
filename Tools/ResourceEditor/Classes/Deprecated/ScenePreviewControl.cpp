@@ -10,8 +10,11 @@
 ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     : UI3DView(rect)
 {
-    SetInputEnabled(true, true);
+    SetName(DAVA::FastName("Preview 3D View"));
+
     SetBasePriority(-100);
+    SetInputEnabled(true, true);
+    SetDrawToFrameBuffer(true);
 }
 
 ScenePreviewControl::~ScenePreviewControl()
@@ -22,17 +25,11 @@ ScenePreviewControl::~ScenePreviewControl()
     rotationSystem = nullptr;
 }
 
-void ScenePreviewControl::Input(DAVA::UIEvent* event)
-{
-    UI3DView::Input(event);
-}
-
 void ScenePreviewControl::RecreateScene()
 {
     DVASSERT(editorScene == nullptr);
 
     editorScene = new DAVA::Scene();
-    editorScene->GetMainPassConfig().priority = DAVA::PRIORITY_MAIN_2D - 5;
 
     rotationSystem = new DAVA::RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);

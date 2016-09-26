@@ -1,11 +1,12 @@
 #include "UI/mainwindow.h"
-#include "DocumentGroup.h"
-#include "Document.h"
+#include "Document/DocumentGroup.h"
+#include "Document/Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "QtTools/Utils/Utils.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
@@ -26,9 +27,12 @@ EditorCore::EditorCore(QObject* parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
+    ConnectApplicationFocus();
+
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->AttachDocumentGroup(documentGroup);
 
+    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
     mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
@@ -39,6 +43,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+    connect(project, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
@@ -81,6 +86,8 @@ EditorCore::EditorCore(QObject* parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
@@ -89,6 +96,8 @@ EditorCore::~EditorCore()
     {
         cacheClient->Disconnect();
     }
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 MainWindow* EditorCore::GetMainWindow() const
@@ -126,7 +135,7 @@ void EditorCore::OnReloadSpritesFinished()
         cacheClient.reset();
     }
 
-    Sprite::ReloadSprites(Texture::GetDefaultGPU());
+    Sprite::ReloadSprites();
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -157,8 +166,8 @@ void EditorCore::OnProjectPathChanged(const QString& projectPath)
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
-        const QFileInfo& fileInfo = it.fileInfo();
         it.next();
+        const QFileInfo& fileInfo = it.fileInfo();
         if (fileInfo.isDir())
         {
             QString outputPath = fileInfo.absoluteFilePath();
@@ -310,6 +319,18 @@ void EditorCore::OnNewProject()
     else if (result.type == Result::RESULT_ERROR)
     {
         QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
+    }
+}
+
+void EditorCore::OnProjectOpenChanged(bool isOpen)
+{
+    if (isOpen)
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
+    }
+    else
+    {
+        mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
     }
 }
 

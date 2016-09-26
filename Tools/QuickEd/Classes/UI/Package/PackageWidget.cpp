@@ -16,10 +16,10 @@
 
 #include "Model/YamlPackageSerializer.h"
 #include "EditorCore.h"
-#include "Document.h"
+#include "Document/Document.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 using namespace DAVA;
 
@@ -34,7 +34,7 @@ struct PackageContext : WidgetContext
 template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
-    DAVA::Set<PackageBaseNode*> sortedNodes;
+    SortedPackageBaseNodeSet sortedNodes(CompareByLCA);
     std::copy_if(selectedNodes.begin(), selectedNodes.end(), std::inserter(sortedNodes, sortedNodes.end()), [](typename SelectedNodes::value_type node) {
         return (dynamic_cast<NodeType*>(node) != nullptr);
     });
@@ -210,8 +210,13 @@ void PackageWidget::CreateActions()
     copyAction = CreateAction(tr("Copy"), &PackageWidget::OnCopy, QKeySequence::Copy);
     pasteAction = CreateAction(tr("Paste"), &PackageWidget::OnPaste, QKeySequence::Paste);
     delAction = CreateAction(tr("Delete"), &PackageWidget::OnDelete, QKeySequence::Delete);
+#if defined Q_OS_MAC
+    delAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
+#endif // platform
 
     renameAction = CreateAction(tr("Rename"), &PackageWidget::OnRename);
+
+    copyControlPathAction = CreateAction(tr("Copy Control Path"), &PackageWidget::OnCopyControlPath);
 
     moveUpAction = CreateAction(tr("Move up"), &PackageWidget::OnMoveUp, Qt::ControlModifier + Qt::Key_Up);
     moveDownAction = CreateAction(tr("Move down"), &PackageWidget::OnMoveDown, Qt::ControlModifier + Qt::Key_Down);
@@ -228,6 +233,9 @@ void PackageWidget::PlaceActions()
     treeView->addAction(cutAction);
     treeView->addAction(copyAction);
     treeView->addAction(pasteAction);
+    AddSeparatorAction(treeView);
+
+    treeView->addAction(copyControlPathAction);
     AddSeparatorAction(treeView);
 
     treeView->addAction(renameAction);
@@ -290,6 +298,7 @@ void PackageWidget::RefreshActions()
     bool canMoveDown = false;
     bool canMoveLeft = false;
     bool canMoveRight = false;
+    bool containControlNodes = false;
 
     if (nodes.size() == 1)
     {
@@ -299,6 +308,11 @@ void PackageWidget::RefreshActions()
         canInsertPackages = node->IsInsertingPackagesSupported();
         canInsertStyles = node->IsInsertingStylesSupported();
         canEdit = node->IsEditingSupported();
+
+        if (node->GetControl() != nullptr)
+        {
+            containControlNodes = true;
+        }
 
         if (node->CanRemove())
         {
@@ -321,8 +335,14 @@ void PackageWidget::RefreshActions()
     {
         canCopy |= (*iter)->CanCopy();
         canRemove |= (*iter)->CanRemove();
+
+        if ((*iter)->GetControl() != nullptr)
+        {
+            containControlNodes = true;
+        }
     }
 
+    copyControlPathAction->setEnabled(containControlNodes);
     copyAction->setEnabled(canCopy);
     pasteAction->setEnabled(canInsertControls || canInsertStyles);
     cutAction->setEnabled(canCopy && canRemove);
@@ -533,6 +553,35 @@ void PackageWidget::OnAddStyle()
     commandExecutor->InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
 
+void PackageWidget::OnCopyControlPath()
+{
+    Vector<ControlNode*> controlNodes;
+    CollectSelectedControls(controlNodes, false, false);
+
+    QClipboard* clipboard = QApplication::clipboard();
+    QMimeData* data = new QMimeData();
+
+    QString str;
+    for (ControlNode* controlNode : controlNodes)
+    {
+        PackageControlsNode* root = controlNode->GetPackage()->GetPackageControlsNode();
+        QString path;
+        for (PackageBaseNode* node = controlNode; node != root; node = node->GetParent())
+        {
+            if (!path.isEmpty())
+            {
+                path.prepend("/");
+            }
+            path.prepend(QString::fromStdString(node->GetName()));
+        }
+        str += path;
+        str += "\n";
+    }
+
+    data->setText(str);
+    clipboard->setMimeData(data);
+}
+
 void PackageWidget::OnMoveUp()
 {
     MoveNodeUpDown(true);
@@ -553,7 +602,7 @@ void PackageWidget::MoveNodeUpDown(bool up)
     });
     PackageBaseNode* nextNode = up ? *(--iter) : *(++iter);
     DVASSERT(nullptr != nextNode);
-    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr) || (dynamic_cast<StyleSheetsNode*>(node) != nullptr && dynamic_cast<const StyleSheetsNode*>(nextNode) != nullptr));
+    DVASSERT((dynamic_cast<ControlNode*>(node) != nullptr && dynamic_cast<const ControlNode*>(nextNode) != nullptr) || (dynamic_cast<StyleSheetNode*>(node) != nullptr && dynamic_cast<const StyleSheetNode*>(nextNode) != nullptr));
     PackageBaseNode* nextNodeParent = nextNode->GetParent();
     DVASSERT(nextNodeParent != nullptr);
     int destIndex = nextNodeParent->GetIndex(nextNode);

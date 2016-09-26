@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UI_CONTROL_H__
-#define __DAVAENGINE_UI_CONTROL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
@@ -65,8 +64,8 @@ public:
         {
             if (angle != data.angle)
             {
-                cosA = cosf(angle);
-                sinA = sinf(angle);
+                cosA = std::cos(angle);
+                sinA = std::sin(angle);
             }
             else
             {
@@ -97,8 +96,8 @@ public:
         // well it must be here otherwise there is a bug!
         if (calculatedAngle != angle)
         {
-            cosA = cosf(angle);
-            sinA = sinf(angle);
+            cosA = std::cos(angle);
+            sinA = std::sin(angle);
             calculatedAngle = angle;
         }
         Matrix3 rotateMatr;
@@ -1165,6 +1164,7 @@ protected:
     bool styleSheetInitialized : 1;
     bool layoutDirty : 1;
     bool layoutPositionDirty : 1;
+    bool layoutOrderDirty : 1;
 
     int32 inputProcessorsCount;
 
@@ -1259,14 +1259,21 @@ public:
     bool IsStyleSheetInitialized() const;
     void SetStyleSheetInitialized();
 
+    bool IsStyleSheetDirty() const;
     void SetStyleSheetDirty();
     void ResetStyleSheetDirty();
 
+    bool IsLayoutDirty() const;
     void SetLayoutDirty();
     void ResetLayoutDirty();
 
+    bool IsLayoutPositionDirty() const;
     void SetLayoutPositionDirty();
     void ResetLayoutPositionDirty();
+
+    bool IsLayoutOrderDirty() const;
+    void SetLayoutOrderDirty();
+    void ResetLayoutOrderDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
@@ -1416,7 +1423,7 @@ inline void UIControl::SortChildren(const T& predicate)
     children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
 
     isIteratorCorrupted = true;
-    SetLayoutDirty();
+    SetLayoutOrderDirty();
 }
 
 int32 UIControl::GetState() const
@@ -1473,6 +1480,3 @@ void UIControl::SetWheelSensitivity(float32 newSens)
     wheelSensitivity = newSens;
 }
 };
-
-
-#endif

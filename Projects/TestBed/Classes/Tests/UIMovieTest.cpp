@@ -5,14 +5,14 @@ namespace
 FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 }
 
-UIMovieTest::UIMovieTest()
-    : BaseScreen("UIMovieTest")
+UIMovieTest::UIMovieTest(GameCore* g)
+    : BaseScreen(g, "UIMovieTest")
 {
 }
 
 void UIMovieTest::LoadResources()
 {
-    movieView = new UIMovieView(Rect(10, 10, 940, 600));
+    movieView = new UIMovieView(Rect(100, 10, 940, 600));
     movieView->OpenMovie(path, OpenMovieParams());
 
     movieView->SetDebugDraw(true);

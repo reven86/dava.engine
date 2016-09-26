@@ -25,9 +25,13 @@ else()
 endif()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-standalone-debug" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
+    
+    if ( ANDROID_STRIP_EXPORTS )
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
+    endif ()
 
 elseif ( IOS     )
     set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
@@ -111,6 +115,7 @@ elseif ( WIN32 )
     add_definitions ( -DNOMINMAX )
     add_definitions ( -D_UNICODE )
     add_definitions ( -DUNICODE )
+    add_definitions ( -D_SCL_SECURE_NO_WARNINGS)
 endif  ()
 
 if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
@@ -254,3 +259,15 @@ elseif ( WIN32 )
 	endif ()
 
 endif  ()
+
+# Turn on interprocedure optimization
+if ( DAVA_ENABLE_IPO )
+
+    if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
+        # turn on LTO option
+        set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto" )
+    else ()
+        message ( WARNING "IPO turning on is not implement for your compiler" )
+    endif ()
+    
+endif ()

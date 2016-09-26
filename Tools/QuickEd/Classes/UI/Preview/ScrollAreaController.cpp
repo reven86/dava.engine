@@ -45,7 +45,7 @@ void ScrollAreaController::SetMovableControl(DAVA::UIControl* arg)
     }
 }
 
-void ScrollAreaController::AdjustScale(qreal newScale, QPointF mousePos)
+void ScrollAreaController::AdjustScale(float newScale, QPointF mousePos)
 {
     newScale = fmax(minScale, newScale);
     newScale = fmin(maxScale, newScale); //crop scale to 800
@@ -89,17 +89,17 @@ QPoint ScrollAreaController::GetPosition() const
     return position;
 }
 
-qreal ScrollAreaController::GetScale() const
+float ScrollAreaController::GetScale() const
 {
     return scale;
 }
 
-qreal ScrollAreaController::GetMinScale() const
+float ScrollAreaController::GetMinScale() const
 {
     return minScale;
 }
 
-qreal ScrollAreaController::GetMaxScale() const
+float ScrollAreaController::GetMaxScale() const
 {
     return maxScale;
 }
@@ -132,7 +132,7 @@ void ScrollAreaController::UpdateCanvasContentSize()
     emit CanvasSizeChanged(canvasSize);
 }
 
-void ScrollAreaController::SetScale(qreal arg)
+void ScrollAreaController::SetScale(float arg)
 {
     if (scale != arg)
     {

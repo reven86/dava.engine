@@ -21,7 +21,10 @@ public:
 
     virtual void OnAddToCache(Net::IChannel* channel, const CacheItemKey& key, CachedItemValue&& value) = 0;
     virtual void OnRequestedFromCache(Net::IChannel* channel, const CacheItemKey& key) = 0;
+    virtual void OnRemoveFromCache(Net::IChannel* channel, const CacheItemKey& key) = 0;
+    virtual void OnClearCache(Net::IChannel* channel) = 0;
     virtual void OnWarmingUp(Net::IChannel* channel, const CacheItemKey& key) = 0;
+    virtual void OnStatusRequested(Net::IChannel* channel) = 0;
 
     virtual void OnChannelClosed(Net::IChannel* channel, const char8* message){};
 };
@@ -32,7 +35,7 @@ public:
     ServerNetProxy() = default;
     ~ServerNetProxy();
 
-    void SetDelegate(ServerNetProxyListener* delegate);
+    void SetListener(ServerNetProxyListener* delegate);
 
     void Listen(uint16 port);
 
@@ -40,8 +43,11 @@ public:
 
     uint16 GetListenPort() const;
 
-    bool AddedToCache(Net::IChannel* channel, const CacheItemKey& key, bool added);
-    bool Send(Net::IChannel* channel, const CacheItemKey& key, const CachedItemValue& value);
+    bool SendAddedToCache(Net::IChannel* channel, const CacheItemKey& key, bool added);
+    bool SendRemovedFromCache(Net::IChannel* channel, const CacheItemKey& key, bool removed);
+    bool SendCleared(Net::IChannel* channel, bool cleared);
+    bool SendData(Net::IChannel* channel, const CacheItemKey& key, const CachedItemValue& value);
+    bool SendStatus(Net::IChannel* channel);
 
     //Net::IChannelListener
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
@@ -58,7 +64,7 @@ public:
 private:
     uint16 listenPort = 0;
     std::unique_ptr<Connection> netServer;
-    ServerNetProxyListener* delegate = nullptr;
+    ServerNetProxyListener* listener = nullptr;
 };
 
 inline uint16 ServerNetProxy::GetListenPort() const
@@ -66,9 +72,9 @@ inline uint16 ServerNetProxy::GetListenPort() const
     return listenPort;
 }
 
-inline void ServerNetProxy::SetDelegate(ServerNetProxyListener* _delegate)
+inline void ServerNetProxy::SetListener(ServerNetProxyListener* listener_)
 {
-    delegate = _delegate;
+    listener = listener_;
 }
 
 }; // end of namespace AssetCache

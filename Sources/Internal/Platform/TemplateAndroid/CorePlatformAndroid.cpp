@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 
-//#include "Core/Core.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
 
 #if defined(__DAVAENGINE_ANDROID__)
 
@@ -13,7 +14,7 @@ extern void FrameworkWillTerminate();
 #include "FileSystem/FileSystem.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
 namespace DAVA
@@ -121,7 +122,7 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
 
     Core::CreateSingletons();
 
-    AssetsManager::Instance()->Init(assets);
+    new AssetsManagerAndroid(assets);
 
     Logger::SetTag(logTag);
 }
@@ -157,7 +158,6 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
-        FileSystem::Instance()->Init();
 
         Core::Instance()->SystemAppStarted();
 
@@ -246,7 +246,7 @@ void CorePlatformAndroid::StopForeground(bool isLock)
     Logger::Debug("[CorePlatformAndroid::StopForeground] out");
 }
 
-void CorePlatformAndroid::KeyUp(int32 keyCode)
+void CorePlatformAndroid::KeyUp(int32 keyCode, uint32 modifiers)
 {
     InputSystem* inputSystem = InputSystem::Instance();
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
@@ -256,13 +256,14 @@ void CorePlatformAndroid::KeyUp(int32 keyCode)
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.modifiers = modifiers;
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
     keyboard.OnKeyUnpressed(keyEvent.key);
 }
 
-void CorePlatformAndroid::KeyDown(int32 keyCode)
+void CorePlatformAndroid::KeyDown(int32 keyCode, uint32 modifiers)
 {
     InputSystem* inputSystem = InputSystem::Instance();
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
@@ -272,13 +273,14 @@ void CorePlatformAndroid::KeyDown(int32 keyCode)
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
     keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.modifiers = modifiers;
 
     inputSystem->ProcessInputEvent(&keyEvent);
 
     keyboard.OnKeyPressed(keyEvent.key);
 }
 
-void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
+void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode, uint32 modifiers)
 {
     GamepadDevice& gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
@@ -305,6 +307,7 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
     newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
     newEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newEvent.modifiers = modifiers;
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
     InputSystem::Instance()->ProcessInputEvent(&newEvent);
@@ -369,3 +372,4 @@ int32 CorePlatformAndroid::GetViewHeight() const
 }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)
+#endif // !__DAVAENGINE_COREV2__

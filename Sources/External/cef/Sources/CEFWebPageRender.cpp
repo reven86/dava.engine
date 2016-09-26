@@ -5,6 +5,8 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#include "Engine/EngineModule.h"
+
 namespace DAVA
 {
 struct CEFColor
@@ -24,6 +26,37 @@ struct CEFColor
     uint8 alpha = 0;
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+CEFWebPageRender::CEFWebPageRender(Window* w)
+    : contentBackground(new UIControlBackground)
+    , window(w)
+{
+    auto focusChanged = [this](Window&, bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    auto windowDestroyed = [this](Window& w) -> void {
+        if (&w == window)
+        {
+            window->focusChanged.Disconnect(focusConnection);
+            window->destroyed.Disconnect(windowDestroyedConnection);
+            window = nullptr;
+        }
+    };
+    windowDestroyedConnection = window->destroyed.Connect(windowDestroyed);
+    focusConnection = window->focusChanged.Connect(focusChanged);
+
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+
+    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetColor(Color::White);
+    contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+}
+#else
 CEFWebPageRender::CEFWebPageRender()
     : contentBackground(new UIControlBackground)
 {
@@ -43,10 +76,19 @@ CEFWebPageRender::CEFWebPageRender()
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
+#endif
 
 CEFWebPageRender::~CEFWebPageRender()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if (window != nullptr)
+    {
+        window->focusChanged.Disconnect(focusConnection);
+        window->destroyed.Disconnect(windowDestroyedConnection);
+    }
+#else
     Core::Instance()->focusChanged.Disconnect(focusConnection);
+#endif
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
 
@@ -234,9 +276,12 @@ CefCursorHandle CEFWebPageRender::GetDefaultCursor()
 
 void CEFWebPageRender::SetCursor(CefCursorHandle cursor)
 {
+#if defined(__DAVAENGINE_COREV2__)
+#else
     HWND wnd = static_cast<HWND>(Core::Instance()->GetNativeView());
     SetClassLongPtr(wnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
     ::SetCursor(cursor);
+#endif
 }
 
 #endif

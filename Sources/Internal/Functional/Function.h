@@ -1,5 +1,4 @@
-#ifndef __DAVA_FUNCTION_H__
-#define __DAVA_FUNCTION_H__
+#pragma once
 
 #include <new>
 #include <memory>
@@ -24,6 +23,12 @@ template <typename T>
 struct is_best_argument_type : std::integral_constant<bool,
                                                       std::is_fundamental<T>::value || std::is_pointer<T>::value ||
                                                       (sizeof(T) <= sizeof(void*) && (std::is_standard_layout<T>::value || std::is_pod<T>::value))>
+{
+};
+
+// Explicit specialization for reference types
+template <typename T>
+struct is_best_argument_type<T&> : std::integral_constant<bool, true>
 {
 };
 
@@ -467,15 +472,8 @@ private:
         Detail<
         trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
         && std::is_trivially_destructible<Fn>::value
-#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
-        // android old-style way
-        && std::has_trivial_copy_constructor<Fn>::value
-        && std::has_trivial_copy_assign<Fn>::value
-#else
-        // standard c++14 way
         && std::is_trivially_copy_constructible<Fn>::value
         && std::is_trivially_copy_assignable<Fn>::value
-#endif
         ,
         Hldr, Fn, Prms...>::Init(this, fn, std::forward<Prms>(params)...);
     }
@@ -574,5 +572,3 @@ void swap(DAVA::Function<F>& lf, DAVA::Function<F>& rf)
 }
 
 } // namespace std
-
-#endif // __DAVA_FUNCTION_H__

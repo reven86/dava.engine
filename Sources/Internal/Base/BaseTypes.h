@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_BASETYPES_H__
-#define __DAVAENGINE_BASETYPES_H__
+#pragma once
 
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
@@ -272,5 +271,3 @@ enum class eErrorCode
 };
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_BASETYPES_H__

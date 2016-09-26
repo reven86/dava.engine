@@ -1,13 +1,22 @@
 #include "JniExtensions.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Math/Rect.h"
+#include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 JniExtension::JniExtension()
 {
+#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
     AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
     vm = delegate->GetVM();
+#endif
 }
 
 JniExtension::~JniExtension()
@@ -62,3 +71,5 @@ Rect JniExtension::V2P(const Rect& srcRect) const
 }
 
 } //namespace DAVA
+
+#endif // __DAVAENGINE_ANDROID__

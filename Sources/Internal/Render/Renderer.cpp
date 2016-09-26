@@ -18,7 +18,7 @@ namespace Renderer
 {
 namespace //for private variables
 {
-bool ininialized = false;
+bool initialized = false;
 rhi::Api api;
 int32 desiredFPS = 60;
 
@@ -28,30 +28,13 @@ RuntimeTextures runtimeTextures;
 RenderStats stats;
 
 rhi::ResetParam resetParams;
-
-ScreenShotCallbackDelegate* screenshotCallback = nullptr;
-
-static void
-rhiScreenShotCallback(uint32 width, uint32 height, const void* rgba)
-{
-    if (screenshotCallback)
-    {
-        DAVA::Image* img = DAVA::Image::CreateFromData(width, height, FORMAT_RGBA8888, static_cast<const uint8*>(rgba));
-
-        if (img)
-        {
-            (*screenshotCallback)(img);
-            img->Release();
-        }
-    }
-}
 }
 
 static Mutex renderCmdExecSync;
 
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
-    DVASSERT(!ininialized);
+    DVASSERT(!initialized);
 
     api = _api;
 
@@ -72,25 +55,35 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
     resetParams.window = params.window;
     resetParams.fullScreen = params.fullScreen;
 
-    ininialized = true;
+    initialized = true;
+
     //must be called after setting ininialized in true
-    Texture::SetDefaultGPU(DeviceInfo::GetGPUFamily());
+    Vector<eGPUFamily> gpuLoadingOrder;
+    gpuLoadingOrder.push_back(DeviceInfo::GetGPUFamily());
+#if defined(__DAVAENGINE_ANDROID__)
+    if (gpuLoadingOrder[0] != eGPUFamily::GPU_MALI)
+    {
+        gpuLoadingOrder.push_back(eGPUFamily::GPU_MALI);
+    }
+#endif //android
+
+    Texture::SetGPULoadingOrder(gpuLoadingOrder);
 }
 
 void Uninitialize()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
 
     FXCache::Uninitialize();
     ShaderDescriptorCache::Uninitialize();
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
-    ininialized = false;
+    initialized = false;
 }
 
 bool IsInitialized()
 {
-    return ininialized;
+    return initialized;
 }
 
 void Reset(const rhi::ResetParam& params)
@@ -102,13 +95,13 @@ void Reset(const rhi::ResetParam& params)
 
 bool IsDeviceLost()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return false;
 }
 
 rhi::Api GetAPI()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return api;
 }
 
@@ -138,7 +131,7 @@ bool IsVSyncEnabled()
 
 RenderOptions* GetOptions()
 {
-    DVASSERT(ininialized);
+    DVASSERT(initialized);
     return &renderOptions;
 }
 
@@ -165,12 +158,6 @@ int32 GetFramebufferWidth()
 int32 GetFramebufferHeight()
 {
     return static_cast<int32>(resetParams.height);
-}
-
-void RequestGLScreenShot(ScreenShotCallbackDelegate* _screenShotCallback)
-{
-    screenshotCallback = _screenShotCallback;
-    rhi::TakeScreenshot(&rhiScreenShotCallback);
 }
 
 void BeginFrame()

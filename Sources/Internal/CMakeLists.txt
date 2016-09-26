@@ -1,14 +1,15 @@
-include ( CMake-common         )
-if( WIN32 AND NOT WINDOWS_UAP  )
+include ( CMake-common )
+if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
-include ( DavaLibs             )
+include ( DavaLibs )
 
-set( NAME_MODULE DavaFramework )
+set( NAME_MODULE ${DAVA_LIBRARY} )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
+set( EXTERNAL_MODULES           ${DAVA_MODULES_DIR}/TArc )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -36,7 +37,8 @@ set( FIND_SYSTEM_LIBRARY_IOS        CoreGraphics
                                     AssetsLibrary
                                     SystemConfiguration
                                     MediaPlayer 
-                                    ZLIB )
+                                    ZLIB
+                                    CoreTelephony )
 
 set( FIND_SYSTEM_LIBRARY_MACOS      Cocoa
                                     GLUT
@@ -67,7 +69,6 @@ set( STATIC_LIBRARIES_WINUAP        ${DAVA_STATIC_LIBRARIES_WINUAP} )
 set( STATIC_LIBRARIES_WINUAP_RELEASE ${DAVA_STATIC_LIBRARIES_WINUAP_RELEASE} )
 set( STATIC_LIBRARIES_WINUAP_DEBUG  ${DAVA_STATIC_LIBRARIES_WINUAP_DEBUG} )
 
-set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so )
 set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
@@ -138,6 +139,14 @@ endif()
 
 if( DENY_RUN_MULTIPLE_APP_INSTANCES )
     list( APPEND DEFINITIONS -DDENY_RUN_MULTIPLE_APP_INSTANCES )
+endif()
+
+if ( ANDROID_USE_LOCAL_RESOURCES )
+    list( APPEND DEFINITIONS -DUSE_LOCAL_RESOURCES )
+endif()
+
+if (DAVA_PLATFORM_QT)
+    find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
 endif()
 
 setup_main_module()

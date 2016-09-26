@@ -11,6 +11,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -87,22 +88,35 @@ void UIStaticText::SetText(const WideString& _string, const Vector2& requestedTe
 {
     textBlock->SetRectSize(size);
     textBlock->SetText(_string, requestedTextRectSize);
-    textBg->SetAlign(textBlock->GetVisualAlign());
-    PrepareSprite();
-    SetLayoutDirty();
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
-void UIStaticText::SetTextWithoutRect(const WideString& text)
+void UIStaticText::SetUtf8Text(const String& utf8String, const Vector2& requestedTextRectSize /*= Vector2::Zero*/)
 {
-    SetText(text, Vector2(0.0f, 0.0f));
+    SetText(UTF8Utils::EncodeToWideString(utf8String), requestedTextRectSize);
+}
+
+void UIStaticText::SetUtf8TextWithoutRect(const String& utf8String)
+{
+    SetUtf8Text(utf8String, Vector2::Zero);
+}
+
+String UIStaticText::GetUtf8Text() const
+{
+    return UTF8Utils::EncodeToUTF8(GetText());
 }
 
 void UIStaticText::SetFittingOption(int32 fittingType)
 {
     textBlock->SetRectSize(size);
     textBlock->SetFittingOption(fittingType);
-    PrepareSprite();
-    SetLayoutDirty();
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
 int32 UIStaticText::GetFittingOption() const
@@ -116,9 +130,10 @@ void UIStaticText::SetFont(Font* _font)
     {
         textBlock->SetRectSize(size);
         textBlock->SetFont(_font);
-        textBg->SetAlign(textBlock->GetVisualAlign());
-        PrepareSprite();
-        SetLayoutDirty();
+        if (textBlock->NeedCalculateCacheParams())
+        {
+            SetLayoutDirty();
+        }
     }
 }
 
@@ -141,8 +156,10 @@ void UIStaticText::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 {
     textBlock->SetRectSize(size);
     textBlock->SetMultiline(_isMultilineEnabled, bySymbol);
-    PrepareSprite();
-    SetLayoutDirty();
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
 bool UIStaticText::GetMultiline() const
@@ -158,7 +175,10 @@ bool UIStaticText::GetMultilineBySymbol() const
 void UIStaticText::SetTextAlign(int32 _align)
 {
     textBlock->SetAlign(_align);
-    textBg->SetAlign(textBlock->GetVisualAlign());
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
 int32 UIStaticText::GetTextAlign() const
@@ -184,7 +204,10 @@ bool UIStaticText::GetTextIsRtl() const
 void UIStaticText::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
     textBlock->SetUseRtlAlign(useRtlAlign);
-    textBg->SetAlign(textBlock->GetVisualAlign());
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
 TextBlock::eUseRtlAlign UIStaticText::GetTextUseRtlAlign() const
@@ -253,6 +276,7 @@ void UIStaticText::Draw(const UIGeometricData& geometricData)
     textBlock->SetPosition(textBlockRect.GetPosition());
     textBlock->PreDraw();
     PrepareSprite();
+    textBg->SetAlign(textBlock->GetVisualAlign());
 
     UIControl::Draw(geometricData);
 
@@ -349,6 +373,10 @@ const Vector<int32>& UIStaticText::GetStringSizes() const
 void UIStaticText::SetForceBiDiSupportEnabled(bool value)
 {
     textBlock->SetForceBiDiSupportEnabled(value);
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 
 void UIStaticText::PrepareSprite()
@@ -600,11 +628,15 @@ DAVA::Font* UIStaticText::GetFont() const
 
 DAVA::float32 UIStaticText::GetFontSize() const
 {
-    return textBlock->GetFontSize();
+    return textBlock->GetRenderSize();
 }
 
 void UIStaticText::SetFontSize(float32 newSize)
 {
-    textBlock->SetFontSize(newSize);
+    textBlock->SetRenderSize(newSize);
+    if (textBlock->NeedCalculateCacheParams())
+    {
+        SetLayoutDirty();
+    }
 }
 };

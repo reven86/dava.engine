@@ -1,12 +1,11 @@
-#ifndef __DOWNLOADER_COMMON_H__
-#define __DOWNLOADER_COMMON_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
+class FilePath;
 /*
     Task type
  */
@@ -206,5 +205,3 @@ public:
     uint64 progress;
 };
 }
-
-#endif

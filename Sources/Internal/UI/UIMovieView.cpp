@@ -2,14 +2,21 @@
 
 #include "UI/UIMovieView.h"
 
-#if defined(__DAVAENGINE_IPHONE__)
-#include "Platform/TemplateiOS/MovieViewControliOS.h"
+#include "Engine/Engine.h"
+
+#if defined(DISABLE_NATIVE_MOVIEVIEW)
+// Use stub movie control
+#define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
+#include "Platform/MovieViewControlStub.h"
+#include "Render/RenderHelper.h"
+#elif defined(__DAVAENGINE_IPHONE__)
+#include "UI/Private/iOS/MovieViewControliOS.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "Platform/TemplateMacOS/MovieViewControlMacOS.h"
+#include "UI/Private/OSX/MovieViewControlMacOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
+#include "UI/Private/Android/MovieViewControlAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Platform/TemplateWin32/MovieViewControlWinUAP.h"
+#include "UI/Private/UWP/MovieViewControlUWP.h"
 #elif defined(__DAVAENGINE_WIN32__)
 #include "Platform/TemplateWin32/MovieViewControlWin32.h"
 #else
@@ -24,7 +31,11 @@ namespace DAVA
 {
 UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
-    , movieViewControl(new MovieViewControl())
+#if defined(__DAVAENGINE_COREV2__)
+    , movieViewControl(std::make_shared<MovieViewControl>(Engine::Instance()->PrimaryWindow()))
+#else
+    , movieViewControl(std::make_shared<MovieViewControl>())
+#endif
 {
     movieViewControl->Initialize(rect);
     UpdateControlRect();
@@ -32,7 +43,7 @@ UIMovieView::UIMovieView(const Rect& rect)
 
 UIMovieView::~UIMovieView()
 {
-    SafeDelete(movieViewControl);
+    movieViewControl->OwnerIsDying();
 }
 
 void UIMovieView::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)

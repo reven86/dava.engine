@@ -3,19 +3,25 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+#if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
 #include "Base/ScopedPtr.h"
 
 namespace DAVA
 {
+class Window;
 class FfmpegPlayer;
 class Texture;
 class UIControlBackground;
 class MovieViewControl : public IMovieViewControl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    MovieViewControl(Window* w);
+#else
     MovieViewControl();
+#endif
     ~MovieViewControl() override;
 
     // Initialize the control.
@@ -56,4 +62,5 @@ private:
 };
 }
 
-#endif
+#endif // !DISABLE_NATIVE_MOVIEVIEW
+#endif // __DAVAENGINE_WIN32__

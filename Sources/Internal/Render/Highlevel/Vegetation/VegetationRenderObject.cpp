@@ -879,9 +879,9 @@ void VegetationRenderObject::CreateRenderData()
 
 void VegetationRenderObject::RestoreRenderData()
 {
-#if defined(__DAVAENGINE_IPHONE__)
-    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
-#endif
+    //#if defined(__DAVAENGINE_IPHONE__)
+    //    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+    //#endif
 
     if (renderData == nullptr)
         return;
@@ -1363,5 +1363,24 @@ void VegetationRenderObject::BindDynamicParameters(Camera* camera)
     {
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LANDSCAPE_HEIGHTMAP_TEXTURE_SIZE, &heightmapSize, pointer_size(&heightmapSize));
     }
+}
+
+void VegetationRenderObject::RebuildCustomGeometry()
+{
+    if (vegetationGeometry != nullptr)
+    {
+        ScopedPtr<KeyedArchive> props(new KeyedArchive());
+        props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
+
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
+    }
+}
+
+void VegetationRenderObject::Rebuild()
+{
+    RebuildCustomGeometry();
+
+    GenerateDensityMapFromTransparencyMask(lightmapTexturePath);
+    UpdateVegetationSetup();
 }
 };

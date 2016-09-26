@@ -8,13 +8,12 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
-#include "Commands2/Base/Command2.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
-#include "Commands2/Base/CommandBatch.h"
 
 #include "Main/Guards.h"
 
@@ -22,6 +21,11 @@
 #include "Scene/System/EditorLODSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Lod/LodSystem.h"
+
+#include "Commands2/Base/RECommand.h"
+
+#include "Settings/Settings.h"
+#include "Settings/SettingsManager.h"
 
 using namespace DAVA;
 
@@ -94,7 +98,7 @@ void LODComponentHolder::PropagateValues()
         {
             if (isChanged[i])
             {
-                scene->Exec(Command2::Create<ChangeLODDistanceCommand>(lc, i, distances[i]));
+                scene->Exec(std::unique_ptr<DAVA::Command>(new ChangeLODDistanceCommand(lc, i, distances[i])));
             }
         }
     }
@@ -110,7 +114,7 @@ bool LODComponentHolder::DeleteLOD(int32 layer)
     {
         if ((GetLodLayersCount(lc) > 0) && (HasComponent(lc->GetEntity(), Component::PARTICLE_EFFECT_COMPONENT) == false))
         {
-            scene->Exec(Command2::Create<DeleteLODCommand>(lc, layer, -1));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new DeleteLODCommand(lc, layer, -1)));
             wasLayerRemoved = true;
         }
     }
@@ -134,7 +138,7 @@ bool LODComponentHolder::CopyLod(int32 from, int32 to)
 
         if (GetLodLayersCount(entity) < LodComponent::MAX_LOD_LAYERS)
         {
-            scene->Exec(Command2::Create<CopyLastLODToLod0Command>(lc));
+            scene->Exec(std::unique_ptr<DAVA::Command>(new CopyLastLODToLod0Command(lc)));
             wasCopiedRemoved = true;
         }
     }
@@ -561,14 +565,13 @@ void EditorLODSystem::DispatchSignals()
     invalidateUIFlag = FLAG_NONE;
 }
 
-void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
+void EditorLODSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
 {
     if (generateCommands)
     {
         return;
     }
-
-    if (command->MatchCommandID(CMDID_LOD_DISTANCE_CHANGE))
+    if (commandNotification.MatchCommandID(CMDID_LOD_DISTANCE_CHANGE))
     {
         RecalculateData();
         EmitInvalidateUI(FLAG_DISTANCE);
@@ -582,15 +585,15 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
         EmitInvalidateUI(FLAG_ALL);
     };
 
-    static const Vector<int32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
-    if (command->MatchCommandIDs(commands))
+    static const Vector<uint32> commands = { CMDID_DELETE_RENDER_BATCH, CMDID_CLONE_LAST_BATCH, CMDID_LOD_CREATE_PLANE, CMDID_LOD_COPY_LAST_LOD, CMDID_LOD_DELETE };
+    if (commandNotification.MatchCommandIDs(commands))
     {
         InvalidateAllData();
     }
 
-    if (command->MatchCommandID(CMDID_COMPONENT_REMOVE))
+    if (commandNotification.MatchCommandID(CMDID_COMPONENT_REMOVE))
     {
-        auto ProcessRemoveCommand = [this, InvalidateAllData](const RemoveComponentCommand* removeCommand)
+        auto processRemoveCommand = [this, InvalidateAllData](const RemoveComponentCommand* removeCommand)
         {
             if (removeCommand->GetComponent()->GetType() == Component::RENDER_COMPONENT)
             {
@@ -600,14 +603,13 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
             return false;
         };
 
-        if (command->GetId() == CMDID_BATCH)
+        if (commandNotification.batch != nullptr)
         {
-            const CommandBatch* batch = static_cast<const CommandBatch*>(command);
-            const uint32 count = batch->Size();
+            const uint32 count = commandNotification.batch->Size();
             for (uint32 i = 0; i < count; ++i)
             {
-                const Command2* cmd = batch->GetCommand(i);
-                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
+                const RECommand* cmd = commandNotification.batch->GetCommand(i);
+                if (cmd->MatchCommandID(CMDID_COMPONENT_REMOVE) && processRemoveCommand(static_cast<const RemoveComponentCommand*>(cmd)))
                 {
                     break;
                 }
@@ -615,7 +617,7 @@ void EditorLODSystem::ProcessCommand(const Command2* command, bool redo)
         }
         else
         {
-            ProcessRemoveCommand(static_cast<const RemoveComponentCommand*>(command));
+            processRemoveCommand(static_cast<const RemoveComponentCommand*>(commandNotification.command));
         }
     }
 }
@@ -670,7 +672,7 @@ void EditorLODSystem::ProcessPlaneLODs()
         sceneEditor2->BeginBatch("Create plane lods", static_cast<DAVA::uint32>(planeLODRequests.size()));
         for (const auto& req : planeLODRequests)
         {
-            sceneEditor2->Exec(Command2::Create<CreatePlaneLODCommand>(req));
+            sceneEditor2->Exec(std::unique_ptr<DAVA::Command>(new CreatePlaneLODCommand(req)));
         }
         sceneEditor2->EndBatch();
         planeLODRequests.clear();
@@ -686,4 +688,22 @@ void EditorLODSystem::RecalculateData()
     {
         lodData[m].SummarizeValues();
     }
+}
+
+bool EditorLODSystem::IsFitModeEnabled(const DAVA::Vector<DAVA::float32>& distances)
+{
+    if (SettingsManager::GetValue(Settings::General_LODEditor_FitSliders).AsBool())
+    {
+        return true;
+    }
+
+    for (DAVA::float32 dist : distances)
+    {
+        if ((fabs(dist - LOD_DISTANCE_INFINITY) > DAVA::EPSILON) && (dist > DAVA::LodComponent::MAX_LOD_DISTANCE))
+        { // not max float and more than 1000
+            return true;
+        }
+    }
+
+    return false;
 }

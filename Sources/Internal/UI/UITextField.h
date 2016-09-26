@@ -190,8 +190,11 @@ public:
 
     void SetSpriteAlign(int32 align) override;
 
-    const WideString& GetText();
-    virtual void SetText(const WideString& text);
+    DAVA_DEPRECATED(const WideString& GetText());
+    DAVA_DEPRECATED(virtual void SetText(const WideString& text));
+
+    String GetUtf8Text();
+    void SetUtf8Text(const String& text);
 
     WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString& replacementString);
 
@@ -406,12 +409,15 @@ private:
     bool isMultiline = false;
     bool isEditing = false;
 
-    TextFieldPlatformImpl* textFieldImpl = nullptr;
+    // Make impl to be controlled by std::shared_ptr as on some platforms (e.g. uwp, android)
+    // impl can live longer than its owner: native control can queue callback in UI thread
+    // but impl's owner is already dead
+    std::shared_ptr<TextFieldPlatformImpl> textFieldImpl;
     int32 maxLength = -1;
 
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
-                         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("text", "Text", GetUtf8Text, SetUtf8Text, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("selectioncolor", "Selection color", GetSelectionColor, SetSelectionColor, I_SAVE | I_VIEW | I_EDIT)

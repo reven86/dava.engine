@@ -58,13 +58,13 @@ public:
     /**
      \brief Get current file position
      */
-    uint32 GetPos() const override;
+    uint64 GetPos() const override;
 
     /**
      \brief Get current file size if writing
             and get real file size if file for reading
      */
-    uint32 GetSize() const override;
+    uint64 GetSize() const override;
 
     /**
      \brief Set current file position
@@ -72,13 +72,19 @@ public:
      \param seekType - \ref IO::eFileSeek flag to set type of positioning
      \return true if successful otherwise false.
      */
-    bool Seek(int32 position, eFileSeek seekType) override;
+    bool Seek(int64 position, eFileSeek seekType) override;
 
     //! return true if end of file reached and false in another case
     bool IsEof() const override;
 
+    /**
+    \brief Truncate a file to a specified length
+    \param size A size, that file is going to be truncated to
+    */
+    bool Truncate(uint64 size) override;
+
 protected:
-    uint32 currentPtr;
+    uint64 currentPtr;
     Vector<uint8> data;
     uint32 fileAttributes;
     bool isEof;

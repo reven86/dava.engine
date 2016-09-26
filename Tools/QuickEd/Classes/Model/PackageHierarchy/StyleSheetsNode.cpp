@@ -77,3 +77,23 @@ bool StyleSheetsNode::CanInsertStyle(StyleSheetNode* node, DAVA::int32 pos) cons
 {
     return !IsReadOnly();
 }
+
+DAVA::Vector<StyleSheetNode*>::const_iterator StyleSheetsNode::begin() const
+{
+    return styleSheets.begin();
+}
+
+DAVA::Vector<StyleSheetNode*>::const_iterator StyleSheetsNode::end() const
+{
+    return styleSheets.end();
+}
+
+DAVA::Vector<StyleSheetNode*>::iterator StyleSheetsNode::begin()
+{
+    return styleSheets.begin();
+}
+
+DAVA::Vector<StyleSheetNode*>::iterator StyleSheetsNode::end()
+{
+    return styleSheets.end();
+}

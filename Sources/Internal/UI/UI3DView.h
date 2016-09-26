@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -39,6 +40,9 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
+    void OnVisible() override;
+    void OnInvisible() override;
+
     void SetDrawToFrameBuffer(bool enable);
     bool GetDrawToFrameBuffer() const;
     void SetFrameBufferScaleFactor(float32 scale);
@@ -47,6 +51,9 @@ public:
 
     int32 GetBasePriority();
     void SetBasePriority(int32 priority);
+
+    bool IsClearRequested() const;
+    void SetClearRequested(bool requested);
 
 protected:
     Scene* scene;
@@ -64,6 +71,8 @@ private:
     Texture* frameBuffer = nullptr;
 
     int32 basePriority = PRIORITY_MAIN_3D;
+
+    rhi::LoadAction colorLoadAction = rhi::LOADACTION_CLEAR;
 
 public:
     INTROSPECTION_EXTEND(UI3DView, UIControl,

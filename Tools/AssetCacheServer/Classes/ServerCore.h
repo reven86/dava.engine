@@ -1,25 +1,29 @@
-#ifndef __SERVER_CORE_H__
-#define __SERVER_CORE_H__
+#pragma once
 
-#include "AssetCache/AssetCache.h"
+#include "AssetCache/ServerNetProxy.h"
 #include "AssetCache/ClientNetProxy.h"
+
+#include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
+#include "SharedDataRequester.h"
 
 #include <atomic>
-
 #include <QObject>
 
 class QTimer;
 
 class ServerCore : public QObject,
-                   public DAVA::AssetCache::ClientNetProxyListener
+                   public DAVA::AssetCache::ClientNetProxyListener,
+                   public CacheDBOwner,
+                   public AssetCacheHttpServerListener
 {
     Q_OBJECT
 
-    static const uint32 UPDATE_INTERVAL_MS = 1;
-    static const uint32 CONNECT_TIMEOUT_SEC = 1;
-    static const uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    static const DAVA::uint32 UPDATE_INTERVAL_MS = 16;
+    static const DAVA::uint32 CONNECT_TIMEOUT_SEC = 1;
+    static const DAVA::uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    static const DAVA::uint32 SHARED_UPDATE_INTERVAL_SEC = 3;
 
 public:
     enum class State
@@ -32,6 +36,7 @@ public:
         STARTED,
         STOPPED,
         CONNECTING,
+        VERIFYING,
         WAITING_REATTEMPT
     };
 
@@ -46,31 +51,67 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
+    void InitiateShareRequest(PoolID poolID, const DAVA::String& serverName);
+    void InitiateUnshareRequest();
+
+    void SetApplicationPath(const DAVA::String& path);
+
+    void ClearStorage();
+    void GetStorageSpaceUsage(DAVA::uint64& occupied, DAVA::uint64& overall) const;
+
     // ClientNetProxyListener
-    virtual void OnAssetClientStateChanged() override;
+    void OnClientProxyStateChanged() override;
+    void OnServerStatusReceived() override;
+    void OnIncorrectPacketReceived(DAVA::AssetCache::IncorrectPacketType) override;
+
+    // CacheDBOwner
+    void OnStorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) override;
+
+    // AssetCacheHttpServerListener
+    void OnStatusRequested(ClientID clientId) override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
-
-public slots:
-    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void StorageSizeChanged(DAVA::uint64 occupied, DAVA::uint64 overall) const;
+    void ServerShared();
+    void ServerUnshared();
+    void SharedDataUpdated();
 
 private slots:
-    void OnTimerUpdate();
+    void OnServerShared(PoolID poolID, ServerID serverID, const DAVA::String& serverName);
+    void OnServerUnshared();
+    void OnSharedDataReceived(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers);
+    void OnSettingsUpdated(const ApplicationSettings* settings);
+    void OnRefreshTimer();
     void OnConnectTimeout();
     void OnReattemptTimer();
+    void ReconnectAsynchronously();
+    void ReconnectNow();
+    void OnSharedDataUpdateTimer();
 
 private:
     void StartListening();
     void StopListening();
 
     bool ConnectRemote();
+    bool VerifyRemote();
     void DisconnectRemote();
+    void ReconnectRemoteLater();
+    void UseNextRemote();
+    void ResetRemotesList();
+
+    struct CompareResult
+    {
+        bool listsAreTotallyEqual = false;
+        bool listsAreEqualAtLeastTillCurrentIndex = false;
+    };
+    CompareResult CompareWithRemoteList(const DAVA::List<RemoteServerParams>& updatedRemotesList);
 
 private:
-    DAVA::AssetCache::ServerNetProxy server;
-    DAVA::AssetCache::ClientNetProxy client;
-    DAVA::AssetCache::CacheDB dataBase;
+    AssetCacheHttpServer httpServer;
+    DAVA::AssetCache::ServerNetProxy serverProxy;
+    DAVA::AssetCache::ClientNetProxy clientProxy;
+    CacheDB dataBase;
 
     ServerLogics serverLogics;
     ApplicationSettings settings;
@@ -78,11 +119,19 @@ private:
     std::atomic<State> state;
     std::atomic<RemoteState> remoteState;
 
-    ServerData remoteServerData;
+    DAVA::String appPath;
 
-    QTimer* updateTimer;
-    QTimer* connectTimer;
-    QTimer* reattemptWaitTimer;
+    DAVA::Vector<RemoteServerParams> remoteServers;
+    size_t remoteServerIndex = 0;
+    bool remoteServerIndexIsValid = false;
+    RemoteServerParams currentRemoteServer;
+
+    SharedDataRequester sharedDataRequester;
+
+    QTimer* updateTimer = nullptr;
+    QTimer* connectTimer = nullptr;
+    QTimer* reconnectWaitTimer = nullptr;
+    QTimer* sharedDataUpdateTimer = nullptr;
 };
 
 inline ServerCore::State ServerCore::GetState() const
@@ -99,5 +148,3 @@ inline ApplicationSettings& ServerCore::Settings()
 {
     return settings;
 }
-
-#endif // __SERVER_CORE_H__

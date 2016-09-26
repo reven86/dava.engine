@@ -19,12 +19,14 @@ class Project : public QObject, public DAVA::InspBase
 
 public:
     explicit Project(QObject* parent = nullptr);
+    ~Project();
     bool Open(const QString& path);
     void Close();
     bool CanOpenProject(const QString& path) const;
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+    const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
     static const QString& GetScreensRelativePath();
     static const QString& GetProjectFileName();
     QString CreateNewProject(DAVA::Result* result = nullptr);
@@ -55,6 +57,7 @@ private:
 
     bool isOpen = false;
     DAVA::FilePath projectPath;
+    DAVA::Vector<DAVA::FilePath> libraryPackages;
     QString projectName;
     DAVA::String projectsHistory;
     DAVA::uint32 projectsHistorySize;
@@ -65,8 +68,6 @@ public:
                   //maximum size of projects history
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
-
-    REGISTER_PREFERENCES(Project)
 };
 
 #endif // QUICKED__PROJECT_H__

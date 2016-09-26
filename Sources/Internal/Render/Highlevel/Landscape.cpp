@@ -1,4 +1,3 @@
-#include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
@@ -22,6 +21,11 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Debug/CPUProfiler.h"
+#include "Concurrency/LockGuard.h"
+
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -74,6 +78,15 @@ Landscape::Landscape()
 
         //Workaround for some mali drivers (Android 4.x + T6xx gpu): it does not support fetch from texture mips in vertex program
         renderMode = (majorVersion == 4 && maliT600series) ? RENDERMODE_INSTANCING : RENDERMODE_INSTANCING_MORPHING;
+    }
+    if (renderMode != RENDERMODE_NO_INSTANCING)
+    {
+        //Workaround for Lenovo P90: on this device vertex texture fetch is very slow
+        //(relevant for Android 4.4.4, currently there is no update to Android 5.0)
+        if (strstr(DeviceInfo::GetModel().c_str(), "Lenovo P90") != nullptr)
+        {
+            renderMode = RENDERMODE_NO_INSTANCING;
+        }
     }
 #endif
 
@@ -1158,6 +1171,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
 
     RenderObject::PrepareToRender(camera);
 
@@ -1165,8 +1179,6 @@ void Landscape::PrepareToRender(Camera* camera)
     {
         return;
     }
-
-    TIME_PROFILE("Landscape.PrepareToRender");
 
     if (!subdivision->GetLevelCount() || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
@@ -1425,6 +1437,8 @@ void Landscape::SetMaterial(NMaterial* material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+
+    UpdateMaterialFlags();
 }
 
 RenderObject* Landscape::Clone(RenderObject* newObject)
@@ -1527,7 +1541,11 @@ void Landscape::SetRenderMode(RenderMode newRenderMode)
 
     renderMode = newRenderMode;
     RebuildLandscape();
+    UpdateMaterialFlags();
+}
 
+void Landscape::UpdateMaterialFlags()
+{
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     landscapeMaterial->PreBuildMaterial(PASS_FORWARD);

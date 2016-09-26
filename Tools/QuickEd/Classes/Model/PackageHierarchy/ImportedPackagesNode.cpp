@@ -101,3 +101,23 @@ bool ImportedPackagesNode::IsReadOnly() const
 {
     return GetParent() != nullptr ? GetParent()->IsReadOnly() : true;
 }
+
+DAVA::Vector<PackageNode*>::const_iterator ImportedPackagesNode::begin() const
+{
+    return packages.begin();
+}
+
+DAVA::Vector<PackageNode*>::const_iterator ImportedPackagesNode::end() const
+{
+    return packages.end();
+}
+
+DAVA::Vector<PackageNode*>::iterator ImportedPackagesNode::begin()
+{
+    return packages.begin();
+}
+
+DAVA::Vector<PackageNode*>::iterator ImportedPackagesNode::end()
+{
+    return packages.end();
+}

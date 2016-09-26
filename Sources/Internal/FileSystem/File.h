@@ -1,19 +1,11 @@
-#ifndef __DAVAENGINE_FILE_H__
-#define __DAVAENGINE_FILE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
-
-
-#if defined(__DAVAENGINE_ANDROID__)
-	#include "zip/zip.h"
-#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA
 {
-class File;
-
+class FilePath;
 /**
 	\ingroup filesystem
 	\brief class to work with file on disk
@@ -28,7 +20,7 @@ public:
     //! EFA_CREATE | EFA_WRITE
     //! EFA_APPEND | EFA_WRITE
 
-    enum eFileAttributes
+    enum eFileAttributes : uint32
     {
         CREATE = 0x1,
         OPEN = 0x2,
@@ -38,19 +30,14 @@ public:
     };
 
     //! File seek enumeration
-    enum eFileSeek
+    enum eFileSeek : uint32
     {
         SEEK_FROM_START = 1, //! Seek from start of file
         SEEK_FROM_END = 2, //! Seek from end of file
         SEEK_FROM_CURRENT = 3, //! Seek from current file position relatively
     };
 
-protected:
-    File() = default;
-    virtual ~File();
-
-public:
-    /** 
+    /**
 		\brief function to create a file instance with give attributes.
         Use framework notation for paths.
 		\param[in] filePath absolute or relative framework specific path to file
@@ -58,30 +45,13 @@ public:
 		\returns file instance
 	 */
     static File* Create(const FilePath& filePath, uint32 attributes);
-
-    /** 
-        \brief funciton to create a file instance with give attributes
-        this function must be used for opening existing files also
-        \param[in] filePath absolute system path to file
-        \param[in] attributes combinations of eFileAttributes
-        \returns file instance
-	 */
-    static File* CreateFromSystemPath(const FilePath& filePath, uint32 attributes);
-
     /**
-        \brief funciton to create a file instance with give attributes directly without framework path management.
-        \param[in] filePath absolute system path to file
-        \param[in] attributes combinations of eFileAttributes
-        \returns file instance
+        \brief Get this file name
+        \returns name of this file
      */
-    static File* PureCreate(const FilePath& filePath, uint32 attributes);
-    /**
-		\brief Get this file name
-		\returns name of this file
-	 */
     virtual const FilePath& GetFilename();
 
-    /** 
+    /**
 		\brief Write [dataSize] bytes to this file from [pointerToData]
 		\param[in] sourceBuffer function get data from this buffer
 		\param[in] dataSize size of data we want to write
@@ -97,7 +67,7 @@ public:
     template <class T>
     uint32 Write(const T* value);
 
-    /** 
+    /**
 		\brief Write string.
 		write null-terminated string from current position in file.
 		\param[in] string string data loaded to this variable/
@@ -122,9 +92,9 @@ public:
 	 */
     virtual bool WriteLine(const String& string);
 
-    /** 
-		\brief Read [dataSize] bytes from this file to [pointerToData] 
-		\param[in, out] destinationBuffer function write data to this pointer
+    /**
+		\brief Read [dataSize] bytes from this file to [pointerToData]
+		\param[in,out] destinationBuffer function write data to this pointer
 		\param[in] dataSize size of data we want to read
 		\return number of bytes actually read
 	*/
@@ -132,7 +102,7 @@ public:
 
     /**
 		\brief Read [sizeof(T)] bytes from this file to [value]
-		\param[in, out] value function write data to this pointer
+		\param[in,out] value function write data to this pointer
 		\return number of bytes actually read
 	 */
     template <class T>
@@ -140,7 +110,7 @@ public:
 
     /**
 		\brief Read one line from text file to [pointerToData] buffer
-		\param[in, out] destinationBuffer function write data to this buffer
+		\param[in,out] destinationBuffer function write data to this buffer
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
@@ -153,31 +123,31 @@ public:
 
     /**
 		\brief Read string line from file to destination buffer with destinationBufferSize
-		\param[in, out] destinationBuffer buffer for the data
+		\param[in,out] destinationBuffer buffer for the data
 		\param[in] destinationBufferSize size of the destinationBuffer, for security reasons
 		\returns actual length of the string that was read
 	 */
     virtual uint32 ReadString(char8* destinationBuffer, uint32 destinationBufferSize);
     uint32 ReadString(String& destinationString);
 
-    /** 
+    /**
 		\brief Get current file position
 	*/
-    virtual uint32 GetPos() const;
+    virtual uint64 GetPos() const;
 
-    /** 
+    /**
 		\brief Get current file size if writing
 		       and get real file size if file for reading
 	*/
-    virtual uint32 GetSize() const;
+    virtual uint64 GetSize() const;
 
-    /** 
+    /**
 		\brief Set current file position
 		\param position - position to set
 		\param seekType - \ref IO::eFileSeek flag to set type of positioning
 		\return true if successful otherwise false.
 	*/
-    virtual bool Seek(int32 position, eFileSeek seekType);
+    virtual bool Seek(int64 position, eFileSeek seekType);
 
     //! return true if end of file reached and false in another case
     virtual bool IsEof() const;
@@ -186,7 +156,7 @@ public:
         \brief Truncate a file to a specified length
         \param size A size, that file is going to be truncated to
     */
-    bool Truncate(int32 size);
+    virtual bool Truncate(uint64 size);
 
     /**
         \brief Flushes file buffers to output device
@@ -196,31 +166,48 @@ public:
 
     static String GetModificationDate(const FilePath& filePathname);
 
+protected:
+    File() = default;
+    virtual ~File();
+
+    FilePath filename;
+
 private:
+    static File* LoadFileFromMountedArchive(const String& packName, const String& relative);
+    static bool IsFileInMountedArchive(const String& packName, const String& relative);
+    /**
+    \brief funciton to create a file instance with give attributes
+    this function must be used for opening existing files also
+    \param[in] filePath absolute system path to file
+    \param[in] attributes combinations of eFileAttributes
+    \returns file instance
+    */
+    static File* CreateFromSystemPath(const FilePath& filePath, uint32 attributes);
+
+    /**
+    \brief funciton to create a file instance with give attributes directly without framework path management.
+    \param[in] filePath absolute system path to file
+    \param[in] attributes combinations of eFileAttributes
+    \returns file instance
+    */
+    static File* PureCreate(const FilePath& filePath, uint32 attributes);
     // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
     bool GetNextChar(uint8* nextChar);
 
-private:
     FILE* file = nullptr;
-    uint32 size = 0;
-
-protected:
-    FilePath filename;
+    uint64 size = 0;
+    friend class FileSystem;
 };
 
 template <class T>
 uint32 File::Read(T* value)
 {
-    return Read(value, sizeof(T));
+    return static_cast<uint32>(Read(value, sizeof(T)));
 }
 
 template <class T>
 uint32 File::Write(const T* value)
 {
-    return Write(value, sizeof(T));
+    return static_cast<uint32>(Write(value, sizeof(T)));
 }
 };
-
-
-
-#endif

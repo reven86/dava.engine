@@ -1,40 +1,46 @@
-package.path = package.path .. ";../../../../dava.framework/Build/?.lua"
-require("TupState")
+tup.davainclude("../../../Tools/Bin/lua/Tupdava.lua")
 
 tupState = TupState.New({
-    outputDir = "../.output",
-    outputDbName = "testbed",
-    intermediateDir = "../.tmp"
+    outputDir = "../.Assets",
+    superpackDir = "../.AssetsSuperpack",
+    intermediateDir = "../.tmp",
+    superpack = true
 })
+
+tup.davainclude("Tuprules.inc.lua")
 
 tupState:AddPacks {
     {
-        name = "vpack",
-        depends = { "pack1", "pack2" }
+        name = "allpacks",
+        depends = { "pack1", "pack2", "packgpu" }
     },
     {
-        exclusive = true,
-        name = "pack1",
+        name = "pack0",
+        is_base = true,
         rules = {
-            { "",  "%.aaa" }
+            {"Shaders", ".*"}
+        }
+    },
+    {
+        name = "pack1",
+        is_base = true, -- is_base - only for local pack, not in superpack
+        compression = "none",
+        rules = {
+            { "^$",  ".*" }
         },
     },
+    lowercase_rule,
     {
-        exclusive = true,
+        name = "packgpu",
+        is_gpu = true,
+        rules = {
+            { "", ".*{gpu}.*"}
+        }
+    },
+    {
         name = "pack2",
         rules = {
-            { "", "%.sc2" }
+            { "", ".*" }
         },
-    },
-    { 
-         name = "gpupack",
-         gpu = true,
-         rules = {
-            { "", "%.{gpu}" },
-            { "", "%.sc3" }
-         }
-    },
+    }
 }
-
--- UtilDumpTable(tupState)
-

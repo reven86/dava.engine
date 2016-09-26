@@ -147,15 +147,6 @@ public:
     // Setters for Map/Array nodes.
     inline void AddNodeToArray(YamlNode* value);
 
-    // Add the values to the current node of type Array.
-    DAVA_DEPRECATED(inline void AddValueToArray(int32 value));
-    DAVA_DEPRECATED(inline void AddValueToArray(float32 value));
-    DAVA_DEPRECATED(inline void AddValueToArray(const String& value));
-    DAVA_DEPRECATED(inline void AddValueToArray(const Vector2& value));
-    DAVA_DEPRECATED(inline void AddValueToArray(const Vector3& value));
-    DAVA_DEPRECATED(inline void AddValueToArray(const Vector4& value));
-    DAVA_DEPRECATED(inline void AddValueToArray(VariantType* value));
-
     // Remove node value from map
     void RemoveNodeFromMap(const String& name);
     eStringRepresentation GetStringRepresentation() const;
@@ -416,35 +407,6 @@ inline void YamlNode::AddNodeToArray(YamlNode* value)
 {
     Add(value);
 }
-
-inline void YamlNode::AddValueToArray(int32 value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(float32 value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(const String& value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(const Vector2& value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(const Vector3& value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(const Vector4& value)
-{
-    Add(value);
-};
-inline void YamlNode::AddValueToArray(VariantType* value)
-{
-    Add(*value);
-};
 };
 
 #endif // __DAVAENGINE_YAML_NODE_H__

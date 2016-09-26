@@ -1,7 +1,6 @@
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 #include "AssetCache/AssetCacheClient.h"
-#include "Debug/Stats.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 #include "Functional/Function.h"
@@ -35,8 +34,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
     { //calculate digest for scene file
         MD5::MD5Digest fileDigest;
         MD5::ForFile(scenePathname, fileDigest);
-
-        Memcpy(key.data(), fileDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);
+        key.SetPrimaryKey(fileDigest);
     }
 
     { //calculate digest for params
@@ -52,7 +50,7 @@ void CalculateSceneKey(const FilePath& scenePathname, const String& sceneLink, A
         params += Format("Optimized: %u", optimize);
 
         MD5::ForData(reinterpret_cast<const uint8*>(params.data()), static_cast<uint32>(params.size()), sceneParamsDigest);
-        Memcpy(key.data() + MD5::MD5Digest::DIGEST_SIZE, sceneParamsDigest.digest.data(), MD5::MD5Digest::DIGEST_SIZE);
+        key.SetSecondaryKey(sceneParamsDigest);
     }
 }
 

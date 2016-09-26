@@ -36,5 +36,10 @@
 			<type>2</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/Java/com</locationURI>
 		</link>
+		<link>
+			<name>src_core_v2/com</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Engine/Private/Android/Java/com</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

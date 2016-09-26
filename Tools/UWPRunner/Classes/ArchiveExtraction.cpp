@@ -12,7 +12,7 @@ bool RunPythonScript(const String& script)
     FileSystem* fs = FileSystem::Instance();
     FilePath scriptFilePath(fs->GetCurrentExecutableDirectory(), "script.py");
 
-    RefPtr<File> scriptFile(File::PureCreate(scriptFilePath, File::CREATE | File::WRITE));
+    RefPtr<File> scriptFile(File::Create(scriptFilePath, File::CREATE | File::WRITE));
     if (!scriptFile)
         return false;
 

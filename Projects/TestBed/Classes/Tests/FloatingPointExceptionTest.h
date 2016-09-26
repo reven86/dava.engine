@@ -4,10 +4,11 @@
 #include <DAVAEngine.h>
 #include "Infrastructure/BaseScreen.h"
 
+class GameCore;
 class FloatingPointExceptionTest : public BaseScreen
 {
 public:
-    FloatingPointExceptionTest();
+    FloatingPointExceptionTest(GameCore* g);
 
 protected:
     void LoadResources() override;

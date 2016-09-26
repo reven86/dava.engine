@@ -90,7 +90,7 @@ AutotestingSystemLua::~AutotestingSystemLua()
     }
     lua_close(luaState);
     luaState = nullptr;
-    
+
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     destroy_mspace(memorySpace);
     free(memoryPool);
@@ -305,9 +305,13 @@ String AutotestingSystemLua::GetDeviceName()
 
 bool AutotestingSystemLua::IsPhoneScreen()
 {
+#if !defined(__DAVAENGINE_COREV2__)
     float32 xInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx / static_cast<float32>(Core::Instance()->GetScreenDPI());
     float32 yInch = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy / static_cast<float32>(Core::Instance()->GetScreenDPI());
     return sqrtf(xInch * xInch + yInch * yInch) <= 6.5f;
+#else
+    return false;
+#endif
 }
 
 String AutotestingSystemLua::GetTestParameter(const String& parameter)
@@ -750,6 +754,47 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     ProcessInput(touchUp);
 }
 
+void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
+{
+    UIEvent clickDown;
+    clickDown.phase = UIEvent::Phase::BEGAN;
+    clickDown.mouseButton = UIEvent::MouseButton::LEFT;
+    clickDown.device = UIEvent::Device::MOUSE;
+    clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickDown.point = point;
+    ProcessInput(clickDown);
+}
+
+void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
+{
+    UIEvent clickUp;
+    if (!AutotestingSystem::Instance()->FindTouch(static_cast<int32>(UIEvent::MouseButton::LEFT), clickUp))
+    {
+        AutotestingSystem::Instance()->OnError("ClickAction::LeftMouseClickUp click down not found");
+    }
+    clickUp.phase = UIEvent::Phase::ENDED;
+    clickUp.mouseButton = UIEvent::MouseButton::LEFT;
+    clickUp.device = UIEvent::Device::MOUSE;
+    clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickUp.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    clickUp.point = point;
+    ProcessInput(clickUp);
+}
+
+void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y)
+{
+    UIEvent wheel;
+    wheel.wheelDelta.x = x;
+    wheel.wheelDelta.y = y;
+    wheel.phase = UIEvent::Phase::WHEEL;
+    wheel.device = UIEvent::Device::MOUSE;
+    wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    wheel.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+    wheel.point = point;
+    ProcessInput(wheel);
+}
+
 void AutotestingSystemLua::ScrollToControl(const String& path) const
 {
     UIControl* control = FindControl(path);
@@ -817,9 +862,9 @@ bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
         Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", luaFilePath.GetAbsolutePathname().c_str());
         return false;
     }
-    char* data = new char[file->GetSize()];
-    file->Read(data, file->GetSize());
-    uint32 fileSize = file->GetSize();
+    char* data = new char[static_cast<size_t>(file->GetSize())];
+    file->Read(data, static_cast<uint32>(file->GetSize()));
+    uint32 fileSize = static_cast<uint32>(file->GetSize());
     file->Release();
     bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
     delete[] data;

@@ -1,12 +1,14 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "AndroidLayer.h"
 #include "UI/Private/Android/WebViewControlAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
 extern "C"
 {
-int Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthis, int id, jstring jUrl, jboolean hasGesture)
+JNIEXPORT int JNICALL Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthis, int id, jstring jUrl, jboolean hasGesture)
 {
     int res = 0;
     DAVA::String url = DAVA::JNI::ToString(jUrl);
@@ -15,7 +17,7 @@ int Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthi
     return res;
 }
 
-void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id, jintArray pixels, int width, int height)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id, jintArray pixels, int width, int height)
 {
     static_assert(sizeof(jint) == sizeof(DAVA::int32), "o_O can't be");
 
@@ -62,7 +64,7 @@ void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classt
     }
 }
 
-void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, jstring jResult)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, jstring jResult)
 {
     // string with result can be large with JSON inside
 
@@ -80,3 +82,5 @@ void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject cl
     env->ReleaseStringUTFChars(jResult, utf8Data);
 }
 };
+
+#endif // !__DAVAENGINE_COREV2__

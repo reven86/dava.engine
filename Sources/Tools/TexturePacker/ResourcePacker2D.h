@@ -8,8 +8,7 @@
 #include "TexturePacker/Spritesheet.h"
 #include <atomic>
 
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedItemValue.h"
+#include "AssetCache/AssetCacheClient.h"
 
 namespace DAVA
 {
@@ -47,6 +46,7 @@ private:
 
     bool IsUsingCache() const;
 
+    uint32 GetMaxTextureSize() const;
     Vector<String> FetchFlags(const FilePath& flagsPathname);
     static String GetProcessFolderName();
 
@@ -61,6 +61,7 @@ public:
     FilePath inputGfxDirectory;
     FilePath outputGfxDirectory;
     FilePath rootDirectory;
+    FilePath dataSourceDirectory;
     String gfxDirName;
 
     bool outputDirModified = true;

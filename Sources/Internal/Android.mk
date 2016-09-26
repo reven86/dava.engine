@@ -4,6 +4,19 @@
 # set local path for lib
 LOCAL_PATH := $(call my-dir)
 
+# HACK for right order of .so linking
+# c++_shared must be linked before all other shared libs, so add it manually
+# if we don't do it, linker can take symbols from wrong shared lib (unwind_backtrace from fmod, for example)
+ifeq ($(APP_STL), c++_shared)
+# Yet another hack - we don't need gcc lib, so unset variable with option -lgcc
+TARGET_LIBGCC := 
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := cxx-shared-prebuild
+LOCAL_SRC_FILES := $(NDK_ROOT)/sources/cxx-stl/llvm-libc++/$(LLVM_VERSION)/libs/$(TARGET_ARCH_ABI)/libc++_shared.so
+include $(PREBUILT_SHARED_LIBRARY)
+endif
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
 LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
@@ -15,88 +28,88 @@ LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.s
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := xml_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libxml_android.a
+LOCAL_MODULE := xml
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libxml.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := png_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libpng_android.a
+LOCAL_MODULE := png
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libpng.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := freetype_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
+LOCAL_MODULE := freetype
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libfreetype.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := yaml_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libyaml_android.a
+LOCAL_MODULE := yaml
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libyaml.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := mongodb_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
+LOCAL_MODULE := mongodb
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libmongodb.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := lua_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/liblua_android.a
+LOCAL_MODULE := lua
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/liblua.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := dxt_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libdxt_android.a
+LOCAL_MODULE := dxt
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libdxt.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := jpeg_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
+LOCAL_MODULE := jpeg
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libjpeg.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := curl_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcurl_android.a
+LOCAL_MODULE := curl
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libcurl.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := ssl_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libssl_android.a
+LOCAL_MODULE := ssl
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libssl.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := crypto_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+LOCAL_MODULE := crypto
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libcrypto.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := zip_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
+LOCAL_MODULE := zip
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libzip.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := icucommon_android
-LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libicucommon_android.a
+LOCAL_MODULE := icucommon
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libicucommon.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := unibreak_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
+LOCAL_MODULE := unibreak
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libunibreak.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := uv_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
+LOCAL_MODULE := uv
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libuv.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := webp_android
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+LOCAL_MODULE := webp
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libwebp.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := sqlite3_android
-LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libsqlite3_android.a
+LOCAL_MODULE := sqlite3
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libsqlite3.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 DAVA_ROOT := $(LOCAL_PATH)
@@ -108,23 +121,19 @@ DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/openssl/include/android
 
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 
-# starting from ndk10b x86 support NEON too! Add latter
-ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 DV_LOCAL_ARM_NEON := true
 DV_LOCAL_ARM_MODE := arm
 DV_LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
 DV_LOCAL_CFLAGS += -DUSE_NEON
-else
-DV_LOCAL_ARM_NEON := false
-endif
 
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
-DV_LOCAL_CPPFLAGS += -std=c++1y
+DV_LOCAL_CPPFLAGS += -std=c++14
 
 DV_LOCAL_CFLAGS += -DDAVA_FMOD
 
@@ -207,6 +216,16 @@ DV_LOCAL_CPPFLAGS += -Wno-unused-value
 DV_LOCAL_CPPFLAGS += -Wno-self-assign-field
 DV_LOCAL_CPPFLAGS += -Wno-undefined-reinterpret-cast
 
+# These warnings were added after switch on ndk 12
+DV_LOCAL_CPPFLAGS += -Wno-documentation-unknown-command
+DV_LOCAL_CPPFLAGS += -Wno-double-promotion
+DV_LOCAL_CPPFLAGS += -Wno-over-aligned
+DV_LOCAL_CPPFLAGS += -Wno-shift-negative-value
+
+# These warnings were added after switch on crystax ndk
+DV_LOCAL_CPPFLAGS += -Wno-macro-redefined
+DV_LOCAL_CPPFLAGS += -Wno-format
+
 DV_LOCAL_CPP_FEATURES += exceptions
 
 ifeq ($(DAVA_PROFILE), true)
@@ -220,15 +239,28 @@ DV_LOCAL_CFLAGS += -D__DAVAENGINE_PROFILE__
 endif
 endif
 
+DV_LOCAL_CFLAGS += -fno-standalone-debug
+
 # set exported build flags
-DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
+DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS) -fno-standalone-debug
 
 # set exported used libs
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
+# set exported linker flags
+# ld.bfd doesn't fail with big *.a and *.o
+DV_LOCAL_EXPORT_LDFLAGS := -fuse-ld=bfd
+
 # set included libraries
-DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
+DV_LOCAL_STATIC_LIBRARIES := libc++abi
 DV_LOCAL_STATIC_LIBRARIES += liblz4
+
+ifeq ($(APP_STL), c++_shared)
+DV_LOCAL_SHARED_LIBRARIES += cxx-shared-prebuild
+endif
+
+DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
+DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -236,28 +268,26 @@ DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
 
-DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
-
-DV_LOCAL_STATIC_LIBRARIES += xml_android
-DV_LOCAL_STATIC_LIBRARIES += png_android
-DV_LOCAL_STATIC_LIBRARIES += freetype_android
-DV_LOCAL_STATIC_LIBRARIES += yaml_android
-DV_LOCAL_STATIC_LIBRARIES += mongodb_android
-DV_LOCAL_STATIC_LIBRARIES += lua_android
-DV_LOCAL_STATIC_LIBRARIES += dxt_android
-DV_LOCAL_STATIC_LIBRARIES += jpeg_android
-DV_LOCAL_STATIC_LIBRARIES += curl_android
-DV_LOCAL_STATIC_LIBRARIES += ssl_android
-DV_LOCAL_STATIC_LIBRARIES += crypto_android
-DV_LOCAL_STATIC_LIBRARIES += zip_android
-DV_LOCAL_STATIC_LIBRARIES += icucommon_android
-DV_LOCAL_STATIC_LIBRARIES += unibreak_android
-DV_LOCAL_STATIC_LIBRARIES += uv_android
-DV_LOCAL_STATIC_LIBRARIES += webp_android
+DV_LOCAL_STATIC_LIBRARIES += xml
+DV_LOCAL_STATIC_LIBRARIES += png
+DV_LOCAL_STATIC_LIBRARIES += freetype
+DV_LOCAL_STATIC_LIBRARIES += yaml
+DV_LOCAL_STATIC_LIBRARIES += mongodb
+DV_LOCAL_STATIC_LIBRARIES += lua
+DV_LOCAL_STATIC_LIBRARIES += dxt
+DV_LOCAL_STATIC_LIBRARIES += jpeg
+DV_LOCAL_STATIC_LIBRARIES += curl
+DV_LOCAL_STATIC_LIBRARIES += ssl
+DV_LOCAL_STATIC_LIBRARIES += crypto
+DV_LOCAL_STATIC_LIBRARIES += zip
+DV_LOCAL_STATIC_LIBRARIES += icucommon
+DV_LOCAL_STATIC_LIBRARIES += unibreak
+DV_LOCAL_STATIC_LIBRARIES += uv
+DV_LOCAL_STATIC_LIBRARIES += webp
 DV_LOCAL_STATIC_LIBRARIES += cpufeatures
-DV_LOCAL_STATIC_LIBRARIES += sqlite3_android
+DV_LOCAL_STATIC_LIBRARIES += sqlite3
 
-DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic -landroid -lz
 
 ifeq ($(APP_PLATFORM), android-14)
 	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
@@ -300,6 +330,7 @@ LOCAL_CFLAGS := $(DV_LOCAL_CFLAGS)
 LOCAL_CPP_FEATURES := $(DV_LOCAL_CPP_FEATURES)
 LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
+LOCAL_EXPORT_LDFLAGS := $(DV_LOCAL_EXPORT_LDFLAGS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 
@@ -311,6 +342,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Base/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
@@ -318,6 +350,12 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Debug/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/JNI/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
@@ -335,7 +373,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
-	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -354,6 +394,7 @@ LOCAL_CFLAGS := $(DV_LOCAL_CFLAGS)
 LOCAL_CPP_FEATURES := $(DV_LOCAL_CPP_FEATURES)
 LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
+LOCAL_EXPORT_LDFLAGS := $(DV_LOCAL_EXPORT_LDFLAGS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 

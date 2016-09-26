@@ -1,7 +1,24 @@
-#ifndef _ANDROID_LAYER_
-#define _ANDROID_LAYER_
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
-#include "AndroidLayer.h"
+#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Engine/Private/Android/AndroidBridge.h"
+#include "Platform/DeviceInfo.h"
+
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    return Private::AndroidBridge::GetJavaVM();
+}
+
+} // namespace JNI
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Logger/Logger.h"
@@ -16,12 +33,12 @@
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
+#include "UI/Private/Android/MovieViewControlAndroid.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
-#include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
 #include "Utils/UTF8Utils.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #include <dirent.h>
 
 #include "Render/Renderer.h"
@@ -53,14 +70,16 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv*
 
 //JNISurfaceView
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject classthis, jint action, jint source, jint groupSize, jobject allInputs);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode);
-JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers);
+JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode, jint modifiers);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceCreated(JNIEnv* env, jobject classthis, jobject surface);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceChanged(JNIEnv* env, jobject classthis, jobject surface, jint width, jint height);
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, jobject classthis);
 
 JNIEXPORT void JNICALL Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis);
+//DeviceInfo
+JNIEXPORT void JNICALL Java_com_dava_framework_DataConnectionStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis);
 };
 
 namespace
@@ -84,6 +103,7 @@ jfieldID gInputEventTidField;
 jfieldID gInputEventXField;
 jfieldID gInputEventYField;
 jfieldID gInputEventTimeField;
+jfieldID gInputEventModifiersField;
 
 AndroidDelegate* androidDelegate = nullptr;
 ANativeWindow* nativeWindow = nullptr;
@@ -120,6 +140,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     }
 
     androidDelegate = new AndroidDelegate(vm);
+
+    DAVA::JNI::JavaClass::Initialize();
 
     DAVA::AndroidCrashReport::Init(env);
     LOGI("finished JNI_OnLoad");
@@ -195,6 +217,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     gInputEventXField = env->GetFieldID(*gInputEventClass, "x", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventYField = env->GetFieldID(*gInputEventClass, "y", DAVA::JNI::TypeMetrics<jfloat>());
     gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
+    gInputEventModifiersField = env->GetFieldID(*gInputEventClass, "modifiers", DAVA::JNI::TypeMetrics<jint>());
 
     DAVA::Logger::Info("finish OnCreateApplication");
 }
@@ -335,6 +358,7 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
                                                            gInputEventYField);
     // timestamp in seconds, JNIEnv retern in milliseconds
     event.timestamp = env->GetDoubleField(input, gInputEventTimeField) / 1000.0;
+    event.modifiers = env->GetIntField(input, gInputEventModifiersField);
     event.phase = GetPhase(action, source);
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
@@ -388,27 +412,27 @@ void Java_com_dava_framework_JNISurfaceView_nativeOnInput(JNIEnv* env, jobject c
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnKeyDown(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers)
 {
     if (core)
     {
-        core->KeyDown(keyCode);
+        core->KeyDown(keyCode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnKeyUp(JNIEnv* env, jobject classthis, jint keyCode, jint modifiers)
 {
     if (core)
     {
-        core->KeyUp(keyCode);
+        core->KeyUp(keyCode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 
-void Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode)
+void Java_com_dava_framework_JNISurfaceView_nativeOnGamepadElement(JNIEnv* env, jobject classthis, jint elementKey, jfloat value, jboolean isKeycode, jint modifiers)
 {
     if (core)
     {
-        core->OnGamepadElement(elementKey, value, isKeycode);
+        core->OnGamepadElement(elementKey, value, isKeycode, static_cast<DAVA::uint32>(modifiers));
     }
 }
 
@@ -463,6 +487,12 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv* env, 
     }
 }
 
+void Java_com_dava_framework_DataConnectionStateListener_OnCarrierNameChanged(JNIEnv* env, jobject classthis)
+{
+    // TODO: add callback in Core V2
+    DAVA::DeviceInfo::carrierNameChanged.Emit(DAVA::DeviceInfo::GetCarrierName());
+}
+
 void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobject classthis)
 {
     if (core)
@@ -489,4 +519,5 @@ void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject clas
 
 // END OF JNISurfaceView
 
-#endif //#ifndef _ANDROID_LAYER_
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

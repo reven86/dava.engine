@@ -1,6 +1,8 @@
 #include "FileSystem/FileList.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
+#include "PackManager/PackManager.h"
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
@@ -14,6 +16,9 @@
 #include <direct.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include <dirent.h>
+#include <sys/stat.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -24,6 +29,56 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
 
     path = filepath;
 
+// first check if required files inside DVPK archives
+#ifdef __DAVAENGINE_COREV2__
+    // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+    // access Engine object after it has beem destroyed
+    IPackManager* pm = nullptr;
+    Engine* e = Engine::Instance();
+    DVASSERT(e != nullptr);
+    EngineContext* context = e->GetContext();
+    DVASSERT(context != nullptr);
+    pm = context->packManager;
+#else
+    IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+    if (nullptr != pm && pm->IsInitialized())
+    {
+        if (filepath.GetType() == FilePath::PATH_IN_RESOURCES)
+        {
+            auto listFiles = [&](const FilePath& path, const String& pack)
+            {
+                FileEntry entry;
+                entry.path = path;
+                entry.name = path.IsDirectoryPathname() ? path.GetLastDirectoryName() : path.GetFilename();
+
+                entry.isHidden = false;
+                entry.isDirectory = entry.path.IsDirectoryPathname();
+
+                uint64 fileSize = 0;
+                if (!entry.isDirectory)
+                {
+                    FileSystem::Instance()->GetFileSize(path, fileSize);
+                    ++fileCount;
+                }
+                else
+                {
+                    ++directoryCount;
+                }
+                entry.size = static_cast<uint32>(fileSize);
+
+                fileList.push_back(entry);
+            };
+            pm->ListFilesInPacks(filepath, listFiles);
+        }
+        if (!fileList.empty())
+        {
+            return;
+        }
+    }
+
+// now check native FS for files
 #if defined(__DAVAENGINE_WINDOWS__)
 
     struct _wfinddata_t c_file;
@@ -118,34 +173,92 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
         free(namelist);
     }
 #elif defined(__DAVAENGINE_ANDROID__)
-    JniFileList jniFileList;
-    Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
-    FileEntry entry;
-    for (int32 i = 0; i < entrys.size(); ++i)
+
+    const String& dirPath = path.GetAbsolutePathname();
+
+    DIR* dir = opendir(dirPath.c_str());
+    if (nullptr != dir)
     {
-        const JniFileList::JniFileListEntry& jniEntry = entrys[i];
-
-        entry.path = path + jniEntry.name;
-        entry.name = jniEntry.name;
-        entry.size = jniEntry.size;
-        entry.isDirectory = jniEntry.isDirectory;
-        entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
-
-        if (entry.isDirectory)
+        // print all the files and directories within directory
+        FileEntry entry;
+        for (struct dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
         {
-            entry.path.MakeDirectoryPathname();
+            String fileOrDirName = ent->d_name;
+            if (fileOrDirName == "." || fileOrDirName == "..")
+            {
+                continue; // just skip. faster work less bugs
+            }
+            String fullPath = dirPath + fileOrDirName;
+            entry.path = fullPath;
+            entry.name = fileOrDirName;
+
+            if (ent->d_type != DT_DIR && ent->d_type != DT_REG)
+            {
+                Logger::Error("unsupported d_type in directory: %s", dirPath.c_str());
+                continue;
+            }
+
+            entry.isDirectory = (DT_DIR == ent->d_type);
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            entry.size = 0;
+
+            if (!entry.isDirectory)
+            {
+                struct stat st;
+                if (stat(fullPath.c_str(), &st) == 0)
+                {
+                    entry.size = st.st_size;
+                }
+            }
+            else
+            {
+                entry.path.MakeDirectoryPathname();
+            }
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
         }
-
-        if (!entry.isHidden || includeHidden)
+        closedir(dir);
+    }
+    else
+    {
+        // could not open directory try in APK assets
+        AssetsManagerAndroid* assets = AssetsManagerAndroid::Instance();
+        Vector<ResourceArchive::FileInfo> files;
+        if (assets->ListDirectory(dirPath, files))
         {
-            fileList.push_back(entry);
+            FileEntry entry;
+            for (ResourceArchive::FileInfo& info : files)
+            {
+                entry.path = info.relativeFilePath;
+
+                entry.size = info.originalSize;
+                entry.isDirectory = (info.relativeFilePath.back() == '/');
+                entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+
+                if (entry.isDirectory)
+                {
+                    entry.name = entry.path.GetLastDirectoryName();
+                }
+                else
+                {
+                    entry.name = entry.path.GetFilename();
+                }
+
+                if (!entry.isHidden || includeHidden)
+                {
+                    fileList.push_back(entry);
+                }
+            }
         }
     }
 #endif //PLATFORMS
 
     directoryCount = 0;
     fileCount = 0;
-    for (int fi = 0; fi < GetCount(); ++fi)
+    for (uint32 fi = 0; fi < GetCount(); ++fi)
     {
         if (IsDirectory(fi))
         {
@@ -161,68 +274,61 @@ FileList::~FileList()
 {
 }
 
-int32 FileList::GetCount() const
+uint32 FileList::GetCount() const
 {
-    return static_cast<int32>(fileList.size());
+    return static_cast<uint32>(fileList.size());
 }
 
-int32 FileList::GetFileCount() const
+uint32 FileList::GetFileCount() const
 {
     return fileCount;
 }
 
-int32 FileList::GetDirectoryCount() const
+uint32 FileList::GetDirectoryCount() const
 {
     return directoryCount;
 }
 
-const FilePath& FileList::GetPathname(int32 index) const
+const FilePath& FileList::GetPathname(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].path;
+    return fileList.at(index).path;
 }
 
-const String& FileList::GetFilename(int32 index) const
+const String& FileList::GetFilename(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].name;
+    return fileList.at(index).name;
 }
 
-bool FileList::IsDirectory(int32 index) const
+bool FileList::IsDirectory(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].isDirectory;
+    return fileList.at(index).isDirectory;
 }
 
-bool FileList::IsNavigationDirectory(int32 index) const
+bool FileList::IsNavigationDirectory(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    //bool isDir = fileList[index].isDirectory;
-    //if (isDir)
-    //{
+    const String& filename = GetFilename(index);
 
-    String filename = GetFilename(index);
     if ((filename == ".") || (filename == ".."))
+    {
         return true;
-    //}
+    }
+
     return false;
 }
 
-bool FileList::IsHidden(int32 index) const
+bool FileList::IsHidden(uint32 index) const
 {
-    DVASSERT((index >= 0) && (index < static_cast<int32>(fileList.size())));
-    return fileList[index].isHidden;
+    return fileList.at(index).isHidden;
 }
 
 uint32 FileList::GetFileSize(uint32 index) const
 {
-    DVASSERT(index < static_cast<uint32>(fileList.size()));
     return fileList[index].size;
 }
 
 void FileList::Sort()
 {
-    std::sort(fileList.begin(), fileList.end());
+    stable_sort(begin(fileList), end(fileList));
 }
 
 }; // end of namespace DAVA
