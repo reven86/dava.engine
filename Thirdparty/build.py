@@ -5,16 +5,24 @@ import imp
 import os
 import sys
 import traceback
+import shutil
 
+# Allow importing from Private folder
 sys.path.append('Private')
 import build_utils
+
+# Path for temporary output produced by builders 
+output_path = os.path.abspath('output')
 
 # Imported builders dict to avoid multiple imports
 imported_builders = {}
 
 def import_library_builder_module(name):
+	# Import only once
+
 	if not name in imported_builders:
 		builder_file_path = os.path.join(name, 'build.py')
+		# Change imported module name to avoid name clashes with built-in modules
 		imported_builders[name] = imp.load_source('dava_builder_' + name, builder_file_path)
 
 	return imported_builders[name]
@@ -26,7 +34,7 @@ def build_library(name, targets, skip_dependencies):
 
 	# Check if we already invoked builder for this library
 	# (it could be declared as a dependency for another library)
-	# Return None in this case since we didn't remember the result
+	# Return None in this case since we didn't remember the result (and don't need it)
 	if name in invoked_builders:
 		return None
 
@@ -50,15 +58,16 @@ def build_library(name, targets, skip_dependencies):
 			print 'Found dependency: {}'.format(dependency)
 			if build_library(dependency, targets, skip_dependencies) == False:
 				print 'Skipping library {} since its dependency ({}) couldn\' be built'.format(name, dependency)
-				return False;
+				return False
 
 	# Build
 
-	library_working_dir = os.path.abspath(os.path.join('output', name))
+	library_working_dir = os.path.join(output_path, name)
 	project_root_path = os.path.abspath('..')
 	if not os.path.exists(library_working_dir):
 		os.makedirs(library_working_dir)
 
+	# Change working directory to builder's one
 	os.chdir(name)
 
 	try:
@@ -72,6 +81,7 @@ def build_library(name, targets, skip_dependencies):
 		traceback.print_exc()
 		result = False
 
+	# Revert workind dir change
 	os.chdir('..')
 
 	return result
@@ -114,6 +124,7 @@ if __name__ == "__main__":
 	parser.add_argument('-sd', '--skip-dependencies', action='store_true', help='build without first building dependencies')
 	parser.add_argument('-i', '--info', action='store_true', help='only show information about selected libraries (all if none was specified)')
 	parser.add_argument('-v', '--verbose', action='store_true', help='print additional logs')
+	parser.add_argument('--no-clean', action='store_true', help='do not delete temporary output folder after script invokation')
 	args = parser.parse_args()
 
 	# Prepare and verify data
@@ -142,5 +153,13 @@ if __name__ == "__main__":
 		for lib in libraries_to_process:
 			print_info(lib, targets_to_process)
 	else:
+		# Remove output directory from previous run (if exists)
+		shutil.rmtree(output_path, ignore_errors=True)
+
+		# Build
 		for lib in libraries_to_process:
 			build_library(lib, targets_to_process, args.skip_dependencies)
+
+		# Clean (if not forbidden)
+		if not args.no_clean:
+			shutil.rmtree(output_path, ignore_errors=True)

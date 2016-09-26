@@ -136,7 +136,6 @@ def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator
 
 def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_generator, project, target, cmake_additional_args = []):
 	cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
-	build_xcode_target(os.path.join(output_folder_path, project), target, 'Debug')
 	build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
 def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi):
