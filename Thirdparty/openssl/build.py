@@ -68,6 +68,8 @@ def __build_android(working_directory_path, root_project_path):
 	shutil.copyfile(libssl_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libssl.a'))
 	shutil.copyfile(libcrypto_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libcrypto.a'))
 
+	copy_headers(source_folder_path, root_project_path, 'android')
+
 	return True
 
 def __get_android_env(source_folder_path, root_project_path, android_target, machine, arch, toolchain_folder, cross_compile, crystax_libs_folder):
@@ -96,3 +98,7 @@ def __get_android_env_arm(source_folder_path, root_project_path):
 
 def __get_android_env_x86(source_folder_path, root_project_path):
 	return __get_android_env(source_folder_path, root_project_path, 'android-9', 'i686', 'x86', 'x86-4.9', 'i686-linux-android-', 'x86')
+
+def copy_headers(source_folder_path, root_project_path, target_folder):
+	include_path = os.path.join(root_project_path, os.path.join('Libs/openssl/include', target_folder))
+	build_utils.copy_files(os.path.join(source_folder_path, 'include/openssl'), include_path, '*.h')

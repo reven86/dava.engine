@@ -153,13 +153,14 @@ if __name__ == "__main__":
 		for lib in libraries_to_process:
 			print_info(lib, targets_to_process)
 	else:
-		# Remove output directory from previous run (if exists)
-		shutil.rmtree(output_path, ignore_errors=True)
+		# Clean previous run (if it was invoked with --no-clean)
+		if not args.no_clean:
+			shutil.rmtree(output_path, ignore_errors=True)
 
 		# Build
 		for lib in libraries_to_process:
 			build_library(lib, targets_to_process, args.skip_dependencies)
 
-		# Clean (if not forbidden)
+		# Clean
 		if not args.no_clean:
 			shutil.rmtree(output_path, ignore_errors=True)
