@@ -5,7 +5,7 @@ namespace DAVA
 {
 namespace UnitTests
 {
-void TestClass::InitTest(const String& testName)
+void TestClass::InitTimeStampForTest(const String& testName)
 {
     auto iter = std::find_if(tests.begin(), tests.end(), [&testName](const TestInfo& testInfo)
                              {

@@ -27,7 +27,7 @@ public:
     TestClass() = default;
     virtual ~TestClass() = default;
 
-    void InitTest(const String& testName);
+    void InitTimeStampForTest(const String& testName);
 
     virtual void SetUp(const String& testName);
     virtual void TearDown(const String& testName);
