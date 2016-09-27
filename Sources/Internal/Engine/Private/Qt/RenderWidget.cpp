@@ -30,7 +30,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
-    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::sceneGraphInvalidated, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
@@ -63,7 +63,7 @@ void RenderWidget::OnActiveFocusItemChanged()
     }
 }
 
-void RenderWidget::sceneGraphInvalidated()
+void RenderWidget::OnSceneGraphInvalidated()
 {
     if (isClosing)
     {

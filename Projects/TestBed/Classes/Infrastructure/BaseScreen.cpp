@@ -1,6 +1,8 @@
 #include "Infrastructure/BaseScreen.h"
 #include "Infrastructure/GameCore.h"
 
+#include <UI/Layouts/UIAnchorComponent.h>
+
 DAVA::int32 BaseScreen::globalScreenId = 1;
 
 BaseScreen::BaseScreen(GameCore& gameCore, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
@@ -41,6 +43,14 @@ void BaseScreen::LoadResources()
 
     exitButton->SetDebugDraw(true);
     exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
+
+    {
+        // Stick button to bottom right corner
+        UIAnchorComponent* anchor = exitButton->GetOrCreateComponent<UIAnchorComponent>();
+        anchor->SetBottomAnchorEnabled(true);
+        anchor->SetRightAnchorEnabled(true);
+    }
+
     AddControl(exitButton);
 }
 

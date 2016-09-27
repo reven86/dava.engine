@@ -111,6 +111,7 @@ GameCore::GameCore(Engine& engine)
 
         Window* w = engine.PrimaryWindow();
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
+        w->Resize(1024.f, 768.f);
         w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
     }
 
@@ -120,6 +121,8 @@ GameCore::GameCore(Engine& engine)
 void GameCore::OnGameLoopStarted()
 {
     Logger::Debug("****** GameCore::OnGameLoopStarted");
+
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
 
     InitNetwork();
     RunOnlyThisTest();
@@ -204,6 +207,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new FullscreenTest(*this);
     new CoreV2Test(*this);
     new DeviceInfoTest(*this);
     new DlcTest(*this);
@@ -219,7 +223,6 @@ void GameCore::RegisterTests()
     new WebViewTest(*this);
     new FunctionSignalTest(*this);
     new KeyboardTest(*this);
-    new FullscreenTest(*this);
     new UIBackgroundTest(*this);
     new ClipTest(*this);
     new GPUTest(*this);
