@@ -357,6 +357,7 @@ void GameCore::RegisterTests()
     new GPUTest(this);
     new CoreTest(this);
     new FormatsTest(this);
+    new ScriptingTest(this);
     new AssertTest(this);
     new FloatingPointExceptionTest(this);
     new PackManagerTest(this);

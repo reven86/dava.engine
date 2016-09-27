@@ -1,32 +1,48 @@
 #include "Tests/ScriptingTest.h"
 #include "Base/Type.h"
-#include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/Registrator.h"
 #include "Scripting/Script.h"
-
-class DemoObj
-{
-    DAVA_DECLARE_TYPE_INITIALIZER;
-
-public:
-    int a = 99;
-    String b = "DEMO_TEST";
-    Color c = Color::White;
-};
-
-DAVA_TYPE_INITIALIZER(DemoObj)
-{
-    DAVA::ReflectionRegistrator<DemoObj>::Begin()
-    .Field("a", &DemoObj::a)
-    .Field("b", &DemoObj::b)
-    .Field("c", &DemoObj::c)
-    .End();
-}
 
 using namespace DAVA;
 
-ScriptingTest::ScriptingTest()
-    : BaseScreen("ScriptingTest")
+class SubObj : public ReflectedBase
+{
+    DAVA_VIRTUAL_REFLECTION(SubObj)
+    {
+        ReflectionRegistrator<SubObj>::Begin()
+        .Field("a", &SubObj::a)
+        .Field("b", &SubObj::b)
+        .Field("c", &SubObj::c)
+        .End();
+    }
+
+public:
+    int32 a = 10;
+    WideString b = L"WideString";
+    Color c = Color::Black;
+};
+
+class DemoObj : public ReflectedBase
+{
+    DAVA_VIRTUAL_REFLECTION(DemoObj)
+    {
+        ReflectionRegistrator<DemoObj>::Begin()
+        .Field("a", &DemoObj::a)
+        .Field("b", &DemoObj::b)
+        .Field("c", &DemoObj::c)
+        .Field("d", &DemoObj::d)
+        .End();
+    }
+
+public:
+    int32 a = 99;
+    String b = "String";
+    Color c = Color::White;
+    SubObj d;
+};
+
+ScriptingTest::ScriptingTest(GameCore* g)
+    : BaseScreen(g, "ScriptingTest")
 {
 }
 
@@ -34,36 +50,42 @@ void ScriptingTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    static const String demo_script =
-    R"script(
-
-DV.Debug("LUA: static code")
-
-function printRef(any)
-    DV.Debug("Print any: " .. tostring(any:value()))
-end
+    static const String demo_script = R"script(
 
 function main(context)
-    aRef = context:ref("a")
-    printRef(aRef)
-    bRef = aRef
-    aRef:set(956)
-    printRef(bRef)
+    DV.Debug("context: "..tostring(context))
+    DV.Debug("context.a: "..tostring(context.a))
+    DV.Debug("context.b: "..tostring(context.b))
+    DV.Debug("context.c: "..tostring(context.c))
+    DV.Debug("context.d: "..tostring(context.d))
+    DV.Debug("context.d.a: "..tostring(context.d.a))
+    DV.Debug("context.d.b: "..tostring(context.d.b))
+    DV.Debug("context.d.c: "..tostring(context.d.c))
 
-    cRef = context:ref("c")
-    DV.Debug("C ref: " .. tostring(cRef))
-    cVal = cRef:value()
-    DV.Debug("C val: " .. tostring(cVal))
+    context.a = 1
+    DV.Debug("context.a: "..tostring(context.a))
 
-    DV.Debug("type(aRef): " .. type(aRef))
-    DV.Debug("type(cRef): " .. type(cRef))
-    DV.Debug("type(cVal): " .. type(cVal))
+    context.b = "New String"
+    DV.Debug("context.b: "..tostring(context.b))
+
+    context.c = context.d.c
+    DV.Debug("context.c: "..tostring(context.c))
+
+    context.d.a = 2    
+    DV.Debug("context.d.a: "..tostring(context.d.a))
+
+    context.d.b = "New WideString"
+    DV.Debug("context.d.b: "..tostring(context.d.b))
+
+
+    DV.Debug("context.a + context.d.a: "..(context.a + context.d.a))
+
 end
 
 )script";
 
     DemoObj obj;
-    DAVA::Reflection objRef = DAVA::Reflection::Reflect(&obj);
+    Reflection objRef = Reflection::Create(&obj).ref;
 
     Script s;
     s.LoadString(demo_script);

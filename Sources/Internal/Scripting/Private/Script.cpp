@@ -17,9 +17,9 @@ Script::Script()
     state->lua = luaL_newstate();
     luaL_openlibs(state->lua);
 
-    Dava_register(state->lua);
-    Any_register(state->lua);
-    Reflection_register(state->lua);
+    lua::Dava_register(state->lua);
+    lua::Any_register(state->lua);
+    lua::Reflection_register(state->lua);
 }
 
 Script::~Script()
@@ -53,14 +53,14 @@ bool Script::LoadFile(const FilePath& filepath)
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't load file");
-        Logger::Error("Lua script error: %s", lua_tostring(state->lua, -1));
+        Logger::Error("Lua script (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
-    res = lua_pcall(state->lua, 0, LUA_MULTRET, 0);
+    res = lua_pcall(state->lua, 0, 0, 0);
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't execute script");
-        Logger::Error("Lua script error: %s", lua_tostring(state->lua, -1));
+        Logger::Error("Lua script (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     return true;
@@ -69,12 +69,12 @@ bool Script::LoadFile(const FilePath& filepath)
 bool Script::Run(const DAVA::Reflection& context)
 {
     lua_getglobal(state->lua, mainFuctionName.c_str());
-    pushReflection(state->lua, context);
-    DAVA::int32 res = lua_pcall(state->lua, 1, 1, 0);
+    lua::pushReflection(state->lua, context);
+    DAVA::int32 res = lua_pcall(state->lua, 1, 0, 0);
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't execute main()");
-        Logger::Error("Lua script error (%d): ", res, lua_tostring(state->lua, -1));
+        Logger::Error("Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     return true;

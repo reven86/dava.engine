@@ -1,15 +1,19 @@
 #include "lua_bridge.h"
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 
-static DAVA::int32 lua_logger_debug(lua_State* state)
+namespace lua
 {
+DAVA::int32 lua_logger_debug(lua_State* state)
+{
+    luaL_checktype(state, -1, LUA_TSTRING);
     const char* msg = lua_tostring(state, -1);
     DAVA::Logger::Debug(msg);
     lua_pop(state, 1);
     return 0;
 }
 
-static DAVA::int32 Dava_register(lua_State* state)
+DAVA::int32 Dava_register(lua_State* state)
 {
     static const struct luaL_reg davalib[] = {
         { "Debug", &lua_logger_debug },
@@ -22,7 +26,7 @@ static DAVA::int32 Dava_register(lua_State* state)
 
 /******************************************************************************/
 
-static DAVA::Any toAny(lua_State* state, DAVA::int32 index)
+DAVA::Any toAny(lua_State* state, DAVA::int32 index)
 {
     DAVA::Any* pAny = static_cast<DAVA::Any*>(lua_touserdata(state, index));
     if (!pAny)
@@ -32,7 +36,7 @@ static DAVA::Any toAny(lua_State* state, DAVA::int32 index)
     return *pAny;
 }
 
-static DAVA::Any checkAny(lua_State* state, DAVA::int32 index)
+DAVA::Any checkAny(lua_State* state, DAVA::int32 index)
 {
     luaL_checktype(state, index, LUA_TUSERDATA);
     DAVA::Any* pAny = static_cast<DAVA::Any*>(luaL_checkudata(state, index, AnyTName));
@@ -43,7 +47,7 @@ static DAVA::Any checkAny(lua_State* state, DAVA::int32 index)
     return *pAny;
 }
 
-static DAVA::Any* pushAny(lua_State* state, const DAVA::Any& refl)
+DAVA::Any* pushAny(lua_State* state, const DAVA::Any& refl)
 {
     DAVA::Any* pAny = static_cast<DAVA::Any*>(lua_newuserdata(state, sizeof(DAVA::Any)));
     *pAny = refl;
@@ -52,13 +56,13 @@ static DAVA::Any* pushAny(lua_State* state, const DAVA::Any& refl)
     return pAny;
 }
 
-static DAVA::int32 Any_gc(lua_State* state)
+DAVA::int32 Any_gc(lua_State* state)
 {
     // TODO: need?
     return 0;
 }
 
-static DAVA::int32 Any_tostring(lua_State* state)
+DAVA::int32 Any_tostring(lua_State* state)
 {
     DAVA::Any any = checkAny(state, 1);
     void* pAny = lua_touserdata(state, 1);
@@ -66,7 +70,7 @@ static DAVA::int32 Any_tostring(lua_State* state)
     return 1;
 }
 
-static DAVA::int32 Any_register(lua_State* state)
+DAVA::int32 Any_register(lua_State* state)
 {
     static const luaL_reg Any_methods[] = {
         { nullptr, nullptr }
@@ -107,7 +111,7 @@ static DAVA::int32 Any_register(lua_State* state)
 
 /******************************************************************************/
 
-static DAVA::Reflection toReflection(lua_State* state, DAVA::int32 index)
+DAVA::Reflection toReflection(lua_State* state, DAVA::int32 index)
 {
     DAVA::Reflection* pRef = static_cast<DAVA::Reflection*>(lua_touserdata(state, index));
     if (!pRef)
@@ -117,7 +121,7 @@ static DAVA::Reflection toReflection(lua_State* state, DAVA::int32 index)
     return *pRef;
 }
 
-static DAVA::Reflection checkReflection(lua_State* state, DAVA::int32 index)
+DAVA::Reflection checkReflection(lua_State* state, DAVA::int32 index)
 {
     luaL_checktype(state, index, LUA_TUSERDATA);
     DAVA::Reflection* pRef = static_cast<DAVA::Reflection*>(luaL_checkudata(state, index, ReflectionTName));
@@ -128,7 +132,7 @@ static DAVA::Reflection checkReflection(lua_State* state, DAVA::int32 index)
     return *pRef;
 }
 
-static DAVA::Reflection* pushReflection(lua_State* state, const DAVA::Reflection& refl)
+DAVA::Reflection* pushReflection(lua_State* state, const DAVA::Reflection& refl)
 {
     DAVA::Reflection* pRef = static_cast<DAVA::Reflection*>(lua_newuserdata(state, sizeof(DAVA::Reflection)));
     *pRef = refl;
@@ -137,22 +141,36 @@ static DAVA::Reflection* pushReflection(lua_State* state, const DAVA::Reflection
     return pRef;
 }
 
-static DAVA::int32 Reflection_ref(lua_State* state)
+DAVA::int32 Reflection_gc(lua_State* state)
+{
+    // TODO: need?
+    return 0;
+}
+
+DAVA::int32 Reflection_tostring(lua_State* state)
 {
     DAVA::Reflection refl = checkReflection(state, 1);
-    DAVA::String name = luaL_checkstring(state, 2);
-
-    const DAVA::ReflectedObject& obj = refl.GetValueObject();
-    const DAVA::StructureWrapper* wr = refl.GetStructure();
-
-    DAVA::Ref::Field field = wr->GetField(obj, name);
-    pushReflection(state, field.valueRef);
+    void* pRef = lua_touserdata(state, 1);
+    lua_pushfstring(state, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
     return 1;
 }
 
-static DAVA::int32 Reflection_value(lua_State* state)
+DAVA::int32 Reflection_index(lua_State* state)
 {
-    DAVA::Reflection refl = checkReflection(state, 1);
+    DAVA::Reflection self = checkReflection(state, 1);
+    DAVA::String name = luaL_checkstring(state, 2);
+
+    DAVA::Reflection refl = self.GetField(name).ref;
+    if (!refl.IsValid())
+    {
+        return 0;
+    }
+
+    if (refl.HasFields() || refl.HasMethods())
+    {
+        pushReflection(state, refl);
+        return 1;
+    }
 
     DAVA::Any value = refl.GetValue();
     if (value.CanGet<DAVA::int32>())
@@ -180,6 +198,12 @@ static DAVA::int32 Reflection_value(lua_State* state)
         const DAVA::String& res = value.Get<DAVA::String>();
         lua_pushlstring(state, res.c_str(), res.length());
     }
+    else if (value.CanGet<DAVA::WideString>())
+    {
+        const DAVA::WideString& res = value.Get<DAVA::WideString>();
+        const DAVA::String& utf = DAVA::UTF8Utils::EncodeToUTF8(res);
+        lua_pushlstring(state, utf.c_str(), res.length());
+    }
     else if (value.CanGet<bool>())
     {
         lua_pushboolean(state, value.Get<bool>());
@@ -191,103 +215,89 @@ static DAVA::int32 Reflection_value(lua_State* state)
     return 1;
 }
 
-static DAVA::int32 Reflection_set(lua_State* state)
+DAVA::int32 Reflection_newindex(lua_State* state)
 {
-    DAVA::Reflection refl = checkReflection(state, 1);
+    DAVA::Reflection self = checkReflection(state, 1);
+    DAVA::String name = luaL_checkstring(state, 2);
 
-    DAVA::Any value;
-    int ltype = lua_type(state, 2);
-    switch (ltype)
+    DAVA::Reflection refl = self.GetField(name).ref;
+    if (refl.IsValid())
     {
-    case LUA_TBOOLEAN:
-        value.Set(bool(lua_toboolean(state, 2) != 0));
-        break;
-    case LUA_TNUMBER:
-        value.Set(DAVA::float64(lua_tonumber(state, 2)));
-        break;
-    case LUA_TSTRING:
-        value.Set(DAVA::String(lua_tolstring(state, 2, nullptr)));
-        break;
-    case LUA_TUSERDATA:
-        value = checkAny(state, 2);
-        break;
-    case LUA_TNIL:
-    case LUA_TLIGHTUSERDATA:
-    case LUA_TTABLE:
-    case LUA_TFUNCTION:
-    case LUA_TTHREAD:
-    default:
-        luaL_error(state, "Wrong input type!");
-        break;
-    }
+        DAVA::Any value;
+        int ltype = lua_type(state, 3);
+        switch (ltype)
+        {
+        case LUA_TBOOLEAN:
+            value.Set(bool(lua_toboolean(state, 3) != 0));
+            break;
+        case LUA_TNUMBER:
+            value.Set(DAVA::float64(lua_tonumber(state, 3)));
+            break;
+        case LUA_TSTRING:
+            value.Set(DAVA::String(lua_tolstring(state, 3, nullptr)));
+            break;
+        case LUA_TUSERDATA:
+            value = checkAny(state, 3);
+            break;
+        case LUA_TNIL:
+        case LUA_TLIGHTUSERDATA:
+        case LUA_TTABLE:
+        case LUA_TFUNCTION:
+        case LUA_TTHREAD:
+        default:
+            return luaL_error(state, "Wrong input type!");
+        }
 
-    // Cast-HACK
-    if (value.GetType() == DAVA::Type::Instance<DAVA::float64>())
-    {
-        DAVA::float64 rawValue = value.Get<DAVA::float64>();
-        if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int32>())
+        // Cast-HACK
+        if (value.GetType() == DAVA::Type::Instance<DAVA::float64>())
         {
-            refl.SetValue(DAVA::Any(static_cast<DAVA::int32>(rawValue)));
+            DAVA::float64 rawValue = value.Get<DAVA::float64>();
+            if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int32>())
+            {
+                refl.SetValue(DAVA::Any(static_cast<DAVA::int32>(rawValue)));
+            }
+            else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int16>())
+            {
+                refl.SetValue(DAVA::Any(static_cast<DAVA::int16>(rawValue)));
+            }
+            else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int8>())
+            {
+                refl.SetValue(DAVA::Any(static_cast<DAVA::int8>(rawValue)));
+            }
+            else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::float32>())
+            {
+                refl.SetValue(DAVA::Any(static_cast<DAVA::float32>(rawValue)));
+            }
         }
-        else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int16>())
+        else if (value.GetType() == DAVA::Type::Instance<DAVA::String>() &&
+                 refl.GetValueType() == DAVA::Type::Instance<DAVA::WideString>())
         {
-            refl.SetValue(DAVA::Any(static_cast<DAVA::int16>(rawValue)));
+            const DAVA::WideString& wstr = DAVA::UTF8Utils::EncodeToWideString(value.Get<DAVA::String>());
+            refl.SetValue(DAVA::Any(wstr));
         }
-        else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::int8>())
+        else
         {
-            refl.SetValue(DAVA::Any(static_cast<DAVA::int8>(rawValue)));
+            refl.SetValue(value);
         }
-        else if (refl.GetValueType() == DAVA::Type::Instance<DAVA::float32>())
-        {
-            refl.SetValue(DAVA::Any(static_cast<DAVA::float32>(rawValue)));
-        }
-    }
-    else
-    {
-        refl.SetValue(value);
+
+        return 0;
     }
 
     return 0;
 }
 
-static DAVA::int32 Reflection_gc(lua_State* state)
+DAVA::int32 Reflection_register(lua_State* state)
 {
-    // TODO: need?
-    return 0;
-}
-
-static DAVA::int32 Reflection_tostring(lua_State* state)
-{
-    DAVA::Reflection refl = checkReflection(state, 1);
-    void* pRef = lua_touserdata(state, 1);
-    lua_pushfstring(state, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
-    return 1;
-}
-
-static DAVA::int32 Reflection_register(lua_State* state)
-{
-    static const luaL_reg Reflection_methods[] = {
-        { "ref", &Reflection_ref },
-        { "value", &Reflection_value },
-        { "set", &Reflection_set },
-        { nullptr, nullptr }
-    };
-
     static const luaL_reg Reflection_meta[] = {
         { "__gc", &Reflection_gc },
         { "__tostring", &Reflection_tostring },
+        { "__index", &Reflection_index },
+        { "__newindex", &Reflection_newindex },
         { nullptr, nullptr }
     };
 
-    luaL_openlib(state, ReflectionTName, Reflection_methods, 0);
     luaL_newmetatable(state, ReflectionTName);
-    luaL_openlib(state, 0, Reflection_meta, 0);
-    lua_pushliteral(state, "__index"); // Hide index. __index = methods
-    lua_pushvalue(state, -3);
-    lua_rawset(state, -3);
-    lua_pushliteral(state, "__metatable"); // Hide metatable. __metatable = methods
-    lua_pushvalue(state, -3);
-    lua_rawset(state, -3);
-    lua_pop(state, 1);
+    luaL_register(state, 0, Reflection_meta);
     return 1;
+}
 }
