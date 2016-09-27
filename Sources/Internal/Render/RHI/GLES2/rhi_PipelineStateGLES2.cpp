@@ -548,6 +548,12 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
 
             if (status)
             {
+                GLCommand cmd3[] =
+                {
+                  { GLCommand::USE_PROGRAM, { gl_prog } }
+                };
+                ExecGL(cmd3, 1);
+
                 entry.vprog->vdecl.InitVattr(gl_prog);
                 entry.vprog->GetProgParams(gl_prog);
                 entry.fprog->GetProgParams(gl_prog);

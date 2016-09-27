@@ -2501,6 +2501,13 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         }
         break;
 
+        case GLCommand::USE_PROGRAM:
+        {
+            GL_CALL(glUseProgram(GLuint(arg[0])));
+            cmd->status = err;
+        }
+        break;
+
         case GLCommand::SHADER_SOURCE:
         {
             GL_CALL(glShaderSource(GLuint(arg[0]), GLsizei(arg[1]), reinterpret_cast<const GLchar**>(arg[2]), reinterpret_cast<const GLint*>(arg[3])));
