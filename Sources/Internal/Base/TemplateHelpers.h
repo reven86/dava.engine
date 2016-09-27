@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_TEMPLATEHELPERS_H__
-#define __DAVAENGINE_TEMPLATEHELPERS_H__
+#pragma once
 
 #include "NullType.h"
 #include "TypeList.h"
@@ -306,7 +305,7 @@ bool IsPointerToExactClass(const O* pObject)
     if (pObject)
     {
         static_assert(!std::is_pointer<C>::value, "IsPointerToExactClass doesn't operate on pointers");
-        return &typeid(*pObject) == &typeid(C);
+        return typeid(*pObject) == typeid(C);
     }
     return false;
 }
@@ -382,5 +381,3 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 #endif
 
 #define SCOPE_EXIT auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = ::DAVA::ScopeGuardOnExit() + [&]()
-
-#endif // __DAVAENGINE_TEMPLATEHELPERS_H__

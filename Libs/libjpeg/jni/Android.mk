@@ -73,7 +73,7 @@ LOCAL_CFLAGS += -O3 -fstrict-aliasing -fprefetch-loop-arrays
 # enable tile based decode
 LOCAL_CFLAGS += -DANDROID_TILE_BASED_DECODE
 
-LOCAL_MODULE:= libjpeg_android
+LOCAL_MODULE:= libjpeg
 
 # build static library
 include $(BUILD_STATIC_LIBRARY)

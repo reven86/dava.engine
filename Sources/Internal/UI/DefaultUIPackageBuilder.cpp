@@ -12,6 +12,7 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
+#include "Styles/UIStyleSheetSystem.h"
 
 namespace DAVA
 {
@@ -260,7 +261,7 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
         if (controlsStack.empty() || isRoot)
         {
             UIControl* control = lastDescr->control.Get();
-            UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(control);
+            UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
         }
         else

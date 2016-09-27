@@ -10,7 +10,7 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "DAVAEngine.h"

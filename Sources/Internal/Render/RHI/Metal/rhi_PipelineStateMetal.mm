@@ -6,7 +6,7 @@
 
     #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
 #include "FileSystem/File.h"
 
     #include "_metal.h"
@@ -261,6 +261,7 @@ public:
         MTLPixelFormat color_format;
         id<MTLRenderPipelineState> state;
         uint32 stride;
+        uint32 sampleCount;
         uint32 ds_used : 1;
     };
     std::vector<state_t> altState;
@@ -903,8 +904,7 @@ VertexStreamCount(Handle ps)
     return psm->layout.StreamCount();
 }
 
-uint32
-SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce)
+uint32 SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id<MTLRenderCommandEncoder> ce, uint32 sampleCount)
 {
     uint32 stride = 0;
     PipelineStateMetal_t* psm = PipelineStateMetalPool::Get(ps);
@@ -913,8 +913,7 @@ SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id
 
     if (layoutUID == VertexLayout::InvalidUID
         && color_fmt == MTLPixelFormatBGRA8Unorm
-        && ds_used
-        )
+        && ds_used)
     {
         [ce setRenderPipelineState:psm->state];
         stride = psm->layout.Stride();
@@ -926,7 +925,10 @@ SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id
 
         for (unsigned i = 0; i != psm->altState.size(); ++i)
         {
-            if (psm->altState[i].layoutUID == layoutUID && psm->altState[i].color_format == color_fmt && psm->altState[i].ds_used == ds_used)
+            if ((psm->altState[i].layoutUID == layoutUID) &&
+                (psm->altState[i].color_format == color_fmt) &&
+                (psm->altState[i].ds_used == ds_used) &&
+                (psm->altState[i].sampleCount == sampleCount))
             {
                 si = i;
                 do_add = false;
@@ -955,7 +957,7 @@ SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id
 
             rp_desc.colorAttachments[0] = psm->desc.colorAttachments[0];
             rp_desc.colorAttachments[0].pixelFormat = color_fmt;
-            rp_desc.sampleCount = 1;
+            rp_desc.sampleCount = sampleCount;
             rp_desc.vertexFunction = psm->desc.vertexFunction;
             rp_desc.fragmentFunction = psm->desc.fragmentFunction;
 
@@ -1068,6 +1070,7 @@ SetToRHI(Handle ps, uint32 layoutUID, MTLPixelFormat color_fmt, bool ds_used, id
             state.color_format = color_fmt;
             state.ds_used = ds_used;
             state.stride = layout->Stride();
+            state.sampleCount = sampleCount;
 
             if (state.state != nil)
             {

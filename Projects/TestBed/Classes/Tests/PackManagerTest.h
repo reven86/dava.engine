@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
@@ -27,6 +25,7 @@ private:
     void OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
     void OnPackStateChange(const DAVA::IPackManager::Pack& pack);
     void OnPackDownloadChange(const DAVA::IPackManager::Pack& pack);
@@ -63,5 +62,6 @@ private:
     DAVA::UIButton* startSync = nullptr;
     DAVA::UIButton* clearDocs = nullptr;
     DAVA::UIButton* lsDvpks = nullptr;
+    DAVA::UITextField* dirToListFiles = nullptr;
+    DAVA::UIButton* lsDirFromPacks = nullptr;
 };
-#endif // !__DAVAENGINE_COREV2__
