@@ -53,14 +53,14 @@ bool Script::LoadFile(const FilePath& filepath)
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't load file");
-        Logger::Error("Lua script (%d): %s", res, lua_tostring(state->lua, -1));
+        Logger::Error("Can't load file. Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     res = lua_pcall(state->lua, 0, 0, 0);
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't execute script");
-        Logger::Error("Lua script (%d): %s", res, lua_tostring(state->lua, -1));
+        Logger::Error("Can't execute script. Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     return true;
@@ -74,7 +74,7 @@ bool Script::Run(const DAVA::Reflection& context)
     if (res != 0)
     {
         DVASSERT_MSG(false, "Can't execute main()");
-        Logger::Error("Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
+        Logger::Error("Can't execute main(). Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     return true;
