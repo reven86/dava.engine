@@ -36,6 +36,7 @@
 #include "Job/JobManager.h"
 
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <cfenv>
@@ -586,7 +587,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("Core::SystemProcessFrame");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_PROCESS_FRAME);
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;

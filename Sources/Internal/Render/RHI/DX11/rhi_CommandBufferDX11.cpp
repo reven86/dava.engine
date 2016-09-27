@@ -11,6 +11,7 @@
 using DAVA::Logger;
     #include "Core/Core.h"
     #include "Debug/CPUProfiler.h"
+    #include "Debug/ProfilerMarkerNames.h"
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
     #include "Concurrency/AutoResetEvent.h"
@@ -1101,7 +1102,7 @@ dx11_SyncObject_IsSignaled(Handle obj)
 static void
 _ExecuteQueuedCommandsDX11()
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
+    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_EXECUTE_QUEUED_CMDS);
 
     StatSet::ResetAll();
 
@@ -1224,7 +1225,7 @@ _ExecuteQueuedCommandsDX11()
         // do present
         HRESULT hr;
         {
-            DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
+            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_DEVICE_PRESENT);
             hr = _D3D11_SwapChain->Present(1, 0);
         }
 
@@ -1252,7 +1253,7 @@ _ExecuteQueuedCommandsDX11()
 static void
 _ExecDX11(DX11Command* command, uint32 cmdCount)
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
+    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
 
     for (DX11Command *cmd = command, *cmdEnd = command + cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1300,7 +1301,7 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
+        DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
 
         while (!scheduled)
         {
@@ -1345,10 +1346,10 @@ _RenderFuncDX11(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
+        DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_RENDER_LOOP);
 
         {
-            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
+            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_FRAME);
 
             bool do_wait = true;
             while (do_wait)
@@ -1435,7 +1436,7 @@ void UninitializeRenderThreadDX11()
 static void
 dx11_Present(Handle sync)
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
+    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_PRESENT);
 
     if (_DX11_RenderThreadFrameCount)
     {
@@ -1464,7 +1465,7 @@ dx11_Present(Handle sync)
         bool reset_pending = false;
 
         {
-            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
+            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_FRAME_EXECUTION);
             do
             {
                 _DX11_FrameSync.Lock();
@@ -1659,7 +1660,7 @@ void CommandBufferDX11_t::_ApplyConstBuffers()
 
 void CommandBufferDX11_t::Execute()
 {
-    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DVASSERT(isComplete);

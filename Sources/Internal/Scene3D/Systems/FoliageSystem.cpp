@@ -5,6 +5,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
@@ -70,7 +71,7 @@ void FoliageSystem::RemoveEntity(Entity* entity)
 
 void FoliageSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("FoliageSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_FOLIAGE_SYSTEM);
 
     if (GetScene()->GetRenderSystem()->GetMainCamera() == nullptr)
     {

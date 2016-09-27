@@ -9,7 +9,6 @@
     #include "FileSystem/File.h"
     #include "FileSystem/FileSystem.h"
 using DAVA::Logger;
-    #include "Debug/CPUProfiler.h"
 
     #include "_gl.h"
 

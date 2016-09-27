@@ -12,8 +12,6 @@
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 
-#include "Debug/CPUProfiler.h"
-
 namespace DAVA
 {
 const float32 RotationControllerSystem::maxViewAngle = 89.0f;
@@ -49,8 +47,6 @@ void RotationControllerSystem::RemoveEntity(Entity* entity)
 
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("RotationControllerSystem::Process")
-
     Camera* camera = GetScene()->GetDrawCamera();
     if (camera != oldCamera)
     {

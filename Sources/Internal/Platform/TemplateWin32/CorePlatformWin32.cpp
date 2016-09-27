@@ -18,7 +18,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif

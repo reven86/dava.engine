@@ -1,4 +1,5 @@
 #include "Debug/GPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Debug/DVAssert.h"
 #include "Core/Core.h"
 #include "Render/Renderer.h"
@@ -40,7 +41,7 @@ Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
     });
 
     Vector<TraceEvent> trace;
-    trace.emplace_back(TraceEvent(FastName("GPUframe"), 0, 0, startTime, endTime - startTime, TraceEvent::PHASE_DURATION));
+    trace.emplace_back(TraceEvent(FastName(GPUMarkerName::GPU_FRAME), 0, 0, startTime, endTime - startTime, TraceEvent::PHASE_DURATION));
     for (const MarkerInfo* m : sortedMarkers)
     {
         trace.emplace_back(TraceEvent(FastName(m->name), 0, 0, m->startTime, m->endTime - m->startTime, TraceEvent::PHASE_DURATION));

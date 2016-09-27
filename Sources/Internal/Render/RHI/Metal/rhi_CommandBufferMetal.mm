@@ -9,7 +9,6 @@
 #include "Logger/Logger.h"
 using DAVA::Logger;
 #include "Core/Core.h"
-#include "Debug/CPUProfiler.h"
 
 #include "_metal.h"
 

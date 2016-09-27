@@ -5,6 +5,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -48,7 +49,7 @@ void SkeletonSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SkeletonSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SkeletonSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_SKELETON_SYSTEM);
 
     for (int32 i = 0, sz = static_cast<int32>(entities.size()); i < sz; ++i)
     {

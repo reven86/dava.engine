@@ -4,6 +4,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Base/Radix/Radix.h"
 #include "Debug/GPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -88,7 +89,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
 
             if (mat->GetEffectiveFXName() == NMaterialName::TILE_MASK)
             {
-                DAVA_GPU_PROFILER_PACKET(packet, "Landscape");
+                DAVA_GPU_PROFILER_PACKET(packet, GPUMarkerName::LANDSCAPE);
             }
             else
             {

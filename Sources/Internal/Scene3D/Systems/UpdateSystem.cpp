@@ -3,6 +3,7 @@
 #include "Scene3D/Entity.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -77,7 +78,7 @@ void UpdateSystem::Process(float32 timeElapsed)
 
 void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("UpdateSystem::UpdatePreTransform");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_UPDATE_SYSTEM_PRE_TRANSFORM);
 
     uint32 size = static_cast<uint32>(updatesBeforeTransform.size());
     for (uint32 i = 0; i < size; ++i)
@@ -88,7 +89,7 @@ void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 
 void UpdateSystem::UpdatePostTransform(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("UpdateSystem::UpdatePostTransform");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_UPDATE_SYSTEM_POST_TRANSFORM);
 
     uint32 size = static_cast<uint32>(updatesAfterTransform.size());
     for (uint32 i = 0; i < size; ++i)

@@ -9,6 +9,7 @@
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
@@ -61,7 +62,7 @@ void WaveSystem::ImmediateEvent(Component* component, uint32 event)
 
 void WaveSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("WaveSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_WAVE_SYSTEM);
 
     int32 index = 0;
     int32 size = static_cast<int32>(waves.size());

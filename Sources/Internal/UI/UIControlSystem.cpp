@@ -14,6 +14,7 @@
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Render/2D/TextBlock.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
@@ -295,7 +296,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
-    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Update");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_UI_SYSTEM_UPDATE);
 
     updateCounter = 0;
     ProcessScreenLogic();
@@ -325,7 +326,7 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE("UIControlSystem::Draw");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_UI_SYSTEM_DRAW);
 
     resizePerFrame = 0;
 

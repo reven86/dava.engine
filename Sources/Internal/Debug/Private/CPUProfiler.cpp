@@ -268,25 +268,31 @@ Vector<TraceEvent> CPUProfiler::GetTrace(int32 snapshot)
 
 Vector<TraceEvent> CPUProfiler::GetTrace(const char* counterName, uint32 counterCount, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before tracing");
+    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started || counterCount == 1) && "Stop profiler before tracing");
 
     CounterArray* array = GetCounterArray(snapshot);
-    CounterArray::reverse_iterator itr = array->rbegin(), itrEnd = array->rend();
-    for (; itr != itr; itr++)
+    CounterArray::reverse_iterator begin = array->rbegin(), end = array->rend();
+    CounterArray::reverse_iterator it = begin;
+    for (; it != end; ++it)
     {
-        if (itr->endTime != 0 && (strcmp(counterName, itr->name) == 0))
+        if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
             counterCount--;
 
         if (counterCount == 0)
             break;
     }
 
-    CounterArray::iterator it(itr);
-    CounterArray::iterator itEnd = array->end();
+    uint64 threadID = it->threadID;
     Vector<TraceEvent> trace;
-    for (; it != itEnd; ++it)
+    for (; it != begin; --it)
     {
-        trace.push_back(TraceEvent(FastName(it->name), 0, it->threadID, it->startTime, it->endTime - it->startTime, TraceEvent::PHASE_DURATION));
+        if (it->threadID == threadID)
+        {
+            if (it->endTime == 0)
+                break;
+
+            trace.push_back(TraceEvent(FastName(it->name), 0, it->threadID, it->startTime, it->endTime - it->startTime, TraceEvent::PHASE_DURATION));
+        }
     }
 
     return trace;

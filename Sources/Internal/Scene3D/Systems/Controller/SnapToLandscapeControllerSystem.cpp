@@ -10,8 +10,6 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 
-#include "Debug/CPUProfiler.h"
-
 namespace DAVA
 {
 SnapToLandscapeControllerSystem::SnapToLandscapeControllerSystem(Scene* scene)
@@ -60,8 +58,6 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity* entity)
 
 void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SnapToLandscapeControllerSystem::Process")
-
     const uint32 size = static_cast<uint32>(entities.size());
     if (0 == size)
         return;

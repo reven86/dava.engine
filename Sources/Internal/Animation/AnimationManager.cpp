@@ -1,6 +1,7 @@
 #include "Animation/AnimationManager.h"
 #include "Logger/Logger.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Job/JobManager.h"
 #include "Render/Renderer.h"
 
@@ -166,7 +167,7 @@ bool AnimationManager::HasActiveAnimations(AnimatedObject* owner) const
 
 void AnimationManager::Update(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("AnimationManager::Update");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_ANIMATION_MANAGER);
 
     DVASSERT(Thread::IsMainThread());
 

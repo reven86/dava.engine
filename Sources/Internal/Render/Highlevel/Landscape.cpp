@@ -22,6 +22,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
 
 #include "Concurrency/Mutex.h"
@@ -1171,7 +1172,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::RENDER_PREPARE_LANDSCAPE)
 
     RenderObject::PrepareToRender(camera);
 

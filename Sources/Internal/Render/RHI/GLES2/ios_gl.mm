@@ -9,8 +9,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "Debug/CPUProfiler.h"
-
 static GLuint colorRenderbuffer = -1;
 static GLuint depthRenderbuffer = -1;
 static int backingWidth = 0;

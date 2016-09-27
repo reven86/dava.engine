@@ -17,6 +17,7 @@
 #include "Scene3D/Scene.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -73,7 +74,7 @@ void RenderUpdateSystem::RemoveEntity(Entity* entity)
 
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("RenderUpdateSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_RENDER_UPDATE_SYSTEM);
 
     RenderSystem* renderSystem = GetScene()->GetRenderSystem();
     renderSystem->SetMainCamera(GetScene()->GetCurrentCamera());

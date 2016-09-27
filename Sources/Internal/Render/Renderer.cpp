@@ -171,7 +171,7 @@ void BeginFrame()
 void EndFrame()
 {
     DynamicBufferAllocator::EndFrame();
-    ProfilerOverlay::OnFrameEnd();
+    ProfilerOverlay::globalProfilerOverlay->OnFrameEnd();
     GPUProfiler::globalProfiler->OnFrameEnd();
     rhi::Present();
 

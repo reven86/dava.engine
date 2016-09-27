@@ -6,6 +6,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -28,7 +29,7 @@ AnimationSystem::~AnimationSystem()
 
 void AnimationSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("AnimationSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_ANIMATION_SYSTEM);
 
     int componentsCount = static_cast<int32>(activeComponents.size());
     for (int i = 0; i < componentsCount; i++)

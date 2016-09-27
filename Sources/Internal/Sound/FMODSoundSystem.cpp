@@ -11,6 +11,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include "Engine/EngineModule.h"
 
@@ -404,7 +405,7 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("SoundSystem::Update");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_SOUND_SYSTEM);
 
     if (fmodEventSystem)
     {

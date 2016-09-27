@@ -8,6 +8,7 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -33,25 +34,19 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 
 void TransformSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("TransformSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_TRANSFORM_SYSTEM);
 
     passedNodes = 0;
     multipliedNodes = 0;
 
+    uint32 size = static_cast<uint32>(updatableEntities.size());
+    for (uint32 i = 0; i < size; ++i)
     {
-        DAVA_CPU_PROFILER_SCOPE("TransformSystem::FindNodeThatRequireUpdate");
-        uint32 size = static_cast<uint32>(updatableEntities.size());
-        for (uint32 i = 0; i < size; ++i)
-        {
-            //HierahicFindUpdatableTransform(updatableEntities[i]);
-            FindNodeThatRequireUpdate(updatableEntities[i]);
-        }
+        //HierahicFindUpdatableTransform(updatableEntities[i]);
+        FindNodeThatRequireUpdate(updatableEntities[i]);
     }
 
-    {
-        DAVA_CPU_PROFILER_SCOPE("TransformSystem::GroupEvent");
-        GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
-    }
+    GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
     sendEvent.clear();
 
     updatableEntities.clear();

@@ -6,6 +6,7 @@
 using DAVA::Logger;
 
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 
 namespace rhi
@@ -1040,7 +1041,7 @@ void AddPacket(HPacketList packetList, const Packet& packet)
 
 void ProcessScheduledDelete()
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::ProcessScheduledDelete")
+    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
 
     for (int i = 0; i < frameSyncObjectsCount; i++)
     {

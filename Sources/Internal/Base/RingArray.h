@@ -8,6 +8,8 @@ template <class T>
 class RingArray
 {
 public:
+    RingArray() = default;
+
     RingArray(std::size_t _size)
     {
         elementsCount = _size;
@@ -20,9 +22,16 @@ public:
     RingArray(const RingArray& a)
     {
         elementsCount = a.elementsCount;
-        elements = new T[elementsCount];
-        memcpy(elements, a.elements, elementsCount * sizeof(T));
         head = a.head;
+        if (elementsCount)
+        {
+            elements = new T[elementsCount];
+            memcpy(elements, a.elements, elementsCount * sizeof(T));
+        }
+        else
+        {
+            elements = nullptr;
+        }
     }
     RingArray& operator=(const RingArray& a)
     {

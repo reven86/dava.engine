@@ -36,6 +36,7 @@
 #include "Scene3D/Systems/LandscapeSystem.h"
 
 #include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 
 #include "Sound/SoundSystem.h"
@@ -634,7 +635,7 @@ void Scene::SetupTestLighting()
 
 void Scene::Update(float timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE("Scene::Update")
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_UPDATE)
 
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
@@ -666,7 +667,7 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE("Scene::Draw")
+    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_DRAW)
 
     //TODO: re-think configuring global dynamic bindings
     static Color defShadowColor(1.f, 0.f, 0.f, 1.f);

@@ -48,7 +48,7 @@ public:
     void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
 
     Vector<TraceEvent> GetTrace(int32 snapshot = NO_SNAPSHOT_ID);
-    Vector<TraceEvent> GetTrace(const char* counterName, uint32 counterCount, int32 snapshot = NO_SNAPSHOT_ID);
+    Vector<TraceEvent> GetTrace(const char* counterName, uint32 counterCount = 1, int32 snapshot = NO_SNAPSHOT_ID);
 
 protected:
     CounterArray* GetCounterArray(int32 snapshot);
