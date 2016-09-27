@@ -9,7 +9,7 @@
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "Qt/Settings/SettingsManager.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QMessageBox>
 #include <QFileInfo>

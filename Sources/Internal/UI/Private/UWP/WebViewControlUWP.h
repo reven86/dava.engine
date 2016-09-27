@@ -13,6 +13,7 @@ class Window;
 class Sprite;
 class CorePlatformWinUAP;
 class PrivateWebViewWinUAP;
+class Window;
 
 // Web View Control for WinUAP
 class WebViewControl : public IWebViewControl,

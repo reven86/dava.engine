@@ -46,6 +46,7 @@ private:
 
     bool IsUsingCache() const;
 
+    uint32 GetMaxTextureSize() const;
     Vector<String> FetchFlags(const FilePath& flagsPathname);
     static String GetProcessFolderName();
 

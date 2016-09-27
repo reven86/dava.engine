@@ -5,6 +5,7 @@
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
@@ -43,7 +44,6 @@
 #include "UI/UIControlSystem.h"
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
-#include "PackManager/PackManager.h"
 #include "PackManager/Private/PackManagerImpl.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -131,7 +131,12 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
 {
     runMode = engineRunMode;
 
-    platformCore->Init();
+    // Do not initialize PlatformCore in console mode as console mode is fully
+    // implemented in EngineBackend
+    if (!IsConsoleMode())
+    {
+        platformCore->Init();
+    }
 
     Thread::InitMainThread();
     // For now only next subsystems/modules are created on demand:
@@ -147,12 +152,8 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     context->fileSystem->SetDefaultDocumentsDirectory();
     context->fileSystem->CreateDirectory(context->fileSystem->GetCurrentDocumentsDirectory(), true);
 
-    if (!IsConsoleMode())
-    {
-        context->uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
-        context->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
-    }
-
+    context->uiControlSystem->vcs->SetVirtualScreenSize(1024, 768);
+    context->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
 }
 
@@ -188,6 +189,11 @@ void EngineBackend::Quit(int exitCode)
     }
 }
 
+void EngineBackend::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
+{
+    closeRequestHandler = handler;
+}
+
 void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool blocking)
 {
     MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
@@ -204,7 +210,7 @@ void EngineBackend::RunConsole()
         Thread::Sleep(1);
     }
     OnGameLoopStopped();
-    OnBeforeTerminate();
+    OnEngineCleanup();
 }
 
 void EngineBackend::OnGameLoopStarted()
@@ -216,16 +222,11 @@ void EngineBackend::OnGameLoopStopped()
 {
     DVASSERT(justCreatedWindows.empty());
 
-    // Detach alive windows if any
-    for (Window* w : aliveWindows)
+    for (Window* w : dyingWindows)
     {
-        w->Detach();
+        delete w;
     }
-
-    while (!aliveWindows.empty())
-    {
-        DoEvents();
-    }
+    dyingWindows.clear();
 
     engine->gameLoopStopped.Emit();
     if (!IsConsoleMode())
@@ -235,9 +236,9 @@ void EngineBackend::OnGameLoopStopped()
     }
 }
 
-void EngineBackend::OnBeforeTerminate()
+void EngineBackend::OnEngineCleanup()
 {
-    engine->beforeTerminate.Emit();
+    engine->cleanup.Emit();
 
     DestroySubsystems();
     delete context;
@@ -264,8 +265,9 @@ void EngineBackend::OnFrameConsole()
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
     DoEvents();
-
     engine->update.Emit(frameDelta);
+
+    globalFrameIndex += 1;
 }
 
 int32 EngineBackend::OnFrame()
@@ -293,6 +295,7 @@ int32 EngineBackend::OnFrame()
         }
     }
 
+    globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
 }
 
@@ -338,6 +341,43 @@ void EngineBackend::OnEndFrame()
     Renderer::EndFrame();
 }
 
+void EngineBackend::OnWindowCreated(Window* window)
+{
+    {
+        // Place window into alive window list
+        size_t nerased = justCreatedWindows.erase(window);
+        DVASSERT(nerased == 1);
+
+        auto result = aliveWindows.insert(window);
+        DVASSERT(result.second == true);
+    }
+    engine->windowCreated.Emit(*window);
+}
+
+void EngineBackend::OnWindowDestroyed(Window* window)
+{
+    engine->windowDestroyed.Emit(*window);
+
+    // Remove window from alive window list and place it into dying window list to delete later
+    size_t nerased = aliveWindows.erase(window);
+    DVASSERT(nerased == 1);
+    dyingWindows.insert(window);
+
+    if (window->IsPrimary())
+    {
+        primaryWindow = nullptr;
+    }
+
+    if (aliveWindows.empty())
+    { // No alive windows left, exit application
+        platformCore->Quit();
+    }
+    else if (window->IsPrimary() && !IsEmbeddedGUIMode())
+    { // Initiate app termination if primary window is destroyed, except embedded mode
+        PostAppTerminate(false);
+    }
+}
+
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 {
     switch (e.type)
@@ -345,17 +385,14 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case MainDispatcherEvent::WINDOW_CREATED:
-        HandleWindowCreated(e);
-        break;
-    case MainDispatcherEvent::WINDOW_DESTROYED:
-        HandleWindowDestroyed(e);
-        break;
     case MainDispatcherEvent::APP_SUSPENDED:
         HandleAppSuspended(e);
         break;
     case MainDispatcherEvent::APP_RESUMED:
         HandleAppResumed(e);
+        break;
+    case MainDispatcherEvent::USER_CLOSE_REQUEST:
+        HandleUserCloseRequest(e);
         break;
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
@@ -369,48 +406,44 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     }
 }
 
-void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-
-    {
-        // Place window into alive window list
-        DVASSERT(justCreatedWindows.find(e.window) != justCreatedWindows.end());
-        DVASSERT(aliveWindows.find(e.window) == aliveWindows.end());
-
-        justCreatedWindows.erase(e.window);
-        aliveWindows.insert(e.window);
-    }
-
-    engine->windowCreated.Emit(*e.window);
-}
-
-void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-    engine->windowDestroyed.Emit(*e.window);
-
-    if (e.window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-        // If primary window is destroyed then terminate application
-        PostAppTerminate(false);
-    }
-
-    // Remove window from alive window list and delete
-    size_t nerased = aliveWindows.erase(e.window);
-    DVASSERT(nerased == 1);
-    delete e.window;
-}
-
 void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
 {
-    if (!appIsTerminating)
+    // Application can be terminated by several ways:
+    //  1. application calls Engine::Quit
+    //  2. application calls Window::Close for primary window
+    //  3. user closes primary window (e.g. Alt+F4 key combination or mouse press on close button)
+    //  4. system delivers unconditional termination request (e.g, android on activity finishing)
+    //
+    // EngineBackend receives termination request through MainDispatcherEvent::APP_TERMINATE event with
+    // parameter triggeredBySystem which denotes termination request source: system (value 1) or user (value 0).
+    // If termination request originates from user then EngineBackend calls PlatformCore to prepare for quit
+    // (e.g. android implementation triggers activity finishing which in turn sends system termination request,
+    // other platforms may simply repost termination request as if initiated by system).
+    // If termination request originates from system then EngineBackend closes all active windows and waits
+    // till all windows are closed. When last window is closed EngineBackend tells PlatformCore to quit which
+    // usually means simply to exit game loop.
+    // This sequence is invented for unification purpose.
+
+    if (e.terminateEvent.triggeredBySystem != 0)
     {
-        // Prevent handling multiple Quit from user code
-        // System request to terminate should come only once
-        appIsTerminating = e.terminateEvent.triggeredBySystem != 0;
-        platformCore->Quit(appIsTerminating);
+        appIsTerminating = true;
+
+        // Usually windows send blocking event about destruction and aliveWindows can be
+        // modified while iterating over windows, so use such while construction.
+        auto it = aliveWindows.begin();
+        while (it != aliveWindows.end())
+        {
+            Window* w = *it;
+            ++it;
+
+            // Directly call Close for WindowBackend to tell important information that application is terminating
+            w->GetBackend()->Close(true);
+        }
+    }
+    else if (!appIsTerminating)
+    {
+        appIsTerminating = true;
+        platformCore->PrepareToQuit();
     }
 }
 
@@ -436,11 +469,40 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
     }
 }
 
+void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
+{
+    bool satisfyCloseRequest = true;
+    if (closeRequestHandler != nullptr)
+    {
+        satisfyCloseRequest = closeRequestHandler(e.window);
+    }
+
+    if (satisfyCloseRequest)
+    {
+        if (e.window != nullptr)
+        {
+            e.window->Close();
+        }
+        else
+        {
+            Quit(0);
+        }
+    }
+}
+
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
     MainDispatcherEvent e(MainDispatcherEvent::APP_TERMINATE);
     e.timestamp = context->systemTimer->FrameStampTimeMS();
     e.terminateEvent.triggeredBySystem = triggeredBySystem;
+    dispatcher->PostEvent(e);
+}
+
+void EngineBackend::PostUserCloseRequest()
+{
+    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST);
+    e.timestamp = context->systemTimer->FrameStampTimeMS();
+    e.window = nullptr;
     dispatcher->PostEvent(e);
 }
 
@@ -521,6 +583,9 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->fileSystem = new FileSystem();
+    context->renderSystem2D = new RenderSystem2D();
+    context->uiControlSystem = new UIControlSystem();
+    context->animationManager = new AnimationManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
@@ -576,11 +641,8 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     if (!IsConsoleMode())
     {
-        context->animationManager = new AnimationManager();
         context->fontManager = new FontManager();
-        context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
@@ -591,7 +653,7 @@ void EngineBackend::DestroySubsystems()
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
-        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::beforeTerminate
+        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::cleanup
         context->jobManager->WaitWorkerJobs();
         context->jobManager->WaitMainJobs();
     }
@@ -600,13 +662,13 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->uiControlSystem->Release();
         context->fontManager->Release();
-        context->animationManager->Release();
-        context->renderSystem2D->Release();
         context->inputSystem->Release();
     }
 
+    context->uiControlSystem->Release();
+    context->animationManager->Release();
+    context->renderSystem2D->Release();
     context->performanceSettings->Release();
     context->random->Release();
 

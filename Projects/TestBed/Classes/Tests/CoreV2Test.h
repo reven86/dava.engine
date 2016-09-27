@@ -1,5 +1,3 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
@@ -21,7 +19,7 @@ class GameCore;
 class CoreV2Test : public BaseScreen
 {
 public:
-    CoreV2Test(GameCore* g);
+    CoreV2Test(GameCore& gameCore);
     ~CoreV2Test();
 
 protected:
@@ -30,20 +28,26 @@ protected:
 
 private:
     void OnQuit(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData);
+
     void OnResize(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnRun(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData);
 
+    void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
+
     void OnWindowCreated(DAVA::Window& w);
+    bool OnWindowWantsToClose(DAVA::Window* w);
     void OnWindowDestroyed(DAVA::Window& w);
 
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
                                    void (CoreV2Test::*onClick)(DAVA::BaseObject*, void*, void*));
 
 private:
-    DAVA::Engine* engine = nullptr;
+    DAVA::Engine& engine;
 
     DAVA::UIButton* buttonQuit = nullptr;
+    DAVA::UIButton* buttonCloseWindow = nullptr;
 
     DAVA::UIButton* buttonResize640x480 = nullptr;
     DAVA::UIButton* buttonResize1024x768 = nullptr;
@@ -58,8 +62,13 @@ private:
     DAVA::UIButton* buttonDispTrigger2000 = nullptr;
     DAVA::UIButton* buttonDispTrigger3000 = nullptr;
 
+    DAVA::UIButton* buttonDisableClose = nullptr;
+    DAVA::UIButton* buttonEnableClose = nullptr;
+
     size_t tokenOnWindowCreated = 0;
     size_t tokenOnWindowDestroyed = 0;
+
+    bool closeDisabled = false;
 
     //////////////////////////////////////////////////////////////////////////
     using TestDispatcher = DAVA::Dispatcher<int>;
@@ -71,5 +80,3 @@ private:
     void DispatcherThread(TestDispatcher* dispatcher, int index);
     void DispatcherEventHandler(int type);
 };
-
-#endif // __DAVAENGINE_COREV2__

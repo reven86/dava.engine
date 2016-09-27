@@ -14,7 +14,7 @@ protected:
     virtual ~UIMovieTest() = default;
 
 public:
-    UIMovieTest(GameCore* g);
+    UIMovieTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

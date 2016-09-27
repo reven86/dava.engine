@@ -9,7 +9,7 @@ class GameCore;
 class GPUTest : public BaseScreen
 {
 public:
-    GPUTest(GameCore* g);
+    GPUTest(GameCore& gameCore);
 
 public:
     void LoadResources() override;

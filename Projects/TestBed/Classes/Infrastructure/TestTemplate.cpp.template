@@ -4,8 +4,8 @@
 
 using namespace DAVA;
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ (GameCore* g)
-    : BaseScreen(g, "$UNITTEST_CLASSNAME$")
+$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ (GameCore& gameCore)
+    : BaseScreen(gameCore, "$UNITTEST_CLASSNAME$")
 {
 }
 

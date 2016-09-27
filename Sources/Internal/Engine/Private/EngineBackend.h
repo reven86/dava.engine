@@ -70,12 +70,17 @@ public:
     int Run();
     void Quit(int32 exitCode);
 
+    void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
     void PostAppTerminate(bool triggeredBySystem);
+    void PostUserCloseRequest();
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
-    void OnBeforeTerminate();
+    void OnEngineCleanup();
+
+    void OnWindowCreated(Window* window);
+    void OnWindowDestroyed(Window* window);
 
     int32 OnFrame();
 
@@ -96,16 +101,14 @@ private:
     void OnEndFrame();
 
     void EventHandler(const MainDispatcherEvent& e);
-    void HandleWindowCreated(const MainDispatcherEvent& e);
-    void HandleWindowDestroyed(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
+    void HandleUserCloseRequest(const MainDispatcherEvent& e);
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
-private:
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;
@@ -119,6 +122,9 @@ private:
     Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
+    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    Function<bool(Window*)> closeRequestHandler;
+
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool quitConsole = false;
     bool appIsSuspended = false;
@@ -127,7 +133,7 @@ private:
     int32 exitCode = 0;
 
     KeyedArchive* options = nullptr;
-    uint32 globalFrameIndex = 0;
+    uint32 globalFrameIndex = 1;
 
     static EngineBackend* instance;
 };

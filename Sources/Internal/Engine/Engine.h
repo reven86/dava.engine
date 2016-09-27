@@ -37,21 +37,36 @@ public:
     int Run();
     void Quit(int exitCode = 0);
 
+    /// \brief Set handler which is invoked when user is trying to close window or application.
+    ///
+    /// Handler can prevent window/application closing by returning false. This ability is
+    /// supported only on desktop platforms: win32 and macOS.
+    /// Typical usage is to return false in handler to prevent immediate window/app closing
+    /// and show dialog asking user whether she wants to close window/app. If she chooses to
+    /// close window/app then application should call Window::Close or Engine::Quit.
+    /// Handler is only invoked if window/app is closing by user request: by pressing Alt+F4 or
+    /// by clicking mouse on window close button or by pressing Cmd+Q on macOS.
+    ///
+    /// \param handler Function object which takes Window* as parameter and returns bool.
+    ///                If pointer to Window is null then user is trying to close whole application,
+    ///                otherwise user is trying to close specified window.
+    void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void RunAsyncOnMainThread(const Function<void()>& task);
     void RunAndWaitOnMainThread(const Function<void()>& task);
 
     // Methods taken from class Core
-    void SetOptions(KeyedArchive* options_);
+    void SetOptions(KeyedArchive* options);
     KeyedArchive* GetOptions();
 
     uint32 GetGlobalFrameIndex() const;
     const Vector<String>& GetCommandLine() const;
+    DAVA::Vector<char*> GetCommandLineAsArgv();
 
 public:
     // Signals
     Signal<> gameLoopStarted;
     Signal<> gameLoopStopped;
-    Signal<> beforeTerminate;
+    Signal<> cleanup;
     Signal<Window&> windowCreated;
     Signal<Window&> windowDestroyed;
     Signal<> beginFrame;

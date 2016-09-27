@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <windows.h>
@@ -48,7 +49,7 @@ Vector<String> GetCommandArgs()
         cmdargs.reserve(nargs);
         for (int i = 0; i < nargs; ++i)
         {
-            cmdargs.push_back(WStringToString(arglist[i]));
+            cmdargs.push_back(UTF8Utils::EncodeToUTF8(arglist[i]));
         }
         ::LocalFree(arglist);
     }

@@ -365,6 +365,7 @@ void AutotestingSystem::Draw()
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.colorAttachment = screenshotTexture->handle;
             desc.depthAttachment = screenshotTexture->handleDepthStencil;
+            desc.format = PixelFormat::FORMAT_RGBA8888;
             desc.width = uint32(pScreenSize.dx);
             desc.height = uint32(pScreenSize.dy);
             desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;

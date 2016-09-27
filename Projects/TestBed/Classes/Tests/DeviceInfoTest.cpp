@@ -4,8 +4,8 @@
 
 using namespace DAVA;
 
-DeviceInfoTest::DeviceInfoTest(GameCore* g)
-    : BaseScreen(g, "DeviceInfoTest")
+DeviceInfoTest::DeviceInfoTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "DeviceInfoTest")
 {
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_POINTER_TYPE).Connect(this, &DeviceInfoTest::OnInputChanged);
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &DeviceInfoTest::OnInputChanged);

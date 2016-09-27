@@ -25,8 +25,8 @@ public:
     ~WindowBackend();
 
     void Resize(float32 width, float32 height);
-    void Close();
-    void Detach();
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;

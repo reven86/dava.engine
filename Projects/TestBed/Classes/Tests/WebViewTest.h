@@ -10,7 +10,7 @@ class GameCore;
 class WebViewTest : public BaseScreen
 {
 public:
-    WebViewTest(GameCore* g);
+    WebViewTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

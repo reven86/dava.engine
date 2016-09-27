@@ -20,8 +20,8 @@ namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridge::WindowNativeBridge(WindowBackend* wbackend)
-    : windowBackend(wbackend)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
+    : windowBackend(*windowBackend)
 {
 }
 
@@ -32,7 +32,7 @@ void* WindowNativeBridge::GetHandle() const
     return [renderView layer];
 }
 
-bool WindowNativeBridge::DoCreateWindow()
+bool WindowNativeBridge::CreateWindow()
 {
     ::UIScreen* screen = [ ::UIScreen mainScreen];
     CGRect rect = [screen bounds];
@@ -49,26 +49,26 @@ bool WindowNativeBridge::DoCreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
-    windowBackend->GetWindow()->PostWindowCreated(windowBackend, rect.size.width, rect.size.height, scale, scale);
-    windowBackend->GetWindow()->PostVisibilityChanged(true);
+    windowBackend.PostWindowCreated(rect.size.width, rect.size.height, scale, scale);
+    windowBackend.PostVisibilityChanged(true);
     return true;
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
-        windowBackend->ProcessPlatformEvents();
+        windowBackend.ProcessPlatformEvents();
     });
 }
 
 void WindowNativeBridge::ApplicationDidBecomeOrResignActive(bool becomeActive)
 {
-    windowBackend->GetWindow()->PostFocusChanged(becomeActive);
+    windowBackend.PostFocusChanged(becomeActive);
 }
 
 void WindowNativeBridge::ApplicationDidEnterForegroundOrBackground(bool foreground)
 {
-    windowBackend->GetWindow()->PostVisibilityChanged(foreground);
+    windowBackend.PostVisibilityChanged(foreground);
 }
 
 void WindowNativeBridge::AddUIView(UIView* uiview)
@@ -104,60 +104,42 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    windowBackend->GetWindow()->PostSizeChanged(w, h, scale, scale);
+    windowBackend.PostSizeChanged(w, h, scale, scale);
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::TOUCH_DOWN;
-    e.window = windowBackend->window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
-    MainDispatcher* dispatcher = windowBackend->GetDispatcher();
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        e.tclickEvent.x = pt.x;
-        e.tclickEvent.y = pt.y;
-        e.tclickEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        dispatcher->PostEvent(e);
+        float32 x = pt.x;
+        float32 y = pt.y;
+        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        windowBackend.PostTouchDown(touchId, x, y);
     }
 }
 
 void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::TOUCH_MOVE;
-    e.window = windowBackend->window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
-    MainDispatcher* dispatcher = windowBackend->GetDispatcher();
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        e.tmoveEvent.x = pt.x;
-        e.tmoveEvent.y = pt.y;
-        e.tmoveEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        dispatcher->PostEvent(e);
+        float32 x = pt.x;
+        float32 y = pt.y;
+        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        windowBackend.PostTouchMove(touchId, x, y);
     }
 }
 
 void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::TOUCH_UP;
-    e.window = windowBackend->window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
-    MainDispatcher* dispatcher = windowBackend->GetDispatcher();
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        e.tclickEvent.x = pt.x;
-        e.tclickEvent.y = pt.y;
-        e.tclickEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        dispatcher->PostEvent(e);
+        float32 x = pt.x;
+        float32 y = pt.y;
+        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        windowBackend.PostTouchUp(touchId, x, y);
     }
 }
 

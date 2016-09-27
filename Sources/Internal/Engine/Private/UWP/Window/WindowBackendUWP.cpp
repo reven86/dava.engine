@@ -15,8 +15,8 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(ref new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
@@ -27,17 +27,17 @@ WindowBackend::~WindowBackend() = default;
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResize(width, height);
+    PostResizeOnUIThread(width, height);
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
-    PostClose(false);
+    PostCloseOnUIThread();
 }
 
-void WindowBackend::Detach()
+void WindowBackend::SetTitle(const String& title)
 {
-    PostClose(true);
+    PostSetTitleOnUIThread(title);
 }
 
 void* WindowBackend::GetHandle() const
@@ -77,10 +77,14 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        bridge->ResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow(e.closeEvent.detach ? true : false);
+        bridge->CloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        bridge->SetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

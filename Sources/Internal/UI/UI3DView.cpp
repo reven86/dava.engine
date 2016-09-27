@@ -1,10 +1,11 @@
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderHelper.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/RenderHelper.h"
+#include "Render/Highlevel/RenderPass.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -66,7 +67,6 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
 
     RenderSystem2D::Instance()->Flush();
 
-    rhi::RenderPassConfig& config = scene->GetMainPassConfig();
     const RenderSystem2D::RenderTargetPassDescriptor& currentTarget = RenderSystem2D::Instance()->GetActiveTargetDescriptor();
 
     Rect viewportRect = geometricData.GetUnrotatedRect();
@@ -76,40 +76,64 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     else
         viewportRc = viewportRect;
 
+    uint32 priority = currentTarget.priority;
+
+    uint32 targetWidth = 0;
+    uint32 targetHeight = 0;
+    PixelFormat targetFormat = PixelFormat::FORMAT_INVALID;
+
+    rhi::HTexture colorTexture;
+    rhi::HTexture depthStencilTexture;
+    rhi::LoadAction loadAction = rhi::LOADACTION_CLEAR;
+
     if (drawToFrameBuffer)
     {
-        // Calculate viewport for frame buffer
-        viewportRc.x = 0.f;
-        viewportRc.y = 0.f;
+        viewportRc.x = 0.0f;
+        viewportRc.y = 0.0f;
         viewportRc.dx *= fbScaleFactor;
         viewportRc.dy *= fbScaleFactor;
 
         PrepareFrameBuffer();
 
-        rhi::RenderPassConfig& config = scene->GetMainPassConfig();
-        config.priority = currentTarget.priority + PRIORITY_SERVICE_3D;
-        config.colorBuffer[0].texture = frameBuffer->handle;
-        config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        config.depthStencilBuffer.texture = frameBuffer->handleDepthStencil;
-        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+        priority += PRIORITY_SERVICE_3D;
+        colorTexture = frameBuffer->handle;
+        depthStencilTexture = frameBuffer->handleDepthStencil;
+        targetFormat = frameBuffer->GetFormat();
+        targetWidth = frameBuffer->GetWidth();
+        targetHeight = frameBuffer->GetHeight();
     }
     else
     {
         if (currentTarget.transformVirtualToPhysical)
+        {
             viewportRc += UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
+        }
 
-        config.colorBuffer[0].texture = currentTarget.colorAttachment;
-        config.depthStencilBuffer.texture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::DefaultDepthBuffer;
-        config.priority = currentTarget.priority + basePriority;
-        config.colorBuffer[0].loadAction = colorLoadAction;
-        config.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        config.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        config.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+        priority += basePriority;
+        colorTexture = currentTarget.colorAttachment;
+        depthStencilTexture = currentTarget.depthAttachment.IsValid() ? currentTarget.depthAttachment : rhi::HTexture(rhi::DefaultDepthBuffer);
+        loadAction = colorLoadAction;
+
+        if (currentTarget.colorAttachment == rhi::InvalidHandle)
+        {
+            targetFormat = PixelFormat::FORMAT_RGBA8888;
+            targetWidth = Renderer::GetFramebufferWidth();
+            targetHeight = Renderer::GetFramebufferHeight();
+        }
+        else
+        {
+            targetFormat = currentTarget.format;
+            targetWidth = currentTarget.width;
+            targetHeight = currentTarget.height;
+        }
     }
 
-    scene->SetMainPassViewport(viewportRc);
+    DVASSERT(targetWidth > 0);
+    DVASSERT(targetHeight > 0);
+    DVASSERT(targetFormat != PixelFormat::FORMAT_INVALID);
+
+    scene->SetMainRenderTarget(colorTexture, depthStencilTexture, loadAction, currentTarget.clearColor);
+    scene->SetMainPassProperties(priority, viewportRc, targetWidth, targetHeight, targetFormat);
     scene->Draw();
 
     if (drawToFrameBuffer)

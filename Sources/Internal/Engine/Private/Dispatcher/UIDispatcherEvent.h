@@ -17,6 +17,7 @@ struct UIDispatcherEvent final
         RESIZE_WINDOW,
         CREATE_WINDOW,
         CLOSE_WINDOW,
+        SET_TITLE,
         FUNCTOR,
     };
 
@@ -26,9 +27,9 @@ struct UIDispatcherEvent final
         float32 height;
     };
 
-    struct CloseEvent
+    struct SetTitleEvent
     {
-        uint32 detach;
+        const char8* title;
     };
 
     UIDispatcherEvent() = default;
@@ -42,7 +43,7 @@ struct UIDispatcherEvent final
     union
     {
         ResizeEvent resizeEvent;
-        CloseEvent closeEvent;
+        SetTitleEvent setTitleEvent;
     };
 };
 

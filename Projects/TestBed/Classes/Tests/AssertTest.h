@@ -6,7 +6,7 @@ class GameCore;
 class AssertTest : public BaseScreen
 {
 public:
-    AssertTest(GameCore* g);
+    AssertTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

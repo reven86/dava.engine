@@ -9,12 +9,13 @@
 #include "UI/UIControlSystem.h"
 extern "C"
 {
-void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
 {
     DAVA::TextFieldPlatformImpl::TextFieldShouldReturn(id);
 }
 
-jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+JNIEXPORT jbyteArray JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env,
+                                                                                      jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 {
     DAVA::WideString string;
 
@@ -35,7 +36,7 @@ jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env,
     return r;
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
 {
     DAVA::WideString newString, oldString;
 
@@ -54,7 +55,7 @@ void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jo
     }
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
 {
     // Recalculate to virtual coordinates.
     DAVA::Vector2 keyboardOrigin(x, y);
@@ -66,18 +67,18 @@ void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jo
     DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
 {
     DAVA::TextFieldPlatformImpl::TextFieldKeyboardHidden(id);
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
 {
     DAVA::TextFieldPlatformImpl::TextFieldFocusChanged(id, hasFocus);
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
-                                                                 jobject classthis, uint32_t id, jintArray pixels, int width, int height)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
+                                                                                   jobject classthis, uint32_t id, jintArray pixels, int width, int height)
 {
     static_assert(sizeof(jint) == sizeof(DAVA::int32), "o_O can't be");
 

@@ -1,39 +1,41 @@
-#ifndef __FULLSCREENTEST_TEST_H__
-#define __FULLSCREENTEST_TEST_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "Infrastructure/BaseScreen.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 
-using namespace DAVA;
+namespace DAVA
+{
+class Window;
+}
 
 class GameCore;
 class FullscreenTest : public BaseScreen
 {
 public:
-    FullscreenTest(GameCore* g);
+    FullscreenTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;
     void UnloadResources() override;
 
-    bool SystemInput(UIEvent* currentInput) override;
+    bool SystemInput(DAVA::UIEvent* currentInput) override;
 
 private:
     void UpdateMode();
-    void OnSelectModeClick(BaseObject* sender, void* data, void* callerData);
-    void OnMulUp(BaseObject* sender, void* data, void* callerData);
-    void OnMulDown(BaseObject* sender, void* data, void* callerData);
-    void On3DViewControllClick(BaseObject* sender, void* data, void* callerData);
-    void OnPinningClick(BaseObject* sender, void* data, void* callerData);
+    void OnSelectModeClick(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnMulUp(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnMulDown(DAVA::BaseObject* sender, void* data, void* callerData);
+    void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    UIStaticText* currentModeText;
-    UIStaticText* currentScaleText;
-    UI3DView* ui3dview = nullptr;
-    RotationControllerSystem* rotationControllerSystem = nullptr;
-    UIStaticText* currect3dScaleText = nullptr;
-    UIStaticText* pinningText = nullptr;
-    UIStaticText* pinningMousePosText = nullptr;
+    DAVA::Window* primaryWindow = nullptr;
+
+    DAVA::UIStaticText* currentModeText;
+    DAVA::UIStaticText* currentScaleText;
+    DAVA::UI3DView* ui3dview = nullptr;
+    DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
+    DAVA::UIStaticText* currect3dScaleText = nullptr;
+    DAVA::UIStaticText* pinningText = nullptr;
+    DAVA::UIStaticText* pinningMousePosText = nullptr;
 };
-
-#endif //__FULLSCREENTEST_TEST_H__

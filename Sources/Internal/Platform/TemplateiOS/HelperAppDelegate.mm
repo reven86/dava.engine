@@ -20,7 +20,7 @@ class CoreIOS : public DAVA::Core
 public:
     void SetScreenScaleMultiplier(DAVA::float32 multiplier) override
     {
-        if (fabsf(GetScreenScaleMultiplier() - multiplier) >= DAVA::EPSILON)
+        if (std::abs(GetScreenScaleMultiplier() - multiplier) >= DAVA::EPSILON)
         {
             Core::SetScreenScaleMultiplier(multiplier);
 

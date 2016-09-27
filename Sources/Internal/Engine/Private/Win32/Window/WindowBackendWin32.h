@@ -34,8 +34,8 @@ public:
 
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
-    void Close();
-    void Detach();
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -49,12 +49,14 @@ public:
 private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoSetTitle(const char8* title);
 
     void AdjustWindowSize(int32* w, int32* h);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
+    LRESULT OnEnterExitSizeMove(bool enter);
     LRESULT OnSetKillFocus(bool gotFocus);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
@@ -62,6 +64,7 @@ private:
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
+    bool OnClose();
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
@@ -72,6 +75,8 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool isEnteredSizingModalLoop = false;
+    bool closeRequestByApp = false;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];

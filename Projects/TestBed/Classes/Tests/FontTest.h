@@ -10,7 +10,7 @@ class GameCore;
 class FontTest : public BaseScreen
 {
 public:
-    FontTest(GameCore* g);
+    FontTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

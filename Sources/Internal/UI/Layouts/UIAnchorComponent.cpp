@@ -36,7 +36,7 @@ bool UIAnchorComponent::IsEnabled() const
 
 void UIAnchorComponent::SetEnabled(bool enabled)
 {
-    flags.set(FLAG_ENABLED, enabled);
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 bool UIAnchorComponent::IsLeftAnchorEnabled() const
@@ -46,8 +46,7 @@ bool UIAnchorComponent::IsLeftAnchorEnabled() const
 
 void UIAnchorComponent::SetLeftAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_LEFT_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_LEFT_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetLeftAnchor() const
@@ -57,6 +56,11 @@ float32 UIAnchorComponent::GetLeftAnchor() const
 
 void UIAnchorComponent::SetLeftAnchor(float32 anchor)
 {
+    if (leftAnchor == anchor)
+    {
+        return;
+    }
+
     leftAnchor = anchor;
     SetLayoutDirty();
 }
@@ -68,8 +72,7 @@ bool UIAnchorComponent::IsHCenterAnchorEnabled() const
 
 void UIAnchorComponent::SetHCenterAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_HCENTER_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_HCENTER_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetHCenterAnchor() const
@@ -79,6 +82,10 @@ float32 UIAnchorComponent::GetHCenterAnchor() const
 
 void UIAnchorComponent::SetHCenterAnchor(float32 anchor)
 {
+    if (hCenterAnchor == anchor)
+    {
+        return;
+    }
     hCenterAnchor = anchor;
     SetLayoutDirty();
 }
@@ -90,8 +97,7 @@ bool UIAnchorComponent::IsRightAnchorEnabled() const
 
 void UIAnchorComponent::SetRightAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_RIGHT_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_RIGHT_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetRightAnchor() const
@@ -101,6 +107,11 @@ float32 UIAnchorComponent::GetRightAnchor() const
 
 void UIAnchorComponent::SetRightAnchor(float32 anchor)
 {
+    if (rightAnchor == anchor)
+    {
+        return;
+    }
+
     rightAnchor = anchor;
     SetLayoutDirty();
 }
@@ -112,8 +123,7 @@ bool UIAnchorComponent::IsTopAnchorEnabled() const
 
 void UIAnchorComponent::SetTopAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_TOP_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_TOP_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetTopAnchor() const
@@ -123,6 +133,11 @@ float32 UIAnchorComponent::GetTopAnchor() const
 
 void UIAnchorComponent::SetTopAnchor(float32 anchor)
 {
+    if (topAnchor == anchor)
+    {
+        return;
+    }
+
     topAnchor = anchor;
     SetLayoutDirty();
 }
@@ -134,8 +149,7 @@ bool UIAnchorComponent::IsVCenterAnchorEnabled() const
 
 void UIAnchorComponent::SetVCenterAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_VCENTER_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_VCENTER_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetVCenterAnchor() const
@@ -145,6 +159,11 @@ float32 UIAnchorComponent::GetVCenterAnchor() const
 
 void UIAnchorComponent::SetVCenterAnchor(float32 anchor)
 {
+    if (vCenterAnchor == anchor)
+    {
+        return;
+    }
+
     vCenterAnchor = anchor;
     SetLayoutDirty();
 }
@@ -156,8 +175,7 @@ bool UIAnchorComponent::IsBottomAnchorEnabled() const
 
 void UIAnchorComponent::SetBottomAnchorEnabled(bool enabled)
 {
-    flags.set(FLAG_BOTTOM_ENABLED, enabled);
-    SetLayoutDirty();
+    SetFlag(FLAG_BOTTOM_ENABLED, enabled);
 }
 
 float32 UIAnchorComponent::GetBottomAnchor() const
@@ -167,6 +185,11 @@ float32 UIAnchorComponent::GetBottomAnchor() const
 
 void UIAnchorComponent::SetBottomAnchor(float32 anchor)
 {
+    if (bottomAnchor == anchor)
+    {
+        return;
+    }
+
     bottomAnchor = anchor;
     SetLayoutDirty();
 }
@@ -178,8 +201,7 @@ bool UIAnchorComponent::IsUseRtl() const
 
 void UIAnchorComponent::SetUseRtl(bool use)
 {
-    flags.set(FLAG_USE_RTL, use);
-    SetLayoutDirty();
+    SetFlag(FLAG_USE_RTL, use);
 }
 
 void UIAnchorComponent::SetLayoutDirty()
@@ -187,6 +209,15 @@ void UIAnchorComponent::SetLayoutDirty()
     if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
+    }
+}
+
+void UIAnchorComponent::SetFlag(eFlags flag, bool enabled)
+{
+    if (flags.test(flag) != enabled)
+    {
+        flags.set(flag, enabled);
+        SetLayoutDirty();
     }
 }
 }

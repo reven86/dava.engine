@@ -56,12 +56,6 @@ public:
     void SetSkipInvisibleControls(bool skip);
 
 private:
-    int32 GetOrientationAsInt() const;
-    void SetOrientationFromInt(int32 orientation);
-
-    void SetLayoutDirty();
-
-private:
     enum eFlags
     {
         FLAG_ENABLED,
@@ -73,6 +67,11 @@ private:
         FLAG_SKIP_INVISIBLE_CONTROLS,
         FLAG_COUNT
     };
+    int32 GetOrientationAsInt() const;
+    void SetOrientationFromInt(int32 orientation);
+
+    void SetLayoutDirty();
+    void SetFlag(eFlags flag, bool enabled);
 
     Bitset<eFlags::FLAG_COUNT> flags;
     float32 padding = 0.0f;

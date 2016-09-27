@@ -19,8 +19,8 @@ String BenchTest(const char* name, F& f, A... a)
     return Format("%s: %lu ms, res = %d\n", name, clock() - time_ms, res);
 }
 
-FunctionSignalTest::FunctionSignalTest(GameCore* g)
-    : BaseScreen(g, "FunctionSignalTest")
+FunctionSignalTest::FunctionSignalTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "FunctionSignalTest")
 {
 }
 

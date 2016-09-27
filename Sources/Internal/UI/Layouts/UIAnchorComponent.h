@@ -63,9 +63,6 @@ public:
     void SetUseRtl(bool use);
 
 private:
-    void SetLayoutDirty();
-
-private:
     enum eFlags
     {
         FLAG_ENABLED,
@@ -78,6 +75,9 @@ private:
         FLAG_USE_RTL,
         FLAGS_COUNT
     };
+
+    void SetLayoutDirty();
+    void SetFlag(eFlags flag, bool enabled);
 
     std::bitset<FLAGS_COUNT> flags;
     float32 leftAnchor = 0.0f;

@@ -8,7 +8,7 @@ class GameCore;
 class FloatingPointExceptionTest : public BaseScreen
 {
 public:
-    FloatingPointExceptionTest(GameCore* g);
+    FloatingPointExceptionTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

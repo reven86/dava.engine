@@ -6,7 +6,7 @@
 
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "ResourcesManageHelper.h"
 
 using namespace DAVA;

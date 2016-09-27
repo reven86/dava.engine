@@ -1,4 +1,5 @@
 #include "rhi_Impl.h"
+#include "../rhi_Public.h"
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
@@ -36,7 +37,8 @@ uint32 stat_SET_CB = DAVA::InvalidIndex;
 uint32 stat_SET_VB = DAVA::InvalidIndex;
 uint32 stat_SET_IB = DAVA::InvalidIndex;
 
-static Dispatch _Impl = { 0 };
+static Dispatch _Impl = {};
+static RenderDeviceCaps renderDeviceCaps = {};
 
 void SetDispatchTable(const Dispatch& dispatch)
 {
@@ -151,7 +153,7 @@ bool TextureFormatSupported(TextureFormat format)
 
 const RenderDeviceCaps& DeviceCaps()
 {
-    return (*_Impl.impl_DeviceCaps)();
+    return renderDeviceCaps;
 }
 
 void SuspendRendering()
@@ -1017,6 +1019,14 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     }
 
     return color;
+}
+
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get()
+{
+    return renderDeviceCaps;
+}
 }
 
 } //namespace rhi

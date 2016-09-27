@@ -3,8 +3,8 @@
 
 using namespace DAVA;
 
-NotificationScreen::NotificationScreen(GameCore* g)
-    : BaseScreen(g, "NotificationScreen")
+NotificationScreen::NotificationScreen(GameCore& gameCore)
+    : BaseScreen(gameCore, "NotificationScreen")
     , showNotificationText(nullptr)
     , showNotificationTextDelayed(nullptr)
     , cancelDelayedNotifications(nullptr)

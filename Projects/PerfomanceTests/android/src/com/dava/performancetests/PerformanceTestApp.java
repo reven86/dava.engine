@@ -10,7 +10,7 @@ public class PerformanceTestApp extends JNIApplication {
 	}
 	
 	static {
-		System.loadLibrary("gnustl_shared");
+		System.loadLibrary("c++_shared");
 		System.loadLibrary("PerformanceTests");
 	}
 }

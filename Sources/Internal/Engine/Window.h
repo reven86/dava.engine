@@ -8,7 +8,6 @@
 
 #include "UI/UIEvent.h"
 
-#include "Engine/WindowArea.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -46,6 +45,7 @@ public:
 
     void Resize(const Size2f& size);
     void Close();
+    void SetTitle(const String& title);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
@@ -69,8 +69,6 @@ public:
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
     Private::WindowBackend* GetBackend() const;
-    /// Detach from native window, used on exit when alive windows still exist
-    void Detach();
 
     /// Initialize platform specific render params, e.g. acquire/release context functions for Qt platform
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -96,13 +94,13 @@ private:
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
-    void HandlePendingSizeChanging();
-
+    void UpdateVirtualCoordinatesSystem();
     void ClearMouseButtons();
 
 private:
     // TODO: unique_ptr
-    Private::EngineBackend* engineBackend = nullptr;
+    Private::EngineBackend& engineBackend;
+    Private::MainDispatcher& mainDispatcher;
     Private::WindowBackend* windowBackend = nullptr;
 
     InputSystem* inputSystem = nullptr;
@@ -115,9 +113,7 @@ private:
     float32 dpi = 0;
     Size2f size = { 0.0f, 0.0f };
     Size2f physicalSize = { 0.0f, 0.0f };
-
-    bool pendingInitRender = false;
-    bool pendingSizeChanging = false;
+    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };

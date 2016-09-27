@@ -13,6 +13,7 @@
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -23,8 +24,8 @@ bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*window,
-                        *engineBackend->GetDispatcher(),
+    : WindowBackendBase(*engineBackend,
+                        *window,
                         MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
@@ -74,18 +75,18 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResize(width, height);
+    PostResizeOnUIThread(width, height);
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
-    DoCloseWindow();
+    closeRequestByApp = true;
+    PostCloseOnUIThread();
 }
 
-void WindowBackend::Detach()
+void WindowBackend::SetTitle(const String& title)
 {
-    // On Win32 detach is similar to close
-    Close();
+    PostSetTitleOnUIThread(title);
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -121,6 +122,12 @@ void WindowBackend::DoCloseWindow()
     ::DestroyWindow(hwnd);
 }
 
+void WindowBackend::DoSetTitle(const char8* title)
+{
+    WideString wideTitle = UTF8Utils::EncodeToWideString(title);
+    ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
@@ -139,6 +146,10 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        DoSetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -167,10 +178,27 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         }
     }
 
-    PostSizeChanged(static_cast<float32>(width),
-                    static_cast<float32>(height),
-                    1.0f,
-                    1.0f);
+    if (!isEnteredSizingModalLoop)
+    {
+        float32 w = static_cast<float32>(width);
+        float32 h = static_cast<float32>(height);
+        PostSizeChanged(w, h, 1.0f, 1.0f);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnEnterExitSizeMove(bool enter)
+{
+    isEnteredSizingModalLoop = enter;
+    if (!enter)
+    {
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        float32 w = static_cast<float32>(rc.right - rc.left);
+        float32 h = static_cast<float32>(rc.bottom - rc.top);
+        PostSizeChanged(w, h, 1.0f, 1.0f);
+    }
     return 0;
 }
 
@@ -284,14 +312,20 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     GetClientRect(hwnd, &rc);
 
-    void* p = GetHandle();
-
-    PostWindowCreated(static_cast<float32>(rc.right - rc.left),
-                      static_cast<float32>(rc.bottom - rc.top),
-                      1.0f,
-                      1.0f);
+    float32 w = static_cast<float32>(rc.right - rc.left);
+    float32 h = static_cast<float32>(rc.bottom - rc.top);
+    PostWindowCreated(w, h, 1.0f, 1.0f);
     PostVisibilityChanged(true);
     return 0;
+}
+
+bool WindowBackend::OnClose()
+{
+    if (!closeRequestByApp)
+    {
+        PostUserCloseRequest();
+    }
+    return closeRequestByApp;
 }
 
 LRESULT WindowBackend::OnDestroy()
@@ -300,8 +334,8 @@ LRESULT WindowBackend::OnDestroy()
     {
         PostVisibilityChanged(false);
     }
+    DispatchWindowDestroyed(true);
     hwnd = nullptr;
-    DispatchWindowDestroyed(false);
     return 0;
 }
 
@@ -314,6 +348,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
+    }
+    else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
+    {
+        lresult = OnEnterExitSizeMove(message == WM_ENTERSIZEMOVE);
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -374,6 +412,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_CREATE)
     {
         lresult = OnCreate();
+    }
+    else if (message == WM_CLOSE)
+    {
+        isHandled = !OnClose();
     }
     else if (message == WM_DESTROY)
     {

@@ -111,8 +111,8 @@ Font::StringMetrics TextBlockSoftwareRender::DrawTextML(const WideString& drawTe
         metrics = ftFont->DrawStringToBuffer(buf, x, y,
                                              -textBlock->cacheOx + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(xOffset))),
                                              -textBlock->cacheOy + int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(yOffset))),
-                                             int32(ceilf(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))),
-                                             int32(ceilf(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(lineSize)))),
+                                             int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))),
+                                             int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(lineSize)))),
                                              drawText,
                                              true);
     }

@@ -7,7 +7,7 @@ class GameCore;
 class FunctionSignalTest : public BaseScreen
 {
 public:
-    FunctionSignalTest(GameCore* g);
+    FunctionSignalTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

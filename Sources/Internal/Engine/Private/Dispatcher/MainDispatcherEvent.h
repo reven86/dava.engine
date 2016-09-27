@@ -40,6 +40,7 @@ struct MainDispatcherEvent final
         APP_SUSPENDED,
         APP_RESUMED,
 
+        USER_CLOSE_REQUEST,
         APP_TERMINATE,
     };
 

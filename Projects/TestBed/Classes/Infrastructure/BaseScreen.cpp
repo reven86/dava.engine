@@ -1,32 +1,20 @@
 #include "Infrastructure/BaseScreen.h"
 #include "Infrastructure/GameCore.h"
 
-using namespace DAVA;
+DAVA::int32 BaseScreen::globalScreenId = 1;
 
-int32 BaseScreen::globalScreenId = 1;
-
-BaseScreen::BaseScreen(GameCore* g, const String& _screenName, int32 skipBeforeTests)
+BaseScreen::BaseScreen(GameCore& gameCore, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
     : UIScreen()
-    , gameCore(g)
-    , currentScreenId(globalScreenId++)
-    , exitButton(nullptr)
-{
-    SetName(_screenName);
-
-    gameCore->RegisterScreen(this);
-}
-
-BaseScreen::BaseScreen(GameCore* g)
-    : UIScreen()
-    , gameCore(g)
+    , gameCore(gameCore)
     , currentScreenId(globalScreenId++)
 {
-    SetName("BaseScreen");
-    gameCore->RegisterScreen(this);
+    SetName(screenName);
+    gameCore.RegisterScreen(this);
 }
 
-bool BaseScreen::SystemInput(UIEvent* currentInput)
+bool BaseScreen::SystemInput(DAVA::UIEvent* currentInput)
 {
+    using namespace DAVA;
     if ((currentInput->key == Key::BACK) && (currentInput->phase == UIEvent::Phase::KEY_DOWN))
     {
         OnExitButton(nullptr, nullptr, nullptr);
@@ -40,6 +28,7 @@ bool BaseScreen::SystemInput(UIEvent* currentInput)
 
 void BaseScreen::LoadResources()
 {
+    using namespace DAVA;
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
     font->SetSize(30);
@@ -66,5 +55,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject* obj, void* data, void* callerData)
 {
-    gameCore->ShowStartScreen();
+    gameCore.ShowStartScreen();
 }

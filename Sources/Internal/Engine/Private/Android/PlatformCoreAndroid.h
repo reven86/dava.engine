@@ -22,7 +22,8 @@ public:
 
     void Init();
     void Run();
-    void Quit(bool triggeredBySystem);
+    void PrepareToQuit();
+    void Quit();
 
 private:
     WindowBackend* ActivityOnCreate();
@@ -33,8 +34,8 @@ private:
     void GameThread();
 
 private:
-    EngineBackend* engineBackend = nullptr;
-    MainDispatcher* dispatcher = nullptr;
+    EngineBackend& engineBackend;
+    MainDispatcher& dispatcher;
     std::unique_ptr<NativeService> nativeService;
 
     bool quitGameThread = false;

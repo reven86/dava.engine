@@ -16,7 +16,8 @@
 namespace DAVA
 {
 Window::Window(Private::EngineBackend* engineBackend, bool primary)
-    : engineBackend(engineBackend)
+    : engineBackend(*engineBackend)
+    , mainDispatcher(*engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
@@ -24,24 +25,42 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
 
 Window::~Window()
 {
-    Logger::Debug("===================================== Window::~Window");
     delete windowBackend;
     windowBackend = nullptr;
 }
 
 void Window::Resize(const Size2f& size)
 {
-    windowBackend->Resize(size.dx, size.dy);
+    // Window cannot be resized in embedded mode as window lifetime
+    // is controlled by highlevel framework
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->Resize(size.dx, size.dy);
+    }
 }
 
 void Window::Close()
 {
-    windowBackend->Close();
+    // Window cannot be close in embedded mode as window lifetime
+    // is controlled by highlevel framework
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->Close(false);
+    }
+}
+
+void Window::SetTitle(const String& title)
+{
+    // It does not make sense to set window title in embedded mode
+    if (!engineBackend.IsEmbeddedGUIMode())
+    {
+        windowBackend->SetTitle(title);
+    }
 }
 
 Engine* Window::GetEngine() const
 {
-    return engineBackend->GetEngine();
+    return engineBackend.GetEngine();
 }
 
 void* Window::GetNativeHandle() const
@@ -57,11 +76,6 @@ WindowNativeService* Window::GetNativeService() const
 void Window::RunAsyncOnUIThread(const Function<void()>& task)
 {
     windowBackend->RunAsyncOnUIThread(task);
-}
-
-void Window::Detach()
-{
-    windowBackend->Detach();
 }
 
 void Window::InitCustomRenderParams(rhi::InitParam& params)
@@ -134,31 +148,50 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
 
 void Window::FinishEventHandlingOnCurrentFrame()
 {
-    if (pendingSizeChanging)
-    {
-        HandlePendingSizeChanging();
-        pendingSizeChanging = false;
-    }
-
+    sizeEventHandled = false;
     windowBackend->TriggerPlatformEvents();
 }
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_CREATED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
+    // Look into dispatcher queue and compress size events into one event to allow:
+    //  - single render init/reset call during one frame
+    //  - emit signals about window creation or size changing immediately
+    using Private::MainDispatcherEvent;
+    MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
+    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e)
+                                  {
+                                      if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
+                                      {
+                                          compressedSize.width = e.sizeEvent.width;
+                                          compressedSize.height = e.sizeEvent.height;
+                                          compressedSize.scaleX = e.sizeEvent.scaleX;
+                                          compressedSize.scaleY = e.sizeEvent.scaleY;
+                                          compressedSize.dpi = e.sizeEvent.dpi;
+                                      }
+                                  });
+    sizeEventHandled = true;
 
-    size.dx = e.sizeEvent.width;
-    size.dy = e.sizeEvent.height;
-    physicalSize.dx = size.dx * e.sizeEvent.scaleX;
-    physicalSize.dy = size.dy * e.sizeEvent.scaleY;
-    dpi = e.sizeEvent.dpi;
+    size.dx = compressedSize.width;
+    size.dy = compressedSize.height;
+    physicalSize.dx = size.dx * compressedSize.scaleX;
+    physicalSize.dy = size.dy * compressedSize.scaleY;
+    dpi = compressedSize.dpi;
 
-    pendingInitRender = true;
-    pendingSizeChanging = true;
+    Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
 
-    EngineContext* context = engineBackend->GetEngineContext();
+    engineBackend.InitRenderer(this);
+
+    EngineContext* context = engineBackend.GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
+
+    UpdateVirtualCoordinatesSystem();
+
+    engineBackend.OnWindowCreated(this);
+
+    sizeChanged.Emit(*this, size);
+    physicalSizeChanged.Emit(*this, physicalSize);
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
@@ -166,23 +199,67 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
 
     destroyed.Emit(*this);
+    engineBackend.OnWindowDestroyed(this);
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
 
-    engineBackend->DeinitRender(this);
+    engineBackend.DeinitRender(this);
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: w=%.1f, h=%.1f", e.sizeEvent.width, e.sizeEvent.height);
+    if (sizeEventHandled)
+    {
+        return;
+    }
 
-    size.dx = e.sizeEvent.width;
-    size.dy = e.sizeEvent.height;
-    physicalSize.dx = size.dx * e.sizeEvent.scaleX;
-    physicalSize.dy = size.dy * e.sizeEvent.scaleY;
-    dpi = e.sizeEvent.dpi;
-    pendingSizeChanging = true;
+    // Look into dispatcher queue and compress size events into one event to allow:
+    //  - single render init/reset call during one frame
+    //  - emit signals about window creation or size changing immediately
+    using Private::MainDispatcherEvent;
+    MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
+    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e)
+                                  {
+                                      if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
+                                      {
+                                          compressedSize.width = e.sizeEvent.width;
+                                          compressedSize.height = e.sizeEvent.height;
+                                          compressedSize.scaleX = e.sizeEvent.scaleX;
+                                          compressedSize.scaleY = e.sizeEvent.scaleY;
+                                          compressedSize.dpi = e.sizeEvent.dpi;
+                                      }
+                                  });
+
+    size.dx = compressedSize.width;
+    size.dy = compressedSize.height;
+    physicalSize.dx = size.dx * compressedSize.scaleX;
+    physicalSize.dy = size.dy * compressedSize.scaleY;
+    dpi = compressedSize.dpi;
+
+    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+
+    engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
+    if (windowBackend->IsWindowReadyForRender())
+    {
+        UpdateVirtualCoordinatesSystem();
+        sizeChanged.Emit(*this, size);
+        physicalSizeChanged.Emit(*this, physicalSize);
+    }
+}
+
+void Window::UpdateVirtualCoordinatesSystem()
+{
+    int32 w = static_cast<int32>(size.dx);
+    int32 h = static_cast<int32>(size.dy);
+    int32 physW = static_cast<int32>(physicalSize.dx);
+    int32 physH = static_cast<int32>(physicalSize.dy);
+
+    uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
+    uiControlSystem->vcs->SetPhysicalScreenSize(physW, physH);
+    uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
+    uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
+    uiControlSystem->vcs->ScreenSizeChanged();
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
@@ -353,37 +430,6 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.timestamp = e.timestamp / 1000.0;
 
     uiControlSystem->OnInput(&uie);
-}
-
-void Window::HandlePendingSizeChanging()
-{
-    int32 w = static_cast<int32>(size.dx);
-    int32 h = static_cast<int32>(size.dy);
-    int32 physW = static_cast<int32>(physicalSize.dx);
-    int32 physH = static_cast<int32>(physicalSize.dy);
-
-    if (pendingInitRender)
-    {
-        engineBackend->InitRenderer(this);
-        pendingInitRender = false;
-    }
-    else
-    {
-        engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
-    }
-
-    if (windowBackend->IsWindowReadyForRender())
-    {
-        uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
-        uiControlSystem->vcs->SetPhysicalScreenSize(physW, physH);
-        uiControlSystem->vcs->SetVirtualScreenSize(w, h);
-        uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
-        uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
-        uiControlSystem->vcs->ScreenSizeChanged();
-
-        sizeChanged.Emit(*this, size);
-        physicalSizeChanged.Emit(*this, physicalSize);
-    }
 }
 
 void Window::ClearMouseButtons()

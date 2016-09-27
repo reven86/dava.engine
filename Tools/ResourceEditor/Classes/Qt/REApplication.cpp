@@ -177,7 +177,7 @@ void REApplication::RunWindow()
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     mainWindow->show();
     exec();
 
@@ -212,7 +212,7 @@ void REApplication::RunConsole()
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
-    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
+    DAVA::Texture::SetGPULoadingOrder({ DAVA::eGPUFamily::GPU_ORIGIN });
 
     cmdLineManager->Process();
 }

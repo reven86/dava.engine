@@ -22,14 +22,14 @@ namespace DAVA
 {
 namespace Private
 {
-WindowNativeBridge::WindowNativeBridge(WindowBackend* wbackend)
-    : windowBackend(wbackend)
+WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
+    : windowBackend(*windowBackend)
 {
 }
 
 WindowNativeBridge::~WindowNativeBridge() = default;
 
-bool WindowNativeBridge::DoCreateWindow(float32 x, float32 y, float32 width, float32 height)
+bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float32 height)
 {
     // clang-format off
     NSUInteger style = NSTitledWindowMask |
@@ -53,28 +53,35 @@ bool WindowNativeBridge::DoCreateWindow(float32 x, float32 y, float32 width, flo
     {
         float32 scale = [nswindow backingScaleFactor];
 
-        windowBackend->GetWindow()->PostWindowCreated(windowBackend, viewRect.size.width, viewRect.size.height, scale, scale);
-        windowBackend->GetWindow()->PostVisibilityChanged(true);
+        windowBackend.PostWindowCreated(viewRect.size.width, viewRect.size.height, scale, scale);
+        windowBackend.PostVisibilityChanged(true);
     }
 
     [nswindow makeKeyAndOrderFront:nil];
     return true;
 }
 
-void WindowNativeBridge::DoResizeWindow(float32 width, float32 height)
+void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
     [nswindow setContentSize:NSMakeSize(width, height)];
 }
 
-void WindowNativeBridge::DoCloseWindow()
+void WindowNativeBridge::CloseWindow()
 {
     [nswindow close];
+}
+
+void WindowNativeBridge::SetTitle(const char8* title)
+{
+    NSString* nsTitle = [NSString stringWithUTF8String:title];
+    [nswindow setTitle:nsTitle];
+    [nsTitle release];
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
-        windowBackend->ProcessPlatformEvents();
+        windowBackend.ProcessPlatformEvents();
     });
 }
 
@@ -86,7 +93,7 @@ void WindowNativeBridge::ApplicationDidHideUnhide(bool hidden)
 void WindowNativeBridge::WindowDidMiniaturize()
 {
     isMiniaturized = true;
-    windowBackend->GetWindow()->PostVisibilityChanged(false);
+    windowBackend.PostVisibilityChanged(false);
 }
 
 void WindowNativeBridge::WindowDidDeminiaturize()
@@ -98,17 +105,17 @@ void WindowNativeBridge::WindowDidBecomeKey()
 {
     if (isMiniaturized || isAppHidden)
     {
-        windowBackend->GetWindow()->PostVisibilityChanged(true);
+        windowBackend.PostVisibilityChanged(true);
     }
-    windowBackend->GetWindow()->PostFocusChanged(true);
+    windowBackend.PostFocusChanged(true);
 }
 
 void WindowNativeBridge::WindowDidResignKey()
 {
-    windowBackend->GetWindow()->PostFocusChanged(false);
+    windowBackend.PostFocusChanged(false);
     if (isAppHidden)
     {
-        windowBackend->GetWindow()->PostVisibilityChanged(false);
+        windowBackend.PostVisibilityChanged(false);
     }
 }
 
@@ -117,7 +124,7 @@ void WindowNativeBridge::WindowDidResize()
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
 
-    windowBackend->GetWindow()->PostSizeChanged(size.width, size.height, scale, scale);
+    windowBackend.PostSizeChanged(size.width, size.height, scale, scale);
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
@@ -126,12 +133,18 @@ void WindowNativeBridge::WindowDidChangeScreen()
 
 bool WindowNativeBridge::WindowShouldClose()
 {
+    if (!windowBackend.closeRequestByApp)
+    {
+        windowBackend.PostUserCloseRequest();
+        return false;
+    }
     return true;
 }
 
 void WindowNativeBridge::WindowWillClose()
 {
-    windowBackend->GetWindow()->PostWindowDestroyed();
+    windowBackend.WindowWillClose();
+    windowBackend.DispatchWindowDestroyed(false);
 
     [nswindow setContentView:nil];
     [nswindow setDelegate:nil];
@@ -142,8 +155,7 @@ void WindowNativeBridge::WindowWillClose()
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
 {
-    MainDispatcherEvent e;
-    e.window = windowBackend->window;
+    MainDispatcherEvent e(windowBackend.window);
     e.mclickEvent.clicks = 1;
     e.mclickEvent.button = [theEvent buttonNumber] + 1;
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -168,21 +180,17 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
-    windowBackend->GetDispatcher()->PostEvent(e);
+    windowBackend.mainDispatcher.PostEvent(e);
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
-    MainDispatcherEvent e;
-    e.window = windowBackend->window;
-    e.type = MainDispatcherEvent::MOUSE_MOVE;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
-    e.mmoveEvent.x = pt.x;
-    e.mmoveEvent.y = sz.height - pt.y;
-    windowBackend->GetDispatcher()->PostEvent(e);
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    windowBackend.PostMouseMove(x, y);
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -200,55 +208,49 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     }
 
     const float32 scrollK = 10.0f;
-    float32 deltaX = [theEvent scrollingDeltaX];
-    float32 deltaY = [theEvent scrollingDeltaY];
-
-    MainDispatcherEvent e;
-    e.window = windowBackend->window;
-    e.type = MainDispatcherEvent::MOUSE_WHEEL;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
 
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
-    e.mwheelEvent.x = pt.x;
-    e.mwheelEvent.y = sz.height - pt.y;
 
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    float32 deltaX = [theEvent scrollingDeltaX];
+    float32 deltaY = [theEvent scrollingDeltaY];
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
         // touchpad or other precise device sends integer values (-3, -1, 0, 1, 40, etc)
-        e.mwheelEvent.deltaX = deltaX / scrollK;
-        e.mwheelEvent.deltaY = deltaY / scrollK;
+        deltaX /= scrollK;
+        deltaY /= scrollK;
     }
     else
     {
         // mouse sends float values from 0.1 for one wheel tick
-        e.mwheelEvent.deltaX = deltaX * scrollK;
-        e.mwheelEvent.deltaY = deltaY * scrollK;
+        deltaX *= scrollK;
+        deltaY *= scrollK;
     }
-
-    windowBackend->GetDispatcher()->PostEvent(e);
+    windowBackend.PostMouseWheel(x, y, deltaX, deltaY);
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
 {
-    MainDispatcherEvent e;
-    e.window = windowBackend->window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.type = [theEvent type] == NSKeyDown ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    e.keyEvent.key = [theEvent keyCode];
-    e.keyEvent.isRepeated = [theEvent isARepeat];
-    windowBackend->dispatcher->PostEvent(e);
+    uint32 key = [theEvent keyCode];
+    bool isRepeated = [theEvent isARepeat];
+    if ([theEvent type] == NSKeyDown)
+    {
+        windowBackend.PostKeyDown(key, isRepeated);
+    }
+    else
+    {
+        windowBackend.PostKeyUp(key);
+    }
 
     if ([theEvent type] == NSKeyDown)
     {
-        e.type = MainDispatcherEvent::KEY_CHAR;
-
         NSString* chars = [theEvent characters];
-        NSUInteger n = [chars length];
-        for (NSUInteger i = 0; i < n; ++i)
+        for (NSUInteger i = 0, n = [chars length]; i < n; ++i)
         {
-            e.keyEvent.key = [chars characterAtIndex:i];
-            windowBackend->GetDispatcher()->PostEvent(e);
+            uint32 key = [chars characterAtIndex:i];
+            windowBackend.PostKeyChar(key, false);
         }
     }
 }

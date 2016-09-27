@@ -9,7 +9,7 @@ class GameCore;
 class NotificationScreen : public BaseScreen
 {
 public:
-    NotificationScreen(GameCore* g);
+    NotificationScreen(GameCore& gameCore);
 
 protected:
     ~NotificationScreen()

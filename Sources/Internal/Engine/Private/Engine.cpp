@@ -85,6 +85,11 @@ void Engine::Quit(int exitCode)
     engineBackend->Quit(exitCode);
 }
 
+void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
+{
+    engineBackend->SetCloseRequestHandler(handler);
+}
+
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, false);
@@ -103,6 +108,11 @@ uint32 Engine::GetGlobalFrameIndex() const
 const Vector<String>& Engine::GetCommandLine() const
 {
     return engineBackend->GetCommandLine();
+}
+
+DAVA::Vector<char*> Engine::GetCommandLineAsArgv()
+{
+    return engineBackend->GetCommandLineAsArgv();
 }
 
 void Engine::SetOptions(KeyedArchive* options)

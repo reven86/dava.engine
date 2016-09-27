@@ -26,7 +26,7 @@ namespace Private
 // CoreNativeBridge is friend of OsX's PlatformCore
 struct CoreNativeBridge final
 {
-    CoreNativeBridge(PlatformCore* c);
+    CoreNativeBridge(PlatformCore* core);
     ~CoreNativeBridge();
 
     void Run();
@@ -45,12 +45,13 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate();
 
-    PlatformCore* core = nullptr;
+    PlatformCore& core;
 
     AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;
 
     bool quitSent = false;
+    bool closeRequestByApp = false;
     int32 curFps = 0;
 };
 

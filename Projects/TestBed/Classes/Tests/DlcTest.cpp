@@ -45,8 +45,8 @@ const float32 INFO_Y = SPEED_THREAD_Y + BUTTON_H + SPACE;
 const float32 START_CANCEL_Y = INFO_Y + BUTTON_H + 6 * SPACE;
 }
 
-DlcTest::DlcTest(GameCore* g)
-    : BaseScreen(g, "DlcTest")
+DlcTest::DlcTest(GameCore& gameCore)
+    : BaseScreen(gameCore, "DlcTest")
     , options(new KeyedArchive)
     , dlc(nullptr)
 {

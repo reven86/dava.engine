@@ -10,7 +10,7 @@ class GameCore;
 class UIBackgroundTest : public BaseScreen
 {
 public:
-    UIBackgroundTest(GameCore* g);
+    UIBackgroundTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

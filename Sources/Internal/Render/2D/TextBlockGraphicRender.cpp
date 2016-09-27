@@ -173,7 +173,7 @@ Font::StringMetrics TextBlockGraphicRender::DrawTextML(const WideString& drawTex
                                                        int32 xOffset, uint32 yOffset,
                                                        int32 lineSize)
 {
-    return InternalDrawText(drawText, xOffset, yOffset, int32(ceilf(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))), lineSize);
 }
 
 Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)

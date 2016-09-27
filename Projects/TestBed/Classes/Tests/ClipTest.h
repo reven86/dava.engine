@@ -10,7 +10,7 @@ class GameCore;
 class ClipTest : public BaseScreen
 {
 public:
-    ClipTest(GameCore* g);
+    ClipTest(GameCore& gameCore);
 
 protected:
     void LoadResources() override;

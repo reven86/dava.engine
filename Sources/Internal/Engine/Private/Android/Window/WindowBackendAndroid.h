@@ -30,10 +30,9 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void Detach();
-
     void Resize(float32 width, float32 height);
-    void Close();
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Core/ApplicationCore.h"
-#include "Core/Core.h"
-
 #include "Network/NetCore.h"
 #include "Network/PeerDesription.h"
 #include "Network/Services/NetLogger.h"
@@ -33,13 +30,13 @@ class GameCore
     };
 
 public:
-    GameCore(DAVA::Engine* e);
+    GameCore(DAVA::Engine& engine);
 
-    DAVA::Engine* GetEngine() const;
+    DAVA::Engine& GetEngine() const;
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
-    void OnBeforeTerminate();
+    void OnEngineCleanup();
 
     void OnWindowSizeChanged(DAVA::Window& w, DAVA::Size2f size);
     void OnWindowPhysicalSizeChanged(DAVA::Window& w, DAVA::Size2f size);
@@ -51,7 +48,6 @@ public:
 
     void OnUpdateConsole(DAVA::float32 frameDelta);
 
-public:
     void RegisterScreen(BaseScreen* screen);
     void ShowStartScreen();
 
@@ -66,7 +62,7 @@ private:
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    DAVA::Engine* engine = nullptr;
+    DAVA::Engine& engine;
 
     DAVA::String runOnlyThisTest;
 
@@ -93,7 +89,7 @@ private:
     bool loggerInUse = false;
 };
 
-inline DAVA::Engine* GameCore::GetEngine() const
+inline DAVA::Engine& GameCore::GetEngine() const
 {
     return engine;
 }

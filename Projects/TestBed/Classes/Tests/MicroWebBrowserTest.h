@@ -10,7 +10,7 @@ class GameCore;
 class MicroWebBrowserTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
-    MicroWebBrowserTest(GameCore* g);
+    MicroWebBrowserTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;

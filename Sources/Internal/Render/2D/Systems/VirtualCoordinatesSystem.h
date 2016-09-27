@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
-#define __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -135,12 +134,12 @@ inline const Rect& VirtualCoordinatesSystem::GetFullScreenVirtualRect() const
 
 inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(float32 value) const
 {
-    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
+    return std::floor(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(float32 value) const
 {
-    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
+    return std::floor(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(float32 value) const
@@ -321,4 +320,3 @@ const Vector2& VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
 }
 };
 
-#endif

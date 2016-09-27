@@ -12,7 +12,7 @@ protected:
     }
 
 public:
-    UIScrollViewTest(GameCore* g);
+    UIScrollViewTest(GameCore& gameCore);
 
     void LoadResources() override;
     void UnloadResources() override;
