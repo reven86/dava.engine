@@ -234,5 +234,4 @@ void GPUProfiler::ResetPerfQueryPair(const GPUProfiler::PerfQueryPair& perfQuery
         }
     }
 }
-
 }

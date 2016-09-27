@@ -32,27 +32,28 @@ static const int32 HISTORY_CHART_TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * HIST
 static const uint64 HISTORY_CHART_CEIL_STEP = 500; //mcs
 };
 
-static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, GPUProfiler::globalProfiler, {
-                                                                                                         FastName(CPUMarkerName::CORE_PROCESS_FRAME),
-                                                                                                         FastName(CPUMarkerName::CORE_UI_SYSTEM_UPDATE),
-                                                                                                         FastName(CPUMarkerName::CORE_UI_SYSTEM_DRAW),
-                                                                                                         FastName(CPUMarkerName::SCENE_UPDATE),
-                                                                                                         FastName(CPUMarkerName::SCENE_DRAW),
-                                                                                                         FastName(CPUMarkerName::RENDER_PASS_DRAW_LAYERS),
-                                                                                                         FastName(CPUMarkerName::RHI_PRESENT),
-                                                                                                         FastName(CPUMarkerName::RHI_WAIT_FRAME),
-                                                                                                         FastName(CPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
-                                                                                                         FastName(CPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
-                                                                                                         FastName(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME),
+static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, GPUProfiler::globalProfiler,
+                                               {
+                                               FastName(CPUMarkerName::CORE_PROCESS_FRAME),
+                                               FastName(CPUMarkerName::CORE_UI_SYSTEM_UPDATE),
+                                               FastName(CPUMarkerName::CORE_UI_SYSTEM_DRAW),
+                                               FastName(CPUMarkerName::SCENE_UPDATE),
+                                               FastName(CPUMarkerName::SCENE_DRAW),
+                                               FastName(CPUMarkerName::RENDER_PASS_DRAW_LAYERS),
+                                               FastName(CPUMarkerName::RHI_PRESENT),
+                                               FastName(CPUMarkerName::RHI_WAIT_FRAME),
+                                               FastName(CPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
+                                               FastName(CPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
+                                               FastName(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME),
 
-                                                                                                         FastName(GPUMarkerName::GPU_FRAME),
-                                                                                                         FastName(GPUMarkerName::RENDER_PASS_MAIN_3D),
-                                                                                                         FastName(GPUMarkerName::RENDER_PASS_WATER_REFLECTION),
-                                                                                                         FastName(GPUMarkerName::RENDER_PASS_WATER_REFRACTION),
-                                                                                                         FastName(GPUMarkerName::RENDER_PASS_2D),
-                                                                                                         FastName(GPUMarkerName::LANDSCAPE),
-                                                                                                         FastName(ProfilerOverlayDetails::OVERLAY_PASS_MARKER_NAME)
-                                                                                                         });
+                                               FastName(GPUMarkerName::GPU_FRAME),
+                                               FastName(GPUMarkerName::RENDER_PASS_MAIN_3D),
+                                               FastName(GPUMarkerName::RENDER_PASS_WATER_REFLECTION),
+                                               FastName(GPUMarkerName::RENDER_PASS_WATER_REFRACTION),
+                                               FastName(GPUMarkerName::RENDER_PASS_2D),
+                                               FastName(GPUMarkerName::LANDSCAPE),
+                                               FastName(ProfilerOverlayDetails::OVERLAY_PASS_MARKER_NAME)
+                                               });
 
 ProfilerOverlay* const ProfilerOverlay::globalProfilerOverlay = &GLOBAL_PROFILER_OVERLAY;
 
@@ -160,7 +161,7 @@ void ProfilerOverlay::Update()
     CPUTraces.emplace_back((currentFrameIndex - 1), std::move(CPUProfiler::globalProfiler->GetTrace("Core::SystemProcessFrame")));
 }
 
-void ProfilerOverlay::UpdateCurrentTrace(OverlayTrace& trace, const Vector<TraceEvent>& events, uint32 frameIndex)
+void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEvent>& events, uint32 frameIndex)
 {
     trace.frameIndex = frameIndex;
     trace.minTimestamp = uint64(-1);
@@ -237,7 +238,7 @@ void ProfilerOverlay::UpdateCurrentTrace(OverlayTrace& trace, const Vector<Trace
             eventColor = eventsColor[e.name];
             eventDepth = timestampsStack.size() - 1;
 
-            trace.rects.emplace_back(OverlayTrace::TraceRect(eventStart, eventDuration, eventColor, eventDepth));
+            trace.rects.emplace_back(TraceData::TraceRect(eventStart, eventDuration, eventColor, eventDepth));
         }
     }
 }
@@ -300,7 +301,7 @@ void ProfilerOverlay::Draw()
     rhi::EndRenderPass(pass);
 }
 
-void ProfilerOverlay::DrawTrace(const OverlayTrace& trace, const char* traceHeader, const Rect2i& rect)
+void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect)
 {
     static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
@@ -364,7 +365,7 @@ void ProfilerOverlay::DrawTrace(const OverlayTrace& trace, const char* traceHead
     int32 tracedx = drawRect.dx - x0trace - MARGIN;
     float32 dt = float32(tracedx) / (trace.maxTimestamp - trace.minTimestamp);
 
-    for (const OverlayTrace::TraceRect& r : trace.rects)
+    for (const TraceData::TraceRect& r : trace.rects)
     {
         x0 = x0trace + int32(r.start * dt);
         x1 = x0 + int32(r.duration * dt);
@@ -452,7 +453,7 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + drawRect.dy - MARGIN - DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, "0 mcs");
 }
 
-int32 ProfilerOverlay::GetEnoughRectHeight(const OverlayTrace& trace)
+int32 ProfilerOverlay::GetEnoughRectHeight(const TraceData& trace)
 {
     size_t legendCount = 0;
     for (const FastName& n : interestEventsNames)

@@ -32,7 +32,7 @@ protected:
     using HistoryArray = RingArray<HistoryInstance>;
     using EventHistory = std::pair<uint32, HistoryArray>; //<updates count, history values>
 
-    struct OverlayTrace
+    struct TraceData
     {
         struct TraceRect
         {
@@ -58,13 +58,13 @@ protected:
     };
 
     void Update();
-    void UpdateCurrentTrace(OverlayTrace& trace, const Vector<TraceEvent>& events, uint32 frameIndex);
+    void UpdateCurrentTrace(TraceData& trace, const Vector<TraceEvent>& events, uint32 frameIndex);
 
     void Draw();
-    void DrawTrace(const OverlayTrace& trace, const char* traceHeader, const Rect2i& rect);
+    void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
     void DrawHistory(const HistoryArray& history, const FastName& name, const Rect2i& rect);
 
-    int32 GetEnoughRectHeight(const OverlayTrace& trace);
+    int32 GetEnoughRectHeight(const TraceData& trace);
 
     FastNameMap<EventHistory> eventsHistory = FastNameMap<EventHistory>(128, EventHistory(0, HistoryArray(EVENT_HISTORY_LENGTH)));
     FastNameMap<uint32> eventsColor;
@@ -72,8 +72,8 @@ protected:
     Vector<FastName> interestEventsNames;
     uint32 maxEventNameLen = 0;
 
-    OverlayTrace currentGPUTrace;
-    OverlayTrace currentCPUTrace;
+    TraceData currentGPUTrace;
+    TraceData currentCPUTrace;
     List<std::pair<uint32, Vector<TraceEvent>>> CPUTraces; //<frameIndex, cpu-trace>
 
     CPUProfiler* cpuProfiler = nullptr;

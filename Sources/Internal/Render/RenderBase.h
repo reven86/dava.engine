@@ -282,7 +282,6 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
-
 };
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

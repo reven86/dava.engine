@@ -2067,7 +2067,6 @@ _GLES2_ExecuteQueuedCommands()
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-
             if (pp->perfQuery0 != InvalidHandle)
             {
                 if (cb->skipPerfQueries)
@@ -2085,7 +2084,6 @@ _GLES2_ExecuteQueuedCommands()
                 else
                     PerfQueryGLES2::IssueQuery(pp->perfQuery1);
             }
-
 
             if (cb->sync != InvalidHandle)
             {
