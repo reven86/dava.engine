@@ -241,16 +241,16 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
 	download_and_extract.cache.append(download_data)
 
-def run_process(args, process_cwd='.', environment=None):
+def run_process(args, process_cwd='.', environment=None, shell=False):
 	print 'running process: ' + ' '.join(args)
-	for output_line in _run_process_iter(args, process_cwd, environment):
+	for output_line in _run_process_iter(args, process_cwd, environment, shell):
 		print_verbose(output_line)
 
-def _run_process_iter(args, process_cwd='.', environment=None):
+def _run_process_iter(args, process_cwd='.', environment=None, shell=False):
 	if environment is None:
-		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
+		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd, shell=shell)
 	else:
-		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
+		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd, env=environment, shell=shell)
 
 	stdout_lines = iter(sp.stdout.readline, '')
 	for stdout_line in stdout_lines:
@@ -287,6 +287,31 @@ def make_fat_darwin_binary(input_files_pathes, output_file_path):
 	args = ['lipo', '-output', output_file_path, '-create']
 	args.extend(input_files_pathes)
 	run_process(args)
+
+def get_vs_x86_env():
+	return _get_vs_env('x86')
+
+def get_vs_x64_env():
+	return _get_vs_env('x86_amd64')
+
+def _get_vs_env(arch):
+	vsvars_path = '{}/vcvarsall.bat'.format(build_config.win32_vc_path)
+
+	cmd = [vsvars_path, arch, '&', 'set']
+	print cmd
+	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+	output = sp.communicate()[0]
+	output = output.split("\r\n")
+
+	env = os.environ.copy()
+	for line in output:
+		parts = line.strip().split('=')
+		if len(parts) == 2:
+			key = parts[0].strip().upper()
+			value = parts[1].strip()
+			env[key] = value
+
+	return env
 
 # Default builders
 
@@ -426,22 +451,36 @@ def build_and_copy_libraries_android_cmake(
 
 	return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
-def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure'):
-	cmd = ['./{}'.format(configure_exec_name)]
+def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make'):
+	print env
+	if isinstance(configure_exec_name, list):
+		if sys.platform == 'win32':
+			cmd = list(configure_exec_name)
+		else:
+			cmd = ['./{}'.format(configure_exec_name[0])]
+			cmd.extend(configure_exec_name[1:])
+	else:
+		if sys.platform == 'win32':
+			cmd = [configure_exec_name]
+		else:
+			cmd = ['./{}'.format(configure_exec_name)]
+
 	cmd.extend(configure_args)
 	if install_dir is not None:
 		if not os.path.exists(install_dir):
 			os.makedirs(install_dir)
 		cmd.append('--prefix=' + install_dir)
 
-	run_process(cmd, process_cwd=source_folder_path, environment=env)
+	enable_shell = sys.platform == 'win32'
 
-	cmd = ['make', 'all']
-	run_process(cmd, process_cwd=source_folder_path, environment=env)
+	run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
+
+	cmd = [make_exec_name, 'all']
+	run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
 	if install_dir is not None:
-		cmd = ['make', 'install']
-		run_process(cmd, process_cwd=source_folder_path, environment=env)
+		cmd = [make_exec_name, 'install']
+		run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
-		cmd = ['make', 'clean']
-		run_process(cmd, process_cwd=source_folder_path, environment=env)
+		cmd = [make_exec_name, 'clean']
+		run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
