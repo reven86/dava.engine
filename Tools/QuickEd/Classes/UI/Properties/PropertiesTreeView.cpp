@@ -16,6 +16,7 @@ void PropertiesTreeView::drawRow(QPainter* painter, const QStyleOptionViewItem& 
 {
     QStyleOptionViewItemV3 opt = option;
 
+    opt.font.setFamily(opt.font.family());
     QTreeView::drawRow(painter, opt, index);
     QColor color = static_cast<QRgb>(QApplication::style()->styleHint(QStyle::SH_Table_GridLineColor, &opt));
     painter->save();
