@@ -154,26 +154,8 @@ void Window::FinishEventHandlingOnCurrentFrame()
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    // Look into dispatcher queue and compress size events into one event to allow:
-    //  - single render init/reset call during one frame
-    //  - emit signals about window creation or size changing immediately
-    using Private::MainDispatcherEvent;
-    MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
-    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
-        if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED)
-        {
-            compressedSize.width = e.sizeEvent.width;
-            compressedSize.height = e.sizeEvent.height;
-            compressedSize.scaleX = e.sizeEvent.scaleX;
-            compressedSize.scaleY = e.sizeEvent.scaleY;
-        }
-    });
+    CompressSizeChangedEvents(e);
     sizeEventHandled = true;
-
-    width = compressedSize.width;
-    height = compressedSize.height;
-    scaleX = compressedSize.scaleX;
-    scaleY = compressedSize.scaleY;
 
     Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
 
@@ -212,9 +194,24 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         return;
     }
 
+    CompressSizeChangedEvents(e);
+    sizeEventHandled = true;
+
+    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+
+    engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
+    if (windowBackend->IsWindowReadyForRender())
+    {
+        UpdateVirtualCoordinatesSystem();
+        sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+    }
+}
+
+void Window::CompressSizeChangedEvents(const Private::MainDispatcherEvent& e)
+{
     // Look into dispatcher queue and compress size events into one event to allow:
     //  - single render init/reset call during one frame
-    //  - emit signals about window creation or size changing immediately
+    //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
     mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
@@ -226,21 +223,11 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             compressedSize.scaleY = e.sizeEvent.scaleY;
         }
     });
-    sizeEventHandled = true;
 
     width = compressedSize.width;
     height = compressedSize.height;
     scaleX = compressedSize.scaleX;
     scaleY = compressedSize.scaleY;
-
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
-
-    engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
-    if (windowBackend->IsWindowReadyForRender())
-    {
-        UpdateVirtualCoordinatesSystem();
-        sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
-    }
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
