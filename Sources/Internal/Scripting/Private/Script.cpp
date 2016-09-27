@@ -79,4 +79,11 @@ bool Script::Run(const DAVA::Reflection& context)
     }
     return true;
 }
+
+void Script::RegisterGlobalReflection(const String& name, const Reflection& reflection)
+{
+    DVASSERT_MSG(reflection.IsValid(), "Can't register invalid reflection in Lua script!");
+    lua::pushReflection(state->lua, reflection);
+    lua_setglobal(state->lua, name.c_str());
+}
 }

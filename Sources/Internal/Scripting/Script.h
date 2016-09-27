@@ -16,7 +16,9 @@ public:
 
     bool LoadString(const String& script);
     bool LoadFile(const FilePath& filepath);
-    bool Run(const DAVA::Reflection& context);
+    bool Run(const Reflection& context);
+
+    void RegisterGlobalReflection(const String& name, const Reflection& reflection);
 
 private:
     ScriptState* state = nullptr;

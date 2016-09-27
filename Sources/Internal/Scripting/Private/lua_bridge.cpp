@@ -4,7 +4,7 @@
 
 namespace lua
 {
-DAVA::int32 lua_logger_debug(lua_State* state)
+DAVA::int32 DV_Logger_Debug(lua_State* state)
 {
     luaL_checktype(state, -1, LUA_TSTRING);
     const char* msg = lua_tostring(state, -1);
@@ -13,14 +13,24 @@ DAVA::int32 lua_logger_debug(lua_State* state)
     return 0;
 }
 
+DAVA::int32 DV_Logger_Error(lua_State* state)
+{
+    luaL_checktype(state, -1, LUA_TSTRING);
+    const char* msg = lua_tostring(state, -1);
+    DAVA::Logger::Error(msg);
+    lua_pop(state, 1);
+    return 0;
+}
+
 DAVA::int32 Dava_register(lua_State* state)
 {
     static const struct luaL_reg davalib[] = {
-        { "Debug", &lua_logger_debug },
+        { "Debug", &DV_Logger_Debug },
+        { "Error", &DV_Logger_Error },
         { nullptr, nullptr }
     };
 
-    luaL_openlib(state, "DV", davalib, 0);
+    luaL_register(state, "DV", davalib);
     return 1;
 }
 
@@ -158,12 +168,26 @@ DAVA::int32 Reflection_tostring(lua_State* state)
 DAVA::int32 Reflection_index(lua_State* state)
 {
     DAVA::Reflection self = checkReflection(state, 1);
-    DAVA::String name = luaL_checkstring(state, 2);
+
+    DAVA::Any name;
+    int ltype = lua_type(state, 2);
+    switch (ltype)
+    {
+    case LUA_TNUMBER:
+        name.Set(size_t(lua_tointeger(state, 2)) - 1); // -1 because in Lua first item in array has index 1
+        break;
+    case LUA_TSTRING:
+        name.Set(DAVA::String(lua_tostring(state, 2)));
+        break;
+    default:
+        return luaL_error(state, "Wrong key type %d!", ltype);
+    }
 
     DAVA::Reflection refl = self.GetField(name).ref;
     if (!refl.IsValid())
     {
-        return 0;
+        lua_pushnil(state);
+        return 1;
     }
 
     if (refl.HasFields() || refl.HasMethods())
@@ -218,7 +242,20 @@ DAVA::int32 Reflection_index(lua_State* state)
 DAVA::int32 Reflection_newindex(lua_State* state)
 {
     DAVA::Reflection self = checkReflection(state, 1);
-    DAVA::String name = luaL_checkstring(state, 2);
+
+    DAVA::Any name;
+    int ltype = lua_type(state, 2);
+    switch (ltype)
+    {
+    case LUA_TNUMBER:
+        name.Set(size_t(lua_tointeger(state, 2)) - 1); // -1 because in Lua first item in array has index 1
+        break;
+    case LUA_TSTRING:
+        name.Set(DAVA::String(lua_tostring(state, 2)));
+        break;
+    default:
+        return luaL_error(state, "Wrong key type %d!", ltype);
+    }
 
     DAVA::Reflection refl = self.GetField(name).ref;
     if (refl.IsValid())
@@ -286,6 +323,13 @@ DAVA::int32 Reflection_newindex(lua_State* state)
     return 0;
 }
 
+DAVA::int32 Reflection_len(lua_State* state)
+{
+    DAVA::Reflection self = checkReflection(state, 1);
+    lua_pushinteger(state, self.GetFields().size());
+    return 1;
+}
+
 DAVA::int32 Reflection_register(lua_State* state)
 {
     static const luaL_reg Reflection_meta[] = {
@@ -293,6 +337,7 @@ DAVA::int32 Reflection_register(lua_State* state)
         { "__tostring", &Reflection_tostring },
         { "__index", &Reflection_index },
         { "__newindex", &Reflection_newindex },
+        { "__len", &Reflection_len },
         { nullptr, nullptr }
     };
 
