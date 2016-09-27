@@ -137,6 +137,17 @@ void WindowBackend::AdjustWindowSize(int32* w, int32* h)
     *h = rc.bottom - rc.top;
 }
 
+void WindowBackend::HandleSizeChanged(int32 w, int32 h)
+{
+    // Do not send excessive size changed events
+    if (width != w || height != h)
+    {
+        width = w;
+        height = h;
+        PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+    }
+}
+
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
@@ -180,25 +191,27 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
 
     if (!isEnteredSizingModalLoop)
     {
-        float32 w = static_cast<float32>(width);
-        float32 h = static_cast<float32>(height);
-        PostSizeChanged(w, h, 1.0f, 1.0f);
+        HandleSizeChanged(width, height);
     }
     return 0;
 }
 
-LRESULT WindowBackend::OnEnterExitSizeMove(bool enter)
+LRESULT WindowBackend::OnEnterSizeMove()
 {
-    isEnteredSizingModalLoop = enter;
-    if (!enter)
-    {
-        RECT rc;
-        GetClientRect(hwnd, &rc);
+    isEnteredSizingModalLoop = true;
+    return 0;
+}
 
-        float32 w = static_cast<float32>(rc.right - rc.left);
-        float32 h = static_cast<float32>(rc.bottom - rc.top);
-        PostSizeChanged(w, h, 1.0f, 1.0f);
-    }
+LRESULT WindowBackend::OnExitSizeMove()
+{
+    RECT rc;
+    ::GetClientRect(hwnd, &rc);
+
+    int32 w = rc.right - rc.left;
+    int32 h = rc.bottom - rc.top;
+    HandleSizeChanged(w, h);
+
+    isEnteredSizingModalLoop = false;
     return 0;
 }
 
@@ -310,11 +323,11 @@ LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 LRESULT WindowBackend::OnCreate()
 {
     RECT rc;
-    GetClientRect(hwnd, &rc);
+    ::GetClientRect(hwnd, &rc);
 
-    float32 w = static_cast<float32>(rc.right - rc.left);
-    float32 h = static_cast<float32>(rc.bottom - rc.top);
-    PostWindowCreated(w, h, 1.0f, 1.0f);
+    width = rc.right - rc.left;
+    height = rc.bottom - rc.top;
+    PostWindowCreated(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
     PostVisibilityChanged(true);
     return 0;
 }
@@ -349,10 +362,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
     }
-    else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
-    {
-        lresult = OnEnterExitSizeMove(message == WM_ENTERSIZEMOVE);
-    }
     else if (message == WM_ERASEBKGND)
     {
         lresult = 1;
@@ -364,8 +373,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         lresult = OnSetKillFocus(message == WM_SETFOCUS);
     }
-    else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
+    else if (message == WM_ENTERSIZEMOVE)
     {
+        lresult = OnEnterSizeMove();
+    }
+    else if (message == WM_EXITSIZEMOVE)
+    {
+        lresult = OnExitSizeMove();
     }
     else if (message == WM_MOUSEMOVE)
     {
@@ -398,6 +412,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
+        // Forward WM_SYSKEYUP and WM_SYSKEYDOWN to DefWindowProc to allow system shortcuts: Alt+F4, etc
+        isHandled = (message == WM_KEYUP || message == WM_KEYDOWN);
     }
     else if (message == WM_CHAR)
     {

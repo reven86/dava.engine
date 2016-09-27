@@ -54,7 +54,6 @@ public:
     void PostTouchUp(uint32 touchId, float32 x, float32 y);
     void PostTouchMove(uint32 touchId, float32 x, float32 y);
 
-public:
     EngineBackend& engineBackend;
     Window& window; // Window frontend reference
     MainDispatcher& mainDispatcher; // Dispatcher that dispatches events to DAVA main thread

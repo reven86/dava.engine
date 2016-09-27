@@ -52,11 +52,13 @@ private:
     void DoSetTitle(const char8* title);
 
     void AdjustWindowSize(int32* w, int32* h);
+    void HandleSizeChanged(int32 w, int32 h);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
-    LRESULT OnEnterExitSizeMove(bool enter);
+    LRESULT OnEnterSizeMove();
+    LRESULT OnExitSizeMove();
     LRESULT OnSetKillFocus(bool gotFocus);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
@@ -77,6 +79,8 @@ private:
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
+    int32 width = 0;
+    int32 height = 0;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
