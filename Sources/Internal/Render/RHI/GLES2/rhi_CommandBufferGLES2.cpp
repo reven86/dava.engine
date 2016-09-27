@@ -2494,7 +2494,7 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         }
         break;
 
-        case GLCommand::LINK_AND_USE_PROGRAM:
+        case GLCommand::LINK_PROGRAM:
         {
             GLint linkStatus = GL_FALSE;
             GLuint program = static_cast<GLuint>(arg[0]);

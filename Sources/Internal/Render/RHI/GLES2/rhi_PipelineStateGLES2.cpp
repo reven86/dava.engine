@@ -539,7 +539,7 @@ bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc,
             {
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
               { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
-              { GLCommand::LINK_AND_USE_PROGRAM, { gl_prog } },
+              { GLCommand::LINK_PROGRAM, { gl_prog } },
             };
 
             ExecGL(cmd2, countof(cmd2));

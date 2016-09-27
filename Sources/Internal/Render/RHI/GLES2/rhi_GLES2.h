@@ -154,7 +154,7 @@ GLCommand
         SHADER_SOURCE,
         COMPILE_SHADER,
         ATTACH_SHADER,
-        LINK_AND_USE_PROGRAM,
+        LINK_PROGRAM,
         GET_SHADER_IV,
         GET_SHADER_INFO_LOG,
         GET_PROGRAM_IV,
