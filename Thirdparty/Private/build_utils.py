@@ -231,7 +231,7 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 	source_archive_filepath = os.path.join(working_directory_path, sources_filename)
 
 	# Download & extract
-	download_if_doesnt_exist(download_url, source_archive_filepath)
+	download(download_url, source_archive_filepath)
 	unzip_inplace(source_archive_filepath)
 
 	# Rename version-dependent folder name to simpler one
