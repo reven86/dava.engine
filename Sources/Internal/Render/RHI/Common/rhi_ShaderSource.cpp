@@ -1,4 +1,5 @@
 #include "../rhi_ShaderSource.h"
+#include "../rhi_Public.h"
 
 //#define PROFILER_ENABLED 1
 //#include "Debug/Profiler.h"
@@ -39,6 +40,8 @@ namespace rhi
 
 ShaderSource::ShaderSource(const char* filename)
     : fileName(filename)
+    ,
+    ast(nullptr)
 {
 }
 
@@ -1790,11 +1793,10 @@ ReadS0(DAVA::File* f, std::string* str)
     return false;
 }
 
-bool ShaderSource::Load(DAVA::File* in)
+bool ShaderSource::Load(Api api, DAVA::File* in)
 {
 #define READ_CHECK(exp) if (!(exp)) { return false; }
-    return false;
-    /*
+
     std::string s0;
     uint32 readUI4;
     uint8 readUI1;
@@ -1804,7 +1806,7 @@ bool ShaderSource::Load(DAVA::File* in)
     READ_CHECK(ReadUI4(in, &readUI4));
     type = ProgType(readUI4);
 
-    READ_CHECK(ReadS0(in, &code));
+    READ_CHECK(ReadS0(in, code + api));
 
     READ_CHECK(vertexLayout.Load(in));
 
@@ -1882,7 +1884,6 @@ bool ShaderSource::Load(DAVA::File* in)
 #undef READ_CHECK
 
     return true;
-*/
 }
 
 //------------------------------------------------------------------------------
@@ -1915,14 +1916,20 @@ WriteS0(DAVA::File* f, const char* str)
     return false;
 }
 
-bool ShaderSource::Save(DAVA::File* out) const
+bool ShaderSource::Save(Api api, DAVA::File* out) const
 {
 #define WRITE_CHECK(exp) if (!(exp)) { return false; }
 
-    return false;
-    /*
+    if (code[api].length() == 0)
+    {
+        if (ast)
+            GetSourceCode(api);
+        else
+            return false;
+    }
+
     WRITE_CHECK(WriteUI4(out, type));
-    WRITE_CHECK(WriteS0(out, code.c_str()));
+    WRITE_CHECK(WriteS0(out, code[api].c_str()));
 
     WRITE_CHECK(vertexLayout.Save(out));
 
@@ -1972,57 +1979,65 @@ bool ShaderSource::Save(DAVA::File* out) const
 #undef WRITE_CHECK
 
     return true;
-*/
 }
 
 //------------------------------------------------------------------------------
 
-bool
-ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
+const std::string&
+ShaderSource::GetSourceCode(Api targetApi) const
 {
-    DVASSERT(ast);
-
-    bool success = false;
     static sl::Allocator alloc;
     static sl::HLSLGenerator hlsl_gen(&alloc);
     static sl::GLESGenerator gles_gen(&alloc);
     static sl::MSLGenerator mtl_gen(&alloc);
     const char* main = (type == PROG_VERTEX) ? "vp_main" : "fp_main";
+    DVASSERT(targetApi < countof(code));
+    std::string* src = code + targetApi;
 
-    switch (targetApi)
+    if (src->length() == 0)
     {
-    case RHI_DX11:
-    {
-        sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+        DVASSERT(ast);
 
-        success = hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX11, target, main, code);
+        switch (targetApi)
+        {
+        case RHI_DX11:
+        {
+            sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+
+            if (!hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX11, target, main, src))
+                src->clear();
+        }
+        break;
+
+        case RHI_DX9:
+        {
+            sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+
+            if (hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, src))
+                src->clear();
+        }
+        break;
+
+        case RHI_GLES2:
+        {
+            sl::GLESGenerator::Target target = (type == PROG_VERTEX) ? sl::GLESGenerator::Target_VertexShader : sl::GLESGenerator::Target_FragmentShader;
+
+            if (!gles_gen.Generate(ast, target, main, src))
+                src->clear();
+        }
+        break;
+
+        case RHI_METAL:
+        {
+            sl::MSLGenerator::Target target = (type == PROG_VERTEX) ? sl::MSLGenerator::Target_VertexShader : sl::MSLGenerator::Target_PixelShader;
+
+            if (!mtl_gen.Generate(ast, target, main, src))
+                src->clear();
+        }
+        break;
+        }
     }
-    break;
 
-    case RHI_DX9:
-    {
-        sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
-
-        success = hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, code);
-    }
-    break;
-
-    case RHI_GLES2:
-    {
-        sl::GLESGenerator::Target target = (type == PROG_VERTEX) ? sl::GLESGenerator::Target_VertexShader : sl::GLESGenerator::Target_FragmentShader;
-
-        success = gles_gen.Generate(ast, target, main, code);
-    }
-    break;
-
-    case RHI_METAL:
-    {
-        sl::MSLGenerator::Target target = (type == PROG_VERTEX) ? sl::MSLGenerator::Target_VertexShader : sl::MSLGenerator::Target_PixelShader;
-
-        success = mtl_gen.Generate(ast, target, main, code);
-    }
-    break;
-    }
 #if 0
 {
     Logger::Info("src-code:");
@@ -2056,7 +2071,7 @@ ShaderSource::GetSourceCode(Api targetApi, std::string* code) const
 }
 #endif
 
-    return success;
+    return code[targetApi];
 }
 
 //------------------------------------------------------------------------------
@@ -2140,6 +2155,9 @@ void ShaderSource::_Reset()
         blending.rtBlend[i].blendEnabled = false;
         blending.rtBlend[i].alphaToCoverage = false;
     }
+
+    for (unsigned i = 0; i != countof(code); ++i)
+        code[i].clear();
 }
 
 //------------------------------------------------------------------------------
@@ -2260,26 +2278,27 @@ void ShaderSource::Dump() const
 
 Mutex shaderSourceEntryMutex;
 std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
-const uint32 ShaderSourceCache::FormatVersion = 4;
+const uint32 ShaderSourceCache::FormatVersion = 5;
 
 const ShaderSource*
 ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 {
     LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-    //Logger::Info("get-shader-src");
-    //Logger::Info("  uid= \"%s\"",uid.c_str());
+    //    Logger::Info("get-shader-src (host-api = %i)",HostApi());
+    //    Logger::Info("  uid= \"%s\"",uid.c_str());
     const ShaderSource* src = nullptr;
+    Api api = HostApi();
 
     for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
     {
-        if (e->uid == uid && e->srcHash == srcHash)
+        if (e->uid == uid && e->api == api && e->srcHash == srcHash)
         {
             src = e->src;
             break;
         }
     }
-    //Logger::Info("  %s",(src)?"found":"not found");
+    //    Logger::Info("  %s",(src)?"found":"not found");
 
     return src;
 }
@@ -2291,10 +2310,11 @@ void ShaderSourceCache::Update(FastName uid, uint32 srcHash, const ShaderSource&
     LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
     bool doAdd = true;
+    Api api = HostApi();
 
     for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
     {
-        if (e->uid == uid)
+        if (e->uid == uid && e->api == api)
         {
             *(e->src) = source;
             e->srcHash = srcHash;
@@ -2308,6 +2328,7 @@ void ShaderSourceCache::Update(FastName uid, uint32 srcHash, const ShaderSource&
         entry_t e;
 
         e.uid = uid;
+        e.api = api;
         e.srcHash = srcHash;
         e.src = new ShaderSource();
         *(e.src) = source;
@@ -2365,8 +2386,9 @@ void ShaderSourceCache::Save(const char* fileName)
         for (std::vector<entry_t>::const_iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
         {
             WRITE_CHECK(WriteS0(file, e->uid.c_str()));
+            WRITE_CHECK(WriteUI4(file, e->api));
             WRITE_CHECK(WriteUI4(file, e->srcHash));
-            WRITE_CHECK(e->src->Save(file));
+            WRITE_CHECK(e->src->Save(Api(e->api), file));
         }
         
 #undef WRITE_CHECK
@@ -2413,10 +2435,11 @@ void ShaderSourceCache::Load(const char* fileName)
                 READ_CHECK(ReadS0(file, &str));
 
                 e->uid = FastName(str.c_str());
+                READ_CHECK(ReadUI4(file, &e->api));
                 READ_CHECK(ReadUI4(file, &e->srcHash));
                 e->src = new ShaderSource();
 
-                READ_CHECK(e->src->Load(file));
+                READ_CHECK(e->src->Load(Api(e->api), file));
             }
         }
         else

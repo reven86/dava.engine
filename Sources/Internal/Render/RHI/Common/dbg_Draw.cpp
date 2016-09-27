@@ -954,7 +954,6 @@ void DbgDraw::_init()
 
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
-    std::string bin;
 
     if (vp_ptc.Construct(rhi::PROG_VERTEX, vp__dbg_ptc) && fp_ptc.Construct(rhi::PROG_FRAGMENT, fp__dbg_ptc))
     {
@@ -975,10 +974,11 @@ void DbgDraw::_init()
         s_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_NEAREST;
         s_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
 
-        vp_ptc.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, bin.c_str(), bin.length());
-        fp_ptc.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, bin.c_str(), bin.length());
+        const std::string& vp_bin = vp_ptc.GetSourceCode(rhi::HostApi());
+        const std::string& fp_bin = fp_ptc.GetSourceCode(rhi::HostApi());
+
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_bin.c_str(), vp_bin.length());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_bin.c_str(), fp_bin.length());
 
         _ptc_pipeline_state = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(_ptc_pipeline_state, 1, &_ptc_const);
@@ -1001,10 +1001,11 @@ void DbgDraw::_init()
         desc.fprogUid = FastName("fp.pc");
         ///        desc.blend_state.blend_mode = fp_pc.blending();
 
-        vp_pc.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, bin.c_str(), bin.length());
-        fp_pc.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, bin.c_str(), bin.length());
+        const std::string& vp_bin = vp_pc.GetSourceCode(rhi::HostApi());
+        const std::string& fp_bin = fp_pc.GetSourceCode(rhi::HostApi());
+
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, desc.vprogUid, vp_bin.c_str(), vp_bin.length());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, desc.fprogUid, fp_bin.c_str(), fp_bin.length());
 
         _pc_pipeline_state = rhi::AcquireRenderPipelineState(desc);
         rhi::CreateVertexConstBuffers(_pc_pipeline_state, 1, &_pc_const);

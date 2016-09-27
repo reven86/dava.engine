@@ -265,21 +265,18 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         }
     }
 
-    std::string bin;
-
 #if 0
     Logger::Info("\n\n%s", vProgUid.c_str());
     vSource->Dump();
 #endif
-    vSource->GetSourceCode(rhi::HostApi(), &bin);
-    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, bin.c_str(), bin.length());
+    const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), vpBin.length());
 #if 0
     Logger::Info("\n\n%s", fProgUid.c_str());
     fSource->Dump();
 #endif
-    fSource->GetSourceCode(rhi::HostApi(), &bin);
-
-    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, bin.c_str(), bin.length());
+    const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), fpBin.length());
 
     //ShaderDescr
     rhi::PipelineState::Descriptor psDesc;
@@ -335,12 +332,10 @@ void RelaoadShaders()
         vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
         fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
 
-        std::string bin;
-
-        vSource.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, bin.c_str(), bin.length());
-        fSource.GetSourceCode(rhi::HostApi(), &bin);
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, bin.c_str(), bin.length());
+        const std::string& vpBin = vSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vpBin.c_str(), vpBin.length());
+        const std::string& fpBin = fSource.GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fpBin.c_str(), fpBin.length());
 
         //ShaderDescr
         rhi::PipelineState::Descriptor psDesc;

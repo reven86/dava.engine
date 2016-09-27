@@ -78,10 +78,10 @@ public:
 
     bool Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines);
     bool Construct(ProgType progType, const char* srcText);
-    bool Load(DAVA::File* in);
-    bool Save(DAVA::File* out) const;
+    bool Load(Api api, DAVA::File* in);
+    bool Save(Api api, DAVA::File* out) const;
 
-    bool GetSourceCode(Api targetApi, std::string* code) const;
+    const std::string& GetSourceCode(Api targetApi) const;
     const ShaderPropList& Properties() const;
     const ShaderSamplerList& Samplers() const;
     const VertexLayout& ShaderVertexLayout() const;
@@ -111,9 +111,9 @@ private:
 
     std::string fileName;
     sl::HLSLTree* ast;
+    mutable std::string code[RHI_COUNT];
 
     ProgType type;
-    //-    std::string code;
     uint32 codeLineCount;
     VertexLayout vertexLayout;
     std::vector<ShaderProp> property;
@@ -138,6 +138,7 @@ private:
     entry_t
     {
         FastName uid;
+        uint32 api;
         uint32 srcHash;
         ShaderSource* src;
     };
