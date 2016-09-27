@@ -243,10 +243,10 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
 def run_process(args, process_cwd='.', environment=None):
 	print 'running process: ' + ' '.join(args)
-	for output_line in __run_process_iter(args, process_cwd, environment):
+	for output_line in _run_process_iter(args, process_cwd, environment):
 		print_verbose(output_line)
 
-def __run_process_iter(args, process_cwd='.', environment=None):
+def _run_process_iter(args, process_cwd='.', environment=None):
 	if environment is None:
 		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
 	else:

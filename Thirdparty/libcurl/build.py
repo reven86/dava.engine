@@ -19,26 +19,26 @@ def get_supported_build_platforms():
 
 def build_for_target(target, working_directory_path, root_project_path):
 	if target == 'win32':
-		return __build_win32(working_directory_path, root_project_path)
+		return _build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
-		return __build_win10(working_directory_path, root_project_path)
+		return _build_win10(working_directory_path, root_project_path)
 	elif target == 'macos':
-		return __build_macos(working_directory_path, root_project_path)
+		return _build_macos(working_directory_path, root_project_path)
 	elif target == 'ios':
-		return __build_ios(working_directory_path, root_project_path)
+		return _build_ios(working_directory_path, root_project_path)
 	elif target == 'android':
-		return __build_android(working_directory_path, root_project_path)
+		return _build_android(working_directory_path, root_project_path)
 
 def get_download_url():
 	return { 'macos_and_ios': 'maintained by curl-ios-build-scripts (bundled)', 'others': 'https://curl.haxx.se/download/curl-7.50.3.tar.gz' }
 
-def __download_and_extract(working_directory_path):
+def _download_and_extract(working_directory_path):
 	source_folder_path = os.path.join(working_directory_path, 'libcurl_source')
 	url = get_download_url()['others']
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
 
-def __build_macos(working_directory_path, root_project_path):
+def _build_macos(working_directory_path, root_project_path):
 	build_curl_run_dir = os.path.join(working_directory_path, 'gen/build_osx')
 
 	if not os.path.exists(build_curl_run_dir):
@@ -59,7 +59,7 @@ def __build_macos(working_directory_path, root_project_path):
 
 	return True
 
-def __build_ios(working_directory_path, root_project_path):
+def _build_ios(working_directory_path, root_project_path):
 	build_curl_run_dir = os.path.join(working_directory_path, 'gen/build_ios')
 
 	if not os.path.exists(build_curl_run_dir):
@@ -80,8 +80,8 @@ def __build_ios(working_directory_path, root_project_path):
 
 	return True
 
-def __build_android(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
+def _build_android(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
 
 	env = os.environ.copy()
 	original_path_var = env["PATH"]
@@ -100,10 +100,10 @@ def __build_android(working_directory_path, root_project_path):
 	configure_args = [ '--host=i686-linux-android', '--disable-shared', '--with-ssl=' + os.path.abspath(os.path.join(working_directory_path, '../openssl/gen/install_x86/')) ]
 	build_utils.build_with_autotools(source_folder_path, configure_args, install_dir_arm, env)
 
-	__copy_headers(source_folder_path, root_project_path, 'Others')
+	_copy_headers(source_folder_path, root_project_path, 'Others')
 
 	return True
 
-def __copy_headers(source_folder_path, root_project_path, target_folder):
+def _copy_headers(source_folder_path, root_project_path, target_folder):
 	include_path = os.path.join(root_project_path, os.path.join('Libs/include/curl', target_folder))
 	build_utils.copy_files(os.path.join(source_folder_path, 'include/curl'), include_path, '*.h')

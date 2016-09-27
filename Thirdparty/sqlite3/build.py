@@ -16,40 +16,40 @@ def get_supported_build_platforms():
 
 def build_for_target(target, working_directory_path, root_project_path):
 	if target == 'win32':
-		return __build_win32(working_directory_path, root_project_path)
+		return _build_win32(working_directory_path, root_project_path)
 	elif target == 'win10':
-		return __build_win10(working_directory_path, root_project_path)
+		return _build_win10(working_directory_path, root_project_path)
 	elif target == 'macos':
-		return __build_macos(working_directory_path, root_project_path)
+		return _build_macos(working_directory_path, root_project_path)
 	elif target == 'ios':
-		return __build_ios(working_directory_path, root_project_path)
+		return _build_ios(working_directory_path, root_project_path)
 	elif target == 'android':
-		return __build_android(working_directory_path, root_project_path)
+		return _build_android(working_directory_path, root_project_path)
 
 def get_download_url():
 	return 'https://www.sqlite.org/2016/sqlite-amalgamation-3140200.zip'
 
-def __download_and_extract(working_directory_path):
+def _download_and_extract(working_directory_path):
 	source_folder_path = os.path.join(working_directory_path, 'sqlite3_source')
 	url = get_download_url()
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
 
-def __patch_sources(source_folder_path, working_directory_path):
+def _patch_sources(source_folder_path, working_directory_path):
 	# Skip if we've already did the job once
 	try:
-		if __patch_sources.did:
+		if _patch_sources.did:
 			return
 	except AttributeError:
 		pass
 
 	shutil.copyfile('CMakeLists.txt', os.path.join(source_folder_path, 'CMakeLists.txt'))
 
-	__patch_sources.did = True
+	_patch_sources.did = True
 
-def __build_win32(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
-	__patch_sources(source_folder_path, working_directory_path)
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
 
 	build_utils.build_and_copy_libraries_win32_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
@@ -58,13 +58,13 @@ def __build_win32(working_directory_path, root_project_path):
 		'sqlite3.lib', 'sqlite3.lib',
 		'sqlite3.lib', 'sqlite3.lib')
 
-	__copy_headers(source_folder_path, root_project_path)
+	_copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def __build_win10(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
-	__patch_sources(source_folder_path, working_directory_path)
+def _build_win10(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
 
 	build_utils.build_and_copy_libraries_win10_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
@@ -75,13 +75,13 @@ def __build_win10(working_directory_path, root_project_path):
 		'sqlite3_uap.lib', 'sqlite3_uap.lib',
 		['-DWIN_UWP=1'])
 
-	__copy_headers(source_folder_path, root_project_path)
+	_copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def __build_macos(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
-	__patch_sources(source_folder_path, working_directory_path)
+def _build_macos(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
 
 	build_utils.build_and_copy_libraries_macos_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
@@ -89,13 +89,13 @@ def __build_macos(working_directory_path, root_project_path):
 		'libsqlite3.a',
 		'libsqlite3.a')
 
-	__copy_headers(source_folder_path, root_project_path)
+	_copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def __build_ios(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
-	__patch_sources(source_folder_path, working_directory_path)
+def _build_ios(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
 
 	build_utils.build_and_copy_libraries_ios_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
@@ -103,23 +103,23 @@ def __build_ios(working_directory_path, root_project_path):
 		'libsqlite3.a',
 		'libsqlite3_ios.a')
 
-	__copy_headers(source_folder_path, root_project_path)
+	_copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def __build_android(working_directory_path, root_project_path):
-	source_folder_path = __download_and_extract(working_directory_path)
-	__patch_sources(source_folder_path, working_directory_path)
+def _build_android(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
 
 	build_utils.build_and_copy_libraries_android_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
 		'libsqlite3.a',
 		'libsqlite3.a')
 
-	__copy_headers(source_folder_path, root_project_path)
+	_copy_headers(source_folder_path, root_project_path)
 
 	return True
 
-def __copy_headers(source_folder_path, root_project_path):
+def _copy_headers(source_folder_path, root_project_path):
 	include_path = os.path.join(root_project_path, 'Libs/include')
 	build_utils.copy_files(source_folder_path, include_path, '*.h')
