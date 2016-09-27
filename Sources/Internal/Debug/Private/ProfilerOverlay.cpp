@@ -158,7 +158,7 @@ void ProfilerOverlay::Update()
     }
 
     uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-    CPUTraces.emplace_back((currentFrameIndex - 1), std::move(CPUProfiler::globalProfiler->GetTrace("Core::SystemProcessFrame")));
+    CPUTraces.emplace_back((currentFrameIndex - 1), std::move(CPUProfiler::globalProfiler->GetTrace(CPUMarkerName::CORE_PROCESS_FRAME)));
 }
 
 void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEvent>& events, uint32 frameIndex)
