@@ -2494,16 +2494,17 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         }
         break;
 
-        case GLCommand::LINK_PROGRAM:
+        case GLCommand::LINK_AND_USE_PROGRAM:
         {
-            GL_CALL(glLinkProgram(GLuint(arg[0])));
-            cmd->status = err;
-        }
-        break;
-
-        case GLCommand::USE_PROGRAM:
-        {
-            GL_CALL(glUseProgram(GLuint(arg[0])));
+            GLint linkStatus = GL_FALSE;
+            GLuint program = static_cast<GLuint>(arg[0]);
+            GL_CALL(glLinkProgram(program));
+            GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &linkStatus));
+            if (linkStatus)
+            {
+                GL_CALL(glUseProgram(program));
+            }
+            cmd->retval = linkStatus;
             cmd->status = err;
         }
         break;
