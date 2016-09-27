@@ -34,14 +34,14 @@ bool Script::LoadString(const String& script)
     DVASSERT_MSG(res == 0, "Can't load script");
     if (res != 0)
     {
-        Logger::Error("LUA Error: %s", lua_tostring(state->lua, -1));
+        Logger::Error("Can't load string. Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     res = lua_pcall(state->lua, 0, LUA_MULTRET, 0);
     DVASSERT_MSG(res == 0, "Can't execute script");
     if (res != 0)
     {
-        Logger::Error("LUA Error: %s", lua_tostring(state->lua, -1));
+        Logger::Error("Can't execute script. Lua script error (%d): %s", res, lua_tostring(state->lua, -1));
         return false;
     }
     return true;
