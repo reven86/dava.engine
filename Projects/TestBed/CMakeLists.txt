@@ -84,11 +84,6 @@ if (ANDROID)
 endif()
 
 setup_main_executable()
-# TODO: move this line somewhere in cmake core
-if (WIN32)
-    set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-endif()
-
 convert_graphics()
 
 if (IOS)
