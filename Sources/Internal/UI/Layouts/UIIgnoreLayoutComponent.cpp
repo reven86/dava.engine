@@ -5,8 +5,8 @@
 namespace DAVA
 {
 UIIgnoreLayoutComponent::UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src)
+    : enabled(src.enabled)
 {
-    enabled = src.enabled;
 }
 
 UIIgnoreLayoutComponent* UIIgnoreLayoutComponent::Clone() const
