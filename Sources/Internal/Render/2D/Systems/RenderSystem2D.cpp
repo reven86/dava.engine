@@ -213,6 +213,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture* target, bool needClear /* = 
     RenderTargetPassDescriptor desc;
     desc.colorAttachment = target->handle;
     desc.depthAttachment = target->handleDepthStencil;
+    desc.format = target->GetFormat();
     desc.width = target->GetWidth();
     desc.height = target->GetHeight();
     desc.clearColor = clearColor;
