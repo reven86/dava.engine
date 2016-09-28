@@ -1,5 +1,7 @@
 #include "ApplyMaterialPresetCommand.h"
 
+#include "Classes/Qt/Project/ProjectManager.h"
+#include "Classes/Commands2/RECommandIDs.h"
 #include "Render/Material/NMaterial.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
@@ -166,7 +168,7 @@ void ApplyMaterialPresetCommand::Init(DAVA::uint32 materialParts_)
 
 void ApplyMaterialPresetCommand::Undo()
 {
-    HashMap<DAVA::FastName, DAVA::MaterialTextureInfo*> textures = material->GetLocalTextures();
+    DAVA::HashMap<DAVA::FastName, DAVA::MaterialTextureInfo*> textures = material->GetLocalTextures();
     for (const auto& info : textures)
     {
         material->RemoveTexture(info.first);

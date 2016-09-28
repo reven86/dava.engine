@@ -20,6 +20,7 @@
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Qt/GlobalOperations.h"
+#include "Qt/Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 

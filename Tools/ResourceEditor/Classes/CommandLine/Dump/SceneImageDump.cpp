@@ -1,10 +1,17 @@
 #include "SceneImageDump.h"
 
+#include "Base/BaseTypes.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/Texture.h"
+#include "Render/RHI/rhi_Public.h"
+#include "CommandLine/OptionName.h"
 #include "Classes/Qt/Scene/SceneImageGraber.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
 
 SceneImageDump::SceneImageDump()
     : CommandLineTool("-sceneimagedump")
 {
+    using namespace DAVA;
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
     options.AddOption(OptionName::Camera, VariantType(String("")), "Camera name for draw");
     options.AddOption(OptionName::Width, VariantType(int32(0)), "Result image width");
@@ -20,7 +27,7 @@ void SceneImageDump::ConvertOptionsToParamsInternal()
     cameraName = DAVA::FastName(options.GetOption(OptionName::Camera).AsString());
     width = options.GetOption(OptionName::Width).AsInt32();
     height = options.GetOption(OptionName::Height).AsInt32();
-    String gpuName = options.GetOption(OptionName::GPU).AsString();
+    DAVA::String gpuName = options.GetOption(OptionName::GPU).AsString();
     gpuFamily = DAVA::GPUFamilyDescriptor::GetGPUByName(gpuName);
     outputFile = options.GetOption(OptionName::OutFile).AsString();
     qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
@@ -54,11 +61,11 @@ void SceneImageDump::ProcessInternal()
     const rhi::HTexture nullTexture;
     const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-    DAVA::Vector<DAVA::eGPUFamily> textureLoadingOrder = Texture::GetGPULoadingOrder();
-    Texture::SetGPULoadingOrder({ gpuFamily });
+    DAVA::Vector<DAVA::eGPUFamily> textureLoadingOrder = DAVA::Texture::GetGPULoadingOrder();
+    DAVA::Texture::SetGPULoadingOrder({ gpuFamily });
 
-    ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-    if (scene->LoadScene(sceneFilePath) == SceneFileV2::eError::ERROR_NO_ERROR)
+    DAVA::ScopedPtr<SceneEditor2> scene(new SceneEditor2());
+    if (scene->LoadScene(sceneFilePath) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->EnableEditorSystems();
         DAVA::Camera* camera = FindCamera(scene);
@@ -82,21 +89,21 @@ void SceneImageDump::ProcessInternal()
         };
 
         scene->Update(0.1f);
-        Renderer::BeginFrame();
-        RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+        DAVA::Renderer::BeginFrame();
+        DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
         SceneImageGrabber::GrabImage(params);
-        Renderer::EndFrame();
+        DAVA::Renderer::EndFrame();
 
         while (grabFinished == false)
         {
-            Renderer::BeginFrame();
-            RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+            DAVA::Renderer::BeginFrame();
+            DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
             scene->Update(0.1f);
-            Renderer::EndFrame();
+            DAVA::Renderer::EndFrame();
         }
     }
 
-    Texture::SetGPULoadingOrder(textureLoadingOrder);
+    DAVA::Texture::SetGPULoadingOrder(textureLoadingOrder);
 }
 
 DAVA::FilePath SceneImageDump::GetQualityConfigPath() const
@@ -111,7 +118,7 @@ DAVA::FilePath SceneImageDump::GetQualityConfigPath() const
 
 DAVA::Camera* SceneImageDump::FindCamera(DAVA::Entity* rootNode) const
 {
-    for (Entity* entity : rootNode->children)
+    for (DAVA::Entity* entity : rootNode->children)
     {
         if (entity->GetName() == cameraName)
         {
