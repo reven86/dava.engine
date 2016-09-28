@@ -34,8 +34,8 @@ private:
     void GameThread();
 
 private:
-    EngineBackend& engineBackend;
-    MainDispatcher& dispatcher;
+    EngineBackend* engineBackend = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool quitGameThread = false;
