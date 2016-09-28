@@ -189,21 +189,19 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    if (sizeEventHandled)
+    if (!sizeEventHandled)
     {
-        return;
-    }
+        CompressSizeChangedEvents(e);
+        sizeEventHandled = true;
 
-    CompressSizeChangedEvents(e);
-    sizeEventHandled = true;
+        Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
 
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
-
-    engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
-    if (windowBackend->IsWindowReadyForRender())
-    {
-        UpdateVirtualCoordinatesSystem();
-        sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+        engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
+        if (windowBackend->IsWindowReadyForRender())
+        {
+            UpdateVirtualCoordinatesSystem();
+            sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+        }
     }
 }
 
