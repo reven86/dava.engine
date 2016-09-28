@@ -23,7 +23,9 @@ namespace DAVA
 namespace Private
 {
 WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
-    : windowBackend(*windowBackend)
+    : windowBackend(windowBackend)
+    , window(windowBackend->window)
+    , mainDispatcher(windowBackend->mainDispatcher)
 {
 }
 
@@ -52,9 +54,12 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     {
         float32 scale = [nswindow backingScaleFactor];
-
-        windowBackend.PostWindowCreated(viewRect.size.width, viewRect.size.height, scale, scale);
-        windowBackend.PostVisibilityChanged(true);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
+                                                                                viewRect.size.width,
+                                                                                viewRect.size.height,
+                                                                                scale,
+                                                                                scale));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 
     [nswindow makeKeyAndOrderFront:nil];
@@ -81,7 +86,7 @@ void WindowNativeBridge::SetTitle(const char8* title)
 void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
-        windowBackend.ProcessPlatformEvents();
+        windowBackend->ProcessPlatformEvents();
     });
 }
 
@@ -93,7 +98,7 @@ void WindowNativeBridge::ApplicationDidHideUnhide(bool hidden)
 void WindowNativeBridge::WindowDidMiniaturize()
 {
     isMiniaturized = true;
-    windowBackend.PostVisibilityChanged(false);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
 }
 
 void WindowNativeBridge::WindowDidDeminiaturize()
@@ -105,17 +110,17 @@ void WindowNativeBridge::WindowDidBecomeKey()
 {
     if (isMiniaturized || isAppHidden)
     {
-        windowBackend.PostVisibilityChanged(true);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
-    windowBackend.PostFocusChanged(true);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 }
 
 void WindowNativeBridge::WindowDidResignKey()
 {
-    windowBackend.PostFocusChanged(false);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
     if (isAppHidden)
     {
-        windowBackend.PostVisibilityChanged(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
     }
 }
 
@@ -123,8 +128,11 @@ void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-
-    windowBackend.PostSizeChanged(size.width, size.height, scale, scale);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
+                                                                                size.width,
+                                                                                size.height,
+                                                                                scale,
+                                                                                scale));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
@@ -133,9 +141,9 @@ void WindowNativeBridge::WindowDidChangeScreen()
 
 bool WindowNativeBridge::WindowShouldClose()
 {
-    if (!windowBackend.closeRequestByApp)
+    if (!windowBackend->closeRequestByApp)
     {
-        windowBackend.PostUserCloseRequest();
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
         return false;
     }
     return true;
@@ -143,8 +151,8 @@ bool WindowNativeBridge::WindowShouldClose()
 
 void WindowNativeBridge::WindowWillClose()
 {
-    windowBackend.WindowWillClose();
-    windowBackend.DispatchWindowDestroyed(false);
+    windowBackend->WindowWillClose();
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
 
     [nswindow setContentView:nil];
     [nswindow setDelegate:nil];
@@ -155,32 +163,36 @@ void WindowNativeBridge::WindowWillClose()
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
 {
-    MainDispatcherEvent e(windowBackend.window);
-    e.mclickEvent.clicks = 1;
-    e.mclickEvent.button = [theEvent buttonNumber] + 1;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
+    MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
     switch ([theEvent type])
     {
     case NSLeftMouseDown:
     case NSRightMouseDown:
     case NSOtherMouseDown:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
         break;
     case NSLeftMouseUp:
     case NSRightMouseUp:
     case NSOtherMouseUp:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
         break;
     default:
-        break;
+        return;
     }
 
     NSSize sz = [renderView frame].size;
     NSPoint pt = [theEvent locationInWindow];
-    e.mclickEvent.x = pt.x;
-    e.mclickEvent.y = sz.height - pt.y;
-    windowBackend.mainDispatcher.PostEvent(e);
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    uint32 button = [theEvent buttonNumber] + 1;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
+                                                                               type,
+                                                                               button,
+                                                                               x,
+                                                                               y,
+                                                                               1,
+                                                                               false));
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
@@ -190,7 +202,10 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
-    windowBackend.PostMouseMove(x, y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
+                                                                              x,
+                                                                              y,
+                                                                              false));
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -228,29 +243,42 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         deltaX *= scrollK;
         deltaY *= scrollK;
     }
-    windowBackend.PostMouseWheel(x, y, deltaX, deltaY);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
+                                                                               x,
+                                                                               y,
+                                                                               deltaX,
+                                                                               deltaY,
+                                                                               false));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
 {
     uint32 key = [theEvent keyCode];
     bool isRepeated = [theEvent isARepeat];
-    if ([theEvent type] == NSKeyDown)
-    {
-        windowBackend.PostKeyDown(key, isRepeated);
-    }
-    else
-    {
-        windowBackend.PostKeyUp(key);
-    }
+    bool isPressed = [theEvent type] == NSKeyDown;
+
+    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
+                                                                             type,
+                                                                             key,
+                                                                             isRepeated));
 
     if ([theEvent type] == NSKeyDown)
     {
         NSString* chars = [theEvent characters];
-        for (NSUInteger i = 0, n = [chars length]; i < n; ++i)
+        NSUInteger n = [chars length];
+        if (n > 0)
         {
-            uint32 key = [chars characterAtIndex:i];
-            windowBackend.PostKeyChar(key, false);
+            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window,
+                                                                                   MainDispatcherEvent::KEY_CHAR,
+                                                                                   0,
+                                                                                   false);
+            for (NSUInteger i = 0; i < n; ++i)
+            {
+                uint32 key = [chars characterAtIndex:i];
+                e.keyEvent.key = key;
+                mainDispatcher->PostEvent(e);
+            }
         }
     }
 }

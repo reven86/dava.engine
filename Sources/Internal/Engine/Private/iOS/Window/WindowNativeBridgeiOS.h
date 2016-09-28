@@ -64,7 +64,9 @@ struct WindowNativeBridge final
 
     //////////////////////////////////////////////////////////////////////////
 
-    WindowBackend& windowBackend;
+    WindowBackend* windowBackend = nullptr;
+    Window* window = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
 
     UIWindow* uiwindow = nullptr;
     RenderView* renderView = nullptr;
