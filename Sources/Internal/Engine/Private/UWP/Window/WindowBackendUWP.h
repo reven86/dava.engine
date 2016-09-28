@@ -45,7 +45,7 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
     bool SetCaptureMode(eCaptureMode mode);
-    bool SetMouseVisibility(bool visibility);
+    bool SetMouseVisibility(bool visible);
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);

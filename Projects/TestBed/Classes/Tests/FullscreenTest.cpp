@@ -6,13 +6,16 @@ using namespace DAVA;
 FullscreenTest::FullscreenTest(GameCore* g)
     : BaseScreen(g, "FullscreenTest")
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
-#endif // defined(__DAVAENGINE_COREV2__)
 }
 
 void FullscreenTest::LoadResources()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if (isInit)
+    {
+        Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
+    }
+#endif // defined(__DAVAENGINE_COREV2__)
     BaseScreen::LoadResources();
 
     GetBackground()->SetColor(Color::White);

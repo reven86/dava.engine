@@ -35,7 +35,7 @@ struct UIDispatcherEvent final
     {
         ResizeEvent resizeEvent;
         eCaptureMode mouseMode;
-        bool mouseVisibility;
+        bool mouseVisible;
     };
 };
 

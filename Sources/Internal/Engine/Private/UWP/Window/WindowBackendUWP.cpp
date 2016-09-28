@@ -95,7 +95,7 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
         bridge->ChangeCaptureMode(e.mouseMode);
         break;
     case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
-        bridge->ChangeMouseVisibility(e.mouseVisibility);
+        bridge->ChangeMouseVisibility(e.mouseVisible);
         break;
     default:
         break;
@@ -116,11 +116,11 @@ bool WindowBackend::SetCaptureMode(eCaptureMode mode)
     return true;
 }
 
-bool WindowBackend::SetMouseVisibility(bool visibility)
+bool WindowBackend::SetMouseVisibility(bool visible)
 {
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
-    e.mouseVisibility = visibility;
+    e.mouseVisible = visible;
     platformDispatcher.PostEvent(e);
     return true;
 }

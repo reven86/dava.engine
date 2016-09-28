@@ -38,6 +38,7 @@ private:
 
     bool mouseCaptured = false;
     bool mouseVisible = true;
+    bool isInit = false;
 };
 
 #endif //__FULLSCREENTEST_TEST_H__

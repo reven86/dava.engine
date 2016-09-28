@@ -107,6 +107,29 @@ void WindowBackend::TriggerPlatformEvents()
     ::PostMessage(hwnd, WM_CUSTOM_MESSAGE, 0, 0);
 }
 
+bool WindowBackend::SetCaptureMode(eCaptureMode mode)
+{
+    if (eCaptureMode::FRAME == mode)
+    {
+        //for now, not supported
+        return false;
+    }
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_CAPTURE_MODE;
+    e.mouseMode = mode;
+    platformDispatcher.PostEvent(e);
+    return true;
+}
+
+bool WindowBackend::SetMouseVisibility(bool visible)
+{
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
+    e.mouseVisible = visible;
+    platformDispatcher.PostEvent(e);
+    return true;
+}
+
 void WindowBackend::SetCursorInCenter()
 {
     RECT clientRect;
@@ -119,107 +142,6 @@ void WindowBackend::SetCursorInCenter()
     ::ClientToScreen(hwnd, &point);
     ::SetCursorPos(point.x, point.y);
     ::SetCursor(NULL);
-}
-
-void WindowBackend::SetMouseVisibility(bool visible)
-{
-    return;
-    if (mouseVisibled != visible)
-    {
-        mouseVisibled = visible;
-        if (visible)
-        {
-            HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
-            SetClassLongPtr(hwnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
-            ::SetCursor(defaultCursor);
-        }
-        else
-        {
-            SetClassLongPtr(hwnd, GCLP_HCURSOR, NULL);
-            ::SetCursor(NULL);
-        }
-    }
-}
-
-bool WindowBackend::DeferredMouseMode(const MainDispatcherEvent& e)
-{
-    if (!hasFocus)
-    {
-        return true;
-    }
-    focusChanged = false;
-    if (deferredMouseMode)
-    {
-        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
-        {
-            deferredMouseMode = false;
-            SetMouseVisibility(false);
-            if (eMouseMode::PINNING == nativeMouseMode)
-            {
-                SetMouseCaptured(false);
-            }
-            return false;
-        }
-        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
-        {
-            // check, only mouse release event in work rect tern on capture mode
-            bool mclickInRect = true;
-            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= window->GetWidth());
-            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= window->GetHeight());
-            if (mclickInRect && hasFocus)
-            {
-                deferredMouseMode = false;
-                SetMouseVisibility(false);
-                if (eMouseMode::PINNING == nativeMouseMode)
-                {
-                    SetMouseCaptured(true);
-                }
-                // skip this event
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
-eMouseMode WindowBackend::GetMouseMode() const
-{
-    return nativeMouseMode;
-}
-
-void WindowBackend::SetMouseMode(eMouseMode mode)
-{
-    if (nativeMouseMode == mode)
-    {
-        return;
-    }
-    nativeMouseMode = mode;
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
-    e.mouseMode = mode;
-    platformDispatcher.PostEvent(e);
-}
-
-void WindowBackend::SetMouseCaptured(bool capture)
-{
-    if (mouseCaptured != capture)
-    {
-        mouseCaptured = capture;
-        if (mouseCaptured)
-        {
-            //SetMouseVisibility(false);
-            POINT p;
-            ::GetCursorPos(&p);
-            lastCursorPosition.x = p.x;
-            lastCursorPosition.y = p.y;
-            SetCursorInCenter();
-        }
-        else
-        {
-            SetMouseVisibility(true);
-            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
-        }
-    }
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -237,41 +159,54 @@ void WindowBackend::DoCloseWindow()
     ::DestroyWindow(hwnd);
 }
 
-void WindowBackend::DoChangeMouseMode(eMouseMode mode)
+void WindowBackend::DoSetCaptureMode(eCaptureMode mode)
 {
-    deferredMouseMode = false;
+    if (captureMode == mode)
+    {
+        return;
+    }
+    captureMode = mode;
     switch (mode)
     {
-    case DAVA::eMouseMode::FRAME:
+    case eCaptureMode::FRAME:
         //not implemented
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
         break;
-    case DAVA::eMouseMode::PINNING:
+    case eCaptureMode::PINNING:
     {
-        if (hasFocus && !focusChanged)
-        {
-            SetMouseCaptured(true);
-            SetMouseVisibility(false);
-        }
-        else
-        {
-            deferredMouseMode = true;
-        }
+        DoSetMouseVisibility(false);
+        POINT p;
+        ::GetCursorPos(&p);
+        lastCursorPosition.x = p.x;
+        lastCursorPosition.y = p.y;
+        SetCursorInCenter();
         break;
     }
-    case DAVA::eMouseMode::DEFAULT:
+    case eCaptureMode::DEFAULT:
     {
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
+        DoSetMouseVisibility(true);
+        ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
         break;
     }
-    case DAVA::eMouseMode::HIDE:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(false);
-        break;
     }
+}
+
+void WindowBackend::DoSetMouseVisibility(bool visible)
+{
+    if (mouseVisible == visible)
+    {
+        return;
+    }
+    mouseVisible = visible;
+    if (visible)
+    {
+        HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
+        SetClassLongPtr(hwnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
+        ::SetCursor(defaultCursor);
+    }
+    else
+    {
+        SetClassLongPtr(hwnd, GCLP_HCURSOR, NULL);
+        ::SetCursor(NULL);
     }
 }
 
@@ -297,8 +232,12 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case UIDispatcherEvent::CHANGE_MOUSE_MODE:
-        DoChangeMouseMode(e.mouseMode);
+    case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
+        DoSetCaptureMode(e.mouseMode);
+        break;
+    case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
+        DoSetMouseVisibility(e.mouseVisible);
+        break;
     default:
         break;
     }
@@ -332,22 +271,6 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
 
 LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
 {
-    hasFocus = gotFocus;
-    if (!gotFocus)
-    {
-        focusChanged = true;
-        if (eMouseMode::PINNING == nativeMouseMode)
-        {
-            SetMouseVisibility(true);
-            SetMouseCaptured(false);
-            deferredMouseMode = true;
-        }
-        else if (eMouseMode::HIDE == nativeMouseMode)
-        {
-            SetMouseVisibility(true);
-            deferredMouseMode = true;
-        }
-    }
     window->PostFocusChanged(gotFocus);
     return 0;
 }
@@ -374,7 +297,7 @@ LRESULT WindowBackend::OnMouseLeaveEvent()
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    if (!mouseTracking && eMouseMode::HIDE == nativeMouseMode)
+    if (!mouseTracking && !mouseVisible)
     {
         // start tracking if we aren't already
         TRACKMOUSEEVENT tme;
@@ -385,7 +308,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         mouseTracking = (::TrackMouseEvent(&tme) != 0);
     }
 
-    if (mouseCaptured)
+    if (eCaptureMode::PINNING == captureMode)
     {
         RECT clientRect;
         ::GetClientRect(hwnd, &clientRect);
@@ -411,10 +334,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
     e.window = window;
     e.mmoveEvent.x = static_cast<float32>(x);
     e.mmoveEvent.y = static_cast<float32>(y);
-    if (!DeferredMouseMode(e))
-    {
-        dispatcher->PostEvent(e);
-    }
+    dispatcher->PostEvent(e);
     return 0;
 }
 
@@ -428,10 +348,7 @@ LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x
     e.mwheelEvent.y = static_cast<float32>(y);
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(delta);
-    if (!DeferredMouseMode(e))
-    {
-        dispatcher->PostEvent(e);
-    }
+    dispatcher->PostEvent(e);
     return 0;
 }
 
@@ -494,10 +411,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
     default:
         return 0;
     }
-    if (!DeferredMouseMode(e))
-    {
-        dispatcher->PostEvent(e);
-    }
+    dispatcher->PostEvent(e);
     return 0;
 }
 
@@ -514,10 +428,7 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
     e.window = window;
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    if (!DeferredMouseMode(e))
-    {
-        dispatcher->PostEvent(e);
-    }
+    dispatcher->PostEvent(e);
     return 0;
 }
 
@@ -529,10 +440,7 @@ LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.keyEvent.key = key;
     e.keyEvent.isRepeated = isRepeated;
-    if (!DeferredMouseMode(e))
-    {
-        dispatcher->PostEvent(e);
-    }
+    dispatcher->PostEvent(e);
     return 0;
 }
 
