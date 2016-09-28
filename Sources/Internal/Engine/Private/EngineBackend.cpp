@@ -357,12 +357,12 @@ void EngineBackend::OnWindowCreated(Window* window)
         auto result = aliveWindows.insert(window);
         DVASSERT(result.second == true);
     }
-    engine->windowCreated.Emit(*window);
+    engine->windowCreated.Emit(window);
 }
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
-    engine->windowDestroyed.Emit(*window);
+    engine->windowDestroyed.Emit(window);
 
     // Remove window from alive window list and place it into dying window list to delete later
     size_t nerased = aliveWindows.erase(window);

@@ -68,15 +68,14 @@ public:
 
 public:
     // Signals
-    Signal<Window&, bool> visibilityChanged;
-    Signal<Window&, bool> focusChanged;
-    Signal<Window&> destroyed;
-    Signal<Window&, float32, float32, float32, float32> sizeScaleChanged;
-    //Signal<Window&> beginUpdate;
-    //Signal<Window&> beginDraw;
-    Signal<Window&, float32> update;
-    //Signal<Window&> endDraw;
-    //Signal<Window&> endUpdate;
+    Signal<Window*, bool> visibilityChanged;
+    Signal<Window*, bool> focusChanged;
+    Signal<Window*, float32, float32, float32, float32> sizeScaleChanged;
+    //Signal<Window*> beginUpdate;
+    //Signal<Window*> beginDraw;
+    Signal<Window*, float32> update;
+    //Signal<Window*> endDraw;
+    //Signal<Window*> endUpdate;
 
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
@@ -111,10 +110,9 @@ private:
     void ClearMouseButtons();
 
 private:
-    Private::EngineBackend& engineBackend;
-    Private::MainDispatcher& mainDispatcher;
-    // TODO: unique_ptr
-    Private::WindowBackend* windowBackend = nullptr;
+    Private::EngineBackend* engineBackend = nullptr;
+    Private::MainDispatcher* mainDispatcher = nullptr;
+    std::unique_ptr<Private::WindowBackend> windowBackend;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
@@ -214,7 +212,7 @@ inline void Window::Resize(Vector2 size)
 
 inline Private::WindowBackend* Window::GetBackend() const
 {
-    return windowBackend;
+    return windowBackend.get();
 }
 
 } // namespace DAVA

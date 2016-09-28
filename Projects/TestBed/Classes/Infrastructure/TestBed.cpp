@@ -153,7 +153,7 @@ void TestBed::OnEngineCleanup()
     netLogger.Uninstall();
 }
 
-void TestBed::OnWindowCreated(DAVA::Window& w)
+void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
@@ -163,12 +163,12 @@ void TestBed::OnWindowCreated(DAVA::Window& w)
     RunTests();
 }
 
-void TestBed::OnWindowDestroyed(DAVA::Window& w)
+void TestBed::OnWindowDestroyed(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowDestroyed");
 }
 
-void TestBed::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
     Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }

@@ -36,9 +36,9 @@ private:
 
     void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
 
-    void OnWindowCreated(DAVA::Window& w);
+    void OnWindowCreated(DAVA::Window* w);
     bool OnWindowWantsToClose(DAVA::Window* w);
-    void OnWindowDestroyed(DAVA::Window& w);
+    void OnWindowDestroyed(DAVA::Window* w);
 
     DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
                                    void (CoreV2Test::*onClick)(DAVA::BaseObject*, void*, void*));

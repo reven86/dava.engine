@@ -16,24 +16,20 @@
 namespace DAVA
 {
 Window::Window(Private::EngineBackend* engineBackend, bool primary)
-    : engineBackend(*engineBackend)
-    , mainDispatcher(*engineBackend->GetDispatcher())
+    : engineBackend(engineBackend)
+    , mainDispatcher(engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
 }
 
-Window::~Window()
-{
-    delete windowBackend;
-    windowBackend = nullptr;
-}
+Window::~Window() = default;
 
 void Window::Resize(float32 w, float32 h)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->Resize(w, h);
     }
@@ -43,7 +39,7 @@ void Window::Close()
 {
     // Window cannot be close in embedded mode as window lifetime
     // is controlled by highlevel framework
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->Close(false);
     }
@@ -52,7 +48,7 @@ void Window::Close()
 void Window::SetTitle(const String& title)
 {
     // It does not make sense to set window title in embedded mode
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->SetTitle(title);
     }
@@ -60,7 +56,7 @@ void Window::SetTitle(const String& title)
 
 Engine* Window::GetEngine() const
 {
-    return engineBackend.GetEngine();
+    return engineBackend->GetEngine();
 }
 
 void* Window::GetNativeHandle() const
@@ -86,7 +82,7 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 void Window::Update(float32 frameDelta)
 {
     uiControlSystem->Update();
-    update.Emit(*this, frameDelta);
+    update.Emit(this, frameDelta);
 }
 
 void Window::Draw()
@@ -159,9 +155,9 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
 
-    engineBackend.InitRenderer(this);
+    engineBackend->InitRenderer(this);
 
-    EngineContext* context = engineBackend.GetEngineContext();
+    EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
     virtualCoordSystem = context->virtualCoordSystem;
@@ -169,22 +165,21 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     UpdateVirtualCoordinatesSystem();
 
-    engineBackend.OnWindowCreated(this);
-    sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+    engineBackend->OnWindowCreated(this);
+    sizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
 
-    destroyed.Emit(*this);
-    engineBackend.OnWindowDestroyed(this);
+    engineBackend->OnWindowDestroyed(this);
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
     virtualCoordSystem = nullptr;
 
-    engineBackend.DeinitRender(this);
+    engineBackend->DeinitRender(this);
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
@@ -196,11 +191,11 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 
         Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
 
-        engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
+        engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
         if (windowBackend->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
-            sizeScaleChanged.Emit(*this, width, height, scaleX, scaleY);
+            sizeScaleChanged.Emit(this, width, height, scaleX, scaleY);
         }
     }
 }
@@ -212,7 +207,7 @@ void Window::CompressSizeChangedEvents(const Private::MainDispatcherEvent& e)
     //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
-    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
+    mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
         if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED)
         {
             compressedSize.width = e.sizeEvent.width;
@@ -251,7 +246,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     ClearMouseButtons();
 
     hasFocus = e.stateEvent.state != 0;
-    focusChanged.Emit(*this, hasFocus);
+    focusChanged.Emit(this, hasFocus);
 }
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
@@ -259,7 +254,7 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
     Logger::FrameworkDebug("=========== WINDOW_VISIBILITY_CHANGED: state=%s", e.stateEvent.state ? "visible" : "hidden");
 
     isVisible = e.stateEvent.state != 0;
-    visibilityChanged.Emit(*this, isVisible);
+    visibilityChanged.Emit(this, isVisible);
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
