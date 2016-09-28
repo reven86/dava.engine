@@ -147,6 +147,7 @@ void Present(); // execute all submitted command-buffers & do flip/present
 
 Api HostApi();
 bool TextureFormatSupported(TextureFormat format);
+bool VertexTexutreFormatSupported(TextureFormat format);
 const RenderDeviceCaps& DeviceCaps();
 
 void SuspendRendering();

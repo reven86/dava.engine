@@ -47,24 +47,15 @@ dx9_HostApi()
 static bool
 dx9_TextureFormatSupported(TextureFormat format)
 {
-    bool supported = false;
+    return SUCCEEDED(_D3D9->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_TEXTURE, DX9_TextureFormat(format)));
+}
 
-    switch (format)
-    {
-    case TEXTURE_FORMAT_R8G8B8A8:
-    case TEXTURE_FORMAT_R5G5B5A1:
-    case TEXTURE_FORMAT_R5G6B5:
-    case TEXTURE_FORMAT_R4G4B4A4:
-    case TEXTURE_FORMAT_R8:
-    case TEXTURE_FORMAT_R16:
-    case TEXTURE_FORMAT_DXT1:
-    case TEXTURE_FORMAT_DXT3:
-    case TEXTURE_FORMAT_DXT5:
-        supported = true;
-        break;
-    }
+//------------------------------------------------------------------------------
 
-    return supported;
+static bool
+dx9_VertexTextureFormatSupported(TextureFormat format)
+{
+    return SUCCEEDED(_D3D9->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, DX9_TextureFormat(format)));
 }
 
 //------------------------------------------------------------------------------
@@ -379,6 +370,7 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+    DispatchDX9.impl_VertexTextureFormatSupported = &dx9_VertexTextureFormatSupported;
 
     SetDispatchTable(DispatchDX9);
 

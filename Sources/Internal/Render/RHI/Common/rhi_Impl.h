@@ -18,6 +18,7 @@ Dispatch
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
     bool (*impl_TextureFormatSupported)(TextureFormat);
+    bool (*impl_VertexTextureFormatSupported)(TextureFormat);
 
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();

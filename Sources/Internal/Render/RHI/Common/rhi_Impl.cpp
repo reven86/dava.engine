@@ -150,6 +150,11 @@ bool TextureFormatSupported(TextureFormat format)
     return (*_Impl.impl_TextureFormatSupported)(format);
 }
 
+bool VertexTexutreFormatSupported(TextureFormat format)
+{
+    return (*_Impl.impl_VertexTextureFormatSupported)(format);
+}
+
 const RenderDeviceCaps& DeviceCaps()
 {
     return renderDeviceCaps;
@@ -975,6 +980,18 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
 
     case TEXTURE_FORMAT_D24S8:
         sz = ext.dx * ext.dy * sizeof(uint32);
+        break;
+
+    case TEXTURE_FORMAT_R32F:
+        sz = ext.dx * ext.dy * sizeof(float32);
+        break;
+
+    case TEXTURE_FORMAT_RG32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 2;
+        break;
+
+    case TEXTURE_FORMAT_RGBA32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 4;
         break;
 
     default:

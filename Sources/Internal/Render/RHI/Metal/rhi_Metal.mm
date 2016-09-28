@@ -218,6 +218,7 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_Uninitialize = &metal_Uninitialize;
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
+    DispatchMetal.impl_VertexTextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;

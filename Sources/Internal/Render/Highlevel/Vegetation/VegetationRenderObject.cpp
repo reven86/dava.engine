@@ -708,7 +708,7 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
     const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported;
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported && rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4);
 
     return result;
 }

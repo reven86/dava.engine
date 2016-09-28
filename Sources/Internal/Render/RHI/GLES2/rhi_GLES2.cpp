@@ -497,6 +497,7 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
         DispatchGLES2.impl_HostApi = &gles2_HostApi;
         DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+        DispatchGLES2.impl_VertexTextureFormatSupported = &gles2_TextureFormatSupported;
         DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -643,6 +644,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_VertexTextureFormatSupported = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -738,6 +740,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_VertexTextureFormatSupported = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
@@ -833,6 +836,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_VertexTextureFormatSupported = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_NeedRestoreResources = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
