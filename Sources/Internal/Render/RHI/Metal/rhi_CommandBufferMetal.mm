@@ -130,7 +130,7 @@ CommandBufferMetal_t::Execute()
         {
             [encoder endEncoding];
 
-            Handle syncObject = (static_cast<SWCommand_End*>(cmd))->syncObject;
+            Handle syncObject = static_cast<const SWCommand_End*>(cmd)->syncObject;
 
             if (syncObject != InvalidHandle)
             {
@@ -142,7 +142,7 @@ CommandBufferMetal_t::Execute()
             }
 
             #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            if (((SWCommand_End*)cmd)->doCommit)
+            if (static_cast<const SWCommand_End*>(cmd)->doCommit)
             {
                 [buf commit];
             }
@@ -152,8 +152,8 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_PIPELINE_STATE:
         {
-            Handle ps = ((SWCommand_SetPipelineState*)cmd)->ps;
-            unsigned layoutUID = ((SWCommand_SetPipelineState*)cmd)->vdecl;
+            Handle ps = static_cast<const SWCommand_SetPipelineState*>(cmd)->ps;
+            unsigned layoutUID = static_cast<const SWCommand_SetPipelineState*>(cmd)->vdecl;
 
             cur_stride = PipelineStateMetal::SetToRHI(ps, layoutUID, color_fmt, ds_used, encoder, sampleCount);
             cur_vstream_count = PipelineStateMetal::VertexStreamCount(ps);
@@ -163,7 +163,7 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_CULL_MODE:
         {
-            switch (CullMode(((SWCommand_SetCullMode*)cmd)->mode))
+            switch (CullMode(static_cast<const SWCommand_SetCullMode*>(cmd)->mode))
             {
             case CULL_NONE:
                 [encoder setCullMode:MTLCullModeNone];
@@ -184,10 +184,10 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_SCISSOR_RECT:
         {
-            int x = ((SWCommand_SetScissorRect*)cmd)->x;
-            int y = ((SWCommand_SetScissorRect*)cmd)->y;
-            int w = ((SWCommand_SetScissorRect*)cmd)->width;
-            int h = ((SWCommand_SetScissorRect*)cmd)->height;
+            int x = static_cast<const SWCommand_SetScissorRect*>(cmd)->x;
+            int y = static_cast<const SWCommand_SetScissorRect*>(cmd)->y;
+            int w = static_cast<const SWCommand_SetScissorRect*>(cmd)->width;
+            int h = static_cast<const SWCommand_SetScissorRect*>(cmd)->height;
             MTLScissorRect rc;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
@@ -237,10 +237,10 @@ CommandBufferMetal_t::Execute()
         case CMD_SET_VIEWPORT:
         {
             MTLViewport vp;
-            int x = ((SWCommand_SetViewport*)cmd)->x;
-            int y = ((SWCommand_SetViewport*)cmd)->y;
-            int w = ((SWCommand_SetViewport*)cmd)->width;
-            int h = ((SWCommand_SetViewport*)cmd)->height;
+            int x = static_cast<const SWCommand_SetViewport*>(cmd)->x;
+            int y = static_cast<const SWCommand_SetViewport*>(cmd)->y;
+            int w = static_cast<const SWCommand_SetViewport*>(cmd)->width;
+            int h = static_cast<const SWCommand_SetViewport*>(cmd)->height;
 
             if (!(x == 0 && y == 0 && w == 0 && h == 0))
             {
@@ -267,14 +267,14 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_FILLMODE:
         {
-            [encoder setTriangleFillMode:(FillMode(((SWCommand_SetFillMode*)cmd)->mode) == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
+            [encoder setTriangleFillMode:(FillMode(static_cast<const SWCommand_SetFillMode*>(cmd)->mode) == FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
         }
         break;
 
         case CMD_SET_VERTEX_DATA:
         {
-            Handle vb = ((SWCommand_SetVertexData*)cmd)->vb;
-            unsigned streamIndex = ((SWCommand_SetVertexData*)cmd)->streamIndex;
+            Handle vb = static_cast<const SWCommand_SetVertexData*>(cmd)->vb;
+            unsigned streamIndex = static_cast<const SWCommand_SetVertexData*>(cmd)->streamIndex;
 
             cur_vb[streamIndex] = vb;
             StatSet::IncStat(stat_SET_VB, 1);
@@ -283,9 +283,9 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_VERTEX_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((SWCommand_SetVertexProgConstBuffer*)cmd)->buffer;
-            unsigned index = ((SWCommand_SetVertexProgConstBuffer*)cmd)->bufIndex;
-            uintptr_t inst = reinterpret_cast<uintptr_t>(((SWCommand_SetVertexProgConstBuffer*)cmd)->inst);
+            Handle buffer = static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd)->buffer;
+            unsigned index = static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd)->bufIndex;
+            uintptr_t inst = reinterpret_cast<uintptr_t>(static_cast<const SWCommand_SetVertexProgConstBuffer*>(cmd)->inst);
             unsigned instOffset = static_cast<unsigned>(inst);
 
             ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
@@ -294,8 +294,8 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_VERTEX_TEXTURE:
         {
-            Handle tex = ((SWCommand_SetVertexTexture*)cmd)->tex;
-            unsigned unitIndex = ((SWCommand_SetVertexTexture*)cmd)->unitIndex;
+            Handle tex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->tex;
+            unsigned unitIndex = static_cast<const SWCommand_SetVertexTexture*>(cmd)->unitIndex;
 
             TextureMetal::SetToRHIVertex(tex, unitIndex, encoder);
             StatSet::IncStat(stat_SET_TEX, 1);
@@ -304,14 +304,14 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_INDICES:
         {
-            cur_ib = ((SWCommand_SetIndices*)cmd)->ib;
+            cur_ib = static_cast<const SWCommand_SetIndices*>(cmd)->ib;
             StatSet::IncStat(stat_SET_IB, 1);
         }
         break;
 
         case CMD_SET_QUERY_INDEX:
         {
-            unsigned index = ((SWCommand_SetQueryIndex*)cmd)->objectIndex;
+            unsigned index = static_cast<const SWCommand_SetQueryIndex*>(cmd)->objectIndex;
 
             if (index != DAVA::InvalidIndex)
             {
@@ -329,9 +329,9 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_FRAGMENT_PROG_CONST_BUFFER:
         {
-            Handle buffer = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->buffer;
-            unsigned index = ((SWCommand_SetFragmentProgConstBuffer*)cmd)->bufIndex;
-            uintptr_t inst = reinterpret_cast<uintptr_t>(((SWCommand_SetFragmentProgConstBuffer*)cmd)->inst);
+            Handle buffer = static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd)->buffer;
+            unsigned index = static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd)->bufIndex;
+            uintptr_t inst = reinterpret_cast<uintptr_t>(static_cast<const SWCommand_SetFragmentProgConstBuffer*>(cmd)->inst);
             unsigned instOffset = static_cast<unsigned>(inst);
             ConstBufferMetal::SetToRHI(buffer, index, instOffset, encoder);
         }
@@ -339,8 +339,8 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_FRAGMENT_TEXTURE:
         {
-            Handle tex = ((SWCommand_SetFragmentTexture*)cmd)->tex;
-            unsigned unitIndex = ((SWCommand_SetFragmentTexture*)cmd)->unitIndex;
+            Handle tex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->tex;
+            unsigned unitIndex = static_cast<const SWCommand_SetFragmentTexture*>(cmd)->unitIndex;
 
             TextureMetal::SetToRHIFragment(tex, unitIndex, encoder);
             StatSet::IncStat(stat_SET_TEX, 1);
@@ -349,21 +349,21 @@ CommandBufferMetal_t::Execute()
 
         case CMD_SET_DEPTHSTENCIL_STATE:
         {
-            DepthStencilStateMetal::SetToRHI(((SWCommand_SetDepthStencilState*)cmd)->depthStencilState, encoder);
+            DepthStencilStateMetal::SetToRHI(static_cast<const SWCommand_SetDepthStencilState*>(cmd)->depthStencilState, encoder);
         }
         break;
 
         case CMD_SET_SAMPLER_STATE:
         {
-            SamplerStateMetal::SetToRHI(((SWCommand_SetSamplerState*)cmd)->samplerState, encoder);
+            SamplerStateMetal::SetToRHI(static_cast<const SWCommand_SetSamplerState*>(cmd)->samplerState, encoder);
             StatSet::IncStat(stat_SET_SS, 1);
         }
         break;
 
         case CMD_DRAW_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawPrimitive*)cmd)->mode);
-            unsigned vertexCount = ((SWCommand_DrawPrimitive*)cmd)->vertexCount;
+            MTLPrimitiveType ptype = MTLPrimitiveType(static_cast<const SWCommand_DrawPrimitive*>(cmd)->mode);
+            unsigned vertexCount = static_cast<const SWCommand_DrawPrimitive*>(cmd)->vertexCount;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount];
@@ -372,10 +372,10 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawIndexedPrimitive*)cmd)->mode);
-            unsigned indexCount = ((SWCommand_DrawIndexedPrimitive*)cmd)->indexCount;
-            unsigned firstVertex = ((SWCommand_DrawIndexedPrimitive*)cmd)->firstVertex;
-            unsigned startIndex = ((SWCommand_DrawIndexedPrimitive*)cmd)->startIndex;
+            MTLPrimitiveType ptype = MTLPrimitiveType(static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->mode);
+            unsigned indexCount = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->indexCount;
+            unsigned firstVertex = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->firstVertex;
+            unsigned startIndex = static_cast<const SWCommand_DrawIndexedPrimitive*>(cmd)->startIndex;
 
             unsigned ib_base = 0;
             id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cur_ib, &ib_base);
@@ -389,9 +389,9 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawInstancedPrimitive*)cmd)->mode);
-            unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
-            unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instanceCount;
+            MTLPrimitiveType ptype = MTLPrimitiveType(static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->mode);
+            unsigned vertexCount = static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->vertexCount;
+            unsigned instCount = static_cast<const SWCommand_DrawInstancedPrimitive*>(cmd)->instanceCount;
 
             _ApplyVertexData();
             [encoder drawPrimitives:ptype vertexStart:0 vertexCount:vertexCount instanceCount:instCount];
@@ -400,11 +400,11 @@ CommandBufferMetal_t::Execute()
 
         case CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE:
         {
-            MTLPrimitiveType ptype = MTLPrimitiveType(((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->mode);
-            unsigned firstVertex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->firstVertex;
-            unsigned indexCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->indexCount;
-            unsigned startIndex = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->startIndex;
-            unsigned instCount = ((SWCommand_DrawInstancedIndexedPrimitive*)cmd)->instanceCount;
+            MTLPrimitiveType ptype = MTLPrimitiveType(static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->mode);
+            unsigned firstVertex = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->firstVertex;
+            unsigned indexCount = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->indexCount;
+            unsigned startIndex = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->startIndex;
+            unsigned instCount = static_cast<const SWCommand_DrawInstancedIndexedPrimitive*>(cmd)->instanceCount;
 
             unsigned ib_base = 0;
             id<MTLBuffer> ib = IndexBufferMetal::GetBuffer(cur_ib, &ib_base);
