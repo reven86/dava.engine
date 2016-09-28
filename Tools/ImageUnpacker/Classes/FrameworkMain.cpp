@@ -153,8 +153,8 @@ void ProcessImageUnpacker()
     if (CommandLineParser::CommandIsFound("-resave"))
     {
         ResaveUtility utility;
-        utility.InitFromCommandLine();
         utility.Resave();
+
         needShowUsage = false;
     }
     else if (CommandLineParser::CommandIsFound("-saveas") && sourceFolderPath.IsEmpty() == false)

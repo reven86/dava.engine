@@ -10,7 +10,7 @@
 
 namespace ResaveUtilityDetail
 {
-void EnumerateFolder(const DAVA::FilePath& folder, const DAVA::String& ext, DAVA::Vector<DAVA::FilePath>& files)
+void EnumerateFolder(const DAVA::FilePath& folder, const DAVA::String& ext, DAVA::List<DAVA::FilePath>& files)
 {
     using namespace DAVA;
 
@@ -18,12 +18,9 @@ void EnumerateFolder(const DAVA::FilePath& folder, const DAVA::String& ext, DAVA
     for (int32 i = 0, count = fileList->GetCount(); i < count; ++i)
     {
         const FilePath& pathname = fileList->GetPathname(i);
-        if (fileList->IsDirectory(i))
+        if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
         {
-            if (!fileList->IsNavigationDirectory(i))
-            {
-                EnumerateFolder(pathname, ext, files);
-            }
+            EnumerateFolder(pathname, ext, files);
         }
         else if (pathname.IsEqualToExtension(ext))
         {
@@ -32,7 +29,7 @@ void EnumerateFolder(const DAVA::FilePath& folder, const DAVA::String& ext, DAVA
     }
 }
 
-void ReadFiles(const DAVA::FilePath& filelist, DAVA::Vector<DAVA::FilePath>& files)
+void ReadFiles(const DAVA::FilePath& filelist, DAVA::List<DAVA::FilePath>& files)
 {
     using namespace DAVA;
 
@@ -46,14 +43,14 @@ void ReadFiles(const DAVA::FilePath& filelist, DAVA::Vector<DAVA::FilePath>& fil
     do
     {
         FilePath pathname = fileWithLinks->ReadLine();
-        if (pathname.IsEmpty() == false)
+        if (pathname.IsEmpty() == false && pathname.IsDirectoryPathname() == false)
         {
             files.push_back(pathname);
         }
     } while (!fileWithLinks->IsEof());
 }
 
-DAVA::String GetEngineStyleExt(DAVA::String sourceString)
+DAVA::String GetExtension(DAVA::String sourceString)
 {
     using namespace DAVA;
 
@@ -68,7 +65,7 @@ DAVA::String GetEngineStyleExt(DAVA::String sourceString)
 
 } // ResaveUtilityDetail
 
-void ResaveUtility::InitFromCommandLine()
+ResaveUtility::ResaveUtility()
 {
     using namespace DAVA;
 
@@ -83,7 +80,7 @@ void ResaveUtility::InitFromCommandLine()
     else if (folder.IsEmpty() == false)
     {
         String ext = CommandLineParser::GetCommandParam("-ext");
-        ext = ResaveUtilityDetail::GetEngineStyleExt(ext);
+        ext = ResaveUtilityDetail::GetExtension(ext);
         if (ext.empty())
         {
             Logger::Error("Wrong commandline: please provide extension for images in Engine format (e.g.  \".png\")");
@@ -113,7 +110,6 @@ void ResaveUtility::Resave()
         if (image)
         {
             ImageSystem::Save(path, image, image->format);
-            ScopedPtr<Image> image2(ImageSystem::LoadSingleMip(path));
         }
         else
         {
@@ -121,5 +117,5 @@ void ResaveUtility::Resave()
         }
     }
 
-    Logger::Info("%u files resaved", static_cast<uint32>(filesToResave.size()));
+    Logger::Info("%u files processed", static_cast<uint32>(filesToResave.size()));
 }

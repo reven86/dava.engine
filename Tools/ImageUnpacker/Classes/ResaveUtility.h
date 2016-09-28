@@ -6,9 +6,10 @@
 class ResaveUtility
 {
 public:
-    void InitFromCommandLine();
+    ResaveUtility();
+
     void Resave();
 
 private:
-    DAVA::Vector<DAVA::FilePath> filesToResave;
+    DAVA::List<DAVA::FilePath> filesToResave;
 };
