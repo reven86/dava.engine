@@ -40,6 +40,7 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
+    HWND GetHWND() const;
     WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
@@ -99,6 +100,11 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return static_cast<void*>(hwnd);
+}
+
+inline HWND WindowBackend::GetHWND() const
+{
+    return hwnd;
 }
 
 inline WindowNativeService* WindowBackend::GetNativeService() const
