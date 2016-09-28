@@ -6,6 +6,7 @@
 #include <QShowEvent>
 #include <QKeyEvent>
 #include <QPlainTextEdit>
+#include <QApplication>
 
 namespace MultilineTextInputDialogDetails
 {
@@ -27,12 +28,22 @@ bool MultilineTextInputDialog::eventFilter(QObject* obj, QEvent* event)
                 QPlainTextEdit* textEdit = qobject_cast<QPlainTextEdit*>(obj);
                 if (nullptr != textEdit)
                 {
-                    textEdit->appendPlainText("");
+                    //just appending a text do not clear the selection
+                    QKeyEvent keyEvent(keyEvent->type(),
+                                       keyEvent->key(),
+                                       //this event will be handeled here, so we can not send an empty modifiers
+                                       Qt::KeyboardModifiers(Qt::SHIFT),
+                                       keyEvent->text(),
+                                       keyEvent->isAutoRepeat(),
+                                       keyEvent->count());
+                    qApp->sendEvent(textEdit, &keyEvent);
+                    return true;
                 }
             }
             else if (!(modifiers & Qt::SHIFT))
             {
                 accept();
+                return true;
             }
         }
     }
