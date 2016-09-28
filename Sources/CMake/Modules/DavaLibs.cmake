@@ -275,6 +275,7 @@ if( WIN )
                                       "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
                                       "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/glew32.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/msvcr120.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll")
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )
