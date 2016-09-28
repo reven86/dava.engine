@@ -92,22 +92,27 @@ void WindowBackend::ProcessPlatformEvents()
     platformDispatcher.ProcessEvents();
 }
 
-void WindowBackend::SetMouseMode(eMouseMode mode)
+bool WindowBackend::SetCaptureMode(eCaptureMode mode)
 {
-    if (mouseMode == mode)
+    if (eCaptureMode::FRAME == mode)
     {
-        return;
+        //for now, not supported
+        return false;
     }
-    mouseMode = mode;
     UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
+    e.type = UIDispatcherEvent::CHANGE_CAPTURE_MODE;
     e.mouseMode = mode;
     platformDispatcher.PostEvent(e);
+    return true;
 }
 
-eMouseMode WindowBackend::GetMouseMode() const
+bool WindowBackend::SetMouseVisibility(bool visible)
 {
-    return mouseMode;
+    UIDispatcherEvent e;
+    e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
+    e.mouseVisible = visible;
+    platformDispatcher.PostEvent(e);
+    return true;
 }
 
 void WindowBackend::EventHandler(const UIDispatcherEvent& e)
@@ -123,9 +128,12 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case UIDispatcherEvent::CHANGE_MOUSE_MODE:
-    bridge->DoChangeMouseMode(e.mouseMode);
-    break;
+    case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
+        bridge->ChangeCaptureMode(e.mouseMode);
+        break;
+    case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
+        bridge->ChangeMouseVisibility(e.mouseVisible);
+        break;
     default:
         break;
     }

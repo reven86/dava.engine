@@ -38,7 +38,6 @@ struct WindowNativeBridge final
     bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
-    void DoChangeMouseMode(eMouseMode mode);
 
     void TriggerPlatformEvents();
 
@@ -62,6 +61,8 @@ struct WindowNativeBridge final
     void MouseEntered(NSEvent* theEvent);
     void MouseExited(NSEvent* theEvent);
 
+    void ChangeCaptureMode(eCaptureMode mode);
+    void ChangeMouseVisibility(bool visibility);
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
@@ -84,12 +85,7 @@ private:
     NSTrackingArea* trackingArea = nullptr;
     // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
     void* blankCursor = nullptr;
-    bool mouseCaptured = false;
-    bool mouseVisibled = true;
-    bool deferredMouseMode = false;
-    eMouseMode nativeMouseMode = eMouseMode::DEFAULT;
-    bool hasFocus = false;
-    bool focusChanged = false;
+    eCaptureMode captureMode = eCaptureMode::DEFAULT;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
     // So move mouse pointer to window center before enabling pinning mode.

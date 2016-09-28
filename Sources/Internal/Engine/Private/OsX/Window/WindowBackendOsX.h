@@ -45,8 +45,8 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    void SetMouseMode(eMouseMode mode);
-    eMouseMode GetMouseMode() const;
+    bool SetCaptureMode(eCaptureMode mode);
+    bool SetMouseVisibility(bool visible);
 
 private:
     void EventHandler(const UIDispatcherEvent& e);
@@ -63,7 +63,6 @@ private:
 
     bool isMinimized = false;
     size_t hideUnhideSignalId = 0;
-    eMouseMode mouseMode = eMouseMode::DEFAULT;
 
     // Friends
     friend class PlatformCore;

@@ -118,19 +118,6 @@ void WindowNativeBridge::WindowDidBecomeKey()
 
 void WindowNativeBridge::WindowDidResignKey()
 {
-    hasFocus = false;
-    focusChanged = true;
-    if (eMouseMode::PINING == nativeMouseMode)
-    {
-        SetMouseVisibility(true);
-        SetMouseCaptured(false);
-        deferredMouseMode = true;
-    }
-    else if (eMouseMode::HIDE == nativeMouseMode)
-    {
-        SetMouseVisibility(true);
-        deferredMouseMode = true;
-    }
     windowBackend->GetWindow()->PostFocusChanged(false);
     if (isAppHidden)
     {
@@ -194,10 +181,7 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     NSPoint pt = [theEvent locationInWindow];
     e.mclickEvent.x = pt.x;
     e.mclickEvent.y = sz.height - pt.y;
-    if (!DeferredMouseMode(e))
-    {
-        windowBackend->GetDispatcher()->PostEvent(e);
-    }
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
@@ -217,10 +201,7 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
     NSPoint pt = theEvent.locationInWindow;
     e.mmoveEvent.x = pt.x;
     e.mmoveEvent.y = sz.height - pt.y;
-    if (!DeferredMouseMode(e))
-    {
-        windowBackend->GetDispatcher()->PostEvent(e);
-    }
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -264,10 +245,7 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         e.mwheelEvent.deltaY = deltaY * scrollK;
     }
 
-    if (!DeferredMouseMode(e))
-    {
-        windowBackend->GetDispatcher()->PostEvent(e);
-    }
+    windowBackend->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -289,10 +267,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
         for (NSUInteger i = 0; i < n; ++i)
         {
             e.keyEvent.key = [chars characterAtIndex:i];
-            if (!DeferredMouseMode(e))
-            {
-                windowBackend->GetDispatcher()->PostEvent(e);
-            }
+            windowBackend->GetDispatcher()->PostEvent(e);
         }
     }
 }
@@ -301,7 +276,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
     if (nativeMouseMode == eMouseMode::HIDE)
     {
-        SetMouseVisibility(false);
+        ChangeMouseVisibility(false);
         deferredMouseMode = false;
     }
 }
@@ -310,77 +285,26 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
     if (nativeMouseMode == eMouseMode::HIDE)
     {
-        SetMouseVisibility(true);
+        ChangeMouseVisibility(true);
         deferredMouseMode = false;
     }
 }
 
-void WindowNativeBridge::DoChangeMouseMode(eMouseMode newMode)
+void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
 {
-    nativeMouseMode = newMode;
-    deferredMouseMode = false;
+    if (captureMode == mode)
+    {
+        return;
+    }
+    captureMode = mode;
     switch (newMode)
     {
     case DAVA::eMouseMode::FRAME:
         //not implemented
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
         break;
     case DAVA::eMouseMode::PINING:
     {
-        if (hasFocus && !focusChanged)
-        {
-            SetMouseCaptured(true);
-            SetMouseVisibility(false);
-        }
-        else
-        {
-            deferredMouseMode = true;
-        }
-        break;
-    }
-    case DAVA::eMouseMode::DEFAULT:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
-        break;
-    }
-    case DAVA::eMouseMode::HIDE:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(false);
-        break;
-    }
-    }
-}
-
-void WindowNativeBridge::SetMouseVisibility(bool visible)
-{
-    if (mouseVisibled == visible)
-    {
-        return;
-    }
-    mouseVisibled = visible;
-    if (visible)
-    {
-        [[NSCursor arrowCursor] set];
-    }
-    else
-    {
-        [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
-    }
-}
-
-void WindowNativeBridge::SetMouseCaptured(bool capture)
-{
-    if (mouseCaptured == capture)
-    {
-        return;
-    }
-    mouseCaptured = capture;
-    if (capture)
-    {
-        // mouse capture
+        ChangeMouseVisibility(false);
         CGAssociateMouseAndMouseCursorPosition(false);
         // set cursor in window center
         NSRect windowRect = [nswindow frame];
@@ -390,54 +314,33 @@ void WindowNativeBridge::SetMouseCaptured(bool capture)
         float x = windowRect.origin.x + windowRect.size.width / 2.0f;
         float y = windowRect.origin.y + windowRect.size.height / 2.0f;
         CGWarpMouseCursorPosition(CGPointMake(x, y));
+        uint32 skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
     }
-    else
+    case DAVA::eMouseMode::DEFAULT:
     {
+        ChangeMouseVisibility(true);
         CGAssociateMouseAndMouseCursorPosition(true);
+        break;
+    }
     }
 }
 
-bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
+void WindowNativeBridge::ChangeMouseVisibility(bool visible)
 {
-    if (!hasFocus)
+    static bool mouseVisible = true;
+    if (mouseVisible == visible)
     {
-        return true;
+        return;
     }
-    focusChanged = false;
-    if (deferredMouseMode)
+    mouseVisible = visible;
+    if (visible)
     {
-        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
-        {
-            deferredMouseMode = false;
-            SetMouseVisibility(false);
-            if (eMouseMode::PINING == nativeMouseMode)
-            {
-                SetMouseCaptured(true);
-                skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-            }
-            return false;
-        }
-        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
-        {
-            // mouseUp event in work area, turn on mouse capture mode
-            bool mclickInRect = true;
-            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= windowBackend->GetWindow()->GetWidth());
-            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= windowBackend->GetWindow()->GetHeight());
-            if (mclickInRect && hasFocus)
-            {
-                deferredMouseMode = false;
-                SetMouseVisibility(false);
-                if (eMouseMode::PINNING == nativeMouseMode)
-                {
-                    SetMouseCaptured(true);
-                    skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-                }
-                // skip this event
-            }
-        }
-        return true;
+        [[NSCursor arrowCursor] set];
     }
-    return false;
+    else
+    {
+        [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
+    }
 }
 
 void* WindowNativeBridge::GetOrCreateBlankCursor()
