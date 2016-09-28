@@ -173,6 +173,8 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         if (property->IsOverriddenLocally() || property->IsReadOnly())
         {
             QFont myFont;
+            // We should set font family manually, to set familyResolved flag in font.
+            // If we don't do this, Qt will get resolve family almost randomly
             myFont.setFamily(myFont.family());
             myFont.setBold(property->IsOverriddenLocally());
             myFont.setItalic(property->IsReadOnly());
