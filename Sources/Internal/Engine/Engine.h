@@ -46,6 +46,7 @@ public:
 
     uint32 GetGlobalFrameIndex() const;
     const Vector<String>& GetCommandLine() const;
+    DAVA::Vector<char*> GetCommandLineAsArgv();
 
 public:
     // Signals

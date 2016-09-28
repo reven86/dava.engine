@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../rhi_Type.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 

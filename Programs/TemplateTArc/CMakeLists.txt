@@ -37,6 +37,7 @@ file(GLOB RCC_LIST "Resources/*.qrc")
 file(GLOB QML_LIST "Resources/*.qml")
 qt5_add_resources(RCC_APP_SRCS  ${RCC_LIST})
 set(ADDED_SRC ${RCC_APP_SRCS})
+set(QML_SCAN_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 define_source (SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} "Resources")
 

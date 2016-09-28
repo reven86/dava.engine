@@ -9,7 +9,7 @@
 #include "Logger/Logger.h"
 using DAVA::Logger;
 #include "Core/Core.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 
 #include "_metal.h"
 
@@ -1825,9 +1825,10 @@ metal_SyncObject_IsSignaled(Handle obj)
 static void
 metal_Present(Handle syncObject)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
+
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);
-    SCOPED_NAMED_TIMING("rhi.draw-present");
 
     if (_Metal_Frame.size() == 0)
     {

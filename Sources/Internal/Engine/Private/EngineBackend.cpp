@@ -45,6 +45,7 @@
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
+#include "ModuleManager/ModuleManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -152,11 +153,10 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     if (!IsConsoleMode())
     {
         DeviceInfo::InitializeScreenInfo();
-
-        context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
-        context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 
+    context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
+    context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
 }
 
@@ -551,6 +551,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->fileSystem = new FileSystem();
+    context->renderSystem2D = new RenderSystem2D();
+    context->virtualCoordSystem = new VirtualCoordinatesSystem();
+    context->uiControlSystem = new UIControlSystem();
+    context->animationManager = new AnimationManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
@@ -606,19 +610,21 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     if (!IsConsoleMode())
     {
-        context->animationManager = new AnimationManager();
         context->fontManager = new FontManager();
-        context->uiControlSystem = new UIControlSystem();
         context->inputSystem = new InputSystem();
-        context->virtualCoordSystem = new VirtualCoordinatesSystem();
-        context->renderSystem2D = new RenderSystem2D();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
+
+    context->moduleManager = new ModuleManager();
+    context->moduleManager->InitModules();
 }
 
 void EngineBackend::DestroySubsystems()
 {
+    context->moduleManager->ResetModules();
+    delete context->moduleManager;
+
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
@@ -631,14 +637,14 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->uiControlSystem->Release();
         context->fontManager->Release();
-        context->animationManager->Release();
-        context->virtualCoordSystem->Release();
-        context->renderSystem2D->Release();
         context->inputSystem->Release();
     }
 
+    context->uiControlSystem->Release();
+    context->animationManager->Release();
+    context->virtualCoordSystem->Release();
+    context->renderSystem2D->Release();
     context->performanceSettings->Release();
     context->random->Release();
 

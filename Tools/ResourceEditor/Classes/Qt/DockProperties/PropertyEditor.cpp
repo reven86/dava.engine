@@ -45,6 +45,7 @@
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 #include "Scene/System/PathSystem.h"
+#include "Render/Highlevel/RenderObject.h"
 
 #include "Deprecated/SceneValidator.h"
 

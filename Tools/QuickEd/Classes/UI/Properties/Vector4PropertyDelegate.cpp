@@ -4,6 +4,7 @@
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Utils/Utils.h"
+#include "QtTools/Utils/Utils.h"
 #include "PropertiesTreeItemDelegate.h"
 
 using namespace DAVA;
@@ -53,23 +54,10 @@ bool Vector4PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variantType;
-
-    QStringList tokens = editor->text().split(";");
-    if (tokens.length() == 1) // try to split by space
-    {
-        tokens = editor->text().split(" ", QString::SkipEmptyParts);
-    }
-
-    Vector4 val;
-    int count = Min(tokens.size(), 4);
-    for (int i = 0; i < count; i++)
-    {
-        val.data[i] = tokens[i].toFloat();
-    }
+    Vector4 vector = StringToVector<Vector4>(editor->text());
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(VariantType(val));
+    variant.setValue<DAVA::VariantType>(VariantType(vector));
 
     return model->setData(index, variant, Qt::EditRole);
 }

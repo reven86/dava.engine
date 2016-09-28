@@ -55,7 +55,6 @@ public:
     static TextBlock* Create(const Vector2& size);
 
     virtual void SetFont(Font* font);
-    virtual void SetFontSize(float32 newSize);
     virtual void SetScale(const Vector2& scale);
     virtual void SetRectSize(const Vector2& size);
     virtual void SetPosition(const Vector2& position);
@@ -76,7 +75,6 @@ public:
     Vector2 GetPreferredSizeForWidth(float32 width);
 
     virtual Font* GetFont();
-    virtual float32 GetFontSize();
     virtual const WideString& GetText();
     virtual const WideString& GetVisualText();
     virtual const Vector<WideString>& GetMultilineStrings();
@@ -137,6 +135,11 @@ public:
     void SetAngle(const float32 _angle);
     void SetPivot(const Vector2& _pivot);
 
+    bool NeedCalculateCacheParams() const
+    {
+        return needCalculateCacheParams;
+    }
+
 private:
     static void RegisterTextBlock(TextBlock* textBlock);
     static void UnregisterTextBlock(TextBlock* textBlock);
@@ -162,6 +165,11 @@ private:
     Vector2 cacheFinalSize;
     Vector2 cacheSpriteOffset;
     Vector2 cacheTextSize;
+    struct
+    {
+        Vector2 size;
+        float32 width;
+    } cachedLayoutData;
 
     float32 renderSize;
 
@@ -213,14 +221,6 @@ private:
 
 public:
 };
-
-inline void TextBlock::CalculateCacheParamsIfNeed()
-{
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
-}
 
 inline void TextBlock::SetPosition(const Vector2& _position)
 {
