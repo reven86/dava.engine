@@ -4,7 +4,7 @@ import build_utils
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
-		return []
+		return ['win32']
 	else:
 		return ['macos', 'ios', 'android']
 
@@ -37,6 +37,28 @@ def _download_and_extract(working_directory_path):
 	url = get_download_url()['others']
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
+
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+
+	vc12_solution_file_path = os.path.join(source_folder_path, 'projects/Windows/VC12/curl-all.sln')
+	build_utils.build_vs(vc12_solution_file_path, 'LIB Debug - DLL Windows SSPI', 'Win32', 'libcurl')
+	build_utils.build_vs(vc12_solution_file_path, 'LIB Release - DLL Windows SSPI', 'Win32', 'libcurl')
+	build_utils.build_vs(vc12_solution_file_path, 'LIB Debug - DLL Windows SSPI', 'x64', 'libcurl')
+	build_utils.build_vs(vc12_solution_file_path, 'LIB Release - DLL Windows SSPI', 'x64', 'libcurl')
+
+	shutil.copyfile(
+		os.path.join(source_folder_path, 'build/Win32/VC12/LIB Debug - DLL Windows SSPI/libcurld.lib'),
+		os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/libcurl.lib'))
+	shutil.copyfile(
+		os.path.join(source_folder_path, 'build/Win32/VC12/LIB Release - DLL Windows SSPI/libcurl.lib'),
+		os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/libcurl.lib'))
+	shutil.copyfile(
+		os.path.join(source_folder_path, 'build/Win64/VC12/LIB Debug - DLL Windows SSPI/libcurld.lib'),
+		os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Debug/libcurl_a_debug.lib'))
+	shutil.copyfile(
+		os.path.join(source_folder_path, 'build/Win64/VC12/LIB Release - DLL Windows SSPI/libcurl.lib'),
+		os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/libcurl_a.lib'))
 
 def _build_macos(working_directory_path, root_project_path):
 	build_curl_run_dir = os.path.join(working_directory_path, 'gen/build_osx')
