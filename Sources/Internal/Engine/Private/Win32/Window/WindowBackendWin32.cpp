@@ -24,9 +24,10 @@ bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*engineBackend,
-                        *window,
-                        MakeFunction(this, &WindowBackend::UIEventHandler))
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
 }
@@ -75,18 +76,23 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResizeOnUIThread(width, height);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
 void WindowBackend::Close(bool /*appIsTerminating*/)
 {
     closeRequestByApp = true;
-    PostCloseOnUIThread();
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
 }
 
 void WindowBackend::SetTitle(const String& title)
 {
-    PostSetTitleOnUIThread(title);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -144,7 +150,11 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
     {
         width = w;
         height = h;
-        PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
+                                                                                    static_cast<float32>(width),
+                                                                                    static_cast<float32>(height),
+                                                                                    1.0f,
+                                                                                    1.0f));
     }
 }
 
@@ -175,7 +185,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
-        PostVisibilityChanged(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
     }
 
@@ -184,7 +194,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         if (isMinimized)
         {
             isMinimized = false;
-            PostVisibilityChanged(true);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
             return 0;
         }
     }
@@ -215,84 +225,93 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
-LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
+LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
 {
-    PostFocusChanged(gotFocus);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    PostMouseMove(static_cast<float32>(x), static_cast<float32>(y));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
+                                                                              static_cast<float32>(x),
+                                                                              static_cast<float32>(y),
+                                                                              false));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
 {
-    PostMouseWheel(static_cast<float32>(x), static_cast<float32>(y), 0.f, static_cast<float32>(delta));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
+                                                                               static_cast<float32>(x),
+                                                                               static_cast<float32>(y),
+                                                                               0.f,
+                                                                               static_cast<float32>(delta),
+                                                                               false));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y)
 {
-    MainDispatcherEvent e(window);
-
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.mclickEvent.clicks = 1;
-    e.mclickEvent.x = static_cast<float32>(x);
-    e.mclickEvent.y = static_cast<float32>(y);
-
+    uint32 button = 0;
+    MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
     switch (message)
     {
     case WM_LBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 1;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 1;
         break;
     case WM_LBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 1;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 1;
         break;
     case WM_LBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_RBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 2;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 2;
         break;
     case WM_RBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 2;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 2;
         break;
     case WM_RBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_MBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 3;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 3;
         break;
     case WM_MBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 3;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 3;
         break;
     case WM_MBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_XBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = xbutton == XBUTTON1 ? 4 : 5;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = xbutton == XBUTTON1 ? 4 : 5;
         break;
     case WM_XBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = xbutton == XBUTTON1 ? 4 : 5;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = xbutton == XBUTTON1 ? 4 : 5;
         break;
     case WM_XBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     default:
         return 0;
     }
 
-    mainDispatcher.PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
+                                                                               type,
+                                                                               button,
+                                                                               static_cast<float32>(x),
+                                                                               static_cast<float32>(y),
+                                                                               1,
+                                                                               false));
     return 0;
 }
 
@@ -303,20 +322,20 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
         key |= 0x100;
     }
 
-    if (isPressed)
-    {
-        PostKeyDown(key, isRepeated);
-    }
-    else
-    {
-        PostKeyUp(key);
-    }
+    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
+                                                                             type,
+                                                                             key,
+                                                                             isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
-    PostKeyChar(key, isRepeated);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
+                                                                             MainDispatcherEvent::KEY_CHAR,
+                                                                             key,
+                                                                             isRepeated));
     return 0;
 }
 
@@ -327,8 +346,12 @@ LRESULT WindowBackend::OnCreate()
 
     width = rc.right - rc.left;
     height = rc.bottom - rc.top;
-    PostWindowCreated(static_cast<float32>(width), static_cast<float32>(height), 1.0f, 1.0f);
-    PostVisibilityChanged(true);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
+                                                                            static_cast<float32>(width),
+                                                                            static_cast<float32>(height),
+                                                                            1.0f,
+                                                                            1.0f));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
 
@@ -336,7 +359,7 @@ bool WindowBackend::OnClose()
 {
     if (!closeRequestByApp)
     {
-        PostUserCloseRequest();
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
     }
     return closeRequestByApp;
 }
@@ -345,9 +368,10 @@ LRESULT WindowBackend::OnDestroy()
 {
     if (!isMinimized)
     {
-        PostVisibilityChanged(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
     }
-    DispatchWindowDestroyed(true);
+
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
     hwnd = nullptr;
     return 0;
 }

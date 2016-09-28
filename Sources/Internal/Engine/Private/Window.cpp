@@ -270,10 +270,10 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.mclickEvent.x, e.mclickEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mclickEvent.button);
+    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
 
     // NOTE: Taken from CoreWin32Platform::OnMouseClick
 
@@ -299,10 +299,10 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
-    uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
+    uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
 
     // TODO: let input system decide what to do when shift is pressed while wheelling
     // Now use implementation from current core
@@ -320,7 +320,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
-    uie.physPoint = Vector2(e.mmoveEvent.x, e.mmoveEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;
@@ -353,10 +353,10 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = UIEvent::Device::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.tclickEvent.touchId;
+    uie.touchId = e.touchEvent.touchId;
 
     uiControlSystem->OnInput(&uie);
 }
@@ -365,10 +365,10 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::DRAG;
-    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = UIEvent::Device::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.tclickEvent.touchId;
+    uie.touchId = e.touchEvent.touchId;
 
     uiControlSystem->OnInput(&uie);
 }
