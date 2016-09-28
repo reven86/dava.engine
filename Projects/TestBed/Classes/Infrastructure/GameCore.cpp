@@ -415,12 +415,6 @@ void CheckDeviceInfoValid()
     Logger::Info("http_proxy_port: %d", httpProxyPort);
     DVASSERT(httpProxyPort == 0);
 
-    auto screenInfo = DeviceInfo::GetScreenInfo();
-    Logger::Info("screen_info: w=%d h=%d scale=%f", screenInfo.width, screenInfo.height, screenInfo.scale);
-    DVASSERT(screenInfo.height > 0);
-    DVASSERT(screenInfo.width > 0);
-    DVASSERT(screenInfo.scale >= 1);
-
     auto zbufferSize = DeviceInfo::GetZBufferSize();
     Logger::Info("zbuffer_size: %d", zbufferSize);
     DVASSERT(zbufferSize == 16 || zbufferSize == 24);

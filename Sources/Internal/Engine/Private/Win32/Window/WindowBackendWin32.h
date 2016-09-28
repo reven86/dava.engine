@@ -70,6 +70,8 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
+    float32 GetDpi() const;
+
 private:
     HWND hwnd = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;

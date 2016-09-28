@@ -8,6 +8,7 @@
 #include "CEFWebViewControl.h"
 #include "CEFDavaResourceHandler.h"
 #include "Utils/Utils.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -71,6 +72,7 @@ CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
 #if defined(__DAVAENGINE_COREV2__)
+    onPhSzChangedId = Engine::Instance()->PrimaryWindow()->physicalSizeChanged.Connect(this, &CEFWebViewControl::OnPhSizeChanged);
     webPageRender = new CEFWebPageRender(window);
 #else
     webPageRender = new CEFWebPageRender;
@@ -86,6 +88,10 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 
 void CEFWebViewControl::Deinitialize()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->PrimaryWindow()->physicalSizeChanged.Disconnect(onPhSzChangedId);
+#endif
+
     // Close browser and release object
     // If we don't release cefBrowser, dtor of CEFWebViewControl will never be invoked
     cefBrowser->GetHost()->CloseBrowser(true);
@@ -147,7 +153,7 @@ Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
-    webPageRender->SetViewSize(rect.GetSize());
+    webPageRender->SetViewRect(rect);
     cefBrowser->GetHost()->WasResized();
 }
 
@@ -450,14 +456,13 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-
+    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
-        webViewOffSet = webView.GetAbsolutePosition();
-        webViewOffSet.dx = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dx);
-        webViewOffSet.dy = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dy);
+         webViewPhPos = webView.GetAbsolutePosition();
+//         webViewPhPos.x += vcs->GetPhysicalDrawOffset().dx;
+//         webViewPhPos.y += vcs->GetPhysicalDrawOffset().dy;
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -491,8 +496,9 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
+    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
+    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
+    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int32 mouseType = CEFDetails::ConvertMouseTypeDavaToCef(input);
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(mouseType);
@@ -502,12 +508,19 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
     host->SendMouseClickEvent(clickEvent, type, mouseUp, clickCount);
 }
 
+void CEFWebViewControl::OnPhSizeChanged(Window &, Size2f)
+{
+    cefBrowser->GetHost()->NotifyScreenInfoChanged();
+    cefBrowser->GetHost()->WasResized();
+}
+
 void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
+    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
+    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
+    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
@@ -517,8 +530,9 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(webViewOffSet.dy);
+    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
+    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
+    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
     int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);

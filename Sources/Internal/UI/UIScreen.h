@@ -2,10 +2,14 @@
 #define __DAVAENGINE_UI_SCREEN_H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
-#include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "UI/UIControl.h"
+#if !defined(__DAVAENGINE_COREV2__)
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#else
+#include "UI/UIControlSystem.h"
+#endif
 
 namespace DAVA
 {
@@ -27,8 +31,13 @@ protected:
 public:
     UIScreen(const Rect& rect = Rect(0.0f,
                                      0.0f,
+#if !defined(__DAVAENGINE_COREV2__)
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx),
+                                     static_cast<float32>(VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy)
+#else
                                      static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx),
                                      static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy)
+#endif
                                      ));
 
     /**

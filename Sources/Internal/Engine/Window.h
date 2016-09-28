@@ -43,6 +43,9 @@ public:
     Size2f GetSize() const;
     Size2f GetPhysicalSize() const;
 
+    float GetUserScale() const;
+    void SetUsetScale(float scale);
+
     void Resize(const Size2f& size);
     void Close();
     void SetTitle(const String& title);
@@ -109,11 +112,12 @@ private:
     bool isPrimary = false;
     bool isVisible = false;
     bool hasFocus = false;
+    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
     float32 dpi = 0;
+    float32 userScale = 1.0f;
     Size2f size = { 0.0f, 0.0f };
     Size2f physicalSize = { 0.0f, 0.0f };
-    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
@@ -208,6 +212,11 @@ inline Size2f Window::GetSize() const
 inline Size2f Window::GetPhysicalSize() const
 {
     return physicalSize;
+}
+
+inline float32 Window::GetUserScale() const
+{
+    return userScale;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

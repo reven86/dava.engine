@@ -13,9 +13,9 @@ class DeviceInfo
 public:
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
 
+#if !defined(__DAVAENGINE_COREV2__)
     struct ScreenInfo
     {
-#if !defined(__DAVAENGINE_COREV2__)
         int32 width;
         int32 height;
         float32 scale;
@@ -33,11 +33,8 @@ public:
             height = h;
             scale = _scale;
         }
-#else
-        int32 width = 0;
-        int32 height = 0;
-#endif
     };
+#endif
 
     enum ePlatform
     {
@@ -139,7 +136,6 @@ public:
     static String GetHTTPProxyHost();
     static String GetHTTPNonProxyHosts();
     static int32 GetHTTPProxyPort();
-    static ScreenInfo& GetScreenInfo();
     static int32 GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
@@ -152,6 +148,7 @@ public:
     static bool IsHIDConnected(eHIDType type);
 
 #if !defined(__DAVAENGINE_COREV2__)
+    static ScreenInfo& GetScreenInfo();
     static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
 #endif
 

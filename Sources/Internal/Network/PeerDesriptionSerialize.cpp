@@ -124,9 +124,9 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     SerializedGeneralInfo* general = reinterpret_cast<SerializedGeneralInfo*>(header + 1);
     general->platfromType = static_cast<uint32>(platformType);
     general->gpuFamily = static_cast<uint32>(gpuFamily);
+#if !defined(__DAVAENGINE_COREV2__)
     general->screenWidth = screenInfo.width;
     general->screenHeight = screenInfo.height;
-#if !defined(__DAVAENGINE_COREV2__)
     general->screenScale = static_cast<int32>(screenInfo.scale);
 #endif
     strncpy(general->platform.data(), platform.c_str(), general->platform.size());

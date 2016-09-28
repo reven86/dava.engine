@@ -141,10 +141,12 @@ int DeviceInfoPrivate::GetHTTPProxyPort()
     return 0;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 {
     return screenInfo;
 }
+#endif
 
 int DeviceInfoPrivate::GetZBufferSize()
 {
@@ -192,6 +194,7 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
     return networkInfo;
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 // temporary decision
 void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit)
 {
@@ -212,7 +215,6 @@ void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& scree
         return;
     }
 
-#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
@@ -243,8 +245,8 @@ void DeviceInfoPrivate::InitializeScreenInfo(const DeviceInfo::ScreenInfo& scree
         CreateAndStartHIDWatcher();
         watchersCreated = true;
     }
-#endif // !__DAVAENGINE_COREV2__
 }
+#endif // !__DAVAENGINE_COREV2__
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
 {

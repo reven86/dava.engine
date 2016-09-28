@@ -237,6 +237,11 @@ void Core::CreateSingletons()
     new VersionInfo();
 
     new VirtualCoordinatesSystem();
+
+#if !defined(__DAVAENGINE_COREV2__)
+    UIControlSystem::Instance()->vcs = VirtualCoordinatesSystem::Instance();
+#endif
+
     new RenderSystem2D();
 
 #if defined __DAVAENGINE_IPHONE__

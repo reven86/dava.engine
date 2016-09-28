@@ -85,12 +85,12 @@ int32 DeviceInfo::GetHTTPProxyPort()
     return GetPrivateImpl()->GetHTTPProxyPort();
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 DeviceInfo::ScreenInfo& DeviceInfo::GetScreenInfo()
 {
     return GetPrivateImpl()->GetScreenInfo();
 }
 
-#if !defined(__DAVAENGINE_COREV2__)
 void DeviceInfo::InitializeScreenInfo(const ScreenInfo& screenInfo, bool fullInit)
 {
 #if defined(__DAVAENGINE_WIN_UAP__)

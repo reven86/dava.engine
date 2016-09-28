@@ -24,7 +24,7 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnResume(long windowBackendPointer);
     public static native void nativeSurfaceViewOnPause(long windowBackendPointer);
     public static native void nativeSurfaceViewOnSurfaceCreated(long windowBackendPointer, DavaSurfaceView surfaceView);
-    public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height);
+    public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height, int dpi);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
@@ -139,8 +139,16 @@ final class DavaSurfaceView extends SurfaceView
             return;
         }
 
-        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
-        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
+        int dpi = 0;
+
+        {
+            final DisplayMetrics dm = new DisplayMetrics();
+            DavaActivity.instance().getWindowManager().getDefaultDisplay().getMetrics(dm);
+            dpi = (int) dm.densityDpi; 
+        }
+
+        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, dpi=%d", w, h, dpi));
+        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, dpi);
         
         if (DavaActivity.davaMainThread == null)
         {

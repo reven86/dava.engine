@@ -21,6 +21,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "Engine/EngineModule.h"
 
 namespace DAVA
 {
@@ -36,8 +37,10 @@ UIControlSystem::UIControlSystem()
     styleSheetSystem = new UIStyleSheetSystem();
     inputSystem = new UIInputSystem();
 
+#if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
     vcs->EnableReloadResourceOnResize(true);
+#endif
 
     screenshoter = new UIScreenshoter();
 

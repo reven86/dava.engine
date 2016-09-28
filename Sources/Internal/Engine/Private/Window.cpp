@@ -178,7 +178,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     physicalSize.dy = size.dy * compressedSize.scaleY;
     dpi = compressedSize.dpi;
 
-    Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+    Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, phW=%.3f, phH=%.3f, dpi=%.3f", size.dx, size.dy, physicalSize.dx, physicalSize.dy, dpi);
 
     engineBackend.InitRenderer(this);
 
@@ -237,7 +237,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
     physicalSize.dy = size.dy * compressedSize.scaleY;
     dpi = compressedSize.dpi;
 
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
+    Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED: width=%.1f, height=%.1f, phW=%.3f, phH=%.3f, dpi=%.3f", size.dx, size.dy, physicalSize.dx, physicalSize.dy, dpi);
 
     engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
     if (windowBackend->IsWindowReadyForRender())

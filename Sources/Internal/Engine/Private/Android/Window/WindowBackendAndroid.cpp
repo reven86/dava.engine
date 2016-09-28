@@ -143,7 +143,7 @@ void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
     }
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 dpi)
 {
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
@@ -173,13 +173,13 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        PostWindowCreated(w, h, 1.0f, 1.0f);
+        PostWindowCreated(w, h, 1.0f, 1.0f, dpi);
 
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        PostSizeChanged(w, h, 1.0f, 1.0f);
+        PostSizeChanged(w, h, 1.0f, 1.0f, dpi);
     }
 }
 

@@ -51,7 +51,7 @@ private:
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
-    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
+    void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 dpi);
     void SurfaceDestroyed();
     void ProcessProperties();
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);

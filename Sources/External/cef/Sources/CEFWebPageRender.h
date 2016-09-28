@@ -27,7 +27,7 @@ public:
 
     void SetVisible(bool visibility);
     void SetBackgroundTransparency(bool value);
-    void SetViewSize(Vector2 size);
+    void SetViewRect(const Rect& rect);
     void ShutDown();
 
 private:
@@ -54,7 +54,7 @@ private:
     int imageWidth = 0;
     int imageHeight = 0;
     Vector<uint8> imageData;
-    Vector2 logicalViewSize;
+    Rect logicalViewRect;
     RefPtr<UIControlBackground> contentBackground;
     bool transparency = true;
     bool isActive = true;

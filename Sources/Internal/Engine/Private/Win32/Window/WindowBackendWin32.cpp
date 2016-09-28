@@ -6,6 +6,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
+#include <ShellScalingAPI.h>
+
 #include "Engine/Window.h"
 #include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
@@ -177,12 +179,13 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
             return 0;
         }
     }
-
     if (!isEnteredSizingModalLoop)
     {
         float32 w = static_cast<float32>(width);
         float32 h = static_cast<float32>(height);
-        PostSizeChanged(w, h, 1.0f, 1.0f);
+        float32 dpi = GetDpi();
+        float32 scale = 96.0f / dpi;
+        PostSizeChanged(w, h, scale, scale, dpi);
     }
     return 0;
 }
@@ -194,10 +197,11 @@ LRESULT WindowBackend::OnEnterExitSizeMove(bool enter)
     {
         RECT rc;
         GetClientRect(hwnd, &rc);
-
         float32 w = static_cast<float32>(rc.right - rc.left);
         float32 h = static_cast<float32>(rc.bottom - rc.top);
-        PostSizeChanged(w, h, 1.0f, 1.0f);
+        float32 dpi = GetDpi();
+        float32 scale = 96.0f / dpi;
+        PostSizeChanged(w, h, scale, scale, dpi);
     }
     return 0;
 }
@@ -314,7 +318,9 @@ LRESULT WindowBackend::OnCreate()
 
     float32 w = static_cast<float32>(rc.right - rc.left);
     float32 h = static_cast<float32>(rc.bottom - rc.top);
-    PostWindowCreated(w, h, 1.0f, 1.0f);
+    float32 dpi = GetDpi();
+    float32 scale = 96.0f / dpi;
+    PostWindowCreated(w, h, scale, scale, dpi);
     PostVisibilityChanged(true);
     return 0;
 }
@@ -352,6 +358,16 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
     {
         lresult = OnEnterExitSizeMove(message == WM_ENTERSIZEMOVE);
+    }
+    else if (message == WM_DPICHANGED)
+    {
+        RECT* suggestedSize = reinterpret_cast<RECT*>(lparam);
+
+        float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
+        float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
+        Resize(w, h);
+
+        lresult = 1;
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -485,6 +501,39 @@ bool WindowBackend::RegisterWindowClass()
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
     }
     return windowClassRegistered;
+}
+
+float32 WindowBackend::GetDpi() const
+{
+    float32 dpi = 0.0f;
+
+    using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
+
+    // we are trying to get pointer on GetDpiForMonitor function with GetProcAddress
+    // because this function is available only on win8.1 and win10 but we should be able
+    // to run the same build on win7, win8, win10. So on win7 GetProcAddress will return null
+    // and GetDpiForMonitor wont be called
+    HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
+    MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
+
+    if (nullptr != fn)
+    {
+        UINT x = 0, y = 0;
+        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+        (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
+
+        dpi = static_cast<float32>(x);
+    }
+    else
+    {
+        // default behavior for windows (ver < 8.1)
+        // get dpi from caps
+        HDC screen = GetDC(NULL);
+        dpi = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
+        ReleaseDC(NULL, screen);
+    }
+
+    return dpi;
 }
 
 } // namespace Private

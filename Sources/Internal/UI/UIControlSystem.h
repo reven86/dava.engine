@@ -7,6 +7,10 @@
 #include "Base/FastName.h"
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
+#if !defined(__DAVAENGINE_COREV2__)
+#include "UI/UIScreenTransition.h"
+#include "UI/UIPopup.h"
+#endif
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -24,8 +28,10 @@ class UIStyleSheetSystem;
 class UIFocusSystem;
 class UIInputSystem;
 class UIScreenshoter;
+#if defined(__DAVAENGINE_COREV2__)
 class UIScreenTransition;
 class UIPopup;
+#endif
 
 class ScreenSwitchListener
 {
