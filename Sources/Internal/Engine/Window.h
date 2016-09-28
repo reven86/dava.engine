@@ -65,8 +65,9 @@ public:
     /// Supports following modes: see more in eMouseMode enum
     /// SetMouseMode - turn on mouse mode, if could be set, on WinUWP it will be performed on UI thread
     /// GetMouseMode - gets current mode
+    /// return true, if platform supported mode, otherwise false
     ///
-    void SetMouseMode(eMouseMode mode);
+    bool SetMouseMode(eMouseMode mode);
     eMouseMode GetMouseMode() const;
 
 public:
@@ -124,6 +125,7 @@ private:
 
     void ClearMouseButtons();
     void InitCustomRenderParams(rhi::InitParam& params);
+    bool SkipOrActivatePinning(const Private::MainDispatcherEvent& e);
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
@@ -147,7 +149,8 @@ private:
     bool pendingSizeChanging = false;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
-
+    eMouseMode mouseMode = eMouseMode::DEFAULT;
+    bool deferredPinningOn = false;
     // Friends
     friend class Private::EngineBackend;
     friend Private::WindowBackend;

@@ -101,20 +101,15 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
 
 void WindowBackend::SetMouseMode(eMouseMode mode)
 {
-    if (mouseMode == mode)
-    {
-        return;
-    }
-    mouseMode = mode;
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CHANGE_MOUSE_MODE;
     e.mouseMode = mode;
     platformDispatcher.PostEvent(e);
 }
 
-eMouseMode WindowBackend::GetMouseMode() const
+bool WindowBackend::MouseModeSupported(eMouseMode mode) const
 {
-    return mouseMode;
+    return mode != eMouseMode::FRAME;
 }
 
 } // namespace Private

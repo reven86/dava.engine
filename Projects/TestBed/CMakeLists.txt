@@ -7,6 +7,7 @@ if( NOT DAVA_MEGASOLUTION )
     #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+set (DAVA_COREV2 1)
 if (DAVA_COREV2)
     add_definitions(-D__DAVAENGINE_COREV2__)
     # Uncomment to use local resources for android

@@ -38,7 +38,6 @@ ref struct WindowNativeBridge sealed
 private:
     void SetMouseVisibility(bool visible);
     void SetMouseCaptured(bool capture);
-    bool DeferredMouseMode(const MainDispatcherEvent& e);
 
     void OnTriggerPlatformEvents();
 
@@ -91,12 +90,6 @@ private:
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
 
-    bool mouseCaptured = false;
-    bool mouseVisibled = true;
-    bool deferredMouseMode = false;
-    eMouseMode nativeMouseMode = eMouseMode::DEFAULT;
-    bool hasFocus = false;
-    bool focusChanged = false;
     uint32 skipMouseMoveEvents = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };

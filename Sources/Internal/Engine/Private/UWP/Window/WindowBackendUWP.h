@@ -45,7 +45,7 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
     void SetMouseMode(eMouseMode mode);
-    eMouseMode GetMouseMode() const;
+    bool MouseModeSupported(eMouseMode mode) const;
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);

@@ -103,26 +103,16 @@ void WindowNativeBridge::DoCloseWindow()
 
 void WindowNativeBridge::DoChangeMouseMode(eMouseMode mode)
 {
-    nativeMouseMode = mode;
-    deferredMouseMode = false;
     switch (mode)
     {
     case DAVA::eMouseMode::FRAME:
         //not implemented
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
         break;
     case DAVA::eMouseMode::PINNING:
     {
-        if (hasFocus && !focusChanged)
-        {
-            SetMouseCaptured(true);
-            SetMouseVisibility(false);
-        }
-        else
-        {
-            deferredMouseMode = true;
-        }
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        SetMouseCaptured(true);
+        SetMouseVisibility(false);
         break;
     }
     case DAVA::eMouseMode::DEFAULT:
@@ -142,6 +132,7 @@ void WindowNativeBridge::DoChangeMouseMode(eMouseMode mode)
 
 void WindowNativeBridge::SetMouseVisibility(bool visible)
 {
+    static bool mouseVisibled = true;
     // run on UI thread
     if (mouseVisibled == visible)
     {
@@ -162,6 +153,7 @@ void WindowNativeBridge::SetMouseVisibility(bool visible)
 
 void WindowNativeBridge::SetMouseCaptured(bool capture)
 {
+    static bool mouseCaptured = false;
     using namespace ::Windows::Devices::Input;
     using namespace ::Windows::Foundation;
     if (mouseCaptured == capture)
@@ -179,51 +171,6 @@ void WindowNativeBridge::SetMouseCaptured(bool capture)
     }
 }
 
-bool WindowNativeBridge::DeferredMouseMode(const MainDispatcherEvent& e)
-{
-    // run on UI thread
-    if (!hasFocus)
-    {
-        return true;
-    }
-    focusChanged = false;
-    if (deferredMouseMode)
-    {
-        if (MainDispatcherEvent::MOUSE_MOVE != e.type && MainDispatcherEvent::MOUSE_BUTTON_UP != e.type && MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type)
-        {
-            deferredMouseMode = false;
-            SetMouseVisibility(false);
-            if (eMouseMode::PINNING == nativeMouseMode)
-            {
-                SetMouseCaptured(true);
-                skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-            }
-            return false;
-        }
-        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
-        {
-            // check, only mouse release event in work rect tern on capture mode
-            bool mclickInRect = true;
-            Vector2 virtualPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(Vector2(e.mclickEvent.x, e.mclickEvent.y));
-            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= uwpWindow->GetWindow()->GetWidth());
-            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= uwpWindow->GetWindow()->GetHeight());
-            if (mclickInRect && hasFocus)
-            {
-                deferredMouseMode = false;
-                SetMouseVisibility(false);
-                if (eMouseMode::PINNING == nativeMouseMode)
-                {
-                    SetMouseCaptured(true);
-                    skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-                }
-                // skip this event
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     uwpWindow->ProcessPlatformEvents();
@@ -232,22 +179,7 @@ void WindowNativeBridge::OnTriggerPlatformEvents()
 void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg)
 {
     using namespace ::Windows::UI::Core;
-    hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
-    if (!hasFocus)
-    {
-        focusChanged = true;
-        if (eMouseMode::PINNING == nativeMouseMode)
-        {
-            SetMouseVisibility(true);
-            SetMouseCaptured(false);
-            deferredMouseMode = true;
-        }
-        else if (eMouseMode::HIDE == nativeMouseMode)
-        {
-            SetMouseVisibility(true);
-            deferredMouseMode = true;
-        }
-    }
+    bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     uwpWindow->GetWindow()->PostFocusChanged(hasFocus);
 }
 
@@ -276,24 +208,12 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
     {
     case CoreAcceleratorKeyEventType::KeyDown:
     case CoreAcceleratorKeyEventType::SystemKeyDown:
-    {
-        MainDispatcherEvent e;
-        e.type = MainDispatcherEvent::KEY_DOWN;
-        if (!DeferredMouseMode(e))
-        {
-            uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
-        }
+        uwpWindow->GetWindow()->PostKeyDown(key, status.WasKeyDown);
         break;
-    }
     case CoreAcceleratorKeyEventType::KeyUp:
     case CoreAcceleratorKeyEventType::SystemKeyUp:
     {
-        MainDispatcherEvent e;
-        e.type = MainDispatcherEvent::KEY_UP;
-        if (!DeferredMouseMode(e))
-        {
-            uwpWindow->GetWindow()->PostKeyUp(key);
-        }
+        uwpWindow->GetWindow()->PostKeyUp(key);
         break;
     }
     default:
@@ -341,11 +261,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(state);
-
-        if (!DeferredMouseMode(e))
-        {
-            uwpWindow->GetDispatcher()->PostEvent(e);
-        }
+        uwpWindow->GetDispatcher()->PostEvent(e);
 
         mouseButtonState = state;
     }
@@ -375,11 +291,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(mouseButtonState);
-
-        if (!DeferredMouseMode(e))
-        {
-            uwpWindow->GetDispatcher()->PostEvent(e);
-        }
+        uwpWindow->GetDispatcher()->PostEvent(e);
 
         mouseButtonState.reset();
     }
@@ -417,21 +329,14 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
             {
                 e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
                 e.mclickEvent.button = static_cast<uint32>(i + 1);
-                if (!DeferredMouseMode(e))
-                {
-                    uwpWindow->GetDispatcher()->PostEvent(e);
-                }
+                uwpWindow->GetDispatcher()->PostEvent(e);
             }
         }
 
         e.type = MainDispatcherEvent::MOUSE_MOVE;
         e.mmoveEvent.x = pointerPoint->Position.X;
         e.mmoveEvent.y = pointerPoint->Position.Y;
-
-        if (!DeferredMouseMode(e))
-        {
-            uwpWindow->GetDispatcher()->PostEvent(e);
-        }
+        uwpWindow->GetDispatcher()->PostEvent(e);
 
         mouseButtonState = state;
     }
@@ -455,18 +360,11 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     e.mwheelEvent.y = pointerPoint->Position.Y;
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    if (!DeferredMouseMode(e))
-    {
-        uwpWindow->GetDispatcher()->PostEvent(e);
-    }
+    uwpWindow->GetDispatcher()->PostEvent(e);
 }
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (eMouseMode::PINNING != nativeMouseMode)
-    {
-        return;
-    }
     // after enabled Pinning mode, skip move events, large x, y delta
     if (skipMouseMoveEvents)
     {
@@ -479,10 +377,7 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
     e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
-    if (!DeferredMouseMode(e))
-    {
-        uwpWindow->GetDispatcher()->PostEvent(e);
-    }
+    uwpWindow->GetDispatcher()->PostEvent(e);
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)

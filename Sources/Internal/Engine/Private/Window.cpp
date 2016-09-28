@@ -69,15 +69,74 @@ void Window::RunAsyncOnUIThread(const Function<void()>& task)
     windowBackend->RunAsyncOnUIThread(task);
 }
 
-void Window::SetMouseMode(eMouseMode mode)
+bool Window::SetMouseMode(eMouseMode mode)
 {
-    DVASSERT(windowBackend != nullptr);
-    windowBackend->SetMouseMode(mode);
+    if (!windowBackend->MouseModeSupported(mode))
+    {
+        return false;
+    }
+    if (mouseMode == mode)
+    {
+        return true;
+    }
+    mouseMode = mode;
+    switch (mode)
+    {
+    case DAVA::eMouseMode::DEFAULT:
+    case DAVA::eMouseMode::FRAME:
+    case DAVA::eMouseMode::HIDE:
+        windowBackend->SetMouseMode(mode);
+        break;
+    case DAVA::eMouseMode::PINNING:
+    {
+        if (hasFocus && !deferredPinningOn)
+        {
+            windowBackend->SetMouseMode(mode);
+        }
+        else
+        {
+            deferredPinningOn = true;
+        }
+    }
+    }
+    return true;
+}
+
+bool Window::SkipOrActivatePinning(const Private::MainDispatcherEvent& e)
+{
+    using Private::MainDispatcherEvent;
+    if (deferredPinningOn)
+    {
+        bool eventFilter = (MainDispatcherEvent::MOUSE_MOVE != e.type);
+        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_UP != e.type);
+        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type);
+        if (eventFilter)
+        {
+            deferredPinningOn = false;
+            windowBackend->SetMouseMode(eMouseMode::PINNING);
+            return false;
+        }
+        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        {
+            // check, only mouse release event in work rect tern on capture mode
+            bool mclickInRect = true;
+            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= GetWidth());
+            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= GetHeight());
+            if (mclickInRect && hasFocus)
+            {
+                deferredPinningOn = false;
+                windowBackend->SetMouseMode(eMouseMode::PINNING);
+                // return true, skip this event
+            }
+        }
+        return true;
+    }
+    return false;
 }
 
 eMouseMode Window::GetMouseMode() const
 {
-    return windowBackend->GetMouseMode();
+    return mouseMode;
 }
 
 void Window::Update(float32 frameDelta)
@@ -207,6 +266,17 @@ void Window::PostKeyChar(uint32 key, bool isRepeated)
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
+    if (MainDispatcherEvent::IsInputType(e.type))
+    {
+        if (!hasFocus)
+        {
+            return;
+        }
+        if (SkipOrActivatePinning(e))
+        {
+            return;
+        }
+    }
     switch (e.type)
     {
     case MainDispatcherEvent::MOUSE_MOVE:
@@ -319,8 +389,22 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
-
     hasFocus = e.stateEvent.state != 0;
+    if (hasFocus)
+    {
+        if (eMouseMode::PINNING != mouseMode)
+        {
+            windowBackend->SetMouseMode(mouseMode);
+        }
+    }
+    else
+    {
+        if (eMouseMode::DEFAULT != mouseMode)
+        {
+            windowBackend->SetMouseMode(eMouseMode::DEFAULT);
+        }
+    }
+    deferredPinningOn = (eMouseMode::PINNING == mouseMode);
     focusChanged.Emit(*this, hasFocus);
 }
 

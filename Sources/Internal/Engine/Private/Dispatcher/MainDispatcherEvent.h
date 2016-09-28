@@ -44,6 +44,11 @@ struct MainDispatcherEvent final
         APP_IMMEDIATE_TERMINATE,
     };
 
+    static bool IsInputType(eType type)
+    {
+        return (MOUSE_BUTTON_DOWN <= type && type <= KEY_CHAR);
+    }
+
     struct WindowStateEvent
     {
         uint32 state;
