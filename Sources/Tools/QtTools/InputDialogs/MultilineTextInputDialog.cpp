@@ -5,6 +5,7 @@
 #include <QEvent>
 #include <QShowEvent>
 #include <QKeyEvent>
+#include <QPlainTextEdit>
 
 namespace MultilineTextInputDialogDetails
 {
@@ -19,9 +20,20 @@ bool MultilineTextInputDialog::eventFilter(QObject* obj, QEvent* event)
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
         Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
-        if ((key == Qt::Key_Enter || key == Qt::Key_Return) && (modifiers & Qt::CTRL || modifiers & Qt::ALT))
+        if (key == Qt::Key_Enter || key == Qt::Key_Return)
         {
-            accept();
+            if (modifiers & (Qt::CTRL | Qt::ALT))
+            {
+                QPlainTextEdit* textEdit = qobject_cast<QPlainTextEdit*>(obj);
+                if (nullptr != textEdit)
+                {
+                    textEdit->appendPlainText("");
+                }
+            }
+            else if (!(modifiers & Qt::SHIFT))
+            {
+                accept();
+            }
         }
     }
     return false;
