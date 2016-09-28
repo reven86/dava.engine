@@ -327,7 +327,7 @@ def build_and_copy_libraries_win32_cmake(
 
 	# Generate & build
 	cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
-	cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_additional_args)
+	cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'x64', cmake_additional_args)
 	
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure	
@@ -362,7 +362,7 @@ def build_and_copy_libraries_win10_cmake(
 
 	# Generate & build
 	cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, build_config.win10_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
-	cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, build_config.win10_x64_cmake_generator, solution_name, target_name, 'Win64', cmake_additional_args)
+	cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, build_config.win10_x64_cmake_generator, solution_name, target_name, 'x64', cmake_additional_args)
 	cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, build_config.win10_arm_cmake_generator, solution_name, target_name, 'ARM', cmake_additional_args)
 
 	# Move built files into Libs/lib_CMake
