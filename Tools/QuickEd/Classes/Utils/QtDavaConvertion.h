@@ -1,5 +1,5 @@
-#ifndef __QTDAVACONVERTION_H__
-#define __QTDAVACONVERTION_H__
+#pragma once
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "FileSystem/VariantType.h"
@@ -22,5 +22,3 @@ QString QColorToHex(const QColor& color);
 
 DAVA::Vector2 QVector2DToVector2(const QVector2D& vector);
 QVector2D Vector2ToQVector2D(const DAVA::Vector2& vector);
-
-#endif // __QTDAVACONVERTION_H__
