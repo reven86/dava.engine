@@ -36,8 +36,11 @@ public:
 
     bool HasEvents() const;
 
-    void PostEvent(const T& e);
-    void SendEvent(const T& e);
+    template <typename U>
+    void PostEvent(U&& e);
+    template <typename U>
+    void SendEvent(U&& e);
+
     void ProcessEvents();
     void ViewEventQueue(const Function<void(const T&)>& viewer);
 
@@ -100,14 +103,16 @@ bool Dispatcher<T>::HasEvents() const
 }
 
 template <typename T>
-void Dispatcher<T>::PostEvent(const T& e)
+template <typename U>
+void Dispatcher<T>::PostEvent(U&& e)
 {
     LockGuard<Mutex> lock(mutex);
-    eventQueue.emplace_back(e, nullptr);
+    eventQueue.emplace_back(std::forward<U>(e), nullptr);
 }
 
 template <typename T>
-void Dispatcher<T>::SendEvent(const T& e)
+template <typename U>
+void Dispatcher<T>::SendEvent(U&& e)
 {
     DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
@@ -118,7 +123,7 @@ void Dispatcher<T>::SendEvent(const T& e)
         // simply call ProcessEvents
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(e, nullptr);
+            eventQueue.emplace_back(std::forward<U>(e), nullptr);
         }
         ProcessEvents();
     }
@@ -144,7 +149,7 @@ void Dispatcher<T>::SendEvent(const T& e)
 
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(e, &signalEventPool[signalEventIndex]);
+            eventQueue.emplace_back(std::forward<U>(e), &signalEventPool[signalEventIndex]);
         }
 
         DAVA_BEGIN_BLOCKING_CALL(linkedThreadId);
