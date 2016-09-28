@@ -55,14 +55,6 @@ struct AndroidBridge final
 
     void GameThread();
 
-    void SurfaceViewOnResume(WindowBackend* wbackend);
-    void SurfaceViewOnPause(WindowBackend* wbackend);
-    void SurfaceViewOnSurfaceCreated(WindowBackend* wbackend, JNIEnv* env, jobject jsurfaceView);
-    void SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height);
-    void SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env);
-    void SurfaceViewOnProcessProperties(WindowBackend* wbackend);
-    void SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y);
-
     JavaVM* javaVM = nullptr;
     jobject classLoader = nullptr; // Cached instance of ClassLoader
     jmethodID methodClassLoader_loadClass = nullptr; // ClassLoader.loadClass method

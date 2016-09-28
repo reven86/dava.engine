@@ -353,6 +353,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Debug/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/JNI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \
