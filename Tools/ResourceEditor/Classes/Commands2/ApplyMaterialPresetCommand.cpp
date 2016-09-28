@@ -10,12 +10,28 @@ namespace ApplyMaterialPresetDetail
 const DAVA::String contentNodeName("content");
 
 void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                           DAVA::KeyedArchive* content, const DAVA::SerializationContext& context)
+                           DAVA::KeyedArchive* content, const DAVA::SerializationContext& context, bool storeForUndo)
 {
-    DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
+    DAVA::Vector<DAVA::FastName> membersList;
+    if (storeForUndo == false)
+    {
+        // when we save preset into file we want to save only valid textures
+        DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
+        DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
 
-    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
+        membersList = dynamicInfo->MembersList(ddata);
+    }
+    else
+    {
+        // when we store preset for undo, we should save loval textures,
+        // to restore full state of material on undo
+        const DAVA::HashMap<DAVA::FastName, DAVA::MaterialTextureInfo*>& textures = material->GetLocalTextures();
+        membersList.reserve(textures.size());
+        for (const auto& item : textures)
+        {
+            membersList.push_back(item.first);
+        }
+    }
     for (const auto& texName : membersList)
     {
         if (material->HasLocalTexture(texName))
@@ -159,7 +175,7 @@ void ApplyMaterialPresetCommand::Init(DAVA::uint32 materialParts_)
     materialParts = materialParts_;
     DAVA::SerializationContext context;
     PrepareSerializationContext(context);
-    StoreMaterialPreset(undoInfo.get(), material.Get(), context);
+    StoreMaterialPresetImpl(undoInfo.get(), material.Get(), context, true);
 
     DVASSERT(undoInfo->IsKeyExists(ApplyMaterialPresetDetail::contentNodeName));
 }
@@ -186,41 +202,7 @@ void ApplyMaterialPresetCommand::Redo()
 
 void ApplyMaterialPresetCommand::StoreMaterialPreset(DAVA::KeyedArchive* preset, DAVA::NMaterial* material, const DAVA::SerializationContext& context)
 {
-    using namespace ApplyMaterialPresetDetail;
-
-    DAVA::ScopedPtr<DAVA::KeyedArchive> content(new DAVA::KeyedArchive());
-    const DAVA::InspInfo* info = material->GetTypeInfo();
-
-    DAVA::ScopedPtr<DAVA::KeyedArchive> texturesArchive(new DAVA::KeyedArchive());
-    DAVA::ScopedPtr<DAVA::KeyedArchive> flagsArchive(new DAVA::KeyedArchive());
-    DAVA::ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());
-
-    const DAVA::InspMember* materialMember = info->Member(DAVA::FastName("localTextures"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialTextures(material, materialMember, texturesArchive, context);
-
-    materialMember = info->Member(DAVA::FastName("localFlags"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialFlags(material, materialMember, flagsArchive);
-
-    materialMember = info->Member(DAVA::FastName("localProperties"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialProperties(material, materialMember, propertiesArchive);
-
-    content->SetArchive("flags", flagsArchive);
-    content->SetArchive("textures", texturesArchive);
-    content->SetArchive("properties", propertiesArchive);
-
-    auto fxName = material->GetLocalFXName();
-    if (fxName.IsValid())
-        content->SetFastName("fxname", fxName);
-
-    auto qualityGroup = material->GetQualityGroup();
-    if (qualityGroup.IsValid())
-        content->SetFastName("group", qualityGroup);
-
-    preset->SetUInt32("serializationContextVersion", context.GetVersion());
-    preset->SetArchive("content", content);
+    StoreMaterialPresetImpl(preset, material, context, false);
 }
 
 void ApplyMaterialPresetCommand::LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::uint32 parts)
@@ -261,6 +243,45 @@ void ApplyMaterialPresetCommand::LoadMaterialPreset(DAVA::KeyedArchive* archive,
     {
         UpdateMaterialTexturesFromPreset(material, preset->GetArchive("textures"), context.GetScenePath());
     }
+}
+
+void ApplyMaterialPresetCommand::StoreMaterialPresetImpl(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, bool storeForUndo)
+{
+    using namespace ApplyMaterialPresetDetail;
+
+    DAVA::ScopedPtr<DAVA::KeyedArchive> content(new DAVA::KeyedArchive());
+    const DAVA::InspInfo* info = material->GetTypeInfo();
+
+    DAVA::ScopedPtr<DAVA::KeyedArchive> texturesArchive(new DAVA::KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> flagsArchive(new DAVA::KeyedArchive());
+    DAVA::ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());
+
+    const DAVA::InspMember* materialMember = info->Member(DAVA::FastName("localTextures"));
+    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
+        StoreMaterialTextures(material, materialMember, texturesArchive, context, storeForUndo);
+
+    materialMember = info->Member(DAVA::FastName("localFlags"));
+    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
+        StoreMaterialFlags(material, materialMember, flagsArchive);
+
+    materialMember = info->Member(DAVA::FastName("localProperties"));
+    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
+        StoreMaterialProperties(material, materialMember, propertiesArchive);
+
+    content->SetArchive("flags", flagsArchive);
+    content->SetArchive("textures", texturesArchive);
+    content->SetArchive("properties", propertiesArchive);
+
+    auto fxName = material->GetLocalFXName();
+    if (fxName.IsValid())
+        content->SetFastName("fxname", fxName);
+
+    auto qualityGroup = material->GetQualityGroup();
+    if (qualityGroup.IsValid())
+        content->SetFastName("group", qualityGroup);
+
+    archive->SetUInt32("serializationContextVersion", context.GetVersion());
+    archive->SetArchive("content", content);
 }
 
 void ApplyMaterialPresetCommand::PrepareSerializationContext(DAVA::SerializationContext& context)
