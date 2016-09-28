@@ -45,6 +45,11 @@ struct UIDispatcherEvent final
         ResizeEvent resizeEvent;
         SetTitleEvent setTitleEvent;
     };
+
+    static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
+    static UIDispatcherEvent CreateCloseEvent();
+    static UIDispatcherEvent CreateSetTitleEvent(const String& title);
+    static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 
 } // namespace Private
