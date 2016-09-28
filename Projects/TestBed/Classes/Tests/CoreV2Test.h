@@ -15,11 +15,11 @@ class BaseObject;
 class Thread;
 };
 
-class GameCore;
+class TestBed;
 class CoreV2Test : public BaseScreen
 {
 public:
-    CoreV2Test(GameCore& gameCore);
+    CoreV2Test(TestBed& app);
     ~CoreV2Test();
 
 protected:

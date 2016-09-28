@@ -1,4 +1,4 @@
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
 
@@ -84,43 +84,43 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
 
     CheckDeviceInfoValid();
 
-    GameCore game(e);
+    TestBed game(e);
     return e.Run();
 }
 
-GameCore::GameCore(Engine& engine)
+TestBed::TestBed(Engine& engine)
     : engine(engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
-    engine.gameLoopStarted.Connect(this, &GameCore::OnGameLoopStarted);
-    engine.gameLoopStopped.Connect(this, &GameCore::OnGameLoopStopped);
-    engine.cleanup.Connect(this, &GameCore::OnEngineCleanup);
+    engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
+    engine.gameLoopStopped.Connect(this, &TestBed::OnGameLoopStopped);
+    engine.cleanup.Connect(this, &TestBed::OnEngineCleanup);
 
-    engine.suspended.Connect(this, &GameCore::OnSuspended);
-    engine.resumed.Connect(this, &GameCore::OnResumed);
+    engine.suspended.Connect(this, &TestBed::OnSuspended);
+    engine.resumed.Connect(this, &TestBed::OnResumed);
 
     if (engine.IsConsoleMode())
     {
-        engine.update.Connect(this, &GameCore::OnUpdateConsole);
+        engine.update.Connect(this, &TestBed::OnUpdateConsole);
     }
     else
     {
-        engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
-        engine.windowDestroyed.Connect(this, &GameCore::OnWindowDestroyed);
+        engine.windowCreated.Connect(this, &TestBed::OnWindowCreated);
+        engine.windowDestroyed.Connect(this, &TestBed::OnWindowDestroyed);
 
         Window* w = engine.PrimaryWindow();
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->Resize(1024.f, 768.f);
-        w->sizeScaleChanged.Connect(this, &GameCore::OnWindowSizeChanged);
+        w->sizeScaleChanged.Connect(this, &TestBed::OnWindowSizeChanged);
     }
 
     engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
 }
 
-void GameCore::OnGameLoopStarted()
+void TestBed::OnGameLoopStarted()
 {
-    Logger::Debug("****** GameCore::OnGameLoopStarted");
+    Logger::Debug("****** TestBed::OnGameLoopStarted");
 
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
 
@@ -135,9 +135,9 @@ void GameCore::OnGameLoopStarted()
     }
 }
 
-void GameCore::OnGameLoopStopped()
+void TestBed::OnGameLoopStopped()
 {
-    Logger::Debug("****** GameCore::OnGameLoopStopped");
+    Logger::Debug("****** TestBed::OnGameLoopStopped");
 
     for (auto testScreen : screens)
     {
@@ -147,15 +147,15 @@ void GameCore::OnGameLoopStopped()
     SafeRelease(testListScreen);
 }
 
-void GameCore::OnEngineCleanup()
+void TestBed::OnEngineCleanup()
 {
-    Logger::Debug("****** GameCore::OnEngineCleanup");
+    Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
 }
 
-void GameCore::OnWindowCreated(DAVA::Window& w)
+void TestBed::OnWindowCreated(DAVA::Window& w)
 {
-    Logger::Error("****** GameCore::OnWindowCreated");
+    Logger::Error("****** TestBed::OnWindowCreated");
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
@@ -163,27 +163,27 @@ void GameCore::OnWindowCreated(DAVA::Window& w)
     RunTests();
 }
 
-void GameCore::OnWindowDestroyed(DAVA::Window& w)
+void TestBed::OnWindowDestroyed(DAVA::Window& w)
 {
-    Logger::Error("****** GameCore::OnWindowDestroyed");
+    Logger::Error("****** TestBed::OnWindowDestroyed");
 }
 
-void GameCore::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void TestBed::OnWindowSizeChanged(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
-    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
+    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f, sx=%.1f, sy=%.1f", width, height, scaleX, scaleY);
 }
 
-void GameCore::OnSuspended()
+void TestBed::OnSuspended()
 {
-    Logger::Error("****** GameCore::OnSuspended");
+    Logger::Error("****** TestBed::OnSuspended");
 }
 
-void GameCore::OnResumed()
+void TestBed::OnResumed()
 {
-    Logger::Error("****** GameCore::OnResumed");
+    Logger::Error("****** TestBed::OnResumed");
 }
 
-void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
+void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
 {
     static int frameCount = 0;
     frameCount += 1;
@@ -195,19 +195,18 @@ void GameCore::OnUpdateConsole(DAVA::float32 frameDelta)
     }
 }
 
-void GameCore::RunOnlyThisTest()
+void TestBed::RunOnlyThisTest()
 {
     //runOnlyThisTest = "NotificationScreen";
 }
 
-void GameCore::OnError()
+void TestBed::OnError()
 {
     DavaDebugBreak();
 }
 
-void GameCore::RegisterTests()
+void TestBed::RegisterTests()
 {
-    new FullscreenTest(*this);
     new CoreV2Test(*this);
     new DeviceInfoTest(*this);
     new DlcTest(*this);
@@ -223,6 +222,7 @@ void GameCore::RegisterTests()
     new WebViewTest(*this);
     new FunctionSignalTest(*this);
     new KeyboardTest(*this);
+    new FullscreenTest(*this);
     new UIBackgroundTest(*this);
     new ClipTest(*this);
     new GPUTest(*this);
@@ -233,7 +233,7 @@ void GameCore::RegisterTests()
     //$UNITTEST_CTOR
 }
 
-void GameCore::RegisterScreen(BaseScreen* screen)
+void TestBed::RegisterScreen(BaseScreen* screen)
 {
     UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
 
@@ -241,13 +241,13 @@ void GameCore::RegisterScreen(BaseScreen* screen)
     testListScreen->AddTestScreen(screen);
 }
 
-void GameCore::ShowStartScreen()
+void TestBed::ShowStartScreen()
 {
     currentScreen = nullptr;
     UIScreenManager::Instance()->SetScreen(0);
 }
 
-void GameCore::CreateDocumentsFolder()
+void TestBed::CreateDocumentsFolder()
 {
     FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "TestBed/";
 
@@ -255,7 +255,7 @@ void GameCore::CreateDocumentsFolder()
     FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
 }
 
-File* GameCore::CreateDocumentsFile(const String& filePathname)
+File* TestBed::CreateDocumentsFile(const String& filePathname)
 {
     FilePath workingFilepathname = FilePath::FilepathInDocuments(filePathname);
 
@@ -265,7 +265,7 @@ File* GameCore::CreateDocumentsFile(const String& filePathname)
     return retFile;
 }
 
-void GameCore::RunTests()
+void TestBed::RunTests()
 {
     if ("" != runOnlyThisTest)
     {
@@ -292,7 +292,7 @@ void GameCore::RunTests()
     }
 }
 
-bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
+bool TestBed::IsNeedSkipTest(const BaseScreen& screen) const
 {
     if (runOnlyThisTest.empty())
     {
@@ -304,7 +304,7 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name.c_str());
 }
 
-void GameCore::InitNetwork()
+void TestBed::InitNetwork()
 {
     using namespace Net;
     auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
@@ -343,11 +343,11 @@ void GameCore::InitNetwork()
     peerDescr = PeerDescription(config);
     Net::Endpoint annoUdpEndpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);
     Net::Endpoint annoTcpEndpoint(NetCore::DEFAULT_TCP_ANNOUNCE_PORT);
-    id_anno = NetCore::Instance()->CreateAnnouncer(annoUdpEndpoint, DEFAULT_ANNOUNCE_TIME_PERIOD, MakeFunction(this, &GameCore::AnnounceDataSupplier), annoTcpEndpoint);
+    id_anno = NetCore::Instance()->CreateAnnouncer(annoUdpEndpoint, DEFAULT_ANNOUNCE_TIME_PERIOD, MakeFunction(this, &TestBed::AnnounceDataSupplier), annoTcpEndpoint);
     id_net = NetCore::Instance()->CreateController(config, nullptr);
 }
 
-size_t GameCore::AnnounceDataSupplier(size_t length, void* buffer)
+size_t TestBed::AnnounceDataSupplier(size_t length, void* buffer)
 {
     using namespace Net;
     if (true == peerDescr.NetworkInterfaces().empty())

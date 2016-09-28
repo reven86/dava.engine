@@ -1,14 +1,14 @@
 #include "Tests/CoreV2Test.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;
 
-CoreV2Test::CoreV2Test(GameCore& gameCore)
-    : BaseScreen(gameCore, "CoreV2Test")
-    , engine(gameCore.GetEngine())
+CoreV2Test::CoreV2Test(TestBed& app)
+    : BaseScreen(app, "CoreV2Test")
+    , engine(app.GetEngine())
 {
     dispatchers.reserve(4);
     for (int i = 0; i < 4; ++i)

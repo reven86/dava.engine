@@ -398,8 +398,8 @@ private:
 
 CustomText* customText = nullptr;
 
-KeyboardTest::KeyboardTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "KeyboardTest")
+KeyboardTest::KeyboardTest(TestBed& app)
+    : BaseScreen(app, "KeyboardTest")
 {
 }
 

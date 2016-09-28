@@ -9,11 +9,11 @@ namespace DAVA
 class Window;
 }
 
-class GameCore;
+class TestBed;
 class FullscreenTest : public BaseScreen
 {
 public:
-    FullscreenTest(GameCore& gameCore);
+    FullscreenTest(TestBed& app);
 
 protected:
     void LoadResources() override;

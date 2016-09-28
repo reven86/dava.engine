@@ -1,17 +1,17 @@
 #include "Infrastructure/BaseScreen.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include <UI/Layouts/UIAnchorComponent.h>
 
 DAVA::int32 BaseScreen::globalScreenId = 1;
 
-BaseScreen::BaseScreen(GameCore& gameCore, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
+BaseScreen::BaseScreen(TestBed& app, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
     : UIScreen()
-    , gameCore(gameCore)
+    , app(app)
     , currentScreenId(globalScreenId++)
 {
     SetName(screenName);
-    gameCore.RegisterScreen(this);
+    app.RegisterScreen(this);
 }
 
 bool BaseScreen::SystemInput(DAVA::UIEvent* currentInput)
@@ -65,5 +65,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject* obj, void* data, void* callerData)
 {
-    gameCore.ShowStartScreen();
+    app.ShowStartScreen();
 }

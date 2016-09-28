@@ -18,7 +18,7 @@ class TestData;
 class BaseScreen;
 class TestListScreen;
 
-class GameCore
+class TestBed
 {
     struct ErrorData
     {
@@ -30,7 +30,7 @@ class GameCore
     };
 
 public:
-    GameCore(DAVA::Engine& engine);
+    TestBed(DAVA::Engine& engine);
 
     DAVA::Engine& GetEngine() const;
 
@@ -88,7 +88,7 @@ private:
     bool loggerInUse = false;
 };
 
-inline DAVA::Engine& GameCore::GetEngine() const
+inline DAVA::Engine& TestBed::GetEngine() const
 {
     return engine;
 }

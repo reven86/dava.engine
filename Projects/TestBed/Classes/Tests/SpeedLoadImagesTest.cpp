@@ -6,8 +6,8 @@
 
 using namespace DAVA;
 
-SpeedLoadImagesTest::SpeedLoadImagesTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "SpeedLoadImagesTest")
+SpeedLoadImagesTest::SpeedLoadImagesTest(TestBed& app)
+    : BaseScreen(app, "SpeedLoadImagesTest")
     , resultText(nullptr)
 {
 }

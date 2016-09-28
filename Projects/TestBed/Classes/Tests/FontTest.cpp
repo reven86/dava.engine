@@ -33,8 +33,8 @@ enum Tags
     DECREASE_SIZE_TAG
 };
 
-FontTest::FontTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "FontTest")
+FontTest::FontTest(TestBed& app)
+    : BaseScreen(app, "FontTest")
 {
 }
 

@@ -3,11 +3,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class GameCore;
+class TestBed;
 class FunctionSignalTest : public BaseScreen
 {
 public:
-    FunctionSignalTest(GameCore& gameCore);
+    FunctionSignalTest(TestBed& app);
 
     void LoadResources() override;
     void UnloadResources() override;

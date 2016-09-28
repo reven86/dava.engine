@@ -1,14 +1,14 @@
 #include "Tests/FullscreenTest.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "FullscreenTest")
-    , primaryWindow(gameCore.GetEngine().PrimaryWindow())
+FullscreenTest::FullscreenTest(TestBed& app)
+    : BaseScreen(app, "FullscreenTest")
+    , primaryWindow(app.GetEngine().PrimaryWindow())
 {
 }
 

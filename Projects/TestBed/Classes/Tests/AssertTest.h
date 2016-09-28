@@ -2,11 +2,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class GameCore;
+class TestBed;
 class AssertTest : public BaseScreen
 {
 public:
-    AssertTest(GameCore& gameCore);
+    AssertTest(TestBed& app);
 
 protected:
     void LoadResources() override;
