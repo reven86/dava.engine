@@ -101,47 +101,17 @@ void WindowNativeBridge::DoCloseWindow()
     UninstallEventHandlers();
 }
 
-void WindowNativeBridge::DoChangeMouseMode(eMouseMode mode)
-{
-    switch (mode)
-    {
-    case DAVA::eMouseMode::FRAME:
-        //not implemented
-        break;
-    case DAVA::eMouseMode::PINNING:
-    {
-        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-        SetMouseCaptured(true);
-        SetMouseVisibility(false);
-        break;
-    }
-    case DAVA::eMouseMode::DEFAULT:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(true);
-        break;
-    }
-    case DAVA::eMouseMode::HIDE:
-    {
-        SetMouseCaptured(false);
-        SetMouseVisibility(false);
-        break;
-    }
-    }
-}
-
-void WindowNativeBridge::SetMouseVisibility(bool visible)
+void WindowNativeBridge::ChangeMouseVisibility(bool visibility)
 {
     static bool mouseVisibled = true;
-    // run on UI thread
-    if (mouseVisibled == visible)
+    if (mouseVisibled == visibility)
     {
         return;
     }
-    mouseVisibled = visible;
+    mouseVisibled = visibility;
     using ::Windows::UI::Core::CoreCursor;
     using ::Windows::UI::Core::CoreCursorType;
-    if (visible)
+    if (visibility)
     {
         ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
     }
@@ -151,23 +121,27 @@ void WindowNativeBridge::SetMouseVisibility(bool visible)
     }
 }
 
-void WindowNativeBridge::SetMouseCaptured(bool capture)
+void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
 {
-    static bool mouseCaptured = false;
     using namespace ::Windows::Devices::Input;
     using namespace ::Windows::Foundation;
-    if (mouseCaptured == capture)
+    if (captureMode == mode)
     {
         return;
     }
-    mouseCaptured = capture;
-    if (capture)
+    captureMode = mode;
+    switch (captureMode)
     {
-        tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
-    }
-    else
-    {
+    case DAVA::eCaptureMode::DEFAULT:
         MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+        break;
+    case DAVA::eCaptureMode::FRAME:
+        // now, not implemented
+        break;
+    case DAVA::eCaptureMode::PINNING:
+        tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        break;
     }
 }
 
@@ -261,6 +235,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(state);
+        e.mclickEvent.relatival = (captureMode == eCaptureMode::PINNING);
         uwpWindow->GetDispatcher()->PostEvent(e);
 
         mouseButtonState = state;
@@ -291,6 +266,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         e.mclickEvent.x = pointerPoint->Position.X;
         e.mclickEvent.y = pointerPoint->Position.Y;
         e.mclickEvent.button = GetMouseButtonIndex(mouseButtonState);
+        e.mclickEvent.relatival = (captureMode == eCaptureMode::PINNING);
         uwpWindow->GetDispatcher()->PostEvent(e);
 
         mouseButtonState.reset();
@@ -360,6 +336,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     e.mwheelEvent.y = pointerPoint->Position.Y;
     e.mwheelEvent.deltaX = 0.0f;
     e.mwheelEvent.deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
+    e.mwheelEvent.relatival = (captureMode == eCaptureMode::PINNING);
     uwpWindow->GetDispatcher()->PostEvent(e);
 }
 
@@ -377,6 +354,7 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     e.type = MainDispatcherEvent::MOUSE_MOVE;
     e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
     e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
+    e.mmoveEvent.relatival = (captureMode == eCaptureMode::PINNING);
     uwpWindow->GetDispatcher()->PostEvent(e);
 }
 

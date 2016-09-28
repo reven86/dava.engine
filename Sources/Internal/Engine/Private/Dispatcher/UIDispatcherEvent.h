@@ -19,7 +19,8 @@ struct UIDispatcherEvent final
         CREATE_WINDOW,
         CLOSE_WINDOW,
         FUNCTOR,
-        CHANGE_MOUSE_MODE,
+        CHANGE_CAPTURE_MODE,
+        CHANGE_MOUSE_VISIBILITY,
     };
 
     struct ResizeEvent
@@ -33,7 +34,8 @@ struct UIDispatcherEvent final
     union
     {
         ResizeEvent resizeEvent;
-        eMouseMode mouseMode;
+        eCaptureMode mouseMode;
+        bool mouseVisibility;
     };
 };
 

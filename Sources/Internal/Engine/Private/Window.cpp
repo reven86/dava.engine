@@ -69,74 +69,14 @@ void Window::RunAsyncOnUIThread(const Function<void()>& task)
     windowBackend->RunAsyncOnUIThread(task);
 }
 
-bool Window::SetMouseMode(eMouseMode mode)
+bool Window::SetCaptureMode(eCaptureMode mode)
 {
-    if (!windowBackend->MouseModeSupported(mode))
-    {
-        return false;
-    }
-    if (mouseMode == mode)
-    {
-        return true;
-    }
-    mouseMode = mode;
-    switch (mode)
-    {
-    case DAVA::eMouseMode::DEFAULT:
-    case DAVA::eMouseMode::FRAME:
-    case DAVA::eMouseMode::HIDE:
-        windowBackend->SetMouseMode(mode);
-        break;
-    case DAVA::eMouseMode::PINNING:
-    {
-        if (hasFocus && !deferredPinningOn)
-        {
-            windowBackend->SetMouseMode(mode);
-        }
-        else
-        {
-            deferredPinningOn = true;
-        }
-    }
-    }
-    return true;
+    return windowBackend->SetCaptureMode(mode);
 }
 
-bool Window::SkipOrActivatePinning(const Private::MainDispatcherEvent& e)
+bool Window::SetMouseVisibility(bool visibility)
 {
-    using Private::MainDispatcherEvent;
-    if (deferredPinningOn)
-    {
-        bool eventFilter = (MainDispatcherEvent::MOUSE_MOVE != e.type);
-        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_UP != e.type);
-        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type);
-        if (eventFilter)
-        {
-            deferredPinningOn = false;
-            windowBackend->SetMouseMode(eMouseMode::PINNING);
-            return false;
-        }
-        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
-        {
-            // check, only mouse release event in work rect tern on capture mode
-            bool mclickInRect = true;
-            mclickInRect &= (e.mclickEvent.x >= 0.f && e.mclickEvent.x <= GetWidth());
-            mclickInRect &= (e.mclickEvent.y >= 0.f && e.mclickEvent.y <= GetHeight());
-            if (mclickInRect && hasFocus)
-            {
-                deferredPinningOn = false;
-                windowBackend->SetMouseMode(eMouseMode::PINNING);
-                // return true, skip this event
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
-eMouseMode Window::GetMouseMode() const
-{
-    return mouseMode;
+    return windowBackend->SetMouseVisibility(visibility);
 }
 
 void Window::Update(float32 frameDelta)
@@ -266,17 +206,6 @@ void Window::PostKeyChar(uint32 key, bool isRepeated)
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
-    if (MainDispatcherEvent::IsInputType(e.type))
-    {
-        if (!hasFocus)
-        {
-            return;
-        }
-        if (SkipOrActivatePinning(e))
-        {
-            return;
-        }
-    }
     switch (e.type)
     {
     case MainDispatcherEvent::MOUSE_MOVE:
@@ -390,21 +319,11 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
     hasFocus = e.stateEvent.state != 0;
-    if (hasFocus)
+    if (!hasFocus)
     {
-        if (eMouseMode::PINNING != mouseMode)
-        {
-            windowBackend->SetMouseMode(mouseMode);
-        }
+        windowBackend->SetCaptureMode(eCaptureMode::DEFAULT);
+        windowBackend->SetMouseVisibility(true);
     }
-    else
-    {
-        if (eMouseMode::DEFAULT != mouseMode)
-        {
-            windowBackend->SetMouseMode(eMouseMode::DEFAULT);
-        }
-    }
-    deferredPinningOn = (eMouseMode::PINNING == mouseMode);
     focusChanged.Emit(*this, hasFocus);
 }
 
@@ -423,6 +342,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mclickEvent.x, e.mclickEvent.y);
+    uie.relatival = e.mclickEvent.relatival;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mclickEvent.button);
@@ -452,6 +372,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
+    uie.relatival = e.mwheelEvent.relatival;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
@@ -473,6 +394,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mmoveEvent.x, e.mmoveEvent.y);
+    uie.relatival = e.mmoveEvent.relatival;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;

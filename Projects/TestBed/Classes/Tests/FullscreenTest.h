@@ -26,6 +26,7 @@ private:
     void OnMulDown(BaseObject* sender, void* data, void* callerData);
     void On3DViewControllClick(BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(BaseObject* sender, void* data, void* callerData);
+    void FocusChanged(Window& window, bool hasFocus);
 
     UIStaticText* currentModeText;
     UIStaticText* currentScaleText;
@@ -34,6 +35,9 @@ private:
     UIStaticText* currect3dScaleText = nullptr;
     UIStaticText* pinningText = nullptr;
     UIStaticText* pinningMousePosText = nullptr;
+
+    bool mouseCaptured = false;
+    bool mouseVisible = true;
 };
 
 #endif //__FULLSCREENTEST_TEST_H__

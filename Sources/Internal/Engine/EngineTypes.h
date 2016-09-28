@@ -12,13 +12,14 @@ enum class eEngineRunMode : int32
     CONSOLE_MODE, /// Run engine as standalone console application
 };
 
+#if defined(__DAVAENGINE_COREV2__)
 /// is a strongly typed enum class representing the status of mouse mode
-enum class eMouseMode : int32
+enum class eCaptureMode : int32
 {
     DEFAULT = 0, ///< Disable any capturing, show cursor (send absolute xy)
     FRAME, ///< Capture system cursor into window rect, show cursor (send absolute xy) */
     PINNING, ///< Capture system cursor on current position, and hide cursor (send xy move delta) */
-    HIDE ///< Disable any capturing, and hide cursor (send absolute xy) */
 };
+#endif
 
 } // namespace DAVA

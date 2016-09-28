@@ -33,12 +33,10 @@ ref struct WindowNativeBridge sealed
 
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
-    void DoChangeMouseMode(eMouseMode newMode);
+    void ChangeCaptureMode(eCaptureMode mode);
+    void ChangeMouseVisibility(bool visibility);
 
 private:
-    void SetMouseVisibility(bool visible);
-    void SetMouseCaptured(bool capture);
-
     void OnTriggerPlatformEvents();
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
@@ -90,6 +88,7 @@ private:
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;
 
+    eCaptureMode captureMode = eCaptureMode::DEFAULT;
     uint32 skipMouseMoveEvents = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };

@@ -136,6 +136,7 @@ public:
     };
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
+    bool relatival = false; // coordinates in Capture::PINNING mouse mode
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
     Phase phase = Phase::ERROR; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input

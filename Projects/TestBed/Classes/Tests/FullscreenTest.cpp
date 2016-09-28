@@ -6,6 +6,9 @@ using namespace DAVA;
 FullscreenTest::FullscreenTest(GameCore* g)
     : BaseScreen(g, "FullscreenTest")
 {
+#if defined(__DAVAENGINE_COREV2__)
+    Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
+#endif // defined(__DAVAENGINE_COREV2__)
 }
 
 void FullscreenTest::LoadResources()
@@ -60,7 +63,7 @@ void FullscreenTest::LoadResources()
 #if !defined(__DAVAENGINE_COREV2__)
     btn->SetStateText(0xFF, L"Mouse Capute: Frame");
 #else
-    btn->SetStateText(0xFF, L"Mouse Mode: Hide");
+    btn->SetStateText(0xFF, L"Mouse Visibility: false");
 #endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(0);
@@ -69,7 +72,11 @@ void FullscreenTest::LoadResources()
 
     btn.reset(new UIButton(Rect(10, 135, 300, 20)));
     btn->SetStateFont(0xFF, font);
+#if !defined(__DAVAENGINE_COREV2__)
     btn->SetStateText(0xFF, L"Mouse Mode: Pinning");
+#else
+    btn->SetStateText(0xFF, L"Mouse Capture Mode: Pinning");
+#endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -296,7 +303,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 #if !defined(__DAVAENGINE_COREV2__)
         InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::FRAME);
 #else
-        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::HIDE);
+        mouseVisible = !Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
 #endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
@@ -304,7 +311,8 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 #if !defined(__DAVAENGINE_COREV2__)
         InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
 #else
-        Engine::Instance()->PrimaryWindow()->SetMouseMode(eMouseMode::PINNING);
+        mouseCaptured = Engine::Instance()->PrimaryWindow()->SetCaptureMode(eCaptureMode::PINNING);
+        mouseCaptured &= Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
 #endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
@@ -312,6 +320,16 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
         break;
     }
 
+    UpdateMode();
+}
+
+void FullscreenTest::FocusChanged(Window& window, bool hasFocus)
+{
+    if (!hasFocus)
+    {
+        mouseCaptured = false;
+        mouseVisible = true;
+    }
     UpdateMode();
 }
 
@@ -353,25 +371,34 @@ void FullscreenTest::UpdateMode()
         break;
     }
 #else
-    Window* primWind = Engine::Instance()->PrimaryWindow();
-    eMouseMode captureMode = primWind->GetMouseMode();
-    switch (captureMode)
+    WideString outStr;
+    if (mouseCaptured)
     {
-    case eMouseMode::DEFAULT:
-        pinningText->SetText(L"Mouse Mode mode: OFF");
-        pinningMousePosText->SetVisibilityFlag(false);
-        break;
-
-    case eMouseMode::HIDE:
-        pinningText->SetText(L"Mouse Mode = HIDE, press Middle Mouse Button to turn off");
+        outStr += L"Mouse Capture Mode = PINNING";
+        outStr += L"\n";
+        outStr += L"Mouse visibility = false";
+        outStr += L"\n";
+        outStr += L"press Middle Mouse Button to turn off";
         pinningMousePosText->SetVisibilityFlag(true);
-        break;
-
-    case eMouseMode::PINNING:
-        pinningText->SetText(L"Mouse Mode = PINNING, press Middle Mouse Button to turn off");
-        pinningMousePosText->SetVisibilityFlag(true);
-        break;
     }
+    else
+    {
+        outStr += L"Mouse Capture Mode mode: DEFAULT";
+        outStr += L"\n";
+        if (mouseVisible)
+        {
+            outStr += L"Mouse visibility = true";
+            pinningMousePosText->SetVisibilityFlag(false);
+        }
+        else
+        {
+            outStr += L"Mouse visibility = false";
+            outStr += L"\n";
+            outStr += L"press Middle Mouse Button to turn off";
+            pinningMousePosText->SetVisibilityFlag(true);
+        }
+    }
+    pinningText->SetText(outStr.c_str());
 #endif
 }
 
@@ -400,16 +427,16 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
 
     return BaseScreen::SystemInput(currentInput);
 #else
-    Window* primWind = Engine::Instance()->PrimaryWindow();
-    eMouseMode captureMode = primWind->GetMouseMode();
-    if ((primWind->GetMouseMode() != eMouseMode::DEFAULT) && (currentInput->device == UIEvent::Device::MOUSE))
+    if (currentInput->device == UIEvent::Device::MOUSE)
     {
+        Window* primWind = Engine::Instance()->PrimaryWindow();
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                primWind->SetMouseMode(eMouseMode::DEFAULT);
+                mouseCaptured = !primWind->SetCaptureMode(eCaptureMode::DEFAULT);
+                mouseVisible = primWind->SetMouseVisibility(true);
             }
             break;
 

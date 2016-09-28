@@ -74,12 +74,14 @@ struct MainDispatcherEvent final
         uint32 clicks;
         float32 x;
         float32 y;
+        bool relatival;
     };
 
     struct MouseWheelEvent
     {
         float32 x;
         float32 y;
+        bool relatival;
         float32 deltaX;
         float32 deltaY;
     };
@@ -88,6 +90,7 @@ struct MainDispatcherEvent final
     {
         float32 x;
         float32 y;
+        bool relatival;
     };
 
     struct TouchClickEvent
