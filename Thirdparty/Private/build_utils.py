@@ -298,7 +298,6 @@ def _get_vs_env(arch):
 	vsvars_path = '{}/vcvarsall.bat'.format(build_config.win32_vc_path)
 
 	cmd = [vsvars_path, arch, '&', 'set']
-	print cmd
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 	output = sp.communicate()[0]
 	output = output.split("\r\n")
@@ -430,6 +429,7 @@ def build_and_copy_libraries_android_cmake(
 		gen_folder_path, source_folder_path, root_project_path,
 		built_lib_name_release,
 		result_lib_name_release,
+		arm_abi='armeabi-v7a',
 		cmake_additional_args = []):
 	build_android_armeabiv7a_folder = os.path.join(gen_folder_path, 'build_android_armeabiv7a')
 	build_android_x86_folder = os.path.join(gen_folder_path, 'build_android_x86')
@@ -437,7 +437,7 @@ def build_and_copy_libraries_android_cmake(
 	toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/android.toolchain.cmake')
 	android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
 
-	cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'armeabi-v7a')
+	cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, arm_abi)
 	cmake_generate_build_ndk(build_android_x86_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'x86')
 
 	# Move built files into Libs/lib_CMake
