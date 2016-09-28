@@ -12,7 +12,6 @@ bool android_gl_end_frame();
 void android_gl_acquire_context();
 void android_gl_release_context();
 void android_gl_enable_debug();
-void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
 
 #endif    
 

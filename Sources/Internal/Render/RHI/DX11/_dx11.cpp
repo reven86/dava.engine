@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "../rhi_Public.h"
+#include "../Common/rhi_Utils.h"
 
 //==============================================================================
 

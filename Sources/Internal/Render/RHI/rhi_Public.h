@@ -249,10 +249,10 @@ HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
 void ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate = false);
 
 HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 HConstBuffer CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex);
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
+void CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf);
 
 bool UpdateConstBuffer4fv(HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount);
 bool UpdateConstBuffer1fv(HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount);

@@ -10,7 +10,7 @@ namespace rhi
 {
 namespace FrameLoop
 {
-static uint32 currFrameNumber = 0;
+static uint32 currentFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
 static uint32 frameCount = 0;
 static DAVA::Spinlock frameSync;
@@ -18,7 +18,7 @@ static bool frameStarted = false;
 
 void RejectFrames()
 {
-    frameSync.Lock();
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     for (std::vector<CommonImpl::Frame>::iterator f = frames.begin(); f != frames.end();)
     {
         if (f->readyToExecute)
@@ -32,7 +32,6 @@ void RejectFrames()
             ++f;
         }
     }
-    frameSync.Unlock();
 }
 
 void ProcessFrame()
@@ -51,7 +50,7 @@ void ProcessFrame()
             CommonImpl::Frame currFrame = std::move(frames.front());
             frames.erase(frames.begin());
             frameSync.Unlock();
-            currFrame.frameNumber = currFrameNumber++;
+            currFrame.frameNumber = currentFrameNumber++;
             DispatchPlatform::ExecuteFrame(std::move(currFrame));
 
             frameSync.Lock();
@@ -61,7 +60,7 @@ void ProcessFrame()
 
         {
             DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
-            presentResult = DispatchPlatform::PresntBuffer();
+            presentResult = DispatchPlatform::PresentBuffer();
         }
     }
 
@@ -91,22 +90,18 @@ bool FinishFrame(Handle sync)
 
 bool FrameReady()
 {
-    frameSync.Lock();
-    bool res = (frames.size() && frames.begin()->readyToExecute);
-    frameSync.Unlock();
-    return res;
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
+    return (frames.size() && frames.begin()->readyToExecute);
 }
 
 uint32 FramesCount()
 {
-    frameSync.Lock();
-    uint32 frame_cnt = frameCount;
-    frameSync.Unlock();
-    return frame_cnt;
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
+    return frameCount;
 }
 void AddPass(Handle pass)
 {
-    frameSync.Lock();
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     if (!frameStarted)
     {
         frames.push_back(CommonImpl::Frame());
@@ -115,7 +110,6 @@ void AddPass(Handle pass)
     }
     frames.back().pass.push_back(pass);
     //frames.back().perfQuerySet = PerfQuerySet::Current();
-    frameSync.Unlock();
 }
 }
 }

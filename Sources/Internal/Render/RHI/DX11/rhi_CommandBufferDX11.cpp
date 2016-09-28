@@ -135,7 +135,7 @@ DAVA::Mutex pendingSecondaryCmdListSync;
 
 static std::vector<RasterizerStateDX11> _RasterizerStateDX11;
 
-static ID3D11RasterizerState* _GetRasterizerState(RasterizerParamDX11 param)
+static ID3D11RasterizerState* dx11_GetRasterizerState(RasterizerParamDX11 param)
 {
     ID3D11RasterizerState* state = nullptr;
 
@@ -279,7 +279,7 @@ static void dx11_CommandBuffer_Begin(Handle cmdBuf)
     cb->Begin(context);
 #else
     cb->curUsedSize = 0;
-    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
+    cb->allocCmd<SWCommand_Begin>();
 #endif
 }
 
@@ -894,9 +894,6 @@ static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
             PerfQuerySetDX11::IssueTimestampQuery(perfQuerySet, pp->perfQueryIndex1, _D3D11_ImmediateContext);
     }
 
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
-        RenderPassPoolDX11::Free(*p);
-
     if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
     {
         PerfQuerySetDX11::IssueFrameEndQuery(perfQuerySet, _D3D11_ImmediateContext);
@@ -904,7 +901,8 @@ static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         _DX11_PerfQuerySetPending = true;
     }
 
-    // update sync-objects
+    for (Handle p : frame.pass)
+        RenderPassPoolDX11::Free(p);
 
     for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
     {
@@ -1134,7 +1132,7 @@ void CommandBufferDX11_t::_ApplyRasterizerState()
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     if (!cur_rs)
     {
-        cur_rs = _GetRasterizerState(rs_param);
+        cur_rs = dx11_GetRasterizerState(rs_param);
     }
 
     if (cur_rs != last_rs)
@@ -1406,7 +1404,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1438,7 +1436,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1457,7 +1455,7 @@ void CommandBufferDX11_t::Execute()
 
         case CMD_DRAW_INSTANCED_PRIMITIVE:
         {
-            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawPrimitive*)cmd)->mode);
+            D3D11_PRIMITIVE_TOPOLOGY topo = D3D11_PRIMITIVE_TOPOLOGY(((SWCommand_DrawInstancedPrimitive*)cmd)->mode);
             unsigned vertexCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->vertexCount;
             unsigned instCount = ((SWCommand_DrawInstancedPrimitive*)cmd)->instanceCount;
 
@@ -1469,7 +1467,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1503,7 +1501,7 @@ void CommandBufferDX11_t::Execute()
 
             if (!cur_rs)
             {
-                cur_rs = _GetRasterizerState(rs_param);
+                cur_rs = dx11_GetRasterizerState(rs_param);
                 _D3D11_ImmediateContext->RSSetState(cur_rs);
             }
 
@@ -1519,6 +1517,9 @@ void CommandBufferDX11_t::Execute()
                 QueryBufferDX11::BeginQuery(cur_query_buf, cur_query_i, _D3D11_ImmediateContext);
         }
         break;
+        default:
+            Logger::Error("unsupported command: %d", cmd->type);
+            DVASSERT_MSG(false, "unsupported command");
         }
 
         if (cmd->type == CMD_END)
@@ -1648,7 +1649,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ProcessImmediateCommand = &dx11_ExecImmediateCommand;
     dispatch->impl_ExecuteFrame = &dx11_ExecuteQueuedCommands;
     dispatch->impl_RejectFrame = &dx11_RejectFrame;
-    dispatch->impl_PresntBuffer = &dx11_PresentBuffer;
+    dispatch->impl_PresentBuffer = &dx11_PresentBuffer;
     dispatch->impl_FinishFrame = &dx11_EndFrame;
 }
 }

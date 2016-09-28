@@ -120,7 +120,7 @@ static void gles2_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     cb->Begin();
-    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
+    cb->allocCmd<SWCommand_Begin>();
 }
 //------------------------------------------------------------------------------
 
@@ -301,10 +301,9 @@ static void gles2_CommandBuffer_SetSamplerState(Handle cmdBuf, const Handle samp
 
 //------------------------------------------------------------------------------
 
-static int
-_GLES2_GetDrawMode(PrimitiveType primType, uint32 primCount, unsigned* v_cnt)
+static int32 _GLES2_GetDrawMode(PrimitiveType primType, uint32 primCount, uint32* v_cnt)
 {
-    int mode = GL_TRIANGLES;
+    int32 mode = GL_TRIANGLES;
 
     switch (primType)
     {
@@ -331,8 +330,8 @@ _GLES2_GetDrawMode(PrimitiveType primType, uint32 primCount, unsigned* v_cnt)
 
 static void gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count)
 {
-    unsigned v_cnt = 0;
-    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+    uint32 v_cnt = 0;
+    int32 mode = _GLES2_GetDrawMode(type, count, &v_cnt);
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_DrawPrimitive* cmd = cb->allocCmd<SWCommand_DrawPrimitive>();
     cmd->mode = mode;
@@ -343,8 +342,8 @@ static void gles2_CommandBuffer_DrawPrimitive(Handle cmdBuf, PrimitiveType type,
 
 static void gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex)
 {
-    unsigned i_cnt = 0;
-    int mode = _GLES2_GetDrawMode(type, count, &i_cnt);
+    uint32 i_cnt = 0;
+    int32 mode = _GLES2_GetDrawMode(type, count, &i_cnt);
 
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_DrawIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawIndexedPrimitive>();
@@ -356,11 +355,10 @@ static void gles2_CommandBuffer_DrawIndexedPrimitive(Handle cmdBuf, PrimitiveTyp
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
+static void gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count)
 {
-    unsigned v_cnt = 0;
-    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+    uint32 v_cnt = 0;
+    int32 mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_DrawInstancedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedPrimitive>();
@@ -373,8 +371,8 @@ gles2_CommandBuffer_DrawInstancedPrimitive(Handle cmdBuf, PrimitiveType type, ui
 
 static void gles2_CommandBuffer_DrawInstancedIndexedPrimitive(Handle cmdBuf, PrimitiveType type, uint32 instCount, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex, uint32 baseInstance)
 {
-    unsigned v_cnt = 0;
-    int mode = _GLES2_GetDrawMode(type, count, &v_cnt);
+    uint32 v_cnt = 0;
+    int32 mode = _GLES2_GetDrawMode(type, count, &v_cnt);
 
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_DrawInstancedIndexedPrimitive* cmd = cb->allocCmd<SWCommand_DrawInstancedIndexedPrimitive>();
@@ -524,7 +522,7 @@ void CommandBufferGLES2_t::Execute()
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
         const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
-        switch (cmd->type)
+        switch (SoftwareCommandType(cmd->type))
         {
         case CMD_BEGIN:
         {
@@ -1107,6 +1105,10 @@ void CommandBufferGLES2_t::Execute()
             Trace(text);
         }
         break;
+
+        default:
+            Logger::Error("unsupported command: %d", cmd->type);
+            DVASSERT_MSG(false, "unsupported command");
         }
 
         if (--immediate_cmd_ttw <= 0)
@@ -1220,8 +1222,8 @@ static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
             CommandBufferPoolGLES2::Free(cb_h);
         }
     }
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
-        RenderPassPoolGLES2::Free(*p);
+    for (Handle p : frame.pass)
+        RenderPassPoolGLES2::Free(p);
 
     //update sync objects
     _GLES2_SyncObjectsSync.Lock();
@@ -1241,7 +1243,7 @@ bool _GLES2_PresentBuffer()
 
 // do swap-buffers            
     #if defined(__DAVAENGINE_WIN32__)
-    SwapBuffers(_GLES2_WindowDC);    
+    win32_gl_end_frame();
     #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_end_frame();
     #elif defined(__DAVAENGINE_IPHONE__)
@@ -1745,7 +1747,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ProcessImmediateCommand = _GLES2_ExecImmediateCommand;
     dispatch->impl_ExecuteFrame = _GLES2_ExecuteQueuedCommands;
     dispatch->impl_RejectFrame = _GLES2_RejectFrame;
-    dispatch->impl_PresntBuffer = _GLES2_PresentBuffer;
+    dispatch->impl_PresentBuffer = _GLES2_PresentBuffer;
     dispatch->impl_ResetBlock = _GLES2_ResetBlock;
     dispatch->impl_FinishFrame = _GLES2_FinishFrame;
 }

@@ -385,10 +385,6 @@ extern GLuint _GLES2_LastSetTex0;
 extern GLenum _GLES2_LastSetTex0Target;
 extern int _GLES2_LastActiveTexture;
 
-#if defined(__DAVAENGINE_WIN32__)
-extern HDC _GLES2_WindowDC;
-#endif
-
 extern bool _GLES2_IsDebugSupported;
 extern bool _GLES2_IsGlDepth24Stencil8Supported;
 extern bool _GLES2_IsGlDepthNvNonLinearSupported;

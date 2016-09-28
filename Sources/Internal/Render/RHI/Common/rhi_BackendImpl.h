@@ -25,7 +25,7 @@ struct Dispatch
     void (*impl_FinishFrame)(); //this functions is called from main thread
     void (*impl_ExecuteFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
     void (*impl_RejectFrame)(CommonImpl::Frame&&); //should also handle command buffer sync here
-    bool (*impl_PresntBuffer)();
+    bool (*impl_PresentBuffer)();
     void (*impl_ResetBlock)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);

@@ -36,8 +36,6 @@ enum SoftwareCommandType
     CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE_RANGED = 48,
 
     CMD_SET_MARKER = 51,
-
-    CMD_NOP = 77
 };
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -263,4 +261,13 @@ public:
     uint32 curUsedSize = 0;
     RingBuffer* text = nullptr;
 };
+
+inline void SoftwareCommandBuffer::Begin()
+{
+    curUsedSize = 0;
+}
+
+inline void SoftwareCommandBuffer::End()
+{
+}
 }

@@ -196,7 +196,7 @@ void FinishFrame(); //this functions is called from main thread
 void ExecuteFrame(CommonImpl::Frame&&); //should also handle command buffer sync here
 void RejectFrame(CommonImpl::Frame&&); //should also handle command buffer sync here
 
-bool PresntBuffer();
+bool PresentBuffer();
 void ResetBlock();
 }
 

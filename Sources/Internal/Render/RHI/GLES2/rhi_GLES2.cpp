@@ -39,10 +39,6 @@ volatile bool _GLES2_ValidateNeonCalleeSavedRegisters = false;
 volatile GLCallRegisters gl_call_registers;
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
-HDC _GLES2_WindowDC = 0;
-#endif
-
 
 #define ENABLE_DEBUG_OUTPUT 0
 
@@ -50,7 +46,7 @@ namespace rhi
 {
 //==============================================================================
 
-Dispatch DispatchGLES2 = { 0 };
+Dispatch DispatchGLES2 = {};
 
 static bool ATC_Supported = false;
 static bool PVRTC_Supported = false;
@@ -374,6 +370,63 @@ static void gles2_Suspend()
     GL_CALL(glFinish());
 }
 
+
+#if defined(__DAVAENGINE_WIN32__)
+void GLAPIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
+{
+#if 0    
+    const char* ssource     = "unknown";
+    const char* stype       = "unknown";
+    const char* sseverity   = "unknown";
+
+    switch( source )
+    {
+    case GL_DEBUG_SOURCE_API                : ssource = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM      : ssource = "window system"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER    : ssource = "shader compiler"; break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY        : ssource = "third party"; break;
+    case GL_DEBUG_SOURCE_APPLICATION        : ssource = "application"; break;
+    case GL_DEBUG_SOURCE_OTHER              : ssource = "other"; break;
+    default                                 : ssource= "unknown"; break;
+    }
+
+    switch( type )
+    {
+    case GL_DEBUG_TYPE_ERROR                : stype = "error"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR  : stype = "deprecated behaviour"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR   : stype = "undefined behaviour"; break;
+    case GL_DEBUG_TYPE_PORTABILITY          : stype = "portabiliy"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE          : stype = "performance"; break;
+    case GL_DEBUG_TYPE_OTHER                : stype = "other"; break;
+    default                                 : stype = "unknown"; break;
+    }
+
+    switch( severity )
+    {
+    case GL_DEBUG_SEVERITY_HIGH             : sseverity = "high"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM           : sseverity = "medium"; break;
+    case GL_DEBUG_SEVERITY_LOW              : sseverity = "low"; break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION     : sseverity = "notification"; break;
+    default                                 : sseverity = "unknown"; break;
+    }
+#endif
+    if (type == GL_DEBUG_TYPE_PERFORMANCE)
+        Trace("[gl.warning] %s\n", message);
+    else if (type == GL_DEBUG_TYPE_ERROR)
+        Trace("[gl.error] %s\n", message);
+    //    else
+    //        Logger::Info( "[gl] %s\n", message );
+}
+#elif defined(__DAVAENGINE_ANDROID__)
+void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
+{
+    if ((message != nullptr) && (length > 1))
+    {
+        DAVA::Logger::Info("OpenGL debug message (%d): %s", length, message);
+    }
+}
+#endif
+
 void gles2_enable_debug_output()
 {
 #if ENABLE_DEBUG_OUTPUT
@@ -381,12 +434,10 @@ void gles2_enable_debug_output()
 
     DAVA::Logger::Error("Enabling OpenGL debug...");
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
     GL_CALL(glEnable(GL_DEBUG_OUTPUT));
     GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
-#if defined(__DAVAENGINE_WIN32__)
-    GL_CALL(glDebugMessageCallback(&win32_gl_debug_callback, nullptr));    
-#elif defined(__DAVAENGINE_ANDROID__)
-    GL_CALL(glDebugMessageCallback(&gles_debug_callback, nullptr));
+    GL_CALL(glDebugMessageCallback(&gl_debug_callback, nullptr));    
 #else
 #error DEBUG_OUTPUT Not implemented for platform
 #endif
@@ -414,8 +465,8 @@ void gles2_Initialize(const InitParam& param)
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &ios_gl_release_context;
 #elif defined(__DAVAENGINE_ANDROID__)
     android_gl_init(param.window);
-    _GLES2_AcquireContext = &android_gl_acquire_context;
-    _GLES2_ReleaseContext = &android_gl_release_context;                
+    _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &android_gl_acquire_context;
+    _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &android_gl_release_context;                
 #endif
 
     if (param.maxVertexBufferCount)
@@ -443,7 +494,7 @@ void gles2_Initialize(const InitParam& param)
         ringBufferSize = param.shaderConstRingBufferSize;
     ConstBufferGLES2::InitializeRingBuffer(ringBufferSize);
 
-    Logger::FrameworkDebug("GL inited\n");
+    Logger::FrameworkDebug("GL initialized");
     Logger::FrameworkDebug("  GL version   : %s", glGetString(GL_VERSION));
     Logger::FrameworkDebug("  GPU vendor   : %s", glGetString(GL_VENDOR));
     Logger::FrameworkDebug("  GPU          : %s", glGetString(GL_RENDERER));

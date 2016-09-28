@@ -6,8 +6,6 @@
 
 #include "Core/Core.h"
 
-#include "Debug/Profiler.h"
-
 namespace rhi
 {
 struct TextureSetInfo
@@ -207,14 +205,7 @@ bool GetPerfQuerySetFrameTimestamps(HPerfQuerySet hset, uint64* t0, uint64* t1)
 
 HPipelineState AcquireRenderPipelineState(const PipelineState::Descriptor& desc)
 {
-    HPipelineState ps;
-
-    if (!ps.IsValid())
-    {
-        ps = HPipelineState(PipelineState::Create(desc));
-    }
-
-    return ps;
+    return HPipelineState(PipelineState::Create(desc));
 }
 
 //------------------------------------------------------------------------------
@@ -233,14 +224,10 @@ HConstBuffer CreateVertexConstBuffer(HPipelineState rps, uint32 bufIndex)
 
 //------------------------------------------------------------------------------
 
-bool CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
+void CreateVertexConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
 {
-    bool success = false;
-
     for (unsigned i = 0; i != maxCount; ++i)
         constBuf[i] = HConstBuffer(PipelineState::CreateVertexConstBuffer(rps, i));
-
-    return success;
 }
 
 //------------------------------------------------------------------------------
@@ -252,14 +239,10 @@ HConstBuffer CreateFragmentConstBuffer(HPipelineState rps, uint32 bufIndex)
 
 //------------------------------------------------------------------------------
 
-bool CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
+void CreateFragmentConstBuffers(HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf)
 {
-    bool success = false;
-
     for (unsigned i = 0; i != maxCount; ++i)
         constBuf[i] = HConstBuffer(PipelineState::CreateFragmentConstBuffer(rps, i));
-
-    return success;
 }
 
 //------------------------------------------------------------------------------

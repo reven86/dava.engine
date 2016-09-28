@@ -178,7 +178,7 @@ static void dx9_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
     cb->Begin();
-    SWCommand_Begin* cmd = cb->allocCmd<SWCommand_Begin>();
+    cb->allocCmd<SWCommand_Begin>();
 }
 
 //------------------------------------------------------------------------------
@@ -310,7 +310,6 @@ static void dx9_CommandBuffer_SetQueryBuffer(Handle cmdBuf, Handle queryBuf)
 
 static void dx9_CommandBuffer_SetFragmentConstBuffer(Handle cmdBuf, uint32 bufIndex, Handle buffer)
 {
-    //    L_ASSERT(buffer);
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
 
     if (buffer != DAVA::InvalidIndex)
@@ -485,7 +484,7 @@ void CommandBufferDX9_t::Execute()
 
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const SWCommand* cmd = (const SWCommand*)c;
+        const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
 
         switch (SoftwareCommandType(cmd->type))
         {
@@ -935,9 +934,9 @@ void CommandBufferDX9_t::Execute()
             ::D3DPERF_SetMarker(D3DCOLOR_ARGB(0xFF, 0x40, 0x40, 0x80), txt);
         }
         break;
-
         default:
-            DVASSERT("unknown DX9 render-command");
+            Logger::Error("unsupported command: %d", cmd->type);
+            DVASSERT_MSG(false, "unsupported command");
         }
 
         if (--immediate_cmd_ttw <= 0)
@@ -1062,8 +1061,8 @@ static void _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
         }
     }
 
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
-        RenderPassPoolDX9::Free(*p);
+    for (Handle p : frame.pass)
+        RenderPassPoolDX9::Free(p);
 
     // update sync-objects
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
@@ -1604,7 +1603,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_ProcessImmediateCommand = _DX9_ExecImmediateCommand;
     dispatch->impl_ExecuteFrame = _DX9_ExecuteQueuedCommands;
     dispatch->impl_RejectFrame = _DX9_RejectFrame;
-    dispatch->impl_PresntBuffer = _DX9_PresentBuffer;
+    dispatch->impl_PresentBuffer = _DX9_PresentBuffer;
     dispatch->impl_ResetBlock = _DX9_ResetBlock;
     dispatch->impl_FinishFrame = _DX9_InvalidateFrameCache;
 }

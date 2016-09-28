@@ -122,7 +122,7 @@ bool rhi_MetalIsSupported()
 
 void Metal_InitContext()
 {
-    _Metal_Layer = (CAMetalLayer*)_Metal_InitParam.window;
+    _Metal_Layer = static_cast<CAMetalLayer*>(_Metal_InitParam.window);
     [_Metal_Layer retain];
 
     if (!_Metal_Device)

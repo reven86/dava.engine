@@ -167,12 +167,4 @@ void android_gl_release_context()
     eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
-void GL_APIENTRY android_gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userdata)
-{
-    if ((message != nullptr) && (length > 1))
-    {
-        DAVA::Logger::Info("OpenGL debug message (%d): %s", length, message);
-    }
-}
-
 #endif

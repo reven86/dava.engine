@@ -62,9 +62,9 @@ void Present() // called from main thread
     }
     scheduledDeleteMutex.Unlock();
 
-    bool res = FrameLoop::FinishFrame(frameSync);
+    bool validFrame = FrameLoop::FinishFrame(frameSync);
 
-    if (!res) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
+    if (!validFrame) //if present was called without actual work - need to do nothing here (or should we swap buffers in any case?)
     {
         Logger::Debug(" *** empty frame finished **");
         return;
@@ -98,7 +98,7 @@ void Present() // called from main thread
 
 //------------------------------------------------------------------------------
 
-static void RenderFunc(DAVA::BaseObject* obj, void*, void*)
+static void RenderFunc()
 {
     DispatchPlatform::InitContext();
 
@@ -162,7 +162,7 @@ void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority prior
 
     if (renderThreadFrameCount)
     {
-        renderThread = DAVA::Thread::Create(DAVA::Message(&RenderFunc));
+        renderThread = DAVA::Thread::Create(DAVA::Thread::Procedure(&RenderFunc));
         renderThread->SetName("RHI.RENDER_THREAD");
         renderThread->Start();
         if (bindToProcessor != -1)
@@ -209,7 +209,7 @@ void ResumeRender()
 
 void UninitializeRenderLoop()
 {
-    if (renderThreadFrameCount) //?ASSERT
+    if (renderThreadFrameCount)
     {
         renderThreadExitPending = true;
         if (renderThreadSuspended)
@@ -258,16 +258,14 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 
         while (!scheduled)
         {
-            pendingImmediateCmdSync.Lock();
+            DAVA::LockGuard<DAVA::Mutex> lock(pendingImmediateCmdSync);
             if (pendingImmediateCmd.load() == nullptr)
             {
                 pendingImmediateCmd = command;
                 scheduled = true;
             }
-            pendingImmediateCmdSync.Unlock();
         }
 
-        // CRAP: busy-wait
         while (!executed)
         {
             if (pendingImmediateCmd.load(std::memory_order_relaxed) == nullptr)

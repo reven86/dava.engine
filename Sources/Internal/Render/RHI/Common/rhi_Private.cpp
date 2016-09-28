@@ -184,9 +184,9 @@ void RejectFrame(CommonImpl::Frame&& frame)
 {
     (*_Impl.impl_RejectFrame)(std::move(frame));
 }
-bool PresntBuffer()
+bool PresentBuffer()
 {
-    return (*_Impl.impl_PresntBuffer)();
+    return (*_Impl.impl_PresentBuffer)();
 }
 void ResetBlock()
 {

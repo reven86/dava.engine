@@ -118,18 +118,16 @@ static void dx11_ResetBlock()
 	
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
     DAVA::LockGuard<DAVA::Mutex> secondaryContextLockGuard(_D3D11_SecondaryContextSync);
-#endif	
-#if RHI_DX11__USE_DEFERRED_CONTEXTS
-    {
-        ID3D11CommandList* cl = nullptr;
 
-        _D3D11_SecondaryContext->ClearState();
-        CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
-        cl->Release();
-        _D3D11_SecondaryContext->Release();
+    ID3D11CommandList* cl = nullptr;
 
-        CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
-    }
+    _D3D11_SecondaryContext->ClearState();
+    CHECK_HR(_D3D11_SecondaryContext->FinishCommandList(FALSE, &cl));
+    cl->Release();
+    _D3D11_SecondaryContext->Release();
+
+    CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
+
 #else
     rhi::ConstBufferDX11::InvalidateAll();
 #endif

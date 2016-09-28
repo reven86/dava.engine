@@ -3,12 +3,13 @@
 
 #include "Concurrency/Spinlock.h"
 
-static DAVA::Spinlock _TraceSync;
-static char _TraceBuf[4096];
 
 void Trace(const char* format, ...)
 {
 #if 0
+    static DAVA::Spinlock _TraceSync;
+    static char _TraceBuf[4096];
+
     _TraceSync.Lock();
 
     va_list  arglist;
@@ -35,78 +36,41 @@ namespace rhi
 {
 uint32 TextureStride(TextureFormat format, Size2i size, uint32 level)
 {
-    uint32 stride = 0;
     uint32 width = TextureExtents(size, level).dx;
 
     switch (format)
     {
     case TEXTURE_FORMAT_R8G8B8A8:
-    {
-        stride = width * sizeof(uint32);
-    }
-    break;
-
+        return width * sizeof(uint32);
     case TEXTURE_FORMAT_R8G8B8:
-    {
-        stride = width * 3 * sizeof(uint8);
-    }
-    break;
-
+        return width * 3 * sizeof(uint8);
     case TEXTURE_FORMAT_R4G4B4A4:
     case TEXTURE_FORMAT_R5G5B5A1:
     case TEXTURE_FORMAT_R5G6B5:
     case TEXTURE_FORMAT_R16:
     case TEXTURE_FORMAT_D16:
-    {
-        stride = width * sizeof(uint16);
-    }
-    break;
-
+        return width * sizeof(uint16);
     case TEXTURE_FORMAT_R8:
-    {
-        stride = width * sizeof(uint8);
-    }
-    break;
-
+        return width * sizeof(uint8);
     case TEXTURE_FORMAT_D24S8:
-    {
-        stride = width * sizeof(uint32);
-    }
-    break;
-
+        return width * sizeof(uint32);
     case TEXTURE_FORMAT_DXT1:
-    {
-        stride = (width * 8) / 4;
-    }
-    break;
-
+        return (width * 8) / 4;
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
-    {
-        stride = (width * 16) / 4;
-    }
-    break;
+        return (width * 16) / 4;
 
     default:
-    {
+        Logger::Error("TextureStride - Unknown format");
     }
-    }
-
-    return stride;
+    return 0;
 }
 
 //------------------------------------------------------------------------------
 
 Size2i TextureExtents(Size2i size, uint32 level)
 {
-    Size2i sz(size.dx >> level, size.dy >> level);
-
-    if (sz.dx == 0)
-        sz.dx = 1;
-    if (sz.dy == 0)
-        sz.dy = 1;
-
-    return sz;
+    return Size2i(std::max(1, size.dx >> level), std::max(1, size.dy >> level));
 }
 
 //------------------------------------------------------------------------------
