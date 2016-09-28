@@ -104,16 +104,9 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const
 {
-    Vector<ControlNode*> nodesUnderPoint;
-    auto predicate = [point](const ControlNode* node) -> bool {
-        auto control = node->GetControl();
-        DVASSERT(control != nullptr);
-        return control->IsVisible() && control->IsPointInside(point);
-    };
-    CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
+    return selectionSystemPtr->ControlNodeUnderPoint(point, nearest);
 }
 
 uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
@@ -264,4 +257,9 @@ void EditorSystemsManager::RefreshRootControls()
         EditingRootControlsChanged.Emit(editingRootControls);
         UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
     }
+}
+
+DAVA::Vector2 GetMinimumSize()
+{
+    return DAVA::Vector2(16.0f, 16.0f);
 }

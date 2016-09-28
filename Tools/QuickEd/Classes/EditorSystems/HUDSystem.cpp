@@ -48,7 +48,7 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(EditorSystemsManager* systemsManager, ControlNode* node, UIControl* hudControl);
+    HUD(ControlNode* node, UIControl* hudControl);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -57,11 +57,11 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
-HUDSystem::HUD::HUD(EditorSystemsManager* systemsManager, ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
-    , container(new HUDContainer(systemsManager, node_))
+    , container(new HUDContainer(node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
     DAVA::Vector<HUDAreaInfo::eArea> areas;
@@ -151,7 +151,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(systemsManager, controlNode, hudControl.Get());
+                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -159,6 +159,8 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
     UpdateAreasVisibility();
     ProcessCursor(hoveredPoint, SEARCH_BACKWARD);
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(hoveredPoint, false);
+    OnNodesHovered({ node });
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
@@ -166,7 +168,17 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
-    switch (currentInput->phase)
+    UIEvent::Phase phase = currentInput->phase;
+    if (phase == UIEvent::Phase::MOVE
+        || phase == UIEvent::Phase::WHEEL
+        || phase == UIEvent::Phase::ENDED
+        )
+    {
+        ControlNode* node = systemsManager->ControlNodeUnderPoint(hoveredPoint, false);
+        OnNodesHovered({ node });
+    }
+
+    switch (phase)
     {
     case UIEvent::Phase::MOVE:
         ProcessCursor(hoveredPoint, searchOrder);
@@ -252,10 +264,8 @@ void HUDSystem::OnNodesHovered(const Vector<ControlNode*>& nodes)
             auto gd = targetControl->GetGeometricData();
             Rect ur(gd.position, gd.size * gd.scale);
 
-            RefPtr<UIControl> control(new UIControl(ur));
-            ::SetupHUDMagnetRectControl(control.Get());
-            control->SetPivot(targetControl->GetPivot());
-            control->SetAngle(gd.angle);
+            RefPtr<UIControl> control(CreateHUDRect(node));
+
             hudControl->AddControl(control.Get());
             hoveredNodes[node] = control;
         }

@@ -9,6 +9,8 @@
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 
+DAVA::Vector2 GetMinimumSize();
+
 namespace DAVA
 {
 class UIControl;
@@ -89,7 +91,7 @@ public:
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
@@ -137,9 +139,6 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
-
-public:
-    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 };
 
 template <class OutIt, class Predicate>
@@ -149,6 +148,14 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
+        if (predicate(controlNode))
+        {
+            *destination++ = controlNode;
+        }
+    }
+    for (PackageBaseNode* rootControl : editingRootControls)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         CollectControlNodesImpl(destination, predicate, stopPredicate, controlNode);
     }
 }
@@ -156,14 +163,17 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
 template <class OutIt, class Predicate>
 void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
-    if (predicate(node))
-    {
-        *destination++ = node;
-    }
-
     if (!stopPredicate(node))
     {
         int count = node->GetCount();
+        for (int i = 0; i < count; ++i)
+        {
+            ControlNode* child = node->Get(i);
+            if (predicate(child))
+            {
+                *destination++ = child;
+            }
+        }
         for (int i = 0; i < count; ++i)
         {
             CollectControlNodesImpl(destination, predicate, stopPredicate, node->Get(i));

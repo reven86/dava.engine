@@ -30,6 +30,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     case UIEvent::Phase::BEGAN:
         mousePressed = true;
         ProcessMousePress(currentInput->point, currentInput->mouseButton);
+        break;
     case UIEvent::Phase::ENDED:
         if (!mousePressed)
         {
@@ -66,19 +67,19 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
     auto predicate = [rect](const ControlNode* node) -> bool {
-        const auto control = node->GetControl();
+        const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
         return control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox());
     };
     auto stopPredicate = [](const ControlNode* node) -> bool {
-        const auto control = node->GetControl();
+        const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
         return !control->GetVisibilityFlag();
     };
     systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
     if (!areaNodes.empty())
     {
-        for (auto node : areaNodes)
+        for (ControlNode* node : areaNodes)
         {
             selected.insert(node);
         }
@@ -152,22 +153,7 @@ void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     ControlNode* selectedNode = nullptr;
     if (buttonID == UIEvent::MouseButton::LEFT)
     {
-        Vector<ControlNode*> nodesUnderPoint;
-        auto predicate = [point](const ControlNode* node) -> bool {
-            const auto control = node->GetControl();
-            DVASSERT(nullptr != control);
-            return control->GetVisibilityFlag() && control->IsPointInside(point);
-        };
-        auto stopPredicate = [](const ControlNode* node) -> bool {
-            const auto control = node->GetControl();
-            DVASSERT(nullptr != control);
-            return !control->GetVisibilityFlag();
-        };
-        systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate, stopPredicate);
-        if (!nodesUnderPoint.empty())
-        {
-            selectedNode = nodesUnderPoint.back();
-        }
+        selectedNode = ControlNodeUnderPoint(point, false);
     }
     if (nullptr != selectedNode)
     {
@@ -214,9 +200,147 @@ void SelectionSystem::SelectNode(ControlNode* selectedNode)
             selected.insert(selectedNode);
         }
     }
-    for (auto controlNode : selected)
+    for (PackageBaseNode* controlNode : selected)
     {
         deselected.erase(controlNode);
     }
     SelectNode(selected, deselected);
+}
+
+namespace SelectionSystemDetails
+{
+ControlNode* GetCommonNodeUnderPoint(const Vector<ControlNode*>& nodesUnderPoint)
+{
+    //if control much smaller than parent - we can want to select it
+    Vector<std::pair<ControlNode*, Vector2>> sizes;
+    sizes.reserve(nodesUnderPoint.size());
+    for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
+    {
+        ControlNode* node = *iter;
+        Vector2 size = node->GetControl()->GetAbsoluteRect().GetSize();
+        if (!sizes.empty())
+        {
+            const std::pair<ControlNode*, Vector2> lastNodeSize = sizes.back();
+            Vector2 sizeDiff = size - lastNodeSize.second;
+            if (sizeDiff.dx > 300.0f || sizeDiff.dx > 300.0f
+                || sizeDiff.dx > 100.0f && sizeDiff.dy > 100.0f)
+            {
+                Logger::Debug("found common of selected %s with size %f %f - %s with size %f %f", node->GetName().c_str(), size.x, size.y, lastNodeSize.first->GetName().c_str(), lastNodeSize.second.x, lastNodeSize.second.y);
+                return lastNodeSize.first;
+            }
+        }
+        sizes.push_back(std::make_pair(node, size));
+    }
+    return nullptr;
+}
+}
+
+ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const
+{
+    if (KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
+    {
+        nearest = !nearest;
+    }
+    auto findPredicate = [point](const ControlNode* node) -> bool {
+        const UIControl* control = node->GetControl();
+        DVASSERT(nullptr != control);
+        return control->GetVisibilityFlag() && control->IsPointInside(point);
+    };
+    Vector<ControlNode*> nodesUnderPoint;
+
+    auto stopPredicate = [](const ControlNode* node) -> bool {
+        const UIControl* control = node->GetControl();
+        DVASSERT(nullptr != control);
+        return !control->GetVisibilityFlag();
+    };
+    systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
+
+    const SelectedNodes& selected = selectionContainer.selectedNodes;
+    //no selection. Search for the child of root under cursor
+    if (nodesUnderPoint.empty())
+    {
+        return nullptr;
+    }
+
+    //found only one item
+    else if (nodesUnderPoint.size() == 1)
+    {
+        Logger::Debug("found only one %s", nodesUnderPoint.front()->GetName().c_str());
+        return nodesUnderPoint.front();
+    }
+
+    else if (!nearest)
+    {
+        if (!selected.empty())
+        {
+            SelectedNodes parentsOfSelectedNodes;
+            auto outIter = std::inserter(parentsOfSelectedNodes, parentsOfSelectedNodes.end());
+            std::transform(selected.begin(), selected.end(), outIter, [](PackageBaseNode* node) { return node->GetParent(); });
+            //move from deep nodes to root node
+            for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
+            {
+                ControlNode* node = *iter;
+                PackageBaseNode* nodeParent = node->GetParent();
+
+                //search child of selected to move down by hierarchy
+                if (selected.find(nodeParent) != selected.end())
+                {
+                    Logger::Debug("found child of selected %s", node->GetName().c_str());
+                    return node;
+                }
+
+                //search neighbor to move left-right
+                else if (parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
+                {
+                    Logger::Debug("found neighbor of selected %s", node->GetName().c_str());
+                    return node;
+                }
+
+                //search parent of selected to move up
+                else if (parentsOfSelectedNodes.find(node) != parentsOfSelectedNodes.end())
+                {
+                    Logger::Debug("found parent of selected %s", node->GetName().c_str());
+                    return node;
+                }
+
+                //if already selected.
+                else if (selected.find(node) != selected.end())
+                {
+                    Logger::Debug("found already of selected %s", node->GetName().c_str());
+                    return node;
+                }
+            }
+            //may be there some small node inside big one
+            ControlNode* node = SelectionSystemDetails::GetCommonNodeUnderPoint(nodesUnderPoint);
+            if (node != nullptr)
+            {
+                return node;
+            }
+        }
+        //return child of root control
+        else
+        {
+            ControlNode* node = SelectionSystemDetails::GetCommonNodeUnderPoint(nodesUnderPoint);
+            if (node != nullptr)
+            {
+                return node;
+            }
+            else
+            {
+                ControlNode* firstNode = nodesUnderPoint.front();
+                if (firstNode->GetParent()->GetControl() == nullptr)
+                {
+                    Logger::Debug("no selected but found root child %s %s", nodesUnderPoint.at(1)->GetName().c_str(), nodesUnderPoint.at(0)->GetName().c_str());
+                    return nodesUnderPoint.at(1);
+                }
+                else
+                {
+                    Logger::Debug("no selected but found something %s %s", nodesUnderPoint.at(1)->GetName().c_str(), nodesUnderPoint.at(0)->GetName().c_str());
+                    return firstNode;
+                }
+            }
+        }
+    }
+    DAVA::Logger::Debug("search nearest node %s", nodesUnderPoint.empty() ? "" : nodesUnderPoint.back()->GetName().c_str());
+    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }

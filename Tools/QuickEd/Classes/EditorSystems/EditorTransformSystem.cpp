@@ -569,7 +569,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 {
-    const Vector2 scaledMinimum(systemsManager->minimumSize / controlGeometricData.scale);
+    const Vector2 scaledMinimum(GetMinimumSize() / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
 
     Vector2 finalSize(origSize + deltaSize);

@@ -5,11 +5,39 @@
 
 using namespace DAVA;
 
-namespace
+namespace HUDControlsDetails
 {
 const Vector2 PIVOT_CONTROL_SIZE(15.0f, 15.0f);
 const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
 const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15);
+
+UIControl* CreateFrameBorderControl(FrameControl::eBorder border)
+{
+    UIControl* control = new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f));
+    UIAnchorComponent* anchor = control->GetOrCreateComponent<UIAnchorComponent>();
+    anchor->SetLeftAnchorEnabled(true);
+    anchor->SetRightAnchorEnabled(true);
+    anchor->SetTopAnchorEnabled(true);
+    anchor->SetBottomAnchorEnabled(true);
+    switch (border)
+    {
+    case FrameControl::TOP:
+        anchor->SetBottomAnchorEnabled(false);
+        break;
+    case FrameControl::BOTTOM:
+        anchor->SetTopAnchorEnabled(false);
+        break;
+    case FrameControl::LEFT:
+        anchor->SetRightAnchorEnabled(false);
+        break;
+    case FrameControl::RIGHT:
+        anchor->SetLeftAnchorEnabled(false);
+        break;
+    default:
+        DVASSERT("!impossible value for frame control position");
+    }
+    return control;
+}
 }
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -33,10 +61,9 @@ bool ControlContainer::GetSystemVisible() const
     return systemVisible;
 }
 
-HUDContainer::HUDContainer(EditorSystemsManager* systemsManager_, ControlNode* node_)
+HUDContainer::HUDContainer(ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
-    , systemsManager(systemsManager_)
 {
     DVASSERT(nullptr != node);
     SetName(FastName(String("HudContainer of ") + node->GetName().c_str()));
@@ -72,7 +99,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetVisibilityFlag(containerVisible);
     if (containerVisible)
     {
-        const DAVA::Vector2& minimumSize = systemsManager->minimumSize;
+        const DAVA::Vector2& minimumSize = GetMinimumSize();
         DAVA::Vector2 actualSize(gd.size * gd.scale);
         DAVA::UIGeometricData changedGD = gd;
         bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;
@@ -111,16 +138,25 @@ void HUDContainer::SystemDraw(const UIGeometricData& gd)
     UIControl::SystemDraw(gd);
 }
 
-FrameControl::FrameControl()
+FrameControl::FrameControl(eType type_)
     : ControlContainer(HUDAreaInfo::FRAME_AREA)
+    , type(type_)
 {
     SetName(FastName("Frame Control"));
-    for (uint32 i = 0; i < BORDERS_COUNT; ++i)
+    for (uint32 i = 0; i < COUNT; ++i)
     {
-        ScopedPtr<UIControl> control(CreateFrameBorderControl(i));
+        FrameControl::eBorder border = static_cast<FrameControl::eBorder>(i);
+        ScopedPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
         control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
-        background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
+        if (type == CHECKERED)
+        {
+            background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
+        }
+        else
+        {
+            background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+        }
         background->SetDrawType(UIControlBackground::DRAW_TILED);
         AddControl(control);
     }
@@ -129,34 +165,6 @@ FrameControl::FrameControl()
 void FrameControl::InitFromGD(const UIGeometricData& gd)
 {
     SetRect(Rect(Vector2(0.0f, 0.0f), gd.size * gd.scale));
-}
-
-UIControl* FrameControl::CreateFrameBorderControl(uint32 border)
-{
-    UIControl* control = new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f));
-    UIAnchorComponent* anchor = control->GetOrCreateComponent<UIAnchorComponent>();
-    anchor->SetLeftAnchorEnabled(true);
-    anchor->SetRightAnchorEnabled(true);
-    anchor->SetTopAnchorEnabled(true);
-    anchor->SetBottomAnchorEnabled(true);
-    switch (border)
-    {
-    case BORDER_TOP:
-        anchor->SetBottomAnchorEnabled(false);
-        break;
-    case BORDER_BOTTOM:
-        anchor->SetTopAnchorEnabled(false);
-        break;
-    case BORDER_LEFT:
-        anchor->SetRightAnchorEnabled(false);
-        break;
-    case BORDER_RIGHT:
-        anchor->SetLeftAnchorEnabled(false);
-        break;
-    default:
-        DVASSERT("!impossible value for frame control position");
-    }
-    return control;
 }
 
 FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
@@ -170,7 +178,7 @@ FrameRectControl::FrameRectControl(const HUDAreaInfo::eArea area_)
 
 void FrameRectControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect(Vector2(), FRAME_RECT_SIZE);
+    Rect rect(Vector2(), HUDControlsDetails::FRAME_RECT_SIZE);
     rect.SetCenter(GetPos(gd));
     SetRect(rect);
 }
@@ -213,7 +221,7 @@ PivotPointControl::PivotPointControl()
 
 void PivotPointControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
+    Rect rect(Vector2(), HUDControlsDetails::PIVOT_CONTROL_SIZE);
     rect.SetCenter(gd.pivotPoint * gd.scale);
     SetRect(rect);
 }
@@ -229,11 +237,11 @@ RotateControl::RotateControl()
 
 void RotateControl::InitFromGD(const UIGeometricData& gd)
 {
-    Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
+    Rect rect(Vector2(0.0f, 0.0f), HUDControlsDetails::ROTATE_CONTROL_SIZE);
     Rect controlRect(Vector2(0.0f, 0.0f), gd.size * gd.scale);
 
     const int margin = 5;
-    rect.SetCenter(Vector2(controlRect.dx / 2.0f, controlRect.GetPosition().y - ROTATE_CONTROL_SIZE.y - margin));
+    rect.SetCenter(Vector2(controlRect.dx / 2.0f, controlRect.GetPosition().y - HUDControlsDetails::ROTATE_CONTROL_SIZE.y - margin));
 
     SetRect(rect);
 }
@@ -247,12 +255,22 @@ void SetupHUDMagnetLineControl(UIControl* control)
 
 void SetupHUDMagnetRectControl(UIControl* parentControl)
 {
-    const int bordersCount = 4;
-    for (int i = 0; i < bordersCount; ++i)
+    for (int i = 0; i < FrameControl::COUNT; ++i)
     {
-        ScopedPtr<UIControl> control(FrameControl::CreateFrameBorderControl(i));
+        FrameControl::eBorder border = static_cast<FrameControl::eBorder>(i);
+        ScopedPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
         SetupHUDMagnetLineControl(control);
         control->SetName(FastName(String("border of magnet rect")));
         parentControl->AddControl(control);
     }
+}
+
+UIControl* CreateHUDRect(ControlNode* node)
+{
+    HUDContainer* container = new HUDContainer(node);
+    ControlContainer* controlContainer = new FrameControl(FrameControl::UNIFORM);
+    container->AddChild(controlContainer);
+
+    container->InitFromGD(node->GetControl()->GetGeometricData());
+    return container;
 }

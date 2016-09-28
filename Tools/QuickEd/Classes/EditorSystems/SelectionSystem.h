@@ -30,6 +30,8 @@ public:
 
     void SelectNode(ControlNode* node);
 
+    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const;
+
 private:
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnPackageNodeChanged(PackageNode* packageNode);

@@ -131,6 +131,30 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
+ControlNode* PreviewWidget::HighlightNodeUnderPoint(const QPoint& localPos, bool nearest)
+{
+    //GL is not initialized yet
+    if (!systemsManager)
+    {
+        return nullptr;
+    }
+
+    Vector2 davaPos(localPos.x(), localPos.y());
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPos, nearest);
+    systemsManager->NodesHovered.Emit({ node });
+    return node;
+}
+
+void PreviewWidget::ClearHightlight()
+{
+    //GL is not initialized yet
+    if (!systemsManager)
+    {
+        return;
+    }
+    systemsManager->NodesHovered.Emit({ nullptr });
+}
+
 void PreviewWidget::CreateActions()
 {
     QAction* importPackageAction = new QAction(tr("Import package"), this);
@@ -480,7 +504,7 @@ void PreviewWidget::ShowMenu(const QPoint& pos)
         menu.addSeparator();
     }
     Vector2 davaPoint(pos.x(), pos.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint, false);
     if (CanChangeTextInControl(node))
     {
         QString name = QString::fromStdString(node->GetName());
@@ -713,7 +737,7 @@ void PreviewWidget::OnDoubleClickEvent(QMouseEvent* event)
     QPoint point = event->pos();
 
     Vector2 davaPoint(point.x(), point.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint, true);
     if (!CanChangeTextInControl(node))
     {
         return;
@@ -771,9 +795,8 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DVASSERT(nullptr != document);
-        Vector2 pos(event->pos().x(), event->pos().y());
-        auto node = systemsManager->ControlNodeUnderPoint(pos);
-        systemsManager->NodesHovered.Emit({ node });
+        ControlNode* node = HighlightNodeUnderPoint(event->pos(), true);
+
         if (nullptr != node)
         {
             if (node->IsReadOnly())
@@ -808,18 +831,18 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
 
 void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
 {
-    systemsManager->NodesHovered.Emit({ nullptr });
+    ClearHightlight();
 }
 
 void PreviewWidget::OnDropEvent(QDropEvent* event)
 {
-    systemsManager->NodesHovered.Emit({ nullptr });
+    ClearHightlight();
     DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
     if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         Vector2 pos(event->pos().x(), event->pos().y());
-        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
+        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos, true);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
         uint32 index = 0;

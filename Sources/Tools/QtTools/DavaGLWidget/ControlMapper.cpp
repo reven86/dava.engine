@@ -188,14 +188,17 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent* event)
 
 void ControlMapper::wheelEvent(QWheelEvent* event)
 {
-    DAVA::UIEvent davaEvent;
-    davaEvent.wheelDelta.x = event->pixelDelta().x();
-    davaEvent.wheelDelta.y = event->pixelDelta().y();
-    davaEvent.timestamp = 0;
-    davaEvent.phase = DAVA::UIEvent::Phase::WHEEL;
-    davaEvent.device = DAVA::UIEvent::Device::MOUSE;
+    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+    for (auto& ev : mouseButtons)
+    {
+        ev.phase = DAVA::UIEvent::Phase::WHEEL;
+        ev.timestamp = 0;
+
+        ev.wheelDelta.x = event->pixelDelta().x();
+        ev.wheelDelta.y = event->pixelDelta().y();
+        DAVA::QtLayer::Instance()->MouseEvent(ev);
+    }
 }
 
 void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
