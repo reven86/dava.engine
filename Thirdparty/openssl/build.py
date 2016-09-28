@@ -35,11 +35,13 @@ def _download_and_extract(working_directory_path, win10=False):
 	if win10:
 		source_folder_path = os.path.join(working_directory_path, 'openssl_source_win10')
 		url = get_download_url()['win10']
+		inner_dir = 'openssl-' + build_utils.get_url_file_name_no_ext(url)
 	else:
 		source_folder_path = os.path.join(working_directory_path, 'openssl_source')
 		url = get_download_url()['others']
+		inner_dir = build_utils.get_url_file_name_no_ext(url)
 
-	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
+	build_utils.download_and_extract(url, working_directory_path, source_folder_path, inner_dir_name=inner_dir)	
 	return source_folder_path
 
 def _patch_sources(source_folder_path, working_directory_path):
@@ -57,7 +59,6 @@ configure_args = ['no-whirlpool', 'no-asm', 'no-cast', 'no-idea', 'no-camellia',
 
 def _build_win32(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
-	_patch_sources(source_folder_path, working_directory_path)
 
 	configure_exec = ['perl', 'Configure']
 	vs_x86_env = build_utils.get_vs_x86_env()
@@ -108,6 +109,53 @@ def _build_win32(working_directory_path, root_project_path):
 
 	_copy_headers(install_dir_x86, root_project_path, 'win32/x86')
 	_copy_headers(install_dir_x64, root_project_path, 'win32/x64')
+
+def _build_win10(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path, win10=True)
+
+	build_utils.run_process(['ms\\do_vsprojects14.bat'], process_cwd=source_folder_path, shell=True)
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Debug', 'Win32')
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Release', 'Win32')
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Debug', 'x64')
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Release', 'x64')
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Debug', 'ARM')
+	build_utils.build_vs(os.path.join(source_folder_path, 'vsout/NT-Universal-10.0-Static-Unicode/NT-Universal-10.0-Static-Unicode.vcxproj'), 'Release', 'ARM')
+	build_utils.run_process(['ms\\do_packwinuniversal.bat'], process_cwd=source_folder_path, shell=True)
+
+	package_folder_path = os.path.join(source_folder_path, 'vsout/package')
+	libs_folder_path = os.path.join(package_folder_path, 'lib/Universal/10.0/Static/Unicode')
+
+	libssl_path_x86_debug = os.path.join(libs_folder_path, 'Debug/Win32/ssleay32.lib')
+	libcrypto_path_x86_debug = os.path.join(libs_folder_path, 'Debug/Win32/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Debug/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Debug/libeay32.lib'))
+
+	libssl_path_x86_release = os.path.join(libs_folder_path, 'Release/Win32/ssleay32.lib')
+	libcrypto_path_x86_release = os.path.join(libs_folder_path, 'Release/Win32/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/libeay32.lib'))
+
+	libssl_path_x64_debug = os.path.join(libs_folder_path, 'Debug/x64/ssleay32.lib')
+	libcrypto_path_x64_debug = os.path.join(libs_folder_path, 'Debug/x64/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Debug/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Debug/libeay32.lib'))
+
+	libssl_path_x64_release = os.path.join(libs_folder_path, 'Release/x64/ssleay32.lib')
+	libcrypto_path_x64_release = os.path.join(libs_folder_path, 'Release/x64/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Release/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Release/libeay32.lib'))
+
+	libssl_path_arm_debug = os.path.join(libs_folder_path, 'Debug/arm/ssleay32.lib')
+	libcrypto_path_arm_debug = os.path.join(libs_folder_path, 'Debug/arm/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/libeay32.lib'))
+
+	libssl_path_arm_release = os.path.join(libs_folder_path, 'Release/arm/ssleay32.lib')
+	libcrypto_path_arm_release = os.path.join(libs_folder_path, 'Release/arm/libeay32.lib')
+	shutil.copyfile(libssl_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/ssleay32.lib'))
+	shutil.copyfile(libcrypto_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/libeay32.lib'))
+
+	_copy_headers(package_folder_path, root_project_path, 'uwp')
 
 def _build_macos(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
@@ -172,8 +220,6 @@ def _build_android(working_directory_path, root_project_path):
 	shutil.copyfile(libcrypto_path_android_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libcrypto.a'))
 
 	_copy_headers(install_dir_arm, root_project_path, 'android')
-
-	return True
 
 def _get_ios_env():
 	xcode_developer_path = build_utils.get_xcode_developer_path()

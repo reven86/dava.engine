@@ -69,7 +69,7 @@ def apply_patch(patch, working_dir = '.'):
 
 def build_vs(project, configuration, platform='Win32', target = None):
 	print "Building %s for %s ..." % (project, configuration)
-	args = ["c:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration]
+	args = ["c:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration, '/p:Platform=' + platform]
 	if (not target is None):
 		args.append('/target:' + target)
 	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -452,7 +452,6 @@ def build_and_copy_libraries_android_cmake(
 	return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
 def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make'):
-	print env
 	if isinstance(configure_exec_name, list):
 		if sys.platform == 'win32':
 			cmd = list(configure_exec_name)
