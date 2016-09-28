@@ -263,20 +263,12 @@ void UIControl::SetState(int32 state)
 
 void UIControl::AddState(int32 state)
 {
-    if ((controlState & state) == 0)
-    {
-        controlState |= state;
-        SetStyleSheetDirty();
-    }
+    SetState(controlState | state);
 }
 
 void UIControl::RemoveState(int32 state)
 {
-    if ((controlState & state) != 0)
-    {
-        controlState &= ~state;
-        SetStyleSheetDirty();
-    }
+    SetState(controlState & ~state);
 }
 
 Sprite* UIControl::GetSprite() const
