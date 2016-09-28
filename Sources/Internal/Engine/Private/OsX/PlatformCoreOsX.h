@@ -41,7 +41,7 @@ private:
     static WindowBackend* GetWindowBackend(Window* window);
 
 private:
-    EngineBackend& engineBackend;
+    EngineBackend* engineBackend = nullptr;
 
     std::unique_ptr<CoreNativeBridge> bridge;
     std::unique_ptr<NativeService> nativeService;

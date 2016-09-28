@@ -498,18 +498,12 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
 
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
-    MainDispatcherEvent e(MainDispatcherEvent::APP_TERMINATE);
-    e.timestamp = context->systemTimer->FrameStampTimeMS();
-    e.terminateEvent.triggeredBySystem = triggeredBySystem;
-    dispatcher->PostEvent(e);
+    dispatcher->PostEvent(MainDispatcherEvent::CreateAppTerminateEvent(triggeredBySystem));
 }
 
 void EngineBackend::PostUserCloseRequest()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST);
-    e.timestamp = context->systemTimer->FrameStampTimeMS();
-    e.window = nullptr;
-    dispatcher->PostEvent(e);
+    dispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(nullptr));
 }
 
 void EngineBackend::InitRenderer(Window* w)

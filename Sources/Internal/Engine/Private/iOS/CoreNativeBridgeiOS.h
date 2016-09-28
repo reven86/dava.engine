@@ -38,7 +38,9 @@ struct CoreNativeBridge final
     void ApplicationWillTerminate();
     void ApplicationDidReceiveMemoryWarning();
 
-    PlatformCore& core;
+    PlatformCore* core = nullptr;
+    EngineBackend* engineBackend = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
     FrameTimer* frameTimer = nullptr;
 };
 

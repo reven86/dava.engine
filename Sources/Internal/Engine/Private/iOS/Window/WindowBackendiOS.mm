@@ -77,6 +77,11 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;
