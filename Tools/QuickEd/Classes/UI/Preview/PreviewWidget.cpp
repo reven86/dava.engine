@@ -214,6 +214,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     continuousUpdater->Stop();
     SaveContext();
     document = arg;
+    systemsManager->MagnetLinesChanged.Emit({});
+    systemsManager->NodesHovered.Emit({});
     if (document.isNull())
     {
         systemsManager->PackageNodeChanged.Emit(nullptr);

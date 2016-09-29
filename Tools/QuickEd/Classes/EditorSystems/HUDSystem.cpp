@@ -317,16 +317,16 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         magnetTargetControls.reserve(count);
         for (size_type i = 0; i < count; ++i)
         {
-            UIControl* lineControl = new UIControl();
+            RefPtr<UIControl> lineControl(new UIControl());
             lineControl->SetName(FastName("magnet line control"));
-            ::SetupHUDMagnetLineControl(lineControl);
-            hudControl->AddControl(lineControl);
+            ::SetupHUDMagnetLineControl(lineControl.Get());
+            hudControl->AddControl(lineControl.Get());
             magnetControls.emplace_back(lineControl);
 
-            UIControl* rectControl = new UIControl();
+            RefPtr<UIControl> rectControl(new UIControl());
             rectControl->SetName(FastName("rect of target control which we magnet to"));
-            ::SetupHUDMagnetRectControl(rectControl);
-            hudControl->AddControl(rectControl);
+            ::SetupHUDMagnetRectControl(rectControl.Get());
+            hudControl->AddControl(rectControl.Get());
             magnetTargetControls.emplace_back(rectControl);
         }
     }

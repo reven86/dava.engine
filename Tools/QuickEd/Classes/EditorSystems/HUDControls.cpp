@@ -251,6 +251,7 @@ void SetupHUDMagnetLineControl(UIControl* control)
     control->GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
     control->GetBackground()->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
     control->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    control->SetName("Magnet line");
 }
 
 void SetupHUDMagnetRectControl(UIControl* parentControl)
@@ -268,8 +269,10 @@ void SetupHUDMagnetRectControl(UIControl* parentControl)
 UIControl* CreateHUDRect(ControlNode* node)
 {
     HUDContainer* container = new HUDContainer(node);
-    ControlContainer* controlContainer = new FrameControl(FrameControl::UNIFORM);
-    container->AddChild(controlContainer);
+    container->SetName("HUD rect container");
+    ControlContainer* frame = new FrameControl(FrameControl::UNIFORM);
+    frame->SetName("HUD rect frame control");
+    container->AddChild(frame);
 
     container->InitFromGD(node->GetControl()->GetGeometricData());
     return container;
