@@ -432,6 +432,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
         }
 
+        NMaterial* globalMaterial = nullptr;
+
         if (header.nodeCount > 0)
         {
             // try to load global material
@@ -450,12 +452,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             if (name == "GlobalMaterial")
             {
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-                NMaterial* globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-                ApplyFogQualityToGlobalMaterial(globalMaterial);
-
-                scene->SetGlobalMaterial(globalMaterial);
+                globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
-
                 --header.nodeCount;
             }
             else
@@ -474,9 +472,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         }
 
         serializationContext.ResolveMaterialBindings();
-    }
 
-    ApplyFogQualityToDataNodes();
+        ApplyFogQuality(globalMaterial);
+        scene->SetGlobalMaterial(globalMaterial);
+    }
 
     if (isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
@@ -520,32 +519,19 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
-void SceneFileV2::ApplyFogQualityToGlobalMaterial(NMaterial* globalMaterial)
-{
-    DVASSERT(globalMaterial != nullptr);
-
-    QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
-    bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
-    bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
-
-    if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
-        globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
-
-    if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
-        globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
-
-    if (removeVertexFog && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
-        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
-
-    if (removeHalfSpaceFog && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
-        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
-}
-
-void SceneFileV2::ApplyFogQualityToDataNodes()
+void SceneFileV2::ApplyFogQuality(NMaterial* globalMaterial)
 {
     QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
     bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
     bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+
+    if (globalMaterial != nullptr)
+    {
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
+        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
+            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
+    }
 
     if (removeVertexFog || removeHalfSpaceFog)
     {
