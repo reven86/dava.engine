@@ -2502,7 +2502,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             GL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &linkStatus));
             if (linkStatus)
             {
+                GLint currentProgram = 0;
+                GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram));
+
+                // Force OpenGL to compile program immediately
                 GL_CALL(glUseProgram(program));
+
+                // Restore original state
+                GL_CALL(glUseProgram(currentProgram));
             }
             cmd->retval = linkStatus;
             cmd->status = err;
