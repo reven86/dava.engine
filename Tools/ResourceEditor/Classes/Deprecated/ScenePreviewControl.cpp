@@ -66,6 +66,7 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 
     CreateCamera();
 
+    SceneValidator::ExtractEmptyRenderObjects(editorScene);
     SceneValidator::Instance()->ValidateScene(editorScene, pathToFile);
 
     return retError;
@@ -114,7 +115,6 @@ void ScenePreviewControl::CreateCamera()
 
     editorScene->AddCamera(camera);
     editorScene->SetCurrentCamera(camera);
-    editorScene->Update(0.01f);
 }
 
 void ScenePreviewControl::SetupCamera()
