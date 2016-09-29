@@ -139,6 +139,16 @@
     bridge->KeyEvent(theEvent);
 }
 
+- (void)mouseEntered:(NSEvent*)theEvent
+{
+    bridge->MouseEntered(theEvent);
+}
+
+- (void)mouseExited:(NSEvent*)theEvent
+{
+    bridge->MouseExited(theEvent);
+}
+
 - (void)flagsChanged:(NSEvent*)theEvent
 {
 }

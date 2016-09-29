@@ -87,14 +87,16 @@ void WindowBackend::ProcessPlatformEvents()
     platformDispatcher.ProcessEvents();
 }
 
-void WindowBackend::SetMouseMode(eMouseMode mode)
+bool WindowBackend::SetCaptureMode(eCaptureMode mode)
 {
-    // iOS didn't have mouse
+    // not supported
+    return false;
 }
-
-eMouseMode WindowBackend::GetMouseMode() const
+    
+bool WindowBackend::SetMouseVisibility(bool visible)
 {
-    return eMouseMode::DEFAULT;
+    // not supported
+    return false;
 }
 
 void WindowBackend::EventHandler(const UIDispatcherEvent& e)
@@ -104,8 +106,9 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     // iOS windows cannot be closed and are always stretched to screen size
     // case UIDispatcherEvent::CLOSE_WINDOW:
     // case UIDispatcherEvent::RESIZE_WINDOW:
-    // iOS didn't have mouse
-    // case UIDispatcherEvent::CHANGE_MOUSE_MODE:
+    // not supported
+    // case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
+    // case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;

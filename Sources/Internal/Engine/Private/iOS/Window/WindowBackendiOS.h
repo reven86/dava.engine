@@ -43,8 +43,8 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    void SetMouseMode(eMouseMode mode);
-    eMouseMode GetMouseMode() const;
+    bool SetCaptureMode(eCaptureMode mode);
+    bool SetMouseVisibility(bool visible);
 
 private:
     void EventHandler(const UIDispatcherEvent& e);

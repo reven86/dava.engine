@@ -8,6 +8,7 @@
 
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
+#import <AppKit/NSTrackingArea.h>
 
 #include "Engine/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -108,7 +109,6 @@ void WindowNativeBridge::WindowDidDeminiaturize()
 
 void WindowNativeBridge::WindowDidBecomeKey()
 {
-    hasFocus = true;
     if (isMiniaturized || isAppHidden)
     {
         windowBackend->GetWindow()->PostVisibilityChanged(true);
@@ -274,19 +274,17 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
-    if (nativeMouseMode == eMouseMode::HIDE)
+    if (!mouseVisible)
     {
-        ChangeMouseVisibility(false);
-        deferredMouseMode = false;
+        SetMouseVisibility(false);
     }
 }
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
-    if (nativeMouseMode == eMouseMode::HIDE)
+    if (!mouseVisible)
     {
-        ChangeMouseVisibility(true);
-        deferredMouseMode = false;
+        SetMouseVisibility(true);
     }
 }
 
@@ -297,12 +295,12 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
         return;
     }
     captureMode = mode;
-    switch (newMode)
+    switch (mode)
     {
-    case DAVA::eMouseMode::FRAME:
+    case DAVA::eCaptureMode::FRAME:
         //not implemented
         break;
-    case DAVA::eMouseMode::PINING:
+    case DAVA::eCaptureMode::PINNING:
     {
         ChangeMouseVisibility(false);
         CGAssociateMouseAndMouseCursorPosition(false);
@@ -314,9 +312,10 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
         float x = windowRect.origin.x + windowRect.size.width / 2.0f;
         float y = windowRect.origin.y + windowRect.size.height / 2.0f;
         CGWarpMouseCursorPosition(CGPointMake(x, y));
-        uint32 skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        break;
     }
-    case DAVA::eMouseMode::DEFAULT:
+    case DAVA::eCaptureMode::DEFAULT:
     {
         ChangeMouseVisibility(true);
         CGAssociateMouseAndMouseCursorPosition(true);
@@ -325,14 +324,14 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
     }
 }
 
-void WindowNativeBridge::ChangeMouseVisibility(bool visible)
+void WindowNativeBridge::SetMouseVisibility(bool visible)
 {
-    static bool mouseVisible = true;
-    if (mouseVisible == visible)
+    static bool mouseVisibleState = true;
+    if (mouseVisibleState == visible)
     {
         return;
     }
-    mouseVisible = visible;
+    mouseVisibleState = visible;
     if (visible)
     {
         [[NSCursor arrowCursor] set];
@@ -341,6 +340,17 @@ void WindowNativeBridge::ChangeMouseVisibility(bool visible)
     {
         [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
     }
+}
+
+
+void WindowNativeBridge::ChangeMouseVisibility(bool visible)
+{
+    if (mouseVisible == visible)
+    {
+        return;
+    }
+    mouseVisible = visible;
+    SetMouseVisibility(visible);
 }
 
 void* WindowNativeBridge::GetOrCreateBlankCursor()

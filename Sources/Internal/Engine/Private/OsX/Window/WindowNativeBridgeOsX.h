@@ -13,6 +13,7 @@
 
 @class NSEvent;
 @class NSWindow;
+@class NSTrackingArea;
 
 @class RenderView;
 @class WindowDelegate;
@@ -86,6 +87,7 @@ private:
     // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
     void* blankCursor = nullptr;
     eCaptureMode captureMode = eCaptureMode::DEFAULT;
+    bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
     // So move mouse pointer to window center before enabling pinning mode.

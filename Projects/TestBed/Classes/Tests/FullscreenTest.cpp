@@ -11,8 +11,9 @@ FullscreenTest::FullscreenTest(GameCore* g)
 void FullscreenTest::LoadResources()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    if (isInit)
+    if (!isInit)
     {
+        isInit = true;
         Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
     }
 #endif // defined(__DAVAENGINE_COREV2__)
