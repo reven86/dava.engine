@@ -158,7 +158,7 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    rect = CefRect(0, 0, logicalViewSize.dx, logicalViewSize.dy);
+    rect = CefRect(0, 0, static_cast<int>(logicalViewSize.dx), static_cast<int>(logicalViewSize.dy));
     return true;
 }
 
