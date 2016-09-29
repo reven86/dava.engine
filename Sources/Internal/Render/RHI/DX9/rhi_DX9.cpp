@@ -197,6 +197,7 @@ void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
             hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_HAL, &adapter.caps);
             if (SUCCEEDED(hr))
             {
+                DAVA::Logger::Info("DX9 DEVICE: %s", adapter.info.Description);
                 adapters.push_back(adapter);
             }
         }
