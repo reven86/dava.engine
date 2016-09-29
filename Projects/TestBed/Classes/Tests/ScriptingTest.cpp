@@ -43,16 +43,7 @@ public:
     Vector<int32> v;
 };
 
-ScriptingTest::ScriptingTest(GameCore* g)
-    : BaseScreen(g, "ScriptingTest")
-{
-}
-
-void ScriptingTest::LoadResources()
-{
-    BaseScreen::LoadResources();
-
-    static const String demo_script = R"script(
+static const String demo_script = R"script(
 
 function main(context)
     DV.Debug("GlobObj.a: "..tostring(GlobObj.a))
@@ -91,11 +82,19 @@ end
 
 )script";
 
+ScriptingTest::ScriptingTest(GameCore* g)
+    : BaseScreen(g, "ScriptingTest")
+{
+}
+
+void ScriptingTest::LoadResources()
+{
+    BaseScreen::LoadResources();
+
     DemoObj obj;
     obj.v.assign({ 1, 2, 3, 4, 5 });
 
     Reflection objRef = Reflection::Create(&obj).ref;
-
     Reflection globRef = Reflection::Create(&obj.d).ref;
 
     Script s;
@@ -110,4 +109,8 @@ void ScriptingTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
     //TODO: Release resources here
+}
+
+void ScriptingTest::Update(DAVA::float32 timeElapsed)
+{
 }

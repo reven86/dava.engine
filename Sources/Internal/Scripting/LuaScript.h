@@ -8,11 +8,11 @@ namespace DAVA
 {
 struct ScriptState;
 
-class Script
+class LuaScript
 {
 public:
-    Script();
-    ~Script();
+    LuaScript();
+    ~LuaScript();
 
     bool LoadString(const String& script);
     bool LoadFile(const FilePath& filepath);

@@ -11,9 +11,10 @@ extern "C"
 #include <lualib.h>
 }
 
-namespace lua
+namespace DAVA
 {
-static struct lua_State* state;
+namespace Lua
+{
 
 DAVA::int32 Dava_register(lua_State* state);
 
@@ -28,4 +29,5 @@ DAVA::Reflection toReflection(lua_State* state, DAVA::int32 index);
 DAVA::Reflection checkReflection(lua_State* state, DAVA::int32 index);
 DAVA::Reflection* pushReflection(lua_State* state, const DAVA::Reflection& refl);
 DAVA::int32 Reflection_register(lua_State* state);
+}
 }

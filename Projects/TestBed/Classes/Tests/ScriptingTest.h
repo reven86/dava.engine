@@ -10,4 +10,5 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
+    void Update(DAVA::float32 timeElapsed) override;
 };

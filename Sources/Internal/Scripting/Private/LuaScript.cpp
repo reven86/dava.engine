@@ -1,4 +1,4 @@
-#include "Scripting/Script.h"
+#include "Scripting/LuaScript.h"
 #include "Debug/DVAssert.h"
 #include "lua_bridge.h"
 
@@ -11,7 +11,7 @@ struct ScriptState
 
 static const String mainFuctionName = "main";
 
-Script::Script()
+LuaScript::LuaScript()
 {
     state = new ScriptState;
     state->lua = luaL_newstate();
@@ -22,13 +22,13 @@ Script::Script()
     lua::Reflection_register(state->lua);
 }
 
-Script::~Script()
+LuaScript::~LuaScript()
 {
     lua_close(state->lua);
     delete state;
 }
 
-bool Script::LoadString(const String& script)
+bool LuaScript::LoadString(const String& script)
 {
     int res = luaL_loadstring(state->lua, script.c_str());
     DVASSERT_MSG(res == 0, "Can't load script");
@@ -47,7 +47,7 @@ bool Script::LoadString(const String& script)
     return true;
 }
 
-bool Script::LoadFile(const FilePath& filepath)
+bool LuaScript::LoadFile(const FilePath& filepath)
 {
     int res = luaL_loadfile(state->lua, filepath.GetAbsolutePathname().c_str());
     if (res != 0)
@@ -66,7 +66,7 @@ bool Script::LoadFile(const FilePath& filepath)
     return true;
 }
 
-bool Script::Run(const DAVA::Reflection& context)
+bool LuaScript::Run(const DAVA::Reflection& context)
 {
     lua_getglobal(state->lua, mainFuctionName.c_str());
     lua::pushReflection(state->lua, context);
@@ -80,7 +80,7 @@ bool Script::Run(const DAVA::Reflection& context)
     return true;
 }
 
-void Script::RegisterGlobalReflection(const String& name, const Reflection& reflection)
+void LuaScript::RegisterGlobalReflection(const String& name, const Reflection& reflection)
 {
     DVASSERT_MSG(reflection.IsValid(), "Can't register invalid reflection in Lua script!");
     lua::pushReflection(state->lua, reflection);
