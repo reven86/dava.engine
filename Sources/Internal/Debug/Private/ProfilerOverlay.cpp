@@ -178,19 +178,24 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
         EventHistory& history = eventsHistory[e.name];
         uint64& historyEventDuration = history.second.rbegin()->first;
 
-        if (e.phase == TraceEvent::PHASE_DURATION)
+        switch (e.phase)
         {
+        case TraceEvent::PHASE_DURATION:
             historyEventDuration += e.duration;
             trace.maxTimestamp = Max(trace.maxTimestamp, e.timestamp + e.duration);
-        }
-        else if (e.phase == TraceEvent::PHASE_BEGIN)
-        {
+            break;
+
+        case TraceEvent::PHASE_BEGIN:
             historyEventDuration -= e.timestamp;
-        }
-        else if (e.phase == TraceEvent::PHASE_END)
-        {
+            break;
+
+        case TraceEvent::PHASE_END:
             historyEventDuration += e.timestamp;
             trace.maxTimestamp = Max(trace.maxTimestamp, e.timestamp);
+            break;
+
+        default:
+            break;
         }
 
         trace.minTimestamp = Min(trace.minTimestamp, e.timestamp);
@@ -216,17 +221,22 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
         while (timestampsStack.size() && (timestampsStack.back().second != 0) && (e.timestamp >= timestampsStack.back().second))
             timestampsStack.pop_back();
 
-        if (e.phase == TraceEvent::PHASE_DURATION)
+        switch (e.phase)
         {
+        case TraceEvent::PHASE_DURATION:
             timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, e.timestamp + e.duration));
-        }
-        else if (e.phase == TraceEvent::PHASE_BEGIN)
-        {
+            break;
+
+        case TraceEvent::PHASE_BEGIN:
             timestampsStack.emplace_back(std::pair<uint64, uint64>(e.timestamp, 0));
-        }
-        else if (e.phase == TraceEvent::PHASE_END)
-        {
+            break;
+
+        case TraceEvent::PHASE_END:
             timestampsStack.back().second = e.timestamp;
+            break;
+
+        default:
+            break;
         }
 
         if (e.phase == TraceEvent::PHASE_END || e.phase == TraceEvent::PHASE_DURATION)
@@ -238,7 +248,7 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
             eventColor = eventsColor[e.name];
             eventDepth = timestampsStack.size() - 1;
 
-            trace.rects.emplace_back(TraceData::TraceRect(eventStart, eventDuration, eventColor, eventDepth));
+            trace.rects.push_back({ eventStart, eventDuration, eventColor, eventDepth });
         }
     }
 }
@@ -344,7 +354,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
             DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, TEXT_COLOR, m.c_str());
 
             uint64 historyEventDuration = eventsHistory[m].second.crbegin()->first;
-            sprintf(strbuf, "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, historyEventDuration);
+            snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, historyEventDuration);
             DbgDraw::Text2D(x0 + legentWidth, y0, TEXT_COLOR, strbuf);
 
             y0 += ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE + 1;
@@ -400,7 +410,7 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
 
     uint64 maxValue = 0;
     for (const HistoryInstance& h : history)
-        maxValue = Max(maxValue, h.first);
+        maxValue = Max(maxValue, Max(h.first, uint64(h.second)));
 
     char strbuf[128];
     float32 ceilValue = float32((maxValue / ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP + 1) * ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP);
@@ -445,10 +455,10 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
     const int32 lastvalueIndent = (drawRect.dx - 2 * MARGIN) / DbgDraw::NormalCharW;
-    sprintf(strbuf, "%lld [%.1f] mcs", history.crbegin()->first, history.crbegin()->second);
+    snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->first, history.crbegin()->second);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "%*s", lastvalueIndent, strbuf);
 
-    sprintf(strbuf, "%d mcs", int32(ceilValue));
+    snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN + DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, strbuf);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + drawRect.dy - MARGIN - DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, "0 mcs");
 }

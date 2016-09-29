@@ -36,14 +36,6 @@ protected:
     {
         struct TraceRect
         {
-            TraceRect(uint64 _start, uint64 _duration, uint32 _color, int32 _depth)
-                : start(_start)
-                , duration(_duration)
-                , color(_color)
-                , depth(_depth)
-            {
-            }
-
             uint64 start;
             uint64 duration;
             uint32 color;

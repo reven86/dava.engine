@@ -32,7 +32,6 @@ void GPUProfiler::PerfQueryPair::GetTimestamps(uint64& t0, uint64& t1)
 Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
 {
     Vector<const GPUProfiler::MarkerInfo*> sortedMarkers;
-    sortedMarkers.clear();
     for (const GPUProfiler::MarkerInfo& m : markers)
         sortedMarkers.push_back(&m);
 
@@ -41,10 +40,10 @@ Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
     });
 
     Vector<TraceEvent> trace;
-    trace.emplace_back(TraceEvent(FastName(GPUMarkerName::GPU_FRAME), 0, 0, startTime, endTime - startTime, TraceEvent::PHASE_DURATION));
+    trace.push_back({ FastName(GPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION });
     for (const MarkerInfo* m : sortedMarkers)
     {
-        trace.emplace_back(TraceEvent(FastName(m->name), 0, 0, m->startTime, m->endTime - m->startTime, TraceEvent::PHASE_DURATION));
+        trace.push_back({ FastName(m->name), m->startTime, m->endTime - m->startTime, 0, 0, TraceEvent::PHASE_DURATION });
     }
 
     return trace;
@@ -60,11 +59,10 @@ void GPUProfiler::Frame::Reset()
     globalFrameIndex = 0;
 }
 
-GPUProfiler::GPUProfiler(uint32 _framesInfoCount)
-    : framesInfoCount(_framesInfoCount)
+GPUProfiler::GPUProfiler(uint32 framesInfoCount)
+    : framesInfo(RingArray<FrameInfo>(framesInfoCount))
 {
     DVASSERT(framesInfoCount && "Should be > 0");
-    framesInfo.resize(framesInfoCount);
 }
 
 GPUProfiler::~GPUProfiler()
@@ -73,13 +71,13 @@ GPUProfiler::~GPUProfiler()
 
 const GPUProfiler::FrameInfo& GPUProfiler::GetLastFrame(uint32 index) const
 {
-    DVASSERT(index < framesInfoCount);
-    return framesInfo[(framesInfoHead - index) % framesInfoCount];
+    DVASSERT(index < uint32(framesInfo.size()));
+    return *(framesInfo.crbegin() - index);
 }
 
 uint32 GPUProfiler::GetFramesCount() const
 {
-    return framesInfoCount;
+    return uint32(framesInfo.size());
 }
 
 void GPUProfiler::CheckPendingFrames()
@@ -103,7 +101,7 @@ void GPUProfiler::CheckPendingFrames()
             }
         }
 
-        if (!frame.pendingMarkers.size() && frame.perfQuery.IsReady())
+        if (frame.pendingMarkers.empty() && frame.perfQuery.IsReady())
         {
             FrameInfo frameInfo;
             frameInfo.frameIndex = frame.globalFrameIndex;
@@ -120,7 +118,7 @@ void GPUProfiler::CheckPendingFrames()
                     isFrameReliable = ((t0 != rhi::NonreliableQueryValue) && (t1 != rhi::NonreliableQueryValue));
                     if (isFrameReliable)
                     {
-                        frameInfo.markers.push_back(MarkerInfo(marker.name, t0, t1));
+                        frameInfo.markers.push_back({ marker.name, t0, t1 });
                     }
                 }
 
@@ -130,8 +128,7 @@ void GPUProfiler::CheckPendingFrames()
 
             if (isFrameReliable)
             {
-                framesInfoHead = (framesInfoHead + 1) % framesInfoCount;
-                framesInfo[framesInfoHead] = frameInfo;
+                framesInfo.next() = frameInfo;
             }
 
             ResetPerfQueryPair(frame.perfQuery);
@@ -163,9 +160,9 @@ void GPUProfiler::OnFrameEnd()
 Vector<TraceEvent> GPUProfiler::GetTrace()
 {
     Vector<TraceEvent> trace, frameTrace;
-    for (uint32 fi = 0; fi < framesInfoCount; ++fi)
+
+    for (const FrameInfo& frameInfo : framesInfo)
     {
-        const FrameInfo& frameInfo = framesInfo[(framesInfoHead + fi + 1) % framesInfoCount];
         if (frameInfo.frameIndex == 0)
             continue;
 
@@ -181,7 +178,7 @@ void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, co
     if (profilerStarted)
     {
         PerfQueryPair p = GetPerfQueryPair();
-        currentFrame.pendingMarkers.push_back(Marker(markerName, p));
+        currentFrame.pendingMarkers.push_back({ markerName, p });
 
         *query0 = p.query[0];
         *query1 = p.query[1];

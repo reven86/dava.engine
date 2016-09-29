@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Debug/TraceEvent.h"
+#include "Base/RingArray.h"
 
 #define GPU_PROFILER_ENABLED 1
 
@@ -16,16 +17,9 @@ public:
 
     struct MarkerInfo
     {
-        MarkerInfo(const char* _name, uint64 start, uint64 end)
-            : name(_name)
-            , startTime(start)
-            , endTime(end)
-        {
-        }
-
-        const char* name = nullptr;
-        uint64 startTime = 0;
-        uint64 endTime = 0;
+        const char* name;
+        uint64 startTime;
+        uint64 endTime;
     };
 
     struct FrameInfo
@@ -62,13 +56,7 @@ protected:
 
     struct Marker
     {
-        Marker(const char* _name, const PerfQueryPair& _perfQuery)
-            : name(_name)
-            , perfQuery(_perfQuery)
-        {
-        }
-
-        const char* name = nullptr;
+        const char* name;
         PerfQueryPair perfQuery;
     };
 
@@ -88,10 +76,7 @@ protected:
     PerfQueryPair GetPerfQueryPair();
     void ResetPerfQueryPair(const PerfQueryPair& perfQuery);
 
-    Vector<FrameInfo> framesInfo;
-    uint32 framesInfoCount = 0;
-    uint32 framesInfoHead = 0;
-
+    RingArray<FrameInfo> framesInfo;
     Vector<rhi::HPerfQuery> queryPool;
     List<Frame> pendingFrames;
     Frame currentFrame;

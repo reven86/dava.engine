@@ -17,16 +17,6 @@ struct TraceEvent
         PHASE_COUNT
     };
 
-    TraceEvent(const FastName& _name, uint32 _processID, uint64 _threadID, uint64 _timestamp, uint64 _duration, EventPhase _phase)
-        : name(_name)
-        , timestamp(_timestamp)
-        , duration(_duration)
-        , threadID(_threadID)
-        , processID(_processID)
-        , phase(_phase)
-    {
-    }
-
     FastName name;
     uint64 timestamp;
     uint64 duration;

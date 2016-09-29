@@ -9,13 +9,6 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WINDOWS__)
-
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-
-#endif
-
 namespace
 {
 const size_t defaultBufferSize{ 4096 };

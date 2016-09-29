@@ -260,7 +260,7 @@ Vector<TraceEvent> CPUProfiler::GetTrace(int32 snapshot)
         if (!c.name)
             continue;
 
-        trace.push_back(TraceEvent(FastName(c.name), 0, c.threadID, c.startTime, c.endTime ? (c.endTime - c.startTime) : 0, TraceEvent::PHASE_DURATION));
+        trace.push_back({ FastName(c.name), c.startTime, c.endTime ? (c.endTime - c.startTime) : 0, c.threadID, 0, TraceEvent::PHASE_DURATION });
     }
 
     return trace;
@@ -291,7 +291,7 @@ Vector<TraceEvent> CPUProfiler::GetTrace(const char* counterName, uint32 counter
             if (it->endTime == 0)
                 break;
 
-            trace.push_back(TraceEvent(FastName(it->name), 0, it->threadID, it->startTime, it->endTime - it->startTime, TraceEvent::PHASE_DURATION));
+            trace.push_back({ FastName(it->name), it->startTime, it->endTime - it->startTime, it->threadID, 0, TraceEvent::PHASE_DURATION });
         }
     }
 
