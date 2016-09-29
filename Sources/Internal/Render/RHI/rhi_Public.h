@@ -146,8 +146,7 @@ bool NeedRestoreResources();
 void Present(); // execute all submitted command-buffers & do flip/present
 
 Api HostApi();
-bool TextureFormatSupported(TextureFormat format);
-bool VertexTexutreFormatSupported(TextureFormat format);
+bool TextureFormatSupported(TextureFormat format, ProgType progType = PROG_FRAGMENT);
 const RenderDeviceCaps& DeviceCaps();
 
 void SuspendRendering();

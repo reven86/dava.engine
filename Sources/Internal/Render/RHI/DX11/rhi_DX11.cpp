@@ -42,7 +42,7 @@ dx11_NeedRestoreResources()
 //------------------------------------------------------------------------------
 
 static bool
-dx11_TextureFormatSupported(TextureFormat format)
+dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -345,7 +345,6 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_Reset = &dx11_Reset;
     DispatchDX11.impl_HostApi = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
-    DispatchDX11.impl_VertexTextureFormatSupported = &dx11_TextureFormatSupported;
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;

@@ -65,9 +65,9 @@ Landscape::Landscape()
 
     renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
     if (renderMode == RENDERMODE_INSTANCING_MORPHING)
-        renderMode = rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
+        renderMode = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
 
-    floatHeightTexture = rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4) ? false : true;
+    floatHeightTexture = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) ? false : true;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
@@ -367,7 +367,7 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
     Vector<Image*> dataOut;
     if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
-        DVASSERT(rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8));
+        DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX));
 
         dataOut.reserve(HighestBitIndex(hmSize));
 
@@ -426,7 +426,7 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
         Image* heightImage = nullptr;
         if (floatHeightTexture)
         {
-            DVASSERT(rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R32F));
+            DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX));
 
             float32* texData = new float32[hmSize * hmSize];
             float32* texDataPtr = texData;
@@ -444,7 +444,7 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
         }
         else
         {
-            DVASSERT(rhi::VertexTexutreFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4));
+            DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX));
             heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
         }
 

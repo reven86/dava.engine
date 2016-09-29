@@ -35,7 +35,7 @@ metal_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-metal_TextureFormatSupported(TextureFormat format)
+metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -218,7 +218,6 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_Uninitialize = &metal_Uninitialize;
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
-    DispatchMetal.impl_VertexTextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;

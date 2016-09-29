@@ -145,14 +145,9 @@ Api HostApi()
     return (*_Impl.impl_HostApi)();
 }
 
-bool TextureFormatSupported(TextureFormat format)
+bool TextureFormatSupported(TextureFormat format, ProgType progType)
 {
-    return (*_Impl.impl_TextureFormatSupported)(format);
-}
-
-bool VertexTexutreFormatSupported(TextureFormat format)
-{
-    return (*_Impl.impl_VertexTextureFormatSupported)(format);
+    return (*_Impl.impl_TextureFormatSupported)(format, progType);
 }
 
 const RenderDeviceCaps& DeviceCaps()
