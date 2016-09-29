@@ -24,8 +24,10 @@ uint32 DPIHelper::GetScreenDPI()
     // and GetDpiForMonitor wont be called
     HMODULE module = GetModuleHandle(TEXT("shcore.dll"));
     MonitorDpiFn fn = reinterpret_cast<MonitorDpiFn>(GetProcAddress(module, "GetDpiForMonitor"));
-#if defined(__DAVAENGINE_QT__)
-    void* nativeWindow = nullptr;
+
+#if defined(__DAVAENGINE_COREV2__)
+    Window* w = Engine::Instance()->PrimaryWindow();
+    void* nativeWindow = w != nullptr ? w->GetNativeHandle() : nullptr;
 #elif !defined(__DAVAENGINE_COREV2__)
     void* nativeWindow = Core::Instance()->GetNativeWindow();
 #else

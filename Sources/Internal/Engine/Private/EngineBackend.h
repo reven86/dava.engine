@@ -64,17 +64,23 @@ public:
     void SetOptions(KeyedArchive* options_);
     KeyedArchive* GetOptions();
 
+    Window* InitializePrimaryWindow();
+
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules);
     int Run();
-    void Quit(int32 exitCode_);
+    void Quit(int32 exitCode);
 
-    void RunAsyncOnMainThread(const Function<void()>& task);
-    void RunAndWaitOnMainThread(const Function<void()>& task);
-    void PostAppTerminate();
+    void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
+    void DispatchOnMainThread(const Function<void()>& task, bool blocking);
+    void PostAppTerminate(bool triggeredBySystem);
+    void PostUserCloseRequest();
 
     void OnGameLoopStarted();
     void OnGameLoopStopped();
-    void OnBeforeTerminate();
+    void OnEngineCleanup();
+
+    void OnWindowCreated(Window* window);
+    void OnWindowDestroyed(Window* window);
 
     int32 OnFrame();
 
@@ -95,14 +101,10 @@ private:
     void OnEndFrame();
 
     void EventHandler(const MainDispatcherEvent& e);
-    void HandleWindowCreated(const MainDispatcherEvent& e);
-    void HandleWindowDestroyed(const MainDispatcherEvent& e);
     void HandleAppSuspended(const MainDispatcherEvent& e);
     void HandleAppResumed(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
-    void HandleAppImmediateTerminate(const MainDispatcherEvent& e);
-
-    Window* CreatePrimaryWindowBackend();
+    void HandleUserCloseRequest(const MainDispatcherEvent& e);
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
@@ -116,7 +118,12 @@ private:
     Engine* engine = nullptr;
 
     Window* primaryWindow = nullptr;
-    Set<Window*> windows;
+    Set<Window*> justCreatedWindows; // Just created Window instances which do not have native windows yet
+    Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
+    Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
+
+    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool quitConsole = false;

@@ -7,9 +7,8 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/Private/Dispatcher/UIDispatcher.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Functional/Function.h"
+#include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 namespace rhi
 {
@@ -23,7 +22,7 @@ namespace Private
 class WindowBackend final : private RenderWidget::Delegate
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
     WindowBackend(const WindowBackend&) = delete;
@@ -31,29 +30,33 @@ public:
 
     void Update();
     RenderWidget* GetRenderWidget();
-    void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
-    bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
-    void Close();
-    bool IsWindowReadyForRender() const;
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-    void TriggerPlatformEvents();
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
+    bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
+
+    void TriggerPlatformEvents();
 
     bool SetCaptureMode(eCaptureMode mode);
     bool SetMouseVisibility(bool visible);
 
 private:
-    void PlatformEventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoSetTitle(const char8* title);
 
     // RenderWidget::Delegate
     void OnCreated() override;
+    bool OnUserCloseRequest() override;
     void OnDestroyed() override;
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, float32 dpi) override;
@@ -73,12 +76,16 @@ private:
 #endif
 
 private:
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
-    UIDispatcher platformDispatcher;
-    std::unique_ptr<WindowNativeService> nativeService;
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
+    // TODO: may be keep RenderWidget in QPointer?
     RenderWidget* renderWidget = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
+
+    bool closeRequestByApp = false;
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;

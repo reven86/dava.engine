@@ -9,8 +9,6 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/EngineTypes.h"
 
-#include "Functional/Function.h"
-
 namespace DAVA
 {
 namespace Private
@@ -18,7 +16,7 @@ namespace Private
 ref struct WindowNativeBridge sealed
 {
     internal :
-    WindowNativeBridge(WindowBackend* window);
+    WindowNativeBridge(WindowBackend* windowBackend);
 
     void* GetHandle() const;
 
@@ -31,8 +29,9 @@ ref struct WindowNativeBridge sealed
 
     void TriggerPlatformEvents();
 
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    void ResizeWindow(float32 width, float32 height);
+    void CloseWindow();
+    void SetTitle(const char8* title);
     void ChangeCaptureMode(eCaptureMode mode);
     void ChangeMouseVisibility(bool visibility);
 
@@ -63,7 +62,9 @@ private:
     void UninstallEventHandlers();
 
 private:
-    WindowBackend* uwpWindow = nullptr;
+    WindowBackend* windowBackend = nullptr;
+    Window* window = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
 
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;

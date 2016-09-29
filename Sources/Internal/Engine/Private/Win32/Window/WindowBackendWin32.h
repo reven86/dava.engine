@@ -15,8 +15,6 @@
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 #include "Engine/EngineTypes.h"
 
-#include "Functional/Function.h"
-
 namespace rhi
 {
 struct InitParam;
@@ -29,24 +27,28 @@ namespace Private
 class WindowBackend final
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
-
     bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
-    void Close();
-    bool IsWindowReadyForRender() const;
-    void InitCustomRenderParams(rhi::InitParam& params);
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
+    void* GetHandle() const;
+    HWND GetHWND() const;
+    WindowNativeService* GetNativeService() const;
+
+    bool IsWindowReadyForRender() const;
+    void InitCustomRenderParams(rhi::InitParam& params);
+
     void TriggerPlatformEvents();
+    void ProcessPlatformEvents();
 
     bool SetCaptureMode(eCaptureMode mode);
     bool SetMouseVisibility(bool visible);
@@ -60,15 +62,19 @@ private:
 
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
+    void DoSetTitle(const char8* title);
     void DoSetCaptureMode(eCaptureMode mode);
     void DoSetMouseVisibility(bool visible);
 
     void AdjustWindowSize(int32* w, int32* h);
+    void HandleSizeChanged(int32 w, int32 h);
 
-    void EventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
-    LRESULT OnSetKillFocus(bool gotFocus);
+    LRESULT OnEnterSizeMove();
+    LRESULT OnExitSizeMove();
+    LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseHoverEvent();
     LRESULT OnMouseLeaveEvent();
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
@@ -77,27 +83,31 @@ private:
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
+    bool OnClose();
     LRESULT OnDestroy();
-    LRESULT OnCustomMessage();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
 private:
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
     HWND hwnd = nullptr;
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool isEnteredSizingModalLoop = false;
+    bool closeRequestByApp = false;
+    int32 width = 0;
+    int32 height = 0;
     bool mouseTracking = false;
-
-    UIDispatcher platformDispatcher;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
-    static const UINT WM_CUSTOM_MESSAGE = WM_USER + 39;
+    static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;
     static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD windowExStyle = 0;
 };
@@ -105,6 +115,11 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return static_cast<void*>(hwnd);
+}
+
+inline HWND WindowBackend::GetHWND() const
+{
+    return hwnd;
 }
 
 inline WindowNativeService* WindowBackend::GetNativeService() const

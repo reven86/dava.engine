@@ -1,22 +1,24 @@
 #include "Tests/FullscreenTest.h"
-#include "Engine/EngineModule.h"
+#include "Infrastructure/TestBed.h"
+
+#include <Engine/Engine.h>
+#include <Engine/Window.h>
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest(GameCore* g)
-    : BaseScreen(g, "FullscreenTest")
+FullscreenTest::FullscreenTest(TestBed& app)
+    : BaseScreen(app, "FullscreenTest")
+    , primaryWindow(app.GetEngine().PrimaryWindow())
 {
 }
 
 void FullscreenTest::LoadResources()
 {
-#if defined(__DAVAENGINE_COREV2__)
     if (!isInit)
     {
         isInit = true;
         Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
     }
-#endif // defined(__DAVAENGINE_COREV2__)
     BaseScreen::LoadResources();
 
     GetBackground()->SetColor(Color::White);
@@ -64,11 +66,7 @@ void FullscreenTest::LoadResources()
     // pinning mode
     btn.reset(new UIButton(Rect(10, 110, 300, 20)));
     btn->SetStateFont(0xFF, font);
-#if !defined(__DAVAENGINE_COREV2__)
-    btn->SetStateText(0xFF, L"Mouse Capute: Frame");
-#else
     btn->SetStateText(0xFF, L"Mouse Visibility: false");
-#endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(0);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -76,11 +74,7 @@ void FullscreenTest::LoadResources()
 
     btn.reset(new UIButton(Rect(10, 135, 300, 20)));
     btn->SetStateFont(0xFF, font);
-#if !defined(__DAVAENGINE_COREV2__)
-    btn->SetStateText(0xFF, L"Mouse Mode: Pinning");
-#else
     btn->SetStateText(0xFF, L"Mouse Capture Mode: Pinning");
-#endif // !defined(__DAVAENGINE_COREV2__)
     btn->SetDebugDraw(true);
     btn->SetTag(1);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
@@ -117,9 +111,7 @@ void FullscreenTest::LoadResources()
     currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
-#if !defined(__DAVAENGINE_COREV2__)
-    currentScaleText->SetText(Format(L"%f", Core::Instance()->GetScreenScaleMultiplier()));
-#endif
+    currentScaleText->SetText(Format(L"%f", primaryWindow->GetUserScale()));
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -212,54 +204,55 @@ void FullscreenTest::UnloadResources()
 
 void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
     UIButton* btn = static_cast<UIButton*>(sender);
     switch (btn->GetTag())
     {
     case 0:
-        Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED);
+        // TODO: implement window mode switch in engine and testbed
+        // Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED);
         break;
     case 1:
-        Core::Instance()->SetScreenMode(Core::eScreenMode::FULLSCREEN);
+        // TODO: implement window mode switch in engine and testbed
+        // Core::Instance()->SetScreenMode(Core::eScreenMode::FULLSCREEN);
         break;
     case 2:
-        Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED_FULLSCREEN);
+        // TODO: implement window mode switch in engine and testbed
+        // Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED_FULLSCREEN);
         break;
     case 99:
         UpdateMode();
         break;
     }
-#endif
 }
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    float32 mul = Core::Instance()->GetScreenScaleMultiplier();
+    float32 mul = primaryWindow->GetUserScale();
     if (mul < 2.0f)
     {
         mul += 0.1f;
     }
 
-    Core::Instance()->SetScreenScaleMultiplier(mul);
+    // TODO: implement window user scale factor in engine and testbed
+    // Core::Instance()->SetScreenScaleMultiplier(mul);
 
+    mul = primaryWindow->GetUserScale();
     currentScaleText->SetText(Format(L"%f", mul));
-#endif
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    float32 mul = Core::Instance()->GetScreenScaleMultiplier();
+    float32 mul = primaryWindow->GetUserScale();
     if (mul > 0.2f)
     {
         mul -= 0.1f;
     }
 
-    Core::Instance()->SetScreenScaleMultiplier(mul);
+    // TODO: implement window user scale factor in engine and testbed
+    // Core::Instance()->SetScreenScaleMultiplier(mul);
 
+    mul = primaryWindow->GetUserScale();
     currentScaleText->SetText(Format(L"%f", mul));
-#endif
 }
 
 void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void* callerData)
@@ -304,20 +297,12 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     switch (btn->GetTag())
     {
     case 0:
-#if !defined(__DAVAENGINE_COREV2__)
-        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::FRAME);
-#else
         mouseVisible = !Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
-#endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
     case 1:
-#if !defined(__DAVAENGINE_COREV2__)
-        InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::PINING);
-#else
         mouseCaptured = Engine::Instance()->PrimaryWindow()->SetCaptureMode(eCaptureMode::PINNING);
         mouseCaptured &= Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
-#endif // !defined(__DAVAENGINE_COREV2__)
         break;
 
     default:
@@ -339,42 +324,24 @@ void FullscreenTest::FocusChanged(Window& window, bool hasFocus)
 
 void FullscreenTest::UpdateMode()
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    switch (Core::Instance()->GetScreenMode())
-    {
-    case Core::eScreenMode::WINDOWED:
-        currentModeText->SetText(L"Windowed");
-        break;
-    case Core::eScreenMode::WINDOWED_FULLSCREEN:
-        currentModeText->SetText(L"Windowed fullscreen");
-        break;
-    case Core::eScreenMode::FULLSCREEN:
-        currentModeText->SetText(L"Fullscreen");
-        break;
-    default:
-        currentModeText->SetText(L"Unknown");
-        break;
-    }
+    // TODO: implement window mode switch in engine and testbed
 
-    eCaptureMode captureMode = InputSystem::Instance()->GetMouseDevice().GetMode();
-    switch (captureMode)
-    {
-    case eCaptureMode::OFF:
-        pinningText->SetText(L"Mouse capture mode: OFF");
-        pinningMousePosText->SetVisibilityFlag(false);
-        break;
-
-    case eCaptureMode::FRAME:
-        pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
-        pinningMousePosText->SetVisibilityFlag(true);
-        break;
-
-    case eCaptureMode::PINING:
-        pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
-        pinningMousePosText->SetVisibilityFlag(true);
-        break;
-    }
-#else
+    // switch (Core::Instance()->GetScreenMode())
+    // {
+    // case Core::eScreenMode::WINDOWED:
+    //     currentModeText->SetText(L"Windowed");
+    //     break;
+    // case Core::eScreenMode::WINDOWED_FULLSCREEN:
+    //     currentModeText->SetText(L"Windowed fullscreen");
+    //     break;
+    // case Core::eScreenMode::FULLSCREEN:
+    //     currentModeText->SetText(L"Fullscreen");
+    //     break;
+    // default:
+    //     currentModeText->SetText(L"Unknown");
+    //     break;
+    // }
+    //
     WideString outStr;
     if (mouseCaptured)
     {
@@ -403,34 +370,10 @@ void FullscreenTest::UpdateMode()
         }
     }
     pinningText->SetText(outStr.c_str());
-#endif
 }
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    if ((InputSystem::Instance()->GetMouseDevice().GetMode() != eCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
-    {
-        switch (currentInput->phase)
-        {
-        case UIEvent::Phase::BEGAN:
-        {
-            InputSystem::Instance()->GetMouseDevice().SetMode(eCaptureMode::OFF);
-            break;
-        }
-        case UIEvent::Phase::MOVE:
-            pinningMousePosText->SetText(Format(L"dx: %f, dy: %f", currentInput->physPoint.dx, currentInput->physPoint.dy));
-            break;
-
-        default:
-            break;
-        }
-
-        UpdateMode();
-    }
-
-    return BaseScreen::SystemInput(currentInput);
-#else
     if (currentInput->device == UIEvent::Device::MOUSE)
     {
         Window* primWind = Engine::Instance()->PrimaryWindow();
@@ -456,5 +399,4 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
     }
 
     return BaseScreen::SystemInput(currentInput);
-#endif
 }

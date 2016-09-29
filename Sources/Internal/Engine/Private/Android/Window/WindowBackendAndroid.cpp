@@ -14,35 +14,114 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
+extern "C"
+{
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnResume(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnResume();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnPause(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnPause();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceCreated(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject jsurfaceView)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceCreated(env, jsurfaceView);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceChanged(env, surface, width, height);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceDestroyed();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewProcessEvents(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->ProcessProperties();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnTouch(action, touchId, x, y);
+}
+} // extern "C"
+
 namespace DAVA
 {
 namespace Private
 {
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
 }
 
-WindowBackend::~WindowBackend() = default;
-
-bool WindowBackend::Create(float32 width, float32 height)
+WindowBackend::~WindowBackend()
 {
-    // For now primary window is created in java, later add ability to create secondary (presentation) windows
-    return false;
+    DVASSERT(surfaceView == nullptr);
 }
 
-void WindowBackend::Resize(float32 width, float32 height)
+void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
 {
-    // Android windows are always stretched to screen size
+    // Android windows are always stretched to display size
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool appIsTerminating)
 {
-    // For now android windows cannot be closed. Later add ability to close non-primary windows
+    if (appIsTerminating)
+    {
+        // If application is terminating then free window resources on C++ side and send event
+        // as if window has been destroyed. Engine ensures that Close with appIsTerminating with
+        // true value is always called on termination.
+        if (surfaceView != nullptr)
+        {
+            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+
+            JNIEnv* env = JNI::GetEnv();
+            env->DeleteGlobalRef(surfaceView);
+            surfaceView = nullptr;
+        }
+    }
+    else if (window->IsPrimary())
+    {
+        // Primary android window cannot be closed, instead quit application according to Engine rules.
+        // TODO: later add ability to close secondary windows.
+        engineBackend->Quit(0);
+    }
+}
+
+void WindowBackend::SetTitle(const String& title)
+{
+    // Android window does not have title
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -50,17 +129,9 @@ bool WindowBackend::IsWindowReadyForRender() const
     return GetHandle() != nullptr;
 }
 
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
-}
-
 void WindowBackend::TriggerPlatformEvents()
 {
-    if (platformDispatcher.HasEvents())
+    if (uiDispatcher.HasEvents())
     {
         try
         {
@@ -89,34 +160,10 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
     return object;
 }
 
-bool WindowBackend::SetCaptureMode(eCaptureMode mode);
-{
-    // not implemented
-    return false;
-}
-
-bool WindowBackend::SetMouseVisibility(bool visible);
-{
-    // not implemented
-    return false;
-}
-
-void WindowBackend::DoResizeWindow(float32 width, float32 height)
-{
-}
-
-void WindowBackend::DoCloseWindow()
-{
-}
-
-void WindowBackend::EventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
-    case UIDispatcherEvent::RESIZE_WINDOW:
-        break;
-    case UIDispatcherEvent::CLOSE_WINDOW:
-        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
@@ -128,16 +175,25 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     }
 }
 
+void WindowBackend::ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow)
+{
+    if (androidWindow != nullptr)
+    {
+        ANativeWindow_release(androidWindow);
+    }
+    androidWindow = newAndroidWindow;
+}
+
 void WindowBackend::OnResume()
 {
-    window->PostVisibilityChanged(true);
-    window->PostFocusChanged(true);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 }
 
 void WindowBackend::OnPause()
 {
-    window->PostFocusChanged(false);
-    window->PostVisibilityChanged(false);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
 }
 
 void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
@@ -156,18 +212,16 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
 
         MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
         e.functor = [this, nativeWindow]() {
-            if (androidWindow != nullptr)
-            {
-                ANativeWindow_release(androidWindow);
-            }
-            androidWindow = nativeWindow;
+            ReplaceAndroidNativeWindow(nativeWindow);
         };
-        dispatcher->PostEvent(e);
+        mainDispatcher->PostEvent(e);
     }
 
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
     if (firstTimeSurfaceChanged)
     {
-        platformDispatcher.LinkToCurrentThread();
+        uiDispatcher.LinkToCurrentThread();
 
         try
         {
@@ -181,44 +235,35 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        MainDispatcherEvent e(MainDispatcherEvent::WINDOW_CREATED, window);
-        e.windowCreatedEvent.windowBackend = this;
-        e.windowCreatedEvent.size.width = static_cast<float32>(width);
-        e.windowCreatedEvent.size.height = static_cast<float32>(height);
-        e.windowCreatedEvent.size.scaleX = 1.0f;
-        e.windowCreatedEvent.size.scaleY = 1.0f;
-        dispatcher->PostEvent(e);
-
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
+                                                                                w,
+                                                                                h,
+                                                                                1.0f,
+                                                                                1.0f));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        MainDispatcherEvent e(MainDispatcherEvent::WINDOW_SIZE_SCALE_CHANGED, window);
-        e.sizeEvent.width = static_cast<float32>(width);
-        e.sizeEvent.height = static_cast<float32>(height);
-        e.sizeEvent.scaleX = 1.0f;
-        e.sizeEvent.scaleY = 1.0f;
-        dispatcher->PostEvent(e);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
+                                                                                    w,
+                                                                                    h,
+                                                                                    1.0f,
+                                                                                    1.0f));
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
     MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-    e.functor = [this]()
-    {
-        if (androidWindow != nullptr)
-        {
-            ANativeWindow_release(androidWindow);
-            androidWindow = nullptr;
-        }
+    e.functor = [this]() {
+        ReplaceAndroidNativeWindow(nullptr);
     };
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(e);
 }
 
 void WindowBackend::ProcessProperties()
 {
-    platformDispatcher.ProcessEvents();
+    uiDispatcher.ProcessEvents();
 }
 
 void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
@@ -232,33 +277,28 @@ void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
         ACTION_POINTER_UP = 6
     };
 
-    if (action == ACTION_POINTER_DOWN)
-        action = ACTION_DOWN;
-    else if (action == ACTION_POINTER_UP)
-        action = ACTION_UP;
-
-    MainDispatcherEvent e(window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
+    MainDispatcherEvent::eType type = MainDispatcherEvent::TOUCH_DOWN;
     switch (action)
     {
     case ACTION_MOVE:
-        e.type = MainDispatcherEvent::TOUCH_MOVE;
-        e.tmoveEvent.touchId = touchId;
-        e.tmoveEvent.x = x;
-        e.tmoveEvent.y = y;
+        type = MainDispatcherEvent::TOUCH_MOVE;
         break;
     case ACTION_UP:
+    case ACTION_POINTER_UP:
+        type = MainDispatcherEvent::TOUCH_UP;
+        break;
     case ACTION_DOWN:
-        e.type = action == ACTION_UP ? MainDispatcherEvent::TOUCH_UP : MainDispatcherEvent::TOUCH_DOWN;
-        e.tclickEvent.touchId = touchId;
-        e.tclickEvent.x = x;
-        e.tclickEvent.y = y;
+    case ACTION_POINTER_DOWN:
+        type = MainDispatcherEvent::TOUCH_DOWN;
         break;
     default:
         return;
     }
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window,
+                                                                          type,
+                                                                          touchId,
+                                                                          x,
+                                                                          y));
 }
 
 } // namespace Private
