@@ -11,14 +11,28 @@ struct ScriptState;
 class LuaScript
 {
 public:
+    struct BaseResult
+    {
+        int32 code = 0;
+        String error;
+    };
+
+    struct LoadResult : public BaseResult
+    {
+        bool loaded = false;
+    };
+
+    struct RunResult : public BaseResult
+    {
+        Any value;
+    };
+
     LuaScript();
     ~LuaScript();
 
-    bool LoadString(const String& script);
-    bool LoadFile(const FilePath& filepath);
-    bool Run(const Reflection& context);
-
-    void RegisterGlobalReflection(const String& name, const Reflection& reflection);
+    LoadResult RunString(const String& script);
+    LoadResult RunFile(const FilePath& filepath);
+    RunResult RunMain(Any args[]);
 
 private:
     ScriptState* state = nullptr;

@@ -1,4 +1,4 @@
-#include "lua_bridge.h"
+#include "LuaBridge.h"
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 
@@ -33,6 +33,7 @@ int32 Dava_register(lua_State* state)
     };
 
     luaL_register(state, "DV", davalib);
+    lua_pop(state, 1);
     return 1;
 }
 
@@ -345,7 +346,58 @@ int32 Reflection_register(lua_State* state)
 
     luaL_newmetatable(state, ReflectionTName);
     luaL_register(state, 0, Reflection_meta);
+    lua_pop(state, 1);
     return 1;
+}
+
+std::pair<bool, Any> luaToAny(lua_State* state, int32 index)
+{
+    std::pair<bool, Any> res;
+    res.first = true;
+    int ltype = lua_type(state, index);
+    switch (ltype)
+    {
+    case LUA_TBOOLEAN:
+        res.second.Set(bool(lua_toboolean(state, index) != 0));
+        break;
+    case LUA_TNUMBER:
+        res.second.Set(float64(lua_tonumber(state, index)));
+        break;
+    case LUA_TSTRING:
+        res.second.Set(String(lua_tolstring(state, index, nullptr)));
+        break;
+    case LUA_TUSERDATA:
+    {
+        void* ud = nullptr;
+        if (ud = luaL_checkudata(state, index, AnyTName))
+        {
+            res.second = *static_cast<Any*>(ud);
+        }
+        else if (ud = luaL_checkudata(state, index, ReflectionTName))
+        {
+            res.second = *static_cast<Reflection*>(ud);
+        }
+        else
+        {
+            res.first = false;
+        }
+    }
+    break;
+    case LUA_TNIL:
+        res.second.Clear();
+        break;
+    case LUA_TLIGHTUSERDATA:
+    case LUA_TTABLE:
+    case LUA_TFUNCTION:
+    case LUA_TTHREAD:
+    default:
+        res.first = false;
+    }
+    return res;
+}
+
+void anyToLua(lua_State* state, const Any& value)
+{
 }
 }
 }

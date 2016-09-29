@@ -1,7 +1,7 @@
 #include "Tests/ScriptingTest.h"
 #include "Base/Type.h"
 #include "Reflection/Registrator.h"
-#include "Scripting/Script.h"
+#include "Scripting/LuaScript.h"
 
 using namespace DAVA;
 
@@ -82,6 +82,20 @@ end
 
 )script";
 
+static const String sss = R"script(
+
+glob_value = 1
+
+function main(arg1, arg2, arg3, arg4)
+    DV.Debug(tostring(arg1))
+    DV.Debug(tostring(arg2))
+    DV.Debug(tostring(arg3))
+    DV.Debug(tostring(arg4))
+    return glob_value
+end
+
+)script";
+
 ScriptingTest::ScriptingTest(GameCore* g)
     : BaseScreen(g, "ScriptingTest")
 {
@@ -95,12 +109,15 @@ void ScriptingTest::LoadResources()
     obj.v.assign({ 1, 2, 3, 4, 5 });
 
     Reflection objRef = Reflection::Create(&obj).ref;
-    Reflection globRef = Reflection::Create(&obj.d).ref;
 
-    Script s;
-    s.RegisterGlobalReflection("GlobObj", globRef);
-    s.LoadString(demo_script);
-    s.Run(objRef);
+    LuaScript s;
+    s.RunString(sss);
+    Any args[] = { 1, "String", false, 16.5f };
+    LuaScript::RunResult res = s.RunMain(args);
+
+    float64 d = res.value.Cast<float64>();
+    float32 f = res.value.Cast<float32>();
+    int32 i = res.value.Cast<int32>();
 
     DAVA::Logger::Debug("CPP: obj.v[3] == %d", obj.v[3]);
 }
