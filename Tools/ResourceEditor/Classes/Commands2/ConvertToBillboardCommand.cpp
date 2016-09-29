@@ -1,8 +1,10 @@
+#include "Commands2/RECommandIDs.h"
 #include "Commands2/ConvertToBillboardCommand.h"
 #include "Commands2/RECommandIDs.h"
 #include "Render/Highlevel/BillboardRenderObject.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Base/ScopedPtr.h"
 
 ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAVA::Entity* entity_)
     : RECommand(CMDID_CONVERT_TO_BILLBOARD, "Convert to billboard")
@@ -10,10 +12,9 @@ ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAV
     , oldRenderComponent(DAVA::GetRenderComponent(entity))
     , newRenderComponent(new DAVA::RenderComponent())
 {
-    using namespace DAVA;
-    ScopedPtr<RenderObject> newRenderObject(new BillboardRenderObject());
+    DAVA::ScopedPtr<DAVA::RenderObject> newRenderObject(new DAVA::BillboardRenderObject());
     oldRenderComponent->GetRenderObject()->Clone(newRenderObject);
-    newRenderObject->AddFlag(RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER);
+    newRenderObject->AddFlag(DAVA::RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER);
     newRenderObject->RecalcBoundingBox();
 
     newRenderComponent->SetRenderObject(newRenderObject);

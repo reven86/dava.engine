@@ -19,6 +19,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
 #include "Qt/Tools/PathDescriptor/PathDescriptor.h"
 
@@ -495,7 +496,7 @@ private:
         SceneImageGrabber::Params params;
         params.scene = scene;
         params.cameraToGrab = GetCamera(entityItem->GetEntity());
-        DVASSERT(params.cameraToGrab != nullptr);
+        DVASSERT(params.cameraToGrab.Get() != nullptr);
         params.imageSize = DAVA::Size2i(SettingsManager::GetValue(Settings::Scene_Grab_Size_Width).AsInt32(),
                                         SettingsManager::GetValue(Settings::Scene_Grab_Size_Height).AsInt32());
         params.outputFile = filePath.toStdString();

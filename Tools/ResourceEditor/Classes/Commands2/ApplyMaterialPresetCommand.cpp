@@ -6,6 +6,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
 
 namespace ApplyMaterialPresetDetail
 {
