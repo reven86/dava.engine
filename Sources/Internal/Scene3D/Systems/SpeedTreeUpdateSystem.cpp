@@ -12,7 +12,7 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
@@ -89,7 +89,7 @@ void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity* entity)
 
 void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WaveSystem::Process");
+    DAVA_CPU_PROFILER_SCOPE("SpeedTreeUpdateSystem::Process");
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
@@ -116,7 +116,7 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
         component->oscVelocity += (windVec - component->oscOffset * component->GetTrunkOscillationSpring()) * timeElapsed;
 
         float32 velocityLengthSq = component->oscVelocity.SquareLength();
-        Vector2 dVelocity = (component->GetTrunkOscillationDamping() * sqrtf(velocityLengthSq) * component->oscVelocity) * timeElapsed;
+        Vector2 dVelocity = (component->GetTrunkOscillationDamping() * std::sqrt(velocityLengthSq) * component->oscVelocity) * timeElapsed;
         if (velocityLengthSq >= dVelocity.SquareLength())
             component->oscVelocity -= dVelocity;
         else
@@ -124,7 +124,7 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 
         component->oscOffset += component->oscVelocity * timeElapsed;
 
-        component->leafTime += timeElapsed * sqrtf(leafForce) * component->GetLeafsOscillationSpeed();
+        component->leafTime += timeElapsed * std::sqrt(leafForce) * component->GetLeafsOscillationSpeed();
 
         float32 sine, cosine;
         SinCosFast(component->leafTime, sine, cosine);

@@ -28,6 +28,8 @@ public:
     inline rhi::RenderPassConfig& GetPassConfig();
     inline void SetViewport(const Rect& viewPort);
 
+    void SetRenderTargetProperties(uint32 width, uint32 height, PixelFormat format);
+
 protected:
     FastName passName;
     rhi::RenderPassConfig passConfig;
@@ -47,12 +49,24 @@ protected:
     bool BeginRenderPass();
     void EndRenderPass();
 
+    void ValidateMultisampledTextures(const rhi::RenderPassConfig& forConfig);
+
     Vector<RenderLayer*> renderLayers;
     std::array<RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT> layersBatchArrays;
     Vector<RenderObject*> visibilityArray;
 
     rhi::HPacketList packetList;
     rhi::HRenderPass renderPass;
+
+    Texture::FBODescriptor multisampledDescription;
+    Texture* multisampledTexture = nullptr;
+
+    struct RenderTargetProperites
+    {
+        uint32 width = 0;
+        uint32 height = 0;
+        PixelFormat format = PixelFormat::FORMAT_INVALID;
+    } renderTargetProperties;
 
 #ifdef __DAVAENGINE_RENDERSTATS__
 
@@ -74,6 +88,7 @@ inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 {
     return passConfig;
 }
+
 inline void RenderPass::SetViewport(const Rect& _viewport)
 {
     viewport = _viewport;
@@ -112,6 +127,7 @@ protected:
     Camera *passMainCamera, *passDrawCamera;
     float32 waterLevel = 0;
 };
+
 class WaterReflectionRenderPass : public WaterPrePass
 {
 public:

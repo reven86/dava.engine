@@ -1,4 +1,4 @@
-APP_MODULES := libyaml_android
+APP_MODULES := libyaml
 
 APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-10

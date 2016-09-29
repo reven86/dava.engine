@@ -4,7 +4,7 @@
 #include "../rhi_Public.h"
 #include "rhi_GLES2.h"
 #include "Debug/DVAssert.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Logger/Logger.h"
 #include "_gl.h"
 
@@ -12,9 +12,16 @@ namespace rhi
 {
 //==============================================================================
 
-class
-TextureGLES2_t
-: public ResourceImpl<TextureGLES2_t, Texture::Descriptor>
+struct FramebufferGLES2_t
+{
+    Handle color = InvalidHandle;
+    Handle depthStencil = InvalidHandle;
+    TextureFace face = TextureFace::TEXTURE_FACE_POSITIVE_X;
+    uint32_t level = 0;
+    GLuint frameBuffer = 0;
+};
+
+class TextureGLES2_t : public ResourceImpl<TextureGLES2_t, Texture::Descriptor>
 {
 public:
     TextureGLES2_t();
@@ -22,34 +29,24 @@ public:
     bool Create(const Texture::Descriptor& desc, bool force_immediate = false);
     void Destroy(bool force_immediate = false);
 
-    unsigned uid;
-    unsigned uid2;
+    uint32 uid = 0;
+    uint32 uid2 = 0;
+    uint32 width = 0;
+    uint32 height = 0;
+    uint32 sampleCount = 1;
+    TextureFormat format = TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
+    uint32 mappedLevel = 0;
+    GLenum mappedFace = 0;
 
-    unsigned width;
-    unsigned height;
-    TextureFormat format;
-    uint32 mappedLevel;
-    GLenum mappedFace;
     void* mappedData = nullptr;
+    SamplerState::Descriptor::Sampler samplerState;
+    std::vector<FramebufferGLES2_t> fbo;
+
     uint32 isMapped : 1;
     uint32 updatePending : 1;
     uint32 isCubeMap : 1;
     uint32 isRenderTarget : 1;
     uint32 isRenderBuffer : 1;
-
-    struct
-    fbo_t
-    {
-        Handle color;
-        Handle depthStencil;
-        TextureFace face;
-        uint32_t level;
-
-        GLuint frameBuffer;
-    };
-    std::vector<fbo_t> fbo;
-
-    SamplerState::Descriptor::Sampler samplerState;
     uint32 forceSetSamplerState : 1;
 };
 
@@ -58,28 +55,13 @@ RHI_IMPL_RESOURCE(TextureGLES2_t, Texture::Descriptor)
 typedef ResourcePool<TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true> TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t, RESOURCE_TEXTURE, Texture::Descriptor, true);
 
-TextureGLES2_t::TextureGLES2_t() //-V730 no need to init mapping info, format is initialized in create
-: uid(0)
-  ,
-  uid2(0)
-  ,
-  fbo(0)
-  ,
-  width(0)
-  ,
-  height(0)
-  ,
-  isMapped(0)
-  ,
-  updatePending(0)
-  ,
-  isCubeMap(false)
-  ,
-  isRenderTarget(false)
-  ,
-  isRenderBuffer(false)
-  ,
-  forceSetSamplerState(true)
+TextureGLES2_t::TextureGLES2_t()
+    : isMapped(false)
+    , updatePending(false)
+    , isCubeMap(false)
+    , isRenderTarget(false)
+    , isRenderBuffer(false)
+    , forceSetSamplerState(true)
 {
 }
 
@@ -92,12 +74,15 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
     bool success = false;
     UpdateCreationDesc(desc);
 
-    GLuint uid[2] = { 0, 0 };
-    bool is_depth = desc.format == TEXTURE_FORMAT_D16 || desc.format == TEXTURE_FORMAT_D24S8;
+    GLuint glObjects[2] = {};
 
-    if (is_depth)
+    bool is_render_buffer = false;
+
+    if ((desc.format == TEXTURE_FORMAT_D16) || (desc.format == TEXTURE_FORMAT_D24S8))
     {
-        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2), reinterpret_cast<uint64>(uid) } };
+        is_render_buffer = true;
+        GLCommand cmd1 = { GLCommand::GEN_RENDERBUFFERS, { static_cast<uint64>(_GLES2_IsGlDepth24Stencil8Supported ? 1 : 2),
+                                                           reinterpret_cast<uint64>(glObjects) } };
 
         ExecGL(&cmd1, 1);
 
@@ -107,57 +92,65 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             {
                 GLCommand d24s8cmd[] =
                 {
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height, desc.sampleCount } },
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
                 ExecGL(d24s8cmd, countof(d24s8cmd), force_immediate);
 
                 // Store depth/stencil buffer index as secondary stencil index for iOS/Android
-                uid[1] = uid[0];
+                glObjects[1] = glObjects[0];
             }
             else
             {
-                GLCommand depthCmd;
-#if defined(__DAVAENGINE_ANDROID__)
+                GLuint depthComponentFormat = GL_DEPTH_COMPONENT16;
+			#if defined(__DAVAENGINE_ANDROID__)
                 if (_GLES2_IsGlDepthNvNonLinearSupported)
                 {
-                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, desc.width, desc.height } };
+                    depthComponentFormat = GL_DEPTH_COMPONENT16_NONLINEAR_NV;
                 }
-                else
-#endif
-                {
-                    depthCmd = { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } };
-                }
+			#endif
                 GLCommand d16s8cmd[] =
                 {
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                  depthCmd,
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
-                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, depthComponentFormat, desc.width, desc.height, desc.sampleCount } },
+
+                  { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[1] } },
+                  { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height, desc.sampleCount } },
+
                   { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
                 };
                 ExecGL(d16s8cmd, countof(d16s8cmd), force_immediate);
             }
-
-            /*
-            if( !need_stencil )
-            {
-                cmd2[3].func = GLCommand::NOP;
-                cmd2[4].func = GLCommand::NOP;
-                cmd2[5].func = GLCommand::NOP;
-            }
-*/
         }
     }
-    else
+    else if (desc.sampleCount > 1) // create multisampled render target texture
+    {
+        DVASSERT(desc.isRenderTarget); // do not support plain multisampled textures
+        DVASSERT(desc.type == rhi::TextureType::TEXTURE_TYPE_2D); // do not support cube maps now
+
+        GLint int_fmt = GetGLRenderTargetFormat(desc.format);
+
+        GLCommand gen = { GLCommand::GEN_RENDERBUFFERS, { 1, reinterpret_cast<uint64>(glObjects) } };
+        ExecGL(&gen, 1, force_immediate);
+
+        is_render_buffer = true;
+        GLCommand cmd[] =
+        {
+          { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, glObjects[0] } },
+          { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, static_cast<uint64>(int_fmt), desc.width, desc.height, desc.sampleCount } },
+          { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+        };
+
+        ExecGL(cmd, countof(cmd), force_immediate);
+    }
+    else // create plain texture
     {
         GLenum target = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
         uint32 cmd2_cnt = 2;
         GLCommand cmd2[4 + countof(desc.initialData)] =
         {
-          { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(uid) } },
+          { GLCommand::GEN_TEXTURES, { 1, reinterpret_cast<uint64>(glObjects) } },
           { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0 + 0 } }
         };
 
@@ -171,11 +164,10 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         {
             uint32 array_sz = (desc.type == TEXTURE_TYPE_CUBE) ? 6 : 1;
             GLenum face[] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
-            GLint int_fmt;
-            GLint fmt;
-            GLenum type;
-            bool compressed;
-
+            GLint int_fmt = 0;
+            GLint fmt = 0;
+            GLenum type = 0;
+            bool compressed = false;
             GetGLTextureFormat(desc.format, &int_fmt, &fmt, &type, &compressed);
 
             DVASSERT(desc.levelCount <= countof(desc.initialData));
@@ -183,7 +175,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
             {
                 cmd2[cmd2_cnt].func = GLCommand::BIND_TEXTURE;
                 cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-                cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
+                cmd2[cmd2_cnt].arg[1] = uint64(glObjects);
                 ++cmd2_cnt;
 
                 target = (desc.type == TEXTURE_TYPE_CUBE) ? face[s] : GL_TEXTURE_2D;
@@ -232,28 +224,27 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
         ExecGL(cmd2, cmd2_cnt, force_immediate);
     }
 
-    if (uid[0])
+    if (glObjects[0])
     {
-        this->uid = uid[0];
-        this->uid2 = uid[1];
+        uid = glObjects[0];
+        uid2 = glObjects[1];
         mappedData = nullptr;
         width = desc.width;
         height = desc.height;
         format = desc.format;
+        sampleCount = desc.sampleCount;
         isCubeMap = desc.type == TEXTURE_TYPE_CUBE;
+        isRenderTarget = desc.isRenderTarget;
+        isRenderBuffer = is_render_buffer;
         isMapped = false;
-        isRenderTarget = false;
-        isRenderBuffer = is_depth;
         forceSetSamplerState = true;
 
-        if (desc.isRenderTarget)
+        if (isRenderTarget && !isRenderBuffer)
         {
-            isRenderTarget = true;
-
-            GLint int_fmt, fmt;
-            GLenum type;
-            bool compressed;
-
+            GLint int_fmt = 0;
+            GLint fmt = 0;
+            GLenum type = 0;
+            bool compressed = false;
             GetGLTextureFormat(format, &int_fmt, &fmt, &type, &compressed);
             DVASSERT(!compressed);
 
@@ -287,10 +278,6 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
                 ExecGL(cmd3, countof(cmd3), force_immediate);
             }
         }
-        else
-        {
-            isRenderTarget = false;
-        }
 
         success = true;
     }
@@ -302,37 +289,29 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool force_immediat
 
 void TextureGLES2_t::Destroy(bool force_immediate)
 {
-    GLCommand cmd[16];
+    GLCommand cmd[16] = {};
     size_t cmd_cnt = 1;
 
-    if (isRenderTarget)
+    if (isRenderTarget || isRenderBuffer)
     {
-        cmd[0].func = GLCommand::DELETE_TEXTURES;
+        cmd[0].func = isRenderBuffer ? GLCommand::DELETE_RENDERBUFFERS : GLCommand::DELETE_TEXTURES;
         cmd[0].arg[0] = 1;
         cmd[0].arg[1] = uint64(&(uid));
 
-        DVASSERT(fbo.size() <= countof(cmd) - 1);
-        for (unsigned i = 0; i != fbo.size(); ++i)
-        {
-            cmd[1 + i].func = GLCommand::DELETE_FRAMEBUFFERS;
-            cmd[1 + i].arg[0] = 1;
-            cmd[1 + i].arg[1] = uint64(&(fbo[i].frameBuffer));
-        }
-
-        cmd_cnt += fbo.size();
-    }
-    else if (isRenderBuffer)
-    {
-        cmd[0].func = GLCommand::DELETE_RENDERBUFFERS;
-        cmd[0].arg[0] = 1;
-        cmd[0].arg[1] = uint64(&(uid));
-
-        if (uid2 && uid2 != uid)
+        if ((uid2 != 0) && (uid2 != uid))
         {
             cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
             cmd[1].arg[0] = 1;
             cmd[1].arg[1] = uint64(&(uid2));
+            ++cmd_cnt;
+        }
 
+        DVASSERT(fbo.size() <= countof(cmd) - 1);
+        for (unsigned i = 0; i != fbo.size(); ++i)
+        {
+            cmd[cmd_cnt].func = GLCommand::DELETE_FRAMEBUFFERS;
+            cmd[cmd_cnt].arg[0] = 1;
+            cmd[cmd_cnt].arg[1] = uint64(&(fbo[i].frameBuffer));
             ++cmd_cnt;
         }
     }
@@ -407,12 +386,11 @@ gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         {
             DVASSERT(level == 0);
             DVASSERT(self->fbo.size())
-            GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
             GLCommand cmd[] =
             {
               { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo[0].frameBuffer } },
               { GLCommand::READ_PIXELS, { 0, 0, self->width, self->height, GL_RGBA, GL_UNSIGNED_BYTE, uint64(self->mappedData) } },
-              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
+              { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Bound_FrameBuffer } },
             };
 
             ExecGL(cmd, countof(cmd));
@@ -598,11 +576,9 @@ void gles2_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
 
 //------------------------------------------------------------------------------
 
-static bool
-gles2_Texture_NeedRestore(Handle tex)
+bool gles2_Texture_NeedRestore(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
-
     return self->NeedRestore();
 }
 
@@ -776,9 +752,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     uint32 sampler_i = (base_i == DAVA::InvalidIndex) ? unit_i : base_i + unit_i;
     GLenum target = (self->isCubeMap) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-    const SamplerState::Descriptor::Sampler* sampler = nullptr;
-    if (_CurSamplerState)
-        sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
+    const SamplerState::Descriptor::Sampler* sampler = (fragment) ? _CurSamplerState->fragmentSampler + unit_i : _CurSamplerState->vertexSampler + unit_i;
 
     if (uint32(_GLES2_LastActiveTexture) != GL_TEXTURE0 + sampler_i)
     {
@@ -787,7 +761,6 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
     }
 
     GL_CALL(glBindTexture(target, self->uid));
-    //{SCOPED_NAMED_TIMING("gl-BindTexture");}
 
     if (sampler_i == 0)
     {
@@ -795,7 +768,7 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
         _GLES2_LastSetTex0Target = target;
     }
 
-    if (sampler && (self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
+    if ((self->forceSetSamplerState || memcmp(&(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler))) && !self->isRenderBuffer)
     {
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, _TextureMinMipFilterGLES2(TextureFilter(sampler->minFilter), TextureMipFilter(sampler->mipFilter))));
         GL_CALL(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, _TextureFilterGLES2(TextureFilter(sampler->magFilter))));
@@ -817,28 +790,36 @@ void SetToRHI(Handle tex, unsigned unit_i, uint32 base_i)
 
 void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned level)
 {
-    TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
+    TextureGLES2_t* color = TextureGLES2Pool::Get(tex);
+    TextureGLES2_t* depthStencil = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
+
     GLuint fb = 0;
-    DVASSERT(self->isRenderTarget || self->isRenderBuffer);
-    for (unsigned i = 0; i != self->fbo.size(); ++i)
+    DVASSERT(color->isRenderTarget || color->isRenderBuffer);
+    for (const FramebufferGLES2_t& fbo : color->fbo)
     {
-        if (self->fbo[i].color == tex && self->fbo[i].depthStencil == depth && self->fbo[i].face == face && self->fbo[i].level == level)
+        if ((fbo.color == tex) && (fbo.depthStencil == depth) && (fbo.face == face) && (fbo.level == level))
         {
-            fb = self->fbo[i].frameBuffer;
+            fb = fbo.frameBuffer;
             break;
         }
     }
 
-    if (!fb)
+    if (fb == 0)
     {
         GL_CALL(glGenFramebuffers(1, &fb));
+        DVASSERT(fb != 0);
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
 
-        if (fb)
+        if (color->isRenderBuffer)
         {
-            TextureGLES2_t* ds = (depth != InvalidHandle && depth != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depth) : nullptr;
+            DVASSERT(glIsRenderbuffer(color->uid));
+            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color->uid));
+        }
+        else
+        {
             GLenum target = GL_TEXTURE_2D;
 
-            if (self->isCubeMap)
+            if (color->isCubeMap)
             {
                 switch (face)
                 {
@@ -862,55 +843,90 @@ void SetAsRenderTarget(Handle tex, Handle depth, TextureFace face, unsigned leve
                     break;
                 }
             }
+            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, color->uid, level));
+        }
 
-            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-            GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, self->uid, level));
-            if (ds)
+        if (depthStencil != nullptr)
+        {
+		#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid));
+            if (depthStencil->uid2)
             {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
-                if (ds->uid2)
-                    GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2));
-#else
-                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid));
-#endif
+                GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid2));
             }
-#if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
-#else
-            GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
+		#else
+            GL_CALL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->uid));
+		#endif
+        }
 
-            GL_CALL(glDrawBuffers(1, b));
-#endif
+	#if !(defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__)
+        GLenum b[1] = { GL_COLOR_ATTACHMENT0 };
+        GL_CALL(glDrawBuffers(1, b));
+	#endif
 
-            int status;
-            GL_CALL(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
-            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        int status = 0;
+        GL_CALL(status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-            if (status == GL_FRAMEBUFFER_COMPLETE)
-            {
-                TextureGLES2_t::fbo_t fbo;
-
-                fbo.color = tex;
-                fbo.depthStencil = depth;
-                fbo.face = face;
-                fbo.level = level;
-                fbo.frameBuffer = fb;
-                self->fbo.push_back(fbo);
-            }
-            else
-            {
-                DAVA::Logger::Error("glCheckFramebufferStatus= %08X", status);
-                DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
-            }
+        if (status == GL_FRAMEBUFFER_COMPLETE)
+        {
+            FramebufferGLES2_t fbo;
+            fbo.color = tex;
+            fbo.depthStencil = depth;
+            fbo.face = face;
+            fbo.level = level;
+            fbo.frameBuffer = fb;
+            color->fbo.push_back(fbo);
+        }
+        else
+        {
+            DAVA::Logger::Error("glCheckFramebufferStatus = %08X", status);
+            DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
         }
     }
 
     GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fb));
-    _GLES2_Binded_FrameBuffer = fb;
+    _GLES2_Bound_FrameBuffer = fb;
 }
 
-Size2i
-Size(Handle tex)
+void ResolveMultisampling(Handle fromTexture, Handle toTexture)
+{
+    DVASSERT(fromTexture != rhi::InvalidHandle);
+    TextureGLES2_t* from = TextureGLES2Pool::Get(fromTexture);
+    TextureGLES2_t* to = toTexture == rhi::InvalidHandle ? nullptr : TextureGLES2Pool::Get(toTexture);
+
+    GLuint targetBuffer = _GLES2_Default_FrameBuffer;
+
+    bool fromHasDepthFormat = (from->format == TextureFormat::TEXTURE_FORMAT_D16) || (from->format == TextureFormat::TEXTURE_FORMAT_D24S8);
+    DVASSERT(!fromHasDepthFormat)
+    DVASSERT(!from->fbo.empty());
+
+    if (to != nullptr)
+    {
+        bool toHasDepthFormat = (to->format == TextureFormat::TEXTURE_FORMAT_D16) || (to->format == TextureFormat::TEXTURE_FORMAT_D24S8);
+        DVASSERT(!toHasDepthFormat);
+        if (to->fbo.empty())
+        {
+            // force create framebuffer object
+            SetAsRenderTarget(toTexture, InvalidHandle, TextureFace::TEXTURE_FACE_POSITIVE_X, 0);
+        }
+        targetBuffer = to->fbo.front().frameBuffer;
+    }
+
+    _GLES2_Bound_FrameBuffer = from->fbo.front().frameBuffer;
+    GL_CALL(glBindFramebuffer(GL_READ_FRAMEBUFFER, _GLES2_Bound_FrameBuffer));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetBuffer));
+
+#if defined(__DAVAENGINE_IPHONE__)
+    ios_gl_resolve_multisampling(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+#elif defined(__DAVAENGINE_ANDROID__)
+    DVASSERT(glBlitFramebuffer != nullptr);
+#endif
+
+    GL_CALL(glBlitFramebuffer(0, 0, from->width, from->height, 0, 0, from->width, from->height, GL_COLOR_BUFFER_BIT, GL_LINEAR));
+    GL_CALL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _GLES2_Bound_FrameBuffer));
+}
+
+Size2i Size(Handle tex)
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get(tex);
 

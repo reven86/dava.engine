@@ -385,8 +385,8 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     FT_Vector* advances = new FT_Vector[strLen];
     Prepare(advances);
 
-    float32 bboxSize = ceilf((faceBboxYMax - faceBboxYMin) / ftToPixelScale);
-    int32 baseSize = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(bboxSize)));
+    float32 bboxSize = std::ceil((faceBboxYMax - faceBboxYMin) / ftToPixelScale);
+    int32 baseSize = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(bboxSize)));
     int32 multilineOffsetY = baseSize + offsetY * 2;
 
     int32 justifyOffset = 0;
@@ -399,7 +399,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     }
 
     Font::StringMetrics metrics;
-    metrics.baseline = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale)));
+    metrics.baseline = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale)));
     metrics.height = baseSize;
     metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
 
@@ -555,17 +555,17 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
     if (!contentScaleIncluded)
     {
-        metrics.drawRect.x = int32(floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.x))));
-        metrics.drawRect.y = int32(floorf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
-        metrics.drawRect.dx = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
-        metrics.drawRect.dy = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
-        metrics.baseline = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
-        metrics.height = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.height))));
-        metrics.width = int32(ceilf(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(totalWidth)));
+        metrics.drawRect.x = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.x))));
+        metrics.drawRect.y = int32(std::floor(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
+        metrics.drawRect.dx = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
+        metrics.drawRect.dy = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
+        metrics.baseline = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
+        metrics.height = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualY(float32(metrics.height))));
+        metrics.width = int32(std::ceil(VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(totalWidth)));
     }
     else
     {
-        metrics.width = int32(ceilf(totalWidth));
+        metrics.width = int32(std::ceil(totalWidth));
     }
     return metrics;
 }
@@ -582,7 +582,7 @@ uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 
     SetFTCharSize(size);
     float32 yMax = FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale) * ascendScale;
     float32 yMin = FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale) * descendScale;
-    uint32 height = uint32(ceilf((yMax - yMin) / ftToPixelScale));
+    uint32 height = uint32(std::ceil((yMax - yMin) / ftToPixelScale));
 
     drawStringMutex.Unlock();
 

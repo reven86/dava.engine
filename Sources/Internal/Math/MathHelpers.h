@@ -1,6 +1,6 @@
-#ifndef __DAVAENGINE_MATHHELPERS_H__
-#define __DAVAENGINE_MATHHELPERS_H__
+#pragma once
 
+#include <cmath>
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
 #include "Math/Matrix4.h"
@@ -28,7 +28,7 @@ inline void SinCosFast(float angleInRadians, float& sine, float& cosine)
 {
     if (angleInRadians < 0.0f || angleInRadians >= PI_2)
     {
-        angleInRadians -= floorf(angleInRadians * (1.0f / PI_2)) * PI_2;
+        angleInRadians -= std::floor(angleInRadians * (1.0f / PI_2)) * PI_2;
     }
     sine = PI - angleInRadians;
     if (Abs(sine) > PI_05)
@@ -180,7 +180,7 @@ inline Vector3& TransformPerserveLength(Vector3& vec, const Matrix3& mat)
     vec = vec * mat;
     float newLength = vec.SquareLength();
     if (newLength > EPSILON)
-        vec *= sqrtf(oldLength / newLength);
+        vec *= std::sqrt(oldLength / newLength);
     return vec;
 }
 
@@ -190,13 +190,13 @@ inline Vector3& TransformPerserveLength(Vector3& vec, const Matrix4& mat)
     vec = vec * mat;
     float newLength = vec.SquareLength();
     if (newLength > EPSILON)
-        vec *= sqrtf(oldLength / newLength);
+        vec *= std::sqrt(oldLength / newLength);
     return vec;
 }
 
 inline float32 Round(float32 value)
 {
-    return (value > 0.0f) ? floor(value + 0.5f) : ceil(value - 0.5f);
+    return (value > 0.0f) ? std::floor(value + 0.5f) : std::ceil(value - 0.5f);
 }
 
 inline Vector3 Polar(DAVA::float32 angle, DAVA::float32 distance)
@@ -205,5 +205,3 @@ inline Vector3 Polar(DAVA::float32 angle, DAVA::float32 distance)
 };
 
 } // end of namespace DAVA
-
-#endif
