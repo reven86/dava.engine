@@ -13,15 +13,23 @@
 
 using namespace DAVA;
 
+REGISTER_PREFERENCES_ON_START(SelectionSystem,
+                              PREF_ARG("CanFindCommonForSelection", true),
+                              )
+
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
     systemsManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
     systemsManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
     systemsManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
-SelectionSystem::~SelectionSystem() = default;
+SelectionSystem::~SelectionSystem()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
@@ -207,13 +215,35 @@ void SelectionSystem::SelectNode(ControlNode* selectedNode)
     SelectNode(selected, deselected);
 }
 
-namespace SelectionSystemDetails
+ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>& nodesUnderPoint) const
 {
-ControlNode* GetCommonNodeUnderPoint(const Vector<ControlNode*>& nodesUnderPoint)
-{
+    if (!CanFindCommonForSelection || nodesUnderPoint.empty())
+    {
+        return nullptr;
+    }
     //if control much smaller than parent - we can want to select it
     Vector<std::pair<ControlNode*, Vector2>> sizes;
     sizes.reserve(nodesUnderPoint.size());
+    PackageBaseNode* node = nodesUnderPoint.back();
+    Set<PackageBaseNode*> topLevelItemHierarchy;
+    ControlNode* parentNode = dynamic_cast<ControlNode*>(node->GetParent());
+    if (parentNode == nullptr)
+    {
+        return nullptr;
+    }
+    //we can place controls under each other
+    for (ControlNode* child : *parentNode)
+    {
+        topLevelItemHierarchy.insert(child);
+    }
+
+    //get hierarchy to ensure that node under cursor is a top visible node
+    do
+    {
+        topLevelItemHierarchy.insert(node);
+        node = node->GetParent();
+    } while (node != nullptr && node->GetControl() != nullptr);
+
     for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
     {
         ControlNode* node = *iter;
@@ -222,17 +252,23 @@ ControlNode* GetCommonNodeUnderPoint(const Vector<ControlNode*>& nodesUnderPoint
         {
             const std::pair<ControlNode*, Vector2> lastNodeSize = sizes.back();
             Vector2 sizeDiff = size - lastNodeSize.second;
+            ControlNode* previousNode = lastNodeSize.first;
+            //not toplevel node or it hierarchy. We don't search in background nodes
+            if (topLevelItemHierarchy.find(previousNode) == topLevelItemHierarchy.end())
+            {
+                break;
+            }
             if (sizeDiff.dx > 300.0f || sizeDiff.dx > 300.0f
                 || sizeDiff.dx > 100.0f && sizeDiff.dy > 100.0f)
             {
-                Logger::Debug("found common of selected %s with size %f %f - %s with size %f %f", node->GetName().c_str(), size.x, size.y, lastNodeSize.first->GetName().c_str(), lastNodeSize.second.x, lastNodeSize.second.y);
-                return lastNodeSize.first;
+                Logger::Debug("found common of selected %s with size %f %f - %s with size %f %f",
+                              node->GetName().c_str(), size.x, size.y, previousNode->GetName().c_str(), lastNodeSize.second.x, lastNodeSize.second.y);
+                return previousNode;
             }
         }
         sizes.push_back(std::make_pair(node, size));
     }
     return nullptr;
-}
 }
 
 ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const
@@ -273,9 +309,17 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
     {
         if (!selected.empty())
         {
+            //collect all selected hierarchy
             SelectedNodes parentsOfSelectedNodes;
-            auto outIter = std::inserter(parentsOfSelectedNodes, parentsOfSelectedNodes.end());
-            std::transform(selected.begin(), selected.end(), outIter, [](PackageBaseNode* node) { return node->GetParent(); });
+            for (PackageBaseNode* node : selected)
+            {
+                node = node->GetParent();
+                while (node != nullptr && node->GetControl() != nullptr)
+                {
+                    parentsOfSelectedNodes.insert(node);
+                    node = node->GetParent();
+                }
+            }
             //move from deep nodes to root node
             for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
             {
@@ -290,7 +334,7 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                 }
 
                 //search neighbor to move left-right
-                else if (parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
+                else if (selected.find(node) == selected.end() && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
                 {
                     Logger::Debug("found neighbor of selected %s", node->GetName().c_str());
                     return node;
@@ -302,16 +346,9 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                     Logger::Debug("found parent of selected %s", node->GetName().c_str());
                     return node;
                 }
-
-                //if already selected.
-                else if (selected.find(node) != selected.end())
-                {
-                    Logger::Debug("found already of selected %s", node->GetName().c_str());
-                    return node;
-                }
             }
             //may be there some small node inside big one
-            ControlNode* node = SelectionSystemDetails::GetCommonNodeUnderPoint(nodesUnderPoint);
+            ControlNode* node = GetCommonNodeUnderPoint(nodesUnderPoint);
             if (node != nullptr)
             {
                 return node;
@@ -320,7 +357,7 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
         //return child of root control
         else
         {
-            ControlNode* node = SelectionSystemDetails::GetCommonNodeUnderPoint(nodesUnderPoint);
+            ControlNode* node = GetCommonNodeUnderPoint(nodesUnderPoint);
             if (node != nullptr)
             {
                 return node;

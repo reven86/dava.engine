@@ -5,8 +5,9 @@
 #include "EditorSystems/BaseEditorSystem.h"
 #include "Math/Rect.h"
 #include "UI/UIEvent.h"
-#include <Functional/SignalBase.h>
+#include "Functional/SignalBase.h"
 #include "Model/PackageHierarchy/PackageListener.h"
+#include "Preferences/PreferencesRegistrator.h"
 
 class EditorSystemsManager;
 class ControlNode;
@@ -17,7 +18,7 @@ namespace DAVA
 class Vector2;
 }
 
-class SelectionSystem final : public BaseEditorSystem, PackageListener
+class SelectionSystem : public BaseEditorSystem, PackageListener, public DAVA::InspBase
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
@@ -43,9 +44,17 @@ private:
     void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
     void ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
 
+    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
+
     bool mousePressed = false;
     SelectionContainer selectionContainer;
     PackageNode* packageNode = nullptr;
+    bool CanFindCommonForSelection = true;
+
+public:
+    INTROSPECTION(SelectionSystem,
+                  MEMBER(CanFindCommonForSelection, "Control Selection/Can search most common node", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__
