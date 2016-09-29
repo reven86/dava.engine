@@ -27,7 +27,7 @@ void ClearContent(const Function<const HashMap<FastName, T>&()>& getContentFn, c
 }
 
 template <typename T>
-void AccamulateLocalInfo(const HashMap<FastName, T>& info, Vector<FastName>& members)
+void AccumulateLocalInfo(const HashMap<FastName, T>& info, Vector<FastName>& members)
 {
     // When we create snapshot for undo, we should store all local info, to restore it exactly to same state
     members.reserve(info.size());
@@ -37,7 +37,7 @@ void AccamulateLocalInfo(const HashMap<FastName, T>& info, Vector<FastName>& mem
     }
 }
 
-void AccamulateInspInfo(NMaterial* material, const InspMember* materialMember, Vector<FastName>& members)
+void AccumulateInspInfo(NMaterial* material, const InspMember* materialMember, Vector<FastName>& members)
 {
     if (materialMember == nullptr || materialMember->Dynamic() == nullptr)
         return;
@@ -53,18 +53,18 @@ void StoreMaterialTextures(NMaterial* material, KeyedArchive* content, const Ser
     Vector<FastName> membersList;
     if (storeForUndo)
     {
-        AccamulateLocalInfo(material->GetLocalTextures(), membersList);
+        AccumulateLocalInfo(material->GetLocalTextures(), membersList);
     }
     else
     {
-        AccamulateInspInfo(material, material->GetTypeInfo()->Member(DAVA::FastName("localTextures")), membersList);
+        AccumulateInspInfo(material, material->GetTypeInfo()->Member(DAVA::FastName("localTextures")), membersList);
     }
 
     for (const auto& texName : membersList)
     {
         if (material->HasLocalTexture(texName))
         {
-            auto texturePath = material->GetLocalTexture(texName)->GetPathname();
+            const FilePath& texturePath = material->GetLocalTexture(texName)->GetPathname();
             if (!texturePath.IsEmpty())
             {
                 String textureRelativePath = texturePath.GetRelativePathname(context.GetScenePath());
@@ -82,11 +82,11 @@ void StoreMaterialFlags(NMaterial* material, KeyedArchive* content, bool storeFo
     Vector<FastName> membersList;
     if (storeForUndo)
     {
-        AccamulateLocalInfo(material->GetLocalFlags(), membersList);
+        AccumulateLocalInfo(material->GetLocalFlags(), membersList);
     }
     else
     {
-        AccamulateInspInfo(material, material->GetTypeInfo()->Member(FastName("localFlags")), membersList);
+        AccumulateInspInfo(material, material->GetTypeInfo()->Member(FastName("localFlags")), membersList);
     }
 
     for (const auto& flagName : membersList)
@@ -103,11 +103,11 @@ void StoreMaterialProperties(NMaterial* material, KeyedArchive* content, bool st
     Vector<FastName> membersList;
     if (storeForUndo)
     {
-        AccamulateLocalInfo(material->GetLocalProperties(), membersList);
+        AccumulateLocalInfo(material->GetLocalProperties(), membersList);
     }
     else
     {
-        AccamulateInspInfo(material, material->GetTypeInfo()->Member(FastName("localProperties")), membersList);
+        AccumulateInspInfo(material, material->GetTypeInfo()->Member(FastName("localProperties")), membersList);
     }
 
     for (const auto& propertyName : membersList)
@@ -155,8 +155,8 @@ void UpdateMaterialPropertiesFromPreset(NMaterial* material, KeyedArchive* conte
 
             if (material->HasLocalProperty(propName))
             {
-                auto existingType = material->GetLocalPropType(propName);
-                auto existingSize = material->GetLocalPropArraySize(propName);
+                rhi::ShaderProp::Type existingType = material->GetLocalPropType(propName);
+                DAVA::uint32 existingSize = material->GetLocalPropArraySize(propName);
                 if ((existingType == propType) && (existingSize == propSize))
                 {
                     material->SetPropertyValue(propName, propData);
@@ -197,7 +197,7 @@ void UpdateMaterialTexturesFromPreset(NMaterial* material, KeyedArchive* content
     const auto& texturesMap = content->GetArchieveData();
     for (const auto& tm : texturesMap)
     {
-        auto texture = Texture::CreateFromFile(scenePath + tm.second->AsString());
+        Texture* texture = Texture::CreateFromFile(scenePath + tm.second->AsString());
 
         FastName textureName(tm.first);
         if (material->HasLocalTexture(textureName))
@@ -316,11 +316,11 @@ void ApplyMaterialPresetCommand::StoreMaterialPresetImpl(DAVA::KeyedArchive* arc
     content->SetArchive("textures", texturesArchive);
     content->SetArchive("properties", propertiesArchive);
 
-    auto fxName = material->GetLocalFXName();
+    const FastName& fxName = material->GetLocalFXName();
     if (fxName.IsValid())
         content->SetFastName("fxname", fxName);
 
-    auto qualityGroup = material->GetQualityGroup();
+    const FastName& qualityGroup = material->GetQualityGroup();
     if (qualityGroup.IsValid())
         content->SetFastName("group", qualityGroup);
 
