@@ -88,7 +88,16 @@ void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
         QString path = QString::fromStdString(filePath.GetAbsolutePathname());
         stringsToDisplay << ToShortName(path);
     }
-    stringsToDisplay.sort(Qt::CaseInsensitive);
+    std::sort(stringsToDisplay.begin(), stringsToDisplay.end(), [](const QString& left, const QString& right)
+              {
+                  int leftSize = left.size();
+                  int rightSize = right.size();
+                  if (leftSize != rightSize)
+                  {
+                      return leftSize < rightSize;
+                  }
+                  return left.toLower() < right.toLower();
+              });
     //the only way to not create model and use stringlist is a pass stringlist to the QCompleter c-tor :(
     completer = new QCompleter(stringsToDisplay, this);
     completer->setFilterMode(Qt::MatchContains);
