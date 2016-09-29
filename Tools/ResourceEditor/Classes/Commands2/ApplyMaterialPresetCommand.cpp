@@ -197,7 +197,7 @@ void UpdateMaterialTexturesFromPreset(NMaterial* material, KeyedArchive* content
     const auto& texturesMap = content->GetArchieveData();
     for (const auto& tm : texturesMap)
     {
-        Texture* texture = Texture::CreateFromFile(scenePath + tm.second->AsString());
+        ScopedPtr<Texture> texture(Texture::CreateFromFile(scenePath + tm.second->AsString()));
 
         FastName textureName(tm.first);
         if (material->HasLocalTexture(textureName))
