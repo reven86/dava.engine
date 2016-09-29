@@ -2,12 +2,12 @@
 
 #include "Commands2/RECommandIDs.h"
 #include "Classes/Qt/Project/ProjectManager.h"
+
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Material/NMaterial.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
-#include "Base/Singleton.h"
 
 namespace ApplyMaterialPresetDetail
 {

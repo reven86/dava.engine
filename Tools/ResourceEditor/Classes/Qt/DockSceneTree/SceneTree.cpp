@@ -19,6 +19,7 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 

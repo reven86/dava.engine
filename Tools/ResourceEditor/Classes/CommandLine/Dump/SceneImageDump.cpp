@@ -2,6 +2,12 @@
 
 #include "Classes/CommandLine/OptionName.h"
 #include "Classes/Qt/Scene/SceneImageGraber.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
+#include "Scene/SceneEditor2.h"
+#include "Base/ScopedPtr.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Texture.h"
@@ -10,13 +16,14 @@
 SceneImageDump::SceneImageDump()
     : CommandLineTool("-sceneimagedump")
 {
-    options.AddOption(OptionName::ProcessFile, DAVA::VariantType(DAVA::String("")), "Full pathname to scene file *.sc2");
-    options.AddOption(OptionName::Camera, DAVA::VariantType(DAVA::String("")), "Camera name for draw");
-    options.AddOption(OptionName::Width, DAVA::VariantType(DAVA::int32(0)), "Result image width");
-    options.AddOption(OptionName::Height, DAVA::VariantType(DAVA::int32(0)), "Result image height");
-    options.AddOption(OptionName::GPU, DAVA::VariantType(DAVA::String("origin")), "GPU family: PowerVR_iOS, PowerVR_Android, tegra, mali, adreno, origin, dx11");
-    options.AddOption(OptionName::OutFile, DAVA::VariantType(DAVA::String("")), "Path to output file");
-    options.AddOption(OptionName::QualityConfig, DAVA::VariantType(DAVA::String("")), "Full path for quality.yaml file");
+    using namespace DAVA;
+    options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
+    options.AddOption(OptionName::Camera, VariantType(String("")), "Camera name for draw");
+    options.AddOption(OptionName::Width, VariantType(int32(0)), "Result image width");
+    options.AddOption(OptionName::Height, VariantType(int32(0)), "Result image height");
+    options.AddOption(OptionName::GPU, VariantType(String("origin")), "GPU family: PowerVR_iOS, PowerVR_Android, tegra, mali, adreno, origin, dx11");
+    options.AddOption(OptionName::OutFile, VariantType(String("")), "Path to output file");
+    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
 void SceneImageDump::ConvertOptionsToParamsInternal()

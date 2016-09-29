@@ -5,6 +5,9 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Base/ScopedPtr.h"
 
 ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAVA::Entity* entity_)
     : RECommand(CMDID_CONVERT_TO_BILLBOARD, "Convert to billboard")
