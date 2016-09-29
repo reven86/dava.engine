@@ -59,9 +59,8 @@ uint32 TextureStride(TextureFormat format, Size2i size, uint32 level)
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
         return (width * 16) / 4;
-
     default:
-        Logger::Error("TextureStride - Unknown format");
+        return 0;
     }
     return 0;
 }

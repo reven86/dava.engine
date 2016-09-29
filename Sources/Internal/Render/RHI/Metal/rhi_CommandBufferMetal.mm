@@ -112,7 +112,7 @@ CommandBufferMetal_t::Execute()
 {
     for (const uint8 *c = cmdData, *c_end = cmdData + curUsedSize; c != c_end;)
     {
-        const SWCommand* cmd = static_cast<const SWCommand*>(c);
+        const SWCommand* cmd = reinterpret_cast<const SWCommand*>(c);
 
         switch (SoftwareCommandType(cmd->type))
         {
@@ -1587,7 +1587,6 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);
-    SCOPED_NAMED_TIMING("rhi.draw-present");
     
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (_Metal_currentDrawable == nil)
