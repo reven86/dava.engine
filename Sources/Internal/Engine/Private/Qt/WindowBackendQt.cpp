@@ -488,15 +488,16 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContext;
 }
 
-void WindowBackend::SetMouseMode(eMouseMode mode)
+bool WindowBackend::SetCaptureMode(eCaptureMode mode);
 {
     // not implemented
+    return false;
 }
 
-eMouseMode WindowBackend::GetMouseMode() const
+bool WindowBackend::SetMouseVisibility(bool visible);
 {
     // not implemented
-    return eMouseMode::DEFAULT;
+    return false;
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

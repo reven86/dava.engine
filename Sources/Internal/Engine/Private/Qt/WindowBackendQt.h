@@ -44,8 +44,8 @@ public:
     void TriggerPlatformEvents();
     void InitCustomRenderParams(rhi::InitParam& params);
 
-    void SetMouseMode(eMouseMode mode);
-    eMouseMode GetMouseMode() const;
+    bool SetCaptureMode(eCaptureMode mode);
+    bool SetMouseVisibility(bool visible);
 
 private:
     void PlatformEventHandler(const UIDispatcherEvent& e);
