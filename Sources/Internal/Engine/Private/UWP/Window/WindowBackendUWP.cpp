@@ -116,7 +116,7 @@ bool WindowBackend::SetCaptureMode(eCaptureMode mode)
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CHANGE_CAPTURE_MODE;
     e.mouseMode = mode;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(e);
     return true;
 }
 
@@ -125,7 +125,7 @@ bool WindowBackend::SetMouseVisibility(bool visible)
     UIDispatcherEvent e;
     e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
     e.mouseVisible = visible;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(e);
     return true;
 }
 

@@ -312,7 +312,7 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     UpdateMode();
 }
 
-void FullscreenTest::FocusChanged(Window& window, bool hasFocus)
+void FullscreenTest::FocusChanged(DAVA::Window* window, bool hasFocus)
 {
     if (!hasFocus)
     {

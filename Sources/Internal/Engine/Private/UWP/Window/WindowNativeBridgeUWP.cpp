@@ -254,7 +254,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
                                                                                    x,
                                                                                    y,
                                                                                    1,
-                                                                                   false));
+                                                                                   (captureMode == eCaptureMode::PINNING)));
         mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -283,7 +283,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
                                                                                    x,
                                                                                    y,
                                                                                    1,
-                                                                                   false));
+                                                                                   (captureMode == eCaptureMode::PINNING)));
         mouseButtonState.reset();
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -348,25 +348,27 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
                                                                                y,
                                                                                0.f,
                                                                                deltaY,
-                                                                               false));
+                                                                               (captureMode == eCaptureMode::PINNING)));
 }
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
+    if (captureMode != eCaptureMode::PINNING)
+    {
+        return;
+    }
     // after enabled Pinning mode, skip move events, large x, y delta
     if (skipMouseMoveEvents)
     {
         skipMouseMoveEvents--;
         return;
     }
-    MainDispatcherEvent e;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = uwpWindow->GetWindow();
-    e.type = MainDispatcherEvent::MOUSE_MOVE;
-    e.mmoveEvent.x = static_cast<float32>(args->MouseDelta.X);
-    e.mmoveEvent.y = static_cast<float32>(args->MouseDelta.Y);
-    e.mmoveEvent.relatival = (captureMode == eCaptureMode::PINNING);
-    uwpWindow->GetDispatcher()->PostEvent(e);
+    float32 x = static_cast<float32>(args->MouseDelta.X);
+    float32 y = static_cast<float32>(args->MouseDelta.Y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
+                                                                              x,
+                                                                              y,
+                                                                              true));
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)

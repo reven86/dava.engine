@@ -282,7 +282,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mclickEvent.relatival;
+    uie.relatival = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
@@ -312,7 +312,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mwheelEvent.relatival;
+    uie.relatival = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
@@ -334,7 +334,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mmoveEvent.relatival;
+    uie.relatival = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;

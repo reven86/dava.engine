@@ -357,8 +357,8 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         tme.dwHoverTime = HOVER_DEFAULT;
         mouseTracking = (::TrackMouseEvent(&tme) != 0);
     }
-
-    if (eCaptureMode::PINNING == captureMode)
+    bool isPinningMode = (captureMode == eCaptureMode::PINNING);
+    if (isPinningMode)
     {
         RECT clientRect;
         ::GetClientRect(hwnd, &clientRect);
@@ -381,7 +381,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
                                                                               static_cast<float32>(x),
                                                                               static_cast<float32>(y),
-                                                                              false));
+                                                                              isPinningMode));
     return 0;
 }
 
@@ -392,7 +392,7 @@ LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x
                                                                                static_cast<float32>(y),
                                                                                0.f,
                                                                                static_cast<float32>(delta),
-                                                                               false));
+                                                                               (captureMode == eCaptureMode::PINNING)));
     return 0;
 }
 
@@ -455,7 +455,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
                                                                                static_cast<float32>(x),
                                                                                static_cast<float32>(y),
                                                                                1,
-                                                                               false));
+                                                                               (captureMode == eCaptureMode::PINNING)));
     return 0;
 }
 

@@ -206,7 +206,7 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
                                                                                x,
                                                                                y,
                                                                                1,
-                                                                               false));
+                                                                               (captureMode == eCaptureMode::PINNING)));
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
@@ -224,7 +224,7 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
                                                                               x,
                                                                               y,
-                                                                              false));
+                                                                              (captureMode == eCaptureMode::PINNING)));
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -267,7 +267,7 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
                                                                                y,
                                                                                deltaX,
                                                                                deltaY,
-                                                                               false));
+                                                                               (captureMode == eCaptureMode::PINNING)));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)

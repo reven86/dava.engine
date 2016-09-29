@@ -28,7 +28,7 @@ private:
     void OnMulDown(DAVA::BaseObject* sender, void* data, void* callerData);
     void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
-    void FocusChanged(Window& window, bool hasFocus);
+    void FocusChanged(DAVA::Window* window, bool hasFocus);
 
     DAVA::Window* primaryWindow = nullptr;
 
