@@ -7,6 +7,9 @@
 
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Render/RenderCallbacks.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Functional/Function.h"
 #include "Math/MathHelpers.h"
 
 #include <QQuickWindow>
@@ -36,20 +39,20 @@ void GrabImage(Params inputParams)
     internalParams.inputParams.scene->renderSystem->SetDrawCamera(internalParams.inputParams.cameraToGrab.Get());
     internalParams.inputParams.scene->renderSystem->SetMainCamera(internalParams.inputParams.cameraToGrab.Get());
 
-    Rect viewportRect(0, 0, imageSize.dx, imageSize.dy);
+    DAVA::Rect viewportRect(0, 0, imageSize.dx, imageSize.dy);
     internalParams.inputParams.scene->SetMainRenderTarget(internalParams.renderTarget->handle,
                                                           internalParams.renderTarget->handleDepthStencil,
                                                           rhi::LOADACTION_CLEAR, DAVA::Color::Clear);
-    internalParams.inputParams.scene->SetMainPassProperties(PRIORITY_SERVICE_2D, viewportRect,
+    internalParams.inputParams.scene->SetMainPassProperties(DAVA::PRIORITY_SERVICE_2D, viewportRect,
                                                             internalParams.renderTarget->GetWidth(),
                                                             internalParams.renderTarget->GetHeight(),
                                                             DAVA::PixelFormat::FORMAT_RGBA8888);
     internalParams.inputParams.scene->Draw();
 
-    RenderSystem2D* renderSystem = RenderSystem2D::Instance();
+    DAVA::RenderSystem2D* renderSystem = DAVA::RenderSystem2D::Instance();
 
     renderSystem->BeginRenderTargetPass(internalParams.renderTarget.Get(), false);
-    renderSystem->FillRect(viewportRect, Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+    renderSystem->FillRect(viewportRect, DAVA::Color::White, DAVA::RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
     renderSystem->EndRenderTargetPass();
 
     internalParams.inputParams.cameraToGrab->SetAspect(cameraAspect);
@@ -83,7 +86,7 @@ void GrabImage(Params params)
 {
     if (params.processInDAVAFrame)
     {
-        JobManager::Instance()->CreateMainJob(DAVA::Bind(&SceneImageGrabberDetail::GrabImage, params), DAVA::JobManager::eMainJobType::JOB_MAINLAZY);
+        DAVA::JobManager::Instance()->CreateMainJob(DAVA::Bind(&SceneImageGrabberDetail::GrabImage, params), DAVA::JobManager::eMainJobType::JOB_MAINLAZY);
     }
     else
     {
