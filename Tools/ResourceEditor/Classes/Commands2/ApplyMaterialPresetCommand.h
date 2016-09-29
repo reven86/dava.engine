@@ -39,8 +39,8 @@ public:
     static void StoreMaterialPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context);
 
 private:
-    void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::uint32 parts);
-    void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, DAVA::uint32 parts);
+    void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::uint32 parts, bool loadForUndo);
+    void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, DAVA::uint32 parts, bool loadForUndo);
     static void StoreMaterialPresetImpl(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, bool storeForUndo);
 
     void PrepareSerializationContext(DAVA::SerializationContext& context);
