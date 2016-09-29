@@ -45,12 +45,6 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
         if ((!enableFog) || (is2DMode)) //inverse logic to suspend vertex fog inherited from global material
         {
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_LINEAR, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE_LINEAR, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 0);
-            material->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 0);
         }
 
         if (is2DMode)
@@ -94,26 +88,16 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial* material)
 {
     particleBaseMaterial->SetParent(material);
 
-    //RHI_COMPLETE pre-cache all configs for regularly used blending modes
-    const static uint32 FRAME_BLEND_MASK = 1;
-    const static uint32 FOG_MASK = 2;
-    const static uint32 BLEND_SHIFT = 2;
-    for (uint32 i = 0; i < 12; i++)
+    DAVA::Vector<FastName> variations =
     {
-        bool enableFrameBlend = (i & FRAME_BLEND_MASK) == FRAME_BLEND_MASK;
-        bool enableFog = (i & FOG_MASK) == FOG_MASK;
-        uint32 blending = (i >> BLEND_SHIFT) + 1;
+      NMaterialFlagName::FLAG_FRAME_BLEND,
+      NMaterialFlagName::FLAG_VERTEXFOG,
+      NMaterialFlagName::FLAG_BLENDING,
+    };
 
-        ScopedPtr<NMaterial> material(new NMaterial());
-        material->SetParent(particleBaseMaterial);
-
-        if (enableFrameBlend)
-            material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);
-        if (!enableFog) //inverse logic to suspend vertex fog inherited from global material
-            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);
-        material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
-        material->PreCacheFX();
-    }
+    ScopedPtr<NMaterial> precachedMaterial(new NMaterial());
+    precachedMaterial->SetParent(particleBaseMaterial);
+    precachedMaterial->PreCacheFXVariations({ precachedMaterial->GetEffectiveFXName() }, variations);
 }
 
 void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent* component)

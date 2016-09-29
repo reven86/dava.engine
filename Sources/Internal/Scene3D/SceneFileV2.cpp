@@ -451,6 +451,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             {
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
                 NMaterial* globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
+                ApplyFogQualityToGlobalMaterial(globalMaterial);
 
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
@@ -475,7 +476,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         serializationContext.ResolveMaterialBindings();
     }
 
-    ApplyFogQuality();
+    ApplyFogQualityToDataNodes();
 
     if (isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
@@ -519,40 +520,45 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
-void SceneFileV2::ApplyFogQuality()
+void SceneFileV2::ApplyFogQualityToGlobalMaterial(NMaterial* globalMaterial)
 {
-    //RHI_COMPLETE: performance issues with fog
+    DVASSERT(globalMaterial != nullptr);
 
-    if (!serializationContext.GetScene())
-        return;
+    QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+    bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
+    bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
 
-    NMaterial* globalMaterial = serializationContext.GetScene()->GetGlobalMaterial();
-    if (globalMaterial)
+    if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
+        globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
+
+    if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
+        globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
+
+    if (removeVertexFog && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
+    if (removeHalfSpaceFog && globalMaterial->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+        globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+}
+
+void SceneFileV2::ApplyFogQualityToDataNodes()
+{
+    QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+    bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
+    bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
+
+    if (removeVertexFog || removeHalfSpaceFog)
     {
-        QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
+        Vector<NMaterial*> materials;
+        serializationContext.GetDataNodes(materials);
 
-        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_ATTENUATION))
-            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_ATTENUATION, 1);
-
-        if (qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_ATMOSPHERE_SCATTERING))
-            globalMaterial->AddFlag(NMaterialFlagName::FLAG_FOG_ATMOSPHERE_NO_SCATTERING, 1);
-
-        bool removeVertexFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG);
-        bool removeHalfSpaceFog = qss->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_DISABLE_FOG_HALF_SPACE);
-
-        if (removeVertexFog || removeHalfSpaceFog)
+        for (NMaterial* material : materials)
         {
-            Vector<NMaterial*> materials;
-            serializationContext.GetDataNodes(materials);
+            if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
+                material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
 
-            for (NMaterial* material : materials)
-            {
-                if (removeVertexFog && material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
-                    material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
-
-                if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
-                    material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
-            }
+            if (removeHalfSpaceFog && material->HasLocalFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE))
+                material->RemoveFlag(NMaterialFlagName::FLAG_FOG_HALFSPACE);
         }
     }
 }
