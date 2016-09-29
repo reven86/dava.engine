@@ -31,6 +31,7 @@ class LocalNotificationController;
 
 class IPackManager;
 class AssetsManagerAndroid;
+class ModuleManager;
 
 namespace Net
 {
@@ -66,6 +67,7 @@ public:
     UIScreenManager* uiScreenManager = nullptr;
     LocalNotificationController* localNotificationController = nullptr;
 
+    ModuleManager* moduleManager = nullptr;
     IPackManager* packManager = nullptr;
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
