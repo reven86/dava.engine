@@ -107,6 +107,7 @@ class CoverageReport():
         self.arg                    = arg
         self.pathBuild              = arg.pathBuild
         self.pathExecut             = arg.pathExecut
+        self.targetArgs             = arg.targetArgs
         self.pathReportOut          = arg.pathReportOut
         self.pathReportOutFull      = os.path.join( arg.pathReportOut, 'CoverageFull' ) 
         self.pathReportOutTests     = os.path.join( arg.pathReportOut, 'CoverageTests' )
@@ -128,7 +129,7 @@ class CoverageReport():
         self.tfExec                 = CheckTimeDependence( self.pathExecut, self.pathExecutTime )
 
 
-        self.coverFilePath          = os.path.join    ( self.pathExecutDir,   '{0}.cover'.format( self.executName ) )
+        self.coverFilePath          = os.path.join    ( self.pathExecutDir,   'Tests.cover')
         self.pathLlvmCov            = os.path.join    ( self.pathCoverageDir, 'llvm-cov')
         self.pathLlvmProfdata       = os.path.join    ( self.pathCoverageDir, 'llvm-profdata')
         self.pathCallLlvmGcov       = os.path.join    ( self.pathCoverageDir, 'llvm-gcov.sh')
@@ -162,7 +163,7 @@ class CoverageReport():
             self.tfExec.create_time_file()
             pathExecutExt = get_exe( self.pathExecut )
             os.chdir( self.pathExecutDir )
-            self.__execute( [ pathExecutExt ] )
+            self.__execute( [ pathExecutExt, self.targetArgs ] )
     
         self.__processing_gcda_gcno_files()
         self.__load_json_cover_data()
@@ -226,6 +227,7 @@ class CoverageReport():
                     fileCover = FileCover( find_list[0], None )
                     self.testsCoverage.setdefault(test, []).append( fileCover )
                     self.testsCoverageFiles +=  [find_list[0]]
+        print 'TRACE OUTPUT ', self.testsCoverageFiles
 
     def __processing_gcda_gcno_files( self ):
         
@@ -267,6 +269,7 @@ class CoverageReport():
                   '-instr-profile={0}.profdata'.format(self.executName), 
                   file  
                 ] 
+        print param
         sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         subProcessContinue = True
@@ -569,6 +572,7 @@ def main():
     parser.add_argument( '--teamcityMode', default = 'false', choices=['true', 'false'] )    
     parser.add_argument( '--buildMode', default = 'false', choices=['true', 'false'] )
     parser.add_argument( '--runMode', default = 'false', choices=['true', 'false'] )
+    parser.add_argument( '--targetArgs', default = '')
 
     options = parser.parse_args()
 

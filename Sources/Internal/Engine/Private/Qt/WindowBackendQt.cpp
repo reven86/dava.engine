@@ -268,9 +268,9 @@ void WindowBackend::OnCreated()
     contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
+    float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    float32 dpi = renderWidget->devicePixelRatioF();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
 }
 

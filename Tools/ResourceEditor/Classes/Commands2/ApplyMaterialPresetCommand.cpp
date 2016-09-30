@@ -1,9 +1,13 @@
 #include "ApplyMaterialPresetCommand.h"
 
+#include "RECommandIDs.h"
+#include "Project/ProjectManager.h"
+
 #include "Render/Material/NMaterial.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FilePath.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
 
 namespace ApplyMaterialPresetDetail
 {
@@ -166,7 +170,7 @@ void ApplyMaterialPresetCommand::Init(DAVA::uint32 materialParts_)
 
 void ApplyMaterialPresetCommand::Undo()
 {
-    HashMap<DAVA::FastName, DAVA::MaterialTextureInfo*> textures = material->GetLocalTextures();
+    DAVA::HashMap<DAVA::FastName, DAVA::MaterialTextureInfo*> textures = material->GetLocalTextures();
     for (const auto& info : textures)
     {
         material->RemoveTexture(info.first);

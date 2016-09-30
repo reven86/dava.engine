@@ -24,9 +24,15 @@ private:
 public:
     UIModalInputComponent* Clone() const override;
 
+    bool IsEnabled() const;
+    void SetEnabled(bool enabled_);
+
+private:
+    bool enabled = true;
+
 public:
     INTROSPECTION_EXTEND(UIModalInputComponent, UIComponent,
-                         nullptr);
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 
