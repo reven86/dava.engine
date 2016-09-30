@@ -233,10 +233,7 @@ LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
-                                                                              static_cast<float32>(x),
-                                                                              static_cast<float32>(y),
-                                                                              false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
     return 0;
 }
 
@@ -323,19 +320,13 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
     }
 
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                             type,
-                                                                             key,
-                                                                             isRepeated));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                             MainDispatcherEvent::KEY_CHAR,
-                                                                             key,
-                                                                             isRepeated));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, isRepeated));
     return 0;
 }
 
@@ -346,11 +337,9 @@ LRESULT WindowBackend::OnCreate()
 
     width = rc.right - rc.left;
     height = rc.bottom - rc.top;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                            static_cast<float32>(width),
-                                                                            static_cast<float32>(height),
-                                                                            1.0f,
-                                                                            1.0f));
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }

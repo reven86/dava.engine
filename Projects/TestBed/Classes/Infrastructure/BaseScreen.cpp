@@ -5,7 +5,7 @@
 
 DAVA::int32 BaseScreen::globalScreenId = 1;
 
-BaseScreen::BaseScreen(TestBed& app, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
+BaseScreen::BaseScreen(TestBed& app, const DAVA::String& screenName)
     : UIScreen()
     , app(app)
     , currentScreenId(globalScreenId++)

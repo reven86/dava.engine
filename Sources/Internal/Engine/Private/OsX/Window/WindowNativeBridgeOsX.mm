@@ -54,11 +54,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     {
         float32 scale = [nswindow backingScaleFactor];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                                viewRect.size.width,
-                                                                                viewRect.size.height,
-                                                                                scale,
-                                                                                scale));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, scale, scale));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 
@@ -128,11 +124,7 @@ void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                size.width,
-                                                                                size.height,
-                                                                                scale,
-                                                                                scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, scale, scale));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
@@ -186,13 +178,7 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
     uint32 button = [theEvent buttonNumber] + 1;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               type,
-                                                                               button,
-                                                                               x,
-                                                                               y,
-                                                                               1,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
@@ -202,10 +188,7 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
-                                                                              x,
-                                                                              y,
-                                                                              false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
@@ -243,12 +226,7 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         deltaX *= scrollK;
         deltaY *= scrollK;
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
-                                                                               x,
-                                                                               y,
-                                                                               deltaX,
-                                                                               deltaY,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, false));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -258,10 +236,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     bool isPressed = [theEvent type] == NSKeyDown;
 
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                             type,
-                                                                             key,
-                                                                             isRepeated));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, isRepeated));
 
     if ([theEvent type] == NSKeyDown)
     {
@@ -269,10 +244,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
         NSUInteger n = [chars length];
         if (n > 0)
         {
-            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                                   MainDispatcherEvent::KEY_CHAR,
-                                                                                   0,
-                                                                                   false);
+            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, false);
             for (NSUInteger i = 0; i < n; ++i)
             {
                 uint32 key = [chars characterAtIndex:i];

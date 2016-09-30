@@ -130,12 +130,12 @@ class WindowBackend::QtEventListener : public QObject
 {
 public:
     using TCallback = Function<void()>;
-    QtEventListener(const TCallback& triggered,
-                    const TCallback& destroyed,
+    QtEventListener(const TCallback& triggered_,
+                    const TCallback& destroyed_,
                     QObject* parent)
         : QObject(parent)
-        , triggered(triggered)
-        , destroyed(destroyed)
+        , triggered(triggered_)
+        , destroyed(destroyed_)
     {
     }
 
@@ -271,11 +271,7 @@ void WindowBackend::OnCreated()
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
     float32 dpi = renderWidget->devicePixelRatioF();
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                            w,
-                                                                            h,
-                                                                            dpi,
-                                                                            dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -299,11 +295,9 @@ void WindowBackend::OnFrame()
 
 void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                static_cast<float32>(width),
-                                                                                static_cast<float32>(height),
-                                                                                dpi,
-                                                                                dpi));
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
@@ -322,54 +316,36 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               MainDispatcherEvent::MOUSE_BUTTON_DOWN,
-                                                                               button,
-                                                                               x,
-                                                                               y,
-                                                                               1,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_UP;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               MainDispatcherEvent::MOUSE_BUTTON_UP,
-                                                                               button,
-                                                                               x,
-                                                                               y,
-                                                                               1,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
-                                                                              x,
-                                                                              y,
-                                                                              false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               MainDispatcherEvent::MOUSE_BUTTON_DOWN,
-                                                                               button,
-                                                                               x,
-                                                                               y,
-                                                                               2,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 2, false));
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
@@ -396,12 +372,7 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
         deltaX = delta.x();
         deltaY = delta.y();
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
-                                                                               x,
-                                                                               y,
-                                                                               deltaX,
-                                                                               deltaY,
-                                                                               false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, false));
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
@@ -426,17 +397,12 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
     }
 #endif
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                             MainDispatcherEvent::KEY_DOWN,
-                                                                             key,
-                                                                             qtEvent->isAutoRepeat()));
+    bool isRepeated = qtEvent->isAutoRepeat();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, isRepeated));
     QString text = qtEvent->text();
     if (!text.isEmpty())
     {
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                               MainDispatcherEvent::KEY_CHAR,
-                                                                               0,
-                                                                               qtEvent->isAutoRepeat());
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, isRepeated);
         for (int i = 0, n = text.size(); i < n; ++i)
         {
             QCharRef charRef = text[i];
@@ -468,10 +434,7 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
     }
 #endif
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window,
-                                                                             MainDispatcherEvent::KEY_UP,
-                                                                             key,
-                                                                             false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, false));
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)

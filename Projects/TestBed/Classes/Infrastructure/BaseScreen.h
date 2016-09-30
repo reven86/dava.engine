@@ -11,7 +11,7 @@ protected:
     }
 
 public:
-    BaseScreen(TestBed& app, const DAVA::String& screenName, DAVA::int32 skipBeforeTests = 10);
+    BaseScreen(TestBed& app, const DAVA::String& screenName);
 
     inline DAVA::int32 GetScreenId();
 
