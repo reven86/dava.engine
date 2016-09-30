@@ -373,7 +373,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
-	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp))
                      
@@ -402,6 +402,7 @@ LOCAL_WHOLE_STATIC_LIBRARIES := libInternalPart1
 
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
+                     $(wildcard $(LOCAL_PATH)/ModuleManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \

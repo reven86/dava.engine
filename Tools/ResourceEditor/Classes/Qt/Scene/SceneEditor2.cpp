@@ -147,6 +147,7 @@ SceneEditor2::SceneEditor2()
 SceneEditor2::~SceneEditor2()
 {
     RenderContextGuard guard;
+    commandStack.reset();
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
