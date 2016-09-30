@@ -31,14 +31,16 @@ public:
     ~LuaScript();
 
     /**
-     * \brief Load script from string and run it. Throw LuaException on error.
+     * \brief Load script from string, run it and return vector of results.
+     *        Throw LuaException on error.
      */
-    void RunString(const String& script);
+    Vector<Any> RunString(const String& script);
 
     /**
-     * \brief Load script from file and run it. Throw LuaException on error.
+     * \brief Load script from file, run it and return vector of results.
+     *        Throw LuaException on error.
      */
-    void RunFile(const FilePath& filepath);
+    Vector<Any> RunFile(const FilePath& filepath);
 
     /**
      * \brief Run main(...) function in loaded script with arguments
@@ -53,14 +55,15 @@ public:
     Vector<Any> RunFunction(const String& fName, const Vector<Any> args = {});
 
     /**
-     * \brief Load script from string and run it. Return false on error.
+     * \brief Load script from string, run it and return vector of results.
+     *        Return false on error.
      */
-    bool RunStringSafe(const String& script);
+    bool RunStringSafe(const String& script, Vector<Any>* results = nullptr);
 
     /**
-     * \brief Load script from file and run it. Return false on error.
+     * \brief Load script from file, run it and return vector of results. Return false on error.
      */
-    bool RunFileSafe(const FilePath& filepath);
+    bool RunFileSafe(const FilePath& filepath, Vector<Any>* results = nullptr);
 
     /**
      * \brief Run main(...) function in loaded script with arguments
@@ -74,6 +77,11 @@ public:
      */
     bool RunFunctionSafe(const String& fName, const Vector<Any> args = {}, Vector<Any>* results = nullptr);
 
+    /**
+     * \brief Set value to global table with name vName
+     */
+    void SetGlobalValue(const String& vName, const Any& value);
+
     //TODO:
     //  LuaScript CreateNewThread(); // Create new LuaScript object with lua_State is new thread of currect lua_State
 
@@ -81,6 +89,13 @@ private:
     // Lua state is non-copyable
     LuaScript(const LuaScript&) = delete;
     LuaScript& operator=(const LuaScript&) = delete;
+
+    /**
+     * \brief Pop (top - fromIndex) elements from stack and return they as
+     *        vector of Any.
+     *        Lua stack changes [-(top-fromIndex), +0, e]
+     */
+    Vector<Any> PopElementsFromStackToAny(int32 fromIndex);
 
     // Internal state
     ScriptState* state = nullptr;

@@ -77,6 +77,11 @@ void ScriptingTest::LoadResources()
     outputText = static_cast<UIStaticText*>(dialog->FindByName("OutputText"));
     timeText = static_cast<UIStaticText*>(dialog->FindByName("TimeText"));
 
+    scriptText->SetUtf8Text(demo_script);
+    intArgText->SetUtf8Text("42");
+    strArgText->SetUtf8Text("demoStr");
+    outputText->SetUtf8Text("");
+
     UIActionMap& amap = dialog->GetOrCreateComponent<UIActionBindingComponent>()->GetActionMap();
     amap.Put(FastName("LOAD_SCRIPT"), [&]() {
         try
@@ -109,7 +114,7 @@ void ScriptingTest::LoadResources()
             int32 count = int32(values.size());
             for (int32 i = 0; i < count; ++i)
             {
-                output += Format("%d) %s\n", i, values[i].GetType()->GetName());
+                output += Format("%d) %s\n", i, values[i].IsEmpty() ? "<empty>" : values[i].GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
         }
@@ -133,7 +138,7 @@ void ScriptingTest::LoadResources()
             int32 count = int32(values.size());
             for (int32 i = 0; i < count; ++i)
             {
-                output += Format("%d) %s\n", i, values[i].GetType()->GetName());
+                output += Format("%d) %s\n", i, values[i].IsEmpty() ? "<empty>" : values[i].GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
         }
@@ -148,6 +153,7 @@ void ScriptingTest::LoadResources()
     amap.Put(FastName("RESET_SCRIPT"), [&]() {
         SafeDelete(script);
         script = new LuaScript();
+        script->SetGlobalValue("GlobRef", objRef);
     });
     amap.Put(FastName("RUN_10000"), [&]() {
         try
@@ -172,13 +178,10 @@ void ScriptingTest::LoadResources()
         }
     });
 
-    script = new LuaScript();
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
     objRef = Reflection::Create(&demoObj).ref;
-    scriptText->SetUtf8Text(demo_script);
-    intArgText->SetUtf8Text("42");
-    strArgText->SetUtf8Text("demoStr");
-    outputText->SetUtf8Text("");
+    script = new LuaScript();
+    script->SetGlobalValue("GlobRef", objRef);
 }
 
 void ScriptingTest::UnloadResources()

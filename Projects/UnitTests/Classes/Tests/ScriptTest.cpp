@@ -31,7 +31,7 @@
 #include "Math/Color.h"
 #include "Math/MathDefines.h"
 #include "Reflection/Registrator.h"
-#include "Scripting/Script.h"
+#include "Scripting/LuaScript.h"
 
 struct ReflClass : public DAVA::ReflectedBase
 {
@@ -62,7 +62,6 @@ DAVA_TESTCLASS (ScriptTest)
     {
         ReflClass subcl;
         subcl.intVal = 10;
-
         ReflClass cl;
         cl.intVal = 5;
         cl.floatVal = 1.4f;
@@ -70,8 +69,11 @@ DAVA_TESTCLASS (ScriptTest)
         cl.stringVal = "Demo string";
         cl.colorVal = DAVA::Color::Black;
         cl.subClass = &subcl;
-
         DAVA::Reflection clRef = DAVA::Reflection::Create(&cl).ref;
+
+        DAVA::LuaScript s;
+
+        /* Valid test */
 
         const DAVA::String script = R"script(
 function main(context)
@@ -84,6 +86,10 @@ function main(context)
     assert(boolVal == true, "Test fail! context.boolVal " .. tostring(boolVal) .. " != true")
     local stringVal = context.stringVal
     assert(stringVal == "Demo string", "Test fail! context.stringVal '" .. stringVal .. "' != 'Demo string'")
+        
+    -- Get global value
+    intVal = GlobRef.intVal
+    assert(intVal == 5, "Test fail! context.intVal " .. intVal .. " != 5")
 
     local subClass = context.subClass
     intVal = subClass.intVal
@@ -108,13 +114,48 @@ function main(context)
 end
 )script";
 
-        DAVA::Script s;
-        TEST_VERIFY(s.LoadString(script));
-        TEST_VERIFY(s.Run(clRef));
+        s.SetGlobalValue("GlobRef", clRef);
+        TEST_VERIFY(s.RunStringSafe(script));
+        TEST_VERIFY(s.RunMainSafe({ clRef }));
         TEST_VERIFY(cl.intVal == 42);
         TEST_VERIFY(FLOAT_EQUAL(cl.floatVal, 3.14f));
         TEST_VERIFY(cl.boolVal == false);
         TEST_VERIFY(cl.stringVal == "New demo string");
         TEST_VERIFY(cl.colorVal == subcl.colorVal);
+
+        /* Run from string error */
+
+        const DAVA::String error_script = R"script(
+incorrect script
+)script";
+
+        try
+        {
+            s.RunString(error_script);
+            TEST_VERIFY(false);
+        }
+        catch (const DAVA::LuaException& e)
+        {
+            TEST_VERIFY(e.error_code() != 0);
+        }
+
+        /* Run main function error */
+
+        const DAVA::String error_script2 = R"script(
+function main()
+    undefined_function_call("test")
+end
+)script";
+
+        TEST_VERIFY(s.RunStringSafe(error_script2));
+        try
+        {
+            s.RunMain();
+            TEST_VERIFY(false);
+        }
+        catch (const DAVA::LuaException& e)
+        {
+            TEST_VERIFY(e.error_code() != 0);
+        }
     }
 };
