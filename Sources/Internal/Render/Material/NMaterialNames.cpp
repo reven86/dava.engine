@@ -197,6 +197,8 @@ Vector<FastName> RUNTIME_ONLY_FLAGS =
   NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING,
   NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR,
   NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR,
+
+  NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE,
 };
 
 bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
