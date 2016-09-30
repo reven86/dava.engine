@@ -146,8 +146,29 @@ Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
+    // WORKAROUND PART 1 BEGIN -->
+    // In off-screen rednering mode, when resizing webView on devices with
+    // screen scaling other than 1.0f it can be repaint with bad size (without taking into
+    // account that scale). Possible it is a CEF bug... or we don't understand how to
+    // use off-screen rendering right.
+    // But when we switch visibility off/on this cause CEF to invoke OnPaint with right sizes,
+    // so we can workaround this problem.
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(true);
+    }
+    // <--- WORKAROUND PART 1 END
+
     webPageRender->SetViewSize(rect.GetSize());
     cefBrowser->GetHost()->WasResized();
+
+    // WORKAROUND LAST PART 2 BEGIN -->
+    // See PART 1 description higher
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(false);
+    }
+    // <-- WORKAROUND PART 2 END
 }
 
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)

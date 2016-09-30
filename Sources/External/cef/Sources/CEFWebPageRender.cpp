@@ -123,6 +123,11 @@ void CEFWebPageRender::SetVisible(bool visibility)
     }
 }
 
+bool CEFWebPageRender::IsVisible() const
+{
+    return isVisible;
+}
+
 void CEFWebPageRender::SetBackgroundTransparency(bool value)
 {
     transparency = value;
