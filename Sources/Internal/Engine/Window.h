@@ -83,7 +83,7 @@ public:
     /// return true, if platform supported, otherwise false
     /// remarks: when focus lost, sets mouse visible in true
     ///
-    bool SetMouseVisibility(bool visibility);
+    bool SetMouseVisibility(bool visible);
 
 public:
     // Signals

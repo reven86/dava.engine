@@ -108,7 +108,6 @@ struct MainDispatcherEvent final
     ///     - TOUCH_MOVE
     struct TouchEvent
     {
-
         uint32 touchId;
         float32 x;
         float32 y;

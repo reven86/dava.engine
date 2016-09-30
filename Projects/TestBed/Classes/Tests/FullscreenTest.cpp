@@ -373,7 +373,6 @@ void FullscreenTest::UpdateMode()
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-    Logger::Info("!!!!!! phase = %d, typedevice = %d", (int)currentInput->phase, (int)currentInput->device);
     if (currentInput->device == UIEvent::Device::MOUSE)
     {
         Window* primWind = Engine::Instance()->PrimaryWindow();

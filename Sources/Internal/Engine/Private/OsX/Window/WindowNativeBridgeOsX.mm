@@ -378,7 +378,6 @@ void WindowNativeBridge::SetMouseVisibility(bool visible)
     }
 }
 
-
 void WindowNativeBridge::ChangeMouseVisibility(bool visible)
 {
     if (mouseVisible == visible)

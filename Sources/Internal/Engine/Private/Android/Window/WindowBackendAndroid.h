@@ -51,7 +51,6 @@ public:
     bool SetMouseVisibility(bool visible);
     // These methods are public intentionally as they are accessed from
     // extern "C" functions which are invoked by java
-
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);

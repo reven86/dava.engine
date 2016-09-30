@@ -230,7 +230,6 @@ void TestBed::RegisterTests()
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
-
     //$UNITTEST_CTOR
 }
 

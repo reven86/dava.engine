@@ -127,13 +127,14 @@ void WindowNativeBridge::ChangeMouseVisibility(bool visibility)
     mouseVisibled = visibility;
     using ::Windows::UI::Core::CoreCursor;
     using ::Windows::UI::Core::CoreCursorType;
+    using ::Windows::UI::Core::CoreWindow;
     if (visibility)
     {
-        ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
     }
     else
     {
-        ::Windows::UI::Core::CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
     }
 }
 
@@ -453,7 +454,6 @@ void WindowNativeBridge::InstallEventHandlers()
     using namespace ::Windows::UI::Core;
     using namespace ::Windows::UI::Xaml;
     using namespace ::Windows::UI::Xaml::Input;
-    using namespace ::Windows::Devices::Input;
     using namespace ::Windows::UI::Xaml::Controls;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;

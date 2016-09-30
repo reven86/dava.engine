@@ -61,10 +61,6 @@ Engine* Window::GetEngine() const
 
 void* Window::GetNativeHandle() const
 {
-    if (nullptr == windowBackend)
-    {
-        return nullptr;
-    }
     return windowBackend->GetHandle();
 }
 
@@ -88,9 +84,9 @@ bool Window::SetCaptureMode(eCaptureMode mode)
     return windowBackend->SetCaptureMode(mode);
 }
 
-bool Window::SetMouseVisibility(bool visibility)
+bool Window::SetMouseVisibility(bool visible)
 {
-    return windowBackend->SetMouseVisibility(visibility);
+    return windowBackend->SetMouseVisibility(visible);
 }
 
 void Window::Update(float32 frameDelta)
@@ -282,7 +278,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mouseEvent.isRelative;
+    uie.isRelative = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
@@ -312,7 +308,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mouseEvent.isRelative;
+    uie.isRelative = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
@@ -334,7 +330,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.relatival = e.mouseEvent.isRelative;
+    uie.isRelative = e.mouseEvent.isRelative;
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;

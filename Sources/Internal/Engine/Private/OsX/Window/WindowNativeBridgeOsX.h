@@ -82,8 +82,6 @@ private:
     void CreateOrUpdateTrackArea();
     void* GetOrCreateBlankCursor();
     void SetMouseVisibility(bool visible);
-    void SetMouseCaptured(bool capture);
-    bool DeferredMouseMode(const MainDispatcherEvent& e);
 
     //for using MouseEntered MouseExited events, set trackArea
     NSTrackingArea* trackingArea = nullptr;

@@ -28,10 +28,8 @@ uint32 DPIHelper::GetScreenDPI()
 #if defined(__DAVAENGINE_COREV2__)
     Window* w = Engine::Instance()->PrimaryWindow();
     void* nativeWindow = w != nullptr ? w->GetNativeHandle() : nullptr;
-#elif !defined(__DAVAENGINE_COREV2__)
-    void* nativeWindow = Core::Instance()->GetNativeWindow();
 #else
-    void* nativeWindow = Engine::Instance()->PrimaryWindow()->GetNativeHandle();
+    void* nativeWindow = Core::Instance()->GetNativeWindow();
 #endif
     if (nullptr != fn && nullptr != nativeWindow)
     {

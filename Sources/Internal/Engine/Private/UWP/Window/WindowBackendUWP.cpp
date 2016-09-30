@@ -110,7 +110,7 @@ bool WindowBackend::SetCaptureMode(eCaptureMode mode)
 {
     if (eCaptureMode::FRAME == mode)
     {
-        //for now, not supported
+        // not implemented
         return false;
     }
     UIDispatcherEvent e;
