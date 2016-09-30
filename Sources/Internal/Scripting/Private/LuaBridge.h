@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
-#include "Reflection/Reflection.h"
 
 extern "C"
 {
@@ -13,23 +12,31 @@ extern "C"
 
 namespace DAVA
 {
-namespace Lua
+namespace LuaBridge
 {
-int32 Dava_register(lua_State* state);
+/**
+ * \brief Register in lua_State new DV namespace with service functions
+ */
+void RegisterDava(lua_State* L);
 
-static const char* AnyTName = "Any";
-Any toAny(lua_State* state, int32 index);
-Any checkAny(lua_State* state, int32 index);
-Any* pushAny(lua_State* state, const Any& refl);
-int32 Any_register(lua_State* state);
+/**
+ * \brief Register in lua_State metatable for Any userdata type
+ */
+void RegisterAny(lua_State* L);
 
-static const char* ReflectionTName = "Reflection";
-Reflection toReflection(lua_State* state, int32 index);
-Reflection checkReflection(lua_State* state, int32 index);
-Reflection* pushReflection(lua_State* state, const Reflection& refl);
-int32 Reflection_register(lua_State* state);
+/**
+* \brief Register in lua_State metatable for Reflection userdata type
+*/
+void RegisterReflection(lua_State* L);
 
-std::pair<bool, Any> luaToAny(lua_State* state, int32 index);
-void anyToLua(lua_State* state, const Any& value);
+/**
+ * \brief Gets Lua variable from stack with index and convert it to Any
+ */
+Any luaToAny(lua_State* L, int32 index);
+
+/**
+ * \brief Push Any as Lua variable to stack
+ */
+void anyToLua(lua_State* L, const Any& value);
 }
 }

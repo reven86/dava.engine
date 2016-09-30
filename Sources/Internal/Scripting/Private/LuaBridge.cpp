@@ -1,30 +1,44 @@
 #include "LuaBridge.h"
+#include "Scripting/LuaException.h"
+#include "Reflection/Reflection.h"
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
-namespace Lua
+namespace LuaBridge
 {
-int32 DV_Logger_Debug(lua_State* state)
+/******************************************************************************/
+static const char* DavaNamespace = "DV";
+
+/**
+ * \brief Check and pop string variable from stack and print it to log.
+ * [-1, +0, v]
+ */
+int32 DV_Logger_Debug(lua_State* L)
 {
-    luaL_checktype(state, -1, LUA_TSTRING);
-    const char* msg = lua_tostring(state, -1);
+    luaL_checktype(L, -1, LUA_TSTRING);
+    const char* msg = lua_tostring(L, -1);
+    lua_pop(L, 1);
     Logger::Debug(msg);
-    lua_pop(state, 1);
     return 0;
 }
 
-int32 DV_Logger_Error(lua_State* state)
+/**
+ * \brief Check and pop string variable from stack and print it to log
+ * [-1, +0, v]
+ */
+int32 DV_Logger_Error(lua_State* L)
 {
-    luaL_checktype(state, -1, LUA_TSTRING);
-    const char* msg = lua_tostring(state, -1);
+    luaL_checktype(L, -1, LUA_TSTRING);
+    const char* msg = lua_tostring(L, -1);
     Logger::Error(msg);
-    lua_pop(state, 1);
+    lua_pop(L, 1);
     return 0;
 }
 
-int32 Dava_register(lua_State* state)
+void RegisterDava(lua_State* L)
 {
     static const struct luaL_reg davalib[] = {
         { "Debug", &DV_Logger_Debug },
@@ -32,66 +46,64 @@ int32 Dava_register(lua_State* state)
         { nullptr, nullptr }
     };
 
-    luaL_register(state, "DV", davalib);
-    lua_pop(state, 1);
-    return 1;
+    luaL_register(L, DavaNamespace, davalib);
+    lua_pop(L, 1);
 }
 
 /******************************************************************************/
+static const char* AnyTName = "Any";
 
-Any toAny(lua_State* state, int32 index)
+/**
+ * \brief Get userdata from stack with index and return it as Any. 
+ *        Return NULL if can't get.
+ * [-0, +0, -]
+ */
+Any lua_todvany(lua_State* L, int32 index)
 {
-    Any* pAny = static_cast<Any*>(lua_touserdata(state, index));
+    Any* pAny = static_cast<Any*>(lua_touserdata(L, index));
+    return *pAny;
+}
+
+/**
+ * \brief Get userdata from stack with index and return it as Any.
+ *        Throw lua_error on incorrect Lua type.
+ * [-0, +0, v]
+ */
+Any lua_checkdvany(lua_State* L, int32 index)
+{
+    luaL_checktype(L, index, LUA_TUSERDATA);
+    Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
     if (!pAny)
     {
-        luaL_typerror(state, index, AnyTName);
+        luaL_typerror(L, index, AnyTName);
     }
     return *pAny;
 }
 
-Any checkAny(lua_State* state, int32 index)
+/**
+ * \brief Push new userdata with Any metatable to top on the stack
+ * [-0, +1, -]
+ */
+void lua_pushdvany(lua_State* L, const Any& refl)
 {
-    luaL_checktype(state, index, LUA_TUSERDATA);
-    Any* pAny = static_cast<Any*>(luaL_checkudata(state, index, AnyTName));
-    if (!pAny)
-    {
-        luaL_typerror(state, index, AnyTName);
-    }
-    return *pAny;
-}
-
-Any* pushAny(lua_State* state, const Any& refl)
-{
-    Any* pAny = static_cast<Any*>(lua_newuserdata(state, sizeof(Any)));
+    Any* pAny = static_cast<Any*>(lua_newuserdata(L, sizeof(Any)));
     *pAny = refl;
-    luaL_getmetatable(state, AnyTName);
-    lua_setmetatable(state, -2);
-    return pAny;
+    luaL_getmetatable(L, AnyTName);
+    lua_setmetatable(L, -2);
 }
 
-int32 Any_gc(lua_State* state)
+int32 Any__tostring(lua_State* L)
 {
-    // TODO: need?
-    return 0;
-}
-
-int32 Any_tostring(lua_State* state)
-{
-    Any any = checkAny(state, 1);
-    void* pAny = lua_touserdata(state, 1);
-    lua_pushfstring(state, "Any: %s (%p)", any.GetType()->GetName(), pAny);
+    Any any = lua_checkdvany(L, 1);
+    void* pAny = lua_touserdata(L, 1);
+    lua_pushfstring(L, "Any: %s (%p)", any.GetType()->GetName(), pAny);
     return 1;
 }
 
-int32 Any_register(lua_State* state)
+void RegisterAny(lua_State* L)
 {
-    static const luaL_reg Any_methods[] = {
-        { nullptr, nullptr }
-    };
-
     static const luaL_reg Any_meta[] = {
-        { "__gc", &Any_gc }, // Userdata finalize code
-        { "__tostring", &Any_tostring }, // Control string representation
+        { "__tostring", &Any__tostring }, // Control string representation
         // { "__call",  }, // Treat a table like a function
         // { "__len",  }, // Control table length
         // { "__mode",  }, // Control weak references
@@ -109,215 +121,146 @@ int32 Any_register(lua_State* state)
         { nullptr, nullptr }
     };
 
-    luaL_openlib(state, AnyTName, Any_methods, 0);
-    luaL_newmetatable(state, AnyTName);
-    luaL_openlib(state, 0, Any_meta, 0);
-    lua_pushliteral(state, "__index"); // Hide index. __index = methods
-    lua_pushvalue(state, -3);
-    lua_rawset(state, -3);
-    lua_pushliteral(state, "__metatable"); // Hide metatable. __metatable = methods
-    lua_pushvalue(state, -3);
-    lua_rawset(state, -3);
-    lua_pop(state, 1);
-    return 1;
+    luaL_newmetatable(L, AnyTName);
+    luaL_register(L, 0, Any_meta);
+    lua_pop(L, 1);
 }
 
 /******************************************************************************/
+static const char* ReflectionTName = "Reflection";
 
-Reflection toReflection(lua_State* state, int32 index)
+Reflection lua_toreflection(lua_State* L, int32 index)
 {
-    Reflection* pRef = static_cast<Reflection*>(lua_touserdata(state, index));
+    Reflection* pRef = static_cast<Reflection*>(lua_touserdata(L, index));
     if (!pRef)
     {
-        luaL_typerror(state, index, ReflectionTName);
+        luaL_typerror(L, index, ReflectionTName);
     }
     return *pRef;
 }
 
-Reflection checkReflection(lua_State* state, int32 index)
+Reflection lua_checkreflection(lua_State* L, int32 index)
 {
-    luaL_checktype(state, index, LUA_TUSERDATA);
-    Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(state, index, ReflectionTName));
+    luaL_checktype(L, index, LUA_TUSERDATA);
+    Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
     if (!pRef)
     {
-        luaL_typerror(state, index, ReflectionTName);
+        luaL_typerror(L, index, ReflectionTName);
     }
     return *pRef;
 }
 
-Reflection* pushReflection(lua_State* state, const Reflection& refl)
+void lua_pushreflection(lua_State* L, const Reflection& refl)
 {
-    Reflection* pRef = static_cast<Reflection*>(lua_newuserdata(state, sizeof(Reflection)));
+    Reflection* pRef = static_cast<Reflection*>(lua_newuserdata(L, sizeof(Reflection)));
     *pRef = refl;
-    luaL_getmetatable(state, ReflectionTName);
-    lua_setmetatable(state, -2);
-    return pRef;
+    luaL_getmetatable(L, ReflectionTName);
+    lua_setmetatable(L, -2);
 }
 
-int32 Reflection_gc(lua_State* state)
+int32 Reflection__tostring(lua_State* L)
 {
-    // TODO: need?
-    return 0;
-}
-
-int32 Reflection_tostring(lua_State* state)
-{
-    Reflection refl = checkReflection(state, 1);
-    void* pRef = lua_touserdata(state, 1);
-    lua_pushfstring(state, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
+    Reflection refl = lua_checkreflection(L, 1);
+    void* pRef = lua_touserdata(L, 1);
+    lua_pushfstring(L, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
     return 1;
 }
 
-int32 Reflection_index(lua_State* state)
+int32 Reflection__index(lua_State* L)
 {
-    Reflection self = checkReflection(state, 1);
+    Reflection self = lua_checkreflection(L, 1);
 
     Any name;
-    int ltype = lua_type(state, 2);
+    int ltype = lua_type(L, 2);
     switch (ltype)
     {
     case LUA_TNUMBER:
-        name.Set(size_t(lua_tointeger(state, 2)) - 1); // -1 because in Lua first item in array has index 1
+        name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
-        name.Set(String(lua_tostring(state, 2)));
+        name.Set(String(lua_tostring(L, 2)));
         break;
     default:
-        return luaL_error(state, "Wrong key type %d!", ltype);
+        return luaL_error(L, "Wrong key type %d!", ltype);
     }
 
     Reflection refl = self.GetField(name).ref;
     if (!refl.IsValid())
     {
-        lua_pushnil(state);
+        lua_pushnil(L);
         return 1;
     }
 
     if (refl.HasFields() || refl.HasMethods())
     {
-        pushReflection(state, refl);
+        lua_pushreflection(L, refl);
         return 1;
     }
 
-    Any value = refl.GetValue();
-    if (value.CanGet<int32>())
-    {
-        lua_pushinteger(state, value.Get<int32>());
-    }
-    else if (value.CanGet<int16>())
-    {
-        lua_pushinteger(state, value.Get<int16>());
-    }
-    else if (value.CanGet<int8>())
-    {
-        lua_pushinteger(state, value.Get<int8>());
-    }
-    else if (value.CanGet<float64>())
-    {
-        lua_pushnumber(state, value.Get<float64>());
-    }
-    else if (value.CanGet<float32>())
-    {
-        lua_pushnumber(state, value.Get<float32>());
-    }
-    else if (value.CanGet<String>())
-    {
-        const String& res = value.Get<String>();
-        lua_pushlstring(state, res.c_str(), res.length());
-    }
-    else if (value.CanGet<WideString>())
-    {
-        const WideString& res = value.Get<WideString>();
-        const String& utf = UTF8Utils::EncodeToUTF8(res);
-        lua_pushlstring(state, utf.c_str(), res.length());
-    }
-    else if (value.CanGet<bool>())
-    {
-        lua_pushboolean(state, value.Get<bool>());
-    }
-    else // unknown type
-    {
-        pushAny(state, value);
-    }
+    anyToLua(L, refl.GetValue());
     return 1;
 }
 
-int32 Reflection_newindex(lua_State* state)
+int32 Reflection__newindex(lua_State* L)
 {
-    Reflection self = checkReflection(state, 1);
+    Reflection self = lua_checkreflection(L, 1);
 
     Any name;
-    int ltype = lua_type(state, 2);
+    int ltype = lua_type(L, 2);
     switch (ltype)
     {
     case LUA_TNUMBER:
-        name.Set(size_t(lua_tointeger(state, 2)) - 1); // -1 because in Lua first item in array has index 1
+        name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
-        name.Set(String(lua_tostring(state, 2)));
+        name.Set(String(lua_tostring(L, 2)));
         break;
     default:
-        return luaL_error(state, "Wrong key type %d!", ltype);
+        return luaL_error(L, "Wrong key type %d!", ltype);
     }
 
     Reflection refl = self.GetField(name).ref;
     if (refl.IsValid())
     {
-        Any value;
-        int ltype = lua_type(state, 3);
-        switch (ltype)
+        try
         {
-        case LUA_TBOOLEAN:
-            value.Set(bool(lua_toboolean(state, 3) != 0));
-            break;
-        case LUA_TNUMBER:
-            value.Set(float64(lua_tonumber(state, 3)));
-            break;
-        case LUA_TSTRING:
-            value.Set(String(lua_tolstring(state, 3, nullptr)));
-            break;
-        case LUA_TUSERDATA:
-            value = checkAny(state, 3);
-            break;
-        case LUA_TNIL:
-        case LUA_TLIGHTUSERDATA:
-        case LUA_TTABLE:
-        case LUA_TFUNCTION:
-        case LUA_TTHREAD:
-        default:
-            return luaL_error(state, "Wrong input type!");
-        }
+            Any value = luaToAny(L, 3);
 
-        // Cast-HACK
-        if (value.GetType() == Type::Instance<float64>())
-        {
-            float64 rawValue = value.Get<float64>();
-            if (refl.GetValueType() == Type::Instance<int32>())
+            // Cast-HACK
+            if (value.GetType() == Type::Instance<float64>())
             {
-                refl.SetValue(Any(static_cast<int32>(rawValue)));
+                float64 rawValue = value.Get<float64>();
+                if (refl.GetValueType() == Type::Instance<int32>())
+                {
+                    refl.SetValue(Any(static_cast<int32>(rawValue)));
+                }
+                else if (refl.GetValueType() == Type::Instance<int16>())
+                {
+                    refl.SetValue(Any(static_cast<int16>(rawValue)));
+                }
+                else if (refl.GetValueType() == Type::Instance<int8>())
+                {
+                    refl.SetValue(Any(static_cast<int8>(rawValue)));
+                }
+                else if (refl.GetValueType() == Type::Instance<float32>())
+                {
+                    refl.SetValue(Any(static_cast<float32>(rawValue)));
+                }
             }
-            else if (refl.GetValueType() == Type::Instance<int16>())
+            else if (value.GetType() == Type::Instance<String>() &&
+                     refl.GetValueType() == Type::Instance<WideString>())
             {
-                refl.SetValue(Any(static_cast<int16>(rawValue)));
+                const WideString& wstr = UTF8Utils::EncodeToWideString(value.Get<String>());
+                refl.SetValue(Any(wstr));
             }
-            else if (refl.GetValueType() == Type::Instance<int8>())
+            else
             {
-                refl.SetValue(Any(static_cast<int8>(rawValue)));
-            }
-            else if (refl.GetValueType() == Type::Instance<float32>())
-            {
-                refl.SetValue(Any(static_cast<float32>(rawValue)));
+                refl.SetValue(value);
             }
         }
-        else if (value.GetType() == Type::Instance<String>() &&
-                 refl.GetValueType() == Type::Instance<WideString>())
+        catch (const LuaException& e)
         {
-            const WideString& wstr = UTF8Utils::EncodeToWideString(value.Get<String>());
-            refl.SetValue(Any(wstr));
-        }
-        else
-        {
-            refl.SetValue(value);
+            return luaL_error(L, e.what());
         }
 
         return 0;
@@ -326,78 +269,103 @@ int32 Reflection_newindex(lua_State* state)
     return 0;
 }
 
-int32 Reflection_len(lua_State* state)
-{
-    Reflection self = checkReflection(state, 1);
-    lua_pushinteger(state, self.GetFields().size());
-    return 1;
-}
-
-int32 Reflection_register(lua_State* state)
+void RegisterReflection(lua_State* L)
 {
     static const luaL_reg Reflection_meta[] = {
-        { "__gc", &Reflection_gc },
-        { "__tostring", &Reflection_tostring },
-        { "__index", &Reflection_index },
-        { "__newindex", &Reflection_newindex },
-        { "__len", &Reflection_len },
+        { "__tostring", &Reflection__tostring },
+        { "__index", &Reflection__index },
+        { "__newindex", &Reflection__newindex },
         { nullptr, nullptr }
     };
 
-    luaL_newmetatable(state, ReflectionTName);
-    luaL_register(state, 0, Reflection_meta);
-    lua_pop(state, 1);
-    return 1;
+    luaL_newmetatable(L, ReflectionTName);
+    luaL_register(L, 0, Reflection_meta);
+    lua_pop(L, 1);
 }
 
-std::pair<bool, Any> luaToAny(lua_State* state, int32 index)
+/******************************************************************************/
+Any luaToAny(lua_State* L, int32 index)
 {
-    std::pair<bool, Any> res;
-    res.first = true;
-    int ltype = lua_type(state, index);
+    int ltype = lua_type(L, index);
     switch (ltype)
     {
-    case LUA_TBOOLEAN:
-        res.second.Set(bool(lua_toboolean(state, index) != 0));
-        break;
-    case LUA_TNUMBER:
-        res.second.Set(float64(lua_tonumber(state, index)));
-        break;
-    case LUA_TSTRING:
-        res.second.Set(String(lua_tolstring(state, index, nullptr)));
-        break;
-    case LUA_TUSERDATA:
-    {
-        void* ud = nullptr;
-        if (ud = luaL_checkudata(state, index, AnyTName))
-        {
-            res.second = *static_cast<Any*>(ud);
-        }
-        else if (ud = luaL_checkudata(state, index, ReflectionTName))
-        {
-            res.second = *static_cast<Reflection*>(ud);
-        }
-        else
-        {
-            res.first = false;
-        }
-    }
-    break;
     case LUA_TNIL:
-        res.second.Clear();
-        break;
+        return Any();
+    case LUA_TBOOLEAN:
+        return Any(bool(lua_toboolean(L, index) != 0));
+    case LUA_TNUMBER:
+        return Any(float64(lua_tonumber(L, index)));
+    case LUA_TSTRING:
+        return Any(String(lua_tolstring(L, index, nullptr)));
+    case LUA_TUSERDATA:
+        if (void* ud = luaL_checkudata(L, index, AnyTName))
+        {
+            return Any(*static_cast<Any*>(ud));
+        }
+        else if (void* ud = luaL_checkudata(L, index, ReflectionTName))
+        {
+            return Any(*static_cast<Reflection*>(ud));
+        }
+        throw LuaException(ltype, "Unknown userdata type!");
     case LUA_TLIGHTUSERDATA:
     case LUA_TTABLE:
     case LUA_TFUNCTION:
     case LUA_TTHREAD:
     default:
-        res.first = false;
+        throw LuaException(ltype, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
     }
-    return res;
 }
 
-void anyToLua(lua_State* state, const Any& value)
+void anyToLua(lua_State* L, const Any& value)
 {
+    if (value.CanGet<int32>())
+    {
+        lua_pushinteger(L, value.Get<int32>());
+    }
+    else if (value.CanGet<int16>())
+    {
+        lua_pushinteger(L, value.Get<int16>());
+    }
+    else if (value.CanGet<int8>())
+    {
+        lua_pushinteger(L, value.Get<int8>());
+    }
+    else if (value.CanGet<float64>())
+    {
+        lua_pushnumber(L, value.Get<float64>());
+    }
+    else if (value.CanGet<float32>())
+    {
+        lua_pushnumber(L, value.Get<float32>());
+    }
+    else if (value.CanGet<const char*>())
+    {
+        const char* res = value.Get<const char*>();
+        lua_pushlstring(L, res, strlen(res));
+    }
+    else if (value.CanGet<String>())
+    {
+        const String& res = value.Get<String>();
+        lua_pushlstring(L, res.c_str(), res.length());
+    }
+    else if (value.CanGet<WideString>())
+    {
+        const WideString& res = value.Get<WideString>();
+        const String& utf = UTF8Utils::EncodeToUTF8(res);
+        lua_pushlstring(L, utf.c_str(), res.length());
+    }
+    else if (value.CanGet<bool>())
+    {
+        lua_pushboolean(L, value.Get<bool>());
+    }
+    else if (value.CanGet<Reflection>())
+    {
+        lua_pushreflection(L, value.Get<Reflection>());
+    }
+    else // unknown type, push as is
+    {
+        lua_pushdvany(L, value);
+    }
 }
 }
 }
