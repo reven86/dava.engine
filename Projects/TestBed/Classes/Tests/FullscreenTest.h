@@ -42,5 +42,5 @@ private:
 
     bool mouseCaptured = false;
     bool mouseVisible = true;
-    bool isInit = false;
+    DAVA::SigConnectionID focusChangedId = DAVA::SigConnectionID();
 };

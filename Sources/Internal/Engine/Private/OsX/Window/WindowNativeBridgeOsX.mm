@@ -49,6 +49,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
+    [nswindow setAcceptsMouseMovedEvents:YES];
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
@@ -218,13 +219,18 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
     }
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
-
+    bool isRelative = (captureMode == eCaptureMode::PINNING);
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
+    if (isRelative)
+    {
+        x = [theEvent deltaX];
+        y = [theEvent deltaY];
+    }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
                                                                               x,
                                                                               y,
-                                                                              (captureMode == eCaptureMode::PINNING)));
+                                                                              isRelative));
 }
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)

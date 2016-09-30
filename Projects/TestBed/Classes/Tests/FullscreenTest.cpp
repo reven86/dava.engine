@@ -14,11 +14,8 @@ FullscreenTest::FullscreenTest(TestBed& app)
 
 void FullscreenTest::LoadResources()
 {
-    if (!isInit)
-    {
-        isInit = true;
-        Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
-    }
+    focusChangedId = Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
+
     BaseScreen::LoadResources();
 
     GetBackground()->SetColor(Color::White);
@@ -189,6 +186,8 @@ void FullscreenTest::LoadResources()
 
 void FullscreenTest::UnloadResources()
 {
+    Engine::Instance()->PrimaryWindow()->focusChanged.Disconnect(focusChangedId);
+
     if (ui3dview->GetScene())
     {
         ui3dview->GetScene()->RemoveSystem(rotationControllerSystem);
@@ -374,6 +373,7 @@ void FullscreenTest::UpdateMode()
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
+    Logger::Info("!!!!!! phase = %d, typedevice = %d", (int)currentInput->phase, (int)currentInput->device);
     if (currentInput->device == UIEvent::Device::MOUSE)
     {
         Window* primWind = Engine::Instance()->PrimaryWindow();
