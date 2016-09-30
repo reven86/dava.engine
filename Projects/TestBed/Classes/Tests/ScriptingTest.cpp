@@ -89,7 +89,7 @@ function main(arg1, arg2, arg3, arg4)
     DV.Debug(type(arg2).." > "..tostring(arg2))
     DV.Debug(type(arg3).." > "..tostring(arg3))
     DV.Debug(type(arg4).." > "..tostring(arg4))
-    return arg1, arg2, arg3, {arg4}
+    return arg1, arg2, arg3, arg4
 end
 
 )script";
@@ -112,7 +112,7 @@ void ScriptingTest::LoadResources()
     {
         LuaScript s;
         s.RunString(sss);
-        Vector<Any> res = s.RunMain({ 1, "String", false, 16.5f });
+        Vector<Any> res = s.RunMain({ 1, "String", false, objRef });
 
         for (Any& val : res)
         {
@@ -121,16 +121,8 @@ void ScriptingTest::LoadResources()
     }
     catch (const LuaException& e)
     {
-        DAVA::Logger::Debug("LuaException: %d, %s", e.error_code(), e.what());
+        DAVA::Logger::Debug("LuaException: %s", e.what());
     }
-
-    {
-        LuaScript s;
-        bool res = s.RunStringSafe(sss);
-        res = s.RunMainSafe({ 1, "String", false, 16.5f }, nullptr);
-    }
-
-    DAVA::Logger::Debug("CPP: obj.v[3] == %d", obj.v[3]);
 }
 
 void ScriptingTest::UnloadResources()

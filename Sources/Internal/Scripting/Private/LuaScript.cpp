@@ -69,7 +69,7 @@ void LuaScript::RunFile(const FilePath& filepath)
 
 Vector<Any> LuaScript::RunMain(const Vector<Any> args)
 {
-    return RunFunction(mainFuctionName);
+    return RunFunction(mainFuctionName, args);
 }
 
 Vector<Any> LuaScript::RunFunction(const String& fName, const Vector<Any> args)

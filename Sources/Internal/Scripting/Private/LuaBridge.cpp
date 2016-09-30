@@ -215,7 +215,7 @@ int32 Reflection__index(lua_State* L)
         name.Set(String(lua_tostring(L, 2)));
         break;
     default:
-        return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(ltype));
+        return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
     Reflection refl = self.GetField(name).ref;
@@ -337,6 +337,7 @@ Any luaToAny(lua_State* L, int32 index)
     case LUA_TSTRING:
         return Any(String(lua_tolstring(L, index, nullptr)));
     case LUA_TUSERDATA:
+
         if (void* ud = luaL_checkudata(L, index, AnyTName))
         {
             return Any(*static_cast<Any*>(ud));
