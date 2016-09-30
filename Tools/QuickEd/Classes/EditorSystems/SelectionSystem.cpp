@@ -251,22 +251,27 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
         if (!sizes.empty())
         {
             const std::pair<ControlNode*, Vector2> lastNodeSize = sizes.back();
-            Vector2 sizeDiff = size - lastNodeSize.second;
+            Vector2 previousSize = lastNodeSize.second;
+
             ControlNode* previousNode = lastNodeSize.first;
             //not toplevel node or it hierarchy. We don't search in background nodes
             if (topLevelItemHierarchy.find(previousNode) == topLevelItemHierarchy.end())
             {
                 break;
             }
-            if (sizeDiff.dx > 300.0f || sizeDiff.dx > 300.0f
-                || sizeDiff.dx > 100.0f && sizeDiff.dy > 100.0f)
+            if ((size.dx / previousSize.dx > 3.0f && size.dx - previousSize.dx > 30.0f)
+                || (size.dy / previousSize.dy > 3.0f && size.dy - previousSize.dy > 30.0f)
+                || size.dx - previousSize.dx > 200.0f || size.dy - previousSize.dy > 200.0f)
             {
                 Logger::Debug("found common of selected %s with size %f %f - %s with size %f %f",
                               node->GetName().c_str(), size.x, size.y, previousNode->GetName().c_str(), lastNodeSize.second.x, lastNodeSize.second.y);
                 return previousNode;
             }
         }
-        sizes.push_back(std::make_pair(node, size));
+        if (size.dx > 0.0f && size.dy > 0.0f)
+        {
+            sizes.push_back(std::make_pair(node, size));
+        }
     }
     return nullptr;
 }
@@ -277,6 +282,7 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
     {
         nearest = !nearest;
     }
+
     auto findPredicate = [point](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
