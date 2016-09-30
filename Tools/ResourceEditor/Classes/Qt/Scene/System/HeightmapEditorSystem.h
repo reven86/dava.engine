@@ -81,8 +81,7 @@ protected:
     DAVA::Rect GetHeightmapUpdatedRect();
 
     void StoreOriginalHeightmap();
-
-    void FinishEditing(bool applyModification = true);
+    void FinishEditing(bool applyModification);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

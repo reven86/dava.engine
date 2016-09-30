@@ -50,7 +50,7 @@ private:
     DAVA::String GetRelativePathToProjectPath(const DAVA::FilePath& absolutePath);
     DAVA::FilePath GetAbsolutePathFromProjectPath(const DAVA::String& relativePath);
 
-    void FinishEditing(bool applyModification = true);
+    void FinishEditing(bool applyModification);
 
     std::unique_ptr<DAVA::Command> CreateSaveFileNameCommand(const DAVA::String& filePath);
 

@@ -161,7 +161,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
             break;
 
         case DAVA::UIEvent::Phase::ENDED:
-            FinishEditing();
+            FinishEditing(true);
             break;
 
         default:
@@ -170,7 +170,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
     }
 }
 
-void CustomColorsSystem::FinishEditing(bool applyModification /*= true*/)
+void CustomColorsSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)
     {

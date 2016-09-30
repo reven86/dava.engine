@@ -158,7 +158,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
             break;
 
         case DAVA::UIEvent::Phase::ENDED:
-            FinishEditing();
+            FinishEditing(true);
             break;
 
         default:
@@ -167,7 +167,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
     }
 }
 
-void HeightmapEditorSystem::FinishEditing(bool applyModification /*= true*/)
+void HeightmapEditorSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)
     {
