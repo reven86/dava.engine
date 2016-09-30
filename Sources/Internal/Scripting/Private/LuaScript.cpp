@@ -44,16 +44,12 @@ void LuaScript::RunString(const String& script)
     int32 res = luaL_loadstring(state->lua, script.c_str()); // stack +1: script chunk
     if (res != 0)
     {
-        const char* errmsg = lua_tostring(state->lua, -1);
-        lua_pop(state->lua, 1); // stack -1
-        throw LuaException(res, errmsg);
+        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
     }
     res = lua_pcall(state->lua, 0, 0, 0); // stack -1: run function/chunk on stack top and pop it
     if (res != 0)
     {
-        const char* errmsg = lua_tostring(state->lua, -1);
-        lua_pop(state->lua, 1); // stack -1
-        throw LuaException(res, errmsg);
+        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
     }
 }
 
@@ -62,16 +58,12 @@ void LuaScript::RunFile(const FilePath& filepath)
     int32 res = luaL_loadfile(state->lua, filepath.GetAbsolutePathname().c_str()); // stack +1: script chunk
     if (res != 0)
     {
-        const char* errmsg = lua_tostring(state->lua, -1);
-        lua_pop(state->lua, 1); // stack -1
-        throw LuaException(res, errmsg);
+        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
     }
     res = lua_pcall(state->lua, 0, 0, 0); // stack -1: run function/chunk on stack top and pop it
     if (res != 0)
     {
-        const char* errmsg = lua_tostring(state->lua, -1);
-        lua_pop(state->lua, 1); // stack -1
-        throw LuaException(res, errmsg);
+        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
     }
 }
 
@@ -93,9 +85,7 @@ Vector<Any> LuaScript::RunFunction(const String& fName, const Vector<Any> args)
     int32 res = lua_pcall(state->lua, count, LUA_MULTRET, 0); // stack -(count+1), +nresults: return value or error message
     if (res != 0)
     {
-        const char* errmsg = lua_tostring(state->lua, -1);
-        lua_pop(state->lua, 1); // stack -1
-        throw LuaException(res, errmsg);
+        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
     }
 
     int32 endTop = lua_gettop(state->lua); // store current stack size

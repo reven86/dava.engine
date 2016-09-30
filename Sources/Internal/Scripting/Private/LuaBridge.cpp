@@ -10,13 +10,17 @@ namespace DAVA
 namespace LuaBridge
 {
 /******************************************************************************/
+
+/**
+ * \brief Lua global table name for Dava service functions
+ */
 static const char* DavaNamespace = "DV";
 
 /**
  * \brief Check and pop string variable from stack and print it to log.
- * [-1, +0, v]
+ *        Lua stack changes [-1, +0, v]
  */
-int32 DV_Logger_Debug(lua_State* L)
+int32 DV_Debug(lua_State* L)
 {
     luaL_checktype(L, -1, LUA_TSTRING);
     const char* msg = lua_tostring(L, -1);
@@ -26,10 +30,10 @@ int32 DV_Logger_Debug(lua_State* L)
 }
 
 /**
- * \brief Check and pop string variable from stack and print it to log
- * [-1, +0, v]
+ * \brief Check and pop string variable from stack and print it to log.
+ *        Lua stack changes [-1, +0, v]
  */
-int32 DV_Logger_Error(lua_State* L)
+int32 DV_Error(lua_State* L)
 {
     luaL_checktype(L, -1, LUA_TSTRING);
     const char* msg = lua_tostring(L, -1);
@@ -41,8 +45,8 @@ int32 DV_Logger_Error(lua_State* L)
 void RegisterDava(lua_State* L)
 {
     static const struct luaL_reg davalib[] = {
-        { "Debug", &DV_Logger_Debug },
-        { "Error", &DV_Logger_Error },
+        { "Debug", &DV_Debug },
+        { "Error", &DV_Error },
         { nullptr, nullptr }
     };
 
@@ -51,12 +55,16 @@ void RegisterDava(lua_State* L)
 }
 
 /******************************************************************************/
-static const char* AnyTName = "Any";
+
+/**
+ * \brief Any metatable type name
+ */
+static const char* AnyTName = "AnyT";
 
 /**
  * \brief Get userdata from stack with index and return it as Any. 
  *        Return NULL if can't get.
- * [-0, +0, -]
+ *        Lua stack changes [-0, +0, -]
  */
 Any lua_todvany(lua_State* L, int32 index)
 {
@@ -65,9 +73,9 @@ Any lua_todvany(lua_State* L, int32 index)
 }
 
 /**
- * \brief Get userdata from stack with index and return it as Any.
+ * \brief Check and get userdata from stack with index and return it as Any.
  *        Throw lua_error on incorrect Lua type.
- * [-0, +0, v]
+ *        Lua stack changes [-0, +0, v]
  */
 Any lua_checkdvany(lua_State* L, int32 index)
 {
@@ -81,8 +89,8 @@ Any lua_checkdvany(lua_State* L, int32 index)
 }
 
 /**
- * \brief Push new userdata with Any metatable to top on the stack
- * [-0, +1, -]
+ * \brief Push new userdata with Any metatable to top on the stack.
+ *        Lua stack changes [-0, +1, -]
  */
 void lua_pushdvany(lua_State* L, const Any& refl)
 {
@@ -92,6 +100,10 @@ void lua_pushdvany(lua_State* L, const Any& refl)
     lua_setmetatable(L, -2);
 }
 
+/**
+ * \brief Metamethod for presentation Any as string.
+ *        Lua stack changes [-0, +1, -]
+ */
 int32 Any__tostring(lua_State* L)
 {
     Any any = lua_checkdvany(L, 1);
@@ -127,19 +139,29 @@ void RegisterAny(lua_State* L)
 }
 
 /******************************************************************************/
-static const char* ReflectionTName = "Reflection";
 
-Reflection lua_toreflection(lua_State* L, int32 index)
+/**
+ * \brief Reflection metatable type name
+ */
+static const char* ReflectionTName = "ReflectionT";
+
+/**
+ * \brief Get userdata from stack with index and return it as Reflection. 
+ *        Return NULL if can't get.
+ *        Lua stack changes [-0, +0, -]
+ */
+Reflection lua_todvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(lua_touserdata(L, index));
-    if (!pRef)
-    {
-        luaL_typerror(L, index, ReflectionTName);
-    }
     return *pRef;
 }
 
-Reflection lua_checkreflection(lua_State* L, int32 index)
+/**
+ * \brief Check and get userdata from stack with index and return it as Reflection.
+ *        Throw lua_error on incorrect Lua type.
+ *        Lua stack changes [-0, +0, v]
+ */
+Reflection lua_checkdvreflection(lua_State* L, int32 index)
 {
     luaL_checktype(L, index, LUA_TUSERDATA);
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
@@ -150,7 +172,11 @@ Reflection lua_checkreflection(lua_State* L, int32 index)
     return *pRef;
 }
 
-void lua_pushreflection(lua_State* L, const Reflection& refl)
+/**
+ * \brief Push new userdata with Reflection metatable to top on the stack.
+ *        Lua stack changes [-0, +1, -]
+ */
+void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
     Reflection* pRef = static_cast<Reflection*>(lua_newuserdata(L, sizeof(Reflection)));
     *pRef = refl;
@@ -158,17 +184,25 @@ void lua_pushreflection(lua_State* L, const Reflection& refl)
     lua_setmetatable(L, -2);
 }
 
+/**
+ * \brief Metamethod for presentation Any as string.
+ *        Lua stack changes [-0, +1, -]
+ */
 int32 Reflection__tostring(lua_State* L)
 {
-    Reflection refl = lua_checkreflection(L, 1);
+    Reflection refl = lua_checkdvreflection(L, 1);
     void* pRef = lua_touserdata(L, 1);
     lua_pushfstring(L, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
     return 1;
 }
 
+/**
+ * \brief Metamethod for getting element from Reflection userdata object.
+ *        Lua stack changes [-0, +1, v]
+ */
 int32 Reflection__index(lua_State* L)
 {
-    Reflection self = lua_checkreflection(L, 1);
+    Reflection self = lua_checkdvreflection(L, 1);
 
     Any name;
     int ltype = lua_type(L, 2);
@@ -181,7 +215,7 @@ int32 Reflection__index(lua_State* L)
         name.Set(String(lua_tostring(L, 2)));
         break;
     default:
-        return luaL_error(L, "Wrong key type %d!", ltype);
+        return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(ltype));
     }
 
     Reflection refl = self.GetField(name).ref;
@@ -193,7 +227,7 @@ int32 Reflection__index(lua_State* L)
 
     if (refl.HasFields() || refl.HasMethods())
     {
-        lua_pushreflection(L, refl);
+        lua_pushdvreflection(L, refl);
         return 1;
     }
 
@@ -201,9 +235,13 @@ int32 Reflection__index(lua_State* L)
     return 1;
 }
 
+/**
+ * \brief Metamethod for setting value to Reflection userdata object.
+ *        Lua stack changes [-0, +0, v]
+ */
 int32 Reflection__newindex(lua_State* L)
 {
-    Reflection self = lua_checkreflection(L, 1);
+    Reflection self = lua_checkdvreflection(L, 1);
 
     Any name;
     int ltype = lua_type(L, 2);
@@ -284,6 +322,7 @@ void RegisterReflection(lua_State* L)
 }
 
 /******************************************************************************/
+
 Any luaToAny(lua_State* L, int32 index)
 {
     int ltype = lua_type(L, index);
@@ -360,12 +399,23 @@ void anyToLua(lua_State* L, const Any& value)
     }
     else if (value.CanGet<Reflection>())
     {
-        lua_pushreflection(L, value.Get<Reflection>());
+        lua_pushdvreflection(L, value.Get<Reflection>());
     }
     else // unknown type, push as is
     {
         lua_pushdvany(L, value);
     }
+}
+
+String PopString(lua_State* L)
+{
+    String msg;
+    if (lua_gettop(L) > 0)
+    {
+        msg = lua_tostring(L, -1);
+        lua_pop(L, 1); // stack -1
+    }
+    return msg;
 }
 }
 }

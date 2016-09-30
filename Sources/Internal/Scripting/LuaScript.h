@@ -12,7 +12,7 @@ struct ScriptState;
 /**
  * \brief Class for Lua script.
  */
-class LuaScript
+class LuaScript final
 {
 public:
     /**
