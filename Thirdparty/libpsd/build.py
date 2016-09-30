@@ -9,7 +9,10 @@ def get_supported_targets_for_build_platform(platform):
 		return ['macos']
 
 def get_dependencies_for_target(target):
-	return []
+	if target =='win32':
+		return ['zlib']
+	else:
+		return []
 
 def get_supported_build_platforms():
 	return ['win32', 'darwin']
@@ -55,3 +58,23 @@ def _build_macos(working_directory_path, root_project_path):
 	_copy_headers(source_folder_path, root_project_path)
 
 	return True
+
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
+
+	cmake_flags =  [ '-DZLIB_INCLUDE_DIR=' + os.path.join(working_directory_path, '../zlib/zlib_source/') ]
+	build_utils.build_and_copy_libraries_win32_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'psd.sln', 'psd',
+		'psd.lib', 'psd.lib',
+		'libpsd.lib', 'libpsd.lib',
+		'libpsd.lib', 'libpsd.lib')
+
+	_copy_headers(source_folder_path, root_project_path)
+
+	return True
+
+def _copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/libpsd')
+	build_utils.copy_files(os.path.join(source_folder_path, 'include'), include_path, '*.h')

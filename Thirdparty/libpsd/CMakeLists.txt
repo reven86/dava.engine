@@ -3,6 +3,11 @@ project(psd)
 
 include_directories(./include)
 
+if(WIN32)
+  find_package(ZLIB)
+  include_directories(${ZLIB_INCLUDE_DIR})
+endif()
+
 FILE(GLOB SOURCE_FILES src/*.c)
 add_library(psd STATIC ${SOURCE_FILES})
 
