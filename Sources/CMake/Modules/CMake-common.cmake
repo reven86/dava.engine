@@ -124,7 +124,7 @@ endmacro ()
 #   PROJECT_FOLDERS
 #   PROJECT_HEADER_FILE_ONLY
 macro (define_source)
-    cmake_parse_arguments ( ARG ""  "RECURSIVE_CALL" "SOURCE;SOURCE_RECURSE;GROUP_SOURCE;IGNORE_ITEMS" ${ARGN} )
+    cmake_parse_arguments ( ARG ""  "RECURSIVE_CALL" "SOURCE;SOURCE_RECURSE;GROUP_SOURCE;GROUP_STRINGS;IGNORE_ITEMS" ${ARGN} )
     
     get_property( DEFINE_SOURCE_LIST GLOBAL PROPERTY DEFINE_SOURCE_LIST )
     list( APPEND DEFINE_SOURCE_LIST "define_source" )
@@ -183,7 +183,7 @@ macro (define_source)
                 list( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_HPP} ${${FOLDER_NAME}_PROJECT_SOURCE_FILES_CPP} )
             else()
                 file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE}/* )
-                define_source( SOURCE ${LIST_SOURCE} IGNORE_ITEMS ${ARG_IGNORE_ITEMS} RECURSIVE_CALL true GROUP_SOURCE ${ARG_GROUP_SOURCE})
+                define_source( SOURCE ${LIST_SOURCE} IGNORE_ITEMS ${ARG_IGNORE_ITEMS} RECURSIVE_CALL true GROUP_SOURCE ${ARG_GROUP_SOURCE} )
             endif()
         else()
             file( GLOB LIST_SOURCE ${ITEM_ARG_SOURCE} )
@@ -225,6 +225,18 @@ macro (define_source)
         if ( ${LENGTH_PROJECT_FOLDERS} GREATER "0" )
            list( REMOVE_DUPLICATES PROJECT_FOLDERS )
         endif()
+
+        set( IGNORE_GROOP_ITEMS )
+        if( ARG_GROUP_STRINGS )
+            foreach( ITEM ${ARG_GROUP_STRINGS} )
+                string(REGEX REPLACE " " ";" FILES ${ITEM} )
+                list( GET FILES 0  FILE_GROUP )
+                list( REMOVE_AT  FILES 0 )
+                source_group( "${FILE_GROUP}" FILES ${FILES} )
+                list( APPEND IGNORE_GROOP_ITEMS ${FILES} )
+            endforeach () 
+        endif()
+
         foreach ( ITEM ${PROJECT_FOLDERS}  )
             file(RELATIVE_PATH RELATIVE_PATH ${CMAKE_CURRENT_LIST_DIR} ${ITEM})
             #message( "    ${RELATIVE_PATH}")
@@ -233,27 +245,31 @@ macro (define_source)
 
             foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
 
-                get_filename_component( ITEM_LIST_SOURCE ${ITEM_LIST_SOURCE} REALPATH )
+                list (FIND IGNORE_GROOP_ITEMS ${ITEM_LIST_SOURCE} _index)
+                if (${_index} MATCHES -1)
 
-                string(REGEX REPLACE "${ITEM}/" "" FILE_GROUP ${ITEM_LIST_SOURCE} )
-                
-                if( RELATIVE_PATH )
-                    set( FILE_GROUP ${RELATIVE_PATH}/${FILE_GROUP} )
-                else()
-                    set( FILE_GROUP ${FILE_GROUP} )
-                endif()
-                
-                get_filename_component( FILE_GROUP_NAME ${FILE_GROUP} NAME )
-                string(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
-                string(REGEX REPLACE "\\\\${FILE_GROUP_NAME}" "" FILE_GROUP ${FILE_GROUP})
-                string( REGEX REPLACE "^[..\\\\]+" "_EXT_" FILE_GROUP ${FILE_GROUP} )               
-                
-                get_filename_component( FILE_GROUP_EXT ${FILE_GROUP} EXT )
-                if( FILE_GROUP_EXT )
-                    source_group( "" FILES ${ITEM_LIST_SOURCE} )
-                else()
-                    source_group( "${FILE_GROUP}" FILES ${ITEM_LIST_SOURCE} )
-                    #message( "    ${FILE_GROUP}")                     
+                    get_filename_component( ITEM_LIST_SOURCE ${ITEM_LIST_SOURCE} REALPATH )
+
+                    string(REGEX REPLACE "${ITEM}/" "" FILE_GROUP ${ITEM_LIST_SOURCE} )
+                    
+                    if( RELATIVE_PATH )
+                        set( FILE_GROUP ${RELATIVE_PATH}/${FILE_GROUP} )
+                    else()
+                        set( FILE_GROUP ${FILE_GROUP} )
+                    endif()
+                    
+                    get_filename_component( FILE_GROUP_NAME ${FILE_GROUP} NAME )
+                    string(REGEX REPLACE "/" "\\\\" FILE_GROUP ${FILE_GROUP})
+                    string(REGEX REPLACE "\\\\${FILE_GROUP_NAME}" "" FILE_GROUP ${FILE_GROUP})
+                    string( REGEX REPLACE "^[..\\\\]+" "_EXT_" FILE_GROUP ${FILE_GROUP} )               
+                    
+                    get_filename_component( FILE_GROUP_EXT ${FILE_GROUP} EXT )
+                    if( FILE_GROUP_EXT )
+                        source_group( "" FILES ${ITEM_LIST_SOURCE} )
+                    else()
+                        source_group( "${FILE_GROUP}" FILES ${ITEM_LIST_SOURCE} )
+                        #message( "    ${FILE_GROUP}")                     
+                    endif()
                 endif()
 
                 list (FIND PROJECT_SOURCE_FILES ${ITEM_LIST_SOURCE} _index)
@@ -277,8 +293,10 @@ macro (define_source)
         #message( "")
         reset_property( PROJECT_FOLDERS )    
     endif()
-    
-    list( REMOVE_DUPLICATES TARGET_FOLDERS_${PROJECT_NAME} )
+
+    if( TARGET_FOLDERS_${PROJECT_NAME} )
+        list( REMOVE_DUPLICATES TARGET_FOLDERS_${PROJECT_NAME} )
+    endif()
 
 endmacro ()
 

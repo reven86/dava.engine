@@ -8,6 +8,8 @@ class RenderObject;
 class RenderSystem;
 class BillboardRenderObject;
 class RenderComponent;
+class Component;
+class Entity;
 }
 
 class ConvertToBillboardCommand : public RECommand

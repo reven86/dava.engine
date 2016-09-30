@@ -143,6 +143,7 @@ public:
 
     // DAVA events
     void Update(float timeElapsed) override;
+    void Draw() override;
 
     // this function should be called each time UI3Dview changes its position
     // viewport rect is used to calc. ray from camera to any 2d point on this viewport
@@ -190,8 +191,6 @@ protected:
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
     void EditorCommandProcess(const RECommandNotificationObject& commandNotification);
-
-    void Draw() override;
 
     void ExtractEditorEntities();
     void InjectEditorEntities();

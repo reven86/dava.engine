@@ -58,6 +58,10 @@ public:
     static const DAVA::String AssetCachePort;
     static const DAVA::String AssetCacheTimeout;
 
+    static const DAVA::String Width;
+    static const DAVA::String Height;
+    static const DAVA::String Camera;
+
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };
 
