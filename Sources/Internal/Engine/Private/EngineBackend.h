@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Functional/Functional.h"
 
 #include "Engine/EngineTypes.h"
@@ -132,7 +133,7 @@ private:
 
     int32 exitCode = 0;
 
-    KeyedArchive* options = nullptr;
+    RefPtr<KeyedArchive> options;
     uint32 globalFrameIndex = 1;
 
     static EngineBackend* instance;

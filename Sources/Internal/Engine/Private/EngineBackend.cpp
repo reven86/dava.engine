@@ -72,6 +72,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
     , cmdargs(cmdargs)
+    , options(new KeyedArchive) // Ensure options never null
 {
     DVASSERT(instance == nullptr);
     instance = this;
@@ -97,12 +98,13 @@ void EngineBackend::EngineDestroyed()
 
 void EngineBackend::SetOptions(KeyedArchive* options_)
 {
-    options = options_;
+    DVASSERT(options_ != nullptr);
+    options.Set(options_);
 }
 
 KeyedArchive* EngineBackend::GetOptions()
 {
-    return options;
+    return options.Get();
 }
 
 NativeService* EngineBackend::GetNativeService() const
