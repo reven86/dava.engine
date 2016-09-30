@@ -36,18 +36,24 @@ void RegisterReflection(lua_State* L);
  * \brief Gets Lua variable from stack with index and convert it to Any.
  *        Lua stack changes [-0, +0, -]
  */
-Any luaToAny(lua_State* L, int32 index);
+Any LuaToAny(lua_State* L, int32 index);
 
 /**
  * \brief Push Any as Lua variable to stack.
  *        Lua stack changes [-0, +1, e]
  */
-void anyToLua(lua_State* L, const Any& value);
+void AnyToLua(lua_State* L, const Any& value);
 
 /**
  * \brief Get string from top of stack and pop it.
  *        Lua stack changes [-1, +0, -]
  */
 String PopString(lua_State* L);
+
+/**
+ * \brief Dump Lua stack to Debug output.
+ *        Lua stack changes [-0, +0, -]
+ */
+void DumpStack(lua_State* L);
 }
 }

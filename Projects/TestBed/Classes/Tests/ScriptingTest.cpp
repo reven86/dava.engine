@@ -2,6 +2,9 @@
 #include "Base/Type.h"
 #include "Reflection/Registrator.h"
 #include "Scripting/LuaScript.h"
+#include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Input/UIActionMap.h"
+#include "Utils/StringUtils.h"
 
 using namespace DAVA;
 
@@ -43,55 +46,15 @@ public:
     Vector<int32> v;
 };
 
-static const String demo_script = R"script(
+DemoObj demoObj;
+Reflection objRef;
+LuaScript* script = nullptr;
 
-function main(context)
-    DV.Debug("GlobObj.a: "..tostring(GlobObj.a))
-    
-    DV.Debug("context: "..tostring(context))
-    DV.Debug("context.a: "..tostring(context.a))
-    DV.Debug("context[\"a\"]: "..tostring(context["a"]))
-    DV.Debug("context.b: "..tostring(context.b))
-    DV.Debug("context.c: "..tostring(context.c))
-    DV.Debug("context.d: "..tostring(context.d))
-    DV.Debug("context.d.a: "..tostring(context.d.a))
-    DV.Debug("context.d.b: "..tostring(context.d.b))
-    DV.Debug("context.d.c: "..tostring(context.d.c))
-
-    context.a = 1
-    DV.Debug("context.a: "..tostring(context.a))
-    context.b = "New String"
-    DV.Debug("context.b: "..tostring(context.b))
-    context.c = context.d.c
-    DV.Debug("context.c: "..tostring(context.c))
-    context.d.a = 2    
-    DV.Debug("context.d.a: "..tostring(context.d.a))
-    context.d.b = "New WideString"
-    DV.Debug("context.d.b: "..tostring(context.d.b))
-
-    DV.Debug("context.a + context.d.a: "..(context.a + context.d.a))
-
-    DV.Debug("context.v: "..tostring(context.v))
-    DV.Debug("Length #context.v: "..tostring(#context.v))
-    context.v[3] = 999;
-    DV.Debug("----- index for -----")
-    for i = 1, #context.v do
-        DV.Debug("  context.v["..i.."]: "..context.v[i])
-    end
+static const String demo_script = R"script(DV.Debug("Script loaded")
+function main(int, str, ref)
+    DV.Debug("Main function")
+    return int, str, ref
 end
-
-)script";
-
-static const String sss = R"script(
-
-function main(arg1, arg2, arg3, arg4)
-    DV.Debug(type(arg1).." > "..tostring(arg1))
-    DV.Debug(type(arg2).." > "..tostring(arg2))
-    DV.Debug(type(arg3).." > "..tostring(arg3))
-    DV.Debug(type(arg4).." > "..tostring(arg4))
-    return arg1, arg2, arg3, arg4
-end
-
 )script";
 
 ScriptingTest::ScriptingTest(GameCore* g)
@@ -103,32 +66,125 @@ void ScriptingTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
-    DemoObj obj;
-    obj.v.assign({ 1, 2, 3, 4, 5 });
+    DAVA::DefaultUIPackageBuilder pkgBuilder;
+    DAVA::UIPackageLoader().LoadPackage("~res:/UI/ScriptingTest.yaml", &pkgBuilder);
+    UIControl* dialog = pkgBuilder.GetPackage()->GetControl(0);
+    AddControl(dialog);
 
-    Reflection objRef = Reflection::Create(&obj).ref;
+    scriptText = static_cast<UITextField*>(dialog->FindByName("ScriptText"));
+    intArgText = static_cast<UITextField*>(dialog->FindByName("IntArgText"));
+    strArgText = static_cast<UITextField*>(dialog->FindByName("StrArgText"));
+    outputText = static_cast<UIStaticText*>(dialog->FindByName("OutputText"));
+    timeText = static_cast<UIStaticText*>(dialog->FindByName("TimeText"));
 
-    try
-    {
-        LuaScript s;
-        s.RunString(sss);
-        Vector<Any> res = s.RunMain({ 1, "String", false, objRef });
-
-        for (Any& val : res)
+    UIActionMap& amap = dialog->GetOrCreateComponent<UIActionBindingComponent>()->GetActionMap();
+    amap.Put(FastName("LOAD_SCRIPT"), [&]() {
+        try
         {
-            DAVA::Logger::Debug("Ret val: %s", val.GetType()->GetName());
+            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+            script->RunString(scriptText->GetUtf8Text());
+            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+            outputText->SetUtf8Text(Format("Load script time: %llu us", time));
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
         }
-    }
-    catch (const LuaException& e)
-    {
-        DAVA::Logger::Debug("LuaException: %s", e.what());
-    }
+        catch (const LuaException& e)
+        {
+            String error = Format("LuaException: %s", e.what());
+            Logger::Error(error.c_str());
+            outputText->SetUtf8Text(error);
+            timeText->SetUtf8Text("Error");
+        }
+    });
+    amap.Put(FastName("RUN_MAIN"), [&]() {
+        try
+        {
+            int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
+            String strArg = strArgText->GetUtf8Text();
+            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+            Vector<Any> values = script->RunMain({ intArg, strArg, objRef });
+            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+            String output;
+            output += Format("Run main(...) time: %llu us\n", time);
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
+            int32 count = int32(values.size());
+            for (int32 i = 0; i < count; ++i)
+            {
+                output += Format("%d) %s\n", i, values[i].GetType()->GetName());
+            }
+            outputText->SetUtf8Text(output);
+        }
+        catch (const LuaException& e)
+        {
+            String error = Format("LuaException: %s", e.what());
+            Logger::Error(error.c_str());
+            outputText->SetUtf8Text(error);
+            timeText->SetUtf8Text("Error");
+        }
+    });
+    amap.Put(FastName("RUN_MAIN_NOARGS"), [&]() {
+        try
+        {
+            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+            Vector<Any> values = script->RunMain();
+            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+            String output;
+            output += Format("Run main() time: %llu us\n", time);
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
+            int32 count = int32(values.size());
+            for (int32 i = 0; i < count; ++i)
+            {
+                output += Format("%d) %s\n", i, values[i].GetType()->GetName());
+            }
+            outputText->SetUtf8Text(output);
+        }
+        catch (const LuaException& e)
+        {
+            String error = Format("LuaException: %s", e.what());
+            Logger::Error(error.c_str());
+            outputText->SetUtf8Text(error);
+            timeText->SetUtf8Text("Error");
+        }
+    });
+    amap.Put(FastName("RESET_SCRIPT"), [&]() {
+        SafeDelete(script);
+        script = new LuaScript();
+    });
+    amap.Put(FastName("RUN_10000"), [&]() {
+        try
+        {
+            int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
+            String strArg = strArgText->GetUtf8Text();
+            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+            for (int32 i = 0; i < 10000; ++i)
+            {
+                script->RunMain({ intArg, strArg, objRef });
+            }
+            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+            outputText->SetUtf8Text(Format("Run 10k main() time: %llu us", time));
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
+        }
+        catch (const LuaException& e)
+        {
+            String error = Format("LuaException: %s", e.what());
+            Logger::Error(error.c_str());
+            outputText->SetUtf8Text(error);
+            timeText->SetUtf8Text("Error");
+        }
+    });
+
+    script = new LuaScript();
+    demoObj.v.assign({ 1, 2, 3, 4, 5 });
+    objRef = Reflection::Create(&demoObj).ref;
+    scriptText->SetUtf8Text(demo_script);
+    intArgText->SetUtf8Text("42");
+    strArgText->SetUtf8Text("demoStr");
+    outputText->SetUtf8Text("");
 }
 
 void ScriptingTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
-    //TODO: Release resources here
+    SafeDelete(script);
 }
 
 void ScriptingTest::Update(DAVA::float32 timeElapsed)

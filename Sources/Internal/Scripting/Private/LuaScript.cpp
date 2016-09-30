@@ -79,7 +79,7 @@ Vector<Any> LuaScript::RunFunction(const String& fName, const Vector<Any> args)
     int32 count = int32(args.size());
     for (int32 i = 0; i < count; ++i)
     {
-        LuaBridge::anyToLua(state->lua, args[i]); // stack +1 (*count): function arg
+        LuaBridge::AnyToLua(state->lua, args[i]); // stack +1 (*count): function arg
     }
 
     int32 res = lua_pcall(state->lua, count, LUA_MULTRET, 0); // stack -(count+1), +nresults: return value or error message
@@ -95,7 +95,7 @@ Vector<Any> LuaScript::RunFunction(const String& fName, const Vector<Any> args)
     {
         for (int32 index = beginTop + 1; index <= endTop; ++index)
         {
-            Any result = LuaBridge::luaToAny(state->lua, index);
+            Any result = LuaBridge::LuaToAny(state->lua, index);
             results.push_back(std::move(result));
         }
         lua_pop(state->lua, nresults); // stack -nresults

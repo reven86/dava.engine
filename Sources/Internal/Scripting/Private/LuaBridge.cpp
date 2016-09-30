@@ -12,7 +12,7 @@ namespace LuaBridge
 /******************************************************************************/
 
 /**
- * \brief Lua global table name for Dava service functions
+ * \brief Lua global table name for Dava service functions.
  */
 static const char* DavaNamespace = "DV";
 
@@ -79,12 +79,7 @@ Any lua_todvany(lua_State* L, int32 index)
  */
 Any lua_checkdvany(lua_State* L, int32 index)
 {
-    luaL_checktype(L, index, LUA_TUSERDATA);
     Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
-    if (!pAny)
-    {
-        luaL_typerror(L, index, AnyTName);
-    }
     return *pAny;
 }
 
@@ -101,7 +96,7 @@ void lua_pushdvany(lua_State* L, const Any& refl)
 }
 
 /**
- * \brief Metamethod for presentation Any as string.
+ * \brief Meta method for presentation Any as string.
  *        Lua stack changes [-0, +1, -]
  */
 int32 Any__tostring(lua_State* L)
@@ -163,12 +158,7 @@ Reflection lua_todvreflection(lua_State* L, int32 index)
  */
 Reflection lua_checkdvreflection(lua_State* L, int32 index)
 {
-    luaL_checktype(L, index, LUA_TUSERDATA);
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
-    if (!pRef)
-    {
-        luaL_typerror(L, index, ReflectionTName);
-    }
     return *pRef;
 }
 
@@ -185,7 +175,7 @@ void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 }
 
 /**
- * \brief Metamethod for presentation Any as string.
+ * \brief Meta method for presentation Any as string.
  *        Lua stack changes [-0, +1, -]
  */
 int32 Reflection__tostring(lua_State* L)
@@ -197,7 +187,7 @@ int32 Reflection__tostring(lua_State* L)
 }
 
 /**
- * \brief Metamethod for getting element from Reflection userdata object.
+ * \brief Meta method for getting element from Reflection userdata object.
  *        Lua stack changes [-0, +1, v]
  */
 int32 Reflection__index(lua_State* L)
@@ -231,12 +221,12 @@ int32 Reflection__index(lua_State* L)
         return 1;
     }
 
-    anyToLua(L, refl.GetValue());
+    AnyToLua(L, refl.GetValue());
     return 1;
 }
 
 /**
- * \brief Metamethod for setting value to Reflection userdata object.
+ * \brief Meta method for setting value to Reflection userdata object.
  *        Lua stack changes [-0, +0, v]
  */
 int32 Reflection__newindex(lua_State* L)
@@ -262,7 +252,7 @@ int32 Reflection__newindex(lua_State* L)
     {
         try
         {
-            Any value = luaToAny(L, 3);
+            Any value = LuaToAny(L, 3);
 
             // Cast-HACK
             if (value.GetType() == Type::Instance<float64>())
@@ -323,7 +313,19 @@ void RegisterReflection(lua_State* L)
 
 /******************************************************************************/
 
-Any luaToAny(lua_State* L, int32 index)
+/**
+* \brief Compare value on top of the stack with metatable named metatableName.
+*        Lua stack changes [-0, +0, v]
+*/
+bool lua_equalmetatable(lua_State* L, const char* metatableName)
+{
+    luaL_getmetatable(L, metatableName); // stack +1 (top: metatable metatableName)
+    int32 eq = lua_rawequal(L, -1, -2);
+    lua_pop(L, 1); // stack -1 (remove metatable metatableName)
+    return eq == 1;
+}
+
+Any LuaToAny(lua_State* L, int32 index)
 {
     int ltype = lua_type(L, index);
     switch (ltype)
@@ -337,16 +339,28 @@ Any luaToAny(lua_State* L, int32 index)
     case LUA_TSTRING:
         return Any(String(lua_tolstring(L, index, nullptr)));
     case LUA_TUSERDATA:
-
-        if (void* ud = luaL_checkudata(L, index, AnyTName))
+        if (lua_getmetatable(L, index) != 0) // stack +1 (top: metatable of userdata object)
         {
-            return Any(*static_cast<Any*>(ud));
+            if (lua_equalmetatable(L, AnyTName))
+            {
+                lua_pop(L, 1); // stack -1
+                return lua_todvany(L, index);
+            }
+            else if (lua_equalmetatable(L, ReflectionTName))
+            {
+                lua_pop(L, 1); // stack -1
+                return Any(lua_todvreflection(L, index));
+            }
+            else
+            {
+                lua_pop(L, 1); // stack -1
+                throw LuaException(ltype, "Unknown userdata type!");
+            }
         }
-        else if (void* ud = luaL_checkudata(L, index, ReflectionTName))
+        else // stack +0
         {
-            return Any(*static_cast<Reflection*>(ud));
+            throw LuaException(ltype, "Unknown userdata type without metatable!");
         }
-        throw LuaException(ltype, "Unknown userdata type!");
     case LUA_TLIGHTUSERDATA:
     case LUA_TTABLE:
     case LUA_TFUNCTION:
@@ -356,7 +370,7 @@ Any luaToAny(lua_State* L, int32 index)
     }
 }
 
-void anyToLua(lua_State* L, const Any& value)
+void AnyToLua(lua_State* L, const Any& value)
 {
     if (value.CanGet<int32>())
     {
@@ -417,6 +431,16 @@ String PopString(lua_State* L)
         lua_pop(L, 1); // stack -1
     }
     return msg;
+}
+
+void DumpStack(lua_State* L)
+{
+    int32 count = lua_gettop(L);
+    Logger::Debug("Lua stack:");
+    for (int32 i = 1; i <= count; ++i)
+    {
+        Logger::Debug("  %d) %s", i, luaL_typename(L, i));
+    }
 }
 }
 }
