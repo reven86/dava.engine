@@ -99,7 +99,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing(bool saveNeeded)
     {
         SceneSignals::Instance()->EmitCustomColorsTextureShouldBeSaved(((SceneEditor2*)GetScene()));
     }
-    FinishEditing();
+    FinishEditing(false);
 
     selectionSystem->SetLocked(false);
     modifSystem->SetLocked(false);
@@ -170,11 +170,23 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
     }
 }
 
-void CustomColorsSystem::FinishEditing()
+void CustomColorsSystem::FinishEditing(bool applyModification /*= true*/)
 {
     if (editingIsEnabled)
     {
-        CreateUndoPoint();
+        if (applyModification)
+        {
+            DAVA::Rect updatedRect = GetUpdatedRect();
+            if (updatedRect.dx > 0 && updatedRect.dy > 0)
+            {
+                SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+                DVASSERT(scene);
+
+                DAVA::ScopedPtr<DAVA::Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
+                scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyCustomColorsCommand(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false)));
+            }
+        }
+        SafeRelease(originalImage);
         editingIsEnabled = false;
     }
 }
@@ -270,21 +282,6 @@ void CustomColorsSystem::StoreOriginalState()
     DVASSERT(originalImage == NULL);
     originalImage = drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory();
     ResetAccumulatorRect();
-}
-
-void CustomColorsSystem::CreateUndoPoint()
-{
-    DAVA::Rect updatedRect = GetUpdatedRect();
-    if (updatedRect.dx > 0 && updatedRect.dy > 0)
-    {
-        SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-        DVASSERT(scene);
-
-        DAVA::ScopedPtr<DAVA::Image> image(drawSystem->GetCustomColorsProxy()->GetTexture()->CreateImageFromMemory());
-        scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyCustomColorsCommand(originalImage, image, drawSystem->GetCustomColorsProxy(), updatedRect, false)));
-    }
-
-    SafeRelease(originalImage);
 }
 
 void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
