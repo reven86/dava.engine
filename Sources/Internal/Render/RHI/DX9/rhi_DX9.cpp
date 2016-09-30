@@ -47,8 +47,38 @@ dx9_HostApi()
 static bool
 dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
 {
-    DWORD texUsage = (progType == PROG_VERTEX) ? D3DUSAGE_QUERY_VERTEXTEXTURE : 0;
-    return SUCCEEDED(_D3D9->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, texUsage, D3DRTYPE_TEXTURE, DX9_TextureFormat(format)));
+    bool supported = false;
+
+    switch (format)
+    {
+    case TEXTURE_FORMAT_R8G8B8A8:
+    case TEXTURE_FORMAT_R5G5B5A1:
+    case TEXTURE_FORMAT_R5G6B5:
+    case TEXTURE_FORMAT_R4G4B4A4:
+    case TEXTURE_FORMAT_R8:
+    case TEXTURE_FORMAT_R16:
+    case TEXTURE_FORMAT_DXT1:
+    case TEXTURE_FORMAT_DXT3:
+    case TEXTURE_FORMAT_DXT5:
+    case TEXTURE_FORMAT_R32F:
+    case TEXTURE_FORMAT_RGBA32F:
+        supported = true;
+        break;
+    }
+
+    if (progType == PROG_VERTEX)
+    {
+        const char* found = strstr(DeviceCaps().deviceDescription, "GeForce");
+        if (strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
+        {
+            if ((found[8] == '6' || found[8] == '7') && found[11] == '0')
+            {
+                supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
+            }
+        }
+    }
+
+    return supported;
 }
 
 //------------------------------------------------------------------------------
