@@ -619,10 +619,7 @@ void Core::SystemProcessFrame()
     }
 
     if (!isActive)
-    {        
-        #if PROFILER_ENABLED
-        profiler::Stop();
-        #endif
+    {
         return;
     }
 
