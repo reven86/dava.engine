@@ -69,7 +69,7 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
     if (progType == PROG_VERTEX)
     {
         const char* found = strstr(DeviceCaps().deviceDescription, "GeForce");
-        if (strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
+        if (found && strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
         {
             if ((found[8] == '6' || found[8] == '7') && found[11] == '0')
             {
