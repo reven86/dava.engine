@@ -326,6 +326,11 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                 ControlNode* node = *iter;
                 PackageBaseNode* nodeParent = node->GetParent();
 
+                if (selected.find(node) != selected.end())
+                {
+                    Logger::Debug("found selected %s", node->GetName().c_str());
+                    return node;
+                }
                 //search child of selected to move down by hierarchy
                 if (selected.find(nodeParent) != selected.end())
                 {
@@ -334,7 +339,8 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                 }
 
                 //search neighbor to move left-right
-                else if (selected.find(node) == selected.end() && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
+                else if (selected.find(node) == selected.end()
+                         && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
                 {
                     Logger::Debug("found neighbor of selected %s", node->GetName().c_str());
                     return node;
