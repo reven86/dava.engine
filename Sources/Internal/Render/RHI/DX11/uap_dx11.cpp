@@ -376,9 +376,7 @@ void CreateWindowSizeDependentResources()
     m_d3dRenderTargetSize.Height = swapDimensions ? m_backbufferSize.Width : m_backbufferSize.Height;
 
     uint32 swapchainBufferWidth = lround(m_d3dRenderTargetSize.Width);
-    uint32 swapchainBufferHeight = DAVA::UWPWorkaround::EnableSurfaceSizeWorkaround ?
-    lround(m_d3dRenderTargetSize.Height) + 1 :
-    lround(m_d3dRenderTargetSize.Height);
+    uint32 swapchainBufferHeight = lround(m_d3dRenderTargetSize.Height) + (DAVA::UWPWorkaround::EnableSurfaceSizeWorkaround ? 1 : 0);
 
     if (m_swapChain != nullptr)
     {
