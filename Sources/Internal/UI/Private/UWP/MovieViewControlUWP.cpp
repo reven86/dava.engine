@@ -21,6 +21,11 @@
 
 namespace DAVA
 {
+namespace UWPWorkaround
+{
+extern bool EnableSurfaceSizeWorkaround;
+}
+
 void MovieViewControl::MovieViewProperties::ClearChangedFlags()
 {
     anyPropertyChanged = false;
@@ -378,12 +383,9 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
     core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
 #endif
 
-    { //'workaround' for ATI HD ****G adapters
-        const char* gpuDesc = rhi::DeviceCaps().deviceDescription;
-        if (strstr(gpuDesc, "AMD Radeon HD") && gpuDesc[strlen(gpuDesc) - 1] == 'G')
-        {
-            nativeControl->Height += 1.0;
-        }
+    if (UWPWorkaround::EnableSurfaceSizeWorkaround)
+    {
+        nativeControl->Height += 1.0;
     }
 }
 
