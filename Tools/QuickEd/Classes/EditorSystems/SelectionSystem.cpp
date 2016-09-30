@@ -339,13 +339,6 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                     Logger::Debug("found neighbor of selected %s", node->GetName().c_str());
                     return node;
                 }
-
-                //search parent of selected to move up
-                else if (parentsOfSelectedNodes.find(node) != parentsOfSelectedNodes.end())
-                {
-                    Logger::Debug("found parent of selected %s", node->GetName().c_str());
-                    return node;
-                }
             }
             //may be there some small node inside big one
             ControlNode* node = GetCommonNodeUnderPoint(nodesUnderPoint);
@@ -364,16 +357,19 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
             }
             else
             {
-                ControlNode* firstNode = nodesUnderPoint.front();
-                if (firstNode->GetParent()->GetControl() == nullptr)
+                for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
                 {
-                    Logger::Debug("no selected but found root child %s %s", nodesUnderPoint.at(1)->GetName().c_str(), nodesUnderPoint.at(0)->GetName().c_str());
-                    return nodesUnderPoint.at(1);
-                }
-                else
-                {
-                    Logger::Debug("no selected but found something %s %s", nodesUnderPoint.at(1)->GetName().c_str(), nodesUnderPoint.at(0)->GetName().c_str());
-                    return firstNode;
+                    ControlNode* node = *iter;
+                    PackageBaseNode* parent = node->GetParent();
+                    if (parent != nullptr)
+                    {
+                        parent = parent->GetParent();
+                    }
+                    if (parent != nullptr && parent->GetControl() == nullptr)
+                    {
+                        Logger::Debug("no selected but found child %s of root %s", node->GetName().c_str(), node->GetParent()->GetName().c_str());
+                        return node;
+                    }
                 }
             }
         }
