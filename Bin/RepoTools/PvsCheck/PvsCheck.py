@@ -13,28 +13,26 @@ def main():
         "--progress",
         "--target", args.sln_path, 
         "--output", args.output_log,
-        "--settings", "Settings.xml"])
+		"--settings", "Settings.xml"])
     proc.communicate()
-    hadErrors = False
-    if proc.returncode == 0:
-        ok
-    elif proc.returncode == 7:
-        hadErrors = True
-    else:
+    if proc.returncode != 0 and proc.returncode != 7:
         sys.exit(proc.returncode)
 
     proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe", 
         "-t", "Html",
         "-a", "GA:1",
+		"-d", "V520",
         args.output_log])
     proc.communicate()
     if proc.returncode != 0:
         sys.exit(proc.returncode)
-
-    if hadErrors:
-        errorMsg = "##teamcity[message text=\'PVS found some issues, see .plog.html for details\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
+		
+	file = open("log.plog.html", "r")
+	content = file.read()
+	if content.find("No Messages Generated") == -1:
+		errorMsg = "##teamcity[message text=\'PVS found some issues, see .plog.html for details\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
         print errorMsg
         sys.exit(7)
-
+		
 if "__main__" == __name__:
     main()
