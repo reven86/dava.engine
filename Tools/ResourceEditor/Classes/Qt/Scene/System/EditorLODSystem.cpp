@@ -394,8 +394,34 @@ void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const 
     planeLODRequests.reserve(activeLodData->lodComponents.size());
     for (LodComponent* lc : activeLodData->lodComponents)
     {
-        auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lc, fromLayer, textureSize, texturePath);
-        planeLODRequests.push_back(request);
+        Entity* entity = lc->GetEntity();
+        DVASSERT(entity != nullptr);
+
+        RenderObject* ro = GetRenderObject(entity);
+        if (ro != nullptr)
+        {
+            bool hasGeometry = false;
+            uint32 count = ro->GetRenderBatchCount();
+            for (uint32 i = 0; i < count; ++i)
+            {
+                int32 lod, sw;
+                if ((ro->GetRenderBatch(i, lod, sw) != nullptr) && (lod == fromLayer))
+                {
+                    hasGeometry = true;
+                    break;
+                }
+            }
+
+            if (hasGeometry)
+            {
+                auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lc, fromLayer, textureSize, texturePath);
+                planeLODRequests.push_back(request);
+            }
+            else
+            {
+                Logger::Error("Cannot create planeLod for layer %d: no geometry", fromLayer);
+            }
+        }
     }
 }
 
