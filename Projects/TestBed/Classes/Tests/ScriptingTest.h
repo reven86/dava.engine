@@ -5,7 +5,7 @@
 class ScriptingTest : public BaseScreen
 {
 public:
-    ScriptingTest(GameCore* g);
+    ScriptingTest(TestBed& app);
 
 protected:
     void LoadResources() override;

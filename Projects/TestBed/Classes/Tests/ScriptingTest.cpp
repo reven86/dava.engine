@@ -58,8 +58,8 @@ end
 return true -- Return in global body works fine
 )script";
 
-ScriptingTest::ScriptingTest(GameCore* g)
-    : BaseScreen(g, "ScriptingTest")
+ScriptingTest::ScriptingTest(TestBed& app)
+    : BaseScreen(app, "ScriptingTest")
 {
 }
 
@@ -195,8 +195,15 @@ void ScriptingTest::LoadResources()
 
 void ScriptingTest::UnloadResources()
 {
-    BaseScreen::UnloadResources();
     SafeDelete(script);
+
+    scriptText.Set(nullptr);
+    intArgText.Set(nullptr);
+    strArgText.Set(nullptr);
+    outputText.Set(nullptr);
+    timeText.Set(nullptr);
+
+    BaseScreen::UnloadResources();
 }
 
 void ScriptingTest::Update(DAVA::float32 timeElapsed)
