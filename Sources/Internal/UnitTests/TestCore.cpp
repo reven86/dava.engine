@@ -141,11 +141,12 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 {
                     curTestName = curTestClass->TestName(curTestIndex);
                     testStartedCallback(curTestClassName, curTestName);
+                    curTestClass->InitTimeStampForTest(curTestName);
                     curTestClass->SetUp(curTestName);
                     testSetUpInvoked = true;
+                    curTestClass->RunTest(curTestIndex);
                 }
 
-                curTestClass->RunTest(curTestIndex);
                 if (curTestClass->TestComplete(curTestName))
                 {
                     testSetUpInvoked = false;
