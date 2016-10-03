@@ -11,7 +11,7 @@ class UIIgnoreLayoutComponent : public UIBaseComponent<UIComponent::IGNORE_LAYOU
 {
 public:
     UIIgnoreLayoutComponent() = default;
-    UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src) = default;
+    UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src);
 
 protected:
     virtual ~UIIgnoreLayoutComponent() = default;

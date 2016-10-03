@@ -300,12 +300,8 @@ void LODEditor::SceneDeactivated(SceneEditor2* scene)
     scene->editorLODSystem->RemoveDelegate(this);
     scene->editorStatisticsSystem->RemoveDelegate(this);
 
-    if (GetCurrentEditorLODSystem() == nullptr)
-    {
-        UpdatePanelsUI(nullptr);
-    }
-
     activeScene = nullptr;
+    UpdatePanelsUI(nullptr);
 }
 
 void LODEditor::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)

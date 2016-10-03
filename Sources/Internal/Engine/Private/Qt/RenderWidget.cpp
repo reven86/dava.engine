@@ -68,7 +68,7 @@ void RenderWidget::OnActiveFocusItemChanged()
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = devicePixelRatioF();
+    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height(), dpi);
 }

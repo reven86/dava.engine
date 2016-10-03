@@ -24,7 +24,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     set( COVERAGE_SCRIPT ${DAVA_ROOT_DIR}/RepoTools/coverage/coverage_report.py )
 
     set( COVERAGE_INDEX_HTML ${CMAKE_BINARY_DIR}/Coverage/index.html )
-    set( COVERAGE_COMMAND_GENERATE_HTML "python ${COVERAGE_SCRIPT} --pathExecut ${EXECUT_FILE} --pathBuild ${CMAKE_BINARY_DIR} --pathReportOut ${CMAKE_BINARY_DIR}/Coverage --buildConfig $(CONFIGURATION) --runMode true --notExecute true" )
+    set( COVERAGE_COMMAND_GENERATE_HTML "python ${COVERAGE_SCRIPT} --pathExecut ${EXECUT_FILE} --pathBuild ${CMAKE_BINARY_DIR} --pathReportOut ${CMAKE_BINARY_DIR}/Coverage --buildConfig $(CONFIGURATION) --runMode true --notExecute true --targetArgs ${COVERAGE_ARGS}" )
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/CoverageExecuteGenHtml.in
                     ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp  )
@@ -42,6 +42,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
                     --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
                     --buildMode     true 
+                    --targetArgs    ${COVERAGE_ARGS}
                     )
 
 
