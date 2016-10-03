@@ -4,6 +4,7 @@
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -63,13 +64,13 @@ static const char* AnyTName = "AnyT";
 
 /**
  * \brief Get userdata from stack with index and return it as Any. 
- *        Return NULL if can't get.
+ *        Return empty any if can't get.
  *        Lua stack changes [-0, +0, -]
  */
 Any lua_todvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(lua_touserdata(L, index));
-    return *pAny;
+    return pAny != nullptr ? *pAny : Any();
 }
 
 /**
@@ -80,6 +81,7 @@ Any lua_todvany(lua_State* L, int32 index)
 Any lua_checkdvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
+    DVASSERT_MSG(pAny, "Can't get Any ptr");
     return *pAny;
 }
 
@@ -87,11 +89,10 @@ Any lua_checkdvany(lua_State* L, int32 index)
  * \brief Push new userdata with Any metatable to top on the stack.
  *        Lua stack changes [-0, +1, -]
  */
-void lua_pushdvany(lua_State* L, const Any& refl)
+void lua_pushdvany(lua_State* L, const Any& any)
 {
-    Any* pAny = static_cast<Any*>(lua_newuserdata(L, sizeof(Any)));
-    Memset(pAny, 0, sizeof(Any));
-    *pAny = refl;
+    void* userdata = lua_newuserdata(L, sizeof(Any));
+    Any* pAny = new (userdata) Any(any);
     luaL_getmetatable(L, AnyTName);
     lua_setmetatable(L, -2);
 }
@@ -104,7 +105,7 @@ int32 Any__tostring(lua_State* L)
 {
     Any any = lua_checkdvany(L, 1);
     void* pAny = lua_touserdata(L, 1);
-    lua_pushfstring(L, "Any: %s (%p)", any.GetType()->GetName(), pAny);
+    lua_pushfstring(L, "Any: %s (%p)", any.IsEmpty() ? "<empty>" : any.GetType()->GetName(), pAny);
     return 1;
 }
 
@@ -143,13 +144,13 @@ static const char* ReflectionTName = "ReflectionT";
 
 /**
  * \brief Get userdata from stack with index and return it as Reflection. 
- *        Return NULL if can't get.
+ *        Return empty reflection if can't get.
  *        Lua stack changes [-0, +0, -]
  */
 Reflection lua_todvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(lua_touserdata(L, index));
-    return *pRef;
+    return pRef != nullptr ? *pRef : Reflection();
 }
 
 /**
@@ -160,6 +161,7 @@ Reflection lua_todvreflection(lua_State* L, int32 index)
 Reflection lua_checkdvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
+    DVASSERT_MSG(pRef, "Can't get Reflection ptr");
     return *pRef;
 }
 
@@ -169,9 +171,8 @@ Reflection lua_checkdvreflection(lua_State* L, int32 index)
  */
 void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
-    Reflection* pRef = static_cast<Reflection*>(lua_newuserdata(L, sizeof(Reflection)));
-    Memset(pRef, 0, sizeof(Reflection));
-    *pRef = refl;
+    void* userdata = lua_newuserdata(L, sizeof(Reflection));
+    Reflection* pRef = new (userdata) Reflection(refl);
     luaL_getmetatable(L, ReflectionTName);
     lua_setmetatable(L, -2);
 }
@@ -184,7 +185,7 @@ int32 Reflection__tostring(lua_State* L)
 {
     Reflection refl = lua_checkdvreflection(L, 1);
     void* pRef = lua_touserdata(L, 1);
-    lua_pushfstring(L, "Reflection: %s (%p)", refl.GetValueType()->GetName(), pRef);
+    lua_pushfstring(L, "Reflection: %s (%p)", refl.IsValid() ? refl.GetValueType()->GetName() : "<non valid>", pRef);
     return 1;
 }
 
@@ -333,7 +334,7 @@ Any LuaToAny(lua_State* L, int32 index)
     switch (ltype)
     {
     case LUA_TNIL:
-        return Any();
+        return Any(nullptr);
     case LUA_TBOOLEAN:
         return Any(bool(lua_toboolean(L, index) != 0));
     case LUA_TNUMBER:
@@ -416,7 +417,19 @@ void AnyToLua(lua_State* L, const Any& value)
     }
     else if (value.CanGet<Reflection>())
     {
-        lua_pushdvreflection(L, value.Get<Reflection>());
+        Reflection ref = value.Get<Reflection>();
+        if (ref.IsValid())
+        {
+            lua_pushdvreflection(L, value.Get<Reflection>());
+        }
+        else
+        {
+            lua_pushnil(L); // Push nil if reflection isn't valid
+        }
+    }
+    else if (value.IsEmpty())
+    {
+        lua_pushnil(L); // Push nil if any is empty
     }
     else // unknown type, push as is
     {
