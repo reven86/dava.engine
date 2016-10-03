@@ -2,10 +2,9 @@
 
 namespace DAVA
 {
-SceneNodeAnimation::SceneNodeAnimation(uint32 _keyCount) //-V730 do not init currentValue
-: keyCount(_keyCount)
-  ,
-  keys(new SceneNodeAnimationKey[_keyCount])
+SceneNodeAnimation::SceneNodeAnimation(uint32 _keyCount)
+    : keyCount(_keyCount)
+    , keys(new SceneNodeAnimationKey[_keyCount])
 {
 }
 

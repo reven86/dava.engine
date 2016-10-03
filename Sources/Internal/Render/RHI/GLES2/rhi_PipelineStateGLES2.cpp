@@ -42,12 +42,10 @@ VertexDeclGLES2
 
     static vattr_t vattr[VATTR_COUNT];
 
-    VertexDeclGLES2() //-V730 no need to init elem array
-    : elemCount(0)
-      ,
-      streamCount(0)
-      ,
-      vattrInited(false)
+    VertexDeclGLES2()
+        : elemCount(0)
+        , streamCount(0)
+        , vattrInited(false)
     {
         memset(stride, 0, sizeof(stride));
     }
@@ -315,7 +313,7 @@ VertexDeclGLES2
         void* offset;
     };
 
-    Elem elem[VATTR_COUNT];
+    Elem elem[VATTR_COUNT]; //-V730_NOINIT
     unsigned elemCount;
     unsigned stride[MAX_VERTEX_STREAM_COUNT];
     unsigned streamCount;

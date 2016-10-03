@@ -82,16 +82,12 @@ DumpShaderTextGLES2(const char* code, unsigned code_sz)
 
 //==============================================================================
 
-ProgGLES2::ProgGLES2(ProgType t) //-V730 no need to init tex unit locations
-: type(t)
-  ,
-  prog(0)
-  ,
-  shader(0)
-  ,
-  texunitCount(0)
-  ,
-  texunitInited(false)
+ProgGLES2::ProgGLES2(ProgType t)
+    : type(t)
+    , prog(0)
+    , shader(0)
+    , texunitCount(0)
+    , texunitInited(false)
 {
     for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
     {

@@ -13,10 +13,9 @@ namespace UnitTests
 // Move dtor to source file to prevent clang warning: 'class' has no out-of-line virtual method definitions
 TestClassFactoryBase::~TestClassFactoryBase() = default;
 
-TestCore::TestClassInfo::TestClassInfo(const char* name_, TestClassFactoryBase* factory_) //-V730 do not init testedFiles
-: name(name_)
-  ,
-  factory(factory_)
+TestCore::TestClassInfo::TestClassInfo(const char* name_, TestClassFactoryBase* factory_)
+    : name(name_)
+    , factory(factory_)
 {
 }
 

@@ -2,6 +2,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#include <atomic>
 #include "Functional/Function.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
@@ -259,12 +260,10 @@ MMNetProto::Packet MMNetServer::CreateReplyStatPacket(uint32 maxItems)
 
 bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
-    static Atomic<uint32> curSnapshotIndex{ 0 };
-
+    std::atomic<uint32> curSnapshotIndex;
     bool result = false;
     FilePath filePath("~doc:");
-    filePath += Format("msnap_%u.bin", curSnapshotIndex.Get());
-    curSnapshotIndex++;
+    filePath += Format("msnap_%u.bin", curSnapshotIndex++);
 
     bool erase = false;
     {

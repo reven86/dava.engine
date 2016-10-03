@@ -104,7 +104,7 @@ private:
 
     ConstBufInfo cbuf[MAX_CONST_BUFFER_COUNT];
     void* cbufLastBoundData[MAX_CONST_BUFFER_COUNT];
-    unsigned texunitLoc[16];
+    unsigned texunitLoc[16]; //-V730_NOINIT
 
     unsigned shader;
     uint32 prog;

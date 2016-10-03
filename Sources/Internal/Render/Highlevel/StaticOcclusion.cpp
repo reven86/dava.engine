@@ -13,7 +13,7 @@
 
 namespace DAVA
 {
-StaticOcclusion::StaticOcclusion() //-V730 no need to init stats
+StaticOcclusion::StaticOcclusion()
 {
     for (uint32 k = 0; k < 6; ++k)
     {

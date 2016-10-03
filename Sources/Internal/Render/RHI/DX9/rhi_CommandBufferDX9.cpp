@@ -181,16 +181,15 @@ struct CommandBufferDX9_t
     };
 
     std::vector<uint64> _cmd;
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
 
-    CommandBufferDX9_t() //-V730 do not init passCfg
-    : isFirstInPass(1)
-      ,
-      isLastInPass(1)
+    CommandBufferDX9_t()
+        : isFirstInPass(1)
+        , isLastInPass(1)
     {
     }
 };
