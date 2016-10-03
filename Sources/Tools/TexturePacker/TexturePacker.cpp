@@ -198,7 +198,11 @@ Vector<std::unique_ptr<SpritesheetLayout>> TexturePacker::PackSprites(Vector<Spr
             }
         }
 
-        DVASSERT_MSG(bestSpritesWeight > 0, "Can't pack any sprite");
+        if (bestSpritesWeight <= 0)
+        {
+            AddError("Can't pack any sprite. Probably maxTextureSize should be altered");
+            break;
+        }
 
         spritesToPack.swap(bestSpritesRemaining);
         resultSheets.emplace_back(std::move(bestSheet));

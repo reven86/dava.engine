@@ -103,7 +103,7 @@ inline void SectionProperty<ValueType>::RemoveProperty(ValueType* property)
 template <typename ValueType>
 inline DAVA::uint32 SectionProperty<ValueType>::GetCount() const
 {
-    return children.size();
+    return static_cast<DAVA::uint32>(children.size());
 }
 
 template <typename ValueType>

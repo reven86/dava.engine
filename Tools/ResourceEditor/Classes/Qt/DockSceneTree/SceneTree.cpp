@@ -17,7 +17,9 @@
 #include "Main/QTUtils.h"
 #include "Project/ProjectManager.h"
 #include "Scene/SceneEditor2.h"
+#include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
@@ -334,6 +336,7 @@ private:
     {
         Connect(menu.addAction(SharedIcon(":/QtIcons/eye.png"), QStringLiteral("Look from")), this, &EntityContextMenu::SetCurrentCamera);
         Connect(menu.addAction(SharedIcon(":/QtIcons/camera.png"), QStringLiteral("Set custom draw camera")), this, &EntityContextMenu::SetCustomDrawCamera);
+        Connect(menu.addAction(SharedIcon(":/QtIcons/grab-image.png"), QStringLiteral("Grab image")), this, &EntityContextMenu::GrabImage);
     }
 
     void SaveEntityAs()
@@ -475,6 +478,29 @@ private:
     void SaveEffectEmittersAs()
     {
         PerformSaveEffectEmitters(true);
+    }
+
+    void GrabImage()
+    {
+        SceneEditor2* scene = GetScene();
+        DAVA::FilePath scenePath = scene->GetScenePath();
+        QString filePath = FileDialog::getSaveFileName(GetParentWidget()->globalOperations->GetGlobalParentWidget(),
+                                                       "Save Scene Image",
+                                                       scenePath.GetDirectory().GetAbsolutePathname().c_str(),
+                                                       PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+
+        if (filePath.isEmpty())
+            return;
+
+        SceneImageGrabber::Params params;
+        params.scene = scene;
+        params.cameraToGrab = GetCamera(entityItem->GetEntity());
+        DVASSERT(params.cameraToGrab.Get() != nullptr);
+        params.imageSize = DAVA::Size2i(SettingsManager::GetValue(Settings::Scene_Grab_Size_Width).AsInt32(),
+                                        SettingsManager::GetValue(Settings::Scene_Grab_Size_Height).AsInt32());
+        params.outputFile = filePath.toStdString();
+
+        SceneImageGrabber::GrabImage(params);
     }
 
     void PerformSaveEffectEmitters(bool forceAskFileName)
