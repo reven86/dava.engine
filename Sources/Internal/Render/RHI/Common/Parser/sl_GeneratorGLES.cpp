@@ -947,9 +947,16 @@ void GLESGenerator::OutputStatements(int indent, HLSLStatement* statement, const
                     m_writer.BeginLine(indent, declaration->fileName, declaration->line);
                     if (indent == 0)
                     {
-                        // At the top level, we need the "uniform" keyword.
-                        if (!(declaration->type.flags & HLSLTypeFlag_Property))
+                        // At the top level, we need the "uniform" keyword
+                        if (declaration->type.flags & HLSLTypeFlag_Const)
+                        {
+                            m_writer.Write("const ");
+                        }
+                        else
+                        {
+                            if (!(declaration->type.flags & HLSLTypeFlag_Property))
                             m_writer.Write("uniform ");
+                        }
                     }
                     OutputDeclaration(declaration);
 
