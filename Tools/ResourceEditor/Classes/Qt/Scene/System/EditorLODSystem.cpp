@@ -419,7 +419,7 @@ void EditorLODSystem::CreatePlaneLOD(int32 fromLayer, uint32 textureSize, const 
             }
             else
             {
-                Logger::Error("Cannot create planeLod for layer %d: no geometry", fromLayer);
+                Logger::Error("Cannot create planeLod from not exiting geometry at layer %d", fromLayer);
             }
         }
     }
