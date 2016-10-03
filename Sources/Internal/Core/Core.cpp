@@ -268,6 +268,8 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
+
+    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -307,6 +309,7 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -945,10 +948,15 @@ void* DAVA::Core::GetNativeWindow() const
     return nullptr;
 }
 
-IPackManager& Core::GetPackManager()
+IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+const ModuleManager& Core::GetModuleManager() const
+{
+    return moduleManager;
 }
 
 } // namespace DAVA

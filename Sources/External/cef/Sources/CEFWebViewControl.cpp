@@ -153,8 +153,29 @@ Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
+    // WORKAROUND PART 1 BEGIN -->
+    // In off-screen rednering mode, when resizing webView on devices with
+    // screen scaling other than 1.0f it can be repaint with bad size (without taking into
+    // account that scale). Possible it is a CEF bug... or we don't understand how to
+    // use off-screen rendering right.
+    // But when we switch visibility off/on this cause CEF to invoke OnPaint with right sizes,
+    // so we can workaround this problem.
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(true);
+    }
+    // <--- WORKAROUND PART 1 END
+
     webPageRender->SetViewRect(rect);
     cefBrowser->GetHost()->WasResized();
+
+    // WORKAROUND LAST PART 2 BEGIN -->
+    // See PART 1 description higher
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(false);
+    }
+    // <-- WORKAROUND PART 2 END
 }
 
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
@@ -456,13 +477,10 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
-         webViewPhPos = webView.GetAbsolutePosition();
-//         webViewPhPos.x += vcs->GetPhysicalDrawOffset().dx;
-//         webViewPhPos.y += vcs->GetPhysicalDrawOffset().dy;
+        webViewPos = webView.GetAbsolutePosition();
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -492,13 +510,30 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     }
 }
 
+void CEFWebViewControl::OnPhSizeChanged(Window &, Size2f)
+{
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(true);
+    }
+    // <--- WORKAROUND PART 1 END
+
+    cefBrowser->GetHost()->NotifyScreenInfoChanged();
+
+    // WORKAROUND LAST PART 2 BEGIN -->
+    // See PART 1 description higher
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(false);
+    }
+}
+
 void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
-    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
-    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int32 mouseType = CEFDetails::ConvertMouseTypeDavaToCef(input);
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(mouseType);
@@ -508,19 +543,12 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
     host->SendMouseClickEvent(clickEvent, type, mouseUp, clickCount);
 }
 
-void CEFWebViewControl::OnPhSizeChanged(Window &, Size2f)
-{
-    cefBrowser->GetHost()->NotifyScreenInfoChanged();
-    cefBrowser->GetHost()->WasResized();
-}
-
 void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
-    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
-    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
@@ -530,9 +558,8 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    VirtualCoordinatesSystem *vcs = UIControlSystem::Instance()->vcs;
-    clickEvent.x = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.x - webViewPhPos.x));
-    clickEvent.y = static_cast<int>(vcs->ConvertVirtualToInputX(input->point.y - webViewPhPos.x));
+    clickEvent.x = static_cast<int>(input->point.dx - webViewPos.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewPos.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
     int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);

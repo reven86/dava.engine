@@ -3,6 +3,10 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 
+#if defined(__DAVAENGINE_MACOS__)
+#include "AssertGuardMacOSHack.h"
+#endif
+
 #include <QApplication>
 #include <QAbstractEventDispatcher>
 #include <QWidget>
@@ -67,5 +71,8 @@ bool ToolsAssetGuard::InnerShow(DAVA::DVAssertMessage::eModalType modalType, con
         filter.reset(new EventFilter());
     }
 
+#if defined(__DAVAENGINE_MACOS__)
+    MacOSRunLoopGuard macOSGuard;
+#endif
     return DAVA::DVAssertMessage::InnerShow(DAVA::DVAssertMessage::ALWAYS_MODAL, message);
 }

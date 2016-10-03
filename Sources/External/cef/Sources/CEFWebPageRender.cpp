@@ -52,7 +52,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
 
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -72,7 +72,7 @@ CEFWebPageRender::CEFWebPageRender()
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
 
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -123,6 +123,11 @@ void CEFWebPageRender::SetVisible(bool visibility)
     }
 }
 
+bool CEFWebPageRender::IsVisible() const
+{
+    return isVisible;
+}
+
 void CEFWebPageRender::SetBackgroundTransparency(bool value)
 {
     transparency = value;
@@ -159,18 +164,18 @@ void CEFWebPageRender::ResetCursor()
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
     VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-    Rect wrect = vcs->ConvertVirtualToInput(logicalViewRect);
+    Rect wrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
  
-    rect = CefRect(0, 0, logicalViewRect.dx, logicalViewRect.dy);
+    rect = CefRect(0, 0, static_cast<int>(logicalViewRect.dx), static_cast<int>(logicalViewRect.dy));
     return true;
 }
 
 bool CEFWebPageRender::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info)
 {
     VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-    Rect wrect = vcs->ConvertVirtualToInput(logicalViewRect);
+    Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
 
-    screen_info.device_scale_factor = 1.0f; // logicalViewRect.dx / wrect.dx;
+    screen_info.device_scale_factor = 1.0f; // phrect.dx / logicalViewRect.dx;
     screen_info.depth = 32;
     screen_info.depth_per_component = 8;
     screen_info.is_monochrome = 0;

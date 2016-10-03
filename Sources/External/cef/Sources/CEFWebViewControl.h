@@ -103,12 +103,13 @@ private:
     Window* window = nullptr;
 #endif
     UIWebView& webView;
-    Vector2 webViewPhPos;
+    Vector2 webViewPos;
     IUIWebViewDelegate* delegate = nullptr;
     CefRefPtr<CefBrowser> cefBrowser;
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;
     bool pageLoaded = false;
+    int needRedraw = 0;
     SigConnectionID onPhSzChangedId;
 };
 

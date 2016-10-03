@@ -79,18 +79,6 @@ private slots:
     void onTabContextMenuRequested(const QPoint& pos);
 
 private:
-    enum
-    {
-        CHECKED_NOTHING = 0x0,
-
-        CHECKED_TEMPLATE = 0x1,
-        CHECKED_GROUP = 0x2,
-        CHECKED_PROPERTIES = 0x4,
-        CHECKED_TEXTURES = 0x8,
-
-        CHECKED_ALL = 0xff
-    };
-
     QString GetTemplatePath(DAVA::int32 index) const;
     DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile);
 
@@ -99,22 +87,6 @@ private:
     void setTemplatePlaceholder(const QString& text);
 
     void UpdateContent(SceneEditor2* scene);
-
-    void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-                               DAVA::SerializationContext* context) const;
-    void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                               DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const;
-    void StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                            DAVA::KeyedArchive* flagsArchive) const;
-    void StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                                 DAVA::KeyedArchive* propertiesArchive) const;
-
-    void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-                                             DAVA::SerializationContext* context, DAVA::uint32 options);
-    void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
-    void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
-    void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
-                                          const DAVA::FilePath& scenePath);
 
     QtPropertyData* AddSection(const DAVA::FastName& sectionName);
 
