@@ -19,7 +19,7 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* ebackend);
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
     PlatformCore(const PlatformCore&) = delete;
@@ -31,13 +31,11 @@ public:
 
     void Init();
     void Run();
+    void PrepareToQuit();
     void Quit();
 
 private:
-    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
-
-private:
-    EngineBackend* engineBackend = nullptr;
+    EngineBackend& engineBackend;
     std::unique_ptr<NativeService> nativeService;
 
     static HINSTANCE hinstance;

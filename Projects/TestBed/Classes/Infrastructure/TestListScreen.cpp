@@ -1,14 +1,9 @@
 #include "Infrastructure/TestListScreen.h"
 #include <Utils/UTF8Utils.h>
 
-using namespace DAVA;
+#include <UI/Layouts/UISizePolicyComponent.h>
 
-TestListScreen::TestListScreen()
-    : UIScreen()
-    , testsGrid(nullptr)
-    , cellHeight(50)
-{
-}
+using namespace DAVA;
 
 TestListScreen::~TestListScreen()
 {
@@ -31,8 +26,16 @@ void TestListScreen::LoadResources()
 
     Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
 
-    testsGrid = new UIList(Rect(0.0, 0.0, static_cast<DAVA::float32>(screenSize.dx), static_cast<DAVA::float32>(screenSize.dy)), UIList::ORIENTATION_VERTICAL);
+    testsGrid = new UIList(Rect(), UIList::ORIENTATION_VERTICAL);
     testsGrid->SetDelegate(this);
+    testsGrid->SetDebugDraw(true);
+
+    UISizePolicyComponent* sizePolicy = testsGrid->GetOrCreateComponent<UISizePolicyComponent>();
+    sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
+    sizePolicy->SetVerticalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
+    sizePolicy->SetHorizontalValue(100.0f);
+    sizePolicy->SetVerticalValue(100.0f);
+
     AddControl(testsGrid);
 }
 
@@ -60,9 +63,15 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
     const char8 cellName[] = "TestButtonCell";
     UIStaticText* buttonText = nullptr;
     UIListCell* c = list->GetReusableCell(cellName); //try to get cell from the reusable cells store
-    if (!c)
+    if (c == nullptr)
     { //if cell of requested type isn't find in the store create new cell
-        c = new UIListCell(Rect(0., 0., static_cast<float32>(list->size.x), CellHeight(list, index)), cellName);
+        c = new UIListCell(Rect(), cellName);
+        c->SetDebugDraw(true);
+        {
+            UISizePolicyComponent* sizePolicy = c->GetOrCreateComponent<UISizePolicyComponent>();
+            sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
+            sizePolicy->SetHorizontalValue(100.0f);
+        }
 
         buttonText = new UIStaticText(Rect(0., 0., static_cast<float32>(list->size.x), CellHeight(list, index)));
         buttonText->SetName(buttonName);
@@ -74,6 +83,11 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
         font->SetSize(static_cast<float32>(20));
         buttonText->SetFont(font);
         buttonText->SetDebugDraw(true);
+        {
+            UISizePolicyComponent* sizePolicy = buttonText->GetOrCreateComponent<UISizePolicyComponent>();
+            sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
+            sizePolicy->SetHorizontalValue(100.0f);
+        }
 
         SafeRelease(font);
         c->GetBackground()->SetColor(Color(0.75, 0.75, 0.75, 0.5));
