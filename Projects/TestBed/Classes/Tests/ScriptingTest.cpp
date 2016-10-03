@@ -50,9 +50,9 @@ DemoObj demoObj;
 Reflection objRef;
 LuaScript* script = nullptr;
 
-static const String demo_script = R"script(DV.Debug("Script loaded")
+static const String demo_script = R"script(DV.Debug("LUA: Script loaded")
 function main(int, str, ref)
-    DV.Debug("Main function")
+    DV.Debug("LUA: Main function")
     return int, str, ref
 end
 )script";

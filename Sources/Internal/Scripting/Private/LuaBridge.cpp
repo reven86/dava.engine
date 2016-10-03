@@ -90,6 +90,7 @@ Any lua_checkdvany(lua_State* L, int32 index)
 void lua_pushdvany(lua_State* L, const Any& refl)
 {
     Any* pAny = static_cast<Any*>(lua_newuserdata(L, sizeof(Any)));
+    Memset(pAny, 0, sizeof(Any));
     *pAny = refl;
     luaL_getmetatable(L, AnyTName);
     lua_setmetatable(L, -2);
@@ -169,6 +170,7 @@ Reflection lua_checkdvreflection(lua_State* L, int32 index)
 void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
     Reflection* pRef = static_cast<Reflection*>(lua_newuserdata(L, sizeof(Reflection)));
+    Memset(pRef, 0, sizeof(Reflection));
     *pRef = refl;
     luaL_getmetatable(L, ReflectionTName);
     lua_setmetatable(L, -2);
