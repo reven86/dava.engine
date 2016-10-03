@@ -6,6 +6,7 @@
 #include "CommandLine/SceneExporter/SceneExporterTool.h"
 #include "CommandLine/StaticOcclusion/StaticOcclusionTool.h"
 #include "CommandLine/Dump/DumpTool.h"
+#include "CommandLine/Dump/SceneImageDump.h"
 #include "CommandLine/Beast/BeastCommandLineTool.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorTool.h"
 #include "CommandLine/Version/VersionTool.h"
@@ -33,6 +34,7 @@ void CommandLineManager::CreateTools()
     commandLineTools.emplace_back(new BeastCommandLineTool());
 #endif //#if defined (__DAVAENGINE_BEAST__)
     commandLineTools.emplace_back(new VersionTool());
+    commandLineTools.emplace_back(new SceneImageDump());
 }
 
 CommandLineManager::~CommandLineManager() = default;

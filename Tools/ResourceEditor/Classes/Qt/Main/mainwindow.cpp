@@ -20,6 +20,7 @@
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
@@ -77,7 +78,7 @@
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
 #include "Engine/Engine.h"
@@ -88,6 +89,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 #include "Utils/StringFormat.h"
 
 #include <QActionGroup>
@@ -485,7 +487,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
     if (SaveTilemask())
     {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(gpu)));
-        DAVA::Texture::SetDefaultGPU(gpu);
+        DAVA::Texture::SetGPULoadingOrder({ gpu });
 
         SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
@@ -1578,10 +1580,7 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
-    if (SetVisibilityToolEnabledIfPossible(enabled))
-    {
-        SetLandscapeInstancingEnabled(false);
-    }
+    SetVisibilityToolEnabledIfPossible(enabled);
 }
 
 void QtMainWindow::OnRefreshVisibilitySystem()
@@ -2431,10 +2430,10 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
     {
         SetVisibilityToolEnabledIfPossible(false);
     }
-    SetLandscapeInstancingEnabled(anyEditorEnabled);
-
     ui->actionForceFirstLODonLandscape->setChecked(anyEditorEnabled);
     OnForceFirstLod(anyEditorEnabled);
+
+    UpdateLandscapeRenderMode();
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -3333,19 +3332,35 @@ bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
     }
 
     ui->actionEnableVisibilitySystem->setChecked(enabled);
+    UpdateLandscapeRenderMode();
+
     return enabled;
 }
 
-void QtMainWindow::SetLandscapeInstancingEnabled(bool enabled)
+void QtMainWindow::UpdateLandscapeRenderMode()
 {
     DAVA::Landscape* landscape = FindLandscape(GetCurrentScene());
+    if (landscape != nullptr)
+    {
+        bool visibiilityEnabled = DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM);
+        bool anyToolEnabled = GetCurrentScene()->GetEnabledTools() != 0;
+        bool enableInstancing = anyToolEnabled || !visibiilityEnabled;
 
-    if (landscape == nullptr)
-        return;
+        if (anyToolEnabled)
+        {
+            DVASSERT(visibiilityEnabled == false);
+        }
+        if (visibiilityEnabled)
+        {
+            DVASSERT(anyToolEnabled == false)
+        }
 
-    landscape->SetRenderMode(enabled ?
-                             DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
-                             DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING);
+        DAVA::Landscape::RenderMode newRenderMode = enableInstancing ?
+        DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
+        DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING;
+
+        landscape->SetRenderMode(newRenderMode);
+    }
 }
 
 bool QtMainWindow::ParticlesArePacking() const

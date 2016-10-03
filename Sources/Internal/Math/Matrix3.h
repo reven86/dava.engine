@@ -1,8 +1,6 @@
-#ifndef __DAVAENGINE_MATH2DMATRIX3_H__
-#define __DAVAENGINE_MATH2DMATRIX3_H__
+#pragma once
 
-#include <math.h>
-
+#include <cmath>
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "Math/MathDefines.h"
@@ -122,8 +120,8 @@ inline void Matrix3::Identity()
 
 inline void Matrix3::CreateRotation(const Vector3& r, float32 angleInRadians)
 {
-    float32 cosA = cosf(angleInRadians);
-    float32 sinA = sinf(angleInRadians);
+    float32 cosA = std::cos(angleInRadians);
+    float32 sinA = std::sin(angleInRadians);
     Identity();
     _data[0][0] = cosA + (1 - cosA) * r.x * r.x;
     _data[0][1] = (1 - cosA) * r.x * r.y - r.z * sinA;
@@ -153,8 +151,8 @@ inline void Matrix3::BuildRotation(float32 cosA, float32 sinA)
 
 inline void Matrix3::BuildRotation(float32 angle)
 {
-    float32 cosA = cosf(angle);
-    float32 sinA = sinf(angle);
+    float32 cosA = std::cos(angle);
+    float32 sinA = std::sin(angle);
 
     BuildRotation(cosA, sinA);
 }
@@ -364,7 +362,7 @@ inline void Matrix3::Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const
     // U stores the entries U[0] = u01, U[1] = u02, U[2] = u12
 
     // build orthogonal matrix Q
-    float32 fInvLength = sqrtf(_data[0][0] * _data[0][0] + _data[1][0] * _data[1][0] + _data[2][0] * _data[2][0]);
+    float32 fInvLength = std::sqrt(_data[0][0] * _data[0][0] + _data[1][0] * _data[1][0] + _data[2][0] * _data[2][0]);
 
     kQ._data[0][0] = _data[0][0] * fInvLength;
     kQ._data[1][0] = _data[1][0] * fInvLength;
@@ -375,7 +373,7 @@ inline void Matrix3::Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const
     kQ._data[0][1] = _data[0][1] - fDot * kQ._data[0][0];
     kQ._data[1][1] = _data[1][1] - fDot * kQ._data[1][0];
     kQ._data[2][1] = _data[2][1] - fDot * kQ._data[2][0];
-    fInvLength = sqrtf(kQ._data[0][1] * kQ._data[0][1] + kQ._data[1][1] * kQ._data[1][1] + kQ._data[2][1] * kQ._data[2][1]);
+    fInvLength = std::sqrt(kQ._data[0][1] * kQ._data[0][1] + kQ._data[1][1] * kQ._data[1][1] + kQ._data[2][1] * kQ._data[2][1]);
 
     kQ._data[0][1] *= fInvLength;
     kQ._data[1][1] *= fInvLength;
@@ -391,7 +389,7 @@ inline void Matrix3::Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const
     kQ._data[0][2] -= fDot * kQ._data[0][1];
     kQ._data[1][2] -= fDot * kQ._data[1][1];
     kQ._data[2][2] -= fDot * kQ._data[2][1];
-    fInvLength = sqrtf(kQ._data[0][2] * kQ._data[0][2] + kQ._data[1][2] * kQ._data[1][2] + kQ._data[2][2] * kQ._data[2][2]);
+    fInvLength = std::sqrt(kQ._data[0][2] * kQ._data[0][2] + kQ._data[1][2] * kQ._data[1][2] + kQ._data[2][2] * kQ._data[2][2]);
 
     kQ._data[0][2] *= fInvLength;
     kQ._data[1][2] *= fInvLength;
@@ -402,7 +400,7 @@ inline void Matrix3::Decomposition(Matrix3& kQ, Vector3& kD, Vector3& kU) const
     kQ._data[0][2] * kQ._data[1][0] * kQ._data[2][1] - kQ._data[0][2] * kQ._data[1][1] * kQ._data[2][0] -
     kQ._data[0][1] * kQ._data[1][0] * kQ._data[2][2] - kQ._data[0][0] * kQ._data[1][2] * kQ._data[2][1];
 
-    if (fDet < 0.0)
+    if (fDet < 0.0f)
     {
         for (size_t iRow = 0; iRow < 3; iRow++)
             for (size_t iCol = 0; iCol < 3; iCol++)
@@ -454,5 +452,3 @@ inline bool Matrix3::operator!=(const Matrix3& _m) const
 }
 
 }; // end of namespace DAVA
-
-#endif // __DAVAENGINE_MATH2DMATRIX3_H__

@@ -114,7 +114,7 @@ void SpritesPackerModule::CloseWaitDialog()
 
 void SpritesPackerModule::ReloadObjects()
 {
-    DAVA::Sprite::ReloadSprites(DAVA::Texture::GetDefaultGPU());
+    DAVA::Sprite::ReloadSprites();
 
     const DAVA::Vector<DAVA::eGPUFamily>& gpus = spritesPacker->GetResourcePacker().requestedGPUs;
     if (gpus.empty() == false)

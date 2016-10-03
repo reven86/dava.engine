@@ -10,6 +10,8 @@
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
+#include <QQuickWindow>
+#include <QQuickItem>
 #include <QOpenGLContext>
 #include <QQuickItem>
 
@@ -98,10 +100,19 @@ void RenderWidget::OnActiveFocusItemChanged()
     }
 }
 
+void RenderWidget::OnActiveFocusItemChanged()
+{
+    QQuickItem* item = quickWindow()->activeFocusItem();
+    if (item != nullptr)
+    {
+        item->installEventFilter(this);
+    }
+}
+
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = devicePixelRatioF();
+    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height(), dpi);
     emit Resized(size.width(), size.height());

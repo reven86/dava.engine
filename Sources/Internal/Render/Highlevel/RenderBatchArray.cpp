@@ -1,5 +1,4 @@
 #include "Render/Highlevel/RenderBatchArray.h"
-#include "Debug/Stats.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderPass.h"
 
@@ -19,8 +18,6 @@ bool RenderBatchArray::MaterialCompareFunction(const RenderBatch* a, const Rende
 
 void RenderBatchArray::Sort(Camera* camera)
 {
-    TIME_PROFILE("RenderBatchArray::Sort");
-
     // Need sort
     sortFlags |= SORT_REQUIRED;
 

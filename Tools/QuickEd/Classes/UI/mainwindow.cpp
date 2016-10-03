@@ -12,7 +12,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "Preferences/PreferencesStorage.h"
@@ -165,7 +165,7 @@ void MainWindow::InitLanguageBox()
 void MainWindow::FillComboboxLanguages(const Project* project)
 {
     QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
-    bool wasBlocked = comboboxLanguage->blockSignals(true); //performace fix
+    bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
     comboboxLanguage->clear();
     comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
     comboboxLanguage->setCurrentText(currentText);

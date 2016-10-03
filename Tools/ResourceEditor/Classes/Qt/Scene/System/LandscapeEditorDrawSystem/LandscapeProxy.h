@@ -50,7 +50,6 @@ public:
 
     void SetToolTexture(DAVA::Texture* texture, bool mixColors);
 
-    DAVA::RenderObject* GetRenderObject();
     void SetHeightmap(DAVA::Heightmap* heightmap);
 
     void CursorEnable();
@@ -94,8 +93,6 @@ protected:
     DAVA::Vector4 cursorCoordSize;
 
     eLandscapeMode mode = MODE_ORIGINAL_LANDSCAPE;
-
-    void UpdateDisplayedTexture();
 
     DAVA::Texture* cursorTexture = nullptr;
 };

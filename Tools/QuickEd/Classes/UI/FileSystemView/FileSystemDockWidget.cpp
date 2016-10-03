@@ -1,9 +1,17 @@
+#include "FileSystemDockWidget.h"
+
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
-#include "FileSystemDockWidget.h"
+
 #include "ValidatedTextInputDialog.h"
 #include "FileSystemModel.h"
+#include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/Utils/Utils.h"
+#include "QtTools/ProjectInformation/ProjectStructure.h"
+
+#include "Project/Project.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QClipboard>
@@ -17,17 +25,37 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
+#include <QTimer>
 
-#include "QtTools/FileDialog/FileDialog.h"
-#include "QtTools/Utils/Utils.h"
-#include "QtHelpers/HelperFunctions.h"
-#include "Project/Project.h"
+namespace FileSystemDockWidgetDetails
+{
+template <typename T>
+QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex& rootIndex, T&& predicate)
+{
+    QModelIndexList modelIndexList;
+    QModelIndex parentIndex = index.parent();
+
+    while (parentIndex != rootIndex)
+    {
+        if (predicate(parentIndex))
+        {
+            //to expand or fetch items we reverse list to walk from parent to child
+            modelIndexList.push_front(parentIndex);
+        }
+        parentIndex = parentIndex.parent();
+    }
+    return modelIndexList;
+}
+}
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
     , model(new FileSystemModel(this))
 {
+    DAVA::Vector<DAVA::String> extensions = { "yaml" };
+    projectStructure.reset(new ProjectStructure(extensions));
+
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -39,6 +67,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     setFilterFixedString("");
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
+
+    connect(model, &QFileSystemModel::directoryLoaded, this, &FileSystemDockWidget::OnDirectoryLoaded);
 
     ui->treeView->setModel(model);
     ui->treeView->hideColumn(0);
@@ -84,6 +114,10 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
     connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
+    findInFilesAction = FindFileDialog::CreateFindInFilesAction(parent);
+    connect(findInFilesAction, &QAction::triggered, this, &FileSystemDockWidget::FindInFiles);
+    addAction(findInFilesAction);
+
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
@@ -99,18 +133,38 @@ FileSystemDockWidget::~FileSystemDockWidget() = default;
 
 void FileSystemDockWidget::SetProjectDir(const QString& path)
 {
-    if (path.isEmpty())
-    {
-        ui->treeView->hideColumn(0);
-    }
-    else
+    isAvailable = !path.isEmpty();
+    findInFilesAction->setEnabled(isAvailable);
+
+    if (isAvailable)
     {
         QDir dir(path);
-        auto index = model->setRootPath(dir.path() + Project::GetScreensRelativePath());
+        QString uiPath = dir.path() + Project::GetScreensRelativePath();
+
+        auto index = model->setRootPath(uiPath);
         ui->treeView->setRootIndex(index);
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
+
+        projectStructure->SetProjectDirectory(uiPath.toStdString());
     }
+    else
+    {
+        ui->treeView->hideColumn(0);
+
+        projectStructure->SetProjectDirectory(DAVA::FilePath());
+    }
+}
+
+void FileSystemDockWidget::FindInFiles()
+{
+    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", parentWidget());
+    if (filePath.isEmpty())
+    {
+        return;
+    }
+    ShowAndSelectFile(filePath);
+    emit OpenPackageFile(filePath);
 }
 
 //refresh actions by menu invoke pos
@@ -343,6 +397,35 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
     UpdateActionsWithShortcutsState(indexes);
 }
 
+void FileSystemDockWidget::OnDirectoryLoaded()
+{
+    if (!indexToSetCurrent.isValid())
+    {
+        return;
+    }
+    QModelIndex rootIndex = ui->treeView->rootIndex();
+    auto predicate = [this](const QModelIndex& index) {
+        return model->canFetchMore(index);
+    };
+    QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, predicate);
+    if (!indexes.isEmpty())
+    {
+        return;
+    }
+
+    auto dummyPredicate = [this](const QModelIndex& index) {
+        return true;
+    };
+    indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, dummyPredicate);
+    for (const QModelIndex& index : indexes)
+    {
+        ui->treeView->expand(index);
+    }
+
+    ui->treeView->setCurrentIndex(indexToSetCurrent);
+    indexToSetCurrent = QPersistentModelIndex();
+}
+
 void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList& indexes)
 {
     bool canDelete = false;
@@ -359,4 +442,27 @@ void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList
     deleteAction->setEnabled(canDelete);
     openFileAction->setEnabled(canOpen);
     openFileAction->setVisible(canOpen);
+}
+
+void FileSystemDockWidget::ShowAndSelectFile(const QString& filePath)
+{
+    DVASSERT(!filePath.isEmpty());
+    indexToSetCurrent = model->index(filePath);
+    if (indexToSetCurrent.isValid())
+    {
+        auto predicate = [this](const QModelIndex& index) -> bool {
+            return model->canFetchMore(index);
+        };
+        //get unfetched indexes
+        QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, ui->treeView->rootIndex(), predicate);
+        for (const QModelIndex& index : indexes)
+        {
+            model->fetchMore(index);
+        }
+        //nothing to fetch - can show selected file
+        if (indexes.isEmpty())
+        {
+            OnDirectoryLoaded();
+        }
+    }
 }

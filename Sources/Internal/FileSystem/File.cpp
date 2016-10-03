@@ -37,10 +37,62 @@ File::~File()
     }
 }
 
+static uint64 GetFilePos(FILE* f)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    return _ftelli64(f);
+#else
+    return static_cast<uint64>(ftello(f));
+#endif
+}
+
+static int SetFilePos(FILE* f, int64 position, int32 seekDirection)
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    return _fseeki64(f, position, seekDirection);
+#else
+    return fseeko(f, position, seekDirection);
+#endif
+}
+
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
     File* result = CreateFromSystemPath(filePath, attributes);
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
+}
+
+File* File::LoadFileFromMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            Vector<uint8> fileContent;
+            if (it->second.archive->LoadFile(relative, fileContent))
+            {
+                return DynamicMemoryFile::Create(std::move(fileContent), READ, "~res:/" + relative);
+            }
+        }
+        return nullptr;
+    }
+}
+
+bool File::IsFileInMountedArchive(const String& packName, const String& relative)
+{
+    FileSystem* fs = FileSystem::Instance();
+    {
+        LockGuard<Mutex> lock(fs->accessArchiveMap);
+
+        auto it = fs->resArchiveMap.find(packName);
+        if (it != end(fs->resArchiveMap))
+        {
+            return it->second.archive->HasFile(relative);
+        }
+        return false;
+    }
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
@@ -66,27 +118,17 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 #else
         IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif
-        if (pm != nullptr && pm->IsGpuPacksInitialized())
+
+        if (nullptr != pm && pm->IsInitialized())
         {
             const String& packName = pm->FindPackName(filename);
             if (!packName.empty())
             {
-                auto it = fileSystem->resArchiveMap.find(packName);
-                if (it != end(fileSystem->resArchiveMap))
+                File* file = LoadFileFromMountedArchive(packName, relative);
+                if (file != nullptr)
                 {
-                    if (it->second.archive->LoadFile(relative, contentAndSize))
-                    {
-                        return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
-                    }
+                    return file;
                 }
-            }
-        }
-
-        for (auto& pair : fileSystem->resArchiveMap)
-        {
-            if (pair.second.archive->LoadFile(relative, contentAndSize))
-            {
-                return DynamicMemoryFile::Create(std::move(contentAndSize), READ, filename);
             }
         }
     }
@@ -116,8 +158,8 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
 
 File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
-    FILE* file = 0;
-    uint32 size = 0;
+    FILE* file = nullptr;
+    uint64 size = 0;
     FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
@@ -137,15 +179,23 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
             File* fromAPK = CreateFromAPK(filePath, attributes);
             return fromAPK; // simpler debugging on android
 #else
+#ifdef __DAVAENGINE_DEBUG__
+// this is a last place where we search for file, so help
+// developers a litle and add some logs
+// String p = UTF8Utils::EncodeToUTF8(path);
+// Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
+#endif
             return nullptr;
 #endif
         }
-        if (0 != fseek(file, 0, SEEK_END))
+        if (0 != SetFilePos(file, 0, SEEK_END))
         {
             Logger::Error("fseek end error");
         }
-        size = static_cast<uint32>(ftell(file));
-        if (0 != fseek(file, 0, SEEK_SET))
+
+        size = GetFilePos(file);
+
+        if (0 != SetFilePos(file, 0, SEEK_SET))
         {
             Logger::Error("fseek set error");
         }
@@ -161,8 +211,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
         if (!file)
             return nullptr;
-        fseek(file, 0, SEEK_END);
-        size = static_cast<uint32>(ftell(file));
+        if (0 != SetFilePos(file, 0, SEEK_END))
+        {
+            Logger::Error("fseek set error");
+        }
+        size = GetFilePos(file);
     }
     else
     {
@@ -340,11 +393,7 @@ bool File::GetNextChar(uint8* nextChar)
 
 uint64 File::GetPos() const
 {
-#if defined(__DAVAENGINE_WINDOWS__)
-    return _ftelli64(file);
-#else
-    return static_cast<uint64>(ftello(file));
-#endif
+    return GetFilePos(file);
 }
 
 uint64 File::GetSize() const
@@ -371,11 +420,7 @@ bool File::Seek(int64 position, eFileSeek seekType)
         break;
     }
 
-#if defined(__DAVAENGINE_WINDOWS__)
-    return 0 == _fseeki64(file, position, realSeekType);
-#else
-    return 0 == fseeko(file, position, realSeekType);
-#endif
+    return 0 == SetFilePos(file, position, realSeekType);
 }
 
 bool File::Flush()
