@@ -204,13 +204,13 @@ fp_main( fragment_in input )
             #if FLOWMAP
                 float3 flowData = input.varFlowData;
                 float2 flowDir = float2(tex2D( flowmap, input.varTexCoord0 ).xy) * 2.0 - 1.0;
-                half3 flowSample1 = half3( tex2D( albedo, input.varTexCoord0 + flowDir*flowData.x).rgb);
-                half3 flowSample2 = half3(tex2D( albedo, input.varTexCoord0) + flowDir*flowData.y).rgb);
+                half3 flowSample1 = half3( tex2D( albedo, input.varTexCoord0 + flowDir*flowData.x).rgb );
+                half3 flowSample2 = half3( tex2D( albedo, input.varTexCoord0 + flowDir*flowData.y).rgb );
                 half3 textureColor0 = lerp(flowSample1, flowSample2, half(flowData.z) );
             #else
                 #if TEST_OCCLUSION
                     half4 preColor = half4(tex2D( albedo, input.varTexCoord0 ) );
-                    half3 textureColor0 = min10float3(preColor.rgb*preColor.a);
+                    half3 textureColor0 = half3(preColor.rgb*preColor.a);
                 #else
                     half3 textureColor0 = half3(tex2D( albedo, input.varTexCoord0 ).rgb);
                 #endif
@@ -264,8 +264,8 @@ fp_main( fragment_in input )
 
     #if MATERIAL_DECAL || MATERIAL_LIGHTMAP
         #if SETUP_LIGHTMAP
-            min10float3 lightGray = float3(0.75,0.75,0.75);
-            min10float3 darkGray = float3(0.25,0.25,0.25);
+            half3 lightGray = float3(0.75,0.75,0.75);
+            half3 darkGray = float3(0.25,0.25,0.25);
     
             bool isXodd;
             bool isYodd;            

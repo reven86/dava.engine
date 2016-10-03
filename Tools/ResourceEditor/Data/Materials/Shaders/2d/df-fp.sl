@@ -21,11 +21,11 @@ fp_main( fragment_in input )
 {
     fragment_out    output;
 
-    min10float4 in_color = input.color;
-    float2      in_uv    = input.uv;
+    half4   in_color = input.color;
+    float2  in_uv    = input.uv;
 
-    min10float distance = FP_A8(tex2D( tex, in_uv ));
-    min10float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    half distance = FP_A8(tex2D( tex, in_uv ));
+    half alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     alpha = min(alpha, in_color.a);
 
     output.color = float4(in_color.rgb, alpha);

@@ -67,7 +67,7 @@ fp_main( fragment_in input )
 #endif
 
 #if ALPHATEST
-    min10float alpha = resColor.a;
+    half alpha = resColor.a;
     if( alpha < 0.5 ) discard;
 #endif
 

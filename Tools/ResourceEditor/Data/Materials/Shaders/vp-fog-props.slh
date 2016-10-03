@@ -19,7 +19,7 @@
     #if FOG_ATMOSPHERE
         [statik][fog] property float fogAtmosphereDistance = 100.0 ;
         #if FOG_ATMOSPHERE_MAP
-            DECL_SAMPLERCUBE(atmospheremap) : static,fog : ;
+            [statik][fog] uniform samplerCUBE atmospheremap;
         #else
             [statik][fog] property float3 fogAtmosphereColorSun   = float3(0.0,1.0,0.0) ;
             [statik][fog] property float3 fogAtmosphereColorSky   = float3(0.0,0.0,1.0) ;
