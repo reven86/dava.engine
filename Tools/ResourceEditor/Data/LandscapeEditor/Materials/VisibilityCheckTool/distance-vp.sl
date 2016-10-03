@@ -1,0 +1,81 @@
+#include "common.slh"
+#include "blending.slh"
+
+vertex_in
+{
+    float3  position : POSITION;
+    float3  normal   : NORMAL;
+};
+
+vertex_out
+{
+    float4  position : SV_POSITION;
+    
+    #if defined(ENCODE_DISTANCE)
+
+    float3  directionFromPoint  : TEXCOORD0;
+
+    #elif defined(DECODE_DISTANCE)
+
+    float3  directionFromPoint  : TEXCOORD0;
+
+    #elif defined(REPROJECTION)
+
+    float4  reprojectedCoords   : TEXCOORD0;
+    float   distanceToOrigin    : TEXCOORD1;
+    float4  viewportCoords      : TEXCOORD2;
+
+    #endif
+};
+
+
+
+[dynamic][a] property float4x4 worldViewProjMatrix;
+[dynamic][a] property float4x4 worldMatrix;
+[dynamic][a] property float4x4 viewProjMatrix;
+[dynamic][a] property float3 cameraPosition;
+
+
+#if defined(DECODE_DISTANCE)
+
+[statik][a] property float3 origin;
+
+#elif defined(REPROJECTION)
+
+[statik][a] property float4x4 fixedFrameMatrix;
+[statik][a] property float3 origin;
+
+#endif
+
+
+vertex_out
+vp_main( vertex_in input )
+{
+    vertex_out  output;
+
+    float4 pos = float4(input.position.xyz, 1.0);
+    float4 worldPosition = mul(pos, worldMatrix);
+
+#if defined(ENCODE_DISTANCE)
+
+    output.directionFromPoint = worldPosition.xyz - cameraPosition;
+
+#elif defined(DECODE_DISTANCE)
+
+    output.directionFromPoint = worldPosition.xyz - origin;
+
+#elif defined(REPROJECTION)
+
+    output.reprojectedCoords = mul(worldPosition, fixedFrameMatrix);
+    output.distanceToOrigin = length(worldPosition.xyz - origin);
+
+#endif
+
+    output.position = mul(pos, worldViewProjMatrix);
+
+#if defined(REPROJECTION)
+    output.viewportCoords = output.position;
+#endif
+
+    return output;
+}
