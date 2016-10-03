@@ -288,6 +288,82 @@ def make_fat_darwin_binary(input_files_pathes, output_file_path):
 	args.extend(input_files_pathes)
 	run_process(args)
 
+def get_autotools_macos_env():
+	xcode_developer_path = get_xcode_developer_path()
+	cc_path = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/clang')
+	cxx_path = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++')
+	sysroot_path = os.path.join(xcode_developer_path, 'Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
+
+	env = os.environ.copy()
+	env['CC'] = cc_path
+	env['CXX'] = cxx_path
+	env['CFLAGS'] = '-arch x86_64 -arch i386 -pipe -Os -gdwarf-2 -isysroot {}'.format(sysroot_path)
+	env['CXXFLAGS'] = env['CFLAGS']
+	env['LDFLAGS'] = '-arch x86_64 -arch i386 -isysroot {}'.format(sysroot_path)
+	env['CPP'] = '{} -E'.format(env['CC'])
+	env['CXXCPP'] = '{} -E'.format(env['CXX'])
+
+	return env
+
+def get_autotools_ios_env():
+	xcode_developer_path = get_xcode_developer_path()
+	cc_path = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/clang')
+	cxx_path = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++')
+	sysroot_path = os.path.join(xcode_developer_path, 'Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk')
+
+	env = os.environ.copy()
+	env['CC'] = cc_path
+	env['CXX'] = cxx_path
+	env['CFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -pipe -Os -gdwarf-2 -mios-version-min=6.0 -isysroot {}'.format(sysroot_path)
+	env['CXXFLAGS'] = env['CFLAGS']
+	env['LDFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -isysroot {}'.format(sysroot_path)
+	env['CPP'] = '{} -E'.format(env['CC'])
+	env['CXXCPP'] = '{} -E'.format(env['CXX'])
+
+	return env
+
+def get_autotools_android_arm_env(root_project_path):
+	android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
+	android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64')
+	cross_path = os.path.join(android_prefix, 'bin/arm-linux-androideabi')
+	sysroot_path = os.path.join(android_ndk_folder_path, 'platforms/android-14/arch-arm')
+
+	env = os.environ.copy()
+	env['CPP'] = '{}-cpp'.format(cross_path)
+	env['AR'] = '{}-ar'.format(cross_path)
+	env['AS'] = '{}-as'.format(cross_path)
+	env['NM'] = '{}-nm'.format(cross_path)
+	env['CC'] = '{}-gcc'.format(cross_path)
+	env['CXX'] = '{}-g++'.format(cross_path)
+	env['LD'] = '{}-ld'.format(cross_path)
+	env['RANLIB'] = '{}-ranlib'.format(cross_path)
+	env['CFLAGS'] = '--sysroot={} -I{}/usr/include -I{}/include -O2'.format(sysroot_path, sysroot_path, android_prefix)
+	env['CPPFLAGS'] = env['CFLAGS']
+	env['LDFLAGS'] = '-L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/armeabi-v7a'.format(sysroot_path, android_prefix, android_ndk_folder_path)
+
+	return env
+
+def get_autotools_android_x86_env(root_project_path):
+	android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
+	android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/x86-4.9/prebuilt/darwin-x86_64')
+	cross_path = os.path.join(android_prefix, 'bin/i686-linux-android')
+	sysroot_path = os.path.join(android_ndk_folder_path, 'platforms/android-14/arch-x86')
+
+	env = os.environ.copy()
+	env['CPP'] = '{}-cpp'.format(cross_path)
+	env['AR'] = '{}-ar'.format(cross_path)
+	env['AS'] = '{}-as'.format(cross_path)
+	env['NM'] = '{}-nm'.format(cross_path)
+	env['CC'] = '{}-gcc'.format(cross_path)
+	env['CXX'] = '{}-g++'.format(cross_path)
+	env['LD'] = '{}-ld'.format(cross_path)
+	env['RANLIB'] = '{}-ranlib'.format(cross_path)
+	env['CFLAGS'] = '--sysroot={} -I{}/usr/include -I{}/include -O2'.format(sysroot_path, sysroot_path, android_prefix)
+	env['CPPFLAGS'] = env['CFLAGS']
+	env['LDFLAGS'] = '-L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/x86'.format(sysroot_path, android_prefix, android_ndk_folder_path)
+
+	return env
+
 def get_vs_x86_env():
 	return _get_vs_env('x86')
 
