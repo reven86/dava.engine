@@ -16,7 +16,7 @@ def updateGameCore(className):
                 if "//$UNITTEST_INCLUDE" in line:
                     outfile.write('#include "Tests/'+className+'.h"\n')
                 if "//$UNITTEST_CTOR" in line:
-                    outfile.write('    new '+className+'();\n')
+                    outfile.write('    new '+className+'(this);\n')
                 outfile.write(line)
 
     shutil.move(gc_write, gc_read)

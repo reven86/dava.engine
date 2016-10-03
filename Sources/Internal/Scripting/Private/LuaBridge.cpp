@@ -12,15 +12,11 @@ namespace LuaBridge
 {
 /******************************************************************************/
 
-/**
- * \brief Lua global table name for Dava service functions.
- */
+/// \brief Lua global table name for Dava service functions.
 static const char* DavaNamespace = "DV";
 
-/**
- * \brief Check and pop string variable from stack and print it to log.
- *        Lua stack changes [-1, +0, v]
- */
+/// \brief Check and pop string variable from stack and print it to log.
+///        Lua stack changes [-1, +0, v]
 int32 DV_Debug(lua_State* L)
 {
     luaL_checktype(L, -1, LUA_TSTRING);
@@ -30,10 +26,8 @@ int32 DV_Debug(lua_State* L)
     return 0;
 }
 
-/**
- * \brief Check and pop string variable from stack and print it to log.
- *        Lua stack changes [-1, +0, v]
- */
+/// \brief Check and pop string variable from stack and print it to log.
+///        Lua stack changes [-1, +0, v]
 int32 DV_Error(lua_State* L)
 {
     luaL_checktype(L, -1, LUA_TSTRING);
@@ -57,27 +51,21 @@ void RegisterDava(lua_State* L)
 
 /******************************************************************************/
 
-/**
- * \brief Any metatable type name
- */
+/// \brief Any metatable type name
 static const char* AnyTName = "AnyT";
 
-/**
- * \brief Get userdata from stack with index and return it as Any. 
- *        Return empty any if can't get.
- *        Lua stack changes [-0, +0, -]
- */
+/// \brief Get userdata from stack with index and return it as Any.
+///        Return empty any if can't get.
+///        Lua stack changes [-0, +0, -]
 Any lua_todvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(lua_touserdata(L, index));
     return pAny != nullptr ? *pAny : Any();
 }
 
-/**
- * \brief Check and get userdata from stack with index and return it as Any.
- *        Throw lua_error on incorrect Lua type.
- *        Lua stack changes [-0, +0, v]
- */
+/// \brief Check and get userdata from stack with index and return it as Any.
+///        Throw lua_error on incorrect Lua type.
+///        Lua stack changes [-0, +0, v]
 Any lua_checkdvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
@@ -85,10 +73,8 @@ Any lua_checkdvany(lua_State* L, int32 index)
     return *pAny;
 }
 
-/**
- * \brief Push new userdata with Any metatable to top on the stack.
- *        Lua stack changes [-0, +1, -]
- */
+/// \brief Push new userdata with Any metatable to top on the stack.
+///        Lua stack changes [-0, +1, -]
 void lua_pushdvany(lua_State* L, const Any& any)
 {
     void* userdata = lua_newuserdata(L, sizeof(Any));
@@ -97,10 +83,8 @@ void lua_pushdvany(lua_State* L, const Any& any)
     lua_setmetatable(L, -2);
 }
 
-/**
- * \brief Meta method for presentation Any as string.
- *        Lua stack changes [-0, +1, -]
- */
+/// \brief Meta method for presentation Any as string.
+///        Lua stack changes [-0, +1, -]
 int32 Any__tostring(lua_State* L)
 {
     Any any = lua_checkdvany(L, 1);
@@ -137,27 +121,21 @@ void RegisterAny(lua_State* L)
 
 /******************************************************************************/
 
-/**
- * \brief Reflection metatable type name
- */
+/// \brief Reflection metatable type name
 static const char* ReflectionTName = "ReflectionT";
 
-/**
- * \brief Get userdata from stack with index and return it as Reflection. 
- *        Return empty reflection if can't get.
- *        Lua stack changes [-0, +0, -]
- */
+/// \brief Get userdata from stack with index and return it as Reflection.
+///        Return empty reflection if can't get.
+///        Lua stack changes [-0, +0, -]
 Reflection lua_todvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(lua_touserdata(L, index));
     return pRef != nullptr ? *pRef : Reflection();
 }
 
-/**
- * \brief Check and get userdata from stack with index and return it as Reflection.
- *        Throw lua_error on incorrect Lua type.
- *        Lua stack changes [-0, +0, v]
- */
+/// \brief Check and get userdata from stack with index and return it as Reflection.
+///        Throw lua_error on incorrect Lua type.
+///        Lua stack changes [-0, +0, v]
 Reflection lua_checkdvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
@@ -165,10 +143,8 @@ Reflection lua_checkdvreflection(lua_State* L, int32 index)
     return *pRef;
 }
 
-/**
- * \brief Push new userdata with Reflection metatable to top on the stack.
- *        Lua stack changes [-0, +1, -]
- */
+/// \brief Push new userdata with Reflection metatable to top on the stack.
+///        Lua stack changes [-0, +1, -]
 void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
     void* userdata = lua_newuserdata(L, sizeof(Reflection));
@@ -177,10 +153,8 @@ void lua_pushdvreflection(lua_State* L, const Reflection& refl)
     lua_setmetatable(L, -2);
 }
 
-/**
- * \brief Meta method for presentation Any as string.
- *        Lua stack changes [-0, +1, -]
- */
+/// \brief Meta method for presentation Any as string.
+///        Lua stack changes [-0, +1, -]
 int32 Reflection__tostring(lua_State* L)
 {
     Reflection refl = lua_checkdvreflection(L, 1);
@@ -189,10 +163,8 @@ int32 Reflection__tostring(lua_State* L)
     return 1;
 }
 
-/**
- * \brief Meta method for getting element from Reflection userdata object.
- *        Lua stack changes [-0, +1, v]
- */
+/// \brief Meta method for getting element from Reflection userdata object.
+///        Lua stack changes [-0, +1, v]
 int32 Reflection__index(lua_State* L)
 {
     Reflection self = lua_checkdvreflection(L, 1);
@@ -228,10 +200,8 @@ int32 Reflection__index(lua_State* L)
     return 1;
 }
 
-/**
- * \brief Meta method for setting value to Reflection userdata object.
- *        Lua stack changes [-0, +0, v]
- */
+/// \brief Meta method for setting value to Reflection userdata object.
+///        Lua stack changes [-0, +0, v]
 int32 Reflection__newindex(lua_State* L)
 {
     Reflection self = lua_checkdvreflection(L, 1);
@@ -316,10 +286,8 @@ void RegisterReflection(lua_State* L)
 
 /******************************************************************************/
 
-/**
-* \brief Compare value on top of the stack with metatable named metatableName.
-*        Lua stack changes [-0, +0, v]
-*/
+/// \brief Compare value on top of the stack with metatable named metatableName.
+///        Lua stack changes [-0, +0, v]
 bool lua_equalmetatable(lua_State* L, const char* metatableName)
 {
     luaL_getmetatable(L, metatableName); // stack +1 (top: metatable metatableName)

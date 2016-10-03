@@ -55,6 +55,7 @@ function main(int, str, ref)
     DV.Debug("LUA: Main function")
     return int, str, ref
 end
+return true -- Return in global body works fine
 )script";
 
 ScriptingTest::ScriptingTest(GameCore* g)
@@ -87,9 +88,16 @@ void ScriptingTest::LoadResources()
         try
         {
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            script->RunString(scriptText->GetUtf8Text());
+            int32 nresults = script->ExecuteString(scriptText->GetUtf8Text());
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-            outputText->SetUtf8Text(Format("Load script time: %llu us", time));
+
+            String output = Format("Execute script time: %llu us\n", time);
+            for (int32 i = 0; i < nresults; ++i)
+            {
+                Any val = script->PopAny();
+                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
+            }
+            outputText->SetUtf8Text(output);
             timeText->SetUtf8Text(Format("Time: %llu us", time));
         }
         catch (const LuaException& e)
@@ -101,22 +109,22 @@ void ScriptingTest::LoadResources()
         }
     });
     amap.Put(FastName("RUN_MAIN"), [&]() {
+        int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
+        String strArg = strArgText->GetUtf8Text();
         try
         {
-            int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
-            String strArg = strArgText->GetUtf8Text();
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            Vector<Any> values = script->RunMain({ intArg, strArg, objRef });
+            int32 nresults = script->CallFunction("main", intArg, strArg, objRef);
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-            String output;
-            output += Format("Run main(...) time: %llu us\n", time);
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-            int32 count = int32(values.size());
-            for (int32 i = 0; i < count; ++i)
+
+            String output = Format("Run main(...) time: %llu us\n", time);
+            for (int32 i = 0; i < nresults; ++i)
             {
-                output += Format("%d) %s\n", i, values[i].IsEmpty() ? "<empty>" : values[i].GetType()->GetName());
+                Any val = script->PopAny();
+                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
         }
         catch (const LuaException& e)
         {
@@ -130,17 +138,17 @@ void ScriptingTest::LoadResources()
         try
         {
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            Vector<Any> values = script->RunMain();
+            int32 nresults = script->CallFunction("main");
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-            String output;
-            output += Format("Run main() time: %llu us\n", time);
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-            int32 count = int32(values.size());
-            for (int32 i = 0; i < count; ++i)
+
+            String output = Format("Run main() time: %llu us\n", time);
+            for (int32 i = 0; i < nresults; ++i)
             {
-                output += Format("%d) %s\n", i, values[i].IsEmpty() ? "<empty>" : values[i].GetType()->GetName());
+                Any val = script->PopAny();
+                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
+            timeText->SetUtf8Text(Format("Time: %llu us", time));
         }
         catch (const LuaException& e)
         {
@@ -153,19 +161,20 @@ void ScriptingTest::LoadResources()
     amap.Put(FastName("RESET_SCRIPT"), [&]() {
         SafeDelete(script);
         script = new LuaScript();
-        script->SetGlobalValue("GlobRef", objRef);
+        script->SetGlobalVariable("GlobRef", objRef);
     });
     amap.Put(FastName("RUN_10000"), [&]() {
+        int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
+        String strArg = strArgText->GetUtf8Text();
         try
         {
-            int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
-            String strArg = strArgText->GetUtf8Text();
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
             for (int32 i = 0; i < 10000; ++i)
             {
-                script->RunMain({ intArg, strArg, objRef });
+                script->CallFunction("main", intArg, strArg, objRef);
             }
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+
             outputText->SetUtf8Text(Format("Run 10k main() time: %llu us", time));
             timeText->SetUtf8Text(Format("Time: %llu us", time));
         }
@@ -181,7 +190,7 @@ void ScriptingTest::LoadResources()
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
     objRef = Reflection::Create(&demoObj).ref;
     script = new LuaScript();
-    script->SetGlobalValue("GlobRef", objRef);
+    script->SetGlobalVariable("GlobRef", objRef);
 }
 
 void ScriptingTest::UnloadResources()
