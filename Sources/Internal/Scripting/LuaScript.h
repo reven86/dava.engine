@@ -3,6 +3,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
 #include "Scripting/LuaException.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -105,7 +107,7 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
     }
     catch (const LuaException& e)
     {
-        Logger::Error(Format("LuaException: %s", e.what()).c_str());
+        DAVA::Logger::Error(Format("LuaException: %s", e.what()).c_str());
         return -1;
     }
 }

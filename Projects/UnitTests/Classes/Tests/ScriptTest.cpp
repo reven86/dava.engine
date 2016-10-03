@@ -86,9 +86,9 @@ function main(context)
 end
 )script";
 
-        s.SetGlobalValue("GlobRef", clRef);
-        TEST_VERIFY(s.RunStringSafe(script));
-        TEST_VERIFY(s.RunMainSafe({ clRef }));
+        s.SetGlobalVariable("GlobRef", clRef);
+        TEST_VERIFY(s.ExecStringSafe(script) >= 0);
+        TEST_VERIFY(s.ExecFunctionSafe("main", clRef) >= 0);
         TEST_VERIFY(cl.intVal == 42);
         TEST_VERIFY(FLOAT_EQUAL(cl.floatVal, 3.14f));
         TEST_VERIFY(cl.boolVal == false);
@@ -103,7 +103,7 @@ incorrect script
 
         try
         {
-            s.RunString(error_script);
+            s.ExecString(error_script);
             TEST_VERIFY(false);
         }
         catch (const DAVA::LuaException& e)
@@ -119,10 +119,10 @@ function main()
 end
 )script";
 
-        TEST_VERIFY(s.RunStringSafe(error_script2));
+        TEST_VERIFY(s.ExecStringSafe(error_script2));
         try
         {
-            s.RunMain();
+            s.ExecFunction("main");
             TEST_VERIFY(false);
         }
         catch (const DAVA::LuaException& e)

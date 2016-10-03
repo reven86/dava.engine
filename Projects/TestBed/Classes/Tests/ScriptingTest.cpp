@@ -88,13 +88,13 @@ void ScriptingTest::LoadResources()
         try
         {
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->ExecuteString(scriptText->GetUtf8Text());
+            int32 nresults = script->ExecString(scriptText->GetUtf8Text());
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
 
             String output = Format("Execute script time: %llu us\n", time);
             for (int32 i = 0; i < nresults; ++i)
             {
-                Any val = script->PopAny();
+                Any val = script->PopResult();
                 output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
@@ -114,13 +114,13 @@ void ScriptingTest::LoadResources()
         try
         {
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->CallFunction("main", intArg, strArg, objRef);
+            int32 nresults = script->ExecFunction("main", intArg, strArg, objRef);
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
 
             String output = Format("Run main(...) time: %llu us\n", time);
             for (int32 i = 0; i < nresults; ++i)
             {
-                Any val = script->PopAny();
+                Any val = script->PopResult();
                 output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
@@ -138,13 +138,13 @@ void ScriptingTest::LoadResources()
         try
         {
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->CallFunction("main");
+            int32 nresults = script->ExecFunction("main");
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
 
             String output = Format("Run main() time: %llu us\n", time);
             for (int32 i = 0; i < nresults; ++i)
             {
-                Any val = script->PopAny();
+                Any val = script->PopResult();
                 output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
             }
             outputText->SetUtf8Text(output);
@@ -171,7 +171,7 @@ void ScriptingTest::LoadResources()
             uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
             for (int32 i = 0; i < 10000; ++i)
             {
-                script->CallFunction("main", intArg, strArg, objRef);
+                script->ExecFunction("main", intArg, strArg, objRef);
             }
             uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
 

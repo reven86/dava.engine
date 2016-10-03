@@ -42,7 +42,7 @@ LuaScript::~LuaScript()
     }
 }
 
-int32 LuaScript::ExecuteString(const String& script)
+int32 LuaScript::ExecString(const String& script)
 {
     int32 beginTop = lua_gettop(state->lua); // store current stack size
     int32 res = luaL_loadstring(state->lua, script.c_str()); // stack +1: script chunk
@@ -60,11 +60,11 @@ int32 LuaScript::ExecuteString(const String& script)
     return lastIndex - beginTop; // calculate number of function results
 }
 
-int32 LuaScript::ExecuteStringSafe(const String& script)
+int32 LuaScript::ExecStringSafe(const String& script)
 {
     try
     {
-        return ExecuteString(script);
+        return ExecString(script);
     }
     catch (const LuaException& e)
     {
@@ -73,14 +73,14 @@ int32 LuaScript::ExecuteStringSafe(const String& script)
     }
 }
 
-Any LuaScript::PopAny()
+Any LuaScript::PopResult()
 {
     Any res = LuaBridge::LuaToAny(state->lua, -1);
     lua_pop(state->lua, 1);
     return res;
 }
 
-bool LuaScript::PopAnySafe(Any& any)
+bool LuaScript::PopResultSafe(Any& any)
 {
     bool res = true;
     try
