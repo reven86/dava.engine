@@ -580,7 +580,7 @@ elseif( MACOS )
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Frameworks @executable_path/Libs")
+        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
             set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
         endif()
@@ -823,7 +823,11 @@ if( DEPLOY )
         endforeach()
 
     elseif( APPLE )
-        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
+        if( NOT DEPLOY_DIR_EXECUTABLE )
+            set( DEPLOY_DIR_EXECUTABLE ${DEPLOY_DIR} )
+        endif()
+
+        set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR_EXECUTABLE} )
 
         if( IOS )
 
@@ -858,7 +862,7 @@ if( DEPLOY )
 
     endif()
 
-    if( QT5_FOUND )
+    if( QT5_FOUND AND NOT DAVA_MEGASOLUTION )
         qt_deploy( )
 
     endif()

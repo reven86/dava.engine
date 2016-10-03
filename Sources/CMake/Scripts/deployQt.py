@@ -8,6 +8,7 @@ parser.add_option("-p", action="store", dest="platform", help="Platform where de
 parser.add_option("-q", action="store", dest="qtPath", help="Path to Qt root folder")
 parser.add_option("-d", action="store", dest="deployRoot", help="Root folder of build. {_build/app} for example")
 parser.add_option("-a", action="store", dest="deployArgs", help="Platform specific arguments that put into deplot qt util")
+parser.add_option("-n", action="store", dest="toolName", help="Tool name")
 
 (options, args) = parser.parse_args()
 
@@ -28,8 +29,27 @@ else:
 prevCurrentDir = os.getcwd()
 os.chdir(options.deployRoot)
 
-procces = Popen(deployUtilName + " " + options.deployArgs, shell=True, stdout=PIPE)
-for line in procces.stdout:
-    print line
+if options.platform == "MAC":
+    execDir            = os.path.join( options.deployRoot, '{0}.app/Contents/MacOS'.format( options.toolName ) )
+    pathFileExecute    = os.path.join( execDir, options.toolName  )
+    pathFileExecuteTmp = os.path.join(execDir, 'Root_{0}'.format( options.toolName ) )  
+    os.rename(pathFileExecute, pathFileExecuteTmp )
+    for rootdir, dirs, files in os.walk( execDir ):
+        for file in files: 
+            pathFileProcessed =  os.path.join(rootdir,  file  )              
+            os.rename( pathFileProcessed, pathFileExecute ) 
+            print 'Qt deploy - ', file
+            sys.stdout.flush()
+            procces = Popen(deployUtilName + " " + options.deployArgs, shell=True, stdout=PIPE)
+            for line in procces.stdout:
+                print line
+            os.rename( pathFileExecute, pathFileProcessed )
+    os.rename( pathFileExecuteTmp, pathFileExecute )
+else:
+    procces = Popen(deployUtilName + " " + options.deployArgs, shell=True, stdout=PIPE)
+    for line in procces.stdout:
+        print line
+
+
 os.chdir(prevCurrentDir)
 

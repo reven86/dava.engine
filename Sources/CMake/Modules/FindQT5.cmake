@@ -16,8 +16,13 @@ macro ( qt_deploy )
         return ()
     endif ()
 
+    if( NOT DEPLOY_DIR_ROOT )
+        set( DEPLOY_DIR_ROOT ${DEPLOY_DIR} )
+
+    endif()
+
     set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
-    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR_ROOT})
 
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
@@ -29,7 +34,7 @@ macro ( qt_deploy )
         set(DEPLOY_PLATFORM "WIN")
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR_ROOT}")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
         foreach(ITEM ${BINARY_ITEMS})
             string(TOLOWER ${ITEM} ITEM)
@@ -55,6 +60,8 @@ macro ( qt_deploy )
 
     endif()
 
+    message( "${PROJECT_NAME} ===${DEPLOY_PLATFORM} ===${DEPLOY_QT_FOLDER} ===${DEPLOY_ROOT_FOLDER} ===${DEPLOY_ARGUMENTS}")
+
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
@@ -62,6 +69,7 @@ macro ( qt_deploy )
                     "-q" "${DEPLOY_QT_FOLDER}"
                     "-d" "${DEPLOY_ROOT_FOLDER}"
                     "-a" "${DEPLOY_ARGUMENTS}"
+                    "-n" "${PROJECT_NAME}"
         )
 
 endmacro()
@@ -101,6 +109,8 @@ set_linkage_qt5_modules(LINKAGE_LIST)
 set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
 set(QT5_FOUND 1)
+
+set_property( GLOBAL PROPERTY QT5_FOUND 1 )
 
 if( NOT QT5_FOUND )
     message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  )

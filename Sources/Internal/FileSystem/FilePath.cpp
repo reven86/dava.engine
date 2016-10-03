@@ -111,11 +111,18 @@ void FilePath::InitializeBundleName()
 {
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
     FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    SetBundleName(execDirectory + "Data/");
+    
+#if defined( DATA_RELATIVE_DIRECTORY )
+    String dataRelativeDirectory = DATA_RELATIVE_DIRECTORY;
+#else
+    String dataRelativeDirectory = "Data/";
+#endif
+    
+    SetBundleName(execDirectory + dataRelativeDirectory);
 
     if (workingDirectory != execDirectory)
     {
-        FilePath dataDirPath(workingDirectory + "Data/");
+        FilePath dataDirPath(workingDirectory + dataRelativeDirectory);
         if (FileSystem::Instance()->Exists(dataDirPath))
         {
             AddResourcesFolder(dataDirPath);
