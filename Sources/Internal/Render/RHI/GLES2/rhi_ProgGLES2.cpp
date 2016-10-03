@@ -29,49 +29,26 @@ uint32 ProgGLES2::ConstBuf::CurFrame = 0;
 static void
 DumpShaderTextGLES2(const char* code, unsigned code_sz)
 {
-    char src[64 * 1024];
-    char* src_line[1024];
+    char ss[64 * 1024];
     unsigned line_cnt = 0;
 
-    if (code_sz < sizeof(src))
+    if (code_sz < sizeof(ss))
     {
-        memcpy(src, code, code_sz);
-        src[code_sz] = '\0';
-        memset(src_line, 0, sizeof(src_line));
+        strcpy(ss, code);
 
-        src_line[line_cnt++] = src;
-        for (char* s = src; *s;)
+        const char* line = ss;
+        for (char* s = ss; *s; ++s)
         {
+            if (*s == '\r')
+                *s = ' ';
+
             if (*s == '\n')
             {
                 *s = 0;
-                ++s;
-
-                while (*s && (/**s == '\n'  ||  */ *s == '\r'))
-                {
-                    *s = 0;
-                    ++s;
-                }
-
-                if (!(*s))
-                    break;
-
-                src_line[line_cnt] = s;
+                Logger::Info("%4u |  %s", 1 + line_cnt, line);
+                line = s + 1;
                 ++line_cnt;
             }
-            else if (*s == '\r')
-            {
-                *s = ' ';
-            }
-            else
-            {
-                ++s;
-            }
-        }
-
-        for (unsigned i = 0; i != line_cnt; ++i)
-        {
-            Logger::Info("%4u |  %s", 1 + i, src_line[i]);
         }
     }
     else

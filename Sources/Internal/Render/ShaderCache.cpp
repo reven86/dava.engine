@@ -294,6 +294,12 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }
+    else
+    {
+        DAVA::Logger::Error("failed to get pipeline-state");
+        DAVA::Logger::Info("  vprog-uid = %s", vProgUid.c_str());
+        DAVA::Logger::Info("  fprog-uid = %s", fProgUid.c_str());
+    }
 
     shaderDescriptors[key] = res;
     return res;
