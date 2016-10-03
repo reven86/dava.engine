@@ -406,7 +406,6 @@ void CheckDeviceInfoValid()
 
     auto httpNonProxyHosts = DeviceInfo::GetHTTPNonProxyHosts();
     Logger::Info("http_non_proxy_host: %s", httpNonProxyHosts.c_str());
-    DVASSERT(httpNonProxyHosts == "");
 
     auto httpProxyPort = DeviceInfo::GetHTTPProxyPort();
     Logger::Info("http_proxy_port: %d", httpProxyPort);
