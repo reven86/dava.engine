@@ -119,7 +119,7 @@ function main()
 end
 )script";
 
-        TEST_VERIFY(s.ExecStringSafe(error_script2));
+        TEST_VERIFY(s.ExecStringSafe(error_script2) >= 0);
         try
         {
             s.ExecFunction("main");
