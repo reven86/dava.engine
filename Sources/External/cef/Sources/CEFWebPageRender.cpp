@@ -72,7 +72,7 @@ CEFWebPageRender::CEFWebPageRender()
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
 
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
     contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 }
@@ -123,6 +123,11 @@ void CEFWebPageRender::SetVisible(bool visibility)
     }
 }
 
+bool CEFWebPageRender::IsVisible() const
+{
+    return isVisible;
+}
+
 void CEFWebPageRender::SetBackgroundTransparency(bool value)
 {
     transparency = value;
@@ -158,11 +163,7 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
-    float32 width = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dx);
-    float32 height = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dy);
-
-    rect = CefRect(0, 0, static_cast<int>(width), static_cast<int>(height));
+    rect = CefRect(0, 0, static_cast<int>(logicalViewSize.dx), static_cast<int>(logicalViewSize.dy));
     return true;
 }
 
