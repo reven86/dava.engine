@@ -1379,7 +1379,7 @@ void GLESGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             }
             else
             {
-                OutputExpression(declaration->assignment, &declaration->type);
+                OutputExpression(declaration->assignment, NULL /*&declaration->type*/);
             }
             m_writer.Write(")");
         }
