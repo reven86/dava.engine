@@ -5,6 +5,16 @@ namespace DAVA
 {
 namespace UnitTests
 {
+void TestClass::InitTimeStampForTest(const String& testName)
+{
+    auto iter = std::find_if(tests.begin(), tests.end(), [&testName](const TestInfo& testInfo)
+                             {
+                                 return testInfo.name == testName;
+                             });
+
+    iter->startTime = TestInfo::Clock::now();
+}
+
 void TestClass::SetUp(const String& testName)
 {
 }

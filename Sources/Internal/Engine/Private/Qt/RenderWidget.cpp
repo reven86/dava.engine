@@ -9,6 +9,8 @@
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
+#include <QQuickWindow>
+#include <QQuickItem>
 #include <QOpenGLContext>
 
 namespace DAVA
@@ -19,7 +21,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     setAcceptDrops(true);
     setMouseTracking(true);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::StrongFocus);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setMinimumSize(QSize(width, height));
     setResizeMode(QQuickWidget::SizeViewToRootObject);
@@ -28,6 +30,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget()
@@ -53,10 +56,19 @@ void RenderWidget::OnFrame()
     widgetDelegate->OnFrame();
 }
 
+void RenderWidget::OnActiveFocusItemChanged()
+{
+    QQuickItem* item = quickWindow()->activeFocusItem();
+    if (item != nullptr)
+    {
+        item->installEventFilter(this);
+    }
+}
+
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
-    float32 dpi = devicePixelRatioF();
+    float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height(), dpi);
 }
@@ -128,16 +140,17 @@ void RenderWidget::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::eventFilter(QObject* object, QEvent* e)
 {
-    if (object == quickWindow() && keyEventRecursiveGuard == false)
+    QEvent::Type t = e->type();
+    if ((t == QEvent::KeyPress || t == QEvent::KeyRelease) && keyEventRecursiveGuard == false)
     {
-        keyEventRecursiveGuard = true;
-        SCOPE_EXIT
+        QQuickItem* focusObject = quickWindow()->activeFocusItem();
+        if (object == quickWindow() || object == focusObject)
         {
-            keyEventRecursiveGuard = false;
-        };
-        QEvent::Type t = e->type();
-        if (t == QEvent::KeyPress || t == QEvent::KeyRelease)
-        {
+            keyEventRecursiveGuard = true;
+            SCOPE_EXIT
+            {
+                keyEventRecursiveGuard = false;
+            };
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
             if (t == QEvent::KeyPress)
             {

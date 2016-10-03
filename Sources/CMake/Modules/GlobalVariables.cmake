@@ -88,19 +88,20 @@ elseif( WIN32 AND WINDOWS_UAP )
     set( WINUAP true )
 endif()
 
-set( DAVA_MODULES_DIR               "${DAVA_ROOT_DIR}/Modules")
-set( DAVA_SOURCES_DIR               "${DAVA_ROOT_DIR}/Sources")
+
+set( DAVA_MODULES_DIR                   "${DAVA_ROOT_DIR}/Modules" )
+set( DAVA_SOURCES_DIR                   "${DAVA_ROOT_DIR}/Sources" )
 set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Tools" )
 set( DAVA_ENGINE_DIR                    "${DAVA_SOURCES_DIR}/Internal" )
 set( DAVA_EXTERNAL_DIR                  "${DAVA_SOURCES_DIR}/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
 set( DAVA_THIRD_PARTY_ROOT_PATH         "${DAVA_ROOT_DIR}/Libs" )
 set( DAVA_CONFIGURE_FILES_PATH          "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+set( DAVA_MODULES_FILES_PATH            "${DAVA_ROOT_DIR}/Sources/CMake/Modules" )
 set( DAVA_SCRIPTS_FILES_PATH            "${DAVA_ROOT_DIR}/Sources/CMake/Scripts" )
 set( DAVA_THIRD_PARTY_INCLUDES_PATH     "${DAVA_THIRD_PARTY_ROOT_PATH}/include" 
                                         "${DAVA_ENGINE_DIR}/../External"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/glew/include" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/lua/include" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/icucommon/source/common" 
                                       ) 
@@ -215,3 +216,8 @@ else()
 endif()
 
 load_config ( ${DAVA_CONFIG_PATH} )
+
+if( ANDROID_NDK_TYPE )
+    set( ANDROID_NDK  ${ANDROID_NDK_${ANDROID_NDK_TYPE}} )
+endif()
+

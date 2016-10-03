@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QDebug>
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "Qt/Scene/SceneEditor2.h"
 

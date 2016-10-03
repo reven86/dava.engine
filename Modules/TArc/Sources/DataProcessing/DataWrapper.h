@@ -8,12 +8,13 @@ namespace DAVA
 {
 namespace TArc
 {
-template<typename T> class DataEditor;
+template <typename T>
+class DataEditor;
 class DataListener;
 class DataWrapper
 {
 public:
-    using DataAccessor = DAVA::Function<DAVA::Reflection(const DataContext&)>;
+    using DataAccessor = Function<Reflection(const DataContext&)>;
 
     DataWrapper() = default;
     DataWrapper(const DataWrapper& other) = default;
@@ -26,45 +27,48 @@ public:
     void AddListener(DataListener* listener);
     void RemoveListener(DataListener* listener);
 
-    template<typename T>
+    template <typename T>
     DataEditor<T> CreateEditor();
 
 private:
     friend class Core;
     friend class QtReflected;
-    template<typename T> friend class DataEditor;
-    DataWrapper(const DAVA::ReflectedType* type);
+    template <typename T>
+    friend class DataEditor;
+    DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
     void SetContext(DataContext* context);
 
     void Sync(bool notifyListeners);
-    void NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields = DAVA::Set<DAVA::String>());
-    DAVA::Reflection GetData() const;
+    void SyncWithEditor(const Reflection& etalonData);
+    void NotifyListeners(bool sendNotify, const Set<String>& fields = Set<String>());
+    Reflection GetData() const;
 
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;
 };
 
-template<typename T>
+template <typename T>
 class DataEditor final
 {
 public:
-    DataEditor(DataWrapper& holder, DAVA::Reflection reflection);
+    DataEditor(DataWrapper& holder, Reflection reflection);
     ~DataEditor();
-    
+
     DataEditor(const DataEditor& other) = delete;
     DataEditor& operator=(const DataEditor& other) = delete;
-    
+
     DataEditor(DataEditor&& other);
     DataEditor& operator=(DataEditor&& other);
-    
+
     T* operator->();
-    
+
 private:
-    DAVA::Reflection reflection;
+    Reflection reflection;
     T* dataPtr = nullptr;
+    T copyValue;
     DataWrapper holder;
 };
 } // namespace TArc

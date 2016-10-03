@@ -13,6 +13,8 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
+#include "Concurrency/LockGuard.h"
+#include "PackManager/PackManager.h"
 
 #include "Engine/EngineModule.h"
 
@@ -54,8 +56,6 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    resArchiveMap.clear();
-
     // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
 }
@@ -465,13 +465,33 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             relative = str.substr(6);
         }
 
-        // TODO if packManager initialized we can use index to find pack with filePath
-
-        if (!relative.empty())
+        if (relative.empty())
         {
-            for (auto& pair : resArchiveMap)
+            return false;
+        }
+
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
+#ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
+        IPackManager* pm = nullptr;
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
+#else
+        IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+        if (nullptr != pm && pm->IsInitialized())
+        {
+            const String& packName = pm->FindPackName(pathToCheck);
+            if (!packName.empty())
             {
-                if (pair.second.archive->HasFile(relative))
+                if (File::IsFileInMountedArchive(packName, relative))
                 {
                     return true;
                 }
@@ -869,17 +889,22 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
         item.archive.reset(new ResourceArchive(archiveName));
         item.archiveFilePath = archiveName;
 
-        resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
+        {
+            LockGuard<Mutex> lock(accessArchiveMap);
+            resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
+        }
     }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
+    LockGuard<Mutex> lock(accessArchiveMap);
     resArchiveMap.erase(arhiveName.GetBasename());
 }
 
 bool FileSystem::IsMounted(const FilePath& archiveName) const
 {
+    LockGuard<Mutex> lock(accessArchiveMap);
     return resArchiveMap.find(archiveName.GetBasename()) != end(resArchiveMap);
 }
 

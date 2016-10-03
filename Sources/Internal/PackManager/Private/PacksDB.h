@@ -15,6 +15,7 @@ public:
     ~PacksDB();
 
     const String& FindPack(const FilePath& relativeFilePath) const;
+    void ListFiles(const String& relativePathDir, const Function<void(const String&, const String&)>& fn);
 
     void InitializePacks(Vector<IPackManager::Pack>& out) const;
 

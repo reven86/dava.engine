@@ -10,12 +10,12 @@ namespace TArc
 {
 namespace DataWrapperDetail
 {
-DAVA::Reflection GetDataDefault(const DataContext& context, const DAVA::ReflectedType* type)
+Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
 {
-    DAVA::Reflection ret;
+    Reflection ret;
     if (context.HasData(type))
     {
-        ret = DAVA::Reflection::Create(&context.GetData(type)).ref;
+        ret = Reflection::Create(&context.GetData(type)).ref;
     }
 
     return ret;
@@ -26,13 +26,13 @@ struct DataWrapper::Impl
 {
     DataContext* activeContext = nullptr;
     DataAccessor dataAccessor;
-    DAVA::Vector<DAVA::Any> cachedValues;
+    Vector<Any> cachedValues;
 
-    DAVA::Set<DataListener*> listeners;
+    Set<DataListener*> listeners;
 };
 
-DataWrapper::DataWrapper(const DAVA::ReflectedType* type)
-    : DataWrapper(DAVA::Bind(&DataWrapperDetail::GetDataDefault, std::placeholders::_1, type))
+DataWrapper::DataWrapper(const ReflectedType* type)
+    : DataWrapper(Bind(&DataWrapperDetail::GetDataDefault, std::placeholders::_1, type))
 {
 }
 
@@ -70,17 +70,17 @@ bool DataWrapper::HasData() const
         return false;
     }
 
-    DAVA::Reflection reflection;
+    Reflection reflection;
     try
     {
         reflection = impl->dataAccessor(*impl->activeContext);
     }
     catch (const std::runtime_error& e)
     {
-        DAVA::Logger::Error(e.what());
+        Logger::Error(e.what());
         return false;
     }
-    
+
     return reflection.IsValid();
 }
 
@@ -112,13 +112,13 @@ void DataWrapper::Sync(bool notifyListeners)
     DVASSERT(impl != nullptr);
     if (HasData())
     {
-        DAVA::Reflection reflection = GetData();
-        DAVA::Vector<DAVA::Reflection::Field> fields = reflection.GetFields();
+        Reflection reflection = GetData();
+        Vector<Reflection::Field> fields = reflection.GetFields();
 
         if (impl->cachedValues.size() != fields.size())
         {
             impl->cachedValues.clear();
-            for (const DAVA::Reflection::Field& field : fields)
+            for (const Reflection::Field& field : fields)
             {
                 impl->cachedValues.push_back(field.ref.GetValue());
             }
@@ -126,25 +126,34 @@ void DataWrapper::Sync(bool notifyListeners)
         }
         else
         {
-            DAVA::Set<DAVA::String> fieldNames;
-            std::function<void(const DAVA::String&)> nameInserter;
+            Set<String> fieldNames;
+            std::function<void(const String&)> nameInserter;
             if (notifyListeners)
             {
-                nameInserter = [&fieldNames](const DAVA::String& name) { fieldNames.insert(name); };
+                nameInserter = [&fieldNames](const String& name) { fieldNames.insert(name); };
             }
             else
             {
-                nameInserter = [](const DAVA::String&) {};
+                nameInserter = [](const String&) {};
             }
 
             for (size_t i = 0; i < fields.size(); ++i)
             {
-                const DAVA::Reflection::Field& field = fields[i];
-                DAVA::Any newValue = field.ref.GetValue();
-                if (impl->cachedValues[i] != newValue)
+                const Reflection::Field& field = fields[i];
+                Any newValue = field.ref.GetValue();
+                bool valuesEqual = false;
+                try
+                {
+                    valuesEqual = impl->cachedValues[i] == newValue;
+                }
+                catch (const Any::Exception& e)
+                {
+                    DAVA::Logger::Error("DataWrapper::Sync: %s", e.what());
+                }
+                if (!valuesEqual)
                 {
                     impl->cachedValues[i] = newValue;
-                    nameInserter(field.key.Cast<DAVA::String>());
+                    nameInserter(field.key.Cast<String>());
                 }
             }
 
@@ -164,7 +173,37 @@ void DataWrapper::Sync(bool notifyListeners)
     }
 }
 
-void DataWrapper::NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>& fields)
+void DataWrapper::SyncWithEditor(const Reflection& etalonData)
+{
+    DVASSERT(impl != nullptr);
+    DVASSERT(HasData());
+    Reflection data = GetData();
+
+    Vector<Reflection::Field> dataFields = data.GetFields();
+    Vector<Reflection::Field> etalonFields = etalonData.GetFields();
+
+    if (dataFields.size() != etalonFields.size())
+    {
+        // if sizes not equal, it means that data is collection
+        // and on next Sync iteration we will signalize that all fields were changed
+        // and there is no reason to sync cached values
+        return;
+    }
+
+    DVASSERT(dataFields.size() == impl->cachedValues.size());
+    for (size_t i = 0; i < dataFields.size(); ++i)
+    {
+        Any dataFieldValue = dataFields[i].ref.GetValue();
+        Any etalonFieldValue = etalonFields[i].ref.GetValue();
+
+        if (dataFieldValue != etalonFieldValue)
+        {
+            impl->cachedValues[i] = dataFieldValue;
+        }
+    }
+}
+
+void DataWrapper::NotifyListeners(bool sendNotify, const Set<String>& fields)
 {
     if (sendNotify == false)
         return;
@@ -174,7 +213,7 @@ void DataWrapper::NotifyListeners(bool sendNotify, const DAVA::Set<DAVA::String>
     std::for_each(impl->listeners.begin(), impl->listeners.end(), fn);
 }
 
-DAVA::Reflection DataWrapper::GetData() const
+Reflection DataWrapper::GetData() const
 {
     DVASSERT(HasData());
     return impl->dataAccessor(*impl->activeContext);

@@ -1,7 +1,4 @@
 #pragma once
-
-#if !defined(__DAVAENGINE_ANDROID__)
-
 #include "Base/Type.h"
 
 namespace DAVA
@@ -88,5 +85,3 @@ ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T>&& meta)
 }
 
 } // namespace DAVA
-
-#endif

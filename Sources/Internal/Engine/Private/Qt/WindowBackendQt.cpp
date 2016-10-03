@@ -6,7 +6,7 @@
 
 #include "Engine/Window.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
@@ -269,7 +269,7 @@ void WindowBackend::OnCreated()
     contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engine->GetNativeService()->GetApplication());
-    float32 dpi = renderWidget->devicePixelRatioF();
+    float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     window->PostWindowCreated(this, renderWidget->width(), renderWidget->height(), dpi, dpi);
 }
 

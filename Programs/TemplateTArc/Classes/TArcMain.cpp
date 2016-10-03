@@ -1,9 +1,11 @@
-#include "ControllerModule.h"
-#include "DataChangerModule.h"
+#include "SceneViewModule.h"
+#include "LibraryModule.h"
+#include "ConsoleCommandModule.h"
 
 #include "TArcCore/TArcCore.h"
+#include "Testing/TArcTestCore.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"
@@ -24,15 +26,43 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "NetCore",
         "LocalizationSystem",
         "SoundSystem",
-        "DownloadManager",
+        "DownloadManager"
     };
 
     DAVA::Engine e;
-    DAVA::TArc::Core core(e);
-    core.CreateModule<TemplateControllerModule>();
-    core.CreateModule<DataChangerModule>();
-
     e.SetOptions(appOptions);
-    e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+
+    if (cmdline.size() > 1 && cmdline[1] == "selftest")
+    {
+        e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+        DAVA::TArc::TestCore testCore(e);
+        return e.Run();
+    }
+
+    bool isConsoleMode = cmdline.size() > 1;
+    e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE : DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+    DAVA::TArc::Core core(e);
+
+    if (isConsoleMode)
+    {
+        int argv = static_cast<int>(cmdline.size());
+        int currentArg = 1;
+        while (currentArg < argv)
+        {
+            if (cmdline[currentArg] == "staticocclusion")
+            {
+                ++currentArg;
+                DVASSERT(currentArg < argv);
+                core.CreateModule<ConsoleCommandModule>(cmdline[currentArg]);
+            }
+            ++currentArg;
+        }
+    }
+    else
+    {
+        core.CreateModule<LibraryModule>();
+        core.CreateModule<SceneViewModule>();
+    }
+
     return e.Run();
 }
