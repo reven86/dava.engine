@@ -126,6 +126,7 @@ public:
     static const FastName WATER_CLEAR_COLOR;
     static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
     static const FastName DEPRECATED_LANDSCAPE_TEXTURE_0_TILING;
+    static const FastName PARAM_TREE_LEAF_COLOR_MUL;
 };
 
 class NMaterialFlagName

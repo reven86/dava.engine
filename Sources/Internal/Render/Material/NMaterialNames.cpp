@@ -51,7 +51,6 @@ const FastName NMaterialName::VERTEXLIT_OPAQUE = FastName("~res:/Materials/Verte
 const FastName NMaterialName::PIXELLIT_SPECULAR_OPAQUE = FastName("~res:/Materials/PixelLit.Specular.Opaque.material");
 const FastName NMaterialName::TEXTURE_LIGHTMAP_OPAQUE = FastName("~res:/Materials/TextureLightmap.Opaque.material");
 const FastName NMaterialName::GRASS = FastName("~res:/Materials/Grass.material");
-;
 
 const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Particles.material");
 
@@ -112,6 +111,7 @@ const FastName NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING("textureTiling
 const FastName NMaterialParamName::WATER_CLEAR_COLOR("waterColor");
 const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 const FastName NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING("texture0Tiling");
+const FastName NMaterialParamName::PARAM_TREE_LEAF_COLOR_MUL("treeLeafColorMul");
 
 //flags
 const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
