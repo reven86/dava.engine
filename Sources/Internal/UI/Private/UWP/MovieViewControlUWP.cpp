@@ -23,7 +23,7 @@ namespace DAVA
 {
 namespace UWPWorkaround
 {
-extern bool EnableSurfaceSizeWorkaround;
+extern bool enableSurfaceSizeWorkaround;
 }
 
 void MovieViewControl::MovieViewProperties::ClearChangedFlags()
@@ -383,7 +383,7 @@ void MovieViewControl::SetNativePositionAndSize(const Rect& rect)
     core->XamlApplication()->PositionUIElement(nativeControl, rect.x, rect.y);
 #endif
 
-    if (UWPWorkaround::EnableSurfaceSizeWorkaround)
+    if (UWPWorkaround::enableSurfaceSizeWorkaround)
     {
         nativeControl->Height += 1.0;
     }

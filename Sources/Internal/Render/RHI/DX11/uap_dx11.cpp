@@ -44,7 +44,7 @@ namespace DAVA
 {
 namespace UWPWorkaround
 {
-bool EnableSurfaceSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
+bool enableSurfaceSizeWorkaround = false; //'workaround' for ATI HD ****G drivers
 }
 }
 
@@ -331,7 +331,7 @@ void CreateDeviceResources()
 
                 ::WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, NULL, NULL);
 
-                DAVA::UWPWorkaround::EnableSurfaceSizeWorkaround = strstr(info, "AMD Radeon HD") && info[strlen(info) - 1] == 'G';
+                DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = strstr(info, "AMD Radeon HD") && info[strlen(info) - 1] == 'G';
 
                 DAVA::Logger::Info("using adapter  \"%s\"  vendor= %04X  device= %04X", info, desc.VendorId, desc.DeviceId);
             }
@@ -376,7 +376,7 @@ void CreateWindowSizeDependentResources()
     m_d3dRenderTargetSize.Height = swapDimensions ? m_backbufferSize.Width : m_backbufferSize.Height;
 
     uint32 swapchainBufferWidth = lround(m_d3dRenderTargetSize.Width);
-    uint32 swapchainBufferHeight = lround(m_d3dRenderTargetSize.Height) + (DAVA::UWPWorkaround::EnableSurfaceSizeWorkaround ? 1 : 0);
+    uint32 swapchainBufferHeight = lround(m_d3dRenderTargetSize.Height) + (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround ? 1 : 0);
 
     if (m_swapChain != nullptr)
     {
@@ -459,7 +459,7 @@ void CreateWindowSizeDependentResources()
             DAVA::Logger::Error("DX11: failed to create swapchain, attempting with workaround...");
             swapChainDesc.Height++;
             swapchainBufferHeight++;
-            DAVA::UWPWorkaround::EnableSurfaceSizeWorkaround = true;
+            DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
             try
             {
                 ThrowIfFailed(dxgiFactory->CreateSwapChainForComposition(m_d3dDevice.Get(), &swapChainDesc, nullptr, &m_swapChain));
