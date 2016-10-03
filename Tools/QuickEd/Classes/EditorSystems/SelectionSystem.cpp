@@ -16,9 +16,9 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemsManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
-    systemsManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
+    systemsManager->packageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
+    systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 
 SelectionSystem::~SelectionSystem() = default;
@@ -194,7 +194,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
             return !visibleProp->GetVisibleInEditor();
         };
         systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPointForMenu), predicateForMenu, stopPredicate);
-        selectedNode = systemsManager->GetControlByMenu(nodesUnderPointForMenu, point);
+        selectedNode = systemsManager->getControlByMenu(nodesUnderPointForMenu, point);
         if (nullptr == selectedNode)
         {
             return true; //selection was required but cancelled
@@ -235,6 +235,6 @@ void SelectionSystem::SetSelection(const SelectedNodes& selected, const Selected
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        systemsManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
+        systemsManager->selectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }

@@ -195,10 +195,15 @@ void PackageNode::RefreshProperty(ControlNode* node, AbstractProperty* property)
         node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsOverridden());
 
     node->GetRootProperty()->RefreshProperty(property, AbstractProperty::REFRESH_DEFAULT_VALUE | AbstractProperty::REFRESH_LOCALIZATION | AbstractProperty::REFRESH_FONT);
-
-    RefreshControlStylesAndLayout(node);
-    RefreshPropertiesInInstances(node, property);
-
+    if (canUpdateAll)
+    {
+        RefreshControlStylesAndLayout(node);
+        RefreshPropertiesInInstances(node, property);
+    }
+    else
+    {
+        changedProperties.insert(std::make_pair(node, property));
+    }
     for (PackageListener* listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
 }
@@ -409,6 +414,24 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
     }
 }
 
+void PackageNode::SetCanUpdateAll(bool canUpdate)
+{
+    canUpdateAll = canUpdate;
+    if (canUpdateAll)
+    {
+        for (const std::pair<ControlNode*, AbstractProperty*>& pair : changedProperties)
+        {
+            RefreshProperty(pair.first, pair.second);
+        }
+        changedProperties.clear();
+    }
+}
+
+bool PackageNode::CanUpdateAll() const
+{
+    return canUpdateAll;
+}
+
 void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property)
 {
     for (ControlNode* instance : node->GetInstances())
@@ -427,7 +450,6 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
     {
         root = static_cast<ControlNode*>(root->GetParent());
     }
-
     RestoreProperties(root);
     RefreshStyles(root);
     UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(root->GetControl());
@@ -436,11 +458,10 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
 
 void PackageNode::RefreshStyles(ControlNode* node)
 {
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl(), true);
-    for (int32 i = 0; i < node->GetCount(); i++)
-    {
-        RefreshStyles(node->Get(i));
-    }
+    UIControlSystem* uiControlSystem = UIControlSystem::Instance();
+    UIStyleSheetSystem* styleSheetSystem = uiControlSystem->GetStyleSheetSystem();
+    UIControl* control = node->GetControl();
+    styleSheetSystem->ProcessControl(control, true);
 }
 
 void PackageNode::CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots)

@@ -86,6 +86,9 @@ public:
     void RebuildStyleSheets();
     void RefreshPackageStylesAndLayout(bool includeImportedPackages = false);
 
+    void SetCanUpdateAll(bool canUpdate);
+    bool CanUpdateAll() const;
+
 private:
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
@@ -95,7 +98,6 @@ private:
     void RestoreProperties(ControlNode* control);
     void NotifyPropertyChanged(ControlNode* control);
 
-private:
     enum eSection
     {
         SECTION_IMPORTED_PACKAGES = 0,
@@ -104,7 +106,6 @@ private:
         SECTION_COUNT = 3
     };
 
-private:
     DAVA::FilePath path;
     DAVA::String name;
 
@@ -113,6 +114,8 @@ private:
     StyleSheetsNode* styleSheets = nullptr;
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
+    bool canUpdateAll = true;
+    DAVA::Set<std::pair<ControlNode*, AbstractProperty*>> changedProperties;
 };
 
 #endif // __UI_EDITOR_PACKAGE_NODE_H__
