@@ -586,6 +586,21 @@ String AutotestingSystemLua::GetText(UIControl* control)
     return "";
 }
 
+uint32 AutotestingSystemLua::GetTextColor(UIControl* control)
+{
+    UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
+    if (uiStaticText)
+    {
+        return uiStaticText->GetTextColor().GetRGBA();
+    }
+    UITextField* uiTextField = dynamic_cast<UITextField*>(control);
+    if (uiTextField)
+    {
+        return uiTextField->GetTextColor().GetRGBA();
+    }
+    return 0;
+}
+
 bool AutotestingSystemLua::IsSelected(UIControl* control) const
 {
     Logger::Debug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
