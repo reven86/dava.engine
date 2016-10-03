@@ -574,12 +574,12 @@ void AutotestingSystemLua::ClickSystemBack()
 String AutotestingSystemLua::GetText(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
-    if (uiStaticText)
+    if (uiStaticText != nullptr)
     {
         return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
     }
     UITextField* uiTextField = dynamic_cast<UITextField*>(control);
-    if (uiTextField)
+    if (uiTextField != nullptr)
     {
         return UTF8Utils::EncodeToUTF8(uiTextField->GetText());
     }
@@ -589,12 +589,12 @@ String AutotestingSystemLua::GetText(UIControl* control)
 uint32 AutotestingSystemLua::GetTextColor(UIControl* control)
 {
     UIStaticText* uiStaticText = dynamic_cast<UIStaticText*>(control);
-    if (uiStaticText)
+    if (uiStaticText != nullptr)
     {
         return uiStaticText->GetTextColor().GetRGBA();
     }
     UITextField* uiTextField = dynamic_cast<UITextField*>(control);
-    if (uiTextField)
+    if (uiTextField != nullptr)
     {
         return uiTextField->GetTextColor().GetRGBA();
     }
