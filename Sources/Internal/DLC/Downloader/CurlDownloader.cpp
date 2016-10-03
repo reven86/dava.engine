@@ -18,7 +18,7 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
     { DLE_NO_ERROR, 10 },
 };
 
-CurlDownloader::CurlDownloader() //-V730 no need to init inactivityConnectionTimer
+CurlDownloader::CurlDownloader() /*-V730 no need to init inactivityConnectionTimer*/
 : isDownloadInterrupting(false)
   ,
   currentDownloadPartsCount(0)
