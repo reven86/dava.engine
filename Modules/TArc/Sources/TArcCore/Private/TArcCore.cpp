@@ -11,6 +11,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/NativeService.h"
+
 #include "Engine/EngineContext.h"
 #include "Functional/Function.h"
 #include "FileSystem/FileSystem.h"
@@ -27,7 +28,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class Core::Impl : public TrackedObject, public CoreInterface
+class Core::Impl : public CoreInterface
 {
 public:
     Impl(Engine& engine_, Core* core_)
@@ -605,6 +606,11 @@ public:
                       });
     }
 
+    bool HasControllerModule() const
+    {
+        return controllerModule != nullptr;
+    }
+
 private:
     AnyFn FindOperation(int operationId)
     {
@@ -628,6 +634,11 @@ private:
 };
 
 Core::Core(Engine& engine)
+    : Core(engine, true)
+{
+}
+
+Core::Core(Engine& engine, bool connectSignals)
 {
     if (engine.IsConsoleMode())
     {
@@ -638,10 +649,13 @@ Core::Core(Engine& engine)
         impl.reset(new GuiImpl(engine, this));
     }
 
-    engine.update.Connect(impl.get(), &Impl::OnFrame);
-    engine.gameLoopStarted.Connect(impl.get(), &Impl::OnLoopStarted);
-    engine.gameLoopStopped.Connect(impl.get(), &Impl::OnLoopStopped);
-    engine.windowCreated.Connect(impl.get(), &Impl::OnWindowCreated);
+    if (connectSignals)
+    {
+        engine.update.Connect(this, &Core::OnFrame);
+        engine.gameLoopStarted.Connect(this, &Core::OnLoopStarted);
+        engine.gameLoopStopped.Connect(this, &Core::OnLoopStopped);
+        engine.windowCreated.Connect(this, &Core::OnWindowCreated);
+    }
 }
 
 Core::~Core() = default;
@@ -664,6 +678,60 @@ void Core::AddModule(ClientModule* module)
 void Core::AddModule(ControllerModule* module)
 {
     impl->AddModule(module);
+}
+
+void Core::OnLoopStarted()
+{
+    DVASSERT(impl);
+    impl->OnLoopStarted();
+}
+
+void Core::OnLoopStopped()
+{
+    DVASSERT(impl);
+    impl->OnLoopStopped();
+}
+
+void Core::OnFrame(float32 delta)
+{
+    DVASSERT(impl);
+    impl->OnFrame(delta);
+}
+
+void Core::OnWindowCreated(DAVA::Window& w)
+{
+    DVASSERT(impl);
+    impl->OnWindowCreated(w);
+}
+
+bool Core::HasControllerModule() const
+{
+    GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
+    return guiImpl != nullptr && guiImpl->HasControllerModule();
+}
+
+OperationInvoker* Core::GetMockInvoker()
+{
+    return nullptr;
+}
+
+DataContext& Core::GetActiveContext()
+{
+    DVASSERT(impl);
+    return impl->GetActiveContext();
+}
+
+DataContext& Core::GetGlobalContext()
+{
+    DVASSERT(impl);
+    return impl->GetGlobalContext();
+}
+
+DataWrapper Core::CreateWrapper(const DAVA::ReflectedType* type)
+{
+    GuiImpl* guiImpl = dynamic_cast<GuiImpl*>(impl.get());
+    DVASSERT(guiImpl != nullptr);
+    return guiImpl->CreateWrapper(type);
 }
 
 } // namespace TArc

@@ -227,7 +227,7 @@ void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
         {
             ++i;
             std::string output_name = argv[i];
-            output.open(output_name);
+            output.open(output_name, std::ios_base::out | std::ios_base::binary);
             if (!output)
             {
                 std::string err = std::strerror(errno);
@@ -299,7 +299,7 @@ void merge_command(int argc, const char** argv, std::streambuf* coutbuf)
     {
         std::ifstream file;
 
-        file.open(path, std::ios::ate);
+        file.open(path, std::ios::in | std::ios::binary | std::ios::ate);
         if (file)
         {
             if (file.tellg() > 0)

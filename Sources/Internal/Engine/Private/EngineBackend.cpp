@@ -45,6 +45,7 @@
 #include "Job/JobManager.h"
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
+#include "ModuleManager/ModuleManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -614,10 +615,16 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
+
+    context->moduleManager = new ModuleManager();
+    context->moduleManager->InitModules();
 }
 
 void EngineBackend::DestroySubsystems()
 {
+    context->moduleManager->ResetModules();
+    delete context->moduleManager;
+
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
