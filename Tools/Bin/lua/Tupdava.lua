@@ -505,8 +505,7 @@ function TupState.BuildLists(self)
                 for index, file in pairs(files) do
                     local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
                     baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
-                    -- tup.rule(file, self.cmd.cp .. " %f %o", {baseOutput})
-                    tup.rule(file, self.cmd.fwdep .. " merge %f -o %o", {baseOutput})
+                    tup.rule(file, self.cmd.fwdep .. " merge %\"f -o %\"o", {baseOutput})
                 end
             else
                 local packGroup = self:GetPackGroup(pack.name, gpu)

@@ -590,9 +590,13 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
-	
+
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+        if (DAVA_COREV2)
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:wWinMainCRTStartup /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+        else()
+            set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+        endif()
     else()
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
     endif()
@@ -658,7 +662,6 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
-
 
     add_custom_target( VS_MODIFIED_${PROJECT_NAME}  ALL
          COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_modifications.py ${COMMAND_PY}  )

@@ -24,7 +24,7 @@ String disableTheseTestClasses = "";
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
-const String TestCoverageFileName = "UnitTests.cover";
+const String TestCoverageFileName = "Tests.cover";
 }
 
 #if defined(__DAVAENGINE_COREV2__)

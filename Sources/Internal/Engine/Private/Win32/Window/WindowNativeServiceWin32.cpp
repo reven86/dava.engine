@@ -10,9 +10,14 @@
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
-    : windowBackend(wbackend)
+WindowNativeService::WindowNativeService(Private::WindowBackend* windowBackend)
+    : windowBackend(windowBackend)
 {
+}
+
+HWND WindowNativeService::GetHWND() const
+{
+    return windowBackend->GetHWND();
 }
 
 } // namespace DAVA
