@@ -190,7 +190,6 @@ GameCore::GameCore(Engine* e)
     if (engine->IsConsoleMode())
     {
         engine->update.Connect(this, &GameCore::OnUpdateConsole);
-    new ScriptingTest();
     }
     else
     {
