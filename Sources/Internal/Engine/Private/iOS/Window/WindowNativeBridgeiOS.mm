@@ -51,11 +51,7 @@ bool WindowNativeBridge::CreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                            rect.size.width,
-                                                                            rect.size.height,
-                                                                            scale,
-                                                                            scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, scale, scale));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }
@@ -110,20 +106,12 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                w,
-                                                                                h,
-                                                                                scale,
-                                                                                scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scale, scale));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                        MainDispatcherEvent::TOUCH_DOWN,
-                                                                        0,
-                                                                        0.f,
-                                                                        0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -136,11 +124,7 @@ void WindowNativeBridge::TouchesBegan(NSSet* touches)
 
 void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                        MainDispatcherEvent::TOUCH_MOVE,
-                                                                        0,
-                                                                        0.f,
-                                                                        0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
@@ -153,11 +137,7 @@ void WindowNativeBridge::TouchesMoved(NSSet* touches)
 
 void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
-    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                        MainDispatcherEvent::TOUCH_UP,
-                                                                        0,
-                                                                        0.f,
-                                                                        0.f);
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];

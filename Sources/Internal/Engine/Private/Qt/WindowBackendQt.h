@@ -10,6 +10,8 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
+#include <QPointer>
+
 namespace rhi
 {
 struct InitParam;
@@ -81,8 +83,8 @@ private:
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
     UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
-    // TODO: may be keep RenderWidget in QPointer?
-    RenderWidget* renderWidget = nullptr;
+    // Use QPointer as renderWidget can be deleted outside WindowBackend in embedded mode
+    QPointer<RenderWidget> renderWidget;
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool closeRequestByApp = false;

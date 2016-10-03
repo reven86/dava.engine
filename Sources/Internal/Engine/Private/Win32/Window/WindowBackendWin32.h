@@ -101,7 +101,7 @@ private:
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
-    int32 width = 0;
+    int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
     int32 height = 0;
     bool mouseTracking = false;
 

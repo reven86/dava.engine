@@ -125,9 +125,7 @@ metal_DepthStencilState_Create(const DepthStencilState::Descriptor& desc)
         back_desc.stencilCompareFunction = _CmpFunc(CmpFunc(desc.stencilBack.func));
 
         ds_desc.frontFaceStencil = front_desc;
-
-        if (desc.stencilTwoSided)
-            ds_desc.backFaceStencil = back_desc;
+        ds_desc.backFaceStencil = desc.stencilTwoSided ? back_desc : front_desc;
 
         state->stencilRefValue = desc.stencilFront.refValue;
     }

@@ -1,0 +1,25 @@
+diff -ur ./libyaml_source_original/CMakeLists.txt ./libyaml_source/CMakeLists.txt
+--- ./libyaml_source_original/CMakeLists.txt	2016-08-29 02:56:34.000000000 +0300
++++ ./libyaml_source/CMakeLists.txt	2016-09-22 10:28:09.862088000 +0300
+@@ -14,3 +14,6 @@
+ add_definitions (-DHAVE_CONFIG_H -DYAML_DECLARE_STATIC)
+ add_library (yaml STATIC ${SRC})
+ 
++if (WIN10)
++  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
++endif()
+\ No newline at end of file
+diff -ur ./libyaml_sources_original/src/api.c ./libyaml_sources/src/api.c
+--- ./libyaml_source_original/src/api.c	2016-08-29 02:56:34.000000000 +0300
++++ ./libyaml_source/src/api.c	2016-09-22 10:24:59.705080600 +0300
+@@ -63,7 +63,10 @@
+     if (!str)
+         return NULL;
+ 
++#pragma warning(push)
++#pragma warning(disable : 4996)
+     return (yaml_char_t *)strdup((char *)str);
++#pragma warning(pop)
+ }
+ 
+ /*
