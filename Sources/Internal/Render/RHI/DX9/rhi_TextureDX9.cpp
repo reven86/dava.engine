@@ -367,8 +367,8 @@ dx9_Texture_Map(Handle tex, unsigned level, TextureFace face)
 
         if (dataAvailable)
         {
-            IDirect3DTexture9* tex = (self->CreationDesc().isRenderTarget) ? self->rt_tex9 : self->tex9;
-            DX9Command cmd = { DX9Command::READ_TEXTURE_LEVEL, { uint64_t(&tex), level, data_sz, format, uint64(self->mappedData) } };
+            IDirect3DTexture9** tex = (self->CreationDesc().isRenderTarget) ? &self->rt_tex9 : &self->tex9;
+            DX9Command cmd = { DX9Command::READ_TEXTURE_LEVEL, { uint64_t(tex), level, data_sz, format, uint64(self->mappedData) } };
             ExecDX9(&cmd, 1, false);
             if (SUCCEEDED(cmd.retval))
             {
@@ -404,8 +404,8 @@ dx9_Texture_Unmap(Handle tex)
     }
     else
     {
-        IDirect3DTexture9* tex = (self->CreationDesc().isRenderTarget) ? self->rt_tex9 : self->tex9;
-        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&tex), self->mappedLevel, uint64(self->mappedData), data_sz, self->CreationDesc().format } };
+        IDirect3DTexture9** tex = (self->CreationDesc().isRenderTarget) ? &self->rt_tex9 : &self->tex9;
+        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(tex), self->mappedLevel, uint64(self->mappedData), data_sz, self->CreationDesc().format } };
         ExecDX9(&cmd, 1, false);
         hr = cmd.retval;
     }
@@ -448,8 +448,8 @@ dx9_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace face)
     }
     else
     {
-        IDirect3DTexture9* tex = (self->CreationDesc().isRenderTarget) ? self->rt_tex9 : self->tex9;
-        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(&tex), level, uint64(data), data_sz, self->CreationDesc().format } };
+        IDirect3DTexture9** tex = (self->CreationDesc().isRenderTarget) ? &self->rt_tex9 : &self->tex9;
+        DX9Command cmd = { DX9Command::UPDATE_TEXTURE_LEVEL, { uint64_t(tex), level, uint64(data), data_sz, self->CreationDesc().format } };
         ExecDX9(&cmd, 1, false);
         hr = cmd.retval;
     }
