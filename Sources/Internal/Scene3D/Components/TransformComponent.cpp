@@ -6,15 +6,6 @@
 
 namespace DAVA
 {
-TransformComponent::TransformComponent()
-{
-    localMatrix = Matrix4::IDENTITY;
-    worldMatrix = Matrix4::IDENTITY;
-}
-
-TransformComponent::~TransformComponent()
-{
-}
 
 Component* TransformComponent::Clone(Entity* toEntity)
 {

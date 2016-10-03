@@ -12,20 +12,13 @@ class Entity;
 
 class TransformComponent : public Component
 {
-protected:
-    virtual ~TransformComponent();
-
 public:
-    TransformComponent();
-
     IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT)
 
     inline Matrix4* GetWorldTransformPtr();
     inline const Matrix4& GetWorldTransform();
     inline const Matrix4& GetLocalTransform();
     Matrix4& ModifyLocalTransform();
-
-    inline int32 GetIndex();
 
     void SetLocalTransform(const Matrix4* transform);
     void SetParent(Entity* node);
