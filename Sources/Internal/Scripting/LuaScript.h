@@ -33,44 +33,34 @@ public:
     /// \brief Load script from string, run it and return number of results.
     ///        Throw LuaException on error.
     ///        Lua stack changes [-0, +nresult, -]
-    int32 ExecuteString(const String& script);
+    int32 ExecString(const String& script);
 
     /// \brief Load script from string, run it and return number of results.
     ///        Return -1 on error.
     ///        Lua stack changes [-0, +nresult, -]
-    int32 ExecuteStringSafe(const String& script);
-
-    /// \brief Run fName() function and return number of results.
-    ///        Throw LuaException on error.
-    ///        Lua stack changes [-0, +nresult, -]
-    int32 CallFunction(const String& fName);
-
-    /// \brief Run fName() function and return number of results.
-    ///        Return -1 on error.
-    ///        Lua stack changes [-0, +nresult, -]
-    int32 CallFunctionSafe(const String& fName);
+    int32 ExecStringSafe(const String& script);
 
     /// \brief Run fName(...) function with arguments and return number of
     ///        results. Throw LuaException on error.
     ///        Lua stack changes [-0, +nresult, -]
     template <typename... T>
-    int32 CallFunction(const String& fName, T... args);
+    int32 ExecFunction(const String& fName, T&&... args);
 
     /// \brief Run fName(...) function with arguments return number of results.
     ///        Return -1 on error.
     ///        Lua stack changes [-0, +nresult, -]
     template <typename... T>
-    int32 CallFunctionSafe(const String& fName, T... args);
+    int32 ExecFunctionSafe(const String& fName, T&&... args);
 
     /// \brief Return value from top of the stack as Any and pop it.
     ///        Throw LuaException or error.
     ///        Lua stack changes [-(top-fromIndex), +0, v].
-    Any PopAny();
+    Any PopResult();
 
     /// \brief Return value from top of the stack as Any and pop it.
     ///        Return false on error.
     ///        Lua stack changes [-(top-fromIndex), +0, v].
-    bool PopAnySafe(Any& any);
+    bool PopResultSafe(Any& any);
 
     /// \brief Set variable to global table with name vName
     void SetGlobalVariable(const String& vName, const Any& value);
@@ -98,20 +88,20 @@ private:
 };
 
 template <typename... T>
-inline int32 LuaScript::CallFunction(const String& fName, T... args)
+inline int32 LuaScript::ExecFunction(const String& fName, T&&... args)
 {
     BeginCallFunction(fName);
     const int32 size = sizeof...(args);
-    bool vargs[] = { (PushArg(Any(args)), true)... };
+    bool vargs[] = { true, (PushArg(Any(std::forward<T>(args))), true)... };
     return EndCallFunction(size);
 }
 
 template <typename... T>
-inline int32 LuaScript::CallFunctionSafe(const String& fName, T... args)
+inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
 {
     try
     {
-        return CallFunction(fName, args...);
+        return ExecFunction(fName, std::forward<T>(args)...);
     }
     catch (const LuaException& e)
     {

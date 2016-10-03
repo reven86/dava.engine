@@ -60,25 +60,6 @@ int32 LuaScript::ExecuteString(const String& script)
     return lastIndex - beginTop; // calculate number of function results
 }
 
-int32 LuaScript::CallFunction(const String& fName)
-{
-    BeginCallFunction(fName);
-    return EndCallFunction(0);
-}
-
-int32 LuaScript::CallFunctionSafe(const String& fName)
-{
-    try
-    {
-        return CallFunction(fName);
-    }
-    catch (const LuaException& e)
-    {
-        Logger::Error(Format("LuaException: %s", e.what()).c_str());
-        return -1;
-    }
-}
-
 int32 LuaScript::ExecuteStringSafe(const String& script)
 {
     try

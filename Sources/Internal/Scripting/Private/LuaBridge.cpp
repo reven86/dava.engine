@@ -302,7 +302,7 @@ Any LuaToAny(lua_State* L, int32 index)
     switch (ltype)
     {
     case LUA_TNIL:
-        return Any(nullptr);
+        return Any();
     case LUA_TBOOLEAN:
         return Any(bool(lua_toboolean(L, index) != 0));
     case LUA_TNUMBER:
