@@ -137,7 +137,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Create the rendering window
     if (isFullscreen)
     {
-        style = WS_VISIBLE | WS_POPUP;
+        style = FULLSCREEN_STYLE;
     } // End if Fullscreen
 
     AdjustWindowRect(&clientSize, style, FALSE);
