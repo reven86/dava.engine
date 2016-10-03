@@ -62,8 +62,7 @@ def _build_macos(working_directory_path, root_project_path):
 def _build_win32(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
 	_patch_sources(source_folder_path, working_directory_path)
-
-	cmake_flags =  [ '-DZLIB_INCLUDE_DIR=' + os.path.join(working_directory_path, '../zlib/zlib_source/') ]
+	
 	build_utils.build_and_copy_libraries_win32_cmake(
 		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
 		'psd.sln', 'psd',

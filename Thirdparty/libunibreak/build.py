@@ -35,6 +35,46 @@ def _download_and_extract(working_directory_path):
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
 
+def _patch_sources(source_folder_path, working_directory_path):
+	try:
+		if _patch_sources.did:
+			return
+	except AttributeError:
+		pass
+
+	shutil.copyfile('CMakeLists.txt', os.path.join(source_folder_path, 'CMakeLists.txt'))
+
+	_patch_sources.did = True
+
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_win32_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'unibreak.sln', 'unibreak',
+		'unibreak.lib', 'unibreak.lib',
+		'unibreak_wind.lib', 'unibreak_win.lib',
+		'unibreak.lib', 'unibreak.lib')
+
+	_copy_headers(source_folder_path, root_project_path)
+
+def _build_win10(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources(source_folder_path, working_directory_path)
+
+	build_utils.build_and_copy_libraries_win10_cmake(
+		os.path.join(working_directory_path, 'gen'), source_folder_path, root_project_path,
+		'unibreak.sln', 'unibreak',
+		'unibreak.lib', 'unibreak.lib',
+		'unibreak.lib', 'unibreak.lib',
+		'unibreak.lib', 'unibreak.lib',
+		'unibreak.lib', 'unibreak.lib')
+
+	_copy_headers(source_folder_path, root_project_path)
+
+	return True
+
 def _build_macos(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
 
@@ -44,7 +84,7 @@ def _build_macos(working_directory_path, root_project_path):
 	libunibreak_lib_path = os.path.join(install_dir_macos, 'lib/libunibreak.a')
 	shutil.copyfile(libunibreak_lib_path, os.path.join(root_project_path, 'Libs/lib_CMake/mac/libunibreak_macos.a'))
 
-	_copy_headers(install_dir_macos, root_project_path)
+	_copy_headers_from_install(install_dir_macos, root_project_path)
 
 def _build_ios(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
@@ -55,7 +95,7 @@ def _build_ios(working_directory_path, root_project_path):
 	libunibreak_lib_path = os.path.join(install_dir_ios, 'lib/libunibreak.a')
 	shutil.copyfile(libunibreak_lib_path, os.path.join(root_project_path, 'Libs/lib_CMake/ios/libunibreak_ios.a'))
 
-	_copy_headers(install_dir_ios, root_project_path)
+	_copy_headers_from_install(install_dir_ios, root_project_path)
 
 def _build_android(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
@@ -72,8 +112,12 @@ def _build_android(working_directory_path, root_project_path):
 	libunibreak_lib_path_x86 = os.path.join(install_dir_android_x86, 'lib/libunibreak.a')
 	shutil.copyfile(libunibreak_lib_path_x86, os.path.join(root_project_path, 'Libs/lib_CMake/android/x86/libunibreak.a'))
 
-	_copy_headers(install_dir_android_arm, root_project_path)
+	_copy_headers_from_install(install_dir_android_arm, root_project_path)
 
-def _copy_headers(install_folder_path, root_project_path):
+def _copy_headers_from_install(install_folder_path, root_project_path):
 	include_path = os.path.join(root_project_path, 'Libs/include/unibreak')
 	build_utils.copy_folder_recursive(os.path.join(install_folder_path, 'include'), include_path)
+
+def _copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/unibreak')
+	build_utils.copy_files(os.path.join(source_folder_path, 'src'), include_path, '*.h')
