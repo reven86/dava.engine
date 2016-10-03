@@ -9,8 +9,6 @@
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
-#include "Functional/Function.h"
-
 namespace rhi
 {
 struct InitParam;
@@ -23,20 +21,20 @@ namespace Private
 class WindowBackend final
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
-    void* GetHandle() const;
-    MainDispatcher* GetDispatcher() const;
-    Window* GetWindow() const;
-    WindowNativeService* GetNativeService() const;
-
     void Resize(float32 width, float32 height);
-    void Close();
-    bool IsWindowReadyForRender() const;
-    void InitCustomRenderParams(rhi::InitParam& params);
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
+    bool IsWindowReadyForRender() const;
+    void InitCustomRenderParams(rhi::InitParam& params);
 
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
@@ -44,28 +42,18 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
 private:
-    void PlatformEventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
 
-private:
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
-
-    UIDispatcher platformDispatcher;
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
     ref struct WindowNativeBridge ^ bridge = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
+
+    friend ref struct WindowNativeBridge;
 };
-
-inline MainDispatcher* WindowBackend::GetDispatcher() const
-{
-    return dispatcher;
-}
-
-inline Window* WindowBackend::GetWindow() const
-{
-    return window;
-}
 
 inline WindowNativeService* WindowBackend::GetNativeService() const
 {

@@ -22,7 +22,7 @@ void ModuleManager::InitModules()
 
 void ModuleManager::ResetModules()
 {
-    for (const auto& module : modules)
+    for (IModule* module : modules)
     {
         module->Shutdown();
         delete module;

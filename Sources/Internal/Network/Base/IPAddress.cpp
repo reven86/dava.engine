@@ -7,11 +7,21 @@ namespace DAVA
 {
 namespace Net
 {
+IPAddress::IPAddress(uint32 address)
+    : addr(htonl(address))
+{
+}
+
 IPAddress::IPAddress(const char8* address)
     : addr(0)
 {
     DVASSERT(address != NULL);
     *this = FromString(address);
+}
+
+uint32 IPAddress::ToUInt() const
+{
+    return ntohl(addr);
 }
 
 bool IPAddress::ToString(char8* buffer, size_t size) const

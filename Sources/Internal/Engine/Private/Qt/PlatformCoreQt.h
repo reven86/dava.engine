@@ -25,6 +25,7 @@ public:
 
     void Init();
     void Run();
+    void PrepareToQuit();
     void Quit();
 
     QApplication* GetApplication();
@@ -32,8 +33,8 @@ public:
     RenderWidget* GetRenderWidget();
 
 private:
-    EngineBackend* engineBackend = nullptr;
-    WindowBackend* windowBackend = nullptr;
+    EngineBackend& engineBackend;
+    WindowBackend* primaryWindowBackend = nullptr;
     std::unique_ptr<NativeService> nativeService;
 };
 
