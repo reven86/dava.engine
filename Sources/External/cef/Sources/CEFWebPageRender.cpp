@@ -31,23 +31,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
     : contentBackground(new UIControlBackground)
     , window(w)
 {
-    auto focusChanged = [this](Window&, bool isFocused) -> void
-    {
-        if (!isFocused)
-        {
-            ResetCursor();
-        }
-    };
-    auto windowDestroyed = [this](Window& w) -> void {
-        if (&w == window)
-        {
-            window->focusChanged.Disconnect(focusConnection);
-            window->destroyed.Disconnect(windowDestroyedConnection);
-            window = nullptr;
-        }
-    };
-    windowDestroyedConnection = window->destroyed.Connect(windowDestroyed);
-    focusConnection = window->focusChanged.Connect(focusChanged);
+    ConnectToSignals();
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
@@ -60,6 +44,46 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
 CEFWebPageRender::CEFWebPageRender()
     : contentBackground(new UIControlBackground)
 {
+    ConnectToSignals();
+
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+
+    contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    contentBackground->SetColor(Color::White);
+    contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+}
+#endif
+
+CEFWebPageRender::~CEFWebPageRender()
+{
+    DisconnectFromSignals();
+
+    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
+
+    ShutDown();
+}
+
+void CEFWebPageRender::ConnectToSignals()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    auto focusChanged = [this](Window*, bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    auto windowDestroyed = [this](Window* w) -> void {
+        if (w == window)
+        {
+            DisconnectFromSignals();
+        }
+    };
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(windowDestroyed);
+    focusConnection = window->focusChanged.Connect(focusChanged);
+#else
     auto focusChanged = [this](bool isFocused) -> void
     {
         if (!isFocused)
@@ -68,31 +92,21 @@ CEFWebPageRender::CEFWebPageRender()
         }
     };
     focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
-
-    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
-    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
-
-    contentBackground->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-    contentBackground->SetColor(Color::White);
-    contentBackground->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
-}
 #endif
+}
 
-CEFWebPageRender::~CEFWebPageRender()
+void CEFWebPageRender::DisconnectFromSignals()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    if (window != nullptr)
-    {
+    if (windowDestroyedConnection != 0)
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+    if (focusConnection != 0)
         window->focusChanged.Disconnect(focusConnection);
-        window->destroyed.Disconnect(windowDestroyedConnection);
-    }
+    windowDestroyedConnection = 0;
+    focusConnection = 0;
 #else
     Core::Instance()->focusChanged.Disconnect(focusConnection);
 #endif
-    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
-
-    ShutDown();
 }
 
 void CEFWebPageRender::ClearRenderSurface()
@@ -121,6 +135,11 @@ void CEFWebPageRender::SetVisible(bool visibility)
     {
         ResetCursor();
     }
+}
+
+bool CEFWebPageRender::IsVisible() const
+{
+    return isVisible;
 }
 
 void CEFWebPageRender::SetBackgroundTransparency(bool value)
@@ -158,11 +177,7 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
-    float32 width = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dx);
-    float32 height = vcs->ConvertVirtualToPhysicalX(logicalViewSize.dy);
-
-    rect = CefRect(0, 0, static_cast<int>(width), static_cast<int>(height));
+    rect = CefRect(0, 0, static_cast<int>(logicalViewSize.dx), static_cast<int>(logicalViewSize.dy));
     return true;
 }
 

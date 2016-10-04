@@ -35,6 +35,7 @@ QPalette GetPalette()
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     : QtPropertyEditor(parent)
     , treeStateHelper(this, curModel)
+    , infoUpdated(DAVA::MakeFunction(this, &SceneInfo::RefreshAllData))
 {
     // global scene manager signals
     SceneSignals* signalDispatcher = SceneSignals::Instance();
@@ -313,13 +314,13 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
     return textureSize;
 }
 
-void SceneInfo::CollectSceneData(SceneEditor2* scene)
+void SceneInfo::CollectSceneData()
 {
     ClearData();
 
-    if (scene)
+    if (activeScene)
     {
-        scene->GetChildNodes(nodesAtScene);
+        activeScene->GetChildNodes(nodesAtScene);
 
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
         SceneHelper::EnumerateSceneTextures(activeScene, collector);
@@ -512,7 +513,7 @@ void SceneInfo::showEvent(QShowEvent* event)
     if (!isUpToDate)
     {
         isUpToDate = true;
-        RefreshAllData(activeScene);
+        RefreshAllData();
     }
 
     QtPropertyEditor::showEvent(event);
@@ -532,9 +533,9 @@ void SceneInfo::UpdateInfoByTimer()
     RefreshLayersSection();
 }
 
-void SceneInfo::RefreshAllData(SceneEditor2* scene)
+void SceneInfo::RefreshAllData()
 {
-    CollectSceneData(scene);
+    CollectSceneData();
 
     SaveTreeState();
 
@@ -559,7 +560,7 @@ void SceneInfo::SceneActivated(SceneEditor2* scene)
     isUpToDate = isVisible();
     if (isUpToDate)
     {
-        RefreshAllData(scene);
+        infoUpdated.Update();
     }
 }
 
@@ -569,7 +570,7 @@ void SceneInfo::SceneDeactivated(SceneEditor2* scene)
     {
         activeScene = NULL;
         landscape = NULL;
-        RefreshAllData(NULL);
+        RefreshAllData();
     }
 }
 
@@ -582,7 +583,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         isUpToDate = isVisible();
         if (isUpToDate)
         {
-            RefreshAllData(scene);
+            infoUpdated.Update();
         }
     }
 }
@@ -609,7 +610,7 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificat
 
     if (commandNotification.MatchCommandIDs(commandIDs))
     {
-        RefreshAllData(scene);
+        infoUpdated.Update();
     }
 }
 
@@ -728,7 +729,7 @@ void SceneInfo::SpritesReloaded()
 
 void SceneInfo::OnQualityChanged()
 {
-    RefreshAllData(activeScene);
+    RefreshAllData();
 }
 
 void SceneInfo::InitializeVegetationInfoSection()

@@ -40,9 +40,9 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeShutdownEngine(JN
     androidBridge->ShutdownEngine();
 }
 
-JNIEXPORT jlong JNICALL Java_com_dava_engine_DavaActivity_nativeOnCreate(JNIEnv* env, jclass jclazz)
+JNIEXPORT jlong JNICALL Java_com_dava_engine_DavaActivity_nativeOnCreate(JNIEnv* env, jclass jclazz, jobject activity)
 {
-    DAVA::Private::WindowBackend* wbackend = androidBridge->ActivityOnCreate();
+    DAVA::Private::WindowBackend* wbackend = androidBridge->ActivityOnCreate(env, activity);
     return static_cast<jlong>(reinterpret_cast<uintptr_t>(wbackend));
 }
 
@@ -58,61 +58,12 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeOnPause(JNIEnv* e
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeOnDestroy(JNIEnv* env, jclass jclazz)
 {
-    androidBridge->ActivityOnDestroy();
+    androidBridge->ActivityOnDestroy(env);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaActivity_nativeGameThread(JNIEnv* env, jclass jcls)
 {
     androidBridge->GameThread();
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnResume(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnResume(wbackend);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnPause(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnPause(wbackend);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceCreated(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject jsurfaceView)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnSurfaceCreated(wbackend, env, jsurfaceView);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnSurfaceChanged(wbackend, env, surface, width, height);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnSurfaceDestroyed(wbackend, env);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewProcessEvents(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnProcessProperties(wbackend);
-}
-
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
-{
-    using DAVA::Private::WindowBackend;
-    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    androidBridge->SurfaceViewOnTouch(wbackend, action, touchId, x, y);
 }
 
 } // extern "C"
@@ -149,6 +100,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
     {
         // Get com.dava.engine.DavaActivity class which will be used to obtain ClassLoader instance
         jclass jclassDavaActivity = env->FindClass("com/dava/engine/DavaActivity");
+        JNI::CheckJavaException(env, true);
+
+        methodDavaActivity_postFinish = env->GetMethodID(jclassDavaActivity, "postQuit", "()V");
         JNI::CheckJavaException(env, true);
 
         // Get java.lang.Class<com.dava.engine.DavaActivity>
@@ -227,8 +181,9 @@ void AndroidBridge::ShutdownEngine()
     core = nullptr;
 }
 
-WindowBackend* AndroidBridge::ActivityOnCreate()
+WindowBackend* AndroidBridge::ActivityOnCreate(JNIEnv* env, jobject activityInstance)
 {
+    activity = env->NewGlobalRef(activityInstance);
     return core->ActivityOnCreate();
 }
 
@@ -242,49 +197,17 @@ void AndroidBridge::ActivityOnPause()
     core->ActivityOnPause();
 }
 
-void AndroidBridge::ActivityOnDestroy()
+void AndroidBridge::ActivityOnDestroy(JNIEnv* env)
 {
     core->ActivityOnDestroy();
+
+    env->DeleteGlobalRef(activity);
+    activity = nullptr;
 }
 
 void AndroidBridge::GameThread()
 {
     core->GameThread();
-}
-
-void AndroidBridge::SurfaceViewOnResume(WindowBackend* wbackend)
-{
-    wbackend->OnResume();
-}
-
-void AndroidBridge::SurfaceViewOnPause(WindowBackend* wbackend)
-{
-    wbackend->OnPause();
-}
-
-void AndroidBridge::SurfaceViewOnSurfaceCreated(WindowBackend* wbackend, JNIEnv* env, jobject jsurfaceView)
-{
-    wbackend->SurfaceCreated(env, jsurfaceView);
-}
-
-void AndroidBridge::SurfaceViewOnSurfaceChanged(WindowBackend* wbackend, JNIEnv* env, jobject surface, int32 width, int32 height)
-{
-    wbackend->SurfaceChanged(env, surface, width, height);
-}
-
-void AndroidBridge::SurfaceViewOnSurfaceDestroyed(WindowBackend* wbackend, JNIEnv* env)
-{
-    wbackend->SurfaceDestroyed();
-}
-
-void AndroidBridge::SurfaceViewOnProcessProperties(WindowBackend* wbackend)
-{
-    wbackend->ProcessProperties();
-}
-
-void AndroidBridge::SurfaceViewOnTouch(WindowBackend* wbackend, int32 action, int32 touchId, float32 x, float32 y)
-{
-    wbackend->OnTouch(action, touchId, x, y);
 }
 
 JavaVM* AndroidBridge::GetJavaVM()
@@ -319,6 +242,20 @@ bool AndroidBridge::DetachCurrentThreadFromJavaVM()
         return status == JNI_OK;
     }
     return false;
+}
+
+void AndroidBridge::PostQuitToActivity()
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_postFinish);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("postQuit call failed: %s", e.what());
+    }
 }
 
 jclass AndroidBridge::LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException)
