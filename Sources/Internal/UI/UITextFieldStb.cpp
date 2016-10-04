@@ -864,11 +864,11 @@ bool TextFieldStbImpl::PasteFromClipboardInternal()
         {
             clipText = clip.GetText();
             // Remove not valid characters (include Font check)
-            clipText = StringUtils::RemoveNonPrintable(clipText);
+            //clipText = StringUtils::RemoveNonPrintable(clipText);
             StringUtils::RemoveEmoji(clipText);
             clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
                                           {
-                                              return !font->IsCharAvaliable(static_cast<char16>(ch));
+                                              return !font->IsCharAvaliable(static_cast<char16>(ch)) && ch != '\n';
                                           }),
                            clipText.end());
 

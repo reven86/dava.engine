@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
+#include "Functional/Function.h"
 
 class ScriptingTest : public BaseScreen
 {
@@ -13,6 +14,9 @@ protected:
     void Update(DAVA::float32 timeElapsed) override;
 
 private:
+    void CreateScript();
+    void Run(DAVA::Function<DAVA::int32()> func);
+
     DAVA::RefPtr<DAVA::UITextField> scriptText;
     DAVA::RefPtr<DAVA::UITextField> intArgText;
     DAVA::RefPtr<DAVA::UITextField> strArgText;

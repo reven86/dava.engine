@@ -85,112 +85,50 @@ void ScriptingTest::LoadResources()
 
     UIActionMap& amap = dialog->GetOrCreateComponent<UIActionBindingComponent>()->GetActionMap();
     amap.Put(FastName("LOAD_SCRIPT"), [&]() {
-        try
-        {
-            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->ExecString(scriptText->GetUtf8Text());
-            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-
-            String output = Format("Execute script time: %llu us\n", time);
-            for (int32 i = 0; i < nresults; ++i)
-            {
-                Any val = script->PopResult();
-                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
-            }
-            outputText->SetUtf8Text(output);
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-        }
-        catch (const LuaException& e)
-        {
-            String error = Format("LuaException: %s", e.what());
-            Logger::Error(error.c_str());
-            outputText->SetUtf8Text(error);
-            timeText->SetUtf8Text("Error");
-        }
+        String scriptBody = scriptText->GetUtf8Text();
+        Run([&]() -> int32 {
+            return script->ExecString(scriptBody);
+        });
     });
     amap.Put(FastName("RUN_MAIN"), [&]() {
         int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
         String strArg = strArgText->GetUtf8Text();
-        try
-        {
-            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->ExecFunction("main", intArg, strArg, objRef);
-            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-
-            String output = Format("Run main(...) time: %llu us\n", time);
-            for (int32 i = 0; i < nresults; ++i)
-            {
-                Any val = script->PopResult();
-                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
-            }
-            outputText->SetUtf8Text(output);
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-        }
-        catch (const LuaException& e)
-        {
-            String error = Format("LuaException: %s", e.what());
-            Logger::Error(error.c_str());
-            outputText->SetUtf8Text(error);
-            timeText->SetUtf8Text("Error");
-        }
+        Run([&]() -> int32 {
+            return script->ExecFunction("main", intArg, strArg, objRef);
+        });
     });
     amap.Put(FastName("RUN_MAIN_NOARGS"), [&]() {
-        try
-        {
-            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
-            int32 nresults = script->ExecFunction("main");
-            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-
-            String output = Format("Run main() time: %llu us\n", time);
-            for (int32 i = 0; i < nresults; ++i)
-            {
-                Any val = script->PopResult();
-                output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
-            }
-            outputText->SetUtf8Text(output);
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-        }
-        catch (const LuaException& e)
-        {
-            String error = Format("LuaException: %s", e.what());
-            Logger::Error(error.c_str());
-            outputText->SetUtf8Text(error);
-            timeText->SetUtf8Text("Error");
-        }
-    });
-    amap.Put(FastName("RESET_SCRIPT"), [&]() {
-        SafeDelete(script);
-        script = new LuaScript();
-        script->SetGlobalVariable("GlobRef", objRef);
+        Run([&]() -> int32 {
+            return script->ExecFunction("main");
+        });
     });
     amap.Put(FastName("RUN_10000"), [&]() {
         int32 intArg = atoi(intArgText->GetUtf8Text().c_str());
         String strArg = strArgText->GetUtf8Text();
-        try
-        {
-            uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+        Run([&]() -> int32 {
             for (int32 i = 0; i < 10000; ++i)
             {
                 script->ExecFunction("main", intArg, strArg, objRef);
             }
-            uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
-
-            outputText->SetUtf8Text(Format("Run 10k main() time: %llu us", time));
-            timeText->SetUtf8Text(Format("Time: %llu us", time));
-        }
-        catch (const LuaException& e)
-        {
-            String error = Format("LuaException: %s", e.what());
-            Logger::Error(error.c_str());
-            outputText->SetUtf8Text(error);
-            timeText->SetUtf8Text("Error");
-        }
+            return 0;
+        });
+    });
+    amap.Put(FastName("RUN_10000_NOARGS"), [&]() {
+        Run([&]() -> int32 {
+            for (int32 i = 0; i < 10000; ++i)
+            {
+                script->ExecFunction("main");
+            }
+            return 0;
+        });
+    });
+    amap.Put(FastName("RESET_SCRIPT"), [&]() {
+        CreateScript();
     });
 
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
     objRef = Reflection::Create(&demoObj).ref;
-    script = new LuaScript();
-    script->SetGlobalVariable("GlobRef", objRef);
+    CreateScript();
 }
 
 void ScriptingTest::UnloadResources()
@@ -208,4 +146,37 @@ void ScriptingTest::UnloadResources()
 
 void ScriptingTest::Update(DAVA::float32 timeElapsed)
 {
+}
+
+void ScriptingTest::CreateScript()
+{
+    SafeDelete(script);
+    script = new LuaScript();
+    script->SetGlobalVariable("GlobRef", objRef);
+}
+
+void ScriptingTest::Run(Function<int32()> func)
+{
+    try
+    {
+        uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+        int32 nresults = func();
+        uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+
+        String output = Format("Run main() time: %llu us\n", time);
+        for (int32 i = 0; i < nresults; ++i)
+        {
+            Any val = script->PopResult();
+            output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
+        }
+        outputText->SetUtf8Text(output);
+        timeText->SetUtf8Text(Format("Time: %llu us", time));
+    }
+    catch (const LuaException& e)
+    {
+        String error = Format("LuaException: %s", e.what());
+        Logger::Error(error.c_str());
+        outputText->SetUtf8Text(error);
+        timeText->SetUtf8Text("Error");
+    }
 }

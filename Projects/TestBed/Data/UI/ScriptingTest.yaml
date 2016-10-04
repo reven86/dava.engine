@@ -16,7 +16,7 @@ Controls:
             bottomAnchorEnabled: true
             bottomAnchor: 10.000000
         ActionBinding:
-            actions: "LOAD_SCRIPT; RUN_MAIN; RESET_SCRIPT; RUN_10000; RUN_MAIN_NOARGS"
+            actions: "LOAD_SCRIPT; RUN_MAIN; RESET_SCRIPT; RUN_10000; RUN_MAIN_NOARGS; RUN_10000_NOARGS"
     children:
     -   class: "UITextField"
         name: "ScriptText"
@@ -61,7 +61,7 @@ Controls:
         size: [205.520004, 38.000000]
         noInput: false
         debugDraw: true
-        text: "Load Script"
+        text: "Execute string"
         font: "Korinna_18"
         components:
             SizePolicy:
@@ -77,7 +77,7 @@ Controls:
         size: [205.520004, 38.000000]
         noInput: false
         debugDraw: true
-        text: "Run Main"
+        text: "Call main(...)"
         font: "Korinna_18"
         components:
             SizePolicy:
@@ -89,11 +89,11 @@ Controls:
                 action: "RUN_MAIN"
     -   class: "UIStaticText"
         name: "ResetScriptBtn"
-        position: [528.479980, 172.000000]
+        position: [528.479980, 214.050003]
         size: [205.520004, 38.000000]
         noInput: false
         debugDraw: true
-        text: "Reset Script"
+        text: "Recreate script state"
         font: "Korinna_18"
         components:
             SizePolicy:
@@ -109,7 +109,7 @@ Controls:
         size: [205.520004, 38.000000]
         noInput: false
         debugDraw: true
-        text: "Run Main 10k times"
+        text: "Call main(...) 10k"
         font: "Korinna_18"
         components:
             SizePolicy:
@@ -121,7 +121,7 @@ Controls:
                 action: "RUN_10000"
     -   class: "UIStaticText"
         name: "TimeText"
-        position: [528.479980, 215.000000]
+        position: [528.479980, 258.000000]
         size: [205.520004, 38.000000]
         debugDraw: false
         text: "Time: 0ns"
@@ -134,7 +134,7 @@ Controls:
                 rightAnchorEnabled: true
     -   class: "UIStaticText"
         name: "UIStaticText"
-        position: [550.500000, 271.500000]
+        position: [550.500000, 314.500000]
         size: [183.500000, 38.000000]
         debugDraw: false
         textalign: ["LEFT", "VCENTER"]
@@ -148,7 +148,7 @@ Controls:
                 rightAnchorEnabled: true
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 314.500000]
+        position: [528.479980, 357.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -191,7 +191,7 @@ Controls:
                 Focus: {}
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 357.500000]
+        position: [528.479980, 400.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -234,7 +234,7 @@ Controls:
                 Focus: {}
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 400.500000]
+        position: [528.479980, 443.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -267,7 +267,7 @@ Controls:
         size: [205.520004, 38.000000]
         noInput: false
         debugDraw: true
-        text: "Run Main w/o args"
+        text: "Call main()"
         font: "Korinna_18"
         components:
             SizePolicy:
@@ -277,3 +277,19 @@ Controls:
                 rightAnchorEnabled: true
             Action:
                 action: "RUN_MAIN_NOARGS"
+    -   class: "UIStaticText"
+        name: "RunMainMultBtn"
+        position: [528.479980, 171.050003]
+        size: [205.520004, 38.000000]
+        noInput: false
+        debugDraw: true
+        text: "Call main() 10k"
+        font: "Korinna_18"
+        components:
+            SizePolicy:
+                horizontalPolicy: "PercentOfParent"
+                horizontalValue: 28.000000
+            Anchor:
+                rightAnchorEnabled: true
+            Action:
+                action: "RUN_10000_NOARGS"
