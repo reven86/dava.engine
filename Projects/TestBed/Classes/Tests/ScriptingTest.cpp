@@ -179,8 +179,6 @@ void ScriptingTest::Run(Function<int32()> func)
         }
         outputText->SetUtf8Text(output);
         timeText->SetUtf8Text(Format("Time: %llu us", time));
-
-        script->DumpStack();
     }
     catch (const LuaException& e)
     {
