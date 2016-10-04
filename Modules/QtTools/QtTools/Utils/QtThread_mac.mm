@@ -1,4 +1,5 @@
 #include "QtThread.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
