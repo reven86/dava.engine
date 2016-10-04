@@ -73,7 +73,11 @@ macro( processing_mix_data )
 
     load_property( PROPERTY_LIST MIX_APP_DATA )
     if( DEPLOY )
-        set( MIX_APP_DIR ${DEPLOY_DIR} )        
+        if( NOT DEPLOY_DIR_DATA )
+            set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
+        endif()
+
+        set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )        
     else()
         set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
     endif()

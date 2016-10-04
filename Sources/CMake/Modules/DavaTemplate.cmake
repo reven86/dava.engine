@@ -785,8 +785,11 @@ if( DEPLOY )
     
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
         file ( GLOB RESOURCES_LIST ${DEPLOY_TO_BIN} ${DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}} )
+        if( NOT DEPLOY_DIR_DATA )
+            set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
+        endif()
         foreach( ITEM ${RESOURCES_LIST} )
-            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR}" )
+            file(COPY "${ITEM}" DESTINATION "${DEPLOY_DIR_DATA}" )
         endforeach()
     endif()
 

@@ -82,8 +82,9 @@ reset_property ( MIX_APP_DATA )
 
 ## tools
 set( MAC_DISABLE_BUNDLE true )
-set( DEFINITIONS -DDATA_RELATIVE_DIRECTORY="../Data/" )
+set( DEFINITIONS -DDATA_RELATIVE_DIRECTORY="../Resources/Data/" )
 set( DEPLOY_DIR             ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents )
+set( DEPLOY_DIR_DATA        ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents/Resources )
 set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents/MacOS )
 set( TARGETS_LIST )
 reset_property ( MIX_APP_DATA )
