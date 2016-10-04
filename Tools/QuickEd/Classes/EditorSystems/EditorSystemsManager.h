@@ -163,17 +163,13 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
 template <class OutIt, class Predicate>
 void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const
 {
+    if (predicate(node))
+    {
+        *destination++ = node;
+    }
     if (!stopPredicate(node))
     {
         int count = node->GetCount();
-        for (int i = 0; i < count; ++i)
-        {
-            ControlNode* child = node->Get(i);
-            if (predicate(child))
-            {
-                *destination++ = child;
-            }
-        }
         for (int i = 0; i < count; ++i)
         {
             CollectControlNodesImpl(destination, predicate, stopPredicate, node->Get(i));

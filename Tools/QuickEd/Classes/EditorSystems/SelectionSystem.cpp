@@ -263,8 +263,6 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
                 || (size.dy / previousSize.dy > 3.0f && size.dy - previousSize.dy > 30.0f)
                 || size.dx - previousSize.dx > 200.0f || size.dy - previousSize.dy > 200.0f)
             {
-                Logger::Debug("found common of selected %s with size %f %f - %s with size %f %f",
-                              node->GetName().c_str(), size.x, size.y, previousNode->GetName().c_str(), lastNodeSize.second.x, lastNodeSize.second.y);
                 return previousNode;
             }
         }
@@ -307,7 +305,6 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
     //found only one item
     else if (nodesUnderPoint.size() == 1)
     {
-        Logger::Debug("found only one %s", nodesUnderPoint.front()->GetName().c_str());
         return nodesUnderPoint.front();
     }
 
@@ -334,13 +331,11 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
 
                 if (selected.find(node) != selected.end())
                 {
-                    Logger::Debug("found selected %s", node->GetName().c_str());
                     return node;
                 }
                 //search child of selected to move down by hierarchy
                 if (selected.find(nodeParent) != selected.end())
                 {
-                    Logger::Debug("found child of selected %s", node->GetName().c_str());
                     return node;
                 }
 
@@ -348,7 +343,6 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                 else if (selected.find(node) == selected.end()
                          && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
                 {
-                    Logger::Debug("found neighbor of selected %s", node->GetName().c_str());
                     return node;
                 }
             }
@@ -379,13 +373,11 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
                     }
                     if (parent != nullptr && parent->GetControl() == nullptr)
                     {
-                        Logger::Debug("no selected but found child %s of root %s", node->GetName().c_str(), node->GetParent()->GetName().c_str());
                         return node;
                     }
                 }
             }
         }
     }
-    DAVA::Logger::Debug("search nearest node %s", nodesUnderPoint.empty() ? "" : nodesUnderPoint.back()->GetName().c_str());
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }
