@@ -94,9 +94,8 @@ public:
     void Dump() const;
 
 private:
-    void _Reset();
-    //    void _AppendLine(const char* line, size_t lineLen);
-    void _ProcessMetaData(sl::HLSLTree* ast);
+    void Reset();
+    void ProcessMetaData(sl::HLSLTree* ast);
 
     struct
     buf_t

@@ -24,16 +24,6 @@ using DAVA::LockGuard;
     #include "Parser/sl_GeneratorGLES.h"
     #include "Parser/sl_GeneratorMSL.h"
 
-    #define RHI__USE_STD_REGEX 0
-    #define RHI__OPTIMIZED_REGEX 1
-
-
-    #if RHI__USE_STD_REGEX
-        #include <regex>
-    #else
-        #include "RegExp.h"
-    #endif
-
 namespace rhi
 {
 //==============================================================================
@@ -49,6 +39,7 @@ ShaderSource::ShaderSource(const char* filename)
 
 ShaderSource::~ShaderSource()
 {
+    delete ast;
 }
 
 //------------------------------------------------------------------------------
@@ -140,7 +131,6 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 #endif
 
     static sl::Allocator alloc;
-    //    sl::HLSLTree tree(&alloc);
     sl::HLSLParser parser(&alloc, "<shader>", src.c_str(), strlen(src.c_str()));
     ast = new sl::HLSLTree(&alloc);
 
@@ -158,837 +148,13 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         DVASSERT(ast);
     }
 
-    // parse properties/samplers
-    /*
-    DAVA::ScopedPtr<DynamicMemoryFile> in(DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1), DAVA::File::READ));
-
-    if (in)
-    {
-
-        _Reset();
-        STOP_NAMED_TIMING("shadersrc.setup");
-
-        START_NAMED_TIMING("shadersrc.parse");
-        while (!in->IsEof())
-        {
-            char line[4 * 1024];
-            uint32 lineLen = in->ReadLine(line, sizeof(line));
-            #if RHI__USE_STD_REGEX
-            std::cmatch match;
-            bool isComment = std::regex_match(line, match, comment_re);
-            #else
-            bool isComment = comment_re.test(line);
-            #endif
-            bool propDefined = false;
-            bool propArray = false;
-
-            #if RHI__USE_STD_REGEX
-            if (!isComment && std::regex_match(line, match, prop_re))
-            {
-                propDefined = true;
-                propArray = false;
-            }
-            else if (!isComment && std::regex_match(line, match, proparr_re))
-            {
-                propDefined = true;
-                propArray = true;
-            }
-            #else
-            if (!isComment && prop_re.test(line))
-            {
-                propDefined = true;
-                propArray = false;
-            }
-            else if (!isComment && proparr_re.test(line))
-            {
-                propDefined = true;
-                propArray = true;
-            }
-            #endif
-
-            if (propDefined)
-            {
-                prop.resize(prop.size() + 1);
-
-                ShaderProp& p = prop.back();
-                std::string type;
-                std::string uid;
-                std::string tags;
-                std::string script;
-                std::string arrSz;
-
-                
-                #if RHI__USE_STD_REGEX
-                if (propArray)
-                {
-                    type = match[1].str();
-                    uid = match[2].str();
-                    arrSz = match[3].str();
-                    tags = match[4].str();
-                    script = match[5].str();
-
-                    p.arraySize = atoi(arrSz.c_str());
-                    p.isBigArray = (strstr(script.c_str(), "bigarray")) ? true : false;
-                }
-                else
-                {
-                    type = match[1].str();
-                    uid = match[2].str();
-                    tags = match[3].str();
-                    script = match[4].str();
-
-                    p.arraySize = 1;
-                    p.isBigArray = false;
-                }
-                #else
-                if (propArray)
-                {
-                    proparr_re.get_pattern(1, &type);
-                    proparr_re.get_pattern(2, &uid);
-                    proparr_re.get_pattern(3, &arrSz);
-                    proparr_re.get_pattern(4, &tags);
-                    proparr_re.get_pattern(5, &script);
-
-                    p.arraySize = atoi(arrSz.c_str());
-                    p.isBigArray = (strstr(script.c_str(), "bigarray")) ? true : false;
-                }
-                else
-                {
-                    prop_re.get_pattern(1, &type);
-                    prop_re.get_pattern(2, &uid);
-                    prop_re.get_pattern(3, &tags);
-                    prop_re.get_pattern(4, &script);
-
-                    p.arraySize = 1;
-                    p.isBigArray = false;
-                }
-                #endif
-
-                p.uid = FastName(uid);
-                //                p.scope     = ShaderProp::SCOPE_SHARED;
-                p.storage = ShaderProp::STORAGE_DYNAMIC;
-                p.type = ShaderProp::TYPE_FLOAT4;
-
-                if (stricmp(type.c_str(), "float") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT1;
-                    p.precision = ShaderProp::PRECISION_NORMAL;
-                }
-                else if (stricmp(type.c_str(), "float2") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT2;
-                    p.precision = ShaderProp::PRECISION_NORMAL;
-                }
-                else if (stricmp(type.c_str(), "float3") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT3;
-                    p.precision = ShaderProp::PRECISION_NORMAL;
-                }
-                else if (stricmp(type.c_str(), "float4") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT4;
-                    p.precision = ShaderProp::PRECISION_NORMAL;
-                }
-                else if (stricmp(type.c_str(), "float4x4") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT4X4;
-                    p.precision = ShaderProp::PRECISION_NORMAL;
-                }
-                else if (stricmp(type.c_str(), "half") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT1;
-                    p.precision = ShaderProp::PRECISION_HALF;
-                }
-                else if (stricmp(type.c_str(), "half2") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT2;
-                    p.precision = ShaderProp::PRECISION_HALF;
-                }
-                else if (stricmp(type.c_str(), "half3") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT3;
-                    p.precision = ShaderProp::PRECISION_HALF;
-                }
-                else if (stricmp(type.c_str(), "half4") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT4;
-                    p.precision = ShaderProp::PRECISION_HALF;
-                }
-                else if (stricmp(type.c_str(), "min10float") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT1;
-                    p.precision = ShaderProp::PRECISION_LOW;
-                }
-                else if (stricmp(type.c_str(), "min10float2") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT2;
-                    p.precision = ShaderProp::PRECISION_LOW;
-                }
-                else if (stricmp(type.c_str(), "min10float3") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT3;
-                    p.precision = ShaderProp::PRECISION_LOW;
-                }
-                else if (stricmp(type.c_str(), "min10float4") == 0)
-                {
-                    p.type = ShaderProp::TYPE_FLOAT4;
-                    p.precision = ShaderProp::PRECISION_LOW;
-                }
-                else
-                {
-                    Logger::Error("unknown property type (%s)", type.c_str());
-                    return false;
-                }
-
-                {
-                    char storage[128] = "";
-                    char tag[128] = "";
-                    const char* ss = strchr(tags.c_str(), ',');
-
-                    if (ss)
-                    {
-                        size_t n = ss - tags.c_str();
-
-                        strncpy(storage, tags.c_str(), n);
-                        storage[n] = '\0';
-                        strcpy(tag, tags.c_str() + n + 1);
-                    }
-                    else
-                    {
-                        strcpy(storage, tags.c_str());
-                    }
-
-                    //                sscanf( tags.c_str(), "%s,%s", scope, tag );
-                    if (stricmp(storage, "static") == 0)
-                        p.storage = ShaderProp::STORAGE_STATIC;
-                    else if (stricmp(storage, "dynamic") == 0)
-                        p.storage = ShaderProp::STORAGE_DYNAMIC;
-                    p.tag = FastName(tag);
-                }
-
-                memset(p.defaultValue, 0, sizeof(p.defaultValue));
-                if (script.length())
-                {
-                    const char* def_value = strstr(script.c_str(), "def_value");
-
-                    if (def_value)
-                    {
-                        char val[128];
-
-                        if (sscanf(def_value, "def_value=%s", val) == 1)
-                        {
-                            DAVA::Vector<DAVA::String> v;
-
-                            DAVA::Split(val, ",", v);
-                            for (uint32 i = 0; i != v.size(); ++i)
-                                p.defaultValue[i] = float(atof(v[i].c_str()));
-                        }
-                    }
-                }
-
-                buf_t* cbuf = 0;
-
-                for (std::vector<buf_t>::iterator b = buf.begin(), b_end = buf.end(); b != b_end; ++b)
-                {
-                    if (b->storage == p.storage && b->tag == p.tag)
-                    {
-                        cbuf = &(buf[b - buf.begin()]);
-                        break;
-                    }
-                }
-
-                if (!cbuf)
-                {
-                    buf.resize(buf.size() + 1);
-
-                    cbuf = &(buf.back());
-
-                    cbuf->storage = p.storage;
-                    cbuf->tag = p.tag;
-                    cbuf->regCount = 0;
-                }
-
-                p.bufferindex = static_cast<uint32>(cbuf - &(buf[0]));
-
-                if (p.type == ShaderProp::TYPE_FLOAT1 || p.type == ShaderProp::TYPE_FLOAT2 || p.type == ShaderProp::TYPE_FLOAT3)
-                {
-                    bool do_add = true;
-                    uint32 sz = 0;
-
-                    switch (p.type)
-                    {
-                    case ShaderProp::TYPE_FLOAT1:
-                        sz = 1;
-                        break;
-                    case ShaderProp::TYPE_FLOAT2:
-                        sz = 2;
-                        break;
-                    case ShaderProp::TYPE_FLOAT3:
-                        sz = 3;
-                        break;
-                    default:
-                        break;
-                    }
-
-                    for (unsigned r = 0; r != cbuf->avlRegIndex.size(); ++r)
-                    {
-                        if (cbuf->avlRegIndex[r] + sz <= 4)
-                        {
-                            p.bufferReg = r;
-                            p.bufferRegCount = cbuf->avlRegIndex[r];
-
-                            cbuf->avlRegIndex[r] += sz;
-
-                            do_add = false;
-                            break;
-                        }
-                    }
-
-                    if (do_add)
-                    {
-                        p.bufferReg = cbuf->regCount;
-                        p.bufferRegCount = 0;
-
-                        ++cbuf->regCount;
-
-                        cbuf->avlRegIndex.push_back(sz);
-                    }
-                }
-                else if (p.type == ShaderProp::TYPE_FLOAT4 || p.type == ShaderProp::TYPE_FLOAT4X4)
-                {
-                    p.bufferReg = cbuf->regCount;
-                    p.bufferRegCount = p.arraySize * ((p.type == ShaderProp::TYPE_FLOAT4) ? 1 : 4);
-
-                    cbuf->regCount += p.bufferRegCount;
-
-                    for (int i = 0; i != p.bufferRegCount; ++i)
-                        cbuf->avlRegIndex.push_back(4);
-                }
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, fsampler2d_re) 
-                        #else
-                     && fsampler2d_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                #else
-                std::string sname;
-                fsampler2d_re.get_pattern(1, &sname);
-                #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
-                size_t sn = sname.length();
-
-                DVASSERT(sampler.size() < 10);
-                char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
-                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                line[mbegin + 1] = ch;
-                if (sn > static_cast<size_t>(sl))
-                    memset(line + mbegin + sl, ' ', sn - sl);
-                sampler.resize(sampler.size() + 1);
-                sampler.back().uid = FastName(sname);
-                sampler.back().type = TEXTURE_TYPE_2D;
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, samplercube_re) 
-                        #else
-                     && samplercube_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                #else
-                std::string sname;
-                samplercube_re.get_pattern(1, &sname);
-                #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
-                size_t sn = sname.length();
-
-                DVASSERT(sampler.size() < 10);
-                char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
-                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                line[mbegin + 1] = ch;
-                if (sn > static_cast<size_t>(sl))
-                    memset(line + mbegin + sl, ' ', sn - sl);
-                sampler.resize(sampler.size() + 1);
-                sampler.back().uid = FastName(sname);
-                sampler.back().type = TEXTURE_TYPE_CUBE;
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, ftexture2d_re) 
-                        #else
-                     && ftexture2d_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                size_t mbegin = match.position(1);
-                #else
-                std::string sname;
-                ftexture2d_re.get_pattern(1, &sname);
-                size_t mbegin = ftexture2d_re.pattern(1)->begin;
-                #endif
-                FastName suid(sname);
-
-                for (unsigned s = 0; s != sampler.size(); ++s)
-                {
-                    if (sampler[s].uid == suid)
-                    {
-                        int sl = sprintf(line + mbegin, "%u", s);
-                        size_t sn = sname.length();
-                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                        line[mbegin + sl] = ',';
-                        if (sn > static_cast<size_t>(sl))
-                            memset(line + mbegin + sl, ' ', sn - sl);
-
-                        break;
-                    }
-                }
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, vsampler2d_re) 
-                        #else
-                     && vsampler2d_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                #else
-                std::string sname;
-                vsampler2d_re.get_pattern(1, &sname);
-                #endif
-                size_t mbegin = strstr(line, sname.c_str()) - line;
-                size_t sn = sname.length();
-
-                DVASSERT(sampler.size() < 10);
-                char ch = line[mbegin + 1];
-                int sl = sprintf(line + mbegin, "%u", uint32(sampler.size()));
-                DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                line[mbegin + 1] = ch;
-                if (sn > static_cast<size_t>(sl))
-                    memset(line + mbegin + sl, ' ', sn - sl);
-                sampler.resize(sampler.size() + 1);
-                sampler.back().uid = FastName(sname);
-                sampler.back().type = TEXTURE_TYPE_2D;
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, vtexture2d_re) 
-                        #else
-                     && vtexture2d_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                size_t mbegin = match.position(1);
-                #else
-                std::string sname;
-                vtexture2d_re.get_pattern(1, &sname);
-                size_t mbegin = vtexture2d_re.pattern(1)->begin;
-                #endif
-                FastName suid(sname);
-
-                for (unsigned s = 0; s != sampler.size(); ++s)
-                {
-                    if (sampler[s].uid == suid)
-                    {
-                        int sl = sprintf(line + mbegin, "%u", s);
-                        size_t sn = sname.length();
-                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                        line[mbegin + sl] = ',';
-                        if (sn > static_cast<size_t>(sl))
-                            memset(line + mbegin + sl, ' ', sn - sl);
-
-                        break;
-                    }
-                }
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, texturecube_re) 
-                        #else
-                     && texturecube_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string sname = match[1].str();
-                size_t mbegin = match.position(1);
-                #else
-                std::string sname;
-                texturecube_re.get_pattern(1, &sname);
-                size_t mbegin = texturecube_re.pattern(1)->begin;
-                #endif
-                FastName suid(sname);
-
-                for (unsigned s = 0; s != sampler.size(); ++s)
-                {
-                    if (sampler[s].uid == suid)
-                    {
-                        int sl = sprintf(line + mbegin, "%u", s);
-                        size_t sn = sname.length();
-                        DVASSERT(sl >= 0 && sn >= static_cast<size_t>(sl));
-                        line[mbegin + sl] = ',';
-                        if (sn > static_cast<size_t>(sl))
-                            memset(line + mbegin + sl, ' ', sn - sl);
-
-                        break;
-                    }
-                }
-
-                _AppendLine(line, strlen(line));
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, blend_re) 
-                        #else
-                     && blend_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string mode = match[1].str();
-                #else
-                std::string mode;
-                blend_re.get_pattern(1, &mode);
-                #endif
-
-                if (!stricmp(mode.c_str(), "alpha"))
-                {
-                    blending.rtBlend[0].blendEnabled = true;
-                    blending.rtBlend[0].colorSrc = BLENDOP_SRC_ALPHA;
-                    blending.rtBlend[0].colorDst = BLENDOP_INV_SRC_ALPHA;
-                    blending.rtBlend[0].alphaSrc = BLENDOP_SRC_ALPHA;
-                    blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
-                }
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, blending2_re) 
-                        #else
-                     && blending2_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string src = match[1].str();
-                std::string dst = match[2].str();
-                #else
-                std::string src;
-                blending2_re.get_pattern(1, &src);
-                std::string dst;
-                blending2_re.get_pattern(2, &dst);
-                #endif
-
-                blending.rtBlend[0].blendEnabled = true;
-                blending.rtBlend[0].colorSrc = blending.rtBlend[0].alphaSrc = BlendOpFromText(src.c_str());
-                blending.rtBlend[0].colorDst = blending.rtBlend[0].alphaDst = BlendOpFromText(dst.c_str());
-            }
-            else if (!isComment  
-                        #if RHI__USE_STD_REGEX
-                     && std::regex_match(line, match, colormask_re) 
-                        #else
-                     && colormask_re.test(line)
-                        #endif
-                     )
-            {
-                #if RHI__USE_STD_REGEX
-                std::string mask = match[1].str();
-                #else
-                std::string mask;
-                colormask_re.get_pattern(1, &mask);
-                #endif
-
-                if (stricmp(mask.c_str(), "all") == 0)
-                    blending.rtBlend[0].writeMask = COLORMASK_ALL;
-                else if (stricmp(mask.c_str(), "none") == 0)
-                    blending.rtBlend[0].writeMask = COLORMASK_NONE;
-                else if (stricmp(mask.c_str(), "rgb") == 0)
-                    blending.rtBlend[0].writeMask = COLORMASK_R | COLORMASK_G | COLORMASK_B;
-                else if (stricmp(mask.c_str(), "a") == 0)
-                    blending.rtBlend[0].writeMask = COLORMASK_A;
-            }
-            else
-            {
-                _AppendLine(line, strlen(line));
-            }
-
-            if (strstr(line, "VPROG_IN_BEGIN"))
-                vdecl.Clear();
-            if (strstr(line, "VPROG_IN_STREAM_VERTEX"))
-                vdecl.AddStream(VDF_PER_VERTEX);
-            if (strstr(line, "VPROG_IN_STREAM_INSTANCE"))
-                vdecl.AddStream(VDF_PER_INSTANCE);
-            if (strstr(line, "VPROG_IN_POSITION"))
-                vdecl.AddElement(VS_POSITION, 0, VDT_FLOAT, 3);
-            if (strstr(line, "VPROG_IN_NORMAL"))
-                vdecl.AddElement(VS_NORMAL, 0, VDT_FLOAT, 3);
-
-            if (strstr(line, "VPROG_IN_TEXCOORD"))
-            {
-                uint32 usage_i = 0;
-                uint32 data_cnt = 2;
-
-                #if RHI__USE_STD_REGEX
-                std::regex texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
-                #else
-                RegExp texcoord_re;
-#if !(RHI__OPTIMIZED_REGEX)
-                texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
-#else
-                texcoord_re.compile("VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(\\s*([0-7])\\s*\\)");
-#endif
-                #endif
-
-                if ( 
-                    #if RHI__USE_STD_REGEX
-                std::regex_match(line, match, texcoord_re) 
-                    #else
-                texcoord_re.test(line)
-                    #endif
-                )
-                {
-                    #if RHI__USE_STD_REGEX
-                    std::string u = match[1].str();
-                    std::string c = match[2].str();
-                    #else
-                    std::string u;
-                    texcoord_re.get_pattern(1, &u);
-                    std::string c;
-                    texcoord_re.get_pattern(2, &c);
-                    #endif
-
-                    usage_i = atoi(u.c_str());
-                    data_cnt = atoi(c.c_str());
-                }
-
-                vdecl.AddElement(VS_TEXCOORD, usage_i, VDT_FLOAT, data_cnt);
-            }
-
-            if (strstr(line, "VPROG_IN_COLOR"))
-                vdecl.AddElement(VS_COLOR, 0, VDT_UINT8N, 4);
-
-            if (strstr(line, "VPROG_IN_TANGENT"))
-                vdecl.AddElement(VS_TANGENT, 0, VDT_FLOAT, 3);
-
-            if (strstr(line, "VPROG_IN_BINORMAL"))
-                vdecl.AddElement(VS_BINORMAL, 0, VDT_FLOAT, 3);
-
-            if (strstr(line, "VPROG_IN_BLENDINDEX"))
-            {
-                uint32 data_cnt = 1;
-                #if RHI__USE_STD_REGEX
-                std::regex index_re(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
-                #else
-                RegExp index_re;
-#if !(RHI__OPTIMIZED_REGEX)
-                index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
-#else
-                index_re.compile("VPROG_IN_BLENDINDEX\\s*\\(\\s*([0-7])\\s*\\)");
-#endif
-                #endif
-
-                if ( 
-                    #if RHI__USE_STD_REGEX
-                std::regex_match(line, match, index_re) 
-                    #else
-                index_re.test(line)
-                    #endif
-                )
-                {
-                    #if RHI__USE_STD_REGEX
-                    std::string c = match[1].str();
-                    #else
-                    std::string c;
-                    index_re.get_pattern(1, &c);
-                    #endif
-
-                    data_cnt = atoi(c.c_str());
-                }
-
-                vdecl.AddElement(VS_BLENDINDEX, 0, VDT_FLOAT, data_cnt);
-            }
-
-        } // for each line
-        STOP_NAMED_TIMING("shadersrc.parse");
-
-        type = progType;
-
-        success = true;
-    }
-
-    if (success)
-    {
-        START_NAMED_TIMING("shadersrc.gen");
-        // check if any const-buffer has more than one bigarray-prop
-
-        for (size_t b = 0, b_end = buf.size(); b != b_end; ++b)
-        {
-            unsigned bigarray_cnt = 0;
-
-            for (std::vector<ShaderProp>::iterator p = prop.begin(), p_end = prop.end(); p != p_end; ++p)
-            {
-                if (p->isBigArray && p->bufferindex == b)
-                {
-                    if (++bigarray_cnt > 1)
-                        break;
-                }
-            }
-
-            if (bigarray_cnt > 1)
-            {
-                DVASSERT(bigarray_cnt <= 1);
-                return false;
-            }
-        }
-
-        // generate prop-var definitions
-
-        const char* prog_begin = (progType == PROG_VERTEX) ? "VPROG_BEGIN" : "FPROG_BEGIN";
-        const char* prog = strstr(code.c_str(), prog_begin);
-
-        if (prog)
-        {
-            char buf_def[1024];
-            int buf_len = 0;
-            char var_def[8 * 1024];
-            int var_len = 0;
-            char pt = (progType == PROG_VERTEX) ? 'V' : 'F';
-            unsigned reg = 0;
-
-            buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "//--------\n");
-            for (unsigned i = 0; i != buf.size(); ++i)
-            {
-                buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "DECL_%cPROG_BUFFER(%u,%u,%u)\n", pt, i, buf[i].regCount, reg);
-                reg += buf[i].regCount;
-            }
-            buf_len += Snprintf(buf_def + buf_len, sizeof(buf_def) - buf_len, "\n\n");
-
-            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
-            for (std::vector<ShaderProp>::const_iterator p = prop.begin(), p_end = prop.end(); p != p_end; ++p)
-            {
-                switch (p->type)
-                {
-                case ShaderProp::TYPE_FLOAT1:
-                {
-                    const char* xyzw = "xyzw";
-                    //                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
-                    var_len += Snprintf(
-                    var_def + var_len, sizeof(var_def) - var_len,
-                    "    #define %s  float4(%cP_Buffer%u[%u]).%c\n",
-                    p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount]);
-                }
-                break;
-
-                case ShaderProp::TYPE_FLOAT2:
-                {
-                    const char* xyzw = "xyzw";
-                    var_len += Snprintf(
-                    var_def + var_len, sizeof(var_def) - var_len,
-                    //                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n",      k
-                    //                    "    float2 %s = float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
-                    "    #define %s  float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c )\n",
-                    p->uid.c_str(),
-                    pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0],
-                    pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 1]);
-                }
-                break;
-
-                case ShaderProp::TYPE_FLOAT3:
-                {
-                    const char* xyzw = "xyzw";
-                    var_len += Snprintf(
-                    var_def + var_len, sizeof(var_def) - var_len,
-                    //                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n",
-                    //                    "    float3 %s = float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n",
-                    "    #define %s  float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c )\n",
-                    p->uid.c_str(),
-                    pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 0],
-                    pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 1],
-                    pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount + 2]);
-                }
-                break;
-
-                case ShaderProp::TYPE_FLOAT4:
-                {
-                    if (p->arraySize == 1)
-                    {
-                        var_len += Snprintf(
-                        var_def + var_len, sizeof(var_def) - var_len,
-                        "    #define %s  float4(%cP_Buffer%u[%u])\n",
-                        p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
-                    }
-                    else
-                    {
-                        if (p->isBigArray)
-                        {
-                            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    #define %s %cP_Buffer%u\n", p->uid.c_str(), pt, p->bufferindex);
-                        }
-                        else
-                        {
-                            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float4 %s[%u];\n", p->uid.c_str(), p->arraySize);
-                            for (unsigned i = 0; i != p->arraySize; ++i)
-                            {
-                                var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "      %s[%u] = %cP_Buffer%u[%u];\n", p->uid.c_str(), i, pt, p->bufferindex, p->bufferReg + i);
-                            }
-                        }
-                    }
-                }
-                break;
-
-                case ShaderProp::TYPE_FLOAT4X4:
-                {
-                    var_len += Snprintf(
-                    var_def + var_len, sizeof(var_def) - var_len,
-                    "    #define %s float4x4( %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u], %cP_Buffer%u[%u] )\n",
-                    p->uid.c_str(),
-                    pt, p->bufferindex, p->bufferReg + 0,
-                    pt, p->bufferindex, p->bufferReg + 1,
-                    pt, p->bufferindex, p->bufferReg + 2,
-                    pt, p->bufferindex, p->bufferReg + 3);
-                }
-                break;
-                };
-            }
-            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    //--------\n");
-            var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "\n\n");
-            size_t var_pos = (prog - code.c_str()) + strlen("XPROG_BEGIN") + buf_len + 2;
-
-            code.insert(prog - code.c_str(), buf_def, buf_len);
-            code.insert(var_pos, var_def, var_len);
-        }
-        STOP_NAMED_TIMING("shadersrc.gen");
-    }
-*/
     return success;
 }
 
 //------------------------------------------------------------------------------
 
 void
-ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
+ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 {
     struct
     prop_t
@@ -1407,8 +573,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 vertexLayout.AddElement(usage, usage_i, data_type, data_count);
             }
 
-            //-            Logger::Info("vertex-layout:");
-            //-            vertexLayout.Dump();
         }
     }
 
@@ -1443,7 +607,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                     if (property[p].bufferindex == i)
                     {
                         decl->name = ast->AddString(property[p].uid.c_str());
-                        //                        decl->type.baseType=sl::HLSLBaseType_Float4x4;
                         break;
                     }
                 }
@@ -1480,31 +643,31 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
             {
                 if (!property[i].isBigArray)
                 {
-                sl::HLSLArrayAccess* arr_access = ast->AddNode<sl::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                sl::HLSLLiteralExpression* idx = ast->AddNode<sl::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                sl::HLSLIdentifierExpression* arr = ast->AddNode<sl::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                char buf_name[128];
+                    sl::HLSLArrayAccess* arr_access = ast->AddNode<sl::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                    sl::HLSLLiteralExpression* idx = ast->AddNode<sl::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                    sl::HLSLIdentifierExpression* arr = ast->AddNode<sl::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                    char buf_name[128];
 
-                Snprintf(buf_name, sizeof(buf_name), "%cP_Buffer%u", btype, property[i].bufferindex);
-                arr->name = ast->AddString(buf_name);
-                arr->global = true;
+                    Snprintf(buf_name, sizeof(buf_name), "%cP_Buffer%u", btype, property[i].bufferindex);
+                    arr->name = ast->AddString(buf_name);
+                    arr->global = true;
 
-                idx->type = sl::HLSLBaseType_Int;
-                idx->iValue = property[i].bufferReg;
+                    idx->type = sl::HLSLBaseType_Int;
+                    idx->iValue = property[i].bufferReg;
 
-                arr_access->array = arr;
-                arr_access->index = idx;
+                    arr_access->array = arr;
+                    arr_access->index = idx;
                     
                     #if DO_FLOAT4_CAST
-                sl::HLSLCastingExpression* cast_expr = ast->AddNode<sl::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                cast_expr->expression = arr_access;
-                cast_expr->type.baseType = sl::HLSLBaseType_Float4;
+                    sl::HLSLCastingExpression* cast_expr = ast->AddNode<sl::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                    cast_expr->expression = arr_access;
+                    cast_expr->type.baseType = sl::HLSLBaseType_Float4;
 
-                prop_decl[i].decl->assignment = cast_expr;
-                prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
+                    prop_decl[i].decl->assignment = cast_expr;
+                    prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
                     #else
-                prop_decl[i].decl->assignment = arr_access;
-                prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
+                    prop_decl[i].decl->assignment = arr_access;
+                    prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
                     #endif
                 }
                 else
@@ -1556,7 +719,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 arr_access->array = arr;
                 arr_access->index = idx;
 
-                    #if DO_FLOAT4_CAST
+                #if DO_FLOAT4_CAST
                 sl::HLSLCastingExpression* cast_expr = ast->AddNode<sl::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
                 cast_expr->expression = arr_access;
                 cast_expr->type.baseType = sl::HLSLBaseType_Float4;
@@ -1564,10 +727,10 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
 
                 prop_decl[i].decl->assignment = member_access;
                 prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
-                    #else
+                #else
                 prop_decl[i].decl->assignment = member_access;
                 prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
-                    #endif
+                #endif
             }
             break;
 
@@ -1597,7 +760,7 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                     arr_access[k]->index = idx;
                 }
 
-                    #if DO_FLOAT4_CAST
+                #if DO_FLOAT4_CAST
                 for (unsigned k = 0; k != 4; ++k)
                 {
                     cast_expr[k] = ast->AddNode<sl::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
@@ -1608,11 +771,11 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
                 ctor->argument = cast_expr[0];
                 for (unsigned k = 0; k != 4 - 1; ++k)
                     cast_expr[k]->nextExpression = cast_expr[k + 1];
-                    #else
+                #else
                 ctor->argument = arr_access[0];
                 for (unsigned k = 0; k != 4 - 1; ++k)
                     arr_access[k]->nextExpression = arr_access[k + 1];
-                    #endif
+                #endif
 
                 prop_decl[i].decl->assignment = ctor;
                 prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
@@ -1622,9 +785,6 @@ ShaderSource::_ProcessMetaData(sl::HLSLTree* ast)
 
             if (property[i].isBigArray)
             {
-                //                if( prop_decl[i].prev_statement )
-                //                    prop_decl[i].prev_statement->nextStatement = prop_decl[i].decl->nextStatement;
-
                 prop_decl[i].decl->hidden = true;
             }
         }
@@ -1801,7 +961,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     uint32 readUI4;
     uint8 readUI1;
 
-    _Reset();
+    Reset();
 
     READ_CHECK(ReadUI4(in, &readUI4));
     type = ProgType(readUI4);
@@ -2160,15 +1320,6 @@ void ShaderSource::_Reset()
         code[i].clear();
 }
 
-//------------------------------------------------------------------------------
-/*
-void ShaderSource::_AppendLine(const char* line, size_t lineLen)
-{
-    code.append(line, lineLen);
-    code.push_back('\n');
-    return;
-}
-*/
 //------------------------------------------------------------------------------
 
 void ShaderSource::Dump() const
