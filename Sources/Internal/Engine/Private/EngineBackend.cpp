@@ -5,6 +5,7 @@
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/WindowBackend.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
@@ -71,15 +72,12 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
     , cmdargs(cmdargs)
+    , options(new KeyedArchive) // Ensure options never null
 {
     DVASSERT(instance == nullptr);
     instance = this;
 
     context->logger = new Logger;
-
-#if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_ANDROID__)
-    CreatePrimaryWindowBackend();
-#endif
 }
 
 EngineBackend::~EngineBackend()
@@ -100,12 +98,13 @@ void EngineBackend::EngineDestroyed()
 
 void EngineBackend::SetOptions(KeyedArchive* options_)
 {
-    options = options_;
+    DVASSERT(options_ != nullptr);
+    options.Set(options_);
 }
 
 KeyedArchive* EngineBackend::GetOptions()
 {
-    return options;
+    return options.Get();
 }
 
 NativeService* EngineBackend::GetNativeService() const
@@ -124,16 +123,23 @@ Vector<char*> EngineBackend::GetCommandLineAsArgv()
     return argv;
 }
 
+Window* EngineBackend::InitializePrimaryWindow()
+{
+    DVASSERT(primaryWindow == nullptr);
+    primaryWindow = new Window(this, true);
+    justCreatedWindows.insert(primaryWindow);
+    return primaryWindow;
+}
+
 void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
 {
     runMode = engineRunMode;
 
-    platformCore->Init();
+    // Do not initialize PlatformCore in console mode as console mode is fully
+    // implemented in EngineBackend
     if (!IsConsoleMode())
     {
-#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_ANDROID__)
-        CreatePrimaryWindowBackend();
-#endif
+        platformCore->Init();
     }
 
     Thread::InitMainThread();
@@ -173,13 +179,13 @@ int EngineBackend::Run()
     return exitCode;
 }
 
-void EngineBackend::Quit(int exitCode_)
+void EngineBackend::Quit(int exitCode)
 {
-    exitCode = exitCode_;
+    this->exitCode = exitCode;
     switch (runMode)
     {
     case eEngineRunMode::GUI_STANDALONE:
-        PostAppTerminate();
+        PostAppTerminate(false);
         break;
     case eEngineRunMode::GUI_EMBEDDED:
         Logger::Warning("Engine does not support Quit command in embedded mode");
@@ -192,22 +198,16 @@ void EngineBackend::Quit(int exitCode_)
     }
 }
 
-void EngineBackend::RunAsyncOnMainThread(const Function<void()>& task)
+void EngineBackend::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::FUNCTOR;
-    e.window = nullptr;
-    e.functor = task;
-    dispatcher->PostEvent(e);
+    closeRequestHandler = handler;
 }
 
-void EngineBackend::RunAndWaitOnMainThread(const Function<void()>& task)
+void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool blocking)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::FUNCTOR;
-    e.window = nullptr;
+    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
     e.functor = task;
-    dispatcher->SendEvent(e);
+    blocking ? dispatcher->SendEvent(e) : dispatcher->PostEvent(e);
 }
 
 void EngineBackend::RunConsole()
@@ -219,7 +219,7 @@ void EngineBackend::RunConsole()
         Thread::Sleep(1);
     }
     OnGameLoopStopped();
-    OnBeforeTerminate();
+    OnEngineCleanup();
 }
 
 void EngineBackend::OnGameLoopStarted()
@@ -229,6 +229,14 @@ void EngineBackend::OnGameLoopStarted()
 
 void EngineBackend::OnGameLoopStopped()
 {
+    DVASSERT(justCreatedWindows.empty());
+
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+
     engine->gameLoopStopped.Emit();
     if (!IsConsoleMode())
     {
@@ -237,9 +245,9 @@ void EngineBackend::OnGameLoopStopped()
     }
 }
 
-void EngineBackend::OnBeforeTerminate()
+void EngineBackend::OnEngineCleanup()
 {
-    engine->beforeTerminate.Emit();
+    engine->cleanup.Emit();
 
     DestroySubsystems();
     delete context;
@@ -253,7 +261,7 @@ void EngineBackend::OnBeforeTerminate()
 void EngineBackend::DoEvents()
 {
     dispatcher->ProcessEvents();
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->FinishEventHandlingOnCurrentFrame();
     }
@@ -266,8 +274,9 @@ void EngineBackend::OnFrameConsole()
     context->systemTimer->UpdateGlobalTime(frameDelta);
 
     DoEvents();
-
     engine->update.Emit(frameDelta);
+
+    globalFrameIndex += 1;
 }
 
 int32 EngineBackend::OnFrame()
@@ -295,6 +304,7 @@ int32 EngineBackend::OnFrame()
         }
     }
 
+    globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
 }
 
@@ -311,7 +321,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->Update(frameDelta);
     }
@@ -324,7 +334,7 @@ void EngineBackend::OnDraw()
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
-    for (Window* w : windows)
+    for (Window* w : aliveWindows)
     {
         w->Draw();
     }
@@ -340,6 +350,43 @@ void EngineBackend::OnEndFrame()
     Renderer::EndFrame();
 }
 
+void EngineBackend::OnWindowCreated(Window* window)
+{
+    {
+        // Place window into alive window list
+        size_t nerased = justCreatedWindows.erase(window);
+        DVASSERT(nerased == 1);
+
+        auto result = aliveWindows.insert(window);
+        DVASSERT(result.second == true);
+    }
+    engine->windowCreated.Emit(window);
+}
+
+void EngineBackend::OnWindowDestroyed(Window* window)
+{
+    engine->windowDestroyed.Emit(window);
+
+    // Remove window from alive window list and place it into dying window list to delete later
+    size_t nerased = aliveWindows.erase(window);
+    DVASSERT(nerased == 1);
+    dyingWindows.insert(window);
+
+    if (window->IsPrimary())
+    {
+        primaryWindow = nullptr;
+    }
+
+    if (aliveWindows.empty())
+    { // No alive windows left, exit application
+        platformCore->Quit();
+    }
+    else if (window->IsPrimary() && !IsEmbeddedGUIMode())
+    { // Initiate app termination if primary window is destroyed, except embedded mode
+        PostAppTerminate(false);
+    }
+}
+
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 {
     switch (e.type)
@@ -347,23 +394,17 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case MainDispatcherEvent::WINDOW_CREATED:
-        HandleWindowCreated(e);
-        break;
-    case MainDispatcherEvent::WINDOW_DESTROYED:
-        HandleWindowDestroyed(e);
-        break;
     case MainDispatcherEvent::APP_SUSPENDED:
         HandleAppSuspended(e);
         break;
     case MainDispatcherEvent::APP_RESUMED:
         HandleAppResumed(e);
         break;
+    case MainDispatcherEvent::USER_CLOSE_REQUEST:
+        HandleUserCloseRequest(e);
+        break;
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
-        break;
-    case MainDispatcherEvent::APP_IMMEDIATE_TERMINATE:
-        HandleAppImmediateTerminate(e);
         break;
     default:
         if (e.window != nullptr)
@@ -374,57 +415,45 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     }
 }
 
-void EngineBackend::HandleWindowCreated(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-    engine->windowCreated.Emit(*e.window);
-}
-
-void EngineBackend::HandleWindowDestroyed(const MainDispatcherEvent& e)
-{
-    e.window->EventHandler(e);
-    engine->windowDestroyed.Emit(*e.window);
-
-    size_t nerased = windows.erase(e.window);
-    DVASSERT(nerased == 1);
-
-    bool isPrimary = e.window->IsPrimary();
-    delete e.window;
-
-    if (isPrimary)
-    {
-        primaryWindow = nullptr;
-        // If primary window is destroyed then terminate application
-        PostAppTerminate();
-    }
-
-    if (windows.empty())
-    {
-        platformCore->Quit();
-    }
-}
-
 void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
 {
-    for (Window* w : windows)
-    {
-        w->Close();
-    }
-}
+    // Application can be terminated by several ways:
+    //  1. application calls Engine::Quit
+    //  2. application calls Window::Close for primary window
+    //  3. user closes primary window (e.g. Alt+F4 key combination or mouse press on close button)
+    //  4. system delivers unconditional termination request (e.g, android on activity finishing)
+    //
+    // EngineBackend receives termination request through MainDispatcherEvent::APP_TERMINATE event with
+    // parameter triggeredBySystem which denotes termination request source: system (value 1) or user (value 0).
+    // If termination request originates from user then EngineBackend calls PlatformCore to prepare for quit
+    // (e.g. android implementation triggers activity finishing which in turn sends system termination request,
+    // other platforms may simply repost termination request as if initiated by system).
+    // If termination request originates from system then EngineBackend closes all active windows and waits
+    // till all windows are closed. When last window is closed EngineBackend tells PlatformCore to quit which
+    // usually means simply to exit game loop.
+    // This sequence is invented for unification purpose.
 
-void EngineBackend::HandleAppImmediateTerminate(const MainDispatcherEvent& e)
-{
-    MainDispatcherEvent dummyEvent;
-    dummyEvent.type = MainDispatcherEvent::WINDOW_DESTROYED;
-    for (Window* w : windows)
+    if (e.terminateEvent.triggeredBySystem != 0)
     {
-        dummyEvent.window = w;
-        w->HandleWindowDestroyed(dummyEvent);
-        engine->windowDestroyed.Emit(*w);
-        delete w;
+        appIsTerminating = true;
+
+        // Usually windows send blocking event about destruction and aliveWindows can be
+        // modified while iterating over windows, so use such while construction.
+        auto it = aliveWindows.begin();
+        while (it != aliveWindows.end())
+        {
+            Window* w = *it;
+            ++it;
+
+            // Directly call Close for WindowBackend to tell important information that application is terminating
+            w->GetBackend()->Close(true);
+        }
     }
-    windows.clear();
-    platformCore->Quit();
+    else if (!appIsTerminating)
+    {
+        appIsTerminating = true;
+        platformCore->PrepareToQuit();
+    }
 }
 
 void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
@@ -449,18 +478,35 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
     }
 }
 
-void EngineBackend::PostAppTerminate()
+void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
 {
-    if (!appIsTerminating)
+    bool satisfyCloseRequest = true;
+    if (closeRequestHandler != nullptr)
     {
-        MainDispatcherEvent e;
-        e.window = nullptr;
-        e.type = MainDispatcherEvent::APP_TERMINATE;
-        e.timestamp = context->systemTimer->FrameStampTimeMS();
-        dispatcher->PostEvent(e);
-
-        appIsTerminating = true;
+        satisfyCloseRequest = closeRequestHandler(e.window);
     }
+
+    if (satisfyCloseRequest)
+    {
+        if (e.window != nullptr)
+        {
+            e.window->Close();
+        }
+        else
+        {
+            Quit(0);
+        }
+    }
+}
+
+void EngineBackend::PostAppTerminate(bool triggeredBySystem)
+{
+    dispatcher->PostEvent(MainDispatcherEvent::CreateAppTerminateEvent(triggeredBySystem));
+}
+
+void EngineBackend::PostUserCloseRequest()
+{
+    dispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(nullptr));
 }
 
 void EngineBackend::InitRenderer(Window* w)
@@ -530,17 +576,6 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
 
 void EngineBackend::DeinitRender(Window* w)
 {
-}
-
-Window* EngineBackend::CreatePrimaryWindowBackend()
-{
-    DVASSERT(primaryWindow == nullptr);
-
-    Window* window = new Window(this, true);
-    windows.insert(window);
-
-    primaryWindow = window;
-    return window;
 }
 
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)
@@ -628,7 +663,7 @@ void EngineBackend::DestroySubsystems()
     if (context->jobManager != nullptr)
     {
         // Wait job completion before releasing singletons
-        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::beforeTerminate
+        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::cleanup
         context->jobManager->WaitWorkerJobs();
         context->jobManager->WaitMainJobs();
     }
