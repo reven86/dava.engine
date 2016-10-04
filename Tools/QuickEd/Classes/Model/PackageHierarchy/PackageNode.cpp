@@ -193,17 +193,11 @@ void PackageNode::RefreshProperty(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetStylePropertyIndex() != -1)
         node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsOverridden());
-
     node->GetRootProperty()->RefreshProperty(property, AbstractProperty::REFRESH_DEFAULT_VALUE | AbstractProperty::REFRESH_LOCALIZATION | AbstractProperty::REFRESH_FONT);
-    if (canUpdateAll)
-    {
-        RefreshControlStylesAndLayout(node);
-        RefreshPropertiesInInstances(node, property);
-    }
-    else
-    {
-        changedProperties.insert(std::make_pair(node, property));
-    }
+
+    RefreshControlStylesAndLayout(node, canUpdateAll);
+    RefreshPropertiesInInstances(node, property);
+
     for (PackageListener* listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
 }
@@ -417,14 +411,6 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
 void PackageNode::SetCanUpdateAll(bool canUpdate)
 {
     canUpdateAll = canUpdate;
-    if (canUpdateAll)
-    {
-        for (const std::pair<ControlNode*, AbstractProperty*>& pair : changedProperties)
-        {
-            RefreshProperty(pair.first, pair.second);
-        }
-        changedProperties.clear();
-    }
 }
 
 bool PackageNode::CanUpdateAll() const
@@ -442,7 +428,7 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProper
     }
 }
 
-void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
+void PackageNode::RefreshControlStylesAndLayout(ControlNode* node, bool needRefreshStyles)
 {
     Vector<ControlNode*> roots;
     ControlNode* root = node;
@@ -451,7 +437,11 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode* node)
         root = static_cast<ControlNode*>(root->GetParent());
     }
     RestoreProperties(root);
-    RefreshStyles(root);
+    if (needRefreshStyles)
+    {
+        RefreshStyles(root);
+    }
+
     UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(root->GetControl());
     NotifyPropertyChanged(root);
 }

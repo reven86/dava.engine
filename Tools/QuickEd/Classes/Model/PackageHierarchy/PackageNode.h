@@ -92,7 +92,7 @@ public:
 private:
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
-    void RefreshControlStylesAndLayout(ControlNode* node);
+    void RefreshControlStylesAndLayout(ControlNode* node, bool canUpdateAll = true);
     void RefreshStyles(ControlNode* node);
     void CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots);
     void RestoreProperties(ControlNode* control);
@@ -115,7 +115,6 @@ private:
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
     bool canUpdateAll = true;
-    DAVA::Set<std::pair<ControlNode*, AbstractProperty*>> changedProperties;
 };
 
 #endif // __UI_EDITOR_PACKAGE_NODE_H__
