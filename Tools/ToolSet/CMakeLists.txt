@@ -30,7 +30,7 @@ macro ( init_tool_set )
     set_target_properties ( ${PROJECT_NAME} PROPERTIES
                             MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}"
                             XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                            RESOURCE "${RESOURCES_LIST}"
+                            RESOURCE "${MACOS_ICO}"
                             XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR ${CMAKE_BINARY_DIR}/app
                           )
 

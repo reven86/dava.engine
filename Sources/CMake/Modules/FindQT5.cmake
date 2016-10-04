@@ -52,11 +52,7 @@ macro ( qt_deploy )
         set(DEPLOY_PLATFORM "MAC")
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
 
-        if( MAC_DISABLE_BUNDLE )
-            set(DEPLOY_ARGUMENTS "-always-overwrite ${QML_SCAN_FLAG}")            
-        else()
-            set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
-        endif()
+        set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
 
