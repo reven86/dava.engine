@@ -28,6 +28,7 @@
 #set( ADDED_BINARY_DIR           )
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
+#set( DEFINITIONS                )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.

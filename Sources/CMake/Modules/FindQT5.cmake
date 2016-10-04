@@ -60,8 +60,6 @@ macro ( qt_deploy )
 
     endif()
 
-    message( "${PROJECT_NAME} ===${DEPLOY_PLATFORM} ===${DEPLOY_QT_FOLDER} ===${DEPLOY_ROOT_FOLDER} ===${DEPLOY_ARGUMENTS}")
-
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND "python"
                     ${DEPLOY_SCRIPT_PATH}
