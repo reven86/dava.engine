@@ -108,7 +108,11 @@ void ScriptingTest::LoadResources()
         Run([&]() -> int32 {
             for (int32 i = 0; i < 10000; ++i)
             {
-                script->ExecFunction("main", intArg, strArg, objRef);
+                int32 nresults = script->ExecFunction("main", intArg, strArg, objRef);
+                for (int32 i = 0; i < nresults; ++i)
+                {
+                    script->PopResult();
+                }
             }
             return 0;
         });
@@ -117,7 +121,11 @@ void ScriptingTest::LoadResources()
         Run([&]() -> int32 {
             for (int32 i = 0; i < 10000; ++i)
             {
-                script->ExecFunction("main");
+                int32 nresults = script->ExecFunction("main");
+                for (int32 i = 0; i < nresults; ++i)
+                {
+                    script->PopResult();
+                }
             }
             return 0;
         });
@@ -171,6 +179,8 @@ void ScriptingTest::Run(Function<int32()> func)
         }
         outputText->SetUtf8Text(output);
         timeText->SetUtf8Text(Format("Time: %llu us", time));
+
+        script->DumpStack();
     }
     catch (const LuaException& e)
     {
