@@ -2,6 +2,11 @@ include ( CMake-common )
 if( WIN32 AND NOT WINDOWS_UAP )
     include( FindWindowsSDK )
 endif()
+
+if( NOT DAVA_LIBRARY )
+    set( DAVA_LIBRARY    "DavaFramework" )
+endif()
+
 include ( DavaLibs )
 
 set( NAME_MODULE ${DAVA_LIBRARY} )
@@ -9,7 +14,8 @@ set( NAME_MODULE ${DAVA_LIBRARY} )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
-set( EXTERNAL_MODULES           ${DAVA_MODULES_DIR}/TArc )
+set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/TArc 
+                                    ${DAVA_MODULES_DIR}/SampleModule )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -73,6 +79,8 @@ set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
                                
 set( SRC_FOLDERS                    "." )
+ 
+set( MODULE_MANAGER_TEMPLATE        ModuleManager/ModuleManager.in )
 
 set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
                    

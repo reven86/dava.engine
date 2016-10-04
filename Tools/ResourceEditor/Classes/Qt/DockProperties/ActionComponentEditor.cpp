@@ -68,9 +68,9 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
     DAVA::VariantType widths = posSaver.LoadValue(ActionComponentEditorDetail::GetColumnWidthsKey());
     if (widths.type == DAVA::VariantType::TYPE_BYTE_ARRAY)
     {
-        int32 size = widths.AsByteArraySize() / sizeof(int);
+        DAVA::int32 size = widths.AsByteArraySize() / sizeof(int);
         DVASSERT(size == ui->tableActions->columnCount());
-        const uint8* data = widths.AsByteArray();
+        const DAVA::uint8* data = widths.AsByteArray();
         const int* intData = reinterpret_cast<const int*>(data);
         for (int i = 0; i < size; ++i)
         {
@@ -110,7 +110,7 @@ ActionComponentEditor::~ActionComponentEditor()
     {
         widths.push_back(ui->tableActions->columnWidth(i));
     }
-    DAVA::VariantType value(reinterpret_cast<uint8*>(widths.data()), widths.size() * sizeof(int));
+    DAVA::VariantType value(reinterpret_cast<DAVA::uint8*>(widths.data()), widths.size() * sizeof(int));
     posSaver.SaveValue(ActionComponentEditorDetail::GetColumnWidthsKey(), value);
     delete ui;
 }

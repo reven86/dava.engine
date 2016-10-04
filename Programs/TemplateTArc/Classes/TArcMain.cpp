@@ -3,6 +3,7 @@
 #include "ConsoleCommandModule.h"
 
 #include "TArcCore/TArcCore.h"
+#include "Testing/TArcTestCore.h"
 
 #include "Engine/Engine.h"
 #include "FileSystem/KeyedArchive.h"
@@ -27,9 +28,16 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
         "SoundSystem",
         "DownloadManager"
     };
-    
+
     DAVA::Engine e;
     e.SetOptions(appOptions);
+
+    if (cmdline.size() > 1 && cmdline[1] == "selftest")
+    {
+        e.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+        DAVA::TArc::TestCore testCore(e);
+        return e.Run();
+    }
 
     bool isConsoleMode = cmdline.size() > 1;
     e.Init(isConsoleMode ? DAVA::eEngineRunMode::CONSOLE_MODE : DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
