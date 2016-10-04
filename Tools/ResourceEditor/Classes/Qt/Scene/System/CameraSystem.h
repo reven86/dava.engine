@@ -1,5 +1,4 @@
-#ifndef __SCENE_CAMERA_SYSTEM_H__
-#define __SCENE_CAMERA_SYSTEM_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/Camera.h"
@@ -56,7 +55,7 @@ public:
 
     void EnableSystem();
 
-protected:
+private:
     void OnKeyboardInput(DAVA::UIEvent* event);
 
     void Draw();
@@ -70,18 +69,15 @@ protected:
 
     DAVA::Rect viewportRect;
 
-    DAVA::Camera* curSceneCamera;
+    DAVA::Camera* curSceneCamera = nullptr;
 
-    bool animateToNewPos;
-    DAVA::float32 animateToNewPosTime;
+    bool animateToNewPos = false;
+    DAVA::float32 animateToNewPosTime = 0;
     DAVA::Vector3 newPos;
     DAVA::Vector3 newTar;
 
     DAVA::Vector<DAVA::Entity*> sceneCameras;
+    DAVA::float32 distanceToCamera = 0.f;
 
-    DAVA::float32 distanceToCamera;
-
-    DAVA::uint32 activeSpeedIndex;
+    DAVA::uint32 activeSpeedIndex = 0;
 };
-
-#endif
