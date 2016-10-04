@@ -299,6 +299,10 @@ void CacheDB::Insert(const DAVA::AssetCache::CacheItemKey& key, ServerCacheEntry
 {
     if (entry.GetValue().GetSize() > maxStorageSize)
     {
+        if (maxStorageSize > 0)
+        {
+            DAVA::Logger::Warning("Inserted data size %llu is bigger than max storage size %llu", entry.GetValue().GetSize(), maxStorageSize);
+        }
         return;
     }
 
