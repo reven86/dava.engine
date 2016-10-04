@@ -9,6 +9,11 @@ namespace DAVA
 {
 namespace Private
 {
+bool MainDispatcherEvent::IsInputEvent(eType type)
+{
+    return (FIRST_INPUT_EVENT <= type && type <= LAST_INPUT_EVENT);
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateAppTerminateEvent(bool triggeredBySystem)
 {
     MainDispatcherEvent e(APP_TERMINATE);

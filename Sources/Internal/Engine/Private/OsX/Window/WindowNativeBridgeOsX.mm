@@ -8,7 +8,6 @@
 
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
-#import <AppKit/NSTrackingArea.h>
 
 #include "Engine/Window.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -53,7 +52,6 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];
-    CreateOrUpdateTrackArea();
 
     {
         float32 scale = [nswindow backingScaleFactor];
@@ -63,17 +61,6 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     [nswindow makeKeyAndOrderFront:nil];
     return true;
-}
-
-void WindowNativeBridge::CreateOrUpdateTrackArea()
-{
-    int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
-    if (trackingArea != nullptr)
-    {
-        [renderView removeTrackingArea:trackingArea];
-    }
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
-    [renderView addTrackingArea:trackingArea];
 }
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
@@ -138,7 +125,6 @@ void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-    CreateOrUpdateTrackArea();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, scale, scale));
 }
 
@@ -198,9 +184,9 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
-    if (skipMouseMoveEvents)
+    if (skipNumberMouseMoveEvents)
     {
-        skipMouseMoveEvents--;
+        skipNumberMouseMoveEvents--;
         return;
     }
     NSSize sz = [renderView frame].size;
@@ -284,7 +270,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
     if (!mouseVisible)
     {
-        SetMouseVisibility(false);
+        SetSystemCursorVisible(false);
     }
 }
 
@@ -292,11 +278,11 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
     if (!mouseVisible)
     {
-        SetMouseVisibility(true);
+        SetSystemCursorVisible(true);
     }
 }
 
-void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
+void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
 {
     if (captureMode == mode)
     {
@@ -310,7 +296,7 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
         break;
     case DAVA::eCaptureMode::PINNING:
     {
-        ChangeMouseVisibility(false);
+        SetCursorVisible(false);
         CGAssociateMouseAndMouseCursorPosition(false);
         // set cursor in window center
         NSRect windowRect = [nswindow frame];
@@ -320,19 +306,19 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
         float x = windowRect.origin.x + windowRect.size.width / 2.0f;
         float y = windowRect.origin.y + windowRect.size.height / 2.0f;
         CGWarpMouseCursorPosition(CGPointMake(x, y));
-        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         break;
     }
-    case DAVA::eCaptureMode::DEFAULT:
+    case DAVA::eCaptureMode::OFF:
     {
-        ChangeMouseVisibility(true);
+        SetCursorVisible(true);
         CGAssociateMouseAndMouseCursorPosition(true);
         break;
     }
     }
 }
 
-void WindowNativeBridge::SetMouseVisibility(bool visible)
+void WindowNativeBridge::SetSystemCursorVisible(bool visible)
 {
     static bool mouseVisibleState = true;
     if (mouseVisibleState == visible)
@@ -346,21 +332,21 @@ void WindowNativeBridge::SetMouseVisibility(bool visible)
     }
     else
     {
-        [static_cast<NSCursor*>(GetOrCreateBlankCursor()) set];
+        [GetBlankCursor() set];
     }
 }
 
-void WindowNativeBridge::ChangeMouseVisibility(bool visible)
+void WindowNativeBridge::SetCursorVisible(bool visible)
 {
     if (mouseVisible == visible)
     {
         return;
     }
     mouseVisible = visible;
-    SetMouseVisibility(visible);
+    SetSystemCursorVisible(visible);
 }
 
-void* WindowNativeBridge::GetOrCreateBlankCursor()
+NSCursor* WindowNativeBridge::GetBlankCursor()
 {
     if (blankCursor != nullptr)
     {

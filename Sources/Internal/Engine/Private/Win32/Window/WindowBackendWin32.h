@@ -50,11 +50,11 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    bool SetCaptureMode(eCaptureMode mode);
-    bool SetMouseVisibility(bool visible);
+    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorVisible(bool visible);
 
 private:
-    eCaptureMode captureMode = eCaptureMode::DEFAULT;
+    eCaptureMode captureMode = eCaptureMode::OFF;
     bool mouseVisible = true;
 
     void SetCursorInCenter();
@@ -63,8 +63,8 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
-    void DoSetCaptureMode(eCaptureMode mode);
-    void DoSetMouseVisibility(bool visible);
+    void DoSetCursorCapture(eCaptureMode mode);
+    void DoSetCursorVisible(bool visible);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);

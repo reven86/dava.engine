@@ -97,13 +97,13 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
-bool WindowBackend::SetCaptureMode(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCaptureMode mode)
 {
     // not supported
     return false;
 }
-    
-bool WindowBackend::SetMouseVisibility(bool visible)
+
+bool WindowBackend::SetCursorVisible(bool visible)
 {
     // not supported
     return false;
@@ -117,8 +117,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     // case UIDispatcherEvent::CLOSE_WINDOW:
     // case UIDispatcherEvent::RESIZE_WINDOW:
     // not supported
-    // case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
-    // case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
+    // case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+    // case UIDispatcherEvent::SET_CURSOR_VISIBLE:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;

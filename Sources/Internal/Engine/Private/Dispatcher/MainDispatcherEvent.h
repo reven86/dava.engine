@@ -23,6 +23,7 @@ struct MainDispatcherEvent final
         WINDOW_SIZE_SCALE_CHANGED,
 
         MOUSE_BUTTON_DOWN,
+        FIRST_INPUT_EVENT = MOUSE_BUTTON_DOWN,
         MOUSE_BUTTON_UP,
         MOUSE_WHEEL,
         MOUSE_MOVE,
@@ -34,6 +35,7 @@ struct MainDispatcherEvent final
         KEY_DOWN,
         KEY_UP,
         KEY_CHAR,
+        LAST_INPUT_EVENT = KEY_CHAR,
 
         FUNCTOR,
 
@@ -44,10 +46,7 @@ struct MainDispatcherEvent final
         APP_TERMINATE,
     };
 
-    static bool IsInputType(eType type)
-    {
-        return (MOUSE_BUTTON_DOWN <= type && type <= KEY_CHAR);
-    }
+    static bool IsInputEvent(eType type);
 
     /// Parameter for APP_TERMINATE event
     struct AppTerminateEvent

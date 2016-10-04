@@ -12,6 +12,8 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 
+@class NSTrackingArea;
+
 // Subclass of NSOpenGLView
 // Responsibilities:
 //  - OpenGL-related tasks
@@ -19,6 +21,8 @@
 @interface RenderView : NSOpenGLView
 {
     DAVA::Private::WindowNativeBridge* bridge;
+    //for using MouseEntered MouseExited events, set trackArea
+    NSTrackingArea* trackingArea = nullptr;
 }
 
 - (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;

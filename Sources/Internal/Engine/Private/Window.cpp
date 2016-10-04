@@ -79,14 +79,22 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
     windowBackend->InitCustomRenderParams(params);
 }
 
-bool Window::SetCaptureMode(eCaptureMode mode)
+bool Window::SetCursorCapture(eCaptureMode mode)
 {
-    return windowBackend->SetCaptureMode(mode);
+    if (!hasFocus)
+    {
+        return false;
+    }
+    return windowBackend->SetCursorCapture(mode);
 }
 
-bool Window::SetMouseVisibility(bool visible)
+bool Window::SetCursorVisible(bool visible)
 {
-    return windowBackend->SetMouseVisibility(visible);
+    if (!hasFocus)
+    {
+        return false;
+    }
+    return windowBackend->SetCursorVisible(visible);
 }
 
 void Window::Update(float32 frameDelta)
@@ -106,6 +114,13 @@ void Window::Draw()
 void Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
+    if (MainDispatcherEvent::IsInputEvent(e.type))
+    {
+        if (!hasFocus)
+        {
+            return; // if haven't focus - skip all input events
+        }
+    }
     switch (e.type)
     {
     case MainDispatcherEvent::MOUSE_MOVE:
@@ -257,8 +272,8 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     hasFocus = e.stateEvent.state != 0;
     if (!hasFocus)
     {
-        windowBackend->SetCaptureMode(eCaptureMode::DEFAULT);
-        windowBackend->SetMouseVisibility(true);
+        windowBackend->SetCursorCapture(eCaptureMode::OFF);
+        windowBackend->SetCursorVisible(true);
     }
     focusChanged.Emit(this, hasFocus);
 }

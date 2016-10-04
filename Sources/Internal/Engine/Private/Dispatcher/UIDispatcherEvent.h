@@ -20,8 +20,8 @@ struct UIDispatcherEvent final
         CLOSE_WINDOW,
         SET_TITLE,
         FUNCTOR,
-        CHANGE_CAPTURE_MODE,
-        CHANGE_MOUSE_VISIBILITY,
+        SET_CURSOR_CAPTURE,
+        SET_CURSOR_VISIBLE,
     };
 
     struct ResizeEvent
@@ -33,6 +33,16 @@ struct UIDispatcherEvent final
     struct SetTitleEvent
     {
         const char8* title;
+    };
+
+    struct SetCursorCaptureEvent
+    {
+        eCaptureMode mode;
+    };
+
+    struct SetCursorVisibleEvent
+    {
+        bool visible;
     };
 
     UIDispatcherEvent() = default;
@@ -47,13 +57,15 @@ struct UIDispatcherEvent final
     {
         ResizeEvent resizeEvent;
         SetTitleEvent setTitleEvent;
-        eCaptureMode mouseMode;
-        bool mouseVisible;
+        SetCursorCaptureEvent setCursorCaptureEvent;
+        SetCursorVisibleEvent setCursorVisibleEvent;
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
+    static UIDispatcherEvent CreateSetCursorCaptureEvent(eCaptureMode mode);
+    static UIDispatcherEvent CreateSetCursorVisibleEvent(bool visible);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 

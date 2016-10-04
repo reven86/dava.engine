@@ -113,20 +113,19 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
-void WindowNativeBridge::ChangeMouseVisibility(bool visibility)
+void WindowNativeBridge::SetCursorVisible(bool visible)
 {
-    static bool mouseVisibled = true;
-    if (mouseVisibled == visibility)
+    if (mouseVisible == visible)
     {
         return;
     }
-    mouseVisibled = visibility;
+    mouseVisible = visible;
     using ::Windows::UI::Core::CoreCursor;
     using ::Windows::UI::Core::CoreCursorType;
     using ::Windows::UI::Core::CoreWindow;
-    if (visibility)
+    if (visible)
     {
-        CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+        CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
     }
     else
     {
@@ -134,7 +133,7 @@ void WindowNativeBridge::ChangeMouseVisibility(bool visibility)
     }
 }
 
-void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
+void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
 {
     using namespace ::Windows::Devices::Input;
     using namespace ::Windows::Foundation;
@@ -145,7 +144,7 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
     captureMode = mode;
     switch (captureMode)
     {
-    case DAVA::eCaptureMode::DEFAULT:
+    case DAVA::eCaptureMode::OFF:
         MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
         break;
     case DAVA::eCaptureMode::FRAME:
@@ -153,7 +152,8 @@ void WindowNativeBridge::ChangeCaptureMode(eCaptureMode mode)
         break;
     case DAVA::eCaptureMode::PINNING:
         tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
-        skipMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+        // after enabled Pinning mode, skip move events, large x, y delta
+        skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         break;
     }
 }
@@ -231,13 +231,14 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         uint32 button = GetMouseButtonIndex(state);
+        bool isRelative = (captureMode == eCaptureMode::PINNING);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                    MainDispatcherEvent::MOUSE_BUTTON_DOWN,
                                                                                    button,
                                                                                    x,
                                                                                    y,
                                                                                    1,
-                                                                                   (captureMode == eCaptureMode::PINNING)));
+                                                                                   isRelative));
         mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -260,13 +261,14 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         uint32 button = GetMouseButtonIndex(mouseButtonState);
+        bool isRelative = (captureMode == eCaptureMode::PINNING);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                    MainDispatcherEvent::MOUSE_BUTTON_UP,
                                                                                    button,
                                                                                    x,
                                                                                    y,
                                                                                    1,
-                                                                                   (captureMode == eCaptureMode::PINNING)));
+                                                                                   isRelative));
         mouseButtonState.reset();
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -326,27 +328,19 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, captureMode == eCaptureMode::PINNING)));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, captureMode == eCaptureMode::PINNING));
 }
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (captureMode != eCaptureMode::PINNING)
+    if (skipNumberMouseMoveEvents)
     {
-        return;
-    }
-    // after enabled Pinning mode, skip move events, large x, y delta
-    if (skipMouseMoveEvents)
-    {
-        skipMouseMoveEvents--;
+        skipNumberMouseMoveEvents--;
         return;
     }
     float32 x = static_cast<float32>(args->MouseDelta.X);
     float32 y = static_cast<float32>(args->MouseDelta.Y);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window,
-                                                                              x,
-                                                                              y,
-                                                                              true));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, true));
 }
 
 uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)

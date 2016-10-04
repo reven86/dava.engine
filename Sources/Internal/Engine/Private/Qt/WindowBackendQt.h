@@ -47,8 +47,8 @@ public:
 
     void TriggerPlatformEvents();
 
-    bool SetCaptureMode(eCaptureMode mode);
-    bool SetMouseVisibility(bool visible);
+    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorVisible(bool visible);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

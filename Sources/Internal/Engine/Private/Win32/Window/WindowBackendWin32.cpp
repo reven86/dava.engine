@@ -108,26 +108,20 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-bool WindowBackend::SetCaptureMode(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCaptureMode mode)
 {
     if (eCaptureMode::FRAME == mode)
     {
         //for now, not supported
         return false;
     }
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_CAPTURE_MODE;
-    e.mouseMode = mode;
-    uiDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
     return true;
 }
 
-bool WindowBackend::SetMouseVisibility(bool visible)
+bool WindowBackend::SetCursorVisible(bool visible)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
-    e.mouseVisible = visible;
-    uiDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
     return true;
 }
 
@@ -135,14 +129,11 @@ void WindowBackend::SetCursorInCenter()
 {
     RECT clientRect;
     ::GetClientRect(hwnd, &clientRect);
-    int clientCenterX = static_cast<int>((clientRect.left + clientRect.right) >> 1);
-    int clientCenterY = static_cast<int>((clientRect.bottom + clientRect.top) >> 1);
     POINT point;
-    point.x = clientCenterX;
-    point.y = clientCenterY;
+    point.x = ((clientRect.left + clientRect.right) / 2);
+    point.y = ((clientRect.bottom + clientRect.top) / 2);
     ::ClientToScreen(hwnd, &point);
     ::SetCursorPos(point.x, point.y);
-    ::SetCursor(NULL);
 }
 
 void WindowBackend::ProcessPlatformEvents()
@@ -171,7 +162,7 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-void WindowBackend::DoSetCaptureMode(eCaptureMode mode)
+void WindowBackend::DoSetCursorCapture(eCaptureMode mode)
 {
     if (captureMode == mode)
     {
@@ -185,24 +176,24 @@ void WindowBackend::DoSetCaptureMode(eCaptureMode mode)
         break;
     case eCaptureMode::PINNING:
     {
-        DoSetMouseVisibility(false);
         POINT p;
         ::GetCursorPos(&p);
         lastCursorPosition.x = p.x;
         lastCursorPosition.y = p.y;
         SetCursorInCenter();
+        DoSetCursorVisible(false);
         break;
     }
-    case eCaptureMode::DEFAULT:
+    case eCaptureMode::OFF:
     {
-        DoSetMouseVisibility(true);
         ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+        DoSetCursorVisible(true);
         break;
     }
     }
 }
 
-void WindowBackend::DoSetMouseVisibility(bool visible)
+void WindowBackend::DoSetCursorVisible(bool visible)
 {
     if (mouseVisible == visible)
     {
@@ -263,11 +254,11 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
-        DoSetCaptureMode(e.mouseMode);
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        DoSetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
-    case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
-        DoSetMouseVisibility(e.mouseVisible);
+    case UIDispatcherEvent::SET_CURSOR_VISIBLE:
+        DoSetCursorVisible(e.setCursorVisibleEvent.visible);
         break;
     default:
         break;
@@ -384,12 +375,13 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 
 LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
 {
+    bool isRelative = (captureMode == eCaptureMode::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
                                                                                static_cast<float32>(x),
                                                                                static_cast<float32>(y),
                                                                                0.f,
                                                                                static_cast<float32>(delta),
-                                                                               (captureMode == eCaptureMode::PINNING)));
+                                                                               isRelative));
     return 0;
 }
 
@@ -446,13 +438,14 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
     default:
         return 0;
     }
+    bool isRelative = (captureMode == eCaptureMode::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                type,
                                                                                button,
                                                                                static_cast<float32>(x),
                                                                                static_cast<float32>(y),
                                                                                1,
-                                                                               (captureMode == eCaptureMode::PINNING)));
+                                                                               isRelative));
     return 0;
 }
 

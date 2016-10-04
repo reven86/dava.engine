@@ -7,6 +7,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #import <AppKit/NSOpenGL.h>
+#import <AppKit/NSTrackingArea.h>
 #import <OpenGL/OpenGL.h>
 
 #include "Engine/Private/OsX/Window/WindowNativeBridgeOsX.h"
@@ -40,6 +41,11 @@
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
     // Enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
+
+    int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
+    [renderView addTrackingArea:trackingArea];
+
     return self;
 }
 
@@ -75,6 +81,17 @@
 - (BOOL)acceptsFirstResponder
 {
     return YES;
+}
+
+- (void)reshape
+{
+    int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
+    if (trackingArea != nullptr)
+    {
+        [renderView removeTrackingArea:trackingArea];
+    }
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
+    [renderView addTrackingArea:trackingArea];
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent

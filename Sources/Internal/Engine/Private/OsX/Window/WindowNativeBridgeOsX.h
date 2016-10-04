@@ -13,7 +13,7 @@
 
 @class NSEvent;
 @class NSWindow;
-@class NSTrackingArea;
+@class NSCursor;
 
 @class RenderView;
 @class WindowDelegate;
@@ -63,8 +63,8 @@ struct WindowNativeBridge final
     void MouseEntered(NSEvent* theEvent);
     void MouseExited(NSEvent* theEvent);
 
-    void ChangeCaptureMode(eCaptureMode mode);
-    void ChangeMouseVisibility(bool visibility);
+    void SetCursorCapture(eCaptureMode mode);
+    void SetCursorVisible(bool visible);
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
@@ -79,15 +79,12 @@ struct WindowNativeBridge final
     bool isMiniaturized = false;
 
 private:
-    void CreateOrUpdateTrackArea();
-    void* GetOrCreateBlankCursor();
-    void SetMouseVisibility(bool visible);
+    NSCursor* GetBlankCursor();
+    void SetSystemCursorVisible(bool visible);
 
-    //for using MouseEntered MouseExited events, set trackArea
-    NSTrackingArea* trackingArea = nullptr;
     // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
     void* blankCursor = nullptr;
-    eCaptureMode captureMode = eCaptureMode::DEFAULT;
+    eCaptureMode captureMode = eCaptureMode::OFF;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.
@@ -95,9 +92,9 @@ private:
     // Secondly, after using CGWarpMouseCursorPosition function to center mouse pointer
     // mouse move events arrive with big delta which causes mouse hopping.
     // The best solution I have investigated is to skip first N mouse move events after enabling
-    // pinning mode: global variable skipMouseMoveEvents is set to some reasonable value
+    // pinning mode: global variable skipNumberMouseMoveEvents is set to some reasonable value
     // and is checked in OpenGLView's process method to skip mouse move events
-    uint32 skipMouseMoveEvents = 0;
+    uint32 skipNumberMouseMoveEvents = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 

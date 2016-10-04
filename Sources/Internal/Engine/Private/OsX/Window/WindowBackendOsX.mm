@@ -84,26 +84,20 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
-bool WindowBackend::SetCaptureMode(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCaptureMode mode)
 {
     if (eCaptureMode::FRAME == mode)
     {
         //for now, not supported
         return false;
     }
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_CAPTURE_MODE;
-    e.mouseMode = mode;
-    uiDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
     return true;
 }
 
-bool WindowBackend::SetMouseVisibility(bool visible)
+bool WindowBackend::SetCursorVisible(bool visible)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY;
-    e.mouseVisible = visible;
-    uiDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
     return true;
 }
 
@@ -124,11 +118,11 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
-        bridge->ChangeCaptureMode(e.mouseMode);
+    case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+        bridge->SetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
-    case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
-        bridge->ChangeMouseVisibility(e.mouseVisible);
+    case UIDispatcherEvent::SET_CURSOR_VISIBLE:
+        bridge->SetCursorVisible(e.setCursorVisibleEvent.visible);
         break;
     default:
         break;

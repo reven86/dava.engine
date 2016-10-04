@@ -168,8 +168,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         e.functor();
         break;
     // not implemented
-    // case UIDispatcherEvent::CHANGE_CAPTURE_MODE:
-    // case UIDispatcherEvent::CHANGE_MOUSE_VISIBILITY:
+    // case UIDispatcherEvent::SET_CURSOR_CAPTURE:
+    // case UIDispatcherEvent::SET_CURSOR_VISIBLE:
     default:
         break;
     }

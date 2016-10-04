@@ -296,12 +296,12 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     switch (btn->GetTag())
     {
     case 0:
-        mouseVisible = !Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
+        mouseVisible = !Engine::Instance()->PrimaryWindow()->SetCursorVisible(false);
         break;
 
     case 1:
-        mouseCaptured = Engine::Instance()->PrimaryWindow()->SetCaptureMode(eCaptureMode::PINNING);
-        mouseCaptured &= Engine::Instance()->PrimaryWindow()->SetMouseVisibility(false);
+        mouseCaptured = Engine::Instance()->PrimaryWindow()->SetCursorCapture(eCaptureMode::PINNING);
+        mouseCaptured &= Engine::Instance()->PrimaryWindow()->SetCursorVisible(false);
         break;
 
     default:
@@ -381,8 +381,8 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                mouseCaptured = !primWind->SetCaptureMode(eCaptureMode::DEFAULT);
-                mouseVisible = primWind->SetMouseVisibility(true);
+                mouseCaptured = !primWind->SetCursorCapture(eCaptureMode::OFF);
+                mouseVisible = primWind->SetCursorVisible(true);
             }
             break;
 
