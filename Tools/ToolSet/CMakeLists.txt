@@ -49,25 +49,23 @@ endmacro()
 
 ############
 
-    set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-    set( DAVA_USE_QT_WIDGETS true )
-    set( DAVA_USE_RENDERSTATS true )
-    set( JOIN_PROJECT_NAME 1 )
-    set( DAVA_DISABLE_AUTOTESTS true )
-    set( DAVA_MEGASOLUTION      1 )
+set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
+set( DAVA_USE_QT_WIDGETS true )
+set( DAVA_USE_RENDERSTATS true )
+set( JOIN_PROJECT_NAME 1 )
+set( DAVA_DISABLE_AUTOTESTS true )
+set( DAVA_MEGASOLUTION      1 )
+set( IGNORE_FILE_TREE_CHECK 1 )
 
-    find_package ( DavaTools     REQUIRED )
-##
+find_package ( DavaTools     REQUIRED )
 
 ## other
 set( MAC_DISABLE_BUNDLE    )
 set( DEFINITIONS           )
-set( DEPLOY_DIR_ROOT       ${CMAKE_BINARY_DIR}/app )
-set( DEPLOY_DIR            ${DEPLOY_DIR_ROOT}/other )
+set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app/other )
 set( DEPLOY_DIR_EXECUTABLE )
 reset_property ( MIX_APP_DATA )
 
-##
     add_tool     ( Launcher )
 
     add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
@@ -83,15 +81,17 @@ reset_property ( MIX_APP_DATA )
 ## tools
 set( MAC_DISABLE_BUNDLE true )
 set( DEFINITIONS -DDATA_RELATIVE_DIRECTORY="../Resources/Data/" )
-set( DEPLOY_DIR             ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents )
-set( DEPLOY_DIR_DATA        ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents/Resources )
-set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_ROOT}/ToolSet.app/Contents/MacOS )
+set( DEPLOY_DIR             ${CMAKE_BINARY_DIR}/app )
+set( DEPLOY_DIR_LIBS        ${DEPLOY_DIR}/ToolSet.app/Contents/Libs )
+set( DEPLOY_DIR_DATA        ${DEPLOY_DIR}/ToolSet.app/Contents/Resources )
+set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR}/ToolSet.app/Contents/MacOS )
 set( TARGETS_LIST )
+set( POSTPONED_MIX_DATA 1 )
+
 reset_property ( MIX_APP_DATA )
 
     add_tool     ( ResourceEditor  )
     add_tool     ( QuickEd         )
-
 ##
     add_tool     ( ResourcePacker   )
     add_tool     ( ResourcePatcher  )

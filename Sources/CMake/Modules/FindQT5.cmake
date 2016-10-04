@@ -16,13 +16,8 @@ macro ( qt_deploy )
         return ()
     endif ()
 
-    if( NOT DEPLOY_DIR_ROOT )
-        set( DEPLOY_DIR_ROOT ${DEPLOY_DIR} )
-
-    endif()
-
     set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
-    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR_ROOT})
+    set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
 
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
@@ -34,7 +29,7 @@ macro ( qt_deploy )
         set(DEPLOY_PLATFORM "WIN")
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR_ROOT}")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
         foreach(ITEM ${BINARY_ITEMS})
             string(TOLOWER ${ITEM} ITEM)

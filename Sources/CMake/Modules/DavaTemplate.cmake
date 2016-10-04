@@ -338,7 +338,7 @@ if( MIX_APP_DATA )
     
     append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
 
-    if( DAVA_MEGASOLUTION )
+    if( POSTPONED_MIX_DATA )
         processing_mix_data( NOT_DATA_COPY )
     else()
         processing_mix_data()
@@ -857,10 +857,14 @@ if( DEPLOY )
         endif()
 
         if( MACOS AND MAC_DISABLE_BUNDLE )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/Libs )
+            if( NOT DEPLOY_DIR_LIBS )
+                set( DEPLOY_DIR_LIBS ${DEPLOY_DIR}/Libs )
+            endif()
+
+            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR_LIBS} )
 
             foreach ( ITEM ${DYLIB_FILES})
-                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${DEPLOY_DIR}/Libs )
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM} ${DEPLOY_DIR_LIBS} )
             endforeach ()
         endif()
 
