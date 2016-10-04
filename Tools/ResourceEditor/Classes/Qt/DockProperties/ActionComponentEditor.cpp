@@ -280,6 +280,15 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject* parent)
     eventTypes["User"] = DAVA::ActionComponent::Action::EVENT_CUSTOM;
 }
 
+void ActionItemEditDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QStyleOptionViewItem opt = option;
+    // We should set font family manually, to set familyResolved flag in font.
+    // If we don't do this, Qt will get resolve family almost randomly
+    opt.font.setFamily(opt.font.family());
+    QStyledItemDelegate::paint(painter, opt, index);
+}
+
 QWidget* ActionItemEditDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
                                               const QModelIndex& index) const
 {

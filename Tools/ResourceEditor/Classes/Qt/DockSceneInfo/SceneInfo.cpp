@@ -15,14 +15,22 @@
 
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
-
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include <QApplication>
 
 using namespace DAVA;
+
+namespace SceneInfoDetail
+{
+QPalette GetPalette()
+{
+    return qApp->palette();
+}
+}
 
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     : QtPropertyEditor(parent)
@@ -421,7 +429,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    headerData->SetBackground(palette().alternateBase());
+    headerData->SetBackground(SceneInfoDetail::GetPalette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -441,7 +449,7 @@ void SceneInfo::AddChild(const QString& key, QtPropertyData* parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -450,7 +458,7 @@ void SceneInfo::AddChild(const QString& key, const QString& toolTip, QtPropertyD
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
     propData->SetToolTip(toolTip);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
