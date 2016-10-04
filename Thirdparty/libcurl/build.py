@@ -73,6 +73,8 @@ def _build_win32(working_directory_path, root_project_path):
 		os.path.join(source_folder_path, 'build/Win64/VC12/LIB Release - DLL Windows SSPI/libcurl.lib'),
 		os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/libcurl_a.lib'))
 
+	_copy_headers(source_folder_path, root_project_path, 'Others')
+
 def _build_win10(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
 	_patch_sources(source_folder_path, working_directory_path)
@@ -107,6 +109,8 @@ def _build_win10(working_directory_path, root_project_path):
 	shutil.copyfile(
 		os.path.join(vc14_solution_folder_path, 'ARM/LIB Release - DLL Windows SSPI/libcurl.lib'),
 		os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/libcurl.lib'))
+
+	_copy_headers(source_folder_path, root_project_path, 'Others')
 
 def _build_macos(working_directory_path, root_project_path):
 	build_curl_run_dir = os.path.join(working_directory_path, 'gen/build_osx')
