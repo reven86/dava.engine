@@ -17,7 +17,7 @@ public:
         ~ConnectionParams();
         String ip = AssetCache::GetLocalHost();
         uint16 port = AssetCache::ASSET_SERVER_PORT;
-        uint64 timeoutms = 60 * 1000;
+        uint64 timeoutms = 60u * 1000u;
 
         INTROSPECTION(ConnectionParams,
                       MEMBER(ip, "Asset cache/Asset Cache IP", DAVA::I_PREFERENCE)
@@ -43,7 +43,7 @@ public:
 private:
     void ProcessNetwork();
 
-    AssetCache::Error WaitRequest();
+    AssetCache::Error WaitRequest(uint64 requestTimeoutMs);
 
     AssetCache::Error CheckStatusSynchronously();
 
@@ -94,7 +94,9 @@ private:
 
     AssetCache::ClientNetProxy client;
 
-    uint64 timeoutms = 60u * 1000u;
+    uint64 lightRequestTimeoutMs = 60u * 1000u;
+    uint64 heavyRequestTimeoutMs = 60u * 1000u;
+    uint64 currentTimeoutMs = 60u * 1000u;
 
     Mutex requestLocker;
     Mutex connectEstablishLocker;
@@ -108,7 +110,7 @@ private:
 
 inline uint64 AssetCacheClient::GetTimeoutMs() const
 {
-    return timeoutms;
+    return currentTimeoutMs;
 }
 
 } //END of DAVA

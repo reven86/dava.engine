@@ -297,6 +297,11 @@ void CacheDB::Insert(const DAVA::AssetCache::CacheItemKey& key, const DAVA::Asse
 
 void CacheDB::Insert(const DAVA::AssetCache::CacheItemKey& key, ServerCacheEntry&& entry)
 {
+    if (entry.GetValue().GetSize() > maxStorageSize)
+    {
+        return;
+    }
+
     auto found = fullCache.find(key);
     if (found != fullCache.end())
     {
