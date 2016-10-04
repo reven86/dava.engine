@@ -10,6 +10,7 @@ class BeastProxy;
 
 class SettingsManager;
 class SceneValidator;
+class EditorConfig;
 
 class REBaseApplication
 {

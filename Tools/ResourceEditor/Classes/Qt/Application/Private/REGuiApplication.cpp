@@ -3,10 +3,17 @@
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 
+#include "Classes/Deprecated/ControlsFactory.h"
+
+#include "version.h"
 #include "QtTools/Utils/AssertGuard.h"
 #include "QtTools/Utils/Utils.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "ResourceEditorLauncher.h"
+
+#include "Engine/Engine.h"
+#include "Engine/NativeService.h"
+#include "Settings/SettingsManager.h"
 
 REGuiApplication::REGuiApplication()
 {

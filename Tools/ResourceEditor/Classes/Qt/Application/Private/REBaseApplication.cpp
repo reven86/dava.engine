@@ -1,4 +1,7 @@
 #include "Classes/Qt/Application/REBaseApplication.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Deprecated/EditorConfig.h"
+#include "Classes/Deprecated/SceneValidator.h"
 #include "version.h"
 
 #include "Preferences/PreferencesStorage.h"

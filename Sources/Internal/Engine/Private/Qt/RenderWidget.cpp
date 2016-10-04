@@ -100,15 +100,6 @@ void RenderWidget::OnActiveFocusItemChanged()
     }
 }
 
-void RenderWidget::OnActiveFocusItemChanged()
-{
-    QQuickItem* item = quickWindow()->activeFocusItem();
-    if (item != nullptr)
-    {
-        item->installEventFilter(this);
-    }
-}
-
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);

@@ -3,9 +3,16 @@
 #include "CommandLine/WinConsoleIOLocker.h"
 #include "CommandLine/CommandLineManager.h"
 
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/RHI/rhi_Type.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Debug/DVAssert.h"
+
 #include <QGuiApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include "Render/Renderer.h"
+#include "Engine/EngineContext.h"
 
 REConsoleApplication::REConsoleApplication(CommandLineManager& cmdLineManager_)
     : cmdLineManager(cmdLineManager_)
@@ -74,7 +81,7 @@ void REConsoleApplication::OnLoopStarted()
     engineContext->logger->EnableConsoleMode();
     engineContext->logger->SetLogLevel(DAVA::Logger::LEVEL_INFO);
 
-    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
+    DAVA::Texture::SetGPULoadingOrder({ DAVA::eGPUFamily::GPU_ORIGIN });
 }
 
 void REConsoleApplication::OnUpdate(DAVA::float32 delta)

@@ -12,6 +12,7 @@
 
 #include "Project/Project.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QClipboard>

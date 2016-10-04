@@ -613,9 +613,8 @@ void QtMainWindow::closeEvent(QCloseEvent* event)
 
 void QtMainWindow::SetupTitle()
 {
-    String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
-                                static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
-    ;
+    DAVA::String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
+                                      static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
 
     if (ProjectManager::Instance()->IsOpened())
     {

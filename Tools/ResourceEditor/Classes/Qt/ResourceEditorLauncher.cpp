@@ -26,7 +26,7 @@ void ResourceEditorLauncher::OnProjectOpened(const QString&)
 
     DAVA::uint32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
     DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
-    DAVA::Texture::SetDefaultGPU(family);
+    DAVA::Texture::SetGPULoadingOrder({ family });
 
     emit LaunchFinished();
 }

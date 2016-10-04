@@ -4,6 +4,8 @@
 #include "CommandLine/CommandLineManager.h"
 #include "Logger/Logger.h"
 
+#include <QtGlobal>
+
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
     CommandLineManager cmdLineMng(cmdline);
