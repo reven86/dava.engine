@@ -823,10 +823,24 @@ void RemoveSelection(SceneEditor2* scene)
     SelectableGroup objectsToRemove;
     for (const auto& item : selection.GetContent())
     {
-        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
+        if (item.CanBeCastedTo<DAVA::Entity>())
         {
-            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
+            DAVA::Entity* entity = item.AsEntity();
+            if (entity->GetLocked() || entity->GetNotRemovable())
+            {
+                //Don't remove entity
+                continue;
+            }
+
+            DAVA::Camera* camera = DAVA::GetCamera(entity);
+            if (camera != nullptr && camera == scene->GetCurrentCamera())
+            {
+                //Don't remove current camera
+                continue;
+            }
         }
+
+        objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
     }
 
     if (objectsToRemove.IsEmpty() == false)
