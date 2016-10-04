@@ -428,12 +428,12 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
             // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
             //
-			uint32 style = FULLSCREEN_STYLE;
-			if (IsWindowVisible(hWindow))
-			{
-				style |= WS_VISIBLE;
-			}
-			SetWindowLong(hWindow, GWL_STYLE, style);
+            uint32 style = FULLSCREEN_STYLE;
+            if (IsWindowVisible(hWindow))
+            {
+                style |= WS_VISIBLE;
+            }
+            SetWindowLong(hWindow, GWL_STYLE, style);
 
             MONITORINFO monitorInfo;
             monitorInfo.cbSize = sizeof(monitorInfo);
@@ -446,7 +446,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
                          rect.top,
                          rect.right - rect.left,
                          rect.bottom - rect.top,
-						 SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+                         SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
             break;
         }
         case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
