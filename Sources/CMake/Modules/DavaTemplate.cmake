@@ -590,7 +590,7 @@ elseif( MACOS )
     endif()
 
 elseif ( WIN32 )
-	
+
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         if (DAVA_COREV2)
             set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY:wWinMainCRTStartup /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )

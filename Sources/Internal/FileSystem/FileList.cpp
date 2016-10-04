@@ -2,7 +2,11 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "PackManager/PackManager.h"
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#else
 #include "Core/Core.h"
+#endif
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
@@ -37,7 +41,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
 // first check if required files inside DVPK archives
 #ifdef __DAVAENGINE_COREV2__
     // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
-    // access Engine object after it has beem destroyed
+    // access Engine object after it has been destroyed
     IPackManager* pm = nullptr;
     Engine* e = Engine::Instance();
     DVASSERT(e != nullptr);

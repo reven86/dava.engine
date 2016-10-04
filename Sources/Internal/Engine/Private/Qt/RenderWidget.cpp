@@ -34,13 +34,11 @@ RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32
     window->setClearBeforeRendering(true);
     window->setColor(QColor(76, 76, 76, 255));
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
-RenderWidget::~RenderWidget()
-{
-    widgetDelegate->OnDestroyed();
-}
+RenderWidget::~RenderWidget() = default;
 
 void RenderWidget::SetClientDelegate(ClientDelegate* delegate)
 {
@@ -100,6 +98,14 @@ void RenderWidget::OnActiveFocusItemChanged()
     }
 }
 
+void RenderWidget::OnSceneGraphInvalidated()
+{
+    if (isClosing)
+    {
+        widgetDelegate->OnDestroyed();
+    }
+}
+
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
@@ -119,6 +125,19 @@ void RenderWidget::hideEvent(QHideEvent* e)
 {
     widgetDelegate->OnVisibilityChanged(false);
     QQuickWidget::hideEvent(e);
+}
+
+void RenderWidget::closeEvent(QCloseEvent* e)
+{
+    if (widgetDelegate->OnUserCloseRequest())
+    {
+        isClosing = true;
+        e->accept();
+    }
+    else
+    {
+        e->ignore();
+    }
 }
 
 void RenderWidget::timerEvent(QTimerEvent* e)

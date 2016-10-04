@@ -14,9 +14,11 @@ namespace DAVA
 {
 class WindowNativeService final
 {
-public:
 private:
-    WindowNativeService(Private::WindowBackend* wbackend);
+    WindowNativeService(Private::WindowBackend* windowBackend);
+
+public:
+    HWND GetHWND() const;
 
 private:
     Private::WindowBackend* windowBackend = nullptr;

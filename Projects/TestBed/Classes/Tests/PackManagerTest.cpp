@@ -1,6 +1,7 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "Tests/PackManagerTest.h"
+#include "Infrastructure/TestBed.h"
+
+#include <Engine/Engine.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
@@ -8,8 +9,9 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(GameCore* g)
-    : BaseScreen(g, "PackManagerTest")
+PackManagerTest::PackManagerTest(TestBed& app)
+    : BaseScreen(app, "PackManagerTest")
+    , engine(app.GetEngine())
 {
 }
 
@@ -317,9 +319,7 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     if (pm.IsRequestingEnabled())
     {
         return;
@@ -339,7 +339,6 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     pm.EnableRequesting();
 
     packNameLoading->SetText(L"done: finish init");
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -352,8 +351,7 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
@@ -368,14 +366,11 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
     FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
 
     for (auto& pack : pm.GetPacks())
@@ -392,17 +387,14 @@ void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, v
         s = s.substr(0, s.size() - 2);
     }
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
     {
         return;
@@ -424,13 +416,11 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-#if !defined(__DAVAENGINE_COREV2__)
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();
@@ -449,7 +439,6 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     {
         packNameLoading->SetText(UTF8Utils::EncodeToWideString(ex.what()));
     }
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -534,5 +523,3 @@ void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, 
 
     packNameLoading->SetText(out);
 }
-
-#endif // !__DAVAENGINE_COREV2__
