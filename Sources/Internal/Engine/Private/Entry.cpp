@@ -4,7 +4,7 @@
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // clang-format off
 
@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
     Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
@@ -40,7 +40,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
     Vector<String> cmdargs = Private::GetCommandArgs();
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)

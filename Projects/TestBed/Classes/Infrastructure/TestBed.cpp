@@ -37,7 +37,7 @@
 
 void CheckDeviceInfoValid();
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
     using namespace Net;
