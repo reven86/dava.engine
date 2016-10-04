@@ -136,7 +136,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     if (parser.Parse(ast))
     {
-        _ProcessMetaData(ast);
+        ProcessMetaData(ast);
         type = progType;
         success = true;
     }
@@ -1301,7 +1301,7 @@ ShaderSource::Blending() const
 
 //------------------------------------------------------------------------------
 
-void ShaderSource::_Reset()
+void ShaderSource::Reset()
 {
     vertexLayout.Clear();
     property.clear();
