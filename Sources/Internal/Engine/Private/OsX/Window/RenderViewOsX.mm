@@ -43,8 +43,8 @@
     [self setWantsBestResolutionOpenGLSurface:YES];
 
     int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
-    [renderView addTrackingArea:trackingArea];
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:areaOptions owner:self userInfo:nil];
+    [self addTrackingArea:trackingArea];
 
     return self;
 }
@@ -88,10 +88,10 @@
     int areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
     if (trackingArea != nullptr)
     {
-        [renderView removeTrackingArea:trackingArea];
+        [self removeTrackingArea:trackingArea];
     }
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[renderView bounds] options:areaOptions owner:renderView userInfo:nil];
-    [renderView addTrackingArea:trackingArea];
+    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:areaOptions owner:self userInfo:nil];
+    [self addTrackingArea:trackingArea];
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent

@@ -179,7 +179,8 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
     uint32 button = [theEvent buttonNumber] + 1;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, captureMode == eCaptureMode::PINNING)));
+    bool isRelative = (captureMode == eCaptureMode::PINNING);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, isRelative));
 }
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
@@ -237,7 +238,8 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         deltaX *= scrollK;
         deltaY *= scrollK;
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, captureMode == eCaptureMode::PINNING)));
+    bool isRelative = captureMode == eCaptureMode::PINNING;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, isRelative));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)

@@ -22,7 +22,7 @@
 {
     DAVA::Private::WindowNativeBridge* bridge;
     //for using MouseEntered MouseExited events, set trackArea
-    NSTrackingArea* trackingArea = nullptr;
+    NSTrackingArea* trackingArea;
 }
 
 - (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;

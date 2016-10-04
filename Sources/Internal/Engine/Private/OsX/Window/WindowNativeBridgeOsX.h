@@ -83,7 +83,7 @@ private:
     void SetSystemCursorVisible(bool visible);
 
     // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
-    void* blankCursor = nullptr;
+    NSCursor* blankCursor = nullptr;
     eCaptureMode captureMode = eCaptureMode::OFF;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
