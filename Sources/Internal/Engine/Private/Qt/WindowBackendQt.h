@@ -8,7 +8,9 @@
 
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/WindowBackendBase.h"
+#include "Engine/Private/Dispatcher/UIDispatcher.h"
+
+#include <QPointer>
 
 namespace rhi
 {
@@ -19,8 +21,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public WindowBackendBase,
-                            private RenderWidget::Delegate
+class WindowBackend final : private RenderWidget::Delegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -35,6 +36,8 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+
+    void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -72,8 +75,13 @@ private:
 #endif
 
 private:
-    // TODO: may be keep RenderWidget in QPointer?
-    RenderWidget* renderWidget = nullptr;
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
+    // Use QPointer as renderWidget can be deleted outside WindowBackend in embedded mode
+    QPointer<RenderWidget> renderWidget;
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool closeRequestByApp = false;

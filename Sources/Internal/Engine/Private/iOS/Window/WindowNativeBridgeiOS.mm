@@ -21,7 +21,9 @@ namespace DAVA
 namespace Private
 {
 WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
-    : windowBackend(*windowBackend)
+    : windowBackend(windowBackend)
+    , window(windowBackend->window)
+    , mainDispatcher(windowBackend->mainDispatcher)
 {
 }
 
@@ -49,26 +51,26 @@ bool WindowNativeBridge::CreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
-    windowBackend.PostWindowCreated(rect.size.width, rect.size.height, scale, scale);
-    windowBackend.PostVisibilityChanged(true);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, scale, scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
 {
     dispatch_async(dispatch_get_main_queue(), [this]() {
-        windowBackend.ProcessPlatformEvents();
+        windowBackend->ProcessPlatformEvents();
     });
 }
 
 void WindowNativeBridge::ApplicationDidBecomeOrResignActive(bool becomeActive)
 {
-    windowBackend.PostFocusChanged(becomeActive);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, becomeActive));
 }
 
 void WindowNativeBridge::ApplicationDidEnterForegroundOrBackground(bool foreground)
 {
-    windowBackend.PostVisibilityChanged(foreground);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, foreground));
 }
 
 void WindowNativeBridge::AddUIView(UIView* uiview)
@@ -104,42 +106,45 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    windowBackend.PostSizeChanged(w, h, scale, scale);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scale, scale));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
 {
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        float32 x = pt.x;
-        float32 y = pt.y;
-        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        windowBackend.PostTouchDown(touchId, x, y);
+        e.touchEvent.x = pt.x;
+        e.touchEvent.y = pt.y;
+        e.touchEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        mainDispatcher->PostEvent(e);
     }
 }
 
 void WindowNativeBridge::TouchesMoved(NSSet* touches)
 {
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        float32 x = pt.x;
-        float32 y = pt.y;
-        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        windowBackend.PostTouchMove(touchId, x, y);
+        e.touchEvent.x = pt.x;
+        e.touchEvent.y = pt.y;
+        e.touchEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        mainDispatcher->PostEvent(e);
     }
 }
 
 void WindowNativeBridge::TouchesEnded(NSSet* touches)
 {
+    MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, 0, 0.f, 0.f);
     for (UITouch* touch in touches)
     {
         CGPoint pt = [touch locationInView:touch.view];
-        float32 x = pt.x;
-        float32 y = pt.y;
-        uint32 touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
-        windowBackend.PostTouchUp(touchId, x, y);
+        e.touchEvent.x = pt.x;
+        e.touchEvent.y = pt.y;
+        e.touchEvent.touchId = static_cast<uint32>(reinterpret_cast<uintptr_t>(touch));
+        mainDispatcher->PostEvent(e);
     }
 }
 

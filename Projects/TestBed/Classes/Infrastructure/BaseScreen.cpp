@@ -1,15 +1,17 @@
 #include "Infrastructure/BaseScreen.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
+
+#include <UI/Layouts/UIAnchorComponent.h>
 
 DAVA::int32 BaseScreen::globalScreenId = 1;
 
-BaseScreen::BaseScreen(GameCore& gameCore, const DAVA::String& screenName, DAVA::int32 skipBeforeTests)
+BaseScreen::BaseScreen(TestBed& app, const DAVA::String& screenName)
     : UIScreen()
-    , gameCore(gameCore)
+    , app(app)
     , currentScreenId(globalScreenId++)
 {
     SetName(screenName);
-    gameCore.RegisterScreen(this);
+    app.RegisterScreen(this);
 }
 
 bool BaseScreen::SystemInput(DAVA::UIEvent* currentInput)
@@ -41,6 +43,14 @@ void BaseScreen::LoadResources()
 
     exitButton->SetDebugDraw(true);
     exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
+
+    {
+        // Stick button to bottom right corner
+        UIAnchorComponent* anchor = exitButton->GetOrCreateComponent<UIAnchorComponent>();
+        anchor->SetBottomAnchorEnabled(true);
+        anchor->SetRightAnchorEnabled(true);
+    }
+
     AddControl(exitButton);
 }
 
@@ -55,5 +65,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject* obj, void* data, void* callerData)
 {
-    gameCore.ShowStartScreen();
+    app.ShowStartScreen();
 }

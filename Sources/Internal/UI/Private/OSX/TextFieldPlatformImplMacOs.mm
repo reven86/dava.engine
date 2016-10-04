@@ -321,7 +321,7 @@ public:
     }
 
 #if defined(__DAVAENGINE_COREV2__)
-    void OnWindowVisibilityChanged(Window&, bool visible)
+    void OnWindowVisibilityChanged(Window*, bool visible)
     {
         SetVisible(visible);
     }

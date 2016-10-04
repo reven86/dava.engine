@@ -45,7 +45,7 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate();
 
-    PlatformCore& core;
+    PlatformCore* core = nullptr;
 
     AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;

@@ -1,14 +1,14 @@
 #include "Tests/CoreV2Test.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;
 
-CoreV2Test::CoreV2Test(GameCore& gameCore)
-    : BaseScreen(gameCore, "CoreV2Test")
-    , engine(gameCore.GetEngine())
+CoreV2Test::CoreV2Test(TestBed& app)
+    : BaseScreen(app, "CoreV2Test")
+    , engine(app.GetEngine())
 {
     dispatchers.reserve(4);
     for (int i = 0; i < 4; ++i)
@@ -116,7 +116,7 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         w = 1024.0f;
         h = 768.0f;
     }
-    engine.PrimaryWindow()->Resize({ w, h });
+    engine.PrimaryWindow()->SetSize({ w, h });
 }
 
 void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -239,7 +239,7 @@ void CoreV2Test::DispatcherEventHandler(int type)
     }
 }
 
-void CoreV2Test::OnWindowCreated(DAVA::Window& w)
+void CoreV2Test::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowCreated");
 }
@@ -260,7 +260,7 @@ bool CoreV2Test::OnWindowWantsToClose(DAVA::Window* w)
     return !closeDisabled;
 }
 
-void CoreV2Test::OnWindowDestroyed(DAVA::Window& w)
+void CoreV2Test::OnWindowDestroyed(DAVA::Window* w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowDestroyed");
 }

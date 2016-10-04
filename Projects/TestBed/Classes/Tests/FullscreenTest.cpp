@@ -1,14 +1,14 @@
 #include "Tests/FullscreenTest.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
 
 using namespace DAVA;
 
-FullscreenTest::FullscreenTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "FullscreenTest")
-    , primaryWindow(gameCore.GetEngine().PrimaryWindow())
+FullscreenTest::FullscreenTest(TestBed& app)
+    : BaseScreen(app, "FullscreenTest")
+    , primaryWindow(app.GetEngine().PrimaryWindow())
 {
 }
 
@@ -106,7 +106,7 @@ void FullscreenTest::LoadResources()
     currentScaleText = new UIStaticText(Rect(310, 150, 300, 30));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
-    currentScaleText->SetText(Format(L"%f", primaryWindow->GetUserScale()));
+    currentScaleText->SetText(Format(L"%f", primaryWindow->GetSurfaceScale()));
     AddControl(currentScaleText);
 
     // UI3DView test
@@ -222,7 +222,7 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
 
 void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul < 2.0f)
     {
         mul += 0.1f;
@@ -231,13 +231,13 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
 {
-    float32 mul = primaryWindow->GetUserScale();
+    float32 mul = primaryWindow->GetSurfaceScale();
     if (mul > 0.2f)
     {
         mul -= 0.1f;
@@ -246,7 +246,7 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     // TODO: implement window user scale factor in engine and testbed
     // Core::Instance()->SetScreenScaleMultiplier(mul);
 
-    mul = primaryWindow->GetUserScale();
+    mul = primaryWindow->GetSurfaceScale();
     currentScaleText->SetText(Format(L"%f", mul));
 }
 

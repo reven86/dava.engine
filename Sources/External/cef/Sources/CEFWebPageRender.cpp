@@ -31,23 +31,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
     : contentBackground(new UIControlBackground)
     , window(w)
 {
-    auto focusChanged = [this](Window&, bool isFocused) -> void
-    {
-        if (!isFocused)
-        {
-            ResetCursor();
-        }
-    };
-    auto windowDestroyed = [this](Window& w) -> void {
-        if (&w == window)
-        {
-            window->focusChanged.Disconnect(focusConnection);
-            window->destroyed.Disconnect(windowDestroyedConnection);
-            window = nullptr;
-        }
-    };
-    windowDestroyedConnection = window->destroyed.Connect(windowDestroyed);
-    focusConnection = window->focusChanged.Connect(focusChanged);
+    ConnectToSignals();
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
@@ -60,14 +44,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w)
 CEFWebPageRender::CEFWebPageRender()
     : contentBackground(new UIControlBackground)
 {
-    auto focusChanged = [this](bool isFocused) -> void
-    {
-        if (!isFocused)
-        {
-            ResetCursor();
-        }
-    };
-    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+    ConnectToSignals();
 
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
@@ -80,19 +57,56 @@ CEFWebPageRender::CEFWebPageRender()
 
 CEFWebPageRender::~CEFWebPageRender()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    if (window != nullptr)
-    {
-        window->focusChanged.Disconnect(focusConnection);
-        window->destroyed.Disconnect(windowDestroyedConnection);
-    }
-#else
-    Core::Instance()->focusChanged.Disconnect(focusConnection);
-#endif
+    DisconnectFromSignals();
+
     auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
     RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
 
     ShutDown();
+}
+
+void CEFWebPageRender::ConnectToSignals()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    auto focusChanged = [this](Window*, bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    auto windowDestroyed = [this](Window* w) -> void {
+        if (w == window)
+        {
+            DisconnectFromSignals();
+        }
+    };
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(windowDestroyed);
+    focusConnection = window->focusChanged.Connect(focusChanged);
+#else
+    auto focusChanged = [this](bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    };
+    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+#endif
+}
+
+void CEFWebPageRender::DisconnectFromSignals()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    if (windowDestroyedConnection != 0)
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+    if (focusConnection != 0)
+        window->focusChanged.Disconnect(focusConnection);
+    windowDestroyedConnection = 0;
+    focusConnection = 0;
+#else
+    Core::Instance()->focusChanged.Disconnect(focusConnection);
+#endif
 }
 
 void CEFWebPageRender::ClearRenderSurface()

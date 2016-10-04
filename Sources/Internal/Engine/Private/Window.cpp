@@ -16,26 +16,22 @@
 namespace DAVA
 {
 Window::Window(Private::EngineBackend* engineBackend, bool primary)
-    : engineBackend(*engineBackend)
-    , mainDispatcher(*engineBackend->GetDispatcher())
+    : engineBackend(engineBackend)
+    , mainDispatcher(engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
 }
 
-Window::~Window()
-{
-    delete windowBackend;
-    windowBackend = nullptr;
-}
+Window::~Window() = default;
 
-void Window::Resize(const Size2f& size)
+void Window::SetSize(Size2f sz)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
-        windowBackend->Resize(size.dx, size.dy);
+        windowBackend->Resize(sz.dx, sz.dy);
     }
 }
 
@@ -43,7 +39,7 @@ void Window::Close()
 {
     // Window cannot be close in embedded mode as window lifetime
     // is controlled by highlevel framework
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->Close(false);
     }
@@ -52,7 +48,7 @@ void Window::Close()
 void Window::SetTitle(const String& title)
 {
     // It does not make sense to set window title in embedded mode
-    if (!engineBackend.IsEmbeddedGUIMode())
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->SetTitle(title);
     }
@@ -60,7 +56,7 @@ void Window::SetTitle(const String& title)
 
 Engine* Window::GetEngine() const
 {
-    return engineBackend.GetEngine();
+    return engineBackend->GetEngine();
 }
 
 void* Window::GetNativeHandle() const
@@ -86,7 +82,7 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 void Window::Update(float32 frameDelta)
 {
     uiControlSystem->Update();
-    update.Emit(*this, frameDelta);
+    update.Emit(this, frameDelta);
 }
 
 void Window::Draw()
@@ -154,109 +150,98 @@ void Window::FinishEventHandlingOnCurrentFrame()
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    // Look into dispatcher queue and compress size events into one event to allow:
-    //  - single render init/reset call during one frame
-    //  - emit signals about window creation or size changing immediately
-    using Private::MainDispatcherEvent;
-    MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
-    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e)
-                                  {
-                                      if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
-                                      {
-                                          compressedSize.width = e.sizeEvent.width;
-                                          compressedSize.height = e.sizeEvent.height;
-                                          compressedSize.scaleX = e.sizeEvent.scaleX;
-                                          compressedSize.scaleY = e.sizeEvent.scaleY;
-                                          compressedSize.dpi = e.sizeEvent.dpi;
-                                      }
-                                  });
+    Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
+
+    dpi = e.sizeEvent.dpi;
+    ProcessSizeChangedEvents(e);
     sizeEventHandled = true;
 
-    size.dx = compressedSize.width;
-    size.dy = compressedSize.height;
-    physicalSize.dx = size.dx * compressedSize.scaleX;
-    physicalSize.dy = size.dy * compressedSize.scaleY;
-    dpi = compressedSize.dpi;
+    engineBackend->InitRenderer(this);
 
-    Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, phW=%.3f, phH=%.3f, dpi=%.3f", size.dx, size.dy, physicalSize.dx, physicalSize.dy, dpi);
-
-    engineBackend.InitRenderer(this);
-
-    EngineContext* context = engineBackend.GetEngineContext();
+    EngineContext* context = engineBackend->GetEngineContext();
     inputSystem = context->inputSystem;
     uiControlSystem = context->uiControlSystem;
 
     UpdateVirtualCoordinatesSystem();
 
-    engineBackend.OnWindowCreated(this);
+    engineBackend->OnWindowCreated(this);
 
-    sizeChanged.Emit(*this, size);
-    physicalSizeChanged.Emit(*this, physicalSize);
+    sizeChanged.Emit(this, GetSize());
+    surfaceSizeChanged.Emit(this, GetSurfaceSize());
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
 
-    destroyed.Emit(*this);
-    engineBackend.OnWindowDestroyed(this);
+    engineBackend->OnWindowDestroyed(this);
 
     inputSystem = nullptr;
     uiControlSystem = nullptr;
 
-    engineBackend.DeinitRender(this);
+    engineBackend->DeinitRender(this);
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    if (sizeEventHandled)
-    {
-        return;
-    }
+    Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
 
+    if (!sizeEventHandled)
+    {
+        ProcessSizeChangedEvents(e);
+        sizeEventHandled = true;
+
+        engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
+        if (windowBackend->IsWindowReadyForRender())
+        {
+            UpdateVirtualCoordinatesSystem();
+
+            sizeChanged.Emit(this, GetSize());
+            surfaceSizeChanged.Emit(this, GetSurfaceSize());
+        }
+    }
+}
+
+void Window::HandleDpiChanged(const Private::MainDispatcherEvent& e)
+{
+    dpi = e.dpiEvent.dpi;
+    dpiChanged.Emit(this, dpi);
+}
+
+void Window::ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e)
+{
     // Look into dispatcher queue and compress size events into one event to allow:
     //  - single render init/reset call during one frame
-    //  - emit signals about window creation or size changing immediately
+    //  - emit signals about window creation or size changing immediately on event receiving
     using Private::MainDispatcherEvent;
     MainDispatcherEvent::WindowSizeEvent compressedSize(e.sizeEvent);
-    mainDispatcher.ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e)
-                                  {
-                                      if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
-                                      {
-                                          compressedSize.width = e.sizeEvent.width;
-                                          compressedSize.height = e.sizeEvent.height;
-                                          compressedSize.scaleX = e.sizeEvent.scaleX;
-                                          compressedSize.scaleY = e.sizeEvent.scaleY;
-                                          compressedSize.dpi = e.sizeEvent.dpi;
-                                      }
-                                  });
+    mainDispatcher->ViewEventQueue([this, &compressedSize](const MainDispatcherEvent& e) {
+        if (e.window == this && e.type == MainDispatcherEvent::WINDOW_SIZE_CHANGED)
+        {
+            compressedSize = e.sizeEvent;
+        }
+    });
 
-    size.dx = compressedSize.width;
-    size.dy = compressedSize.height;
-    physicalSize.dx = size.dx * compressedSize.scaleX;
-    physicalSize.dy = size.dy * compressedSize.scaleY;
-    dpi = compressedSize.dpi;
+    width = compressedSize.width;
+    height = compressedSize.height;
+    surfaceScaleW = compressedSize.surfaceScaleW;
+    surfaceScaleH = compressedSize.surfaceScaleH;
 
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED: width=%.1f, height=%.1f, phW=%.3f, phH=%.3f, dpi=%.3f", size.dx, size.dy, physicalSize.dx, physicalSize.dy, dpi);
-
-    engineBackend.ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
-    if (windowBackend->IsWindowReadyForRender())
-    {
-        UpdateVirtualCoordinatesSystem();
-        sizeChanged.Emit(*this, size);
-        physicalSizeChanged.Emit(*this, physicalSize);
-    }
+    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, scaleW=%.3f, scaleH=%.3f", width, height, surfaceScaleW, surfaceScaleH);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
 {
-    int32 w = static_cast<int32>(size.dx);
-    int32 h = static_cast<int32>(size.dy);
-    int32 physW = static_cast<int32>(physicalSize.dx);
-    int32 physH = static_cast<int32>(physicalSize.dy);
+    int32 w = static_cast<int32>(width);
+    int32 h = static_cast<int32>(height);
+
+    Size2f surfSize = GetSurfaceSize();
+
+    int32 sw = static_cast<int32>(surfSize.dx);
+    int32 sh = static_cast<int32>(surfSize.dy);
 
     uiControlSystem->vcs->SetInputScreenAreaSize(w, h);
-    uiControlSystem->vcs->SetPhysicalScreenSize(physW, physH);
+    uiControlSystem->vcs->SetPhysicalScreenSize(sw, sh);
     uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
     uiControlSystem->vcs->RegisterAvailableResourceSize(w, h, "Gfx");
     uiControlSystem->vcs->ScreenSizeChanged();
@@ -270,7 +255,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     ClearMouseButtons();
 
     hasFocus = e.stateEvent.state != 0;
-    focusChanged.Emit(*this, hasFocus);
+    focusChanged.Emit(this, hasFocus);
 }
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
@@ -278,7 +263,7 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
     Logger::FrameworkDebug("=========== WINDOW_VISIBILITY_CHANGED: state=%s", e.stateEvent.state ? "visible" : "hidden");
 
     isVisible = e.stateEvent.state != 0;
-    visibilityChanged.Emit(*this, isVisible);
+    visibilityChanged.Emit(this, isVisible);
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
@@ -287,10 +272,10 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.mclickEvent.x, e.mclickEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mclickEvent.button);
+    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
 
     // NOTE: Taken from CoreWin32Platform::OnMouseClick
 
@@ -316,12 +301,12 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
-    uie.physPoint = Vector2(e.mwheelEvent.x, e.mwheelEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { e.mwheelEvent.deltaX, e.mwheelEvent.deltaY };
+    uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
 
-    // TODO: let input system decide what to do when shift is pressed while wheelling
+    // TODO: let input system decide what to do when shift is pressed while wheeling
     // Now use implementation from current core
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
@@ -337,7 +322,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
-    uie.physPoint = Vector2(e.mmoveEvent.x, e.mmoveEvent.y);
+    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;
@@ -370,10 +355,10 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = UIEvent::Device::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.tclickEvent.touchId;
+    uie.touchId = e.touchEvent.touchId;
 
     uiControlSystem->OnInput(&uie);
 }
@@ -382,10 +367,10 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
 {
     UIEvent uie;
     uie.phase = UIEvent::Phase::DRAG;
-    uie.physPoint = Vector2(e.tclickEvent.x, e.tclickEvent.y);
+    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
     uie.device = UIEvent::Device::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.tclickEvent.touchId;
+    uie.touchId = e.touchEvent.touchId;
 
     uiControlSystem->OnInput(&uie);
 }

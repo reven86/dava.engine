@@ -1,5 +1,5 @@
 #include "Tests/PackManagerTest.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include <Engine/Engine.h>
 #include <UI/Focus/UIFocusComponent.h>
@@ -9,9 +9,9 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "PackManagerTest")
-    , engine(gameCore.GetEngine())
+PackManagerTest::PackManagerTest(TestBed& app)
+    : BaseScreen(app, "PackManagerTest")
+    , engine(app.GetEngine())
 {
 }
 

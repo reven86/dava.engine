@@ -93,7 +93,7 @@ private:
     void StopLoading();
     bool IsEmail(const String& url);
 
-    void OnPhSizeChanged(Window&, Size2f);
+    void OnSurfaceSizeChanged(Window*, Size2f);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnMouseWheel(UIEvent* input);
@@ -110,7 +110,7 @@ private:
     String requestedUrl;
     bool pageLoaded = false;
     int needRedraw = 0;
-    SigConnectionID onPhSzChangedId;
+    SigConnectionID onSurfSzChangedId;
 };
 
 } // namespace DAVA

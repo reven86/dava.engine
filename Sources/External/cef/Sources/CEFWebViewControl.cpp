@@ -72,7 +72,7 @@ CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    onPhSzChangedId = Engine::Instance()->PrimaryWindow()->physicalSizeChanged.Connect(this, &CEFWebViewControl::OnPhSizeChanged);
+    onSurfSzChangedId = Engine::Instance()->PrimaryWindow()->surfaceSizeChanged.Connect(this, &CEFWebViewControl::OnSurfaceSizeChanged);
     webPageRender = new CEFWebPageRender(window);
 #else
     webPageRender = new CEFWebPageRender;
@@ -89,7 +89,7 @@ void CEFWebViewControl::Initialize(const Rect& rect)
 void CEFWebViewControl::Deinitialize()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    Engine::Instance()->PrimaryWindow()->physicalSizeChanged.Disconnect(onPhSzChangedId);
+    Engine::Instance()->PrimaryWindow()->surfaceSizeChanged.Disconnect(onSurfSzChangedId);
 #endif
 
     // Close browser and release object
@@ -510,7 +510,7 @@ void CEFWebViewControl::Input(UIEvent* currentInput)
     }
 }
 
-void CEFWebViewControl::OnPhSizeChanged(Window &, Size2f)
+void CEFWebViewControl::OnSurfaceSizeChanged(Window*, Size2f)
 {
     if (webPageRender->IsVisible())
     {

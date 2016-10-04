@@ -8,7 +8,7 @@
 
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/WindowBackendBase.h"
+#include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 #include <android/native_window_jni.h>
 
@@ -21,7 +21,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public WindowBackendBase
+class WindowBackend final
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -34,6 +34,8 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    void RunAsyncOnUIThread(const Function<void()>& task);
+
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
 
@@ -44,10 +46,8 @@ public:
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
-private:
-    void UIEventHandler(const UIDispatcherEvent& e);
-    void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
-
+    // These methods are public intentionally as they are accessed from
+    // extern "C" functions which are invoked by java
     void OnResume();
     void OnPause();
     void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
@@ -57,6 +57,14 @@ private:
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);
 
 private:
+    void UIEventHandler(const UIDispatcherEvent& e);
+    void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
+
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
     jobject surfaceView = nullptr;
     ANativeWindow* androidWindow = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;

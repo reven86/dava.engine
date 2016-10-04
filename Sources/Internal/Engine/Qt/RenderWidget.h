@@ -58,7 +58,7 @@ private:
 
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
-    Q_SLOT void sceneGraphInvalidated();
+    Q_SLOT void OnSceneGraphInvalidated();
 
 private:
     bool initialized = false;

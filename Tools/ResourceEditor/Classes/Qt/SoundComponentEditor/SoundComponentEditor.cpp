@@ -169,7 +169,7 @@ void SoundComponentEditor::OnAddEvent()
 
         if (selectedEventIndex != -1)
         {
-            SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
+            DAVA::SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
             browser->SetCurrentEvent(soundEvent->GetEventName());
         }
         if (browser->exec() == QDialog::Accepted)

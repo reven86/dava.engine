@@ -15,7 +15,7 @@ namespace Private
 ref struct WindowNativeBridge sealed
 {
     internal :
-    WindowNativeBridge(WindowBackend* window);
+    WindowNativeBridge(WindowBackend* windowBackend);
 
     void* GetHandle() const;
 
@@ -59,6 +59,8 @@ private:
 
 private:
     WindowBackend* windowBackend = nullptr;
+    Window* window = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
 
     ::Windows::UI::Xaml::Window ^ xamlWindow = nullptr;
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;

@@ -40,13 +40,15 @@ public:
     bool HasFocus() const;
 
     float32 GetDPI() const;
+
     Size2f GetSize() const;
-    Size2f GetPhysicalSize() const;
+    void SetSize(Size2f size);
 
-    float GetUserScale() const;
-    void SetUsetScale(float scale);
+    Size2f GetSurfaceSize() const;
 
-    void Resize(const Size2f& size);
+    float32 GetSurfaceScale() const;
+    bool SetSurfaceScale(float scale);
+
     void Close();
     void SetTitle(const String& title);
 
@@ -58,16 +60,16 @@ public:
 
 public:
     // Signals
-    Signal<Window&, bool> visibilityChanged;
-    Signal<Window&, bool> focusChanged;
-    Signal<Window&> destroyed;
-    Signal<Window&, Size2f> sizeChanged;
-    Signal<Window&, Size2f> physicalSizeChanged;
-    //Signal<Window&> beginUpdate;
-    //Signal<Window&> beginDraw;
-    Signal<Window&, float32> update;
-    //Signal<Window&> endDraw;
-    //Signal<Window&> endUpdate;
+    Signal<Window*, bool> visibilityChanged;
+    Signal<Window*, bool> focusChanged;
+    Signal<Window*, Size2f> sizeChanged;
+    Signal<Window*, Size2f> surfaceSizeChanged;
+    Signal<Window*, float32> dpiChanged;
+    //Signal<Window*> beginUpdate;
+    //Signal<Window*> beginDraw;
+    Signal<Window*, float32> update;
+    //Signal<Window*> endDraw;
+    //Signal<Window*> endUpdate;
 
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
@@ -87,6 +89,7 @@ private:
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
+    void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
@@ -97,14 +100,14 @@ private:
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
+    void ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
     void ClearMouseButtons();
 
 private:
-    // TODO: unique_ptr
-    Private::EngineBackend& engineBackend;
-    Private::MainDispatcher& mainDispatcher;
-    Private::WindowBackend* windowBackend = nullptr;
+    Private::EngineBackend* engineBackend = nullptr;
+    Private::MainDispatcher* mainDispatcher = nullptr;
+    std::unique_ptr<Private::WindowBackend> windowBackend;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
@@ -114,10 +117,12 @@ private:
     bool hasFocus = false;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
-    float32 dpi = 0;
-    float32 userScale = 1.0f;
-    Size2f size = { 0.0f, 0.0f };
-    Size2f physicalSize = { 0.0f, 0.0f };
+    float32 dpi = 0.0f;
+    float32 width = 0.0f;
+    float32 height = 0.0f;
+    float32 surfaceScaleW = 1.0f;
+    float32 surfaceScaleH = 1.0f;
+    float32 surfaceUserScale = 1.0f;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
@@ -206,22 +211,22 @@ inline float32 Window::GetDPI() const
 
 inline Size2f Window::GetSize() const
 {
-    return size;
+    return { width, height };
 }
 
-inline Size2f Window::GetPhysicalSize() const
+inline Size2f Window::GetSurfaceSize() const
 {
-    return physicalSize;
+    return { width * surfaceScaleW, height * surfaceScaleH };
 }
 
-inline float32 Window::GetUserScale() const
+inline float32 Window::GetSurfaceScale() const
 {
-    return userScale;
+    return surfaceUserScale;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const
 {
-    return windowBackend;
+    return windowBackend.get();
 }
 
 } // namespace DAVA

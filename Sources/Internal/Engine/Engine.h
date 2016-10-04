@@ -60,15 +60,15 @@ public:
 
     uint32 GetGlobalFrameIndex() const;
     const Vector<String>& GetCommandLine() const;
-    DAVA::Vector<char*> GetCommandLineAsArgv();
+    DAVA::Vector<char*> GetCommandLineAsArgv() const;
 
 public:
     // Signals
     Signal<> gameLoopStarted;
     Signal<> gameLoopStopped;
     Signal<> cleanup;
-    Signal<Window&> windowCreated;
-    Signal<Window&> windowDestroyed;
+    Signal<Window*> windowCreated;
+    Signal<Window*> windowDestroyed;
     Signal<> beginFrame;
     Signal<float32> update;
     Signal<> draw;

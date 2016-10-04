@@ -130,12 +130,12 @@ class WindowBackend::QtEventListener : public QObject
 {
 public:
     using TCallback = Function<void()>;
-    QtEventListener(const TCallback& triggered,
-                    const TCallback& destroyed,
+    QtEventListener(const TCallback& triggered_,
+                    const TCallback& destroyed_,
                     QObject* parent)
         : QObject(parent)
-        , triggered(triggered)
-        , destroyed(destroyed)
+        , triggered(triggered_)
+        , destroyed(destroyed_)
     {
     }
 
@@ -162,9 +162,10 @@ private:
 };
 
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*engineBackend,
-                        *window,
-                        MakeFunction(this, &WindowBackend::UIEventHandler))
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
     QtEventListener::TCallback triggered = [this]()
@@ -187,18 +188,23 @@ WindowBackend::~WindowBackend()
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResizeOnUIThread(width, height);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
-void WindowBackend::Close(bool appIsTerminating)
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
     closeRequestByApp = true;
-    PostCloseOnUIThread();
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
 }
 
 void WindowBackend::SetTitle(const String& title)
 {
-    PostSetTitleOnUIThread(title);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -208,11 +214,10 @@ bool WindowBackend::IsWindowReadyForRender() const
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    NativeService* service = engineBackend.GetNativeService();
-    DVASSERT(service);
+    NativeService* service = engineBackend->GetNativeService();
     QApplication* app = service->GetApplication();
     DVASSERT(app);
-    if (app)
+    if (app != nullptr)
     {
         app->postEvent(qtEventListener, new TriggerProcessEvent());
     }
@@ -262,72 +267,85 @@ void WindowBackend::OnCreated()
 {
     contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend.GetNativeService()->GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
+    float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    float32 dpi = renderWidget->devicePixelRatioF();
-    PostWindowCreated(w, h, dpi, dpi);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
 }
 
 bool WindowBackend::OnUserCloseRequest()
 {
     if (!closeRequestByApp)
     {
-        PostUserCloseRequest();
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
     }
     return closeRequestByApp;
 }
 
 void WindowBackend::OnDestroyed()
 {
-    DispatchWindowDestroyed(true);
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
 }
 
 void WindowBackend::OnFrame()
 {
-    engineBackend.OnFrame();
+    engineBackend->OnFrame();
 }
 
 void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
 {
-    PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), dpi, dpi);
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
-    PostVisibilityChanged(isVisible);
-    PostFocusChanged(isVisible);
+    if (isVisible)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isVisible));
+    }
+    else
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isVisible));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
+    }
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    PostMouseDown(button, x, y, 1);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_UP;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    PostMouseUp(button, x, y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    PostMouseMove(x, y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
     uint32 button = ConvertButtons(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    PostMouseDown(button, x, y, 2);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 2, false));
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
@@ -354,7 +372,7 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
         deltaX = delta.x();
         deltaY = delta.y();
     }
-    PostMouseWheel(x, y, deltaX, deltaY);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, false));
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
@@ -362,30 +380,35 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
 #ifdef Q_OS_WIN
     uint32 nativeModif = qtEvent->nativeModifiers();
     uint32 nativeScanCode = qtEvent->nativeScanCode();
-    uint32 virtKey = qtEvent->nativeVirtualKey();
+    uint32 key = qtEvent->nativeVirtualKey();
     if ((1 << 24) & nativeModif)
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
-    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
 #else
-    uint32 virtKey = qtEvent->nativeVirtualKey();
-    if (virtKey == 0)
+    uint32 key = qtEvent->nativeVirtualKey();
+    if (key == 0)
     {
-        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
+        key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
-    PostKeyDown(virtKey, qtEvent->isAutoRepeat());
-
+    bool isRepeated = qtEvent->isAutoRepeat();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, isRepeated));
     QString text = qtEvent->text();
-    for (int i = 0, n = text.size(); i < n; ++i)
+    if (!text.isEmpty())
     {
-        QCharRef charRef = text[i];
-        PostKeyChar(charRef.unicode(), qtEvent->isAutoRepeat());
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, isRepeated);
+        for (int i = 0, n = text.size(); i < n; ++i)
+        {
+            QCharRef charRef = text[i];
+            e.keyEvent.key = charRef.unicode();
+            mainDispatcher->PostEvent(e);
+        }
     }
 }
 
@@ -394,24 +417,24 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 #ifdef Q_OS_WIN
     uint32 nativeModif = qtEvent->nativeModifiers();
     uint32 nativeScanCode = qtEvent->nativeScanCode();
-    uint32 virtKey = qtEvent->nativeVirtualKey();
+    uint32 key = qtEvent->nativeVirtualKey();
     if ((1 << 24) & nativeModif)
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
-    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
 #else
-    qint32 virtKey = qtEvent->nativeVirtualKey();
-    if (virtKey == 0)
+    qint32 key = qtEvent->nativeVirtualKey();
+    if (key == 0)
     {
-        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
+        key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
-    PostKeyUp(virtKey);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, false));
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)

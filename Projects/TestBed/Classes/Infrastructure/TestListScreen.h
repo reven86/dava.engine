@@ -11,7 +11,7 @@ protected:
     virtual ~TestListScreen();
 
 public:
-    TestListScreen();
+    TestListScreen() = default;
 
     void LoadResources() override;
     void UnloadResources() override;
@@ -27,6 +27,6 @@ private:
 
 private:
     Vector<BaseScreen*> testScreens;
-    UIList* testsGrid;
-    float32 cellHeight;
+    UIList* testsGrid = nullptr;
+    float32 cellHeight = 50.f;
 };

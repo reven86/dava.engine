@@ -65,7 +65,6 @@
 - (void)cancel
 {
     [timer invalidate];
-    [timer release];
     timer = nullptr;
 }
 
@@ -83,18 +82,13 @@ namespace DAVA
 namespace Private
 {
 CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
-    : core(*core)
+    : core(core)
 {
     // Force init NSApplication
     [NSApplication sharedApplication];
 }
 
-CoreNativeBridge::~CoreNativeBridge()
-{
-    [[NSApplication sharedApplication] setDelegate:nil];
-    [appDelegate release];
-    [frameTimer release];
-}
+CoreNativeBridge::~CoreNativeBridge() = default;
 
 void CoreNativeBridge::Run()
 {
@@ -122,7 +116,7 @@ void CoreNativeBridge::Quit()
 
 void CoreNativeBridge::OnFrameTimer()
 {
-    int32 fps = core.OnFrame();
+    int32 fps = core->OnFrame();
     if (fps <= 0)
     {
         // To prevent division by zero
@@ -142,9 +136,9 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 
 void CoreNativeBridge::ApplicationDidFinishLaunching()
 {
-    core.engineBackend.OnGameLoopStarted();
+    core->engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core.engineBackend.GetPrimaryWindow());
+    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
     primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
@@ -166,25 +160,25 @@ void CoreNativeBridge::ApplicationDidResignActive()
 
 void CoreNativeBridge::ApplicationDidHide()
 {
-    core.didHideUnhide.Emit(true);
+    core->didHideUnhide.Emit(true);
 }
 
 void CoreNativeBridge::ApplicationDidUnhide()
 {
-    core.didHideUnhide.Emit(false);
+    core->didHideUnhide.Emit(false);
 }
 
 bool CoreNativeBridge::ApplicationShouldTerminate()
 {
     if (!closeRequestByApp)
     {
-        core.engineBackend.PostUserCloseRequest();
+        core->engineBackend->PostUserCloseRequest();
         return false;
     }
 
     if (!quitSent)
     {
-        core.engineBackend.PostAppTerminate(false);
+        core->engineBackend->PostAppTerminate(false);
         return false;
     }
     return true;
@@ -199,14 +193,14 @@ void CoreNativeBridge::ApplicationWillTerminate()
 {
     [frameTimer cancel];
 
-    core.engineBackend.OnGameLoopStopped();
+    core->engineBackend->OnGameLoopStopped();
 
     [[NSApplication sharedApplication] setDelegate:nil];
     [appDelegate release];
     [frameTimer release];
 
-    int exitCode = core.engineBackend.GetExitCode();
-    core.engineBackend.OnEngineCleanup();
+    int exitCode = core->engineBackend->GetExitCode();
+    core->engineBackend->OnEngineCleanup();
     std::exit(exitCode);
 }
 

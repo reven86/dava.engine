@@ -1,11 +1,11 @@
 #include "Tests/$UNITTEST_CLASSNAME$.h"
 
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 using namespace DAVA;
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ (GameCore& gameCore)
-    : BaseScreen(gameCore, "$UNITTEST_CLASSNAME$")
+$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ (TestBed& app)
+    : BaseScreen(app, "$UNITTEST_CLASSNAME$")
 {
 }
 

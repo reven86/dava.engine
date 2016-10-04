@@ -55,8 +55,8 @@ public:
     virtual ~TextDelegateMulti() = default;
 };
 
-MultilineTest::MultilineTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "MultilineTest")
+MultilineTest::MultilineTest(TestBed& app)
+    : BaseScreen(app, "MultilineTest")
 {
 }
 

@@ -538,7 +538,8 @@ UIControl* UIInputSystem::FindNearestToUserModalControlImpl(UIControl* current) 
         }
     }
 
-    if (current->GetComponent<UIModalInputComponent>() != nullptr && current->IsVisible())
+    UIModalInputComponent* modalInputComponent = current->GetComponent<UIModalInputComponent>();
+    if (modalInputComponent != nullptr && modalInputComponent->IsEnabled() && current->IsVisible())
     {
         return current;
     }

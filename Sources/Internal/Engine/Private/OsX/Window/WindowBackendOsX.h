@@ -11,7 +11,7 @@
 #include "Functional/Function.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/WindowBackendBase.h"
+#include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 namespace rhi
 {
@@ -22,7 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public WindowBackendBase
+class WindowBackend final
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -32,6 +32,8 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+
+    void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
     WindowNativeService* GetNativeService() const;
@@ -48,6 +50,10 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
     std::unique_ptr<WindowNativeBridge> bridge;
     std::unique_ptr<WindowNativeService> nativeService;
 

@@ -21,6 +21,7 @@ struct MainDispatcherEvent final
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,
         WINDOW_SIZE_CHANGED,
+        WINDOW_DPI_CHANGED,
 
         MOUSE_BUTTON_DOWN,
         MOUSE_BUTTON_UP,
@@ -70,57 +71,54 @@ struct MainDispatcherEvent final
         uint32 detached;
     };
 
+    /// Parameter for event
+    struct WindowCreatedEvent
+    {
+        float32 width;
+        float32 height;
+        float32 surfaceScaleW;
+        float32 surfaceScaleH;
+    };
+
     /// Parameter for events:
     ///     - WINDOW_CREATED
-    ///     - WINDOW_SIZE_SCALE_CHANGED
+    ///     - WINDOW_SIZE_CHANGED
     struct WindowSizeEvent
     {
         float32 width;
         float32 height;
-        float32 scaleX;
-        float32 scaleY;
+        float32 surfaceScaleW;
+        float32 surfaceScaleH;
+        float32 dpi; //< is set only by WINDOW_CREATED
+    };
+
+    /// Parameter for event WINDOW_DPI_CHANGED
+    struct WindowDpiEvent
+    {
         float32 dpi;
     };
 
-    /// Parameter for events:
+    /// Parameter for mouse events:
     ///     - MOUSE_BUTTON_DOWN
     ///     - MOUSE_BUTTON_UP
-    struct MouseClickEvent
+    ///     - MOUSE_MOVE
+    ///     - MOUSE_WHEEL
+    struct MouseEvent
     {
-        uint32 button;
-        uint32 clicks;
-        float32 x;
-        float32 y;
+        uint32 button; // What button is pressed (MOUSE_BUTTON_DOWN and MOUSE_BUTTON_UP)
+        uint32 clicks; // Number of button clicks (MOUSE_BUTTON_DOWN)
+        float32 x; // Point where mouse click, mouse wheel occured or point where mouse is moved,
+        float32 y; // if isRelative then point designate relative mouse move not absolute
+        float32 scrollDeltaX; // Scroll deltas for
+        float32 scrollDeltaY; //      MOUSE_WHEEL event
+        bool isRelative : 1; // Mouse event occured while window cursor is in pinning mode
     };
 
-    /// Parameter for MOUSE_WHEEL event
-    struct MouseWheelEvent
-    {
-        float32 x;
-        float32 y;
-        float32 deltaX;
-        float32 deltaY;
-    };
-
-    /// Parameter for MOUSE_MOVE event
-    struct MouseMoveEvent
-    {
-        float32 x;
-        float32 y;
-    };
-
-    /// Parameter for events:
+    /// Parameter for touch events:
     ///     - TOUCH_DOWN
     ///     - TOUCH_UP
-    struct TouchClickEvent
-    {
-        uint32 touchId;
-        float32 x;
-        float32 y;
-    };
-
-    /// Parameter for TOUCH_MOVE events
-    struct TouchMoveEvent
+    ///     - TOUCH_MOVE
+    struct TouchEvent
     {
         uint32 touchId;
         float32 x;
@@ -142,13 +140,13 @@ struct MainDispatcherEvent final
         : type(type)
     {
     }
-    MainDispatcherEvent(Window& window)
-        : window(&window)
+    MainDispatcherEvent(Window* window)
+        : window(window)
     {
     }
-    MainDispatcherEvent(eType type, Window& window)
+    MainDispatcherEvent(eType type, Window* window)
         : type(type)
-        , window(&window)
+        , window(window)
     {
     }
 
@@ -160,15 +158,30 @@ struct MainDispatcherEvent final
     {
         AppTerminateEvent terminateEvent;
         WindowStateEvent stateEvent;
+        WindowCreatedEvent createdEvent;
         WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
-        MouseClickEvent mclickEvent;
-        MouseWheelEvent mwheelEvent;
-        MouseMoveEvent mmoveEvent;
-        TouchClickEvent tclickEvent;
-        TouchMoveEvent tmoveEvent;
+        WindowDpiEvent dpiEvent;
+        MouseEvent mouseEvent;
+        TouchEvent touchEvent;
         KeyEvent keyEvent;
     };
+
+    static MainDispatcherEvent CreateAppTerminateEvent(bool triggeredBySystem);
+    static MainDispatcherEvent CreateUserCloseRequestEvent(Window* window);
+
+    static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfScaleW, float32 surfScaleH, float32 dpi);
+    static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfScaleW, float32 surfScaleH);
+    static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
+    static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
+    static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);
+
+    static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, bool isRepeated);
+    static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, uint32 button, float32 x, float32 y, uint32 clicks, bool isRelative);
+    static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, bool isRelative);
+    static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, bool isRelative);
+    static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
 };
 
 } // namespace Private

@@ -7,7 +7,7 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 
 struct DLCCrashTest
 {
@@ -32,7 +32,7 @@ struct DLCCrashTest
 class DlcTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
-    DlcTest(GameCore& gameCore);
+    DlcTest(TestBed& app);
 
 protected:
     ~DlcTest() = default;

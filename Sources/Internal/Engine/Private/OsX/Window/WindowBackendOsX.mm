@@ -22,10 +22,10 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*engineBackend,
-                        *window,
-                        MakeFunction(this, &WindowBackend::UIEventHandler))
-    , engineBackend(engineBackend)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge.get()))
 {
@@ -50,18 +50,23 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    PostResizeOnUIThread(width, height);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
 void WindowBackend::Close(bool /*appIsTerminating*/)
 {
     closeRequestByApp = true;
-    PostCloseOnUIThread();
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
 }
 
 void WindowBackend::SetTitle(const String& title)
 {
-    PostSetTitleOnUIThread(title);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const

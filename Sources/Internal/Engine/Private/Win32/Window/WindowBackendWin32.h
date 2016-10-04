@@ -12,7 +12,7 @@
 #include <windows.h>
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/WindowBackendBase.h"
+#include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 namespace rhi
 {
@@ -23,7 +23,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public WindowBackendBase
+class WindowBackend final
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -37,7 +37,10 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    void RunAsyncOnUIThread(const Function<void()>& task);
+
     void* GetHandle() const;
+    HWND GetHWND() const;
     WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
@@ -52,12 +55,15 @@ private:
     void DoSetTitle(const char8* title);
 
     void AdjustWindowSize(int32* w, int32* h);
+    void HandleSizeChanged(int32 w, int32 h);
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
     LRESULT OnSize(int resizingType, int width, int height);
-    LRESULT OnEnterExitSizeMove(bool enter);
-    LRESULT OnSetKillFocus(bool gotFocus);
+    LRESULT OnEnterSizeMove();
+    LRESULT OnExitSizeMove();
+    LRESULT OnDpiChaged();
+    LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
     LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
@@ -70,15 +76,23 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
 
-    float32 GetDpi() const;
+    float32 GetCurrentDpi() const;
 
 private:
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
     HWND hwnd = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
+    int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
+    int32 height = 0;
+    float32 dpi = 96.0f;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
@@ -90,6 +104,11 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return static_cast<void*>(hwnd);
+}
+
+inline HWND WindowBackend::GetHWND() const
+{
+    return hwnd;
 }
 
 inline WindowNativeService* WindowBackend::GetNativeService() const

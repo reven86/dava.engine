@@ -1,8 +1,8 @@
 #include "Tests/MicroWebBrowserTest.h"
 #include "UI/Focus/UIFocusComponent.h"
 
-MicroWebBrowserTest::MicroWebBrowserTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "MicroWebBrowserTest")
+MicroWebBrowserTest::MicroWebBrowserTest(TestBed& app)
+    : BaseScreen(app, "MicroWebBrowserTest")
 {
 }
 

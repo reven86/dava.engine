@@ -42,8 +42,8 @@ private:
     // as CoreNativeBridge cannot make friends with Window class
     static WindowBackend* GetWindowBackend(Window* window);
 
-    EngineBackend& engineBackend;
-    MainDispatcher& dispatcher;
+    EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
 
     std::unique_ptr<CoreNativeBridge> bridge;
     std::unique_ptr<NativeService> nativeService;

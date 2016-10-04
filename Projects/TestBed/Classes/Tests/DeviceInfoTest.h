@@ -2,11 +2,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class GameCore;
+class TestBed;
 class DeviceInfoTest : public BaseScreen
 {
 public:
-    DeviceInfoTest(GameCore& gameCore);
+    DeviceInfoTest(TestBed& app);
 
 protected:
     void LoadResources() override;

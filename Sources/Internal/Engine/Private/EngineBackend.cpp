@@ -71,6 +71,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     , platformCore(new PlatformCore(this))
     , context(new EngineContext)
     , cmdargs(cmdargs)
+    , options(new KeyedArchive) // Ensure options never null
 {
     DVASSERT(instance == nullptr);
     instance = this;
@@ -96,12 +97,13 @@ void EngineBackend::EngineDestroyed()
 
 void EngineBackend::SetOptions(KeyedArchive* options_)
 {
-    options = options_;
+    DVASSERT(options_ != nullptr);
+    options.Set(options_);
 }
 
 KeyedArchive* EngineBackend::GetOptions()
 {
-    return options;
+    return options.Get();
 }
 
 NativeService* EngineBackend::GetNativeService() const
@@ -352,12 +354,12 @@ void EngineBackend::OnWindowCreated(Window* window)
         auto result = aliveWindows.insert(window);
         DVASSERT(result.second == true);
     }
-    engine->windowCreated.Emit(*window);
+    engine->windowCreated.Emit(window);
 }
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
-    engine->windowDestroyed.Emit(*window);
+    engine->windowDestroyed.Emit(window);
 
     // Remove window from alive window list and place it into dying window list to delete later
     size_t nerased = aliveWindows.erase(window);
@@ -493,18 +495,12 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
 
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 {
-    MainDispatcherEvent e(MainDispatcherEvent::APP_TERMINATE);
-    e.timestamp = context->systemTimer->FrameStampTimeMS();
-    e.terminateEvent.triggeredBySystem = triggeredBySystem;
-    dispatcher->PostEvent(e);
+    dispatcher->PostEvent(MainDispatcherEvent::CreateAppTerminateEvent(triggeredBySystem));
 }
 
 void EngineBackend::PostUserCloseRequest()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::USER_CLOSE_REQUEST);
-    e.timestamp = context->systemTimer->FrameStampTimeMS();
-    e.window = nullptr;
-    dispatcher->PostEvent(e);
+    dispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(nullptr));
 }
 
 void EngineBackend::InitRenderer(Window* w)
@@ -534,7 +530,7 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Size2f size = w->GetSize();
-    Size2f physicalSize = w->GetPhysicalSize();
+    Size2f physicalSize = w->GetSurfaceSize();
     rendererParams.window = w->GetNativeHandle();
     rendererParams.width = static_cast<int32>(physicalSize.dx);
     rendererParams.height = static_cast<int32>(physicalSize.dy);
@@ -562,7 +558,7 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
     else
     {
         Size2f size = w->GetSize();
-        Size2f physicalSize = w->GetPhysicalSize();
+        Size2f physicalSize = w->GetSurfaceSize();
 
         rendererParams.width = static_cast<int32>(physicalSize.dx);
         rendererParams.height = static_cast<int32>(physicalSize.dy);

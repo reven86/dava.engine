@@ -14,14 +14,68 @@
 #include "Logger/Logger.h"
 #include "Platform/SystemTimer.h"
 
+extern "C"
+{
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnResume(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnResume();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnPause(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnPause();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceCreated(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject jsurfaceView)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceCreated(env, jsurfaceView);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceChanged(env, surface, width, height);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->SurfaceDestroyed();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewProcessEvents(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->ProcessProperties();
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnTouch(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint touchId, jfloat x, jfloat y)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnTouch(action, touchId, x, y);
+}
+} // extern "C"
+
 namespace DAVA
 {
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*engineBackend,
-                        *window,
-                        MakeFunction(this, &WindowBackend::UIEventHandler))
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
 }
@@ -45,24 +99,29 @@ void WindowBackend::Close(bool appIsTerminating)
         // true value is always called on termination.
         if (surfaceView != nullptr)
         {
-            DispatchWindowDestroyed(true);
+            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
 
             JNIEnv* env = JNI::GetEnv();
             env->DeleteGlobalRef(surfaceView);
             surfaceView = nullptr;
         }
     }
-    else if (window.IsPrimary())
+    else if (window->IsPrimary())
     {
         // Primary android window cannot be closed, instead quit application according to Engine rules.
         // TODO: later add ability to close secondary windows.
-        engineBackend.Quit(0);
+        engineBackend->Quit(0);
     }
 }
 
 void WindowBackend::SetTitle(const String& title)
 {
     // Android window does not have title
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -124,14 +183,14 @@ void WindowBackend::ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow)
 
 void WindowBackend::OnResume()
 {
-    PostVisibilityChanged(true);
-    PostFocusChanged(true);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 }
 
 void WindowBackend::OnPause()
 {
-    PostFocusChanged(false);
-    PostVisibilityChanged(false);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
 }
 
 void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
@@ -152,7 +211,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         e.functor = [this, nativeWindow]() {
             ReplaceAndroidNativeWindow(nativeWindow);
         };
-        mainDispatcher.PostEvent(e);
+        mainDispatcher->PostEvent(e);
     }
 
     float32 w = static_cast<float32>(width);
@@ -173,13 +232,20 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        PostWindowCreated(w, h, 1.0f, 1.0f, dpi);
-
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
+                                                                                w,
+                                                                                h,
+                                                                                1.0f,
+                                                                                1.0f));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        PostSizeChanged(w, h, 1.0f, 1.0f, dpi);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
+                                                                                    w,
+                                                                                    h,
+                                                                                    1.0f,
+                                                                                    1.0f));
     }
 }
 
@@ -189,7 +255,7 @@ void WindowBackend::SurfaceDestroyed()
     e.functor = [this]() {
         ReplaceAndroidNativeWindow(nullptr);
     };
-    mainDispatcher.PostEvent(e);
+    mainDispatcher->PostEvent(e);
 }
 
 void WindowBackend::ProcessProperties()
@@ -208,33 +274,28 @@ void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
         ACTION_POINTER_UP = 6
     };
 
-    if (action == ACTION_POINTER_DOWN)
-        action = ACTION_DOWN;
-    else if (action == ACTION_POINTER_UP)
-        action = ACTION_UP;
-
-    MainDispatcherEvent e(window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-
+    MainDispatcherEvent::eType type = MainDispatcherEvent::TOUCH_DOWN;
     switch (action)
     {
     case ACTION_MOVE:
-        e.type = MainDispatcherEvent::TOUCH_MOVE;
-        e.tmoveEvent.touchId = touchId;
-        e.tmoveEvent.x = x;
-        e.tmoveEvent.y = y;
+        type = MainDispatcherEvent::TOUCH_MOVE;
         break;
     case ACTION_UP:
+    case ACTION_POINTER_UP:
+        type = MainDispatcherEvent::TOUCH_UP;
+        break;
     case ACTION_DOWN:
-        e.type = action == ACTION_UP ? MainDispatcherEvent::TOUCH_UP : MainDispatcherEvent::TOUCH_DOWN;
-        e.tclickEvent.touchId = touchId;
-        e.tclickEvent.x = x;
-        e.tclickEvent.y = y;
+    case ACTION_POINTER_DOWN:
+        type = MainDispatcherEvent::TOUCH_DOWN;
         break;
     default:
         return;
     }
-    mainDispatcher.PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window,
+                                                                          type,
+                                                                          touchId,
+                                                                          x,
+                                                                          y));
 }
 
 } // namespace Private

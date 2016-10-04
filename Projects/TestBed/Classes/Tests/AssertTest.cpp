@@ -4,8 +4,8 @@
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
-AssertTest::AssertTest(GameCore& gameCore)
-    : BaseScreen(gameCore, "AssertTest")
+AssertTest::AssertTest(TestBed& app)
+    : BaseScreen(app, "AssertTest")
 {
 }
 

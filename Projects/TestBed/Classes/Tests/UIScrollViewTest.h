@@ -3,7 +3,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class GameCore;
+class TestBed;
 class UIScrollViewTest : public BaseScreen
 {
 protected:
@@ -12,7 +12,7 @@ protected:
     }
 
 public:
-    UIScrollViewTest(GameCore& gameCore);
+    UIScrollViewTest(TestBed& app);
 
     void LoadResources() override;
     void UnloadResources() override;

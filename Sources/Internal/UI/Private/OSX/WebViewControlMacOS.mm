@@ -500,7 +500,7 @@ void WebViewControl::SetNativeVisible(bool visible)
 }
 
 #if defined(__DAVAENGINE_COREV2__)
-void WebViewControl::OnWindowVisibilityChanged(Window& w, bool visible)
+void WebViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     if (visible && isVisible)
     {

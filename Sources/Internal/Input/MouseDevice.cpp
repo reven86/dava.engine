@@ -51,7 +51,7 @@ MouseDevice::MouseDevice()
     context = new MouseDeviceContext();
 
 #if defined(__DAVAENGINE_COREV2__)
-    auto focusChanged = [this](Window&, bool isFocused) -> void
+    auto focusChanged = [this](Window*, bool isFocused) -> void
 #else
     auto focusChanged = [this](bool isFocused) -> void
 #endif

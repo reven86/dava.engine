@@ -79,16 +79,11 @@ endif ()
 
 if (ANDROID)
     # Libraries and classes to load at startup
-    set (ANDROID_BOOT_MODULES "gnustl_shared;TestBed")
-    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBed")
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;TestBed")
+    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBedBoot")
 endif()
 
 setup_main_executable()
-# TODO: move this line somewhere in cmake core
-if (WIN32)
-    set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-endif()
-
 convert_graphics()
 
 if (IOS)

@@ -6,11 +6,11 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class FontTest : public BaseScreen
 {
 public:
-    FontTest(GameCore& gameCore);
+    FontTest(TestBed& app);
 
     void LoadResources() override;
     void UnloadResources() override;

@@ -18,10 +18,10 @@ namespace DAVA
 namespace Private
 {
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
-    : WindowBackendBase(*engineBackend,
-                        *window,
-                        MakeFunction(this, &WindowBackend::UIEventHandler))
-    , engineBackend(engineBackend)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge.get()))
 {
@@ -68,13 +68,18 @@ void WindowBackend::Close(bool appIsTerminating)
     {
         // If application is terminating then send event as if window has been destroyed.
         // Engine ensures that Close with appIsTerminating with true value is always called on termination.
-        DispatchWindowDestroyed(true);
+        mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
     }
 }
 
 void WindowBackend::SetTitle(const String& title)
 {
     // iOS window does not have title
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
