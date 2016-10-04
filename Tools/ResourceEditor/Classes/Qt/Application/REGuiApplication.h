@@ -13,7 +13,7 @@ public:
 
     void OnLoopStarted() override;
     void OnLoopStopped() override;
-    void OnWindowCreated(DAVA::Window& w) override;
+    void OnWindowCreated(DAVA::Window* w) override;
 
 protected:
     DAVA::eEngineRunMode GetEngineMode() override;

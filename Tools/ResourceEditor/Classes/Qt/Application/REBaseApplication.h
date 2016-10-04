@@ -21,7 +21,7 @@ public:
     virtual void OnLoopStarted();
     virtual void OnLoopStopped();
     virtual void OnUpdate(DAVA::float32 delta);
-    virtual void OnWindowCreated(DAVA::Window& w);
+    virtual void OnWindowCreated(DAVA::Window* w);
 
     int Run();
 

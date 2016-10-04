@@ -1,11 +1,9 @@
 #include "Tools/LoggerOutput/ErrorDialogOutput.h"
 
+#include "Classes/Qt/GlobalOperations.h"
+
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringFormat.h"
-
-#include "Main/mainwindow.h"
-#include "QtTools/Updaters/LazyUpdater.h"
-#include "QtTools/Utils/RenderContextGuard.h"
 
 #include "Settings/SettingsManager.h"
 
@@ -108,7 +106,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
         DVASSERT(waitDialogConnectionId == 0);
 
         isJobStarted = true;
-        DAVA::JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog), DAVA::JobManager::JOB_MAINLAZY);
+        DelayedExecute(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog));
     }
 }
 
@@ -173,10 +171,6 @@ void ErrorDialogOutput::ShowErrorDialogImpl()
         errors.clear();
     }
 
-    // QMessageBox::critical run internal event loop, that also changes OGL context for redraw Qt backing store.
-    // In some situations current OGL context after QMessageBox::critical can be different than before
-    // That's why we put our context guard here.
-    RenderContextGuard guard;
     QMessageBox::critical(globalOperations->GetGlobalParentWidget(), title.c_str(), errorMessage.c_str());
 }
 

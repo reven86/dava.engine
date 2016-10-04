@@ -73,7 +73,7 @@ void REBaseApplication::OnUpdate(DAVA::float32 delta)
 {
 }
 
-void REBaseApplication::OnWindowCreated(DAVA::Window& w)
+void REBaseApplication::OnWindowCreated(DAVA::Window* w)
 {
 }
 
@@ -112,8 +112,7 @@ DAVA::Vector<DAVA::String> REBaseApplication::GetEngineModules()
 
 void REBaseApplication::Init()
 {
-    DAVA::ScopedPtr<DAVA::KeyedArchive> options(GetEngineOptions());
-    engine.SetOptions(options);
+    engine.SetOptions(GetEngineOptions());
     engine.Init(GetEngineMode(), GetEngineModules());
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";

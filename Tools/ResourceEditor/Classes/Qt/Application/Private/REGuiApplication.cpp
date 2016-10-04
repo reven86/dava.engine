@@ -55,7 +55,7 @@ void REGuiApplication::OnLoopStopped()
     REBaseApplication::OnLoopStopped();
 }
 
-void REGuiApplication::OnWindowCreated(DAVA::Window& w)
+void REGuiApplication::OnWindowCreated(DAVA::Window* w)
 {
     DAVA::Renderer::SetDesiredFPS(60);
     DAVA::DynamicBufferAllocator::SetPageSize(16 * 1024 * 1024); // 16 mb

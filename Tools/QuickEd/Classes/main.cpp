@@ -26,8 +26,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
           "SoundSystem",
           "DownloadManager",
         };
-        DAVA::ScopedPtr<DAVA::KeyedArchive> options(CreateOptions());
-        engine.SetOptions(options);
+        engine.SetOptions(CreateOptions());
         engine.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
     }
 
@@ -39,7 +38,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
                                        editorCore->Init(engine);
                                    });
 
-    engine.windowCreated.Connect([&](DAVA::Window&)
+    engine.windowCreated.Connect([&](DAVA::Window*)
                                  {
                                      DVASSERT(editorCore != nullptr);
                                      editorCore->OnRenderingInitialized();
