@@ -22,7 +22,7 @@ public:
     };
 
     void OnAppStarted();
-    void OnWindowCreated(DAVA::Window& w);
+    void OnWindowCreated(DAVA::Window* w);
     void OnAppFinished();
 
     void OnSuspend();

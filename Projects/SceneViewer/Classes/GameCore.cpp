@@ -36,7 +36,7 @@ void GameCore::OnAppStarted()
 {
 }
 
-void GameCore::OnWindowCreated(DAVA::Window& /*w*/)
+void GameCore::OnWindowCreated(DAVA::Window* /*w*/)
 {
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
@@ -278,10 +278,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
       "DownloadManager",
     };
     DAVA::Engine e;
-    {
-        ScopedPtr<KeyedArchive> options(CreateOptions());
-        e.SetOptions(options);
-    }
+    e.SetOptions(CreateOptions());
     e.Init(eEngineRunMode::GUI_STANDALONE, modules);
 
     GameCore core(e);
