@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-
 Component* TransformComponent::Clone(Entity* toEntity)
 {
     TransformComponent* newTransform = new TransformComponent();
