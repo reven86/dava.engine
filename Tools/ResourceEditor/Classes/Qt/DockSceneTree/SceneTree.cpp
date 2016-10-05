@@ -803,8 +803,8 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     , filteringProxyModel(new SceneTreeFilteringModel(treeModel))
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
-    treeUpdater.reset(new LazyUpdater(fn, this));
-    selectionUpdater.reset(new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::UpdateSelection), this));
+    treeUpdater = new LazyUpdater(fn, this);
+    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::UpdateSelection), this);
 
     setModel(filteringProxyModel);
 
