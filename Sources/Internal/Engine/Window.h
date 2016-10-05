@@ -62,9 +62,9 @@ public:
     // Signals
     Signal<Window*, bool> visibilityChanged;
     Signal<Window*, bool> focusChanged;
+    Signal<Window*, float32> dpiChanged;
     Signal<Window*, Size2f> sizeChanged;
     Signal<Window*, Size2f> surfaceSizeChanged;
-    Signal<Window*, float32> dpiChanged;
     //Signal<Window*> beginUpdate;
     //Signal<Window*> beginDraw;
     Signal<Window*, float32> update;
@@ -120,9 +120,9 @@ private:
     float32 dpi = 0.0f;
     float32 width = 0.0f;
     float32 height = 0.0f;
-    float32 surfaceScaleW = 1.0f;
-    float32 surfaceScaleH = 1.0f;
-    float32 surfaceUserScale = 1.0f;
+    float32 surfaceWidth = 0.0f;
+    float32 surfaceHeight = 0.0f;
+    float32 surfaceScale = 1.0f;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 };
@@ -216,12 +216,12 @@ inline Size2f Window::GetSize() const
 
 inline Size2f Window::GetSurfaceSize() const
 {
-    return { width * surfaceScaleW, height * surfaceScaleH };
+    return { surfaceWidth, surfaceHeight };
 }
 
 inline float32 Window::GetSurfaceScale() const
 {
-    return surfaceUserScale;
+    return surfaceScale;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

@@ -177,9 +177,6 @@ void CEFWebPageRender::ResetCursor()
 
 bool CEFWebPageRender::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
-    Rect wrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
- 
     rect = CefRect(0, 0, static_cast<int>(logicalViewRect.dx), static_cast<int>(logicalViewRect.dy));
     return true;
 }
@@ -189,7 +186,7 @@ bool CEFWebPageRender::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInf
     VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
     Rect phrect = vcs->ConvertVirtualToPhysical(logicalViewRect);
 
-    screen_info.device_scale_factor = 1.0f; // phrect.dx / logicalViewRect.dx;
+    screen_info.device_scale_factor = phrect.dx / logicalViewRect.dx;
     screen_info.depth = 32;
     screen_info.depth_per_component = 8;
     screen_info.is_monochrome = 0;

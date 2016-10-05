@@ -530,12 +530,12 @@ void EngineBackend::InitRenderer(Window* w)
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Size2f size = w->GetSize();
-    Size2f physicalSize = w->GetSurfaceSize();
+    Size2f surfSize = w->GetSurfaceSize();
     rendererParams.window = w->GetNativeHandle();
-    rendererParams.width = static_cast<int32>(physicalSize.dx);
-    rendererParams.height = static_cast<int32>(physicalSize.dy);
-    rendererParams.scaleX = physicalSize.dx / size.dx;
-    rendererParams.scaleY = physicalSize.dy / size.dy;
+    rendererParams.width = static_cast<int32>(surfSize.dx);
+    rendererParams.height = static_cast<int32>(surfSize.dy);
+    rendererParams.scaleX = surfSize.dx / size.dx;
+    rendererParams.scaleY = surfSize.dy / size.dy;
 
     w->InitCustomRenderParams(rendererParams);
 
@@ -558,12 +558,12 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
     else
     {
         Size2f size = w->GetSize();
-        Size2f physicalSize = w->GetSurfaceSize();
+        Size2f surfSize = w->GetSurfaceSize();
 
-        rendererParams.width = static_cast<int32>(physicalSize.dx);
-        rendererParams.height = static_cast<int32>(physicalSize.dy);
-        rendererParams.scaleX = size.dx / physicalSize.dx;
-        rendererParams.scaleY = size.dy / physicalSize.dy;
+        rendererParams.width = static_cast<int32>(surfSize.dx);
+        rendererParams.height = static_cast<int32>(surfSize.dy);
+        rendererParams.scaleX = surfSize.dx / size.dx;
+        rendererParams.scaleY = surfSize.dy / size.dy;
     }
     Renderer::Reset(rendererParams);
 }

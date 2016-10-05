@@ -156,7 +156,7 @@ void WindowBackend::HandleSizeChanged(int32 w, int32 h)
         float32 w_ = static_cast<float32>(width);
         float32 h_ = static_cast<float32>(height);
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w_, h_, 1.0f, 1.0f));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w_, h_, w_, h_));
     }
 }
 
@@ -355,7 +355,7 @@ LRESULT WindowBackend::OnCreate()
     float32 h = static_cast<float32>(height);
     float32 dpi = GetCurrentDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
@@ -543,7 +543,7 @@ bool WindowBackend::RegisterWindowClass()
 
 float32 WindowBackend::GetCurrentDpi() const
 {
-    float32 dpi = 0.0f;
+    float32 ret = 0.0f;
 
     using MonitorDpiFn = HRESULT(WINAPI*)(_In_ HMONITOR, _In_ MONITOR_DPI_TYPE, _Out_ UINT*, _Out_ UINT*);
 
@@ -560,18 +560,18 @@ float32 WindowBackend::GetCurrentDpi() const
         HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
         (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
 
-        dpi = static_cast<float32>(x);
+        ret = static_cast<float32>(x);
     }
     else
     {
         // default behavior for windows (ver < 8.1)
         // get dpi from caps
         HDC screen = GetDC(NULL);
-        dpi = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
+        ret = static_cast<float32>(GetDeviceCaps(screen, LOGPIXELSX));
         ReleaseDC(NULL, screen);
     }
 
-    return dpi;
+    return ret;
 }
 
 } // namespace Private

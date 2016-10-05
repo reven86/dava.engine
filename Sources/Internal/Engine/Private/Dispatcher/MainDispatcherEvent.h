@@ -71,15 +71,6 @@ struct MainDispatcherEvent final
         uint32 detached;
     };
 
-    /// Parameter for event
-    struct WindowCreatedEvent
-    {
-        float32 width;
-        float32 height;
-        float32 surfaceScaleW;
-        float32 surfaceScaleH;
-    };
-
     /// Parameter for events:
     ///     - WINDOW_CREATED
     ///     - WINDOW_SIZE_CHANGED
@@ -87,8 +78,8 @@ struct MainDispatcherEvent final
     {
         float32 width;
         float32 height;
-        float32 surfaceScaleW;
-        float32 surfaceScaleH;
+        float32 surfaceWidth;
+        float32 surfaceHeight;
         float32 dpi; //< is set only by WINDOW_CREATED
     };
 
@@ -158,7 +149,6 @@ struct MainDispatcherEvent final
     {
         AppTerminateEvent terminateEvent;
         WindowStateEvent stateEvent;
-        WindowCreatedEvent createdEvent;
         WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
         WindowDpiEvent dpiEvent;

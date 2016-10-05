@@ -24,14 +24,14 @@ MainDispatcherEvent MainDispatcherEvent::CreateUserCloseRequestEvent(Window* win
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfScaleW, float32 surfScaleH, float32 dpi)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfW, float32 surfH, float32 dpi)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.sizeEvent.width = w;
     e.sizeEvent.height = h;
-    e.sizeEvent.surfaceScaleW = surfScaleW;
-    e.sizeEvent.surfaceScaleH = surfScaleH;
+    e.sizeEvent.surfaceWidth = surfW;
+    e.sizeEvent.surfaceHeight = surfH;
     e.sizeEvent.dpi = dpi;
     return e;
 }
@@ -43,14 +43,14 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfScaleW, float32 surfScaleH)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfW, float32 surfH)
 {
     MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.sizeEvent.width = w;
     e.sizeEvent.height = h;
-    e.sizeEvent.surfaceScaleW = surfScaleW;
-    e.sizeEvent.surfaceScaleH = surfScaleH;
+    e.sizeEvent.surfaceWidth = surfW;
+    e.sizeEvent.surfaceHeight = surfH;
     e.sizeEvent.dpi = 0.0f;
     return e;
 }

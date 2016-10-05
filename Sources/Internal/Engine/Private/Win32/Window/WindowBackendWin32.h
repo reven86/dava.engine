@@ -92,7 +92,9 @@ private:
     bool closeRequestByApp = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
     int32 height = 0;
-    float32 dpi = 96.0f;
+
+    const float32 defaultDpi = 96.0f;
+    float32 dpi = defaultDpi;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];

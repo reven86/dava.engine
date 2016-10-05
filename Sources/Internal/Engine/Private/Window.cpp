@@ -125,6 +125,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_SIZE_CHANGED:
         HandleSizeChanged(e);
         break;
+    case MainDispatcherEvent::WINDOW_DPI_CHANGED:
+        HandleDpiChanged(e);
+        break;
     case MainDispatcherEvent::WINDOW_FOCUS_CHANGED:
         HandleFocusChanged(e);
         break;
@@ -224,10 +227,10 @@ void Window::ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e)
 
     width = compressedSize.width;
     height = compressedSize.height;
-    surfaceScaleW = compressedSize.surfaceScaleW;
-    surfaceScaleH = compressedSize.surfaceScaleH;
+    surfaceWidth = compressedSize.surfaceWidth;
+    surfaceHeight = compressedSize.surfaceHeight;
 
-    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, scaleW=%.3f, scaleH=%.3f", width, height, surfaceScaleW, surfaceScaleH);
+    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, scaleW=%.3f, scaleH=%.3f", width, height, surfaceWidth, surfaceHeight);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()
