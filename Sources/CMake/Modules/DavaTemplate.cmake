@@ -442,7 +442,7 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND )
+if ( XXXXX )#QT5_FOUND
     set (QTCONF_TARGET_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     if (DEPLOY_DIR AND DEPLOY)
         set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
