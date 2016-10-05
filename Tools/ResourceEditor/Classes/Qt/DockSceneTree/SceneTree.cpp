@@ -21,6 +21,7 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 

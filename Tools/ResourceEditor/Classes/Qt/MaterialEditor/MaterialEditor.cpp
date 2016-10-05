@@ -481,9 +481,9 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     : QDialog(parent)
     , ui(new Ui::MaterialEditor)
     , templatesFilterModel(nullptr)
-    , lastCheckState(ApplyMaterialPresetCommand::ALL)
     , validator(new ConfigNameValidator(this))
 {
+    lastCheckState = ApplyMaterialPresetCommand::PROPERTIES | ApplyMaterialPresetCommand::TEMPLATE | ApplyMaterialPresetCommand::GROUP;
     DAVA::Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
     materialPropertiesUpdater = new LazyUpdater(fn, this);
 
@@ -540,7 +540,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
         ui->materialProperty->header()->resizeSection(1, v2.AsInt32());
 
     DAVA::VariantType savePath = posSaver.LoadValue("lastSavePath");
-    DAVA::VariantType loadState = posSaver.LoadValue("lastLoadState");
+    DAVA::VariantType loadState = posSaver.LoadValue("lastLoadPresetState");
     if (savePath.GetType() == DAVA::VariantType::TYPE_FILEPATH)
         lastSavePath = savePath.AsFilePath();
     if (loadState.GetType() == DAVA::VariantType::TYPE_UINT32)
@@ -562,7 +562,7 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("splitPosProperties", v1);
     posSaver.SaveValue("splitPosPreview", v2);
     posSaver.SaveValue("lastSavePath", DAVA::VariantType(lastSavePath));
-    posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
+    posSaver.SaveValue("lastLoadPresetState", DAVA::VariantType(lastCheckState));
 }
 
 QtPropertyData* MaterialEditor::AddSection(const DAVA::FastName& sectionName)
@@ -1204,9 +1204,11 @@ void MaterialEditor::OnMaterialLoad(bool checked)
             // version info is reserved for future use
             if (command->IsValidPreset())
             {
-                DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
-                command->Init(userChoiseWhatToLoad);
-                activeScene->Exec(std::move(command));
+                if (ExecMaterialLoadingDialog(lastCheckState, inputFile))
+                {
+                    command->Init(lastCheckState);
+                    activeScene->Exec(std::move(command));
+                }
             }
             else
             {
@@ -1219,26 +1221,26 @@ void MaterialEditor::OnMaterialLoad(bool checked)
     RefreshMaterialProperties();
 }
 
-DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile)
+bool MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32& userChoise, const QString& inputFile)
 {
     DAVA::uint32 ret = 0;
 
-    QDialog* dlg = new QDialog(this);
+    QDialog dlg;
     QVBoxLayout* dlgLayout = new QVBoxLayout();
     dlgLayout->setMargin(10);
     dlgLayout->setSpacing(15);
 
-    dlg->setWindowTitle("Loading material preset...");
-    dlg->setWindowFlags(Qt::Tool);
-    dlg->setLayout(dlgLayout);
+    dlg.setWindowTitle("Loading material preset...");
+    dlg.setWindowFlags(Qt::Tool);
+    dlg.setLayout(dlgLayout);
 
-    QLineEdit* pathLine = new QLineEdit(dlg);
+    QLineEdit* pathLine = new QLineEdit(&dlg);
     pathLine->setText(inputFile);
     pathLine->setReadOnly(false);
     pathLine->setToolTip(inputFile);
     dlgLayout->addWidget(pathLine);
 
-    QGroupBox* groupbox = new QGroupBox("Load parameters", dlg);
+    QGroupBox* groupbox = new QGroupBox("Load parameters", &dlg);
     dlgLayout->addWidget(groupbox);
 
     QCheckBox* templateChBox = new QCheckBox(QString(UIName::Template.c_str()), groupbox);
@@ -1246,10 +1248,10 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     QCheckBox* propertiesChBox = new QCheckBox(QString(UIName::Properties.c_str()), groupbox);
     QCheckBox* texturesChBox = new QCheckBox(QString(UIName::Textures.c_str()), groupbox);
 
-    templateChBox->setChecked((bool)(initialState & ApplyMaterialPresetCommand::TEMPLATE));
-    groupChBox->setChecked((bool)(initialState & ApplyMaterialPresetCommand::GROUP));
-    propertiesChBox->setChecked((bool)(initialState & ApplyMaterialPresetCommand::PROPERTIES));
-    texturesChBox->setChecked((bool)(initialState & ApplyMaterialPresetCommand::TEXTURES));
+    templateChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::TEMPLATE));
+    groupChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::GROUP));
+    propertiesChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::PROPERTIES));
+    texturesChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::TEXTURES));
 
     QGridLayout* gridLayout = new QGridLayout();
     groupbox->setLayout(gridLayout);
@@ -1259,26 +1261,28 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     gridLayout->addWidget(propertiesChBox, 0, 1);
     gridLayout->addWidget(texturesChBox, 1, 1);
 
-    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
     dlgLayout->addWidget(buttons);
 
-    QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-    QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+    QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+    QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
 
-    if (QDialog::Accepted == dlg->exec())
+    QDialog::DialogCode retCode = static_cast<QDialog::DialogCode>(dlg.exec());
+
+    if (QDialog::Accepted == retCode)
     {
+        userChoise = 0;
         if (templateChBox->checkState() == Qt::Checked)
-            ret |= ApplyMaterialPresetCommand::TEMPLATE;
+            userChoise |= ApplyMaterialPresetCommand::TEMPLATE;
         if (groupChBox->checkState() == Qt::Checked)
-            ret |= ApplyMaterialPresetCommand::GROUP;
+            userChoise |= ApplyMaterialPresetCommand::GROUP;
         if (propertiesChBox->checkState() == Qt::Checked)
-            ret |= ApplyMaterialPresetCommand::PROPERTIES;
+            userChoise |= ApplyMaterialPresetCommand::PROPERTIES;
         if (texturesChBox->checkState() == Qt::Checked)
-            ret |= ApplyMaterialPresetCommand::TEXTURES;
+            userChoise |= ApplyMaterialPresetCommand::TEXTURES;
     }
 
-    delete dlg;
-    return ret;
+    return retCode == QDialog::Accepted;
 }
 
 void MaterialEditor::RefreshMaterialProperties()
