@@ -260,10 +260,11 @@ MMNetProto::Packet MMNetServer::CreateReplyStatPacket(uint32 maxItems)
 
 bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
-    std::atomic<uint32> curSnapshotIndex;
+    static std::atomic<uint32> curSnapshotIndex;
     bool result = false;
     FilePath filePath("~doc:");
-    filePath += Format("msnap_%u.bin", curSnapshotIndex++);
+    uint32 tempIndex = curSnapshotIndex++;
+    filePath += Format("msnap_%u.bin", tempIndex);
 
     bool erase = false;
     {
