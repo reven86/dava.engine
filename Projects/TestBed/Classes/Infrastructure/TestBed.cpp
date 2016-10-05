@@ -43,12 +43,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     using namespace Net;
 
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "TestBed");
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
 #if defined(__DAVAENGINE_QT__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
@@ -79,8 +75,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.SetOptions(appOptions);
-    e.Init(runmode, modules);
+    e.Init(runmode, modules, appOptions);
+    SafeRelease(appOptions);
 
     CheckDeviceInfoValid();
 
@@ -113,9 +109,9 @@ TestBed::TestBed(Engine& engine)
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->Resize(1024.f, 768.f);
         w->sizeScaleChanged.Connect(this, &TestBed::OnWindowSizeChanged);
-    }
 
-    engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+        engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+    }
 }
 
 void TestBed::OnGameLoopStarted()

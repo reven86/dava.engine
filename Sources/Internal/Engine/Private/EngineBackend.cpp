@@ -85,9 +85,9 @@ EngineBackend::~EngineBackend()
     instance = nullptr;
 }
 
-void EngineBackend::EngineCreated(Engine* e)
+void EngineBackend::EngineCreated(Engine* engine_)
 {
-    engine = e;
+    engine = engine_;
     dispatcher->LinkToCurrentThread();
 }
 
@@ -96,13 +96,7 @@ void EngineBackend::EngineDestroyed()
     engine = nullptr;
 }
 
-void EngineBackend::SetOptions(KeyedArchive* options_)
-{
-    DVASSERT(options_ != nullptr);
-    options.Set(options_);
-}
-
-KeyedArchive* EngineBackend::GetOptions()
+const KeyedArchive* EngineBackend::GetOptions() const
 {
     return options.Get();
 }
@@ -131,9 +125,15 @@ Window* EngineBackend::InitializePrimaryWindow()
     return primaryWindow;
 }
 
-void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
+void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_)
 {
+    DVASSERT(isInitialized == false && "Engine::Init is called more than once");
+
     runMode = engineRunMode;
+    if (options_ != nullptr)
+    {
+        options = options_;
+    }
 
     // Do not initialize PlatformCore in console mode as console mode is fully
     // implemented in EngineBackend
@@ -164,10 +164,14 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
     context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
+
+    isInitialized = true;
 }
 
 int EngineBackend::Run()
 {
+    DVASSERT(isInitialized == true && "Engine::Init is not called");
+
     if (IsConsoleMode())
     {
         RunConsole();
@@ -179,9 +183,9 @@ int EngineBackend::Run()
     return exitCode;
 }
 
-void EngineBackend::Quit(int exitCode)
+void EngineBackend::Quit(int exitCode_)
 {
-    this->exitCode = exitCode;
+    exitCode = exitCode_;
     switch (runMode)
     {
     case eEngineRunMode::GUI_STANDALONE:

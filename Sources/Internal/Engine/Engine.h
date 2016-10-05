@@ -33,7 +33,7 @@ public:
     bool IsEmbeddedGUIMode() const;
     bool IsConsoleMode() const;
 
-    void Init(eEngineRunMode runMode, const Vector<String>& modules);
+    void Init(eEngineRunMode runMode, const Vector<String>& modules = Vector<String>(), KeyedArchive* options = nullptr);
     int Run();
     void Quit(int exitCode = 0);
 
@@ -54,9 +54,7 @@ public:
     void RunAsyncOnMainThread(const Function<void()>& task);
     void RunAndWaitOnMainThread(const Function<void()>& task);
 
-    // Methods taken from class Core
-    void SetOptions(KeyedArchive* options);
-    KeyedArchive* GetOptions();
+    const KeyedArchive* GetOptions() const;
 
     uint32 GetGlobalFrameIndex() const;
     const Vector<String>& GetCommandLine() const;
