@@ -35,7 +35,7 @@ def _copyLib(src, dst):
 
 def _download(working_directory_path):
     source_folder_path = os.path.join(working_directory_path, 'googletest')
-    build_utils.run_process('git clone ' + get_download_url(), working_directory_path)
+    build_utils.run_process('git clone ' + get_download_url(), process_cwd=working_directory_path, shell=True)
     return source_folder_path
 
 def _patch_sources(working_directory_path):
@@ -57,7 +57,7 @@ def _build_win32(working_directory_path, root_project_path):
     build_folder86 = os.path.join(source_folder_path, '_build86')
     build_folder64 = os.path.join(source_folder_path, '_build64')
 
-    build_utils.cmake_generate(build_folder86, source_folder_path, build_config.win32_x64_cmake_generator)
+    build_utils.cmake_generate(build_folder86, source_folder_path, build_config.win32_x86_cmake_generator)
     build_utils.cmake_build(build_folder86, 'Debug')
     build_utils.cmake_build(build_folder86, 'Release')
 

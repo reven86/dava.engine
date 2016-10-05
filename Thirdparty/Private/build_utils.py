@@ -134,7 +134,7 @@ def copy_folder_recursive(src, dest, ignore=None):
         shutil.copyfile(src, dest)
 
 def cmake_build(solution_folder_path, configuration):
-	run_process("cmake --build . --config " + configuration, solution_folder_path)
+	run_process("cmake --build . --config " + configuration, process_cwd=solution_folder_path, shell=True)
 
 def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args = []):
 	if not os.path.exists(output_folder_path):
@@ -245,16 +245,16 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
 	download_and_extract.cache.append(download_data)
 
-def run_process(args, process_cwd='.', environment=None):
+def run_process(args, process_cwd='.', environment=None, shell=False):
 	print 'running process: ' + ' '.join(args)
-	for output_line in _run_process_iter(args, process_cwd, environment):
+	for output_line in _run_process_iter(args, process_cwd, environment, shell):
 		print_verbose(output_line)
 
-def _run_process_iter(args, process_cwd='.', environment=None):
+def _run_process_iter(args, process_cwd='.', environment=None, shell=False):
 	if environment is None:
-		sp = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, cwd=process_cwd)
+		sp = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, cwd=process_cwd)
 	else:
-		sp = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
+		sp = subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
 
 	stdout_lines = iter(sp.stdout.readline, '')
 	for stdout_line in stdout_lines:
@@ -372,7 +372,7 @@ def build_and_copy_libraries_macos_cmake(
 		cmake_additional_args = []):
 	build_folder_macos = os.path.join(gen_folder_path, 'build_macos')
 
-	cmake_generate_build_xcode(build_folder_macos, source_folder_path, 'Xcode', project_name, target_name, cmake_additional_args)
+	cmake_generate_build_xcode(build_folder_macos, source_folder_path, build_config.XCode, project_name, target_name, cmake_additional_args)
 
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure
@@ -394,7 +394,7 @@ def build_and_copy_libraries_ios_cmake(
 	toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/ios.toolchain.cmake')
 	cmake_additional_args.append('-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath)
 
-	cmake_generate_build_xcode(build_folder_ios, source_folder_path, 'Xcode', project_name, target_name, cmake_additional_args)
+	cmake_generate_build_xcode(build_folder_ios, source_folder_path, build_config.XCode, project_name, target_name, cmake_additional_args)
 	
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure
