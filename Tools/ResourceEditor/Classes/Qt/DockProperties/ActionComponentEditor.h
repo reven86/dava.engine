@@ -19,6 +19,8 @@ class ActionItemEditDelegate : public QStyledItemDelegate
 public:
     ActionItemEditDelegate(QObject* parent = 0);
 
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
                           const QModelIndex& index) const;
 

@@ -85,14 +85,19 @@ void Engine::Quit(int exitCode)
     engineBackend->Quit(exitCode);
 }
 
+void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
+{
+    engineBackend->SetCloseRequestHandler(handler);
+}
+
 void Engine::RunAsyncOnMainThread(const Function<void()>& task)
 {
-    engineBackend->RunAsyncOnMainThread(task);
+    engineBackend->DispatchOnMainThread(task, false);
 }
 
 void Engine::RunAndWaitOnMainThread(const Function<void()>& task)
 {
-    engineBackend->RunAndWaitOnMainThread(task);
+    engineBackend->DispatchOnMainThread(task, true);
 }
 
 uint32 Engine::GetGlobalFrameIndex() const

@@ -15,18 +15,27 @@
 
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
-
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include <QApplication>
 
 using namespace DAVA;
+
+namespace SceneInfoDetail
+{
+QPalette GetPalette()
+{
+    return qApp->palette();
+}
+}
 
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     : QtPropertyEditor(parent)
     , treeStateHelper(this, curModel)
+    , infoUpdated(DAVA::MakeFunction(this, &SceneInfo::RefreshAllData))
 {
     // global scene manager signals
     SceneSignals* signalDispatcher = SceneSignals::Instance();
@@ -305,13 +314,13 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap& textures)
     return textureSize;
 }
 
-void SceneInfo::CollectSceneData(SceneEditor2* scene)
+void SceneInfo::CollectSceneData()
 {
     ClearData();
 
-    if (scene)
+    if (activeScene)
     {
-        scene->GetChildNodes(nodesAtScene);
+        activeScene->GetChildNodes(nodesAtScene);
 
         SceneHelper::TextureCollector collector(SceneHelper::TextureCollector::OnlyActiveTextures);
         SceneHelper::EnumerateSceneTextures(activeScene, collector);
@@ -420,7 +429,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    headerData->SetBackground(palette().alternateBase());
+    headerData->SetBackground(SceneInfoDetail::GetPalette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -440,7 +449,7 @@ void SceneInfo::AddChild(const QString& key, QtPropertyData* parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -449,7 +458,7 @@ void SceneInfo::AddChild(const QString& key, const QString& toolTip, QtPropertyD
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
     propData->SetToolTip(toolTip);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -504,7 +513,7 @@ void SceneInfo::showEvent(QShowEvent* event)
     if (!isUpToDate)
     {
         isUpToDate = true;
-        RefreshAllData(activeScene);
+        RefreshAllData();
     }
 
     QtPropertyEditor::showEvent(event);
@@ -524,9 +533,9 @@ void SceneInfo::UpdateInfoByTimer()
     RefreshLayersSection();
 }
 
-void SceneInfo::RefreshAllData(SceneEditor2* scene)
+void SceneInfo::RefreshAllData()
 {
-    CollectSceneData(scene);
+    CollectSceneData();
 
     SaveTreeState();
 
@@ -551,7 +560,7 @@ void SceneInfo::SceneActivated(SceneEditor2* scene)
     isUpToDate = isVisible();
     if (isUpToDate)
     {
-        RefreshAllData(scene);
+        infoUpdated.Update();
     }
 }
 
@@ -561,7 +570,7 @@ void SceneInfo::SceneDeactivated(SceneEditor2* scene)
     {
         activeScene = NULL;
         landscape = NULL;
-        RefreshAllData(NULL);
+        RefreshAllData();
     }
 }
 
@@ -574,7 +583,7 @@ void SceneInfo::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
         isUpToDate = isVisible();
         if (isUpToDate)
         {
-            RefreshAllData(scene);
+            infoUpdated.Update();
         }
     }
 }
@@ -601,7 +610,7 @@ void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificat
 
     if (commandNotification.MatchCommandIDs(commandIDs))
     {
-        RefreshAllData(scene);
+        infoUpdated.Update();
     }
 }
 
@@ -720,7 +729,7 @@ void SceneInfo::SpritesReloaded()
 
 void SceneInfo::OnQualityChanged()
 {
-    RefreshAllData(activeScene);
+    RefreshAllData();
 }
 
 void SceneInfo::InitializeVegetationInfoSection()
