@@ -495,7 +495,7 @@ function TupState.BuildLists(self)
         -- if not - that should be thread as error
         if secondMatch ~= nil then
             print("Packs: " .. firstMatch .. " and " .. secondMatch)
-            print "File is matching more than one pack"
+            error "File is matching more than one pack"
         end
     end
     
@@ -505,8 +505,7 @@ function TupState.BuildLists(self)
                 for index, file in pairs(files) do
                     local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
                     baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
-                    -- tup.rule(file, self.cmd.cp .. " %f %o", {baseOutput})
-                    tup.rule(file, self.cmd.fwdep .. " merge %f -o %o", {baseOutput})
+                    tup.rule(file, self.cmd.fwdep .. " merge %\"f -o %\"o", {baseOutput})
                 end
             else
                 local packGroup = self:GetPackGroup(pack.name, gpu)
@@ -596,10 +595,16 @@ function TupState.BuildPacks(self)
         local sqlCommonGroup = self:GetSqlGroup(self.conf.commonGpu)
         local sqlCommonGroupPath = self.sqlDir .. "/<" .. sqlCommonGroup .. ">"
     
+        -- generate emply sql for each gpu
+        local emptySqlCmd = self.cmd.fwdep .. " echo -o %o"
+        local emptySqlCmdText = "^ Get empty sql for " .. gpu .. "^ "
+        local emptySqlOutput = self.sqlDir .. "/" .. gpu .. "/" .. "empty.sql"
+        tup.rule(emptySqlCmdText .. emptySqlCmd, { emptySqlOutput })
+
         -- merge final sql
         local mergeSqlMaskCommon = self.sqlDir .. "/" .. self.conf.commonGpu .. "/*.sql"
         local mergeSqlMaskGpu = self.sqlDir .. "/" .. gpu .. "/*.sql"  
-        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o" --[[" -- %<" .. sqlGroup .. ">"]]
+        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o"
         local mergeSqlCmdText = "^ Gen merged sql " .. gpu .. "^ "
         local mergeSqlOutput = self.mergeDir .. "/" .. gpu .. "/final.sql" 
 
@@ -646,7 +651,7 @@ function TupState.BuildPacks(self)
 
         -- merge superpack lists
         local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o" --[[" -- %<" .. superPackGroup .. ">"]]
+        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o"
         local mergedSuperCmdText = "^ Gen merged superlist^ "
         local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 

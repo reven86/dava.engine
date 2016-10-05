@@ -26,11 +26,15 @@ public:
     UIControlBackground* GetContentBackground();
 
     void SetVisible(bool visibility);
+    bool IsVisible() const;
     void SetBackgroundTransparency(bool value);
     void SetViewSize(Vector2 size);
     void ShutDown();
 
 private:
+    void ConnectToSignals();
+    void DisconnectFromSignals();
+
     // CefRenderHandler interface implementation
     bool GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
     bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info) override;

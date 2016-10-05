@@ -1314,9 +1314,10 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
     Landscape::PARAM_TILE_COLOR3,
     } };
 
-    Array<FastName, 2> propertyFloat3toFloat4 =
+    Array<FastName, 3> propertyFloat3toFloat4 =
     { { NMaterialParamName::PARAM_FLAT_COLOR,
-        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR,
+        NMaterialParamName::PARAM_TREE_LEAF_COLOR_MUL } };
 
     Array<FastName, 1> propertyFloat1toFloat2 =
     {

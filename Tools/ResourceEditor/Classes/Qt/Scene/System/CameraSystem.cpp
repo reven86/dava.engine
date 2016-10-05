@@ -41,11 +41,6 @@ const auto wheelAdjust = 0.002;
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
-    , curSceneCamera(nullptr)
-    , animateToNewPos(false)
-    , animateToNewPosTime(0)
-    , distanceToCamera(0.f)
-    , activeSpeedIndex(0)
 {
 }
 
@@ -245,8 +240,12 @@ void SceneCameraSystem::Process(float timeElapsed)
             // update collision object for last camera
             if (nullptr != curSceneCamera)
             {
-                SceneCollisionSystem* collSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-                collSystem->UpdateCollisionObject(Selectable(GetEntityFromCamera(curSceneCamera)));
+                DAVA::Entity* cameraOwner = GetEntityFromCamera(curSceneCamera);
+                if (cameraOwner != nullptr)
+                {
+                    SceneCollisionSystem* collSystem = (static_cast<SceneEditor2*>(GetScene()))->collisionSystem;
+                    collSystem->UpdateCollisionObject(Selectable(cameraOwner));
+                }
             }
 
             // remember current scene camera
