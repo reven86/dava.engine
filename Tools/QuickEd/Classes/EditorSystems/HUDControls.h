@@ -15,7 +15,7 @@ public:
     bool GetSystemVisible() const;
 
 protected:
-    ~ControlContainer() = default;
+    ~ControlContainer() override = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
     bool systemVisible = true;
 };
@@ -29,11 +29,11 @@ public:
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
 
 private:
-    ~HUDContainer() = default;
+    ~HUDContainer() override = default;
     ControlNode* node = nullptr;
     VisibleValueProperty* visibleProperty = nullptr;
+    //weak pointer to control to wrap around
     DAVA::UIControl* control = nullptr;
-    DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
 };
 
 class FrameControl : public ControlContainer
@@ -95,4 +95,4 @@ private:
 void SetupHUDMagnetLineControl(DAVA::UIControl* control);
 void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 
-DAVA::UIControl* CreateHUDRect(ControlNode* node);
+DAVA::RefPtr<DAVA::UIControl> CreateHUDRect(ControlNode* node);

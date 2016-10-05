@@ -21,14 +21,14 @@ namespace
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
 
-ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
+RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 {
     switch (area)
     {
     case HUDAreaInfo::PIVOT_POINT_AREA:
-        return new PivotPointControl();
+        return RefPtr<ControlContainer>(new PivotPointControl());
     case HUDAreaInfo::ROTATE_AREA:
-        return new RotateControl();
+        return RefPtr<ControlContainer>(new RotateControl());
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
     case HUDAreaInfo::TOP_RIGHT_AREA:
@@ -37,12 +37,12 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     case HUDAreaInfo::BOTTOM_LEFT_AREA:
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-        return new FrameRectControl(area);
+        return RefPtr<ControlContainer>(new FrameRectControl(area));
     case HUDAreaInfo::FRAME_AREA:
-        return new FrameControl();
+        return RefPtr<ControlContainer>(new FrameControl());
     default:
         DVASSERT(!"unacceptable value of area");
-        return nullptr;
+        return RefPtr<ControlContainer>(nullptr);
     }
 }
 
@@ -89,8 +89,8 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     }
     for (HUDAreaInfo::eArea area : areas)
     {
-        ControlContainer* controlContainer = CreateControlContainer(area);
-        container->AddChild(controlContainer);
+        RefPtr<ControlContainer> controlContainer(CreateControlContainer(area));
+        container->AddChild(controlContainer.Get());
         hudControls[area] = controlContainer;
     }
     hudControl->AddControl(container.Get());

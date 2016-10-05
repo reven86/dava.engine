@@ -11,9 +11,9 @@ const Vector2 PIVOT_CONTROL_SIZE(15.0f, 15.0f);
 const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
 const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15);
 
-UIControl* CreateFrameBorderControl(FrameControl::eBorder border)
+RefPtr<UIControl> CreateFrameBorderControl(FrameControl::eBorder border)
 {
-    UIControl* control = new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f));
+    RefPtr<UIControl> control(new UIControl(Rect(1.0f, 1.0f, 1.0f, 1.0f)));
     UIAnchorComponent* anchor = control->GetOrCreateComponent<UIAnchorComponent>();
     anchor->SetLeftAnchorEnabled(true);
     anchor->SetRightAnchorEnabled(true);
@@ -75,7 +75,6 @@ HUDContainer::HUDContainer(ControlNode* node_)
 void HUDContainer::AddChild(ControlContainer* container)
 {
     AddControl(container);
-    childs.emplace_back(container);
 }
 
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
@@ -114,18 +113,22 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
 
         SetAngle(changedGD.angle);
 
-        for (auto child : childs)
+        for (UIControl* child : GetChildren())
         {
-            auto area = child->GetArea();
-            bool childVisible = child->GetSystemVisible() && changedGD.scale.x > 0.0f && changedGD.scale.y > 0.0f;
-            if (area != HUDAreaInfo::FRAME_AREA)
+            ControlContainer* childControlContainer = dynamic_cast<ControlContainer*>(child);
+            if (nullptr != childControlContainer)
             {
-                childVisible &= !controlIsMoveOnly;
-            }
-            child->SetVisibilityFlag(childVisible);
-            if (childVisible)
-            {
-                child->InitFromGD(changedGD);
+                HUDAreaInfo::eArea area = childControlContainer->GetArea();
+                bool childVisible = childControlContainer->GetSystemVisible() && changedGD.scale.x > 0.0f && changedGD.scale.y > 0.0f;
+                if (area != HUDAreaInfo::FRAME_AREA)
+                {
+                    childVisible &= !controlIsMoveOnly;
+                }
+                childControlContainer->SetVisibilityFlag(childVisible);
+                if (childVisible)
+                {
+                    childControlContainer->InitFromGD(changedGD);
+                }
             }
         }
     }
@@ -143,10 +146,10 @@ FrameControl::FrameControl(eType type_)
     , type(type_)
 {
     SetName(FastName("Frame Control"));
-    for (uint32 i = 0; i < COUNT; ++i)
+    for (uint32 i = 0; i < eBorder::COUNT; ++i)
     {
         FrameControl::eBorder border = static_cast<FrameControl::eBorder>(i);
-        ScopedPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
+        RefPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
         control->SetName(FastName(String("border of ") + GetName().c_str()));
         UIControlBackground* background = control->GetBackground();
         if (type == CHECKERED)
@@ -158,7 +161,7 @@ FrameControl::FrameControl(eType type_)
             background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
         }
         background->SetDrawType(UIControlBackground::DRAW_TILED);
-        AddControl(control);
+        AddControl(control.Get());
     }
 }
 
@@ -256,23 +259,23 @@ void SetupHUDMagnetLineControl(UIControl* control)
 
 void SetupHUDMagnetRectControl(UIControl* parentControl)
 {
-    for (int i = 0; i < FrameControl::COUNT; ++i)
+    for (int i = 0; i < FrameControl::eBorder::COUNT; ++i)
     {
         FrameControl::eBorder border = static_cast<FrameControl::eBorder>(i);
-        ScopedPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
-        SetupHUDMagnetLineControl(control);
+        RefPtr<UIControl> control(HUDControlsDetails::CreateFrameBorderControl(border));
+        SetupHUDMagnetLineControl(control.Get());
         control->SetName(FastName(String("border of magnet rect")));
-        parentControl->AddControl(control);
+        parentControl->AddControl(control.Get());
     }
 }
 
-UIControl* CreateHUDRect(ControlNode* node)
+RefPtr<UIControl> CreateHUDRect(ControlNode* node)
 {
-    HUDContainer* container = new HUDContainer(node);
+    RefPtr<HUDContainer> container(new HUDContainer(node));
     container->SetName("HUD rect container");
-    ControlContainer* frame = new FrameControl(FrameControl::UNIFORM);
+    RefPtr<ControlContainer> frame(new FrameControl(FrameControl::UNIFORM));
     frame->SetName("HUD rect frame control");
-    container->AddChild(frame);
+    container->AddChild(frame.Get());
 
     container->InitFromGD(node->GetControl()->GetGeometricData());
     return container;

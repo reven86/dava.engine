@@ -259,11 +259,18 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
             {
                 break;
             }
-            if ((size.dx / previousSize.dx > 3.0f && size.dx - previousSize.dx > 30.0f)
-                || (size.dy / previousSize.dy > 3.0f && size.dy - previousSize.dy > 30.0f)
-                || size.dx - previousSize.dx > 200.0f || size.dy - previousSize.dy > 200.0f)
+            const Vector2 acceptableSizeProportion(3.0f, 3.0f);
+            const Vector2 acceptableRelativeSizeDifference(30.0f, 30.0f);
+            const Vector2 acceptableAbsoluteSizeDifference(200.0f, 200.0f);
+            for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
             {
-                return previousNode;
+                Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+                if ((size[axis] / previousSize[axis] > acceptableSizeProportion[axis]
+                     && size[axis] - previousSize[axis] > acceptableRelativeSizeDifference[axis])
+                    || size[axis] - previousSize[axis] > acceptableAbsoluteSizeDifference[axis])
+                {
+                    return previousNode;
+                }
             }
         }
         if (size.dx > 0.0f && size.dy > 0.0f)

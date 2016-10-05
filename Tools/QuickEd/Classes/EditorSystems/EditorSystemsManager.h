@@ -146,7 +146,7 @@ void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate pred
 {
     for (PackageBaseNode* rootControl : editingRootControls)
     {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
+        ControlNode* controlNode = DAVA::DynamicTypeCheck<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
         if (predicate(controlNode))
         {
