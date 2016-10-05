@@ -45,7 +45,7 @@ dx9_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-dx9_TextureFormatSupported(TextureFormat format)
+dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
 {
     bool supported = false;
 
@@ -60,8 +60,22 @@ dx9_TextureFormatSupported(TextureFormat format)
     case TEXTURE_FORMAT_DXT1:
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
+    case TEXTURE_FORMAT_R32F:
+    case TEXTURE_FORMAT_RGBA32F:
         supported = true;
         break;
+    }
+
+    if (progType == PROG_VERTEX)
+    {
+        const char* found = strstr(DeviceCaps().deviceDescription, "GeForce");
+        if (found && strlen(found) >= strlen("GeForce XXX0")) //filter GeForce 6 and 7 series
+        {
+            if ((found[8] == '6' || found[8] == '7') && found[11] == '0')
+            {
+                supported = (format == TEXTURE_FORMAT_R32F || format == TEXTURE_FORMAT_RGBA32F);
+            }
+        }
     }
 
     return supported;
