@@ -803,7 +803,8 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
     , filteringProxyModel(new SceneTreeFilteringModel(treeModel))
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
-    treeUpdater = new LazyUpdater(fn, this);
+    treeUpdater.reset(new LazyUpdater(fn, this));
+    selectionUpdater.reset(new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::UpdateSelection), this));
 
     setModel(filteringProxyModel);
 
@@ -1406,13 +1407,18 @@ void SceneTree::UpdateModel()
     treeModel->ReloadFilter();
     filteringProxyModel->invalidate();
 
-    SyncSelectionToTree();
-    EmitParticleSignals();
+    selectionUpdater->Update();
 
     if (treeModel->IsFilterSet())
     {
         ExpandFilteredItems();
     }
+}
+
+void SceneTree::UpdateSelection()
+{
+    SyncSelectionToTree();
+    EmitParticleSignals();
 }
 
 void SceneTree::PropagateSolidFlag()
