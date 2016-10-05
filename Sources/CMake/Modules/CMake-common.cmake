@@ -105,18 +105,10 @@ macro( processing_mix_data )
         foreach( ITEM ${LIST_FOLDER_ITEM} )
             if( IS_DIRECTORY ${ITEM} )
                 list( APPEND RESOURCES_LIST  ${ITEM}  )
-                get_filename_component( FOLDER_NAME ${ITEM}  NAME     )
-
-                if( MACOS AND NOT ARG_NOT_DATA_COPY )
-                    foreach( CONFIGURATION ${CMAKE_CONFIGURATION_TYPES} )
-                        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CONFIGURATION} )
-                        execute_process( COMMAND ln -s ${MIX_APP_DIR}/${FOLDER_NAME} ${CMAKE_BINARY_DIR}/${CONFIGURATION}/${FOLDER_NAME}  )
-                    endforeach()
-                endif()
-                
             endif()
         endforeach()
     endif()
+
 endmacro ()
 
 ##
