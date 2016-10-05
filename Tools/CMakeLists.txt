@@ -68,11 +68,8 @@ if(TARGETS STREQUAL "all")
 	set          ( DAVA_MEGASOLUTION      1 )
 
 ## tools
-    set( MAC_DISABLE_BUNDLE true )
 	add_tool     ( ResourceEditor  )
 	add_tool     ( QuickEd         )
-    set( MAC_DISABLE_BUNDLE )
-
 ##
 	add_tool     ( ResourcePacker   )
 	add_tool     ( ResourcePatcher  )
