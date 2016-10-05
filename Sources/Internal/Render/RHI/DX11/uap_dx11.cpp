@@ -359,7 +359,7 @@ void CreateDeviceResources()
 
 bool CreateWindowSizeDependentResources()
 {
-    const UINT buffersCount = 3;
+    const UINT backBuffersCount = 3;
 
     if (_DX11_InitParam.FrameCommandExecutionSync)
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
@@ -394,12 +394,7 @@ bool CreateWindowSizeDependentResources()
         m_d3dContext->Flush();
 
         // If the swap chain already exists, resize it.
-        HRESULT hr = m_swapChain->ResizeBuffers(
-        buffersCount, // Double-buffered swap chain.
-        swapchainBufferWidth,
-        swapchainBufferHeight,
-        DXGI_FORMAT_B8G8R8A8_UNORM, // Use old format
-        0);
+        HRESULT hr = m_swapChain->ResizeBuffers(backBuffersCount, swapchainBufferWidth, swapchainBufferHeight, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 
         CHECK_HR(hr);
 
@@ -420,7 +415,7 @@ bool CreateWindowSizeDependentResources()
     else
     {
         // Otherwise, create a new one using the same adapter as the existing Direct3D device.
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
+        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
         swapChainDesc.Width = swapchainBufferWidth; // Match the size of the window.
         swapChainDesc.Height = swapchainBufferHeight;
         swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
@@ -428,7 +423,7 @@ bool CreateWindowSizeDependentResources()
         swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = buffersCount; // Use triple-buffering to minimize latency.
+        swapChainDesc.BufferCount = backBuffersCount; // Use triple-buffering to minimize latency.
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
         swapChainDesc.Flags = 0;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -445,31 +440,29 @@ bool CreateWindowSizeDependentResources()
         ThrowIfFailed(dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
 
         // When using XAML interop, the swap chain must be created for composition.
-        bool attemptWithWorkaround = false;
         try
         {
             ThrowIfFailed(dxgiFactory->CreateSwapChainForComposition(m_d3dDevice.Get(), &swapChainDesc, nullptr, &m_swapChain));
         }
         catch (...)
         {
+            m_dxgiAdapter.Reset();
+            m_d3dContext.Reset();
+            m_d3Debug.Reset();
+            m_d3UserAnnotation.Reset();
+            m_d3dDevice.Reset();
+
+            if (_DX11_InitParam.FrameCommandExecutionSync)
+                _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+
             if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
             {
                 DAVA::Logger::Error("DX11: failed to create swapchain even with workaround. Terminating application.");
-                abort();
             }
             else
             {
                 DAVA::Logger::Error("DX11: failed to create swapchain, attempting with workaround...");
                 DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
-
-                m_dxgiAdapter = nullptr;
-                m_d3dContext = nullptr;
-                m_d3Debug = nullptr;
-                m_d3UserAnnotation = nullptr;
-                m_d3dDevice = nullptr;
-
-                if (_DX11_InitParam.FrameCommandExecutionSync)
-                    _DX11_InitParam.FrameCommandExecutionSync->Unlock();
             }
             return false;
         }
@@ -711,19 +704,19 @@ void Present()
 void init_device_and_swapchain_uap(void* panel)
 {
     using ::Windows::UI::Xaml::Controls::SwapChainPanel;
-    SwapChainPanel ^ swapChain = reinterpret_cast<SwapChainPanel ^>(panel);
+    Windows::Foundation::Size backBufferSize(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height));
+    Windows::Foundation::Size backBufferScale(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
+    SetBackBufferSize(backBufferSize, backBufferScale);
+    SetSwapChainPanel(reinterpret_cast<SwapChainPanel ^>(panel));
 
     CreateDeviceResources();
-    SetSwapChainPanel(swapChain);
-    SetBackBufferSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)),
-                      Windows::Foundation::Size(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY));
-
     if (!CreateWindowSizeDependentResources() && DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
     {
-        // failed to create swapchan, attempt one more time
-        // my appologies to whoever will be looking at this code
-        init_device_and_swapchain_uap(panel);
-        return;
+        CreateDeviceResources();
+        if (!CreateWindowSizeDependentResources())
+        {
+            abort();
+        }
     }
 
     _D3D11_Device = m_d3dDevice.Get();
