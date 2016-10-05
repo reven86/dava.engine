@@ -289,7 +289,7 @@ private:
             baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(group));
 
             // Add unknown value:
-            group->AddAllowedValue(DAVA::VariantType(DAVA::String()), "Unknown");
+            group->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Unknown");
 
             // fill allowed values for material group
             for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
