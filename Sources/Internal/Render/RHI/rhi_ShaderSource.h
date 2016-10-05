@@ -126,7 +126,7 @@ ShaderSourceCache
 {
 public:
     static const ShaderSource* Get(FastName uid, uint32 srcHash);
-    static void Update(FastName uid, uint32 srcHash, const ShaderSource& source);
+    static const ShaderSource* Add(const char* filename, FastName uid, ProgType progType, const char* srcText, const std::vector<std::string>& defines);
 
     static void Clear();
     static void Save(const char* fileName);

@@ -1,6 +1,7 @@
 #include "../rhi_ShaderSource.h"
 #include "../rhi_Public.h"
 
+#include "Base/Hash.h"
 //#define PROFILER_ENABLED 1
 //#include "Debug/Profiler.h"
 
@@ -40,6 +41,7 @@ ShaderSource::ShaderSource(const char* filename)
 ShaderSource::~ShaderSource()
 {
     delete ast;
+    ast = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -1082,6 +1084,7 @@ bool ShaderSource::Save(Api api, DAVA::File* out) const
 
     if (code[api].length() == 0)
     {
+        DVASSERT(ast);
         if (ast)
             GetSourceCode(api);
         else
@@ -1455,38 +1458,31 @@ ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 }
 
 //------------------------------------------------------------------------------
-
-void ShaderSourceCache::Update(FastName uid, uint32 srcHash, const ShaderSource& source)
+const ShaderSource*
+ShaderSourceCache::Add(const char* filename, FastName uid, ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
-    LockGuard<Mutex> guard(shaderSourceEntryMutex);
+    ShaderSource* src = new ShaderSource(filename);
 
-    bool doAdd = true;
-    Api api = HostApi();
-
-    for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
+    if (src->Construct(progType, srcText, defines))
     {
-        if (e->uid == uid && e->api == api)
-        {
-            *(e->src) = source;
-            e->srcHash = srcHash;
-            doAdd = false;
-            break;
-        }
-    }
+        LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-    if (doAdd)
-    {
         entry_t e;
 
         e.uid = uid;
-        e.api = api;
-        e.srcHash = srcHash;
-        e.src = new ShaderSource();
-        *(e.src) = source;
+        e.api = HostApi();
+        e.srcHash = DAVA::HashValue_N(srcText, strlen(srcText));
+        e.src = src;
 
         Entry.push_back(e);
-        //Logger::Info("cache-updated  uid= \"%s\"",e.uid.c_str());
     }
+    else
+    {
+        delete src;
+        src = nullptr;
+    }
+
+    return src;
 }
 
 //------------------------------------------------------------------------------

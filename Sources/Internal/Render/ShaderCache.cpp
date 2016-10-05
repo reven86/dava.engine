@@ -214,8 +214,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
     const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
     const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
-    rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
 
 #define TRACE_CACHE_USAGE 0
 
@@ -230,15 +228,12 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", vProgUid.c_str());
 #endif
-        if (vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines))
+        vSource = rhi::ShaderSourceCache::Add(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str(), vProgUid, rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
+
+        if (!vSource)
         {
-            rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
-            vSource = &vSource2;
-        }
-        else
-        {
-            vSource = nullptr;
             Logger::Error("failed to construct \"%s\"", vProgUid.c_str());
+            vSource = nullptr;
         }
     }
 
@@ -253,14 +248,10 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 #if TRACE_CACHE_USAGE
         Logger::Info("building \"%s\"", fProgUid.c_str());
 #endif
-        if (fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines))
+        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+
+        if (!fSource)
         {
-            rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
-            fSource = &fSource2;
-        }
-        else
-        {
-            fSource = nullptr;
             Logger::Error("failed to construct \"%s\"", fProgUid.c_str());
         }
     }
