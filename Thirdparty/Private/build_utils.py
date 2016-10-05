@@ -108,7 +108,8 @@ def copy_files(from_dir, to_dir, wildcard):
 
 def clean_copy_includes(from_dir, to_dir):
 	print "Copying includes from %s to %s" % (from_dir, to_dir)
-	shutil.rmtree(to_dir)
+	if os.path.exists(to_dir) and os.path.isdir(to_dir):
+		shutil.rmtree(to_dir)
 	shutil.copytree(from_dir, to_dir)
 
 def clear_files(dir, wildcard):
@@ -131,6 +132,9 @@ def copy_folder_recursive(src, dest, ignore=None):
                                     ignore)
     else:
         shutil.copyfile(src, dest)
+
+def cmake_build(solution_folder_path, configuration):
+	run_process("cmake --build . --config " + configuration, solution_folder_path)
 
 def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args = []):
 	if not os.path.exists(output_folder_path):
@@ -248,9 +252,9 @@ def run_process(args, process_cwd='.', environment=None):
 
 def _run_process_iter(args, process_cwd='.', environment=None):
 	if environment is None:
-		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd)
+		sp = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, cwd=process_cwd)
 	else:
-		sp = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
+		sp = subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, cwd=process_cwd, env=environment)
 
 	stdout_lines = iter(sp.stdout.readline, '')
 	for stdout_line in stdout_lines:
