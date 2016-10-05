@@ -106,23 +106,16 @@ String GetResourceDirName(const String& arch, const String& dirName, const Strin
 }
 #endif
     
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
 {
     FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
     FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
-    
-#if defined( DATA_RELATIVE_DIRECTORY )
-    String dataRelativeDirectory = DATA_RELATIVE_DIRECTORY;
-#else
-    String dataRelativeDirectory = "Data/";
-#endif
-    
-    SetBundleName(execDirectory + dataRelativeDirectory);
+    SetBundleName(execDirectory + "Data/");
 
     if (workingDirectory != execDirectory)
     {
-        FilePath dataDirPath(workingDirectory + dataRelativeDirectory);
+        FilePath dataDirPath(workingDirectory + "Data/");
         if (FileSystem::Instance()->Exists(dataDirPath))
         {
             AddResourcesFolder(dataDirPath);

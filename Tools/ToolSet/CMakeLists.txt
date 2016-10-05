@@ -80,7 +80,6 @@ reset_property ( MIX_APP_DATA )
 
 ## tools
 set( MAC_DISABLE_BUNDLE true )
-set( DEFINITIONS -DDATA_RELATIVE_DIRECTORY="../Resources/Data/" )
 set( DEPLOY_DIR             ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS        ${DEPLOY_DIR}/ToolSet.app/Contents/Libs )
 set( DEPLOY_DIR_DATA        ${DEPLOY_DIR}/ToolSet.app/Contents/Resources )
