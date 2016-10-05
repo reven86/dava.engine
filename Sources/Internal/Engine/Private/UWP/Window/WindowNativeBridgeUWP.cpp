@@ -133,7 +133,7 @@ void WindowNativeBridge::SetCursorVisible(bool visible)
     }
 }
 
-void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
+void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
     using namespace ::Windows::Devices::Input;
     using namespace ::Windows::Foundation;
@@ -144,13 +144,13 @@ void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
     captureMode = mode;
     switch (captureMode)
     {
-    case DAVA::eCaptureMode::OFF:
+    case DAVA::eCursorCapture::OFF:
         MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
         break;
-    case DAVA::eCaptureMode::FRAME:
+    case DAVA::eCursorCapture::FRAME:
         // now, not implemented
         break;
-    case DAVA::eCaptureMode::PINNING:
+    case DAVA::eCursorCapture::PINNING:
         tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
         // after enabled Pinning mode, skip move events, large x, y delta
         skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
@@ -231,7 +231,7 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         uint32 button = GetMouseButtonIndex(state);
-        bool isRelative = (captureMode == eCaptureMode::PINNING);
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                    MainDispatcherEvent::MOUSE_BUTTON_DOWN,
                                                                                    button,
@@ -261,7 +261,7 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         uint32 button = GetMouseButtonIndex(mouseButtonState);
-        bool isRelative = (captureMode == eCaptureMode::PINNING);
+        bool isRelative = (captureMode == eCursorCapture::PINNING);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                    MainDispatcherEvent::MOUSE_BUTTON_UP,
                                                                                    button,
@@ -328,7 +328,7 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, captureMode == eCaptureMode::PINNING));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, captureMode == eCursorCapture::PINNING));
 }
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)

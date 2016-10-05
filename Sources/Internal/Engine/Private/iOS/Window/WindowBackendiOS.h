@@ -43,7 +43,7 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorCapture(eCursorCapture mode);
     bool SetCursorVisible(bool visible);
 
 private:

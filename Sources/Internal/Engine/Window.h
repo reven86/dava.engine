@@ -70,10 +70,10 @@ public:
     ///
     /// Some platforms suport cursor management
     /// SetCursorCapture implemented on Win32, OsX, WinUWP
-    /// Supports following modes: see more in eCaptureMode enum
+    /// Supports following modes: see more in eCursorCapture enum
     /// return true, if platform supported mode, otherwise false
     /// remarks: when focus lost, sets OFF mode
-    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorCapture(eCursorCapture mode);
 
     /// \brief Set cursor visible
     ///

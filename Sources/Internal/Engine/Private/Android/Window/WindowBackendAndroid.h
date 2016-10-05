@@ -47,7 +47,7 @@ public:
 
     jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
-    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorCapture(eCursorCapture mode);
     bool SetCursorVisible(bool visible);
     // These methods are public intentionally as they are accessed from
     // extern "C" functions which are invoked by java

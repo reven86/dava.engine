@@ -97,7 +97,7 @@ void WindowBackend::ProcessPlatformEvents()
     uiDispatcher.ProcessEvents();
 }
 
-bool WindowBackend::SetCursorCapture(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
     // not supported
     return false;

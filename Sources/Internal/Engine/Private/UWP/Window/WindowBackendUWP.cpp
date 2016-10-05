@@ -106,9 +106,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     }
 }
 
-bool WindowBackend::SetCursorCapture(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
-    if (eCaptureMode::FRAME == mode)
+    if (eCursorCapture::FRAME == mode)
     {
         // not implemented
         return false;

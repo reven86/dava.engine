@@ -50,20 +50,16 @@ public:
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
-    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorCapture(eCursorCapture mode);
     bool SetCursorVisible(bool visible);
 
 private:
-    eCaptureMode captureMode = eCaptureMode::OFF;
-    bool mouseVisible = true;
-
     void SetCursorInCenter();
-    Point2i lastCursorPosition;
 
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
-    void DoSetCursorCapture(eCaptureMode mode);
+    void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisible(bool visible);
 
     void AdjustWindowSize(int32* w, int32* h);
@@ -75,14 +71,13 @@ private:
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
     LRESULT OnSetKillFocus(bool hasFocus);
-    LRESULT OnMouseHoverEvent();
-    LRESULT OnMouseLeaveEvent();
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
     LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
+    LRESULT OnSetCursor();
     bool OnClose();
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
@@ -90,6 +85,11 @@ private:
     static bool RegisterWindowClass();
 
 private:
+    eCursorCapture captureMode = eCursorCapture::OFF;
+    bool mouseVisible = true;
+    HCURSOR defaultCursor;
+    Point2i lastCursorPosition;
+
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference
     MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
@@ -103,7 +103,6 @@ private:
     bool closeRequestByApp = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
     int32 height = 0;
-    bool mouseTracking = false;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];

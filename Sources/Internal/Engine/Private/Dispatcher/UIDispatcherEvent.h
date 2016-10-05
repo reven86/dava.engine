@@ -37,7 +37,7 @@ struct UIDispatcherEvent final
 
     struct SetCursorCaptureEvent
     {
-        eCaptureMode mode;
+        eCursorCapture mode;
     };
 
     struct SetCursorVisibleEvent
@@ -64,7 +64,7 @@ struct UIDispatcherEvent final
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
-    static UIDispatcherEvent CreateSetCursorCaptureEvent(eCaptureMode mode);
+    static UIDispatcherEvent CreateSetCursorCaptureEvent(eCursorCapture mode);
     static UIDispatcherEvent CreateSetCursorVisibleEvent(bool visible);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };

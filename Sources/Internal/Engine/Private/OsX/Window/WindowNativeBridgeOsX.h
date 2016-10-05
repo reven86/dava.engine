@@ -63,7 +63,7 @@ struct WindowNativeBridge final
     void MouseEntered(NSEvent* theEvent);
     void MouseExited(NSEvent* theEvent);
 
-    void SetCursorCapture(eCaptureMode mode);
+    void SetCursorCapture(eCursorCapture mode);
     void SetCursorVisible(bool visible);
     //////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +84,7 @@ private:
 
     // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
     NSCursor* blankCursor = nullptr;
-    eCaptureMode captureMode = eCaptureMode::OFF;
+    eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then
     // mouse clicks are forwarded to other windows and our application loses focus.

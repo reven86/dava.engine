@@ -42,7 +42,7 @@ public:
 
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
-    bool SetCursorCapture(eCaptureMode mode);
+    bool SetCursorCapture(eCursorCapture mode);
     bool SetCursorVisible(bool visible);
 
 private:

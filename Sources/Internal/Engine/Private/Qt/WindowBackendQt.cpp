@@ -480,7 +480,7 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContext;
 }
 
-bool WindowBackend::SetCursorCapture(eCaptureMode mode);
+bool WindowBackend::SetCursorCapture(eCursorCapture mode);
 {
     // not implemented
     return false;

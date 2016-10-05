@@ -179,7 +179,7 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
     uint32 button = [theEvent buttonNumber] + 1;
-    bool isRelative = (captureMode == eCaptureMode::PINNING);
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, isRelative));
 }
 
@@ -192,7 +192,7 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
     }
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
-    bool isRelative = (captureMode == eCaptureMode::PINNING);
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
     float32 x = pt.x;
     float32 y = sz.height - pt.y;
     if (isRelative)
@@ -238,7 +238,7 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         deltaX *= scrollK;
         deltaY *= scrollK;
     }
-    bool isRelative = captureMode == eCaptureMode::PINNING;
+    bool isRelative = captureMode == eCursorCapture::PINNING;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, isRelative));
 }
 
@@ -284,7 +284,7 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
     }
 }
 
-void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
+void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
     if (captureMode == mode)
     {
@@ -293,10 +293,10 @@ void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
     captureMode = mode;
     switch (mode)
     {
-    case DAVA::eCaptureMode::FRAME:
+    case DAVA::eCursorCapture::FRAME:
         //not implemented
         break;
-    case DAVA::eCaptureMode::PINNING:
+    case DAVA::eCursorCapture::PINNING:
     {
         SetCursorVisible(false);
         CGAssociateMouseAndMouseCursorPosition(false);
@@ -305,13 +305,14 @@ void WindowNativeBridge::SetCursorCapture(eCaptureMode mode)
         NSRect screenRect = [[NSScreen mainScreen] frame];
         // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
         windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
-        float x = windowRect.origin.x + windowRect.size.width / 2.0f;
-        float y = windowRect.origin.y + windowRect.size.height / 2.0f;
-        CGWarpMouseCursorPosition(CGPointMake(x, y));
+        CGPoint cursorpos;
+        cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
+        cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
+        CGWarpMouseCursorPosition(cursorpos);
         skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
         break;
     }
-    case DAVA::eCaptureMode::OFF:
+    case DAVA::eCursorCapture::OFF:
     {
         SetCursorVisible(true);
         CGAssociateMouseAndMouseCursorPosition(true);

@@ -22,8 +22,8 @@ struct MainDispatcherEvent final
         WINDOW_VISIBILITY_CHANGED,
         WINDOW_SIZE_SCALE_CHANGED,
 
-        MOUSE_BUTTON_DOWN,
-        FIRST_INPUT_EVENT = MOUSE_BUTTON_DOWN,
+        FIRST_INPUT_EVENT,
+        MOUSE_BUTTON_DOWN = FIRST_INPUT_EVENT,
         MOUSE_BUTTON_UP,
         MOUSE_WHEEL,
         MOUSE_MOVE,
@@ -167,6 +167,11 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
 };
+
+bool MainDispatcherEvent::IsInputEvent(eType type)
+{
+    return (FIRST_INPUT_EVENT <= type && type <= LAST_INPUT_EVENT);
+}
 
 } // namespace Private
 } // namespace DAVA

@@ -30,6 +30,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    defaultCursor = LoadCursor(NULL, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
@@ -108,9 +109,9 @@ void WindowBackend::TriggerPlatformEvents()
     }
 }
 
-bool WindowBackend::SetCursorCapture(eCaptureMode mode)
+bool WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
-    if (eCaptureMode::FRAME == mode)
+    if (eCursorCapture::FRAME == mode)
     {
         //for now, not supported
         return false;
@@ -123,6 +124,36 @@ bool WindowBackend::SetCursorVisible(bool visible)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
     return true;
+}
+
+LRESULT WindowBackend::OnSetCursor()
+{
+    if (!mouseVisible)
+    {
+        POINT cursorPos;
+        RECT clientRect;
+        bool inClientRect = true;
+        ::GetCursorPos(&cursorPos);
+        ::GetClientRect(hwnd, &clientRect);
+        POINT leftBottom, rightTop;
+        leftBottom.x = clientRect.left;
+        leftBottom.y = clientRect.bottom;
+        rightTop.x = clientRect.right;
+        rightTop.y = clientRect.top;
+        ::ClientToScreen(hwnd, &leftBottom);
+        ::ClientToScreen(hwnd, &rightTop);
+        inClientRect &= cursorPos.x > leftBottom.x && cursorPos.x < rightTop.x;
+        inClientRect &= cursorPos.y > rightTop.y && cursorPos.y < leftBottom.y;
+        if (inClientRect)
+        {
+            ::SetCursor(NULL);
+        }
+        else
+        {
+            ::SetCursor(defaultCursor);
+        }
+    }
+    return TRUE;
 }
 
 void WindowBackend::SetCursorInCenter()
@@ -162,7 +193,7 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-void WindowBackend::DoSetCursorCapture(eCaptureMode mode)
+void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 {
     if (captureMode == mode)
     {
@@ -171,10 +202,10 @@ void WindowBackend::DoSetCursorCapture(eCaptureMode mode)
     captureMode = mode;
     switch (mode)
     {
-    case eCaptureMode::FRAME:
+    case eCursorCapture::FRAME:
         //not implemented
         break;
-    case eCaptureMode::PINNING:
+    case eCursorCapture::PINNING:
     {
         POINT p;
         ::GetCursorPos(&p);
@@ -184,7 +215,7 @@ void WindowBackend::DoSetCursorCapture(eCaptureMode mode)
         DoSetCursorVisible(false);
         break;
     }
-    case eCaptureMode::OFF:
+    case eCursorCapture::OFF:
     {
         ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
         DoSetCursorVisible(true);
@@ -202,13 +233,10 @@ void WindowBackend::DoSetCursorVisible(bool visible)
     mouseVisible = visible;
     if (visible)
     {
-        HCURSOR defaultCursor = LoadCursor(NULL, IDC_ARROW);
-        SetClassLongPtr(hwnd, GCLP_HCURSOR, static_cast<LONG>(reinterpret_cast<LONG_PTR>(defaultCursor)));
         ::SetCursor(defaultCursor);
     }
     else
     {
-        SetClassLongPtr(hwnd, GCLP_HCURSOR, NULL);
         ::SetCursor(NULL);
     }
 }
@@ -316,39 +344,9 @@ LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseHoverEvent()
-{
-    mouseTracking = false; // tracking now cancelled
-    // set up leave tracking
-    TRACKMOUSEEVENT tme;
-    tme.cbSize = sizeof(TRACKMOUSEEVENT);
-    tme.dwFlags = TME_LEAVE;
-    tme.hwndTrack = hwnd;
-    mouseTracking = (::TrackMouseEvent(&tme) != 0);
-
-    ::SetCursor(NULL);
-    return 0;
-}
-
-LRESULT WindowBackend::OnMouseLeaveEvent()
-{
-    mouseTracking = false; // tracking now cancelled
-    return 0;
-}
-
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    if (!mouseTracking && !mouseVisible)
-    {
-        // start tracking if we aren't already
-        TRACKMOUSEEVENT tme;
-        tme.cbSize = sizeof(TRACKMOUSEEVENT);
-        tme.dwFlags = TME_HOVER | TME_LEAVE;
-        tme.hwndTrack = hwnd;
-        tme.dwHoverTime = HOVER_DEFAULT;
-        mouseTracking = (::TrackMouseEvent(&tme) != 0);
-    }
-    bool isPinningMode = (captureMode == eCaptureMode::PINNING);
+    bool isPinningMode = (captureMode == eCursorCapture::PINNING);
     if (isPinningMode)
     {
         RECT clientRect;
@@ -375,7 +373,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 
 LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
 {
-    bool isRelative = (captureMode == eCaptureMode::PINNING);
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
                                                                                static_cast<float32>(x),
                                                                                static_cast<float32>(y),
@@ -438,7 +436,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
     default:
         return 0;
     }
-    bool isRelative = (captureMode == eCaptureMode::PINNING);
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
                                                                                type,
                                                                                button,
@@ -531,13 +529,9 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         lresult = OnExitSizeMove();
     }
-    else if (message == WM_MOUSEHOVER)
+    else if (message == WM_SETCURSOR)
     {
-        lresult = OnMouseHoverEvent();
-    }
-    else if (message == WM_MOUSELEAVE)
-    {
-        lresult = OnMouseLeaveEvent();
+        lresult = OnSetCursor();
     }
     else if (message == WM_MOUSEMOVE)
     {
