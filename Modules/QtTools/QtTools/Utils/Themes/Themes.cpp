@@ -175,7 +175,7 @@ void SetupClassicTheme()
     DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
     QString styleSheetContent = styleSheet.readAll();
 
-    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(Themes_local::fontSize));
+    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(ThemesDetail::fontSize));
 
     app->setPalette(lightPalette);
     app->setStyleSheet(styleSheetContent);
@@ -237,7 +237,7 @@ void SetupDarkTheme()
                           .
                           arg(colorToString(darkDisabledTextColor));
 
-    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(Themes_local::fontSize));
+    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(ThemesDetail::fontSize));
     styleSheetContent.append(tabBarStyle);
 
     app->setPalette(darkPalette);
