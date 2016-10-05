@@ -187,10 +187,10 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
-
     if (!sizeEventHandled)
     {
+        Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
+
         ProcessSizeChangedEvents(e);
         sizeEventHandled = true;
 

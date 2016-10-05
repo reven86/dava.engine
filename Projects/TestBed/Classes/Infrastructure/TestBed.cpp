@@ -113,7 +113,7 @@ TestBed::TestBed(Engine& engine)
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
         w->surfaceSizeChanged.Connect(this, &TestBed::OnWindowPhysicalSizeChanged);
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
-        w->SetSize({ 1024.f, 768.f });
+        //w->SetSize({ 1024.f, 768.f });
     }
 
     engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
