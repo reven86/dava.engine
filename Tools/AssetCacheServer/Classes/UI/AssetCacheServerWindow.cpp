@@ -241,6 +241,8 @@ void AssetCacheServerWindow::SetupLaunchOnStartup(bool toLaunchOnStartup, bool t
         xml.writeEndElement();
         xml.writeEndDocument();
 
+        DAVA::FileSystem::Instance()->CreateDirectory(plist.GetDirectory(), true);
+
         DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(plist, DAVA::File::CREATE | DAVA::File::WRITE));
         DVASSERT(file);
         file->Write(buffer.data(), buffer.size());
