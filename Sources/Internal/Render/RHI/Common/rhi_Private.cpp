@@ -123,6 +123,11 @@ void InitializeImplementation(Api api, const InitParam& param)
     }
 }
 
+void UninitializeImplementation()
+{
+    (*_Impl.impl_Uninitialize)();
+}
+
 void Reset(const ResetParam& param)
 {
     (*_Impl.impl_Reset)(param);

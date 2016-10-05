@@ -98,8 +98,7 @@ public:
     Handle sync;
 };
 
-class
-RenderPassDX11_t
+class RenderPassDX11_t
 {
 public:
     std::vector<Handle> cmdBuf;
@@ -108,8 +107,7 @@ public:
     uint32 perfQueryIndex1;
 };
 
-struct
-SyncObjectDX11_t
+struct SyncObjectDX11_t
 {
     uint32 frame;
     uint32 is_signaled : 1;

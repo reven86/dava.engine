@@ -41,8 +41,8 @@ struct ScheduledDeleteResource
 };
 const static uint32 frameSyncObjectsCount = 16;
 static uint32 currFrameSyncId = 0;
-static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
-static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
+static DAVA::Array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
+static DAVA::Array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 static DAVA::Spinlock scheduledDeleteMutex;
 static void ProcessScheduledDelete();
 
@@ -70,7 +70,7 @@ void Present() // called from main thread
         return;
     }
 
-    uint32 frame_cnt = 0;
+    uint32 frameCnt = 0;
     if (renderThreadFrameCount == 0) //single thread render
     {
         if (renderThreadSuspended)
@@ -86,11 +86,11 @@ void Present() // called from main thread
 
         do
         {
-            frame_cnt = FrameLoop::FramesCount();
-            if (frame_cnt >= renderThreadFrameCount)
+            frameCnt = FrameLoop::FramesCount();
+            if (frameCnt >= renderThreadFrameCount)
                 frameDoneEvent.Wait();
 
-        } while (frame_cnt >= renderThreadFrameCount);
+        } while (frameCnt >= renderThreadFrameCount);
     }
 
     ProcessScheduledDelete();

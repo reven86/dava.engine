@@ -177,7 +177,7 @@ void SetupDispatch(Dispatch* dispatch)
 static void dx9_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
-    cb->Begin();
+    cb->curUsedSize = 0;
     cb->allocCmd<SWCommand_Begin>();
 }
 
@@ -188,7 +188,6 @@ static void dx9_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     CommandBufferDX9_t* cb = CommandBufferPoolDX9::Get(cmdBuf);
     SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
-    cb->End();
 }
 
 //------------------------------------------------------------------------------
@@ -995,14 +994,7 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
 #endif
 }
 
-//------------------------------------------------------------------------------
-void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<Handle>& pass_h, unsigned& frame_n)
-{
-}
 
-void _DX9_UpdateSyncObjects(int frameN)
-{
-}
 
 static void _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 {

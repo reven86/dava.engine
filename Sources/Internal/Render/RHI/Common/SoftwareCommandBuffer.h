@@ -238,9 +238,6 @@ struct SWCommand_SetMarker : public SWCommandImpl<SWCommand_SetMarker, CMD_SET_M
 struct SoftwareCommandBuffer
 {
 public:
-    void Begin();
-    void End();
-
     template <class T>
     inline T* allocCmd()
     {
@@ -261,13 +258,4 @@ public:
     uint32 curUsedSize = 0;
     RingBuffer* text = nullptr;
 };
-
-inline void SoftwareCommandBuffer::Begin()
-{
-    curUsedSize = 0;
-}
-
-inline void SoftwareCommandBuffer::End()
-{
-}
 }

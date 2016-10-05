@@ -392,6 +392,7 @@ void Initialize(Api api, const InitParam& param)
 void Uninitialize()
 {
     RenderLoop::UninitializeRenderLoop();
+    UninitializeImplementation();
 }
 
 } //namespace rhi

@@ -12,7 +12,7 @@ namespace FrameLoop
 {
 static uint32 currentFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
-static uint32 frameCount = 0;
+static std::atomic<uint32> frameCount(0);
 static DAVA::Spinlock frameSync;
 static bool frameStarted = false;
 
@@ -52,10 +52,7 @@ void ProcessFrame()
             frameSync.Unlock();
             currFrame.frameNumber = currentFrameNumber++;
             DispatchPlatform::ExecuteFrame(std::move(currFrame));
-
-            frameSync.Lock();
             frameCount--;
-            frameSync.Unlock();
         }
 
         {
@@ -73,11 +70,11 @@ void ProcessFrame()
 
 bool FinishFrame(Handle sync)
 {
-    size_t frame_cnt = 0;
+    size_t frameCnt = 0;
 
     frameSync.Lock();
-    frame_cnt = frames.size();
-    if (frame_cnt)
+    frameCnt = frames.size();
+    if (frameCnt)
     {
         frames.back().readyToExecute = true;
         frames.back().sync = sync;
@@ -85,7 +82,7 @@ bool FinishFrame(Handle sync)
     frameStarted = false;
     frameSync.Unlock();
     DispatchPlatform::FinishFrame();
-    return frame_cnt != 0;
+    return frameCnt != 0;
 }
 
 bool FrameReady()
@@ -96,7 +93,6 @@ bool FrameReady()
 
 uint32 FramesCount()
 {
-    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
     return frameCount;
 }
 void AddPass(Handle pass)

@@ -316,7 +316,6 @@ void gles2_Uninitialize()
     //TODO: release GL resources
     //now it's crash cause Qt context deleted before uninit renderer
     //QueryBufferGLES2::ReleaseQueryObjectsPool();
-    //UninitializeRenderThreadGLES2();
 }
 
 //------------------------------------------------------------------------------

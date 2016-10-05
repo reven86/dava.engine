@@ -119,7 +119,7 @@ void SetupDispatch(Dispatch* dispatch)
 static void gles2_CommandBuffer_Begin(Handle cmdBuf)
 {
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    cb->Begin();
+    cb->curUsedSize = 0;
     cb->allocCmd<SWCommand_Begin>();
 }
 //------------------------------------------------------------------------------
@@ -129,7 +129,6 @@ static void gles2_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
     SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
-    cb->End();
 }
 
 //------------------------------------------------------------------------------
