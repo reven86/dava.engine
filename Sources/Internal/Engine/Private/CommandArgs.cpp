@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <windows.h>

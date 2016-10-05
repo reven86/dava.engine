@@ -239,10 +239,26 @@ void EditorLODSystem::AddComponent(Entity* entity, Component* component)
 {
     DVASSERT(component->GetType() == Component::LOD_COMPONENT);
 
-    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(static_cast<LodComponent*>(component));
+    LodComponent* lodComponent = static_cast<LodComponent*>(component);
+    lodData[eEditorMode::MODE_ALL_SCENE].lodComponents.push_back(lodComponent);
     lodData[eEditorMode::MODE_ALL_SCENE].SummarizeValues();
 
-    if (mode == eEditorMode::MODE_ALL_SCENE)
+    bool invalidateUI = mode == eEditorMode::MODE_ALL_SCENE;
+    if (static_cast<SceneEditor2*>(GetScene())->selectionSystem->GetSelection().ContainsObject(entity))
+    {
+        ForceValues resetForceValues(DAVA::LodComponent::INVALID_DISTANCE, DAVA::LodComponent::INVALID_LOD_LAYER, ForceValues::APPLY_ALL);
+
+        resetForceValues.flag = ForceValues::APPLY_ALL;
+        resetForceValues.layer = LodComponent::INVALID_LOD_LAYER;
+        resetForceValues.distance = LodComponent::INVALID_DISTANCE;
+        lodData[eEditorMode::MODE_SELECTION].ApplyForce(resetForceValues);
+        lodData[eEditorMode::MODE_SELECTION].lodComponents.push_back(lodComponent);
+        lodData[eEditorMode::MODE_SELECTION].SummarizeValues();
+        lodData[eEditorMode::MODE_SELECTION].ApplyForce(forceValues);
+        invalidateUI = true;
+    }
+
+    if (invalidateUI == true)
     {
         EmitInvalidateUI(FLAG_ALL);
     }

@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Window.h"
 #include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
@@ -21,7 +22,7 @@ namespace Private
 {
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
-    , dispatcher(engineBackend->GetDispatcher())
+    , mainDispatcher(engineBackend->GetDispatcher())
     , nativeService(new NativeService(this))
 {
     AndroidBridge::AttachPlatformCore(this);
@@ -57,7 +58,12 @@ void PlatformCore::Run()
     }
 
     engineBackend->OnGameLoopStopped();
-    engineBackend->OnBeforeTerminate();
+    engineBackend->OnEngineCleanup();
+}
+
+void PlatformCore::PrepareToQuit()
+{
+    AndroidBridge::PostQuitToActivity();
 }
 
 void PlatformCore::Quit()
@@ -69,7 +75,8 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 {
     Logger::FrameworkDebug("=========== PlatformCore::ActivityOnCreate");
 
-    WindowBackend* primaryWindowBackend = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
+    Window* primaryWindow = engineBackend->InitializePrimaryWindow();
+    WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
     return primaryWindowBackend;
 }
 
@@ -77,25 +84,24 @@ void PlatformCore::ActivityOnResume()
 {
     Logger::FrameworkDebug("=========== PlatformCore::ActivityOnResume");
 
-    MainDispatcherEvent e(MainDispatcherEvent::APP_RESUMED);
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
 void PlatformCore::ActivityOnPause()
 {
     Logger::FrameworkDebug("=========== PlatformCore::ActivityOnPause");
 
-    MainDispatcherEvent e(MainDispatcherEvent::APP_SUSPENDED);
-    dispatcher->SendEvent(e); // Blocking call !!!
+    // Blocking call !!!
+    mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 }
 
 void PlatformCore::ActivityOnDestroy()
 {
     Logger::FrameworkDebug("=========== PlatformCore::ActivityOnDestroy");
 
+    // Dispatch application termination request initiated by system, i.e. android activity is finishing
     // Do nonblocking call as Java part will wait until native thread is finished
-    MainDispatcherEvent e(MainDispatcherEvent::APP_IMMEDIATE_TERMINATE);
-    dispatcher->PostEvent(e);
+    engineBackend->PostAppTerminate(true);
 }
 
 void PlatformCore::GameThread()
@@ -105,7 +111,8 @@ void PlatformCore::GameThread()
     Vector<String> cmdline;
     GameMain(std::move(cmdline));
 
-    Logger::FrameworkDebug("=========== PlatformCore::GameThread: leave");
+    // Logger already is dead
+    ANDROID_LOG_DEBUG("=========== PlatformCore::GameThread: leave");
 }
 
 } // namespace Private

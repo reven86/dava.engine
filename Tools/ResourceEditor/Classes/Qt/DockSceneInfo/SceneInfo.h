@@ -4,6 +4,7 @@
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "DockProperties/PropertyEditorStateHelper.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 #include <QShowEvent>
 
@@ -70,7 +71,7 @@ private:
 
     void RefreshLayersSection();
 
-    void RefreshAllData(SceneEditor2* scene);
+    void RefreshAllData();
 
     void ClearData();
     void ClearSelectionData();
@@ -86,7 +87,7 @@ private:
     void SetChild(const QString& key, const QVariant& value, QtPropertyData* parent);
     bool HasChild(const QString& key, QtPropertyData* parent);
 
-    void CollectSceneData(SceneEditor2* scene);
+    void CollectSceneData();
     void CollectParticlesData();
     void CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup);
     void CollectSelectedRenderObjects(const SelectableGroup* selected);
@@ -122,6 +123,8 @@ protected:
 
     DAVA::Vector<DAVA::RenderObject*> visibilityArray;
     DAVA::Set<DAVA::RenderObject*> selectedRenderObjects;
+
+    LazyUpdater infoUpdated;
 
     bool isUpToDate = false;
 };
