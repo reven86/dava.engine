@@ -59,7 +59,7 @@ void TimeLineWidget::paintEvent(QPaintEvent* e)
 #endif
     painter.setFont(font);
 
-    painter.fillRect(this->rect(), backgroundBrush);
+    painter.fillRect(this->rect(), palette().window());
     painter.setPen(Qt::black);
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
 

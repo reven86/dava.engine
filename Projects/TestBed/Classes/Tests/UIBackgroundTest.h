@@ -6,11 +6,11 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class UIBackgroundTest : public BaseScreen
 {
 public:
-    UIBackgroundTest(GameCore* g);
+    UIBackgroundTest(TestBed& app);
 
 protected:
     void LoadResources() override;

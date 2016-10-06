@@ -19,7 +19,9 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 
@@ -494,7 +496,7 @@ private:
         SceneImageGrabber::Params params;
         params.scene = scene;
         params.cameraToGrab = GetCamera(entityItem->GetEntity());
-        DVASSERT(params.cameraToGrab != nullptr);
+        DVASSERT(params.cameraToGrab.Get() != nullptr);
         params.imageSize = DAVA::Size2i(SettingsManager::GetValue(Settings::Scene_Grab_Size_Width).AsInt32(),
                                         SettingsManager::GetValue(Settings::Scene_Grab_Size_Height).AsInt32());
         params.outputFile = filePath.toStdString();
@@ -999,18 +1001,7 @@ void SceneTree::SceneStructureChanged(SceneEditor2* scene, DAVA::Entity* parent)
 {
     if (scene == treeModel->GetScene())
     {
-        const QSignalBlocker guard(selectionModel());
-        treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        treeModel->ReloadFilter();
-        filteringProxyModel->invalidate();
-
-        SyncSelectionToTree();
-        EmitParticleSignals();
-
-        if (treeModel->IsFilterSet())
-        {
-            ExpandFilteredItems();
-        }
+        UpdateModel();
     }
 }
 
@@ -1047,7 +1038,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const RECommandNotification
 
 void SceneTree::TreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-    if (isInSync)
+    if (isInSelectionSync)
         return;
 
     SyncSelectionFromTree();
@@ -1181,7 +1172,7 @@ void SceneTree::CollapseAll()
     QTreeView::collapseAll();
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSync, true);
+        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
         QModelIndexList indexList = selectionModel()->selection().indexes();
         for (int i = 0; i < indexList.size(); ++i)
@@ -1209,7 +1200,7 @@ void SceneTree::TreeItemCollapsed(const QModelIndex& index)
 
     bool needSync = false;
     {
-        Guard::ScopedBoolGuard guard(isInSync, true);
+        Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
         // if selected items were inside collapsed item, remove them from selection
         QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -1248,12 +1239,12 @@ void SceneTree::TreeItemExpanded(const QModelIndex& index)
 void SceneTree::SyncSelectionToTree()
 {
     SceneEditor2* curScene = treeModel->GetScene();
-    if (isInSync || (curScene == nullptr))
+    if (isInSelectionSync || (curScene == nullptr))
     {
         return;
     }
 
-    Guard::ScopedBoolGuard guard(isInSync, true);
+    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
     using TSelectionMap = DAVA::Map<QModelIndex, DAVA::Vector<QModelIndex>>;
     TSelectionMap toSelect;
@@ -1322,10 +1313,10 @@ void SceneTree::SyncSelectionToTree()
 
 void SceneTree::SyncSelectionFromTree()
 {
-    if (isInSync)
+    if (isInSelectionSync)
         return;
 
-    Guard::ScopedBoolGuard guard(isInSync, true);
+    Guard::ScopedBoolGuard guard(isInSelectionSync, true);
 
     SceneEditor2* curScene = treeModel->GetScene();
     if (nullptr != curScene)
@@ -1410,7 +1401,18 @@ void SceneTree::UpdateTree()
 
 void SceneTree::UpdateModel()
 {
+    const QSignalBlocker guard(selectionModel());
     treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+    treeModel->ReloadFilter();
+    filteringProxyModel->invalidate();
+
+    SyncSelectionToTree();
+    EmitParticleSignals();
+
+    if (treeModel->IsFilterSet())
+    {
+        ExpandFilteredItems();
+    }
 }
 
 void SceneTree::PropagateSolidFlag()
