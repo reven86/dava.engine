@@ -4,7 +4,7 @@ import build_utils
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
-		return ['win32', 'win10']
+		return ['win32']
 	else:
 		return ['macos', 'ios', 'android']
 
@@ -34,6 +34,47 @@ def _download_and_extract(working_directory_path):
 	url = get_download_url()
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
+
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+
+	build_folder_path = os.path.join(working_directory_path, 'gen/build_win32')
+	build_folder_path_x86 = os.path.join(build_folder_path, 'x86')
+	build_folder_path_x86_debug = os.path.join(build_folder_path_x86, 'Debug')
+	build_folder_path_x86_release = os.path.join(build_folder_path_x86, 'Release')
+	build_folder_path_x64 = os.path.join(build_folder_path, 'x64')
+	build_folder_path_x64_debug = os.path.join(build_folder_path_x64, 'Debug')
+	build_folder_path_x64_release = os.path.join(build_folder_path_x64, 'Release')
+
+	os.makedirs(build_folder_path_x86_debug)
+	os.makedirs(build_folder_path_x86_release)
+	os.makedirs(build_folder_path_x64_debug)
+	os.makedirs(build_folder_path_x64_release)
+
+	x86_env = build_utils.get_vs_x86_env()
+	build_utils.run_process(['vcbuild.bat', 'debug', 'x86'], process_cwd=source_folder_path, environment=x86_env, shell=True)
+	build_utils.run_process(['vcbuild.bat', 'release', 'x86'], process_cwd=source_folder_path, environment=x86_env, shell=True)
+	lib_path_x86_debug = os.path.join(build_folder_path_x86_debug, 'libuv.lib')
+	lib_path_x86_release = os.path.join(build_folder_path_x86_release, 'libuv.lib')
+	shutil.copyfile(os.path.join(source_folder_path, 'Debug/lib/libuv.lib'), lib_path_x86_debug)
+	shutil.copyfile(os.path.join(source_folder_path, 'Release/lib/libuv.lib'), lib_path_x86_release)
+
+	build_utils.run_process(['vcbuild.bat', 'clean'], process_cwd=source_folder_path, shell=True)
+
+	x64_env = build_utils.get_vs_x64_env()
+	build_utils.run_process(['vcbuild.bat', 'debug', 'x64'], process_cwd=source_folder_path, environment=x64_env, shell=True)
+	build_utils.run_process(['vcbuild.bat', 'release', 'x64'], process_cwd=source_folder_path, environment=x64_env, shell=True)
+	lib_path_x64_debug = os.path.join(build_folder_path_x64_debug, 'libuv.lib')
+	lib_path_x64_release = os.path.join(build_folder_path_x64_release, 'libuv.lib')
+	shutil.copyfile(os.path.join(source_folder_path, 'Debug/lib/libuv.lib'), lib_path_x64_debug)
+	shutil.copyfile(os.path.join(source_folder_path, 'Release/lib/libuv.lib'), lib_path_x64_release)
+
+	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/libuv.lib'))
+	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/libuv.lib'))
+	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Debug/libuv.lib'))
+	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/uv.lib'))
+
+	_copy_headers(source_folder_path, root_project_path)
 
 def _build_macos(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
