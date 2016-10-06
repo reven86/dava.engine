@@ -1,7 +1,7 @@
 #include "GPUTest.h"
 
-GPUTest::GPUTest(GameCore* g)
-    : BaseScreen(g, "GPUTest")
+GPUTest::GPUTest(TestBed& app)
+    : BaseScreen(app, "GPUTest")
 {
 }
 

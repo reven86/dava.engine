@@ -21,8 +21,6 @@ ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
 ScenePreviewControl::~ScenePreviewControl()
 {
     ReleaseScene();
-
-    SafeRelease(editorScene);
     rotationSystem = nullptr;
 }
 
@@ -36,12 +34,11 @@ void ScenePreviewControl::RecreateScene()
     rotationSystem->SetRotationSpeeed(0.10f);
     editorScene->AddSystem(rotationSystem, (MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::ROTATION_CONTROLLER_COMPONENT)),
                            DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS | DAVA::Scene::SCENE_SYSTEM_REQUIRE_INPUT);
-
-    SetScene(editorScene);
 }
 
 void ScenePreviewControl::ReleaseScene()
 {
+    SetScene(nullptr);
     SafeRelease(editorScene);
     currentScenePath = DAVA::FilePath();
 }
@@ -67,7 +64,10 @@ DAVA::int32 ScenePreviewControl::OpenScene(const DAVA::FilePath& pathToFile)
 
     CreateCamera();
 
+    SceneValidator::ExtractEmptyRenderObjects(editorScene);
     SceneValidator::Instance()->ValidateScene(editorScene, pathToFile);
+
+    SetScene(editorScene);
 
     return retError;
 }
@@ -125,7 +125,6 @@ void ScenePreviewControl::CreateCamera()
 
     editorScene->AddCamera(camera);
     editorScene->SetCurrentCamera(camera);
-    editorScene->Update(0.01f);
 }
 
 void ScenePreviewControl::SetupCamera()

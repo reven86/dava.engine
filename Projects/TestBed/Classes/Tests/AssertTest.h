@@ -3,11 +3,11 @@
 #include "Infrastructure/BaseScreen.h"
 #include "Functional/Signal.h"
 
-class GameCore;
+class TestBed;
 class AssertTest : public BaseScreen, public DAVA::TrackedObject
 {
 public:
-    AssertTest(GameCore* g);
+    AssertTest(TestBed& app);
 
 protected:
     void LoadResources() override;

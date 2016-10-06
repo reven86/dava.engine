@@ -14,11 +14,11 @@ namespace DAVA
 {
 namespace Private
 {
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::PlatformEventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(ref new WindowNativeBridge(this))
     , nativeService(new WindowNativeService(bridge))
 {
@@ -26,25 +26,29 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
 
 WindowBackend::~WindowBackend() = default;
 
+void WindowBackend::Resize(float32 width, float32 height)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
+}
+
+void WindowBackend::Close(bool /*appIsTerminating*/)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
+}
+
+void WindowBackend::SetTitle(const String& title)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
 void* WindowBackend::GetHandle() const
 {
     return bridge->GetHandle();
-}
-
-void WindowBackend::Resize(float32 width, float32 height)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
-}
-
-void WindowBackend::Close()
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -52,41 +56,41 @@ bool WindowBackend::IsWindowReadyForRender() const
     return GetHandle() != nullptr;
 }
 
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
-}
-
 void WindowBackend::TriggerPlatformEvents()
 {
-    bridge->TriggerPlatformEvents();
+    if (uiDispatcher.HasEvents())
+    {
+        bridge->TriggerPlatformEvents();
+    }
 }
 
 void WindowBackend::ProcessPlatformEvents()
 {
     // Method executes in context of XAML::Window's UI thread
-    platformDispatcher.ProcessEvents();
+    uiDispatcher.ProcessEvents();
 }
 
 void WindowBackend::BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
     // Method executes in context of XAML::Window's UI thread
+    uiDispatcher.LinkToCurrentThread();
     bridge->BindToXamlWindow(xamlWindow);
 }
 
-void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     // Method executes in context of XAML::Window's UI thread
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        bridge->ResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow();
+        bridge->CloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        bridge->SetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

@@ -7,14 +7,14 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class UIMovieTest : public BaseScreen, public TrackedObject
 {
 protected:
     virtual ~UIMovieTest() = default;
 
 public:
-    UIMovieTest(GameCore* g);
+    UIMovieTest(TestBed& app);
 
     void LoadResources() override;
     void UnloadResources() override;
