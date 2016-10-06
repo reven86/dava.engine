@@ -66,21 +66,21 @@ public:
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
-    /// \brief Set cursor capture mode
+    /// \brief Set cursor capture mode.
     ///
-    /// Some platforms suport cursor management
-    /// SetCursorCapture implemented on Win32, OsX, WinUWP
-    /// Supports following modes: see more in eCursorCapture enum
-    /// return true, if platform supported mode, otherwise false
-    /// remarks: when focus lost, sets OFF mode
+    /// Some platforms support cursor management.
+    /// SetCursorCapture implemented on Win32, OsX, WinUWP.
+    /// Supports following modes: see more in eCursorCapture enum.
+    /// If platform supported mode - return true, otherwise false.
+    /// Remarks: when focus lost, sets OFF mode.
     bool SetCursorCapture(eCursorCapture mode);
 
     /// \brief Set cursor visible
     ///
-    /// Some platforms suport cursor visibility
-    /// SetCursorVisible implemented on Win32, OsX, WinUWP
-    /// return true, if platform supported, otherwise false
-    /// remarks: when focus lost, sets cursor visible in true
+    /// Some platforms support cursor visibility.
+    /// SetCursorVisible implemented on Win32, OsX, WinUWP.
+    /// If platform supported cursor visibility - return true, otherwise false.
+    /// Remarks: when focus lost, sets cursor visible in true.
     bool SetCursorVisible(bool visible);
 
 public:
