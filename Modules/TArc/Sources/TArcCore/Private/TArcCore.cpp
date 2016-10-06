@@ -86,7 +86,7 @@ public:
         }
     }
 
-    virtual void OnWindowCreated(DAVA::Window& w)
+    virtual void OnWindowCreated(DAVA::Window* w)
     {
     }
 
@@ -431,7 +431,7 @@ public:
         Impl::OnLoopStopped();
     }
 
-    void OnWindowCreated(Window& w) override
+    void OnWindowCreated(Window* w) override
     {
         Impl::OnWindowCreated(w);
         controllerModule->OnRenderSystemInitialized(w);
@@ -698,7 +698,7 @@ void Core::OnFrame(float32 delta)
     impl->OnFrame(delta);
 }
 
-void Core::OnWindowCreated(DAVA::Window& w)
+void Core::OnWindowCreated(DAVA::Window* w)
 {
     DVASSERT(impl);
     impl->OnWindowCreated(w);
