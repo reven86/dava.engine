@@ -362,7 +362,7 @@ void dx11_InitContext()
 #if defined(__DAVAENGINE_WIN_UAP__)
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
-    get_device_description(_DeviceCapsDX11.deviceDescription);
+    get_device_description((MutableDeviceCaps::Get().deviceDescription);
 #else
     InitDeviceAndSwapChain();    
 #endif

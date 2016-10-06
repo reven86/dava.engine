@@ -447,9 +447,6 @@ bool CreateWindowSizeDependentResources()
             m_d3UserAnnotation.Reset();
             m_d3dDevice.Reset();
 
-            if (_DX11_InitParam.FrameCommandExecutionSync)
-                _DX11_InitParam.FrameCommandExecutionSync->Unlock();
-
             if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
             {
                 DAVA::Logger::Error("DX11: failed to create swapchain even with workaround. Terminating application.");
