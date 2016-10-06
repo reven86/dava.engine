@@ -499,6 +499,10 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
     {
         _ABGR1555toRGBA5551(self->mappedData, self->mappedData, sz);
     }
+    else if ((self->format == TEXTURE_FORMAT_R8G8B8A8) && self->CreationDesc().isRenderTarget)
+    {
+        _SwapRB8(self->mappedData, self->mappedData, sz);
+    }
 
     self->is_mapped = true;
     self->mappedLevel = level;

@@ -1,5 +1,4 @@
-#ifndef __TEXTURE_UTILS_H__
-#define __TEXTURE_UTILS_H__
+#pragma once
 
 #include "DAVAEngine.h"
 using namespace DAVA;
@@ -18,6 +17,3 @@ public:
     static CompareResult CompareImages(Image* first, Image* second, PixelFormat format);
     static Image* CreateImageAsRGBA8888(Sprite* sprite);
 };
-
-
-#endif // __TEXTURE_UTILS_H__

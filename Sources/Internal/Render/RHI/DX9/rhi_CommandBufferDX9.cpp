@@ -1116,6 +1116,9 @@ void _DX9_ResetBlock()
             Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+        //clear buffer
+        DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
+        _D3D9_Device->Present(NULL, NULL, NULL, NULL);
 
         _DX9_FramesWithRestoreAttempt = 0;
     }

@@ -17,15 +17,13 @@ struct InitParam;
 D3DFORMAT DX9_TextureFormat(TextureFormat format);
 
 const char* D3D9ErrorText(HRESULT hr);
-
-void AcquireDevice();
 void ScheduleDeviceReset();
-void ReleaseDevice();
 
 extern IDirect3D9* _D3D9;
 extern IDirect3DDevice9* _D3D9_Device;
 extern IDirect3DSurface9* _D3D9_BackBuf;
 extern IDirect3DSurface9* _D3D9_DepthBuf;
+extern UINT _D3D9_Adapter;
 
 extern InitParam _DX9_InitParam;
 extern D3DPRESENT_PARAMETERS _DX9_PresentParam;

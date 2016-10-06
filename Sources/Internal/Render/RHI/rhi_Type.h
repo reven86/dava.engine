@@ -665,7 +665,7 @@ struct Descriptor
     uint32 pad : 25;
     uint32 pad64 : 32;
 
-    struct
+    struct StencilDescriptor
     {
         uint8 readMask;
         uint8 writeMask;

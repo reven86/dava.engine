@@ -14,7 +14,7 @@ struct Dispatch
     void (*impl_Uninitialize)();
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
-    bool (*impl_TextureFormatSupported)(TextureFormat);
+    bool (*impl_TextureFormatSupported)(TextureFormat, ProgType);
 
     void (*impl_InvalidateCache)();
 

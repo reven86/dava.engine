@@ -69,11 +69,6 @@ inline IPAddress Endpoint::Address() const
     return IPAddress(GetSockaddrAddr());
 }
 
-inline uint16 Endpoint::Port() const
-{
-    return ntohs(data.sin_port);
-}
-
 inline size_t Endpoint::Size() const
 {
     return sizeof(data);

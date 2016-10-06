@@ -80,8 +80,10 @@ namespace Private
 // variable
 CoreNativeBridge* coreNativeBridge = nullptr;
 
-CoreNativeBridge::CoreNativeBridge(PlatformCore* c)
-    : core(c)
+CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
+    : core(core)
+    , engineBackend(core->engineBackend)
+    , mainDispatcher(core->dispatcher)
 {
     coreNativeBridge = this;
 }
@@ -111,16 +113,18 @@ void CoreNativeBridge::OnFrameTimer()
 
 bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
-    Logger::Debug("******** applicationWillFinishLaunchingWithOptions");
+    Logger::FrameworkDebug("******** applicationWillFinishLaunchingWithOptions");
     return true;
 }
 
 bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* launchOptions)
 {
-    Logger::Debug("******** applicationDidFinishLaunchingWithOptions");
+    Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
-    core->engineBackend->OnGameLoopStarted();
-    core->CreateNativeWindow(core->engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+    engineBackend->OnGameLoopStarted();
+
+    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(engineBackend->GetPrimaryWindow());
+    primaryWindowBackend->Create();
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1];
@@ -129,14 +133,14 @@ bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(NSDictionary* la
 
 void CoreNativeBridge::ApplicationDidBecomeActive()
 {
-    Logger::Debug("******** applicationDidBecomeActive");
+    Logger::FrameworkDebug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
 }
 
 void CoreNativeBridge::ApplicationWillResignActive()
 {
-    Logger::Debug("******** applicationWillResignActive");
+    Logger::FrameworkDebug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
 }
@@ -144,34 +148,28 @@ void CoreNativeBridge::ApplicationWillResignActive()
 void CoreNativeBridge::ApplicationDidEnterBackground()
 {
     core->didEnterForegroundBackground.Emit(false);
-
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_SUSPENDED;
-    core->dispatcher->SendEvent(e); // Blocking call !!!
+    mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
 void CoreNativeBridge::ApplicationWillEnterForeground()
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_RESUMED;
-    core->dispatcher->PostEvent(e);
-
+    mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
 }
 
 void CoreNativeBridge::ApplicationWillTerminate()
 {
-    Logger::Debug("******** applicationWillTerminate");
+    Logger::FrameworkDebug("******** applicationWillTerminate");
 
     [frameTimer cancel];
 
-    core->engineBackend->OnGameLoopStopped();
-    core->engineBackend->OnBeforeTerminate();
+    engineBackend->OnGameLoopStopped();
+    engineBackend->OnEngineCleanup();
 }
 
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
 {
-    Logger::Debug("******** applicationDidReceiveMemoryWarning");
+    Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
 }
 
 } // namespace Private

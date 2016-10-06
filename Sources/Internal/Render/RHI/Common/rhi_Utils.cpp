@@ -259,6 +259,18 @@ uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 lev
         sz = ext.dx * ext.dy * sizeof(uint32);
         break;
 
+    case TEXTURE_FORMAT_R32F:
+        sz = ext.dx * ext.dy * sizeof(float32);
+        break;
+
+    case TEXTURE_FORMAT_RG32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 2;
+        break;
+
+    case TEXTURE_FORMAT_RGBA32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 4;
+        break;
+
     default:
         break;
     }

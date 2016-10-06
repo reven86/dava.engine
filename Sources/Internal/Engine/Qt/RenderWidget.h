@@ -19,6 +19,7 @@ public:
     {
     public:
         virtual void OnCreated() = 0;
+        virtual bool OnUserCloseRequest() = 0;
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
         virtual void OnResized(uint32 width, uint32 height, float32 dpi) = 0;
@@ -39,6 +40,7 @@ protected:
     void resizeEvent(QResizeEvent* e) override;
     void showEvent(QShowEvent* e) override;
     void hideEvent(QHideEvent* e) override;
+    void closeEvent(QCloseEvent* e) override;
     void timerEvent(QTimerEvent* e) override;
 
     void mousePressEvent(QMouseEvent* e) override;
@@ -56,11 +58,14 @@ private:
 
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
+    Q_SLOT void OnSceneGraphInvalidated();
 
 private:
     bool initialized = false;
     Delegate* widgetDelegate = nullptr;
     bool keyEventRecursiveGuard = false;
+
+    bool isClosing = false;
 
     friend class Private::WindowBackend;
 };

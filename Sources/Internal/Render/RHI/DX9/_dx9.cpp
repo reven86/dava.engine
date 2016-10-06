@@ -16,6 +16,7 @@ IDirect3D9* _D3D9 = nullptr;
 IDirect3DDevice9* _D3D9_Device = nullptr;
 IDirect3DSurface9* _D3D9_BackBuf = nullptr;
 IDirect3DSurface9* _D3D9_DepthBuf = nullptr;
+UINT _D3D9_Adapter = D3DADAPTER_DEFAULT;
 
 InitParam _DX9_InitParam;
 D3DPRESENT_PARAMETERS _DX9_PresentParam;

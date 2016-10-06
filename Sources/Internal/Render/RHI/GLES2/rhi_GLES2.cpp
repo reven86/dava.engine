@@ -69,7 +69,7 @@ static Api gles2_HostApi()
 
 //------------------------------------------------------------------------------
 
-static bool gles2_TextureFormatSupported(TextureFormat format)
+static bool gles2_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 

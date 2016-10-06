@@ -274,7 +274,7 @@ void SetToRHI(Handle ib)
     if (self->updatePending)
     {
         void* bufferData = nullptr;
-        HRESULT hr = self->buffer->Lock(0, self->size, &bufferData, 0);
+        HRESULT hr = self->buffer->Lock(0, self->size, &bufferData, D3DLOCK_DISCARD);
         DVASSERT(SUCCEEDED(hr));
 
         memcpy(bufferData, self->mappedData, self->size);

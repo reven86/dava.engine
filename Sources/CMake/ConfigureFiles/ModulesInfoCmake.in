@@ -1,0 +1,27 @@
+cmake_minimum_required (VERSION 3.0)
+
+set                    ( FOLDER_MODULE        @FOLDER_MODULE@ )
+set                    ( CMAKE_MODULE_PATH   "@DAVA_MODULES_FILES_PATH@" )
+set                    ( DAVA_COMPONENTS     "@DAVA_COMPONENTS@" )
+set                    ( DAVA_PLATFORM_CURENT @DAVA_PLATFORM_CURENT@ )
+
+include                ( CMake-common )
+
+set_property           ( GLOBAL PROPERTY      DAVA_COMPONENTS "${DAVA_COMPONENTS}")
+
+get_filename_component ( FOLDER_NAME          ${FOLDER_MODULE} NAME )
+add_subdirectory       ( ${FOLDER_MODULE}     ${FOLDER_NAME} ) 
+
+
+get_property           ( LOADED_MODULES GLOBAL PROPERTY LOADED_MODULES )
+get_property           ( MODULES_INITIALIZATION GLOBAL PROPERTY MODULES_INITIALIZATION )
+get_property           ( MODULES_INITIALIZATION_HPP GLOBAL PROPERTY MODULES_INITIALIZATION_HPP )
+get_property           ( MODULES_CODE GLOBAL PROPERTY MODULES_CODE )
+
+foreach( ITEM ${MODULES_CODE})
+    set( MODULES_CODE_TMP "${MODULES_CODE_TMP}${ITEM}")
+endforeach()
+set( MODULES_CODE ${MODULES_CODE_TMP} )
+
+configure_file         ( ${DAVA_CONFIGURE_FILES_PATH}/ModulesInfo.in
+                         ${CMAKE_CURRENT_LIST_DIR}/ModulesInfo.cmake  @ONLY )

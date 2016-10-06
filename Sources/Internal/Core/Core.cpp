@@ -263,6 +263,8 @@ void Core::CreateSingletons()
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
 #endif
+
+    moduleManager.InitModules();
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -301,6 +303,7 @@ void Core::ReleaseRenderer()
 
 void Core::ReleaseSingletons()
 {
+    moduleManager.ResetModules();
     // Finish network infrastructure
     // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
@@ -857,25 +860,26 @@ void Core::WindowSizeChanged(float32 width, float32 height, float32 scaleX, floa
 
 void Core::ApplyWindowSize()
 {
-    screenMetrics.screenMetricsModified = false;
-    DVASSERT(Renderer::IsInitialized());
-    screenMetrics.screenMetricsModified = false;
-    int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
-    int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
+    if (Renderer::IsInitialized())
+    {
+        screenMetrics.screenMetricsModified = false;
+        int32 physicalWidth = static_cast<int32>(screenMetrics.width * screenMetrics.scaleX * screenMetrics.userScale);
+        int32 physicalHeight = static_cast<int32>(screenMetrics.height * screenMetrics.scaleY * screenMetrics.userScale);
 
-    // render reset
-    rhi::ResetParam params;
-    params.width = physicalWidth;
-    params.height = physicalHeight;
-    params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
-    params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
-    params.window = screenMetrics.nativeView;
-    Renderer::Reset(params);
+        // render reset
+        rhi::ResetParam params;
+        params.width = physicalWidth;
+        params.height = physicalHeight;
+        params.scaleX = screenMetrics.scaleX * screenMetrics.userScale;
+        params.scaleY = screenMetrics.scaleY * screenMetrics.userScale;
+        params.window = screenMetrics.nativeView;
+        Renderer::Reset(params);
 
-    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
-    virtSystem->ScreenSizeChanged();
+        VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+        virtSystem->SetInputScreenAreaSize(static_cast<int32>(screenMetrics.width), static_cast<int32>(screenMetrics.height));
+        virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+        virtSystem->ScreenSizeChanged();
+    }
 }
 
 void Core::SetIsActive(bool _isActive)
@@ -938,10 +942,15 @@ void* DAVA::Core::GetNativeWindow() const
     return nullptr;
 }
 
-IPackManager& Core::GetPackManager()
+IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+const ModuleManager& Core::GetModuleManager() const
+{
+    return moduleManager;
 }
 
 } // namespace DAVA

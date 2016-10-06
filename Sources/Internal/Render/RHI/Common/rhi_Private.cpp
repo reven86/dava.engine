@@ -1,6 +1,6 @@
 #include "rhi_BackendImpl.h"
 #include "rhi_Utils.h"
-
+#include "../rhi_Public.h"
 #if defined(__DAVAENGINE_WIN32__)
     #include "../DX9/rhi_DX9.h"
     #include "../DX11/rhi_DX11.h"
@@ -143,9 +143,9 @@ Api HostApi()
     return (*_Impl.impl_HostApi)();
 }
 
-bool TextureFormatSupported(TextureFormat format)
+bool TextureFormatSupported(TextureFormat format, ProgType progType)
 {
-    return (*_Impl.impl_TextureFormatSupported)(format);
+    return (*_Impl.impl_TextureFormatSupported)(format, progType);
 }
 
 const RenderDeviceCaps& DeviceCaps()
@@ -720,8 +720,6 @@ void SetMarker(Handle cmdBuf, const char* text)
 }
 
 } // namespace CommandBuffer
-
-//------------------------------------------------------------------------------
 
 namespace MutableDeviceCaps
 {
