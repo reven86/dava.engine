@@ -49,6 +49,70 @@ def _patch_sources_android(source_folder_path):
 
 	_patch_sources_android.cache.append(source_folder_path)
 
+def _patch_sources_windows(source_folder_path, working_directory_path):
+	try:
+		if source_folder_path in _patch_sources_windows.cache:
+			return
+	except AttributeError:
+		_patch_sources_windows.cache = []
+		pass
+
+	shutil.copytree(os.path.join(source_folder_path, 'win32/VC10'), os.path.join(source_folder_path, 'win32/Win10'))
+	build_utils.apply_patch(os.path.abspath('patch_win.diff'), working_directory_path)
+
+	_patch_sources_windows.cache.append(source_folder_path)
+
+def _build_win32(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources_windows(source_folder_path, working_directory_path)
+
+	sln_path = os.path.join(source_folder_path, 'win32/VC10/libxml2.sln')
+	build_utils.build_vs(sln_path, 'Debug', 'Win32', target='libxml2')
+	build_utils.build_vs(sln_path, 'Release', 'Win32', target='libxml2')
+	build_utils.build_vs(sln_path, 'Debug', 'x64', target='libxml2')
+	build_utils.build_vs(sln_path, 'Release', 'x64', target='libxml2')
+
+	lib_path_x86_debug = os.path.join(source_folder_path, 'win32/VC10/Debug/libxml2.lib')
+	lib_path_x86_release = os.path.join(source_folder_path, 'win32/VC10/Release/libxml2.lib')
+	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/libxml_wind.lib'))
+	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/libxml_win.lib'))
+
+	lib_path_x64_debug = os.path.join(source_folder_path, 'win32/VC10/x64/Debug/libxml2.lib')
+	lib_path_x64_release = os.path.join(source_folder_path, 'win32/VC10/x64/Release/libxml2.lib')
+	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Debug/libxml_wind.lib'))
+	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win/x64/Release/libxml_win.lib'))
+
+	_copy_headers(source_folder_path, root_project_path)
+
+def _build_win10(working_directory_path, root_project_path):
+	source_folder_path = _download_and_extract(working_directory_path)
+	_patch_sources_windows(source_folder_path, working_directory_path)
+
+	sln_path = os.path.join(source_folder_path, 'win32/Win10/libxml2.sln')
+	build_utils.build_vs(sln_path, 'Debug', 'Win32', target='libxml2')
+	build_utils.build_vs(sln_path, 'Release', 'Win32', target='libxml2')
+	build_utils.build_vs(sln_path, 'Debug', 'x64', target='libxml2')
+	build_utils.build_vs(sln_path, 'Release', 'x64', target='libxml2')
+	build_utils.build_vs(sln_path, 'Debug', 'ARM', target='libxml2')
+	build_utils.build_vs(sln_path, 'Release', 'ARM', target='libxml2')
+
+	lib_path_x86_debug = os.path.join(source_folder_path, 'win32/Win10/Debug/libxml2.lib')
+	lib_path_x86_release = os.path.join(source_folder_path, 'win32/Win10/Release/libxml2.lib')
+	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Debug/libxml.lib'))
+	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/Win32/Release/libxml.lib'))
+
+	lib_path_x64_debug = os.path.join(source_folder_path, 'win32/Win10/x64/Debug/libxml2.lib')
+	lib_path_x64_release = os.path.join(source_folder_path, 'win32/Win10/x64/Release/libxml2.lib')
+	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Debug/libxml.lib'))
+	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/x64/Release/libxml.lib'))
+
+	lib_path_arm_debug = os.path.join(source_folder_path, 'win32/Win10/ARM/Debug/libxml2.lib')
+	lib_path_arm_release = os.path.join(source_folder_path, 'win32/Win10/ARM/Release/libxml2.lib')
+	shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Debug/libxml.lib'))
+	shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, 'Libs/lib_CMake/win10/arm/Release/libxml.lib'))
+
+	_copy_headers(source_folder_path, root_project_path)
+
 def _build_macos(working_directory_path, root_project_path):
 	source_folder_path = _download_and_extract(working_directory_path)
 
@@ -113,3 +177,7 @@ def _compile_glob(env, output_file_path):
 def _copy_headers_from_install(install_folder_path, root_project_path):
 	include_path = os.path.join(root_project_path, 'Libs/include/libxml')
 	build_utils.copy_folder_recursive(os.path.join(install_folder_path, 'include/libxml2/libxml'), include_path)
+
+def _copy_headers(source_folder_path, root_project_path):
+	include_path = os.path.join(root_project_path, 'Libs/include/libxml')
+	build_utils.copy_files(os.path.join(source_folder_path, 'include/libxml'), include_path, '*.h')
