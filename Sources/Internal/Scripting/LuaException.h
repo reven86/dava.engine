@@ -5,24 +5,24 @@
 namespace DAVA
 {
 /**
- * \brief Class for Lua errors handling as exception
- */
+Class for Lua errors handling as exception
+*/
 class LuaException : public std::runtime_error //TODO: use DAVA exception as base
 {
 public:
     /**
-     * \brief Default constructor
-     */
+    Default constructor
+    */
     LuaException();
 
     /**
-     * \brief Detailed constructor
-     */
+    Detailed constructor
+    */
     LuaException(int32 code, const String& msg);
 
     /**
-     * \brief Return stored error code
-     */
+    Return stored error code
+    */
     int32 error_code() const;
 
 private:
