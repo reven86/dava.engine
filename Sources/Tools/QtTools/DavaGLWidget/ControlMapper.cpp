@@ -170,7 +170,7 @@ void ControlMapper::mouseMoveEvent(QMouseEvent* event)
 {
     Vector<UIEvent> mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
-    for (auto& ev : mouseButtons)
+    for (UIEvent& ev : mouseButtons)
     {
         if (ev.mouseButton != UIEvent::MouseButton::NONE)
         {
@@ -197,9 +197,9 @@ void ControlMapper::mousePressEvent(QMouseEvent* event)
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent* event)
 {
-    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
+    Vector<UIEvent> mouseButtons = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
 
-    for (auto& ev : mouseButtons)
+    for (UIEvent& ev : mouseButtons)
     {
         ev.phase = UIEvent::Phase::ENDED;
         QtLayer::Instance()->MouseEvent(ev);
@@ -213,9 +213,9 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent* event)
 
 void ControlMapper::wheelEvent(QWheelEvent* event)
 {
-    auto& mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
+    Vector<UIEvent> mouseButtons = MapMouseEventToDAVA(event->pos(), event->buttons(), event->timestamp());
 
-    for (auto& ev : mouseButtons)
+    for (UIEvent& ev : mouseButtons)
     {
         ev.phase = UIEvent::Phase::WHEEL;
         ev.timestamp = 0;
@@ -229,8 +229,8 @@ void ControlMapper::wheelEvent(QWheelEvent* event)
 void ControlMapper::dragMoveEvent(QDragMoveEvent* event)
 {
     UIEvent davaEvent;
-    auto pos = event->pos();
-    const auto currentDPR = static_cast<int>(window->devicePixelRatio());
+    QPoint pos = event->pos();
+    const int currentDPR = static_cast<int>(window->devicePixelRatio());
 
     davaEvent.physPoint = Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.mouseButton = UIEvent::MouseButton::LEFT;
