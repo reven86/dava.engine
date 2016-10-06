@@ -79,11 +79,8 @@ struct WindowNativeBridge final
     bool isMiniaturized = false;
 
 private:
-    NSCursor* GetBlankCursor();
     void SetSystemCursorVisible(bool visible);
 
-    // set blank cursor, not use [NSCursor hide/unhide], system sometimes show it
-    NSCursor* blankCursor = nullptr;
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
     // If mouse pointer was outside window rectangle when enabling pinning mode then

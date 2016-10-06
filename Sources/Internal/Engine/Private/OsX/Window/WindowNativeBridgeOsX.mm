@@ -331,11 +331,11 @@ void WindowNativeBridge::SetSystemCursorVisible(bool visible)
     mouseVisibleState = visible;
     if (visible)
     {
-        [[NSCursor arrowCursor] set];
+        [NSCursor unhide];
     }
     else
     {
-        [GetBlankCursor() set];
+        [NSCursor hide];
     }
 }
 
@@ -347,53 +347,6 @@ void WindowNativeBridge::SetCursorVisible(bool visible)
     }
     mouseVisible = visible;
     SetSystemCursorVisible(visible);
-}
-
-NSCursor* WindowNativeBridge::GetBlankCursor()
-{
-    if (blankCursor != nullptr)
-    {
-        return blankCursor;
-    }
-
-    // Image data -> CGDataProviderRef
-    const size_t width = 1;
-    const size_t height = 1;
-    uint32 pixel = 0;
-    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(nullptr, &pixel, sizeof(pixel), nullptr);
-
-    // CGDataProviderRef -> CGImageRef
-    const size_t bitsPerComponent = 8;
-    const size_t bitsPerPixel = 32;
-    const size_t bytesPerRow = width * 4;
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGBitmapInfo bitmapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Host;
-    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
-    CGImageRef imageRef = CGImageCreate(width,
-                                        height,
-                                        bitsPerComponent,
-                                        bitsPerPixel,
-                                        bytesPerRow,
-                                        colorSpace,
-                                        bitmapInfo,
-                                        dataProvider,
-                                        nullptr,
-                                        false,
-                                        renderingIntent);
-
-    // CGImageRef -> NSImage
-    NSImage* img = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(width, height)];
-
-    // NSImage -> NSCursor
-    NSCursor* cursor = [[NSCursor alloc] initWithImage:img hotSpot:NSMakePoint(0, 0)];
-
-    CFRelease(dataProvider);
-    CFRelease(colorSpace);
-    CGImageRelease(imageRef);
-    [img release];
-
-    blankCursor = cursor;
-    return blankCursor;
 }
 
 } // namespace Private
