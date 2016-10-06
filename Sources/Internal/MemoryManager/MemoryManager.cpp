@@ -831,7 +831,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     void* frames[FRAMES_COUNT] = { nullptr };
     Memset(backtrace, 0, sizeof(Backtrace));
 
-    Debug::GetStackFrames(frames, FRAMES_COUNT);
+    Debug::GetBacktrace(frames, FRAMES_COUNT);
 
     auto PointerToString = [](void* ptr, char* buf) -> size_t {
         auto hex = [](uint8 n) -> char { return n < 10 ? n + '0' : n - 10 + 'A'; };
@@ -881,7 +881,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     {
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
-            String symbol = Debug::GetSymbolFromAddr(backtrace->frames[i], true);
+            String symbol = Debug::GetFrameSymbol(backtrace->frames[i], true);
             if (!symbol.empty())
                 symbolMap->emplace(backtrace->frames[i], InternalString(symbol.c_str()));
         }

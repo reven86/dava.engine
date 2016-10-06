@@ -18,6 +18,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
 
@@ -134,6 +135,12 @@ SceneEditor2::SceneEditor2()
 
     editorVegetationSystem = new EditorVegetationSystem(this);
     AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
 
     selectionSystem->AddDelegate(modifSystem);
     selectionSystem->AddDelegate(hoodSystem);

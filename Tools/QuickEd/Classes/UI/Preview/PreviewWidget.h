@@ -26,6 +26,7 @@ class QDragMoveEvent;
 class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
+class QMenu;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::ClientDelegate
 {
@@ -35,7 +36,6 @@ public:
     ~PreviewWidget();
     ScrollAreaController* GetScrollAreaController();
     RulerController* GetRulerController();
-    ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnWindowCreated();
@@ -74,6 +74,11 @@ private slots:
     void OnPositionChanged(const QPoint& position);
 
 private:
+    void ShowMenu(const QMouseEvent* mouseEvent);
+    bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
+    bool CanChangeTextInControl(const ControlNode* node) const;
+    void ChangeControlText(ControlNode* node);
+
     void LoadContext();
     void SaveContext();
 
@@ -85,6 +90,7 @@ public:
     void OnMousePressed(QMouseEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
+    void OnMouseDBClick(QMouseEvent* event) override;
     void OnDragEntered(QDragEnterEvent* event) override;
     void OnDragMoved(QDragMoveEvent* event) override;
     bool ProcessDragMoveEvent(QDropEvent* event);

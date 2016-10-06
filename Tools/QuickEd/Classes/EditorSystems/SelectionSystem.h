@@ -28,6 +28,8 @@ public:
     void FocusNextChild();
     void FocusPreviousChild();
 
+    void SelectNode(ControlNode* node);
+
 private:
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnPackageNodeChanged(PackageNode* packageNode);
@@ -36,8 +38,8 @@ private:
 
     void FocusToChild(bool next);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-    bool ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
+    void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;

@@ -99,6 +99,7 @@ public:
     void FocusNextChild();
     void FocusPreviousChild();
     void ClearSelection();
+    void SelectNode(ControlNode* node);
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
@@ -112,7 +113,6 @@ public:
     DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>&> NodesHovered;
     DAVA::Signal<bool> TransformStateChanged; //indicates when user transform control
-    std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
 private:
     class InputLayerControl;

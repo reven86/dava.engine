@@ -7,12 +7,15 @@
 #include <QMenu>
 #include <QShortCut>
 #include <QFileInfo>
+#include <QInputDialog>
+#include <QTimer>
 
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
+#include "QtTools/InputDialogs/MultilineTextInputDialog.h"
 
 #include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
@@ -25,6 +28,8 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 using namespace DAVA;
 
@@ -50,7 +55,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
-    , continuousUpdater(new ContinuousUpdater(DAVA::MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
+    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
@@ -116,33 +121,6 @@ float PreviewWidget::GetScaleFromComboboxText() const
     float scaleValue = curTextValue.toFloat(&ok);
     DVASSERT_MSG(ok, "can not parse text to float");
     return scaleValue / 100.0f;
-}
-
-ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
-{
-    QPoint globalPos = renderWidget->mapToGlobal(QPoint(point.x, point.y));
-    QMenu menu;
-    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
-    {
-        ControlNode* controlNode = *it;
-        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
-        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
-        action->setCheckable(true);
-        menu.addAction(action);
-        void* ptr = static_cast<void*>(controlNode);
-        action->setData(QVariant::fromValue(ptr));
-        if (selectionContainer.IsSelected(controlNode))
-        {
-            action->setChecked(true);
-        }
-    }
-    QAction* selectedAction = menu.exec(globalPos);
-    if (nullptr != selectedAction)
-    {
-        void* ptr = selectedAction->data().value<void*>();
-        return static_cast<ControlNode*>(ptr);
-    }
-    return nullptr;
 }
 
 void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
@@ -271,7 +249,7 @@ void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const Sele
     systemsManager->SelectionChanged.Emit(selected, deselected);
 }
 
-void PreviewWidget::OnRootControlPositionChanged(const DAVA::Vector2& pos)
+void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
 {
     rootControlPos = QPoint(static_cast<int>(pos.x), static_cast<int>(pos.y));
     ApplyPosChanges();
@@ -385,7 +363,6 @@ void PreviewWidget::OnWindowCreated()
 {
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(renderWidget));
-    systemsManager->GetControlByMenu = std::bind(&PreviewWidget::OnSelectControlByMenu, this, _1, _2);
     scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
     scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
     systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
@@ -410,7 +387,7 @@ void PreviewWidget::OnScaleChanged(float scale)
     scaleCombo->blockSignals(wasBlocked);
 
     rulerController->SetScale(scale);
-    DAVA::float32 realScale = static_cast<DAVA::float32>(scale);
+    float32 realScale = static_cast<float32>(scale);
     if (systemsManager)
     {
         systemsManager->GetScalableControl()->SetScale(Vector2(realScale, realScale));
@@ -442,6 +419,113 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     QPoint canvasPosition = scrollAreaController->GetPosition();
     canvasPosition.setX(hPosition);
     scrollAreaController->SetPosition(canvasPosition);
+}
+
+void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
+{
+    QMenu menu;
+    //separator must be added by the client code, which call AddSelectionMenuSection function
+    QPoint localPos = mouseEvent->pos();
+    if (AddSelectionMenuSection(&menu, localPos))
+    {
+        menu.addSeparator();
+    }
+    Vector2 davaPoint(localPos.x(), localPos.y());
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    if (CanChangeTextInControl(node))
+    {
+        QString name = QString::fromStdString(node->GetName());
+        QAction* action = menu.addAction(tr("Change text in %1").arg(name));
+        connect(action, &QAction::triggered, [this, node]() { ChangeControlText(node); });
+    }
+    if (!menu.actions().isEmpty())
+    {
+        menu.exec(mouseEvent->globalPos());
+    }
+}
+
+bool PreviewWidget::AddSelectionMenuSection(QMenu* menu, const QPoint& pos)
+{
+    Vector<ControlNode*> nodesUnderPoint;
+    Vector2 davaPos(pos.x(), pos.y());
+    auto predicateForMenu = [davaPos](const ControlNode* node) -> bool
+    {
+        const UIControl* control = node->GetControl();
+        DVASSERT(nullptr != control);
+        const VisibleValueProperty* visibleProp = node->GetRootProperty()->GetVisibleProperty();
+        return visibleProp->GetVisibleInEditor() && control->IsPointInside(davaPos);
+    };
+    auto stopPredicate = [](const ControlNode* node) -> bool {
+        const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
+        return !visibleProp->GetVisibleInEditor();
+    };
+    systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicateForMenu, stopPredicate);
+
+    //create list of item to select
+    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
+    {
+        ControlNode* controlNode = *it;
+        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
+        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), menu);
+        action->setCheckable(true);
+        menu->addAction(action);
+        if (selectionContainer.IsSelected(controlNode))
+        {
+            action->setChecked(true);
+        }
+        connect(action, &QAction::toggled, [this, controlNode]() {
+            systemsManager->SelectNode(controlNode);
+        });
+    }
+    return !nodesUnderPoint.empty();
+}
+
+bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
+{
+    if (node == nullptr)
+    {
+        return false;
+    }
+
+    UIControl* control = node->GetControl();
+
+    UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
+    return staticText != nullptr;
+}
+
+void PreviewWidget::ChangeControlText(ControlNode* node)
+{
+    DVASSERT(node != nullptr);
+
+    UIControl* control = node->GetControl();
+
+    UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
+    DVASSERT(staticText != nullptr);
+
+    RootProperty* rootProperty = node->GetRootProperty();
+    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
+    DVASSERT(textProperty != nullptr);
+
+    String text = textProperty->GetValue().AsString();
+
+    QString label = tr("Enter new text, please");
+    bool ok;
+    QString inputText = MultilineTextInputDialog::GetMultiLineText(this, label, label, QString::fromStdString(text), &ok);
+    if (ok)
+    {
+        DVASSERT(document != nullptr);
+        QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+        executor->BeginMacro("change text by user");
+        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
+        DVASSERT(multilineProperty != nullptr);
+        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
+        if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
+        {
+            executor->ChangeProperty(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+        }
+        executor->ChangeProperty(node, textProperty, VariantType(inputText.toStdString()));
+        executor->EndMacro();
+    }
 }
 
 void PreviewWidget::LoadContext()
@@ -548,7 +632,10 @@ void PreviewWidget::OnMousePressed(QMouseEvent* event)
     {
         isMouseMidButtonPressed = true;
     }
-
+    if (buttons & Qt::RightButton)
+    {
+        ShowMenu(event);
+    }
     UpdateDragScreenState();
     if (CanDragScreen())
     {
@@ -569,6 +656,21 @@ void PreviewWidget::OnMouseReleased(QMouseEvent* event)
     }
 
     UpdateDragScreenState();
+}
+
+void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
+{
+    QPoint point = event->pos();
+
+    Vector2 davaPoint(point.x(), point.y());
+    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    if (!CanChangeTextInControl(node))
+    {
+        return;
+    }
+
+    // call "change text" after release event will pass
+    QTimer::singleShot(0, [node, this]() { ChangeControlText(node); });
 }
 
 void PreviewWidget::OnMouseMove(QMouseEvent* event)
@@ -622,7 +724,7 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DVASSERT(nullptr != document);
-        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        Vector2 pos(event->pos().x(), event->pos().y());
         auto node = systemsManager->ControlNodeUnderPoint(pos);
         systemsManager->NodesHovered.Emit({ node });
         if (nullptr != node)
@@ -669,7 +771,7 @@ void PreviewWidget::OnDrop(QDropEvent* event)
     auto mimeData = event->mimeData();
     if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        DAVA::Vector2 pos(event->pos().x(), event->pos().y());
+        Vector2 pos(event->pos().x(), event->pos().y());
         PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
@@ -703,10 +805,23 @@ void PreviewWidget::OnDrop(QDropEvent* event)
 
 void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Space)
+    int key = event->key();
+    if (key == Qt::Key_Space)
     {
         isSpacePressed = true;
         UpdateDragScreenState();
+    }
+    if (key == Qt::Key_Enter || key == Qt::Key_Return)
+    {
+        SelectedNodes selectedNodes = selectionContainer.selectedNodes;
+        if (selectedNodes.size() == 1)
+        {
+            ControlNode* node = dynamic_cast<ControlNode*>(*selectedNodes.begin());
+            if (CanChangeTextInControl(node))
+            {
+                ChangeControlText(node);
+            }
+        }
     }
 }
 
@@ -736,7 +851,7 @@ void PreviewWidget::OnTransformStateChanged(bool inTransformState)
     }
 }
 
-void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue)
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue)
 {
     DVASSERT(!document.isNull());
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();

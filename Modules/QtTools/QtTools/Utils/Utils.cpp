@@ -79,3 +79,36 @@ void RestoreMenuBar()
 {
 }
 #endif
+
+namespace StringPropertyDelegateLocal
+{
+//we need to store sequence in order
+DAVA::Vector<std::pair<QChar, QString>> escapeSequences = {
+    { '\\', QStringLiteral("\\\\") },
+    { '\n', QStringLiteral("\\n") },
+    { '\r', QStringLiteral("\\r") },
+    { '\t', QStringLiteral("\\t") },
+};
+}
+
+//replace strings with escape characters
+QString EscapeString(const QString& str)
+{
+    QString stringToReplace(str);
+    for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
+    {
+        stringToReplace.replace(pair.second, pair.first);
+    }
+    return stringToReplace;
+}
+
+//replace escape characters with their string form
+QString UnescapeString(const QString& str)
+{
+    QString stringToReplace(str);
+    for (const auto& pair : StringPropertyDelegateLocal::escapeSequences)
+    {
+        stringToReplace.replace(pair.first, pair.second);
+    }
+    return stringToReplace;
+}

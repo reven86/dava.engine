@@ -64,7 +64,7 @@ private:
     void OnLoopStarted();
     void OnLoopStopped();
     void OnFrame(float32 delta);
-    void OnWindowCreated(DAVA::Window& w);
+    void OnWindowCreated(DAVA::Window* w);
     bool HasControllerModule() const;
 
     OperationInvoker* GetMockInvoker();
