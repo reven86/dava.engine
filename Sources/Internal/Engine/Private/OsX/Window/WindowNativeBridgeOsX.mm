@@ -55,12 +55,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     {
         float32 dpi = GetDpi();
         CGSize surfSize = [renderView convertSizeToBacking:viewRect.size];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                                viewRect.size.width,
-                                                                                viewRect.size.height,
-                                                                                surfSize.width,
-                                                                                surfSize.height,
-                                                                                dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, surfSize.width, surfSize.height, dpi));
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }

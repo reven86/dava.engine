@@ -230,7 +230,7 @@ void Window::ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e)
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
 
-    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, scaleW=%.3f, scaleH=%.3f", width, height, surfaceWidth, surfaceHeight);
+    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()

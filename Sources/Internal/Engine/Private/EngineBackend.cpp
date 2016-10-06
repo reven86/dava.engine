@@ -560,6 +560,7 @@ void EngineBackend::ResetRenderer(Window* w, bool resetToNull)
         Size2f size = w->GetSize();
         Size2f surfSize = w->GetSurfaceSize();
 
+        rendererParams.window = w->GetNativeHandle();
         rendererParams.width = static_cast<int32>(surfSize.dx);
         rendererParams.height = static_cast<int32>(surfSize.dy);
         rendererParams.scaleX = surfSize.dx / size.dx;
