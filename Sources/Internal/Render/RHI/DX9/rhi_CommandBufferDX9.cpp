@@ -954,7 +954,7 @@ static void _DX9_InvalidateFrameCache()
     ConstBufferDX9::InvalidateAllConstBufferInstances();
 }
 
-static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
+static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
 {
     if (frame.sync != InvalidHandle)
     {
@@ -962,23 +962,23 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
         s->is_signaled = true;
         s->is_used = true;
     }
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    for (Handle p : frame.pass)
     {
-        RenderPassDX9_t* pp = RenderPassPoolDX9::Get(*p);
+        RenderPassDX9_t* pp = RenderPassPoolDX9::Get(p);
 
-        for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+        for (Handle c : pp->cmdBuf)
         {
-            CommandBufferDX9_t* cc = CommandBufferPoolDX9::Get(*c);
+            CommandBufferDX9_t* cc = CommandBufferPoolDX9::Get(c);
             if (cc->sync != InvalidHandle)
             {
                 SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(cc->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
-            CommandBufferPoolDX9::Free(*c);
+            CommandBufferPoolDX9::Free(c);
         }
 
-        RenderPassPoolDX9::Free(*p);
+        RenderPassPoolDX9::Free(p);
     }
 
 #if defined(ENABLE_ASSERT_MESSAGE) || defined(ENABLE_ASSERT_LOGGING)
@@ -994,9 +994,7 @@ static void _DX9_RejectFrame(CommonImpl::Frame&& frame)
 #endif
 }
 
-
-
-static void _DX9_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
+static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     StatSet::ResetAll();
 

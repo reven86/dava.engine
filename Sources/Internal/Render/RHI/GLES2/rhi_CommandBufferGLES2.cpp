@@ -1127,7 +1127,7 @@ void CommandBufferGLES2_t::Execute()
 
 //------------------------------------------------------------------------------
 
-static void _GLES2_RejectFrame(CommonImpl::Frame&& frame)
+static void _GLES2_RejectFrame(const CommonImpl::Frame& frame)
 {
 #ifdef __DAVAENGINE_ANDROID__
 
@@ -1137,9 +1137,9 @@ static void _GLES2_RejectFrame(CommonImpl::Frame&& frame)
         s->is_signaled = true;
         s->is_used = true;
     }
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    for (Handle p : frame.pass)
     {
-        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
+        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(p);
 
         for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
         {
@@ -1155,23 +1155,23 @@ static void _GLES2_RejectFrame(CommonImpl::Frame&& frame)
             CommandBufferPoolGLES2::Free(*c);
         }
 
-        RenderPassPoolGLES2::Free(*p);
+        RenderPassPoolGLES2::Free(p);
     }           
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-static void _GLES2_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
+static void _GLES2_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     StatSet::ResetAll();
 
     std::vector<RenderPassGLES2_t*> pass;
     unsigned frame_n = 0;
 
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    for (Handle p : frame.pass)
     {
-        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(*p);
+        RenderPassGLES2_t* pp = RenderPassPoolGLES2::Get(p);
         bool do_add = true;
 
         for (unsigned i = 0; i != pass.size(); ++i)

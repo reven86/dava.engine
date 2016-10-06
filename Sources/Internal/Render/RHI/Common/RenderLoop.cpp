@@ -158,7 +158,10 @@ static void RenderFunc()
 
 void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority priority, int32 bindToProcessor)
 {
+    DVASSERT(frameCount <= frameSyncObjectsCount);
+
     renderThreadFrameCount = frameCount;
+    FrameLoop::Initialize(frameSyncObjectsCount);
 
     if (renderThreadFrameCount)
     {

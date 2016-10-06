@@ -11,7 +11,9 @@ struct Frame
     Handle perfQuerySet = InvalidHandle;
     std::vector<Handle> pass;
     bool readyToExecute = false;
-    uint32 frameNumber;
+    uint32 frameNumber = 0;
+
+    void Reset();
 };
 
 struct ImmediateCommand

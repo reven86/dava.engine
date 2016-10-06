@@ -181,13 +181,13 @@ void FinishFrame()
 {
     (*_Impl.impl_FinishFrame)();
 }
-void ExecuteFrame(CommonImpl::Frame&& frame)
+void ExecuteFrame(const CommonImpl::Frame& frame)
 {
-    (*_Impl.impl_ExecuteFrame)(std::move(frame));
+    (*_Impl.impl_ExecuteFrame)(frame);
 }
-void RejectFrame(CommonImpl::Frame&& frame)
+void RejectFrame(const CommonImpl::Frame& frame)
 {
-    (*_Impl.impl_RejectFrame)(std::move(frame));
+    (*_Impl.impl_RejectFrame)(frame);
 }
 bool PresentBuffer()
 {

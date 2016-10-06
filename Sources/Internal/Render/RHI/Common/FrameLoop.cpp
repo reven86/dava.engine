@@ -12,30 +12,36 @@ namespace FrameLoop
 {
 static uint32 currentFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
-static std::atomic<uint32> frameCount(0);
+static uint32 frameToBuild = 0;
+static uint32 frameToExecute = 0;
+static uint32 framePoolSize = 0;
 static DAVA::Spinlock frameSync;
-static bool frameStarted = false;
+
+void Initialize(uint32 _framePoolSize)
+{
+    framePoolSize = _framePoolSize;
+    frames.resize(framePoolSize);
+}
 
 void RejectFrames()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
-    for (std::vector<CommonImpl::Frame>::iterator f = frames.begin(); f != frames.end();)
+    while (frameToExecute < frameToBuild)
     {
-        if (f->readyToExecute)
-        {
-            DispatchPlatform::RejectFrame(std::move(*f));
-            f = frames.erase(f);
-            frameCount--;
-        }
-        else
-        {
-            ++f;
-        }
+        DispatchPlatform::RejectFrame(frames[frameToExecute % framePoolSize]);
+        frames[frameToExecute].Reset();
+        frameToExecute++;
+    }
+    if (frameToExecute >= framePoolSize)
+    {
+        frameToBuild -= framePoolSize;
+        frameToExecute -= framePoolSize;
     }
 }
 
 void ProcessFrame()
 {
+    DVASSERT(framePoolSize);
     bool presentResult = false;
     if (NeedRestoreResources())
     {
@@ -46,13 +52,18 @@ void ProcessFrame()
     {
         {
             DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteFrame");
+
+            frames[frameToExecute].frameNumber = currentFrameNumber++;
+            DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
+            frames[frameToExecute].Reset();
+            frameToExecute++;
             frameSync.Lock();
-            CommonImpl::Frame currFrame = std::move(frames.front());
-            frames.erase(frames.begin());
+            if (frameToExecute >= framePoolSize)
+            {
+                frameToBuild -= framePoolSize;
+                frameToExecute -= framePoolSize;
+            }
             frameSync.Unlock();
-            currFrame.frameNumber = currentFrameNumber++;
-            DispatchPlatform::ExecuteFrame(std::move(currFrame));
-            frameCount--;
         }
 
         {
@@ -70,41 +81,37 @@ void ProcessFrame()
 
 bool FinishFrame(Handle sync)
 {
-    size_t frameCnt = 0;
+    bool frameValid = false;
 
     frameSync.Lock();
-    frameCnt = frames.size();
-    if (frameCnt)
+    uint32 frameSlot = frameToBuild % framePoolSize;
+    if (frames[frameSlot].pass.size() != 0)
     {
-        frames.back().readyToExecute = true;
-        frames.back().sync = sync;
+        frames[frameSlot].readyToExecute = true;
+        frames[frameSlot].sync = sync;
+        frameToBuild++;
+        frameValid = true;
     }
-    frameStarted = false;
     frameSync.Unlock();
     DispatchPlatform::FinishFrame();
-    return frameCnt != 0;
+    return frameValid;
 }
 
 bool FrameReady()
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
-    return (frames.size() && frames.begin()->readyToExecute);
+    return frames[frameToExecute].readyToExecute;
 }
 
 uint32 FramesCount()
 {
-    return frameCount;
+    DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
+    return frameToBuild - frameToExecute;
 }
 void AddPass(Handle pass)
 {
     DAVA::LockGuard<DAVA::Spinlock> lock(frameSync);
-    if (!frameStarted)
-    {
-        frames.push_back(CommonImpl::Frame());
-        frameCount++;
-        frameStarted = true;
-    }
-    frames.back().pass.push_back(pass);
+    frames[frameToBuild % framePoolSize].pass.push_back(pass);
     //frames.back().perfQuerySet = PerfQuerySet::Current();
 }
 }

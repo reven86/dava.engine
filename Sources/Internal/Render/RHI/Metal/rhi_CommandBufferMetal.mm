@@ -1520,7 +1520,7 @@ metal_SyncObject_IsSignaled(Handle obj)
     return signaled;
 }
 
-static void Metal_RejectFrame(CommonImpl::Frame&& frame)
+static void Metal_RejectFrame(const CommonImpl::Frame& frame)
 {
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
 
@@ -1583,7 +1583,7 @@ static void Metal_RejectFrame(CommonImpl::Frame&& frame)
 
 //------------------------------------------------------------------------------
 
-static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
+static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);
@@ -1591,7 +1591,7 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (_Metal_currentDrawable == nil)
     {
-        Metal_RejectFrame(std::move(frame));
+        Metal_RejectFrame(frame);
         return;
     }
 #endif
@@ -1636,7 +1636,7 @@ static void Metal_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
 #if !RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
     if (_Metal_currentDrawable == nil)
     {
-        Metal_RejectFrame(std::move(frame));
+        Metal_RejectFrame(frame);
         return;
     }
 #endif

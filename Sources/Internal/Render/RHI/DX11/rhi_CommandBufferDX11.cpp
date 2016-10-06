@@ -781,7 +781,7 @@ dx11_SyncObject_IsSignaled(Handle obj)
 
 //------------------------------------------------------------------------------
 
-static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
+static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
 
@@ -793,9 +793,9 @@ static void dx11_ExecuteQueuedCommands(CommonImpl::Frame&& frame)
     Handle perfQuerySet = InvalidHandle;
     unsigned frame_n = 0;
 
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    for (Handle p : frame.pass)
     {
-        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(p);
         bool do_add = true;
 
         for (unsigned i = 0; i != pass.size(); ++i)
@@ -983,7 +983,7 @@ static void dx11_EndFrame()
 #endif
 }
 
-static void dx11_RejectFrame(CommonImpl::Frame&& frame)
+static void dx11_RejectFrame(const CommonImpl::Frame& frame)
 {
     if (frame.sync != InvalidHandle)
     {
@@ -992,9 +992,9 @@ static void dx11_RejectFrame(CommonImpl::Frame&& frame)
         s->is_used = true;
     }
 
-    for (std::vector<Handle>::iterator p = frame.pass.begin(), p_end = frame.pass.end(); p != p_end; ++p)
+    for (Handle p : frame.pass)
     {
-        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(*p);
+        RenderPassDX11_t* pp = RenderPassPoolDX11::Get(p);
         for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
         {
             CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
@@ -1032,7 +1032,7 @@ static void dx11_RejectFrame(CommonImpl::Frame&& frame)
 #endif
             CommandBufferPoolDX11::Free(*b);
         }
-        RenderPassPoolDX11::Free(*p);
+        RenderPassPoolDX11::Free(p);
     }
 }
 

@@ -8,6 +8,17 @@ namespace rhi
 typedef ResourcePool<CommonImpl::TextureSet_t, RESOURCE_TEXTURE_SET, CommonImpl::TextureSet_t::Desc, false> TextureSetPool;
 RHI_IMPL_POOL(CommonImpl::TextureSet_t, RESOURCE_TEXTURE_SET, CommonImpl::TextureSet_t::Desc, false);
 
+namespace CommonImpl
+{
+void Frame::Reset()
+{
+    sync = InvalidHandle;
+    perfQuerySet = InvalidHandle;
+    pass.clear();
+    readyToExecute = false;
+}
+}
+
 namespace TextureSet
 {
 Handle Create()

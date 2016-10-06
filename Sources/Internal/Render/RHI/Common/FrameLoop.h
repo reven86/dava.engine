@@ -6,6 +6,7 @@ namespace rhi
 {
 namespace FrameLoop
 {
+void Initialize(uint32 framePoolSize);
 void ProcessFrame();
 bool FinishFrame(Handle sync); //return false if frame was empty
 bool FrameReady();
