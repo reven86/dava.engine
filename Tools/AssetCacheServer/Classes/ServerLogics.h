@@ -25,6 +25,11 @@ public:
     void Update();
 
 private:
+    bool IsRemoteServerConnected() const;
+
+    template <typename... Args>
+    void AddServerTask(Args&&... args);
+
     void ProcessServerTasks();
 
 private:
@@ -58,5 +63,14 @@ private:
     DAVA::List<ServerTask> serverTasks;
     DAVA::String serverName;
 };
+
+template <typename... Args>
+void ServerLogics::AddServerTask(Args&&... args)
+{
+    if (IsRemoteServerConnected())
+    {
+        serverTasks.emplace_back(std::forward<Args>(args)...);
+    }
+}
 
 #endif // __SERVER_LOGICS_H__
