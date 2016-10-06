@@ -195,49 +195,47 @@ void WindowBackend::DoSetTitle(const char8* title)
 
 void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 {
-    if (captureMode == mode)
+    if (captureMode != mode)
     {
-        return;
-    }
-    captureMode = mode;
-    switch (mode)
-    {
-    case eCursorCapture::FRAME:
-        //not implemented
-        break;
-    case eCursorCapture::PINNING:
-    {
-        POINT p;
-        ::GetCursorPos(&p);
-        lastCursorPosition.x = p.x;
-        lastCursorPosition.y = p.y;
-        SetCursorInCenter();
-        DoSetCursorVisible(false);
-        break;
-    }
-    case eCursorCapture::OFF:
-    {
-        ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
-        DoSetCursorVisible(true);
-        break;
-    }
+        captureMode = mode;
+        switch (mode)
+        {
+        case eCursorCapture::FRAME:
+            //not implemented
+            break;
+        case eCursorCapture::PINNING:
+        {
+            POINT p;
+            ::GetCursorPos(&p);
+            lastCursorPosition.x = p.x;
+            lastCursorPosition.y = p.y;
+            SetCursorInCenter();
+            DoSetCursorVisible(false);
+            break;
+        }
+        case eCursorCapture::OFF:
+        {
+            ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
+            DoSetCursorVisible(true);
+            break;
+        }
+        }
     }
 }
 
 void WindowBackend::DoSetCursorVisible(bool visible)
 {
-    if (mouseVisible == visible)
+    if (mouseVisible != visible)
     {
-        return;
-    }
-    mouseVisible = visible;
-    if (visible)
-    {
-        ::SetCursor(defaultCursor);
-    }
-    else
-    {
-        ::SetCursor(NULL);
+        mouseVisible = visible;
+        if (visible)
+        {
+            ::SetCursor(defaultCursor);
+        }
+        else
+        {
+            ::SetCursor(NULL);
+        }
     }
 }
 

@@ -115,46 +115,44 @@ void WindowNativeBridge::SetTitle(const char8* title)
 
 void WindowNativeBridge::SetCursorVisible(bool visible)
 {
-    if (mouseVisible == visible)
+    if (mouseVisible != visible)
     {
-        return;
-    }
-    mouseVisible = visible;
-    using ::Windows::UI::Core::CoreCursor;
-    using ::Windows::UI::Core::CoreCursorType;
-    using ::Windows::UI::Core::CoreWindow;
-    if (visible)
-    {
-        CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
-    }
-    else
-    {
-        CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        using ::Windows::UI::Core::CoreCursor;
+        using ::Windows::UI::Core::CoreCursorType;
+        using ::Windows::UI::Core::CoreWindow;
+        mouseVisible = visible;
+        if (visible)
+        {
+            CoreWindow::GetForCurrentThread()->PointerCursor = defaultCursor;
+        }
+        else
+        {
+            CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        }
     }
 }
 
 void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
-    using namespace ::Windows::Devices::Input;
-    using namespace ::Windows::Foundation;
-    if (captureMode == mode)
+    if (captureMode != mode)
     {
-        return;
-    }
-    captureMode = mode;
-    switch (captureMode)
-    {
-    case DAVA::eCursorCapture::OFF:
-        MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
-        break;
-    case DAVA::eCursorCapture::FRAME:
-        // now, not implemented
-        break;
-    case DAVA::eCursorCapture::PINNING:
-        tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
-        // after enabled Pinning mode, skip move events, large x, y delta
-        skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-        break;
+        using namespace ::Windows::Devices::Input;
+        using namespace ::Windows::Foundation;
+        captureMode = mode;
+        switch (captureMode)
+        {
+        case DAVA::eCursorCapture::OFF:
+            MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+            break;
+        case DAVA::eCursorCapture::FRAME:
+            // now, not implemented
+            break;
+        case DAVA::eCursorCapture::PINNING:
+            tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
+            // after enabled Pinning mode, skip move events, large x, y delta
+            skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+            break;
+        }
     }
 }
 
@@ -328,7 +326,8 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, captureMode == eCursorCapture::PINNING));
+    bool isRelative = (captureMode == eCursorCapture::PINNING);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, isRelative));
 }
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)

@@ -286,67 +286,64 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 
 void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
 {
-    if (captureMode == mode)
+    if (captureMode != mode)
     {
-        return;
-    }
-    captureMode = mode;
-    switch (mode)
-    {
-    case DAVA::eCursorCapture::FRAME:
-        //not implemented
-        break;
-    case DAVA::eCursorCapture::PINNING:
-    {
-        SetCursorVisible(false);
-        CGAssociateMouseAndMouseCursorPosition(false);
-        // set cursor in window center
-        NSRect windowRect = [nswindow frame];
-        NSRect screenRect = [[NSScreen mainScreen] frame];
-        // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
-        windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
-        CGPoint cursorpos;
-        cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
-        cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
-        CGWarpMouseCursorPosition(cursorpos);
-        skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
-        break;
-    }
-    case DAVA::eCursorCapture::OFF:
-    {
-        SetCursorVisible(true);
-        CGAssociateMouseAndMouseCursorPosition(true);
-        break;
-    }
+        captureMode = mode;
+        switch (mode)
+        {
+        case DAVA::eCursorCapture::FRAME:
+            //not implemented
+            break;
+        case DAVA::eCursorCapture::PINNING:
+        {
+            SetCursorVisible(false);
+            CGAssociateMouseAndMouseCursorPosition(false);
+            // set cursor in window center
+            NSRect windowRect = [nswindow frame];
+            NSRect screenRect = [[NSScreen mainScreen] frame];
+            // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
+            windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
+            CGPoint cursorpos;
+            cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
+            cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
+            CGWarpMouseCursorPosition(cursorpos);
+            skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+            break;
+        }
+        case DAVA::eCursorCapture::OFF:
+        {
+            SetCursorVisible(true);
+            CGAssociateMouseAndMouseCursorPosition(true);
+            break;
+        }
+        }
     }
 }
 
 void WindowNativeBridge::SetSystemCursorVisible(bool visible)
 {
     static bool mouseVisibleState = true;
-    if (mouseVisibleState == visible)
+    if (mouseVisibleState != visible)
     {
-        return;
-    }
-    mouseVisibleState = visible;
-    if (visible)
-    {
-        [NSCursor unhide];
-    }
-    else
-    {
-        [NSCursor hide];
+        mouseVisibleState = visible;
+        if (visible)
+        {
+            [NSCursor unhide];
+        }
+        else
+        {
+            [NSCursor hide];
+        }
     }
 }
 
 void WindowNativeBridge::SetCursorVisible(bool visible)
 {
-    if (mouseVisible == visible)
+    if (mouseVisible != visible)
     {
-        return;
+        mouseVisible = visible;
+        SetSystemCursorVisible(visible);
     }
-    mouseVisible = visible;
-    SetSystemCursorVisible(visible);
 }
 
 } // namespace Private
