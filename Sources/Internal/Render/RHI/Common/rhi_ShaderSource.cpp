@@ -101,7 +101,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
 #if 0
 {
-    Logger::Info("src-code:");
+    Logger::Info("\n\nsrc-code:");
 
     char ss[64 * 1024];
     unsigned line_cnt = 0;
@@ -138,9 +138,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     if (parser.Parse(ast))
     {
-        ProcessMetaData(ast);
+        success = ProcessMetaData(ast);
         type = progType;
-        success = true;
     }
     else
     {
@@ -155,7 +154,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
 //------------------------------------------------------------------------------
 
-void
+bool
 ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 {
     struct
@@ -345,7 +344,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                         if (prop.arraySize > 1)
                         {
                             cbuf->isArray = true;
-                            prop.isBigArray = true;
+                            //-                            prop.isBigArray = true;
                         }
                         else
                         {
@@ -604,6 +603,25 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 
             if (buf[i].isArray)
             {
+                unsigned propCount = 0;
+
+                for (unsigned p = 0; p != property.size(); ++p)
+                {
+                    if (property[p].bufferindex == i)
+                        ++propCount;
+                }
+                if (propCount != 1)
+                {
+                    Logger::Error("cbuffer with array-property has more than one property :");
+                    Logger::Error("  cbuf[%u]", i);
+                    for (unsigned p = 0; p != property.size(); ++p)
+                    {
+                        if (property[p].bufferindex == i)
+                            Logger::Error("    %s", property[p].uid.c_str());
+                    }
+                    return false;
+                }
+
                 for (unsigned p = 0; p != property.size(); ++p)
                 {
                     if (property[p].bufferindex == i)
@@ -923,6 +941,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
     }
     Logger::Info("\n\n");
 #endif
+
+    return true;
 };
 
 //------------------------------------------------------------------------------
@@ -1203,14 +1223,14 @@ ShaderSource::GetSourceCode(Api targetApi) const
 
 #if 0
 {
-    Logger::Info("src-code:");
+    Logger::Info("src-code (api=%i) :",int(targetApi));
 
     char ss[64 * 1024];
     unsigned line_cnt = 0;
 
-    if (strlen(code->c_str()) < sizeof(ss))
+    if (strlen(src->c_str()) < sizeof(ss))
     {
-        strcpy(ss, code->c_str());
+        strcpy(ss, src->c_str());
 
         const char* line = ss;
         for (char* s = ss; *s; ++s)
