@@ -40,7 +40,7 @@ TestCoverageInfo TestClass::FilesCoveredByTests() const
 String TestClass::PrettifyTypeName(const String& name) const
 {
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-    String result = Debug::DemangleSymbol(name.c_str());
+    String result = Debug::DemangleFrameSymbol(name);
 #else
     // On Windows names are already demangled
     String result = name;

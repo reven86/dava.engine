@@ -1,5 +1,5 @@
 #pragma once
-#include "Reflection/Public/Wrappers.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {
@@ -32,7 +32,7 @@ public:
         if (object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            ret.LoadValue(type, ptr);
+            ret.LoadValue(ptr, type);
         }
 
         return ret;
@@ -50,9 +50,7 @@ public:
         {
             void* ptr = object.GetVoidPtr();
             const Type* inType = object.GetType()->Deref();
-            value.StoreValue(ptr, inType->GetSize());
-
-            ret = true;
+            ret = value.StoreValue(ptr, inType->GetSize());
         }
 
         return ret;

@@ -32,7 +32,7 @@ public:
     }
 
 protected:
-    void OnRenderSystemInitialized(DAVA::Window& w) override
+    void OnRenderSystemInitialized(DAVA::Window* w) override
     {
     }
 
