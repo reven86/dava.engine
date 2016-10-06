@@ -95,7 +95,7 @@ public:
 
 private:
     void Reset();
-    void ProcessMetaData(sl::HLSLTree* ast);
+    bool ProcessMetaData(sl::HLSLTree* ast);
 
     struct
     buf_t
