@@ -9,7 +9,7 @@ class ParticleEffectComponent;
 class ParticleEffectSystem;
 class Camera;
 
-class UIParticles : public UIControl, public TrackedObject
+class UIParticles : public UIControl
 {
 protected:
     virtual ~UIParticles();

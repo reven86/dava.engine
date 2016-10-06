@@ -13,7 +13,7 @@ namespace DAVA
  */
 
 class Scene;
-class UI3DView : public UIControl, public TrackedObject
+class UI3DView : public UIControl
 {
 public:
     UI3DView(const Rect& rect = Rect());

@@ -188,7 +188,7 @@ private:
         representation. UIControlBackground can be changed for the custom. Or you can
         just overload Draw() method for the custom drawing.
      */
-class UIControl : public AnimatedObject
+class UIControl : public AnimatedObject, public TrackedObject
 {
     friend class UIInputSystem;
     friend class UIControlSystem;

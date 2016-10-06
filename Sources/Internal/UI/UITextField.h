@@ -92,7 +92,7 @@ public:
             You typically use this class to gather small amounts of text from the user and perform some immediate action, such as a search operation, based on that text.
             A text field object supports the use of a delegate object to handle editing-related notifications. 
  */
-class UITextField : public UIControl, public TrackedObject
+class UITextField : public UIControl
 {
 public:
     // Auto-capitalization type.

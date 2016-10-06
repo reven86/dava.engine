@@ -141,7 +141,7 @@ private:
     }
     \endcode
  */
-class UIList : public UIControl, public UIScrollBarDelegate, public TrackedObject
+class UIList : public UIControl, public UIScrollBarDelegate
 {
 public:
     static const int32 maximumElementsCount = 100000;

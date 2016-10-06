@@ -7,7 +7,7 @@
 namespace DAVA
 {
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
-class UIWebView : public UIControl, public TrackedObject
+class UIWebView : public UIControl
 {
 public:
     // Data detector types. May be a combination of several flags.
