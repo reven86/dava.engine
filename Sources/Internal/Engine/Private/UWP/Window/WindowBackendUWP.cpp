@@ -106,21 +106,18 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     }
 }
 
-bool WindowBackend::SetCursorCapture(eCursorCapture mode)
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
-    if (eCursorCapture::FRAME == mode)
+    //for now, eCursorCapture::FRAME not supported
+    if (eCursorCapture::FRAME != mode)
     {
-        // not implemented
-        return false;
+        uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
     }
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorCaptureEvent(mode));
-    return true;
 }
 
-bool WindowBackend::SetCursorVisible(bool visible)
+void WindowBackend::SetCursorVisible(bool visible)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
-    return true;
 }
 
 } // namespace Private

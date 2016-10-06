@@ -21,6 +21,11 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
+    // TODO: add
+    //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE))
+    {
+        cursorVisible = true;
+    }
 }
 
 Window::~Window() = default;
@@ -79,22 +84,32 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
     windowBackend->InitCustomRenderParams(params);
 }
 
-bool Window::SetCursorCapture(eCursorCapture mode)
+void Window::SetCursorCapture(eCursorCapture mode)
 {
-    if (!hasFocus)
+    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE)*/)
     {
-        return false;
+        cursorCapture = mode;
+        windowBackend->SetCursorCapture(mode);
     }
-    return windowBackend->SetCursorCapture(mode);
 }
 
-bool Window::SetCursorVisible(bool visible)
+eCursorCapture Window::GetCursorCapture() const
 {
-    if (!hasFocus)
+    return cursorCapture;
+}
+
+void Window::SetCursorVisible(bool visible)
+{
+    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE)*/)
     {
-        return false;
+        cursorVisible = visible;
+        windowBackend->SetCursorVisible(visible);
     }
-    return windowBackend->SetCursorVisible(visible);
+}
+
+bool Window::GetCursorVisible() const
+{
+    return cursorVisible;
 }
 
 void Window::Update(float32 frameDelta)

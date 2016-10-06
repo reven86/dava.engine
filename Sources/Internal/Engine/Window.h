@@ -71,17 +71,25 @@ public:
     /// Some platforms support cursor management.
     /// SetCursorCapture implemented on Win32, OsX, WinUWP.
     /// Supports following modes: see more in eCursorCapture enum.
-    /// If platform supported mode - return true, otherwise false.
     /// Remarks: when focus lost, sets OFF mode.
-    bool SetCursorCapture(eCursorCapture mode);
+    void SetCursorCapture(eCursorCapture mode);
+
+    /// \brief Get cursor capture mode.
+    ///
+    /// Get cursor capture mode.
+    eCursorCapture GetCursorCapture() const;
 
     /// \brief Set cursor visible
     ///
     /// Some platforms support cursor visibility.
     /// SetCursorVisible implemented on Win32, OsX, WinUWP.
-    /// If platform supported cursor visibility - return true, otherwise false.
     /// Remarks: when focus lost, sets cursor visible in true.
-    bool SetCursorVisible(bool visible);
+    void SetCursorVisible(bool visible);
+
+    /// \brief Set cursor visible
+    ///
+    /// Get cursor visibility.
+    bool GetCursorVisible() const;
 
 public:
     // Signals
@@ -146,6 +154,8 @@ private:
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    eCursorCapture cursorCapture = eCursorCapture::OFF;
+    bool cursorVisible = false;
     // Friends
     friend class Private::EngineBackend;
     friend class Private::PlatformCore;

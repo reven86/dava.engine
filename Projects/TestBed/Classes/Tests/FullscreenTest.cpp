@@ -10,6 +10,9 @@ FullscreenTest::FullscreenTest(TestBed& app)
     : BaseScreen(app, "FullscreenTest")
     , primaryWindow(app.GetEngine().PrimaryWindow())
 {
+    Window* primWind = Engine::Instance()->PrimaryWindow();
+    mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+    mouseVisible = primWind->GetCursorVisible();
 }
 
 void FullscreenTest::LoadResources()
@@ -293,17 +296,22 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
 void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = static_cast<UIButton*>(sender);
+    Window* primWind = Engine::Instance()->PrimaryWindow();
     switch (btn->GetTag())
     {
     case 0:
-        mouseVisible = !Engine::Instance()->PrimaryWindow()->SetCursorVisible(false);
+    {
+        primWind->SetCursorVisible(false);
+        mouseVisible = primWind->GetCursorVisible();
         break;
-
+    }
     case 1:
-        mouseCaptured = Engine::Instance()->PrimaryWindow()->SetCursorCapture(eCursorCapture::PINNING);
-        mouseCaptured &= Engine::Instance()->PrimaryWindow()->SetCursorVisible(false);
+    {
+        primWind->SetCursorCapture(eCursorCapture::PINNING);
+        primWind->SetCursorVisible(false);
+        mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
         break;
-
+    }
     default:
         break;
     }
@@ -353,7 +361,7 @@ void FullscreenTest::UpdateMode()
     }
     else
     {
-        outStr += L"Mouse Capture Mode mode: DEFAULT";
+        outStr += L"Mouse Capture Mode mode: OFF";
         outStr += L"\n";
         if (mouseVisible)
         {
@@ -381,8 +389,10 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
         case UIEvent::Phase::BEGAN:
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
-                mouseCaptured = !primWind->SetCursorCapture(eCursorCapture::OFF);
-                mouseVisible = primWind->SetCursorVisible(true);
+                primWind->SetCursorCapture(eCursorCapture::OFF);
+                mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+                primWind->SetCursorVisible(true);
+                mouseVisible = primWind->GetCursorVisible();
             }
             break;
 

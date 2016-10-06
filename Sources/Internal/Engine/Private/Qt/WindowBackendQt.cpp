@@ -480,16 +480,14 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContext;
 }
 
-bool WindowBackend::SetCursorCapture(eCursorCapture mode);
+void WindowBackend::SetCursorCapture(eCursorCapture mode);
 {
     // not implemented
-    return false;
 }
 
-bool WindowBackend::SetCursorVisible(bool visible);
+void WindowBackend::SetCursorVisible(bool visible);
 {
     // not implemented
-    return false;
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)
