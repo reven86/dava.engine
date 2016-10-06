@@ -193,11 +193,11 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     document = arg;
     if (document.isNull())
     {
-        systemsManager->PackageNodeChanged.Emit(nullptr);
+        systemsManager->packageNodeChanged.Emit(nullptr);
     }
     else
     {
-        systemsManager->PackageNodeChanged.Emit(document->GetPackage());
+        systemsManager->packageNodeChanged.Emit(document->GetPackage());
         LoadContext();
     }
 }
@@ -235,14 +235,14 @@ void PreviewWidget::LoadSystemsContext(Document* arg)
         selectionContainer.selectedNodes = context->selection;
         if (!selectionContainer.selectedNodes.empty())
         {
-            systemsManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+            systemsManager->selectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
         }
     }
 }
 
 void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    systemsManager->SelectionChanged.Emit(selected, deselected);
+    systemsManager->selectionChanged.Emit(selected, deselected);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
@@ -361,11 +361,11 @@ void PreviewWidget::OnGLInitialized()
     systemsManager.reset(new EditorSystemsManager());
     scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
     scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
-    systemsManager->CanvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-    systemsManager->RootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
-    systemsManager->SelectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemsManager->PropertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
-    systemsManager->TransformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
+    systemsManager->canvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
+    systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
+    systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
+    systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
+    systemsManager->transformStateChanged.Connect(this, &PreviewWidget::OnTransformStateChanged);
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
@@ -601,6 +601,9 @@ void PreviewWidget::SaveContext()
     {
         return;
     }
+
+    //check that we do not leave document in non valid state
+    DVASSERT(document->GetPackage()->CanUpdateAll());
     PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
     context->canvasPosition = scrollAreaController->GetPosition();
 }
@@ -774,7 +777,7 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
         DVASSERT(nullptr != document);
         Vector2 pos(event->pos().x(), event->pos().y());
         auto node = systemsManager->ControlNodeUnderPoint(pos);
-        systemsManager->NodesHovered.Emit({ node });
+        systemsManager->nodesHovered.Emit({ node });
         if (nullptr != node)
         {
             if (node->IsReadOnly())
@@ -809,12 +812,12 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
 
 void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
 {
-    systemsManager->NodesHovered.Emit({ nullptr });
+    systemsManager->nodesHovered.Emit({ nullptr });
 }
 
 void PreviewWidget::OnDropEvent(QDropEvent* event)
 {
-    systemsManager->NodesHovered.Emit({ nullptr });
+    systemsManager->nodesHovered.Emit({ nullptr });
     DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
     if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
