@@ -89,7 +89,7 @@ def _build_macos(working_directory_path, root_project_path):
 
     build_folder = os.path.join(source_folder_path, '_build')
 
-    build_utils.cmake_generate(build_folder, source_folder_path, build_config.XCode)
+    build_utils.cmake_generate(build_folder, source_folder_path, build_config.macos_cmake_generator)
     build_utils.cmake_build(build_folder, 'Debug')
     build_utils.cmake_build(build_folder, 'Release')
 
