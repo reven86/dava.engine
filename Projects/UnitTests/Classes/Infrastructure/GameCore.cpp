@@ -16,9 +16,12 @@ using namespace DAVA;
 
 namespace
 {
-// List of semicolon separated names specifying which test classes should run
+// List of names specifying which test classes should run.
+// Names should be separated with ' ' or ',' or ';'
 String runOnlyTheseTestClasses = "";
-// List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
+
+// List of names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests.
+// Names should be separated with ' ' or ',' or ';'
 String disableTheseTestClasses = "";
 
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
