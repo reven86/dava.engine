@@ -307,8 +307,8 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.isRelative = e.mouseEvent.isRelative;
+    uie.physPoint = e.mouseEvent.isRelative ? Vector2(0.f, 0.f) : Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = UIEvent::Device::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
