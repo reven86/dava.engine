@@ -4,12 +4,8 @@
 DAVA::KeyedArchive* CreateOptions()
 {
     DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
-    appOptions->SetString("title", "QuickEd");
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 1);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     return appOptions;
 }

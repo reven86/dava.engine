@@ -12,9 +12,11 @@ public:
     RunGuard(const QString& key);
     ~RunGuard();
 
-    bool isAnotherRunning();
-    bool tryToRun();
-    void release();
+    bool TryToRun();
+
+private:
+    bool IsAnotherRunning();
+    void Release();
 
 private:
     const QString key;

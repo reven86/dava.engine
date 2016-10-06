@@ -341,7 +341,6 @@ void EngineBackend::OnDraw()
 
     engine->draw.Emit();
     context->renderSystem2D->EndFrame();
-    globalFrameIndex++;
 }
 
 void EngineBackend::OnEndFrame()

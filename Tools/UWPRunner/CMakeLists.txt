@@ -32,9 +32,6 @@ add_definitions(
 -DDAVA_FMOD
 )
 
-file              ( GLOB_RECURSE QT_LIST "Classes/Qt/*.h"  )
-qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
-
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
@@ -45,11 +42,11 @@ include_directories   ( "Classes" )
 include_directories   ( "Classes/Qt" )
 include_directories   ( "Classes/Qt/corecon" )
 
-set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source ( SOURCE  "Classes"  ${PLATFORM_SPECIFIC_FOLDER} )
 
-list ( APPEND UNIFIED_IGNORE_LIST "Classes/Qt/corecon/corecon.cpp" )
+list ( APPEND UNIFIED_IGNORE_LIST "Classes")
 
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${QT_LIBRARIES} runtimeobject.lib XmlLite.lib wsclient.lib shlwapi.lib )

@@ -51,7 +51,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         while (client.ChannelIsOpened() == false)
         {
-            PollNetworkIfSutable();
+            PollNetworkIfSuitable();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
@@ -211,7 +211,7 @@ AssetCache::Error AssetCacheClient::WaitRequest()
 
     while (currentRequest.recieved == false)
     {
-        PollNetworkIfSutable();
+        PollNetworkIfSuitable();
 
         {
             LockGuard<Mutex> guard(requestLocker);
@@ -229,7 +229,7 @@ AssetCache::Error AssetCacheClient::WaitRequest()
     {
         while (currentRequest.processingRequest)
         {
-            PollNetworkIfSutable();
+            PollNetworkIfSuitable();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -393,7 +393,7 @@ bool AssetCacheClient::IsConnected() const
     return client.ChannelIsOpened();
 }
 
-void AssetCacheClient::PollNetworkIfSutable()
+void AssetCacheClient::PollNetworkIfSuitable()
 {
     if (Thread::IsMainThread())
     {

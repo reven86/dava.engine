@@ -28,14 +28,10 @@ GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_c
 
 QApplication* GetApplication()
 {
-#if defined(__DAVAENGINE_QT__)
     DAVA::Engine* engine = DAVA::Engine::Instance();
     DVASSERT(engine != nullptr);
     QApplication* app = engine->GetNativeService()->GetApplication();
     return app;
-#else
-    return qApp;
-#endif
 }
 
 #if defined(__DAVAENGINE_WINDOWS__)

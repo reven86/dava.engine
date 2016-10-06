@@ -31,10 +31,10 @@ RunGuard::RunGuard(const QString& key)
 
 RunGuard::~RunGuard()
 {
-    release();
+    Release();
 }
 
-bool RunGuard::isAnotherRunning()
+bool RunGuard::IsAnotherRunning()
 {
     if (sharedMem.isAttached())
         return false;
@@ -48,9 +48,9 @@ bool RunGuard::isAnotherRunning()
     return isRunning;
 }
 
-bool RunGuard::tryToRun()
+bool RunGuard::TryToRun()
 {
-    if (isAnotherRunning()) // Extra check
+    if (IsAnotherRunning()) // Extra check
         return false;
 
     memLock.acquire();
@@ -58,14 +58,14 @@ bool RunGuard::tryToRun()
     memLock.release();
     if (!result)
     {
-        release();
+        Release();
         return false;
     }
 
     return true;
 }
 
-void RunGuard::release()
+void RunGuard::Release()
 {
     memLock.acquire();
     if (sharedMem.isAttached())

@@ -44,7 +44,7 @@ private:
     AssetCache::Error WaitRequest();
 
     AssetCache::Error CheckStatusSynchronously();
-    void PollNetworkIfSutable();
+    void PollNetworkIfSuitable();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;

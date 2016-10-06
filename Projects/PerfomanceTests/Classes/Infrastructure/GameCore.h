@@ -26,6 +26,9 @@ public:
 
     void OnAppStarted();
     void OnAppFinished();
+    void OnWindowCreated(DAVA::Window* w);
+    void OnWindowResized(DAVA::Window* window, DAVA::float32 w, DAVA::float32 h,
+                         DAVA::float32 scaleX, DAVA::float32 scaleY);
 
     void OnSuspend();
     void OnResume();
@@ -40,6 +43,7 @@ private:
     void RegisterTests();
     void ReadSingleTestParams(BaseTest::TestParams& params);
     void LoadMaps(const String& testName, Vector<std::pair<String, String>>& maps);
+    void Cleanup();
 
     String GetDeviceName();
 

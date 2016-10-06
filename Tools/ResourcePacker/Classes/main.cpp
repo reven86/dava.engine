@@ -208,7 +208,8 @@ void Process(Engine& e)
 int GameMain(Vector<String> cmdLine)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    DAVA::Vector<DAVA::String> modules = { "NetCore" };
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
 
     e.update.Connect([&e](float32)
                      {

@@ -3,6 +3,7 @@
 #include "ViewSceneScreen.h"
 
 #include "Engine/Engine.h"
+#include "Engine/Window.h"
 
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/dbg_Draw.h"
@@ -36,8 +37,19 @@ void GameCore::OnAppStarted()
 {
 }
 
-void GameCore::OnWindowCreated(DAVA::Window* /*w*/)
+void GameCore::OnWindowCreated(DAVA::Window* w)
 {
+    w->SetTitle("Scene Viewer");
+#if defined(__DAVAENGINE_WIN_UAP__)
+    ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+    w->Resize(screenInfo.width, screenInfo.height);
+#else
+    w->Resize(1024, 768);
+#endif
+
+    // TODO FullScreen
+    //w->SetFullScreen(false);
+
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
     //flags[FastName("VERTEX_LIT")] = 1;
@@ -221,8 +233,6 @@ GameCore* GameCore::instance = nullptr;
 KeyedArchive* CreateOptions()
 {
     KeyedArchive* appOptions = new KeyedArchive();
-    const uint32 defaultWidth = 1024;
-    const uint32 defaultHeight = 768;
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
@@ -230,16 +240,9 @@ KeyedArchive* CreateOptions()
     //appOptions->SetInt32("renderer", rhi::RHI_METAL);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-    appOptions->SetInt32("width", defaultWidth);
-    appOptions->SetInt32("height", defaultHeight);
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    appOptions->SetInt32("width", DeviceInfo::GetScreenInfo().width);
-    appOptions->SetInt32("height", DeviceInfo::GetScreenInfo().height);
-
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Scene Viewer"));
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
 
@@ -253,15 +256,10 @@ KeyedArchive* CreateOptions()
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
 
-    appOptions->SetInt32("width", defaultWidth);
-    appOptions->SetInt32("height", defaultHeight);
-
     //appOptions->SetInt("fullscreen.width",	1280);
     //appOptions->SetInt("fullscreen.height", 800);
 
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Scene Viewer"));
 #endif
 
     return appOptions;

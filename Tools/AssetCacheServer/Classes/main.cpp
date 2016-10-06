@@ -19,7 +19,7 @@ int Process(Engine& e)
     const QString appUid = "{DAVA.AssetCacheServer.Version.1.0.0}";
     const QString appUidPath = QCryptographicHash::hash((appUid).toUtf8(), QCryptographicHash::Sha1).toHex();
     std::unique_ptr<QtHelpers::RunGuard> runGuard = std::make_unique<QtHelpers::RunGuard>(appUidPath);
-    if (!runGuard->tryToRun())
+    if (!runGuard->TryToRun())
     {
         return -1;
     }

@@ -25,7 +25,7 @@ int Process(Engine& e)
         }
     }
 
-    return succeed ? 1 : 0;
+    return succeed ? 0 : 1;
 }
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)

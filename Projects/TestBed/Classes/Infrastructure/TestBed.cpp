@@ -1,10 +1,6 @@
 #include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
-#if defined(__DAVAENGINE_QT__)
-#include "Engine/Public/NativeService.h"
-#include "Engine/Public/Qt/RenderWidget.h"
-#endif
 
 #include "Platform/DateTime.h"
 #include "CommandLine/CommandLineParser.h"
@@ -47,12 +43,8 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     using namespace Net;
 
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "TestBed");
-    appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
 #if defined(__DAVAENGINE_QT__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
@@ -137,12 +129,6 @@ void TestBed::OnGameLoopStarted()
             Logger::Error("******** KABOOM on main thread********");
         });
     }
-#if defined(__DAVAENGINE_QT__)
-    else
-    {
-        engine->GetNativeService()->GetRenderWidget()->show();
-    }
-#endif
 }
 
 void TestBed::OnGameLoopStopped()
@@ -166,6 +152,11 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
+    w->Resize(1024, 768);
+    w->SetTitle("TestBed");
+
+    // TODO FullScreen
+    //w->SetFullScreen(false);
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
