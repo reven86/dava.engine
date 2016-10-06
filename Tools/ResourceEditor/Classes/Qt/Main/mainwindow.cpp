@@ -180,6 +180,9 @@ QtMainWindow::QtMainWindow(QWidget* parent)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
 #endif
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
+#endif
 {
     ActiveSceneHolder::Init();
     globalOperations.reset(new MainWindowDetails::GlobalOperationsProxy(this));
@@ -564,6 +567,13 @@ void QtMainWindow::WaitStop()
 bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
 {
     QEvent::Type eventType = event->type();
+
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == eventType && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
 
     if (qApp == obj)
     {
