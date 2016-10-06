@@ -277,6 +277,7 @@ protected:
 
     Texture* heightTexture = nullptr;
     Texture* tangentTexture = nullptr;
+    bool floatHeightTexture = false;
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;
