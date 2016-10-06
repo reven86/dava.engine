@@ -190,7 +190,7 @@ void SelectionSystem::SelectNode(const SelectedNodes& selected, const SelectedNo
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        systemsManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
+        systemsManager->selectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }
 
