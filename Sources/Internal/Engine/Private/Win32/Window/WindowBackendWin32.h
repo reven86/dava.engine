@@ -87,7 +87,6 @@ private:
 private:
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
-    HCURSOR defaultCursor = nullptr;
     POINT lastCursorPosition;
 
     EngineBackend* engineBackend = nullptr;

@@ -30,7 +30,6 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
-    defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
