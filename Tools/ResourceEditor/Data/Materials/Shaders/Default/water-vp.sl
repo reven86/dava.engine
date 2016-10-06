@@ -196,7 +196,7 @@ vp_main( vertex_in input )
     #if VERTEX_FOG
     
         #if (SHADING == SHADING_PERVERTEX)
-            float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION.xyz,1.0), worldViewMatrix ).xyz;
+            float3 eyeCoordsPosition = mul( float4(input.position.xyz,1.0), worldViewMatrix ).xyz;
         #endif
     
         #define FOG_view_position eyeCoordsPosition
@@ -214,6 +214,7 @@ vp_main( vertex_in input )
     #endif
 
         #define FOG_eye_position cameraPosition
+        #define FOG_in_position input.position
 
         #include "vp-fog-math.slh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
         

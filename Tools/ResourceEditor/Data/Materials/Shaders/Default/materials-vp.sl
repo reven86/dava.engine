@@ -198,11 +198,11 @@ vertex_out
 [dynamic][a] property float3 boundingBoxSize;
 
     #if SPHERICAL_HARMONICS_9
-        [dynamic][a] property float4 sphericalHarmonics[7];
+        [dynamic][sh] property float4 sphericalHarmonics[7];
     #elif SPHERICAL_HARMONICS_4
-        [dynamic][a] property float4 sphericalHarmonics[3];
+        [dynamic][sh] property float4 sphericalHarmonics[3];
     #else
-        [dynamic][a] property float4 sphericalHarmonics;
+        [dynamic][sh] property float4 sphericalHarmonics;
     #endif
     
 #endif
@@ -411,11 +411,9 @@ vertex_out vp_main( vertex_in input )
             output.position = mul( waveValue, worldViewProjMatrix );
         #else
             #if SKINNING
-//weightedVertexPosition.w=3.0;
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, input.position.xyz);
                 float4 skinnedPosition = float4(weightedVertexPosition.xyz + (input.position.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
                 output.position = mul( skinnedPosition, worldViewProjMatrix );
-//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
             #else
                 output.position = mul( float4(input.position.xyz,1.0), worldViewProjMatrix );
             #endif
@@ -560,6 +558,7 @@ vertex_out vp_main( vertex_in input )
     
     #define FOG_eye_position cameraPosition
     #define FOG_view_position eyeCoordsPosition
+    #define FOG_in_position input.position
         
 #if FOG_ATMOSPHERE
     #define FOG_to_light_dir toLightDir
