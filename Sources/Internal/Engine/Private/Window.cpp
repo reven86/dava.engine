@@ -21,7 +21,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
 {
-    // TODO: add
+    // TODO: Add platfom's caps check
     //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE))
     {
         cursorVisible = true;
@@ -86,7 +86,7 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 
 void Window::SetCursorCapture(eCursorCapture mode)
 {
-    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE)*/)
+    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE)*/) // TODO: Add platfom's caps check
     {
         cursorCapture = mode;
         windowBackend->SetCursorCapture(mode);
@@ -100,7 +100,7 @@ eCursorCapture Window::GetCursorCapture() const
 
 void Window::SetCursorVisible(bool visible)
 {
-    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE)*/)
+    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE)*/) // TODO: Add platfom's caps check
     {
         cursorVisible = visible;
         windowBackend->SetCursorVisible(visible);
@@ -133,7 +133,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     {
         if (!hasFocus)
         {
-            return; // if haven't focus - skip all input events
+            return; // if no focus - skip all input events
         }
     }
     switch (e.type)

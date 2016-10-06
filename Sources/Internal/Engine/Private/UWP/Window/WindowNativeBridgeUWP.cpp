@@ -446,6 +446,7 @@ void WindowNativeBridge::InstallEventHandlers()
 void WindowNativeBridge::UninstallEventHandlers()
 {
     using namespace ::Windows::UI::Core;
+    using namespace ::Windows::Devices::Input;
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
 
     coreWindow->Activated -= tokenActivated;
@@ -461,6 +462,7 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
+    MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(

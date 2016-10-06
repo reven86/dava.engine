@@ -40,7 +40,7 @@ private:
     DAVA::UIStaticText* pinningText = nullptr;
     DAVA::UIStaticText* pinningMousePosText = nullptr;
 
-    bool mouseCaptured = false;
-    bool mouseVisible = true;
+    bool cursorCaptured = false;
+    bool cursorVisible = true;
     DAVA::SigConnectionID focusChangedId = DAVA::SigConnectionID();
 };

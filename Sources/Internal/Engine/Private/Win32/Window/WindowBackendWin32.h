@@ -77,7 +77,7 @@ private:
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
-    LRESULT OnSetCursor();
+    bool OnSetCursor(LPARAM lparam);
     bool OnClose();
     LRESULT OnDestroy();
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
@@ -87,8 +87,8 @@ private:
 private:
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
-    HCURSOR defaultCursor;
-    Point2i lastCursorPosition;
+    HCURSOR defaultCursor = nullptr;
+    POINT lastCursorPosition;
 
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference

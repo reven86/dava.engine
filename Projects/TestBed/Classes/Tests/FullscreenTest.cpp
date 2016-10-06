@@ -11,8 +11,8 @@ FullscreenTest::FullscreenTest(TestBed& app)
     , primaryWindow(app.GetEngine().PrimaryWindow())
 {
     Window* primWind = Engine::Instance()->PrimaryWindow();
-    mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
-    mouseVisible = primWind->GetCursorVisible();
+    cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+    cursorVisible = primWind->GetCursorVisible();
 }
 
 void FullscreenTest::LoadResources()
@@ -302,14 +302,14 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     case 0:
     {
         primWind->SetCursorVisible(false);
-        mouseVisible = primWind->GetCursorVisible();
+        cursorVisible = primWind->GetCursorVisible();
         break;
     }
     case 1:
     {
         primWind->SetCursorCapture(eCursorCapture::PINNING);
         primWind->SetCursorVisible(false);
-        mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+        cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
         break;
     }
     default:
@@ -323,8 +323,8 @@ void FullscreenTest::FocusChanged(DAVA::Window* window, bool hasFocus)
 {
     if (!hasFocus)
     {
-        mouseCaptured = false;
-        mouseVisible = true;
+        cursorCaptured = false;
+        cursorVisible = true;
     }
     UpdateMode();
 }
@@ -350,7 +350,7 @@ void FullscreenTest::UpdateMode()
     // }
     //
     WideString outStr;
-    if (mouseCaptured)
+    if (cursorCaptured)
     {
         outStr += L"Mouse Capture Mode = PINNING";
         outStr += L"\n";
@@ -363,7 +363,7 @@ void FullscreenTest::UpdateMode()
     {
         outStr += L"Mouse Capture Mode mode: OFF";
         outStr += L"\n";
-        if (mouseVisible)
+        if (cursorVisible)
         {
             outStr += L"Mouse visibility = true";
             pinningMousePosText->SetVisibilityFlag(false);
@@ -390,9 +390,9 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
             if (currentInput->mouseButton == UIEvent::MouseButton::MIDDLE)
             {
                 primWind->SetCursorCapture(eCursorCapture::OFF);
-                mouseCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
+                cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
                 primWind->SetCursorVisible(true);
-                mouseVisible = primWind->GetCursorVisible();
+                cursorVisible = primWind->GetCursorVisible();
             }
             break;
 

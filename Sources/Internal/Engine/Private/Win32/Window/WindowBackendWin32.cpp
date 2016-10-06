@@ -30,7 +30,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
-    defaultCursor = LoadCursor(NULL, IDC_ARROW);
+    defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
@@ -123,34 +123,19 @@ void WindowBackend::SetCursorVisible(bool visible)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
 }
 
-LRESULT WindowBackend::OnSetCursor()
+bool WindowBackend::OnSetCursor(LPARAM lparam)
 {
     if (!mouseVisible)
     {
-        POINT cursorPos;
-        RECT clientRect;
-        bool inClientRect = true;
-        ::GetCursorPos(&cursorPos);
-        ::GetClientRect(hwnd, &clientRect);
-        POINT leftBottom, rightTop;
-        leftBottom.x = clientRect.left;
-        leftBottom.y = clientRect.bottom;
-        rightTop.x = clientRect.right;
-        rightTop.y = clientRect.top;
-        ::ClientToScreen(hwnd, &leftBottom);
-        ::ClientToScreen(hwnd, &rightTop);
-        inClientRect &= cursorPos.x > leftBottom.x && cursorPos.x < rightTop.x;
-        inClientRect &= cursorPos.y > rightTop.y && cursorPos.y < leftBottom.y;
-        if (inClientRect)
+        uint16 hittest;
+        hittest = LOWORD(lparam);
+        if (hittest == HTCLIENT)
         {
-            ::SetCursor(NULL);
-        }
-        else
-        {
-            ::SetCursor(defaultCursor);
+            SetCursor(nullptr);
+            return true;
         }
     }
-    return TRUE;
+    return false;
 }
 
 void WindowBackend::SetCursorInCenter()
@@ -225,14 +210,6 @@ void WindowBackend::DoSetCursorVisible(bool visible)
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        if (visible)
-        {
-            ::SetCursor(defaultCursor);
-        }
-        else
-        {
-            ::SetCursor(NULL);
-        }
     }
 }
 
@@ -346,8 +323,8 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
     {
         RECT clientRect;
         ::GetClientRect(hwnd, &clientRect);
-        int clientCenterX = static_cast<int>((clientRect.left + clientRect.right) >> 1);
-        int clientCenterY = static_cast<int>((clientRect.bottom + clientRect.top) >> 1);
+        int clientCenterX((clientRect.left + clientRect.right) / 2);
+        int clientCenterY((clientRect.bottom + clientRect.top) / 2);
         int shiftX = x - clientCenterX;
         int shiftY = y - clientCenterY;
         if (shiftX != 0 || shiftY != 0)
@@ -526,7 +503,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_SETCURSOR)
     {
-        lresult = OnSetCursor();
+        isHandled = OnSetCursor(lparam);
+        lresult = isHandled ? TRUE : FALSE;
     }
     else if (message == WM_MOUSEMOVE)
     {
