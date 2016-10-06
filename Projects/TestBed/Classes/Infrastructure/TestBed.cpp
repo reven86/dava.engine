@@ -76,7 +76,6 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 
     Engine e;
     e.Init(runmode, modules, appOptions);
-    SafeRelease(appOptions);
 
     CheckDeviceInfoValid();
 

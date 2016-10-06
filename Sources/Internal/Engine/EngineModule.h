@@ -1,6 +1,8 @@
 #pragma once
 
-/// \defgroup engine Engine
+/**
+    \defgroup engine Engine
+*/
 
 // Common header for all public types from Engine
 #include "Engine/EngineTypes.h"

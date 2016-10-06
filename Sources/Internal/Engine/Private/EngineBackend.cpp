@@ -132,7 +132,8 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     runMode = engineRunMode;
     if (options_ != nullptr)
     {
-        options = options_;
+        // For now simply transfer ownership without incrementing reference count
+        options.Set(options_);
     }
 
     // Do not initialize PlatformCore in console mode as console mode is fully
