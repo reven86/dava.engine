@@ -13,6 +13,7 @@ class UIGeometricData;
 class ObjCWrapper;
 class UITextField;
 class UITextFieldDelegate;
+class Window;
 
 class TextFieldPlatformImpl
 {

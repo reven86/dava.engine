@@ -57,6 +57,13 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
                            outputGfxDirectory.GetAbsolutePathname().c_str(),
                            rootDirectory.GetAbsolutePathname().c_str());
 
+    if (FileSystem::Instance()->Exists(inputGfxDirectory) == false)
+    {
+        AddError(Format("Input folder is not exist: '%s'", inputGfxDirectory.GetStringValue().c_str()));
+        SetRunning(false);
+        return;
+    }
+
     for (eGPUFamily gpu : forGPUs)
     {
         Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != gpu) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu) : "Unknown");
@@ -84,6 +91,7 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
     else
     {
         AddError(Format("Unknown algorithm: '%s'", alg.c_str()));
+        SetRunning(false);
         return;
     }
 
