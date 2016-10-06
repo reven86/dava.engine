@@ -4,11 +4,11 @@
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
-class GameCore;
+class TestBed;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest(GameCore* g);
+    PackManagerTest(TestBed& app);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
@@ -31,6 +31,8 @@ private:
     void OnPackDownloadChange(const DAVA::IPackManager::Pack& pack);
     void OnRequestChange(const DAVA::IPackManager::IRequest& request);
     void OnInitChange(DAVA::IPackManager& init);
+
+    DAVA::Engine& engine;
 
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";

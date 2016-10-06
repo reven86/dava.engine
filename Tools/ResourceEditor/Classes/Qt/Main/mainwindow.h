@@ -84,6 +84,7 @@ public slots:
     void OnProjectClose();
     void OnSceneNew();
     void OnSceneOpen();
+    void OnSceneOpenQuickly();
     void OnSceneSave();
     void OnSceneSaveAs();
     void OnSceneSaveToFolder();

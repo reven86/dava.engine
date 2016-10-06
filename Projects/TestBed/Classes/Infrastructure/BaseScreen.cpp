@@ -1,32 +1,22 @@
 #include "Infrastructure/BaseScreen.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
-using namespace DAVA;
+#include <UI/Layouts/UIAnchorComponent.h>
 
-int32 BaseScreen::globalScreenId = 1;
+DAVA::int32 BaseScreen::globalScreenId = 1;
 
-BaseScreen::BaseScreen(GameCore* g, const String& _screenName, int32 skipBeforeTests)
+BaseScreen::BaseScreen(TestBed& app, const DAVA::String& screenName)
     : UIScreen()
-    , gameCore(g)
-    , currentScreenId(globalScreenId++)
-    , exitButton(nullptr)
-{
-    SetName(_screenName);
-
-    gameCore->RegisterScreen(this);
-}
-
-BaseScreen::BaseScreen(GameCore* g)
-    : UIScreen()
-    , gameCore(g)
+    , app(app)
     , currentScreenId(globalScreenId++)
 {
-    SetName("BaseScreen");
-    gameCore->RegisterScreen(this);
+    SetName(screenName);
+    app.RegisterScreen(this);
 }
 
-bool BaseScreen::SystemInput(UIEvent* currentInput)
+bool BaseScreen::SystemInput(DAVA::UIEvent* currentInput)
 {
+    using namespace DAVA;
     if ((currentInput->key == Key::BACK) && (currentInput->phase == UIEvent::Phase::KEY_DOWN))
     {
         OnExitButton(nullptr, nullptr, nullptr);
@@ -40,6 +30,7 @@ bool BaseScreen::SystemInput(UIEvent* currentInput)
 
 void BaseScreen::LoadResources()
 {
+    using namespace DAVA;
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
     font->SetSize(30);
@@ -52,6 +43,14 @@ void BaseScreen::LoadResources()
 
     exitButton->SetDebugDraw(true);
     exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
+
+    {
+        // Stick button to bottom right corner
+        UIAnchorComponent* anchor = exitButton->GetOrCreateComponent<UIAnchorComponent>();
+        anchor->SetBottomAnchorEnabled(true);
+        anchor->SetRightAnchorEnabled(true);
+    }
+
     AddControl(exitButton);
 }
 
@@ -66,5 +65,5 @@ void BaseScreen::UnloadResources()
 
 void BaseScreen::OnExitButton(BaseObject* obj, void* data, void* callerData)
 {
-    gameCore->ShowStartScreen();
+    app.ShowStartScreen();
 }

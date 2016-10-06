@@ -1,11 +1,11 @@
 #include "Tests/DeviceInfoTest.h"
 
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 using namespace DAVA;
 
-DeviceInfoTest::DeviceInfoTest(GameCore* g)
-    : BaseScreen(g, "DeviceInfoTest")
+DeviceInfoTest::DeviceInfoTest(TestBed& app)
+    : BaseScreen(app, "DeviceInfoTest")
 {
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_POINTER_TYPE).Connect(this, &DeviceInfoTest::OnInputChanged);
     DeviceInfo::GetHIDConnectionSignal(DAVA::DeviceInfo::eHIDType::HID_MOUSE_TYPE).Connect(this, &DeviceInfoTest::OnInputChanged);

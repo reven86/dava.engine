@@ -24,9 +24,9 @@ SceneViewModule::SceneViewModule()
 {
 }
 
-void SceneViewModule::OnRenderSystemInitialized(DAVA::Window& w)
+void SceneViewModule::OnRenderSystemInitialized(DAVA::Window* w)
 {
-    w.sizeScaleChanged.Connect(DAVA::MakeFunction(this, &SceneViewModule::OnWindowResized));
+    w->sizeScaleChanged.Connect(DAVA::MakeFunction(this, &SceneViewModule::OnWindowResized));
 }
 
 void SceneViewModule::OnContextCreated(DAVA::TArc::DataContext& context)
@@ -46,7 +46,7 @@ void SceneViewModule::PostInit()
     RegisterOperation<void, SceneViewModule, const DAVA::String&>(SceneViewOperations::OpenScene, this, &SceneViewModule::OpenScene);
 }
 
-void SceneViewModule::OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
+void SceneViewModule::OnWindowResized(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY)
 {
     DVASSERT(uiScreen);
     DVASSERT(ui3dView);

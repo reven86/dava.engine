@@ -11,6 +11,10 @@
 #include "Base/ScopedPtr.h"
 #include "Base/BaseTypes.h"
 
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/Texture.h"
+#include "Scene/SceneEditor2.h"
+
 SceneImageDump::SceneImageDump()
     : CommandLineTool("-sceneimagedump")
 {

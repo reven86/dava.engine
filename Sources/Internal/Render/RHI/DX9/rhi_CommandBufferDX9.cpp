@@ -1177,6 +1177,9 @@ _DX9_ExecuteQueuedCommands()
             }
 #endif
             _RejectAllFrames();
+
+            //clear buffer
+            DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
         }
         else
         {
@@ -1282,6 +1285,9 @@ _DX9_ExecuteQueuedCommands()
 
             _DX9_FramesWithRestoreAttempt = 0;
         }
+        //clear buffer
+        DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
+        _D3D9_Device->Present(NULL, NULL, NULL, NULL);
 
         TextureDX9::ReCreateAll();
         VertexBufferDX9::ReCreateAll();
