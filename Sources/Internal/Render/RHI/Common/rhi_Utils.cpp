@@ -3,7 +3,6 @@
 
 #include "Concurrency/Spinlock.h"
 
-
 void Trace(const char* format, ...)
 {
 #if 0

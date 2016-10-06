@@ -41,7 +41,6 @@ static Api dx11_HostApi()
 
 //------------------------------------------------------------------------------
 
-
 static bool dx11_NeedRestoreResources()
 {
     return false;
