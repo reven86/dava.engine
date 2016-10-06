@@ -61,7 +61,8 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include <PackManager/Private/PackManagerImpl.h>
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Analytics/Analytics.h"
 
 namespace DAVA
 {
@@ -252,7 +253,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl());
+    packManager.reset(new PackManagerImpl);
+    analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
 
@@ -948,6 +950,12 @@ IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+Analytics::Core& Core::GetAnalyticsCore() const
+{
+    DVASSERT(analyticsCore);
+    return *analyticsCore;
 }
 
 const ModuleManager& Core::GetModuleManager() const
