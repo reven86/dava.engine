@@ -149,10 +149,20 @@ void LoadingTest::OnInactive()
     Renderer::SetDesiredFPS(FPS_REGULAR);
 }
 
-void LoadingTest::SystemUpdate(float32 timeElapsed)
+void LoadingTest::OnVisible()
 {
-    BaseScreen::SystemUpdate(timeElapsed);
+    BaseTest::OnVisible();
+    UIControlSystem::Instance()->update.Connect(this, &LoadingTest::Update);
+}
 
+void LoadingTest::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+    BaseTest::OnInvisible();
+}
+
+void LoadingTest::Update(float32 timeElapsed)
+{
     if (loadJobs.size())
     {
         if (loadingDelayFrames == 0)

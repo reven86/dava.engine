@@ -1,4 +1,5 @@
 #include "BaseTest.h"
+#include "Infrastructure/UI/CustomUI3DView.h"
 
 const uint32 BaseTest::FRAME_OFFSET = 5;
 
@@ -29,7 +30,7 @@ void BaseTest::LoadResources()
     rect.dx = size.dx;
     rect.dy = size.dy;
 
-    sceneView = new UI3DView(rect);
+    sceneView = new CustomUI3DView(this, rect);
     sceneView->SetScene(scene);
 
     AddControl(sceneView);
@@ -41,6 +42,18 @@ void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
     SafeRelease(sceneView);
+}
+
+void BaseTest::OnVisible()
+{
+    BaseScreen::OnVisible();
+    UIControlSystem::Instance()->update.Connect(this, &BaseTest::Update);
+}
+
+void BaseTest::OnInvisible()
+{
+    UIControlSystem::Instance()->update.Disconnect(this);
+    BaseScreen::OnInvisible();
 }
 
 void BaseTest::CreateUI()
@@ -187,7 +200,7 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
                  .c_str());
 }
 
-void BaseTest::SystemUpdate(float32 timeElapsed)
+void BaseTest::Update(float32 timeElapsed)
 {
     uint32 allocatedMem = GetAllocatedMemory();
     if (allocatedMem > maxAllocatedMemory)
@@ -239,10 +252,8 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
             UpdateUI();
         }
 
-        PerformTestLogic(delta);
+        PerformTestLogic(currentFrameDelta);
     }
-
-    BaseScreen::SystemUpdate(delta);
 }
 
 void BaseTest::BeginFrame()
