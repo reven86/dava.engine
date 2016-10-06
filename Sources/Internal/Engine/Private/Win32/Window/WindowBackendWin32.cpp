@@ -30,6 +30,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    defaultCursor = LoadCursor(nullptr, IDC_ARROW);
 }
 
 WindowBackend::~WindowBackend()
@@ -122,7 +123,7 @@ void WindowBackend::SetCursorVisible(bool visible)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
 }
 
-bool WindowBackend::OnSetCursor(LPARAM lparam)
+LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
 {
     if (!mouseVisible)
     {
@@ -130,11 +131,11 @@ bool WindowBackend::OnSetCursor(LPARAM lparam)
         hittest = LOWORD(lparam);
         if (hittest == HTCLIENT)
         {
-            SetCursor(nullptr);
-            return true;
+            ::SetCursor(nullptr);
+            return TRUE;
         }
     }
-    return false;
+    return FALSE;
 }
 
 void WindowBackend::SetCursorInCenter()
@@ -209,6 +210,14 @@ void WindowBackend::DoSetCursorVisible(bool visible)
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
+        if (visible)
+        {
+            ::SetCursor(defaultCursor);
+        }
+        else
+        {
+            ::SetCursor(nullptr);
+        }
     }
 }
 
@@ -502,8 +511,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_SETCURSOR)
     {
-        isHandled = OnSetCursor(lparam);
-        lresult = isHandled ? TRUE : FALSE;
+        lresult = OnSetCursor(lparam);
+        isHandled = false;
     }
     else if (message == WM_MOUSEMOVE)
     {
@@ -616,7 +625,7 @@ bool WindowBackend::RegisterWindowClass()
         wcex.cbWndExtra = sizeof(void*); // Reserve room to store 'this' pointer
         wcex.hInstance = PlatformCore::Win32AppInstance();
         wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        wcex.hCursor = nullptr;
         wcex.hbrBackground = nullptr;
         wcex.lpszMenuName = nullptr;
         wcex.lpszClassName = windowClassName;
