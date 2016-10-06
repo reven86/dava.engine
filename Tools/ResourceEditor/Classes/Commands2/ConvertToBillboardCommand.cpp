@@ -1,5 +1,9 @@
 #include "Commands2/RECommandIDs.h"
 #include "Commands2/ConvertToBillboardCommand.h"
+
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+
 #include "Render/Highlevel/BillboardRenderObject.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -24,7 +28,7 @@ ConvertToBillboardCommand::ConvertToBillboardCommand(DAVA::RenderObject* ro, DAV
 ConvertToBillboardCommand::~ConvertToBillboardCommand()
 {
     DVASSERT(detachedComponent->GetEntity() == nullptr);
-    SafeDelete(detachedComponent);
+    DAVA::SafeDelete(detachedComponent);
 }
 
 void ConvertToBillboardCommand::Redo()

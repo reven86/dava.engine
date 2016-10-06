@@ -160,14 +160,17 @@ void QtPropertyEditor::OnCollapsed(const QModelIndex& index)
 
 void QtPropertyEditor::drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QColor gridColor = option.palette.color(QPalette::Normal, QPalette::Window);
+    QStyleOptionViewItemV4 opt = option;
+    // We should set font family manually, to set familyResolved flag in font.
+    // If we don't do this, Qt will get resolve family almost randomly
+    opt.font.setFamily(opt.font.family());
+    QColor gridColor = opt.palette.color(QPalette::Normal, QPalette::Window);
 
     // draw horizontal bottom line
     painter->setPen(gridColor);
-    painter->drawLine(option.rect.bottomLeft(), option.rect.bottomRight());
+    painter->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
 
     // adjust rect, so that grid line wont be overdrawn
-    QStyleOptionViewItemV4 opt = option;
     opt.rect.adjust(0, 0, 0, -1);
 
     // draw row

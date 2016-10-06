@@ -55,8 +55,8 @@ void UpdateFormatInfo(PixelFormat format, UIStaticText* formatName, UIStaticText
 }
 }
 
-FormatsTest::FormatsTest(GameCore* g)
-    : BaseScreen(g, "Supported texture formats test")
+FormatsTest::FormatsTest(TestBed& app)
+    : BaseScreen(app, "Supported texture formats test")
 {
 }
 

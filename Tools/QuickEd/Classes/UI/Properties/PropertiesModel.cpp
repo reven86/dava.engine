@@ -23,6 +23,7 @@
 
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -173,6 +174,9 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         if (property->IsOverriddenLocally() || property->IsReadOnly())
         {
             QFont myFont;
+            // We should set font family manually, to set familyResolved flag in font.
+            // If we don't do this, Qt will get resolve family almost randomly
+            myFont.setFamily(myFont.family());
             myFont.setBold(property->IsOverriddenLocally());
             myFont.setItalic(property->IsReadOnly());
             return myFont;
@@ -491,10 +495,10 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
         return QVariant(val.AsFloat64()).toString();
 
     case VariantType::TYPE_STRING:
-        return StringToQString(val.AsString());
+        return UnescapeString(StringToQString(val.AsString()));
 
     case VariantType::TYPE_WIDE_STRING:
-        return WideStringToQString(val.AsWideString());
+        return UnescapeString(WideStringToQString(val.AsWideString()));
 
     case VariantType::TYPE_FASTNAME:
         return StringToQString(val.AsFastName().c_str());

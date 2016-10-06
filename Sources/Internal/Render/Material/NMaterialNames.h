@@ -126,6 +126,7 @@ public:
     static const FastName WATER_CLEAR_COLOR;
     static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
     static const FastName DEPRECATED_LANDSCAPE_TEXTURE_0_TILING;
+    static const FastName PARAM_TREE_LEAF_COLOR_MUL;
 };
 
 class NMaterialFlagName
@@ -181,6 +182,8 @@ public:
     static const FastName FLAG_LANDSCAPE_LOD_MORPHING;
     static const FastName FLAG_LANDSCAPE_MORPHING_COLOR;
     static const FastName FLAG_LANDSCAPE_SPECULAR;
+
+    static const FastName FLAG_HEIGHTMAP_FLOAT_TEXTURE;
 
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;

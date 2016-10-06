@@ -1,5 +1,4 @@
-#ifndef __TEST_LIST_SCREEN_H__
-#define __TEST_LIST_SCREEN_H__
+#pragma once
 
 #include "Infrastructure/BaseScreen.h"
 #include <UI/UIList.h>
@@ -12,7 +11,7 @@ protected:
     virtual ~TestListScreen();
 
 public:
-    TestListScreen();
+    TestListScreen() = default;
 
     void LoadResources() override;
     void UnloadResources() override;
@@ -28,8 +27,6 @@ private:
 
 private:
     Vector<BaseScreen*> testScreens;
-    UIList* testsGrid;
-    float32 cellHeight;
+    UIList* testsGrid = nullptr;
+    float32 cellHeight = 50.f;
 };
-
-#endif

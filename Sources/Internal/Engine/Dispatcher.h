@@ -23,6 +23,8 @@ public:
     Dispatcher(const Function<void(const T&)>& handler);
     ~Dispatcher() = default;
 
+    // Explicitly delete copy and move assignment only for msvc 2013
+    // as it does not fully conform c++11
     Dispatcher(const Dispatcher&) = delete;
     Dispatcher& operator=(const Dispatcher&) = delete;
 
@@ -34,9 +36,13 @@ public:
 
     bool HasEvents() const;
 
-    void PostEvent(const T& e);
-    void SendEvent(const T& e);
+    template <typename U>
+    void PostEvent(U&& e);
+    template <typename U>
+    void SendEvent(U&& e);
+
     void ProcessEvents();
+    void ViewEventQueue(const Function<void(const T&)>& viewer);
 
 private:
     struct EventWrapper
@@ -52,10 +58,11 @@ private:
     };
     using EventType = EventWrapper;
 
-private:
     mutable Mutex mutex; // Mutex to guard event queue
     Vector<EventType> eventQueue;
+    Vector<EventType> readyEvents;
     Function<void(const T&)> eventHandler;
+    size_t curEventIndex = 0;
 
     static const int poolSize = 4;
 
@@ -96,14 +103,16 @@ bool Dispatcher<T>::HasEvents() const
 }
 
 template <typename T>
-void Dispatcher<T>::PostEvent(const T& e)
+template <typename U>
+void Dispatcher<T>::PostEvent(U&& e)
 {
     LockGuard<Mutex> lock(mutex);
-    eventQueue.emplace_back(e, nullptr);
+    eventQueue.emplace_back(std::forward<U>(e), nullptr);
 }
 
 template <typename T>
-void Dispatcher<T>::SendEvent(const T& e)
+template <typename U>
+void Dispatcher<T>::SendEvent(U&& e)
 {
     DVASSERT_MSG(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
@@ -114,7 +123,7 @@ void Dispatcher<T>::SendEvent(const T& e)
         // simply call ProcessEvents
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(e, nullptr);
+            eventQueue.emplace_back(std::forward<U>(e), nullptr);
         }
         ProcessEvents();
     }
@@ -140,7 +149,7 @@ void Dispatcher<T>::SendEvent(const T& e)
 
         {
             LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(e, &signalEventPool[signalEventIndex]);
+            eventQueue.emplace_back(std::forward<U>(e), &signalEventPool[signalEventIndex]);
         }
 
         DAVA_BEGIN_BLOCKING_CALL(linkedThreadId);
@@ -156,12 +165,12 @@ void Dispatcher<T>::SendEvent(const T& e)
 template <typename T>
 void Dispatcher<T>::ProcessEvents()
 {
-    Vector<EventType> readyEvents;
     {
         LockGuard<Mutex> lock(mutex);
         eventQueue.swap(readyEvents);
     }
 
+    curEventIndex = 0;
     for (const EventType& w : readyEvents)
     {
         eventHandler(w.e);
@@ -169,6 +178,17 @@ void Dispatcher<T>::ProcessEvents()
         {
             w.signalEvent->Signal();
         }
+        curEventIndex += 1;
+    }
+    readyEvents.clear();
+}
+
+template <typename T>
+void Dispatcher<T>::ViewEventQueue(const Function<void(const T&)>& viewer)
+{
+    for (size_t i = curEventIndex + 1, n = readyEvents.size(); i < n; ++i)
+    {
+        viewer(readyEvents[i].e);
     }
 }
 
