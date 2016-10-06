@@ -40,7 +40,7 @@ void UnpackHelpDoc()
         DAVA::Logger::FrameworkDebug("Unpacking Help...");
         try
         {
-            DAVA::ResourceArchive helpRA("~res:/Help.docs");
+            DAVA::ResourceArchive helpRA("~res:/ResourceEditor/Help.docs");
             DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
             DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
             helpRA.UnpackToFolder(docsPath);

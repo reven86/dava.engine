@@ -15,7 +15,6 @@ macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
     endif ()
-
     set(DEPLOY_SCRIPT_PATH ${DAVA_SCRIPTS_FILES_PATH}/deployQt.py)
     set(DEPLOY_ROOT_FOLDER ${DEPLOY_DIR})
 
@@ -30,7 +29,7 @@ macro ( qt_deploy )
         set(DEPLOY_QT_FOLDER ${QT_ACTUAL_PATH})
         set(DEPLOY_ARGUMENTS "$<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>")
         set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} --dir ${DEPLOY_DIR}")
-        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}  $<TARGET_FILE:${PROJECT_NAME}>")
+        set(DEPLOY_ARGUMENTS "${DEPLOY_ARGUMENTS} ${QML_SCAN_FLAG}")
         foreach(ITEM ${BINARY_ITEMS})
             string(TOLOWER ${ITEM} ITEM)
             if (EXISTS ${QT_ACTUAL_PATH}/bin/Qt5${ITEM}.dll)
@@ -50,16 +49,32 @@ macro ( qt_deploy )
         set(DEPLOY_ARGUMENTS "${PROJECT_NAME}.app -always-overwrite ${QML_SCAN_FLAG}")
 
     endif()
-
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND "python"
-                    ${DEPLOY_SCRIPT_PATH}
-                    "-p" "${DEPLOY_PLATFORM}"
-                    "-q" "${DEPLOY_QT_FOLDER}"
-                    "-d" "${DEPLOY_ROOT_FOLDER}"
-                    "-a" "${DEPLOY_ARGUMENTS}"
-                    "-n" "${PROJECT_NAME}"
-        )
+    
+    if( QT_POST_DEPLOY )
+        ADD_CUSTOM_TARGET ( QT_DELOY ALL
+                COMMAND "python"
+                        ${DEPLOY_SCRIPT_PATH}
+                        "-p" "${DEPLOY_PLATFORM}"
+                        "-q" "${DEPLOY_QT_FOLDER}"
+                        "-d" "${DEPLOY_ROOT_FOLDER}"
+                        "-a" "${DEPLOY_ARGUMENTS}"
+                        "-t" "${TARGETS_LIST}"
+            )
+            
+        foreach( ITEM ${TARGETS_LIST} )
+            add_dependencies( QT_DELOY ${ITEM} )           
+        endforeach()
+    else()
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+                COMMAND "python"
+                        ${DEPLOY_SCRIPT_PATH}
+                        "-p" "${DEPLOY_PLATFORM}"
+                        "-q" "${DEPLOY_QT_FOLDER}"
+                        "-d" "${DEPLOY_ROOT_FOLDER}"
+                        "-a" "${DEPLOY_ARGUMENTS}"
+                        "-n" "${PROJECT_NAME}"
+            )    
+    endif()
 
 endmacro()
 

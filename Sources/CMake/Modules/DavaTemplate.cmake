@@ -442,7 +442,7 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( XXXXX )#QT5_FOUND
+if ( QT5_FOUND AND WIN32 )
     set (QTCONF_TARGET_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     if (DEPLOY_DIR AND DEPLOY)
         set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
@@ -450,27 +450,17 @@ if ( XXXXX )#QT5_FOUND
 
     set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
 
-    if ( TEAMCITY_DEPLOY AND WIN32 )
-        set ( PLUGINS_PATH .)
-        set ( QML_IMPORT_PATH .)
-        set ( QML2_IMPORT_PATH .)
-    elseif ( TEAMCITY_DEPLOY AND APPLE )
-        set ( PLUGINS_PATH PlugIns )
-        set ( QML_IMPORT_PATH Resources/qml)
-        set ( QML2_IMPORT_PATH Resources/qml)
-    else()
-        get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
-        set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
-        set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
-        set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
-    endif()
-
+    get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
+    set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
+    set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
+    set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
+ 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                             ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
+                             ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
+       ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in
        ${QTCONF_DEPLOY_PATH}
     )
 
@@ -607,6 +597,10 @@ elseif ( WIN32 )
 
     # Generate debug info also in release builds
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+
+    if( NOT DAVA_DEBUGGER_WORKING_DIRECTORY )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} )
+    endif()
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
 
@@ -814,7 +808,7 @@ if( DEPLOY )
                 )
         endif(APP_DATA)
 
-		foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
+       foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
@@ -874,9 +868,8 @@ if( DEPLOY )
 
     endif()
 
-    if( QT5_FOUND AND NOT DAVA_MEGASOLUTION )
+    if( QT5_FOUND AND NOT QT_POST_DEPLOY )
         qt_deploy( )
-
     endif()
 
 endif()

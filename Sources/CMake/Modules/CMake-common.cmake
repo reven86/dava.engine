@@ -84,12 +84,12 @@ macro( processing_mix_data )
         set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )        
     else()
         set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
     endif()
 
     foreach( ITEM ${MIX_APP_DATA} )
         string( REGEX REPLACE " " "" ITEM ${ITEM} )
-        string( REGEX REPLACE ":" ";" ITEM ${ITEM} )
-
+        string( REGEX REPLACE "-" ";" ITEM ${ITEM} )
         list(GET ITEM 0 GROUP_PATH )
         list(GET ITEM 1 DATA_PATH )
 

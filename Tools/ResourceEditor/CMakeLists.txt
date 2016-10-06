@@ -116,8 +116,8 @@ set ( Generated          ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source ( SOURCE "Classes" ${BEAST_WRAPPER} ${DAVA_SPEEDTREE_ROOT_DIR}/Sources "DataQt"
                 GROUP_SOURCE Generated )
 
-set( MIX_APP_DATA         "Data : ${DAVA_ROOT_DIR}/Tools/Data" 
-                          "Data/${PROJECT_NAME} : ${CMAKE_CURRENT_LIST_DIR}/Data" )
+set( MIX_APP_DATA         "Data - ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} - ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )

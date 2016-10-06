@@ -63,7 +63,7 @@ ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir)
     
     #this command is deprecated. Remove it after 2017 plz 
-    COMMAND if $(ConfigurationName) == Release ${CMAKE_COMMAND} -E copy $(OutDir)/platforms/qwindows.dll $(OutDir)
+#    COMMAND if $(ConfigurationName) == Release ${CMAKE_COMMAND} -E copy $(OutDir)platforms/qwindows.dll $(OutDir)
 )    
 endif ()
 

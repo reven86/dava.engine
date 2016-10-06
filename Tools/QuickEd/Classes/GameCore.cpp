@@ -101,7 +101,7 @@ void GameCore::UnpackHelp()
     {
         try
         {
-            ResourceArchive helpRA("~res:/Help.docs");
+            ResourceArchive helpRA("~res:/QuickEd/Help.docs");
 
             FileSystem::Instance()->DeleteDirectory(docsPath);
             FileSystem::Instance()->CreateDirectory(docsPath, true);
