@@ -1,45 +1,44 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
+{
 namespace Analytics
 {
+const char eventNameTag[] = "name";
+const char eventCategoryTag[] = "category";
+const char eventTimestamp[] = "timestamp";
+
+struct EventRecord
 {
-    const char eventNameTag[] = "name";
-    const char eventCategoryTag[] = "category";
-    const char eventTimestamp[] = "timestamp";
+    EventRecord(const String& name, const String& category);
+    const Any* GetField(const String& field) const;
+    UnorderedMap<String, Any> fields;
+};
 
-    struct EventRecord
-    {
-        EventRecord(const String& name, const String& category);
+struct IBackend
+{
+    virtual ~IBackend() = default;
 
-        template <typename T>
-        const T& GetField(const String& field) const;
+    virtual void ConfigChanged(const KeyedArchive&) = 0;
+    virtual void ProcessEvent(const EventRecord& event) = 0;
+};
 
-        template <typename T>
-        T CastField(const String& field) const;
+class Core
+{
+public:
+    void SetConfig(KeyedArchive& newConfig);
+    const KeyedArchive& GetConfig() const;
 
-        bool HasField(const String& field) const;
+    void SetBackend(const String& name, std::shared_ptr<IBackend>& backend);
+    bool PostEvent(const EventRecord& event) const;
 
-        UnorderedMap<String, Any> fields;
-    };
-
-    class Core
-    {
-    public:
-        void SetConfig(KeyedArchive& newConfig);
-        const KeyedArchive& GetConfig() const;
-
-        Signal<const EventRecord&>& GetEventSignal(const String& backend);
-        Signal<const KeyedArchive&> onConfigChanged;
-
-        bool PostEvent(const EventRecord& event) const;
-
-    private:
-        RefPtr<KeyedArchive> config;
-        UnorderedMap<String, Signal<const EventRecord&>> backendSignals;
-    };
+private:
+    RefPtr<KeyedArchive> config;
+    UnorderedMap<String, std::shared_ptr<IBackend>> backends;
+};
 
 } // namespace Analytics
 } // namespace DAVA
