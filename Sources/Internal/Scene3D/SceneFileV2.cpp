@@ -935,7 +935,7 @@ void SceneFileV2::FixLodForLodsystem2(Entity* entity)
     ParticleEffectComponent* effect = GetParticleEffectComponent(entity);
     if (lod && ro && !effect)
     {
-        int32 maxLod = ro->GetMaxLodIndex();
+        int32 maxLod = Max(ro->GetMaxLodIndex(), 0);
         for (int32 i = maxLod; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
             lod->SetLodLayerDistance(i, std::numeric_limits<float32>::max());

@@ -8,6 +8,7 @@
 #include <QShortCut>
 #include <QFileInfo>
 #include <QInputDialog>
+#include <QTimer>
 
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
@@ -744,11 +745,11 @@ void PreviewWidget::OnDoubleClickEvent(QMouseEvent* event)
     {
         return;
     }
-    ChangeControlText(node);
-
     //send mouse release event manually to clear InTransform state
     QMouseEvent mouseEvent(QEvent::MouseButtonRelease, event->pos(), event->button(), event->buttons(), event->modifiers());
     qApp->sendEvent(davaGLWidget->GetGLView(), &mouseEvent);
+    // call "change text" after release event will pass
+    QTimer::singleShot(0, [node, this]() { ChangeControlText(node); });
 }
 
 void PreviewWidget::OnMoveEvent(QMouseEvent* event)
