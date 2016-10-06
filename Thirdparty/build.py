@@ -6,6 +6,7 @@ import os
 import sys
 import traceback
 import shutil
+import stat
 
 # Allow importing from Private folder
 sys.path.append('Private')
@@ -16,6 +17,14 @@ output_path = os.path.abspath('output')
 
 # Imported builders dict to avoid multiple imports
 imported_builders = {}
+
+def rmtree_error(operation, name, exc):
+	os.chmod(name, stat.S_IWRITE)
+	os.unlink(name)
+
+def remove_folder(folder_path):
+	if os.path.exists(folder_path) and os.path.isdir(folder_path):
+		shutil.rmtree(folder_path, onerror=rmtree_error)
 
 def import_library_builder_module(name):
 	# Import only once
@@ -154,7 +163,7 @@ if __name__ == "__main__":
 	else:
 		# Clean previous run (if it was invoked with --no-clean)
 		if not args.no_clean:
-			shutil.rmtree(output_path, ignore_errors=True)
+			remove_folder(output_path)
 
 		# Build
 		for lib in libraries_to_process:
@@ -162,4 +171,4 @@ if __name__ == "__main__":
 
 		# Clean
 		if not args.no_clean:
-			shutil.rmtree(output_path, ignore_errors=True)
+			remove_folder(output_path)
