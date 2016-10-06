@@ -46,7 +46,11 @@ bool Core::PostEvent(const EventRecord& event) const
         return false;
     }
 
-    return false;
+    for (const auto& backend : backends)
+    {
+        backend.second->ProcessEvent(event);
+    }
+    return true;
 }
 
 } // namespace Analytics
