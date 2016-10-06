@@ -3,10 +3,11 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Notification/LocalNotificationUAP.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
-::Windows::Data::Xml::Dom::XmlDocument ^ GenerateToastDeclaration(const WideString& title, const WideString& text, bool useSound)
+::Windows::Data::Xml::Dom::XmlDocument ^ GenerateToastDeclaration(const WideString& title, const WideString& text, bool useSound, Platform::String ^ notificationId)
 {
     using namespace ::Windows::Data::Xml::Dom;
     using namespace ::Windows::UI::Notifications;
@@ -15,21 +16,23 @@ namespace DAVA
     Platform::String ^ toastText = ref new Platform::String(text.c_str());
     XmlDocument ^ toastXml = ToastNotificationManager::GetTemplateContent(ToastTemplateType::ToastText02);
 
+    Platform::String ^ sttr = toastXml->GetXml();
+
     //Set the title and the text
     XmlNodeList ^ toastTextElements = toastXml->GetElementsByTagName("text");
     toastTextElements->GetAt(0)->AppendChild(toastXml->CreateTextNode(toastTitle));
     toastTextElements->GetAt(1)->AppendChild(toastXml->CreateTextNode(toastText));
 
+    IXmlNode ^ toastNode = toastXml->SelectSingleNode("/toast");
+    XmlElement ^ toastElement = static_cast<XmlElement ^>(toastNode);
+    toastElement->SetAttribute("launch", notificationId);
     //Set silence
     if (!useSound)
     {
-        IXmlNode ^ toastNode = toastXml->SelectSingleNode("/toast");
         XmlElement ^ audioNode = toastXml->CreateElement("audio");
         audioNode->SetAttribute("silent", "true");
-
         toastNode->AppendChild(audioNode);
     }
-
     return toastXml;
 }
 
@@ -38,6 +41,7 @@ LocalNotificationUAP::LocalNotificationUAP(const String& _id)
     using ::Windows::UI::Notifications::ToastNotificationManager;
 
     notificationId = _id;
+    nativeNotificationId = ref new Platform::String(StringToWString(_id).c_str());
     toastNotifier = ToastNotificationManager::CreateToastNotifier();
 }
 
@@ -60,7 +64,7 @@ void LocalNotificationUAP::ShowText(const WideString& title, const WideString& t
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
-    XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound);
+    XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound, nativeNotificationId);
     CreateOrUpdateNotification(toastDoc);
 }
 
@@ -74,7 +78,7 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
 
     double percentage = (static_cast<double>(progress) / total) * 100.0;
     WideString titleText = title + Format(L" %.02f%%", percentage);
-    XmlDocument ^ toastDoc = GenerateToastDeclaration(titleText, text, useSound);
+    XmlDocument ^ toastDoc = GenerateToastDeclaration(titleText, text, useSound, nativeNotificationId);
 
     CreateOrUpdateNotification(toastDoc, nullptr, true);
 }
@@ -86,7 +90,7 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
-    XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound);
+    XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound, nativeNotificationId);
 
     Windows::Globalization::Calendar ^ calendar = ref new Windows::Globalization::Calendar;
     calendar->AddSeconds(delaySeconds);

@@ -41,6 +41,15 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
     UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
 
     core->OnLaunched();
+
+    if (args->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
+    {
+        const String launchOptionsStr = UTF8Utils::EncodeToUTF8(args->Arguments->Data());
+        if (!launchOptionsStr.empty())
+        {
+            LocalNotificationController::Instance()->OnNotificationPressed(launchOptionsStr);
+        }
+    }
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)
