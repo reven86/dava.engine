@@ -10,7 +10,7 @@
 #include "Render/RHI/rhi_Type.h"
 #include "Base/BaseTypes.h"
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
     appOptions->SetString("title", "TemplateTArc");
