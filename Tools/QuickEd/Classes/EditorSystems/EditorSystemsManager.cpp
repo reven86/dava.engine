@@ -125,7 +125,7 @@ ControlNode* EditorSystemsManager::HighlightNodeUnderPoint(const DAVA::Vector2& 
     return node;
 }
 
-void EditorSystemsManager::ClearHighLight()
+void EditorSystemsManager::ClearHighlight()
 {
     hudSystemPtr->HighlightNodes({});
 }
