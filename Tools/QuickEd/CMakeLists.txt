@@ -79,8 +79,6 @@ set( WIN32_RESOURCES            ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")
 set( ADDED_BINARY_DIR     ${QT_ACTUAL_PATH}/bin )
 
-list( APPEND UNIFIED_CUSTOM_PACK_1 "Classes/main.cpp")#Зачем это сделали ?
-
 convert_graphics()
 setup_main_executable()
 
