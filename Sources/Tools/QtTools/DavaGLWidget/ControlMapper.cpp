@@ -4,6 +4,8 @@
 #include "UI/UIControlSystem.h"
 #include "Platform/Qt5/QtLayer.h"
 
+#include "QtTools/Utils/DavaQtKeyboard.h"
+
 #include "ControlMapper.h"
 
 PUSH_QT_WARNING_SUPRESSOR
@@ -12,23 +14,6 @@ PUSH_QT_WARNING_SUPRESSOR
 #include <QDragMoveEvent>
 #include <QDebug>
 POP_QT_WARNING_SUPRESSOR
-
-namespace DAVA
-{
-// we have to create this wrapper inside DAVA namespace for friend keyworkd works on private keyboard field
-class DavaQtKeyboard
-{
-public:
-    static Key GetDavaKeyForSystemKey(uint32 virtualKey)
-    {
-        return InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(virtualKey);
-    }
-    static void ClearAllKeys()
-    {
-        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-    }
-};
-} // end namespace DAVA
 
 using namespace DAVA;
 
@@ -65,37 +50,19 @@ ControlMapper::ControlMapper(QWindow* w)
 Key ConvertQtCommandKeysToDava(int qtKey)
 {
     Key result = Key::UNKNOWN;
-    switch (qtKey)
+    const int Kostil_KeyForRussianLanguage_A = 1060;
+    const int Kostil_KeyForRussianLanguage_Z = 1060 + 26;
+    if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
     {
-    case Qt::Key_Shift:
-        result = Key::LSHIFT;
-        break;
-    case Qt::Key_Control:
-        result = Key::LCTRL;
-        break;
-    case Qt::Key_Alt:
-        result = Key::LALT;
-        break;
-    case Qt::Key_AltGr:
-        result = Key::RALT;
-        break;
-    default:
+        int key = static_cast<int>(Key::KEY_A) + (qtKey - Qt::Key_A);
+        result = static_cast<Key>(key);
+    }
+    else if (qtKey >= Kostil_KeyForRussianLanguage_A && qtKey <= Kostil_KeyForRussianLanguage_Z)
     {
-        const int Kostil_KeyForRussianLanguage_A = 1060;
-        const int Kostil_KeyForRussianLanguage_Z = 1060 + 26;
-        if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
-        {
-            int key = static_cast<int>(Key::KEY_A) + (qtKey - Qt::Key_A);
-            result = static_cast<Key>(key);
-        }
-        else if (qtKey >= Kostil_KeyForRussianLanguage_A && qtKey <= Kostil_KeyForRussianLanguage_Z)
-        {
-            int key = static_cast<int>(Key::KEY_A) + (qtKey - Kostil_KeyForRussianLanguage_A);
-            result = static_cast<Key>(key);
-        }
+        int key = static_cast<int>(Key::KEY_A) + (qtKey - Kostil_KeyForRussianLanguage_A);
+        result = static_cast<Key>(key);
     }
-    break;
-    }
+
     return result;
 }
 

@@ -97,8 +97,8 @@ struct ChangePropertyAction
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemsManager->ActiveAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
-    systemsManager->SelectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
+    systemsManager->activeAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
+    systemsManager->selectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -148,7 +148,7 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::Phase::BEGAN:
     {
-        systemsManager->TransformStateChanged.Emit(true);
+        systemsManager->transformStateChanged.Emit(true);
         inTransformState = true;
         extraDelta.SetZero();
         prevPos = currentInput->point;
@@ -171,10 +171,10 @@ bool EditorTransformSystem::OnInput(UIEvent* currentInput)
         {
             ClampAngle();
         }
-        systemsManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
+        systemsManager->magnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         if (inTransformState)
         {
-            systemsManager->TransformStateChanged.Emit(false);
+            systemsManager->transformStateChanged.Emit(false);
             inTransformState = false;
         }
         return false;
@@ -329,9 +329,9 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     }
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
-    systemsManager->MagnetLinesChanged.Emit(magnets);
+    systemsManager->magnetLinesChanged.Emit(magnets);
 }
 
 Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
@@ -563,7 +563,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
 }
 
@@ -616,7 +616,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSiz
     {
         magnets.clear();
     }
-    systemsManager->MagnetLinesChanged.Emit(magnets);
+    systemsManager->magnetLinesChanged.Emit(magnets);
 
     return adjustedSize;
 }
@@ -714,7 +714,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->PropertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
 }
 
@@ -798,7 +798,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
             delta = ::Rotate(deltaPivot * controlSize, controlGeometricData.angle);
         }
     }
-    systemsManager->MagnetLinesChanged.Emit(magnetLines);
+    systemsManager->magnetLinesChanged.Emit(magnetLines);
     return finalPivot;
 }
 
@@ -823,7 +823,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    systemsManager->PropertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
     return true;
 }
 
@@ -937,7 +937,7 @@ void EditorTransformSystem::ClampAngle()
         angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    systemsManager->PropertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
 }
 
 bool EditorTransformSystem::IsShiftPressed() const

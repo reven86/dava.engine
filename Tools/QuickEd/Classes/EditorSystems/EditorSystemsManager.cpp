@@ -50,8 +50,11 @@ EditorSystemsManager::EditorSystemsManager()
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
-    PackageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
-    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
+    //this function must be called first when the transformStateChanged will be emitted
+    transformStateChanged.Connect(this, &EditorSystemsManager::OnTransformStateChanged);
+
+    packageNodeChanged.Connect(this, &EditorSystemsManager::OnPackageNodeChanged);
+    selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     canvasSystemPtr = new CanvasSystem(this);
     systems.emplace_back(canvasSystemPtr);
@@ -102,7 +105,7 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     {
         rootControl->AddControl(inputLayerControl.Get());
     }
-    EmulationModeChangedSignal.Emit(emulationMode);
+    emulationModeChangedSignal.Emit(emulationMode);
 }
 
 ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2& point) const
@@ -205,7 +208,7 @@ void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContaine
         else
         {
             editingRootControls.erase(node);
-            EditingRootControlsChanged.Emit(editingRootControls);
+            editingRootControlsChanged.Emit(editingRootControls);
         }
     }
 }
@@ -221,7 +224,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             if (destination == packageControlsNode)
             {
                 editingRootControls.insert(node);
-                EditingRootControlsChanged.Emit(editingRootControls);
+                editingRootControlsChanged.Emit(editingRootControls);
             }
         }
     }
@@ -266,8 +269,17 @@ void EditorSystemsManager::RefreshRootControls()
     if (editingRootControls != newRootControls)
     {
         editingRootControls = newRootControls;
-        EditingRootControlsChanged.Emit(editingRootControls);
+        editingRootControlsChanged.Emit(editingRootControls);
         UIControlSystem::Instance()->GetInputSystem()->SetCurrentScreen(UIControlSystem::Instance()->GetScreen()); // reset current screen
+    }
+}
+
+void EditorSystemsManager::OnTransformStateChanged(bool inTransformState)
+{
+    if (package != nullptr)
+    {
+        //calling this function can refresh all properties and styles in this node
+        package->SetCanUpdateAll(!inTransformState);
     }
 }
 

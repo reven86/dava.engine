@@ -379,9 +379,9 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     controlsCanvas->SetName(FastName("controls canvas"));
     systemsManager->GetScalableControl()->AddControl(controlsCanvas.Get());
 
-    systemsManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
-    systemsManager->PackageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
-    systemsManager->TransformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
+    systemsManager->packageNodeChanged.Connect(this, &CanvasSystem::OnPackageNodeChanged);
+    systemsManager->transformStateChanged.Connect(this, &CanvasSystem::OnTransformStateChanged);
 }
 
 CanvasSystem::~CanvasSystem()
@@ -407,15 +407,16 @@ void CanvasSystem::OnTransformStateChanged(bool inTransformState_)
     inTransformState = inTransformState_;
     if (!inTransformState)
     {
-        for (auto& node : transformedNodes)
+        if (needRecalculate)
         {
             for (auto& iter : gridControls)
             {
-                iter->RecalculateBackgroundProperties(node);
+                iter->UpdateCounterpoise();
+                iter->AdjustToNestedControl();
             }
         }
     }
-    transformedNodes.clear();
+    needRecalculate = false;
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -455,7 +456,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
 
     if (inTransformState)
     {
-        transformedNodes.insert(node);
+        needRecalculate = true;
     }
     else
     {
@@ -473,7 +474,7 @@ BackgroundController* CanvasSystem::CreateControlBackground(PackageBaseNode* nod
 {
     BackgroundController* backgroundController(new BackgroundController(node->GetControl()));
     backgroundController->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
-    backgroundController->RootControlPosChanged.Connect(&systemsManager->RootControlPositionChanged, &Signal<const Vector2&>::Emit);
+    backgroundController->RootControlPosChanged.Connect(&systemsManager->rootControlPositionChanged, &Signal<const Vector2&>::Emit);
     gridControls.emplace_back(backgroundController);
     return backgroundController;
 }
@@ -541,7 +542,7 @@ void CanvasSystem::LayoutCanvas()
     systemsManager->GetScalableControl()->SetSize(size);
     systemsManager->GetRootControl()->SetSize(size);
     systemsManager->GetInputLayerControl()->SetSize(size);
-    systemsManager->CanvasSizeChanged.Emit();
+    systemsManager->canvasSizeChanged.Emit();
 }
 
 void CanvasSystem::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)

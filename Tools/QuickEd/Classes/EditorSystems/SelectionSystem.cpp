@@ -19,9 +19,9 @@ REGISTER_PREFERENCES_ON_START(SelectionSystem,
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
-    systemsManager->SelectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->PackageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
-    systemsManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
+    systemsManager->packageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
+    systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
@@ -183,7 +183,7 @@ void SelectionSystem::SelectNode(const SelectedNodes& selected, const SelectedNo
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        systemsManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
+        systemsManager->selectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }
 
