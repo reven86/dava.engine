@@ -1,6 +1,8 @@
 #if !defined __MEM_BUFFERALLOCATOR_HPP__
 #define __MEM_BUFFERALLOCATOR_HPP__
 
+#if !(TARGET_IPHONE_SIMULATOR == 1)
+
 #include "mem_RemoteHeap.h"
 #include "_metal.h"
 #include <string>
@@ -223,5 +225,5 @@ BufferAllocator<T>::dump_stats() const
 }
 }
 
-
+#endif // !(TARGET_IPHONE_SIMULATOR == 1)
 #endif // __MEM_BUFFERALLOCATOR_HPP__

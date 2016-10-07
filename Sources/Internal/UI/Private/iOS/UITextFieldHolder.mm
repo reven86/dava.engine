@@ -65,11 +65,10 @@
 {
     window = w;
 
-    DAVA::float32 divider = window->GetScaleX();
-    DAVA::Size2i physicalScreenSize = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
+    DAVA::Size2i inputScreenSize = DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize();
 
-    self.bounds = CGRectMake(0.0f, 0.0f, physicalScreenSize.dx / divider, physicalScreenSize.dy / divider);
-    self.center = CGPointMake(physicalScreenSize.dx / 2.f / divider, physicalScreenSize.dy / 2.f / divider);
+    self.bounds = CGRectMake(0.0f, 0.0f, inputScreenSize.dx, inputScreenSize.dy);
+    self.center = CGPointMake(inputScreenSize.dx / 2.f, inputScreenSize.dy / 2.f);
 }
 #endif
 

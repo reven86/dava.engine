@@ -146,13 +146,7 @@ void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 
 void TextFieldPlatformImpl::SetFontSize(float size)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size);
-    scaledSize /= window->GetScaleX();
-#else
-    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size);
-    scaledSize /= Core::Instance()->GetScreenScaleFactor();
-#endif
+    float scaledSize = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(size);
 
     UIView* view = bridge->textFieldHolder->textCtrl;
     UIFont* font = [UIFont systemFontOfSize:scaledSize];
@@ -371,23 +365,8 @@ void TextFieldPlatformImpl::HideField()
 
 void TextFieldPlatformImpl::UpdateNativeRect(const Rect& virtualRect, int xOffset)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    float32 divider = window->GetScaleX();
-#else
-    float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
-#endif
-    Rect physicalRect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(virtualRect);
-    Vector2 physicalOffset = UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
-    CGRect nativeRect = CGRectMake((physicalRect.x + physicalOffset.x) / divider, (physicalRect.y + physicalOffset.y) / divider, physicalRect.dx / divider, physicalRect.dy / divider);
-
-    nativeRect = CGRectIntegral(nativeRect);
-    nativeRect.origin.x += xOffset;
-
-    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
-    nativeRect.size.width = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.width);
-    nativeRect.size.height = std::max<decltype(nativeRect.size.width)>(0.0, nativeRect.size.height);
-
-    bridge->textFieldHolder->textCtrl.frame = nativeRect;
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(virtualRect);
+    [bridge->textFieldHolder->textCtrl setFrame:CGRectMake(r.x, r.y, r.dx, r.dy)];
 }
 
 void TextFieldPlatformImpl::UpdateRect(const Rect& rect)

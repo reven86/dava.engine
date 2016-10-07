@@ -298,26 +298,9 @@ public:
 
     NSRect ConvertToNativeWindowRect(const Rect& srcRect, NSView* parent)
     {
-        VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-     
-#if defined(__DAVAENGINE_COREV2__)
-        // 1. map virtual to physical
-        Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-        rect += coordSystem->GetPhysicalDrawOffset();
-        rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-        rect.dx = std::max(0.0f, rect.dx);
-        rect.dy = std::max(0.0f, rect.dy);
-
-        NSRect controlRect = [[parent superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-        return controlRect;
-#else
-        Rect rect = coordSystem->ConvertVirtualToInput(srcRect);
-
-        NSView* openglView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        rect.y = openglView.frame.size.height - (rect.y + rect.dy);
-        return NSMakeRect(rect.x, rect.y, rect.dx, rect.dy);
-#endif
+        Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+        DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
+        return NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy);
     }
 
 #if defined(__DAVAENGINE_COREV2__)
@@ -531,18 +514,8 @@ public:
     void SetFontSize(float virtualFontSize) override
     {
         currentFontSize = virtualFontSize;
-
-        float32 size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(virtualFontSize);
-
-        NSSize origSz = NSMakeSize(static_cast<CGFloat>(size), 0);
-#if defined(__DAVAENGINE_COREV2__)
-        [[nsScrollView superview] convertSizeFromBacking:origSz];
-        NSSize convSz = [[nsScrollView superview] convertSizeFromBacking:origSz];
-#else
-        NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-        NSSize convSz = [openGLView convertSizeFromBacking:origSz];
-#endif
-        [nsTextView setFont:[NSFont systemFontOfSize:convSz.width]];
+        float32 size = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
+        [nsTextView setFont:[NSFont systemFontOfSize:size]];
     }
 
     void SetTextAlign(int32 align) override
@@ -944,9 +917,7 @@ public:
         updateViewState = true;
 
         currentFontSize = virtualFontSize;
-
         float32 size = UIControlSystem::Instance()->vcs->ConvertVirtualToInputX(virtualFontSize);
-
         [nsTextField setFont:[NSFont systemFontOfSize:size]];
     }
 

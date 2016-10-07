@@ -93,31 +93,8 @@ void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParam
 
 void MovieViewControl::SetRect(const Rect& rect)
 {
-    CGRect playerViewRect = [[bridge->moviePlayer view] frame];
-
-    Rect physicalRect = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(rect);
-    playerViewRect.origin.x = physicalRect.x + UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y = physicalRect.y + UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset().y;
-    playerViewRect.size.width = physicalRect.dx;
-    playerViewRect.size.height = physicalRect.dy;
-
-#if defined(__DAVAENGINE_COREV2__)
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = window->GetScaleX();
-#else
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
-#endif
-    playerViewRect.origin.x /= scaleDivider;
-    playerViewRect.origin.y /= scaleDivider;
-    playerViewRect.size.height /= scaleDivider;
-    playerViewRect.size.width /= scaleDivider;
-
-    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
-    playerViewRect.size.width = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.width);
-    playerViewRect.size.height = std::max<decltype(playerViewRect.size.width)>(0.0, playerViewRect.size.height);
-
-    [[bridge->moviePlayer view] setFrame:playerViewRect];
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
+    [[bridge->moviePlayer view] setFrame:CGRectMake(r.x, r.y, r.dx, r.dy)];
 }
 
 void MovieViewControl::SetVisible(bool isVisible)

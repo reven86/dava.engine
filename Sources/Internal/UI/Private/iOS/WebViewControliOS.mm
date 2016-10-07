@@ -481,44 +481,8 @@ void WebViewControl::ExecuteJScript(const String& scriptString)
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-    CGRect webViewRect = [bridge->nativeWebView frame];
-
-    VirtualCoordinatesSystem& VCS = *UIControlSystem::Instance()->vcs;
-
-    Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
-
-    webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
-    webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
-
-    if (isRenderToTexture)
-    {
-        const int32 offScreenPos = -10000;
-        // on iOS just move window away and we can render it into our texture
-        // if we will add/remove to view hierarchy - bug with memory
-        // if we hide windows render to texture - always blank texture
-        webViewRect.origin.x = offScreenPos;
-    }
-
-    webViewRect.size.width = physicalRect.dx;
-    webViewRect.size.height = physicalRect.dy;
-
-#if defined(__DAVAENGINE_COREV2__)
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = window->GetScaleX();
-#else
-    // Apply the Retina scale divider, if any.
-    float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
-#endif
-    webViewRect.origin.x /= scaleDivider;
-    webViewRect.origin.y /= scaleDivider;
-    webViewRect.size.height /= scaleDivider;
-    webViewRect.size.width /= scaleDivider;
-
-    // Use decltype as CGRect::CGSize::width/height can be float or double depending on architecture 32-bit or 64-bit
-    webViewRect.size.width = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.width);
-    webViewRect.size.height = std::max<decltype(webViewRect.size.width)>(0.0, webViewRect.size.height);
-
-    [bridge->nativeWebView setFrame:webViewRect];
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
+    [bridge->nativeWebView setFrame:CGRectMake(r.x, r.y, r.dx, r.dy)];
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
