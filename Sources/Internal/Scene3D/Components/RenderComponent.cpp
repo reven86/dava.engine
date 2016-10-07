@@ -82,6 +82,7 @@ void RenderComponent::Serialize(KeyedArchive* archive, SerializationContext* ser
 
 void RenderComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderComponent::Deserialize");
     if (NULL != archive)
     {
         KeyedArchive* roArch = archive->GetArchive("rc.renderObj");

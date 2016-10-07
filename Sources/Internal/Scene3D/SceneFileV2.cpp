@@ -336,6 +336,8 @@ VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath& filename
 
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scene)
 {
+    DAVA_CPU_PROFILER_SCOPE("Scene::LoadScene");
+
     ScopedPtr<File> file(File::Create(filename, File::OPEN | File::READ));
     if (!file)
     {
@@ -412,6 +414,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     if (header.version >= 2)
     {
+        DAVA_CPU_PROFILER_SCOPE("LoadNodes");
         int32 dataNodeCount = 0;
         uint32 result = file->Read(&dataNodeCount, sizeof(int32));
         if (result != sizeof(int32))
@@ -480,20 +483,19 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     if (isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
-    scene->children.reserve(header.nodeCount);
-    for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        const bool loaded = LoadHierarchy(0, scene, file, 1);
-        if (!loaded)
+        scene->children.reserve(header.nodeCount);
+        for (int ci = 0; ci < header.nodeCount; ++ci)
         {
-            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: ", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_READ_ERROR);
-            return GetError();
+            const bool loaded = LoadHierarchy(0, scene, file, 1);
+            if (!loaded)
+            {
+                Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: ", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
         }
     }
-
-    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    JobManager::Instance()->WaitMainJobs();
 
     UpdatePolygonGroupRequestedFormatRecursively(scene);
     const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
@@ -848,6 +850,8 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
 
 bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 level)
 {
+    DAVA_CPU_PROFILER_SCOPE("LoadHierarchy");
+
     bool resultLoad = true;
     bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive* archive = new KeyedArchive();
@@ -861,19 +865,23 @@ bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
     Entity* node = nullptr;
     if (name == "LandscapeNode")
     {
+        DAVA_CPU_PROFILER_SCOPE("LoadLandscape");
         node = LoadLandscape(scene, archive);
     }
     else if (name == "Camera")
     {
+        DAVA_CPU_PROFILER_SCOPE("LoadCamera");
         node = LoadCamera(scene, archive);
     }
     else if ((name == "LightNode")) // || (name == "EditorLightNode"))
     {
+        DAVA_CPU_PROFILER_SCOPE("LoadLight");
         node = LoadLight(scene, archive);
         removeChildren = true;
     }
     else if (name == "SceneNode")
     {
+        DAVA_CPU_PROFILER_SCOPE("LoadEntity");
         node = LoadEntity(scene, archive);
     }
     else
@@ -895,6 +903,7 @@ bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 
 
     if (nullptr != node)
     {
+        DAVA_CPU_PROFILER_SCOPE("Process");
         if (isDebugLogEnabled)
         {
             String arcName = archive->GetString("name");

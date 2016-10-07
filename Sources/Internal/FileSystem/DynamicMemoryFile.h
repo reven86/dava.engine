@@ -7,6 +7,67 @@
 
 namespace DAVA
 {
+class UnmanagedMemoryFile : public File
+{
+public:
+    UnmanagedMemoryFile() = default;
+
+    UnmanagedMemoryFile(const uint8* p, uint32 sz)
+        : pointer(p)
+        , size(sz)
+    {
+    }
+
+    UnmanagedMemoryFile(const UnmanagedMemoryFile& r)
+        : pointer(r.pointer)
+        , size(r.size)
+    {
+    }
+
+    uint32 Read(void* destinationBuffer, uint32 dataSize) override
+    {
+        DVASSERT(pointer != nullptr);
+
+        if (offset + dataSize > size)
+        {
+            dataSize = size - offset;
+        }
+
+        memcpy(destinationBuffer, pointer + offset, dataSize);
+        offset += dataSize;
+
+        return dataSize;
+    }
+
+    uint64 GetPos() const override
+    {
+        return offset;
+    }
+
+    bool IsEof() const override
+    {
+        return offset == size;
+    }
+
+private:
+    bool Seek(int64 position, eFileSeek seekType) override
+    {
+        DVASSERT(0);
+        return false;
+    }
+
+    uint32 Write(const void* sourceBuffer, uint32 dataSize) override
+    {
+        DVASSERT(0);
+        return 0;
+    }
+
+private:
+    const uint8* pointer = nullptr;
+    uint32 size = 0;
+    uint32 offset = 0;
+};
+
 class DynamicMemoryFile : public File
 {
 protected:

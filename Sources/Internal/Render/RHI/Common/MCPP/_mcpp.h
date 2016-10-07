@@ -16,6 +16,7 @@
     #include <stdio.h>
 
     #include "Base/Platform.h"
+    #include "Debug/CPUProfiler.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 typedef struct _stat stat_t;
