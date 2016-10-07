@@ -93,7 +93,7 @@ public:
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     ControlNode* HighlightNodeUnderPoint(const DAVA::Vector2& point);
-    void ClearHighLight();
+    void ClearHighlight();
     ControlNode* GetControlNodeUnderPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
