@@ -86,18 +86,19 @@ macro( processing_mix_data )
         set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
     endif()
+    get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
+
 
     foreach( ITEM ${MIX_APP_DATA} )
         string( REGEX REPLACE " " "" ITEM ${ITEM} )
         string( REGEX REPLACE "-" ";" ITEM ${ITEM} )
         list(GET ITEM 0 GROUP_PATH )
         list(GET ITEM 1 DATA_PATH )
-
+        get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
         execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
         if( NOT ARG_NOT_DATA_COPY )
             execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
         endif()
-
     endforeach()
 
     if( NOT DEPLOY )
