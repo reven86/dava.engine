@@ -108,9 +108,10 @@ set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
 
 reset_property ( MIX_APP_DATA )
 
-    add_tool     ( ResourceEditor  )
-    add_tool     ( QuickEd         )
+    add_tool     ( ResourceEditor   )
+    add_tool     ( QuickEd          )
 ##
+    add_tool     ( ResourceArchiver )
     add_tool     ( ResourcePacker   )
     add_tool     ( ResourcePatcher  )
     add_tool     ( ImageUnpacker    )
