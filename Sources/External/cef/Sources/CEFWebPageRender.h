@@ -26,6 +26,7 @@ public:
     UIControlBackground* GetContentBackground();
 
     void SetVisible(bool visibility);
+    bool IsVisible() const;
     void SetBackgroundTransparency(bool value);
     void SetViewSize(Vector2 size);
     void ShutDown();

@@ -79,7 +79,7 @@ endif ()
 
 if (ANDROID)
     # Libraries and classes to load at startup
-    set (ANDROID_BOOT_MODULES "crystax;c++_shared;TestBed")
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;TestBed")
     set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBedBoot")
 endif()
 
