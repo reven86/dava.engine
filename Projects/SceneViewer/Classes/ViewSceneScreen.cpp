@@ -206,11 +206,11 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
-    uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
+    static uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
-    BaseScreen::Update(timeElapsed);
-
-    updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+    uint64 endTime = SystemTimer::Instance()->GetAbsoluteNano();
+    updateTime += (endTime - startTime);
+    startTime = endTime;
 
     UpdateInfo(timeElapsed);
 

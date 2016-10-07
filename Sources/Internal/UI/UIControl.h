@@ -5,6 +5,7 @@
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "Functional/SingnalBase.h"
 
 namespace DAVA
 {
