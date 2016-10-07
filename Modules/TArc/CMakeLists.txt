@@ -14,8 +14,8 @@ set(INCLUDES_PRIVATE ${DAVA_INCLUDE_DIR})
 
 set (libsPath "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake")
 
-set(STATIC_LIBRARIES_MACOS_RELEASE "${libsPath}/mac/Release/libgmock.a")
-set(STATIC_LIBRARIES_MACOS_DEBUG "${libsPath}/mac/Debug/libgmock.a")
+set(STATIC_LIBRARIES_MACOS_RELEASE "${libsPath}/mac/libgmock.a")
+set(STATIC_LIBRARIES_MACOS_DEBUG "${libsPath}/mac/libgmock.a")
 
 set(STATIC_LIBRARIES_WIN32_RELEASE "${libsPath}/win/x86/Release/gmock.lib")
 set(STATIC_LIBRARIES_WIN32_DEBUG "${libsPath}/win/x86/Debug/gmock.lib")
