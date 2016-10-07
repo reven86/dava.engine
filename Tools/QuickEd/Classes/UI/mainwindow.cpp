@@ -481,6 +481,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 }
 
+bool MainWindow::eventFilter(QObject* object, QEvent* event)
+{
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == eventType && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
+}
+
 String MainWindow::GetState() const
 {
     QByteArray state = saveState().toBase64();
