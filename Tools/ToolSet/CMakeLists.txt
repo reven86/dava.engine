@@ -91,9 +91,9 @@ set( POSTPONED_MIX_DATA 1 )
 set( QT_POST_DEPLOY 1 )
 
 set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
-set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR}/ToolSet.app/Contents/Libs )
-set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR}/ToolSet.app/Contents/Resources )
-set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR}/ToolSet.app/Contents/MacOS )
+set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/Libs )
+set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/Resources )
+set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/MacOS )
 
 set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_WIN          )

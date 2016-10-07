@@ -50,7 +50,7 @@ macro ( qt_deploy )
 
     endif()
     
-    if( QT_POST_DEPLOY )
+    if( QT_POST_DEPLOY AND NOT MACOS )
         ADD_CUSTOM_TARGET ( QT_DELOY ALL
                 COMMAND "python"
                         ${DEPLOY_SCRIPT_PATH}
