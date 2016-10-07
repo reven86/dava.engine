@@ -1,4 +1,6 @@
 #include "UI/UIControl.h"
+
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
@@ -1378,15 +1380,17 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                     if (totalTouches == 0)
                     {
-                        if (IsPointInside(currentInput->point, true))
+                        bool isPointInside = IsPointInside(currentInput->point, true);
+                        eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
+
+                        Analytics::EmitUIEvent(this, event, currentInput);
+                        PerformEventWithData(event, currentInput);
+
+                        if (isPointInside)
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                             UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
-                        else
-                        {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                        }
+
                         controlState &= ~STATE_PRESSED_INSIDE;
                         controlState &= ~STATE_PRESSED_OUTSIDE;
                         controlState |= STATE_NORMAL;

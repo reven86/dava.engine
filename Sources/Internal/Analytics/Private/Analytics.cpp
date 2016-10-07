@@ -34,7 +34,7 @@ const KeyedArchive& Core::GetConfig() const
     return *config;
 }
 
-void Core::SetBackend(const String& name, std::shared_ptr<IBackend>& backend)
+void Core::AddBackend(const String& name, const std::shared_ptr<IBackend>& backend)
 {
     backends[name] = backend;
 }
