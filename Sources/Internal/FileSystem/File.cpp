@@ -203,7 +203,8 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 
                     if (!file)
                     {
-                        Logger::Debug("can't open existing file: %s attempt: %d", path.c_str(), openFileAttempt);
+                        Logger::Error("can't open existing file: %s attempt: %d, errno: %s",
+                                      path.c_str(), openFileAttempt, strerror(errno));
                         Thread::Sleep(100);
                     }
                 } // end while
