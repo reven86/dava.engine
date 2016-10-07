@@ -79,8 +79,6 @@ ApplicationWindow {
         }
     }
 
-    property int maxHistoryLength: 10;
-
     function addProjectToHistory() {
         var found = false;
         var source = rowLayout_sourceFolder.path;
@@ -112,9 +110,6 @@ ApplicationWindow {
             //add to combobox and to history
             history.push(newItem)
             rowLayout_sourceFolder.item.addString(source)
-        }
-        if(historyToSave.length > maxHistoryLength) {
-            historyToSave = historyToSave.slice(historyToSave.length, maxHistoryLength);
         }
     }
 
