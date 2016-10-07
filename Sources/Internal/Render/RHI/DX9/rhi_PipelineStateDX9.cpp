@@ -644,10 +644,10 @@ layout.Dump();
             switch (vl->StreamFrequency(s))
             {
             case VDF_PER_VERTEX:
-                _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INDEXEDDATA | 1);
+                _D3D9_Device->SetStreamSourceFreq(s, 1);
                 break;
             case VDF_PER_INSTANCE:
-                _D3D9_Device->SetStreamSourceFreq(s, D3DSTREAMSOURCE_INSTANCEDATA | 1);
+                _D3D9_Device->SetStreamSourceFreq(s, 1);
                 break;
             }
         }

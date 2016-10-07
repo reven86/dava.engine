@@ -212,6 +212,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/freetype.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glew32.lib"
@@ -221,6 +223,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl_a_debug.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libpsd.lib"
@@ -274,6 +277,8 @@ if( WIN )
                                       "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
                                       "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/glew32.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/msvcr120.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/msvcp120.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll")
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )

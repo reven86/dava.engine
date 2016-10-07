@@ -14,13 +14,7 @@ class EyeDropper
     Q_OBJECT
 
 private:
-    struct ScreenData
-    {
-        int id;
-        QRect rc;
-    };
     typedef QVector<QPointer<DropperShade>> Shades;
-    typedef QVector<ScreenData> ScreenArray;
 
 signals:
     void canceled();
