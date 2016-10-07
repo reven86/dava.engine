@@ -1,5 +1,4 @@
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
 #include "EditorSystems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
@@ -161,7 +160,7 @@ void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     ControlNode* selectedNode = nullptr;
     if (buttonID == UIEvent::MouseButton::LEFT)
     {
-        selectedNode = ControlNodeUnderPoint(point, false);
+        selectedNode = systemsManager->GetControlNodeUnderPoint(point);
     }
     if (nullptr != selectedNode)
     {
@@ -215,7 +214,7 @@ void SelectionSystem::SelectNode(ControlNode* selectedNode)
     SelectNode(selected, deselected);
 }
 
-ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>& nodesUnderPoint) const
+ControlNode* SelectionSystem::FindSmallNodeUnderNode(const Vector<ControlNode*>& nodesUnderPoint) const
 {
     if (!CanFindCommonForSelection || nodesUnderPoint.empty())
     {
@@ -259,6 +258,8 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
             {
                 break;
             }
+
+            //some size issues. They can migrate to the preferences system later
             const Vector2 acceptableSizeProportion(3.0f, 3.0f);
             const Vector2 acceptableRelativeSizeDifference(30.0f, 30.0f);
             const Vector2 acceptableAbsoluteSizeDifference(200.0f, 200.0f);
@@ -273,6 +274,7 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
                 }
             }
         }
+        //someone still can create control with a negative size
         if (size.dx > 0.0f && size.dy > 0.0f)
         {
             sizes.push_back(std::make_pair(node, size));
@@ -281,19 +283,13 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const Vector<ControlNode*>
     return nullptr;
 }
 
-ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const
+void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint, const Vector2& point) const
 {
-    if (KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
-    {
-        nearest = !nearest;
-    }
-
     auto findPredicate = [point](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
         return control->GetVisibilityFlag() && control->IsPointInside(point);
     };
-    Vector<ControlNode*> nodesUnderPoint;
 
     auto stopPredicate = [](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
@@ -301,7 +297,12 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
         return !control->GetVisibilityFlag();
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
+}
 
+ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const
+{
+    Vector<ControlNode*> nodesUnderPoint;
+    GetNodesForSelection(nodesUnderPoint, point);
     const SelectedNodes& selected = selectionContainer.selectedNodes;
     //no selection. Search for the child of root under cursor
     if (nodesUnderPoint.empty())
@@ -315,76 +316,82 @@ ControlNode* SelectionSystem::ControlNodeUnderPoint(const DAVA::Vector2& point, 
         return nodesUnderPoint.front();
     }
 
-    else if (!nearest)
+    if (!selected.empty())
     {
-        if (!selected.empty())
+        //collect all selected hierarchy
+        SelectedNodes parentsOfSelectedNodes;
+        for (PackageBaseNode* node : selected)
         {
-            //collect all selected hierarchy
-            SelectedNodes parentsOfSelectedNodes;
-            for (PackageBaseNode* node : selected)
+            node = node->GetParent();
+            while (node != nullptr && node->GetControl() != nullptr)
             {
+                parentsOfSelectedNodes.insert(node);
                 node = node->GetParent();
-                while (node != nullptr && node->GetControl() != nullptr)
-                {
-                    parentsOfSelectedNodes.insert(node);
-                    node = node->GetParent();
-                }
             }
-            //move from deep nodes to root node
-            for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
+        }
+
+        //move from deep nodes to root node
+        for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
+        {
+            ControlNode* node = *iter;
+            PackageBaseNode* nodeParent = node->GetParent();
+
+            if (selected.find(node) != selected.end())
             {
-                ControlNode* node = *iter;
-                PackageBaseNode* nodeParent = node->GetParent();
-
-                if (selected.find(node) != selected.end())
-                {
-                    return node;
-                }
-                //search child of selected to move down by hierarchy
-                if (selected.find(nodeParent) != selected.end())
-                {
-                    return node;
-                }
-
-                //search neighbor to move left-right
-                else if (selected.find(node) == selected.end()
-                         && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
-                {
-                    return node;
-                }
+                return node;
             }
-            //may be there some small node inside big one
-            ControlNode* node = GetCommonNodeUnderPoint(nodesUnderPoint);
-            if (node != nullptr)
+            //search child of selected to move down by hierarchy
+            if (selected.find(nodeParent) != selected.end())
+            {
+                return node;
+            }
+
+            //search neighbor to move left-right
+            else if (selected.find(node) == selected.end()
+                     && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
             {
                 return node;
             }
         }
-        //return child of root control
+        //may be there some small node inside big one
+        ControlNode* node = FindSmallNodeUnderNode(nodesUnderPoint);
+        if (node != nullptr)
+        {
+            return node;
+        }
+    }
+    //try to find child of root control
+    else
+    {
+        ControlNode* node = FindSmallNodeUnderNode(nodesUnderPoint);
+        if (node != nullptr)
+        {
+            return node;
+        }
         else
         {
-            ControlNode* node = GetCommonNodeUnderPoint(nodesUnderPoint);
-            if (node != nullptr)
+            for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
             {
-                return node;
-            }
-            else
-            {
-                for (auto iter = nodesUnderPoint.rbegin(); iter != nodesUnderPoint.rend(); ++iter)
+                ControlNode* node = *iter;
+                PackageBaseNode* parent = node->GetParent();
+                if (parent != nullptr)
                 {
-                    ControlNode* node = *iter;
-                    PackageBaseNode* parent = node->GetParent();
-                    if (parent != nullptr)
-                    {
-                        parent = parent->GetParent();
-                    }
-                    if (parent != nullptr && parent->GetControl() == nullptr)
-                    {
-                        return node;
-                    }
+                    parent = parent->GetParent();
+                }
+                if (parent != nullptr && parent->GetControl() == nullptr)
+                {
+                    return node;
                 }
             }
         }
     }
+    //did not found nothing, get nearest
+    return GetNearestNodeUnderPoint(point);
+}
+
+ControlNode* SelectionSystem::GetNearestNodeUnderPoint(const DAVA::Vector2& point) const
+{
+    Vector<ControlNode*> nodesUnderPoint;
+    GetNodesForSelection(nodesUnderPoint, point);
     return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
 }

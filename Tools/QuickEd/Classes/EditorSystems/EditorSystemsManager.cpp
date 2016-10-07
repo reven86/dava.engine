@@ -9,6 +9,7 @@
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -104,9 +105,20 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const
+ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2& point) const
 {
-    return selectionSystemPtr->ControlNodeUnderPoint(point, nearest);
+    if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
+    {
+        return selectionSystemPtr->GetCommonNodeUnderPoint(point);
+    }
+    return selectionSystemPtr->GetNearestNodeUnderPoint(point);
+}
+
+ControlNode* EditorSystemsManager::HighlightNodeUnderPoint(const DAVA::Vector2& point)
+{
+    ControlNode* node = GetControlNodeUnderPoint(point);
+    NodesHovered.Emit({ node });
+    return node;
 }
 
 uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const

@@ -31,9 +31,11 @@ public:
 
     void SelectNode(ControlNode* node);
 
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point, bool nearest) const;
+    ControlNode* GetNearestNodeUnderPoint(const DAVA::Vector2& point) const;
+    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point) const;
 
 private:
+    void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
     bool OnInput(DAVA::UIEvent* currentInput) override;
     void OnPackageNodeChanged(PackageNode* packageNode);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
@@ -44,7 +46,7 @@ private:
     void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
     void ProcessMousePress(const DAVA::Vector2& point, DAVA::UIEvent::MouseButton buttonID);
 
-    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
+    ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
     bool mousePressed = false;
     SelectionContainer selectionContainer;

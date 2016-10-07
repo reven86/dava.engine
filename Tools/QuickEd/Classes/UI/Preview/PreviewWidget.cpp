@@ -132,7 +132,7 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
-ControlNode* PreviewWidget::HighlightNodeUnderPoint(const QPoint& localPos, bool nearest)
+ControlNode* PreviewWidget::HighlightNodeUnderPoint(const QPoint& localPos)
 {
     //GL is not initialized yet
     if (!systemsManager)
@@ -141,9 +141,7 @@ ControlNode* PreviewWidget::HighlightNodeUnderPoint(const QPoint& localPos, bool
     }
 
     Vector2 davaPos(localPos.x(), localPos.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPos, nearest);
-    systemsManager->NodesHovered.Emit({ node });
-    return node;
+    return systemsManager->HighlightNodeUnderPoint(davaPos);
 }
 
 void PreviewWidget::ClearHightlight()
@@ -507,7 +505,7 @@ void PreviewWidget::ShowMenu(const QPoint& pos)
         menu.addSeparator();
     }
     Vector2 davaPoint(pos.x(), pos.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint, false);
+    ControlNode* node = systemsManager->GetControlNodeUnderPoint(davaPoint);
     if (CanChangeTextInControl(node))
     {
         QString name = QString::fromStdString(node->GetName());
@@ -740,7 +738,7 @@ void PreviewWidget::OnDoubleClickEvent(QMouseEvent* event)
     QPoint point = event->pos();
 
     Vector2 davaPoint(point.x(), point.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint, true);
+    ControlNode* node = systemsManager->GetControlNodeUnderPoint(davaPoint);
     if (!CanChangeTextInControl(node))
     {
         return;
@@ -798,7 +796,7 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DVASSERT(nullptr != document);
-        ControlNode* node = HighlightNodeUnderPoint(event->pos(), true);
+        ControlNode* node = HighlightNodeUnderPoint(event->pos());
 
         if (nullptr != node)
         {
@@ -845,7 +843,7 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
     if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         Vector2 pos(event->pos().x(), event->pos().y());
-        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos, true);
+        PackageBaseNode* node = systemsManager->GetControlNodeUnderPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
         uint32 index = 0;
