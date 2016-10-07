@@ -14,7 +14,7 @@
 
 // Implementation of NSApplicationDelegate
 // Forwards all necessary methods to CoreNativeBridge
-@interface AppDelegate : NSObject<NSApplicationDelegate>
+@interface AppDelegate : NSObject<NSApplicationDelegate, NSUserNotificationCenterDelegate>
 {
     DAVA::Private::CoreNativeBridge* bridge;
 }
