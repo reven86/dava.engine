@@ -108,8 +108,7 @@ DAVA::Vector<DAVA::String> REBaseApplication::GetEngineModules()
 
 void REBaseApplication::Init()
 {
-    engine.SetOptions(GetEngineOptions());
-    engine.Init(GetEngineMode(), GetEngineModules());
+    engine.Init(GetEngineMode(), GetEngineModules(), GetEngineOptions());
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
 #elif defined(__DAVAENGINE_WIN32__)

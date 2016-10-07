@@ -6,7 +6,7 @@
 
 #include <QtGlobal>
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     CommandLineManager cmdLineMng(cmdline);
     if (cmdLineMng.IsEnabled())

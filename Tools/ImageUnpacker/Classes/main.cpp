@@ -210,10 +210,10 @@ void Process(Engine& e)
     ProcessImageUnpacker();
 }
 
-int GameMain(Vector<String> cmdline)
+int DAVAMain(Vector<String> cmdline)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 
     e.update.Connect([&e](float32)
                      {

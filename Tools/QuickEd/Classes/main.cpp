@@ -10,7 +10,7 @@ DAVA::KeyedArchive* CreateOptions()
     return appOptions;
 }
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     DAVA::Engine engine;
     {
@@ -22,8 +22,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
           "SoundSystem",
           "DownloadManager",
         };
-        engine.SetOptions(CreateOptions());
-        engine.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules);
+        engine.Init(DAVA::eEngineRunMode::GUI_EMBEDDED, modules, CreateOptions());
     }
 
     std::unique_ptr<EditorCore> editorCore;

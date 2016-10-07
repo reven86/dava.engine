@@ -205,11 +205,11 @@ void Process(Engine& e)
     ProcessRecourcePacker(e);
 }
 
-int GameMain(Vector<String> cmdLine)
+int DAVAMain(Vector<String> cmdLine)
 {
     Engine e;
     DAVA::Vector<DAVA::String> modules = { "NetCore" };
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
                      {

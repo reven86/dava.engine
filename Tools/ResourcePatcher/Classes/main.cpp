@@ -358,10 +358,10 @@ int Process(Engine& e)
     return ret;
 }
 
-int GameMain(Vector<String> cmdLine)
+int DAVAMain(Vector<String> cmdLine)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
     e.update.Connect([&e](float32)
                      {
                          int retCode = Process(e);

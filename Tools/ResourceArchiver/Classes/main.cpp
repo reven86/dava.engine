@@ -22,7 +22,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     EngineContext* context = e.GetContext();
     context->logger->SetLogLevel(Logger::LEVEL_INFO);
