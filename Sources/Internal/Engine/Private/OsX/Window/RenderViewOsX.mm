@@ -42,7 +42,7 @@
     // Enable retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 
-    NSTrackingAreaOptions areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
+    NSTrackingAreaOptions areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp | NSTrackingInVisibleRect);
     trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:areaOptions owner:self userInfo:nil];
     [self addTrackingArea:trackingArea];
 
@@ -81,18 +81,6 @@
 - (BOOL)acceptsFirstResponder
 {
     return YES;
-}
-
-- (void)updateTrackingAreas
-{
-    NSTrackingAreaOptions areaOptions = (NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp);
-    if (trackingArea != nullptr)
-    {
-        [self removeTrackingArea:trackingArea];
-    }
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:areaOptions owner:self userInfo:nil];
-    [self addTrackingArea:trackingArea];
-    [super updateTrackingAreas];
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent
