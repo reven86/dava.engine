@@ -120,7 +120,7 @@ ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2&
 ControlNode* EditorSystemsManager::HighlightNodeUnderPoint(const DAVA::Vector2& point)
 {
     ControlNode* node = GetControlNodeUnderPoint(point);
-    NodesHovered.Emit({ node });
+    nodesHovered.Emit({ node });
     return node;
 }
 

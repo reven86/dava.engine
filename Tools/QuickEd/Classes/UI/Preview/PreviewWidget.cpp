@@ -151,7 +151,7 @@ void PreviewWidget::ClearHightlight()
     {
         return;
     }
-    systemsManager->NodesHovered.Emit({ nullptr });
+    systemsManager->nodesHovered.Emit({ nullptr });
 }
 
 void PreviewWidget::CreateActions()
@@ -213,8 +213,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     continuousUpdater->Stop();
     SaveContext();
     document = arg;
-    systemsManager->MagnetLinesChanged.Emit({});
-    systemsManager->NodesHovered.Emit({});
+    systemsManager->magnetLinesChanged.Emit({});
+    systemsManager->nodesHovered.Emit({});
     if (document.isNull())
     {
         systemsManager->packageNodeChanged.Emit(nullptr);
