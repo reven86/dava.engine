@@ -1,14 +1,17 @@
-#include "Classes/Qt/Application/REConsoleApplication.h"
-#include "Classes/Qt/Application/REGuiApplication.h"
+#include "Classes/Qt/Application/REApplication.h"
+//#include "Classes/Qt/Application/REConsoleApplication.h"
+//#include "Classes/Qt/Application/REGuiApplication.h"
 
-#include "CommandLine/CommandLineManager.h"
-#include "Logger/Logger.h"
+//#include "CommandLine/CommandLineManager.h"
+//#include "Logger/Logger.h"
 
-#include <QtGlobal>
+//#include <QtGlobal>
 
 int GameMain(DAVA::Vector<DAVA::String> cmdline)
 {
-    CommandLineManager cmdLineMng(cmdline);
+    REApplication app(std::move(cmdline));
+    return app.Run();
+    /*CommandLineManager cmdLineMng(cmdline);
     if (cmdLineMng.IsEnabled())
     {
         REConsoleApplication app(cmdLineMng);
@@ -36,5 +39,5 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     {
         DAVA::Logger::Error("Wrong command line. Exit on start.");
         return 1; //wrong commandLine
-    }
+    }*/
 }

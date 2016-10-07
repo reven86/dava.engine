@@ -244,8 +244,22 @@ macro( generated_initialization_module_code )
     endif()
 endmacro()
 #
+macro( reset_MAIN_MODULE_PROPERTIES )
+    foreach( VALUE ${MAIN_MODULE_VALUES}
+                                         TARGET_MODULES_LIST 
+                                         QT_DEPLOY_LIST_VALUE 
+                                         QT_LINKAGE_LIST 
+                                         QT_LINKAGE_LIST_VALUE 
+                                         DEPENDENT_LIST
+                                         DAVA_COMPONENTS 
+                                         GROUP_SOURCE )
+        set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
+    endforeach()
+endmacro()
+#
 macro( reset_MAIN_MODULE_VALUES )
-    foreach( VALUE ${MAIN_MODULE_VALUES} TARGET_MODULES_LIST 
+    foreach( VALUE ${MAIN_MODULE_VALUES}
+                                         TARGET_MODULES_LIST 
                                          QT_DEPLOY_LIST_VALUE 
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
@@ -301,6 +315,7 @@ macro( setup_main_module )
         #"hack - find first call"
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
         if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )
+            #reset_MAIN_MODULE_PROPERTIES()
             modules_tree_info_execute()
             generated_initialization_module_code()
         endif()

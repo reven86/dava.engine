@@ -1,6 +1,8 @@
 #include "ActiveSceneHolder.h"
 #include "SceneSignals.h"
 
+#include "TArcUtils/QtConnections.h"
+
 namespace ActiveSceneHolderDetails
 {
 class ActiveSceneHolderImpl : public DAVA::Singleton<ActiveSceneHolderImpl>

@@ -10,7 +10,7 @@ namespace TArc
 {
 class TestClass : public UnitTests::TestClass
 {
-    constexpr static const double testTimeLimit = 10.0; // seconds
+    static const double testTimeLimit; // seconds
 
 public:
     ~TestClass();
