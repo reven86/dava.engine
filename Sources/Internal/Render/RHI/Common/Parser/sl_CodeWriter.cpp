@@ -15,13 +15,6 @@ CodeWriter::CodeWriter(std::string* buf)
     m_currentFileName = NULL;
     m_spacesPerIndent = 4;
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    m_writeLines = false;
-    m_writeFileNames = false;
-#else
-    m_writeLines = true;
-    m_writeFileNames = true;
-#endif
     m_writeLines = false;
     m_writeFileNames = false;
 }
@@ -33,7 +26,7 @@ void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)
         bool outputLine = false;
         bool outputFile = false;
 
-        // Output a line number pragma if necessary.
+        // output a line number pragma if necessary
         if (fileName != NULL && m_currentFileName != fileName)
         {
             m_currentFileName = fileName;
@@ -63,7 +56,7 @@ void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)
         }
     }
 
-    // Handle the indentation.
+    // handle the indentation
     for (int i = 0; i < indent * m_spacesPerIndent; ++i)
     {
         *m_buffer += " ";

@@ -26,7 +26,6 @@ public:
     void EnableLineNumbers(bool enable);
 
 private:
-    //    Allocator* m_allocator;
     std::string ownBuffer;
     std::string* m_buffer;
     int m_currentLine;
