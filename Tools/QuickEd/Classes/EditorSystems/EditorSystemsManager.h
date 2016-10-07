@@ -9,8 +9,6 @@
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 
-DAVA::Vector2 GetMinimumSize();
-
 namespace DAVA
 {
 class UIControl;
@@ -92,9 +90,9 @@ public:
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
-    ControlNode* HighlightNodeUnderPoint(const DAVA::Vector2& point);
+    void HighlightNode(ControlNode* node);
     void ClearHighlight();
-    ControlNode* GetControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     void SelectAll();

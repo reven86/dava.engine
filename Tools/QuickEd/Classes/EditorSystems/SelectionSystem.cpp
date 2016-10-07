@@ -160,7 +160,7 @@ void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, UIEvent::Mou
     ControlNode* selectedNode = nullptr;
     if (buttonID == UIEvent::MouseButton::LEFT)
     {
-        selectedNode = systemsManager->GetControlNodeUnderPoint(point);
+        selectedNode = systemsManager->GetControlNodeAtPoint(point);
     }
     if (nullptr != selectedNode)
     {

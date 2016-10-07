@@ -2,6 +2,7 @@
 #include "EditorSystems/HUDControls.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
+#include "EditorSystems/EditorTransformSystem.h"
 
 using namespace DAVA;
 
@@ -98,7 +99,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetVisibilityFlag(containerVisible);
     if (containerVisible)
     {
-        const DAVA::Vector2& minimumSize = GetMinimumSize();
+        const DAVA::Vector2& minimumSize = EditorTransformSystem::GetMinimumSize();
         DAVA::Vector2 actualSize(gd.size * gd.scale);
         DAVA::UIGeometricData changedGD = gd;
         bool controlIsMoveOnly = actualSize.dx < minimumSize.dx && actualSize.dy < minimumSize.dy;

@@ -115,9 +115,6 @@ private:
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
 
-    ControlNode* HighlightNodeUnderPoint(const QPoint& localPos);
-    void ClearHightlight();
-
     QPoint lastMousePos;
     QCursor lastCursor;
     QPointer<Document> document;

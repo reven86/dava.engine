@@ -158,7 +158,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
     UpdateAreasVisibility();
     ProcessCursor(hoveredPoint, SEARCH_BACKWARD);
-    ControlNode* node = systemsManager->GetControlNodeUnderPoint(hoveredPoint);
+    ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
     HighlightNodes({ node });
 }
 
@@ -174,7 +174,8 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         || phase == UIEvent::Phase::DRAG
         )
     {
-        systemsManager->HighlightNodeUnderPoint(hoveredPoint);
+        ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
+        HighlightNodes({ node });
     }
 
     switch (phase)

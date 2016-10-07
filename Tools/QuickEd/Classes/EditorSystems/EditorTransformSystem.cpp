@@ -11,6 +11,11 @@
 
 using namespace DAVA;
 
+Vector2 EditorTransformSystem::GetMinimumSize()
+{
+    return Vector2(16.0f, 16.0f);
+}
+
 REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("moveMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("resizeMagnetRange", DAVA::Vector2(7.0f, 7.0f)),

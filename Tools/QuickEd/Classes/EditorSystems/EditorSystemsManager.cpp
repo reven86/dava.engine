@@ -109,7 +109,7 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     emulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
 {
     if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
     {
@@ -118,11 +118,9 @@ ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2&
     return selectionSystemPtr->GetNearestNodeUnderPoint(point);
 }
 
-ControlNode* EditorSystemsManager::HighlightNodeUnderPoint(const DAVA::Vector2& point)
+void EditorSystemsManager::HighlightNode(ControlNode* node)
 {
-    ControlNode* node = GetControlNodeUnderPoint(point);
     hudSystemPtr->HighlightNodes({ node });
-    return node;
 }
 
 void EditorSystemsManager::ClearHighlight()
@@ -287,9 +285,4 @@ void EditorSystemsManager::OnTransformStateChanged(bool inTransformState)
         //calling this function can refresh all properties and styles in this node
         package->SetCanUpdateAll(!inTransformState);
     }
-}
-
-DAVA::Vector2 GetMinimumSize()
-{
-    return DAVA::Vector2(16.0f, 16.0f);
 }
