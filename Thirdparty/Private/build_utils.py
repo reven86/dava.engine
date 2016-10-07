@@ -241,7 +241,22 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 	# Rename version-dependent folder name to simpler one
 	# In case other builder will need to use this folder
 	if inner_dir_name is not None:
-		shutil.move(os.path.join(working_directory_path, inner_dir_name), result_folder_path)
+		extracted_path = os.path.join(working_directory_path, inner_dir_name)
+		if not os.path.exists(result_folder_path):
+			shutil.move(extracted_path, result_folder_path)
+		else:
+			def deepmove(src, dst):
+				if not os.path.exists(dst):
+					os.mkdir(dst)
+				for item in os.listdir(src):
+					s = os.path.join(src, item)
+					d = os.path.join(dst, item)
+					if os.path.isdir(s):
+						deepmove(s, d)
+					else:
+						shutil.move(s, d)
+				os.rmdir(src)
+			deepmove(extracted_path, result_folder_path)
 
 	download_and_extract.cache.append(download_data)
 

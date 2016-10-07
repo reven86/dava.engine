@@ -3,7 +3,7 @@ project(lua)
 
 include_directories(./src)
 
-FILE(GLOB SOURCE_FILES src/*.c)
+FILE(GLOB SOURCE_FILES bit.c src/*.c)
 add_library(lua STATIC ${SOURCE_FILES})
 
 if(WIN32)
