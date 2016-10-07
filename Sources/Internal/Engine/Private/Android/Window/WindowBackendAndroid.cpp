@@ -160,12 +160,12 @@ jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* 
     return object;
 }
 
-void WindowBackend::SetCursorCapture(eCursorCapture mode);
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
     // not implemented
 }
 
-void WindowBackend::SetCursorVisible(bool visible);
+void WindowBackend::SetCursorVisible(bool visible)
 {
     // not implemented
 }
