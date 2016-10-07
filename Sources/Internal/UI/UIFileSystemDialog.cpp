@@ -7,8 +7,10 @@
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include <algorithm>
+#include "Logger/Logger.h"
 #include "Render/2D/FTFont.h"
+
+#include <algorithm>
 
 namespace DAVA
 {

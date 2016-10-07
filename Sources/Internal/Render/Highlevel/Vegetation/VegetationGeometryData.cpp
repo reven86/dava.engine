@@ -4,6 +4,8 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Job/JobManager.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 static const FastName VEGETATION_ENTITY_VARIATION_0("variation_0");

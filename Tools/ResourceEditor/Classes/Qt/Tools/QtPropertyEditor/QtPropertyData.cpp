@@ -99,6 +99,18 @@ QVariant QtPropertyData::data(int role) const
         }
         break;
     case Qt::FontRole:
+    {
+        ret = style.value(role);
+        if (ret.isValid() && ret.canConvert<QFont>())
+        {
+            QFont font = ret.value<QFont>();
+            // We should set font family manually, to set familyResolved flag in font.
+            // If we don't do this, Qt will get resolve family almost randomly
+            font.setFamily(font.family());
+            ret = QVariant::fromValue(font);
+        }
+    }
+    break;
     case Qt::DecorationRole:
     case Qt::BackgroundRole:
     case Qt::ForegroundRole:

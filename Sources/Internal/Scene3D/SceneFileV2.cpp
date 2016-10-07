@@ -18,6 +18,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
 
+#include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
@@ -935,7 +936,7 @@ void SceneFileV2::FixLodForLodsystem2(Entity* entity)
     ParticleEffectComponent* effect = GetParticleEffectComponent(entity);
     if (lod && ro && !effect)
     {
-        int32 maxLod = ro->GetMaxLodIndex();
+        int32 maxLod = Max(ro->GetMaxLodIndex(), 0);
         for (int32 i = maxLod; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
             lod->SetLodLayerDistance(i, std::numeric_limits<float32>::max());

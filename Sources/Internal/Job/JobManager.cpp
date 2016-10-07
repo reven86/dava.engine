@@ -5,6 +5,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
+#include "Debug/CPUProfiler.h"
 
 #include "Engine/EngineModule.h"
 
@@ -74,6 +75,8 @@ void JobManager::Update(float32 /*frameDelta*/)
 void JobManager::Update()
 #endif
 {
+    DAVA_CPU_PROFILER_SCOPE("JobManager::Update");
+
     bool hasFinishedJobs = false;
 
     mainQueueMutex.Lock();

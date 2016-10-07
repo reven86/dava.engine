@@ -10,13 +10,18 @@
 
 namespace DAVA
 {
+class Window;
 class FfmpegPlayer;
 class Texture;
 class UIControlBackground;
 class MovieViewControl : public IMovieViewControl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    MovieViewControl(Window* w);
+#else
     MovieViewControl();
+#endif
     ~MovieViewControl() override;
 
     // Initialize the control.

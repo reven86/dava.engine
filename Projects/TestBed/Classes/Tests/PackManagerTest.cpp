@@ -1,4 +1,7 @@
 #include "Tests/PackManagerTest.h"
+#include "Infrastructure/TestBed.h"
+
+#include <Engine/Engine.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
@@ -6,8 +9,9 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(GameCore* g)
-    : BaseScreen(g, "PackManagerTest")
+PackManagerTest::PackManagerTest(TestBed& app)
+    : BaseScreen(app, "PackManagerTest")
+    , engine(app.GetEngine())
 {
 }
 
@@ -208,6 +212,26 @@ void PackManagerTest::LoadResources()
     lsDvpks->SetStateText(0xFF, L"ls dvpk's");
     lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListPacksClicked));
     AddControl(lsDvpks);
+
+    dirToListFiles = new UITextField(Rect(5, 300, 400, 20));
+    dirToListFiles->SetFont(font);
+    dirToListFiles->SetFontSize(14);
+    dirToListFiles->SetText(UTF8Utils::EncodeToWideString("~res:/3d/"));
+    dirToListFiles->SetDebugDraw(true);
+    dirToListFiles->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    dirToListFiles->SetInputEnabled(true);
+    dirToListFiles->GetOrCreateComponent<UIFocusComponent>();
+    dirToListFiles->SetDelegate(this);
+    dirToListFiles->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(dirToListFiles);
+
+    lsDirFromPacks = new UIButton(Rect(420, 300, 100, 20));
+    lsDirFromPacks->SetDebugDraw(true);
+    lsDirFromPacks->SetStateFont(0xFF, font);
+    lsDirFromPacks->SetStateFontColor(0xFF, Color::White);
+    lsDirFromPacks->SetStateText(0xFF, L"ls in dvpk");
+    lsDirFromPacks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListInDvpkClicked));
+    AddControl(lsDirFromPacks);
 }
 
 void PackManagerTest::UnloadResources()
@@ -229,6 +253,8 @@ void PackManagerTest::UnloadResources()
     SafeRelease(filePathField);
     SafeRelease(checkFile);
     SafeRelease(startInit);
+    SafeRelease(dirToListFiles);
+    SafeRelease(lsDirFromPacks);
 
     BaseScreen::UnloadResources();
 }
@@ -269,7 +295,6 @@ void PackManagerTest::OnRequestChange(const DAVA::IPackManager::IRequest& reques
 
 void PackManagerTest::OnInitChange(IPackManager& packManager)
 {
-#if !defined(__DAVAENGINE_COREV2__)
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     StringStream ss;
@@ -290,13 +315,11 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
-#endif // !__DAVAENGINE_COREV2__
 }
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     if (pm.IsRequestingEnabled())
     {
         return;
@@ -311,12 +334,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
 
-    // clear and renew all packs state
-    pm.InitLocalCommonPacks(readOnlyDirWithPacks,
-                            folderWithDownloadedPacks,
-                            IPackManager::Hints());
-
-    pm.InitLocalGpuPacks(gpuArchitecture, dbFile);
+    pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, IPackManager::Hints());
 
     pm.EnableRequesting();
 
@@ -325,14 +343,15 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    /*
     packNameLoading->SetText(L"done: start sync");
     IPackManager& pm = Core::Instance()->GetPackManager();
-    pm.InitRemotePacks(urlToServerSuperpack);
+    */
 }
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
@@ -351,8 +370,7 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
 
     for (auto& pack : pm.GetPacks())
@@ -376,9 +394,8 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
-    if (pm.GetInitState() < IPackManager::InitState::MountingReadOnlyPacks)
+    IPackManager& pm = *engine.GetContext()->packManager;
+    if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
     {
         return;
     }
@@ -403,7 +420,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();
@@ -485,4 +502,24 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
     {
         packNameLoading->SetText(L"can't load file");
     }
+}
+
+void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    WideString text = dirToListFiles->GetText();
+    FilePath path(text);
+
+    ScopedPtr<FileList> fileList(new FileList(path));
+
+    StringStream ss;
+
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        const FilePath& nextPath = fileList->GetPathname(i);
+        ss << nextPath.GetStringValue() << '\n';
+    }
+
+    WideString out(UTF8Utils::EncodeToWideString(ss.str()));
+
+    packNameLoading->SetText(out);
 }

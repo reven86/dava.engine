@@ -18,6 +18,7 @@
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
@@ -76,8 +77,10 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Platform/Qt5/QtLayer.h"
 
@@ -86,6 +89,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene/System/EditorVegetationSystem.h"
 
 #include <QActionGroup>
 #include <QColorDialog>
@@ -175,6 +179,9 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
+#endif
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
 #endif
 {
     ActiveSceneHolder::Init();
@@ -474,7 +481,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
     if (SaveTilemask())
     {
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(gpu)));
-        DAVA::Texture::SetDefaultGPU(gpu);
+        DAVA::Texture::SetGPULoadingOrder({ gpu });
 
         SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
@@ -560,6 +567,13 @@ void QtMainWindow::WaitStop()
 bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
 {
     QEvent::Type eventType = event->type();
+
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == eventType && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
 
     if (qApp == obj)
     {
@@ -839,6 +853,13 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionOpenProject, &QAction::triggered, this, &QtMainWindow::OnProjectOpen);
     QObject::connect(ui->actionCloseProject, &QAction::triggered, this, &QtMainWindow::OnProjectClose);
     QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
+
+    QAction* actionOpenSceneQuickly = FindFileDialog::CreateFindInFilesAction(this);
+    actionOpenSceneQuickly->setIcon(SharedIcon(":/QtIcons/openscene.png"));
+    actionOpenSceneQuickly->setText("Open Scene Quickly");
+    ui->menuFile->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
+    QObject::connect(actionOpenSceneQuickly, &QAction::triggered, this, &QtMainWindow::OnSceneOpenQuickly);
+
     QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
     QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
     QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
@@ -1328,6 +1349,15 @@ void QtMainWindow::OnSceneOpen()
     OpenScene(path);
 }
 
+void QtMainWindow::OnSceneOpenQuickly()
+{
+    QString path = FindFileDialog::GetFilePath(ProjectManager::Instance()->GetDataSourceSceneFiles(), "sc2", this);
+    if (!path.isEmpty())
+    {
+        OpenScene(path);
+    }
+}
+
 void QtMainWindow::OnSceneSave()
 {
     if (!IsSavingAllowed())
@@ -1591,10 +1621,7 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 
 void QtMainWindow::OnEnableVisibilitySystemToggle(bool enabled)
 {
-    if (SetVisibilityToolEnabledIfPossible(enabled))
-    {
-        SetLandscapeInstancingEnabled(false);
-    }
+    SetVisibilityToolEnabledIfPossible(enabled);
 }
 
 void QtMainWindow::OnRefreshVisibilitySystem()
@@ -2444,10 +2471,10 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
     {
         SetVisibilityToolEnabledIfPossible(false);
     }
-    SetLandscapeInstancingEnabled(anyEditorEnabled);
-
     ui->actionForceFirstLODonLandscape->setChecked(anyEditorEnabled);
     OnForceFirstLod(anyEditorEnabled);
+
+    UpdateLandscapeRenderMode();
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -2817,8 +2844,8 @@ bool QtMainWindow::OpenScene(const QString& path)
         if (!DAVA::FilePath::ContainPath(argumentPath, projectPath))
         {
             QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s",
-                                                                              projectPath.GetAbsolutePathname().c_str(),
-                                                                              argumentPath.GetAbsolutePathname().c_str()));
+                                                                              argumentPath.GetAbsolutePathname().c_str(),
+                                                                              projectPath.GetAbsolutePathname().c_str()));
         }
         else
         {
@@ -3350,19 +3377,35 @@ bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
     }
 
     ui->actionEnableVisibilitySystem->setChecked(enabled);
+    UpdateLandscapeRenderMode();
+
     return enabled;
 }
 
-void QtMainWindow::SetLandscapeInstancingEnabled(bool enabled)
+void QtMainWindow::UpdateLandscapeRenderMode()
 {
     DAVA::Landscape* landscape = FindLandscape(GetCurrentScene());
+    if (landscape != nullptr)
+    {
+        bool visibiilityEnabled = DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_ENABLE_VISIBILITY_SYSTEM);
+        bool anyToolEnabled = GetCurrentScene()->GetEnabledTools() != 0;
+        bool enableInstancing = anyToolEnabled || !visibiilityEnabled;
 
-    if (landscape == nullptr)
-        return;
+        if (anyToolEnabled)
+        {
+            DVASSERT(visibiilityEnabled == false);
+        }
+        if (visibiilityEnabled)
+        {
+            DVASSERT(anyToolEnabled == false)
+        }
 
-    landscape->SetRenderMode(enabled ?
-                             DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
-                             DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING);
+        DAVA::Landscape::RenderMode newRenderMode = enableInstancing ?
+        DAVA::Landscape::RenderMode::RENDERMODE_INSTANCING_MORPHING :
+        DAVA::Landscape::RenderMode::RENDERMODE_NO_INSTANCING;
+
+        landscape->SetRenderMode(newRenderMode);
+    }
 }
 
 bool QtMainWindow::ParticlesArePacking() const

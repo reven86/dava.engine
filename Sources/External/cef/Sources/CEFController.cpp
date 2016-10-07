@@ -8,6 +8,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Functional/Signal.h"
 #include "CEFController.h"
+#include "Logger/Logger.h"
 
 #include "Engine/EngineModule.h"
 

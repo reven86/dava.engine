@@ -1,5 +1,6 @@
 #include <Functional/Function.h>
 #include <Debug/DVAssert.h>
+#include "Logger/Logger.h"
 
 #include "Network/Private/Discoverer.h"
 #include "Network/Base/NetworkUtils.h"

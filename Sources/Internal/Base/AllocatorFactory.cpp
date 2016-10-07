@@ -1,4 +1,5 @@
 #include "Base/AllocatorFactory.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

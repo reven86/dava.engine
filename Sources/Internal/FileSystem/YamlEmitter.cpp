@@ -1,6 +1,7 @@
 #include "YamlEmitter.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 #include "yaml/yaml.h"
 
 namespace DAVA

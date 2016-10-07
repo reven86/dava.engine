@@ -635,7 +635,6 @@ void UIList::AddCellAtPos(UIListCell* cell, float32 pos, float32 size, int32 ind
         r.y = pos;
     }
     cell->SetRect(r);
-    cell->UpdateLayout();
 
     scrollContainer->AddControl(cell);
 }

@@ -3,6 +3,7 @@
 #include "Compression/LZ4Compressor.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Logger/Logger.h"
 
 #include <mutex>
 

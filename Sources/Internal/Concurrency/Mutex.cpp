@@ -3,6 +3,7 @@
 
 #include "Concurrency/Mutex.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

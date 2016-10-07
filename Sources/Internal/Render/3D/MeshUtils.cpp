@@ -8,6 +8,7 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

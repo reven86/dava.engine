@@ -113,7 +113,7 @@ void TexturePacker::PackToTextures(const FilePath& outputPath, const DefinitionF
 
 void TexturePacker::PackToMultipleTextures(const FilePath& outputPath, const char* basename, const DefinitionFile::Collection& defList, const Vector<eGPUFamily>& forGPUs)
 {
-    DVASSERT(packAlgorithms.empty() == false, "Packing algorithm was not specified");
+    DVASSERT_MSG(packAlgorithms.empty() == false, "Packing algorithm was not specified");
 
     Vector<ImageExportKeys> imageExportKeys = GetExportKeys(forGPUs);
     Vector<SpriteItem> spritesToPack = PrepareSpritesVector(defList);
@@ -198,7 +198,11 @@ Vector<std::unique_ptr<SpritesheetLayout>> TexturePacker::PackSprites(Vector<Spr
             }
         }
 
-        DVASSERT(bestSpritesWeight > 0, "Can't pack any sprite");
+        if (bestSpritesWeight <= 0)
+        {
+            AddError("Can't pack any sprite. Probably maxTextureSize should be altered");
+            break;
+        }
 
         spritesToPack.swap(bestSpritesRemaining);
         resultSheets.emplace_back(std::move(bestSheet));

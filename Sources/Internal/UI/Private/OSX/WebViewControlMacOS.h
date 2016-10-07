@@ -16,7 +16,11 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-    explicit WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     virtual ~WebViewControl();
 
     // Initialize the control.
@@ -52,7 +56,7 @@ private:
     void SetNativeVisible(bool visible);
 
 #if defined(__DAVAENGINE_COREV2__)
-    void OnWindowVisibilityChanged(Window& w, bool visible);
+    void OnWindowVisibilityChanged(Window* w, bool visible);
     size_t windowVisibilityChangedConnection = 0;
 #else
     void OnAppMinimizedRestored(bool minimized);

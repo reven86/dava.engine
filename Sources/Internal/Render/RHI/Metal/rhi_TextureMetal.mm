@@ -167,7 +167,7 @@ MetalRenderableTextureFormat(TextureFormat format)
     switch (format)
     {
     case TEXTURE_FORMAT_R8G8B8A8:
-        return MTLPixelFormatRGBA8Unorm;
+        return MTLPixelFormatBGRA8Unorm;
     case TEXTURE_FORMAT_R8:
         return MTLPixelFormatR8Unorm;
     case TEXTURE_FORMAT_R16:
@@ -207,6 +207,8 @@ MetalRenderableTextureFormat(TextureFormat format)
 static bool
 _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
 {
+    tex->UpdateCreationDesc(texDesc);
+
     bool success = true;
     MTLPixelFormat pf = (texDesc.isRenderTarget) ? MetalRenderableTextureFormat(texDesc.format) : MetalTextureFormat(texDesc.format);
 
@@ -222,10 +224,18 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
     desc.height = texDesc.height;
     desc.pixelFormat = pf;
     desc.arrayLength = 1;
-    desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE) ? MTLTextureTypeCube : MTLTextureType2D;
+    desc.sampleCount = texDesc.sampleCount;
     desc.mipmapLevelCount = texDesc.levelCount;
-    desc.sampleCount = 1;
     desc.resourceOptions = MTLResourceCPUCacheModeDefaultCache;
+    if (texDesc.type == TEXTURE_TYPE_CUBE)
+    {
+        DVASSERT(texDesc.sampleCount == 1);
+        desc.textureType = MTLTextureTypeCube;
+    }
+    else
+    {
+        desc.textureType = (texDesc.sampleCount > 1) ? MTLTextureType2DMultisample : MTLTextureType2D;
+    }
 
     id<MTLTexture> uid = [_Metal_Device newTextureWithDescriptor:desc];
 
@@ -234,7 +244,6 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
     if (uid != nil)
     {
         [uid retain];
-        //Logger::Info("{%u} create-tex%s %ux%u", unsigned(RHI_HANDLE_INDEX(handle)), (texDesc.isRenderTarget) ? "-rt" : "", texDesc.width, texDesc.height);
 
         tex->format = texDesc.format;
         tex->width = texDesc.width;
@@ -294,15 +303,13 @@ _Construct(TextureMetal_t* tex, const Texture::Descriptor& texDesc)
         if (texDesc.format == TEXTURE_FORMAT_D24S8)
         {
             MTLPixelFormat pf2 = MTLPixelFormatStencil8;
-            //            MTLTextureDescriptor* desc2 = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf2 width:texDesc.width height:texDesc.height mipmapped:NO];
             MTLTextureDescriptor* desc2 = [MTLTextureDescriptor new];
-
             desc2.pixelFormat = pf2;
             desc2.width = texDesc.width;
             desc2.height = texDesc.height;
-            desc2.textureType = MTLTextureType2D;
             desc2.mipmapLevelCount = 1;
-            desc2.sampleCount = 1;
+            desc2.sampleCount = texDesc.sampleCount;
+            desc2.textureType = texDesc.sampleCount > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
 
             id<MTLTexture> uid2 = [_Metal_Device newTextureWithDescriptor:desc2];
 
@@ -490,6 +497,10 @@ metal_Texture_Map(Handle tex, unsigned level, TextureFace face)
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
         _ABGR1555toRGBA5551(self->mappedData, self->mappedData, sz);
+    }
+    else if ((self->format == TEXTURE_FORMAT_R8G8B8A8) && self->CreationDesc().isRenderTarget)
+    {
+        _SwapRB8(self->mappedData, self->mappedData, sz);
     }
 
     self->is_mapped = true;
@@ -703,12 +714,29 @@ void SetAsRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
     desc.colorAttachments[0].texture = self->uid;
 }
 
+void SetAsResolveRenderTarget(Handle tex, MTLRenderPassDescriptor* desc)
+{
+    TextureMetal_t* self = TextureMetalPool::Get(tex);
+    DVASSERT(!self->is_cubemap);
+
+    DVASSERT(self->uid);
+    desc.colorAttachments[0].resolveTexture = self->uid;
+}
+
 void SetAsDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
     desc.depthAttachment.texture = self->uid;
     desc.stencilAttachment.texture = self->uid2;
+}
+
+void SetAsResolveDepthStencil(Handle tex, MTLRenderPassDescriptor* desc)
+{
+    TextureMetal_t* self = TextureMetalPool::Get(tex);
+
+    desc.depthAttachment.resolveTexture = self->uid;
+    desc.stencilAttachment.resolveTexture = self->uid2;
 }
 
 unsigned

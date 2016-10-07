@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

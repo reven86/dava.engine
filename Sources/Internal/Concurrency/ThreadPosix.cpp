@@ -11,7 +11,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Engine/Android/JNIBridge.h"
 #elif defined(__DAVAENGINE_APPLE__)
 #import <Foundation/NSAutoreleasePool.h>
 #include <mach/thread_policy.h>

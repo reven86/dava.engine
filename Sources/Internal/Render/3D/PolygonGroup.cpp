@@ -2,6 +2,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

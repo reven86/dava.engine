@@ -185,11 +185,10 @@ public:
     int fboMemoryUsed;
 };
 
-eGPUFamily Texture::defaultGPU = GPU_ORIGIN;
-
 static TextureMemoryUsageInfo texMemoryUsageInfo;
 
 TexturesMap Texture::textureMap;
+Vector<eGPUFamily> Texture::gpuLoadingOrder;
 
 Mutex Texture::textureMapMutex;
 
@@ -411,9 +410,6 @@ Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
     bool loaded = texture->LoadImages(gpu, images);
     if (!loaded)
     {
-        Logger::Error("[Texture::CreateFromImage] Cannot load texture from image. Descriptor: %s, GPU: %s",
-                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu));
-
         SafeDelete(images);
         SafeRelease(texture);
         return nullptr;
@@ -741,13 +737,22 @@ Texture* Texture::PureCreate(const FilePath& pathName, const FastName& group)
         return nullptr;
 
     descriptor->SetQualityGroup(group);
-
-    eGPUFamily gpuForLoading = GetGPUForLoading(defaultGPU, descriptor);
-    texture = CreateFromImage(descriptor, gpuForLoading);
-    if (texture)
+    for (eGPUFamily gpu : gpuLoadingOrder)
     {
-        texture->loadedAsFile = gpuForLoading;
-        AddToMap(texture);
+        eGPUFamily gpuForLoading = GetGPUForLoading(gpu, descriptor);
+        texture = CreateFromImage(descriptor, gpuForLoading);
+        if (texture)
+        {
+            texture->loadedAsFile = gpuForLoading;
+            AddToMap(texture);
+            break;
+        }
+    }
+
+    if (texture == nullptr)
+    {
+        Logger::Error("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
+                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
     }
 
     delete descriptor;
@@ -880,6 +885,7 @@ Texture* Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+    descriptor.sampleCount = fboDesc.sampleCount;
     if (fboDesc.needPixelReadback)
     {
         descriptor.cpuAccessRead = true;
@@ -1098,14 +1104,24 @@ bool Texture::IsPinkPlaceholder()
     return isPink;
 }
 
-void Texture::SetDefaultGPU(eGPUFamily gpuFamily)
+void Texture::SetGPULoadingOrder(const Vector<eGPUFamily>& gpuLoadingOrder_)
 {
-    defaultGPU = gpuFamily;
+    gpuLoadingOrder = gpuLoadingOrder_;
 }
 
-eGPUFamily Texture::GetDefaultGPU()
+const Vector<eGPUFamily>& Texture::GetGPULoadingOrder()
 {
-    return defaultGPU;
+    return gpuLoadingOrder;
+}
+
+eGPUFamily Texture::GetPrimaryGPUForLoading()
+{
+    if (gpuLoadingOrder.empty())
+    {
+        return eGPUFamily::GPU_INVALID;
+    }
+
+    return gpuLoadingOrder[0];
 }
 
 eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor)

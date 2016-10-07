@@ -1,5 +1,6 @@
 #include "Database/MongodbObject.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 #include "mongodb/bson.h"
 
 #define BSON_VERIFY(command) \

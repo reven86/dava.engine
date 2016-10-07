@@ -21,6 +21,8 @@
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
@@ -49,6 +51,7 @@ UIControl::UIControl(const Rect& rect)
     , styleSheetInitialized(false)
     , layoutDirty(true)
     , layoutPositionDirty(true)
+    , layoutOrderDirty(true)
     , family(nullptr)
     , parentWithContext(nullptr)
 {
@@ -485,6 +488,9 @@ Vector2 UIControl::GetAbsolutePosition() const
 
 void UIControl::SetPosition(const Vector2& position)
 {
+    if (relativePosition == position)
+        return;
+
     relativePosition = position;
     SetLayoutPositionDirty();
 }
@@ -516,17 +522,25 @@ void UIControl::SetSize(const Vector2& newSize)
 
 void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
 {
-    pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
+    Vector2 newPivot((size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x),
+                     (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y));
+
+    if (pivot == newPivot)
+        return;
+
+    pivot = newPivot;
 
     SetLayoutPositionDirty();
 }
 
 void UIControl::SetPivot(const Vector2& newPivot)
 {
+    if (pivot == newPivot)
+        return;
+
     pivot = newPivot;
 
-    SetLayoutDirty();
+    SetLayoutPositionDirty();
 }
 
 void UIControl::SetAngle(float32 angleInRad)
@@ -799,7 +813,7 @@ void UIControl::BringChildFront(UIControl* _control)
             children.erase(it);
             children.push_back(_control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -814,7 +828,7 @@ void UIControl::BringChildBack(UIControl* _control)
             children.erase(it);
             children.push_front(_control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -891,7 +905,7 @@ void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
         {
             children.insert(it, _control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -921,7 +935,7 @@ void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
         {
             children.insert(++it, _control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -964,6 +978,8 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
+    layoutPositionDirty = srcControl->layoutPositionDirty;
+    layoutOrderDirty = srcControl->layoutOrderDirty;
     packageContext = srcControl->packageContext;
 
     SafeRelease(eventDispatcher);
@@ -1032,25 +1048,8 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         prevControlState = controlState;
     }
 
-    if (IsVisible())
-    {
-        if (layoutDirty)
-        {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled())
-            {
-                layoutSystem->ApplyLayout(this, true);
-            }
-        }
-        else if (layoutPositionDirty)
-        {
-            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
-            {
-                layoutSystem->ApplyLayoutNonRecursive(parent);
-            }
-        }
-    }
+    UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+    layoutSystem->ProcessControl(this);
 
     it = children.begin();
     isIteratorCorrupted = false;
@@ -2195,7 +2194,7 @@ String UIControl::GetInternalControlDescriptions() const
 
 void UIControl::UpdateLayout()
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+    UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(this);
 }
 
 void UIControl::OnSizeChanged()
@@ -2444,6 +2443,11 @@ void UIControl::ResetStyleSheetDirty()
     styleSheetDirty = false;
 }
 
+bool UIControl::IsLayoutDirty() const
+{
+    return layoutDirty;
+}
+
 void UIControl::SetLayoutDirty()
 {
     layoutDirty = true;
@@ -2453,6 +2457,12 @@ void UIControl::ResetLayoutDirty()
 {
     layoutDirty = false;
     layoutPositionDirty = false;
+    layoutOrderDirty = false;
+}
+
+bool UIControl::IsLayoutPositionDirty() const
+{
+    return layoutPositionDirty;
 }
 
 void UIControl::SetLayoutPositionDirty()
@@ -2463,6 +2473,21 @@ void UIControl::SetLayoutPositionDirty()
 void UIControl::ResetLayoutPositionDirty()
 {
     layoutPositionDirty = false;
+}
+
+bool UIControl::IsLayoutOrderDirty() const
+{
+    return layoutOrderDirty;
+}
+
+void UIControl::SetLayoutOrderDirty()
+{
+    layoutOrderDirty = true;
+}
+
+void UIControl::ResetLayoutOrderDirty()
+{
+    layoutOrderDirty = false;
 }
 
 void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)

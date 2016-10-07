@@ -2111,6 +2111,9 @@ VariantType Convert(T value, VariantType::eVariantType type)
 }
 VariantType VariantType::Convert(const VariantType& val, eVariantType type)
 {
+    if (val.type == type)
+        return val;
+
     switch (val.type)
     {
     case TYPE_INT8:

@@ -9,6 +9,7 @@
 #include "Concurrency/Atomic.h"
 #include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/Mutex.h"
+#include "Functional/Function.h"
 
 #if !defined(__DAVAENGINE_WINDOWS__)
 #include <pthread.h>
@@ -56,7 +57,7 @@ class Thread : public ThreadTraits, public BaseObject
     friend void* PthreadMain(void* param);
 #endif
 public:
-    using Procedure = std::function<void()>;
+    using Procedure = Function<void()>;
 
     enum eThreadPriority
     {

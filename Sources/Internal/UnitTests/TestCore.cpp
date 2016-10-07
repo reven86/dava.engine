@@ -58,7 +58,7 @@ void TestCore::RunOnlyTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         // First, disable all tests
         for (TestClassInfo& x : testClasses)
@@ -87,7 +87,7 @@ void TestCore::DisableTheseTestClasses(const String& testClassNames)
     if (!testClassNames.empty())
     {
         Vector<String> testNames;
-        Split(testClassNames, ";", testNames);
+        Split(testClassNames, ";, ", testNames);
 
         for (const String& testName : testNames)
         {
@@ -141,11 +141,12 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 {
                     curTestName = curTestClass->TestName(curTestIndex);
                     testStartedCallback(curTestClassName, curTestName);
+                    curTestClass->InitTimeStampForTest(curTestName);
                     curTestClass->SetUp(curTestName);
                     testSetUpInvoked = true;
+                    curTestClass->RunTest(curTestIndex);
                 }
 
-                curTestClass->RunTest(curTestIndex);
                 if (curTestClass->TestComplete(curTestName))
                 {
                     testSetUpInvoked = false;
@@ -181,12 +182,12 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     }
 }
 
-Map<String, Vector<String>> TestCore::GetTestCoverage()
+Map<String, TestCoverageInfo> TestCore::GetTestCoverage()
 {
-    Map<String, Vector<String>> result;
+    Map<String, TestCoverageInfo> result;
     for (TestClassInfo& x : testClasses)
     {
-        if (!x.testedFiles.empty())
+        if (!x.testedFiles.testFiles.empty())
         {
             result.emplace(x.name, std::move(x.testedFiles));
         }

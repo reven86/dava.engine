@@ -1,5 +1,5 @@
 #include "FileSystem/XMLParser.h"
-
+#include "Logger/Logger.h"
 
 #include "libxml/parser.h"
 #include "libxml/xmlstring.h"

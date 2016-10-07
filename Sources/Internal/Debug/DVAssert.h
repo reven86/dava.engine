@@ -1,7 +1,6 @@
-#pragma once
+#include "Base/BaseTypes.h"
 
-// TODO: get rid of this dependency
-#include "Debug/Backtrace.h"
+#pragma once
 
 /// \defgroup Asserts
 /// Asserts are a set of macroses for testing conditions which are always expected to be true.
@@ -43,7 +42,7 @@ public:
                const char* const fileName,
                const int lineNumber,
                const char* const message,
-               Vector<Debug::StackFrame> backtrace)
+               Vector<void*> backtrace)
         : expression(expression)
         , fileName(fileName)
         , lineNumber(lineNumber)
@@ -56,7 +55,7 @@ public:
     const char* const fileName;
     const int lineNumber;
     const char* const message;
-    const Vector<Debug::StackFrame> backtrace;
+    const Vector<void*> backtrace;
 };
 
 /// Indicates how a program should act when an assert fails
@@ -103,7 +102,6 @@ void RaiseSigTrap();
 DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const char* const fileName,
                                          const int lineNumber,
-                                         const DAVA::Vector<DAVA::Debug::StackFrame>& backtrace,
                                          const char* const message = "");
 
 // Common macro to use by DVASSERT & DVASSERT_ALWAYS to avoid code duplication
@@ -116,7 +114,6 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                 #expr, \
                 __FILE__, \
                 __LINE__, \
-                DAVA::Debug::GetBacktrace(), \
                 ##__VA_ARGS__) != DAVA::Assert::FailBehaviour::Continue) \
             { \
                 DVASSERT_HALT(); \

@@ -2,6 +2,7 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
+#include "Logger/Logger.h"
 #include "Database/MongodbClient.h"
 
 namespace DAVA

@@ -1,5 +1,6 @@
 #include "UI/TheoraPlayer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Logger/Logger.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 

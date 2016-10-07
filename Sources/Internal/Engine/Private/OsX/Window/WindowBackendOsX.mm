@@ -8,7 +8,7 @@
 
 #include <AppKit/NSScreen.h>
 
-#include "Engine/Public/OsX/WindowNativeServiceOsX.h"
+#include "Engine/OsX/WindowNativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/OsX/PlatformCoreOsX.h"
@@ -21,20 +21,17 @@ namespace DAVA
 {
 namespace Private
 {
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engineBackend(e)
-    , dispatcher(engineBackend->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , bridge(new WindowNativeBridge(this))
-    , nativeService(new WindowNativeService(bridge))
+    , nativeService(new WindowNativeService(bridge.get()))
 {
 }
 
-WindowBackend::~WindowBackend()
-{
-    delete bridge;
-}
+WindowBackend::~WindowBackend() = default;
 
 void* WindowBackend::GetHandle() const
 {
@@ -43,43 +40,38 @@ void* WindowBackend::GetHandle() const
 
 bool WindowBackend::Create(float32 width, float32 height)
 {
-    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge, &WindowNativeBridge::ApplicationDidHideUnhide);
+    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge.get(), &WindowNativeBridge::ApplicationDidHideUnhide);
 
     NSSize screenSize = [[NSScreen mainScreen] frame].size;
     float32 x = (screenSize.width - width) / 2.0f;
     float32 y = (screenSize.height - height) / 2.0f;
-    return bridge->DoCreateWindow(x, y, width, height);
+    return bridge->CreateWindow(x, y, width, height);
 }
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
-    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+    closeRequestByApp = true;
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
+}
 
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+void WindowBackend::SetTitle(const String& title)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
 {
     return GetHandle() != nullptr;
-}
-
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
 }
 
 void WindowBackend::TriggerPlatformEvents()
@@ -89,18 +81,22 @@ void WindowBackend::TriggerPlatformEvents()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    platformDispatcher.ProcessEvents();
+    uiDispatcher.ProcessEvents();
 }
 
-void WindowBackend::EventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
     case UIDispatcherEvent::RESIZE_WINDOW:
-        bridge->DoResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
+        bridge->ResizeWindow(e.resizeEvent.width, e.resizeEvent.height);
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
-        bridge->DoCloseWindow();
+        bridge->CloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        bridge->SetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -108,6 +104,11 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
     default:
         break;
     }
+}
+
+void WindowBackend::WindowWillClose()
+{
+    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
 }
 
 } // namespace Private

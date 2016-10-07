@@ -4,6 +4,7 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
@@ -254,7 +255,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                         else if (state == "STATE_STENCIL_TEST")
                         {
                             passDescriptor.depthStateDescriptor.stencilEnabled = 1;
-                            passDescriptor.depthStateDescriptor.stencilTwoSided = 1;
 
                             const YamlNode* stencilNode = renderStateNode->Get("stencil");
                             if (stencilNode)
@@ -325,6 +325,11 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                                     passDescriptor.depthStateDescriptor.stencilBack.depthFailOperation = GetStencilOpByName(stencilZFailNode->AsString());
                                 }
                             }
+
+                            passDescriptor.depthStateDescriptor.stencilTwoSided = (memcmp(&passDescriptor.depthStateDescriptor.stencilBack,
+                                                                                          &passDescriptor.depthStateDescriptor.stencilFront,
+                                                                                          sizeof(rhi::DepthStencilState::Descriptor::StencilDescriptor)
+                                                                                          ) != 0);
                         }
                     }
                 }

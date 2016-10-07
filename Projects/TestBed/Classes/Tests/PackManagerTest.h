@@ -4,11 +4,11 @@
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
-class GameCore;
+class TestBed;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest(GameCore* g);
+    PackManagerTest(TestBed& app);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
@@ -25,11 +25,14 @@ private:
     void OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
     void OnPackStateChange(const DAVA::IPackManager::Pack& pack);
     void OnPackDownloadChange(const DAVA::IPackManager::Pack& pack);
     void OnRequestChange(const DAVA::IPackManager::IRequest& request);
     void OnInitChange(DAVA::IPackManager& init);
+
+    DAVA::Engine& engine;
 
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
@@ -61,4 +64,6 @@ private:
     DAVA::UIButton* startSync = nullptr;
     DAVA::UIButton* clearDocs = nullptr;
     DAVA::UIButton* lsDvpks = nullptr;
+    DAVA::UITextField* dirToListFiles = nullptr;
+    DAVA::UIButton* lsDirFromPacks = nullptr;
 };

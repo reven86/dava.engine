@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIEvent.h"
 #include "FileSystem/File.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

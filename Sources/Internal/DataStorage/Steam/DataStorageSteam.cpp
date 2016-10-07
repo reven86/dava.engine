@@ -69,7 +69,7 @@ void DataStorageSteam::WriteArchiveToStorage(const ScopedPtr<KeyedArchive> arch)
     ScopedPtr<DynamicMemoryFile> dataFile(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
     arch->Save(dataFile);
 
-    bool isWritten = remoteStorage->FileWrite(storageFileName.c_str(), dataFile->GetData(), dataFile->GetSize());
+    bool isWritten = remoteStorage->FileWrite(storageFileName.c_str(), dataFile->GetData(), static_cast<int32>(dataFile->GetSize()));
 
     if (!isWritten)
     {

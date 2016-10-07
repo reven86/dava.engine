@@ -6,6 +6,7 @@
 #include "Platform/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

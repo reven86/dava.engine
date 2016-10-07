@@ -1,5 +1,6 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
@@ -816,8 +817,8 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& pa
         precomputedAngle = angle;
         if (precomputedAngle != parentState.angle)
         {
-            cosA = cosf(precomputedAngle);
-            sinA = sinf(precomputedAngle);
+            cosA = std::cos(precomputedAngle);
+            sinA = std::sin(precomputedAngle);
         }
         else
         {

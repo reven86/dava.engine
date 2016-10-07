@@ -1,4 +1,5 @@
 #include "Base/Platform.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 

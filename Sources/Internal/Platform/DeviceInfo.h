@@ -1,9 +1,9 @@
-#ifndef __FRAMEWORK__DEVICEINFO__
-#define __FRAMEWORK__DEVICEINFO__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
@@ -143,6 +143,7 @@ public:
     static int32 GetCpuCount();
     static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
     static bool IsTouchPresented();
+    static String GetCarrierName();
 
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
@@ -152,9 +153,9 @@ public:
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
     static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
+    static Signal<const String&> carrierNameChanged;
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();
 };
 };
-#endif /* defined(__FRAMEWORK__DEVICEINFO__) */

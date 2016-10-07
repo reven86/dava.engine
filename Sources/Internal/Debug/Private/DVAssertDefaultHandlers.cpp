@@ -1,5 +1,6 @@
 #include "Debug/DVAssertDefaultHandlers.h"
 #include "Debug/DVAssertMessage.h"
+#include "Debug/Backtrace.h"
 #include "Logger/Logger.h"
 
 namespace DAVA
@@ -17,7 +18,7 @@ FailBehaviour DefaultLoggerHandler(const AssertInfo& assertInfo)
     "======================%s====",
     assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber, AssertMessageTag.c_str());
 
-    Debug::BacktraceToLog(assertInfo.backtrace, Logger::LEVEL_ERROR);
+    Logger::Error(Debug::GetBacktraceString(assertInfo.backtrace).c_str());
 
     return FailBehaviour::Default;
 }
@@ -41,7 +42,7 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
     "Callstack:\n"
     "%s",
     assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
-    Debug::BacktraceToString(assertInfo.backtrace, backtraceDepth).c_str());
+    Debug::GetBacktraceString(assertInfo.backtrace).c_str());
 
     return halt ? FailBehaviour::Halt : FailBehaviour::Continue;
 }

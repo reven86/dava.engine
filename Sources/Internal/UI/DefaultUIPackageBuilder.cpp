@@ -12,6 +12,9 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
+#include "Styles/UIStyleSheetSystem.h"
+
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -91,6 +94,21 @@ void DefaultUIPackageBuilder::EndPackage()
         {
             styleSheets.emplace_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
         }
+    }
+
+    // kill duplicates
+    {
+        std::sort(styleSheets.begin(), styleSheets.end(), [](const UIPriorityStyleSheet& a, const UIPriorityStyleSheet& b)
+                  {
+                      const UIStyleSheet* s1 = a.GetStyleSheet();
+                      const UIStyleSheet* s2 = b.GetStyleSheet();
+                      return s1 == s2 ? a.GetPriority() < b.GetPriority() : s1 < s2;
+                  });
+        auto lastNeeded = std::unique(styleSheets.begin(), styleSheets.end(), [](const UIPriorityStyleSheet& a, const UIPriorityStyleSheet& b)
+                                      {
+                                          return a.GetStyleSheet() == b.GetStyleSheet();
+                                      });
+        styleSheets.erase(lastNeeded, styleSheets.end());
     }
 
     for (const UIPriorityStyleSheet& styleSheet : styleSheets)
@@ -245,7 +263,7 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
         if (controlsStack.empty() || isRoot)
         {
             UIControl* control = lastDescr->control.Get();
-            UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(control);
+            UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
         }
         else

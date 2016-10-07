@@ -1,6 +1,7 @@
 #include <thread>
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
 
 #ifndef __DAVAENGINE_WINDOWS__
 #include <time.h>

@@ -3,6 +3,7 @@
 #include "mongodb/mongo.h"
 #include "mongodb/gridfs.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 

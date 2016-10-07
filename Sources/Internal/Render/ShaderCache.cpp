@@ -3,6 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

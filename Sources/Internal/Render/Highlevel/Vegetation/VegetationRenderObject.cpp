@@ -19,6 +19,8 @@
 
 #include "FileSystem/FileSystem.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 static const uint32 MAX_CLUSTER_TYPES = 4;
@@ -709,7 +711,7 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
     const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported;
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported && rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX);
 
     return result;
 }

@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE" "1" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE" "1" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake \- CMake Command-Line Reference
 .
@@ -38,7 +38,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .ft C
 cmake [<options>] (<path\-to\-source> | <path\-to\-existing\-build>)
 cmake [(\-D <var>=<value>)...] \-P <cmake\-script\-file>
-cmake \-\-build <dir> [<options>] [\-\- <build\-tool\-options>...]
+cmake \-\-build <dir> [<options>...] [\-\- <build\-tool\-options>...]
 cmake \-E <command> [<options>...]
 cmake \-\-find\-package <options>...
 .ft P
@@ -212,28 +212,7 @@ display also advanced variables.  If H is specified, it will also
 display help for each variable.
 .TP
 .B \fB\-\-build <dir>\fP
-Build a CMake\-generated project binary tree.
-.sp
-This abstracts a native build tool\(aqs command\-line interface with the
-following options:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-<dir>          = Project binary directory to be built.
-\-\-target <tgt> = Build <tgt> instead of default targets.
-\-\-config <cfg> = For multi\-configuration tools, choose <cfg>.
-\-\-clean\-first  = Build target \(aqclean\(aq first, then build.
-                 (To clean only, use \-\-target \(aqclean\(aq.)
-\-\-use\-stderr   = Ignored.  Behavior is default in CMake >= 3.0.
-\-\-             = Pass remaining options to the native tool.
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-Run cmake \-\-build with no options for quick help.
+See \fI\%Build Tool Mode\fP\&.
 .TP
 .B \fB\-N\fP
 View mode only.
@@ -250,12 +229,7 @@ is not modified.  If variables are defined using \-D, this must be
 done before the \-P argument.
 .TP
 .B \fB\-\-find\-package\fP
-Run in pkg\-config like mode.
-.sp
-Search a package using find_package() and print the resulting flags
-to stdout.  This can be used to use cmake instead of pkg\-config to
-find installed libraries in plain Makefile\-based projects or in
-autoconf\-based projects (via share/aclocal/cmake.m4).
+See \fI\%Find\-Package Tool Mode\fP\&.
 .TP
 .B \fB\-\-graphviz=[file]\fP
 Generate graphviz of dependencies, see CMakeGraphVizOptions.cmake for more.
@@ -457,6 +431,46 @@ The \fBcmake\-variables(7)\fP manual is printed in a
 human\-readable text format.
 The help is printed to a named <f>ile if given.
 .UNINDENT
+.SH BUILD TOOL MODE
+.sp
+CMake provides a command\-line signature to build an already\-generated
+project binary tree:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake \-\-build <dir> [<options>...] [\-\- <build\-tool\-options>...]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This abstracts a native build tool\(aqs command\-line interface with the
+following options:
+.INDENT 0.0
+.TP
+.B \fB\-\-build <dir>\fP
+Project binary directory to be built.  This is required and must be first.
+.TP
+.B \fB\-\-target <tgt>\fP
+Build \fB<tgt>\fP instead of default targets.  May only be specified once.
+.TP
+.B \fB\-\-config <cfg>\fP
+For multi\-configuration tools, choose configuration \fB<cfg>\fP\&.
+.TP
+.B \fB\-\-clean\-first\fP
+Build target \fBclean\fP first, then build.
+(To clean only, use \fB\-\-target clean\fP\&.)
+.TP
+.B \fB\-\-use\-stderr\fP
+Ignored.  Behavior is default in CMake >= 3.0.
+.TP
+.B \fB\-\-\fP
+Pass remaining options to the native tool.
+.UNINDENT
+.sp
+Run \fBcmake \-\-build\fP with no options for quick help.
 .SH COMMAND-LINE TOOL MODE
 .sp
 CMake provides builtin command\-line tools through the signature:
@@ -480,7 +494,7 @@ Change the current working directory and run a command.
 .TP
 .B \fBcompare_files <file1> <file2>\fP
 Check if \fB<file1>\fP is same as \fB<file2>\fP\&. If files are the same,
-then returns 0, if not itreturns 1.
+then returns 0, if not it returns 1.
 .TP
 .B \fBcopy <file>... <destination>\fP
 Copy files to \fB<destination>\fP (either file or directory).
@@ -511,16 +525,30 @@ Display the current environment variables.
 .TP
 .B \fBmake_directory <dir>...\fP
 Create \fB<dir>\fP directories.  If necessary, create parent
-directories too.
+directories too.  If a directory already exists it will be
+silently ignored.
 .TP
 .B \fBmd5sum <file>...\fP
-Compute md5sum of files.
+Create MD5 checksum of files in \fBmd5sum\fP compatible format:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+351abe79cd3800b38cdfb25d45015a15  file1.txt
+052f86c15bbde68af55c7f7b340ab639  file2.txt
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
 .TP
 .B \fBremove [\-f] <file>...\fP
-Remove the file(s), use \fB\-f\fP to force it.
+Remove the file(s), use \fB\-f\fP to force it.  If a file does
+not exist it will be silently ignored.
 .TP
 .B \fBremove_directory <dir>\fP
-Remove a directory and its contents.
+Remove a directory and its contents.  If a directory does
+not exist it will be silently ignored.
 .TP
 .B \fBrename <oldname> <newname>\fP
 Rename a file or directory (on one volume).
@@ -558,7 +586,8 @@ Run command and return elapsed time.
 Touch a file.
 .TP
 .B \fBtouch_nocreate <file>\fP
-Touch a file if it exists but do not create it.
+Touch a file if it exists but do not create it.  If a file does
+not exist it will be silently ignored.
 .UNINDENT
 .SS UNIX\-specific Command\-Line Tools
 .sp
@@ -586,6 +615,34 @@ Windows CE SDK installed in VS2008.
 .TP
 .B \fBwrite_regv <key> <value>\fP
 Write Windows registry value.
+.UNINDENT
+.SH FIND-PACKAGE TOOL MODE
+.sp
+CMake provides a helper for Makefile\-based projects with the signature:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cmake \-\-find\-package <options>...
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This runs in a pkg\-config like mode.
+.sp
+Search a package using \fBfind_package()\fP and print the resulting flags
+to stdout.  This can be used to use cmake instead of pkg\-config to find
+installed libraries in plain Makefile\-based projects or in autoconf\-based
+projects (via \fBshare/aclocal/cmake.m4\fP).
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+This mode is not well\-supported due to some technical limitations.
+It is kept for compatibility but should not be used in new projects.
+.UNINDENT
 .UNINDENT
 .SH SEE ALSO
 .sp

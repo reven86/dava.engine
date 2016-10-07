@@ -118,11 +118,11 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 {
     InvalidatePressedPoint();
     hudControl->SetName(FastName("hudControl"));
-    systemsManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
-    systemsManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
-    systemsManager->NodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
-    systemsManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
-    systemsManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+    systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
+    systemsManager->emulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemsManager->nodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
+    systemsManager->editingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
 
 HUDSystem::~HUDSystem()
@@ -212,7 +212,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 size.y *= -1.0f;
             }
             selectionRectControl->SetRect(Rect(point, size));
-            systemsManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
+            systemsManager->selectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::Phase::ENDED:
@@ -404,7 +404,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
     if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
-        systemsManager->ActiveAreaChanged.Emit(activeAreaInfo);
+        systemsManager->activeAreaChanged.Emit(activeAreaInfo);
     }
 }
 

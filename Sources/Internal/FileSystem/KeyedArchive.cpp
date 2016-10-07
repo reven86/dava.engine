@@ -6,6 +6,8 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/YamlEmitter.h"
 
+#include "Logger/Logger.h"
+
 namespace DAVA
 {
 KeyedArchive::KeyedArchive()

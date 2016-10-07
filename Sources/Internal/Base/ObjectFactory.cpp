@@ -1,4 +1,5 @@
 #include "Base/ObjectFactory.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

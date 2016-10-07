@@ -1,7 +1,7 @@
-#ifndef ACTIONCOMPONENTEDITOR_H
-#define ACTIONCOMPONENTEDITOR_H
+#pragma once
 
 #include "DAVAEngine.h"
+#include "Classes/Qt/Tools/QtPosSaver/QtPosSaver.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include <QDialog>
 #include <QStyledItemDelegate>
@@ -18,6 +18,8 @@ class ActionItemEditDelegate : public QStyledItemDelegate
 
 public:
     ActionItemEditDelegate(QObject* parent = 0);
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
                           const QModelIndex& index) const;
@@ -64,6 +66,7 @@ private:
     DAVA::ActionComponent::Action GetDefaultAction();
     bool IsActionPresent(const DAVA::ActionComponent::Action action);
 
+    QtPosSaver posSaver;
     Ui::ActionComponentEditor* ui;
 
     DAVA::ActionComponent* targetComponent;
@@ -73,5 +76,3 @@ private:
     QMap<int, QString> eventTypes;
     bool isModified;
 };
-
-#endif // ACTIONCOMPONENTEDITOR_H

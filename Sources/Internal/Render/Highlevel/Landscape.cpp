@@ -1,4 +1,3 @@
-#include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
@@ -22,10 +21,11 @@
 #include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/LockGuard.h"
-
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -64,6 +64,10 @@ Landscape::Landscape()
     subdivision = new LandscapeSubdivision();
 
     renderMode = (rhi::DeviceCaps().isInstancingSupported && rhi::DeviceCaps().isVertexTextureUnitsSupported) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_NO_INSTANCING;
+    if (renderMode == RENDERMODE_INSTANCING_MORPHING)
+        renderMode = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX) ? RENDERMODE_INSTANCING_MORPHING : RENDERMODE_INSTANCING;
+
+    floatHeightTexture = rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) ? false : true;
 
     isRequireTangentBasis = (QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME) == LANDSCAPE_QUALITY_VALUE_HIGH);
 
@@ -315,6 +319,7 @@ void Landscape::PrepareMaterial(NMaterial* material)
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
+    material->AddFlag(NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE, floatHeightTexture ? 1 : 0);
 }
 
 Texture* Landscape::CreateHeightTexture(Heightmap* heightmap, RenderMode renderMode)
@@ -362,6 +367,8 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
     Vector<Image*> dataOut;
     if (renderMode == RENDERMODE_INSTANCING_MORPHING)
     {
+        DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R8G8B8A8, rhi::PROG_VERTEX));
+
         dataOut.reserve(HighestBitIndex(hmSize));
 
         uint32 mipSize = hmSize;
@@ -416,7 +423,31 @@ Vector<Image*> Landscape::CreateHeightTextureData(Heightmap* heightmap, RenderMo
     }
     else
     {
-        Image* heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
+        Image* heightImage = nullptr;
+        if (floatHeightTexture)
+        {
+            DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX));
+
+            float32* texData = new float32[hmSize * hmSize];
+            float32* texDataPtr = texData;
+
+            for (uint32 y = 0; y < hmSize; ++y)
+            {
+                for (uint32 x = 0; x < hmSize; ++x)
+                {
+                    *texDataPtr++ = float32(heightmap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
+                }
+            }
+
+            heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_R32F, reinterpret_cast<uint8*>(texData));
+            SafeDeleteArray(texData);
+        }
+        else
+        {
+            DVASSERT(rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX));
+            heightImage = Image::CreateFromData(hmSize, hmSize, FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightmap->Data()));
+        }
+
         dataOut.push_back(heightImage);
     }
 
@@ -1171,6 +1202,7 @@ void Landscape::BindDynamicParameters(Camera* camera)
 void Landscape::PrepareToRender(Camera* camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_CPU_PROFILER_SCOPE("Landscape::PrepareToRender")
 
     RenderObject::PrepareToRender(camera);
 
@@ -1178,8 +1210,6 @@ void Landscape::PrepareToRender(Camera* camera)
     {
         return;
     }
-
-    TIME_PROFILE("Landscape.PrepareToRender");
 
     if (!subdivision->GetLevelCount() || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
     {
@@ -1438,6 +1468,8 @@ void Landscape::SetMaterial(NMaterial* material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+
+    UpdateMaterialFlags();
 }
 
 RenderObject* Landscape::Clone(RenderObject* newObject)
@@ -1540,7 +1572,11 @@ void Landscape::SetRenderMode(RenderMode newRenderMode)
 
     renderMode = newRenderMode;
     RebuildLandscape();
+    UpdateMaterialFlags();
+}
 
+void Landscape::UpdateMaterialFlags()
+{
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     landscapeMaterial->SetFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     landscapeMaterial->PreBuildMaterial(PASS_FORWARD);

@@ -1,4 +1,5 @@
 #include "CurlDownloader.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

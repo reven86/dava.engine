@@ -1,7 +1,8 @@
 #include "CommandLine/CommandLineParser.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 #include <stdlib.h>
 #include <cerrno>

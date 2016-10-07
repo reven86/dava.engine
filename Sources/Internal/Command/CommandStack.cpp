@@ -28,7 +28,7 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
 
         if (currentIndex != commands.size() - 1)
         {
-            commands.erase(commands.begin() + currentIndex + 1, commands.end());
+            commands.erase(commands.begin() + (currentIndex + 1), commands.end());
         }
 
         if (isSingleCommand)

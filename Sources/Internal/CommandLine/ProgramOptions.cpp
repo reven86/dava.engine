@@ -2,6 +2,7 @@
 
 #include "FileSystem/FileSystem.h"
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
 namespace DAVA

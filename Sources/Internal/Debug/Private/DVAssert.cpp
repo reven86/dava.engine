@@ -1,4 +1,6 @@
 #include "Debug/DVAssert.h"
+#include "Debug/Backtrace.h"
+
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 
@@ -68,7 +70,6 @@ int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
 DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const char* const fileName,
                                          const int lineNumber,
-                                         const DAVA::Vector<DAVA::Debug::StackFrame>& backtrace,
                                          const char* const message)
 {
     using namespace DAVA;
@@ -89,6 +90,8 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
     // Invoke all the handlers with according assert info and return result behaviour
     // Each behaviour is more prioritized than the previous one, in this order:
     // Default -> Continue -> Halt
+
+    Vector<void*> backtrace = Debug::GetBacktrace();
 
     const AssertInfo assertInfo(expr, fileName, lineNumber, message, backtrace);
 

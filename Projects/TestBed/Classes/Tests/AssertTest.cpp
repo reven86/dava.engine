@@ -1,11 +1,10 @@
-
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
-AssertTest::AssertTest(GameCore* g)
-    : BaseScreen(g, "AssertTest")
+AssertTest::AssertTest(TestBed& app)
+    : BaseScreen(app, "AssertTest")
 {
 }
 

@@ -3,7 +3,7 @@
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

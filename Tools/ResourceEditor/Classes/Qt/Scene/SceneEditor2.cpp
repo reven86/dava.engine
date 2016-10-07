@@ -18,6 +18,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
 
@@ -135,13 +136,15 @@ SceneEditor2::SceneEditor2()
     editorVegetationSystem = new EditorVegetationSystem(this);
     AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
 
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+
     selectionSystem->AddDelegate(modifSystem);
     selectionSystem->AddDelegate(hoodSystem);
     selectionSystem->AddDelegate(wayEditSystem);
-
-    DAVA::float32* clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
-    clearColor[0] = clearColor[1] = clearColor[2] = .3f;
-    clearColor[3] = 1.f;
 
     SceneSignals::Instance()->EmitOpened(this);
 
@@ -151,6 +154,7 @@ SceneEditor2::SceneEditor2()
 SceneEditor2::~SceneEditor2()
 {
     RenderContextGuard guard;
+    commandStack.reset();
     RemoveSystems();
 
     SceneSignals::Instance()->EmitClosed(this);
@@ -486,6 +490,11 @@ void SceneEditor2::EditorCommandProcess(const RECommandNotificationObject& comma
     pathSystem->ProcessCommand(commandNotification);
     wayEditSystem->ProcessCommand(commandNotification);
     editorLODSystem->ProcessCommand(commandNotification);
+
+    if (selectionSystem)
+    {
+        selectionSystem->ProcessCommand(commandNotification);
+    }
 }
 
 void SceneEditor2::AddEditorEntity(Entity* editorEntity)
@@ -821,10 +830,24 @@ void RemoveSelection(SceneEditor2* scene)
     SelectableGroup objectsToRemove;
     for (const auto& item : selection.GetContent())
     {
-        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
+        if (item.CanBeCastedTo<DAVA::Entity>())
         {
-            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
+            DAVA::Entity* entity = item.AsEntity();
+            if (entity->GetLocked() || entity->GetNotRemovable())
+            {
+                //Don't remove entity
+                continue;
+            }
+
+            DAVA::Camera* camera = DAVA::GetCamera(entity);
+            if (camera != nullptr && camera == scene->GetCurrentCamera())
+            {
+                //Don't remove current camera
+                continue;
+            }
         }
+
+        objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
     }
 
     if (objectsToRemove.IsEmpty() == false)

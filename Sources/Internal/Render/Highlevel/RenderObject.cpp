@@ -7,20 +7,7 @@
 
 namespace DAVA
 {
-static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_STATIC_OCCLUSION | RenderObject::VISIBLE_QUALITY;
-
 RenderObject::RenderObject()
-    : startClippingPlane(0)
-    , renderSystem(0)
-    , type(TYPE_RENDEROBJECT)
-    , flags(DEFAULT_FLAGS)
-    , debugFlags(0)
-    , removeIndex(-1)
-    , treeNodeIndex(INVALID_TREE_NODE_INDEX)
-    , staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
-    , worldTransform(0)
-    , lodIndex(-1)
-    , switchIndex(-1)
 {
     lights[0] = NULL;
     lights[1] = NULL;
@@ -28,10 +15,9 @@ RenderObject::RenderObject()
 
 RenderObject::~RenderObject()
 {
-    uint32 size = static_cast<uint32>(renderBatchArray.size());
-    for (uint32 i = 0; i < size; ++i)
+    for (IndexedRenderBatch& batch : renderBatchArray)
     {
-        renderBatchArray[i].renderBatch->Release();
+        SafeRelease(batch.renderBatch);
     }
 }
 
@@ -170,10 +156,10 @@ void RenderObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
 
-    uint32 size = static_cast<uint32>(renderBatchArray.size());
-    for (uint32 k = 0; k < size; ++k)
+    for (const IndexedRenderBatch& i : renderBatchArray)
     {
-        bbox.AddAABBox(renderBatchArray[k].renderBatch->GetBoundingBox());
+        RenderBatch* batch = i.renderBatch;
+        bbox.AddAABBox(batch->GetBoundingBox());
     }
 }
 
@@ -203,6 +189,8 @@ RenderObject* RenderObject::Clone(RenderObject* newObject)
     newObject->RemoveFlag(MARKED_FOR_UPDATE);
     newObject->debugFlags = debugFlags;
     newObject->staticOcclusionIndex = staticOcclusionIndex;
+    newObject->lodIndex = lodIndex;
+    newObject->switchIndex = switchIndex;
     //ro->bbox = bbox;
     //ro->worldBBox = worldBBox;
 
@@ -337,6 +325,7 @@ void RenderObject::BakeGeometry(const Matrix4& transform)
 void RenderObject::RecalculateWorldBoundingBox()
 {
     DVASSERT(!bbox.IsEmpty());
+    DVASSERT(worldTransform != nullptr);
     bbox.GetTransformedBox(*worldTransform, worldBBox);
 }
 

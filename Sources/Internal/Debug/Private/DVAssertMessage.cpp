@@ -2,7 +2,7 @@
 #include "Core/Core.h"
 
 #include "Concurrency/Atomic.h"
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

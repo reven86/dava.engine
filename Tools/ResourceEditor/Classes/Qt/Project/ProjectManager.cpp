@@ -10,9 +10,19 @@
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/ProjectInformation/ProjectStructure.h"
+
 
 #include "SpritesPacker/SpritesPackerModule.h"
+
+ProjectManager::ProjectManager()
+{
+    DAVA::Vector<DAVA::String> extensions = { "sc2" };
+    dataSourceSceneFiles.reset(new ProjectStructure(extensions));
+}
+
+ProjectManager::~ProjectManager() = default;
 
 bool ProjectManager::IsOpened() const
 {
@@ -96,6 +106,8 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
 
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
+
+            dataSourceSceneFiles->SetProjectDirectory(dataSourcePath);
 
             bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
             if (spritesPacker != nullptr && reloadParticles)
@@ -233,4 +245,9 @@ DAVA::FilePath ProjectManager::CreateProjectPathFromPath(const DAVA::FilePath& p
     }
 
     return DAVA::FilePath();
+}
+
+ProjectStructure* ProjectManager::GetDataSourceSceneFiles() const
+{
+    return dataSourceSceneFiles.get();
 }

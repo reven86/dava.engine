@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
