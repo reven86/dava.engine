@@ -688,7 +688,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                 memberAccess->object->expressionType.baseType == HLSLBaseType_Uint)
             {
                 // Handle swizzling on scalar values.
-                int swizzleLength = strlen(memberAccess->field);
+                int swizzleLength = int(strlen(memberAccess->field));
                 if (swizzleLength == 2)
                 {
                     m_writer.Write("%s", m_scalarSwizzle2Function);

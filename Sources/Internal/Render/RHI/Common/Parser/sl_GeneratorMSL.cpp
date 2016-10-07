@@ -924,7 +924,7 @@ void MSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
             tex.name = declaration->name;
             tex.type = declaration->type.baseType;
-            tex.unit = _tex.size();
+            tex.unit = unsigned(_tex.size());
             _tex.push_back(tex);
             /*            
             if (reg != -1)

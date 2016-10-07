@@ -1491,7 +1491,7 @@ ShaderSourceCache::Add(const char* filename, FastName uid, ProgType progType, co
 
         e.uid = uid;
         e.api = HostApi();
-        e.srcHash = DAVA::HashValue_N(srcText, strlen(srcText));
+        e.srcHash = DAVA::HashValue_N(srcText, unsigned(strlen(srcText)));
         e.src = src;
 
         Entry.push_back(e);

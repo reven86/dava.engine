@@ -261,13 +261,13 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     vSource->Dump();
 #endif
     const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
-    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), vpBin.length());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
 #if 0
     Logger::Info("\n\n%s", fProgUid.c_str());
     fSource->Dump();
 #endif
     const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
-    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), fpBin.length());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
 
     //ShaderDescr
     rhi::PipelineState::Descriptor psDesc;
@@ -330,9 +330,9 @@ void RelaoadShaders()
         fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
 
         const std::string& vpBin = vSource.GetSourceCode(rhi::HostApi());
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vpBin.c_str(), vpBin.length());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
         const std::string& fpBin = fSource.GetSourceCode(rhi::HostApi());
-        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fpBin.c_str(), fpBin.length());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
 
         //ShaderDescr
         rhi::PipelineState::Descriptor psDesc;

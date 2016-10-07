@@ -1204,7 +1204,7 @@ void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, con
     {
         const std::string& code = src.GetSourceCode(targetApi);
 
-        UpdateProgBinary(targetApi, progType, uid, code.c_str(), code.length());
+        UpdateProgBinary(targetApi, progType, uid, code.c_str(), unsigned(code.length()));
         //DAVA::Logger::Info("\n\n--shader  \"%s\"", uid.c_str());
         //DAVA::Logger::Info(code.c_str());
     }

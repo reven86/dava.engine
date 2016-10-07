@@ -269,7 +269,7 @@ void HLSLTokenizer::ScanString()
     while (m_buffer < m_bufferEnd && *m_buffer && *m_buffer != '\"')
         ++m_buffer;
 
-    int len = m_buffer - start;
+    int len = int(m_buffer - start);
 
     memcpy(m_identifier, start, len);
     m_identifier[len] = 0;
