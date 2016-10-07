@@ -17,13 +17,14 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* e);
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
     NativeService* GetNativeService() const;
 
     void Init();
     void Run();
+    void PrepareToQuit();
     void Quit();
 
     // Signals for distribution UIApplicationDelegate's notifications:
@@ -37,9 +38,10 @@ public:
 private:
     int32 OnFrame();
 
-    WindowBackend* CreateNativeWindow(Window* w, float32 width, float32 height);
+    // Allows CoreNativeBridge class to access Window's WindowBackend instance
+    // as CoreNativeBridge cannot make friends with Window class
+    static WindowBackend* GetWindowBackend(Window* window);
 
-private:
     EngineBackend* engineBackend = nullptr;
     MainDispatcher* dispatcher = nullptr;
 

@@ -17,7 +17,7 @@ Dispatch
     void (*impl_Present)(Handle);
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
-    bool (*impl_TextureFormatSupported)(TextureFormat);
+    bool (*impl_TextureFormatSupported)(TextureFormat, ProgType);
 
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();

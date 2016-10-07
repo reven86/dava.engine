@@ -22,6 +22,12 @@ namespace Themes_local
 {
 const DAVA::FastName themeSettingsKey("ThemeName");
 GlobalValuesRegistrator registrator(themeSettingsKey, DAVA::VariantType(static_cast<DAVA::int64>(Themes::Dark)));
+
+#if defined(__DAVAENGINE_WINDOWS__)
+int fontSize = 10;
+#elif defined(__DAVAENGINE_MACOS__)
+int fontSize = 13;
+#endif
 }
 
 namespace Themes
@@ -41,15 +47,6 @@ void SetupDarkTheme();
 
 void InitFromQApplication()
 {
-#if defined(Q_OS_MAC)
-    //this is default font on MAC OS X
-    qApp->setFont(QFont(".SF NS Text", 13));
-#elif defined(Q_OS_WIN)
-    //this is default font on Windows
-    qApp->setFont(QFont("MS Shell Dlg 2", 10));
-#else
-#error "unsupported OS"
-#endif //platform
     themesInitialized = true;
 
     SetCurrentTheme(GetCurrentTheme());
@@ -162,6 +159,8 @@ void SetupClassicTheme()
     DVVERIFY(styleSheet.open(QIODevice::ReadOnly));
     QString styleSheetContent = styleSheet.readAll();
 
+    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(Themes_local::fontSize));
+
     qApp->setPalette(lightPalette);
     qApp->setStyleSheet(styleSheetContent);
 }
@@ -221,6 +220,7 @@ void SetupDarkTheme()
                           .
                           arg(colorToString(darkDisabledTextColor));
 
+    styleSheetContent.insert(0, QString("* {font-size:%1pt}\n").arg(Themes_local::fontSize));
     styleSheetContent.append(tabBarStyle);
 
     qApp->setPalette(darkPalette);

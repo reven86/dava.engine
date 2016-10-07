@@ -15,13 +15,14 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* e);
+    PlatformCore(EngineBackend* engineBackend);
     ~PlatformCore();
 
     NativeService* GetNativeService() const;
 
     void Init();
     void Run();
+    void PrepareToQuit();
     void Quit();
 
     // Forwarded methods from UWPApplication
@@ -36,8 +37,8 @@ private:
     void GameThread();
 
 private:
-    EngineBackend* engineBackend = nullptr;
-    MainDispatcher* dispatcher = nullptr;
+    EngineBackend& engineBackend;
+    MainDispatcher& dispatcher;
     std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;

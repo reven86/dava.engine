@@ -2,11 +2,11 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-class GameCore;
+class TestBed;
 class $UNITTEST_CLASSNAME$ : public BaseScreen
 {
 public:
-    $UNITTEST_CLASSNAME$(GameCore* g);
+    $UNITTEST_CLASSNAME$(TestBed& app);
 
 protected:
     void LoadResources() override;

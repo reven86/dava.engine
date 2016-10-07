@@ -28,6 +28,11 @@ Endpoint::Endpoint(const sockaddr_in* sin)
     Memcpy(&data, sin, sizeof(data));
 }
 
+uint16 Endpoint::Port() const
+{
+    return ntohs(data.sin_port);
+}
+
 bool Endpoint::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);

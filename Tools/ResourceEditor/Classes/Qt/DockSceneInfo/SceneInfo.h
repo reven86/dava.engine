@@ -4,6 +4,7 @@
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "DockProperties/PropertyEditorStateHelper.h"
+#include "QtTools/Updaters/LazyUpdater.h"
 
 #include <QShowEvent>
 
@@ -15,14 +16,6 @@ class EditorStatisticsSystem;
 class SceneInfo : public QtPropertyEditor
 {
     Q_OBJECT
-
-protected:
-    struct SpeedTreeInfo
-    {
-        DAVA::float32 leafsSquare = 0.0f;
-        DAVA::float32 leafsSquareDivX = 0.0f;
-        DAVA::float32 leafsSquareDivY = 0.0f;
-    };
 
 public:
     SceneInfo(QWidget* parent = 0);
@@ -53,8 +46,6 @@ private:
     void InitializeLODSectionInFrame();
     void InitializeLODSectionForSelection();
 
-    void InitializeSpeedTreeInfoSelection();
-
     void InitializeVegetationInfoSection();
 
     void InitializeLayersSection();
@@ -64,13 +55,11 @@ private:
     void RefreshLODInfoInFrame();
     void RefreshLODInfoForSelection();
 
-    void RefreshSpeedTreeInfoSelection();
-
     void RefreshVegetationInfoSection();
 
     void RefreshLayersSection();
 
-    void RefreshAllData(SceneEditor2* scene);
+    void RefreshAllData();
 
     void ClearData();
     void ClearSelectionData();
@@ -86,9 +75,8 @@ private:
     void SetChild(const QString& key, const QVariant& value, QtPropertyData* parent);
     bool HasChild(const QString& key, QtPropertyData* parent);
 
-    void CollectSceneData(SceneEditor2* scene);
+    void CollectSceneData();
     void CollectParticlesData();
-    void CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup);
     void CollectSelectedRenderObjects(const SelectableGroup* selected);
     void CollectSelectedRenderObjectsRecursivly(DAVA::Entity* entity);
 
@@ -97,8 +85,6 @@ private:
     static DAVA::uint32 CalculateTextureSize(const DAVA::TexturesMap& textures);
 
     static DAVA::uint32 GetTrianglesForNotLODEntityRecursive(DAVA::Entity* entity, bool onlyVisibleBatches);
-
-    static SpeedTreeInfo GetSpeedTreeLeafsSquare(DAVA::RenderObject* forEntity);
 
 protected:
     QtPosSaver posSaver;
@@ -112,8 +98,6 @@ protected:
 
     DAVA::Vector<DAVA::DataNode*> dataNodesAtScene;
 
-    DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
-
     DAVA::uint32 sceneTexturesSize = 0;
     DAVA::uint32 particleTexturesSize = 0;
 
@@ -122,6 +106,8 @@ protected:
 
     DAVA::Vector<DAVA::RenderObject*> visibilityArray;
     DAVA::Set<DAVA::RenderObject*> selectedRenderObjects;
+
+    LazyUpdater infoUpdated;
 
     bool isUpToDate = false;
 };

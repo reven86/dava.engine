@@ -22,9 +22,6 @@ ScrollZoomWidget::ScrollZoomWidget(QWidget* parent)
     generalMaxTime = maxTime;
     initialTimeInterval = 1;
 
-    backgroundBrush.setColor(Qt::white);
-    backgroundBrush.setStyle(Qt::SolidPattern);
-
     gridStyle = GRID_STYLE_LIMITS;
 
     horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
