@@ -309,8 +309,6 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
     {
         return nullptr;
     }
-
-    //found only one item
     else if (nodesUnderPoint.size() == 1)
     {
         return nodesUnderPoint.front();
@@ -340,13 +338,13 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
             {
                 return node;
             }
+
             //search child of selected to move down by hierarchy
+            // or search neighbor to move left-right
             if (selected.find(nodeParent) != selected.end())
             {
                 return node;
             }
-
-            //search neighbor to move left-right
             else if (selected.find(node) == selected.end()
                      && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
             {
