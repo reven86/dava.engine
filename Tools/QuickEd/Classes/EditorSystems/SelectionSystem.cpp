@@ -216,7 +216,7 @@ void SelectionSystem::SelectNode(ControlNode* selectedNode)
 
 ControlNode* SelectionSystem::FindSmallNodeUnderNode(const Vector<ControlNode*>& nodesUnderPoint) const
 {
-    if (!CanFindCommonForSelection || nodesUnderPoint.empty())
+    if (!canFindCommonForSelection || nodesUnderPoint.empty())
     {
         return nullptr;
     }

@@ -120,7 +120,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName(FastName("hudControl"));
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->emulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
-    systemsManager->nodesHovered.Connect(this, &HUDSystem::OnNodesHovered);
     systemsManager->editingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
@@ -160,7 +159,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     UpdateAreasVisibility();
     ProcessCursor(hoveredPoint, SEARCH_BACKWARD);
     ControlNode* node = systemsManager->GetControlNodeUnderPoint(hoveredPoint);
-    OnNodesHovered({ node });
+    HighlightNodes({ node });
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
@@ -254,7 +253,7 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     UpdatePlacedOnScreenStatus();
 }
 
-void HUDSystem::OnNodesHovered(const Vector<ControlNode*>& nodes)
+void HUDSystem::HighlightNodes(const Vector<ControlNode*>& nodes)
 {
     for (const auto& node : nodes)
     {

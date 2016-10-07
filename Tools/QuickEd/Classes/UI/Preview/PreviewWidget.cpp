@@ -151,7 +151,7 @@ void PreviewWidget::ClearHightlight()
     {
         return;
     }
-    systemsManager->nodesHovered.Emit({ nullptr });
+    systemsManager->ClearHighLight();
 }
 
 void PreviewWidget::CreateActions()
@@ -214,7 +214,7 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     SaveContext();
     document = arg;
     systemsManager->magnetLinesChanged.Emit({});
-    systemsManager->nodesHovered.Emit({});
+    systemsManager->ClearHighLight();
     if (document.isNull())
     {
         systemsManager->packageNodeChanged.Emit(nullptr);

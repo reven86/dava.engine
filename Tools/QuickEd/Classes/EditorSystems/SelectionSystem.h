@@ -51,11 +51,11 @@ private:
     bool mousePressed = false;
     SelectionContainer selectionContainer;
     PackageNode* packageNode = nullptr;
-    bool CanFindCommonForSelection = true;
+    bool canFindCommonForSelection = true;
 
 public:
     INTROSPECTION(SelectionSystem,
-                  MEMBER(CanFindCommonForSelection, "Control Selection/Can search most common node", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(canFindCommonForSelection, "Control Selection/Can search most common node", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 };
 

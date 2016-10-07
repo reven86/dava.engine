@@ -61,7 +61,8 @@ EditorSystemsManager::EditorSystemsManager()
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
-    systems.emplace_back(new HUDSystem(this));
+    hudSystemPtr = new HUDSystem(this);
+    systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
 }
@@ -120,8 +121,13 @@ ControlNode* EditorSystemsManager::GetControlNodeUnderPoint(const DAVA::Vector2&
 ControlNode* EditorSystemsManager::HighlightNodeUnderPoint(const DAVA::Vector2& point)
 {
     ControlNode* node = GetControlNodeUnderPoint(point);
-    nodesHovered.Emit({ node });
+    hudSystemPtr->HighlightNodes({ node });
     return node;
+}
+
+void EditorSystemsManager::ClearHighLight()
+{
+    hudSystemPtr->HighlightNodes({});
 }
 
 uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
