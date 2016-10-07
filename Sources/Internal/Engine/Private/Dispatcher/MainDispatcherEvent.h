@@ -168,11 +168,6 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
 };
 
-bool MainDispatcherEvent::IsInputEvent(eType type)
-{
-    return (FIRST_INPUT_EVENT <= type && type <= LAST_INPUT_EVENT);
-}
-
 } // namespace Private
 } // namespace DAVA
 
