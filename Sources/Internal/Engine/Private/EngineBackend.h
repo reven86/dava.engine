@@ -27,7 +27,7 @@ public:
     EngineBackend(const EngineBackend&) = delete;
     EngineBackend& operator=(const EngineBackend&) = delete;
 
-    void EngineCreated(Engine* e);
+    void EngineCreated(Engine* engine_);
     void EngineDestroyed();
 
     //////////////////////////////////////////////////////////////////////////
@@ -41,20 +41,6 @@ public:
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
-
-    /// \brief Get command args in form suitable to use as argc and argv
-    ///
-    /// Some platforms want command line in form argc and argv, e.g. iOS's UIApplicationMain, Qt's QApplication, etc.
-    /// EngineBackend grabs command line at program start and stores it as DAVA::Vector of DAVA::strings, so GetCommandLineAsArgv allows
-    /// passing command line arguments to those functions.
-    ///
-    /// How to use:
-    /// \code{.cpp}
-    ///     Vector<char*> argv = engineBackend->GetCommandLineAsArgv();
-    ///     ::UIApplicationMain(static_cast<int>(argv.size()), &*argv.begin(), @"principal", @"delegate");
-    /// \endcode
-    ///
-    /// \return DAVA::Vector of char pointers to command line arguments.
     Vector<char*> GetCommandLineAsArgv();
 
     Engine* GetEngine() const;
@@ -62,14 +48,13 @@ public:
     NativeService* GetNativeService() const;
     PlatformCore* GetPlatformCore() const;
 
-    void SetOptions(KeyedArchive* options_);
-    KeyedArchive* GetOptions();
+    const KeyedArchive* GetOptions() const;
 
     Window* InitializePrimaryWindow();
 
-    void Init(eEngineRunMode engineRunMode, const Vector<String>& modules);
+    void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
     int Run();
-    void Quit(int32 exitCode);
+    void Quit(int32 exitCode_);
 
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
@@ -127,6 +112,7 @@ private:
     Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
+    bool isInitialized = false; // Flag indicating that Init method has been called
     bool quitConsole = false;
     bool appIsSuspended = false;
     bool appIsTerminating = false;

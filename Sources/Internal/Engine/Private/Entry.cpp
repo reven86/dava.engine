@@ -4,7 +4,30 @@
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+/**
+    \ingroup engine
+    Entry point of program which uses dava.engine. An application shall implement this global function which designates
+    start of program.
+
+    This function is called after primary initialization of engine infrastructure. Thread which executes DAVAMain is considered DAVA main thread.
+    DAVAMain takes parsed command line arguments as passed from operating system. Command line always contains at least one argument - program name 
+    (on android program name is always app_process).
+
+    Return value of DAVAMain is used as process exit code if underlying operating system supports such functionality.
+
+    Minimalistic program that uses dava.engine:
+    \code
+    #include <Engine/Engine.h>
+    int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
+    {
+        using namespace DAVA;
+        Engine engine; // Create Engine object
+        engine.Init(eEngineRunMode::GUI_STANDALONE, Vector<String>(), nullptr); // Initialize engine
+        return engine.Run(); // Run game loop
+    }
+    \endcode
+*/
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // clang-format off
 
@@ -20,7 +43,7 @@ int main(int argc, char* argv[])
 
     Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
@@ -41,7 +64,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
     Vector<String> cmdargs = Private::GetCommandArgs();
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
