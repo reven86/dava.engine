@@ -133,6 +133,181 @@ void RegisterAny(lua_State* L)
 
 /******************************************************************************/
 
+// AnyFn metatable type name
+static const char* AnyFnTName = "AnyFnT";
+
+/*
+Get userdata from stack with specified index and return it as AnyFn.
+Return empty any if can't get.
+Lua stack changes [-0, +0, -]
+*/
+AnyFn lua_todvanyfn(lua_State* L, int32 index)
+{
+    AnyFn* pAnyFn = static_cast<AnyFn*>(lua_touserdata(L, index));
+    return pAnyFn != nullptr ? *pAnyFn : AnyFn();
+}
+
+/*
+Check and get userdata from stack with specified index and return it as AnyFn.
+Throw lua_error on incorrect Lua type.
+Lua stack changes [-0, +0, v]
+*/
+AnyFn lua_checkdvanyfn(lua_State* L, int32 index)
+{
+    AnyFn* pAnyFn = static_cast<AnyFn*>(luaL_checkudata(L, index, AnyFnTName));
+    DVASSERT_MSG(pAnyFn, "Can't get AnyFn ptr");
+    return *pAnyFn;
+}
+
+/*
+Push new userdata with AnyFn metatable to top on the stack.
+Lua stack changes [-0, +1, -]
+*/
+void lua_pushdvanyfn(lua_State* L, const AnyFn& any)
+{
+    void* userdata = lua_newuserdata(L, sizeof(AnyFn));
+    AnyFn* pAny = new (userdata) AnyFn(any);
+    luaL_getmetatable(L, AnyFnTName);
+    lua_setmetatable(L, -2);
+}
+
+/*
+Meta method for presentation AnyFn as string.
+Lua stack changes [-0, +1, v]
+*/
+int32 AnyFn__tostring(lua_State* L)
+{
+    AnyFn anyFn = lua_checkdvanyfn(L, 1);
+    void* pAny = lua_touserdata(L, 1);
+
+    String funcDef = "<non valid>";
+    if (anyFn.IsValid())
+    {
+        const auto& params = anyFn.GetInvokeParams();
+        if (params.retType)
+        {
+            funcDef += params.retType->GetName();
+        }
+        funcDef += " Func(";
+        for (const Type* t : params.argsType)
+        {
+            funcDef += t->GetName();
+            funcDef += ", ";
+        }
+        funcDef += ")";
+    }
+
+    lua_pushfstring(L, "Any: %s (%p)", funcDef, pAny);
+    return 1;
+}
+
+/*
+Meta method for invoke AnyFn.
+Lua stack changes [-0, +(0|1), v]
+*/
+int32 AnyFn__call(lua_State* L)
+{
+    AnyFn anyFn = lua_checkdvanyfn(L, 1);
+    int32 nargs = lua_gettop(L) - 1; // Lower element in stack is AnyFn userdata
+    const Vector<const Type*>& argsTypes = anyFn.GetInvokeParams().argsType;
+
+    DVASSERT_MSG(nargs >= 0, "Lua stack corrupted!");
+    if (nargs != argsTypes.size())
+    {
+        luaL_error(L, "Incorrect number of arguments to invoke AnyFn (need %d, found %d)", argsTypes.size(), nargs);
+        return 0;
+    }
+
+    Any result;
+    try
+    {
+        switch (nargs)
+        {
+        case 0:
+        {
+            result = anyFn.Invoke();
+            break;
+        }
+        case 1:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            result = anyFn.Invoke(a1);
+            break;
+        }
+        case 2:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            result = anyFn.Invoke(a1, a2);
+            break;
+        }
+        case 3:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            Any a3 = LuaToAny(L, 4, argsTypes[2]);
+            result = anyFn.Invoke(a1, a2, a3);
+            break;
+        }
+        case 4:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            Any a3 = LuaToAny(L, 4, argsTypes[2]);
+            Any a4 = LuaToAny(L, 5, argsTypes[3]);
+            result = anyFn.Invoke(a1, a2, a3, a4);
+            break;
+        }
+        case 5:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            Any a3 = LuaToAny(L, 4, argsTypes[2]);
+            Any a4 = LuaToAny(L, 5, argsTypes[3]);
+            Any a5 = LuaToAny(L, 6, argsTypes[4]);
+            result = anyFn.Invoke(a1, a2, a3, a4, a5);
+            break;
+        }
+        case 6:
+        {
+            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            Any a3 = LuaToAny(L, 4, argsTypes[2]);
+            Any a4 = LuaToAny(L, 5, argsTypes[3]);
+            Any a5 = LuaToAny(L, 6, argsTypes[4]);
+            Any a6 = LuaToAny(L, 7, argsTypes[5]);
+            result = anyFn.Invoke(a1, a2, a3, a4, a5, a6);
+            break;
+        }
+        default:
+            luaL_error(L, "Too much arguments (%d) to invoke AnyFn", nargs);
+            return 0;
+        }
+    }
+    catch (const LuaException& e)
+    {
+        luaL_error(L, e.what());
+        return 0;
+    }
+    AnyToLua(L, result);
+    return 1;
+}
+
+void RegisterAnyFn(lua_State* L)
+{
+    static const luaL_reg AnyFn_meta[] = {
+        { "__tostring", &AnyFn__tostring },
+        { "__call", &AnyFn__call },
+        { nullptr, nullptr }
+    };
+
+    luaL_newmetatable(L, AnyFnTName);
+    luaL_register(L, 0, AnyFn_meta);
+    lua_pop(L, 1);
+}
+
+/******************************************************************************/
+
 // Reflection metatable type name
 static const char* ReflectionTName = "ReflectionT";
 
@@ -206,19 +381,26 @@ int32 Reflection__index(lua_State* L)
     }
 
     Reflection refl = self.GetField(name).ref;
-    if (!refl.IsValid())
+    if (refl.IsValid())
     {
-        lua_pushnil(L);
+        if (refl.HasFields() || refl.HasMethods())
+        {
+            lua_pushdvreflection(L, refl);
+            return 1;
+        }
+
+        AnyToLua(L, refl.GetValue());
         return 1;
     }
 
-    if (refl.HasFields() || refl.HasMethods())
+    AnyFn method = self.GetMethod(name.Get<String>()).fn;
+    if (method.IsValid())
     {
-        lua_pushdvreflection(L, refl);
+        lua_pushdvanyfn(L, method);
         return 1;
     }
 
-    AnyToLua(L, refl.GetValue());
+    lua_pushnil(L);
     return 1;
 }
 
@@ -249,48 +431,14 @@ int32 Reflection__newindex(lua_State* L)
     {
         try
         {
-            Any value = LuaToAny(L, 3);
-
-            // Cast-HACK
-            if (value.GetType() == Type::Instance<float64>())
-            {
-                float64 rawValue = value.Get<float64>();
-                if (refl.GetValueType() == Type::Instance<int32>())
-                {
-                    refl.SetValue(Any(static_cast<int32>(rawValue)));
-                }
-                else if (refl.GetValueType() == Type::Instance<int16>())
-                {
-                    refl.SetValue(Any(static_cast<int16>(rawValue)));
-                }
-                else if (refl.GetValueType() == Type::Instance<int8>())
-                {
-                    refl.SetValue(Any(static_cast<int8>(rawValue)));
-                }
-                else if (refl.GetValueType() == Type::Instance<float32>())
-                {
-                    refl.SetValue(Any(static_cast<float32>(rawValue)));
-                }
-            }
-            else if (value.GetType() == Type::Instance<String>() &&
-                     refl.GetValueType() == Type::Instance<WideString>())
-            {
-                const WideString& wstr = UTF8Utils::EncodeToWideString(value.Get<String>());
-                refl.SetValue(Any(wstr));
-            }
-            else
-            {
-                refl.SetValue(value);
-            }
+            Any value = LuaToAny(L, 3, refl.GetValueType());
+            refl.SetValue(value);
         }
         catch (const LuaException& e)
         {
             return luaL_error(L, e.what());
         }
-
-        return 0;
     }
-
     return 0;
 }
 
@@ -322,31 +470,110 @@ bool lua_equalmetatable(lua_State* L, const char* metatableName)
     return eq == 1;
 }
 
-Any LuaToAny(lua_State* L, int32 index)
+Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
 {
+#define ISTYPE(t) (preferredType == Type::Instance<t>())
+#define CASTTYPE(t, ex) (Any(static_cast<t>(ex)))
+#define IFCAST(t, luaFn) if ISTYPE(t) { return CASTTYPE(t, luaFn(L, index)); }
+#define THROWTYPE throw LuaException(ltype, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
+
     int ltype = lua_type(L, index);
     switch (ltype)
     {
     case LUA_TNIL:
-        return Any();
+        if (preferredType)
+        {
+            THROWTYPE
+        }
+        else
+        {
+            return Any();
+        }
     case LUA_TBOOLEAN:
-        return Any(bool(lua_toboolean(L, index) != 0));
+        if (preferredType)
+        {
+            if
+                ISTYPE(bool)
+                {
+                    return CASTTYPE(bool, lua_toboolean(L, index) != 0);
+                }
+            else
+                IFCAST(int8, lua_tointeger)
+            else IFCAST(int16, lua_tointeger)
+            else IFCAST(int32, lua_tointeger)
+            else IFCAST(int64, lua_tonumber)
+            else THROWTYPE
+        }
+        else
+        {
+            return CASTTYPE(bool, lua_toboolean(L, index) != 0);
+        }
     case LUA_TNUMBER:
-        return Any(float64(lua_tonumber(L, index)));
+        if (preferredType)
+        {
+            IFCAST(float32, lua_tonumber)
+            else IFCAST(float64, lua_tonumber)
+            else IFCAST(int8, lua_tointeger)
+            else IFCAST(int16, lua_tointeger)
+            else IFCAST(int32, lua_tointeger)
+            else IFCAST(int64, lua_tonumber)
+            else IFCAST(char8, lua_tointeger)
+            else IFCAST(char16, lua_tointeger)
+            else THROWTYPE
+        }
+        else
+        {
+            return CASTTYPE(float64, lua_tonumber(L, index));
+        }
     case LUA_TSTRING:
-        return Any(String(lua_tolstring(L, index, nullptr)));
+        if (preferredType)
+        {
+            IFCAST(String, lua_tostring)
+            else if ISTYPE(WideString)
+            {
+                const String str(lua_tostring(L, index));
+                const WideString wstr(UTF8Utils::EncodeToWideString(str));
+                return Any(wstr);
+            }
+            else THROWTYPE
+        }
+        else
+        {
+            return CASTTYPE(String, lua_tostring(L, index));
+        }
     case LUA_TUSERDATA:
         if (lua_getmetatable(L, index) != 0) // stack +1 (top: metatable of userdata object)
         {
             if (lua_equalmetatable(L, AnyTName))
             {
                 lua_pop(L, 1); // stack -1
-                return lua_todvany(L, index);
+                Any any = lua_todvany(L, index);
+                if (preferredType
+                    && !ISTYPE(Any)
+                    && any.GetType() != preferredType)
+                {
+                    THROWTYPE;
+                }
+                return any;
+            }
+            else if (lua_equalmetatable(L, AnyFnTName))
+            {
+                lua_pop(L, 1); // stack -1
+                if (preferredType && !ISTYPE(AnyFn))
+                    THROWTYPE;
+                return Any(lua_todvanyfn(L, index));
             }
             else if (lua_equalmetatable(L, ReflectionTName))
             {
                 lua_pop(L, 1); // stack -1
-                return Any(lua_todvreflection(L, index));
+                Reflection refl = lua_todvreflection(L, index);
+                if (preferredType
+                    && !ISTYPE(Reflection)
+                    && refl.GetValueType() != preferredType)
+                {
+                    THROWTYPE;
+                }
+                return Any(refl);
             }
             else
             {
@@ -365,70 +592,67 @@ Any LuaToAny(lua_State* L, int32 index)
     default:
         throw LuaException(ltype, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
     }
+
+#undef ISTYPE
+#undef CASTTYPE
+#undef IFCAST
+#undef THROWTYPE
 }
 
 void AnyToLua(lua_State* L, const Any& value)
 {
-    if (value.CanGet<int32>())
+#define CANGET(t) (value.CanGet<t>())
+#define IFPUSH(t, luaFn) if CANGET(t) { luaFn(L, value.Get<t>()); }
+
+    if (value.IsEmpty())
     {
-        lua_pushinteger(L, value.Get<int32>());
+        lua_pushnil(L); // Push nil if any is empty
     }
-    else if (value.CanGet<int16>())
+    else
+        IFPUSH(int8, lua_pushinteger)
+    else IFPUSH(int16, lua_pushinteger)
+    else IFPUSH(int32, lua_pushinteger)
+    else if (CANGET(int64) && value.CanCast<float64>())
     {
-        lua_pushinteger(L, value.Get<int16>());
+        lua_pushnumber(L, value.Cast<float64>());
     }
-    else if (value.CanGet<int8>())
+    else IFPUSH(float32, lua_pushnumber)
+    else IFPUSH(float64, lua_pushnumber)
+    else IFPUSH(char8, lua_pushinteger)
+    else IFPUSH(char16, lua_pushinteger)
+    else IFPUSH(bool, lua_pushboolean)
+    else IFPUSH(const char*, lua_pushstring)
+    else if CANGET(String)
     {
-        lua_pushinteger(L, value.Get<int8>());
+        const String& str = value.Get<String>();
+        lua_pushlstring(L, str.c_str(), str.length());
     }
-    else if (value.CanGet<float64>())
-    {
-        lua_pushnumber(L, value.Get<float64>());
-    }
-    else if (value.CanGet<float32>())
-    {
-        lua_pushnumber(L, value.Get<float32>());
-    }
-    else if (value.CanGet<const char*>())
-    {
-        const char* res = value.Get<const char*>();
-        lua_pushlstring(L, res, strlen(res));
-    }
-    else if (value.CanGet<String>())
-    {
-        const String& res = value.Get<String>();
-        lua_pushlstring(L, res.c_str(), res.length());
-    }
-    else if (value.CanGet<WideString>())
+    else if CANGET(WideString)
     {
         const WideString& res = value.Get<WideString>();
         const String& utf = UTF8Utils::EncodeToUTF8(res);
         lua_pushlstring(L, utf.c_str(), res.length());
     }
-    else if (value.CanGet<bool>())
-    {
-        lua_pushboolean(L, value.Get<bool>());
-    }
-    else if (value.CanGet<Reflection>())
+    else if CANGET(Reflection)
     {
         Reflection ref = value.Get<Reflection>();
         if (ref.IsValid())
         {
-            lua_pushdvreflection(L, value.Get<Reflection>());
+            lua_pushdvreflection(L, ref);
         }
         else
         {
             lua_pushnil(L); // Push nil if reflection isn't valid
         }
     }
-    else if (value.IsEmpty())
-    {
-        lua_pushnil(L); // Push nil if any is empty
-    }
+    else IFPUSH(AnyFn, lua_pushdvanyfn)
     else // unknown type, push as is
     {
         lua_pushdvany(L, value);
     }
+
+#undef CANGET
+#undef IFPUSH
 }
 
 String PopString(lua_State* L)
@@ -445,10 +669,33 @@ String PopString(lua_State* L)
 void DumpStack(lua_State* L)
 {
     int32 count = lua_gettop(L);
-    Logger::Debug("Lua stack:");
+    Logger::FrameworkDebug("Lua stack:");
     for (int32 i = 1; i <= count; ++i)
     {
-        Logger::Debug("  %d) %s", i, luaL_typename(L, i));
+        String detail;
+        int ltype = lua_type(L, i);
+        switch (ltype)
+        {
+        case LUA_TBOOLEAN:
+            detail = Format(" %s", lua_toboolean(L, i) ? "true" : "false");
+            break;
+        case LUA_TNUMBER:
+            detail = Format(" %f", lua_tonumber(L, i));
+            break;
+        case LUA_TSTRING:
+            detail = Format(" %s", lua_tostring(L, i));
+            break;
+        case LUA_TUSERDATA:
+        case LUA_TLIGHTUSERDATA:
+            detail = Format(" %p", lua_touserdata(L, i));
+            break;
+        case LUA_TNIL:
+        case LUA_TTABLE:
+        case LUA_TFUNCTION:
+        case LUA_TTHREAD:
+            break;
+        }
+        Logger::FrameworkDebug("  %d) <%s>%s", i, luaL_typename(L, i), detail.c_str());
     }
 }
 }

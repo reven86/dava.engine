@@ -16,7 +16,18 @@ struct ReflClass : public DAVA::ReflectedBase
         .Field("boolVal", &ReflClass::boolVal)
         .Field("colorVal", &ReflClass::colorVal)
         .Field("subClass", &ReflClass::subClass)
+        .Method("invert", &ReflClass::invert)
         .End();
+    }
+
+    ReflClass()
+        : colorVal(DAVA::Color::White)
+    {
+    }
+
+    DAVA::int32 invert(DAVA::int32 value)
+    {
+        return -value;
     }
 
 public:
@@ -24,7 +35,7 @@ public:
     DAVA::float32 floatVal = 0.0f;
     bool boolVal = false;
     DAVA::String stringVal;
-    DAVA::Color colorVal = DAVA::Color::White;
+    DAVA::Color colorVal;
     ReflClass* subClass = nullptr;
 };
 
@@ -83,6 +94,10 @@ function main(context)
     -- Test complex type DAVA::Color as userdata
     subClass.colorVal = context.colorVal
     --assert(subClass.colorVal == context.colorVal, "Test fail!  subClass.colorVal (" ..  tostring(subClass.colorVal) .. ") != context.colorVal (" .. tostring(context.colorVal) .. ")")
+
+    -- Test methods
+    local invertedValue = context.invert(42);
+    assert(invertedValue == -42, "Test fail! invertedValue '" .. invertedValue .. "' != -42")
 end
 )script";
 

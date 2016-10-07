@@ -35,6 +35,10 @@ class DemoObj : public ReflectedBase
         .Field("c", &DemoObj::c)
         .Field("d", &DemoObj::d)
         .Field("v", &DemoObj::v)
+        .Method("foo", &DemoObj::foo)
+        .Method("foo2", &DemoObj::foo2)
+        .Method("bar", &DemoObj::bar)
+        .Method("bar2", &DemoObj::bar2)
         .End();
     }
 
@@ -44,6 +48,25 @@ public:
     Color c = Color::White;
     SubObj d;
     Vector<int32> v;
+    void foo()
+    {
+        Logger::Debug("Invoke DemoObj::foo()");
+    }
+    void foo2(int32 a1, String a2, bool a3, Color a4)
+    {
+        Logger::Debug("Invoke DemoObj::foo(%d, %s, %s, Color(%1.1f, %1.1f, %1.1f, %1.1f)",
+                      a1, a2.c_str(), a3 ? "true" : "false", a4.r, a4.g, a4.b, a4.a);
+    }
+    int32 bar(int32 arg)
+    {
+        Logger::Debug("Invoke DemoObj::bar(%d)", arg);
+        return arg;
+    }
+    bool bar2(bool arg)
+    {
+        Logger::Debug("Invoke DemoObj::bar(%s)", arg ? "true" : "false");
+        return arg;
+    }
 };
 
 DemoObj demoObj;
@@ -135,6 +158,7 @@ void ScriptingTest::LoadResources()
     });
 
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
+    demoObj.c = Color::White;
     objRef = Reflection::Create(&demoObj).ref;
     CreateScript();
 }
@@ -175,7 +199,7 @@ void ScriptingTest::Run(Function<int32()> func)
         for (int32 i = 0; i < nresults; ++i)
         {
             Any val = script->PopResult();
-            output += Format("%d) %s\n", i, val.IsEmpty() ? "<empty>" : val.GetType()->GetName());
+            output += Format("%d) %s\n", i, AnyToString(val).c_str());
         }
         outputText->SetUtf8Text(output);
         timeText->SetUtf8Text(Format("Time: %llu us", time));
@@ -187,4 +211,33 @@ void ScriptingTest::Run(Function<int32()> func)
         outputText->SetUtf8Text(error);
         timeText->SetUtf8Text("Error");
     }
+}
+
+String ScriptingTest::AnyToString(const Any& any)
+{
+#define IFFORMAT(t, frm) if (any.CanGet<t>()) { return Format(frm, any.Get<t>()); }
+#define IFFORMATEX(t, frm, exp) if (any.CanGet<t>()) { return Format(frm, (exp)); }
+
+    if (any.IsEmpty())
+        return "Any <empty>";
+    else
+        IFFORMATEX(bool, "%s", any.Get<bool>() ? "true" : "false")
+    else IFFORMAT(int8, "%d")
+    else IFFORMAT(int16, "%d")
+    else IFFORMAT(int32, "%d")
+    else IFFORMAT(int64, "%d")
+    else IFFORMAT(char8, "%d")
+    else IFFORMAT(char16, "%d")
+    else IFFORMAT(float32, "%f")
+    else IFFORMAT(float64, "%f")
+    else IFFORMAT(const char*, "%s")
+    else IFFORMATEX(String, "%s", any.Get<String>().c_str())
+    else IFFORMATEX(WideString, "%s", UTF8Utils::EncodeToUTF8(any.Get<WideString>()).c_str())
+    else IFFORMATEX(Reflection, "Any <Reflection <%s>>", any.Get<Reflection>().IsValid() ? any.Get<Reflection>().GetValueType()->GetName() : "non valid")
+    else IFFORMATEX(Any, "Any <%s>", AnyToString(any.Get<Any>()).c_str())
+    else IFFORMAT(AnyFn, "Any <AnyFn <...>>")
+    else return Format("Any <%s>", any.GetType()->GetName());
+
+#undef IFFORMAT
+#undef IFFORMATEX
 }

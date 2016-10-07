@@ -2,6 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 #include "Functional/Function.h"
+#include "Base/Any.h"
 
 class ScriptingTest : public BaseScreen
 {
@@ -16,6 +17,7 @@ protected:
 private:
     void CreateScript();
     void Run(DAVA::Function<DAVA::int32()> func);
+    DAVA::String AnyToString(const DAVA::Any& any);
 
     DAVA::RefPtr<DAVA::UITextField> scriptText;
     DAVA::RefPtr<DAVA::UITextField> intArgText;

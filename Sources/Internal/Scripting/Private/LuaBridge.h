@@ -27,6 +27,12 @@ Lua stack changes [-0, +0, -]
 void RegisterAny(lua_State* L);
 
 /**
+Register in Lua metatable for AnyFn userdata type.
+Lua stack changes [-0, +0, -]
+*/
+void RegisterAnyFn(lua_State* L);
+
+/**
 Register in Lua metatable for Reflection userdata type.
 Lua stack changes [-0, +0, -]
 */
@@ -36,7 +42,7 @@ void RegisterReflection(lua_State* L);
 Gets Lua variable from stack with specified index and convert it to Any.
 Lua stack changes [-0, +0, -]
 */
-Any LuaToAny(lua_State* L, int32 index);
+Any LuaToAny(lua_State* L, int32 index, const Type* preferredType = nullptr);
 
 /**
 Put specified value as Lua variable to stack.

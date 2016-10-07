@@ -25,6 +25,7 @@ LuaScript::LuaScript(bool initDefaultLibs)
     }
     LuaBridge::RegisterDava(state->lua);
     LuaBridge::RegisterAny(state->lua);
+    LuaBridge::RegisterAnyFn(state->lua);
     LuaBridge::RegisterReflection(state->lua);
 }
 
