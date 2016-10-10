@@ -4,17 +4,21 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
-#include "ControlLayoutData.h"
+#include "UI/Layouts/ControlLayoutData.h"
+#include "UI/UISystem.h"
 
 namespace DAVA
 {
 class UIControl;
 
 class UILayoutSystem
+: public UISystem
 {
 public:
     UILayoutSystem();
-    virtual ~UILayoutSystem();
+    ~UILayoutSystem() override;
+
+    void Process(DAVA::float32 elapsedTime) override{};
 
     bool IsRtl() const;
     void SetRtl(bool rtl);

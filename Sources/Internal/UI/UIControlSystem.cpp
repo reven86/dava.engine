@@ -30,9 +30,13 @@ UIControlSystem::UIControlSystem()
     baseGeometricData.scale = Vector2(1.0f, 1.0f);
     baseGeometricData.angle = 0;
 
-    layoutSystem = new UILayoutSystem();
-    styleSheetSystem = new UIStyleSheetSystem();
-    inputSystem = new UIInputSystem();
+    AddSystem(std::make_unique<UIInputSystem>());
+    AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIStyleSheetSystem>());
+
+    inputSystem = GetSystem<UIInputSystem>();
+    layoutSystem = GetSystem<UILayoutSystem>();
+    styleSheetSystem = GetSystem<UIStyleSheetSystem>();
 
     screenshoter = new UIScreenshoter();
 
@@ -78,9 +82,11 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
-    SafeDelete(styleSheetSystem);
-    SafeDelete(layoutSystem);
-    SafeDelete(inputSystem);
+    inputSystem = nullptr;
+    styleSheetSystem = nullptr;
+    layoutSystem = nullptr;
+
+    systems.clear();
     SafeDelete(screenshoter);
 }
 
@@ -303,6 +309,11 @@ void UIControlSystem::Update()
 
     float32 timeElapsed = SystemTimer::FrameDelta();
 
+    for (auto& system : systems)
+    {
+        system->Process(timeElapsed);
+    }
+
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
         if (currentScreenTransition)
@@ -320,11 +331,6 @@ void UIControlSystem::Update()
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
     newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
     RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
-
-    for (UISystem* system : systems)
-    {
-        system->Process(timeElapsed);
-    }
 
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
@@ -636,7 +642,7 @@ bool UIControlSystem::IsHostControl(const UIControl* control) const
 
 void UIControlSystem::RegisterControl(UIControl* control)
 {
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->RegisterControl(control);
     }
@@ -644,7 +650,7 @@ void UIControlSystem::RegisterControl(UIControl* control)
 
 void UIControlSystem::UnregisterControl(UIControl* control)
 {
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->UnregisterControl(control);
     }
@@ -652,8 +658,7 @@ void UIControlSystem::UnregisterControl(UIControl* control)
 
 void UIControlSystem::RegisterVisibleControl(UIControl* control)
 {
-    inputSystem->OnControlVisible(control);
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->OnControlVisible(control);
     }
@@ -661,8 +666,7 @@ void UIControlSystem::RegisterVisibleControl(UIControl* control)
 
 void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 {
-    inputSystem->OnControlInvisible(control);
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->OnControlInvisible(control);
     }
@@ -670,7 +674,7 @@ void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 
 void UIControlSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->RegisterComponent(control, component);
     }
@@ -678,30 +682,46 @@ void UIControlSystem::RegisterComponent(UIControl* control, UIComponent* compone
 
 void UIControlSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    for (UISystem* system : systems)
+    for (auto& system : systems)
     {
         system->UnregisterComponent(control, component);
     }
 }
 
-void UIControlSystem::AddSystem(UISystem* system)
+void UIControlSystem::AddSystem(std::unique_ptr<UISystem> system, const UISystem* insertBeforeSystem)
 {
-    DVASSERT(std::find(systems.begin(), systems.end(), system) == systems.end());
-    systems.push_back(system);
+    if (insertBeforeSystem)
+    {
+        auto insertIt = std::find_if(systems.begin(), systems.end(),
+                                     [insertBeforeSystem](const std::unique_ptr<UISystem>& systemPtr)
+                                     {
+                                         return systemPtr.get() == insertBeforeSystem;
+                                     });
+        DVASSERT(insertIt != systems.end());
+        systems.insert(insertIt, std::move(system));
+    }
+    else
+    {
+        systems.push_back(std::move(system));
+    }
 }
 
-void UIControlSystem::InsertSystem(UISystem* sceneSystem, int index)
+std::unique_ptr<UISystem> UIControlSystem::RemoveSystem(const UISystem* system)
 {
-    systems.insert(systems.begin() + index, sceneSystem);
-}
+    auto it = std::find_if(systems.begin(), systems.end(),
+                           [system](const std::unique_ptr<UISystem>& systemPtr)
+                           {
+                               return systemPtr.get() == system;
+                           });
 
-void UIControlSystem::RemoveSystem(UISystem* system)
-{
-    auto it = std::find(systems.begin(), systems.end(), system);
     if (it != systems.end())
     {
+        std::unique_ptr<UISystem> systemPtr(it->release());
         systems.erase(it);
+        return std::move(systemPtr);
     }
+
+    return nullptr;
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const

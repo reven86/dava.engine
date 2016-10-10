@@ -1,16 +1,16 @@
 #ifndef __DAVAENGINE_UI_CONTROL_SYSTEM_H__
 #define __DAVAENGINE_UI_CONTROL_SYSTEM_H__
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 #include "Base/Singleton.h"
+#include "Base/TemplateHelpers.h"
+#include "Engine/Private/EnginePrivateFwd.h"
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
-#include "UI/UIScreenTransition.h"
 #include "UI/UIPopup.h"
-#include "Base/FastName.h"
-
-#include "Engine/Private/EnginePrivateFwd.h"
+#include "UI/UIScreenTransition.h"
 
 #define FRAME_SKIP 5
 
@@ -280,9 +280,22 @@ public:
     void RegisterComponent(UIControl* control, UIComponent* component);
     void UnregisterComponent(UIControl* control, UIComponent* component);
 
-    void AddSystem(UISystem* sceneSystem);
-    void InsertSystem(UISystem* sceneSystem, int index);
-    void RemoveSystem(UISystem* sceneSystem);
+    void AddSystem(std::unique_ptr<UISystem> sceneSystem, const UISystem* insertBeforeSystem = nullptr);
+    std::unique_ptr<UISystem> RemoveSystem(const UISystem* sceneSystem);
+
+    template <typename SystemClass>
+    SystemClass* GetSystem() const
+    {
+        for (auto& system : systems)
+        {
+            if (DAVA::IsPointerToExactClass<SystemClass>(system.get()))
+            {
+                return static_cast<SystemClass*>(system.get());
+            }
+        }
+
+        return nullptr;
+    }
 
     UILayoutSystem* GetLayoutSystem() const;
     UIInputSystem* GetInputSystem() const;
@@ -315,7 +328,7 @@ private:
     friend void Core::CreateSingletons();
 #endif
 
-    Vector<UISystem*> systems;
+    Vector<std::unique_ptr<UISystem>> systems;
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
     UIInputSystem* inputSystem = nullptr;
