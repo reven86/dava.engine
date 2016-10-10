@@ -137,7 +137,7 @@ void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const
 void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
-    packs.reserve(911); // now we have 911 packs
+    packs.reserve(1420); // now we have 1420 packs
 
     try
     {
@@ -173,6 +173,8 @@ void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 
             packs.push_back(pack);
         };
+
+        packs.shrink_to_fit();
     }
     catch (std::exception& ex)
     {

@@ -733,12 +733,22 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
     const Pack& packState = pm.FindPack(packName);
     for (const String& dependName : packState.dependency)
     {
-        Pack& dependPack = pm.GetPack(dependName);
-        if (dependPack.state != Pack::Status::Mounted)
+        Pack* dependPack = nullptr;
+        try
         {
-            if (find(begin(dependency), end(dependency), &dependPack) == end(dependency))
+            dependPack = &pm.GetPack(dependName);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("pack \"%s\" has dependency to base pack \"%s\"", packName.c_str(), dependName.c_str());
+            continue;
+        }
+
+        if (dependPack->state != Pack::Status::Mounted)
+        {
+            if (find(begin(dependency), end(dependency), dependPack) == end(dependency))
             {
-                dependency.push_back(&dependPack);
+                dependency.push_back(dependPack);
             }
 
             CollectDownloadableDependency(pm, dependName, dependency);

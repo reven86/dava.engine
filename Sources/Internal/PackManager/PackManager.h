@@ -12,17 +12,17 @@ public:
     virtual ~IPackManager();
     enum class InitState : uint32
     {
-        MountingLocalPacks, ///< mount all local readonly packs (mount all founded in pointed directory)
+        MountingLocalPacks, //!< mount all local readonly packs (mount all founded in pointed directory)
         LocalPacksMounted,
-        LoadingRequestAskFooter, ///< if no connection goto LoadingPacksDataFromDB try using only local packs
+        LoadingRequestAskFooter, //!< if no connection goto LoadingPacksDataFromDB try using only local packs
         LoadingRequestGetFooter,
         LoadingRequestAskFileTable,
         LoadingRequestGetFileTable,
-        CalculateLocalDBHashAndCompare, ///< go to MountingDownloadedPacks if match
-        LoadingRequestAskDB, ///< skip if hash match
-        LoadingRequestGetDB, ///< skip if hash match
-        UnpakingDB, ///< skip if hash match
-        DeleteDownloadedPacksIfNotMatchHash, ///< skip if hash match
+        CalculateLocalDBHashAndCompare, //!< go to MountingDownloadedPacks if match
+        LoadingRequestAskDB, //!< skip if hash match
+        LoadingRequestGetDB, //!< skip if hash match
+        UnpakingDB, //!< skip if hash match
+        DeleteDownloadedPacksIfNotMatchHash, //!< skip if hash match
         LoadingPacksDataFromLocalDB,
         MountingDownloadedPacks,
         Ready
@@ -48,17 +48,17 @@ public:
             Requested,
             Downloading,
             Mounted,
-            ErrorLoading, ///< downloadError - value returned from DLC DownloadManager
-            OtherError ///< mount failed, check hash failed, file IO failed see otherErrorMsg
+            ErrorLoading, //!< downloadError - value returned from DLC DownloadManager
+            OtherError //!< mount failed, check hash failed, file IO failed see otherErrorMsg
         };
 
-        Vector<String> dependency; /// names of dependency packs or empty
+        Vector<String> dependency; /** names of dependency packs or empty */
 
-        String name; /// unique pack name
+        String name; /** unique pack name */
         String otherErrorMsg;
 
-        float32 downloadProgress = 0.f; /// 0.0f to 1.0f
-        float32 priority = 0.f; /// 0.0f to 1.0f
+        float32 downloadProgress = 0.f; /** 0.0f to 1.0f */
+        float32 priority = 0.f; /** 0.0f to 1.0f */
 
         uint32 hashFromDB = 0;
 
@@ -69,11 +69,10 @@ public:
         DownloadError downloadError = DLE_NO_ERROR;
         Status state = Status::NotRequested;
 
-        bool isGPU = false; // depends on architecture
-        bool isReadOnly = false; // find in build readonly dir assets
+        bool isGPU = false; /** depends on architecture */
     };
 
-    /// proxy interface to easily check pack request progress
+    /** proxy interface to easily check pack request progress */
     class IRequest
     {
     public:
@@ -87,13 +86,12 @@ public:
         virtual const String& GetErrorMessage() const = 0;
     };
 
-    /// user have to wait till InitializationState become Ready
-    /// second argument - status text usfull for loging
+    /** User have to wait till InitState become Ready */
     Signal<IPackManager&> asyncConnectStateChanged;
-    /// signal user about every pack state change
+    /** signal user about every pack state change */
     Signal<const Pack&> packStateChanged;
     Signal<const Pack&> packDownloadChanged;
-    /// signal per user request with complete size of all depended packs
+    /** signal per user request with complete size of all depended packs */
     Signal<const IRequest&> requestProgressChanged;
 
     struct Hints
@@ -101,8 +99,10 @@ public:
         bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
     };
 
-    /// you can call after in GameCore::OnAppStarted (throw exception on error)
-    /// complex async connect to server
+    /**
+     you can call after in GameCore::OnAppStarted (throw exception on error)
+     complex async connect to server
+    */
     virtual void Initialize(const String& architecture,
                             const FilePath& dirToDownloadPacks,
                             const FilePath& pathToBasePacksDB,
@@ -123,41 +123,45 @@ public:
 
     virtual bool IsPausedInit() const = 0;
 
-    /// if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "RetryInit"
+    /** if you need ask USER what to do, you can "Pause" initialization and wait some frames and later call "RetryInit" */
     virtual void PauseInit() = 0;
 
     virtual bool IsRequestingEnabled() const = 0;
-    /// enable user request processing
+    /** enable user request processing */
     virtual void EnableRequesting() = 0;
-    /// disable user request processing
+    /** disable user request processing */
     virtual void DisableRequesting() = 0;
 
-    /// internal method called per frame in framework (can thow exception)
+    /** internal method called per frame in framework (can thow exception) */
     virtual void Update() = 0;
 
-    /// return unique pack name or empty string
+    /** return unique pack name or empty string */
     virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
 
-    /// fast find using index
+    /** thow exception if can't find pack */
     virtual const Pack& FindPack(const String& packName) const = 0;
 
-    /// thow exception if can't find pack
+    /** thow exception if can't find pack */
     virtual const Pack& RequestPack(const String& packName) = 0;
 
-    /// list all files from DB for every pack, and call callback function
-    /// for every found path with
-    /// two params first - relative file path, second pack name
+    /**
+     List all files from DB for every pack, and call callback function
+     for every found path with
+     two params first - relative file path, second pack name
+    */
     virtual void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) = 0;
 
-    /// return request contains pack or nullptr
-    /// requestedPackName - previous requested pack currently in downloading
-    /// or present in wait queue
+    /**
+     return request contains pack or nullptr
+     requestedPackName - previous requested pack currently in downloading
+     or present in wait queue
+    */
     virtual const IRequest* FindRequest(const String& requestedPackName) const = 0;
 
-    /// order - [0..1] - 0 - first, 1 - last
+    /** order - [0..1] - 0 - first, 1 - last */
     virtual void SetRequestOrder(const String& packName, float order) = 0;
 
-    /// all packs state, valid till next call Update()
+    /** all packs state, valid till next call Update() */
     virtual const Vector<Pack>& GetPacks() const = 0;
 
     virtual void DeletePack(const String& packName) = 0;
