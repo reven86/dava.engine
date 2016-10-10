@@ -15,6 +15,18 @@
 #include "Utils/Utils.h"
 
 #include "Debug/DVAssert.h"
+#include "Base/Singleton.h"
+
+namespace WayEditSystemDetail
+{
+void RemoveEntityFromSelection(SelectableGroup& group, DAVA::Entity* entity)
+{
+    if (group.ContainsObject(entity))
+    {
+        group.Remove(entity);
+    }
+}
+}
 
 WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* _selectionSystem, SceneCollisionSystem* _collisionSystem)
     : DAVA::SceneSystem(scene)
@@ -42,6 +54,9 @@ void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
 void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
 {
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(currentSelection, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(selectedWaypoints, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(prevSelectedWaypoints, removedPoint);
 
     if (removedPoint->GetNotRemovable() == false)
         return;
@@ -270,7 +285,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 return;
             }
 
-            if (selectedWaypoints.IsEmpty())
+            if (selectedWaypoints.IsEmpty() && cloneJustDone == false)
             {
                 DAVA::Vector3 lanscapeIntersectionPos;
                 bool lanscapeIntersected = collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);

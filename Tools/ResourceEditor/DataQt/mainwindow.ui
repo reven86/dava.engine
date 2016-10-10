@@ -29,7 +29,7 @@
    <string>MainWindow</string>
   </property>
   <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks</set>
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QFrame" name="mainFrame">
    <layout class="QVBoxLayout" name="verticalLayout_8">

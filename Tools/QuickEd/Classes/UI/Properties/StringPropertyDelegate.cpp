@@ -4,14 +4,11 @@
 #include "DAVAEngine.h"
 #include "PropertiesModel.h"
 #include "Utils/QtDavaConvertion.h"
+#include "QtTools/Utils/Utils.h"
 #include "PropertiesTreeItemDelegate.h"
 
 StringPropertyDelegate::StringPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
-{
-}
-
-StringPropertyDelegate::~StringPropertyDelegate()
 {
 }
 
@@ -38,6 +35,8 @@ void StringPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex
     {
         stringValue = WideStringToQString(variant.AsWideString());
     }
+    UnescapeString(stringValue);
+
     editor->blockSignals(true);
     editor->setText(stringValue);
     editor->blockSignals(false);
@@ -52,13 +51,15 @@ bool StringPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
 
+    QString stringValue = EscapeString(editor->text());
+
     if (variantType.GetType() == DAVA::VariantType::TYPE_STRING)
     {
-        variantType.SetString(QStringToString(editor->text()));
+        variantType.SetString(QStringToString(stringValue));
     }
     else
     {
-        variantType.SetWideString(QStringToWideString(editor->text()));
+        variantType.SetWideString(QStringToWideString(stringValue));
     }
 
     QVariant variant;

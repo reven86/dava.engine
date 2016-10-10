@@ -4,6 +4,8 @@
 #include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
+#include "Functional/SignalBase.h"
+
 #include <memory>
 
 namespace DAVA
@@ -16,10 +18,10 @@ class ClientModule;
 class ControllerModule;
 class ConsoleModule;
 
-class Core final
+class Core final : public TrackedObject
 {
 public:
-    Core(Engine& engine_);
+    Core(Engine& engine);
     ~Core();
 
     template <typename T, typename... Args>
@@ -48,12 +50,27 @@ public:
     }
 
 private:
+    // in testing enviroment Core shouldn't connect to Engine signals.
+    // TArcTestClass wrap signals and call Core method directly
+    Core(Engine& engine, bool connectSignals);
     bool IsConsoleMode() const;
     // Don't put AddModule methods into public sections.
     // There is only one orthodox way to inject Module into TArcCore : CreateModule
     void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);
+
+    friend class TestClass;
+    void OnLoopStarted();
+    void OnLoopStopped();
+    void OnFrame(float32 delta);
+    void OnWindowCreated(DAVA::Window* w);
+    bool HasControllerModule() const;
+
+    OperationInvoker* GetMockInvoker();
+    DataContext& GetActiveContext();
+    DataContext& GetGlobalContext();
+    DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
 
 private:
     class Impl;

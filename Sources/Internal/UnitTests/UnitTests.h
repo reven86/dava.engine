@@ -78,6 +78,39 @@
         TEST_VERIFY(CalcSomethingUseful(1) == 42);
     }
  };
+ 
+ ==============================================================================================================
+ 
+ If you need make some additional initialization for custom BaseTestClass, you can implement custom factory for your test classes and use
+ DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY macro to declare it. Custom BaseTestClass should be derived from DAVA::UnitTests::TestClass.
+ Custom factory should be template class and derived from DAVA::UnitTests::TestClassFactoryBase.
+ 
+ class MyBaseTestClass : public DAVA::UnitTests::TestClass
+ {
+ public:
+ void Init() { do some additional initialization }
+ int CalcSomethingUseful(int param) { return param * 42; }
+ };
+ 
+ template <typename T>
+ class MyCustomTestClassFactory : public DAVA::UnitTests::TestClassFactoryBase
+ {
+ public:
+     TestClass* CreateTestClass() override
+     {
+        T* testClass = new T();
+        testClass->Init();
+        return testClass;
+     }
+ }
+ 
+ DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY(MyTestClass, MyBaseTestClass, MyCustomTestClassFactory)
+ {
+ DAVA_TEST(Test1)
+ {
+ TEST_VERIFY(CalcSomethingUseful(1) == 42);
+ }
+ };
 
  ==============================================================================================================
 
@@ -129,6 +162,17 @@
         {                                                                                                                                       \
             DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
         }                                                                                                                                       \
+    } testclass_##classname##_registrar_instance;                                                                                           \
+    struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
+
+#define DAVA_TESTCLASS_CUSTOM_BASE_AND_FACTORY(classname, base_classname, factory)                                                           \
+    struct classname;                                                                                                                       \
+    static struct testclass_##classname##_registrar                                                                                         \
+    {                                                                                                                                       \
+        testclass_##classname##_registrar()                                                                                                 \
+        {                                                                                                                                   \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new factory<classname>);                                   \
+        }                                                                                                                                   \
     } testclass_##classname##_registrar_instance;                                                                                           \
     struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
@@ -219,10 +263,9 @@
     }
 
 #define DEDUCE_COVERED_FILES_FROM_TESTCLASS() \
-BEGIN_FILES_COVERED_BY_TESTS() \
-\
-DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
-END_FILES_COVERED_BY_TESTS()
+        BEGIN_FILES_COVERED_BY_TESTS() \
+            DECLARE_COVERED_FILES(PrettifyTypeName(DAVA::String(typeid(*this).name())) + DAVA::String(".cpp")) \
+        END_FILES_COVERED_BY_TESTS()
 
 #else
 

@@ -109,7 +109,6 @@ protected:
     };
     eGridStyle gridStyle;
 
-    QBrush backgroundBrush;
     DAVA::float32 scale;
     DAVA::float32 initialTimeInterval;
 
