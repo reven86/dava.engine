@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-class UIScreenTransition : public UIScreen
+class UIScreenTransition : public UIScreen, public TrackedObject
 {
 public:
     UIScreenTransition();

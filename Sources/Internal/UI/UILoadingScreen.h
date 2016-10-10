@@ -9,7 +9,7 @@ namespace DAVA
 {
 class Thread;
 
-class UILoadingScreen : public UIScreen
+class UILoadingScreen : public UIScreen, public TrackedObject
 {
 public:
     UILoadingScreen() = default;

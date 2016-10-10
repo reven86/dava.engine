@@ -8,7 +8,7 @@ namespace DAVA
 {
 class ScrollHelper;
 
-class UIScrollViewContainer : public UIControl
+class UIScrollViewContainer : public UIControl, public TrackedObject
 {
 protected:
     virtual ~UIScrollViewContainer();

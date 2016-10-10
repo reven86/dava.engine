@@ -88,7 +88,7 @@ protected:
  * To display selected element UISpinner itself (as UIControl) or its children should be used:
  * use SpinnerAdapter with your custom DisplaySelectedData implementation of display logic.
  */
-class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver
+class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver, public TrackedObject
 {
 public:
     UISpinner(const Rect& rect = Rect());

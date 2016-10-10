@@ -21,8 +21,7 @@ public:
     virtual void UnloadResources();
 
     virtual void Draw(const UIGeometricData& geometricData);
-    void OnVisible();
-    void OnInvisible();
+    virtual void Update(float32 timeElapsed);
 
     virtual void DidAppear();
 
@@ -48,9 +47,6 @@ protected:
 
     Vector2 cursorPosition;
     float32 cursorSize = 0.1f;
-
-private:
-    void Update(float32 timeElapsed);
 };
 
 #endif //__VIEW_SCENE_SCREEN_H__
