@@ -125,6 +125,7 @@ private:
     bool keyEventRecursiveGuard = false;
 
     bool isClosing = false;
+    bool isInPaint = false;
 
     friend class Private::WindowBackend;
 };

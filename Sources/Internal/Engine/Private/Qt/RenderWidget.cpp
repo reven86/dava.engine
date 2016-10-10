@@ -65,6 +65,12 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
+    DVASSERT(isInPaint == false);
+    isInPaint = true;
+    SCOPE_EXIT
+    {
+        isInPaint = false;
+    }
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
     if (!nativeHandle.isValid())
     {
