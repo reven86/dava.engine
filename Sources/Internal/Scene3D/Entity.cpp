@@ -18,7 +18,6 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Debug/CPUProfiler.h"
 #include <functional>
 
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
@@ -602,7 +601,6 @@ void Entity::Save(KeyedArchive* archive, SerializationContext* serializationCont
 
 void Entity::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    DAVA_CPU_PROFILER_SCOPE("Entity::Load");
     BaseObject::LoadObject(archive);
 
     name = FastName(archive->GetString("name", "").c_str());
@@ -620,6 +618,9 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
 
     const Matrix4& localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
     SetLocalTransform(localTransform);
+
+    /// InvalidateLocalTransform();
+    //    debugFlags = archive->GetUInt32("debugFlags", 0);
 
     KeyedArchive* compsArch = archive->GetArchive("components");
 

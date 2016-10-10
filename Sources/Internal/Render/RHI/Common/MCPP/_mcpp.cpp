@@ -39,7 +39,7 @@ void mcpp__set_input(const void* data, unsigned data_sz)
 
     FileEntry entry;
 
-    entry.file = new DAVA::UnmanagedMemoryFile(reinterpret_cast<const uint8*>(data), data_sz);
+    entry.file = DAVA::DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(data), data_sz, DAVA::File::READ);
     entry.file_name = MCPP_Text;
     entry.eof = 0;
     entry.handle = _HandleBase + 0;
@@ -53,7 +53,6 @@ extern void xbegin_allocations(); // defined in support.cpp
 
 void mcpp__startup()
 {
-    DAVA_CPU_PROFILER_SCOPE("mcpp__startup");
     xbegin_allocations();
 }
 
@@ -63,7 +62,6 @@ extern void xend_allocations(); // defined in support.cpp
 
 void mcpp__shutdown()
 {
-    DAVA_CPU_PROFILER_SCOPE("mcpp__shutdown");
     xend_allocations();
 }
 
@@ -118,8 +116,8 @@ FILE* mcpp__fopen(const char* filename, const char* mode)
 else
 {
 DAVA::Logger::Error("can't open \"%s\"",filename);
-    }
-    */
+}
+*/
     }
 
     //DAVA::Logger::Info("mcpp-open \"%s\" %p",filename,file);
@@ -158,6 +156,7 @@ int mcpp__ferror(FILE* file)
         if (f->handle == file)
         {
             eof = f->eof;
+            //DAVA::Logger::Info("mcpp-ferror %p = %i",file,eof);
             break;
         }
     }

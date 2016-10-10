@@ -2,7 +2,6 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
-#include "Render/RHI/Common/MCPP/_mcpp.h"
 
 namespace DAVA
 {
@@ -15,9 +14,6 @@ struct ShaderSourceCode
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
-
-    uint32 vSrcHash = 0;
-    uint32 fSrcHash = 0;
 };
 
 namespace
@@ -43,6 +39,7 @@ void Uninitialize()
 
 void Clear()
 {
+    //RHI_COMPLETE - clear shader descriptors here too?
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
@@ -79,8 +76,9 @@ void BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines
     key.push_back(name.Index());
 }
 
-void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
+ShaderSourceCode LoadFromSource(const String& source)
 {
+    ShaderSourceCode sourceCode;
     sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
     sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
 
@@ -145,19 +143,22 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
         sourceCode.fragmentProgText[0] = 0;
     }
 
-    sourceCode.vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
-    sourceCode.fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
+    return sourceCode;
 }
 
-const ShaderSourceCode& GetSourceCode(const FastName& name)
+ShaderSourceCode GetSourceCode(const FastName& name)
 {
-    DAVA_CPU_PROFILER_SCOPE("GetSourceCode");
     auto sourceIt = shaderSourceCodes.find(name);
     if (sourceIt != shaderSourceCodes.end()) //source found
+    {
         return sourceIt->second;
-
-    LoadFromSource(name.c_str(), shaderSourceCodes[name]);
-    return shaderSourceCodes.at(name);
+    }
+    else
+    {
+        ShaderSourceCode sourceCode = LoadFromSource(name.c_str());
+        shaderSourceCodes[name] = sourceCode;
+        return sourceCode;
+    }
 }
 
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
@@ -173,8 +174,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
-
-    DAVA_CPU_PROFILER_SCOPE("GetShaderDescriptor");
 
     //not found - create new shader
     Vector<String> progDefines;
@@ -210,63 +209,69 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    mcpp__startup();
-
-    const ShaderSourceCode& sourceCode = GetSourceCode(name);
-
-    const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, sourceCode.vSrcHash);
+    ShaderSourceCode sourceCode = GetSourceCode(name);
+    const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
+    const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
+    const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
+    const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
     rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    if (vSource == nullptr)
+    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
+
+#define TRACE_CACHE_USAGE 0
+
+    if (vSource)
     {
-        DAVA_CPU_PROFILER_SCOPE("vSource2.Construct");
-        char localBuffer[64 * 1024] = {};
-        memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
-        vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
-        rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
+#if TRACE_CACHE_USAGE
+        Logger::Info("using cached \"%s\"", vProgUid.c_str());
+#endif
+    }
+    else
+    {
+#if TRACE_CACHE_USAGE
+        Logger::Info("building \"%s\"", vProgUid.c_str());
+#endif
+        vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
+        rhi::ShaderSourceCache::Update(vProgUid, vSrcHash, vSource2);
         vSource = &vSource2;
     }
 
-    const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, sourceCode.fSrcHash);
-    rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
-    if (fSource == nullptr)
+    if (fSource)
     {
-        DAVA_CPU_PROFILER_SCOPE("fSource2.Construct");
-        char localBuffer[64 * 1024] = {};
-        memcpy(localBuffer, sourceCode.fragmentProgText, strlen(sourceCode.fragmentProgText));
-        fSource2.Construct(rhi::PROG_FRAGMENT, localBuffer, progDefines);
-        rhi::ShaderSourceCache::Update(fProgUid, sourceCode.fSrcHash, fSource2);
+#if TRACE_CACHE_USAGE
+        Logger::Info("using cached \"%s\"", fProgUid.c_str());
+#endif
+    }
+    else
+    {
+#if TRACE_CACHE_USAGE
+        Logger::Info("building \"%s\"", fProgUid.c_str());
+#endif
+        fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+        rhi::ShaderSourceCache::Update(fProgUid, fSrcHash, fSource2);
         fSource = &fSource2;
     }
 
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
+
+    //ShaderDescr
+    rhi::PipelineState::Descriptor psDesc;
+    psDesc.vprogUid = vProgUid;
+    psDesc.fprogUid = fProgUid;
+    psDesc.vertexLayout = vSource->ShaderVertexLayout();
+    psDesc.blending = fSource->Blending();
+    rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
+    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
+    res->sourceName = name;
+    res->defines = defines;
+    res->valid = piplineState.IsValid(); //later add another conditions
+    if (res->valid)
     {
-        DAVA_CPU_PROFILER_SCOPE("UpdateProgs");
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
+        res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
+        res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }
 
-    ShaderDescriptor* res = nullptr;
-    {
-        DAVA_CPU_PROFILER_SCOPE("AcquireRenderPipelineState");
-        rhi::PipelineState::Descriptor psDesc;
-        psDesc.vprogUid = vProgUid;
-        psDesc.fprogUid = fProgUid;
-        psDesc.vertexLayout = vSource->ShaderVertexLayout();
-        psDesc.blending = fSource->Blending();
-        rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-        res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
-        res->sourceName = name;
-        res->defines = defines;
-        res->valid = piplineState.IsValid(); //later add another conditions
-        if (res->valid)
-        {
-            res->UpdateConfigFromSource(const_cast<rhi::ShaderSource*>(vSource), const_cast<rhi::ShaderSource*>(fSource));
-            res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
-        }
-    }
     shaderDescriptors[key] = res;
-
-    mcpp__shutdown();
-
     return res;
 }
 

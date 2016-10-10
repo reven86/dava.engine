@@ -30,7 +30,7 @@ public:
     static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
     static CPUProfiler* const globalProfiler;
 
-    CPUProfiler(uint32 countersCount = 16 * 2048);
+    CPUProfiler(uint32 countersCount = 2048);
     ~CPUProfiler();
 
     void Start();

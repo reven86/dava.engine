@@ -1,9 +1,11 @@
 #include "PreProcess.h"
-#include "../rhi_Type.h"
-#include "MCPP/mcpp_lib.h"
-#include "Debug/CPUProfiler.h"
-#include <stdio.h>
-#include <stdarg.h>
+
+    #include "../rhi_Type.h"
+
+    #include "MCPP/mcpp_lib.h"
+
+    #include <stdio.h>
+    #include <stdarg.h>
 
 static std::string* _PreprocessedText = nullptr;
 
@@ -126,10 +128,12 @@ void PreProcessText(const char* text, std::string* result)
 
     _PreprocessedText = result;
     {
+        mcpp__startup();
         mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
         mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
         mcpp_lib_main(countof(argv), const_cast<char**>(argv));
         mcpp__cleanup();
+        mcpp__shutdown();
     }
     _PreprocessedText = nullptr;
 }
@@ -138,7 +142,6 @@ void PreProcessText(const char* text, std::string* result)
 
 void PreProcessText(const char* text, const char** arg, unsigned argCount, std::string* result)
 {
-    DAVA_CPU_PROFILER_SCOPE("PreProcessText");
     if (text)
     {
         const char* argv[128];
@@ -155,10 +158,12 @@ void PreProcessText(const char* text, const char** arg, unsigned argCount, std::
 
         _PreprocessedText = result;
         {
+            mcpp__startup();
             mcpp__set_input(text, static_cast<unsigned>(strlen(text)));
             mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
             mcpp_lib_main(argc, const_cast<char**>(argv));
             mcpp__cleanup();
+            mcpp__shutdown();
         }
         _PreprocessedText = nullptr;
     }
