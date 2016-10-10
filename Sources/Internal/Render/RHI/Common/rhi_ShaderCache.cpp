@@ -1,6 +1,6 @@
 #include "MCPP/mcpp_lib.h"
 
-    #include "../rhi_ShaderCache.h"
+#include "../rhi_ShaderCache.h"
 
 namespace rhi
 {
@@ -865,7 +865,6 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
 {
-    DAVA_CPU_PROFILER_FUNCTION_SCOPE;
     char src[64 * 1024] = {};
     int src_len = 0;
 
@@ -1081,9 +1080,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
     case RHI_GLES2:
         preprocessedText->insert(0, _ShaderHeader_GLES2);
-            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
         preprocessedText->insert(0, "precision highp float;\n");
-            #endif
+        #endif
         break;
 
     case RHI_METAL:

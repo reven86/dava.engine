@@ -6,7 +6,6 @@
 
     #include "Debug/DVAssert.h"
     #include "Logger/Logger.h"
-    #include "Debug/CPUProfiler.h"
 
 using DAVA::Logger;
 using DAVA::uint32;
@@ -457,8 +456,6 @@ void PipelineStateDX9_t::ConstBuf::SetToRHI(const void* inst_data) const
 
 bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_sz, const VertexLayout& vdecl)
 {
-    DAVA_CPU_PROFILER_SCOPE("VertexProgDX9::Construct");
-
     bool success = false;
     LPD3DXBUFFER shader = NULL;
     LPD3DXBUFFER err = NULL;
@@ -705,8 +702,6 @@ PipelineStateDX9_t::VertexProgDX9::SetupVertexStreams(uint32 layoutUID, unsigned
 
 bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bin_sz)
 {
-    DAVA_CPU_PROFILER_SCOPE("FragmentProgDX9::Construct");
-
     bool success = false;
     LPD3DXBUFFER shader = NULL;
     LPD3DXBUFFER err = NULL;

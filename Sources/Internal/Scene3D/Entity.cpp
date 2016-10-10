@@ -602,7 +602,6 @@ void Entity::Save(KeyedArchive* archive, SerializationContext* serializationCont
 
 void Entity::Load(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    DAVA_CPU_PROFILER_SCOPE("Entity::Load");
     BaseObject::LoadObject(archive);
 
     name = FastName(archive->GetString("name", "").c_str());

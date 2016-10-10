@@ -72,7 +72,6 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText)
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
-    DAVA_CPU_PROFILER_SCOPE("ShaderSource::Construct");
     bool success = false;
     std::vector<std::string> def;
     const char* argv[128];
@@ -99,8 +98,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
     DAVA::ScopedPtr<DAVA::UnmanagedMemoryFile> in(new DAVA::UnmanagedMemoryFile(reinterpret_cast<const uint8*>(src.c_str()), uint32(src.length() + 1)));
     {
-        DAVA_CPU_PROFILER_SCOPE("RegExp");
-        #if RHI__USE_STD_REGEX
+    #if RHI__USE_STD_REGEX
         std::regex prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex fsampler2d_re(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
@@ -113,7 +111,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         std::regex blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         std::regex colormask_re(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         std::regex comment_re("^\\s*//.*");
-        #else
+    #else
         static RegExp prop_re;
         static RegExp proparr_re;
         static RegExp fsampler2d_re;
@@ -127,23 +125,23 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
         static RegExp colormask_re;
         static RegExp comment_re;
 
-#if !(RHI__OPTIMIZED_REGEX)
-        prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
-        samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
-        ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
-        blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
-        blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
-        colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
-        comment_re.compile("^\\s*//.*");
-#else
         static bool compileRegexps = true;
         if (compileRegexps)
         {
+        #if !(RHI__OPTIMIZED_REGEX)
+            prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+            proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+            fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+            vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+            samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+            ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+            blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+            blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
+            colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
+            comment_re.compile("^\\s*//.*");
+        #else
             prop_re.compile("property\\s*(\\w+)\\s*(\\w+)\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w\\s=,\\.]*);");
             proparr_re.compile("property\\s*(float4|float4x4)\\s*(\\w+)\\s*\\[\\s*([\\d]+)\\s*\\]\\s*\\:\\s*([\\w,]*)\\s+\\:\\s*([\\w,]*)");
             fsampler2d_re.compile("DECL_FP_SAMPLER2D\\s*\\(\\s*(\\w+)\\s*\\)");
@@ -157,9 +155,9 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
             colormask_re.compile("color_mask\\s*\\:\\s*(\\w+)");
             comment_re.compile("^\\s*//.*");
             compileRegexps = false;
-        }
-#endif
         #endif
+        }
+    #endif
 
         _Reset();
 
