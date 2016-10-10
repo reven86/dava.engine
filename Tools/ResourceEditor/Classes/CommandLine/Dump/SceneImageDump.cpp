@@ -3,11 +3,17 @@
 #include "Classes/CommandLine/OptionName.h"
 #include "Classes/Qt/Scene/SceneImageGraber.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/Texture.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "Scene/SceneEditor2.h"
 #include "Base/ScopedPtr.h"
+#include "Base/BaseTypes.h"
+
+#include "Render/GPUFamilyDescriptor.h"
+#include "Render/Texture.h"
+#include "Scene/SceneEditor2.h"
 
 SceneImageDump::SceneImageDump()
     : CommandLineTool("-sceneimagedump")
