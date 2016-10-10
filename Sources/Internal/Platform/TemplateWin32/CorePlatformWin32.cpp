@@ -24,6 +24,7 @@
 #endif
 
 #include "MemoryManager/MemoryProfiler.h"
+#include "Logger/Logger.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();

@@ -6,6 +6,7 @@
 #include <Core/Core.h>
 #include <Platform/DeviceInfo.h>
 #include <Concurrency/Thread.h>
+#include <Logger/Logger.h>
 
 #include "UnitTests/UnitTests.h"
 

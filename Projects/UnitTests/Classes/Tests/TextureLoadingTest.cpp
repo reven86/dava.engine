@@ -5,6 +5,7 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Texture.h"
 #include "Render/TextureDescriptor.h"
+#include "Logger/Logger.h"
 
 #include <memory>
 

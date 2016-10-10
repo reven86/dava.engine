@@ -2,39 +2,39 @@
 
 #pragma once
 
-/// \defgroup Asserts
-/// Asserts are a set of macroses for testing conditions which are always expected to be true.
-///
-/// There are two of them defined:
-/// DVASSERT - turned on in Debug mode, turned off for Release mode by default (will be fully stripped including expression it checks).
-///            It can also be left turned on in Release mode using __DAVAENGINE_ENABLE_ASSERTS__
-/// DVASSERT_ALWAYS - turned on in both Debug and Release mode
-///
-/// They both have the same interface and can be called with or without additional message
-///
-/// Usage examples:
-/// - DVASSERT(isConnected)
-/// - DVASSERT_ALWAYS(isConnected, "User is not connected!")
-///
-/// If an assert fails, default behaviour is to halt a program (and show the line during debugging),
-/// but adding your own handlers is supported via DAVA::Assert::AddHandler (and removing with DAVA::Assert::RemoveHandler).
-/// Each handler accepts DAVA::Assert::AssertInfo object with all the info and should return one of three values:
-/// - DAVA::Assert::FailBehaviour::Default if handler either doesn't know what to do or is not responsible for that
-/// - DAVA::Assert::FailBehaviour::Continue to indicate that program should not be stopped because of an assert
-/// - DAVA::Assert::FailBehaviour::Halt otherwise
-///
-/// All the handlers will be called every time, even if one of them has already reported FailBehaviour::Halt.
-///
-/// A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Default,
-/// (since it doesn't know what to do with the assert and just logs it), and second one shows a dialog box asking user
-/// if a program should be stopped and returning FailBehaviour::Halt in case it should.
-///
+/** \defgroup Asserts
+Asserts are a set of macroses for testing conditions which are always expected to be true.
+
+There are two of them defined:
+DVASSERT - turned on in Debug mode, turned off for Release mode by default (will be fully stripped including expression it checks).
+           It can also be left turned on in Release mode using __DAVAENGINE_ENABLE_ASSERTS__
+DVASSERT_ALWAYS - turned on in both Debug and Release modes
+
+They both have the same interface and can be called with or without additional message
+
+Usage examples:
+- DVASSERT(isConnected)
+- DVASSERT_ALWAYS(isConnected, "User is not connected!")
+
+If an assert fails, default behaviour is to halt a program (and show the line during debugging),
+but adding your own handlers is supported via DAVA::Assert::AddHandler (and removing with DAVA::Assert::RemoveHandler).
+Each handler accepts DAVA::Assert::AssertInfo object with all the info and should return one of three values:
+- DAVA::Assert::FailBehaviour::Default if handler either doesn't know what to do or is not responsible for that
+- DAVA::Assert::FailBehaviour::Continue to indicate that program should not be stopped because of an assert
+- DAVA::Assert::FailBehaviour::Halt otherwise
+
+All the handlers will be called every time, even if one of them has already reported FailBehaviour::Halt.
+
+A good example would be adding two handlers: the first one logs the assert somewhere and returns FailBehaviour::Default,
+(since it doesn't know what to do with the assert and just logs it), and second one shows a dialog box asking user
+if a program should be stopped and returning FailBehaviour::Halt in case it should.
+*/
 namespace DAVA
 {
-/// \ingroup Asserts
+/** \ingroup Asserts */
 namespace Assert
 {
-/// Helper class that groups information about an assert
+/** Helper class that groups information about an assert */
 class AssertInfo final
 {
 public:
@@ -58,30 +58,26 @@ public:
     const Vector<void*> backtrace;
 };
 
-/// Indicates how a program should act when an assert fails
+/** Indicates how a program should act when an assert fails */
 enum class FailBehaviour
 {
-    /// Default behaviour
+    /** Default behaviour */
     Default,
 
-    /// Ignore an assert and continue invocation
+    /** Ignore an assert and continue invocation */
     Continue,
 
-    /// Stop invocation
+    /** Stop invocation */
     Halt
 };
 
-/// Function that handles failed asserts and returns FailBehaviour
-/// \param[in] assertInfo Information about a failed assert
-/// \returns FailBehaviour value, indicating if a program should be halted or not
+/** Function prototype for handling failed asserts */
 using Handler = FailBehaviour (*)(const AssertInfo& assertInfo);
 
-/// Registers a handler to use
-/// \param[in] handler Handler to add
+/** Register specified `handler` */
 void AddHandler(const Handler handler);
 
-/// Unregisters a handler if it was added before
-/// \param[in] handler Handler to remove
+/** Unregister specified `handler` (in case it has been added before) */
 void RemoveHandler(const Handler handler);
 }
 }
@@ -98,7 +94,7 @@ void RaiseSigTrap();
 #error "DVASSERT_HALT is not defined for current platform"
 #endif
 
-/// Used internally by DVASSERT_INTERNAL macro
+// Used internally by DVASSERT_INTERNAL macro
 DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
                                          const char* const fileName,
                                          const int lineNumber,

@@ -47,7 +47,7 @@ void RaiseSigTrap()
 }
 #endif
 
-int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
+static int GetFailBehaviourPriority(const DAVA::Assert::FailBehaviour behaviour)
 {
     using namespace DAVA::Assert;
 
@@ -92,7 +92,6 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
     // Default -> Continue -> Halt
 
     Vector<void*> backtrace = Debug::GetBacktrace();
-
     const AssertInfo assertInfo(expr, fileName, lineNumber, message, backtrace);
 
     FailBehaviour resultBehaviour = FailBehaviour::Default;
