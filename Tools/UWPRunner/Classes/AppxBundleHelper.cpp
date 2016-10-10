@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
+#include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 

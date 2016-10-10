@@ -3,6 +3,8 @@
 
 #include "Base/BaseObject.h"
 
+#include <functional>
+
 namespace DAVA
 {
 class UIControl;

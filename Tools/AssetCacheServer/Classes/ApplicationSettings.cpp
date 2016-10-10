@@ -3,6 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
     : ip(_ip)
@@ -503,7 +504,7 @@ void ApplicationSettings::EnableSharedPool(PoolID poolID)
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
+        DVASSERT(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
     }
 }
 
@@ -523,11 +524,11 @@ void ApplicationSettings::EnableSharedServer(PoolID poolID, ServerID serverID)
         }
         else
         {
-            DVASSERT_MSG(false, DAVA::Format("Can't find server with id %u inside of pool %u", serverID, poolID).c_str());
+            DVASSERT(false, DAVA::Format("Can't find server with id %u inside of pool %u", serverID, poolID).c_str());
         }
     }
     else
     {
-        DVASSERT_MSG(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
+        DVASSERT(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
     }
 }

@@ -3,6 +3,7 @@
 
 #include "PackageBaseNode.h"
 
+#include "FileSystem/FilePath.h"
 #include "FileSystem/VariantType.h"
 
 class ImportedPackagesNode;

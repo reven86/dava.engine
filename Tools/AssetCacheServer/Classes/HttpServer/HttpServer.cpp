@@ -3,6 +3,7 @@
 #include "Network/Private/TCPServerTransport.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace HttpServerDetail
 {

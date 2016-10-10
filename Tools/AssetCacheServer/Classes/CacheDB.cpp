@@ -6,6 +6,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "AssetCache/CachedItemValue.h"
 #include "ServerCacheEntry.h"

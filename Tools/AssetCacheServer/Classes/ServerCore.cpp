@@ -1,6 +1,7 @@
 #include "ServerCore.h"
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 #include <QTimer>
 

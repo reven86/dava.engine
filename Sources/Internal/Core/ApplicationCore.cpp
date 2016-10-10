@@ -9,6 +9,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
+#include "Logger/Logger.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
