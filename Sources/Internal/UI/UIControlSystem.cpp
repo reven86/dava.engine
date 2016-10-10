@@ -7,6 +7,7 @@
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/UISystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
@@ -320,6 +321,11 @@ void UIControlSystem::Update()
     newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
     RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
 
+    for (UISystem* system : systems)
+    {
+        system->Process(timeElapsed);
+    }
+
     //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
@@ -486,16 +492,6 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
     GetFocusSystem()->SetFocusedControl(newFocused);
 }
 
-void UIControlSystem::OnControlVisible(UIControl* control)
-{
-    inputSystem->OnControlVisible(control);
-}
-
-void UIControlSystem::OnControlInvisible(UIControl* control)
-{
-    inputSystem->OnControlInvisible(control);
-}
-
 UIControl* UIControlSystem::GetFocusedControl() const
 {
     return GetFocusSystem()->GetFocusedControl();
@@ -636,6 +632,76 @@ void UIControlSystem::SetBiDiSupportEnabled(bool support)
 bool UIControlSystem::IsHostControl(const UIControl* control) const
 {
     return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
+}
+
+void UIControlSystem::RegisterControl(UIControl* control)
+{
+    for (UISystem* system : systems)
+    {
+        system->RegisterControl(control);
+    }
+}
+
+void UIControlSystem::UnregisterControl(UIControl* control)
+{
+    for (UISystem* system : systems)
+    {
+        system->UnregisterControl(control);
+    }
+}
+
+void UIControlSystem::RegisterVisibleControl(UIControl* control)
+{
+    inputSystem->OnControlVisible(control);
+    for (UISystem* system : systems)
+    {
+        system->OnControlVisible(control);
+    }
+}
+
+void UIControlSystem::UnregisterVisibleControl(UIControl* control)
+{
+    inputSystem->OnControlInvisible(control);
+    for (UISystem* system : systems)
+    {
+        system->OnControlInvisible(control);
+    }
+}
+
+void UIControlSystem::RegisterComponent(UIControl* control, UIComponent* component)
+{
+    for (UISystem* system : systems)
+    {
+        system->RegisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::UnregisterComponent(UIControl* control, UIComponent* component)
+{
+    for (UISystem* system : systems)
+    {
+        system->UnregisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::AddSystem(UISystem* system)
+{
+    DVASSERT(std::find(systems.begin(), systems.end(), system) == systems.end());
+    systems.push_back(system);
+}
+
+void UIControlSystem::InsertSystem(UISystem* sceneSystem, int index)
+{
+    systems.insert(systems.begin() + index, sceneSystem);
+}
+
+void UIControlSystem::RemoveSystem(UISystem* system)
+{
+    auto it = std::find(systems.begin(), systems.end(), system);
+    if (it != systems.end())
+    {
+        systems.erase(it);
+    }
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
