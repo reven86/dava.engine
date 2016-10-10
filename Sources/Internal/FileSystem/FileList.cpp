@@ -2,6 +2,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "PackManager/PackManager.h"
+#include "Logger/Logger.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #else
