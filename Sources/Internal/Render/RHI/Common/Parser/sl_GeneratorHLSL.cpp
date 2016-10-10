@@ -591,8 +591,8 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
             }
             else
             {
-            OutputExpressionList(functionCall->argument);
-            m_writer.Write(")");
+                OutputExpressionList(functionCall->argument);
+                m_writer.Write(")");
             }
         }
         else

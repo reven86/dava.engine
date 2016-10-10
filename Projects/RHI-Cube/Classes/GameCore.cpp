@@ -563,7 +563,6 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
-
     /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );

@@ -61,7 +61,6 @@ private:
         unsigned unit;
     };
     std::vector<tex_t> _tex;
-
 };
 
 } // namespace sl

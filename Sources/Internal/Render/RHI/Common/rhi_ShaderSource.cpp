@@ -573,7 +573,6 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 
                 vertexLayout.AddElement(usage, usage_i, data_type, data_count);
             }
-
         }
     }
 

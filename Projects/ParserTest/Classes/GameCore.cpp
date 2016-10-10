@@ -743,137 +743,137 @@ _ProcessProperties(M4::HLSLTree* ast)
             switch (property[i].type)
             {
             case rhi::ShaderProp::TYPE_FLOAT4:
-                {
-                    M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                    M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                    M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                    char buf_name[128];
+            {
+                M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                char buf_name[128];
 
-                    Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%u", property[i].bufferindex);
-                    arr->name = ast->AddString(buf_name);
-                    arr->global = true;
+                Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%u", property[i].bufferindex);
+                arr->name = ast->AddString(buf_name);
+                arr->global = true;
 
-                    idx->type = M4::HLSLBaseType_Int;
-                    idx->iValue = property[i].bufferReg;
+                idx->type = M4::HLSLBaseType_Int;
+                idx->iValue = property[i].bufferReg;
 
-                    arr_access->array = arr;
-                    arr_access->index = idx;
+                arr_access->array = arr;
+                arr_access->index = idx;
                     
                     #if DO_FLOAT4_CAST
-                    M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                    cast_expr->expression = arr_access;
-                    cast_expr->type.baseType = M4::HLSLBaseType_Float4;
+                M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                cast_expr->expression = arr_access;
+                cast_expr->type.baseType = M4::HLSLBaseType_Float4;
 
-                    prop_decl[i].decl->assignment = cast_expr;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                prop_decl[i].decl->assignment = cast_expr;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
                     #else
-                    prop_decl[i].decl->assignment = arr_access;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                prop_decl[i].decl->assignment = arr_access;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
                     #endif
-                }
-                break;
+            }
+            break;
 
-                case rhi::ShaderProp::TYPE_FLOAT3:
-                case rhi::ShaderProp::TYPE_FLOAT2:
-                case rhi::ShaderProp::TYPE_FLOAT1:
+            case rhi::ShaderProp::TYPE_FLOAT3:
+            case rhi::ShaderProp::TYPE_FLOAT2:
+            case rhi::ShaderProp::TYPE_FLOAT1:
+            {
+                M4::HLSLMemberAccess* member_access = ast->AddNode<M4::HLSLMemberAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                char xyzw[] = { 'x', 'y', 'z', 'w', '\0' };
+                unsigned elem_cnt = 0;
+                M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
+                char buf_name[128];
+
+                switch (property[i].type)
                 {
-                    M4::HLSLMemberAccess* member_access = ast->AddNode<M4::HLSLMemberAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                    char xyzw[] = { 'x', 'y', 'z', 'w', '\0' };
-                    unsigned elem_cnt = 0;
-                    M4::HLSLArrayAccess* arr_access = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                case rhi::ShaderProp::TYPE_FLOAT1:
+                    elem_cnt = 1;
+                    break;
+                case rhi::ShaderProp::TYPE_FLOAT2:
+                    elem_cnt = 2;
+                    break;
+                case rhi::ShaderProp::TYPE_FLOAT3:
+                    elem_cnt = 3;
+                    break;
+                }
+
+                member_access->object = arr_access;
+                xyzw[property[i].bufferRegCount + elem_cnt] = 0;
+                member_access->field = ast->AddString(xyzw + property[i].bufferRegCount);
+
+                Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%u", property[i].bufferindex);
+                arr->name = ast->AddString(buf_name);
+                arr->global = true;
+
+                idx->type = M4::HLSLBaseType_Int;
+                idx->iValue = property[i].bufferReg;
+
+                arr_access->array = arr;
+                arr_access->index = idx;
+
+                    #if DO_FLOAT4_CAST
+                M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                cast_expr->expression = arr_access;
+                cast_expr->type.baseType = M4::HLSLBaseType_Float4;
+                member_access->object = cast_expr;
+
+                prop_decl[i].decl->assignment = member_access;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #else
+                prop_decl[i].decl->assignment = member_access;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+                    #endif
+            }
+            break;
+
+            case rhi::ShaderProp::TYPE_FLOAT4X4:
+            {
+                M4::HLSLConstructorExpression* ctor = ast->AddNode<M4::HLSLConstructorExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                M4::HLSLArrayAccess* arr_access[4];
+                M4::HLSLCastingExpression* cast_expr[4];
+
+                ctor->type.baseType = M4::HLSLBaseType_Float4x4;
+
+                for (unsigned k = 0; k != 4; ++k)
+                {
+                    arr_access[k] = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+
                     M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
                     M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
                     char buf_name[128];
 
-                    switch (property[i].type)
-                    {
-                    case rhi::ShaderProp::TYPE_FLOAT1:
-                        elem_cnt = 1;
-                        break;
-                    case rhi::ShaderProp::TYPE_FLOAT2:
-                        elem_cnt = 2;
-                        break;
-                    case rhi::ShaderProp::TYPE_FLOAT3:
-                        elem_cnt = 3;
-                        break;
-                    }
-
-                    member_access->object = arr_access;
-                    xyzw[property[i].bufferRegCount + elem_cnt] = 0;
-                    member_access->field = ast->AddString(xyzw + property[i].bufferRegCount);
-
                     Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%u", property[i].bufferindex);
                     arr->name = ast->AddString(buf_name);
-                    arr->global = true;
 
                     idx->type = M4::HLSLBaseType_Int;
-                    idx->iValue = property[i].bufferReg;
+                    idx->iValue = property[i].bufferReg + k;
 
-                    arr_access->array = arr;
-                    arr_access->index = idx;
+                    arr_access[k]->array = arr;
+                    arr_access[k]->index = idx;
+                }
 
                     #if DO_FLOAT4_CAST
-                    M4::HLSLCastingExpression* cast_expr = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                    cast_expr->expression = arr_access;
-                    cast_expr->type.baseType = M4::HLSLBaseType_Float4;
-                    member_access->object = cast_expr;
-
-                    prop_decl[i].decl->assignment = member_access;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
-                    #else
-                    prop_decl[i].decl->assignment = member_access;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
-                    #endif
-                }
-                break;
-
-                case rhi::ShaderProp::TYPE_FLOAT4X4:
+                for (unsigned k = 0; k != 4; ++k)
                 {
-                    M4::HLSLConstructorExpression* ctor = ast->AddNode<M4::HLSLConstructorExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                    M4::HLSLArrayAccess* arr_access[4];
-                    M4::HLSLCastingExpression* cast_expr[4];
+                    cast_expr[k] = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
+                    cast_expr[k]->expression = arr_access[k];
+                    cast_expr[k]->type.baseType = M4::HLSLBaseType_Float4;
+                }
 
-                    ctor->type.baseType = M4::HLSLBaseType_Float4x4;
-
-                    for (unsigned k = 0; k != 4; ++k)
-                    {
-                        arr_access[k] = ast->AddNode<M4::HLSLArrayAccess>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-
-                        M4::HLSLLiteralExpression* idx = ast->AddNode<M4::HLSLLiteralExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                        M4::HLSLIdentifierExpression* arr = ast->AddNode<M4::HLSLIdentifierExpression>(prop_decl[0].decl->fileName, prop_decl[0].decl->line);
-                        char buf_name[128];
-
-                        Snprintf(buf_name, sizeof(buf_name), "VP_Buffer%u", property[i].bufferindex);
-                        arr->name = ast->AddString(buf_name);
-
-                        idx->type = M4::HLSLBaseType_Int;
-                        idx->iValue = property[i].bufferReg + k;
-
-                        arr_access[k]->array = arr;
-                        arr_access[k]->index = idx;
-                    }
-
-                    #if DO_FLOAT4_CAST
-                    for (unsigned k = 0; k != 4; ++k)
-                    {
-                        cast_expr[k] = ast->AddNode<M4::HLSLCastingExpression>(prop_decl[i].decl->fileName, prop_decl[i].decl->line);
-                        cast_expr[k]->expression = arr_access[k];
-                        cast_expr[k]->type.baseType = M4::HLSLBaseType_Float4;
-                    }
-
-                    ctor->argument = cast_expr[0];
-                    for (unsigned k = 0; k != 4 - 1; ++k)
-                        cast_expr[k]->nextExpression = cast_expr[k + 1];
+                ctor->argument = cast_expr[0];
+                for (unsigned k = 0; k != 4 - 1; ++k)
+                    cast_expr[k]->nextExpression = cast_expr[k + 1];
                     #else
-                    ctor->argument = arr_access[0];
-                    for (unsigned k = 0; k != 4 - 1; ++k)
-                        arr_access[k]->nextExpression = arr_access[k + 1];
+                ctor->argument = arr_access[0];
+                for (unsigned k = 0; k != 4 - 1; ++k)
+                    arr_access[k]->nextExpression = arr_access[k + 1];
                     #endif
 
-                    prop_decl[i].decl->assignment = ctor;
-                    prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
-                }
-                break;
+                prop_decl[i].decl->assignment = ctor;
+                prop_decl[i].decl->type.flags |= M4::HLSLTypeFlag_Static | M4::HLSLTypeFlag_Property;
+            }
+            break;
             }
         }
     }
@@ -945,7 +945,7 @@ GameCore::_test_parser()
 //    #define SHADER_TYPE  SHADER_VERTEX
     #define SHADER_TYPE SHADER_PIXEL
 
-    // Read input file.
+// Read input file.
 //    const char* filename = "test.fx";
     #if SHADER_TYPE == SHADER_VERTEX
     const char* filename = "vp-test.fx";
@@ -1073,23 +1073,49 @@ GameCore::_test_parser()
                 virtual void VisitStatements(M4::HLSLStatement* statement)
                 {
                     for (M4::HLSLStatement* s = statement; s; s = s->nextStatement)
-                {
-                    if (s->nextStatement == target)
                     {
-                        prev = s;
-                        break;
+                        if (s->nextStatement == target)
+                        {
+                            prev = s;
+                            break;
+                        }
                     }
-                }
 
-                switch (statement->nodeType)
+                    switch (statement->nodeType)
+                    {
+                    case M4::HLSLNodeType_BlockStatement:
+                    {
+                        M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)statement;
+
+                        if (block->statement == target)
+                        {
+                            parent = statement;
+                        }
+                        else
+                        {
+                            for (M4::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
+                            {
+                                if (bs->nextStatement == target)
+                                {
+                                    parent = block;
+                                    prev = bs;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                    }
+
+                    M4::HLSLTreeVisitor::VisitStatements(statement);
+                }
+                virtual void VisitBlockStatement(M4::HLSLBlockStatement* node)
                 {
-                case M4::HLSLNodeType_BlockStatement:
-                {
-                    M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)statement;
+                    M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)node;
 
                     if (block->statement == target)
                     {
-                        parent = statement;
+                        parent = block;
                     }
                     else
                     {
@@ -1103,32 +1129,6 @@ GameCore::_test_parser()
                             }
                         }
                     }
-                }
-                break;
-                }
-
-                M4::HLSLTreeVisitor::VisitStatements(statement);
-                }
-                virtual void VisitBlockStatement(M4::HLSLBlockStatement* node)
-                {
-                    M4::HLSLBlockStatement* block = (M4::HLSLBlockStatement*)node;
-
-                    if (block->statement == target)
-                    {
-                        parent = block;
-                }
-                else
-                {
-                    for (M4::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
-                    {
-                        if (bs->nextStatement == target)
-                        {
-                            parent = block;
-                            prev = bs;
-                            break;
-                        }
-                    }
-                }
                 }
             };
 

@@ -955,7 +955,7 @@ void GLESGenerator::OutputStatements(int indent, HLSLStatement* statement, const
                         else
                         {
                             if (!(declaration->type.flags & HLSLTypeFlag_Property))
-                            m_writer.Write("uniform ");
+                                m_writer.Write("uniform ");
                         }
                     }
                     OutputDeclaration(declaration);
