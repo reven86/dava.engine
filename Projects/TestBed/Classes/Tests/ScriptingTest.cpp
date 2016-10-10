@@ -159,7 +159,7 @@ void ScriptingTest::LoadResources()
 
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
     demoObj.c = Color::White;
-    objRef = Reflection::Create(&demoObj).ref;
+    objRef = Reflection::Create(&demoObj);
     CreateScript();
 }
 

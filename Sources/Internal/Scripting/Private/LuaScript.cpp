@@ -3,6 +3,28 @@
 #include "Debug/DVAssert.h"
 #include "LuaBridge.h"
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "MemoryManager/MemoryProfiler.h"
+
+void* lua_profiler_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    if (0 == nsize)
+    {
+        DAVA::MemoryManager::Instance()->Deallocate(ptr);
+        return nullptr;
+    }
+
+    void* newPtr = DAVA::MemoryManager::Instance()->Allocate(nsize, ALLOC_POOL_LUA);
+    if (osize != 0 && newPtr != nullptr)
+    {
+        size_t n = std::min(osize, nsize);
+        Memcpy(newPtr, ptr, n);
+        DAVA::MemoryManager::Instance()->Deallocate(ptr);
+    }
+    return newPtr;
+}
+#endif
+
 namespace DAVA
 {
 struct ScriptState
@@ -18,7 +40,11 @@ LuaScript::LuaScript()
 LuaScript::LuaScript(bool initDefaultLibs)
 {
     state = new ScriptState;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    state->lua = lua_newstate(&lua_profiler_allocator, nullptr);
+#else
     state->lua = luaL_newstate();
+#endif
     if (initDefaultLibs)
     {
         luaL_openlibs(state->lua); // Load standard libs
