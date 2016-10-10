@@ -49,12 +49,12 @@ int32 LuaScript::ExecString(const String& script)
     int32 res = luaL_loadstring(state->lua, script.c_str()); // stack +1: script chunk
     if (res != 0)
     {
-        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
+        DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
     res = lua_pcall(state->lua, 0, LUA_MULTRET, 0); // stack -1: run function/chunk on stack top and pop it
     if (res != 0)
     {
-        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
+        DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
 
     int32 lastIndex = lua_gettop(state->lua); // store current stack size
@@ -120,7 +120,7 @@ int32 LuaScript::EndCallFunction(int32 nargs)
     int32 res = lua_pcall(state->lua, nargs, LUA_MULTRET, 0); // stack -(nargs+1), +nresults: return value or error message
     if (res != 0)
     {
-        throw LuaException(res, LuaBridge::PopString(state->lua)); // stack -1
+        DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
     int32 lastIndex = lua_gettop(state->lua); // store current stack size
     return lastIndex - beginTop; // calculate number of function results

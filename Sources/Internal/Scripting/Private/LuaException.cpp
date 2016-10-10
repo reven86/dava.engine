@@ -2,13 +2,14 @@
 
 namespace DAVA
 {
-LuaException::LuaException()
-    : std::runtime_error("")
+LuaException::LuaException(int32 code, const String& msg, const char* file_, size_t line_)
+    : Exception(msg, file_, line_)
+    , code(code)
 {
 }
 
-LuaException::LuaException(int32 code, const String& msg)
-    : std::runtime_error(msg)
+LuaException::LuaException(int32 code, const char* msg, const char* file_, size_t line_)
+    : Exception(msg, file_, line_)
     , code(code)
 {
 }

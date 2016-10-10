@@ -41,7 +41,14 @@ public:
 
 DAVA_TESTCLASS (ScriptTest)
 {
-    DAVA_TEST (ReflectionTest)
+    BEGIN_FILES_COVERED_BY_TESTS()
+    FIND_FILES_IN_TARGET(DavaFramework)
+    DECLARE_COVERED_FILES("LuaScript.cpp")
+    DECLARE_COVERED_FILES("LuaException.cpp")
+    DECLARE_COVERED_FILES("LuaBridge.cpp")
+    END_FILES_COVERED_BY_TESTS()
+
+    DAVA_TEST (BasicTest)
     {
         ReflClass subcl;
         subcl.intVal = 10;
@@ -123,7 +130,7 @@ incorrect script
         }
         catch (const DAVA::LuaException& e)
         {
-            TEST_VERIFY(e.error_code() != 0);
+            TEST_VERIFY(e.ErrorCode() != 0);
         }
 
         /* Run main function error */
@@ -142,7 +149,7 @@ end
         }
         catch (const DAVA::LuaException& e)
         {
-            TEST_VERIFY(e.error_code() != 0);
+            TEST_VERIFY(e.ErrorCode() != 0);
         }
     }
 };

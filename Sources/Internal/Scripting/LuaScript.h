@@ -17,61 +17,59 @@ class LuaScript final
 {
 public:
     /**
-    Default constructor.
+    Create script with default Lua libraries.
     */
     LuaScript();
 
     /**
-    Constructor with flag for loading default Lua libs in state.
+    Create script with or without default Lua libraries.
     */
     LuaScript(bool initDefaultLibs);
 
     /**
-    Default move constructor.
+    Move script state to another object.
     */
     LuaScript(LuaScript&&);
 
     /**
-    Delete copy constructor. Lua state is non-copyable.
+    Deleted copy constructor. Lua state is non-copyable.
     */
     LuaScript(const LuaScript&) = delete;
 
     /**
-    Destroys the object and free Lua state.
+    Destroy the object and free Lua state.
     */
     ~LuaScript();
 
     /**
-    Delete assign operator. Lua state is non-copyable.
+    Deleted assign operator. Lua state is non-copyable.
     */
     LuaScript& operator=(const LuaScript&) = delete;
 
     /**
-    Load script from string, run it and return number of results.
+    Load script from string, run it and return number of results in the stack.
     Throw LuaException on error.
-    Lua stack changes [-0, +nresult, -]
     */
     int32 ExecString(const String& script);
 
     /**
-    Load script from string, run it and return number of results.
+    Load script from string, run it and return number of results in the stack.
     Return -1 on error.
-    Lua stack changes [-0, +nresult, -]
     */
     int32 ExecStringSafe(const String& script);
 
     /**
-    Run `fName(...)` function with arguments and return number of
-    results. Throw LuaException on error.
-    Lua stack changes [-0, +nresult, -]
+    Run `fName(...)` function with arguments and return number of results in 
+    the stack. 
+    Throw LuaException on error.
     */
     template <typename... T>
     int32 ExecFunction(const String& fName, T&&... args);
 
     /**
-    Run `fName(...)` function with arguments and return number of results.
+    Run `fName(...)` function with arguments and return number of results in
+    the stack.
     Return -1 on error.
-    Lua stack changes [-0, +nresult, -]
     */
     template <typename... T>
     int32 ExecFunctionSafe(const String& fName, T&&... args);
@@ -79,14 +77,12 @@ public:
     /**
     Return value from top of the stack as Any and pop it.
     Throw LuaException or error.
-    Lua stack changes [-(top-fromIndex), +0, v].
     */
     Any PopResult();
 
     /**
     Return value from top of the stack as Any and pop it.
     Return false on error.
-    Lua stack changes [-(top-fromIndex), +0, v].
     */
     bool PopResultSafe(Any& any);
 
@@ -95,21 +91,16 @@ public:
     */
     void SetGlobalVariable(const String& vName, const Any& value);
 
-    //TODO: Create new LuaScript object with lua_State is new thread of current lua_State
-    // LuaScript CreateNewThread();
-
 private:
     ScriptState* state = nullptr; //!< Internal script state
 
     /**
-    Find function with name `fName` and put it into stack.
-    Lua stack changes [-0, +1, -]
+    Find function with name `fName` and put at top of the stack.
     */
     void BeginCallFunction(const String& fName);
 
     /**
-    Push any value into stack.
-    Lua stack changes [-0, +1, -]
+    Put any value at top of the stack.
     */
     void PushArg(const Any& any);
 
@@ -117,7 +108,6 @@ private:
     Call Lua function with `nargs` arguments on top of stack, pop they
     and return number of function results in stack.
     Throw LuaException on error.
-    Lua stack changes [-(nargs+1), +nresults, v]
     */
     int32 EndCallFunction(int32 nargs);
 };

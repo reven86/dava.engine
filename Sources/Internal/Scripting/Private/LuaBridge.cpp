@@ -10,6 +10,22 @@ namespace DAVA
 {
 namespace LuaBridge
 {
+/*
+Some functions have an indicator like this: Lua stack changes [-o, +p, x].
+The first field, o, is how many elements the function pops from the stack.
+The second field, p, is how many elements the function pushes onto the stack.
+(Any function always pushes its results after popping its arguments.)
+A field in the form x|y means the function can push (or pop) x or y elements,
+depending on the situation; an interrogation mark '?' means that we cannot know
+how many elements the function pops/pushes by looking only at its arguments
+(e.g., they may depend on what is on the stack).
+The third field, x, tells whether the function may throw errors:
+'-' means the function never throws any error;
+'m' means the function may throw an error only due to not enough memory;
+'e' means the function may throw other kinds of errors;
+'v' means the function may throw an error on purpose.
+*/
+
 /******************************************************************************/
 
 // Lua global table name for Dava service functions.
@@ -475,7 +491,7 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
 #define ISTYPE(t) (preferredType == Type::Instance<t>())
 #define CASTTYPE(t, ex) (Any(static_cast<t>(ex)))
 #define IFCAST(t, luaFn) if ISTYPE(t) { return CASTTYPE(t, luaFn(L, index)); }
-#define THROWTYPE throw LuaException(ltype, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
+#define THROWTYPE DAVA_THROW(LuaException, ltype, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
 
     int ltype = lua_type(L, index);
     switch (ltype)
@@ -578,19 +594,19 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
             else
             {
                 lua_pop(L, 1); // stack -1
-                throw LuaException(ltype, "Unknown userdata type!");
+                DAVA_THROW(LuaException, ltype, "Unknown userdata type!");
             }
         }
         else // stack +0
         {
-            throw LuaException(ltype, "Unknown userdata type without metatable!");
+            DAVA_THROW(LuaException, ltype, "Unknown userdata type without metatable!");
         }
     case LUA_TLIGHTUSERDATA:
     case LUA_TTABLE:
     case LUA_TFUNCTION:
     case LUA_TTHREAD:
     default:
-        throw LuaException(ltype, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
+        DAVA_THROW(LuaException, ltype, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
     }
 
 #undef ISTYPE
