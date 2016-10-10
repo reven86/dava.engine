@@ -72,7 +72,7 @@ inline bool UnmanagedMemoryFile::Seek(int64 position, eFileSeek seekType)
 
 inline uint32 UnmanagedMemoryFile::Write(const void* sourceBuffer, uint32 dataSize)
 {
-    DVASSERT(0, "Write is not supported");
+    DVASSERT_MSG(0, "Write is not supported");
     return 0;
 }
 }

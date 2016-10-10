@@ -173,6 +173,11 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
 
+    static uint32 calls = 0;
+    ++calls;
+    
+    DAVA::Logger::Info(">>>>>>>>>>>>>> GetShaderDescriptor calls: %u", calls);
+    
     //not found - create new shader
     Vector<String> progDefines;
     progDefines.reserve(defines.size() * 2);
