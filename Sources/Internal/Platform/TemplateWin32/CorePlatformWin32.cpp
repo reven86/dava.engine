@@ -137,7 +137,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Create the rendering window
     if (isFullscreen)
     {
-        style = WS_VISIBLE | WS_POPUP;
+        style = FULLSCREEN_STYLE;
     } // End if Fullscreen
 
     AdjustWindowRect(&clientSize, style, FALSE);
@@ -424,7 +424,16 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             currentMode = fullscreenMode;
 
             GetWindowPlacement(hWindow, &windowPlacement);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+            // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
+            //
+            uint32 style = FULLSCREEN_STYLE;
+            if (IsWindowVisible(hWindow))
+            {
+                style |= WS_VISIBLE;
+            }
+            SetWindowLong(hWindow, GWL_STYLE, style);
 
             MONITORINFO monitorInfo;
             monitorInfo.cbSize = sizeof(monitorInfo);

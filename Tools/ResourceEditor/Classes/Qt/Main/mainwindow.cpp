@@ -78,7 +78,9 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/FileDialogs/FileDialog.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include "Platform/Qt5/QtLayer.h"
 
@@ -177,6 +179,9 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 #if defined(NEW_PROPERTY_PANEL)
     , propertyPanel(new PropertyPanel())
+#endif
+#if defined(__DAVAENGINE_MACOS__)
+    , shortcutChecker(this)
 #endif
 {
     ActiveSceneHolder::Init();
@@ -563,6 +568,13 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
 {
     QEvent::Type eventType = event->type();
 
+#if defined(__DAVAENGINE_MACOS__)
+    if (QEvent::ShortcutOverride == eventType && shortcutChecker.TryCallShortcut(static_cast<QKeyEvent*>(event)))
+    {
+        return true;
+    }
+#endif
+
     if (qApp == obj)
     {
         if (QEvent::ApplicationStateChange == eventType)
@@ -841,6 +853,13 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionOpenProject, &QAction::triggered, this, &QtMainWindow::OnProjectOpen);
     QObject::connect(ui->actionCloseProject, &QAction::triggered, this, &QtMainWindow::OnProjectClose);
     QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
+
+    QAction* actionOpenSceneQuickly = FindFileDialog::CreateFindInFilesAction(this);
+    actionOpenSceneQuickly->setIcon(SharedIcon(":/QtIcons/openscene.png"));
+    actionOpenSceneQuickly->setText("Open Scene Quickly");
+    ui->menuFile->insertAction(ui->actionSaveScene, actionOpenSceneQuickly);
+    QObject::connect(actionOpenSceneQuickly, &QAction::triggered, this, &QtMainWindow::OnSceneOpenQuickly);
+
     QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
     QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
     QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
@@ -1328,6 +1347,15 @@ void QtMainWindow::OnSceneOpen()
 {
     QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->GetDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
     OpenScene(path);
+}
+
+void QtMainWindow::OnSceneOpenQuickly()
+{
+    QString path = FindFileDialog::GetFilePath(ProjectManager::Instance()->GetDataSourceSceneFiles(), "sc2", this);
+    if (!path.isEmpty())
+    {
+        OpenScene(path);
+    }
 }
 
 void QtMainWindow::OnSceneSave()

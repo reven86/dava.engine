@@ -17,7 +17,7 @@ namespace TArcTestClassDetail
 class TestControllerModule : public ControllerModule
 {
 protected:
-    void OnRenderSystemInitialized(Window& w) override
+    void OnRenderSystemInitialized(Window* w) override
     {
     }
 
@@ -85,7 +85,7 @@ void TestClass::SetUp(const String& testName)
         core->OnLoopStarted();
         Window* w = e->PrimaryWindow();
         DVASSERT(w);
-        core->OnWindowCreated(*w);
+        core->OnWindowCreated(w);
     }
 
     DAVA::UnitTests::TestClass::SetUp(testName);

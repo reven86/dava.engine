@@ -393,6 +393,11 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
     return nullptr;
 }
 
+const DAVA::HashMap<DAVA::FastName, NMaterialProperty*>& NMaterial::GetLocalProperties() const
+{
+    return GetCurrentConfig().localProperties;
+}
+
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();

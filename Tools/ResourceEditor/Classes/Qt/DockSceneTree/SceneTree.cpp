@@ -19,8 +19,8 @@
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Scene/System/SelectionSystem.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Qt/GlobalOperations.h"
+#include "Qt/Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 
@@ -803,6 +803,7 @@ SceneTree::SceneTree(QWidget* parent /*= 0*/)
 {
     DAVA::Function<void()> fn(this, &SceneTree::UpdateTree);
     treeUpdater = new LazyUpdater(fn, this);
+    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &SceneTree::UpdateSelection), this);
 
     setModel(filteringProxyModel);
 
@@ -1405,13 +1406,18 @@ void SceneTree::UpdateModel()
     treeModel->ReloadFilter();
     filteringProxyModel->invalidate();
 
-    SyncSelectionToTree();
-    EmitParticleSignals();
+    selectionUpdater->Update();
 
     if (treeModel->IsFilterSet())
     {
         ExpandFilteredItems();
     }
+}
+
+void SceneTree::UpdateSelection()
+{
+    SyncSelectionToTree();
+    EmitParticleSignals();
 }
 
 void SceneTree::PropagateSolidFlag()
