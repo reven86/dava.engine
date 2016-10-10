@@ -16,7 +16,7 @@ public:
     void OnWindowCreated(DAVA::Window* w) override;
 
 protected:
-    DAVA::eEngineRunMode GetEngineMode() override;
+    DAVA::eEngineRunMode GetEngineMode() const override;
 
 private:
     void UnpackHelpDoc();

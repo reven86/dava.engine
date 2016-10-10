@@ -1,5 +1,4 @@
-#ifndef __OPTION_NAME_H__
-#define __OPTION_NAME_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -8,7 +7,6 @@
 class OptionName
 {
 public:
-    static const DAVA::String deprecated_forceClose;
     static const DAVA::String deprecated_Export;
 
     static const DAVA::String Output;
@@ -64,5 +62,3 @@ public:
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };
-
-#endif // __OPTION_NAME_H__

@@ -19,12 +19,13 @@ public:
     void OnUpdate(DAVA::float32 delta) override;
 
 protected:
-    DAVA::eEngineRunMode GetEngineMode() override;
+    DAVA::eEngineRunMode GetEngineMode() const override;
 
 private:
 #if defined(__DAVAENGINE_WIN32__)
     WinConsoleIOLocker* locker;
 #endif //platforms
+
     CommandLineManager& cmdLineManager;
     QGuiApplication* application = nullptr;
     QOffscreenSurface* surface = nullptr;

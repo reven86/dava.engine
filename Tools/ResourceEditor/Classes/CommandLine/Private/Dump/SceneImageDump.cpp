@@ -1,20 +1,22 @@
 #include "SceneImageDump.h"
 
-#include "Classes/CommandLine/OptionName.h"
-#include "Classes/Qt/Scene/SceneImageGraber.h"
+#include "CommandLine/Private/OptionName.h"
+#include "CommandLine/Private/SceneConsoleHelper.h"
+
+#include "Base/ScopedPtr.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
-#include "Scene/SceneEditor2.h"
-#include "Base/ScopedPtr.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Texture.h"
+
 #include "Scene/SceneEditor2.h"
+#include "Scene/SceneImageGraber.h"
 
 SceneImageDump::SceneImageDump()
-    : CommandLineTool("-sceneimagedump")
+    : REConsoleModuleCommon("-sceneimagedump")
 {
     using namespace DAVA;
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Full pathname to scene file *.sc2");
@@ -26,42 +28,58 @@ SceneImageDump::SceneImageDump()
     options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
-void SceneImageDump::ConvertOptionsToParamsInternal()
+bool SceneImageDump::PostInitInternal()
 {
-    sceneFilePath = options.GetOption(OptionName::ProcessFile).AsString();
-    cameraName = DAVA::FastName(options.GetOption(OptionName::Camera).AsString());
-    width = options.GetOption(OptionName::Width).AsInt32();
-    height = options.GetOption(OptionName::Height).AsInt32();
-    DAVA::String gpuName = options.GetOption(OptionName::GPU).AsString();
-    gpuFamily = DAVA::GPUFamilyDescriptor::GetGPUByName(gpuName);
-    outputFile = options.GetOption(OptionName::OutFile).AsString();
-    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
+    bool commandLineIsCorrect = ReadCommandLine();
+    if (commandLineIsCorrect == false)
+    {
+        return false;
+    }
+
+    SceneConsoleHelper::InitializeRenderer(qualityPathname);
+    return true;
 }
 
-bool SceneImageDump::InitializeInternal()
+bool SceneImageDump::ReadCommandLine()
 {
+    sceneFilePath = options.GetOption(OptionName::ProcessFile).AsString();
     if (sceneFilePath.IsEmpty() || !sceneFilePath.Exists())
     {
         DAVA::Logger::Error("Path to scene is incorrect");
         return false;
     }
 
+    cameraName = DAVA::FastName(options.GetOption(OptionName::Camera).AsString());
     if (!cameraName.IsValid())
     {
         DAVA::Logger::Error("Camera name is not specified");
         return false;
     }
 
+    width = options.GetOption(OptionName::Width).AsInt32();
+    height = options.GetOption(OptionName::Height).AsInt32();
     if (width <= 0 || height <= 0)
     {
         DAVA::Logger::Error("Incorrect size for output image");
         return false;
     }
 
+    DAVA::String gpuName = options.GetOption(OptionName::GPU).AsString();
+    gpuFamily = DAVA::GPUFamilyDescriptor::GetGPUByName(gpuName);
+    outputFile = options.GetOption(OptionName::OutFile).AsString();
+
+    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
+    qualityPathname = SceneConsoleHelper::CreateQualityPathname(qualityPathname, sceneFilePath);
+    if (qualityPathname.IsEmpty())
+    {
+        DAVA::Logger::Error("Cannot create path to quality.yaml from %s", sceneFilePath.GetAbsolutePathname().c_str());
+        return false;
+    }
+
     return true;
 }
 
-void SceneImageDump::ProcessInternal()
+DAVA::TArc::ConsoleModule::eFrameResult SceneImageDump::OnFrameInternal()
 {
     const rhi::HTexture nullTexture;
     const rhi::Viewport nullViewport(0, 0, 1, 1);
@@ -109,16 +127,8 @@ void SceneImageDump::ProcessInternal()
     }
 
     DAVA::Texture::SetGPULoadingOrder(textureLoadingOrder);
-}
 
-DAVA::FilePath SceneImageDump::GetQualityConfigPath() const
-{
-    if (qualityConfigPath.IsEmpty())
-    {
-        return CreateQualityConfigPath(sceneFilePath);
-    }
-
-    return qualityConfigPath;
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
 DAVA::Camera* SceneImageDump::FindCamera(DAVA::Entity* rootNode) const
@@ -136,4 +146,9 @@ DAVA::Camera* SceneImageDump::FindCamera(DAVA::Entity* rootNode) const
     }
 
     return nullptr;
+}
+
+void SceneImageDump::BeforeDestroyedInternal()
+{
+    SceneConsoleHelper::ReleaseRendering();
 }

@@ -30,7 +30,7 @@ public:
 protected:
     virtual DAVA::KeyedArchive* GetEngineOptions();
     virtual DAVA::Vector<DAVA::String> GetEngineModules();
-    virtual DAVA::eEngineRunMode GetEngineMode() = 0;
+    virtual DAVA::eEngineRunMode GetEngineMode() const = 0;
 
     void Init();
     DAVA::Engine engine;

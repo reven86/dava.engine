@@ -71,7 +71,7 @@ void REGuiApplication::OnWindowCreated(DAVA::Window* w)
     REBaseApplication::OnWindowCreated(w);
 }
 
-DAVA::eEngineRunMode REGuiApplication::GetEngineMode()
+DAVA::eEngineRunMode REGuiApplication::GetEngineMode() const
 {
     return DAVA::eEngineRunMode::GUI_EMBEDDED;
 }

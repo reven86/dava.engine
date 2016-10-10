@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommandLine/CommandLineTool.h"
+#include "CommandLine/Private/REConsoleModuleCommon.h"
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 
@@ -10,20 +10,20 @@ class Camera;
 class Scene;
 }
 
-class SceneImageDump : public CommandLineTool
+class SceneImageDump : public REConsoleModuleCommon
 {
 public:
     SceneImageDump();
 
 protected:
-    void ConvertOptionsToParamsInternal() override;
-    bool InitializeInternal() override;
-    void ProcessInternal() override;
-    DAVA::FilePath GetQualityConfigPath() const override;
-
-    DAVA::Camera* FindCamera(DAVA::Entity* rootNode) const;
+    bool PostInitInternal() override;
+    eFrameResult OnFrameInternal() override;
+    void BeforeDestroyedInternal() override;
 
 private:
+    bool ReadCommandLine();
+    DAVA::Camera* FindCamera(DAVA::Entity* rootNode) const;
+
     DAVA::FilePath sceneFilePath;
     DAVA::FastName cameraName;
     DAVA::int32 width;

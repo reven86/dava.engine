@@ -5,6 +5,12 @@
 
 #include "TArcCore/TArcCore.h"
 
+#include "CommandLine/BeastCommandLineTool.h"
+#include "CommandLine/ConsoleHelpTool.h"
+#include "CommandLine/DumpTool.h"
+#include "CommandLine/SceneImageDump.h"
+#include "CommandLine/VersionTool.h"
+
 namespace REApplicationDetail
 {
 DAVA::KeyedArchive* CreateOptions()
@@ -27,13 +33,7 @@ DAVA::KeyedArchive* CreateOptions()
 REApplication::REApplication(DAVA::Vector<DAVA::String>&& cmdLine_)
     : cmdLine(std::move(cmdLine_))
 {
-    /*
-     // TODO
-     if (something)
-     {
-        isConsoleMode = true;
-     }
-     */
+    isConsoleMode = (cmdLine.size() > 1);
 }
 
 DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
@@ -56,9 +56,13 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     if (isConsoleMode)
+    {
         CreateConsoleModules(tarcCore);
+    }
     else
+    {
         CreateGUIModules(tarcCore);
+    }
 }
 
 void REApplication::Cleanup()
@@ -74,4 +78,27 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
     // TODO
+    DAVA::String command = cmdLine[1];
+    if (command == "-help")
+    {
+        tarcCore->CreateModule<ConsoleHelpTool>();
+    }
+    else if (command == "-version")
+    {
+        tarcCore->CreateModule<VersionTool>();
+    }
+#if defined(__DAVAENGINE_BEAST__)
+    else if (command == "-beast")
+    {
+        tarcCore->CreateModule<BeastCommandLineTool>();
+    }
+#endif //#if defined (__DAVAENGINE_BEAST__)
+    else if (command == "-dump")
+    {
+        tarcCore->CreateModule<DumpTool>();
+    }
+    else if (command == "-sceneimagedump")
+    {
+        tarcCore->CreateModule<SceneImageDump>();
+    }
 }

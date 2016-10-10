@@ -115,7 +115,7 @@ void REConsoleApplication::OnLoopStopped()
     REBaseApplication::OnLoopStopped();
 }
 
-DAVA::eEngineRunMode REConsoleApplication::GetEngineMode()
+DAVA::eEngineRunMode REConsoleApplication::GetEngineMode() const
 {
     return DAVA::eEngineRunMode::CONSOLE_MODE;
 }

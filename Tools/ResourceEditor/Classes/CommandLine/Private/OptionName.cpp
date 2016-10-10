@@ -1,7 +1,6 @@
-#include "CommandLine/OptionName.h"
+#include "CommandLine/Private/OptionName.h"
 #include "Render/GPUFamilyDescriptor.h"
 
-const DAVA::String OptionName::deprecated_forceClose("-forceclose");
 const DAVA::String OptionName::deprecated_Export("-export");
 
 const DAVA::String OptionName::Output("-output");

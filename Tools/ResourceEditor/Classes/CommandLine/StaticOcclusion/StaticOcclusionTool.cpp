@@ -1,7 +1,7 @@
 #include "CommandLine/StaticOcclusion/StaticOcclusionTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "Scene/SceneEditor2.h"
-#include "CommandLine/OptionName.h"
+#include "CommandLine/Private/OptionName.h"
 
 #include <QOpenGLContext>
 

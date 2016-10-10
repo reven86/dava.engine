@@ -1,6 +1,6 @@
 #include "CommandLine/ImageSplitter/ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
-#include "CommandLine/OptionName.h"
+#include "CommandLine/Private/OptionName.h"
 
 using namespace DAVA;
 

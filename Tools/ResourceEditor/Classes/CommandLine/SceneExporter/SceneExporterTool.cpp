@@ -1,6 +1,6 @@
 #include "CommandLine/SceneExporter/SceneExporterTool.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
-#include "CommandLine/OptionName.h"
+#include "CommandLine/Private/OptionName.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
