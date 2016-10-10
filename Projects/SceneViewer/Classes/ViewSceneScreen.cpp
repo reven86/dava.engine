@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "UI/UIControlSystem.h"
 
 using namespace DAVA;
 
