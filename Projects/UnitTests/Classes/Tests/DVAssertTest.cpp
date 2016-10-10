@@ -23,10 +23,10 @@ static void ResetHandlersState()
     secondHandlerInvoked = false;
 }
 
-static std::string lastHandlerMessage;
+static DAVA::String lastHandlerMessage;
 static FailBehaviour AssertMessageSavingHandler(const AssertInfo& assertInfo)
 {
-    lastHandlerMessage = std::string(assertInfo.message);
+    lastHandlerMessage = DAVA::String(assertInfo.message);
     return FailBehaviour::Continue;
 }
 
@@ -110,8 +110,11 @@ DAVA_TESTCLASS (DVAssertTestClass)
         TEST_VERIFY(lastHandlerMessage == "");
 
         // Check specified message
-        std::string message = "such assert, wow";
+        DAVA::String message = "such assert, wow";
         DVASSERT_ALWAYS(false, message.c_str());
         TEST_VERIFY(lastHandlerMessage == message);
+
+        // Reset
+        RemoveHandler(AssertMessageSavingHandler);
     }
 };
