@@ -18,6 +18,7 @@
     #endif
 
     #include "Core/Core.h"
+    #include "Logger/Logger.h"
 using DAVA::Logger;
     #include "Concurrency/Spinlock.h"
 

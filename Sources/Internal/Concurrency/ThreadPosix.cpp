@@ -6,6 +6,7 @@
 
 #include "Concurrency/PosixThreads.h"
 #include "Concurrency/Thread.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include <sys/syscall.h>
