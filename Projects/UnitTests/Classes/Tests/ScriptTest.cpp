@@ -59,7 +59,7 @@ DAVA_TESTCLASS (ScriptTest)
         cl.stringVal = "Demo string";
         cl.colorVal = DAVA::Color::Black;
         cl.subClass = &subcl;
-        DAVA::Reflection clRef = DAVA::Reflection::Create(&cl).ref;
+        DAVA::Reflection clRef = DAVA::Reflection::Create(&cl);
 
         DAVA::LuaScript s;
 
