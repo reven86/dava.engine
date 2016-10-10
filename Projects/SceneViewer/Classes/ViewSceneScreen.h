@@ -2,6 +2,7 @@
 #define __VIEW_SCENE_SCREEN_H__
 
 #include "BaseScreen.h"
+#include "Functional/SignalBase.h"
 
 namespace DAVA
 {
@@ -9,7 +10,7 @@ class RotationControllerSystem;
 class WASDControllerSystem;
 };
 
-class ViewSceneScreen : public BaseScreen
+class ViewSceneScreen : public BaseScreen, public DAVA::TrackedObject
 {
 protected:
     virtual ~ViewSceneScreen()

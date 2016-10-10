@@ -5,8 +5,9 @@
 #include "Infrastructure/Utils/ControlHelpers.h"
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
+#include "Functional/SignalBase.h"
 
-class BaseTest : public BaseScreen
+class BaseTest : public BaseScreen, public DAVA::TrackedObject
 {
 public:
     struct FrameInfo
