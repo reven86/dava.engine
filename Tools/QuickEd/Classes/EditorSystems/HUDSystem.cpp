@@ -122,6 +122,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemsManager->emulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemsManager->editingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+    systemsManager->transformStateChanged.Connect([this](bool inTransformState_) { inTransformState = inTransformState_; });
 }
 
 HUDSystem::~HUDSystem()
@@ -168,10 +169,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
-    if (phase == UIEvent::Phase::MOVE
-        || phase == UIEvent::Phase::WHEEL
-        || phase == UIEvent::Phase::ENDED
-        || phase == UIEvent::Phase::DRAG
+
+    if (!inTransformState
+        && (phase == UIEvent::Phase::MOVE
+            || phase == UIEvent::Phase::WHEEL
+            || phase == UIEvent::Phase::ENDED
+            || phase == UIEvent::Phase::DRAG)
         )
     {
         ControlNode* node = systemsManager->GetControlNodeAtPoint(hoveredPoint);
@@ -185,6 +188,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return false;
     case UIEvent::Phase::BEGAN:
     {
+        HighlightNodes({});
         ProcessCursor(hoveredPoint, searchOrder);
         pressedPoint = hoveredPoint;
         if (activeAreaInfo.area != HUDAreaInfo::NO_AREA || currentInput->mouseButton != UIEvent::MouseButton::LEFT)

@@ -55,6 +55,7 @@ private:
     bool inEmulationMode = false;
     SortedPackageBaseNodeSet rootControls;
     bool isPlacedOnScreen = false;
+    bool inTransformState = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__
