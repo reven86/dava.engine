@@ -14,7 +14,7 @@ void* lua_profiler_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
         return nullptr;
     }
 
-    void* newPtr = DAVA::MemoryManager::Instance()->Allocate(nsize, ALLOC_POOL_LUA);
+    void* newPtr = DAVA::MemoryManager::Instance()->Allocate(nsize, DAVA::ALLOC_POOL_LUA);
     if (osize != 0 && newPtr != nullptr)
     {
         size_t n = std::min(osize, nsize);
