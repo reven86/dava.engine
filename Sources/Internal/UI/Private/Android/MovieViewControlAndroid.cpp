@@ -1,6 +1,7 @@
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/Private/Android/MovieViewControlAndroid.h"
+#include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -12,7 +13,6 @@
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/Android/WindowNativeServiceAndroid.h"
-#include "UI/UIControlSystem.h"
 
 extern "C"
 {
