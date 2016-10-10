@@ -257,7 +257,7 @@ void ReleaseQueryPool()
     std::vector<DX9Command> cmd;
     for (IDirect3DQuery9* iq : QueryDX9Pool)
     {
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&iq) } });
     }
     ExecDX9(cmd.data(), uint32(cmd.size()), false);
 

@@ -358,21 +358,29 @@ void ReleasePerfQueryPool()
     std::vector<DX9Command> cmd;
     for (PerfQueryFrameDX9* frame : pendingPerfQueryFrameDX9)
     {
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(frame->disjointQuery)) } });
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(frame->freqQuery)) } });
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&frame->disjointQuery) } });
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&frame->freqQuery) } });
+    }
+
+    for (PerfQueryFrameDX9* frame : perfQueryFramePoolDX9)
+    {
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&frame->disjointQuery) } });
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&frame->freqQuery) } });
+    }
+
+    ExecDX9(cmd.data(), uint32(cmd.size()), false);
+
+    for (PerfQueryFrameDX9* frame : pendingPerfQueryFrameDX9)
+    {
         delete frame;
     }
     pendingPerfQueryFrameDX9.clear();
 
     for (PerfQueryFrameDX9* frame : perfQueryFramePoolDX9)
     {
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(frame->disjointQuery)) } });
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(frame->freqQuery)) } });
         delete frame;
     }
     perfQueryFramePoolDX9.clear();
-
-    ExecDX9(cmd.data(), uint32(cmd.size()), false);
 }
 }
 
