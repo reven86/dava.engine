@@ -136,7 +136,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Create the rendering window
     if (isFullscreen)
     {
-        style = WS_VISIBLE | WS_POPUP;
+        style = FULLSCREEN_STYLE;
     } // End if Fullscreen
 
     AdjustWindowRect(&clientSize, style, FALSE);
@@ -423,7 +423,16 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             currentMode = fullscreenMode;
 
             GetWindowPlacement(hWindow, &windowPlacement);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+            // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
+            //
+            uint32 style = FULLSCREEN_STYLE;
+            if (IsWindowVisible(hWindow))
+            {
+                style |= WS_VISIBLE;
+            }
+            SetWindowLong(hWindow, GWL_STYLE, style);
 
             MONITORINFO monitorInfo;
             monitorInfo.cbSize = sizeof(monitorInfo);
@@ -1064,6 +1073,14 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
+
+    case WM_NCACTIVATE:
+        // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
+        // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
+        // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
+        // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
+        keyboard.ClearAllKeys();
+        break;
 
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:

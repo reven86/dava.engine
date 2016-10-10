@@ -9,11 +9,25 @@
 
 #include "UI/UIControlSystem.h"
 
+#include <QApplication>
+
 extern void FrameworkWillTerminate();
 extern void FrameworkDidLaunched();
 
 namespace DAVA
 {
+class DavaQtApplyModifier
+{
+public:
+    void operator()(DAVA::KeyboardDevice& keyboard, const Qt::KeyboardModifiers& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::Key davaModifier)
+    {
+        if (true == (currentModifiers.testFlag(qtModifier)))
+            keyboard.OnKeyPressed(davaModifier);
+        else
+            keyboard.OnKeyUnpressed(davaModifier);
+    }
+};
+
 QtLayer::QtLayer()
     : delegate(nullptr)
     , isDAVAEngineEnabled(true)
@@ -69,6 +83,7 @@ void QtLayer::ProcessFrame()
     if (Core::Instance()->IsConsoleMode() == false)
     { // avoid calling of system process frame for console mode. Right not it is called from DAVA GL Widget. Will be refactored in future
 
+        UpdateModifiersState();
         rhi::InvalidateCache(); //as QT itself can break gl states
         Core::Instance()->SystemProcessFrame();
     }
@@ -105,6 +120,7 @@ void QtLayer::KeyPressed(Key key, uint64 timestamp)
     ev.device = UIEvent::Device::KEYBOARD;
     ev.key = key;
 
+    UpdateModifiersState();
     UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyPressed(key);
@@ -118,6 +134,7 @@ void QtLayer::KeyReleased(Key key, uint64 timestamp)
     ev.timestamp = static_cast<float64>(timestamp);
     ev.key = key;
 
+    UpdateModifiersState();
     UIControlSystem::Instance()->OnInput(&ev);
 
     InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(key);
@@ -127,6 +144,21 @@ void QtLayer::MouseEvent(const UIEvent& event)
 {
     UIEvent evCopy(event);
     UIControlSystem::Instance()->OnInput(&evCopy);
+}
+
+void QtLayer::UpdateModifiersState()
+{
+    // HACK Qt send key event to widget with focus not globaly
+    // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
+    // we miss key down event, so we have to check for SHIFT, ALT, CTRL
+    // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
+    using namespace DAVA;
+    Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    DavaQtApplyModifier mod;
+    mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
+    mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
+    mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
 }
 
     

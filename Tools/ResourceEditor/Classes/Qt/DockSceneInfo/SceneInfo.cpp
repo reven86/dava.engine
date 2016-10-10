@@ -15,14 +15,22 @@
 
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Commands2/Base/RECommandNotificationObject.h"
 
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
-
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include <QApplication>
 
 using namespace DAVA;
+
+namespace SceneInfoDetail
+{
+QPalette GetPalette()
+{
+    return qApp->palette();
+}
+}
 
 SceneInfo::SceneInfo(QWidget* parent /* = 0 */)
     : QtPropertyEditor(parent)
@@ -67,7 +75,6 @@ void SceneInfo::InitializeInfo()
     Initialize3DDrawSection();
     InitializeLODSectionInFrame();
     InitializeLODSectionForSelection();
-    InitializeSpeedTreeInfoSelection();
     InitializeLayersSection();
 
     InitializeVegetationInfoSection();
@@ -142,32 +149,6 @@ void SceneInfo::Refresh3DDrawInfo()
 
     SetChild("Dynamic Param Bind Count", renderStats.dynamicParamBindCount, header2);
     SetChild("Material Param Bind Count", renderStats.materialParamBindCount, header2);
-}
-
-void SceneInfo::InitializeSpeedTreeInfoSelection()
-{
-    QtPropertyData* header = CreateInfoHeader("SpeedTree Info");
-
-    AddChild("SpeedTree Leafs Square", header);
-    AddChild("SpeedTree Leafs Square Div X", header);
-    AddChild("SpeedTree Leafs Square Div Y", header);
-}
-
-void SceneInfo::RefreshSpeedTreeInfoSelection()
-{
-    QtPropertyData* header = GetInfoHeader("SpeedTree Info");
-
-    float32 speedTreeLeafSquare = 0.f, speedTreeLeafSquareDivX = 0.f, speedTreeLeafSquareDivY = 0.f;
-    for (const SpeedTreeInfo& info : speedTreeLeafInfo)
-    {
-        speedTreeLeafSquare += info.leafsSquare;
-        speedTreeLeafSquareDivX += info.leafsSquareDivX;
-        speedTreeLeafSquareDivY += info.leafsSquareDivY;
-    }
-
-    SetChild("SpeedTree Leafs Square", speedTreeLeafSquare, header);
-    SetChild("SpeedTree Leafs Square Div X", speedTreeLeafSquareDivX, header);
-    SetChild("SpeedTree Leafs Square Div Y", speedTreeLeafSquareDivY, header);
 }
 
 void SceneInfo::InitializeLODSectionInFrame()
@@ -334,8 +315,6 @@ void SceneInfo::ClearData()
     particleTexturesSize = 0;
     emittersCount = 0;
     spritesCount = 0;
-
-    speedTreeLeafInfo.clear();
 }
 
 void SceneInfo::ClearSelectionData()
@@ -421,7 +400,7 @@ QtPropertyData* SceneInfo::CreateInfoHeader(const QString& key)
 {
     QtPropertyData* headerData = new QtPropertyData(DAVA::FastName(key.toStdString()));
     headerData->SetEditable(false);
-    headerData->SetBackground(palette().alternateBase());
+    headerData->SetBackground(SceneInfoDetail::GetPalette().alternateBase());
     AppendProperty(std::unique_ptr<QtPropertyData>(headerData));
     return headerData;
 }
@@ -441,7 +420,7 @@ void SceneInfo::AddChild(const QString& key, QtPropertyData* parent)
 {
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -450,7 +429,7 @@ void SceneInfo::AddChild(const QString& key, const QString& toolTip, QtPropertyD
     std::unique_ptr<QtPropertyData> propData(new QtPropertyData(DAVA::FastName(key.toStdString())));
     propData->SetEditable(false);
     propData->SetToolTip(toolTip);
-    propData->SetBackground(palette().base());
+    propData->SetBackground(SceneInfoDetail::GetPalette().base());
     parent->ChildAdd(std::move(propData));
 }
 
@@ -535,7 +514,6 @@ void SceneInfo::RefreshAllData()
     Refresh3DDrawInfo();
     RefreshLODInfoInFrame();
     RefreshLODInfoForSelection();
-    RefreshSpeedTreeInfoSelection();
 
     RefreshVegetationInfoSection();
 
@@ -587,9 +565,6 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2* scene, const SelectableGroup
     CollectSelectedRenderObjects(selected);
 
     RefreshLODInfoForSelection();
-
-    CollectSpeedTreeLeafsSquare(selected);
-    RefreshSpeedTreeInfoSelection();
 }
 
 void SceneInfo::OnCommmandExecuted(SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
@@ -633,71 +608,6 @@ void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity* entity)
     {
         CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
     }
-}
-
-void SceneInfo::CollectSpeedTreeLeafsSquare(const SelectableGroup* forGroup)
-{
-    speedTreeLeafInfo.clear();
-
-    for (auto entity : forGroup->ObjectsOfType<DAVA::Entity>())
-    {
-        RenderObject* ro = GetRenderObject(entity);
-        if (ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
-            speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
-    }
-}
-
-SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject* renderObject)
-{
-    SpeedTreeInfo info;
-    if (renderObject)
-    {
-        bool hasLeafsGeometry = false;
-
-        Vector3 bboxSize = renderObject->GetBoundingBox().GetSize();
-        int32 rbCount = renderObject->GetRenderBatchCount();
-        for (int32 i = 0; i < rbCount; ++i)
-        {
-            RenderBatch* rb = renderObject->GetRenderBatch(i);
-            if (rb->GetMaterial() && rb->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_SPEED_TREE_LEAF))
-            {
-                PolygonGroup* pg = rb->GetPolygonGroup();
-                int32 triangleCount = pg->GetIndexCount() / 3;
-                for (int32 t = 0; t < triangleCount; t++)
-                {
-                    int32 i1, i2, i3;
-                    int32 baseVertexIndex = t * 3;
-                    pg->GetIndex(baseVertexIndex, i1);
-                    pg->GetIndex(baseVertexIndex + 1, i2);
-                    pg->GetIndex(baseVertexIndex + 2, i3);
-
-                    Vector3 v1, v2, v3;
-                    pg->GetCoord(i1, v1);
-                    pg->GetCoord(i2, v2);
-                    pg->GetCoord(i3, v3);
-
-                    v1.z = 0;
-                    v2.z = 0;
-                    v3.z = 0; //ortho projection in XY-plane
-
-                    v2 -= v1;
-                    v3 -= v1;
-                    Vector3 vec = v2.CrossProduct(v3);
-                    float32 len = vec.Length() / 2;
-
-                    info.leafsSquare += len;
-                    hasLeafsGeometry = true;
-                }
-            }
-        }
-
-        if (hasLeafsGeometry)
-        {
-            info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
-            info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
-        }
-    }
-    return info;
 }
 
 void SceneInfo::TexturesReloaded()
