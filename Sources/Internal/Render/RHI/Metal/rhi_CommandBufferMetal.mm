@@ -781,7 +781,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
             break;
 
         default:
-            DVASSERT_MSG(0, "Invalid store action specified.");
+            DVASSERT(0, "Invalid store action specified.");
             break;
         }
     }
