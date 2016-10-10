@@ -890,6 +890,7 @@ void PreviewWidget::OnTransformStateChanged(bool inTransformState)
     {
         return;
     }
+    document->SetCanClose(!inTransformState);
     QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
     if (inTransformState)
     {
