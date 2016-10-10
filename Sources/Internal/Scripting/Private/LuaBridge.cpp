@@ -104,7 +104,8 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvany(lua_State* L, const Any& any)
 {
     void* userdata = lua_newuserdata(L, sizeof(Any));
-    Any* pAny = new (userdata) Any(any);
+    DVASSERT_MSG(userdata, "Can't create Any ptr");
+    new (userdata) Any(any);
     luaL_getmetatable(L, AnyTName);
     lua_setmetatable(L, -2);
 }
@@ -182,7 +183,8 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvanyfn(lua_State* L, const AnyFn& any)
 {
     void* userdata = lua_newuserdata(L, sizeof(AnyFn));
-    AnyFn* pAny = new (userdata) AnyFn(any);
+    DVASSERT_MSG(userdata, "Can't create AnyFn ptr");
+    new (userdata) AnyFn(any);
     luaL_getmetatable(L, AnyFnTName);
     lua_setmetatable(L, -2);
 }
@@ -213,7 +215,7 @@ int32 AnyFn__tostring(lua_State* L)
         funcDef += ")";
     }
 
-    lua_pushfstring(L, "Any: %s (%p)", funcDef, pAny);
+    lua_pushfstring(L, "Any: %s (%p)", funcDef.c_str(), pAny);
     return 1;
 }
 
@@ -357,7 +359,8 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
     void* userdata = lua_newuserdata(L, sizeof(Reflection));
-    Reflection* pRef = new (userdata) Reflection(refl);
+    DVASSERT_MSG(userdata, "Can't get Reflection ptr");
+    new (userdata) Reflection(refl);
     luaL_getmetatable(L, ReflectionTName);
     lua_setmetatable(L, -2);
 }
