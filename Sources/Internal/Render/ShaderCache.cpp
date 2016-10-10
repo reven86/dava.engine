@@ -151,7 +151,6 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
 
 const ShaderSourceCode& GetSourceCode(const FastName& name)
 {
-    DAVA_CPU_PROFILER_SCOPE("GetSourceCode");
     auto sourceIt = shaderSourceCodes.find(name);
     if (sourceIt != shaderSourceCodes.end()) //source found
         return sourceIt->second;
@@ -173,8 +172,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
-
-    DAVA_CPU_PROFILER_SCOPE("GetShaderDescriptor");
 
     //not found - create new shader
     Vector<String> progDefines;
