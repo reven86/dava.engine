@@ -114,44 +114,44 @@ fragment_out
 #endif
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
-    [statik][a] property float alphatestThreshold;
+    [material][a] property float alphatestThreshold;
 #endif
 
 #if PIXEL_LIT
     uniform sampler2D normalmap;
-    [statik][a] property float  inSpecularity               = 1.0;    
-    [statik][a] property float3 metalFresnelReflectance     = float3(0.5,0.5,0.5);
-    [statik][a] property float  normalScale                 = 1.0;
+    [material][a] property float  inSpecularity               = 1.0;    
+    [material][a] property float3 metalFresnelReflectance     = float3(0.5,0.5,0.5);
+    [material][a] property float  normalScale                 = 1.0;
 #endif
 
 
 #if TILED_DECAL_MASK
     uniform sampler2D decalmask;
     uniform sampler2D decaltexture;
-    [statik][a] property float4 decalTileColor = float4(1.0,1.0,1.0,1.0) ;
+    [material][a] property float4 decalTileColor = float4(1.0,1.0,1.0,1.0) ;
 #endif
 
 
 #if (VERTEX_LIT || PIXEL_LIT ) && (!SKYOBJECT)
-    [dynamic][a] property float3 lightAmbientColor0;
-    [dynamic][a] property float3 lightColor0;
+    [auto][a] property float3 lightAmbientColor0;
+    [auto][a] property float3 lightColor0;
     #if NORMALIZED_BLINN_PHONG && VIEW_SPECULAR
-        [statik][a] property float inGlossiness = 0.5;
+        [material][a] property float inGlossiness = 0.5;
     #endif
 #endif
 
 
 #if PIXEL_LIT
-    [dynamic][a] property float4 lightPosition0;
+    [auto][a] property float4 lightPosition0;
 #endif
 
 
 #if FLATCOLOR
-    [statik][a] property float4 flatColor;
+    [material][a] property float4 flatColor;
 #endif
 
 #if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)
-    [statik][a] property float lightmapSize;
+    [material][a] property float lightmapSize;
 #endif
 
 inline float 

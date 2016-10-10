@@ -52,9 +52,9 @@ inline float ComputeOcclusion(float4 sampledDistance, float actualDistance)
 
 uniform samplerCUBE cubemap;
 
-[statik][a] property float4 flatColor;
-[statik][a] property float3 transformedNormal;
-[statik][a] property float3 pointProperties;
+[material][a] property float4 flatColor;
+[material][a] property float3 transformedNormal;
+[material][a] property float3 pointProperties;
 
 #elif defined(REPROJECTION)
 
@@ -62,8 +62,8 @@ uniform sampler2D fixedFrame;
 uniform sampler2D fixedFrameDistances;
 uniform sampler2D currentFrame;
 
-[statik][a] property float2 viewportSize;
-[statik][a] property float currentFrameCompleteness;
+[material][a] property float2 viewportSize;
+[material][a] property float currentFrameCompleteness;
 
 #endif
 

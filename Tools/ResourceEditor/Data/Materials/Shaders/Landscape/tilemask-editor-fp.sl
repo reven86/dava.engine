@@ -20,10 +20,10 @@ fragment_out
 uniform sampler2D sourceTexture;
 uniform sampler2D toolTexture;
 
-[statik][instance] property float intensity = 1.0;
+[material][instance] property float intensity = 1.0;
 
 #if DRAW_TYPE == DRAW_TYPE_COPY_PASTE
-[statik][instance] property float2 copypasteOffset = float2(0,0);
+[material][instance] property float2 copypasteOffset = float2(0,0);
 #endif
 
 fragment_out

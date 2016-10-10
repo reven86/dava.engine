@@ -13,7 +13,7 @@ fragment_out
 
 sampler2D tex;
 
-[statik][instance] property float smoothing;
+[material][instance] property float smoothing;
 
 
 fragment_out

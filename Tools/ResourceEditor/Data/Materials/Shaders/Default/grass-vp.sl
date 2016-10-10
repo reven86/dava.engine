@@ -22,31 +22,31 @@ uniform sampler2D heightmap;
 uniform sampler2D vegetationmap;
 
 #if VERTEX_FOG
-[dynamic][a] property float4x4 worldViewMatrix;
+[auto][a] property float4x4 worldViewMatrix;
 #endif
 #if VERTEX_FOG && FOG_ATMOSPHERE
-[dynamic][a] property float4x4 worldViewInvTransposeMatrix;
-[dynamic][a] property float4 lightPosition0;
+[auto][a] property float4x4 worldViewInvTransposeMatrix;
+[auto][a] property float4 lightPosition0;
 #if DISTANCE_ATTENUATION
-[statik][a] property float lightIntensity0; 
+[material][a] property float lightIntensity0; 
 #endif
 #endif
 
 #if VERTEX_FOG
-[dynamic][a] property float3 cameraPosition;
-[dynamic][instance] property float4x4 worldMatrix;
+[auto][a] property float3 cameraPosition;
+[auto][instance] property float4x4 worldMatrix;
 #endif
 
 #include "vp-fog-props.slh"
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
-[dynamic][a] property float heightmapTextureSize;
+[auto][instance] property float4x4 worldViewProjMatrix;
+[auto][a] property float heightmapTextureSize;
     
-[statik][a] property float3 tilePos;
-[statik][a] property float3 worldSize;
-[statik][a] property float2 lodSwitchScale;
-[statik][a] property float4 vegWaveOffsetx;
-[statik][a] property float4 vegWaveOffsety;
+[material][a] property float3 tilePos;
+[material][a] property float3 worldSize;
+[material][a] property float2 lodSwitchScale;
+[material][a] property float4 vegWaveOffsetx;
+[material][a] property float4 vegWaveOffsety;
 //8 floats: xxxxyyyy (xy per layer)
 
 vertex_out

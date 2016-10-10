@@ -172,13 +172,13 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;
             constBuffers[i].targetSlot = i;
-            constBuffers[i].updateType = vSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = vSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
         else
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Fragment;
             constBuffers[i].targetSlot = i - vertexConstBuffersCount;
-            constBuffers[i].updateType = fSource->ConstBufferStorage(constBuffers[i].targetSlot);
+            constBuffers[i].updateType = fSource->ConstBufferSource(constBuffers[i].targetSlot);
         }
 
         constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
@@ -186,7 +186,7 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::S
 
     for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
     {
-        if (constBuffers[i].updateType == rhi::ShaderProp::STORAGE_DYNAMIC)
+        if (constBuffers[i].updateType == rhi::ShaderProp::SOURCE_AUTO)
         {
             rhi::HConstBuffer dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)

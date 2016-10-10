@@ -34,25 +34,25 @@ fragment_out
     uniform sampler2D tileMask;
     uniform sampler2D colorTexture;
 
-    [statik][instance] property float3 tileColor0 = float3(1,1,1);
-    [statik][instance] property float3 tileColor1 = float3(1,1,1);
-    [statik][instance] property float3 tileColor2 = float3(1,1,1);
-    [statik][instance] property float3 tileColor3 = float3(1,1,1);
+    [material][instance] property float3 tileColor0 = float3(1,1,1);
+    [material][instance] property float3 tileColor1 = float3(1,1,1);
+    [material][instance] property float3 tileColor2 = float3(1,1,1);
+    [material][instance] property float3 tileColor3 = float3(1,1,1);
 #else
     uniform sampler2D fullTiledTexture;
 #endif
 
 #if CURSOR
 uniform sampler2D cursorTexture;
-[statik][instance] property float4 cursorCoordSize = float4(0,0,1,1);
+[material][instance] property float4 cursorCoordSize = float4(0,0,1,1);
 #endif
 
 #if LANDSCAPE_SPECULAR
-    [statik][a] property float inGlossiness             = 0.5;
-    [statik][a] property float inSpecularity            = 1.0;
-    [statik][a] property float3 metalFresnelReflectance = float3(0.5,0.5,0.5);
-    [statik][a] property float4 lightPosition0;
-    [statik][a] property float3 lightColor0;
+    [material][a] property float inGlossiness             = 0.5;
+    [material][a] property float inSpecularity            = 1.0;
+    [material][a] property float3 metalFresnelReflectance = float3(0.5,0.5,0.5);
+    [material][a] property float4 lightPosition0;
+    [material][a] property float3 lightColor0;
     
     inline float3 FresnelShlickVec3( float NdotL, float3 Cspec )
     {

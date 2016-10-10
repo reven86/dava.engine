@@ -190,7 +190,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     rhi::ShaderProp& prop = property.back();
 
                     prop.uid = DAVA::FastName(decl->name);
-                    prop.storage = rhi::ShaderProp::STORAGE_DYNAMIC;
+                    prop.source = rhi::ShaderProp::SOURCE_AUTO;
                     prop.precision = rhi::ShaderProp::PRECISION_NORMAL;
                     prop.arraySize = 1;
                     prop.isBigArray = false;
@@ -235,10 +235,10 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 
                     for (sl::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
                     {
-                        if (stricmp(a->attrText, "static") == 0 || stricmp(a->attrText, "statik") == 0)
-                            prop.storage = rhi::ShaderProp::STORAGE_STATIC;
-                        else if (stricmp(a->attrText, "dynamic") == 0)
-                            prop.storage = rhi::ShaderProp::STORAGE_DYNAMIC;
+                        if (stricmp(a->attrText, "material") == 0)
+                            prop.source = rhi::ShaderProp::SOURCE_MATERIAL;
+                        else if (stricmp(a->attrText, "auto") == 0)
+                            prop.source = rhi::ShaderProp::SOURCE_AUTO;
                         else
                             prop.tag = FastName(a->attrText);
                     }
@@ -269,7 +269,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 
                     for (std::vector<buf_t>::iterator b = buf.begin(), b_end = buf.end(); b != b_end; ++b)
                     {
-                        if (b->storage == prop.storage && b->tag == prop.tag)
+                        if (b->source == prop.source && b->tag == prop.tag)
                         {
                             cbuf = &(buf[b - buf.begin()]);
                             break;
@@ -282,7 +282,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
 
                         cbuf = &(buf.back());
 
-                        cbuf->storage = prop.storage;
+                        cbuf->source = prop.source;
                         cbuf->tag = prop.tag;
                         cbuf->regCount = 0;
                         cbuf->isArray = false;
@@ -1005,7 +1005,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
         property[p].type = ShaderProp::Type(readUI4);
 
         READ_CHECK(ReadUI4(in, &readUI4));
-        property[p].storage = ShaderProp::Storage(readUI4);
+        property[p].source = ShaderProp::Source(readUI4);
 
         READ_CHECK(ReadUI4(in, &readUI4));
         property[p].isBigArray = readUI4;
@@ -1023,7 +1023,7 @@ bool ShaderSource::Load(Api api, DAVA::File* in)
     for (unsigned b = 0; b != buf.size(); ++b)
     {
         READ_CHECK(ReadUI4(in, &readUI4));
-        buf[b].storage = ShaderProp::Storage(readUI4);
+        buf[b].source = ShaderProp::Source(readUI4);
 
         READ_CHECK(ReadS0(in, &s0));
         buf[b].tag = FastName(s0.c_str());
@@ -1121,7 +1121,7 @@ bool ShaderSource::Save(Api api, DAVA::File* out) const
         WRITE_CHECK(WriteS0(out, property[p].uid.c_str()));
         WRITE_CHECK(WriteS0(out, property[p].tag.c_str()));
         WRITE_CHECK(WriteUI4(out, property[p].type));
-        WRITE_CHECK(WriteUI4(out, property[p].storage));
+        WRITE_CHECK(WriteUI4(out, property[p].source));
         WRITE_CHECK(WriteUI4(out, property[p].isBigArray));
         WRITE_CHECK(WriteUI4(out, property[p].arraySize));
         WRITE_CHECK(WriteUI4(out, property[p].bufferindex));
@@ -1133,7 +1133,7 @@ bool ShaderSource::Save(Api api, DAVA::File* out) const
     WRITE_CHECK(WriteUI4(out, static_cast<uint32>(buf.size())));
     for (unsigned b = 0; b != buf.size(); ++b)
     {
-        WRITE_CHECK(WriteUI4(out, buf[b].storage));
+        WRITE_CHECK(WriteUI4(out, buf[b].source));
         WRITE_CHECK(WriteS0(out, buf[b].tag.c_str()));
         WRITE_CHECK(WriteUI4(out, buf[b].regCount));
     }
@@ -1307,10 +1307,10 @@ ShaderSource::ConstBufferScope( uint32 bufIndex ) const
 
 //------------------------------------------------------------------------------
 
-ShaderProp::Storage
-ShaderSource::ConstBufferStorage(uint32 bufIndex) const
+ShaderProp::Source
+ShaderSource::ConstBufferSource(uint32 bufIndex) const
 {
-    return buf[bufIndex].storage;
+    return buf[bufIndex].source;
 }
 
 //------------------------------------------------------------------------------

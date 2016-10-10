@@ -21,7 +21,7 @@ struct ConstBufferDescriptor
     };
 
     Type type;
-    rhi::ShaderProp::Storage updateType;
+    rhi::ShaderProp::Source updateType;
     uint32 targetSlot;
 
     UniquePropertyLayout propertyLayoutId;

@@ -30,20 +30,20 @@ vertex_out
 
 
 
-[dynamic][a] property float4x4 worldViewProjMatrix;
-[dynamic][a] property float4x4 worldMatrix;
-[dynamic][a] property float4x4 viewProjMatrix;
-[dynamic][a] property float3 cameraPosition;
+[auto][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldMatrix;
+[auto][a] property float4x4 viewProjMatrix;
+[auto][a] property float3 cameraPosition;
 
 
 #if defined(DECODE_DISTANCE)
 
-[statik][a] property float3 origin;
+[material][a] property float3 origin;
 
 #elif defined(REPROJECTION)
 
-[statik][a] property float4x4 fixedFrameMatrix;
-[statik][a] property float3 origin;
+[material][a] property float4x4 fixedFrameMatrix;
+[material][a] property float3 origin;
 
 #endif
 

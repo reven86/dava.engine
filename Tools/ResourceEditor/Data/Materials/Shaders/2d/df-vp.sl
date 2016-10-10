@@ -12,7 +12,7 @@ vertex_out
     half4   color   : COLOR0;
 };
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
 
 vertex_out
 vp_main( vertex_in input )

@@ -37,19 +37,17 @@ ShaderProp
         PRECISION_HALF,
         PRECISION_LOW
     };
-    //    enum Scope  { SCOPE_UNIQUE, SCOPE_SHARED };
-    enum Storage
+    enum Source
     {
-        STORAGE_STATIC,
-        STORAGE_DYNAMIC
+        SOURCE_AUTO,
+        SOURCE_MATERIAL
     };
 
     FastName uid;
     Type type;
     Precision precision;
     uint32 arraySize;
-    //    Scope       scope;
-    Storage storage;
+    Source source;
     FastName tag;
     uint32 bufferindex;
     uint32 bufferReg;
@@ -87,8 +85,7 @@ public:
     const VertexLayout& ShaderVertexLayout() const;
     uint32 ConstBufferCount() const;
     uint32 ConstBufferSize(uint32 bufIndex) const;
-    //    ShaderProp::Scope       ConstBufferScope( uint32 bufIndex ) const;
-    ShaderProp::Storage ConstBufferStorage(uint32 bufIndex) const;
+    ShaderProp::Source ConstBufferSource(uint32 bufIndex) const;
     BlendState Blending() const;
 
     void Dump() const;
@@ -100,8 +97,7 @@ private:
     struct
     buf_t
     {
-        //        ShaderProp::Scope   scope;
-        ShaderProp::Storage storage;
+        ShaderProp::Source source;
         FastName tag;
         uint32 regCount;
         std::vector<int> avlRegIndex;

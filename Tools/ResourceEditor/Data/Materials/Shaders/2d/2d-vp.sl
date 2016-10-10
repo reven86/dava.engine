@@ -17,7 +17,7 @@ vertex_out
 };
 
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
 
 vertex_out
 vp_main( vertex_in input )

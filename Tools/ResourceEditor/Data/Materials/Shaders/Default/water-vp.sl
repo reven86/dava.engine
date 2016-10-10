@@ -61,52 +61,52 @@ vertex_out
 
 #if VERTEX_FOG
     #if SHADING == SHADING_PERVERTEX
-        [dynamic][instance] property float4x4 worldViewMatrix;
+        [auto][instance] property float4x4 worldViewMatrix;
     #endif
     #if SHADING == SHADING_PERPIXEL
-        [dynamic][instance] property float4x4 worldMatrix;
-        [dynamic][instance] property float3   cameraPosition;
+        [auto][instance] property float4x4 worldMatrix;
+        [auto][instance] property float3   cameraPosition;
     #endif
     #if FOG_ATMOSPHERE
         #if SHADING == SHADING_PERVERTEX
-            [dynamic][instance] property float4x4 worldViewInvTransposeMatrix;
+            [auto][instance] property float4x4 worldViewInvTransposeMatrix;
         #endif
         #if (SHADING == SHADING_PERVERTEX) || !(REAL_REFLECTION && SPECULAR)
-            [dynamic][instance] property float4   lightPosition0;
+            [auto][instance] property float4   lightPosition0;
         #endif
     #endif
 #endif
 
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
 
 #if SHADING == SHADING_PERPIXEL
-[dynamic][instance] property float4x4 worldViewInvTransposeMatrix;
-[dynamic][instance] property float4x4 worldViewMatrix;
+[auto][instance] property float4x4 worldViewInvTransposeMatrix;
+[auto][instance] property float4x4 worldViewMatrix;
     #if REAL_REFLECTION && SPECULAR
-        [dynamic][instance] property float4 lightPosition0;
+        [auto][instance] property float4 lightPosition0;
     #endif
 #endif
 
-[dynamic][instance] property float globalTime;
+[auto][instance] property float globalTime;
 
 #if REAL_REFLECTION
-[dynamic][instance] property float projectionFlip;
+[auto][instance] property float projectionFlip;
 #endif
 
 #if SHADING == SHADING_PERVERTEX 
-[dynamic][instance] property float3 cameraPosition;
-[dynamic][instance] property float4x4 worldMatrix;
-[dynamic][instance] property float4x4 worldInvTransposeMatrix;
+[auto][instance] property float3 cameraPosition;
+[auto][instance] property float4x4 worldMatrix;
+[auto][instance] property float4x4 worldInvTransposeMatrix;
 #endif
 
 #if (!DEBUG_UNITY_Z_NORMAL)||(SHADING == SHADING_PERVERTEX )
-    [statik][instance] property float2 normal0ShiftPerSecond; 
-    [statik][instance] property float2 normal1ShiftPerSecond;
-    [statik][instance] property float normal0Scale;
-    [statik][instance] property float normal1Scale;
+    [material][instance] property float2 normal0ShiftPerSecond; 
+    [material][instance] property float2 normal1ShiftPerSecond;
+    [material][instance] property float normal0Scale;
+    [material][instance] property float normal1Scale;
     #if DEBUG_NORMAL_ROTATION
-        [statik][instance] property float normalRotation;
+        [material][instance] property float normalRotation;
     #endif
 #endif 
 

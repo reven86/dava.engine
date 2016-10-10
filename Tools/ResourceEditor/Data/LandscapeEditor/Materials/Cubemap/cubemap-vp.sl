@@ -12,8 +12,8 @@ vertex_out
     float3  normal   : TEXCOORD0;
 };
 
-[dynamic][a] property float4x4 worldViewProjMatrix;
-[dynamic][a] property float4x4 worldMatrix;
+[auto][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldMatrix;
 
 vertex_out
 vp_main( vertex_in input )

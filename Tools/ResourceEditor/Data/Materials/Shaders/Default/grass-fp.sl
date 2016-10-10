@@ -18,7 +18,7 @@ fragment_out
 uniform sampler2D albedo;
 
 #if LOD_COLOR
-[statik][instance] property float3 lodColor = float3(1,1,1);
+[material][instance] property float3 lodColor = float3(1,1,1);
 #endif
 
 

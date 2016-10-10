@@ -19,14 +19,14 @@ uniform sampler2D colorTexture;
 uniform sampler2D toolTexture;
 #endif
 
-[statik][instance] property float3 tileColor0 = float3(1,1,1);
-[statik][instance] property float3 tileColor1 = float3(1,1,1);
-[statik][instance] property float3 tileColor2 = float3(1,1,1);
-[statik][instance] property float3 tileColor3 = float3(1,1,1);
+[material][instance] property float3 tileColor0 = float3(1,1,1);
+[material][instance] property float3 tileColor1 = float3(1,1,1);
+[material][instance] property float3 tileColor2 = float3(1,1,1);
+[material][instance] property float3 tileColor3 = float3(1,1,1);
 
 #if LANDSCAPE_CURSOR
 uniform sampler2D cursorTexture;
-[statik][instance] property float4 cursorCoordSize = float4(0,0,1,1);
+[material][instance] property float4 cursorCoordSize = float4(0,0,1,1);
 #endif
 
 fragment_out

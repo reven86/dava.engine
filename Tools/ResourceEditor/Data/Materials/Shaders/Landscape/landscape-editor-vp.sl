@@ -46,23 +46,23 @@ vertex_out
 #endif
 
 #if TILEMASK
-    [statik][instance] property float2 textureTiling = float2(50,50);
+    [material][instance] property float2 textureTiling = float2(50,50);
 #endif
 
-[dynamic][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldViewProjMatrix;
 
 #if LANDSCAPE_USE_INSTANCING
-    [dynamic][a] property float3 boundingBoxSize;
-    [dynamic][a] property float heightmapTextureSize;
+    [auto][a] property float3 boundingBoxSize;
+    [auto][a] property float heightmapTextureSize;
 #endif
 
 #if VERTEX_FOG
-[dynamic][a] property float4x4 worldMatrix;
-[dynamic][a] property float4x4 worldViewMatrix;
-[dynamic][a] property float3   cameraPosition;
+[auto][a] property float4x4 worldMatrix;
+[auto][a] property float4x4 worldViewMatrix;
+[auto][a] property float3   cameraPosition;
 #endif
 #if VERTEX_FOG && FOG_ATMOSPHERE
-[dynamic][a] property float4   lightPosition0;
+[auto][a] property float4   lightPosition0;
 #endif
 
 #include "vp-fog-props.slh"

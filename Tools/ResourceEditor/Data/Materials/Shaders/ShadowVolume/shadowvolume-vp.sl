@@ -15,16 +15,16 @@ vertex_out
     float4  pos     : SV_POSITION;
 };
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
-[dynamic][instance] property float4x4 worldViewMatrix;
-[dynamic][instance] property float4x4 projMatrix;
-[dynamic][instance] property float4x4 worldViewInvTransposeMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewMatrix;
+[auto][instance] property float4x4 projMatrix;
+[auto][instance] property float4x4 worldViewInvTransposeMatrix;
 
-[dynamic][instance] property float4 lightPosition0;
+[auto][instance] property float4 lightPosition0;
 
 #if SKINNING
-[dynamic][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray"; // (x, y, z, scale)
-[dynamic][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
+[auto][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray"; // (x, y, z, scale)
+[auto][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
 #endif
 
 inline float3
