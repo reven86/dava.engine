@@ -1203,10 +1203,9 @@ bool VariantType::Read(File* fp)
         {
             return false;
         }
-        DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
+        ScopedPtr<UnmanagedMemoryFile> pF(new UnmanagedMemoryFile(pData, len));
         pointerValue = new KeyedArchive();
         static_cast<KeyedArchive*>(pointerValue)->Load(pF);
-        SafeRelease(pF);
         SafeDeleteArray(pData);
     }
     break;

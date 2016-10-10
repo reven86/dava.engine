@@ -497,15 +497,12 @@ KeyedArchive* KeyedArchive::GetArchiveFromByteArray(const String& key) const
     {
         return nullptr;
     }
-    const uint8* array = GetByteArray(key);
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(array, size, File::OPEN | File::READ);
+    ScopedPtr<UnmanagedMemoryFile> file(new UnmanagedMemoryFile(GetByteArray(key), size));
     if (!archive->Load(file))
     {
-        SafeRelease(file);
         SafeRelease(archive);
         return nullptr;
     }
-    SafeRelease(file);
     return archive;
 }
 

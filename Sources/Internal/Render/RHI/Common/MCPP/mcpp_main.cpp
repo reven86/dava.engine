@@ -337,7 +337,8 @@ int main
 int argc,
 char** argv)
 {
-    DAVA_CPU_PROFILER_SCOPE("mcpp_lib_main");
+    DAVA_CPU_PROFILER_FUNCTION_SCOPE;
+
     char* in_file = NULL;
     char* out_file = NULL;
     char* stdin_name = (char*)"<stdin>";
