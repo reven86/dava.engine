@@ -52,7 +52,7 @@ def unzip_inplace(path):
 	extension = os.path.splitext(path)[1]
 	if extension == '.zip':
 		ref = zipfile.ZipFile(path, 'r')
-	elif extension == '.gz':
+	elif extension == '.gz' or extension == '.tgz':
 		ref = tarfile.open(path, 'r')
 	ref.extractall(os.path.dirname(path))
 	ref.close()
@@ -297,7 +297,7 @@ def get_autotools_macos_env():
 	env = os.environ.copy()
 	env['CC'] = cc_path
 	env['CXX'] = cxx_path
-	env['CFLAGS'] = '-arch x86_64 -arch i386 -pipe -Os -gdwarf-2 -isysroot {}'.format(sysroot_path)
+	env['CFLAGS'] = '-arch x86_64 -arch i386 -pipe -Os -isysroot {}'.format(sysroot_path)
 	env['CXXFLAGS'] = env['CFLAGS']
 	env['LDFLAGS'] = '-arch x86_64 -arch i386 -isysroot {}'.format(sysroot_path)
 	env['CPP'] = '{} -E'.format(env['CC'])
@@ -314,7 +314,7 @@ def get_autotools_ios_env():
 	env = os.environ.copy()
 	env['CC'] = cc_path
 	env['CXX'] = cxx_path
-	env['CFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -pipe -Os -gdwarf-2 -mios-version-min=6.0 -isysroot {}'.format(sysroot_path)
+	env['CFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -pipe -Os -mios-version-min=6.0 -isysroot {}'.format(sysroot_path)
 	env['CXXFLAGS'] = env['CFLAGS']
 	env['LDFLAGS'] = '-arch armv7 -arch armv7s -arch arm64 -isysroot {}'.format(sysroot_path)
 	env['CPP'] = '{} -E'.format(env['CC'])
@@ -322,7 +322,7 @@ def get_autotools_ios_env():
 
 	return env
 
-def get_autotools_android_arm_env(root_project_path):
+def get_autotools_android_arm_env(root_project_path, enable_stl=False):
 	android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
 	android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64')
 	cross_path = os.path.join(android_prefix, 'bin/arm-linux-androideabi')
@@ -339,11 +339,20 @@ def get_autotools_android_arm_env(root_project_path):
 	env['RANLIB'] = '{}-ranlib'.format(cross_path)
 	env['CFLAGS'] = '--sysroot={} -I{}/usr/include -I{}/include -O2'.format(sysroot_path, sysroot_path, android_prefix)
 	env['CPPFLAGS'] = env['CFLAGS']
-	env['LDFLAGS'] = '-L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/armeabi-v7a'.format(sysroot_path, android_prefix, android_ndk_folder_path)
+	env['LDFLAGS'] = '--sysroot={} -L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/armeabi-v7a'.format(sysroot_path, sysroot_path, android_prefix, android_ndk_folder_path)
+
+	if enable_stl:
+		# just use gnu-libstdc++ shared for now
+		stl_folder_path = os.path.join(android_ndk_folder_path, 'sources/cxx-stl/gnu-libstdc++/4.9')
+		stl_include_folder_path = os.path.join(stl_folder_path, 'include')
+		stl_lib_folder_path = os.path.join(stl_folder_path, 'libs/armeabi-v7a')
+		stl_bits_include_folder_path = os.path.join(stl_lib_folder_path, 'include')
+		env['CPPFLAGS'] += ' -I{} -I{} -frtti -fexceptions'.format(stl_include_folder_path, stl_bits_include_folder_path)
+		env['LDFLAGS'] += ' -L{} -l{}'.format(stl_lib_folder_path, 'gnustl_shared')
 
 	return env
 
-def get_autotools_android_x86_env(root_project_path):
+def get_autotools_android_x86_env(root_project_path, enable_stl=False):
 	android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
 	android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/x86-4.9/prebuilt/darwin-x86_64')
 	cross_path = os.path.join(android_prefix, 'bin/i686-linux-android')
@@ -360,7 +369,16 @@ def get_autotools_android_x86_env(root_project_path):
 	env['RANLIB'] = '{}-ranlib'.format(cross_path)
 	env['CFLAGS'] = '--sysroot={} -I{}/usr/include -I{}/include -O2'.format(sysroot_path, sysroot_path, android_prefix)
 	env['CPPFLAGS'] = env['CFLAGS']
-	env['LDFLAGS'] = '-L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/x86'.format(sysroot_path, android_prefix, android_ndk_folder_path)
+	env['LDFLAGS'] = '--sysroot={} -L{}/usr/lib -L{}/lib -L{}/sources/crystax/libs/x86'.format(sysroot_path, sysroot_path, android_prefix, android_ndk_folder_path)
+
+	if enable_stl:
+		# just use gnu-libstdc++ shared for now
+		stl_folder_path = os.path.join(android_ndk_folder_path, 'sources/cxx-stl/gnu-libstdc++/4.9')
+		stl_include_folder_path = os.path.join(stl_folder_path, 'include')
+		stl_lib_folder_path = os.path.join(stl_folder_path, 'libs/x86')
+		stl_bits_include_folder_path = os.path.join(stl_lib_folder_path, 'include')
+		env['CPPFLAGS'] += ' -I{} -I{} -frtti -fexceptions'.format(stl_include_folder_path, stl_bits_include_folder_path)
+		env['LDFLAGS'] += ' -L{} -l{}'.format(stl_lib_folder_path, 'gnustl_shared')
 
 	return env
 
@@ -527,7 +545,7 @@ def build_and_copy_libraries_android_cmake(
 
 	return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
-def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make'):
+def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make', postclean=True):
 	if isinstance(configure_exec_name, list):
 		if sys.platform == 'win32':
 			cmd = list(configure_exec_name)
@@ -557,5 +575,6 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
 		cmd = [make_exec_name, 'install']
 		run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
-		cmd = [make_exec_name, 'clean']
-		run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
+		if postclean:
+			cmd = [make_exec_name, 'clean']
+			run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
