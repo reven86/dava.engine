@@ -2,9 +2,8 @@
     
     #include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "FileSystem/DynamicMemoryFile.h"
+    #include "FileSystem/UnmanagedMemoryFile.h"
     #include "FileSystem/FileSystem.h"
-using DAVA::DynamicMemoryFile;
     #include "Utils/Utils.h"
     #include "Debug/CPUProfiler.h"
     #include "Concurrency/Mutex.h"

@@ -1,6 +1,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/File.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/VariantType.h"

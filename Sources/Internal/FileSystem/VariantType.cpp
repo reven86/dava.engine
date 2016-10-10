@@ -2,6 +2,7 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
