@@ -6,12 +6,16 @@ namespace DAVA
 {
 namespace Assert
 {
-/// Part of the message each predefined handler generates
-/// Can be used to distinguish assert messages when processing log for some reason
+/**
+Part of a message each predefined handler generates
+Can be used to distinguish assert messages when processing log for some reason
+*/
 const String AssertMessageTag = "end=assert=msg";
 
+/** Log assert info as an error and return FailBehaviour::Default */
 FailBehaviour DefaultLoggerHandler(const AssertInfo& assertInfo);
 
+/** Show message box with assert info asking user if program should be halted. Return FailBehaviour::Halt if it should */
 FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo);
 }
 }
