@@ -10,7 +10,7 @@ namespace DAVA
 {
 namespace Assert
 {
-static Vector<Handler> registredHandlers;
+static Vector<Handler> registeredHandlers;
 
 static Mutex registredHandlersMutex;
 
@@ -18,23 +18,23 @@ void AddHandler(const Handler handler)
 {
     LockGuard<Mutex> lock(registredHandlersMutex);
 
-    const Vector<Handler>::iterator position = std::find(registredHandlers.begin(), registredHandlers.end(), handler);
-    if (position != registredHandlers.end())
+    const Vector<Handler>::iterator position = std::find(registeredHandlers.begin(), registeredHandlers.end(), handler);
+    if (position != registeredHandlers.end())
     {
         return;
     }
 
-    registredHandlers.push_back(handler);
+    registeredHandlers.push_back(handler);
 }
 
 void RemoveHandler(const Handler handler)
 {
     LockGuard<Mutex> lock(registredHandlersMutex);
 
-    const Vector<Handler>::iterator position = std::find(registredHandlers.begin(), registredHandlers.end(), handler);
-    if (position != registredHandlers.end())
+    const Vector<Handler>::iterator position = std::find(registeredHandlers.begin(), registeredHandlers.end(), handler);
+    if (position != registeredHandlers.end())
     {
-        registredHandlers.erase(position);
+        registeredHandlers.erase(position);
     }
 }
 }
@@ -79,7 +79,7 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
     Vector<Handler> handlersCopy;
     {
         LockGuard<Mutex> lock(registredHandlersMutex);
-        handlersCopy = registredHandlers;
+        handlersCopy = registeredHandlers;
     }
 
     if (handlersCopy.empty())
