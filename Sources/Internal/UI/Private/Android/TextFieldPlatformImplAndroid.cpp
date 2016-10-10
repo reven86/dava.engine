@@ -198,7 +198,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
         {
             controlRect = rect;
 
-            Rect rc = JNI::V2I(controlRect);
+            Rect rc = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
             rc.dx = std::max(0.0f, rc.dx);
             rc.dy = std::max(0.0f, rc.dy);
             setRect(javaTextField, rc.x, rc.y, rc.dx, rc.dy);

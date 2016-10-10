@@ -12,6 +12,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/Android/WindowNativeServiceAndroid.h"
+#include "UI/UIControlSystem.h"
 
 extern "C"
 {
@@ -169,7 +170,7 @@ void WebViewControl::SetRect(const Rect& rect)
 {
     if (javaWebView != nullptr)
     {
-        Rect rc = JNI::V2I(rect);
+        Rect rc = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
         rc.dx = std::max(0.0f, rc.dx);
         rc.dy = std::max(0.0f, rc.dy);
 
@@ -373,7 +374,7 @@ JniWebView::JniWebView()
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
 {
     controls[id] = control;
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);
@@ -492,7 +493,7 @@ void JniWebView::OpenFromBuffer(int id, const String& string, const String& base
 
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
-    Rect rect = JNI::V2I(controlRect);
+    Rect rect = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(controlRect);
 
     rect.dx = std::max(0.0f, rect.dx);
     rect.dy = std::max(0.0f, rect.dy);

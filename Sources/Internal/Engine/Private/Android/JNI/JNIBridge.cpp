@@ -13,12 +13,6 @@ namespace DAVA
 {
 namespace JNI
 {
-// TODO: del V2I
-Rect V2I(const Rect& rect)
-{
-    return UIControlSystem::Instance()->vcs->ConvertVirtualToInput(rect);
-}
-
 JNIEnv* GetEnv()
 {
     JNIEnv* env = Private::AndroidBridge::GetEnv();

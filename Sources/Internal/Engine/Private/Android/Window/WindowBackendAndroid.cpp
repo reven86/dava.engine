@@ -38,11 +38,11 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnS
     wbackend->SurfaceCreated(env, jsurfaceView);
 }
 
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height)
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height, jint dpi)
 {
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    wbackend->SurfaceChanged(env, surface, width, height);
+    wbackend->SurfaceChanged(env, surface, width, height, dpi);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
@@ -232,20 +232,12 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,
-                                                                                w,
-                                                                                h,
-                                                                                1.0f,
-                                                                                1.0f));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
-                                                                                    w,
-                                                                                    h,
-                                                                                    1.0f,
-                                                                                    1.0f));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w, h));
     }
 }
 
@@ -291,11 +283,7 @@ void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
     default:
         return;
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                          type,
-                                                                          touchId,
-                                                                          x,
-                                                                          y));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, touchId, x, y));
 }
 
 } // namespace Private
