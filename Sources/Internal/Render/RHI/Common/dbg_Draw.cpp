@@ -508,6 +508,16 @@ void DbgDraw::EnsureInited()
         dd->_init();
         dd->_inited = true;
     }
+
+    if (rhi::NeedRestoreTexture(dd->_tex_small_font))
+    {
+        rhi::UpdateTexture(dd->_tex_small_font, Bin__dbg_FontSmall, 0);
+    }
+
+    if (rhi::NeedRestoreTexture(dd->_tex_normal_font))
+    {
+        rhi::UpdateTexture(dd->_tex_normal_font, Bin__dbg_FontNormal, 0);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -912,7 +922,6 @@ void DbgDraw::_init()
     // init small-font texture
     {
         rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
-        descr.needRestore = false; //hmm
         _tex_small_font = rhi::CreateTexture(descr);
 
         if (_tex_small_font)
@@ -933,7 +942,6 @@ void DbgDraw::_init()
     // init normal-font texture
     {
         rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
-        descr.needRestore = false; //hmm
         _tex_normal_font = rhi::CreateTexture(descr);
 
         if (_tex_normal_font)

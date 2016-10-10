@@ -238,8 +238,41 @@ PerfQueryFrameDX9* NextPerfQueryFrame()
 
 void RejectPerfQueryFrame(PerfQueryFrameDX9* frame)
 {
+    DVASSERT(frame);
+
     DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
     perfQueryFramePoolDX9.push_back(frame);
+}
+
+void ReleaseAll()
+{
+    DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
+
+    for (PerfQueryFrameDX9* frame : pendingPerfQueryFrameDX9)
+    {
+        frame->disjointQuery->Release();
+        frame->freqQuery->Release();
+        delete frame;
+    }
+    pendingPerfQueryFrameDX9.clear();
+
+    for (PerfQueryFrameDX9* frame : perfQueryFramePoolDX9)
+    {
+        frame->disjointQuery->Release();
+        frame->freqQuery->Release();
+        delete frame;
+    }
+    perfQueryFramePoolDX9.clear();
+
+    PerfQueryDX9Pool::Iterator it = PerfQueryDX9Pool::Begin(), end = PerfQueryDX9Pool::End();
+    for (; it != end; ++it)
+    {
+        if (it->query)
+        {
+            it->query->Release();
+            it->query = nullptr;
+        }
+    }
 }
 
 void ObtainPerfQueryMeasurment()

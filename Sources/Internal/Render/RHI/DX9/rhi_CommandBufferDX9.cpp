@@ -1133,7 +1133,8 @@ _RejectAllFrames()
                 RenderPassPoolDX9::Free(*p);
             }
 
-            PerfQueryDX9::RejectPerfQueryFrame(f->perfQueryFrame);
+            if (f->perfQueryFrame)
+                PerfQueryDX9::RejectPerfQueryFrame(f->perfQueryFrame);
 
             f = _DX9_Frame.erase(f);
         }
@@ -1307,6 +1308,7 @@ _DX9_ExecuteQueuedCommands()
         TextureDX9::ReleaseAll();
         VertexBufferDX9::ReleaseAll();
         IndexBufferDX9::ReleaseAll();
+        PerfQueryDX9::ReleaseAll();
 
         for (;;)
         {

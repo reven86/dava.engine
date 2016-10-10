@@ -58,6 +58,7 @@ void EndMeasurment(PerfQueryFrameDX9* frame);
 
 PerfQueryFrameDX9* NextPerfQueryFrame();
 void RejectPerfQueryFrame(PerfQueryFrameDX9* frame);
+void ReleaseAll();
 
 void ObtainPerfQueryMeasurment();
 void ReleasePerfQueryPool();
