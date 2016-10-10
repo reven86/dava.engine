@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "Platform/DPIHelper.h"
 #include "ShellScalingAPI.h"
 

@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Logger/Logger.h"
 #include "Utils/Utils.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
