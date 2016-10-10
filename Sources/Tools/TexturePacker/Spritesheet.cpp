@@ -2,6 +2,7 @@
 #include "TexturePacker/TexturePacker.h"
 #include "Base/BaseTypes.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include "Base/GlobalEnum.h"
 

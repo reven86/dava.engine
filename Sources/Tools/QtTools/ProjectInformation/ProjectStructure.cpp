@@ -89,7 +89,7 @@ void ProjectStructure::Impl::SetProjectDirectory(const FilePath& directory)
         QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
         projectDir = QDir(directoryStr);
         DVASSERT(projectDir.exists());
-        DVASSERT(!watcher.directories().contains(directoryStr))
+        DVASSERT(!watcher.directories().contains(directoryStr));
 
         watcher.addPath(directoryStr);
         AddFilesRecursively(projectDir);

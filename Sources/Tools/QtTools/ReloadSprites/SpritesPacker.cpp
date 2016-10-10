@@ -1,6 +1,7 @@
 #include "SpritesPacker.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
+#include "Logger/Logger.h"
 
 #include <QDir>
 #include <QDirIterator>

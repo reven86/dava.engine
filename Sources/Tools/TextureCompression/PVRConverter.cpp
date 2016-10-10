@@ -3,6 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
 #include "Platform/Process.h"
+#include "Logger/Logger.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Image/LibPVRHelper.h"

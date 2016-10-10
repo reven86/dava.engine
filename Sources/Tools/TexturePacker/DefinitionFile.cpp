@@ -2,6 +2,8 @@
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/PngImage.h"
 #include "Render/Image/LibPSDHelper.h"
+#include "Logger/Logger.h"
+
 #include <libpng/png.h>
 #include <libpsd/libpsd.h>
 #include <sys/types.h>

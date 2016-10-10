@@ -10,6 +10,7 @@
 #include "Compression/ZipCompressor.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
+#include "Logger/Logger.h"
 
 #include "AssetCache/AssetCacheClient.h"
 

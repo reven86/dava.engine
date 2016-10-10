@@ -6,6 +6,7 @@
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

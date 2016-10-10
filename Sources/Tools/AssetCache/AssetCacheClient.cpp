@@ -7,6 +7,7 @@
 #include "Job/JobManager.h"
 #include "Preferences/PreferencesRegistrator.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

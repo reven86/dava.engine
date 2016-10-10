@@ -13,6 +13,7 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
+#include "Logger/Logger.h"
 
 #include "Engine/EngineModule.h"
 
