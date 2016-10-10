@@ -235,7 +235,7 @@ String ScriptingTest::AnyToString(const Any& any)
     else IFFORMATEX(WideString, "%s", UTF8Utils::EncodeToUTF8(any.Get<WideString>()).c_str())
     else IFFORMATEX(Reflection, "Any <Reflection <%s>>", any.Get<Reflection>().IsValid() ? any.Get<Reflection>().GetValueType()->GetName() : "non valid")
     else IFFORMATEX(Any, "Any <%s>", AnyToString(any.Get<Any>()).c_str())
-    else IFFORMAT(AnyFn, "Any <AnyFn <...>>")
+    else IFFORMATEX(AnyFn, "Any <AnyFn <%s>>", any.Get<AnyFn>().IsValid() ? "..." : "non valid")
     else return Format("Any <%s>", any.GetType()->GetName());
 
 #undef IFFORMAT
