@@ -14,6 +14,7 @@
 #include <QQuickItem>
 #include <QOpenGLContext>
 #include <QQuickItem>
+#include <QVariant>
 
 namespace DAVA
 {
@@ -70,7 +71,8 @@ void RenderWidget::OnFrame()
     SCOPE_EXIT
     {
         isInPaint = false;
-    }
+    };
+
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
     if (!nativeHandle.isValid())
     {
