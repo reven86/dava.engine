@@ -12,11 +12,11 @@ namespace Assert
 {
 static Vector<Handler> registeredHandlers;
 
-static Mutex registredHandlersMutex;
+static Mutex registeredHandlersMutex;
 
 void AddHandler(const Handler handler)
 {
-    LockGuard<Mutex> lock(registredHandlersMutex);
+    LockGuard<Mutex> lock(registeredHandlersMutex);
 
     const Vector<Handler>::iterator position = std::find(registeredHandlers.begin(), registeredHandlers.end(), handler);
     if (position != registeredHandlers.end())
@@ -29,7 +29,7 @@ void AddHandler(const Handler handler)
 
 void RemoveHandler(const Handler handler)
 {
-    LockGuard<Mutex> lock(registredHandlersMutex);
+    LockGuard<Mutex> lock(registeredHandlersMutex);
 
     const Vector<Handler>::iterator position = std::find(registeredHandlers.begin(), registeredHandlers.end(), handler);
     if (position != registeredHandlers.end())
@@ -78,7 +78,7 @@ DAVA::Assert::FailBehaviour HandleAssert(const char* const expr,
     // Copy handlers list to avoid data race in case some handler uses AddHandler or RemoveHandler functions
     Vector<Handler> handlersCopy;
     {
-        LockGuard<Mutex> lock(registredHandlersMutex);
+        LockGuard<Mutex> lock(registeredHandlersMutex);
         handlersCopy = registeredHandlers;
     }
 
