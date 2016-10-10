@@ -3397,7 +3397,7 @@ void QtMainWindow::UpdateLandscapeRenderMode()
         }
         if (visibiilityEnabled)
         {
-            DVASSERT(anyToolEnabled == false)
+            DVASSERT(anyToolEnabled == false);
         }
 
         DAVA::Landscape::RenderMode newRenderMode = enableInstancing ?
