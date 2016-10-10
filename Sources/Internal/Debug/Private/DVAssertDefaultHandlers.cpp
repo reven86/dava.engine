@@ -7,6 +7,8 @@ namespace DAVA
 {
 namespace Assert
 {
+const String AssertMessageTag = "end=assert=msg";
+
 FailBehaviour DefaultLoggerHandler(const AssertInfo& assertInfo)
 {
     Logger::Error(

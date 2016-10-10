@@ -10,7 +10,7 @@ namespace Assert
 Part of a message each predefined handler generates
 Can be used to distinguish assert messages when processing log for some reason
 */
-const String AssertMessageTag = "end=assert=msg";
+extern const String AssertMessageTag;
 
 /** Log assert info as an error and return FailBehaviour::Default */
 FailBehaviour DefaultLoggerHandler(const AssertInfo& assertInfo);
