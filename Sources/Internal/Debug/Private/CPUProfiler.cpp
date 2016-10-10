@@ -124,6 +124,11 @@ void CPUProfiler::Stop()
     started = false;
 }
 
+bool CPUProfiler::IsStarted()
+{
+    return started;
+}
+
 int32 CPUProfiler::MakeSnapshot()
 {
     //CPU profiler use 'pseudo-thread-safe' ring array (see ProfilerRingArray.h)

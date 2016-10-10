@@ -32,7 +32,7 @@ static const int32 HISTORY_CHART_TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * HIST
 static const uint64 HISTORY_CHART_CEIL_STEP = 500; //mcs
 };
 
-static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, GPUProfiler::globalProfiler,
+static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, CPUMarkerName::CORE_PROCESS_FRAME, GPUProfiler::globalProfiler,
                                                {
                                                FastName(CPUMarkerName::CORE_PROCESS_FRAME),
                                                FastName(CPUMarkerName::CORE_UI_SYSTEM_UPDATE),
@@ -57,9 +57,10 @@ static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, GPUP
 
 ProfilerOverlay* const ProfilerOverlay::globalProfilerOverlay = &GLOBAL_PROFILER_OVERLAY;
 
-ProfilerOverlay::ProfilerOverlay(CPUProfiler* _cpuProfiler, GPUProfiler* _gpuProfiler, const Vector<FastName>& _interestEvents)
-    : cpuProfiler(_cpuProfiler)
-    , gpuProfiler(_gpuProfiler)
+ProfilerOverlay::ProfilerOverlay(CPUProfiler* _cpuProfiler, const char* _cpuCounterName, GPUProfiler* _gpuProfiler, const Vector<FastName>& _interestEvents)
+    : gpuProfiler(_gpuProfiler)
+    , cpuProfiler(_cpuProfiler)
+    , cpuCounterName(_cpuCounterName)
     , interestEventsNames(_interestEvents)
 {
     for (const FastName& n : interestEventsNames)
@@ -111,13 +112,41 @@ Vector<FastName> ProfilerOverlay::GetAvalibleEventsNames()
     return ret;
 }
 
+void ProfilerOverlay::SetCPUProfiler(CPUProfiler* profiler, const char* counterName)
+{
+    cpuProfiler = profiler;
+    cpuCounterName = counterName;
+}
+
+void ProfilerOverlay::SetGPUProfiler(GPUProfiler* profiler)
+{
+    gpuProfiler = profiler;
+}
+
 void ProfilerOverlay::Update()
 {
-    if (!GPUProfiler::globalProfiler || !CPUProfiler::globalProfiler)
-        return;
+    bool needUpdateCPUInfo = false;
+    bool needUpdateGPUInfo = false;
 
-    const GPUProfiler::FrameInfo& frameInfo = GPUProfiler::globalProfiler->GetLastFrame();
-    if (currentGPUTrace.frameIndex != frameInfo.frameIndex)
+    if (gpuProfiler)
+    {
+        uint32 lastGPUFrameIndex = gpuProfiler->GetLastFrame().frameIndex;
+        if (currentGPUTrace.frameIndex != lastGPUFrameIndex)
+        {
+            while (!CPUTraces.empty() && CPUTraces.front().first != lastGPUFrameIndex)
+                CPUTraces.pop_front();
+
+            needUpdateCPUInfo = !CPUTraces.empty();
+            needUpdateGPUInfo = true;
+        }
+    }
+    else if (cpuProfiler)
+    {
+        needUpdateCPUInfo = !CPUTraces.empty();
+    }
+
+    bool needUpdateHistory = needUpdateCPUInfo || needUpdateGPUInfo;
+    if (needUpdateHistory)
     {
         for (FastNameMap<EventHistory>::HashMapItem& i : eventsHistory)
         {
@@ -126,19 +155,21 @@ void ProfilerOverlay::Update()
             value.first = 0;
             value.second = 0.f;
         }
+    }
 
-        UpdateCurrentTrace(currentGPUTrace, frameInfo.GetTrace(), frameInfo.frameIndex);
+    if (needUpdateGPUInfo)
+    {
+        UpdateCurrentTrace(&currentGPUTrace, gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex);
+    }
 
-        while (CPUTraces.size() && CPUTraces.front().first != frameInfo.frameIndex)
-            CPUTraces.pop_front();
+    if (needUpdateCPUInfo)
+    {
+        UpdateCurrentTrace(&currentCPUTrace, CPUTraces.front().second, CPUTraces.front().first);
+        CPUTraces.pop_front();
+    }
 
-        if (CPUTraces.size())
-        {
-            UpdateCurrentTrace(currentCPUTrace, CPUTraces.front().second, CPUTraces.front().first);
-            CPUTraces.pop_front();
-        }
-
-        //Update history
+    if (needUpdateHistory)
+    {
         for (FastNameMap<EventHistory>::HashMapItem& i : eventsHistory)
         {
             EventHistory& history = i.second;
@@ -157,16 +188,19 @@ void ProfilerOverlay::Update()
         }
     }
 
-    uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-    CPUTraces.emplace_back((currentFrameIndex - 1), std::move(CPUProfiler::globalProfiler->GetTrace(CPUMarkerName::CORE_PROCESS_FRAME)));
+    if (cpuProfiler && cpuProfiler->IsStarted())
+    {
+        uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+        CPUTraces.emplace_back((currentFrameIndex - 1), std::move(cpuProfiler->GetTrace(cpuCounterName)));
+    }
 }
 
-void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEvent>& events, uint32 frameIndex)
+void ProfilerOverlay::UpdateCurrentTrace(TraceData* trace, const Vector<TraceEvent>& events, uint32 frameIndex)
 {
-    trace.frameIndex = frameIndex;
-    trace.minTimestamp = uint64(-1);
-    trace.maxTimestamp = 0;
-    trace.rects.clear();
+    trace->frameIndex = frameIndex;
+    trace->minTimestamp = uint64(-1);
+    trace->maxTimestamp = 0;
+    trace->rects.clear();
 
     uint64 eventStart, eventDuration;
     uint32 eventColor;
@@ -182,7 +216,7 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
         {
         case TraceEvent::PHASE_DURATION:
             historyEventDuration += e.duration;
-            trace.maxTimestamp = Max(trace.maxTimestamp, e.timestamp + e.duration);
+            trace->maxTimestamp = Max(trace->maxTimestamp, e.timestamp + e.duration);
             break;
 
         case TraceEvent::PHASE_BEGIN:
@@ -191,14 +225,14 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
 
         case TraceEvent::PHASE_END:
             historyEventDuration += e.timestamp;
-            trace.maxTimestamp = Max(trace.maxTimestamp, e.timestamp);
+            trace->maxTimestamp = Max(trace->maxTimestamp, e.timestamp);
             break;
 
         default:
             break;
         }
 
-        trace.minTimestamp = Min(trace.minTimestamp, e.timestamp);
+        trace->minTimestamp = Min(trace->minTimestamp, e.timestamp);
 
         if (eventsColor.count(e.name) == 0)
         {
@@ -207,7 +241,7 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
             ++colorIndex;
         }
 
-        trace.names.insert(e.name);
+        trace->names.insert(e.name);
 
         if (eventsColor.count(e.name) == 0)
         {
@@ -218,7 +252,7 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
 
         //////////////////////////////////////////////////////////////////////////
 
-        while (timestampsStack.size() && (timestampsStack.back().second != 0) && (e.timestamp >= timestampsStack.back().second))
+        while (!timestampsStack.empty() && (timestampsStack.back().second != 0) && (e.timestamp >= timestampsStack.back().second))
             timestampsStack.pop_back();
 
         switch (e.phase)
@@ -241,14 +275,14 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData& trace, const Vector<TraceEve
 
         if (e.phase == TraceEvent::PHASE_END || e.phase == TraceEvent::PHASE_DURATION)
         {
-            DVASSERT(timestampsStack.size());
+            DVASSERT(!timestampsStack.empty());
 
             eventStart = timestampsStack.back().first - events.front().timestamp;
             eventDuration = timestampsStack.back().second - timestampsStack.back().first;
             eventColor = eventsColor[e.name];
             eventDepth = timestampsStack.size() - 1;
 
-            trace.rects.push_back({ eventStart, eventDuration, eventColor, eventDepth });
+            trace->rects.push_back({ eventStart, eventDuration, eventColor, eventDepth });
         }
     }
 }
@@ -328,7 +362,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
 
     DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, BACKGROUND_COLOR);
 
-    if (!trace.rects.size())
+    if (trace.rects.empty())
         return;
 
     int32 x0, x1, y0, y1;
@@ -465,6 +499,9 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
 
 int32 ProfilerOverlay::GetEnoughRectHeight(const TraceData& trace)
 {
+    if (trace.rects.empty() && trace.names.empty())
+        return 0;
+
     size_t legendCount = 0;
     for (const FastName& n : interestEventsNames)
         legendCount += trace.names.count(n);

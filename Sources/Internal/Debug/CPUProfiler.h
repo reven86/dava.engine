@@ -36,6 +36,7 @@ public:
 
     void Start();
     void Stop();
+    bool IsStarted();
 
     uint64 GetLastCounterTime(const char* counterName);
 

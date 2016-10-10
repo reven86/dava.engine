@@ -44,6 +44,7 @@ public:
 
     void Start();
     void Stop();
+    bool IsStarted();
 
 protected:
     struct PerfQueryPair

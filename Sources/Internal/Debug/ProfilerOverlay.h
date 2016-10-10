@@ -11,7 +11,7 @@ class GPUProfiler;
 class ProfilerOverlay
 {
 public:
-    ProfilerOverlay(CPUProfiler* cpuProfiler, GPUProfiler* gpuProfiler, const Vector<FastName>& interestEvents = Vector<FastName>());
+    ProfilerOverlay(CPUProfiler* cpuProfiler, const char* cpuCounterName, GPUProfiler* gpuProfiler, const Vector<FastName>& interestEvents = Vector<FastName>());
 
     void Enable();
     void Disable();
@@ -21,6 +21,9 @@ public:
     void ClearInterestEvents();
     void AddInterestEvent(const FastName& name);
     Vector<FastName> GetAvalibleEventsNames();
+
+    void SetCPUProfiler(CPUProfiler* profiler, const char* counterName);
+    void SetGPUProfiler(GPUProfiler* profiler);
 
     static ProfilerOverlay* const globalProfilerOverlay;
 
@@ -50,7 +53,7 @@ protected:
     };
 
     void Update();
-    void UpdateCurrentTrace(TraceData& trace, const Vector<TraceEvent>& events, uint32 frameIndex);
+    void UpdateCurrentTrace(TraceData* trace, const Vector<TraceEvent>& events, uint32 frameIndex);
 
     void Draw();
     void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
@@ -68,8 +71,9 @@ protected:
     TraceData currentCPUTrace;
     List<std::pair<uint32, Vector<TraceEvent>>> CPUTraces; //<frameIndex, cpu-trace>
 
-    CPUProfiler* cpuProfiler = nullptr;
     GPUProfiler* gpuProfiler = nullptr;
+    CPUProfiler* cpuProfiler = nullptr;
+    const char* cpuCounterName = nullptr;
 
     bool overlayEnabled = false;
 };

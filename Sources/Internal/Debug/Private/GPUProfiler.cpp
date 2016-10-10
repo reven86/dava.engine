@@ -126,7 +126,7 @@ void GPUProfiler::CheckPendingFrames()
             }
             frame.readyMarkers.clear();
 
-            if (isFrameReliable)
+            if (isFrameReliable && profilerStarted)
             {
                 framesInfo.next() = frameInfo;
             }
@@ -198,6 +198,11 @@ void GPUProfiler::Start()
 void GPUProfiler::Stop()
 {
     profilerStarted = false;
+}
+
+bool GPUProfiler::IsStarted()
+{
+    return profilerStarted;
 }
 
 GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()
