@@ -71,12 +71,12 @@ public:
 
 DAVA_TESTCLASS (ScriptTest)
 {
-    //     BEGIN_FILES_COVERED_BY_TESTS()
-    //         FIND_FILES_IN_TARGET(DavaFramework)
-    //         DECLARE_COVERED_FILES("LuaScript.cpp")
-    //     DECLARE_COVERED_FILES("LuaException.cpp")
-    //     DECLARE_COVERED_FILES("LuaBridge.cpp")
-    //     END_FILES_COVERED_BY_TESTS();
+    BEGIN_FILES_COVERED_BY_TESTS()
+    FIND_FILES_IN_TARGET(DavaFramework)
+    DECLARE_COVERED_FILES("LuaScript.cpp")
+    DECLARE_COVERED_FILES("LuaException.cpp")
+    DECLARE_COVERED_FILES("LuaBridge.cpp")
+    END_FILES_COVERED_BY_TESTS();
 
     DAVA_TEST (FullTest)
     {
