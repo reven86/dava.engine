@@ -253,7 +253,6 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                         else if (state == "STATE_STENCIL_TEST")
                         {
                             passDescriptor.depthStateDescriptor.stencilEnabled = 1;
-                            passDescriptor.depthStateDescriptor.stencilTwoSided = 1;
 
                             const YamlNode* stencilNode = renderStateNode->Get("stencil");
                             if (stencilNode)
@@ -324,6 +323,11 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
                                     passDescriptor.depthStateDescriptor.stencilBack.depthFailOperation = GetStencilOpByName(stencilZFailNode->AsString());
                                 }
                             }
+
+                            passDescriptor.depthStateDescriptor.stencilTwoSided = (memcmp(&passDescriptor.depthStateDescriptor.stencilBack,
+                                                                                          &passDescriptor.depthStateDescriptor.stencilFront,
+                                                                                          sizeof(rhi::DepthStencilState::Descriptor::StencilDescriptor)
+                                                                                          ) != 0);
                         }
                     }
                 }

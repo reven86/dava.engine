@@ -31,6 +31,23 @@ void MapSelectableGroup(const SelectableGroup& srcGroup, SelectableGroup& dstGro
         }
     }
 }
+
+struct SortEntity
+{
+    SortEntity(DAVA::Entity* entity, DAVA::uint32 hierarchyIndex)
+        : entity(entity)
+        , hierarchyIndex(hierarchyIndex)
+    {
+    }
+
+    DAVA::Entity* entity = nullptr;
+    DAVA::uint32 hierarchyIndex = 0;
+
+    bool operator<(const SortEntity& e) const
+    {
+        return hierarchyIndex < e.hierarchyIndex;
+    }
+};
 }
 
 StructureSystem::StructureSystem(DAVA::Scene* scene)
@@ -61,44 +78,44 @@ void StructureSystem::Move(const SelectableGroup& objects, DAVA::Entity* newPare
 void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
 {
     // sort objects by parents (even if parent == nullptr), in order to remove children first
-    std::sort(objects.begin(), objects.end(), [](DAVA::Entity* l, DAVA::Entity* r) {
-        if (l->GetParent() == r)
+    std::priority_queue<StructSystemDetails::SortEntity> queue;
+    for (DAVA::Entity* entity : objects)
+    {
+        DAVA::uint32 hierarchyIndex = 0;
+        DAVA::Entity* e = entity;
+        while (e->GetParent() != nullptr)
         {
-            return true;
+            ++hierarchyIndex;
+            e = e->GetParent();
         }
-        else if (l == r->GetParent())
-        {
-            return false;
-        }
-        else
-        {
-            return reinterpret_cast<uintptr_t>(l->GetParent()) > reinterpret_cast<uintptr_t>(r->GetParent());
-        }
-    });
 
-    // clean-up not removable items
-    objects.erase(std::remove_if(objects.begin(), objects.end(), [](DAVA::Entity* e) {
-                      return e->GetNotRemovable();
-                  }),
-                  objects.end());
+        queue.push(StructSystemDetails::SortEntity(entity, hierarchyIndex));
+    }
 
     // check if we still somebody to delete
-    if (objects.empty())
+    if (queue.empty())
         return;
 
     // actually delete bastards
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     sceneEditor->BeginBatch("Remove entities", objects.size());
-    for (auto entity : objects)
+    while (!queue.empty())
     {
-        for (auto delegate : delegates)
+        StructSystemDetails::SortEntity sortEntity = queue.top();
+        queue.pop();
+        if (sortEntity.entity->GetNotRemovable() == true)
         {
-            delegate->WillRemove(entity);
+            continue;
         }
-        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityRemoveCommand(entity)));
+
         for (auto delegate : delegates)
         {
-            delegate->DidRemoved(entity);
+            delegate->WillRemove(sortEntity.entity);
+        }
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityRemoveCommand(sortEntity.entity)));
+        for (auto delegate : delegates)
+        {
+            delegate->DidRemoved(sortEntity.entity);
         }
     }
     sceneEditor->EndBatch();

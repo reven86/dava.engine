@@ -35,7 +35,7 @@ private:
     DAVA::Set<PackageBaseNode*> rootControls;
     PackageNode* package = nullptr;
     bool inTransformState = false;
-    DAVA::Set<ControlNode*> transformedNodes; //vector of weak pointers
+    bool needRecalculate = false;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

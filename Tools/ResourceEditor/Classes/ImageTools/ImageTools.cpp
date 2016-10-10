@@ -44,24 +44,28 @@ DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, c
         descriptor->CreateLoadPathnamesForGPU(forGPU, files);
     }
 
+    DAVA::FileSystem* fileSystem = DAVA::FileSystem::Instance();
     for (const DAVA::FilePath& imagePathname : files)
     {
-        DAVA::ImageInfo info = DAVA::ImageSystem::GetImageInfo(imagePathname);
-        if (!info.IsEmpty())
+        if (fileSystem->Exists(imagePathname) && fileSystem->IsFile(imagePathname))
         {
-            const auto formatSizeBits = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
-
-            DAVA::uint32 m = DAVA::Min(baseMipMaps, info.mipmapsCount - 1);
-            for (; m < info.mipmapsCount; ++m)
+            DAVA::ImageInfo info = DAVA::ImageSystem::GetImageInfo(imagePathname);
+            if (!info.IsEmpty())
             {
-                DAVA::uint32 w = DAVA::Max(info.width >> m, 1u);
-                DAVA::uint32 h = DAVA::Max(info.height >> m, 1u);
-                size += DAVA::Image::GetSizeInBytes(w, h, info.format);
+                const auto formatSizeBits = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
+
+                DAVA::uint32 m = DAVA::Min(baseMipMaps, info.mipmapsCount - 1);
+                for (; m < info.mipmapsCount; ++m)
+                {
+                    DAVA::uint32 w = DAVA::Max(info.width >> m, 1u);
+                    DAVA::uint32 h = DAVA::Max(info.height >> m, 1u);
+                    size += DAVA::Image::GetSizeInBytes(w, h, info.format);
+                }
             }
-        }
-        else
-        {
-            DAVA::Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+            else
+            {
+                DAVA::Logger::Error("ImageTools::[GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetStringValue().c_str());
+            }
         }
     }
 

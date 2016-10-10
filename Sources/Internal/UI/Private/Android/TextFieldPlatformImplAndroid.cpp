@@ -486,10 +486,13 @@ bool TextFieldPlatformImpl::OnKeyPressed(int32 replacementStart, int32 replaceme
 
 void TextFieldPlatformImpl::OnTextChanged(const WideString& newText, bool programmaticTextChange)
 {
-    if (uiTextFieldDelegate != nullptr && newText != curText)
+    if (newText != curText)
     {
-        UITextFieldDelegate::eReason reason = programmaticTextChange ? UITextFieldDelegate::eReason::CODE : UITextFieldDelegate::eReason::USER;
-        uiTextFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, reason);
+        if (uiTextFieldDelegate != nullptr)
+        {
+            UITextFieldDelegate::eReason reason = programmaticTextChange ? UITextFieldDelegate::eReason::CODE : UITextFieldDelegate::eReason::USER;
+            uiTextFieldDelegate->TextFieldOnTextChanged(uiTextField, newText, curText, reason);
+        }
         curText = newText;
     }
 }
