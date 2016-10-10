@@ -68,8 +68,8 @@ set                           ( UiList       ${UI_LIST} )
 
 define_source ( SOURCE  "Classes"  GROUP_SOURCE Generated UiList )
 
-set( MIX_APP_DATA         "Data - ${DAVA_ROOT_DIR}/Tools/Data" 
-                          "Data/${PROJECT_NAME} - ${CMAKE_CURRENT_LIST_DIR}/Data" )
+set( MIX_APP_DATA         "Data = ${DAVA_ROOT_DIR}/Tools/Data" 
+                          "Data/${PROJECT_NAME} = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO                  ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
