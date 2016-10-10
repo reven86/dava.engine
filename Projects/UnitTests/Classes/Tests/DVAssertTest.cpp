@@ -32,6 +32,11 @@ static FailBehaviour AssertMessageSavingHandler(const AssertInfo& assertInfo)
 
 DAVA_TESTCLASS (DVAssertTestClass)
 {
+    BEGIN_FILES_COVERED_BY_TESTS()
+    FIND_FILES_IN_TARGET(DavaFramework)
+    DECLARE_COVERED_FILES("DVAssert.cpp")
+    END_FILES_COVERED_BY_TESTS()
+
     DAVA_TEST (AssertTestFunction)
     {
         AddHandler(FirstHandler);
