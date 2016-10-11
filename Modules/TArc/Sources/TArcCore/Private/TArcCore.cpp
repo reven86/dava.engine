@@ -366,6 +366,7 @@ public:
     {
 #if defined(__DAVAENGINE_MACOS__)
         MakeAppForeground();
+        FixOSXFonts();
 #endif
         DVASSERT(engine.IsConsoleMode() == false);
     }
@@ -407,6 +408,9 @@ public:
         }
 
         uiManager->InitializationFinished();
+#if defined(__DAVAENGINE_MACOS__)
+        RestoreMenuBar();
+#endif
     }
 
     void OnFrame(DAVA::float32 delta) override
@@ -574,7 +578,12 @@ public:
     {
         DVASSERT(controllerModule != nullptr);
         bool result = true;
-        if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        QCloseEvent closeEvent;
+        if (controllerModule->ControlWindowClosing(key, &closeEvent))
+        {
+            result = closeEvent.isAccepted();
+        }
+        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
         {
             ModalMessageParams params;
             params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
@@ -659,6 +668,11 @@ Core::Core(Engine& engine, bool connectSignals)
 }
 
 Core::~Core() = default;
+
+EngineContext& Core::GetEngineContext()
+{
+    return impl->GetEngineContext();
+}
 
 bool Core::IsConsoleMode() const
 {

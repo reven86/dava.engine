@@ -81,6 +81,8 @@ public:
     void HideWaitDialog() override;
     void ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor) override;
 
+    void CloseAllScenes();
+
     // qt actions slots
 public slots:
     void OnProjectOpen();
@@ -204,7 +206,6 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    void closeEvent(QCloseEvent* event);
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();
