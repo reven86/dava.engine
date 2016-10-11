@@ -396,7 +396,7 @@ void Logger::FileLog(const FilePath& customLogFileName, eLogLevel ll, const char
             snprintf(&prefix[0], prefix.size(), "- %d:%d:%d %d", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
 #endif
-            snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
+            Snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
         }
