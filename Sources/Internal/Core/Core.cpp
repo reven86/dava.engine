@@ -113,7 +113,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-        throw std::runtime_error(ss.str());
+        DAVA_THROW(DAVA::Exception, ss.str());
     }
     default:
         if (SEFuncPtr != nullptr)
@@ -125,7 +125,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
             StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-            throw std::runtime_error(ss.str());
+            DAVA_THROW(DAVA::Exception, ss.str());
         }
     }
 };

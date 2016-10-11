@@ -3,6 +3,7 @@
 #include "MemoryManager/MemoryManager.h"
 #include "FileSystem/FileSystem.h"
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
+#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -69,7 +70,7 @@ public:
         }
         else
         {
-            throw std::runtime_error("can't find db file: " + dbPath);
+            DAVA_THROW(DAVA::Exception, "can't find db file: " + dbPath);
         }
     }
     ~PacksDBData()
@@ -178,7 +179,7 @@ void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
     }
     catch (std::exception& ex)
     {
-        throw std::runtime_error("DB error, update local DB for pack manager: " + data->dbPath.GetStringValue() + " cause: " + ex.what());
+        DAVA_THROW(DAVA::Exception, "DB error, update local DB for pack manager: " + data->dbPath.GetStringValue() + " cause: " + ex.what());
     }
 }
 

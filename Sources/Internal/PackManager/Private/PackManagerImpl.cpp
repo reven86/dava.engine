@@ -6,6 +6,9 @@
 #include "Utils/CRC32.h"
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
+#include "Base/Exception.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 
 #include <algorithm>
 
@@ -19,13 +22,13 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     ScopedPtr<File> f(File::Create(path, File::WRITE | File::CREATE));
     if (!f)
     {
-        throw std::runtime_error("can't create file for local DB: " + path.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't create file for local DB: " + path.GetStringValue());
     }
 
     uint32 written = f->Write(outDB.data(), static_cast<uint32>(outDB.size()));
     if (written != outDB.size())
     {
-        throw std::runtime_error("can't write file for local DB: " + path.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't write file for local DB: " + path.GetStringValue());
     }
 }
 
@@ -35,6 +38,8 @@ void PackManagerImpl::Initialize(const String& architecture_,
                                  const String& urlToServerSuperpack_,
                                  const Hints& hints_)
 {
+    DVASSERT(Thread::IsMainThread());
+
     pathToBasePacksDB = pathToBasePacksDB_;
     dirToDownloadedPacks = dirToDownloadPacks_;
 
@@ -43,7 +48,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
 
     hints = hints_;
 
-    initState = InitState::MountingLocalPacks;
+    initState = InitState::LoadingRequestAskFooter;
 
     initLocalDBFileName = pathToBasePacksDB.GetFilename();
 
@@ -54,125 +59,128 @@ void PackManagerImpl::Initialize(const String& architecture_,
     dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
     dbInDoc.ReplaceExtension("");
 
-    // copy localPackDB from Data to ~doc:/ if not exist
-    FileSystem* fs = FileSystem::Instance();
+    //// copy localPackDB from Data to ~doc:/ if not exist
+    //FileSystem* fs = FileSystem::Instance();
 
-    bool isOk = fs->IsFile(dbInDoc) && fs->IsFile(dbZipInDoc);
+    //bool isOk = fs->IsFile(dbInDoc) && fs->IsFile(dbZipInDoc);
 
-    if (!isOk)
-    {
-        fs->DeleteFile(dbInDoc);
-        fs->DeleteFile(dbZipInDoc);
-        // 0. copy db file from assets (or Data) to doc
-        if (!fs->CopyFile(dbZipInData, dbZipInDoc, true))
-        {
-            throw std::runtime_error("can't copy local zipped DB from Data to Doc: " + dbZipInDoc.GetStringValue());
-        }
-        // 1. extract db file from zip
-        RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
-        ZipArchive zip(fDb, dbZipInDoc);
-        // only one file in archive
-        const String& fileName = zip.GetFilesInfo().at(0).relativeFilePath;
-        Vector<uint8> fileData;
-        if (!zip.LoadFile(fileName, fileData))
-        {
-            throw std::runtime_error("can't unzip: " + fileName + " from: " + dbZipInData.GetStringValue());
-        }
-        // 2. write to ~doc:/file unpacked file
-        ScopedPtr<File> f(File::Create(dbInDoc, File::WRITE | File::CREATE));
-        if (!f)
-        {
-            throw std::runtime_error("can't create file: " + dbInDoc.GetStringValue());
-        }
-        uint32 written = f->Write(fileData.data(), static_cast<uint32>(fileData.size()));
-        if (written != fileData.size())
-        {
-            throw std::runtime_error("can't write file: " + dbInDoc.GetStringValue());
-        }
-        if (!fs->IsFile(dbInDoc))
-        {
-            throw std::runtime_error("no local DB file");
-        }
-    }
+    //if (!isOk)
+    //{
+    //    fs->DeleteFile(dbInDoc);
+    //    fs->DeleteFile(dbZipInDoc);
+    //    // 0. copy db file from assets (or Data) to doc
+    //    if (!fs->CopyFile(dbZipInData, dbZipInDoc, true))
+    //    {
+    //        DAVA_THROW(DAVA::Exception,"can't copy local zipped DB from Data to Doc: " + dbZipInDoc.GetStringValue());
+    //    }
+    //    // 1. extract db file from zip
+    //    RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
+    //    ZipArchive zip(fDb, dbZipInDoc);
+    //    // only one file in archive
+    //    const String& fileName = zip.GetFilesInfo().at(0).relativeFilePath;
+    //    Vector<uint8> fileData;
+    //    if (!zip.LoadFile(fileName, fileData))
+    //    {
+    //        DAVA_THROW(DAVA::Exception,"can't unzip: " + fileName + " from: " + dbZipInData.GetStringValue());
+    //    }
+    //    // 2. write to ~doc:/file unpacked file
+    //    ScopedPtr<File> f(File::Create(dbInDoc, File::WRITE | File::CREATE));
+    //    if (!f)
+    //    {
+    //        DAVA_THROW(DAVA::Exception,"can't create file: " + dbInDoc.GetStringValue());
+    //    }
+    //    uint32 written = f->Write(fileData.data(), static_cast<uint32>(fileData.size()));
+    //    if (written != fileData.size())
+    //    {
+    //        DAVA_THROW(DAVA::Exception,"can't write file: " + dbInDoc.GetStringValue());
+    //    }
+    //    if (!fs->IsFile(dbInDoc))
+    //    {
+    //        DAVA_THROW(DAVA::Exception,"no local DB file");
+    //    }
+    //}
 
-    // now build all packs from localDB, later after request to server
-    // we can delete localDB and replace with new from server if needed
-    db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
+    //// now build all packs from localDB, later after request to server
+    //// we can delete localDB and replace with new from server if needed
+    //db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
 
-    InitializePacksAndBuildIndex();
+    //InitializePacksAndBuildIndex();
 
-    // now user can do requests for local packs
-    requestManager.reset(new RequestManager(*this));
+    //// now user can do requests for local packs
+    //requestManager.reset(new RequestManager(*this));
 
-    // now mount all downloaded packs
-    ScopedPtr<FileList> packFiles(new FileList(dirToDownloadedPacks, false));
-    for (unsigned i = 0; i < packFiles->GetCount(); ++i)
-    {
-        if (packFiles->IsDirectory(i))
-        {
-            continue;
-        }
-        const FilePath& packPath = packFiles->GetPathname(i);
-        if (packPath.GetExtension() == RequestManager::packPostfix)
-        {
-            try
-            {
-                Pack& pack = GetPack(packPath.GetBasename());
-                fs->Mount(packPath, "Data/");
-                pack.state = Pack::Status::Mounted;
-            }
-            catch (std::exception& ex)
-            {
-                Logger::Error("can't auto mount pack on init: %s, cause: %s", packPath.GetAbsolutePathname().c_str(), ex.what());
-            }
-        }
-    }
+    //// now mount all downloaded packs
+    //ScopedPtr<FileList> packFiles(new FileList(dirToDownloadedPacks, false));
+    //for (unsigned i = 0; i < packFiles->GetCount(); ++i)
+    //{
+    //    if (packFiles->IsDirectory(i))
+    //    {
+    //        continue;
+    //    }
+    //    const FilePath& packPath = packFiles->GetPathname(i);
+    //    if (packPath.GetExtension() == RequestManager::packPostfix)
+    //    {
+    //        try
+    //        {
+    //            Pack& pack = GetPack(packPath.GetBasename());
+    //            fs->Mount(packPath, "Data/");
+    //            pack.state = Pack::Status::Mounted;
+    //        }
+    //        catch (std::exception& ex)
+    //        {
+    //            Logger::Error("can't auto mount pack on init: %s, cause: %s, so delete it", packPath.GetAbsolutePathname().c_str(), ex.what());
+    //            fs->DeleteFile(packPath);
+    //        }
+    //    }
+    //}
 
-    initState = InitState::LocalPacksMounted;
+    //initState = InitState::Starting;
 }
 
 bool PackManagerImpl::IsInitialized() const
 {
-    return initState >= InitState::LocalPacksMounted;
+    LockGuard<Mutex> lock(protectPM);
+    return InitState::Ready == initState;
 }
 
 // start ISync //////////////////////////////////////
 IPackManager::InitState PackManagerImpl::GetInitState() const
 {
+    DVASSERT(Thread::IsMainThread());
     return initState;
 }
 
 IPackManager::InitError PackManagerImpl::GetInitError() const
 {
+    DVASSERT(Thread::IsMainThread());
     return initError;
 }
 
 const String& PackManagerImpl::GetInitErrorMessage() const
 {
+    DVASSERT(Thread::IsMainThread());
     return initErrorMsg;
 }
 
 bool PackManagerImpl::CanRetryInit() const
 {
+    DVASSERT(Thread::IsMainThread());
+
     switch (initState)
     {
-    case InitState::MountingLocalPacks:
-    case InitState::LocalPacksMounted:
-        return false;
+    case InitState::Starting:
     case InitState::LoadingRequestAskFooter:
     case InitState::LoadingRequestGetFooter:
     case InitState::LoadingRequestAskFileTable:
     case InitState::LoadingRequestGetFileTable:
-        return true;
     case InitState::CalculateLocalDBHashAndCompare:
-        return false;
     case InitState::LoadingRequestAskDB:
     case InitState::LoadingRequestGetDB:
-        return true;
     case InitState::UnpakingDB:
     case InitState::DeleteDownloadedPacksIfNotMatchHash:
     case InitState::LoadingPacksDataFromLocalDB:
     case InitState::MountingDownloadedPacks:
+        return true;
     case InitState::Ready:
         return false;
     }
@@ -182,6 +190,8 @@ bool PackManagerImpl::CanRetryInit() const
 
 void PackManagerImpl::RetryInit()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (CanRetryInit())
     {
         // for now just go to server check
@@ -195,17 +205,20 @@ void PackManagerImpl::RetryInit()
     }
     else
     {
-        throw std::runtime_error("can't retry initialization from current state: ");
+        DAVA_THROW(DAVA::Exception, "can't retry initialization from current state: ");
     }
 }
 
 bool PackManagerImpl::IsPausedInit() const
 {
+    DVASSERT(Thread::IsMainThread());
     return initPaused;
 }
 
 void PackManagerImpl::PauseInit()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (initState != InitState::Ready)
     {
         initPaused = true;
@@ -215,7 +228,9 @@ void PackManagerImpl::PauseInit()
 
 void PackManagerImpl::Update()
 {
-    if (InitState::MountingLocalPacks != initState)
+    DVASSERT(Thread::IsMainThread());
+
+    if (InitState::Starting != initState)
     {
         if (!initPaused)
         {
@@ -238,7 +253,7 @@ void PackManagerImpl::ContinueInitialization()
 {
     const InitState beforeState = initState;
 
-    if (InitState::LocalPacksMounted == initState)
+    if (InitState::Starting == initState)
     {
         initState = InitState::LoadingRequestAskFooter;
     }
@@ -328,7 +343,7 @@ static void ListPacksInDirAndCopyIfNecessary(const FilePath& copyToDir, const Fi
                     if (!result)
                     {
                         Logger::Error("can't copy pack from assets to pack dir");
-                        throw std::runtime_error("can't copy pack from assets to pack dir");
+                        DAVA_THROW(DAVA::Exception, "can't copy pack from assets to pack dir");
                     }
                 }
                 resultSet.insert(docPath);
@@ -366,7 +381,7 @@ void PackManagerImpl::AskFooter()
                     {
                         if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
                         {
-                            throw std::runtime_error("can't get size of file on server side");
+                            DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
                         }
                     }
                     else
@@ -384,7 +399,7 @@ void PackManagerImpl::AskFooter()
     {
         if (fullSizeServerData < sizeof(PackFormat::PackFile))
         {
-            throw std::runtime_error("too small superpack on server");
+            DAVA_THROW(DAVA::Exception, "too small superpack on server");
         }
 
         uint64 downloadOffset = fullSizeServerData - sizeof(initFooterOnServer);
@@ -411,7 +426,7 @@ void PackManagerImpl::GetFooter()
                 uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&initFooterOnServer.info), sizeof(initFooterOnServer.info));
                 if (crc32 != initFooterOnServer.infoCrc32)
                 {
-                    throw std::runtime_error("on server bad superpack!!! Footer not match crc32");
+                    DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer not match crc32");
                 }
                 usedPackFile.footer = initFooterOnServer;
                 initState = InitState::LoadingRequestAskFileTable;
@@ -429,7 +444,7 @@ void PackManagerImpl::GetFooter()
     }
     else
     {
-        throw std::runtime_error("can't get status for download task");
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
     }
 }
 
@@ -464,7 +479,7 @@ void PackManagerImpl::GetFileTable()
                 uint32 crc32 = CRC32::ForBuffer(buffer.data(), buffer.size());
                 if (crc32 != initFooterOnServer.info.filesTableCrc32)
                 {
-                    throw std::runtime_error("on server bad superpack!!! FileTable not match crc32");
+                    DAVA_THROW(DAVA::Exception, "on server bad superpack!!! FileTable not match crc32");
                 }
 
                 String fileNames;
@@ -484,7 +499,7 @@ void PackManagerImpl::GetFileTable()
     }
     else
     {
-        throw std::runtime_error("can't get status for download task");
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
     }
 }
 
@@ -514,12 +529,12 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
         }
         else
         {
-            throw std::runtime_error("can't find local DB in server superpack: " + initLocalDBFileName);
+            DAVA_THROW(DAVA::Exception, "can't find local DB in server superpack: " + initLocalDBFileName);
         }
     }
     else
     {
-        throw std::runtime_error("no local DB file");
+        DAVA_THROW(DAVA::Exception, "no local DB file");
     }
 }
 
@@ -532,7 +547,7 @@ void PackManagerImpl::AskDB()
     auto it = initFileData.find(initLocalDBFileName);
     if (it == end(initFileData))
     {
-        throw std::runtime_error("can't find local DB file on server in superpack: " + initLocalDBFileName);
+        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + initLocalDBFileName);
     }
 
     const PackFormat::FileTableEntry& fileData = *(it->second);
@@ -575,7 +590,7 @@ void PackManagerImpl::GetDB()
     }
     else
     {
-        throw std::runtime_error("can't get status for download task");
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
     }
 }
 
@@ -588,19 +603,19 @@ void PackManagerImpl::UnpackingDB()
     auto it = initFileData.find(initLocalDBFileName);
     if (it == end(initFileData))
     {
-        throw std::runtime_error("can't find local DB file on server in superpack: " + initLocalDBFileName);
+        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + initLocalDBFileName);
     }
 
     const PackFormat::FileTableEntry& fileData = *it->second;
 
     if (buffCrc32 != fileData.originalCrc32)
     {
-        throw std::runtime_error("on server bad superpack!!! Footer not match crc32");
+        DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer not match crc32");
     }
 
     if (Compressor::Type::None != fileData.type)
     {
-        throw std::runtime_error("can't decompress buffer with local DB");
+        DAVA_THROW(DAVA::Exception, "can't decompress buffer with local DB");
     }
 
     WriteBufferToFile(buffer, dbZipInDoc);
@@ -610,7 +625,7 @@ void PackManagerImpl::UnpackingDB()
     ZipArchive zip(fDb, dbZipInDoc);
     if (!zip.LoadFile(zip.GetFilesInfo().at(0).relativeFilePath, buffer))
     {
-        throw std::runtime_error("can't unpack db from zip: " + dbZipInDoc.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't unpack db from zip: " + dbZipInDoc.GetStringValue());
     }
 
     WriteBufferToFile(buffer, dbInDoc);
@@ -649,7 +664,7 @@ void PackManagerImpl::DeleteOldPacks()
                         // delete old packfile
                         if (!FileSystem::Instance()->DeleteFile(path))
                         {
-                            throw std::runtime_error("can't delete old packfile: " + path.GetStringValue());
+                            DAVA_THROW(DAVA::Exception, "can't delete old packfile: " + path.GetStringValue());
                         }
                     }
                 }
@@ -679,7 +694,7 @@ void PackManagerImpl::LoadPacksDataFromDB()
     }
     else
     {
-        throw std::runtime_error("no local DB file: " + dbInDoc.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "no local DB file: " + dbInDoc.GetStringValue());
     }
 }
 
@@ -740,7 +755,7 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
         }
         catch (std::exception& ex)
         {
-            Logger::Error("pack \"%s\" has dependency to base pack \"%s\"", packName.c_str(), dependName.c_str());
+            Logger::Error("pack \"%s\" has dependency to base pack \"%s\", error: %s", packName.c_str(), dependName.c_str(), ex.what());
             continue;
         }
 
@@ -758,6 +773,8 @@ void PackManagerImpl::CollectDownloadableDependency(PackManagerImpl& pm, const S
 
 const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (requestManager)
     {
         Pack& pack = GetPack(packName);
@@ -805,11 +822,13 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
         }
         return pack;
     }
-    throw std::runtime_error("can't process request initialization not finished");
+    DAVA_THROW(DAVA::Exception, "can't process request initialization not finished");
 }
 
 void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn)
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!relativePathDir.IsDirectoryPathname())
     {
         Logger::Error("can't list not directory path: %s", relativePathDir.GetStringValue().c_str());
@@ -854,6 +873,7 @@ void PackManagerImpl::ListFilesInPacks(const FilePath& relativePathDir, const Fu
 
 const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packName) const
 {
+    DVASSERT(Thread::IsMainThread());
     try
     {
         return &requestManager->Find(packName);
@@ -866,6 +886,7 @@ const IPackManager::IRequest* PackManagerImpl::FindRequest(const String& packNam
 
 void PackManagerImpl::SetRequestOrder(const String& packName, float newPriority)
 {
+    DVASSERT(Thread::IsMainThread());
     if (requestManager->IsInQueue(packName))
     {
         requestManager->UpdatePriority(packName, newPriority);
@@ -880,7 +901,7 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
                  auto it = packsIndex.find(fileName);
                  if (it == end(packsIndex))
                  {
-                     throw std::runtime_error("can't find pack: " + fileName + " in packIndex");
+                     DAVA_THROW(DAVA::Exception, "can't find pack: " + fileName + " in packIndex");
                  }
 
                  Pack& pack = packs.at(it->second);
@@ -900,6 +921,8 @@ void PackManagerImpl::MountPacks(const Set<FilePath>& basePacks)
 
 void PackManagerImpl::DeletePack(const String& packName)
 {
+    DVASSERT(Thread::IsMainThread());
+
     auto& pack = GetPack(packName);
     if (pack.state == Pack::Status::Mounted)
     {
@@ -935,7 +958,7 @@ uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& p
 
     if (it == end(initFileData))
     {
-        throw std::runtime_error("can't find pack file: " + packFile);
+        DAVA_THROW(DAVA::Exception, "can't find pack file: " + packFile);
     }
 
     uint64 downloadOffset = it->second->startPosition;
@@ -949,11 +972,14 @@ uint32_t PackManagerImpl::DownloadPack(const String& packName, const FilePath& p
 
 bool PackManagerImpl::IsRequestingEnabled() const
 {
+    DVASSERT(Thread::IsMainThread());
     return isProcessingEnabled;
 }
 
 void PackManagerImpl::EnableRequesting()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!isProcessingEnabled)
     {
         isProcessingEnabled = true;
@@ -966,6 +992,8 @@ void PackManagerImpl::EnableRequesting()
 
 void PackManagerImpl::DisableRequesting()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (isProcessingEnabled)
     {
         isProcessingEnabled = false;
@@ -978,44 +1006,54 @@ void PackManagerImpl::DisableRequesting()
 
 const String& PackManagerImpl::FindPackName(const FilePath& relativePathInPack) const
 {
+    LockGuard<Mutex> lock(protectPM);
     const String& result = db->FindPack(relativePathInPack);
     return result;
 }
 
 uint32 PackManagerImpl::GetPackIndex(const String& packName) const
 {
+    DVASSERT(Thread::IsMainThread());
+
     auto it = packsIndex.find(packName);
     if (it != end(packsIndex))
     {
         return it->second;
     }
-    throw std::runtime_error("can't find pack with name: " + packName);
+    DAVA_THROW(DAVA::Exception, "can't find pack with name: " + packName);
 }
 
 IPackManager::Pack& PackManagerImpl::GetPack(const String& packName)
 {
+    DVASSERT(Thread::IsMainThread());
+
     uint32 index = GetPackIndex(packName);
     return packs.at(index);
 }
 
 const IPackManager::Pack& PackManagerImpl::FindPack(const String& packName) const
 {
+    DVASSERT(Thread::IsMainThread());
+
     uint32 index = GetPackIndex(packName);
     return packs.at(index);
 }
 
 const Vector<IPackManager::Pack>& PackManagerImpl::GetPacks() const
 {
+    DVASSERT(Thread::IsMainThread());
     return packs;
 }
 
 const FilePath& PackManagerImpl::GetLocalPacksDirectory() const
 {
+    DVASSERT(Thread::IsMainThread());
     return dirToDownloadedPacks;
 }
 
 const String& PackManagerImpl::GetSuperPackUrl() const
 {
+    DVASSERT(Thread::IsMainThread());
     return urlToSuperPack;
 }
 

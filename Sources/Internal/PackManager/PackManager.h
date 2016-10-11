@@ -12,8 +12,7 @@ public:
     virtual ~IPackManager();
     enum class InitState : uint32
     {
-        MountingLocalPacks, //!< mount all local readonly packs (mount all founded in pointed directory)
-        LocalPacksMounted,
+        Starting,
         LoadingRequestAskFooter, //!< if no connection goto LoadingPacksDataFromDB try using only local packs
         LoadingRequestGetFooter,
         LoadingRequestAskFileTable,

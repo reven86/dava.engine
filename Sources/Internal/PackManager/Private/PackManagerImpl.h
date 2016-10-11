@@ -98,6 +98,8 @@ private:
     void MountDownloadedPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
+    mutable Mutex protectPM;
+
     FilePath dirToDownloadedPacks;
     FilePath pathToBasePacksDB;
     String urlToSuperPack;
@@ -114,7 +116,7 @@ private:
 
     String initLocalDBFileName;
     String initErrorMsg;
-    InitState initState = InitState::MountingLocalPacks;
+    InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info

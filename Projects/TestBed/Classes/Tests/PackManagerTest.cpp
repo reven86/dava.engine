@@ -320,12 +320,10 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     IPackManager& pm = *engine.GetContext()->packManager;
-    if (pm.IsRequestingEnabled())
-    {
-        return;
-    }
+
     // do every time full reinitialization
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
+    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks);
 
     packNameLoading->SetText(L"done: start init");
 
@@ -356,7 +354,7 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
                   {
-                      if (pack.state == IPackManager::Pack::Status::Mounted && pack.isReadOnly == false)
+                      if (pack.state == IPackManager::Pack::Status::Mounted)
                       {
                           pm.DeletePack(pack.name);
                       }
@@ -395,7 +393,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // on MacOS slowly connect and then fast downloading
 
     IPackManager& pm = *engine.GetContext()->packManager;
-    if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
+    if (pm.GetInitState() < IPackManager::InitState::Ready)
     {
         return;
     }
