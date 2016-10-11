@@ -163,6 +163,10 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
 
     #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     m_writer.WriteLine(0, "precision highp float;");
+    #else
+    m_writer.WriteLine(0, "#define highp ");
+    m_writer.WriteLine(0, "#define mediump ");
+    m_writer.WriteLine(0, "#define lowp ");
     #endif
     m_writer.WriteLine(0, "#define FP_A8(t) (t).a");
 
@@ -229,7 +233,21 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
     {
         for (HLSLStructField* field = in_struct->field; field; field = field->nextField)
         {
-            m_writer.WriteLine(0, "varying %s var_%s;", GetTypeName(field->type), field->name);
+            const char* prefix = "";
+            const char* tname = GetTypeName(field->type);
+
+            if (field->attribute)
+            {
+                if (stricmp(field->attribute->attrText, "lowp") == 0)
+                    prefix = "lowp";
+            }
+            else
+            {
+                if (field->type.baseType == HLSLBaseType_Half || field->type.baseType == HLSLBaseType_Half2 || field->type.baseType == HLSLBaseType_Half3 || field->type.baseType == HLSLBaseType_Half4)
+                    prefix = "mediump";
+            }
+
+            m_writer.WriteLine(0, "varying %s %s var_%s;", prefix, tname, field->name);
         }
     }
 
@@ -248,7 +266,21 @@ bool GLESGenerator::Generate(const HLSLTree* tree, Target target, const char* en
                         && stricmp(field->semantic, "SV_TARGET") != 0
                         )
                     {
-                        m_writer.WriteLine(0, "varying %s var_%s;", GetTypeName(field->type), field->name);
+                        const char* prefix = "";
+                        const char* tname = GetTypeName(field->type);
+
+                        if (field->attribute)
+                        {
+                            if (stricmp(field->attribute->attrText, "lowp") == 0)
+                                prefix = "lowp";
+                        }
+                        else
+                        {
+                            if (field->type.baseType == HLSLBaseType_Half || field->type.baseType == HLSLBaseType_Half2 || field->type.baseType == HLSLBaseType_Half3 || field->type.baseType == HLSLBaseType_Half4)
+                                prefix = "mediump";
+                        }
+
+                        m_writer.WriteLine(0, "varying %s %s var_%s;", prefix, tname, field->name);
                     }
                 }
             }
