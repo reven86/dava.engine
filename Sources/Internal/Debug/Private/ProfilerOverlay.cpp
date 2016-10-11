@@ -81,6 +81,11 @@ void ProfilerOverlay::Disable()
     overlayEnabled = false;
 }
 
+bool ProfilerOverlay::IsEnabled()
+{
+    return overlayEnabled;
+}
+
 void ProfilerOverlay::OnFrameEnd()
 {
     if (!overlayEnabled)

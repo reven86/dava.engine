@@ -19,6 +19,7 @@ public:
 
     void Enable();
     void Disable();
+    bool IsEnabled();
 
     void OnFrameEnd(); //should be called before rhi::Present();
 
