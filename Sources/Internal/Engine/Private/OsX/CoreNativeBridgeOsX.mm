@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/PlatformCoreOsx.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
@@ -64,7 +65,6 @@
 - (void)cancel
 {
     [timer invalidate];
-    [timer release];
     timer = nullptr;
 }
 
@@ -81,24 +81,19 @@ namespace DAVA
 {
 namespace Private
 {
-CoreNativeBridge::CoreNativeBridge(PlatformCore* c)
-    : core(c)
+CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
+    : core(core)
 {
+    // Force init NSApplication
+    [NSApplication sharedApplication];
 }
 
-CoreNativeBridge::~CoreNativeBridge()
-{
-    [[NSApplication sharedApplication] setDelegate:nil];
-    [appDelegate release];
-    [frameTimer release];
-}
+CoreNativeBridge::~CoreNativeBridge() = default;
 
 void CoreNativeBridge::Run()
 {
     @autoreleasepool
     {
-        [NSApplication sharedApplication];
-
         appDelegate = [[AppDelegate alloc] initWithBridge:this];
         [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
@@ -111,6 +106,7 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::Quit()
 {
+    closeRequestByApp = true;
     if (!quitSent)
     {
         quitSent = true;
@@ -141,7 +137,9 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 void CoreNativeBridge::ApplicationDidFinishLaunching()
 {
     core->engineBackend->OnGameLoopStarted();
-    core->CreateNativeWindow(core->engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+
+    WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
+    primaryWindowBackend->Create(640.0f, 480.0f);
 
     frameTimer = [[FrameTimer alloc] init:this];
     [frameTimer set:1.0 / 60.0];
@@ -172,9 +170,15 @@ void CoreNativeBridge::ApplicationDidUnhide()
 
 bool CoreNativeBridge::ApplicationShouldTerminate()
 {
+    if (!closeRequestByApp)
+    {
+        core->engineBackend->PostUserCloseRequest();
+        return false;
+    }
+
     if (!quitSent)
     {
-        core->engineBackend->PostAppTerminate();
+        core->engineBackend->PostAppTerminate(false);
         return false;
     }
     return true;
@@ -196,7 +200,7 @@ void CoreNativeBridge::ApplicationWillTerminate()
     [frameTimer release];
 
     int exitCode = core->engineBackend->GetExitCode();
-    core->engineBackend->OnBeforeTerminate();
+    core->engineBackend->OnEngineCleanup();
     std::exit(exitCode);
 }
 

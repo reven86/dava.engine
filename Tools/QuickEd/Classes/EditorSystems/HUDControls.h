@@ -1,5 +1,4 @@
-#ifndef _QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_
-#define _QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_
+#pragma once
 
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
@@ -16,7 +15,7 @@ public:
     bool GetSystemVisible() const;
 
 protected:
-    ~ControlContainer() = default;
+    ~ControlContainer() override = default;
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
     bool systemVisible = true;
 };
@@ -24,37 +23,42 @@ protected:
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(EditorSystemsManager* systemsManager, ControlNode* node);
+    explicit HUDContainer(ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     void SystemDraw(const DAVA::UIGeometricData& geometricData) override;
 
 private:
-    ~HUDContainer() = default;
+    ~HUDContainer() override = default;
     ControlNode* node = nullptr;
     VisibleValueProperty* visibleProperty = nullptr;
+    //weak pointer to control to wrap around
     DAVA::UIControl* control = nullptr;
-    DAVA::Vector<DAVA::RefPtr<ControlContainer>> childs;
-    EditorSystemsManager* systemsManager = nullptr;
 };
 
 class FrameControl : public ControlContainer
 {
 public:
-    enum
+    enum eBorder
     {
-        BORDER_TOP,
-        BORDER_BOTTOM,
-        BORDER_LEFT,
-        BORDER_RIGHT,
-        BORDERS_COUNT
+        TOP,
+        BOTTOM,
+        LEFT,
+        RIGHT,
+        COUNT
     };
-    explicit FrameControl();
-    static DAVA::UIControl* CreateFrameBorderControl(DAVA::uint32 border);
+
+    enum eType
+    {
+        CHECKERED,
+        UNIFORM
+    };
+    explicit FrameControl(eType type = CHECKERED);
 
 protected:
     ~FrameControl() = default;
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
+    eType type = CHECKERED;
 };
 
 class FrameRectControl : public ControlContainer
@@ -88,8 +92,7 @@ private:
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
-extern void SetupHUDMagnetLineControl(DAVA::UIControl* control);
+void SetupHUDMagnetLineControl(DAVA::UIControl* control);
+void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 
-extern void SetupHUDMagnetRectControl(DAVA::UIControl* control);
-
-#endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_
+DAVA::RefPtr<DAVA::UIControl> CreateHUDRect(ControlNode* node);

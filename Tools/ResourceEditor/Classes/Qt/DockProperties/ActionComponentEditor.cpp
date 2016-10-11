@@ -68,9 +68,9 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
     DAVA::VariantType widths = posSaver.LoadValue(ActionComponentEditorDetail::GetColumnWidthsKey());
     if (widths.type == DAVA::VariantType::TYPE_BYTE_ARRAY)
     {
-        int32 size = widths.AsByteArraySize() / sizeof(int);
+        DAVA::int32 size = widths.AsByteArraySize() / sizeof(int);
         DVASSERT(size == ui->tableActions->columnCount());
-        const uint8* data = widths.AsByteArray();
+        const DAVA::uint8* data = widths.AsByteArray();
         const int* intData = reinterpret_cast<const int*>(data);
         for (int i = 0; i < size; ++i)
         {
@@ -110,7 +110,7 @@ ActionComponentEditor::~ActionComponentEditor()
     {
         widths.push_back(ui->tableActions->columnWidth(i));
     }
-    DAVA::VariantType value(reinterpret_cast<uint8*>(widths.data()), widths.size() * sizeof(int));
+    DAVA::VariantType value(reinterpret_cast<DAVA::uint8*>(widths.data()), widths.size() * sizeof(int));
     posSaver.SaveValue(ActionComponentEditorDetail::GetColumnWidthsKey(), value);
     delete ui;
 }
@@ -278,6 +278,15 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject* parent)
     eventTypes["Switch"] = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
     eventTypes["Added"] = DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE;
     eventTypes["User"] = DAVA::ActionComponent::Action::EVENT_CUSTOM;
+}
+
+void ActionItemEditDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QStyleOptionViewItem opt = option;
+    // We should set font family manually, to set familyResolved flag in font.
+    // If we don't do this, Qt will get resolve family almost randomly
+    opt.font.setFamily(opt.font.family());
+    QStyledItemDelegate::paint(painter, opt, index);
 }
 
 QWidget* ActionItemEditDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,

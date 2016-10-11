@@ -16,8 +16,8 @@ APP_OPTIM := debug
 
 APP_CPPFLAGS += -Qunused-arguments
 
-# Uncomment to use core v2, do not forget to edit AndroidManifest.xml
-#APP_CPPFLAGS += -D__DAVAENGINE_COREV2__
+# Now testbed core v2 only
+APP_CPPFLAGS += -D__DAVAENGINE_COREV2__
 
 APP_ABI += armeabi-v7a
 APP_ABI += x86

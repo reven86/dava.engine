@@ -31,12 +31,13 @@ namespace Private
 // WindowNativeBridge is friend of OsX's WindowBackend
 struct WindowNativeBridge final
 {
-    WindowNativeBridge(WindowBackend* wbackend);
+    WindowNativeBridge(WindowBackend* windowBackend);
     ~WindowNativeBridge();
 
-    bool DoCreateWindow(float32 x, float32 y, float32 width, float32 height);
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    bool CreateWindow(float32 x, float32 y, float32 width, float32 height);
+    void ResizeWindow(float32 width, float32 height);
+    void CloseWindow();
+    void SetTitle(const char8* title);
 
     void TriggerPlatformEvents();
 
@@ -61,6 +62,8 @@ struct WindowNativeBridge final
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
+    Window* window = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
 
     NSWindow* nswindow = nullptr;
     RenderView* renderView = nullptr;
