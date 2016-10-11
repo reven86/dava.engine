@@ -44,7 +44,7 @@
 
 namespace DAVA
 {
-SceneFileV2::SceneFileV2()
+SceneFileV2::SceneFileV2() //-V730 no need to init descriptor
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -365,7 +365,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     const bool versionValid = ReadVersionTags(scene->version, file);
     if (!versionValid)
     {
-        Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: ", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_VERSION_TAGS_INVALID);
         return GetError();
     }
@@ -375,7 +375,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
@@ -461,7 +461,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 const bool res = file->Seek(filePos, File::SEEK_FROM_START);
                 if (!res)
                 {
-                    Logger::Error("SceneFileV2::LoadScene seek failed in file: ", filename.GetAbsolutePathname().c_str());
+                    Logger::Error("SceneFileV2::LoadScene seek failed in file: %s", filename.GetAbsolutePathname().c_str());
                     SetError(ERROR_FILE_READ_ERROR);
                     SafeRelease(archive);
                     return GetError();
@@ -486,7 +486,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         const bool loaded = LoadHierarchy(0, scene, file, 1);
         if (!loaded)
         {
-            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene LoadHierarchy failed in file: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_READ_ERROR);
             return GetError();
         }
@@ -496,7 +496,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
     if (!contextLoaded)
     {
-        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: ", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_READ_ERROR);
         return GetError();
     }
@@ -585,7 +585,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
         {
-            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: ", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::LoadScene ReadDescriptor failed in file: %s", filename.GetAbsolutePathname().c_str());
             return res;
         }
     }

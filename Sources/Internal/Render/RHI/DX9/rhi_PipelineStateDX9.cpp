@@ -242,7 +242,7 @@ public:
         void SetToRHI(const void* inst_data) const;
 
     private:
-        ProgType progType;
+        ProgType progType = PROG_VERTEX;
         float* value;
         mutable float* inst;
         unsigned reg;

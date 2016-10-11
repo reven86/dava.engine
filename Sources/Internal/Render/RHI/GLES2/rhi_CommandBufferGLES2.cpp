@@ -307,7 +307,7 @@ public:
 
     static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
@@ -915,15 +915,14 @@ gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
+    , usingDefaultFrameBuffer(true)
     , text(nullptr)
-    ,
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    cmdData(nullptr)
+    , cmdData(nullptr)
     , cmdDataSize(0)
     , curUsedSize(0)
-    ,
 #endif
-    sync(InvalidHandle)
+    , sync(InvalidHandle)
 {
 }
 
