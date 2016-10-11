@@ -41,39 +41,12 @@ static const char* vp__dbg_ptc =
 "vp_main( vertex_in input )\n"
 "{\n"
 "    vertex_out output;\n"
-//"   output.pos   = mul( XForm, float4(input.pos,1.0) );\n"
 "   output.pos   = mul( float4(input.pos,1.0), XForm );\n"
 "   output.uv    = input.uv;\n"
 "   output.color = input.color;"
 "    return output;\n"
 "}\n";
-/*
-"VPROG_IN_BEGIN\n"
-"    VPROG_IN_POSITION\n"
-"    VPROG_IN_TEXCOORD\n"
-"    VPROG_IN_COLOR\n"
-"VPROG_IN_END\n"
-"\n"
-"VPROG_OUT_BEGIN\n"
-"    VPROG_OUT_POSITION\n"
-"    VPROG_OUT_TEXCOORD0(texcoord,2)\n"
-"    VPROG_OUT_COLOR0(color,4)\n"
-"VPROG_OUT_END\n"
-"\n"
-"property float4x4   XForm : unique,dynamic : ;\n"
-"\n"
-"VPROG_BEGIN\n"
-"\n"
-"    float3  in_position = VP_IN_POSITION.xyz;\n"
-"    float2  in_texcoord = VP_IN_TEXCOORD;\n"
-"    float4  in_color    = VP_IN_COLOR;\n"
-"\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position, 1.0) );\n"
-"    VP_OUT(texcoord)    = in_texcoord;\n"
-"    VP_OUT(color)       = in_color;\n"
-"\n"
-"VPROG_END\n";
-*/
+
 static const char* fp__dbg_ptc =
 "fragment_in\n"
 "{\n"
@@ -97,33 +70,11 @@ static const char* fp__dbg_ptc =
 "}\n"
 "blending { src=src_alpha dst=inv_src_alpha }\n"
 ;
-/*
-"FPROG_IN_BEGIN\n"
-"    FPROG_IN_TEXCOORD0(texcoord,2)\n"
-"    FPROG_IN_COLOR0(color,4)\n"
-"FPROG_IN_END\n"
-"\n"
-"FPROG_OUT_BEGIN\n"
-"    FPROG_OUT_COLOR\n"
-"FPROG_OUT_END\n"
-"\n"
-"DECL_FP_SAMPLER2D(0)\n"
-"\n"
-"FPROG_BEGIN\n"
-"\n"
-"    float4  color = FP_TEXTURE2D( 0, FP_IN(texcoord) );\n"
-"\n"
-"    FP_OUT_COLOR = color * FP_IN(color);\n"
-"\n"
-"FPROG_END\n"
-"BLEND_MODE(alpha)\n";
-*/
 
 static const char* vp__dbg_pc =
 "vertex_in\n"
 "{\n"
 "    float3 pos   : POSITION;\n"
-//"    uint4 color  : COLOR;\n"
 "    float4 color : COLOR;\n"
 "};\n"
 "vertex_out\n"
@@ -142,29 +93,6 @@ static const char* vp__dbg_pc =
 "    output.color = float4(input.color);"
 "    return output;\n"
 "}\n";
-/*
-"VPROG_IN_BEGIN\n"
-"    VPROG_IN_POSITION\n"
-"    VPROG_IN_COLOR\n"
-"VPROG_IN_END\n"
-"\n"
-"VPROG_OUT_BEGIN\n"
-"    VPROG_OUT_POSITION\n"
-"    VPROG_OUT_COLOR0(color,4)\n"
-"VPROG_OUT_END\n"
-"\n"
-"property float4x4   XForm : unique,dynamic : ;\n"
-"\n"
-"VPROG_BEGIN\n"
-"\n"
-"    float3  in_position = VP_IN_POSITION.xyz;\n"
-"    float4  in_color    = VP_IN_COLOR;\n"
-"\n"
-"    VP_OUT_POSITION     = mul( XForm, float4(in_position,1.0) );\n"
-"    VP_OUT(color)       = in_color;\n"
-"\n"
-"VPROG_END\n";
-*/
 
 static const char* fp__dbg_pc =
 "fragment_in\n"
@@ -185,24 +113,6 @@ static const char* fp__dbg_pc =
 "    output.color = input.color;\n"
 "    return output;\n"
 "}\n";
-/*
-"FPROG_IN_BEGIN\n"
-"    FPROG_IN_COLOR0(color,4)\n"
-"FPROG_IN_END\n"
-"\n"
-"FPROG_OUT_BEGIN\n"
-"    FPROG_OUT_COLOR\n"
-"FPROG_OUT_END\n"
-"\n"
-"DECL_FP_SAMPLER2D(0)\n"
-"\n"
-"FPROG_BEGIN\n"
-"\n"
-"    FP_OUT_COLOR = FP_IN(color);\n"
-"\n"
-"FPROG_END\n"
-"BLEND_MODE(alpha)\n";
-*/
 
 namespace DAVA
 {
