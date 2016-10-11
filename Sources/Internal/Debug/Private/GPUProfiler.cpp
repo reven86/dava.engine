@@ -210,7 +210,7 @@ GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()
     PerfQueryPair p;
     for (rhi::HPerfQuery& q : p.query)
     {
-        if (queryPool.size())
+        if (!queryPool.empty())
         {
             q = queryPool.back();
             queryPool.pop_back();

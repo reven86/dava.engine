@@ -31,9 +31,18 @@ protected:
     static const uint32 EVENT_HISTORY_LENGTH = 300;
     static const uint32 FRAME_TRACE_HISTORY_LENGTH = 10;
 
-    using HistoryInstance = std::pair<uint64, float32>; //<accurate value, filtered value>
+    struct HistoryInstance
+    {
+        uint64 accurate = 0;
+        float32 filtered = 0.f;
+    };
     using HistoryArray = RingArray<HistoryInstance>;
-    using EventHistory = std::pair<uint32, HistoryArray>; //<updates count, history values>
+
+    struct EventHistory
+    {
+        HistoryArray values;
+        uint32 updatesCount;
+    };
 
     struct TraceData
     {
@@ -52,6 +61,12 @@ protected:
         uint64 maxTimestamp = 0;
     };
 
+    struct FrameTrace
+    {
+        Vector<TraceEvent> trace;
+        uint32 frameIndex;
+    };
+
     void Update();
     void UpdateCurrentTrace(TraceData* trace, const Vector<TraceEvent>& events, uint32 frameIndex);
 
@@ -61,7 +76,7 @@ protected:
 
     int32 GetEnoughRectHeight(const TraceData& trace);
 
-    FastNameMap<EventHistory> eventsHistory = FastNameMap<EventHistory>(128, EventHistory(0, HistoryArray(EVENT_HISTORY_LENGTH)));
+    FastNameMap<EventHistory> eventsHistory = FastNameMap<EventHistory>(128, EventHistory({ HistoryArray(EVENT_HISTORY_LENGTH), 0 }));
     FastNameMap<uint32> eventsColor;
 
     Vector<FastName> interestEventsNames;
@@ -69,7 +84,7 @@ protected:
 
     TraceData currentGPUTrace;
     TraceData currentCPUTrace;
-    List<std::pair<uint32, Vector<TraceEvent>>> CPUTraces; //<frameIndex, cpu-trace>
+    List<FrameTrace> CPUTraces;
 
     GPUProfiler* gpuProfiler = nullptr;
     CPUProfiler* cpuProfiler = nullptr;

@@ -54,8 +54,7 @@ PerfQueryDX9::PerfQueryFrameDX9* currentPerfQueryFrameDX9 = nullptr;
 
 //==============================================================================
 
-static Handle
-dx9_PerfQuery_Create()
+static Handle dx9_PerfQuery_Create()
 {
     Handle handle = PerfQueryDX9Pool::Alloc();
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
@@ -74,8 +73,7 @@ dx9_PerfQuery_Create()
     return handle;
 }
 
-static void
-dx9_PerfQuery_Delete(Handle handle)
+static void dx9_PerfQuery_Delete(Handle handle)
 {
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
 
@@ -88,8 +86,7 @@ dx9_PerfQuery_Delete(Handle handle)
     PerfQueryDX9Pool::Free(handle);
 }
 
-static void
-dx9_PerfQuery_Reset(Handle handle)
+static void dx9_PerfQuery_Reset(Handle handle)
 {
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
 
@@ -103,8 +100,7 @@ dx9_PerfQuery_Reset(Handle handle)
     }
 }
 
-static bool
-dx9_PerfQuery_IsReady(Handle handle)
+static bool dx9_PerfQuery_IsReady(Handle handle)
 {
     bool ret = false;
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
@@ -117,8 +113,7 @@ dx9_PerfQuery_IsReady(Handle handle)
     return ret;
 }
 
-static uint64
-dx9_PerfQuery_Value(Handle handle)
+static uint64 dx9_PerfQuery_Value(Handle handle)
 {
     uint64 ret = 0;
     PerfQueryDX9_t* perfQuery = PerfQueryDX9Pool::Get(handle);
@@ -133,8 +128,7 @@ dx9_PerfQuery_Value(Handle handle)
     return ret;
 }
 
-static void
-dx9_PerfQuery_SetCurrent(Handle start, Handle end)
+static void dx9_PerfQuery_SetCurrent(Handle start, Handle end)
 {
     DVASSERT(currentPerfQueryFrameDX9);
     currentPerfQueryFrameDX9->frameQuery0 = start;

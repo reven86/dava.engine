@@ -44,8 +44,7 @@ void SetDispatchTable(const Dispatch& dispatch)
     _Impl = dispatch;
 }
 
-bool
-ApiIsSupported(Api api)
+bool ApiIsSupported(Api api)
 {
     bool supported = false;
 
@@ -175,8 +174,7 @@ void InvalidateCache()
 
 namespace VertexBuffer
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_VertexBuffer_Create)(desc);
@@ -228,8 +226,7 @@ bool NeedRestore(Handle vb)
 
 namespace IndexBuffer
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_IndexBuffer_Create)(desc);
@@ -281,8 +278,7 @@ bool NeedRestore(Handle ib)
 
 namespace QueryBuffer
 {
-Handle
-Create(uint32 maxObjectCount)
+Handle Create(uint32 maxObjectCount)
 {
     return (*_Impl.impl_QueryBuffer_Create)(maxObjectCount);
 }
@@ -373,8 +369,7 @@ uint32 TextureSizeForProfiling(Handle handle, const Texture::Descriptor& desc)
 }
 #endif
 
-Handle
-Create(const Texture::Descriptor& desc)
+Handle Create(const Texture::Descriptor& desc)
 {
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_Texture_Create)(desc);
@@ -426,8 +421,7 @@ bool NeedRestore(Handle tex)
 
 namespace PipelineState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_PipelineState_Create)(desc);
 }
@@ -437,26 +431,22 @@ void Delete(Handle ps)
     return (*_Impl.impl_PipelineState_Delete)(ps);
 }
 
-Handle
-CreateVertexConstBuffer(Handle ps, uint32 bufIndex)
+Handle CreateVertexConstBuffer(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_CreateVertexConstBuffer)(ps, bufIndex);
 }
 
-Handle
-CreateFragmentConstBuffer(Handle ps, uint32 bufIndex)
+Handle CreateFragmentConstBuffer(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_CreateFragmentConstBuffer)(ps, bufIndex);
 }
 
-uint32
-VertexConstBufferCount(Handle ps)
+uint32 VertexConstBufferCount(Handle ps)
 {
     return (*_Impl.impl_PipelineState_VertexConstBufferCount)(ps);
 }
 
-uint32
-VertexConstCount(Handle ps, uint32 bufIndex)
+uint32 VertexConstCount(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_VertexConstCount)(ps, bufIndex);
 }
@@ -466,14 +456,12 @@ bool GetVertexConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConstIn
     return (*_Impl.impl_PipelineState_GetVertexConstInfo)(ps, bufIndex, maxCount, info);
 }
 
-uint32
-FragmentConstBufferCount(Handle ps)
+uint32 FragmentConstBufferCount(Handle ps)
 {
     return (*_Impl.impl_PipelineState_FragmentConstBufferCount)(ps);
 }
 
-uint32
-FragmentConstCount(Handle ps, uint32 bufIndex)
+uint32 FragmentConstCount(Handle ps, uint32 bufIndex)
 {
     return (*_Impl.impl_PipelineState_FragmentConstCount)(ps, bufIndex);
 }
@@ -489,8 +477,7 @@ bool GetFragmentConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConst
 
 namespace ConstBuffer
 {
-uint32
-ConstCount(Handle cb)
+uint32 ConstCount(Handle cb)
 {
     return (*_Impl.impl_ConstBuffer_ConstCount)(cb);
 }
@@ -517,8 +504,7 @@ void Delete(Handle cb)
 
 namespace DepthStencilState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_DepthStencilState_Create)(desc);
 }
@@ -533,8 +519,7 @@ void Delete(Handle state)
 
 namespace SamplerState
 {
-Handle
-Create(const Descriptor& desc)
+Handle Create(const Descriptor& desc)
 {
     return (*_Impl.impl_SamplerState_Create)(desc);
 }
@@ -549,8 +534,7 @@ void Delete(Handle state)
 
 namespace RenderPass
 {
-Handle
-Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
+Handle Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf)
 {
     return (*_Impl.impl_Renderpass_Allocate)(passDesc, cmdBufCount, cmdBuf);
 }
@@ -570,8 +554,7 @@ void End(Handle pass)
 
 namespace SyncObject
 {
-Handle
-Create()
+Handle Create()
 {
     return (*_Impl.impl_SyncObject_Create)();
 }
@@ -709,8 +692,7 @@ void SetMarker(Handle cmdBuf, const char* text)
 
 //------------------------------------------------------------------------------
 
-uint32
-TextureStride(TextureFormat format, Size2i size, uint32 level)
+uint32 TextureStride(TextureFormat format, Size2i size, uint32 level)
 {
     uint32 stride = 0;
     uint32 width = TextureExtents(size, level).dx;
@@ -774,8 +756,7 @@ TextureStride(TextureFormat format, Size2i size, uint32 level)
 
 //------------------------------------------------------------------------------
 
-Size2i
-TextureExtents(Size2i size, uint32 level)
+Size2i TextureExtents(Size2i size, uint32 level)
 {
     Size2i sz(size.dx >> level, size.dy >> level);
 
@@ -789,8 +770,7 @@ TextureExtents(Size2i size, uint32 level)
 
 //------------------------------------------------------------------------------
 
-uint32
-TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
+uint32 TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
 {
     Size2i ext = TextureExtents(Size2i(width, height), level);
     uint32 sz = 0;
@@ -984,8 +964,7 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
 
 //------------------------------------------------------------------------------
 
-uint32
-NativeColorRGBA(float red, float green, float blue, float alpha)
+uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
 {
     uint32 color = 0;
     int r = int(red * 255.0f);
@@ -1018,8 +997,7 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     return color;
 }
 
-uint32
-NativeColorRGBA(uint32 color)
+uint32 NativeColorRGBA(uint32 color)
 {
     uint32 c = 0;
 

@@ -133,7 +133,7 @@ void ProfilerOverlay::Update()
         uint32 lastGPUFrameIndex = gpuProfiler->GetLastFrame().frameIndex;
         if (currentGPUTrace.frameIndex != lastGPUFrameIndex)
         {
-            while (!CPUTraces.empty() && CPUTraces.front().first != lastGPUFrameIndex)
+            while (!CPUTraces.empty() && CPUTraces.front().frameIndex != lastGPUFrameIndex)
                 CPUTraces.pop_front();
 
             needUpdateCPUInfo = !CPUTraces.empty();
@@ -150,10 +150,10 @@ void ProfilerOverlay::Update()
     {
         for (FastNameMap<EventHistory>::HashMapItem& i : eventsHistory)
         {
-            HistoryArray& history = i.second.second;
+            HistoryArray& history = i.second.values;
             HistoryInstance& value = history.next();
-            value.first = 0;
-            value.second = 0.f;
+            value.accurate = 0;
+            value.filtered = 0.f;
         }
     }
 
@@ -164,7 +164,7 @@ void ProfilerOverlay::Update()
 
     if (needUpdateCPUInfo)
     {
-        UpdateCurrentTrace(&currentCPUTrace, CPUTraces.front().second, CPUTraces.front().first);
+        UpdateCurrentTrace(&currentCPUTrace, CPUTraces.front().trace, CPUTraces.front().frameIndex);
         CPUTraces.pop_front();
     }
 
@@ -173,17 +173,17 @@ void ProfilerOverlay::Update()
         for (FastNameMap<EventHistory>::HashMapItem& i : eventsHistory)
         {
             EventHistory& history = i.second;
-            ++history.first;
+            ++history.updatesCount;
 
-            HistoryInstance& current = *history.second.rbegin();
-            if (history.first < ProfilerOverlayDetails::EVENT_HISTORY_NON_FILTERED_COUNT)
+            HistoryInstance& current = *history.values.rbegin();
+            if (history.updatesCount < ProfilerOverlayDetails::EVENT_HISTORY_NON_FILTERED_COUNT)
             {
-                current.second = float32(current.first);
+                current.filtered = float32(current.accurate);
             }
             else
             {
-                const HistoryInstance& prev = *(history.second.crbegin() + 1);
-                current.second = prev.second * 0.99f + current.first * 0.01f;
+                const HistoryInstance& prev = *(history.values.crbegin() + 1);
+                current.filtered = prev.filtered * 0.99f + current.accurate * 0.01f;
             }
         }
     }
@@ -191,7 +191,7 @@ void ProfilerOverlay::Update()
     if (cpuProfiler && cpuProfiler->IsStarted())
     {
         uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-        CPUTraces.emplace_back((currentFrameIndex - 1), std::move(cpuProfiler->GetTrace(cpuCounterName)));
+        CPUTraces.push_back({ std::move(cpuProfiler->GetTrace(cpuCounterName)), (currentFrameIndex - 1) });
     }
 }
 
@@ -210,7 +210,7 @@ void ProfilerOverlay::UpdateCurrentTrace(TraceData* trace, const Vector<TraceEve
     for (const TraceEvent& e : events)
     {
         EventHistory& history = eventsHistory[e.name];
-        uint64& historyEventDuration = history.second.rbegin()->first;
+        uint64& historyEventDuration = history.values.rbegin()->accurate;
 
         switch (e.phase)
         {
@@ -311,7 +311,7 @@ void ProfilerOverlay::Draw()
     rect.dx = chartWidth;
     for (const FastName& m : interestEventsNames)
     {
-        DrawHistory(eventsHistory[m].second, m, rect);
+        DrawHistory(eventsHistory[m].values, m, rect);
         rect.y += rect.dy;
         if ((rect.y + rect.dy) > Renderer::GetFramebufferHeight())
         {
@@ -387,7 +387,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
             DbgDraw::FilledRect2D(x0, y0, x1, y1, eventsColor[m]);
             DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, TEXT_COLOR, m.c_str());
 
-            uint64 historyEventDuration = eventsHistory[m].second.crbegin()->first;
+            uint64 historyEventDuration = eventsHistory[m].values.crbegin()->accurate;
             snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, historyEventDuration);
             DbgDraw::Text2D(x0 + legentWidth, y0, TEXT_COLOR, strbuf);
 
@@ -444,7 +444,7 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
 
     uint64 maxValue = 0;
     for (const HistoryInstance& h : history)
-        maxValue = Max(maxValue, Max(h.first, uint64(h.second)));
+        maxValue = Max(maxValue, Max(h.accurate, uint64(h.filtered)));
 
     char strbuf[128];
     float32 ceilValue = float32((maxValue / ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP + 1) * ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP);
@@ -464,8 +464,8 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
 
     HistoryArray::const_iterator it = history.cbegin();
     int32 px = 0;
-    int32 py = CHART_VALUE_HEIGHT(it->first);
-    int32 pfy = CHART_VALUE_HEIGHT(it->second);
+    int32 py = CHART_VALUE_HEIGHT(it->accurate);
+    int32 pfy = CHART_VALUE_HEIGHT(it->filtered);
     ++it;
 
     int32 index = 1;
@@ -473,8 +473,8 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
     for (; it != hend; ++it, ++index)
     {
         int32 x = int32(index * chartstep);
-        int32 y = CHART_VALUE_HEIGHT(it->first);
-        int32 fy = CHART_VALUE_HEIGHT(it->second);
+        int32 y = CHART_VALUE_HEIGHT(it->accurate);
+        int32 fy = CHART_VALUE_HEIGHT(it->filtered);
 
         DbgDraw::Line2D(chart0x + px, chart0y - py, chart0x + x, chart0y - y, CHART_COLOR);
         DbgDraw::Line2D(chart0x + px, chart0y - pfy, chart0x + x, chart0y - fy, CHART_FILTERED_COLOR);
@@ -489,7 +489,7 @@ void ProfilerOverlay::DrawHistory(const HistoryArray& history, const FastName& n
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
     const int32 lastvalueIndent = (drawRect.dx - 2 * MARGIN) / DbgDraw::NormalCharW;
-    snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->first, history.crbegin()->second);
+    snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->accurate, history.crbegin()->filtered);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "%*s", lastvalueIndent, strbuf);
 
     snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));

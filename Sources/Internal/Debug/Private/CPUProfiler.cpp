@@ -342,7 +342,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
 
         if (c.threadID == threadID)
         {
-            while (nodeEndTime.size() && (c.startTime >= nodeEndTime.back()))
+            while (!nodeEndTime.empty() && (c.startTime >= nodeEndTime.back()))
             {
                 DVASSERT(node->parent);
 

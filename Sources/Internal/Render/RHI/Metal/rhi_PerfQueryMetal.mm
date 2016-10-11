@@ -40,36 +40,30 @@ namespace rhi
 {
 //==============================================================================
 
-static Handle
-metal_PerfQuery_Create()
+static Handle metal_PerfQuery_Create()
 {
     return InvalidHandle;
 }
 
-static void
-metal_PerfQuery_Delete(Handle handle)
+static void metal_PerfQuery_Delete(Handle handle)
 {
 }
 
-static void
-metal_PerfQuery_Reset(Handle handle)
+static void metal_PerfQuery_Reset(Handle handle)
 {
 }
 
-static bool
-metal_PerfQuery_IsReady(Handle handle)
+static bool metal_PerfQuery_IsReady(Handle handle)
 {
     return true;
 }
 
-static uint64
-metal_PerfQueryValue(Handle handle)
+static uint64 metal_PerfQueryValue(Handle handle)
 {
     return 0;
 }
 
-static void
-metal_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
+static void metal_PerfQuery_SetCurrent(Handle handle0, Handle handle1)
 {
 }
 

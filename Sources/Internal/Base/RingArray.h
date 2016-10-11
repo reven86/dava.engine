@@ -33,6 +33,12 @@ public:
             elements = nullptr;
         }
     }
+    RingArray(RingArray&& a)
+    {
+        elements = a.elements;
+        elementsCount = a.elementsCount;
+        head = a.head;
+    }
     RingArray& operator=(const RingArray& a)
     {
         if (this != &a)
