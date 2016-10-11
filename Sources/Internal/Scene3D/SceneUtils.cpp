@@ -58,7 +58,7 @@ void CombineEntityLods(Entity* forRootNode)
 
         ScopedPtr<Mesh> newMesh(new Mesh());
 
-        uint32 lodCount = 0;
+        int32 lodCount = 0;
         for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
         {
             // Try to find node with same name but with other lod
@@ -88,7 +88,7 @@ void CombineEntityLods(Entity* forRootNode)
             }
         }
 
-        if (0 < lodCount)
+        if (lodCount > 0)
         {
             LodComponent* lc = new LodComponent();
             newNodeWithLods->AddComponent(lc);

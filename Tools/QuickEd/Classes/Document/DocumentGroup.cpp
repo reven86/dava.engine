@@ -54,7 +54,7 @@ bool DocumentGroup::CanSave() const
 
 bool DocumentGroup::CanClose() const
 {
-    return active != nullptr;
+    return active != nullptr && active->CanClose();
 }
 
 QString DocumentGroup::GetUndoText() const
@@ -342,6 +342,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     if (active != nullptr)
     {
         disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+        disconnect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
     }
 
     active = document;
@@ -353,6 +354,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     else
     {
         connect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+        connect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
         commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
     emit ActiveDocumentChanged(document);

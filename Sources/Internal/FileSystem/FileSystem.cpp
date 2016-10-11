@@ -154,8 +154,8 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
     File* srcFile = File::Create(existingFile, File::OPEN | File::READ);
     File* dstFile = File::Create(newFile, File::WRITE | File::CREATE);
 
-    Logger::Info("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
-                 newFile.GetStringValue().c_str(), srcFile, dstFile);
+    Logger::Debug("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
+                  newFile.GetStringValue().c_str(), srcFile, dstFile);
 
     if (srcFile && dstFile)
     {

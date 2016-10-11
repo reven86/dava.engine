@@ -45,11 +45,6 @@ struct MaterialBufferBinding
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
-RenderVariantInstance::RenderVariantInstance()
-    : shader(nullptr)
-{
-}
-
 RenderVariantInstance::~RenderVariantInstance()
 {
     rhi::ReleaseTextureSet(textureSet);
