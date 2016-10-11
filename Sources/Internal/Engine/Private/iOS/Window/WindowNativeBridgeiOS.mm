@@ -21,26 +21,27 @@ namespace DAVA
 {
 namespace Private
 {
-enum eIOS_DPI
-{
-    IPHONE_3_IPAD_MINI = 163,
-    IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
-    IPAD_1_2 = 132,
-    IPAD_3_4_AIR_AIR2_PRO = 264,
-    IPHONE_6_PLUS = 401,
-    IPHONE_6_PLUS_ZOOM = 461,
-};
 
 float32 GetDpi(CGRect rect, float32 scale)
 {
-    struct AppleIDevice
+    enum eIosDpi
+    {
+        IPHONE_3_IPAD_MINI = 163,
+        IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
+        IPAD_1_2 = 132,
+        IPAD_3_4_AIR_AIR2_PRO = 264,
+        IPHONE_6_PLUS = 401,
+        IPHONE_6_PLUS_ZOOM = 461,
+    };
+
+    struct AppleDevice
     {
         int minSide;
         int dpi;
         const char* machineTag;
     };
 
-    static AppleIDevice devicesList[] =
+    static AppleDevice listOfAppleDevices[] =
     {
       { 320, IPHONE_3_IPAD_MINI, "" },
       { 640, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "" },
@@ -58,12 +59,12 @@ float32 GetDpi(CGRect rect, float32 scale)
     float32 minSide = std::min(rect.size.width * scale, rect.size.height * scale);
 
     // find possible device with calculated side
-    List<AppleIDevice*> possibleDevices;
-    for (size_t i = 0, sz = (sizeof(devicesList) / sizeof(AppleIDevice)); i < sz; ++i)
+    List<AppleDevice*> possibleDevices;
+    for (size_t i = 0, sz = std::extent<decltype(listOfAppleDevices)>(); i < sz; ++i)
     {
-        if (devicesList[i].minSide == minSide)
+        if (listOfAppleDevices[i].minSide == minSide)
         {
-            possibleDevices.push_back(&devicesList[i]);
+            possibleDevices.push_back(&listOfAppleDevices[i]);
         }
     }
 
@@ -73,7 +74,7 @@ float32 GetDpi(CGRect rect, float32 scale)
     String thisMachine = systemInfo.machine;
 
     // search real device from possibles
-    AppleIDevice* realDevice = nullptr;
+    AppleDevice* realDevice = nullptr;
     for (auto d : possibleDevices)
     {
         if (thisMachine.find(d->machineTag) != String::npos)
