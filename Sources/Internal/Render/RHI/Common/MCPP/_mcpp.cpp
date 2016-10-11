@@ -44,13 +44,14 @@ inline int mcpp_fputs_impl(const char* str, OUTDEST dst)
 
 int mcpp_fprintf_impl(OUTDEST dst, const char* format, ...)
 {
+    static const uint32 localBufferSize = 2048;
     int count = 0;
     if (dst == MCPP_OUT)
     {
-        char localBuffer[2048] = {};
+        char localBuffer[localBufferSize] = {};
         va_list arglist;
         va_start(arglist, format);
-        count = vsnprintf(localBuffer, countof(localBuffer), format, arglist);
+        count = vsnprintf(localBuffer, localBufferSize, format, arglist);
         va_end(arglist);
         mcpp_fputs_impl(localBuffer, dst);
     }

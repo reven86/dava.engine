@@ -2,6 +2,7 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/RHI/Common/MCPP/_mcpp.h"
 
 namespace DAVA
