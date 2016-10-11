@@ -62,7 +62,7 @@ inline uint64 UnmanagedMemoryFile::GetPos() const
     return offset;
 }
 
-uint64 UnmanagedMemoryFile::GetSize() const
+inline uint64 UnmanagedMemoryFile::GetSize() const
 {
     return size;
 }
@@ -84,7 +84,7 @@ inline uint32 UnmanagedMemoryFile::Write(const void* sourceBuffer, uint32 dataSi
     return 0;
 }
 
-bool UnmanagedMemoryFile::Flush()
+inline bool UnmanagedMemoryFile::Flush()
 {
     DVASSERT_MSG(0, "Flush is not supported");
     return 0;
