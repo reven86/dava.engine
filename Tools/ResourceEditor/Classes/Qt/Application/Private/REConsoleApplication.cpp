@@ -1,7 +1,6 @@
 #include "Classes/Qt/Application/REConsoleApplication.h"
 
 #include "CommandLine/WinConsoleIOLocker.h"
-#include "CommandLine/CommandLineManager.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/RHI/rhi_Type.h"
@@ -86,7 +85,6 @@ void REConsoleApplication::OnLoopStarted()
 
 void REConsoleApplication::OnUpdate(DAVA::float32 delta)
 {
-    cmdLineManager.Process();
     engine.Quit(0);
 }
 

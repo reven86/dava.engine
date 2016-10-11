@@ -4,8 +4,8 @@
 class ConsoleHelpTool : public REConsoleModuleCommon
 {
 public:
-    ConsoleHelpTool();
+    ConsoleHelpTool(const DAVA::Vector<DAVA::String>& commandLine);
 
-protected:
-    eFrameResult OnFrameInternal() override;
+private:
+    void ShowHelpInternal() override;
 };

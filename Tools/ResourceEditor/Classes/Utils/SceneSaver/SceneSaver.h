@@ -1,11 +1,10 @@
-#ifndef __SCENE_SAVER_H__
-#define __SCENE_SAVER_H__
+#pragma once
 
 #include "FileSystem/FilePath.h"
 #include "Render/Texture.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 
 namespace DAVA
 {
@@ -51,7 +50,3 @@ private:
     DAVA::Set<DAVA::FilePath> effectFolders;
     bool copyConverted = false;
 };
-
-
-
-#endif // __SCENE_SAVER_H__

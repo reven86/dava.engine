@@ -33,26 +33,30 @@ void SetupLogger(const DAVA::String& logLevelString)
 }
 }
 
-REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::String& moduleName)
+REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
     : options(moduleName)
+    , commandLine(commandLine_)
 {
-    options.AddOption("-log", DAVA::VariantType(DAVA::String("i")), "Set up the level of logging: e - error, w - warning, i - info, d - debug, f - framework. Info by default");
+    options.AddOption("-log", DAVA::VariantType(DAVA::String("i")), "Set up the level of logging: e - error, w - warning, i - info, d - debug, f - framework. Info is defualt value");
     options.AddOption("-h", DAVA::VariantType(false), "Help for command");
-    options.AddOption("-teamcity", DAVA::VariantType(false), "Extra output in teamcity format");
+    options.AddOption("-teamcity", DAVA::VariantType(false), "Enable extra output in teamcity format");
 }
 
 void REConsoleModuleCommon::PostInit()
 {
-    DAVA::String logLevel = options.GetOption("-log").AsString();
-    REConsoleModuleCommonDetail::SetupLogger(logLevel);
-
-    bool useTeamcity = options.GetOption("-teamcity").AsBool();
-    if (useTeamcity)
+    isInitialized = options.Parse(commandLine);
+    if (isInitialized)
     {
-        DAVA::Logger::AddCustomOutput(new DAVA::TeamcityOutput());
-    }
+        DAVA::String logLevel = options.GetOption("-log").AsString();
+        REConsoleModuleCommonDetail::SetupLogger(logLevel);
 
-    isInitialized = PostInitInternal();
+        bool useTeamcity = options.GetOption("-teamcity").AsBool();
+        if (useTeamcity)
+        {
+            DAVA::Logger::AddCustomOutput(new DAVA::TeamcityOutput());
+        }
+        isInitialized = PostInitInternal();
+    }
 }
 
 DAVA::TArc::ConsoleModule::eFrameResult REConsoleModuleCommon::OnFrame()
@@ -95,5 +99,6 @@ void REConsoleModuleCommon::BeforeDestroyedInternal()
 
 void REConsoleModuleCommon::ShowHelpInternal()
 {
-    //base implementation is empty
+    DAVA::String usage = options.GetUsageString();
+    DAVA::Logger::Info("\nDetails:\n%s", usage.c_str());
 }

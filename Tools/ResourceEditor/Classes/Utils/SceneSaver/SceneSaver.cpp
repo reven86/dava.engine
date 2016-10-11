@@ -1,4 +1,5 @@
-#include "CommandLine/SceneSaver/SceneSaver.h"
+#include "Utils/SceneSaver/SceneSaver.h"
+
 #include "Deprecated/SceneValidator.h"
 
 #include "Scene/SceneHelper.h"
@@ -54,7 +55,6 @@ void SceneSaver::SaveFile(const String& fileName)
     }
 
     SafeRelease(scene);
-    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::ResaveFile(const String& fileName)
@@ -75,7 +75,6 @@ void SceneSaver::ResaveFile(const String& fileName)
     }
 
     SafeRelease(scene);
-    RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)

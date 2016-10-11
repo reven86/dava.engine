@@ -1,4 +1,5 @@
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
+#include "CommandLine/Private/SceneConsoleHelper.h"
 
 #include "AssetCache/AssetCacheClient.h"
 #include "FileSystem/FilePath.h"
@@ -332,7 +333,7 @@ bool SceneExporter::ExportSceneFileInternal(const FilePath& scenePathname, Expor
         Logger::Error("[SceneExporterV2::%s] Can't open file %s", __FUNCTION__, scenePathname.GetAbsolutePathname().c_str());
     }
 
-    RenderObjectsFlusher::Flush();
+    SceneConsoleHelper::FlushRHI();
     return sceneExported;
 }
 

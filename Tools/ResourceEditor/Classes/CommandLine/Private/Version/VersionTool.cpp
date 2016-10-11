@@ -4,8 +4,8 @@
 #include "DAVAVersion.h"
 #include "Version.h"
 
-VersionTool::VersionTool()
-    : REConsoleModuleCommon("-version")
+VersionTool::VersionTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-version")
 {
 }
 

@@ -1,23 +1,20 @@
-#include "CommandLine/ImageSplitter/ImageSplitterTool.h"
+#include "CommandLine/ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
 #include "CommandLine/Private/OptionName.h"
 
-using namespace DAVA;
-
-ImageSplitterTool::ImageSplitterTool()
-    : CommandLineTool("-imagesplitter")
+ImageSplitterTool::ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-imagesplitter")
 {
-    options.AddOption(OptionName::Split, VariantType(false), "Action is splitting image file on channels");
-    options.AddOption(OptionName::Merge, VariantType(false), "Action is merging channels into one file");
-    options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of the image file");
-    options.AddOption(OptionName::Folder, VariantType(String("")), "full pathname of the folder with channels");
+    options.AddOption(OptionName::Split, DAVA::VariantType(false), "Action is splitting image file on channels");
+    options.AddOption(OptionName::Merge, DAVA::VariantType(false), "Action is merging channels into one file");
+    options.AddOption(OptionName::File, DAVA::VariantType(DAVA::String("")), "Full pathname of the image file");
+    options.AddOption(OptionName::Folder, DAVA::VariantType(DAVA::String("")), "full pathname of the folder with channels");
 }
 
-void ImageSplitterTool::ConvertOptionsToParamsInternal()
+bool ImageSplitterTool::PostInitInternal()
 {
     filename = options.GetOption(OptionName::File).AsString();
     foldername = options.GetOption(OptionName::Folder).AsString();
-
     if (options.GetOption(OptionName::Split).AsBool())
     {
         commandAction = ACTION_SPLIT;
@@ -26,10 +23,7 @@ void ImageSplitterTool::ConvertOptionsToParamsInternal()
     {
         commandAction = ACTION_MERGE;
     }
-}
 
-bool ImageSplitterTool::InitializeInternal()
-{
     if (commandAction == ACTION_SPLIT)
     {
         if (filename.IsEmpty())
@@ -56,7 +50,7 @@ bool ImageSplitterTool::InitializeInternal()
     return true;
 }
 
-void ImageSplitterTool::ProcessInternal()
+DAVA::TArc::ConsoleModule::eFrameResult ImageSplitterTool::OnFrameInternal()
 {
     if (commandAction == ACTION_SPLIT)
     {
@@ -66,4 +60,15 @@ void ImageSplitterTool::ProcessInternal()
     {
         ImageTools::MergeImages(foldername);
     }
+
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+}
+
+void ImageSplitterTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-imagesplitter -split -file /Users/SmokeTest/images/test.png");
+    DAVA::Logger::Info("\t-imagesplitter -merge -folder /Users/SmokeTest/images/");
 }

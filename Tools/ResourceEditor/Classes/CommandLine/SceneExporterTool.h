@@ -1,14 +1,23 @@
-#ifndef __SCENE_EXPORTER_TOOL_H__
-#define __SCENE_EXPORTER_TOOL_H__
+#pragma once
 
-#include "CommandLine/CommandLineTool.h"
 #include "TextureCompression/TextureConverter.h"
 #include "AssetCache/AssetCacheClient.h"
 
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Utils/SceneExporter/SceneExporter.h"
 
-class SceneExporterTool : public CommandLineTool
+#include "CommandLine/Private/REConsoleModuleCommon.h"
+
+class SceneExporterTool : public REConsoleModuleCommon
 {
+public:
+    SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+private:
+    bool PostInitInternal() override;
+    eFrameResult OnFrameInternal() override;
+    void BeforeDestroyedInternal() override;
+    void ShowHelpInternal() override;
+
     enum eAction : DAVA::int8
     {
         ACTION_NONE = -1,
@@ -18,22 +27,11 @@ class SceneExporterTool : public CommandLineTool
         ACTION_EXPORT_FILELIST
     };
 
-public:
-    SceneExporterTool();
-
-private:
-    void ConvertOptionsToParamsInternal() override;
-    bool InitializeInternal() override;
-
-    void ProcessInternal() override;
-    DAVA::FilePath GetQualityConfigPath() const override;
-
     SceneExporter::ExportedObjectCollection exportedObjects;
     DAVA::AssetCacheClient::ConnectionParams connectionsParams;
 
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
-    DAVA::FilePath qualityConfigPath;
 
     DAVA::String filename;
     DAVA::String foldername;
@@ -50,6 +48,3 @@ private:
     bool useHDTextures = false;
     bool forceCompressTextures = false;
 };
-
-
-#endif // __SCENE_EXPORTER_TOOL_H__

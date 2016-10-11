@@ -10,14 +10,14 @@
 class REConsoleModuleCommon : public DAVA::TArc::ConsoleModule
 {
 public:
-    REConsoleModuleCommon(const DAVA::String& moduleName);
+    REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine, const DAVA::String& moduleName);
 
 protected:
     virtual bool PostInitInternal();
+    virtual void ShowHelpInternal();
+
     virtual eFrameResult OnFrameInternal();
     virtual void BeforeDestroyedInternal();
-
-    virtual void ShowHelpInternal();
 
     DAVA::ProgramOptions options;
 
@@ -27,4 +27,5 @@ private:
     void BeforeDestroyed() override;
 
     bool isInitialized = false;
+    DAVA::Vector<DAVA::String> commandLine;
 };

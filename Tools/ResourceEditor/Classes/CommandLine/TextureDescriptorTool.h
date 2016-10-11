@@ -1,13 +1,23 @@
-#ifndef __TEXTURE_DESCRIPTOR_TOOL_H__
-#define __TEXTURE_DESCRIPTOR_TOOL_H__
-
-#include "CommandLine/CommandLineTool.h"
+#pragma once
 
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
 
-class TextureDescriptorTool : public CommandLineTool
+#include "CommandLine/Private/REConsoleModuleCommon.h"
+
+class TextureDescriptorTool : public REConsoleModuleCommon
 {
+public:
+    TextureDescriptorTool(const DAVA::Vector<DAVA::String>& commandLine);
+
+private:
+    bool PostInitInternal() override;
+    eFrameResult OnFrameInternal() override;
+    void ShowHelpInternal() override;
+
+    void ReadCommandLine();
+    bool ValidateCommandLine();
+
     enum eAction : DAVA::int32
     {
         ACTION_NONE = -1,
@@ -18,15 +28,6 @@ class TextureDescriptorTool : public CommandLineTool
         ACTION_SET_PRESET,
         ACTION_SAVE_PRESET
     };
-
-public:
-    TextureDescriptorTool();
-
-private:
-    void ConvertOptionsToParamsInternal() override;
-    bool InitializeInternal() override;
-    void ProcessInternal() override;
-
     eAction commandAction = ACTION_NONE;
 
     DAVA::FilePath folderPathname;
@@ -43,6 +44,3 @@ private:
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
 };
-
-
-#endif // __TEXTURE_DESCRIPTOR_TOOL_H__

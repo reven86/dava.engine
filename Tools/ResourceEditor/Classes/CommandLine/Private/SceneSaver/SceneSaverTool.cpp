@@ -1,12 +1,13 @@
-#include "CommandLine/SceneSaver/SceneSaverTool.h"
-#include "CommandLine/SceneSaver/SceneSaver.h"
+#include "CommandLine/SceneSaverTool.h"
 #include "CommandLine/Private/OptionName.h"
+#include "CommandLine/Private/SceneConsoleHelper.h"
+#include "Utils/SceneSaver/SceneSaver.h"
 
-using namespace DAVA;
-
-SceneSaverTool::SceneSaverTool()
-    : CommandLineTool("-scenesaver")
+SceneSaverTool::SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-scenesaver")
 {
+    using namespace DAVA;
+
     options.AddOption(OptionName::Save, VariantType(false), "Saving scene from indir to outdir");
     options.AddOption(OptionName::Resave, VariantType(false), "Resave file into indir");
     options.AddOption(OptionName::Yaml, VariantType(false), "Target is *.yaml file");
@@ -17,12 +18,19 @@ SceneSaverTool::SceneSaverTool()
     options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
 }
 
-void SceneSaverTool::ConvertOptionsToParamsInternal()
+bool SceneSaverTool::PostInitInternal()
 {
     inFolder = options.GetOption(OptionName::InDir).AsString();
+    if (inFolder.IsEmpty())
+    {
+        Logger::Error("Input folder was not selected");
+        return false;
+    }
+    inFolder.MakeDirectoryPathname();
+
     outFolder = options.GetOption(OptionName::OutDir).AsString();
     filename = options.GetOption(OptionName::ProcessFile).AsString();
-    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
+    copyConverted = options.GetOption(OptionName::CopyConverted).AsBool();
 
     if (options.GetOption(OptionName::Save).AsBool())
     {
@@ -39,18 +47,6 @@ void SceneSaverTool::ConvertOptionsToParamsInternal()
             commandAction = ACTION_RESAVE_SCENE;
         }
     }
-
-    copyConverted = options.GetOption(OptionName::CopyConverted).AsBool();
-}
-
-bool SceneSaverTool::InitializeInternal()
-{
-    if (inFolder.IsEmpty())
-    {
-        Logger::Error("Input folder was not selected");
-        return false;
-    }
-    inFolder.MakeDirectoryPathname();
 
     if (commandAction == ACTION_SAVE)
     {
@@ -73,10 +69,20 @@ bool SceneSaverTool::InitializeInternal()
         return false;
     }
 
+    if (commandAction != ACTION_RESAVE_YAML)
+    {
+        bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, inFolder);
+        if (!qualityInitialized)
+        {
+            DAVA::Logger::Error("Cannot create path to quality.yaml from %s", inFolder.GetAbsolutePathname().c_str());
+            return false;
+        }
+    }
+
     return true;
 }
 
-void SceneSaverTool::ProcessInternal()
+DAVA::TArc::ConsoleModule::eFrameResult SceneSaverTool::OnFrameInternal()
 {
     switch (commandAction)
     {
@@ -105,17 +111,26 @@ void SceneSaverTool::ProcessInternal()
     }
 
     default:
-        DVASSERT(false);
+        Logger::Error("Unhandled action!");
         break;
     }
+
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-DAVA::FilePath SceneSaverTool::GetQualityConfigPath() const
+void SceneSaverTool::BeforeDestroyedInternal()
 {
-    if (qualityConfigPath.IsEmpty())
-    {
-        return CreateQualityConfigPath(inFolder);
-    }
+    SceneConsoleHelper::FlushRHI();
+}
 
-    return qualityConfigPath;
+void SceneSaverTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-scenesaver -save -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/NewProject/Data/3d/ -processfile Maps/scene.sc2 -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
+    DAVA::Logger::Info("\t-scenesaver -save -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/NewProject/Data/3d/ -processfile Maps/scene.sc2 -qualitycfgpath Users/SmokeTest/Data/quality.yaml -copyconverted");
+
+    DAVA::Logger::Info("\t-scenesaver -resave -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/scene.sc2 -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
+    DAVA::Logger::Info("\t-scenesaver -resave -yaml -indir /Users/SmokeTest/Data/Configs/");
 }

@@ -1,6 +1,7 @@
-#include "CommandLine/SceneExporter/SceneExporterTool.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "CommandLine/SceneExporterTool.h"
 #include "CommandLine/Private/OptionName.h"
+
+#include "Utils/SceneExporter/SceneExporter.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
@@ -9,12 +10,12 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
 
-using namespace DAVA;
+namespace SceneExporterToolDetail
+{
+void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const DAVA::FilePath& inFolder, const SceneExporter::eExportedObjectType objectType, SceneExporter::ExportedObjectCollection& exportedObjects)
+{
+    using namespace DAVA;
 
-namespace SceneExporterToolInternal
-{
-void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const FilePath& inFolder, const SceneExporter::eExportedObjectType objectType, SceneExporter::ExportedObjectCollection& exportedObjects)
-{
     DVASSERT(folderPathname.IsDirectoryPathname())
 
     ScopedPtr<FileList> fileList(new FileList(folderPathname));
@@ -46,7 +47,7 @@ void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const FilePa
     }
 }
 
-SceneExporter::eExportedObjectType GetObjectType(const FilePath& pathname)
+SceneExporter::eExportedObjectType GetObjectType(const DAVA::FilePath& pathname)
 {
     static const Vector<std::pair<SceneExporter::eExportedObjectType, String>> objectDefinition =
     {
@@ -68,6 +69,8 @@ SceneExporter::eExportedObjectType GetObjectType(const FilePath& pathname)
 
 bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
 {
+    using namespace DAVA;
+
     ScopedPtr<File> fileWithLinks(File::Create(fileListPath, File::OPEN | File::READ));
     if (!fileWithLinks)
     {
@@ -104,9 +107,11 @@ bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inF
 }
 }
 
-SceneExporterTool::SceneExporterTool()
-    : CommandLineTool("-sceneexporter")
+SceneExporterTool::SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-sceneexporter")
 {
+    using namespace DAVA;
+
     options.AddOption(OptionName::Scene, VariantType(false), "Target object is scene, so we need to export *.sc2 files from folder");
     options.AddOption(OptionName::Texture, VariantType(false), "Target object is texture, so we need to export *.tex files from folder");
 
@@ -132,14 +137,27 @@ SceneExporterTool::SceneExporterTool()
     options.AddOption(OptionName::AssetCacheTimeout, VariantType(static_cast<uint32>(1)), "timeout for caching operations");
 }
 
-void SceneExporterTool::ConvertOptionsToParamsInternal()
+bool SceneExporterTool::PostInitInternal()
 {
     inFolder = options.GetOption(OptionName::InDir).AsString();
+    if (inFolder.IsEmpty())
+    {
+        Logger::Error("[SceneExporterTool] Input folder was not selected");
+        return false;
+    }
+    inFolder.MakeDirectoryPathname();
+
     outFolder = options.GetOption(OptionName::OutDir).AsString();
+    if (outFolder.IsEmpty())
+    {
+        Logger::Error("[SceneExporterTool] Output folder was not selected");
+        return false;
+    }
+    outFolder.MakeDirectoryPathname();
+
     filename = options.GetOption(OptionName::ProcessFile).AsString();
     foldername = options.GetOption(OptionName::ProcessDir).AsString();
     fileListPath = options.GetOption(OptionName::ProcessFileList).AsString();
-    qualityConfigPath = options.GetOption(OptionName::QualityConfig).AsString();
 
     if (options.GetOption(OptionName::Texture).AsBool())
     {
@@ -155,6 +173,11 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     {
         String gpuName = options.GetOption(OptionName::GPU, i).AsString();
         requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+    }
+    if (requestedGPUs.empty())
+    {
+        Logger::Error("[SceneExporterTool] Unsupported gpu parameter was selected");
+        return false;
     }
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
@@ -173,24 +196,6 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
         connectionsParams.port = static_cast<uint16>(options.GetOption(OptionName::AssetCachePort).AsUInt32());
         connectionsParams.timeoutms = options.GetOption(OptionName::AssetCacheTimeout).AsUInt32() * 1000; //ms
     }
-}
-
-bool SceneExporterTool::InitializeInternal()
-{
-    if (inFolder.IsEmpty())
-    {
-        Logger::Error("[SceneExporterTool] Input folder was not selected");
-        return false;
-    }
-    inFolder.MakeDirectoryPathname();
-
-    if (outFolder.IsEmpty())
-    {
-        Logger::Error("[SceneExporterTool] Output folder was not selected");
-        return false;
-    }
-
-    outFolder.MakeDirectoryPathname();
 
     if (filename.empty() == false)
     {
@@ -210,16 +215,17 @@ bool SceneExporterTool::InitializeInternal()
         return false;
     }
 
-    if (requestedGPUs.empty())
+    bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, inFolder);
+    if (!qualityInitialized)
     {
-        Logger::Error("[SceneExporterTool] Unsupported gpu parameter was selected");
+        DAVA::Logger::Error("Cannot create path to quality.yaml from %s", inFolder.GetAbsolutePathname().c_str());
         return false;
     }
 
     return true;
 }
 
-void SceneExporterTool::ProcessInternal()
+DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
 {
     AssetCacheClient cacheClient;
 
@@ -254,11 +260,11 @@ void SceneExporterTool::ProcessInternal()
 
     if (commandAction == ACTION_EXPORT_FILE)
     {
-        commandObject = SceneExporterToolInternal::GetObjectType(inFolder + filename);
+        commandObject = SceneExporterToolDetail::GetObjectType(inFolder + filename);
         if (commandObject == SceneExporter::OBJECT_NONE)
         {
             Logger::Error("[SceneExporterTool] found wrong filename %s", filename.c_str());
-            return;
+            return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
         }
         exportedObjects.emplace_back(commandObject, std::move(filename));
     }
@@ -267,15 +273,15 @@ void SceneExporterTool::ProcessInternal()
         FilePath folderPathname(inFolder + foldername);
         folderPathname.MakeDirectoryPathname();
 
-        SceneExporterToolInternal::CollectObjectsFromFolder(folderPathname, inFolder, commandObject, exportedObjects);
+        SceneExporterToolDetail::CollectObjectsFromFolder(folderPathname, inFolder, commandObject, exportedObjects);
     }
     else if (commandAction == ACTION_EXPORT_FILELIST)
     {
-        bool collected = SceneExporterToolInternal::CollectObjectFromFileList(fileListPath, inFolder, exportedObjects);
+        bool collected = SceneExporterToolDetail::CollectObjectFromFileList(fileListPath, inFolder, exportedObjects);
         if (!collected)
         {
             Logger::Error("[SceneExporterTool] Can't collect links from file %s", fileListPath.GetAbsolutePathname().c_str());
-            return;
+            return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
         }
     }
 
@@ -285,14 +291,26 @@ void SceneExporterTool::ProcessInternal()
     {
         cacheClient.Disconnect();
     }
+
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-FilePath SceneExporterTool::GetQualityConfigPath() const
+void SceneExporterTool::BeforeDestroyedInternal()
 {
-    if (qualityConfigPath.IsEmpty())
-    {
-        return CreateQualityConfigPath(inFolder);
-    }
+    SceneConsoleHelper::FlushRHI();
+}
 
-    return qualityConfigPath;
+void SceneExporterTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-sceneexporter -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfile Maps/scene.sc2 -gpu mali -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
+    DAVA::Logger::Info("\t-sceneexporter -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfile Maps/image/texture.tex -gpu mali -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
+
+    DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfolder Maps/ -gpu adreno");
+    DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfolder Maps/ -gpu adreno");
+
+    DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno");
+    DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno,PowerVR_iOS -useCache -ip 127.0.0.1");
 }

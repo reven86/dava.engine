@@ -1,12 +1,12 @@
 #include "CommandLine/ConsoleHelpTool.h"
 #include "Logger/Logger.h"
 
-ConsoleHelpTool::ConsoleHelpTool()
-    : REConsoleModuleCommon("-help")
+ConsoleHelpTool::ConsoleHelpTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-help")
 {
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult ConsoleHelpTool::OnFrameInternal()
+void ConsoleHelpTool::ShowHelpInternal()
 {
 #if defined(__DAVAENGINE_BEAST__)
     DAVA::Logger::Info("List of available commands: -sceneexporter, -scenesaver, -texdescriptor, -staticocclusion, -beast, -dump, -imagesplitter, -version, -sceneimagedump, -help");
@@ -18,7 +18,7 @@ DAVA::TArc::ConsoleModule::eFrameResult ConsoleHelpTool::OnFrameInternal()
     DAVA::Logger::Info("\t-scenesaver - set of tools to save, resave or save scenes with references");
     DAVA::Logger::Info("\t-texdescriptor - set of tools to manipulate with textures and their descriptors");
     DAVA::Logger::Info("\t-staticocclusion - tool for building the static occlusion in console mode");
-
+    
 #if defined(__DAVAENGINE_BEAST__)
     DAVA::Logger::Info("\t-beast - tool for beasting scene in console mode");
 #endif //__DAVAENGINE_BEAST__
@@ -31,5 +31,5 @@ DAVA::TArc::ConsoleModule::eFrameResult ConsoleHelpTool::OnFrameInternal()
 
     DAVA::Logger::Info("\nSee \'ResourceEditor <command> -h\' to read about a specific command.");
 
-    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+    REConsoleModuleCommon::ShowHelpInternal();
 }

@@ -1,5 +1,7 @@
-#include "CommandLine/Dump/SceneDumper.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "CommandLine/Private/Dump/SceneDumper.h"
+#include "CommandLine/Private/SceneConsoleHelper.h"
+#include "Utils/SceneUtils/SceneUtils.h"
+
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -41,13 +43,13 @@ SceneDumper::SceneDumper(const FilePath& scenePath)
         SafeRelease(scene);
     }
 
-    RenderObjectsFlusher::Flush();
+    SceneConsoleHelper::FlushRHI();
 }
 
 SceneDumper::~SceneDumper()
 {
     SafeRelease(scene);
-    RenderObjectsFlusher::Flush();
+    SceneConsoleHelper::FlushRHI();
 }
 
 void SceneDumper::DumpLinksRecursive(Entity* entity, SceneDumper::SceneLinks& links) const

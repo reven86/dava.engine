@@ -51,7 +51,7 @@ private:
     void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override;
     void OnRemovedFromCache(const AssetCache::CacheItemKey& key, bool removed) override;
     void OnCacheCleared(bool cleared) override;
-    void OnServerStatusReceived();
+    void OnServerStatusReceived() override;
     void OnIncorrectPacketReceived(AssetCache::IncorrectPacketType) override;
     void OnClientProxyStateChanged() override;
 
@@ -64,9 +64,9 @@ private:
         {
         }
         Request(AssetCache::ePacketID requestID_, const AssetCache::CacheItemKey& key_, AssetCache::CachedItemValue* value_ = nullptr)
-            : requestID(requestID_)
-            , key(key_)
+            : key(key_)
             , value(value_)
+            , requestID(requestID_)
         {
         }
 

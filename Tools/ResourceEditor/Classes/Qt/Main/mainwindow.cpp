@@ -49,7 +49,7 @@
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
 
-#include "CommandLine/SceneSaver/SceneSaver.h"
+#include "Utils/SceneSaver/SceneSaver.h"
 #include "Commands2/Base/RECommandStack.h"
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/RECommandNotificationObject.h"

@@ -1,9 +1,10 @@
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
+
 #include "FileSystem/FileList.h"
 #include "Functional/Function.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/KeyedArchive.h"
 
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "ImageTools/ImageTools.h"
 #include "Settings/SettingsManager.h"
 #include "Preset.h"

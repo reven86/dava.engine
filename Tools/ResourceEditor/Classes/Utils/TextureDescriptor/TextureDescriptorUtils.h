@@ -1,9 +1,8 @@
-#ifndef __TEXTURE_DESCRIPTOR_UTILS_H__
-#define __TEXTURE_DESCRIPTOR_UTILS_H__
+#pragma once
 
 #include "Render/TextureDescriptor.h"
 
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
 namespace DAVA
@@ -27,7 +26,3 @@ void SetPreset(const DAVA::FilePath& descriptorPath, const DAVA::FilePath& prese
 
 void SavePreset(const DAVA::Vector<DAVA::FilePath>& descriptorPath, const DAVA::Vector<DAVA::FilePath>& presetPath);
 };
-
-
-
-#endif // __TEXTURE_DESCRIPTOR_UTILS_H__

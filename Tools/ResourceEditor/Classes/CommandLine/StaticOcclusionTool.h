@@ -1,27 +1,28 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/ScopedPtr.h"
+#include "FileSystem/FilePath.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
-class DumpTool : public REConsoleModuleCommon
+class SceneEditor2;
+class StaticOcclusionTool : public REConsoleModuleCommon
 {
     enum eAction : DAVA::int32
     {
         ACTION_NONE = -1,
-        ACTION_DUMP_LINKS
+        ACTION_BUILD,
     };
 
 public:
-    DumpTool(const DAVA::Vector<DAVA::String>& commandLine);
+    StaticOcclusionTool(const DAVA::Vector<DAVA::String>& commandLine);
 
-private:
+protected:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
     void BeforeDestroyedInternal() override;
     void ShowHelpInternal() override;
 
+    ScopedPtr<SceneEditor2> scene;
     eAction commandAction = ACTION_NONE;
-    DAVA::String filename;
-    DAVA::FilePath inFolder;
-    DAVA::FilePath outFile;
 };

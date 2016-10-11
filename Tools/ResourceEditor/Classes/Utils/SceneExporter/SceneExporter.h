@@ -2,7 +2,7 @@
 
 #include "Utils/StringFormat.h"
 
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 #include "AssetCache/AssetCache.h"
 

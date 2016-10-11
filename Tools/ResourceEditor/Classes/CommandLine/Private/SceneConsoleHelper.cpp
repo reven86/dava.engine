@@ -1,13 +1,13 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
-
-/*
- * RenderObjectsFlusher implementation
- * temporary (hopefully!) solution to clean-up RHI's objects
- * when there is no run/render loop in the application
- */
+#include "CommandLine/ProgramOptions.h"
 
 namespace SceneConsoleHelperDetail
 {
+/*
+ * Flush implementation
+ * temporary (hopefully!) solution to clean-up RHI's objects
+ * when there is no run/render loop in the application
+ */
 DAVA_DEPRECATED(void Flush())
 {
     static const rhi::HTexture nullTexture;
@@ -21,9 +21,8 @@ DAVA_DEPRECATED(void Flush())
         Renderer::EndFrame();
     }
 }
-}
 
-DAVA::FilePath SceneConsoleHelper::CreateQualityPathname(const DAVA::FilePath& qualityPathname, const DAVA::FilePath& targetPathname)
+DAVA::FilePath CreateQualityPathname(const DAVA::FilePath& qualityPathname, const DAVA::FilePath& targetPathname)
 {
     if (qualityPathname.IsEmpty() == false)
     {
@@ -39,13 +38,22 @@ DAVA::FilePath SceneConsoleHelper::CreateQualityPathname(const DAVA::FilePath& q
 
     return DAVA::FilePath();
 }
-
-bool SceneConsoleHelper::InitializeRendering(const DAVA::FilePath& qualityPathname)
-{
-    QualitySettingsSystem::Instance()->Load(qualityPathname);
 }
 
-void SceneConsoleHelper::ReleaseRendering()
+bool SceneConsoleHelper::InitializeQualitySystem(const DAVA::ProgramOptions& options, const DAVA::FilePath& targetPathname)
+{
+    DAVA::FilePath qualityPathname = options.GetOption(OptionName::QualityConfig).AsString();
+    qualityPathname = SceneConsoleHelperDetail::CreateQualityPathname(qualityPathname, targetPathname);
+    if (qualityPathname.IsEmpty())
+    {
+        return false;
+    }
+
+    QualitySettingsSystem::Instance()->Load(qualityPathname);
+    return true;
+}
+
+void SceneConsoleHelper::FlushRHI()
 {
     SceneConsoleHelperDetail::Flush();
 }

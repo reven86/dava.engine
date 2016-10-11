@@ -3,7 +3,7 @@
 #if defined(__DAVAENGINE_BEAST__)
 
 #include "Base/ScopedPtr.h"
-
+#include "Logger/Logger.h"
 
 #include "Scene/SceneEditor2.h"
 #include "Beast/BeastRunner.h"
@@ -12,8 +12,8 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
-BeastCommandLineTool::BeastCommandLineTool()
-    : REConsoleModuleCommon("-beast")
+BeastCommandLineTool::BeastCommandLineTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-beast")
 {
     options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of scene for beasting");
     options.AddOption(OptionName::Output, VariantType(String("")), "Full path for output folder for beasting");
@@ -21,18 +21,6 @@ BeastCommandLineTool::BeastCommandLineTool()
 }
 
 bool BeastCommandLineTool::PostInitInternal()
-{
-    bool commandLineIsCorrect = ReadCommandLine();
-    if (commandLineIsCorrect == false)
-    {
-        return false;
-    }
-
-    SceneConsoleHelper::InitializeRenderer(qualityPathname);
-    return true;
-}
-
-bool BeastCommandLineTool::ReadCommandLine()
 {
     scenePathname = options.GetOption(OptionName::File).AsString();
     if (scenePathname.IsEmpty() || !scenePathname.IsEqualToExtension(".sc2"))
@@ -52,9 +40,8 @@ bool BeastCommandLineTool::ReadCommandLine()
         outputPath.MakeDirectoryPathname();
     }
 
-    qualityConfigPathname = options.GetOption(OptionName::QualityConfig).AsString();
-    qualityConfigPathname = SceneConsoleHelper::CreateQualityPathname(qualityConfigPathname, scenePathname);
-    if (qualityConfigPath.IsEmpty())
+    bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, scenePathname);
+    if (!qualityInitialized)
     {
         DAVA::Logger::Error("Cannot create path to quality.yaml from %s", scenePathname.GetAbsolutePathname().c_str());
         return false;
@@ -84,5 +71,14 @@ void BeastCommandLineTool::BeforeDestroyedInternal()
 {
     SceneConsoleHelper::ReleaseRendering();
 }
+
+void BeastCommandLineTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-beast -file /Users/SmokeTest/DataSource/3d/Maps/scene.sc2 -output /Users/SmokeTest/DataSource/3d/Maps/beast");
+}
+
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

@@ -204,7 +204,7 @@ public slots:
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
-    void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent* event) override;
     void SetupWidget();
     void SetupMainMenu();
     void SetupThemeActions();

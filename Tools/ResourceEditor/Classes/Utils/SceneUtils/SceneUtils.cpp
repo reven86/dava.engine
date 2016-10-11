@@ -142,4 +142,3 @@ void SceneUtils::PrepareDestination()
         }
     }
 }
-

@@ -9,7 +9,13 @@
 #include "CommandLine/ConsoleHelpTool.h"
 #include "CommandLine/DumpTool.h"
 #include "CommandLine/SceneImageDump.h"
+#include "CommandLine/StaticOcclusionTool.h"
 #include "CommandLine/VersionTool.h"
+
+#include "CommandLine/ImageSplitterTool.h"
+#include "CommandLine/TextureDescriptorTool.h"
+#include "CommandLine/SceneSaverTool.h"
+#include "CommandLine/SceneExporterTool.h"
 
 namespace REApplicationDetail
 {
@@ -81,24 +87,49 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
     DAVA::String command = cmdLine[1];
     if (command == "-help")
     {
-        tarcCore->CreateModule<ConsoleHelpTool>();
+        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
     }
     else if (command == "-version")
     {
-        tarcCore->CreateModule<VersionTool>();
+        tarcCore->CreateModule<VersionTool>(cmdLine);
     }
 #if defined(__DAVAENGINE_BEAST__)
     else if (command == "-beast")
     {
-        tarcCore->CreateModule<BeastCommandLineTool>();
+        tarcCore->CreateModule<BeastCommandLineTool>(cmdLine);
     }
 #endif //#if defined (__DAVAENGINE_BEAST__)
     else if (command == "-dump")
     {
-        tarcCore->CreateModule<DumpTool>();
+        tarcCore->CreateModule<DumpTool>(cmdLine);
     }
     else if (command == "-sceneimagedump")
     {
-        tarcCore->CreateModule<SceneImageDump>();
+        tarcCore->CreateModule<SceneImageDump>(cmdLine);
+    }
+    else if (command == "-staticocclusion")
+    {
+        tarcCore->CreateModule<StaticOcclusionTool>(cmdLine);
+    }
+    else if (command == "-imagesplitter")
+    {
+        tarcCore->CreateModule<ImageSplitterTool>(cmdLine);
+    }
+    else if (command == "-texdescriptor")
+    {
+        tarcCore->CreateModule<TextureDescriptorTool>(cmdLine);
+    }
+    else if (command == "-sceneexporter")
+    {
+        tarcCore->CreateModule<SceneExporterTool>(cmdLine);
+    }
+    else if (command == "-scenesaver")
+    {
+        tarcCore->CreateModule<SceneSaverTool>(cmdLine);
+    }
+    else
+    {
+        DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
+        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
     }
 }

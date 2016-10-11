@@ -1,17 +1,17 @@
-#include "CommandLine/TextureDescriptor/TextureDescriptorTool.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "CommandLine/TextureDescriptorTool.h"
 #include "CommandLine/Private/OptionName.h"
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/File.h"
 
-using namespace DAVA;
+namespace TextureDescriptorToolDetail
+{
+DAVA::Vector<DAVA::FilePath> LoadPathesFromFile(const DAVA::FilePath& filePath)
+{
+    using namespace DAVA;
 
-namespace TextureDescriptorToolLocal
-{
-Vector<FilePath> LoadPathesFromFile(const FilePath& filePath)
-{
     ScopedPtr<File> fileWithPathes(File::Create(filePath, File::OPEN | File::READ));
     if (!fileWithPathes)
     {
@@ -35,9 +35,11 @@ Vector<FilePath> LoadPathesFromFile(const FilePath& filePath)
 }
 }
 
-TextureDescriptorTool::TextureDescriptorTool()
-    : CommandLineTool("-texdescriptor")
+TextureDescriptorTool::TextureDescriptorTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-texdescriptor")
 {
+    using namespace DAVA;
+
     options.AddOption(OptionName::Folder, VariantType(String("")), "Path to folder for operation on descriptors");
     options.AddOption(OptionName::File, VariantType(String("")), "Pathname of descriptor");
 
@@ -64,7 +66,13 @@ TextureDescriptorTool::TextureDescriptorTool()
     }
 }
 
-void TextureDescriptorTool::ConvertOptionsToParamsInternal()
+bool TextureDescriptorTool::PostInitInternal()
+{
+    ReadCommandLine();
+    return ValidateCommandLine();
+}
+
+void TextureDescriptorTool::ReadCommandLine()
 {
     folderPathname = options.GetOption(OptionName::Folder).AsString();
     filePathname = options.GetOption(OptionName::File).AsString();
@@ -138,7 +146,7 @@ void TextureDescriptorTool::ConvertOptionsToParamsInternal()
     }
 }
 
-bool TextureDescriptorTool::InitializeInternal()
+bool TextureDescriptorTool::ValidateCommandLine()
 {
     if (commandAction == TextureDescriptorTool::ACTION_NONE)
     {
@@ -187,7 +195,7 @@ bool TextureDescriptorTool::InitializeInternal()
     return true;
 }
 
-void TextureDescriptorTool::ProcessInternal()
+DAVA::TArc::ConsoleModule::eFrameResult TextureDescriptorTool::OnFrameInternal()
 {
     switch (commandAction)
     {
@@ -244,7 +252,7 @@ void TextureDescriptorTool::ProcessInternal()
     {
         if (!filesList.IsEmpty())
         {
-            TextureDescriptorUtils::SavePreset(TextureDescriptorToolLocal::LoadPathesFromFile(filesList), TextureDescriptorToolLocal::LoadPathesFromFile(presetsList));
+            TextureDescriptorUtils::SavePreset(TextureDescriptorToolDetail::LoadPathesFromFile(filesList), TextureDescriptorToolDetail::LoadPathesFromFile(presetsList));
         }
         else
         {
@@ -254,8 +262,32 @@ void TextureDescriptorTool::ProcessInternal()
     }
     default:
     {
-        Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");
+        Logger::Error("Unhandled action!");
         break;
     }
     }
+
+    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+}
+
+void TextureDescriptorTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-texdescriptor -create -folder /Users/SmokeTest/DataSource/3d/Maps/images/");
+    DAVA::Logger::Info("\t-texdescriptor -create -folder /Users/SmokeTest/DataSource/3d/Maps/images/ -preset /Users/descriptor.yaml");
+    DAVA::Logger::Info("\t-texdescriptor -create -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.png");
+
+    DAVA::Logger::Info("\t-texdescriptor -resave -folder /Users/SmokeTest/DataSource/3d/Maps/images/");
+    DAVA::Logger::Info("\t-texdescriptor -resave -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.tex");
+
+    DAVA::Logger::Info("\t-texdescriptor -setcompression -folder /Users/SmokeTest/DataSource/3d/Maps/images/");
+    DAVA::Logger::Info("\t-texdescriptor -setcompression -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.tex -adreno ATC_RGB -tegra DXT5 -mali ETC1 -convert -m -quality 4");
+
+    DAVA::Logger::Info("\t-texdescriptor -setpreset -folder /Users/SmokeTest/DataSource/3d/Maps/images/ -preset /Users/descriptor.yaml");
+    DAVA::Logger::Info("\t-texdescriptor -setpreset -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.tex -preset /Users/descriptor.yaml -convert -qulity 4");
+
+    DAVA::Logger::Info("\t-texdescriptor -savepreset -processfilelist /Users/textures.txt -presetslist /Users/presets.txt");
+    DAVA::Logger::Info("\t-texdescriptor -savepreset -file /Users/SmokeTest/DataSource/3d/Maps/images/texture.tex");
 }

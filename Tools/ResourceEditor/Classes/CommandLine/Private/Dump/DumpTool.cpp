@@ -6,9 +6,11 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 
-DumpTool::DumpTool()
-    : REConsoleModuleCommon("-dump")
+DumpTool::DumpTool(const DAVA::Vector<DAVA::String>& commandLine)
+    : REConsoleModuleCommon(commandLine, "-dump")
 {
+    using namespace DAVA;
+
     options.AddOption(OptionName::Links, VariantType(false), "Target for dumping is links");
     options.AddOption(OptionName::InDir, VariantType(String("")), "Path for Project/DataSource/3d/ folder");
     options.AddOption(OptionName::ProcessFile, VariantType(String("")), "Filename from DataSource/3d/ for dumping");
@@ -17,18 +19,6 @@ DumpTool::DumpTool()
 }
 
 bool DumpTool::PostInitInternal()
-{
-    bool commandLineIsCorrect = ReadCommandLine();
-    if (commandLineIsCorrect == false)
-    {
-        return false;
-    }
-
-    SceneConsoleHelper::InitializeRenderer(qualityPathname);
-    return true;
-}
-
-bool DumpTool::ReadCommandLine()
 {
     inFolder = options.GetOption(OptionName::InDir).AsString();
     if (inFolder.IsEmpty())
@@ -52,9 +42,8 @@ bool DumpTool::ReadCommandLine()
         return false;
     }
 
-    qualityPathname = options.GetOption(OptionName::QualityConfig).AsString();
-    qualityPathname = SceneConsoleHelper::CreateQualityPathname(qualityPathname, inFolder);
-    if (qualityPathname.IsEmpty())
+    bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, inFolder + filename);
+    if (!qualityInitialized)
     {
         DAVA::Logger::Error("Cannot create path to quality.yaml from %s", inFolder.GetAbsolutePathname().c_str());
         return false;
@@ -69,6 +58,7 @@ bool DumpTool::ReadCommandLine()
         DAVA::Logger::Error("Target for dumping was not selected");
         return false;
     }
+
     return true;
 }
 
@@ -79,7 +69,7 @@ DAVA::TArc::ConsoleModule::eFrameResult DumpTool::OnFrameInternal()
         auto links = SceneDumper::DumpLinks(inFolder + filename);
 
         DAVA::FileSystem::Instance()->CreateDirectory(outFile.GetDirectory(), true);
-        DAVA::ScopedPtr<DAVA::File> file(File::Create(outFile, DAVA::File::WRITE | DAVA::File::CREATE));
+        DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(outFile, DAVA::File::WRITE | DAVA::File::CREATE));
         if (file)
         {
             for (const auto& link : links)
@@ -97,5 +87,13 @@ DAVA::TArc::ConsoleModule::eFrameResult DumpTool::OnFrameInternal()
 
 void DumpTool::BeforeDestroyedInternal()
 {
-    SceneConsoleHelper::ReleaseRendering();
+    SceneConsoleHelper::FlushRHI();
+}
+
+void DumpTool::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-dump -indir /Users/SmokeTest/DataSource/3d/ -processfile Maps/11-grass/test_scene.sc2 -outfile /Users/Test/dump.txt -links");
 }
