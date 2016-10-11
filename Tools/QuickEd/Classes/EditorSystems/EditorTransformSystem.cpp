@@ -11,6 +11,11 @@
 
 using namespace DAVA;
 
+Vector2 EditorTransformSystem::GetMinimumSize()
+{
+    return Vector2(16.0f, 16.0f);
+}
+
 REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("moveMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("resizeMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
@@ -573,7 +578,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 {
-    const Vector2 scaledMinimum(systemsManager->minimumSize / controlGeometricData.scale);
+    const Vector2 scaledMinimum(GetMinimumSize() / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
 
     Vector2 finalSize(origSize + deltaSize);
