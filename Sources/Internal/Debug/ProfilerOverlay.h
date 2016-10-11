@@ -6,6 +6,7 @@
 
 namespace DAVA
 {
+class UIEvent;
 class ProfilerCPU;
 class ProfilerGPU;
 class ProfilerOverlay
@@ -33,13 +34,16 @@ public:
 
 protected:
     static const uint32 EVENT_HISTORY_LENGTH = 300;
+    static const uint32 MAX_CPU_FRAME_TRACES = 6;
+
+    struct HistoryInstance;
+    using HistoryArray = RingArray<HistoryInstance>;
 
     struct HistoryInstance
     {
         uint64 accurate = 0;
         float32 filtered = 0.f;
     };
-    using HistoryArray = RingArray<HistoryInstance>;
 
     struct EventHistory
     {
@@ -58,7 +62,7 @@ protected:
         };
 
         Vector<TraceRect> rects;
-        Set<FastName> names;
+        FastNameMap<uint64> eventsDuration;
         uint32 frameIndex = 0;
         uint64 minTimestamp = uint64(-1);
         uint64 maxTimestamp = 0;
