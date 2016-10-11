@@ -63,6 +63,7 @@ void REModule::OnRenderSystemInitialized(DAVA::Window* w)
     using TData = REModuleDetail::REGlobalData;
     DVASSERT(GetAccessor().GetGlobalContext().HasData<TData>());
     REModuleDetail::REGlobalData& globalData = GetAccessor().GetGlobalContext().GetData<REModuleDetail::REGlobalData>();
+    globalData.mainWindow->OnRenderingInitialized();
 
     QObject::connect(globalData.launcher, &ResourceEditorLauncher::LaunchFinished, [this]()
                      {
