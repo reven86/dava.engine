@@ -12,7 +12,7 @@ vertex_out
 {
     float4  position    : SV_POSITION;
     float2  texCoord    : TEXCOORD0;
-    half3   vegetationColor :COLOR0;
+    [lowp] half3   vegetationColor :COLOR0;
     #if VERTEX_FOG
     float4  varFog      : TEXCOORD5;
     #endif

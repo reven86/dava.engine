@@ -15,7 +15,7 @@ vertex_out
     float2  uvDetail    : TEXCOORD1;
     float2  uvGradient  : TEXCOORD2;
     float2  uvContour   : TEXCOORD3;
-    half4   color       : COLOR0;
+    [lowp] half4   color       : COLOR0;
 };
 
 [auto][instance] property float4x4 worldViewProjMatrix;

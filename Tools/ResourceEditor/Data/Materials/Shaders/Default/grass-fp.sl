@@ -3,7 +3,7 @@
 fragment_in
 {
     float2  texCoord        : TEXCOORD0;
-    half3   vegetationColor : COLOR0;
+    [lowp] half3   vegetationColor : COLOR0;
 
     #if VERTEX_FOG
     float4  varFog          : TEXCOORD5;

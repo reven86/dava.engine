@@ -38,20 +38,20 @@ fragment_in
 
     #if VERTEX_LIT
 
-        half varDiffuseColor : COLOR0;
+        [lowp] half varDiffuseColor : COLOR0;
 
         #if BLINN_PHONG
-            half varSpecularColor : TEXCOORD4;
+            [lowp] half varSpecularColor : TEXCOORD4;
         #elif NORMALIZED_BLINN_PHONG
-            half4 varSpecularColor : TEXCOORD4;
+            [lowp] half4 varSpecularColor : TEXCOORD4;
         #endif
     
     #elif PIXEL_LIT
         
         #if FAST_NORMALIZATION
-        half3 varHalfVec : COLOR0;
+        [lowp] half3 varHalfVec : COLOR0;
         #endif
-        half3 varToLightVec : COLOR1;
+        [lowp] half3 varToLightVec : COLOR1;
         float3 varToCameraVec : TEXCOORD7;
     #endif
     
@@ -60,15 +60,15 @@ fragment_in
     #endif
 
     #if VERTEX_COLOR || SPHERICAL_LIT
-        half4 varVertexColor : COLOR1;
+        [lowp] half4 varVertexColor : COLOR1;
     #endif
 
     #if VERTEX_FOG
-        half4 varFog : TEXCOORD5;
+        [lowp] half4 varFog : TEXCOORD5;
     #endif           
 
     #if FRAME_BLEND
-        half varTime : TEXCOORD3;
+        [lowp] half varTime : TEXCOORD3;
     #endif
 
 };

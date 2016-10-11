@@ -3,7 +3,7 @@
 fragment_in
 {
     float2  uv      : TEXCOORD0;
-    half4   color   : COLOR0;
+    [lowp] half4   color   : COLOR0;
 };
 
 fragment_out

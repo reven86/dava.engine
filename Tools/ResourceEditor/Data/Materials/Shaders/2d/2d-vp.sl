@@ -13,7 +13,7 @@ vertex_out
 #if TEXTURED
     float2  uv      : TEXCOORD0;
 #endif //TEXTURED
-    half4   color   : COLOR0;
+    [lowp] half4   color   : COLOR0;
 };
 
 

@@ -9,7 +9,7 @@ vertex_out
 {
     float4  pos     : SV_POSITION;
     float2  uv      : TEXCOORD0;
-    half4   color   : COLOR0;
+    [lowp] half4   color   : COLOR0;
 };
 
 [auto][instance] property float4x4 worldViewProjMatrix;
