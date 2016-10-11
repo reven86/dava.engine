@@ -12,7 +12,7 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 
@@ -90,7 +90,7 @@ void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity* entity)
 
 void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;

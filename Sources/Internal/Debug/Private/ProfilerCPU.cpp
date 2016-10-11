@@ -1,4 +1,4 @@
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Platform/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Base/AllocatorFactory.h"
@@ -11,17 +11,17 @@
 namespace DAVA
 {
 
-#if CPU_PROFILER_ENABLED
-static CPUProfiler GLOBAL_TIME_PROFILER;
-CPUProfiler* const CPUProfiler::globalProfiler = &GLOBAL_TIME_PROFILER;
+#if PROFILER_CPU_ENABLED
+static ProfilerCPU GLOBAL_TIME_PROFILER;
+ProfilerCPU* const ProfilerCPU::globalProfiler = &GLOBAL_TIME_PROFILER;
 #else
-CPUProfiler* const CPUProfiler::globalProfiler = nullptr;
+ProfilerCPU* const ProfilerCPU::globalProfiler = nullptr;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 //Internal Declaration
 
-struct CPUProfiler::Counter
+struct ProfilerCPU::Counter
 {
     uint64 startTime = 0;
     uint64 endTime = 0;
@@ -35,7 +35,7 @@ struct CounterTreeNode
 {
     IMPLEMENT_POOL_ALLOCATOR(CounterTreeNode, 128);
 
-    static CounterTreeNode* BuildTree(CPUProfiler::CounterArray::iterator begin, CPUProfiler::CounterArray* array);
+    static CounterTreeNode* BuildTree(ProfilerCPU::CounterArray::iterator begin, ProfilerCPU::CounterArray* array);
     static CounterTreeNode* CopyTree(const CounterTreeNode* node);
     static void MergeTree(CounterTreeNode* root, const CounterTreeNode* node);
     static void DumpTree(const CounterTreeNode* node, std::ostream& stream, bool average);
@@ -75,7 +75,7 @@ bool NameEquals(const char* name1, const char* name2)
 
 //////////////////////////////////////////////////////////////////////////
 
-CPUProfiler::ScopedCounter::ScopedCounter(const char* counterName, CPUProfiler* _profiler)
+ProfilerCPU::ScopedCounter::ScopedCounter(const char* counterName, ProfilerCPU* _profiler)
 {
     profiler = _profiler;
     if (profiler->started)
@@ -90,7 +90,7 @@ CPUProfiler::ScopedCounter::ScopedCounter(const char* counterName, CPUProfiler* 
     }
 }
 
-CPUProfiler::ScopedCounter::~ScopedCounter()
+ProfilerCPU::ScopedCounter::~ScopedCounter()
 {
     // We don't write end time if profiler stopped cause
     // in this moment thread may other dump counters.
@@ -103,33 +103,33 @@ CPUProfiler::ScopedCounter::~ScopedCounter()
     }
 }
 
-CPUProfiler::CPUProfiler(uint32 countersCount)
+ProfilerCPU::ProfilerCPU(uint32 countersCount)
 {
     counters = new CounterArray(countersCount);
 }
 
-CPUProfiler::~CPUProfiler()
+ProfilerCPU::~ProfilerCPU()
 {
     DeleteSnapshots();
     SafeDelete(counters);
 }
 
-void CPUProfiler::Start()
+void ProfilerCPU::Start()
 {
     started = true;
 }
 
-void CPUProfiler::Stop()
+void ProfilerCPU::Stop()
 {
     started = false;
 }
 
-bool CPUProfiler::IsStarted()
+bool ProfilerCPU::IsStarted()
 {
     return started;
 }
 
-int32 CPUProfiler::MakeSnapshot()
+int32 ProfilerCPU::MakeSnapshot()
 {
     //CPU profiler use 'pseudo-thread-safe' ring array (see ProfilerRingArray.h)
     //So we can't read array when other thread may write
@@ -140,7 +140,7 @@ int32 CPUProfiler::MakeSnapshot()
     return int32(snapshots.size() - 1);
 }
 
-void CPUProfiler::DeleteSnapshot(int32 snapshot)
+void ProfilerCPU::DeleteSnapshot(int32 snapshot)
 {
     if (snapshot != NO_SNAPSHOT_ID)
     {
@@ -150,14 +150,14 @@ void CPUProfiler::DeleteSnapshot(int32 snapshot)
     }
 }
 
-void CPUProfiler::DeleteSnapshots()
+void ProfilerCPU::DeleteSnapshots()
 {
     for (CounterArray*& c : snapshots)
         SafeDelete(c);
     snapshots.clear();
 }
 
-uint64 CPUProfiler::GetLastCounterTime(const char* counterName)
+uint64 ProfilerCPU::GetLastCounterTime(const char* counterName)
 {
     uint64 timeDelta = 0;
     CounterArray::reverse_iterator it = counters->rbegin(), itEnd = counters->rend();
@@ -174,7 +174,7 @@ uint64 CPUProfiler::GetLastCounterTime(const char* counterName)
     return timeDelta;
 }
 
-void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void ProfilerCPU::DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
@@ -206,7 +206,7 @@ void CPUProfiler::DumpLast(const char* counterName, uint32 counterCount, std::os
     stream.flush();
 }
 
-void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
+void ProfilerCPU::DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before dumping");
 
@@ -249,12 +249,12 @@ void CPUProfiler::DumpAverage(const char* counterName, uint32 counterCount, std:
     stream.flush();
 }
 
-void CPUProfiler::DumpJSON(std::ostream& stream, int32 snapshot)
+void ProfilerCPU::DumpJSON(std::ostream& stream, int32 snapshot)
 {
     TraceEvent::DumpJSON(GetTrace(snapshot), stream);
 }
 
-Vector<TraceEvent> CPUProfiler::GetTrace(int32 snapshot)
+Vector<TraceEvent> ProfilerCPU::GetTrace(int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before tracing");
 
@@ -271,7 +271,7 @@ Vector<TraceEvent> CPUProfiler::GetTrace(int32 snapshot)
     return trace;
 }
 
-Vector<TraceEvent> CPUProfiler::GetTrace(const char* counterName, uint32 counterCount, int32 snapshot)
+Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 counterCount, int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started || counterCount == 1) && "Stop profiler before tracing");
 
@@ -303,9 +303,9 @@ Vector<TraceEvent> CPUProfiler::GetTrace(const char* counterName, uint32 counter
     return trace;
 }
 
-CPUProfiler::CounterArray* CPUProfiler::GetCounterArray(int32 snapshot)
+ProfilerCPU::CounterArray* ProfilerCPU::GetCounterArray(int32 snapshot)
 {
-    if (snapshot != CPUProfiler::NO_SNAPSHOT_ID)
+    if (snapshot != ProfilerCPU::NO_SNAPSHOT_ID)
     {
         DVASSERT(snapshot >= 0 && snapshot < int32(snapshots.size()));
         return snapshots[snapshot];
@@ -318,7 +318,7 @@ CPUProfiler::CounterArray* CPUProfiler::GetCounterArray(int32 snapshot)
 //Internal Definition
 namespace CPUProfilerDetails
 {
-CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator begin, CPUProfiler::CounterArray* array)
+CounterTreeNode* CounterTreeNode::BuildTree(ProfilerCPU::CounterArray::iterator begin, ProfilerCPU::CounterArray* array)
 {
     DVASSERT(begin->endTime);
 
@@ -329,10 +329,10 @@ CounterTreeNode* CounterTreeNode::BuildTree(CPUProfiler::CounterArray::iterator 
     CounterTreeNode* node = new CounterTreeNode(nullptr, begin->name, begin->endTime - begin->startTime, 1);
     nodeEndTime.push_back(begin->endTime);
 
-    CPUProfiler::CounterArray::iterator end = array->end();
-    for (CPUProfiler::CounterArray::iterator it = begin + 1; it != end; ++it)
+    ProfilerCPU::CounterArray::iterator end = array->end();
+    for (ProfilerCPU::CounterArray::iterator it = begin + 1; it != end; ++it)
     {
-        const CPUProfiler::Counter& c = *it;
+        const ProfilerCPU::Counter& c = *it;
 
         if (c.threadID != threadID)
             continue;

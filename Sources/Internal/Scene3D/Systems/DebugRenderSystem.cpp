@@ -10,7 +10,7 @@
 
 #include "Render/Highlevel/Camera.h"
 #include "Render/RenderHelper.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 
@@ -29,7 +29,7 @@ DebugRenderSystem::~DebugRenderSystem()
 
 void DebugRenderSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_DEBUG_RENDER_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_DEBUG_RENDER_SYSTEM);
 
     SetCamera(GetScene()->GetCurrentCamera());
 

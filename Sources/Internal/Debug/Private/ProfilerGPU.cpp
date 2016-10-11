@@ -1,4 +1,4 @@
-#include "Debug/GPUProfiler.h"
+#include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Debug/DVAssert.h"
 #include "Core/Core.h"
@@ -11,36 +11,36 @@
 namespace DAVA
 {
 
-#if GPU_PROFILER_ENABLED
-static GPUProfiler GLOBAL_GPU_PROFILER;
-GPUProfiler* const GPUProfiler::globalProfiler = &GLOBAL_GPU_PROFILER;
+#if PROFILER_GPU_ENABLED
+static ProfilerGPU GLOBAL_GPU_PROFILER;
+ProfilerGPU* const ProfilerGPU::globalProfiler = &GLOBAL_GPU_PROFILER;
 #else
-GPUProfiler* const GPUProfiler::globalProfiler = nullptr;
+ProfilerGPU* const ProfilerGPU::globalProfiler = nullptr;
 #endif
 
-bool GPUProfiler::PerfQueryPair::IsReady()
+bool ProfilerGPU::PerfQueryPair::IsReady()
 {
     return (!query[0].IsValid() || rhi::PerfQueryIsReady(query[0])) && (!query[1].IsValid() || rhi::PerfQueryIsReady(query[1]));
 }
 
-void GPUProfiler::PerfQueryPair::GetTimestamps(uint64& t0, uint64& t1)
+void ProfilerGPU::PerfQueryPair::GetTimestamps(uint64& t0, uint64& t1)
 {
     t0 = query[0].IsValid() ? rhi::PerfQueryTimeStamp(query[0]) : 0;
     t1 = query[1].IsValid() ? rhi::PerfQueryTimeStamp(query[1]) : 0;
 }
 
-Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
+Vector<TraceEvent> ProfilerGPU::FrameInfo::GetTrace() const
 {
-    Vector<const GPUProfiler::MarkerInfo*> sortedMarkers;
-    for (const GPUProfiler::MarkerInfo& m : markers)
+    Vector<const ProfilerGPU::MarkerInfo*> sortedMarkers;
+    for (const ProfilerGPU::MarkerInfo& m : markers)
         sortedMarkers.push_back(&m);
 
-    std::stable_sort(sortedMarkers.begin(), sortedMarkers.end(), [](const GPUProfiler::MarkerInfo* l, const GPUProfiler::MarkerInfo* r) {
+    std::stable_sort(sortedMarkers.begin(), sortedMarkers.end(), [](const ProfilerGPU::MarkerInfo* l, const ProfilerGPU::MarkerInfo* r) {
         return l->startTime < r->startTime;
     });
 
     Vector<TraceEvent> trace;
-    trace.push_back({ FastName(GPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION });
+    trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION });
     for (const MarkerInfo* m : sortedMarkers)
     {
         trace.push_back({ FastName(m->name), m->startTime, m->endTime - m->startTime, 0, 0, TraceEvent::PHASE_DURATION });
@@ -49,7 +49,7 @@ Vector<TraceEvent> GPUProfiler::FrameInfo::GetTrace() const
     return trace;
 }
 
-void GPUProfiler::Frame::Reset()
+void ProfilerGPU::Frame::Reset()
 {
     perfQuery = PerfQueryPair();
 
@@ -59,28 +59,28 @@ void GPUProfiler::Frame::Reset()
     globalFrameIndex = 0;
 }
 
-GPUProfiler::GPUProfiler(uint32 framesInfoCount)
+ProfilerGPU::ProfilerGPU(uint32 framesInfoCount)
     : framesInfo(RingArray<FrameInfo>(framesInfoCount))
 {
     DVASSERT(framesInfoCount && "Should be > 0");
 }
 
-GPUProfiler::~GPUProfiler()
+ProfilerGPU::~ProfilerGPU()
 {
 }
 
-const GPUProfiler::FrameInfo& GPUProfiler::GetLastFrame(uint32 index) const
+const ProfilerGPU::FrameInfo& ProfilerGPU::GetLastFrame(uint32 index) const
 {
     DVASSERT(index < uint32(framesInfo.size()));
     return *(framesInfo.crbegin() - index);
 }
 
-uint32 GPUProfiler::GetFramesCount() const
+uint32 ProfilerGPU::GetFramesCount() const
 {
     return uint32(framesInfo.size());
 }
 
-void GPUProfiler::CheckPendingFrames()
+void ProfilerGPU::CheckPendingFrames()
 {
     List<Frame>::iterator fit = pendingFrames.begin();
     while (fit != pendingFrames.end())
@@ -142,7 +142,7 @@ void GPUProfiler::CheckPendingFrames()
     }
 }
 
-void GPUProfiler::OnFrameEnd()
+void ProfilerGPU::OnFrameEnd()
 {
     CheckPendingFrames();
 
@@ -157,7 +157,7 @@ void GPUProfiler::OnFrameEnd()
     }
 }
 
-Vector<TraceEvent> GPUProfiler::GetTrace()
+Vector<TraceEvent> ProfilerGPU::GetTrace()
 {
     Vector<TraceEvent> trace, frameTrace;
 
@@ -173,7 +173,7 @@ Vector<TraceEvent> GPUProfiler::GetTrace()
     return trace;
 }
 
-void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName)
+void ProfilerGPU::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, const char* markerName)
 {
     if (profilerStarted)
     {
@@ -190,22 +190,22 @@ void GPUProfiler::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, co
     }
 }
 
-void GPUProfiler::Start()
+void ProfilerGPU::Start()
 {
     profilerStarted = true;
 }
 
-void GPUProfiler::Stop()
+void ProfilerGPU::Stop()
 {
     profilerStarted = false;
 }
 
-bool GPUProfiler::IsStarted()
+bool ProfilerGPU::IsStarted()
 {
     return profilerStarted;
 }
 
-GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()
+ProfilerGPU::PerfQueryPair ProfilerGPU::GetPerfQueryPair()
 {
     PerfQueryPair p;
     for (rhi::HPerfQuery& q : p.query)
@@ -225,7 +225,7 @@ GPUProfiler::PerfQueryPair GPUProfiler::GetPerfQueryPair()
     return p;
 }
 
-void GPUProfiler::ResetPerfQueryPair(const GPUProfiler::PerfQueryPair& perfQuery)
+void ProfilerGPU::ResetPerfQueryPair(const ProfilerGPU::PerfQueryPair& perfQuery)
 {
     for (rhi::HPerfQuery q : perfQuery.query)
     {

@@ -5,15 +5,15 @@
 #include "Debug/TraceEvent.h"
 #include "Base/RingArray.h"
 
-#define GPU_PROFILER_ENABLED 1
+#define PROFILER_GPU_ENABLED 1
 
 namespace DAVA
 {
-class GPUProfiler
+class ProfilerGPU
 {
 public:
-    GPUProfiler(uint32 framesCount = 180);
-    ~GPUProfiler();
+    ProfilerGPU(uint32 framesCount = 180);
+    ~ProfilerGPU();
 
     struct MarkerInfo
     {
@@ -32,7 +32,7 @@ public:
         Vector<TraceEvent> GetTrace() const;
     };
 
-    static GPUProfiler* const globalProfiler;
+    static ProfilerGPU* const globalProfiler;
 
     const FrameInfo& GetLastFrame(uint32 index = 0) const;
     uint32 GetFramesCount() const;
@@ -87,14 +87,14 @@ protected:
 
 } //ns DAVA
 
-#if GPU_PROFILER_ENABLED
+#if PROFILER_GPU_ENABLED
 
-#define DAVA_GPU_PROFILER_PACKET(packet, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryEnd), marker_name);
-#define DAVA_GPU_PROFILER_RENDER_PASS(passDesc, marker_name) DAVA::GPUProfiler::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryEnd), marker_name);
+#define DAVA_PROFILER_GPU_PACKET(packet, marker_name) DAVA::ProfilerGPU::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryEnd), marker_name);
+#define DAVA_PROFILER_GPU_RENDER_PASS(passDesc, marker_name) DAVA::ProfilerGPU::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryEnd), marker_name);
 
 #else
 
-#define DAVA_GPU_PROFILER_PACKET(packet, marker_name) 
-#define DAVA_GPU_PROFILER_RENDER_PASS(pass, marker_name) 
+#define DAVA_PROFILER_GPU_PACKET(packet, marker_name) 
+#define DAVA_PROFILER_GPU_RENDER_PASS(pass, marker_name) 
 
 #endif

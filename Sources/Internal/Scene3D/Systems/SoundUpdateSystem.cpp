@@ -7,7 +7,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 #include "Engine/EngineModule.h"
@@ -64,7 +64,7 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
 
     Camera* activeCamera = GetScene()->GetCurrentCamera();
 

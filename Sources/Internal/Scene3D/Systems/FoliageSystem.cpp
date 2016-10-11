@@ -4,7 +4,7 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/WindSystem.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
@@ -71,7 +71,7 @@ void FoliageSystem::RemoveEntity(Entity* entity)
 
 void FoliageSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_FOLIAGE_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_FOLIAGE_SYSTEM);
 
     if (GetScene()->GetRenderSystem()->GetMainCamera() == nullptr)
     {

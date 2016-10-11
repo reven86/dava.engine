@@ -7,7 +7,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
@@ -34,7 +34,7 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 
 void TransformSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_TRANSFORM_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_TRANSFORM_SYSTEM);
 
     passedNodes = 0;
     multipliedNodes = 0;

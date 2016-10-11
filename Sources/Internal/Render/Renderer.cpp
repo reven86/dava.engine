@@ -11,7 +11,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Platform/DeviceInfo.h"
-#include "Debug/GPUProfiler.h"
+#include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerOverlay.h"
 
 namespace DAVA
@@ -172,7 +172,7 @@ void EndFrame()
 {
     DynamicBufferAllocator::EndFrame();
     ProfilerOverlay::globalProfilerOverlay->OnFrameEnd();
-    GPUProfiler::globalProfiler->OnFrameEnd();
+    ProfilerGPU::globalProfiler->OnFrameEnd();
     rhi::Present();
 
     stats.drawIndexedPrimitive = StatSet::StatValue(rhi::stat_DIP);

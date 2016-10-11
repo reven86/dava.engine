@@ -6,12 +6,12 @@
 
 namespace DAVA
 {
-class CPUProfiler;
-class GPUProfiler;
+class ProfilerCPU;
+class ProfilerGPU;
 class ProfilerOverlay
 {
 public:
-    ProfilerOverlay(CPUProfiler* cpuProfiler, const char* cpuCounterName, GPUProfiler* gpuProfiler, const Vector<FastName>& interestEvents = Vector<FastName>());
+    ProfilerOverlay(ProfilerCPU* cpuProfiler, const char* cpuCounterName, ProfilerGPU* gpuProfiler, const Vector<FastName>& interestEvents = Vector<FastName>());
 
     void Enable();
     void Disable();
@@ -22,8 +22,8 @@ public:
     void AddInterestEvent(const FastName& name);
     Vector<FastName> GetAvalibleEventsNames();
 
-    void SetCPUProfiler(CPUProfiler* profiler, const char* counterName);
-    void SetGPUProfiler(GPUProfiler* profiler);
+    void SetCPUProfiler(ProfilerCPU* profiler, const char* counterName);
+    void SetGPUProfiler(ProfilerGPU* profiler);
 
     static ProfilerOverlay* const globalProfilerOverlay;
 
@@ -86,8 +86,8 @@ protected:
     TraceData currentCPUTrace;
     List<FrameTrace> CPUTraces;
 
-    GPUProfiler* gpuProfiler = nullptr;
-    CPUProfiler* cpuProfiler = nullptr;
+    ProfilerGPU* gpuProfiler = nullptr;
+    ProfilerCPU* cpuProfiler = nullptr;
     const char* cpuCounterName = nullptr;
 
     bool overlayEnabled = false;

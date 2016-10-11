@@ -5,7 +5,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 #include "Engine/EngineModule.h"
@@ -76,7 +76,7 @@ void JobManager::Update(float32 /*frameDelta*/)
 void JobManager::Update()
 #endif
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_JOB_MANAGER);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_JOB_MANAGER);
 
     bool hasFinishedJobs = false;
 

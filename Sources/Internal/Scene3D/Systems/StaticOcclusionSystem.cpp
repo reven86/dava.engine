@@ -17,7 +17,7 @@
 #include "Scene3D/Lod/LodSystem.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/NMaterialNames.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
@@ -90,7 +90,7 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
 
     SetCamera(GetScene()->GetCurrentCamera());
 

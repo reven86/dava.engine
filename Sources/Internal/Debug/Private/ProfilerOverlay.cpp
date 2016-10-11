@@ -2,8 +2,8 @@
 #include "Debug/DVAssert.h"
 #include "Debug/DebugColors.h"
 #include "Debug/TraceEvent.h"
-#include "Debug/GPUProfiler.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerGPU.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
@@ -32,32 +32,32 @@ static const int32 HISTORY_CHART_TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * HIST
 static const uint64 HISTORY_CHART_CEIL_STEP = 500; //mcs
 };
 
-static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(CPUProfiler::globalProfiler, CPUMarkerName::CORE_PROCESS_FRAME, GPUProfiler::globalProfiler,
+static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::CORE_PROCESS_FRAME, ProfilerGPU::globalProfiler,
                                                {
-                                               FastName(CPUMarkerName::CORE_PROCESS_FRAME),
-                                               FastName(CPUMarkerName::CORE_UI_SYSTEM_UPDATE),
-                                               FastName(CPUMarkerName::CORE_UI_SYSTEM_DRAW),
-                                               FastName(CPUMarkerName::SCENE_UPDATE),
-                                               FastName(CPUMarkerName::SCENE_DRAW),
-                                               FastName(CPUMarkerName::RENDER_PASS_DRAW_LAYERS),
-                                               FastName(CPUMarkerName::RHI_PRESENT),
-                                               FastName(CPUMarkerName::RHI_WAIT_FRAME),
-                                               FastName(CPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
-                                               FastName(CPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
+                                               FastName(ProfilerCPUMarkerName::CORE_PROCESS_FRAME),
+                                               FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_UPDATE),
+                                               FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_DRAW),
+                                               FastName(ProfilerCPUMarkerName::SCENE_UPDATE),
+                                               FastName(ProfilerCPUMarkerName::SCENE_DRAW),
+                                               FastName(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS),
+                                               FastName(ProfilerCPUMarkerName::RHI_PRESENT),
+                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME),
+                                               FastName(ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION),
+                                               FastName(ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE),
                                                FastName(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME),
 
-                                               FastName(GPUMarkerName::GPU_FRAME),
-                                               FastName(GPUMarkerName::RENDER_PASS_MAIN_3D),
-                                               FastName(GPUMarkerName::RENDER_PASS_WATER_REFLECTION),
-                                               FastName(GPUMarkerName::RENDER_PASS_WATER_REFRACTION),
-                                               FastName(GPUMarkerName::RENDER_PASS_2D),
-                                               FastName(GPUMarkerName::LANDSCAPE),
+                                               FastName(ProfilerGPUMarkerName::GPU_FRAME),
+                                               FastName(ProfilerGPUMarkerName::RENDER_PASS_MAIN_3D),
+                                               FastName(ProfilerGPUMarkerName::RENDER_PASS_WATER_REFLECTION),
+                                               FastName(ProfilerGPUMarkerName::RENDER_PASS_WATER_REFRACTION),
+                                               FastName(ProfilerGPUMarkerName::RENDER_PASS_2D),
+                                               FastName(ProfilerGPUMarkerName::LANDSCAPE),
                                                FastName(ProfilerOverlayDetails::OVERLAY_PASS_MARKER_NAME)
                                                });
 
 ProfilerOverlay* const ProfilerOverlay::globalProfilerOverlay = &GLOBAL_PROFILER_OVERLAY;
 
-ProfilerOverlay::ProfilerOverlay(CPUProfiler* _cpuProfiler, const char* _cpuCounterName, GPUProfiler* _gpuProfiler, const Vector<FastName>& _interestEvents)
+ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCounterName, ProfilerGPU* _gpuProfiler, const Vector<FastName>& _interestEvents)
     : gpuProfiler(_gpuProfiler)
     , cpuProfiler(_cpuProfiler)
     , cpuCounterName(_cpuCounterName)
@@ -82,7 +82,7 @@ void ProfilerOverlay::OnFrameEnd()
     if (!overlayEnabled)
         return;
 
-    DAVA_CPU_PROFILER_SCOPE(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerOverlayDetails::OVERLAY_MARKER_CPU_TIME);
 
     Update();
     Draw();
@@ -112,13 +112,13 @@ Vector<FastName> ProfilerOverlay::GetAvalibleEventsNames()
     return ret;
 }
 
-void ProfilerOverlay::SetCPUProfiler(CPUProfiler* profiler, const char* counterName)
+void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
 {
     cpuProfiler = profiler;
     cpuCounterName = counterName;
 }
 
-void ProfilerOverlay::SetGPUProfiler(GPUProfiler* profiler)
+void ProfilerOverlay::SetGPUProfiler(ProfilerGPU* profiler)
 {
     gpuProfiler = profiler;
 }
@@ -332,7 +332,7 @@ void ProfilerOverlay::Draw()
     passConfig.viewport.y = 0;
     passConfig.viewport.width = Renderer::GetFramebufferWidth();
     passConfig.viewport.height = Renderer::GetFramebufferHeight();
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, ProfilerOverlayDetails::OVERLAY_PASS_MARKER_NAME);
+    DAVA_PROFILER_GPU_RENDER_PASS(passConfig, ProfilerOverlayDetails::OVERLAY_PASS_MARKER_NAME);
 
     rhi::HPacketList packetList;
     rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);

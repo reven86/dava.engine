@@ -4,35 +4,35 @@
 #include "Debug/TraceEvent.h"
 #include <iosfwd>
 
-#define CPU_PROFILER_ENABLED 1
+#define PROFILER_CPU_ENABLED 1
 
 namespace DAVA
 {
 template <class T>
 class ProfilerRingArray;
 
-class CPUProfiler
+class ProfilerCPU
 {
 public:
     struct Counter;
-    using CounterArray = ProfilerRingArray<CPUProfiler::Counter>;
+    using CounterArray = ProfilerRingArray<ProfilerCPU::Counter>;
 
     class ScopedCounter
     {
     public:
-        ScopedCounter(const char* counterName, CPUProfiler* profiler);
+        ScopedCounter(const char* counterName, ProfilerCPU* profiler);
         ~ScopedCounter();
 
     private:
         uint64* endTime = nullptr;
-        CPUProfiler* profiler;
+        ProfilerCPU* profiler;
     };
 
     static const int32 NO_SNAPSHOT_ID = -1; //use to dump current trace
-    static CPUProfiler* const globalProfiler;
+    static ProfilerCPU* const globalProfiler;
 
-    CPUProfiler(uint32 countersCount = 2048);
-    ~CPUProfiler();
+    ProfilerCPU(uint32 countersCount = 2048);
+    ~ProfilerCPU();
 
     void Start();
     void Stop();
@@ -63,12 +63,12 @@ protected:
 
 } //ns DAVA
 
-#if CPU_PROFILER_ENABLED
+#if PROFILER_CPU_ENABLED
 
-#define DAVA_CPU_PROFILER_SCOPE(counter_name) DAVA::CPUProfiler::ScopedCounter time_profiler_scope_counter(counter_name, DAVA::CPUProfiler::globalProfiler);
+#define DAVA_PROFILER_CPU_SCOPE(counter_name) DAVA::ProfilerCPU::ScopedCounter time_profiler_scope_counter(counter_name, DAVA::ProfilerCPU::globalProfiler);
 
 #else
 
-#define DAVA_CPU_PROFILER_SCOPE(counter_name)
+#define DAVA_PROFILER_CPU_SCOPE(counter_name)
 
 #endif

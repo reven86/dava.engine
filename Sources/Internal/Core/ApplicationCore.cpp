@@ -7,7 +7,7 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -33,7 +33,7 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_APP_UPDATE)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_APP_UPDATE)
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
@@ -59,7 +59,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_APP_DRAW)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_APP_DRAW)
 
     Renderer::GetRenderStats().Reset();
 
@@ -74,14 +74,14 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_BEGIN_FRAME)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_BEGIN_FRAME)
 
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::CORE_END_FRAME)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_END_FRAME)
 
     Renderer::EndFrame();
 }

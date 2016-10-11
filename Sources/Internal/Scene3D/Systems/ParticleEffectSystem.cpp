@@ -10,7 +10,7 @@
 #include "Scene3D/Lod/LodComponent.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Particles/ParticleRenderObject.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
@@ -255,7 +255,7 @@ void ParticleEffectSystem::ImmediateEvent(Component* component, uint32 event)
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::SCENE_PARTICLE_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_PARTICLE_SYSTEM);
 
     if (timeElapsed == 0.f)
     {

@@ -1824,7 +1824,7 @@ metal_SyncObject_IsSignaled(Handle obj)
 static void
 metal_Present(Handle syncObject)
 {
-    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
+    DAVA_PROFILER_CPU_SCOPE("rhi::Present");
 
     static unsigned frame_n = 0;
     MTL_TRACE("--present %u", ++frame_n);

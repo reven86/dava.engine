@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-namespace CPUMarkerName
+namespace ProfilerCPUMarkerName
 {
 //Core flow
 static const char* CORE_PROCESS_FRAME = "Core::SystemProcessFrame";
@@ -56,7 +56,7 @@ static const char* RHI_WAIT_FRAME = "rhi::WaitFrame";
 static const char* RHI_PROCESS_SCHEDULED_DELETE = "rhi::ProcessScheduledDelete";
 };
 
-namespace GPUMarkerName
+namespace ProfilerGPUMarkerName
 {
 static const char* GPU_FRAME = "GPUFrame";
 static const char* RENDER_PASS_2D = "RenderPass2D";

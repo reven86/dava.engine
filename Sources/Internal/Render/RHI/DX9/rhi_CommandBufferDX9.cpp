@@ -10,7 +10,7 @@
 using DAVA::Logger;
 
 #include "Core/Core.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
@@ -547,7 +547,7 @@ void CommandBufferDX9_t::End()
 
 void CommandBufferDX9_t::Execute()
 {
-    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_CMD_BUFFER_EXECUTE);
 
     Handle cur_pipelinestate = InvalidHandle;
     uint32 cur_vd_uid = VertexLayout::InvalidUID;
@@ -1048,7 +1048,7 @@ void CommandBufferDX9_t::Execute()
 static void
 dx9_Present(Handle sync)
 {
-    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_PRESENT);
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PRESENT);
 
     if (_DX9_RenderThreadFrameCount)
     {
@@ -1069,7 +1069,7 @@ dx9_Present(Handle sync)
         size_t frame_cnt = 0;
 
         {
-            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_FRAME_EXECUTION);
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME_EXECUTION);
             for (;;)
             {
                 _DX9_FrameSync.Lock();
@@ -1189,7 +1189,7 @@ void _DX9_PrepareRenderPasses(std::vector<RenderPassDX9_t*>& pass, std::vector<H
 static void
 _DX9_ExecuteQueuedCommands()
 {
-    DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_EXECUTE_QUEUED_CMDS);
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_QUEUED_CMDS);
 
     StatSet::ResetAll();
 
@@ -1276,7 +1276,7 @@ _DX9_ExecuteQueuedCommands()
 
         HRESULT hr;
         {
-            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_DEVICE_PRESENT);
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT);
             hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
         }
 
@@ -1785,7 +1785,7 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool force_immediate)
         bool scheduled = false;
         bool executed = false;
 
-        DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
 
         // CRAP: busy-wait
         do
@@ -1834,7 +1834,7 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
 
     while (_DX9_RenderThreadRunning)
     {
-        DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_RENDER_LOOP);
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_RENDER_LOOP);
 
         _DX9_PendingImmediateCmdSync.Lock();
         if (_DX9_PendingImmediateCmd)
@@ -1857,7 +1857,7 @@ _RenderFuncDX9(DAVA::BaseObject* obj, void*, void*)
         }
         else
         {
-            DAVA_CPU_PROFILER_SCOPE(DAVA::CPUMarkerName::RHI_WAIT_FRAME);
+            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME);
 
             WaitForSingleObject(_DX9_FramePreparedEvent, INFINITE);
         }

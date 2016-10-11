@@ -6,7 +6,7 @@
 #include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/ShaderCache.h"
 
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 
@@ -16,7 +16,7 @@
 #include "Render/PixelFormatDescriptor.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Debug/GPUProfiler.h"
+#include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
@@ -113,7 +113,7 @@ void RenderPass::Draw(RenderSystem* renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera* camera, RenderSystem* renderSystem)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::RENDER_PASS_PREPARE_ARRAYS)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_PREPARE_ARRAYS)
 
     uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
@@ -154,7 +154,7 @@ void RenderPass::PrepareLayersArrays(const Vector<RenderObject*> objectsArray, C
 
 void RenderPass::DrawLayers(Camera* camera)
 {
-    DAVA_CPU_PROFILER_SCOPE(CPUMarkerName::RENDER_PASS_DRAW_LAYERS)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
 
     ShaderDescriptorCache::ClearDynamicBindigs();
 
@@ -380,7 +380,7 @@ void MainForwardRenderPass::Draw(RenderSystem* renderSystem)
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, GPUMarkerName::RENDER_PASS_MAIN_3D);
+    DAVA_PROFILER_GPU_RENDER_PASS(passConfig, ProfilerGPUMarkerName::RENDER_PASS_MAIN_3D);
     if (BeginRenderPass())
     {
         DrawLayers(mainCamera);
@@ -478,7 +478,7 @@ void WaterReflectionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, GPUMarkerName::RENDER_PASS_WATER_REFLECTION);
+    DAVA_PROFILER_GPU_RENDER_PASS(passConfig, ProfilerGPUMarkerName::RENDER_PASS_WATER_REFLECTION);
     if (BeginRenderPass())
     {
         DrawLayers(currMainCamera);
@@ -537,7 +537,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem* renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
 
-    DAVA_GPU_PROFILER_RENDER_PASS(passConfig, GPUMarkerName::RENDER_PASS_WATER_REFRACTION);
+    DAVA_PROFILER_GPU_RENDER_PASS(passConfig, ProfilerGPUMarkerName::RENDER_PASS_WATER_REFRACTION);
     if (BeginRenderPass())
     {
         DrawLayers(currMainCamera);
