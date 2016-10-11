@@ -164,6 +164,7 @@ bool MSLGenerator::Generate(HLSLTree* tree, Target target, const char* entryName
       "using namespace metal;",
 
       "#define lerp(a,b,t) mix( (a), (b), (t) )",
+      "#define  frac(a) fract(a)",
 
       "inline vector_float4 mul( vector_float4 v, float4x4 m ) { return m*v; }",
       "inline vector_float4 mul( float4x4 m, vector_float4 v ) { return v*m; }",
