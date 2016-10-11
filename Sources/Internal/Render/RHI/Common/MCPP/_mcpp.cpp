@@ -44,7 +44,7 @@ inline int mcpp_fputs_impl(const char* str, OUTDEST dst)
 
 int mcpp_fprintf_impl(OUTDEST dst, const char* format, ...)
 {
-    static const uint32 localBufferSize = 2048;
+    static const DAVA::uint32 localBufferSize = 2048;
     int count = 0;
     if (dst == MCPP_OUT)
     {
