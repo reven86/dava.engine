@@ -287,8 +287,10 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     hasFocus = e.stateEvent.state != 0;
     if (!hasFocus)
     {
-        SetCursorCapture(eCursorCapture::OFF);
-        SetCursorVisibility(true);
+        cursorCapture = eCursorCapture::OFF;
+        windowBackend->SetCursorCapture(cursorCapture);
+        cursorVisible = true;
+        windowBackend->SetCursorVisibility(cursorVisible);
     }
     focusChanged.Emit(this, hasFocus);
 }
