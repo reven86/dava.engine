@@ -492,9 +492,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         }
     }
 
-    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    JobManager::Instance()->WaitMainJobs();
-
     UpdatePolygonGroupRequestedFormatRecursively(scene);
     const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
     if (!contextLoaded)

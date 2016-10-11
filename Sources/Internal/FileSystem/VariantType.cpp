@@ -2,6 +2,7 @@
 #include "FileSystem/VariantType.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
@@ -1203,10 +1204,9 @@ bool VariantType::Read(File* fp)
         {
             return false;
         }
-        DynamicMemoryFile* pF = DynamicMemoryFile::Create(pData, len, File::READ);
+        ScopedPtr<UnmanagedMemoryFile> pF(new UnmanagedMemoryFile(pData, len));
         pointerValue = new KeyedArchive();
         static_cast<KeyedArchive*>(pointerValue)->Load(pF);
-        SafeRelease(pF);
         SafeDeleteArray(pData);
     }
     break;

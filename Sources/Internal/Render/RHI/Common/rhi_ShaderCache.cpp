@@ -1,119 +1,18 @@
 #include "MCPP/mcpp_lib.h"
 
-    #include "../rhi_ShaderCache.h"
+#include "../rhi_ShaderCache.h"
 
 namespace rhi
 {
 static ShaderBuilder _ShaderBuilder = nullptr;
 
-struct
-ProgInfo
+struct ProgInfo
 {
     DAVA::FastName uid;
     std::vector<uint8> bin;
 };
 
 static std::vector<ProgInfo> _ProgInfo;
-
-static std::string* _PreprocessedText = nullptr;
-
-static int
-_mcpp__fputc(int ch, OUTDEST dst)
-{
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            _PreprocessedText->push_back(char(ch));
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return ch;
-}
-
-static int
-_mcpp__fputs(const char* str, OUTDEST dst)
-{
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            *_PreprocessedText += str;
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return 0;
-}
-
-static int
-_mcpp__fprintf(OUTDEST dst, const char* format, ...)
-{
-    va_list arglist;
-    char buf[2048];
-    int count = 0;
-
-    va_start(arglist, format);
-    count = vsnprintf(buf, countof(buf), format, arglist);
-    va_end(arglist);
-
-    switch (dst)
-    {
-    case MCPP_OUT:
-    {
-        if (_PreprocessedText)
-            *_PreprocessedText += buf;
-    }
-    break;
-
-    case MCPP_ERR:
-    {
-    }
-    break;
-
-    case MCPP_DBG:
-    {
-    }
-    break;
-
-    default:
-    {
-    }
-    }
-
-    return count;
-}
 
 namespace ShaderCache
 {
@@ -966,7 +865,7 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
 {
-    char src[256 * 1024] = "";
+    char src[64 * 1024] = {};
     int src_len = 0;
 
     // inject vattr definitions
@@ -1156,17 +1055,19 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
       MCPP_Text
     };
 
-    //DAVA::Logger::Info( "src=\n%s\n", src );
-    _PreprocessedText = preprocessedText;
+    char localBuffer[64 * 1024] = {};
+    _mcpp_preprocessed_text.buffer = localBuffer;
+    _mcpp_preprocessed_text.pos = 0;
     {
-        mcpp__startup();
         mcpp__set_input(src, static_cast<unsigned>(strlen(src)));
-        mcpp_set_out_func(&_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf);
+        mcpp_set_out_func(&mcpp_fputc_impl, &mcpp_fputs_impl, &mcpp_fprintf_impl);
         mcpp_lib_main(countof(argv), const_cast<char**>(argv));
         mcpp__cleanup();
-        mcpp__shutdown();
     }
-    _PreprocessedText = 0;
+    *preprocessedText = std::string(localBuffer);
+    _mcpp_preprocessed_text.buffer = nullptr;
+    _mcpp_preprocessed_text.pos = 0;
+
     switch (targetApi)
     {
     case RHI_DX11:
@@ -1179,9 +1080,9 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
 
     case RHI_GLES2:
         preprocessedText->insert(0, _ShaderHeader_GLES2);
-            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
         preprocessedText->insert(0, "precision highp float;\n");
-            #endif
+        #endif
         break;
 
     case RHI_METAL:

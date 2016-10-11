@@ -1,5 +1,5 @@
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/UnmanagedMemoryFile.h"
 #include "Base/BaseTypes.h"
 #include "Scene3D/PathManip.h"
 #include "_mcpp.h"
@@ -16,9 +16,46 @@ FileEntry
 };
 
 const char* MCPP_Text = "<input>";
+mcpp_preprocessed_text _mcpp_preprocessed_text = {};
 std::vector<std::string> IncludeSearchPath;
 static std::vector<FileEntry> _FileEntry;
 static FILE* const _HandleBase = reinterpret_cast<FILE*>(0x1000);
+
+inline int mcpp_fputc_impl(int ch, OUTDEST dst)
+{
+    if (dst == MCPP_OUT)
+    {
+        *(_mcpp_preprocessed_text.buffer + _mcpp_preprocessed_text.pos) = static_cast<char>(ch);
+        ++_mcpp_preprocessed_text.pos;
+    }
+    return ch;
+}
+
+inline int mcpp_fputs_impl(const char* str, OUTDEST dst)
+{
+    if (dst == MCPP_OUT)
+    {
+        DAVA::uint32 length = static_cast<DAVA::uint32>(strlen(str));
+        memcpy(_mcpp_preprocessed_text.buffer + _mcpp_preprocessed_text.pos, str, length);
+        _mcpp_preprocessed_text.pos += length;
+    }
+    return 0;
+}
+
+int mcpp_fprintf_impl(OUTDEST dst, const char* format, ...)
+{
+    int count = 0;
+    if (dst == MCPP_OUT)
+    {
+        char localBuffer[2048] = {};
+        va_list arglist;
+        va_start(arglist, format);
+        count = vsnprintf(localBuffer, countof(localBuffer), format, arglist);
+        va_end(arglist);
+        mcpp_fputs_impl(localBuffer, dst);
+    }
+    return count;
+}
 
 //------------------------------------------------------------------------------
 
@@ -39,7 +76,7 @@ void mcpp__set_input(const void* data, unsigned data_sz)
 
     FileEntry entry;
 
-    entry.file = DAVA::DynamicMemoryFile::Create(reinterpret_cast<const uint8*>(data), data_sz, DAVA::File::READ);
+    entry.file = new DAVA::UnmanagedMemoryFile(reinterpret_cast<const uint8*>(data), data_sz);
     entry.file_name = MCPP_Text;
     entry.eof = 0;
     entry.handle = _HandleBase + 0;
@@ -116,8 +153,8 @@ FILE* mcpp__fopen(const char* filename, const char* mode)
 else
 {
 DAVA::Logger::Error("can't open \"%s\"",filename);
-}
-*/
+    }
+    */
     }
 
     //DAVA::Logger::Info("mcpp-open \"%s\" %p",filename,file);
@@ -156,7 +193,6 @@ int mcpp__ferror(FILE* file)
         if (f->handle == file)
         {
             eof = f->eof;
-            //DAVA::Logger::Info("mcpp-ferror %p = %i",file,eof);
             break;
         }
     }

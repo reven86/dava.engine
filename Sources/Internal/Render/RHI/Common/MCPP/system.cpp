@@ -549,7 +549,6 @@ opt_search:;
             }
             else
                 usage(opt);
-            standard = (mcpp_mode == STD || mcpp_mode == POST_STD);
             if (old_mode != STD && old_mode != mcpp_mode)
                 mcpp_fprintf(MCPP_ERR, "Mode is redefined to: %s\n", mcpp_optarg);
             break;
@@ -901,9 +900,6 @@ opt_search:;
             look_and_install("_CHAR_UNSIGNED", DEF_NOARGS_PREDEF, null, "1");
             break;
 #endif
-
-        case 'K':
-            mcpp_debug |= MACRO_CALL;
         /*
              * Putout macro expansion informations embedded in comments.
              * Same with '#pragma MCPP debug macro_call'.
@@ -1997,7 +1993,6 @@ int trad /* -traditional (GCC only)      */
     if ((mcpp_debug & MACRO_CALL) && (option_flags.lang_asm || option_flags.c))
     {
         mcpp_fputs("Disabled -K option.\n", MCPP_ERR);
-        mcpp_debug &= ~MACRO_CALL;
         /* -a and -C options do not co-exist with -K    */
     }
     if (incompat)
@@ -2006,7 +2001,6 @@ int trad /* -traditional (GCC only)      */
         usage('?');
     }
 
-    standard = (mcpp_mode == STD || mcpp_mode == POST_STD);
     /* Modify magic characters in character type table. */
     if (!standard)
         char_type[DEF_MAGIC] = 0;
@@ -5153,7 +5147,6 @@ int set /* TRUE to set debugging    */
         }
         else
         {
-            mcpp_debug = 0; /* Clear all the flags  */
             return FALSE;
         }
     }
@@ -5177,17 +5170,12 @@ int set /* TRUE to set debugging    */
             num = argp->arg_num;
             if (set)
             {
-                mcpp_debug |= num;
                 if (num == PATH)
                     dump_path();
                 else if (num == MEMORY)
                     print_heap();
                 else if (num == MACRO_CALL)
                     option_flags.k = TRUE; /* This pragma needs this mode  */
-            }
-            else
-            {
-                mcpp_debug &= ~num;
             }
         }
         c = skip_ws();
@@ -5203,7 +5191,6 @@ int set /* TRUE to set debugging    */
             else
             {
                 cwarn(unknown_arg, work_buf, 0L, NULL);
-                mcpp_debug &= ~num; /* Disable  */
             }
         }
         skip_nl();

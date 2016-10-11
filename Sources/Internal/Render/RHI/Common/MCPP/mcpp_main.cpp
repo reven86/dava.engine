@@ -84,7 +84,6 @@ int stdc2; /* cplus_val || stdc_ver >= 199901L */
 int stdc3; /* cplus_val >= 199901L || stdc_ver >= 199901L.
         (cplus_val >= 199901L) specifies compatible mode to C99 (extended
         feature of this preprocessor)   */
-int standard = TRUE; /* TRUE, if mcpp_mode is STD or POST_STD    */
 int std_line_prefix = STD_LINE_PREFIX;
 /* Output line and file information in C source style   */
 
@@ -120,8 +119,6 @@ char* cur_fullname;
 /* Full path of current source file (i.e. infile->full_fname)       */
 int no_source_line; /* Do not output line in diag.  */
 char identifier[IDMAX + IDMAX / 8]; /* Current identifier   */
-int mcpp_debug = 0; /* != 0 if debugging now        */
-
 /*
  *   in_directive is set TRUE while a directive line is scanned by directive().
  * It modifies the behavior of squeeze_ws() in expand.c so that newline is
@@ -311,14 +308,13 @@ static void init_main(void)
     mcpp_mode = STD;
     cplus_val = stdc_ver = 0L;
     stdc_val = 0;
-    standard = TRUE;
     std_line_prefix = STD_LINE_PREFIX;
     errors = src_col = 0;
     warn_level = -1;
     infile = NULL;
     in_directive = in_define = in_getarg = in_include = in_if = FALSE;
     src_line = macro_line = in_asm = 0L;
-    mcpp_debug = mkdep = no_output = keep_comments = keep_spaces = 0;
+    mkdep = no_output = keep_comments = keep_spaces = 0;
     include_nest = 0;
     insert_sep = NO_SEP;
     mbchar = MBCHAR;
