@@ -3,7 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Debug/TraceEvent.h"
-#include "Base/RingArray.h"
+#include "Debug/Private/RingArray.h"
 
 #define PROFILER_GPU_ENABLED 1
 

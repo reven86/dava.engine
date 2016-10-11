@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastNameMap.h"
-#include "Base/RingArray.h"
+#include "Debug/Private/RingArray.h"
 
 namespace DAVA
 {
