@@ -140,7 +140,6 @@ void REApplication::RunWindow()
     REAppDetails::FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
-    Themes::InitFromQApplication();
 
     ToolsAssetGuard::Instance()->Init();
 
@@ -179,6 +178,9 @@ void REApplication::RunWindow()
 
     QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     mainWindow->show();
+    // Init themes after window has been shown to avoid font size changing in QTreeView for elided and full text
+    Themes::InitFromQApplication();
+    SceneSignals::Instance()->ThemeChanged();
     exec();
 
     DAVA::SafeDelete(mainWindow);

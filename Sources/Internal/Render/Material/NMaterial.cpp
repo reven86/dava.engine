@@ -388,6 +388,11 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
     return nullptr;
 }
 
+const DAVA::HashMap<DAVA::FastName, NMaterialProperty*>& NMaterial::GetLocalProperties() const
+{
+    return GetCurrentConfig().localProperties;
+}
+
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -1309,9 +1314,10 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
     Landscape::PARAM_TILE_COLOR3,
     } };
 
-    Array<FastName, 2> propertyFloat3toFloat4 =
+    Array<FastName, 3> propertyFloat3toFloat4 =
     { { NMaterialParamName::PARAM_FLAT_COLOR,
-        NMaterialParamName::PARAM_DECAL_TILE_COLOR } };
+        NMaterialParamName::PARAM_DECAL_TILE_COLOR,
+        NMaterialParamName::PARAM_TREE_LEAF_COLOR_MUL } };
 
     Array<FastName, 1> propertyFloat1toFloat2 =
     {

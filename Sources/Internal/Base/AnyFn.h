@@ -3,43 +3,18 @@
 #include <tuple>
 #include "Base/Type.h"
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
 #include "Base/Any.h"
 #include "Base/Private/AutoStorage.h"
 
 namespace DAVA
 {
-namespace AnyFnDetail
-{
-struct Invoker;
-}
-
+class AnyFnInvoker;
 class AnyFn final
 {
 public:
+    struct Params;
     using AnyFnStorage = AutoStorage<>;
-
-    struct InvokeParams
-    {
-        const Type* retType = nullptr;
-        Vector<const Type*> argsType;
-
-        template <typename Ret, typename... Args>
-        void Init();
-    };
-
-    struct Exception : public std::runtime_error
-    {
-        enum ErrorCode
-        {
-            BadInvokeArguments,
-            BadBindThis
-        };
-
-        Exception(ErrorCode code, const std::string& message);
-        Exception(ErrorCode code, const char* message);
-
-        ErrorCode errorCode;
-    };
 
     AnyFn();
 
@@ -58,17 +33,38 @@ public:
     bool IsValid() const;
     bool IsStatic() const;
 
-    const InvokeParams& GetInvokeParams() const;
+    const Params& GetInvokeParams() const;
 
     template <typename... Args>
     Any Invoke(const Args&... args) const;
 
     AnyFn BindThis(const void* this_) const;
 
+    struct Params
+    {
+        Params();
+        bool operator==(const Params&) const;
+
+        template <typename Ret, typename... Args>
+        Params& Set();
+
+        template <typename... Args>
+        Params& SetArgs();
+
+        template <typename Ret, typename... Args>
+        static Params From();
+
+        template <typename... Args>
+        static Params FromArgs();
+
+        const Type* retType;
+        Vector<const Type*> argsType;
+    };
+
 private:
     AnyFnStorage anyFnStorage;
-    AnyFnDetail::Invoker* invoker;
-    InvokeParams invokeParams;
+    AnyFnInvoker* invoker;
+    Params invokeParams;
 };
 
 } // namespace DAVA

@@ -125,6 +125,7 @@ public:
     uint32 GetLocalPropArraySize(const FastName& propName);
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
+    const HashMap<FastName, NMaterialProperty*>& GetLocalProperties() const;
 
     // textures
     void AddTexture(const FastName& slotName, Texture* texture);
