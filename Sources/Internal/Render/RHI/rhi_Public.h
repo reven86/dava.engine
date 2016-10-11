@@ -388,6 +388,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
+        , primitiveType(PRIMITIVE_TRIANGLELIST)
         , instanceCount(0)
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)
