@@ -51,7 +51,7 @@ public:
     void ProcessPlatformEvents();
 
     void SetCursorCapture(eCursorCapture mode);
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
 
 private:
     void SetCursorInCenter();
@@ -60,7 +60,7 @@ private:
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
     void DoSetCursorCapture(eCursorCapture mode);
-    void DoSetCursorVisible(bool visible);
+    void DoSetCursorVisibility(bool visible);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);

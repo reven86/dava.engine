@@ -113,7 +113,7 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
-void WindowNativeBridge::SetCursorVisible(bool visible)
+void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
@@ -150,7 +150,7 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
         case DAVA::eCursorCapture::PINNING:
             tokenMouseMoved = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
             // after enabled Pinning mode, skip move events, large x, y delta
-            skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+            mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
             break;
         }
     }
@@ -332,9 +332,9 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
 
 void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args)
 {
-    if (skipNumberMouseMoveEvents)
+    if (mouseMoveSkipCount)
     {
-        skipNumberMouseMoveEvents--;
+        mouseMoveSkipCount--;
         return;
     }
     float32 x = static_cast<float32>(args->MouseDelta.X);
@@ -462,7 +462,8 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
-    MouseDevice::GetForCurrentView()->MouseMoved -= tokenMouseMoved;
+    SetCursorCapture(eCursorCapture::OFF);
+    SetCursorVisibility(true);
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(

@@ -165,7 +165,7 @@ void WindowBackend::SetCursorCapture(eCursorCapture mode)
     // not implemented
 }
 
-void WindowBackend::SetCursorVisible(bool visible)
+void WindowBackend::SetCursorVisibility(bool visible)
 {
     // not implemented
 }

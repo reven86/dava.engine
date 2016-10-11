@@ -118,22 +118,26 @@ void WindowBackend::SetCursorCapture(eCursorCapture mode)
     }
 }
 
-void WindowBackend::SetCursorVisible(bool visible)
+void WindowBackend::SetCursorVisibility(bool visible)
 {
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
 LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
 {
-    if (!mouseVisible)
+    uint16 hittest;
+    hittest = LOWORD(lparam);
+    if (hittest == HTCLIENT)
     {
-        uint16 hittest;
-        hittest = LOWORD(lparam);
-        if (hittest == HTCLIENT)
+        if (mouseVisible)
+        {
+            ::SetCursor(defaultCursor);
+        }
+        else
         {
             ::SetCursor(nullptr);
-            return TRUE;
         }
+        return TRUE;
     }
     return FALSE;
 }
@@ -192,32 +196,24 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
             lastCursorPosition.x = p.x;
             lastCursorPosition.y = p.y;
             SetCursorInCenter();
-            DoSetCursorVisible(false);
+            DoSetCursorVisibility(false);
             break;
         }
         case eCursorCapture::OFF:
         {
             ::SetCursorPos(lastCursorPosition.x, lastCursorPosition.y);
-            DoSetCursorVisible(true);
+            DoSetCursorVisibility(true);
             break;
         }
         }
     }
 }
 
-void WindowBackend::DoSetCursorVisible(bool visible)
+void WindowBackend::DoSetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        if (visible)
-        {
-            ::SetCursor(defaultCursor);
-        }
-        else
-        {
-            ::SetCursor(nullptr);
-        }
     }
 }
 
@@ -266,7 +262,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBLE:
-        DoSetCursorVisible(e.setCursorVisibleEvent.visible);
+        DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:
         break;

@@ -185,9 +185,9 @@ void WindowNativeBridge::MouseClick(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 {
-    if (skipNumberMouseMoveEvents)
+    if (mouseMoveSkipCount)
     {
-        skipNumberMouseMoveEvents--;
+        mouseMoveSkipCount--;
         return;
     }
     NSSize sz = [renderView frame].size;
@@ -296,7 +296,7 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
             break;
         case DAVA::eCursorCapture::PINNING:
         {
-            SetCursorVisible(false);
+            SetCursorVisibility(false);
             CGAssociateMouseAndMouseCursorPosition(false);
             // set cursor in window center
             NSRect windowRect = [nswindow frame];
@@ -307,12 +307,12 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
             cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
             cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
             CGWarpMouseCursorPosition(cursorpos);
-            skipNumberMouseMoveEvents = SKIP_N_MOUSE_MOVE_EVENTS;
+            mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
             break;
         }
         case DAVA::eCursorCapture::OFF:
         {
-            SetCursorVisible(true);
+            SetCursorVisibility(true);
             CGAssociateMouseAndMouseCursorPosition(true);
             break;
         }
@@ -337,7 +337,7 @@ void WindowNativeBridge::SetSystemCursorVisible(bool visible)
     }
 }
 
-void WindowNativeBridge::SetCursorVisible(bool visible)
+void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {

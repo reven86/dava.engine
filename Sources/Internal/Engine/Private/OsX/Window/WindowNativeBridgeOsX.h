@@ -64,7 +64,7 @@ struct WindowNativeBridge final
     void MouseExited(NSEvent* theEvent);
 
     void SetCursorCapture(eCursorCapture mode);
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
@@ -89,9 +89,9 @@ private:
     // Secondly, after using CGWarpMouseCursorPosition function to center mouse pointer
     // mouse move events arrive with big delta which causes mouse hopping.
     // The best solution I have investigated is to skip first N mouse move events after enabling
-    // pinning mode: global variable skipNumberMouseMoveEvents is set to some reasonable value
+    // pinning mode: global variable mouseMoveSkipCount is set to some reasonable value
     // and is checked in OpenGLView's process method to skip mouse move events
-    uint32 skipNumberMouseMoveEvents = 0;
+    uint32 mouseMoveSkipCount = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 

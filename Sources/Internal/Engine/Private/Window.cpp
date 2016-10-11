@@ -98,12 +98,12 @@ eCursorCapture Window::GetCursorCapture() const
     return cursorCapture;
 }
 
-void Window::SetCursorVisible(bool visible)
+void Window::SetCursorVisibility(bool visible)
 {
     if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE)*/) // TODO: Add platfom's caps check
     {
         cursorVisible = visible;
-        windowBackend->SetCursorVisible(visible);
+        windowBackend->SetCursorVisibility(visible);
     }
 }
 
@@ -288,7 +288,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     if (!hasFocus)
     {
         SetCursorCapture(eCursorCapture::OFF);
-        SetCursorVisible(true);
+        SetCursorVisibility(true);
     }
     focusChanged.Emit(this, hasFocus);
 }

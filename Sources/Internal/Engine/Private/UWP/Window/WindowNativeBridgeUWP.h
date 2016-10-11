@@ -33,7 +33,7 @@ ref struct WindowNativeBridge sealed
     void CloseWindow();
     void SetTitle(const char8* title);
     void SetCursorCapture(eCursorCapture mode);
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
 
 private:
     void OnTriggerPlatformEvents();
@@ -92,7 +92,7 @@ private:
     ::Windows::UI::Core::CoreCursor ^ defaultCursor = ref new ::Windows::UI::Core::CoreCursor(::Windows::UI::Core::CoreCursorType::Arrow, 0);
     bool mouseVisible = true;
     eCursorCapture captureMode = eCursorCapture::OFF;
-    uint32 skipNumberMouseMoveEvents = 0;
+    uint32 mouseMoveSkipCount = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
 };
 

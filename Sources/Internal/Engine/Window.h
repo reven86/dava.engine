@@ -71,7 +71,7 @@ public:
      *  Some platforms support cursor management.
      *  SetCursorCapture implemented on Win32, OsX, WinUWP.
      *  Supports following modes: see more in eCursorCapture enum.
-     *  Remarks: when focus lost, sets OFF mode.
+     *  Remarks: when focus lost, window sets capture mode OFF.
      */
     void SetCursorCapture(eCursorCapture mode);
 
@@ -80,10 +80,10 @@ public:
 
     /** Set cursor visible.
      *  Some platforms support cursor visibility.
-     *  SetCursorVisible implemented on Win32, OsX, WinUWP.
-     *  Remarks: when focus lost, sets cursor visible in true.
+     *  SetCursorVisibility implemented on Win32, OsX, WinUWP.
+     *  Remarks: when focus lost, window sets cursor visibility in true.
      */
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
 
     /** Get cursor visibility.*/
     bool GetCursorVisible() const;

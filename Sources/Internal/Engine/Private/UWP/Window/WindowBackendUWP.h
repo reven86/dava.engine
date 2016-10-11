@@ -43,7 +43,7 @@ public:
     void BindXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow);
 
     void SetCursorCapture(eCursorCapture mode);
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

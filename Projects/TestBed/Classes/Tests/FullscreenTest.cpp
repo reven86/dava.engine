@@ -301,14 +301,14 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
     {
     case 0:
     {
-        primWind->SetCursorVisible(false);
+        primWind->SetCursorVisibility(false);
         cursorVisible = primWind->GetCursorVisible();
         break;
     }
     case 1:
     {
         primWind->SetCursorCapture(eCursorCapture::PINNING);
-        primWind->SetCursorVisible(false);
+        primWind->SetCursorVisibility(false);
         cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
         break;
     }
@@ -391,7 +391,7 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
             {
                 primWind->SetCursorCapture(eCursorCapture::OFF);
                 cursorCaptured = (primWind->GetCursorCapture() == eCursorCapture::PINNING);
-                primWind->SetCursorVisible(true);
+                primWind->SetCursorVisibility(true);
                 cursorVisible = primWind->GetCursorVisible();
             }
             break;

@@ -44,7 +44,7 @@ public:
     void ProcessPlatformEvents();
 
     void SetCursorCapture(eCursorCapture mode);
-    void SetCursorVisible(bool visible);
+    void SetCursorVisibility(bool visible);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

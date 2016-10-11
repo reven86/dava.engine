@@ -93,9 +93,9 @@ void WindowBackend::SetCursorCapture(eCursorCapture mode)
     }
 }
 
-void WindowBackend::SetCursorVisible(bool visible)
+void WindowBackend::SetCursorVisibility(bool visible)
 {
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibleEvent(visible));
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetCursorVisibilityEvent(visible));
 }
 
 void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
@@ -119,7 +119,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
     case UIDispatcherEvent::SET_CURSOR_VISIBLE:
-        bridge->SetCursorVisible(e.setCursorVisibleEvent.visible);
+        bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:
         break;
