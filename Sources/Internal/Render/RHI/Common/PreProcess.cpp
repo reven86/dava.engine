@@ -18,7 +18,7 @@ void PreProcessText(const char* text, const char** arg, unsigned argCount, std::
         argv[argc++] = *a;
     argv[argc++] = MCPP_Text;
 
-    char localBuffer[64 * 1024] = {};
+    char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
     _mcpp_preprocessed_text.buffer = localBuffer;
     _mcpp_preprocessed_text.pos = 0;
     {

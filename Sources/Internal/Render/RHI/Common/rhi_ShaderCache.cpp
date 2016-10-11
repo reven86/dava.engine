@@ -865,7 +865,7 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
 {
-    char src[64 * 1024] = {};
+    char src[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
     int src_len = 0;
 
     // inject vattr definitions
@@ -1055,7 +1055,7 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
       MCPP_Text
     };
 
-    char localBuffer[64 * 1024] = {};
+    char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
     _mcpp_preprocessed_text.buffer = localBuffer;
     _mcpp_preprocessed_text.pos = 0;
     {

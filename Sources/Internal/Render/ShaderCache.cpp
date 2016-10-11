@@ -240,7 +240,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (vSource == nullptr)
     {
         DAVA_CPU_PROFILER_SCOPE("vSource2.Construct");
-        char localBuffer[64 * 1024] = {};
+        char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
         memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
         vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
@@ -252,7 +252,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (fSource == nullptr)
     {
         DAVA_CPU_PROFILER_SCOPE("fSource2.Construct");
-        char localBuffer[64 * 1024] = {};
+        char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
         memcpy(localBuffer, sourceCode.fragmentProgText, strlen(sourceCode.fragmentProgText));
         fSource2.Construct(rhi::PROG_FRAGMENT, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(fProgUid, sourceCode.fSrcHash, fSource2);

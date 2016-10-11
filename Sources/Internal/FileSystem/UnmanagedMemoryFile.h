@@ -48,7 +48,7 @@ inline uint32 UnmanagedMemoryFile::Read(void* destinationBuffer, uint32 dataSize
         dataSize = size - offset;
     }
 
-    memcpy(destinationBuffer, pointer + offset, dataSize);
+    Memcpy(destinationBuffer, pointer + offset, dataSize);
     offset += dataSize;
 
     return dataSize;

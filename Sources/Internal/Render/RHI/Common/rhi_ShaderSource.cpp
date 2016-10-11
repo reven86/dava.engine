@@ -1289,7 +1289,7 @@ void ShaderSource::Dump() const
 {
     Logger::Info("src-code:");
 
-    char src[64 * 1024];
+    char src[RHI_SHADER_SOURCE_BUFFER_SIZE];
     char* src_line[1024];
     unsigned line_cnt = 0;
 
