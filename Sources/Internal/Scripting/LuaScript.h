@@ -75,15 +75,29 @@ public:
     int32 ExecFunctionSafe(const String& fName, T&&... args);
 
     /**
-    Return value from top of the stack as Any and pop it.
+    Return value from top of the stack as Any with specified type and pop it.
     Throw LuaException or error.
     */
+    Any PopResult(const Type* preferredType = nullptr);
+
+    /**
+    Return value from top of the stack as Any with specified type and pop it.
+    Throw LuaException or error.
+    */
+    template <typename T>
     Any PopResult();
 
     /**
-    Return value from top of the stack as Any and pop it.
+    Return value from top of the stack as Any with specified type and pop it.
     Return false on error.
     */
+    bool PopResultSafe(Any& any, const Type* preferredType = nullptr);
+
+    /**
+    Return value from top of the stack as Any with specified type and pop it.
+    Return false on error.
+    */
+    template <typename T>
     bool PopResultSafe(Any& any);
 
     /**
@@ -133,5 +147,17 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
         DAVA::Logger::Error(Format("LuaException: %s", e.what()).c_str());
         return -1;
     }
+}
+
+template <typename T>
+inline Any LuaScript::PopResult()
+{
+    return PopResult(Type::Instance<T>());
+}
+
+template <typename T>
+inline bool LuaScript::PopResultSafe(Any& any)
+{
+    return PopResultSafe(any, Type::Instance<T>());
 }
 }

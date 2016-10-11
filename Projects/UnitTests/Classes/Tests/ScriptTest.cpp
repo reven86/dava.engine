@@ -140,20 +140,20 @@ function main(context)
     local invertedValue = context.invert(42)
     assert(invertedValue == -42, "Test fail! context.invert(42) '" .. invertedValue .. "' != -42")
     local sum = context.sum2(1, 2)
-    assert(invertedValue == 3, "Test fail! context.sum2 '" .. sum .. "' != 3")
+    assert(sum == 3, "Test fail! context.sum2 '" .. sum .. "' != 3")
     sum = context.sum3(1, 2, 3)
-    assert(invertedValue == 6, "Test fail! context.sum3 '" .. sum .. "' != 6")
+    assert(sum == 6, "Test fail! context.sum3 '" .. sum .. "' != 6")
     sum = context.sum4(1, 2, 3, 4)
-    assert(invertedValue == 10, "Test fail! context.sum4 '" .. sum .. "' != 10")
+    assert(sum == 10, "Test fail! context.sum4 '" .. sum .. "' != 10")
     sum = context.sum5(1, 2, 3, 4, 5)
-    assert(invertedValue == 15, "Test fail! context.sum5 '" .. sum .. "' != 15")
+    assert(sum == 15, "Test fail! context.sum5 '" .. sum .. "' != 15")
     sum = context.sum6(1, 2, 3, 4, 5, 6)
-    assert(invertedValue == 21, "Test fail! context.sum6 '" .. sum .. "' != 21")
+    assert(sum == 21, "Test fail! context.sum6 '" .. sum .. "' != 21")
     
     -- tostring tests
-    assert(tostring(context.colorVal) != "", "Test fail! tostring(Any) is empty!")
-    assert(tostring(context.invert) != "", "Test fail! tostring(AnyFn) is empty!")
-    assert(tostring(context) != """, "Test fail! tostring(Reflection) is empty!")
+    assert(tostring(context.colorVal) ~= "", "Test fail! tostring(Any) is empty!")
+    assert(tostring(context.invert) ~= "", "Test fail! tostring(AnyFn) is empty!")
+    assert(tostring(context) ~= "", "Test fail! tostring(Reflection) is empty!")
 end
 )script";
 
@@ -181,9 +181,9 @@ incorrect script
             s.ExecString(error_script);
             TEST_VERIFY(false);
         }
-        catch (const DAVA::LuaException& e)
+        catch (const DAVA::LuaException&)
         {
-            TEST_VERIFY(e.ErrorCode() != 0);
+            TEST_VERIFY(true);
         }
 
         // Check safe method
@@ -204,9 +204,9 @@ undefined_function_call("test")
             s.ExecString(error_script);
             TEST_VERIFY(false);
         }
-        catch (const DAVA::LuaException& e)
+        catch (const DAVA::LuaException&)
         {
-            TEST_VERIFY(e.ErrorCode() != 0);
+            TEST_VERIFY(true);
         }
 
         // Check safe method
@@ -231,9 +231,9 @@ end
             s.ExecFunction("main");
             TEST_VERIFY(false);
         }
-        catch (const DAVA::LuaException& e)
+        catch (const DAVA::LuaException&)
         {
-            TEST_VERIFY(e.ErrorCode() != 0);
+            TEST_VERIFY(true);
         }
 
         // Check safe method
@@ -269,7 +269,7 @@ return 42, "demo"
 
         try
         {
-            DAVA::Any r = s.PopResult();
+            DAVA::Any r = s.PopResult<DAVA::String>();
             TEST_VERIFY(r.CanGet<DAVA::String>());
             TEST_VERIFY(r.Get<DAVA::String>() == "demo");
         }
@@ -279,10 +279,10 @@ return 42, "demo"
         }
 
         DAVA::Any r;
-        TEST_VERIFY(s.PopResultSafe(r));
+        TEST_VERIFY(s.PopResultSafe<DAVA::int32>(r));
         TEST_VERIFY(!r.IsEmpty());
-        TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 42.f));
+        TEST_VERIFY(r.CanGet<DAVA::int32>());
+        TEST_VERIFY(r.Get<DAVA::int32>() == 42);
     }
 
     DAVA_TEST (PopResultsErrorTest)
@@ -298,16 +298,16 @@ return 42, "demo"
 
         try
         {
-            DAVA::Any r = s.PopResult();
+            DAVA::Any r = s.PopResult<DAVA::int32>();
             TEST_VERIFY(false);
         }
-        catch (const DAVA::LuaException& e)
+        catch (const DAVA::LuaException&)
         {
-            TEST_VERIFY(e.ErrorCode() != 0);
+            TEST_VERIFY(true);
         }
 
         DAVA::Any r;
-        TEST_VERIFY(!s.PopResultSafe(r));
+        TEST_VERIFY(!s.PopResultSafe<DAVA::int32>(r));
         TEST_VERIFY(r.IsEmpty());
     }
 

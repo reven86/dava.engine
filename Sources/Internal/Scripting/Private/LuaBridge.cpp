@@ -494,7 +494,7 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
 #define ISTYPE(t) (preferredType == Type::Instance<t>())
 #define CASTTYPE(t, ex) (Any(static_cast<t>(ex)))
 #define IFCAST(t, luaFn) if ISTYPE(t) { return CASTTYPE(t, luaFn(L, index)); }
-#define THROWTYPE DAVA_THROW(LuaException, ltype, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
+#define THROWTYPE DAVA_THROW(LuaException, LUA_ERRRUN, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
 
     int ltype = lua_type(L, index);
     switch (ltype)
@@ -597,19 +597,19 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
             else
             {
                 lua_pop(L, 1); // stack -1
-                DAVA_THROW(LuaException, ltype, "Unknown userdata type!");
+                DAVA_THROW(LuaException, LUA_ERRRUN, "Unknown userdata type!");
             }
         }
         else // stack +0
         {
-            DAVA_THROW(LuaException, ltype, "Unknown userdata type without metatable!");
+            DAVA_THROW(LuaException, LUA_ERRRUN, "Unknown userdata type without metatable!");
         }
     case LUA_TLIGHTUSERDATA:
     case LUA_TTABLE:
     case LUA_TFUNCTION:
     case LUA_TTHREAD:
     default:
-        DAVA_THROW(LuaException, ltype, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
+        DAVA_THROW(LuaException, LUA_ERRRUN, Format("Unsupported Lua type \"%s\"!", lua_typename(L, ltype)));
     }
 
 #undef ISTYPE

@@ -100,19 +100,19 @@ int32 LuaScript::ExecStringSafe(const String& script)
     }
 }
 
-Any LuaScript::PopResult()
+Any LuaScript::PopResult(const Type* preferredType /*= nullptr*/)
 {
-    Any res = LuaBridge::LuaToAny(state->lua, -1);
+    Any res = LuaBridge::LuaToAny(state->lua, -1, preferredType);
     lua_pop(state->lua, 1);
     return res;
 }
 
-bool LuaScript::PopResultSafe(Any& any)
+bool LuaScript::PopResultSafe(Any& any, const Type* preferredType /*= nullptr*/)
 {
     bool res = true;
     try
     {
-        any = LuaBridge::LuaToAny(state->lua, -1);
+        any = LuaBridge::LuaToAny(state->lua, -1, preferredType);
     }
     catch (const LuaException& e)
     {
@@ -120,7 +120,7 @@ bool LuaScript::PopResultSafe(Any& any)
         res = false;
     }
     lua_pop(state->lua, 1);
-    return true;
+    return res;
 }
 
 void LuaScript::SetGlobalVariable(const String& vName, const Any& value)
