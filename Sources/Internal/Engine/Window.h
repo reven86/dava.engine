@@ -6,8 +6,7 @@
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
 
-#include "UI/UIEvent.h"
-
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/EngineBackend.h"
 
@@ -128,7 +127,7 @@ private:
     float32 userScale = 1.0f;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    Bitset<static_cast<size_t>(eMouseButtons::COUNT)> mouseButtonState;
 
     // Friends
     friend class Private::EngineBackend;

@@ -264,9 +264,10 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
+    uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     // NOTE: Taken from CoreWin32Platform::OnMouseClick
 
@@ -293,9 +294,10 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
+    uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     // TODO: let input system decide what to do when shift is pressed while wheelling
     // Now use implementation from current core
@@ -314,22 +316,23 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = UIEvent::Device::MOUSE;
+    uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     // NOTE: Taken from CoreWin32Platform::OnMouseMove
     if (mouseButtonState.any())
     {
         uie.phase = UIEvent::Phase::DRAG;
 
-        uint32 firstButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-        uint32 lastButton = static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+        uint32 firstButton = static_cast<uint32>(eMouseButtons::FIRST);
+        uint32 lastButton = static_cast<uint32>(eMouseButtons::LAST);
         for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
         {
             if (mouseButtonState[buttonIndex - 1])
             {
-                uie.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
+                uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
                 uiControlSystem->OnInput(&uie);
             }
         }
@@ -347,9 +350,10 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = UIEvent::Device::TOUCH_SURFACE;
+    uie.device = eInputDevice::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     uiControlSystem->OnInput(&uie);
 }
@@ -359,9 +363,10 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::DRAG;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = UIEvent::Device::TOUCH_SURFACE;
+    uie.device = eInputDevice::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     uiControlSystem->OnInput(&uie);
 }
@@ -374,8 +379,9 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-    uie.device = UIEvent::Device::KEYBOARD;
+    uie.device = eInputDevice::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     if (pressed)
     {
@@ -402,8 +408,9 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
     uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
-    uie.device = UIEvent::Device::KEYBOARD;
+    uie.device = eInputDevice::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
+    uie.modifiers = e.keyEvent.modifierKeys;
 
     uiControlSystem->OnInput(&uie);
 }
@@ -414,16 +421,17 @@ void Window::ClearMouseButtons()
 
     UIEvent uie;
     uie.phase = UIEvent::Phase::ENDED;
-    uie.device = UIEvent::Device::MOUSE;
+    uie.device = eInputDevice::MOUSE;
     uie.timestamp = SystemTimer::FrameStampTimeMS() / 1000.0;
+    uie.modifiers = eModifierKeys::NONE;
 
-    uint32 firstButton = static_cast<uint32>(UIEvent::MouseButton::LEFT);
-    uint32 lastButton = static_cast<uint32>(UIEvent::MouseButton::NUM_BUTTONS);
+    uint32 firstButton = static_cast<uint32>(eMouseButtons::FIRST);
+    uint32 lastButton = static_cast<uint32>(eMouseButtons::LAST);
     for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
     {
         if (mouseButtonState[buttonIndex - 1])
         {
-            uie.mouseButton = static_cast<UIEvent::MouseButton>(buttonIndex);
+            uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
             uiControlSystem->OnInput(&uie);
         }
     }

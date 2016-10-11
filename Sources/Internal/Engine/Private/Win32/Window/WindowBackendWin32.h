@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
@@ -59,13 +60,13 @@ private:
 
     void UIEventHandler(const UIDispatcherEvent& e);
 
-    LRESULT OnSize(int resizingType, int width, int height);
+    LRESULT OnSize(int32 resizingType, int32 width, int32 height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
     LRESULT OnSetKillFocus(bool hasFocus);
-    LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
-    LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
-    LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
+    LRESULT OnMouseMoveEvent(int32 x, int32 y);
+    LRESULT OnMouseWheelEvent(int32 delta, int32 x, int32 y);
+    LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
@@ -74,6 +75,7 @@ private:
     LRESULT WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bool& isHandled);
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
+    static eModifierKeys GetModifierKeys();
 
 private:
     EngineBackend* engineBackend = nullptr;

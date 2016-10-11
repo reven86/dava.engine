@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -88,7 +89,8 @@ struct MainDispatcherEvent final
     ///     - MOUSE_WHEEL
     struct MouseEvent
     {
-        uint32 button; // What button is pressed (MOUSE_BUTTON_DOWN and MOUSE_BUTTON_UP)
+        eMouseButtons button; // What button is pressed (MOUSE_BUTTON_DOWN and MOUSE_BUTTON_UP)
+        eModifierKeys modifierKeys; // Modifier keys accompanying mouse event (shift, alt, control)
         uint32 clicks; // Number of button clicks (MOUSE_BUTTON_DOWN)
         float32 x; // Point where mouse click, mouse wheel occured or point where mouse is moved,
         float32 y; // if isRelative then point designate relative mouse move not absolute
@@ -104,6 +106,7 @@ struct MainDispatcherEvent final
     struct TouchEvent
     {
         uint32 touchId;
+        eModifierKeys modifierKeys; // Modifier keys accompanying touch event (shift, alt, control)
         float32 x;
         float32 y;
     };
@@ -115,6 +118,7 @@ struct MainDispatcherEvent final
     struct KeyEvent
     {
         uint32 key;
+        eModifierKeys modifierKeys; // Modifier keys accompanying key event (shift, alt, control)
         bool isRepeated;
     };
 
@@ -157,11 +161,11 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
 
-    static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, bool isRepeated);
-    static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, uint32 button, float32 x, float32 y, uint32 clicks, bool isRelative);
-    static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, bool isRelative);
-    static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, bool isRelative);
-    static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
+    static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated);
+    static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, eMouseButtons button, float32 x, float32 y, uint32 clicks, eModifierKeys modifierKeys, bool isRelative);
+    static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, eModifierKeys modifierKeys, bool isRelative);
+    static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys, bool isRelative);
+    static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y, eModifierKeys modifierKeys);
 };
 
 } // namespace Private

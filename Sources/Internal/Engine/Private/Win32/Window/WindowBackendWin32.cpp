@@ -180,7 +180,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     }
 }
 
-LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
+LRESULT WindowBackend::OnSize(int32 resizingType, int32 width, int32 height)
 {
     if (resizingType == SIZE_MINIMIZED)
     {
@@ -231,69 +231,71 @@ LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
+LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    float32 vx = static_cast<float32>(x);
+    float32 vy = static_cast<float32>(y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
+LRESULT WindowBackend::OnMouseWheelEvent(int32 delta, int32 x, int32 y)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
-                                                                               static_cast<float32>(x),
-                                                                               static_cast<float32>(y),
-                                                                               0.f,
-                                                                               static_cast<float32>(delta),
-                                                                               false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    float32 vx = static_cast<float32>(x);
+    float32 vy = static_cast<float32>(y);
+    float32 vdelta = static_cast<float32>(delta);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, 0.f, vdelta, modifierKeys, false));
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y)
+LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y)
 {
-    uint32 button = 0;
+    eMouseButtons button = eMouseButtons::NONE;
     MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
     switch (message)
     {
     case WM_LBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 1;
+        button = eMouseButtons::LEFT;
         break;
     case WM_LBUTTONUP:
         type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 1;
+        button = eMouseButtons::LEFT;
         break;
     case WM_LBUTTONDBLCLK:
         // TODO: somehow handle mouse doubleclick
         return 0;
     case WM_RBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 2;
+        button = eMouseButtons::RIGHT;
         break;
     case WM_RBUTTONUP:
         type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 2;
+        button = eMouseButtons::RIGHT;
         break;
     case WM_RBUTTONDBLCLK:
         // TODO: somehow handle mouse doubleclick
         return 0;
     case WM_MBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = 3;
+        button = eMouseButtons::MIDDLE;
         break;
     case WM_MBUTTONUP:
         type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = 3;
+        button = eMouseButtons::MIDDLE;
         break;
     case WM_MBUTTONDBLCLK:
         // TODO: somehow handle mouse doubleclick
         return 0;
     case WM_XBUTTONDOWN:
         type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = xbutton == XBUTTON1 ? 4 : 5;
+        button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
         break;
     case WM_XBUTTONUP:
         type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = xbutton == XBUTTON1 ? 4 : 5;
+        button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
         break;
     case WM_XBUTTONDBLCLK:
         // TODO: somehow handle mouse doubleclick
@@ -302,13 +304,10 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint
         return 0;
     }
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                               type,
-                                                                               button,
-                                                                               static_cast<float32>(x),
-                                                                               static_cast<float32>(y),
-                                                                               1,
-                                                                               false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    float32 vx = static_cast<float32>(x);
+    float32 vy = static_cast<float32>(y);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
     return 0;
 }
 
@@ -319,14 +318,16 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
         key |= 0x100;
     }
 
+    eModifierKeys modifierKeys = GetModifierKeys();
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, isRepeated));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, isRepeated));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
     return 0;
 }
 
@@ -371,9 +372,9 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     LRESULT lresult = 0;
     if (message == WM_SIZE)
     {
-        int w = GET_X_LPARAM(lparam);
-        int h = GET_Y_LPARAM(lparam);
-        lresult = OnSize(static_cast<int>(wparam), w, h);
+        int32 w = GET_X_LPARAM(lparam);
+        int32 h = GET_Y_LPARAM(lparam);
+        lresult = OnSize(static_cast<int32>(wparam), w, h);
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -396,26 +397,23 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_MOUSEMOVE)
     {
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseMoveEvent(keyModifiers, x, y);
+        int32 x = GET_X_LPARAM(lparam);
+        int32 y = GET_Y_LPARAM(lparam);
+        lresult = OnMouseMoveEvent(x, y);
     }
     else if (message == WM_MOUSEWHEEL)
     {
         int32 delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(keyModifiers, delta, x, y);
+        int32 x = GET_X_LPARAM(lparam);
+        int32 y = GET_Y_LPARAM(lparam);
+        lresult = OnMouseWheelEvent(delta, x, y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
-        uint16 keyModifiers = GET_KEYSTATE_WPARAM(wparam);
         uint16 xbutton = GET_XBUTTON_WPARAM(wparam);
-        int x = GET_X_LPARAM(lparam);
-        int y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseClickEvent(message, keyModifiers, xbutton, x, y);
+        int32 x = GET_X_LPARAM(lparam);
+        int32 y = GET_Y_LPARAM(lparam);
+        lresult = OnMouseClickEvent(message, xbutton, x, y);
     }
     else if (message == WM_KEYUP || message == WM_KEYDOWN || message == WM_SYSKEYUP || message == WM_SYSKEYDOWN)
     {
@@ -514,6 +512,28 @@ bool WindowBackend::RegisterWindowClass()
         windowClassRegistered = ::RegisterClassExW(&wcex) != 0;
     }
     return windowClassRegistered;
+}
+
+eModifierKeys WindowBackend::GetModifierKeys()
+{
+    eModifierKeys result = eModifierKeys::NONE;
+    BYTE keyState[256];
+    if (::GetKeyboardState(keyState))
+    {
+        if ((keyState[VK_LSHIFT] & 0x80) || (keyState[VK_RSHIFT] & 0x80))
+        {
+            result |= eModifierKeys::SHIFT;
+        }
+        if ((keyState[VK_LCONTROL] & 0x80) || (keyState[VK_RCONTROL] & 0x80))
+        {
+            result |= eModifierKeys::CONTROL;
+        }
+        if ((keyState[VK_LMENU] & 0x80) || (keyState[VK_RMENU] & 0x80))
+        {
+            result |= eModifierKeys::ALT;
+        }
+    }
+    return result;
 }
 
 } // namespace Private
