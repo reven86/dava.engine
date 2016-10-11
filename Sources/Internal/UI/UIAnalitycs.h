@@ -7,14 +7,13 @@ namespace DAVA
 {
 namespace Analytics
 {
-const char uiEventCategory[] = "UI";
-const char controlNameTag[] = "UIControlName";
-const char pressedKeyTag[] = "PressedKey";
+const char uiEventTypeTag[] = "UIEventType";
 
 const char clickEvent[] = "Click";
 const char doubleClickEvent[] = "DoubleClick";
 const char keyPressEvent[] = "KeyPress";
 
+const char pressedKeyTag[] = "PressedKey";
 const char escKeyPressed[] = "EscKeyPressed";
 const char backKeyPressed[] = "BackKeyPressed";
 const char enterKeyPressed[] = "EnterKeyPressed";

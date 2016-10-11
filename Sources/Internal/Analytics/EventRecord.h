@@ -2,20 +2,21 @@
 
 #include "Base/Any.h"
 #include "Base/BaseTypes.h"
+#include "Platform/DateTime.h"
 
 namespace DAVA
 {
 namespace Analytics
 {
 const char eventNameTag[] = "name";
-const char eventCategoryTag[] = "category";
+const char eventTimestampTag[] = "timestamp";
 
 struct EventRecord
 {
-    EventRecord(const String& category, const String& name)
+    EventRecord(const String& name)
     {
-        fields[eventCategoryTag] = category;
         fields[eventNameTag] = name;
+        fields[eventTimestampTag] = DateTime::Now();
     }
 
     const Any* GetField(const String& field) const

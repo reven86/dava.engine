@@ -258,7 +258,6 @@ void Core::CreateSingletons()
     analyticsCore.reset(new Analytics::Core);
     auto backend = std::make_shared<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
     analyticsCore->AddBackend("LoggingBackend", backend);
-    analyticsCore->Start();
 
     new LocalNotificationController();
 

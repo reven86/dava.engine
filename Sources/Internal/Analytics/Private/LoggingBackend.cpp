@@ -5,6 +5,18 @@ namespace DAVA
 {
 namespace Analytics
 {
+String FormatDateTime(const DateTime& dt)
+{
+    int32 year = dt.GetYear();
+    int32 month = dt.GetMonth();
+    int32 day = dt.GetDay();
+    int32 hour = dt.GetHour();
+    int32 minute = dt.GetMinute();
+    int32 sec = dt.GetSecond();
+
+    return Format("%04d-%02d-%02d %02d:%02d:%02d%", year, month, day, hour, minute, sec);
+}
+
 LoggingBackend::LoggingBackend(const FilePath& path)
     : filePath(path)
 {
@@ -28,6 +40,11 @@ void LoggingBackend::ProcessEvent(const EventRecord& event)
         else if (field.second.CanGet<const char*>())
         {
             value = field.second.Get<const char*>();
+        }
+        else if (field.second.CanGet<const DateTime&>())
+        {
+            const DateTime& dateTime = field.second.Get<const DateTime&>();
+            value = FormatDateTime(dateTime);
         }
 
         if (!msg.empty())

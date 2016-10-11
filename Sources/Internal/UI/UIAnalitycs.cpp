@@ -1,15 +1,28 @@
 #include "UI/UIAnalitycs.h"
 
-#include "Core/Core.h"
-#include "Platform/DateTime.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/UIEvent.h"
 #include "Utils/Utils.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#else
+#include "Core/Core.h"
+#endif
 
 namespace DAVA
 {
 namespace Analytics
 {
+Analytics::Core& GetCore()
+{
+#if defined(__DAVAENGINE_COREV2__)
+    return *Engine::Instance()->GetContext()->analyticsCore;
+#else
+    return DAVA::Core::Instance()->GetAnalyticsCore();
+#endif
+}
+
 bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* uiEvent)
 {
     // Process only touch up
@@ -19,16 +32,15 @@ bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* u
     }
 
     // Check if core is not ready
-    Analytics::Core& core = DAVA::Core::Instance()->GetAnalyticsCore();
+    Analytics::Core& core = GetCore();
     if (!core.IsStarted())
     {
         return false;
     }
 
     // Create event record
-    const char* eventName = uiEvent->tapCount == 1 ? clickEvent : doubleClickEvent;
-    EventRecord event(uiEventCategory, eventName);
-    event.fields[controlNameTag] = GetUIControlName(control);
+    EventRecord event(GetUIControlName(control));
+    event.fields[uiEventTypeTag] = uiEvent->tapCount == 1 ? clickEvent : doubleClickEvent;
 
     // Process
     return core.PostEvent(event);
@@ -60,15 +72,15 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
     }
 
     // Check if core is not ready
-    Analytics::Core& core = DAVA::Core::Instance()->GetAnalyticsCore();
+    Analytics::Core& core = GetCore();
     if (!core.IsStarted())
     {
         return false;
     }
 
     // Create event record
-    EventRecord event(uiEventCategory, keyPressEvent);
-    event.fields[controlNameTag] = GetUIControlName(control);
+    EventRecord event(GetUIControlName(control));
+    event.fields[uiEventTypeTag] = keyPressEvent;
     event.fields[pressedKeyTag] = pressedKey;
 
     // Process
@@ -77,7 +89,7 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
 
 bool IsUIEvent(const EventRecord& record)
 {
-    return record.GetField(eventCategoryTag)->Cast<String>() == uiEventCategory;
+    return record.GetField(uiEventTypeTag) != nullptr;
 }
 
 String GetUIControlName(UIControl* uiControl)
