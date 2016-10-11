@@ -92,9 +92,12 @@ protected:
 
     void Draw();
     void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
-    void DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect);
+    void DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect, bool highlightTitle = false);
 
     int32 GetEnoughRectHeight(const TraceData& trace);
+    int32 FindLegendIndex(const Vector<TraceData::LegentElement>& legend, const FastName& marker);
+    TraceData& GetCurrentTrace(RingArray<TraceData>& traceData);
+    TraceData& GetFocusedTrace();
 
     FastNameMap<MarkerHistory> markersHistory = FastNameMap<MarkerHistory>(128, MarkerHistory({ MarkerHistory::HistoryArray(MARKER_HISTORY_LENGTH), 0 }));
     FastNameMap<uint32> markersColor;
@@ -112,6 +115,7 @@ protected:
 
     uint32 traceHistoryOffset = 0;
 
+    bool focusOnCPUTrace = true;
     bool overlayEnabled = false;
 };
 }

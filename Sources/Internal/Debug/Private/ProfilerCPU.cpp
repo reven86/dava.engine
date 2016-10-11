@@ -29,7 +29,7 @@ struct ProfilerCPU::Counter
     uint64 threadID = 0;
 };
 
-namespace CPUProfilerDetails
+namespace ProfilerCPUDetails
 {
 struct CounterTreeNode
 {
@@ -83,7 +83,7 @@ ProfilerCPU::ScopedCounter::ScopedCounter(const char* counterName, ProfilerCPU* 
         Counter& c = profiler->counters->next();
 
         endTime = &c.endTime;
-        c.startTime = CPUProfilerDetails::TimeStampUs();
+        c.startTime = ProfilerCPUDetails::TimeStampUs();
         c.endTime = 0;
         c.name = counterName;
         c.threadID = Thread::GetCurrentIdAsUInt64();
@@ -99,7 +99,7 @@ ProfilerCPU::ScopedCounter::~ScopedCounter()
     // We know it. But it performance reason.
     if (profiler->started && endTime)
     {
-        *endTime = CPUProfilerDetails::TimeStampUs();
+        *endTime = ProfilerCPUDetails::TimeStampUs();
     }
 }
 
@@ -191,8 +191,8 @@ void ProfilerCPU::DumpLast(const char* counterName, uint32 counterCount, std::os
                 stream << "=== Non-tracked time [" << (lastDumpedCounter->startTime - it->endTime) << " us] ===" << std::endl;
             lastDumpedCounter = &(*it);
 
-            CPUProfilerDetails::CounterTreeNode* treeRoot = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
-            CPUProfilerDetails::CounterTreeNode::DumpTree(treeRoot, stream, false);
+            ProfilerCPUDetails::CounterTreeNode* treeRoot = ProfilerCPUDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
+            ProfilerCPUDetails::CounterTreeNode::DumpTree(treeRoot, stream, false);
             SafeDelete(treeRoot);
 
             counterCount--;
@@ -215,17 +215,17 @@ void ProfilerCPU::DumpAverage(const char* counterName, uint32 counterCount, std:
 
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator it = array->rbegin(), itEnd = array->rend();
-    CPUProfilerDetails::CounterTreeNode* treeRoot = nullptr;
+    ProfilerCPUDetails::CounterTreeNode* treeRoot = nullptr;
     for (; it != itEnd; it++)
     {
         if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
         {
-            CPUProfilerDetails::CounterTreeNode* node = CPUProfilerDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
+            ProfilerCPUDetails::CounterTreeNode* node = ProfilerCPUDetails::CounterTreeNode::BuildTree(CounterArray::iterator(it), array);
 
             if (treeRoot)
             {
-                CPUProfilerDetails::CounterTreeNode::MergeTree(treeRoot, node);
-                CPUProfilerDetails::CounterTreeNode::SafeDeleteTree(node);
+                ProfilerCPUDetails::CounterTreeNode::MergeTree(treeRoot, node);
+                ProfilerCPUDetails::CounterTreeNode::SafeDeleteTree(node);
             }
             else
             {
@@ -241,8 +241,8 @@ void ProfilerCPU::DumpAverage(const char* counterName, uint32 counterCount, std:
 
     if (treeRoot)
     {
-        CPUProfilerDetails::CounterTreeNode::DumpTree(treeRoot, stream, true);
-        CPUProfilerDetails::CounterTreeNode::SafeDeleteTree(treeRoot);
+        ProfilerCPUDetails::CounterTreeNode::DumpTree(treeRoot, stream, true);
+        ProfilerCPUDetails::CounterTreeNode::SafeDeleteTree(treeRoot);
     }
 
     stream << "================================================================" << std::endl;
@@ -316,7 +316,7 @@ ProfilerCPU::CounterArray* ProfilerCPU::GetCounterArray(int32 snapshot)
 
 /////////////////////////////////////////////////////////////////////////////////
 //Internal Definition
-namespace CPUProfilerDetails
+namespace ProfilerCPUDetails
 {
 CounterTreeNode* CounterTreeNode::BuildTree(ProfilerCPU::CounterArray::iterator begin, ProfilerCPU::CounterArray* array)
 {
@@ -350,7 +350,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(ProfilerCPU::CounterArray::iterator 
                 node = node->parent;
             }
 
-            if (CPUProfilerDetails::NameEquals(node->counterName, c.name))
+            if (ProfilerCPUDetails::NameEquals(node->counterName, c.name))
             {
                 node->counterTime += c.endTime - c.startTime;
                 node->count++;
@@ -358,7 +358,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(ProfilerCPU::CounterArray::iterator 
             else
             {
                 auto found = std::find_if(node->childs.begin(), node->childs.end(), [&c](CounterTreeNode* node) {
-                    return (CPUProfilerDetails::NameEquals(c.name, node->counterName));
+                    return (ProfilerCPUDetails::NameEquals(c.name, node->counterName));
                 });
 
                 if (found != node->childs.end())
@@ -385,7 +385,7 @@ CounterTreeNode* CounterTreeNode::BuildTree(ProfilerCPU::CounterArray::iterator 
 
 void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* node)
 {
-    if (CPUProfilerDetails::NameEquals(root->counterName, node->counterName))
+    if (ProfilerCPUDetails::NameEquals(root->counterName, node->counterName))
     {
         root->counterTime += node->counterTime;
         root->count++;
@@ -396,7 +396,7 @@ void CounterTreeNode::MergeTree(CounterTreeNode* root, const CounterTreeNode* no
     else
     {
         auto found = std::find_if(root->childs.begin(), root->childs.end(), [&node](CounterTreeNode* child) {
-            return (CPUProfilerDetails::NameEquals(child->counterName, node->counterName));
+            return (ProfilerCPUDetails::NameEquals(child->counterName, node->counterName));
         });
 
         if (found != root->childs.end())
