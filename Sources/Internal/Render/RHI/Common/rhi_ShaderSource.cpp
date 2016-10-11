@@ -1502,8 +1502,6 @@ void ShaderSourceCache::Save(const char* fileName)
         
 #undef WRITE_CHECK
     }
-
-    exit(0);
 }
 
 //------------------------------------------------------------------------------

@@ -197,11 +197,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
     }
 
-    static uint32 calls = 0;
-    ++calls;
-
-    DAVA::Logger::Info(">>>>>>>>>>>>>> GetShaderDescriptor calls: %u", calls);
-
     //not found - create new shader
     Vector<String> progDefines;
     progDefines.reserve(defines.size() * 2);
