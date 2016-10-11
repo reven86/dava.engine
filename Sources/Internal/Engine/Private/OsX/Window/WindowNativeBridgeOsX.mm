@@ -131,6 +131,12 @@ void WindowNativeBridge::WindowDidResize()
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
+    CGSize size = [renderView frame].size;
+    CGSize surfSize = [renderView convertSizeToBacking:size];
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
 }
 
 bool WindowNativeBridge::WindowShouldClose()
@@ -263,11 +269,6 @@ float32 WindowNativeBridge::GetDpi()
     NSDictionary* description = [screen deviceDescription];
     NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
     CGSize displayPhysicalSize = CGDisplayScreenSize([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-
-    if (displayPhysicalSize.width == 0.0f)
-    {
-        return 0;
-    }
 
     // there being 25.4 mm in an inch
     return (displayPixelSize.width / displayPhysicalSize.width) * 25.4f;
