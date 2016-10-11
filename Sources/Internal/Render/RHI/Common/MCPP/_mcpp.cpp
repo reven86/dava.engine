@@ -4,10 +4,7 @@
 #include "Scene3D/PathManip.h"
 #include "_mcpp.h"
 
-using DAVA::uint8;
-
-struct
-FileEntry
+struct FileEntry
 {
     std::string file_name;
     FILE* handle;
@@ -21,7 +18,7 @@ std::vector<std::string> IncludeSearchPath;
 static std::vector<FileEntry> _FileEntry;
 static FILE* const _HandleBase = reinterpret_cast<FILE*>(0x1000);
 
-inline int mcpp_fputc_impl(int ch, OUTDEST dst)
+int mcpp_fputc_impl(int ch, OUTDEST dst)
 {
     if (dst == MCPP_OUT)
     {
@@ -31,7 +28,7 @@ inline int mcpp_fputc_impl(int ch, OUTDEST dst)
     return ch;
 }
 
-inline int mcpp_fputs_impl(const char* str, OUTDEST dst)
+int mcpp_fputs_impl(const char* str, OUTDEST dst)
 {
     if (dst == MCPP_OUT)
     {
@@ -77,7 +74,7 @@ void mcpp__set_input(const void* data, unsigned data_sz)
 
     FileEntry entry;
 
-    entry.file = new DAVA::UnmanagedMemoryFile(reinterpret_cast<const uint8*>(data), data_sz);
+    entry.file = new DAVA::UnmanagedMemoryFile(reinterpret_cast<const DAVA::uint8*>(data), data_sz);
     entry.file_name = MCPP_Text;
     entry.eof = 0;
     entry.handle = _HandleBase + 0;
