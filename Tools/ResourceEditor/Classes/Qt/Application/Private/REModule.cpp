@@ -133,6 +133,7 @@ void REModule::PostInit()
 {
     UnpackHelpDoc();
 
+    Themes::InitFromQApplication();
     DAVA::TArc::ContextAccessor& accessor = GetAccessor();
 
     DAVA::EngineContext& engineContext = accessor.GetEngineContext();
@@ -149,8 +150,6 @@ void REModule::PostInit()
     globalData.mainWindow->InjectRenderWidget(GetContextManager().GetRenderWidget());
     globalData.mainWindow->EnableGlobalTimeout(true);
     ui.InjectWindow(globalData.windowKey, globalData.mainWindow);
-
-    Themes::InitFromQApplication();
 }
 
 void REModule::UnpackHelpDoc()
