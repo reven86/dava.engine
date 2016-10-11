@@ -1,5 +1,5 @@
 #include "MCPP/mcpp_lib.h"
-
+#include "../rhi_ShaderSource.h"
 #include "../rhi_ShaderCache.h"
 
 namespace rhi
