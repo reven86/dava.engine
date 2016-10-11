@@ -11,6 +11,9 @@ class ProfilerGPU;
 class ProfilerOverlay
 {
 public:
+    static const uint32 TRACE_HISTORY_SIZE = 10;
+    static ProfilerOverlay* const globalProfilerOverlay;
+
     ProfilerOverlay(ProfilerCPU* cpuProfiler, const char* cpuCounterName, ProfilerGPU* gpuProfiler, const Vector<FastName>& interestEvents = Vector<FastName>());
 
     void Enable();
@@ -20,16 +23,16 @@ public:
 
     void ClearInterestEvents();
     void AddInterestEvent(const FastName& name);
-    Vector<FastName> GetAvalibleEventsNames();
+    Vector<FastName> GetAvalibleEventsNames() const;
+
+    void SetTraceHistoryOffset(uint32 offset);
+    uint32 GetTraceHistoryOffset() const;
 
     void SetCPUProfiler(ProfilerCPU* profiler, const char* counterName);
     void SetGPUProfiler(ProfilerGPU* profiler);
 
-    static ProfilerOverlay* const globalProfilerOverlay;
-
 protected:
     static const uint32 EVENT_HISTORY_LENGTH = 300;
-    static const uint32 FRAME_TRACE_HISTORY_LENGTH = 10;
 
     struct HistoryInstance
     {
@@ -68,7 +71,7 @@ protected:
     };
 
     void Update();
-    void UpdateCurrentTrace(TraceData* trace, const Vector<TraceEvent>& events, uint32 frameIndex);
+    void ProcessEventsTrace(const Vector<TraceEvent>& events, uint32 frameIndex, TraceData* trace);
 
     void Draw();
     void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
@@ -82,13 +85,15 @@ protected:
     Vector<FastName> interestEventsNames;
     uint32 maxEventNameLen = 0;
 
-    TraceData currentGPUTrace;
-    TraceData currentCPUTrace;
-    List<FrameTrace> CPUTraces;
+    RingArray<TraceData> GPUTraceData = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
+    RingArray<TraceData> CPUTraceData = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
+    List<FrameTrace> CPUFrameTraces;
 
     ProfilerGPU* gpuProfiler = nullptr;
     ProfilerCPU* cpuProfiler = nullptr;
     const char* cpuCounterName = nullptr;
+
+    uint32 traceHistoryOffset = 0;
 
     bool overlayEnabled = false;
 };

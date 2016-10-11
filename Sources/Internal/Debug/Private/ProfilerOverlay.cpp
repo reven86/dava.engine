@@ -100,16 +100,27 @@ void ProfilerOverlay::AddInterestEvent(const FastName& name)
     maxEventNameLen = Max(maxEventNameLen, strlen(name.c_str()));
 }
 
-Vector<FastName> ProfilerOverlay::GetAvalibleEventsNames()
+Vector<FastName> ProfilerOverlay::GetAvalibleEventsNames() const
 {
     Vector<FastName> ret;
-    for (const FastName& n : currentCPUTrace.names)
+    for (const FastName& n : CPUTraceData.crbegin()->names)
         ret.push_back(n);
 
-    for (const FastName& n : currentGPUTrace.names)
+    for (const FastName& n : GPUTraceData.crbegin()->names)
         ret.push_back(n);
 
     return ret;
+}
+
+void ProfilerOverlay::SetTraceHistoryOffset(uint32 offset)
+{
+    DVASSERT(offset < TRACE_HISTORY_SIZE);
+    traceHistoryOffset = offset;
+}
+
+uint32 ProfilerOverlay::GetTraceHistoryOffset() const
+{
+    return traceHistoryOffset;
 }
 
 void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
@@ -131,18 +142,18 @@ void ProfilerOverlay::Update()
     if (gpuProfiler)
     {
         uint32 lastGPUFrameIndex = gpuProfiler->GetLastFrame().frameIndex;
-        if (currentGPUTrace.frameIndex != lastGPUFrameIndex)
+        if (GPUTraceData.crbegin()->frameIndex != lastGPUFrameIndex)
         {
-            while (!CPUTraces.empty() && CPUTraces.front().frameIndex != lastGPUFrameIndex)
-                CPUTraces.pop_front();
+            while (!CPUFrameTraces.empty() && CPUFrameTraces.front().frameIndex != lastGPUFrameIndex)
+                CPUFrameTraces.pop_front();
 
-            needUpdateCPUInfo = !CPUTraces.empty();
+            needUpdateCPUInfo = !CPUFrameTraces.empty();
             needUpdateGPUInfo = true;
         }
     }
     else if (cpuProfiler)
     {
-        needUpdateCPUInfo = !CPUTraces.empty();
+        needUpdateCPUInfo = !CPUFrameTraces.empty();
     }
 
     bool needUpdateHistory = needUpdateCPUInfo || needUpdateGPUInfo;
@@ -159,13 +170,13 @@ void ProfilerOverlay::Update()
 
     if (needUpdateGPUInfo)
     {
-        UpdateCurrentTrace(&currentGPUTrace, gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex);
+        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex, &GPUTraceData.next());
     }
 
     if (needUpdateCPUInfo)
     {
-        UpdateCurrentTrace(&currentCPUTrace, CPUTraces.front().trace, CPUTraces.front().frameIndex);
-        CPUTraces.pop_front();
+        ProcessEventsTrace(CPUFrameTraces.front().trace, CPUFrameTraces.front().frameIndex, &CPUTraceData.next());
+        CPUFrameTraces.pop_front();
     }
 
     if (needUpdateHistory)
@@ -191,11 +202,11 @@ void ProfilerOverlay::Update()
     if (cpuProfiler && cpuProfiler->IsStarted())
     {
         uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-        CPUTraces.push_back({ std::move(cpuProfiler->GetTrace(cpuCounterName)), (currentFrameIndex - 1) });
+        CPUFrameTraces.push_back({ std::move(cpuProfiler->GetTrace(cpuCounterName)), (currentFrameIndex - 1) });
     }
 }
 
-void ProfilerOverlay::UpdateCurrentTrace(TraceData* trace, const Vector<TraceEvent>& events, uint32 frameIndex)
+void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint32 frameIndex, TraceData* trace)
 {
     trace->frameIndex = frameIndex;
     trace->minTimestamp = uint64(-1);
@@ -293,6 +304,9 @@ void ProfilerOverlay::Draw()
     DbgDraw::SetScreenSize(uint32(Renderer::GetFramebufferWidth()), uint32(Renderer::GetFramebufferHeight()));
     DbgDraw::SetNormalTextSize();
 
+    TraceData& currentCPUTrace = *(CPUTraceData.rbegin() + traceHistoryOffset);
+    TraceData& currentGPUTrace = *(GPUTraceData.rbegin() + traceHistoryOffset);
+
     Rect2i rect = Rect2i(0, 0, Renderer::GetFramebufferWidth(), GetEnoughRectHeight(currentCPUTrace));
     DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect);
 
@@ -387,7 +401,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
             DbgDraw::FilledRect2D(x0, y0, x1, y1, eventsColor[m]);
             DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, TEXT_COLOR, m.c_str());
 
-            uint64 historyEventDuration = eventsHistory[m].values.crbegin()->accurate;
+            uint64 historyEventDuration = (eventsHistory[m].values.crbegin() + traceHistoryOffset)->accurate;
             snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, historyEventDuration);
             DbgDraw::Text2D(x0 + legentWidth, y0, TEXT_COLOR, strbuf);
 
