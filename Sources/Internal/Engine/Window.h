@@ -100,7 +100,7 @@ private:
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 
-    void ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e);
+    void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
     void ClearMouseButtons();
 
@@ -115,7 +115,7 @@ private:
     bool isPrimary = false;
     bool isVisible = false;
     bool hasFocus = false;
-    bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
+    bool sizeEventMerged = false; // Flag indicating that compressed size events are handled on current frame
 
     float32 dpi = 0.0f;
     float32 width = 0.0f;

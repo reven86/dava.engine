@@ -38,11 +38,11 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnS
     wbackend->SurfaceCreated(env, jsurfaceView);
 }
 
-JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height, jint dpi)
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jobject surface, jint width, jint height, jint surfWidth, jint surfHeight, jint dpi)
 {
     using DAVA::Private::WindowBackend;
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
-    wbackend->SurfaceChanged(env, surface, width, height, dpi);
+    wbackend->SurfaceChanged(env, surface, width, height, surfWidth, surfHeight, dpi);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnSurfaceDestroyed(JNIEnv* env, jclass jclazz, jlong windowBackendPointer)
@@ -202,7 +202,7 @@ void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
     }
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 dpi)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfWidth, int32 surfHeight, int32 dpi)
 {
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
@@ -232,12 +232,12 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             DVASSERT_MSG(false, e.what());
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, surfWidth, surfHeight, dpi));
         firstTimeSurfaceChanged = false;
     }
     else
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w, h));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, surfWidth, surfHeight));
     }
 }
 

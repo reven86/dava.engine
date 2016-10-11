@@ -166,12 +166,12 @@ void TestBed::OnWindowDestroyed(DAVA::Window* w)
 
 void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size)
 {
-    Logger::Debug("********** GameCore::OnWindowSizeChanged: w=%.1f, h=%.1f", size.dx, size.dy);
+    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f", size.dx, size.dy);
 }
 
 void TestBed::OnWindowPhysicalSizeChanged(DAVA::Window* w, DAVA::Size2f surfaceSize)
 {
-    Logger::Debug("********** GameCore::OnWindowSurfaceSizeChanged: w=%.1f, h=%.1f", surfaceSize.dx, surfaceSize.dy);
+    Logger::Debug("********** TestBed::OnWindowSurfaceSizeChanged: w=%.1f, h=%.1f", surfaceSize.dx, surfaceSize.dy);
 }
 
 void TestBed::OnSuspended()

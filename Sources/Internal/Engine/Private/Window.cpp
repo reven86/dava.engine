@@ -147,7 +147,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
 
 void Window::FinishEventHandlingOnCurrentFrame()
 {
-    sizeEventHandled = false;
+    sizeEventMerged = false;
     windowBackend->TriggerPlatformEvents();
 }
 
@@ -156,8 +156,8 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
 
     dpi = e.sizeEvent.dpi;
-    ProcessSizeChangedEvents(e);
-    sizeEventHandled = true;
+    MergeSizeChangedEvents(e);
+    sizeEventMerged = true;
 
     engineBackend->InitRenderer(this);
 
@@ -187,12 +187,12 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    if (!sizeEventHandled)
+    if (!sizeEventMerged)
     {
         Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
 
-        ProcessSizeChangedEvents(e);
-        sizeEventHandled = true;
+        MergeSizeChangedEvents(e);
+        sizeEventMerged = true;
 
         engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
         if (windowBackend->IsWindowReadyForRender())
@@ -211,7 +211,7 @@ void Window::HandleDpiChanged(const Private::MainDispatcherEvent& e)
     dpiChanged.Emit(this, dpi);
 }
 
-void Window::ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e)
+void Window::MergeSizeChangedEvents(const Private::MainDispatcherEvent& e)
 {
     // Look into dispatcher queue and compress size events into one event to allow:
     //  - single render init/reset call during one frame
@@ -230,7 +230,7 @@ void Window::ProcessSizeChangedEvents(const Private::MainDispatcherEvent& e)
     surfaceWidth = compressedSize.surfaceWidth;
     surfaceHeight = compressedSize.surfaceHeight;
 
-    Logger::FrameworkDebug("=========== SizeChanged Processed: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
+    Logger::FrameworkDebug("=========== SizeChanged merged to: width=%.1f, height=%.1f, surfaceW=%.3f, surfaceH=%.3f", width, height, surfaceWidth, surfaceHeight);
 }
 
 void Window::UpdateVirtualCoordinatesSystem()

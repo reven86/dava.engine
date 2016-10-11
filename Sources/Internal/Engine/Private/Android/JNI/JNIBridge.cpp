@@ -8,7 +8,6 @@
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
 
-#include "UI/UIControlSystem.h"
 namespace DAVA
 {
 namespace JNI

@@ -296,7 +296,7 @@ public:
     void UI3DViewRemoved();
     int32 GetUI3DViewCount();
 
-    VirtualCoordinatesSystem* vcs = nullptr;
+    VirtualCoordinatesSystem* vcs = nullptr; // TODO: Should be completely removed in favor of direct DAVA::Window methods
 
 private:
     void ProcessScreenLogic();
