@@ -52,7 +52,10 @@ void TriggerAction(QShortcut* shortcut)
 
 void TriggerAction(QAction* action)
 {
-    action->trigger();
+    if (action->isEnabled())
+    {
+        action->trigger();
+    }
 }
 }
 
