@@ -91,10 +91,12 @@ protected:
 
 #define DAVA_PROFILER_GPU_PACKET(packet, marker_name) DAVA::ProfilerGPU::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&packet.perfQueryEnd), marker_name);
 #define DAVA_PROFILER_GPU_RENDER_PASS(passDesc, marker_name) DAVA::ProfilerGPU::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&passDesc.perfQueryEnd), marker_name);
+#define DAVA_PROFILER_GPU_RENDER_BATCH(batch, marker_name) DAVA::ProfilerGPU::globalProfiler->AddMarker(reinterpret_cast<rhi::HPerfQuery*>(&batch->perfQueryStart), reinterpret_cast<rhi::HPerfQuery*>(&batch->perfQueryEnd), marker_name);
 
 #else
 
 #define DAVA_PROFILER_GPU_PACKET(packet, marker_name) 
 #define DAVA_PROFILER_GPU_RENDER_PASS(pass, marker_name) 
+#define DAVA_PROFILER_GPU_RENDER_BATCH(batch, marker_name) 
 
 #endif

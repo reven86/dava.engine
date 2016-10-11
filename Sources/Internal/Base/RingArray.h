@@ -39,6 +39,16 @@ public:
         elementsCount = a.elementsCount;
         head = a.head;
     }
+    RingArray& operator=(RingArray&& a)
+    {
+        if (this != &result)
+        {
+            elements = a.elements;
+            elementsCount = a.elementsCount;
+            head = a.head;
+        }
+        return *this;
+    }
     RingArray& operator=(const RingArray& a)
     {
         if (this != &a)

@@ -1,0 +1,68 @@
+#include "Debug/ProfilerMarkerNames.h"
+
+namespace DAVA
+{
+namespace ProfilerCPUMarkerName
+{
+//Core flow
+const char* CORE_PROCESS_FRAME = "Core::SystemProcessFrame";
+const char* CORE_BEGIN_FRAME = "Core::BeginFrame";
+const char* CORE_END_FRAME = "Core::EndFrame";
+const char* CORE_JOB_MANAGER = "JobManager";
+const char* CORE_APP_UPDATE = "ApplicationCore::Update";
+const char* CORE_APP_DRAW = "ApplicationCore::Draw";
+const char* CORE_SOUND_SYSTEM = "SoundSystem";
+const char* CORE_ANIMATION_MANAGER = "AnimationManager";
+const char* CORE_UI_SYSTEM_UPDATE = "UI::Update";
+const char* CORE_UI_SYSTEM_DRAW = "UI::Draw";
+
+//Scene
+const char* SCENE_UPDATE = "Scene::Update";
+const char* SCENE_DRAW = "Scene::Draw";
+const char* SCENE_STATIC_OCCLUSION_SYSTEM = "StaticOcclusionSystem";
+const char* SCENE_ANIMATION_SYSTEM = "AnimationSystem";
+const char* SCENE_UPDATE_SYSTEM_PRE_TRANSFORM = "UpdateSystem::PreTransform";
+const char* SCENE_UPDATE_SYSTEM_POST_TRANSFORM = "UpdateSystem::PostTransform";
+const char* SCENE_TRANSFORM_SYSTEM = "TransformSystem";
+const char* SCENE_LOD_SYSTEM = "LodSystem";
+const char* SCENE_SWITCH_SYSTEM = "SwitchSystem";
+const char* SCENE_PARTICLE_SYSTEM = "ParticleEffectSystem";
+const char* SCENE_SOUND_UPDATE_SYSTEM = "SoundUpdateSystem";
+const char* SCENE_RENDER_UPDATE_SYSTEM = "RenderUpdateSystem";
+const char* SCENE_ACTION_UPDATE_SYSTEM = "ActionUpdateSystem";
+const char* SCENE_DEBUG_RENDER_SYSTEM = "DebugRenderSystem";
+const char* SCENE_LANDSCAPE_SYSTEM = "LandscapeSystem";
+const char* SCENE_FOLIAGE_SYSTEM = "FoliageSystem";
+const char* SCENE_SPEEDTREE_SYSTEM = "SpeedTreeUpdateSystem";
+const char* SCENE_WIND_SYSTEM = "WindSystem";
+const char* SCENE_WAVE_SYSTEM = "WaveSystem";
+const char* SCENE_SKELETON_SYSTEM = "SkeletonSystem";
+
+//Render
+const char* RENDER_PASS_PREPARE_ARRAYS = "RenderPass::PrepareArrays";
+const char* RENDER_PASS_DRAW_LAYERS = "RenderPass::DrawLayers";
+const char* RENDER_PREPARE_LANDSCAPE = "Landscape::Prepare";
+
+//RHI
+const char* RHI_RENDER_LOOP = "rhi::RenderLoop";
+const char* RHI_PRESENT = "rhi::Present";
+const char* RHI_DEVICE_PRESENT = "rhi::DevicePresent";
+const char* RHI_EXECUTE_QUEUED_CMDS = "rhi::ExecuteQueuedCmds";
+const char* RHI_EXECUTE_IMMEDIATE_CMDS = "rhi::ExecuteImmidiateCmds";
+const char* RHI_WAIT_IMMEDIATE_CMDS = "rhi::WaitImmediateCmd";
+const char* RHI_WAIT_FRAME_EXECUTION = "rhi::WaitFrameExecution";
+const char* RHI_CMD_BUFFER_EXECUTE = "rhi::cb::Execute";
+const char* RHI_WAIT_FRAME = "rhi::WaitFrame";
+const char* RHI_PROCESS_SCHEDULED_DELETE = "rhi::ProcessScheduledDelete";
+};
+
+namespace ProfilerGPUMarkerName
+{
+const char* GPU_FRAME = "GPUFrame";
+const char* RENDER_PASS_2D = "RenderPass2D";
+const char* RENDER_PASS_MAIN_3D = "RenderPassMain3D";
+const char* RENDER_PASS_WATER_REFLECTION = "RenderPassWaterRefl";
+const char* RENDER_PASS_WATER_REFRACTION = "RenderPassWaterRefr";
+const char* LANDSCAPE = "Landscape";
+};
+}; //ns DAVA

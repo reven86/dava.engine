@@ -86,16 +86,8 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
             DVASSERT(packet.primitiveCount);
             mat->BindParams(packet);
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
-
-            if (mat->GetEffectiveFXName() == NMaterialName::TILE_MASK)
-            {
-                DAVA_PROFILER_GPU_PACKET(packet, ProfilerGPUMarkerName::LANDSCAPE);
-            }
-            else
-            {
-                packet.perfQueryStart = rhi::HPerfQuery();
-                packet.perfQueryEnd = rhi::HPerfQuery();
-            }
+            packet.perfQueryStart = batch->perfQueryStart;
+            packet.perfQueryEnd = batch->perfQueryEnd;
 
 #ifdef __DAVAENGINE_RENDERSTATS__
             packet.queryIndex = layerID;
