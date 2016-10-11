@@ -1,11 +1,10 @@
-#ifndef __PROJECT_MANAGER_H__
-#define __PROJECT_MANAGER_H__
+#pragma once
 
 #include <QObject>
 #include <QVector>
-#include "DAVAEngine.h"
 
 class SpritesPackerModule;
+class ProjectStructure;
 class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
 {
     Q_OBJECT
@@ -24,8 +23,8 @@ public:
         QVector<QString> values;
     };
 
-    ProjectManager() = default;
-    ~ProjectManager() = default;
+    ProjectManager();
+    ~ProjectManager();
 
     bool IsOpened() const;
 
@@ -49,6 +48,8 @@ public:
     void OpenLastProject();
     void CloseProject();
 
+    ProjectStructure* GetDataSourceSceneFiles() const;
+
 signals:
     void ProjectOpened(const QString& path);
     void ProjectClosed();
@@ -63,6 +64,8 @@ private:
 
     void UpdateInternalValues();
 
+    std::unique_ptr<ProjectStructure> dataSourceSceneFiles;
+
     DAVA::FilePath projectPath;
     DAVA::FilePath dataSourcePath;
     DAVA::FilePath particlesConfigPath;
@@ -74,5 +77,3 @@ private:
 
     SpritesPackerModule* spritesPacker = nullptr;
 };
-
-#endif // __PROJECT_MANAGER_H__

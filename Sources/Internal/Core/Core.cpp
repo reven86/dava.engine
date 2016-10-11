@@ -82,6 +82,7 @@ Core::Core()
         defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
     screenMetrics.userScale = defaultUserScale;
+    screenOrientation = SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
 }
 
 Core::~Core()
@@ -206,16 +207,16 @@ void Core::CreateSingletons()
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    Logger::Info("SoundSystem init start");
+    Logger::Debug("SoundSystem init start");
     try
     {
         new SoundSystem();
     }
     catch (std::exception& ex)
     {
-        Logger::Info("%s", ex.what());
+        Logger::Error("%s", ex.what());
     }
-    Logger::Info("SoundSystem init finish");
+    Logger::Debug("SoundSystem init finish");
 
     if (isConsoleMode)
     {

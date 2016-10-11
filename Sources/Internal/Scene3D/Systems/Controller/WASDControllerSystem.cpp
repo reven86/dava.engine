@@ -49,7 +49,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         return;
 
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL) || keyboard.IsKeyPressed(Key::LSHIFT))
+    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL))
     {
         return;
     }
