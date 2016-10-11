@@ -146,6 +146,10 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 
 bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 {
+    if (currentInput->device == UIEvent::Device::MOUSE && currentInput->mouseButton != UIEvent::MouseButton::LEFT)
+    {
+        return false;
+    }
     switch (currentInput->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
