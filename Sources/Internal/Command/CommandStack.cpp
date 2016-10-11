@@ -94,6 +94,7 @@ void CommandStack::SetClean()
 
 void CommandStack::Undo()
 {
+    DVASSERT(CanUndo());
     if (CanUndo())
     {
         commands.at(currentIndex)->Undo();
@@ -105,6 +106,7 @@ void CommandStack::Undo()
 
 void CommandStack::Redo()
 {
+    DVASSERT(CanRedo());
     if (CanRedo())
     {
         commands.at(currentIndex + 1)->Redo();
