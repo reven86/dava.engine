@@ -330,4 +330,3 @@ const Vector2& VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
     return drawOffset;
 }
 };
-
