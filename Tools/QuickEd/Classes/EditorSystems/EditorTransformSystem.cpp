@@ -146,7 +146,7 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 
 bool EditorTransformSystem::OnInput(UIEvent* currentInput)
 {
-    if (currentInput->mouseButton != UIEvent::MouseButton::LEFT)
+    if (currentInput->device == UIEvent::Device::MOUSE && currentInput->mouseButton != UIEvent::MouseButton::LEFT)
     {
         return false;
     }
