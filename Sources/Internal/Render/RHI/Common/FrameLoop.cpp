@@ -81,8 +81,8 @@ void ProcessFrame()
 
 bool FinishFrame(Handle sync)
 {
+    DispatchPlatform::FinishFrame();
     bool frameValid = false;
-
     frameSync.Lock();
     uint32 frameSlot = frameToBuild % framePoolSize;
     if (frames[frameSlot].pass.size() != 0)
@@ -93,7 +93,6 @@ bool FinishFrame(Handle sync)
         frameValid = true;
     }
     frameSync.Unlock();
-    DispatchPlatform::FinishFrame();
     return frameValid;
 }
 
