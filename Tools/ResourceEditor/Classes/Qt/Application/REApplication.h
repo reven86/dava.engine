@@ -2,6 +2,8 @@
 
 #include "TArcCore/BaseApplication.h"
 
+#include <QString>
+
 namespace DAVA
 {
 namespace TArc
@@ -9,6 +11,17 @@ namespace TArc
 class Core;
 }
 }
+
+#ifdef __DAVAENGINE_BEAST__
+#define BEAST_PROXY_TYPE BeastProxyImpl
+#else
+#define BEAST_PROXY_TYPE BeastProxy
+#endif
+
+class EditorConfig;
+class SettingsManager;
+class SceneValidator;
+class BEAST_PROXY_TYPE;
 
 class REApplication : public DAVA::TArc::BaseApplication
 {
@@ -25,8 +38,19 @@ protected:
 private:
     void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
     void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
+    void Init(DAVA::TArc::Core* tarcCore);
     void Cleanup() override;
+
+    bool AllowMultipleInstances() const;
+    QString GetInstanceKey() const;
 
     bool isConsoleMode = false;
     DAVA::Vector<DAVA::String> cmdLine;
+
+private:
+    // singletons. In future we probably will try to move them into special module, or completely decompose
+    EditorConfig* config = nullptr;
+    SettingsManager* settingsManager = nullptr;
+    SceneValidator* sceneValidator = nullptr;
+    BEAST_PROXY_TYPE* beastProxy = nullptr;
 };

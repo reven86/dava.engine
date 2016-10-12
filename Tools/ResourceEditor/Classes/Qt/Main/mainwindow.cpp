@@ -598,19 +598,6 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void QtMainWindow::closeEvent(QCloseEvent* event)
-{
-    if (CanBeClosed())
-    {
-        ui->sceneTabWidget->CloseAllTabs(true);
-        event->accept();
-    }
-    else
-    {
-        event->ignore();
-    }
-}
-
 void QtMainWindow::SetupTitle()
 {
     DAVA::String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
@@ -3424,6 +3411,11 @@ void QtMainWindow::ForEachScene(const DAVA::Function<void(SceneEditor2*)>& funct
         DVASSERT(sceneEditor);
         functor(sceneEditor);
     }
+}
+
+void QtMainWindow::CloseAllScenes()
+{
+    ui->sceneTabWidget->CloseAllTabs(true);
 }
 
 void QtMainWindow::UpdateUndoActionText(const DAVA::String& text)

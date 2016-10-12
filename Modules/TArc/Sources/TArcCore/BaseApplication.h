@@ -5,6 +5,8 @@
 #include "Engine/EngineTypes.h"
 #include "FileSystem/KeyedArchive.h"
 
+#include <QString>
+
 namespace DAVA
 {
 namespace TArc
@@ -27,9 +29,15 @@ protected:
 
     virtual EngineInitInfo GetInitInfo() const = 0;
     virtual void CreateModules(Core* tarcCore) const = 0;
-    virtual void Cleanup()
-    {
-    }
+    // Method init has been written only for backward compatibility. Try not using it
+    virtual void Init(Core* tarcCore);
+    virtual void Cleanup();
+
+    virtual bool AllowMultipleInstances() const;
+    virtual QString GetInstanceKey() const;
+
+private:
+    int RunImpl();
 };
 
 } // namespace TArc

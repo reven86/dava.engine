@@ -1,6 +1,7 @@
 #include "TArcCore/BaseApplication.h"
 #include "TArcCore/TArcCore.h"
 #include "Testing/TArcTestCore.h"
+#include "QtHelpers/RunGuard.h"
 
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
@@ -10,6 +11,22 @@ namespace DAVA
 namespace TArc
 {
 int BaseApplication::Run()
+{
+    if (!AllowMultipleInstances())
+    {
+        QtHelpers::RunGuard runGuard(GetInstanceKey());
+        if (runGuard.TryToRun())
+        {
+            return RunImpl();
+        }
+        else
+            return 0;
+    }
+
+    return RunImpl();
+}
+
+int BaseApplication::RunImpl()
 {
     Engine e;
     EngineInitInfo initInfo = GetInitInfo();
@@ -32,9 +49,29 @@ int BaseApplication::Run()
         e.Init(initInfo.runMode, initInfo.modules);
 
         Core core(e);
+        Init(&core);
         CreateModules(&core);
         return e.Run();
     }
 }
+
+void BaseApplication::Init(Core* /*tarcCore*/)
+{
+}
+
+void BaseApplication::Cleanup()
+{
+}
+
+bool BaseApplication::AllowMultipleInstances() const
+{
+    return true;
+}
+
+QString BaseApplication::GetInstanceKey() const
+{
+    return QString();
+}
+
 } // namespace TArc
 } // namespace DAVA
