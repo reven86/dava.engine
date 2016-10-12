@@ -800,6 +800,7 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableSounds, ui->statusBar);
 
     QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
@@ -919,6 +920,9 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionReleaseCurrentFrame, SIGNAL(triggered()), this, SLOT(OnReleaseVisibilityFrame()));
 
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
+
+    QObject::connect(ui->actionEnableSounds, &QAction::toggled, this, &QtMainWindow::OnEnableSounds);
+    ui->actionEnableSounds->toggled(SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool());
 
     // scene undo/redo
     QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
@@ -1642,6 +1646,17 @@ void QtMainWindow::OnReleaseVisibilityFrame()
 void QtMainWindow::OnEnableDisableShadows(bool enable)
 {
     DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::SHADOWVOLUME_DRAW, enable);
+}
+
+void QtMainWindow::OnEnableSounds(bool enable)
+{
+    bool enableSounds = ui->actionEnableSounds->isChecked();
+    if (enableSounds != SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool())
+    {
+        SettingsManager::SetValue(Settings::Internal_EnableSounds, DAVA::VariantType(enableSounds));
+    }
+
+    DAVA::SoundSystem::Instance()->Mute(!enable);
 }
 
 void QtMainWindow::OnReloadTextures()
