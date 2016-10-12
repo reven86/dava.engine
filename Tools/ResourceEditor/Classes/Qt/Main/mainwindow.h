@@ -109,7 +109,7 @@ public slots:
 
     void OnEnableDisableShadows(bool enable);
 
-    void OnEnableSounds(bool enable);
+    void EnableSounds(bool enable);
 
     void OnReloadTextures();
     void OnReloadTexturesTriggered(QAction* reloadAction);

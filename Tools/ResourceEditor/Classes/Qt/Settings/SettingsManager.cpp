@@ -64,7 +64,6 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(static_cast<DAVA::uint32>(10)));
     CreateValue(Settings::General_AutoConvertation, DAVA::VariantType(true));
 
-    CreateValue(Settings::Internal_EnableSounds, DAVA::VariantType(true));
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
     CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
@@ -123,6 +122,8 @@ void SettingsManager::Init()
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
     CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(DAVA::String("")));
+
+    CreateValue(Settings::Internal_EnableSounds, DAVA::VariantType(true));
 
     const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
     DAVA::uint32 colors[nColors]; // Init from Qt::GlobalColor

@@ -921,8 +921,9 @@ void QtMainWindow::SetupActions()
 
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
 
-    QObject::connect(ui->actionEnableSounds, &QAction::toggled, this, &QtMainWindow::OnEnableSounds);
-    ui->actionEnableSounds->toggled(SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool());
+    bool toEnableSounds = SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool();
+    EnableSounds(toEnableSounds);
+    QObject::connect(ui->actionEnableSounds, &QAction::toggled, this, &QtMainWindow::EnableSounds);
 
     // scene undo/redo
     QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
@@ -1648,15 +1649,16 @@ void QtMainWindow::OnEnableDisableShadows(bool enable)
     DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::SHADOWVOLUME_DRAW, enable);
 }
 
-void QtMainWindow::OnEnableSounds(bool enable)
+void QtMainWindow::EnableSounds(bool toEnable)
 {
-    bool enableSounds = ui->actionEnableSounds->isChecked();
-    if (enableSounds != SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool())
+    ui->actionEnableSounds->setChecked(toEnable);
+
+    if (toEnable != SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool())
     {
-        SettingsManager::SetValue(Settings::Internal_EnableSounds, DAVA::VariantType(enableSounds));
+        SettingsManager::SetValue(Settings::Internal_EnableSounds, DAVA::VariantType(toEnable));
     }
 
-    DAVA::SoundSystem::Instance()->Mute(!enable);
+    DAVA::SoundSystem::Instance()->Mute(!toEnable);
 }
 
 void QtMainWindow::OnReloadTextures()
