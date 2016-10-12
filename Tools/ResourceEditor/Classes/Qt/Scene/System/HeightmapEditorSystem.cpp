@@ -70,7 +70,7 @@ bool HeightmapEditorSystem::DisableLandscapeEdititing()
         return true;
     }
 
-    FinishEditing();
+    FinishEditing(false);
 
     selectionSystem->SetLocked(false);
     modifSystem->SetLocked(false);
@@ -158,7 +158,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
             break;
 
         case DAVA::UIEvent::Phase::ENDED:
-            FinishEditing();
+            FinishEditing(true);
             break;
 
         default:
@@ -167,13 +167,19 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent* event)
     }
 }
 
-void HeightmapEditorSystem::FinishEditing()
+void HeightmapEditorSystem::FinishEditing(bool applyModification)
 {
     if (editingIsEnabled)
     {
         if (drawingType != HEIGHTMAP_DROPPER)
         {
-            CreateHeightmapUndo();
+            if (applyModification)
+            {
+                SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
+                DVASSERT(scene);
+                scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
+            }
+            SafeRelease(originalHeightmap);
         }
         editingIsEnabled = false;
     }
@@ -313,14 +319,6 @@ void HeightmapEditorSystem::StoreOriginalHeightmap()
     DVASSERT(originalHeightmap == NULL);
     originalHeightmap = editorHeightmap->Clone(NULL);
     ResetAccumulatorRect(heightmapUpdatedRect);
-}
-
-void HeightmapEditorSystem::CreateHeightmapUndo()
-{
-    SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-    DVASSERT(scene);
-    scene->Exec(std::unique_ptr<DAVA::Command>(new ModifyHeightmapCommand(drawSystem->GetHeightmapProxy(), originalHeightmap, GetHeightmapUpdatedRect())));
-    SafeRelease(originalHeightmap);
 }
 
 void HeightmapEditorSystem::SetBrushSize(DAVA::int32 brushSize)
