@@ -257,8 +257,8 @@ void Core::CreateSingletons()
 
     packManager.reset(new PackManagerImpl);
     analyticsCore.reset(new Analytics::Core);
-    auto backend = std::make_shared<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
-    analyticsCore->AddBackend("LoggingBackend", backend);
+    auto backend = std::make_unique<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
+    analyticsCore->AddBackend("LoggingBackend", std::move(backend));
 
     new LocalNotificationController();
 

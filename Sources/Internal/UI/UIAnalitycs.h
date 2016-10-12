@@ -20,7 +20,7 @@ const char enterKeyPressed[] = "EnterKeyPressed";
 
 bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* uiEvent);
 bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent);
-bool IsUIEvent(const EventRecord& record);
+bool IsUIEvent(const AnalyticsEvent& record);
 String GetUIControlName(UIControl* uiControl);
 
 } // namespace Analytics

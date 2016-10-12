@@ -19,16 +19,15 @@ bool Core::IsStarted() const
     return isStarted;
 }
 
-void Core::SetConfig(const KeyedArchive& newConfig)
+void Core::SetConfig(const KeyedArchive* newConfig)
 {
-    const KeyedArchive* eventsConfig = newConfig.GetArchive("events");
-    if (eventsConfig == nullptr)
+    if (newConfig == nullptr || !newConfig->IsKeyExists("events"))
     {
-        DVASSERT_MSG(false, "Illegal config: no events filtration configuration");
+        DVASSERT_MSG(false, "Illegal config");
         return;
     }
 
-    config.Set(new KeyedArchive(newConfig));
+    config.Set(new KeyedArchive(*newConfig));
 
     // check on/off option
     if (config->IsKeyExists("started"))
@@ -49,17 +48,17 @@ void Core::SetConfig(const KeyedArchive& newConfig)
     }
 }
 
-const KeyedArchive& Core::GetConfig() const
+const KeyedArchive* Core::GetConfig() const
 {
-    return *config;
+    return config.Get();
 }
 
-void Core::AddBackend(const String& name, const std::shared_ptr<IBackend>& backend)
+void Core::AddBackend(const String& name, std::unique_ptr<IBackend> backend)
 {
-    backends[name] = backend;
+    backends[name] = std::move(backend);
 }
 
-bool CheckEventPass(const KeyedArchive& config, const EventRecord& event)
+bool CheckEventPass(const KeyedArchive& config, const AnalyticsEvent& event)
 {
     // check all-passing option
     if (config.GetBool("all"))
@@ -67,21 +66,10 @@ bool CheckEventPass(const KeyedArchive& config, const EventRecord& event)
         return true;
     }
 
-    String eventName;
-    const Any* nameField = event.GetField(eventNameTag);
-    if (nameField->CanCast<String>())
-    {
-        eventName = nameField->Cast<String>();
-    }
-    else if (nameField->CanGet<const char*>())
-    {
-        eventName = nameField->Get<const char*>();
-    }
-
     const KeyedArchive::UnderlyingMap& map = config.GetArchieveData();
     for (const auto& entry : map)
     {
-        if (entry.first == eventName)
+        if (entry.first == event.name)
         {
             return true;
         }
@@ -90,9 +78,9 @@ bool CheckEventPass(const KeyedArchive& config, const EventRecord& event)
     return false;
 }
 
-bool Core::PostEvent(const EventRecord& event) const
+bool Core::PostEvent(const AnalyticsEvent& event) const
 {
-    if (!IsStarted() || backends.empty() || !config->IsKeyExists("events"))
+    if (!IsStarted() || backends.empty() || config == nullptr)
     {
         return false;
     }
@@ -105,31 +93,30 @@ bool Core::PostEvent(const EventRecord& event) const
     }
 
     // per-backend filter
-    const KeyedArchive* backendsConfig = config->GetArchive("backends");
+    bool result = false;
+    const KeyedArchive* backendsConfig = config->GetArchive("backend_events");
     for (const auto& backend : backends)
     {
-        bool needProcessEvent = true;
+        bool needProcessEvent = backendsConfig == nullptr;
 
         if (backendsConfig)
         {
             const KeyedArchive* backendConfig = backendsConfig->GetArchive(backend.first);
 
-            const KeyedArchive* backendEvents;
-            backendEvents = backendConfig ? backendConfig->GetArchive("events") : nullptr;
-
-            if (backendEvents)
+            if (backendConfig)
             {
-                needProcessEvent = CheckEventPass(*backendEvents, event);
+                needProcessEvent = CheckEventPass(*backendConfig, event);
             }
         }
 
         if (needProcessEvent)
         {
             backend.second->ProcessEvent(event);
+            result = true;
         }
     }
 
-    return true;
+    return result;
 }
 
 } // namespace Analytics

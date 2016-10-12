@@ -37,7 +37,7 @@ void UILoggingTest::LoadResources()
 
     RefPtr<KeyedArchive> config(new KeyedArchive);
     config->LoadFromYamlFile("~res:/AnalyticsConfig.yaml");
-    GetCore().SetConfig(*config);
+    GetCore().SetConfig(config.Get());
 }
 
 void UILoggingTest::UnloadResources()

@@ -39,7 +39,7 @@ bool EmitUIEvent(UIControl* control, UIControl::eEventType eventType, UIEvent* u
     }
 
     // Create event record
-    EventRecord event(GetUIControlName(control));
+    AnalyticsEvent event(GetUIControlName(control));
     event.fields[uiEventTypeTag] = uiEvent->tapCount == 1 ? clickEvent : doubleClickEvent;
 
     // Process
@@ -79,7 +79,7 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
     }
 
     // Create event record
-    EventRecord event(GetUIControlName(control));
+    AnalyticsEvent event(GetUIControlName(control));
     event.fields[uiEventTypeTag] = keyPressEvent;
     event.fields[pressedKeyTag] = pressedKey;
 
@@ -87,7 +87,7 @@ bool EmitKeyEvent(UIControl* control, UIEvent* uiEvent)
     return core.PostEvent(event);
 }
 
-bool IsUIEvent(const EventRecord& record)
+bool IsUIEvent(const AnalyticsEvent& record)
 {
     return record.GetField(uiEventTypeTag) != nullptr;
 }

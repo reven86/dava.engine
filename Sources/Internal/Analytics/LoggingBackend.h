@@ -7,13 +7,16 @@ namespace DAVA
 {
 namespace Analytics
 {
+/**
+Simple analytics events logger. Log to console and file (if set)
+*/
 class LoggingBackend : public IBackend
 {
 public:
     LoggingBackend(const FilePath& path = FilePath());
 
     void ConfigChanged(const KeyedArchive& config) override;
-    void ProcessEvent(const EventRecord& event) override;
+    void ProcessEvent(const AnalyticsEvent& event) override;
 
 private:
     FilePath filePath;

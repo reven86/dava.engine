@@ -26,11 +26,16 @@ void LoggingBackend::ConfigChanged(const KeyedArchive& config)
 {
 }
 
-void LoggingBackend::ProcessEvent(const EventRecord& event)
+void LoggingBackend::ProcessEvent(const AnalyticsEvent& event)
 {
     String value;
     String msg;
+    msg.reserve(256);
 
+    msg = FormatDateTime(event.timestamp);
+    msg += " Name: " + event.name + " ";
+
+    bool firstField = true;
     for (const auto& field : event.fields)
     {
         if (field.second.CanCast<String>())
@@ -41,17 +46,17 @@ void LoggingBackend::ProcessEvent(const EventRecord& event)
         {
             value = field.second.Get<const char*>();
         }
-        else if (field.second.CanGet<const DateTime&>())
+        else
         {
-            const DateTime& dateTime = field.second.Get<const DateTime&>();
-            value = FormatDateTime(dateTime);
+            continue;
         }
 
-        if (!msg.empty())
+        if (!firstField)
         {
             msg += ", ";
         }
         msg += field.first + ": " + value;
+        firstField = false;
     }
 
     if (filePath.IsEmpty())

@@ -8,15 +8,15 @@ namespace DAVA
 {
 namespace Analytics
 {
-const char eventNameTag[] = "name";
-const char eventTimestampTag[] = "timestamp";
-
-struct EventRecord
+/**
+AnalyticsEvent represents information about analytics event
+*/
+struct AnalyticsEvent
 {
-    EventRecord(const String& name)
+    AnalyticsEvent(const String& eventName)
+        : name(eventName)
+        , timestamp(DateTime::Now())
     {
-        fields[eventNameTag] = name;
-        fields[eventTimestampTag] = DateTime::Now();
     }
 
     const Any* GetField(const String& field) const
@@ -25,6 +25,8 @@ struct EventRecord
         return iter != fields.end() ? &iter->second : nullptr;
     }
 
+    String name;
+    DateTime timestamp;
     UnorderedMap<String, Any> fields;
 };
 
