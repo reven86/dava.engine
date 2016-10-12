@@ -34,7 +34,7 @@ static const int32 HISTORY_CHART_TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * HIST
 static const uint64 HISTORY_CHART_CEIL_STEP = 500; //mcs
 
 static const uint32 MAX_CPU_FRAME_TRACES = 6;
-static const uint32 MAX_TRACE_LEGENT_ELEMENTS = 10;
+static const uint32 MAX_TRACE_LEGENT_ELEMENTS = 9;
 };
 
 static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::CORE_PROCESS_FRAME, ProfilerGPU::globalProfiler,

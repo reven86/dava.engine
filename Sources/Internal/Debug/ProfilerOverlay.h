@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastNameMap.h"
 #include "Debug/Private/RingArray.h"
+#include "Debug/TraceEvent.h"
 
 namespace DAVA
 {

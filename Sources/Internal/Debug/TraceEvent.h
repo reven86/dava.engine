@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 #include <iosfwd>
 
 namespace DAVA

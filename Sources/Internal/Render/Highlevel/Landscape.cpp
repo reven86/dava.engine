@@ -22,6 +22,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/LockGuard.h"
 
