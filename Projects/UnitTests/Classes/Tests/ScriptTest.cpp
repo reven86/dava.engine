@@ -496,7 +496,7 @@ end
         TEST_VERIFY(nresults == 14);
         nresults += s.ExecFunctionSafe("unsupported_results");
         TEST_VERIFY(nresults == 16);
-        s.DumpStackToLog(DAVA::Logger::LEVEL_INFO);
+        s.DumpStackToLog(DAVA::Logger::LEVEL_DEBUG);
         s.Pop(nresults);
     }
 

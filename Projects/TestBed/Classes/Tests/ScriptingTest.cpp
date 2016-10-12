@@ -132,10 +132,7 @@ void ScriptingTest::LoadResources()
             for (int32 i = 0; i < 10000; ++i)
             {
                 int32 nresults = script->ExecFunction("main", intArg, strArg, objRef);
-                for (int32 i = 0; i < nresults; ++i)
-                {
-                    script->PopResult();
-                }
+                script->Pop(nresults);
             }
             return 0;
         });
@@ -145,16 +142,19 @@ void ScriptingTest::LoadResources()
             for (int32 i = 0; i < 10000; ++i)
             {
                 int32 nresults = script->ExecFunction("main");
-                for (int32 i = 0; i < nresults; ++i)
-                {
-                    script->PopResult();
-                }
+                script->Pop(nresults);
             }
             return 0;
         });
     });
     amap.Put(FastName("RESET_SCRIPT"), [&]() {
         CreateScript();
+    });
+    amap.Put(FastName("DUMP_STACK"), [&]() {
+        if (script)
+        {
+            script->DumpStackToLog(Logger::LEVEL_DEBUG);
+        }
     });
 
     demoObj.v.assign({ 1, 2, 3, 4, 5 });
@@ -196,11 +196,12 @@ void ScriptingTest::Run(Function<int32()> func)
         uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
 
         String output = Format("Run main() time: %llu us\n", time);
-        for (int32 i = 0; i < nresults; ++i)
+        for (int32 i = 1; i <= nresults; ++i)
         {
-            Any val = script->PopResult();
+            Any val = script->GetResult(i);
             output += Format("%d) %s\n", i, AnyToString(val).c_str());
         }
+        script->Pop(nresults);
         outputText->SetUtf8Text(output);
         timeText->SetUtf8Text(Format("Time: %llu us", time));
     }

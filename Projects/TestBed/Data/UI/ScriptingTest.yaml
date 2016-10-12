@@ -16,7 +16,7 @@ Controls:
             bottomAnchorEnabled: true
             bottomAnchor: 10.000000
         ActionBinding:
-            actions: "LOAD_SCRIPT; RUN_MAIN; RESET_SCRIPT; RUN_10000; RUN_MAIN_NOARGS; RUN_10000_NOARGS"
+            actions: "LOAD_SCRIPT; RUN_MAIN; RESET_SCRIPT; RUN_10000; RUN_MAIN_NOARGS; RUN_10000_NOARGS; DUMP_STACK"
     children:
     -   class: "UITextField"
         name: "ScriptText"
@@ -121,7 +121,7 @@ Controls:
                 action: "RUN_10000"
     -   class: "UIStaticText"
         name: "TimeText"
-        position: [528.479980, 258.000000]
+        position: [528.479980, 317.000000]
         size: [205.520004, 38.000000]
         debugDraw: false
         text: "Time: 0ns"
@@ -134,7 +134,7 @@ Controls:
                 rightAnchorEnabled: true
     -   class: "UIStaticText"
         name: "UIStaticText"
-        position: [550.500000, 314.500000]
+        position: [550.500000, 373.500000]
         size: [183.500000, 38.000000]
         debugDraw: false
         textalign: ["LEFT", "VCENTER"]
@@ -148,7 +148,7 @@ Controls:
                 rightAnchorEnabled: true
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 357.500000]
+        position: [528.479980, 416.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -191,7 +191,7 @@ Controls:
                 Focus: {}
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 400.500000]
+        position: [528.479980, 459.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -234,7 +234,7 @@ Controls:
                 Focus: {}
     -   class: "UIControl"
         name: "UIControl"
-        position: [528.479980, 443.500000]
+        position: [528.479980, 502.500000]
         size: [205.520004, 38.000000]
         debugDraw: true
         components:
@@ -293,3 +293,19 @@ Controls:
                 rightAnchorEnabled: true
             Action:
                 action: "RUN_10000_NOARGS"
+    -   class: "UIStaticText"
+        name: "ResetScriptBtn"
+        position: [528.479980, 257.049988]
+        size: [205.520004, 38.000000]
+        noInput: false
+        debugDraw: true
+        text: "Dump stack to log"
+        font: "Korinna_18"
+        components:
+            SizePolicy:
+                horizontalPolicy: "PercentOfParent"
+                horizontalValue: 28.000000
+            Anchor:
+                rightAnchorEnabled: true
+            Action:
+                action: "DUMP_STACK"
