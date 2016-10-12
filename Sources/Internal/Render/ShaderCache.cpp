@@ -3,6 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
 #include "Render/RHI/rhi_ShaderSource.h"
+#include "Render/RHI/Common/PreProcess.h"
 
 #define RHI_TRACE_CACHE_USAGE 0
 
