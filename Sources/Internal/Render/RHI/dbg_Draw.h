@@ -56,6 +56,7 @@ private:
 
     void _init();
     void _uninit();
+    void _restore();
     Vertex_PC* _alloc_pc_vertices(unsigned count);
 
     struct

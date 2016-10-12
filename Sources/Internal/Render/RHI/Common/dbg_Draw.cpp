@@ -1,17 +1,19 @@
 #include "../dbg_Draw.h"
-    #include "../rhi_ShaderSource.h"
-    #include "../rhi_ShaderCache.h"
+#include "../rhi_ShaderSource.h"
+#include "../rhi_ShaderCache.h"
 
-    #include "Math/Matrix4.h"
-    #include "Math/Vector.h"
+#include "Math/Matrix4.h"
+#include "Math/Vector.h"
 using DAVA::Vector3;
 
-    #include <stdio.h>
-    #include <stdarg.h>
+#include "Render/RenderCallbacks.h"
 
-    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    #define _vsnprintf vsnprintf
-    #endif
+#include <stdio.h>
+#include <stdarg.h>
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define _vsnprintf vsnprintf
+#endif
 
 //==============================================================================
 
@@ -508,16 +510,6 @@ void DbgDraw::EnsureInited()
         dd->_init();
         dd->_inited = true;
     }
-
-    if (rhi::NeedRestoreTexture(dd->_tex_small_font))
-    {
-        rhi::UpdateTexture(dd->_tex_small_font, Bin__dbg_FontSmall, 0);
-    }
-
-    if (rhi::NeedRestoreTexture(dd->_tex_normal_font))
-    {
-        rhi::UpdateTexture(dd->_tex_normal_font, Bin__dbg_FontNormal, 0);
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -975,6 +967,8 @@ void DbgDraw::_init()
     _line2d_buf.construct(1 * 1024);
 
     _permanent_text_small = true;
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &DbgDraw::_restore));
 }
 
 //------------------------------------------------------------------------------
@@ -991,7 +985,24 @@ void DbgDraw::_uninit()
         _tri2d_buf.destroy();
         _line2d_buf.destroy();
 
+        RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &DbgDraw::_restore));
+
         _inited = false;
+    }
+}
+
+void DbgDraw::_restore()
+{
+    DbgDraw* dd = Instance();
+
+    if (rhi::NeedRestoreTexture(dd->_tex_small_font))
+    {
+        rhi::UpdateTexture(dd->_tex_small_font, Bin__dbg_FontSmall, 0);
+    }
+
+    if (rhi::NeedRestoreTexture(dd->_tex_normal_font))
+    {
+        rhi::UpdateTexture(dd->_tex_normal_font, Bin__dbg_FontNormal, 0);
     }
 }
 

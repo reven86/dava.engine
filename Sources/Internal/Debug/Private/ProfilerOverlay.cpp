@@ -392,7 +392,7 @@ void ProfilerOverlay::Draw()
     {
         rect.y += rect.dy;
         rect.dy = ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
-        DrawHistory(markersHistory[selectedMarker].values, selectedMarker, rect, true);
+        DrawHistory(markersHistory[selectedMarker].values, selectedMarker, rect);
     }
 
     int32 chartColumnCount = (Renderer::GetFramebufferHeight() - rect.y - rect.dy) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
@@ -558,13 +558,12 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
     }
 }
 
-void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect, bool highlightTitle)
+void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect)
 {
     static const uint32 CHARTRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
     static const uint32 CHART_COLOR = rhi::NativeColorRGBA(.5f, .11f, .11f, 1.f);
     static const uint32 CHART_FILTERED_COLOR = rhi::NativeColorRGBA(1.f, .18f, .18f, 1.f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
-    static const uint32 HIGHLIGHTED_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
     static const uint32 LINE_COLOR = rhi::NativeColorRGBA(.5f, 0.f, 0.f, 1.f);
 
     static const int32 MARGIN = ProfilerOverlayDetails::OVERLAY_RECT_MARGIN;
@@ -626,11 +625,11 @@ void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, co
 
 #undef CHART_VALUE_HEIGHT
 
-    DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, highlightTitle ? highlightTitle : TEXT_COLOR, "\'%s\'", name.c_str());
+    DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
-    const int32 lastvalueIndent = (drawRect.dx - 2 * MARGIN) / DbgDraw::NormalCharW;
     snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->accurate, history.crbegin()->filtered);
-    DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, highlightTitle ? highlightTitle : TEXT_COLOR, "%*s", lastvalueIndent, strbuf);
+    int32 tdx = drawRect.dx - MARGIN - DbgDraw::NormalCharW * strlen(strbuf);
+    DbgDraw::Text2D(drawRect.x + tdx, drawRect.y + MARGIN, TEXT_COLOR, strbuf);
 
     snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN + DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, strbuf);

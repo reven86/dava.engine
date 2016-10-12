@@ -93,7 +93,7 @@ protected:
 
     void Draw();
     void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
-    void DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect, bool highlightTitle = false);
+    void DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect);
 
     int32 GetEnoughRectHeight(const TraceData& trace);
     int32 FindLegendIndex(const Vector<TraceData::LegentElement>& legend, const FastName& marker);
