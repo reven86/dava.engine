@@ -3,9 +3,8 @@
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
 #include "Render/RHI/rhi_ShaderSource.h"
-#include "Render/RHI/Common/MCPP/_mcpp.h"
 
-#define RHI_TRACE_CACHE_USAGE 1
+#define RHI_TRACE_CACHE_USAGE 0
 
 namespace DAVA
 {
@@ -243,7 +242,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (vSource == nullptr)
     {
         char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-        memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
+        Memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
         vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
         vSource = &vSource2;
