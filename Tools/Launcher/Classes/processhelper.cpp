@@ -8,11 +8,12 @@
 #include <QDesktopServices>
 #include <QProcess>
 #include <QStringList>
+#include <stdlib.h>
 
 #ifdef Q_OS_DARWIN
 void ProcessHelper::RunProcess(const QString& path)
 {
-    QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
+    system(path.toStdString().c_str());
 }
 
 //bool ProcessHelper::GetProcessPSN(const QString& path, ProcessSerialNumber& psn)

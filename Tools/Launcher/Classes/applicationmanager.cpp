@@ -9,6 +9,28 @@
 #include <QDebug>
 #include <QMessageBox>
 
+namespace ApplicationManagerDetails
+{
+QString GetBranchDirectory_kostil(const QString& branchID)
+{
+    QString path = FileManager::GetBaseAppsDirectory() + branchID + "/";
+    return path;
+}
+QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
+{
+    QString path = GetBranchDirectory_kostil(branchID) + appID + "/";
+    return path;
+}
+
+QString RemoveWhitespace(const QString& str)
+{
+    QString replacedStr = str;
+    QRegularExpression spaceRegex("\\s+");
+    replacedStr.replace(spaceRegex, "");
+    return replacedStr;
+}
+}
+
 ApplicationManager::ApplicationManager(QObject* parent)
     : QObject(parent)
 {
@@ -64,25 +86,10 @@ void ApplicationManager::ParseRemoteConfigData(const QByteArray& data)
     localConfig.SaveToFile(localConfigFilePath);
 }
 
-namespace ApplicationManagerDetails
-{
-QString GetBranchDirectory_kostil(const QString& branchID)
-{
-    QString path = FileManager::GetBaseAppsDirectory() + branchID + "/";
-    return path;
-}
-QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID)
-{
-    QString path = GetBranchDirectory_kostil(branchID) + appID + "/";
-    return path;
-}
-}
-
 QString ApplicationManager::GetApplicationDirectory(QString branchID, QString appID, bool mustExists) const
 {
-    QRegularExpression spaceRegex("\\s+");
-    branchID.replace(spaceRegex, "");
-    appID.replace(spaceRegex, "");
+    branchID = ApplicationManagerDetails::RemoveWhitespace(branchID);
+    appID = ApplicationManagerDetails::RemoveWhitespace(appID);
     QString runPath = FileManager::GetApplicationDirectory(branchID, appID);
     if (QFile::exists(runPath))
     {
@@ -219,10 +226,11 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
     QString localAppPath = version->runPath;
     if (localAppPath.isEmpty())
     {
+        QString localAppID = ApplicationManagerDetails::RemoveWhitespace(appID);
 #ifdef Q_OS_WIN
-        localAppPath = appID + ".exe";
+        localAppPath = localAppID + ".exe";
 #elif defined(Q_OS_MAC)
-        localAppPath = appID + ".app/Contents/MacOS/" + appID;
+        localAppPath = "ToolSet.app/Contents/MacOS/" + localAppID;
 #else
 #error "unsupported platform"
 #endif //platform
