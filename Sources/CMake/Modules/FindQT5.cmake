@@ -51,7 +51,7 @@ macro ( qt_deploy )
     endif()
     
     if( QT_POST_DEPLOY AND NOT MACOS )
-        ADD_CUSTOM_TARGET ( QT_DELOY ALL
+        ADD_CUSTOM_TARGET ( QT_DEPLOY ALL
                 COMMAND "python"
                         ${DEPLOY_SCRIPT_PATH}
                         "-p" "${DEPLOY_PLATFORM}"
@@ -62,7 +62,7 @@ macro ( qt_deploy )
             )
             
         foreach( ITEM ${TARGETS_LIST} )
-            add_dependencies( QT_DELOY ${ITEM} )           
+            add_dependencies( QT_DEPLOY ${ITEM} )           
         endforeach()
     else()
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
