@@ -29,7 +29,7 @@ void RejectFrames()
     while (frameToExecute < frameToBuild)
     {
         DispatchPlatform::RejectFrame(frames[frameToExecute % framePoolSize]);
-        frames[frameToExecute].Reset();
+        frames[frameToExecute % framePoolSize].Reset();
         frameToExecute++;
     }
     if (frameToExecute >= framePoolSize)
