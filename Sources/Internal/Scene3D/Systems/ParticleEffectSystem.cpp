@@ -28,7 +28,7 @@ NMaterial* ParticleEffectSystem::GetMaterial(Texture* texture, bool enableFog, b
         materialKey += 1 << 4;
     if (enableFrameBlend)
         materialKey += 1 << 5;
-    materialKey += static_cast<uint32>(texture->handle) << 6;
+    materialKey += static_cast<uint32>(texture->handle) << 6; //-V629 uint32->uint64 is ok
 
     Map<uint64, NMaterial*>::iterator it = materialMap.find(materialKey);
     if (it != materialMap.end()) //return existing

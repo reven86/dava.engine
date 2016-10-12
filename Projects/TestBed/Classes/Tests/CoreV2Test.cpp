@@ -1,16 +1,14 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Tests/CoreV2Test.h"
-#include "Infrastructure/GameCore.h"
+#include "Infrastructure/TestBed.h"
 
 #include "Engine/EngineModule.h"
 #include "Logger/Logger.h"
 
 using namespace DAVA;
 
-CoreV2Test::CoreV2Test(GameCore* g)
-    : BaseScreen(g, "CoreV2Test")
-    , engine(g->GetEngine())
+CoreV2Test::CoreV2Test(TestBed& app)
+    : BaseScreen(app, "CoreV2Test")
+    , engine(app.GetEngine())
 {
     dispatchers.reserve(4);
     for (int i = 0; i < 4; ++i)
@@ -21,9 +19,6 @@ CoreV2Test::CoreV2Test(GameCore* g)
         }));
         dispatcherThreads.back()->Start();
     }
-
-    engine->windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
-    engine->windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
 }
 
 CoreV2Test::~CoreV2Test()
@@ -38,10 +33,11 @@ void CoreV2Test::LoadResources()
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
     font->SetSize(12);
 
-    float32 h = 20.0f;
+    float32 h = 60.0f;
     float32 gap = 10.0f;
     float32 y = 10.0f;
     buttonQuit = CreateUIButton(font, Rect(10, y, 200, h), "Quit", &CoreV2Test::OnQuit);
+    buttonCloseWindow = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Close window", &CoreV2Test::OnCloseWindow);
 
     buttonResize640x480 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 640x480", &CoreV2Test::OnResize);
     buttonResize1024x768 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 1024x768", &CoreV2Test::OnResize);
@@ -55,21 +51,32 @@ void CoreV2Test::LoadResources()
     buttonDispTrigger3 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger1000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 1000", &CoreV2Test::OnDispatcherTest);
     buttonDispTrigger2000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 2000", &CoreV2Test::OnDispatcherTest);
-    buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Trigger 3000", &CoreV2Test::OnDispatcherTest);
+    buttonDispTrigger3000 = CreateUIButton(font, Rect(250, y += h + gap, 200, h), "Raise deadlock", &CoreV2Test::OnDispatcherTest);
+
+    y = 10.0f;
+    buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
+    buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
+
+    tokenOnWindowCreated = engine.windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
+    tokenOnWindowDestroyed = engine.windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
+    engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
 
     SafeRelease(font);
 }
 
 void CoreV2Test::UnloadResources()
 {
-    engine->windowCreated.Disconnect(tokenOnWindowCreated);
-    engine->windowDestroyed.Disconnect(tokenOnWindowDestroyed);
+    engine.windowCreated.Disconnect(tokenOnWindowCreated);
+    engine.windowDestroyed.Disconnect(tokenOnWindowDestroyed);
 
     SafeRelease(buttonQuit);
+    SafeRelease(buttonCloseWindow);
     SafeRelease(buttonResize640x480);
     SafeRelease(buttonResize1024x768);
     SafeRelease(buttonRunOnMain);
     SafeRelease(buttonRunOnUI);
+    SafeRelease(buttonDisableClose);
+    SafeRelease(buttonEnableClose);
 
     SafeRelease(buttonDispTrigger1);
     SafeRelease(buttonDispTrigger2);
@@ -78,12 +85,21 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonDispTrigger2000);
     SafeRelease(buttonDispTrigger3000);
 
+    engine.SetCloseRequestHandler(nullptr);
+
     BaseScreen::UnloadResources();
 }
 
 void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
-    engine->Quit(4);
+    Logger::Info("CoreV2Test: sending quit...");
+    engine.Quit(4);
+}
+
+void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    Logger::Info("CoreV2Test: closing primary window...");
+    engine.PrimaryWindow()->Close();
 }
 
 void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -100,20 +116,34 @@ void CoreV2Test::OnResize(DAVA::BaseObject* obj, void* data, void* callerData)
         w = 1024.0f;
         h = 768.0f;
     }
-    engine->PrimaryWindow()->Resize(w, h);
+    engine.PrimaryWindow()->Resize(w, h);
+}
+
+void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    if (obj == buttonDisableClose)
+    {
+        Logger::Debug("Closing application or window by user is disabled");
+        closeDisabled = true;
+    }
+    else if (obj == buttonEnableClose)
+    {
+        Logger::Debug("Closing application or window by user is enabled");
+        closeDisabled = false;
+    }
 }
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     if (obj == buttonRunOnMain)
     {
-        engine->RunAsyncOnMainThread([]() {
+        engine.RunAsyncOnMainThread([]() {
             Logger::Error("******** KABOOM on main thread********");
         });
     }
     else if (obj == buttonRunOnUI)
     {
-        engine->PrimaryWindow()->RunAsyncOnUIThread([]() {
+        engine.PrimaryWindow()->RunAsyncOnUIThread([]() {
             Logger::Error("******** KABOOM on UI thread********");
         });
     }
@@ -151,13 +181,13 @@ void CoreV2Test::OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* calle
 void CoreV2Test::DispatcherThread(TestDispatcher* dispatcher, int index)
 {
     dispatcher->LinkToCurrentThread();
-    Logger::Debug("###### CoreV2Test::DispatcherThread enter: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+    Logger::Debug("###### CoreV2Test::DispatcherThread enter: thread=%llu, index=%d", Thread::GetCurrentIdAsUInt64(), index);
     while (!stopDispatchers)
     {
         dispatcher->ProcessEvents();
         Thread::Sleep(50);
     }
-    Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", dispatcher->GetLinkedThread(), index);
+    Logger::Debug("###### CoreV2Test::DispatcherThread leave: thread=%llu, index=%d", Thread::GetCurrentIdAsUInt64(), index);
 }
 
 void CoreV2Test::DispatcherEventHandler(int type)
@@ -209,12 +239,28 @@ void CoreV2Test::DispatcherEventHandler(int type)
     }
 }
 
-void CoreV2Test::OnWindowCreated(DAVA::Window& w)
+void CoreV2Test::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowCreated");
 }
 
-void CoreV2Test::OnWindowDestroyed(DAVA::Window& w)
+bool CoreV2Test::OnWindowWantsToClose(DAVA::Window* w)
+{
+    if (closeDisabled)
+    {
+        if (w == nullptr)
+        {
+            Logger::Debug("User is trying to close application. Deny");
+        }
+        else
+        {
+            Logger::Debug("User is trying to close window. Deny");
+        }
+    }
+    return !closeDisabled;
+}
+
+void CoreV2Test::OnWindowDestroyed(DAVA::Window* w)
 {
     Logger::Debug("****** CoreV2Test::OnWindowDestroyed");
 }
@@ -233,5 +279,3 @@ DAVA::UIButton* CoreV2Test::CreateUIButton(DAVA::Font* font, const DAVA::Rect& r
     AddControl(button);
     return button;
 }
-
-#endif // __DAVAENGINE_COREV2__

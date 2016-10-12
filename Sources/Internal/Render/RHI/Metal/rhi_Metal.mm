@@ -35,7 +35,7 @@ metal_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-metal_TextureFormatSupported(TextureFormat format)
+metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 

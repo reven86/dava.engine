@@ -17,18 +17,20 @@ DataEditor<T>::DataEditor(DataWrapper& holder_, Reflection reflection_)
 {
     ReflectedObject refObject = reflection.GetValueObject();
     dataPtr = refObject.GetPtr<T>();
+    copyValue = *dataPtr;
 }
 
 template <typename T>
 DataEditor<T>::~DataEditor()
 {
-    holder.Sync(false);
+    holder.SyncWithEditor(Reflection::Create(&copyValue));
 }
 
 template <typename T>
 DataEditor<T>::DataEditor(DataEditor<T>&& other)
     : reflection(std::move(other.reflection))
     , dataPtr(std::move(other.dataPtr))
+    , copyValue(std::move(other.copyValue))
     , holder(other.holder)
 {
     other.holder = nullptr;
@@ -42,6 +44,7 @@ DataEditor<T>& DataEditor<T>::operator=(DataEditor<T>&& other)
 
     reflection = std::move(other.reflection);
     dataPtr = std::move(other.dataCopy);
+    copyValue = std::move(other.copyValue);
     holder = other.holder;
     other.holder = nullptr;
 

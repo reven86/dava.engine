@@ -42,7 +42,7 @@ dx11_NeedRestoreResources()
 //------------------------------------------------------------------------------
 
 static bool
-dx11_TextureFormatSupported(TextureFormat format)
+dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 

@@ -110,9 +110,7 @@ private:
     };
 
     template <typename Vertex, rhi::PrimitiveType Prim>
-    class
-    Buffer
-    : public BufferBase
+    class Buffer : public BufferBase
     {
     public:
         Buffer(const char* const name = "");
@@ -170,7 +168,7 @@ private:
         FontTextureSize = 128
     };
 
-    bool _permanent_text_small;
+    bool _permanent_text_small = true;
 
     rhi::HPipelineState _ptc_pipeline_state;
     rhi::HConstBuffer _ptc_const;

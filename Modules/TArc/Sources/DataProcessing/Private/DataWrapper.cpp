@@ -15,7 +15,7 @@ Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
     Reflection ret;
     if (context.HasData(type))
     {
-        ret = Reflection::Create(&context.GetData(type)).ref;
+        ret = Reflection::Create(&context.GetData(type));
     }
 
     return ret;
@@ -141,7 +141,16 @@ void DataWrapper::Sync(bool notifyListeners)
             {
                 const Reflection::Field& field = fields[i];
                 Any newValue = field.ref.GetValue();
-                if (impl->cachedValues[i] != newValue)
+                bool valuesEqual = false;
+                try
+                {
+                    valuesEqual = impl->cachedValues[i] == newValue;
+                }
+                catch (const DAVA::Exception& e)
+                {
+                    DAVA::Logger::Error("DataWrapper::Sync: %s", e.what());
+                }
+                if (!valuesEqual)
                 {
                     impl->cachedValues[i] = newValue;
                     nameInserter(field.key.Cast<String>());
@@ -160,6 +169,36 @@ void DataWrapper::Sync(bool notifyListeners)
         {
             impl->cachedValues.clear();
             NotifyListeners(notifyListeners);
+        }
+    }
+}
+
+void DataWrapper::SyncWithEditor(const Reflection& etalonData)
+{
+    DVASSERT(impl != nullptr);
+    DVASSERT(HasData());
+    Reflection data = GetData();
+
+    Vector<Reflection::Field> dataFields = data.GetFields();
+    Vector<Reflection::Field> etalonFields = etalonData.GetFields();
+
+    if (dataFields.size() != etalonFields.size())
+    {
+        // if sizes not equal, it means that data is collection
+        // and on next Sync iteration we will signalize that all fields were changed
+        // and there is no reason to sync cached values
+        return;
+    }
+
+    DVASSERT(dataFields.size() == impl->cachedValues.size());
+    for (size_t i = 0; i < dataFields.size(); ++i)
+    {
+        Any dataFieldValue = dataFields[i].ref.GetValue();
+        Any etalonFieldValue = etalonFields[i].ref.GetValue();
+
+        if (dataFieldValue != etalonFieldValue)
+        {
+            impl->cachedValues[i] = dataFieldValue;
         }
     }
 }

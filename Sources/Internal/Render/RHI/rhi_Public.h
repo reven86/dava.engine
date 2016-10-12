@@ -147,7 +147,7 @@ bool NeedRestoreResources();
 void Present(); // execute all submitted command-buffers & do flip/present
 
 Api HostApi();
-bool TextureFormatSupported(TextureFormat format);
+bool TextureFormatSupported(TextureFormat format, ProgType progType = PROG_FRAGMENT);
 const RenderDeviceCaps& DeviceCaps();
 
 void SuspendRendering();
@@ -387,6 +387,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
+        , primitiveType(PRIMITIVE_TRIANGLELIST)
         , instanceCount(0)
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)

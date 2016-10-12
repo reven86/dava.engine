@@ -79,3 +79,7 @@ global_setting.settings
 Projects/AndroidFramework/tmp-src
 
 local.properties
+
+# Python scripts cache
+*.pyc
+Doc/Doxygen/doxygen/

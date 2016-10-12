@@ -186,7 +186,7 @@ struct CommandBufferDX9_t
     };
 
     std::vector<uint64> _cmd;
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
     PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
@@ -1212,6 +1212,9 @@ _DX9_ExecuteQueuedCommands()
             }
 #endif
             _RejectAllFrames();
+
+            //clear buffer
+            DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
         }
         else
         {
@@ -1335,6 +1338,9 @@ _DX9_ExecuteQueuedCommands()
 
             _DX9_FramesWithRestoreAttempt = 0;
         }
+        //clear buffer
+        DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
+        _D3D9_Device->Present(NULL, NULL, NULL, NULL);
 
         TextureDX9::ReCreateAll();
         VertexBufferDX9::ReCreateAll();
@@ -1749,7 +1755,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREATE_RENDER_TARGET:
         {
             DX9_CALL(_D3D9_Device->CreateRenderTarget((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)(arg[5] != 0),
                                                       (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateRenderTarget");
         }
@@ -1758,7 +1764,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREARE_DEPTHSTENCIL_SURFACE:
         {
             DX9_CALL(_D3D9_Device->CreateDepthStencilSurface((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], BOOL(arg[5] != 0),
                                                              (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateDepthStencilSurface");
         }

@@ -148,6 +148,7 @@ inline DbgDraw::Buffer<Vertex, Prim>::Buffer(const char* const name)
     , _v_cnt(0)
     , _name(name)
     , _need_grow(false)
+    , _grow_ttw(0)
 {
 }
 
