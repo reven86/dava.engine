@@ -41,9 +41,11 @@ public:
     }
     RingArray& operator=(RingArray&& a)
     {
-        if (this != &result)
+        if (this != &a)
         {
             elements = a.elements;
+            a.elements = nullptr;
+
             elementsCount = a.elementsCount;
             head = a.head;
         }
