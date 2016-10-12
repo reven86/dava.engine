@@ -3,10 +3,12 @@
 #include "CommandLine/Private/OptionName.h"
 
 #include "Utils/SceneUtils/SceneUtils.h"
-
 #include "Scene/SceneEditor2.h"
 
-#include <QOpenGLContext>
+#include "Math/Color.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
 
 StaticOcclusionTool::StaticOcclusionTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-staticocclusion")
@@ -47,13 +49,8 @@ bool StaticOcclusionTool::PostInitInternal()
 
     if (commandAction == ACTION_BUILD)
     {
-        if (QOpenGLContext::currentContext() == nullptr)
-        {
-            DAVA::Logger::Error("Cannot swap buffers because of no OPEN GL Context.");
-        }
-
         scene.reset(new SceneEditor2());
-        if (scene->LoadScene(scenePathname) != SceneFileV2::eError::ERROR_NO_ERROR)
+        if (scene->LoadScene(scenePathname) != DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
         {
             DAVA::Logger::Error("Cannot load scene %s", scenePathname.GetAbsolutePathname().c_str());
 
@@ -61,7 +58,7 @@ bool StaticOcclusionTool::PostInitInternal()
             return false;
         }
 
-        ScopedPtr<DAVA::Camera> lodSystemDummyCamera(new Camera());
+        DAVA::ScopedPtr<DAVA::Camera> lodSystemDummyCamera(new DAVA::Camera());
         {
             lodSystemDummyCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
             lodSystemDummyCamera->SetPosition(DAVA::Vector3(0.0f, 0.0f, 0.0f));
@@ -89,16 +86,10 @@ DAVA::TArc::ConsoleModule::eFrameResult StaticOcclusionTool::OnFrameInternal()
             const rhi::HTexture nullTexture;
             const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-            Renderer::BeginFrame();
-            RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+            DAVA::Renderer::BeginFrame();
+            DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
             scene->Update(0.1f);
-            Renderer::EndFrame();
-
-            QOpenGLContext* context = QOpenGLContext::currentContext();
-            if (context)
-            {
-                context->swapBuffers(context->surface());
-            }
+            DAVA::Renderer::EndFrame();
 
             return DAVA::TArc::ConsoleModule::eFrameResult::CONTINUE;
         }

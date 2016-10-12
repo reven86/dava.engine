@@ -23,6 +23,6 @@ protected:
     void BeforeDestroyedInternal() override;
     void ShowHelpInternal() override;
 
-    ScopedPtr<SceneEditor2> scene;
+    DAVA::ScopedPtr<SceneEditor2> scene;
     eAction commandAction = ACTION_NONE;
 };

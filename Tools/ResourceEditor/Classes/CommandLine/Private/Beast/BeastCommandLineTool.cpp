@@ -10,14 +10,14 @@
 
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 
 BeastCommandLineTool::BeastCommandLineTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-beast")
 {
-    options.AddOption(OptionName::File, VariantType(String("")), "Full pathname of scene for beasting");
-    options.AddOption(OptionName::Output, VariantType(String("")), "Full path for output folder for beasting");
-    options.AddOption(OptionName::QualityConfig, VariantType(String("")), "Full path for quality.yaml file");
+    options.AddOption(OptionName::File, DAVA::VariantType(DAVA::String("")), "Full pathname of scene for beasting");
+    options.AddOption(OptionName::Output, DAVA::VariantType(DAVA::String("")), "Full path for output folder for beasting");
+    options.AddOption(OptionName::QualityConfig, DAVA::VariantType(DAVA::String("")), "Full path for quality.yaml file");
 }
 
 bool BeastCommandLineTool::PostInitInternal()
@@ -37,7 +37,7 @@ bool BeastCommandLineTool::PostInitInternal()
     }
     else
     {
-        outputPath.MakeDirectoryPathname();
+        outputPathname.MakeDirectoryPathname();
     }
 
     bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, scenePathname);
@@ -54,7 +54,7 @@ DAVA::TArc::ConsoleModule::eFrameResult BeastCommandLineTool::OnFrameInternal()
 {
     DAVA::ScopedPtr<SceneEditor2> scene(new SceneEditor2());
 
-    if (scene->LoadScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR)
+    if (scene->LoadScene(scenePathname) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
     {
         scene->Update(0.1f);
 
@@ -69,7 +69,7 @@ DAVA::TArc::ConsoleModule::eFrameResult BeastCommandLineTool::OnFrameInternal()
 
 void BeastCommandLineTool::BeforeDestroyedInternal()
 {
-    SceneConsoleHelper::ReleaseRendering();
+    SceneConsoleHelper::FlushRHI();
 }
 
 void BeastCommandLineTool::ShowHelpInternal()

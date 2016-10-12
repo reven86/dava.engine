@@ -20,6 +20,8 @@ SceneSaverTool::SceneSaverTool(const DAVA::Vector<DAVA::String>& commandLine)
 
 bool SceneSaverTool::PostInitInternal()
 {
+    using namespace DAVA;
+
     inFolder = options.GetOption(OptionName::InDir).AsString();
     if (inFolder.IsEmpty())
     {
@@ -111,7 +113,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneSaverTool::OnFrameInternal()
     }
 
     default:
-        Logger::Error("Unhandled action!");
+        DAVA::Logger::Error("Unhandled action!");
         break;
     }
 

@@ -1,5 +1,6 @@
 #include "CommandLine/SceneExporterTool.h"
 #include "CommandLine/Private/OptionName.h"
+#include "CommandLine/Private/SceneConsoleHelper.h"
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
@@ -9,6 +10,8 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
+
+#include "AssetCache/AssetCache.h"
 
 namespace SceneExporterToolDetail
 {
@@ -49,11 +52,11 @@ void CollectObjectsFromFolder(const DAVA::FilePath& folderPathname, const DAVA::
 
 SceneExporter::eExportedObjectType GetObjectType(const DAVA::FilePath& pathname)
 {
-    static const Vector<std::pair<SceneExporter::eExportedObjectType, String>> objectDefinition =
+    static const DAVA::Vector<std::pair<SceneExporter::eExportedObjectType, DAVA::String>> objectDefinition =
     {
       { SceneExporter::OBJECT_TEXTURE, ".tex" },
       { SceneExporter::OBJECT_SCENE, ".sc2" },
-      { SceneExporter::OBJECT_HEIGHTMAP, Heightmap::FileExtension() },
+      { SceneExporter::OBJECT_HEIGHTMAP, DAVA::Heightmap::FileExtension() },
     };
 
     for (const auto& def : objectDefinition)
@@ -67,7 +70,7 @@ SceneExporter::eExportedObjectType GetObjectType(const DAVA::FilePath& pathname)
     return SceneExporter::OBJECT_NONE;
 }
 
-bool CollectObjectFromFileList(const FilePath& fileListPath, const FilePath& inFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
+bool CollectObjectFromFileList(const DAVA::FilePath& fileListPath, const DAVA::FilePath& inFolder, SceneExporter::ExportedObjectCollection& exportedObjects)
 {
     using namespace DAVA;
 
@@ -139,6 +142,8 @@ SceneExporterTool::SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLi
 
 bool SceneExporterTool::PostInitInternal()
 {
+    using namespace DAVA;
+
     inFolder = options.GetOption(OptionName::InDir).AsString();
     if (inFolder.IsEmpty())
     {
@@ -227,7 +232,7 @@ bool SceneExporterTool::PostInitInternal()
 
 DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
 {
-    AssetCacheClient cacheClient;
+    DAVA::AssetCacheClient cacheClient;
 
     SceneExporter::Params exportingParams;
     exportingParams.dataFolder = outFolder;
@@ -243,12 +248,12 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
 
     if (useAssetCache)
     {
-        AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
-        if (connected == AssetCache::Error::NO_ERRORS)
+        DAVA::AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
+        if (connected == DAVA::AssetCache::Error::NO_ERRORS)
         {
-            String machineName = WStringToString(DeviceInfo::GetName());
-            DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+            DAVA::String machineName = DAVA::WStringToString(DAVA::DeviceInfo::GetName());
+            DAVA::DateTime timeNow = DAVA::DateTime::Now();
+            DAVA::String timeString = DAVA::WStringToString(timeNow.GetLocalizedDate()) + "_" + DAVA::WStringToString(timeNow.GetLocalizedTime());
 
             exporter.SetCacheClient(&cacheClient, machineName, timeString, "Resource Editor. Export scene");
         }
@@ -263,14 +268,14 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
         commandObject = SceneExporterToolDetail::GetObjectType(inFolder + filename);
         if (commandObject == SceneExporter::OBJECT_NONE)
         {
-            Logger::Error("[SceneExporterTool] found wrong filename %s", filename.c_str());
+            DAVA::Logger::Error("[SceneExporterTool] found wrong filename %s", filename.c_str());
             return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
         }
         exportedObjects.emplace_back(commandObject, std::move(filename));
     }
     else if (commandAction == ACTION_EXPORT_FOLDER)
     {
-        FilePath folderPathname(inFolder + foldername);
+        DAVA::FilePath folderPathname(inFolder + foldername);
         folderPathname.MakeDirectoryPathname();
 
         SceneExporterToolDetail::CollectObjectsFromFolder(folderPathname, inFolder, commandObject, exportedObjects);
@@ -280,7 +285,7 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneExporterTool::OnFrameInternal()
         bool collected = SceneExporterToolDetail::CollectObjectFromFileList(fileListPath, inFolder, exportedObjects);
         if (!collected)
         {
-            Logger::Error("[SceneExporterTool] Can't collect links from file %s", fileListPath.GetAbsolutePathname().c_str());
+            DAVA::Logger::Error("[SceneExporterTool] Can't collect links from file %s", fileListPath.GetAbsolutePathname().c_str());
             return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
         }
     }

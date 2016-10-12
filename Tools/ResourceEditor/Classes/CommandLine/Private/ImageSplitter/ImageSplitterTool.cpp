@@ -1,6 +1,7 @@
 #include "CommandLine/ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
 #include "CommandLine/Private/OptionName.h"
+#include "Logger/Logger.h"
 
 ImageSplitterTool::ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-imagesplitter")
@@ -28,7 +29,7 @@ bool ImageSplitterTool::PostInitInternal()
     {
         if (filename.IsEmpty())
         {
-            Logger::Error("Pathname of image file was not selected");
+            DAVA::Logger::Error("Pathname of image file was not selected");
             return false;
         }
     }
@@ -36,14 +37,14 @@ bool ImageSplitterTool::PostInitInternal()
     {
         if (foldername.IsEmpty())
         {
-            Logger::Error("Input folder was not selected");
+            DAVA::Logger::Error("Input folder was not selected");
             return false;
         }
         foldername.MakeDirectoryPathname();
     }
     else
     {
-        Logger::Error("Wrong action was selected");
+        DAVA::Logger::Error("Wrong action was selected");
         return false;
     }
 

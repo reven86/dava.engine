@@ -24,6 +24,7 @@
 #include "Core/PerformanceSettings.h"
 #include "Base/BaseTypes.h"
 
+#include <QDir>
 #include <QFileInfo>
 #include <QCryptographicHash>
 
@@ -155,6 +156,7 @@ QString REApplication::GetInstanceKey() const
 
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
+    Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<REModule>();
 }
 

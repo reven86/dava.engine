@@ -74,6 +74,8 @@ bool TextureDescriptorTool::PostInitInternal()
 
 void TextureDescriptorTool::ReadCommandLine()
 {
+    using namespace DAVA;
+
     folderPathname = options.GetOption(OptionName::Folder).AsString();
     filePathname = options.GetOption(OptionName::File).AsString();
     filesList = options.GetOption(OptionName::ProcessFileList).AsString();
@@ -150,7 +152,7 @@ bool TextureDescriptorTool::ValidateCommandLine()
 {
     if (commandAction == TextureDescriptorTool::ACTION_NONE)
     {
-        Logger::Error("Action was not specified");
+        DAVA::Logger::Error("Action was not specified");
         return false;
     }
 
@@ -158,12 +160,12 @@ bool TextureDescriptorTool::ValidateCommandLine()
     {
         if ((!filePathname.IsEmpty() && presetPath.IsEmpty()) || (filePathname.IsEmpty() && !presetPath.IsEmpty()))
         {
-            Logger::Error("File or preset parameter was not specified");
+            DAVA::Logger::Error("File or preset parameter was not specified");
             return false;
         }
         else if ((!filesList.IsEmpty() && presetsList.IsEmpty()) || (filesList.IsEmpty() && !presetsList.IsEmpty()))
         {
-            Logger::Error("FilesList or presetsList parameter was not specified");
+            DAVA::Logger::Error("FilesList or presetsList parameter was not specified");
             return false;
         }
     }
@@ -171,7 +173,7 @@ bool TextureDescriptorTool::ValidateCommandLine()
     {
         if (filePathname.IsEmpty() && folderPathname.IsEmpty())
         {
-            Logger::Error("File or folder parameter was not specified");
+            DAVA::Logger::Error("File or folder parameter was not specified");
             return false;
         }
 
@@ -182,12 +184,12 @@ bool TextureDescriptorTool::ValidateCommandLine()
 
         if ((commandAction == TextureDescriptorTool::ACTION_SET_COMPRESSION) && compressionParams.empty())
         {
-            Logger::Error("GPU params were not specified");
+            DAVA::Logger::Error("GPU params were not specified");
             return false;
         }
         else if ((commandAction == TextureDescriptorTool::ACTION_SET_PRESET) && presetPath.IsEmpty())
         {
-            Logger::Error("Preset was not specified");
+            DAVA::Logger::Error("Preset was not specified");
             return false;
         }
     }
@@ -262,7 +264,7 @@ DAVA::TArc::ConsoleModule::eFrameResult TextureDescriptorTool::OnFrameInternal()
     }
     default:
     {
-        Logger::Error("Unhandled action!");
+        DAVA::Logger::Error("Unhandled action!");
         break;
     }
     }

@@ -1,5 +1,12 @@
 #include "CommandLine/Private/SceneConsoleHelper.h"
+#include "CommandLine/Private/OptionName.h"
 #include "CommandLine/ProgramOptions.h"
+
+#include "Math/Color.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace SceneConsoleHelperDetail
 {
@@ -13,12 +20,12 @@ DAVA_DEPRECATED(void Flush())
     static const rhi::HTexture nullTexture;
     static const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-    auto currentFrame = rhi::GetCurrentFrameSyncObject();
+    rhi::HSyncObject currentFrame = rhi::GetCurrentFrameSyncObject();
     while (!rhi::SyncObjectSignaled(currentFrame))
     {
-        Renderer::BeginFrame();
-        RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
-        Renderer::EndFrame();
+        DAVA::Renderer::BeginFrame();
+        DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+        DAVA::Renderer::EndFrame();
     }
 }
 
@@ -49,7 +56,7 @@ bool SceneConsoleHelper::InitializeQualitySystem(const DAVA::ProgramOptions& opt
         return false;
     }
 
-    QualitySettingsSystem::Instance()->Load(qualityPathname);
+    DAVA::QualitySettingsSystem::Instance()->Load(qualityPathname);
     return true;
 }
 

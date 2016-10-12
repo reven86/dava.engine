@@ -4,6 +4,8 @@
 #include "DAVAVersion.h"
 #include "Version.h"
 
+#include <QtGlobal>
+
 VersionTool::VersionTool(const DAVA::Vector<DAVA::String>& commandLine)
     : REConsoleModuleCommon(commandLine, "-version")
 {
