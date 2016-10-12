@@ -3,30 +3,19 @@
 
 namespace DAVA
 {
-struct ModuleManager::PointersToModules
-{
-};
-
-ModuleManager::ModuleManager()
+ModuleManager::ModuleManager(Engine* engine)
 {
 }
 
 ModuleManager::~ModuleManager()
 {
-    ResetModules();
 }
 
 void ModuleManager::InitModules()
 {
 }
 
-void ModuleManager::ResetModules()
+void ModuleManager::ShutdownModules()
 {
-    for (IModule* module : modules)
-    {
-        module->Shutdown();
-        delete module;
-    }
-    modules.clear();
 }
 }

@@ -14,7 +14,7 @@ class ModuleManager;
 namespace Test
 {
     
-class SampleModule : public IModule
+class SampleDynamicModule : public IModule
 {
 public:
     enum eStatus
@@ -29,7 +29,7 @@ public:
         return statusList;
     }
     
-    SampleModule(Engine* engine);
+    SampleDynamicModule(Engine* engine);
     
     void Init() override;
     void Shutdown() override;

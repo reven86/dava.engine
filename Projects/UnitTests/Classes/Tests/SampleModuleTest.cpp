@@ -1,3 +1,4 @@
+#if 0 //test will only work in CoreV2
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
@@ -23,3 +24,4 @@ DAVA_TESTCLASS (SampleModuleTest)
 };
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
+#endif

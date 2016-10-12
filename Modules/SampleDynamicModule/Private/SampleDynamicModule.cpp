@@ -1,23 +1,23 @@
 #pragma once
 
-#include "SampleModule.h"
+#include "SampleDynamicModule.h"
 
 namespace DAVA
 {
 namespace Test
 {
-SampleModule::SampleModule(Engine* engine)
+SampleDynamicModule::SampleDynamicModule(Engine* engine)
     : IModule(engine)
 {
     statusList.emplace_back(eStatus::ES_UNKNOWN);
 }
 
-void SampleModule::Init()
+void SampleDynamicModule::Init()
 {
     statusList.emplace_back(eStatus::ES_INIT);
 }
 
-void SampleModule::Shutdown()
+void SampleDynamicModule::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
 }

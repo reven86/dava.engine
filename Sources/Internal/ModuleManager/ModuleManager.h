@@ -5,18 +5,19 @@
 namespace DAVA
 {
 class IModule;
+class Engine;
 
-class ModuleManager
+class ModuleManager final
 {
 public:
-    ModuleManager();
+    ModuleManager(Engine* engine);
     ~ModuleManager();
 
     template <typename T>
     T* GetModule() const;
 
     void InitModules();
-    void ResetModules();
+    void ShutdownModules();
 
 private:
     struct PointersToModules;

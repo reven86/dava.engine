@@ -17,9 +17,9 @@ add_definitions(-D__DAVAENGINE_COREV2__)
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-set ( DAVA_COMPONENTS "Sound")
+set ( DAVA_COMPONENTS "Sound" "SampleModule" "SampleDynamicModule" )
 if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
-    list ( APPEND DAVA_COMPONENTS "CEFWebview" )
+    list ( APPEND DAVA_COMPONENTS "CEFWebview")
 endif ()
 
 if (DAVA_PLATFORM_QT)

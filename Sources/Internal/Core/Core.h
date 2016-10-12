@@ -11,7 +11,6 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
-#include "ModuleManager/ModuleManager.h"
 
 /**
 	\defgroup core Core
@@ -165,7 +164,7 @@ public:
 
     virtual uint32 GetScreenDPI();
 
-    // Set application's window minimum size, to remove minimume size limit pass zeros as arguments
+    // Set application's window minimum size, to remove minimum size limit pass zeros as arguments
     virtual void SetWindowMinimumSize(float32 width, float32 height);
     virtual Vector2 GetWindowMinimumSize() const;
 
@@ -176,7 +175,7 @@ public:
 	 */
 
     /* This code disabled for now and left for the future
-	MacOS X Version: it works right (commented in MainWindowController.mm) but it require convertaton to virtual coordinates
+	MacOS X Version: it works right (commented in MainWindowController.mm) but it require convertation to virtual coordinates
 	For Win32 function not implemented yet, and I do not have time to implement it right now, so left that for the future.
 
      */
@@ -251,7 +250,6 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager() const;
-    const ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -285,7 +283,6 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
-    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
 };

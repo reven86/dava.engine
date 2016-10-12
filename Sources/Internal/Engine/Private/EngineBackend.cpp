@@ -662,14 +662,14 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->localNotificationController = new LocalNotificationController();
     }
 
-    context->moduleManager = new ModuleManager();
+    context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
 }
 
 void EngineBackend::DestroySubsystems()
 {
-    context->moduleManager->ResetModules();
-    delete context->moduleManager;
+    context->moduleManager->ShutdownModules();
+    SafeDelete(context->moduleManager);
 
     if (context->jobManager != nullptr)
     {
