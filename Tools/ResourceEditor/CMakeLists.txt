@@ -14,6 +14,14 @@ set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG
 
 include ( CMake-common )
 
+if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
+    set( DEPLOY_ROOT ${DEPLOY_DIR} )
+    set( DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME} )
+    set( DEPLOY_DIR ${DEPLOY_ROOT}/dava.framework/Tools/${PROJECT_NAME} )
+    set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
+endif()
+
+
 # This definitions should be before "find_package( DavaFramework REQUIRED )"
 # to force defines into DavaFramework project
 
@@ -143,9 +151,14 @@ if (DEPLOY)
     if (NOT WIN32)
         set(BEAST_DIR "")
     endif()
+
+    if( NOT DEPLOY_BEAST_DIR )
+        set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
+    endif()
+
     ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/postDeploy.py"
-            "${DEPLOY_ROOT}"
+            "${DEPLOY_BEAST_DIR}"
             "${BEAST_DIR}"
         )
 endif()
