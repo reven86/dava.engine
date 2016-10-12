@@ -63,6 +63,7 @@ private:
     LRESULT OnSize(int32 resizingType, int32 width, int32 height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
+    LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
     LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
     LRESULT OnMouseWheelEvent(int32 delta, int32 x, int32 y);

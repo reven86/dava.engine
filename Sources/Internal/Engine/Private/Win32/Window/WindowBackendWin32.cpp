@@ -225,6 +225,14 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
+LRESULT WindowBackend::OnGetMinMaxInfo(MINMAXINFO* minMaxInfo)
+{
+    // Limit minimum window size to some reasonable value
+    minMaxInfo->ptMinTrackSize.x = 128;
+    minMaxInfo->ptMinTrackSize.y = 128;
+    return 0;
+}
+
 LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
@@ -446,6 +454,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_GETMINMAXINFO)
     {
+        MINMAXINFO* minMaxInfo = reinterpret_cast<MINMAXINFO*>(lparam);
+        lresult = OnGetMinMaxInfo(minMaxInfo);
     }
     else if (message == WM_SETFOCUS || message == WM_KILLFOCUS)
     {
