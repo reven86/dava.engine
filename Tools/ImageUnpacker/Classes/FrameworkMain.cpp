@@ -33,13 +33,18 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
     }
     else
     {
-        Image* savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+        ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, FORMAT_RGBA8888));
 
-        ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format),
-                                         savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
+        bool unpacked = ImageConvert::ConvertImage(image, savedImage); //unpack compressed images (PVR2-4, DXT1-5, ...)
+        if (!unpacked)
+        { // unpack uncompressed images
+            unpacked = ImageConvert::ConvertImageDirect(image, savedImage);
+        }
 
-        ImageSystem::Save(newImagePath, savedImage);
-        savedImage->Release();
+        if (unpacked)
+        {
+            ImageSystem::Save(newImagePath, savedImage);
+        }
     }
 }
 
