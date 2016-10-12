@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -33,6 +34,9 @@ ref struct WindowNativeBridge sealed
     void SetTitle(const char8* title);
 
 private:
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
     void OnTriggerPlatformEvents();
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
@@ -49,9 +53,11 @@ private:
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
 
-    static uint32 GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
-    static uint32 GetMouseButtonIndex(std::bitset<5> state);
-    static std::bitset<5> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
+    eModifierKeys GetModifierKeys() const;
+
+    static eMouseButtons GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
+    static eMouseButtons GetMouseButtonIndex(std::bitset<MOUSE_BUTTON_COUNT> state);
+    static std::bitset<MOUSE_BUTTON_COUNT> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
 
     void CreateBaseXamlUI();
     void InstallEventHandlers();
@@ -67,7 +73,7 @@ private:
     ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
 
-    std::bitset<5> mouseButtonState;
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;

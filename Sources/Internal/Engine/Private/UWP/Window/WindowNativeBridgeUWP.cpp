@@ -132,24 +132,51 @@ void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ cor
 
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, arg->KeyStatus.WasKeyDown));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    // Windows translates some Ctrl key combinations into ASCII control characters.
+    // It seems to me that control character are not wanted by game to handle in character message.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
+    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, modifierKeys, arg->KeyStatus.WasKeyDown));
+    }
 }
 
 void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
 {
+    using ::Windows::System::VirtualKey;
     using namespace ::Windows::UI::Core;
 
-    CorePhysicalKeyStatus status = arg->KeyStatus;
-    uint32 key = static_cast<uint32>(arg->VirtualKey);
-    if ((key == VK_SHIFT && status.ScanCode == 0x36) || status.IsExtendedKey)
+    // Process only KeyDown/KeyUp and SystemKeyDown/SystemKeyUp event types to skip unwanted messages, such as
+    // Character (handled in OnCharacterReceived), DeadCharacter, SystemCharacter, etc.
+    bool isPressed = false;
+    CoreAcceleratorKeyEventType eventType = arg->EventType;
+    switch (eventType)
     {
-        key |= 0x100;
-    }
+    case CoreAcceleratorKeyEventType::KeyDown:
+    case CoreAcceleratorKeyEventType::SystemKeyDown:
+        isPressed = true; // Fall through below
+    case CoreAcceleratorKeyEventType::KeyUp:
+    case CoreAcceleratorKeyEventType::SystemKeyUp:
+    {
+        const unsigned int RSHIFT_SCANCODE = 0x36;
 
-    bool isPressed = arg->EventType == CoreAcceleratorKeyEventType::KeyDown ||
-    arg->EventType == CoreAcceleratorKeyEventType::SystemKeyDown;
-    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, status.WasKeyDown));
+        CorePhysicalKeyStatus status = arg->KeyStatus;
+        uint32 key = static_cast<uint32>(arg->VirtualKey);
+        // Ups, UWP does not support MapVirtualKey function to distinguish left and right shift
+        if (status.IsExtendedKey || (arg->VirtualKey == VirtualKey::Shift && status.ScanCode == RSHIFT_SCANCODE))
+        {
+            key |= 0x100;
+        }
+
+        eModifierKeys modifierKeys = GetModifierKeys();
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, status.WasKeyDown));
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
@@ -179,20 +206,15 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
+    eModifierKeys modifierKeys = GetModifierKeys();
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
-        std::bitset<5> state = FillMouseButtonState(prop);
+        std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
 
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
-        uint32 button = GetMouseButtonIndex(state);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                                   MainDispatcherEvent::MOUSE_BUTTON_DOWN,
-                                                                                   button,
-                                                                                   x,
-                                                                                   y,
-                                                                                   1,
-                                                                                   false));
+        eMouseButtons button = GetMouseButtonIndex(state);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_DOWN, button, x, y, 1, modifierKeys, false));
         mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -210,18 +232,13 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
+    eModifierKeys modifierKeys = GetModifierKeys();
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
-        uint32 button = GetMouseButtonIndex(mouseButtonState);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                                   MainDispatcherEvent::MOUSE_BUTTON_UP,
-                                                                                   button,
-                                                                                   x,
-                                                                                   y,
-                                                                                   1,
-                                                                                   false));
+        eMouseButtons button = GetMouseButtonIndex(mouseButtonState);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, false));
         mouseButtonState.reset();
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -239,31 +256,26 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
+    eModifierKeys modifierKeys = GetModifierKeys();
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
-        std::bitset<5> state = FillMouseButtonState(prop);
-        std::bitset<5> change = mouseButtonState ^ state;
+        std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
+        std::bitset<MOUSE_BUTTON_COUNT> change = mouseButtonState ^ state;
 
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window,
-                                                                                 MainDispatcherEvent::MOUSE_BUTTON_DOWN,
-                                                                                 0,
-                                                                                 x,
-                                                                                 y,
-                                                                                 1,
-                                                                                 false);
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, x, y, 1, modifierKeys, false);
         for (size_t i = 0, n = change.size(); i < n; ++i)
         {
             if (change[i])
             {
                 e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-                e.mouseEvent.button = static_cast<uint32>(i + 1);
+                e.mouseEvent.button = static_cast<eMouseButtons>(i + 1);
                 mainDispatcher->PostEvent(e);
             }
         }
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
         mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
@@ -281,37 +293,67 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
     float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, modifierKeys, false));
 }
 
-uint32 WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
+eModifierKeys WindowNativeBridge::GetModifierKeys() const
+{
+    using ::Windows::System::VirtualKey;
+    using ::Windows::UI::Core::CoreWindow;
+    using ::Windows::UI::Core::CoreVirtualKeyStates;
+
+    eModifierKeys result = eModifierKeys::NONE;
+    CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
+
+    CoreVirtualKeyStates keyState = coreWindow->GetKeyState(VirtualKey::Shift);
+    if ((keyState & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)
+    {
+        result |= eModifierKeys::SHIFT;
+    }
+
+    keyState = coreWindow->GetKeyState(VirtualKey::Control);
+    if ((keyState & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)
+    {
+        result |= eModifierKeys::CONTROL;
+    }
+
+    keyState = coreWindow->GetKeyState(VirtualKey::Menu);
+    if ((keyState & CoreVirtualKeyStates::Down) == CoreVirtualKeyStates::Down)
+    {
+        result |= eModifierKeys::ALT;
+    }
+    return result;
+}
+
+eMouseButtons WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
 {
     if (props->IsLeftButtonPressed)
-        return 1;
+        return eMouseButtons::LEFT;
     if (props->IsRightButtonPressed)
-        return 2;
+        return eMouseButtons::RIGHT;
     if (props->IsMiddleButtonPressed)
-        return 3;
+        return eMouseButtons::MIDDLE;
     if (props->IsXButton1Pressed)
-        return 4;
+        return eMouseButtons::EXTENDED1;
     if (props->IsXButton2Pressed)
-        return 5;
-    return 0;
+        return eMouseButtons::EXTENDED2;
+    return eMouseButtons::NONE;
 }
 
-uint32 WindowNativeBridge::GetMouseButtonIndex(std::bitset<5> state)
+eMouseButtons WindowNativeBridge::GetMouseButtonIndex(std::bitset<MOUSE_BUTTON_COUNT> state)
 {
     for (size_t i = 0, n = state.size(); i < n; ++i)
     {
         if (state[i])
-            return static_cast<uint32>(i + 1);
+            return static_cast<eMouseButtons>(i + 1);
     }
-    return 0;
+    return eMouseButtons::NONE;
 }
 
-std::bitset<5> WindowNativeBridge::FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props)
+std::bitset<WindowNativeBridge::MOUSE_BUTTON_COUNT> WindowNativeBridge::FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props)
 {
-    std::bitset<5> state;
+    std::bitset<MOUSE_BUTTON_COUNT> state;
     state.set(0, props->IsLeftButtonPressed);
     state.set(1, props->IsRightButtonPressed);
     state.set(2, props->IsMiddleButtonPressed);
