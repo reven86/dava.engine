@@ -61,6 +61,8 @@ void REGuiApplication::OnWindowCreated(DAVA::Window* w)
     DAVA::DynamicBufferAllocator::SetPageSize(16 * 1024 * 1024); // 16 mb
 
     DVASSERT(mainWindow != nullptr);
+    mainWindow->OnRenderingInitialized();
+
     QObject::connect(launcher, &ResourceEditorLauncher::LaunchFinished, [this]()
                      {
                          mainWindow->SetupTitle();
