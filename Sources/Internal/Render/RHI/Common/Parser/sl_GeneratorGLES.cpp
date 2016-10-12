@@ -1490,7 +1490,7 @@ void GLESGenerator::Error(const char* format, ...)
 
     va_list arg;
     va_start(arg, format);
-    Log_ErrorArgList(format, arg);
+    DAVA::Logger::Error(format, arg);
     va_end(arg);
 }
 

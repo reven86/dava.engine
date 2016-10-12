@@ -145,7 +145,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     {
         delete ast;
         ast = nullptr;
-        sl::Log_Error("Parse error\n");
+        DAVA::Logger::Error("Parse error\n");
         DVASSERT(ast);
     }
 

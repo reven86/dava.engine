@@ -79,28 +79,6 @@ int String_ToIntegerHex(const char* str, char** endptr)
     return strtol(str, endptr, 16);
 }
 
-// Engine/Log.cpp
-
-void Log_Error(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    Log_ErrorArgList(format, args);
-    va_end(args);
-}
-
-void Log_ErrorArgList(const char* format, va_list args)
-{
-    char buf[4 * 1024];
-
-    Snprintf(buf, sizeof(buf), format, args);
-#if defined(__DAVAENGINE_WIN32__)
-    ::OutputDebugStringA(buf);
-#else
-    puts(buf);
-#endif
-}
-
 StringPool::StringPool(Allocator* allocator)
     : stringArray(allocator)
 {

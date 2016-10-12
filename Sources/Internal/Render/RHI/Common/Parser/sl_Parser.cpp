@@ -1532,7 +1532,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     else if (stricmp(op, "dst_color") == 0)
                         src = BLENDOP_DST_COLOR;
                     else
-                        Log_Error("unsupported src blend-op \"%s\"", op);
+                        DAVA::Logger::Error("unsupported src blend-op \"%s\"", op);
                 }
                 else
                 {
@@ -1562,7 +1562,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                     else if (stricmp(op, "dst_color") == 0)
                         dst = BLENDOP_DST_COLOR;
                     else
-                        Log_Error("unsupported dst blend-op \"%s\"", op);
+                        DAVA::Logger::Error("unsupported dst blend-op \"%s\"", op);
                 }
                 else
                 {
@@ -1604,7 +1604,7 @@ bool HLSLParser::ParseTopLevel(HLSLStatement*& statement)
                 else if (stricmp(msk, "a") == 0)
                     mask = COLORMASK_A;
                 else
-                    Log_Error("unsupported color-mask \"%s\"", msk);
+                    DAVA::Logger::Error("unsupported color-mask \"%s\"", msk);
 
                 m->mask = mask;
                 m_tree->GetRoot()->color_mask = m;

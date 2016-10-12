@@ -1,8 +1,5 @@
 #pragma once
 
-//#include <stdarg.h> // va_list, vsnprintf
-//#include <malloc.h> // malloc
-//#include <new> // for placement new
 #include "Debug/DVAssert.h"
 
 namespace sl
@@ -42,8 +39,8 @@ int String_ToInteger(const char* str, char** end);
 
 // Engine/Log.h
 
-void Log_Error(const char* format, ...);
-void Log_ErrorArgList(const char* format, va_list args);
+//void Log_Error(const char* format, ...);
+//void Log_ErrorArgList(const char* format, va_list args);
 
 // Engine/Array.h
 
