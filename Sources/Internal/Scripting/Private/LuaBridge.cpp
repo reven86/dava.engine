@@ -631,9 +631,9 @@ void AnyToLua(lua_State* L, const Any& value)
         IFPUSH(int8, lua_pushinteger)
     else IFPUSH(int16, lua_pushinteger)
     else IFPUSH(int32, lua_pushinteger)
-    else if (CANGET(int64) && value.CanCast<float64>())
+    else if (CANGET(int64))
     {
-        lua_pushnumber(L, value.Cast<float64>());
+        lua_pushnumber(L, static_cast<lua_Number>(value.Get<int64>()));
     }
     else IFPUSH(float32, lua_pushnumber)
     else IFPUSH(float64, lua_pushnumber)
@@ -685,36 +685,37 @@ String PopString(lua_State* L)
     return msg;
 }
 
-void DumpStack(lua_State* L)
+void DumpStack(lua_State* L, std::ostream& os)
 {
     int32 count = lua_gettop(L);
-    Logger::FrameworkDebug("Lua stack:");
+    os << "Lua stack (top: " << count << ")" << (count > 0 ? ":" : "") << std::endl;
     for (int32 i = 1; i <= count; ++i)
     {
-        String detail;
+        os << "  " << i << ") <" << luaL_typename(L, i) << ">";
         int ltype = lua_type(L, i);
         switch (ltype)
         {
         case LUA_TBOOLEAN:
-            detail = Format(" %s", lua_toboolean(L, i) ? "true" : "false");
+            os << " " << (lua_toboolean(L, i) ? "true" : "false");
             break;
         case LUA_TNUMBER:
-            detail = Format(" %f", lua_tonumber(L, i));
+            os << " " << lua_tonumber(L, i);
             break;
         case LUA_TSTRING:
-            detail = Format(" %s", lua_tostring(L, i));
+            os << " " << lua_tostring(L, i);
             break;
         case LUA_TUSERDATA:
         case LUA_TLIGHTUSERDATA:
-            detail = Format(" %p", lua_touserdata(L, i));
+            os << " " << lua_touserdata(L, i);
             break;
         case LUA_TNIL:
         case LUA_TTABLE:
         case LUA_TFUNCTION:
         case LUA_TTHREAD:
+        default:
             break;
         }
-        Logger::FrameworkDebug("  %d) <%s>%s", i, luaL_typename(L, i), detail.c_str());
+        os << std::endl;
     }
 }
 }

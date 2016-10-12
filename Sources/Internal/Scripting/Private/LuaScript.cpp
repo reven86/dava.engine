@@ -100,33 +100,54 @@ int32 LuaScript::ExecStringSafe(const String& script)
     }
 }
 
-Any LuaScript::PopResult(const Type* preferredType /*= nullptr*/)
+Any LuaScript::GetResult(int32 index, const Type* preferredType /*= nullptr*/) const
 {
-    Any res = LuaBridge::LuaToAny(state->lua, -1, preferredType);
-    lua_pop(state->lua, 1);
-    return res;
+    return LuaBridge::LuaToAny(state->lua, index, preferredType);
 }
 
-bool LuaScript::PopResultSafe(Any& any, const Type* preferredType /*= nullptr*/)
+bool LuaScript::GetResultSafe(int32 index, Any& any, const Type* preferredType /*= nullptr*/) const
 {
-    bool res = true;
     try
     {
-        any = LuaBridge::LuaToAny(state->lua, -1, preferredType);
+        any = LuaBridge::LuaToAny(state->lua, index, preferredType);
+        return true;
     }
     catch (const LuaException& e)
     {
         Logger::Error(Format("LuaException: %s", e.what()).c_str());
-        res = false;
+        return false;
     }
-    lua_pop(state->lua, 1);
-    return res;
+}
+
+void LuaScript::Pop(int32 n)
+{
+    n = std::max(0, n);
+    int32 size = lua_gettop(state->lua);
+    n = std::min(n, size);
+    lua_pop(state->lua, n);
 }
 
 void LuaScript::SetGlobalVariable(const String& vName, const Any& value)
 {
     LuaBridge::AnyToLua(state->lua, value); // stack +1
     lua_setglobal(state->lua, vName.c_str()); // stack -1
+}
+
+void LuaScript::DumpStack(std::ostream& os) const
+{
+    LuaBridge::DumpStack(state->lua, os);
+}
+
+void LuaScript::DumpStackToLog(Logger::eLogLevel level) const
+{
+    std::ostringstream os;
+    LuaBridge::DumpStack(state->lua, os);
+
+    Logger* logger = Logger::Instance();
+    if (logger)
+    {
+        logger->Log(level, os.str().c_str());
+    }
 }
 
 void LuaScript::BeginCallFunction(const String& fName)

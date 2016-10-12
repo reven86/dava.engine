@@ -52,6 +52,6 @@ String PopString(lua_State* L);
 /**
 Dump Lua stack to Debug output.
 */
-void DumpStack(lua_State* L);
+void DumpStack(lua_State* L, std::ostream& os);
 }
 }

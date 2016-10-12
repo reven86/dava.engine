@@ -75,35 +75,59 @@ public:
     int32 ExecFunctionSafe(const String& fName, T&&... args);
 
     /**
-    Return value from top of the stack as Any with specified type and pop it.
+    Return value at specified index on the stack as Any with specified type.
+    Acceptable index is in range [1, stack size] or [-stack size, -1]. 
+    After process all results you **must** `Pop` them.
     Throw LuaException or error.
     */
-    Any PopResult(const Type* preferredType = nullptr);
+    Any GetResult(int32 index, const Type* preferredType = nullptr) const;
 
     /**
-    Return value from top of the stack as Any with specified type and pop it.
+    Return value at specified index on the stack as Any with specified type.
+    Acceptable index is in range [1, stack size] or [-stack size, -1].
+    After process all results you **must** `Pop` them.
     Throw LuaException or error.
     */
     template <typename T>
-    Any PopResult();
+    Any GetResult(int32 index) const;
 
     /**
-    Return value from top of the stack as Any with specified type and pop it.
+    Return value at specified index on the stack as Any with specified type.
+    Acceptable index is in range [1, stack size] or [-stack size, -1].
+    After process all results you **must** `Pop` them.
     Return false on error.
     */
-    bool PopResultSafe(Any& any, const Type* preferredType = nullptr);
+    bool GetResultSafe(int32 index, Any& any, const Type* preferredType = nullptr) const;
 
     /**
-    Return value from top of the stack as Any with specified type and pop it.
+    Return value at specified index on the stack as Any with specified type.
+    Acceptable index is in range [1, stack size] or [-stack size, -1].
+    After process all results you **must** `Pop` them.
     Return false on error.
     */
     template <typename T>
-    bool PopResultSafe(Any& any);
+    bool GetResultSafe(int32 index, Any& any) const;
+
+    /**
+    Pop n-results from the stack or clear stack if specified `n` bigger than 
+    size of the stack.
+    */
+    void Pop(int32 n);
 
     /**
     Set variable to global table with name `vName`
     */
     void SetGlobalVariable(const String& vName, const Any& value);
+
+    /**
+    Dump current content of the stack to `ostream`.
+    */
+    void DumpStack(std::ostream& os) const;
+
+    /**
+    Dump current content of the stack to log with specified log level.
+    */
+    void DumpStackToLog(Logger::eLogLevel level) const;
 
 private:
     ScriptState* state = nullptr; //!< Internal script state
@@ -150,14 +174,14 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
 }
 
 template <typename T>
-inline Any LuaScript::PopResult()
+inline Any LuaScript::GetResult(int32 index) const
 {
-    return PopResult(Type::Instance<T>());
+    return GetResult(index, Type::Instance<T>());
 }
 
 template <typename T>
-inline bool LuaScript::PopResultSafe(Any& any)
+inline bool LuaScript::GetResultSafe(int32 index, Any& any) const
 {
-    return PopResultSafe(any, Type::Instance<T>());
+    return GetResultSafe(index, any, Type::Instance<T>());
 }
 }

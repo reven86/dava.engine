@@ -16,18 +16,25 @@ struct ReflClass : public DAVA::ReflectedBase
         .Field("boolVal", &ReflClass::boolVal)
         .Field("colorVal", &ReflClass::colorVal)
         .Field("subClass", &ReflClass::subClass)
+        .Method("returnTrue", &ReflClass::returnTrue)
         .Method("invert", &ReflClass::invert)
         .Method("sum2", &ReflClass::sum2)
         .Method("sum3", &ReflClass::sum3)
         .Method("sum4", &ReflClass::sum4)
         .Method("sum5", &ReflClass::sum5)
         .Method("sum6", &ReflClass::sum6)
+        .Method("sum7", &ReflClass::sum7)
         .End();
     }
 
     ReflClass()
         : colorVal(DAVA::Color::White)
     {
+    }
+
+    bool returnTrue()
+    {
+        return true;
     }
 
     DAVA::int32 invert(DAVA::int32 value)
@@ -60,6 +67,11 @@ struct ReflClass : public DAVA::ReflectedBase
         return a1 + a2 + a3 + a4 + a5 + a6;
     }
 
+    DAVA::int32 sum7(DAVA::int32 a1, DAVA::int32 a2, DAVA::int32 a3, DAVA::int32 a4, DAVA::int32 a5, DAVA::int32 a6, DAVA::int32 a7)
+    {
+        return a1 + a2 + a3 + a4 + a5 + a6 + a7;
+    }
+
 public:
     DAVA::int32 intVal = 0;
     DAVA::float32 floatVal = 0.0f;
@@ -78,8 +90,23 @@ DAVA_TESTCLASS (ScriptTest)
     DECLARE_COVERED_FILES("LuaBridge.cpp")
     END_FILES_COVERED_BY_TESTS();
 
-    DAVA_TEST (FullTest)
+    DAVA_TEST (DavaFunctionsTest)
     {
+        DAVA::LuaScript s;
+
+        const DAVA::String script = R"script(
+-- DV functions
+DV.Debug("Debug msg")
+DV.Error("Error msg")
+)script";
+
+        TEST_VERIFY(s.ExecStringSafe(script) >= 0);
+    }
+
+    DAVA_TEST (ReflectionTest)
+    {
+        DAVA::LuaScript s;
+
         ReflClass subcl;
         subcl.intVal = 10;
         ReflClass cl;
@@ -91,16 +118,8 @@ DAVA_TESTCLASS (ScriptTest)
         cl.subClass = &subcl;
         DAVA::Reflection clRef = DAVA::Reflection::Create(&cl);
 
-        DAVA::LuaScript s;
-
-        /* Valid test */
-
         const DAVA::String script = R"script(
-function main(context)
-    -- DV functions
-    DV.Debug("Debug msg")
-    DV.Error("Error msg")
-
+function fields_valid(context)
     -- Get value tests
     local intVal = context.intVal
     assert(intVal == 5, "Test fail! context.intVal " .. intVal .. " != 5")
@@ -115,6 +134,7 @@ function main(context)
     intVal = GlobRef.intVal
     assert(intVal == 5, "Test fail! context.intVal " .. intVal .. " != 5")
 
+    -- Get sub reflection
     local subClass = context.subClass
     intVal = subClass.intVal
     assert(intVal == 10, "Test fail! subClass.intVal " .. intVal .. " != 10")
@@ -135,36 +155,336 @@ function main(context)
     -- Test complex type DAVA::Color as userdata
     subClass.colorVal = context.colorVal
     --assert(subClass.colorVal == context.colorVal, "Test fail! subClass.colorVal (" ..  tostring(subClass.colorVal) .. ") != context.colorVal (" .. tostring(context.colorVal) .. ")")
+end
 
-    -- Test methods
+function methods_valid(context)
+    local ret = context.returnTrue()
+    assert(ret == true, "Test fail! context.returnTrue() return '" .. tostring(ret) .. "'")
     local invertedValue = context.invert(42)
-    assert(invertedValue == -42, "Test fail! context.invert(42) '" .. invertedValue .. "' != -42")
+    assert(invertedValue == -42, "Test fail! context.invert(42) '" .. tostring(invertedValue) .. "' != -42")
     local sum = context.sum2(1, 2)
-    assert(sum == 3, "Test fail! context.sum2 '" .. sum .. "' != 3")
+    assert(sum == 3, "Test fail! context.sum2 '" .. tostring(sum) .. "' != 3")
     sum = context.sum3(1, 2, 3)
-    assert(sum == 6, "Test fail! context.sum3 '" .. sum .. "' != 6")
+    assert(sum == 6, "Test fail! context.sum3 '" .. tostring(sum) .. "' != 6")
     sum = context.sum4(1, 2, 3, 4)
-    assert(sum == 10, "Test fail! context.sum4 '" .. sum .. "' != 10")
+    assert(sum == 10, "Test fail! context.sum4 '" .. tostring(sum) .. "' != 10")
     sum = context.sum5(1, 2, 3, 4, 5)
-    assert(sum == 15, "Test fail! context.sum5 '" .. sum .. "' != 15")
+    assert(sum == 15, "Test fail! context.sum5 '" .. tostring(sum) .. "' != 15")
     sum = context.sum6(1, 2, 3, 4, 5, 6)
-    assert(sum == 21, "Test fail! context.sum6 '" .. sum .. "' != 21")
-    
-    -- tostring tests
+    assert(sum == 21, "Test fail! context.sum6 '" .. tostring(sum) .. "' != 21")
+end
+
+function incorect_args_count(context)
+    context.returnTrue(true)
+end
+
+function over_6_args(context)
+    context.sum7(1, 2, 3, 4, 5, 6, 7)
+end
+
+function wrong_arg_type(context)
+    context.invert("str")
+end
+
+function get_wrong_field(context)
+    local result = context.undefinedMethod
+    assert(result ~= nil)
+end
+
+function call_wrong_method(context)
+    context.undefinedMethod()
+end
+
+function tostring_test(context)
     assert(tostring(context.colorVal) ~= "", "Test fail! tostring(Any) is empty!")
     assert(tostring(context.invert) ~= "", "Test fail! tostring(AnyFn) is empty!")
     assert(tostring(context) ~= "", "Test fail! tostring(Reflection) is empty!")
 end
+
+function return_complex(context)
+    -- Return Color, AnyFn and Reflection
+    return context.colorVal, context.returnTrue, context
+end
+
 )script";
 
         s.SetGlobalVariable("GlobRef", clRef);
+
+        // Compile and execute script
         TEST_VERIFY(s.ExecStringSafe(script) >= 0);
-        TEST_VERIFY(s.ExecFunctionSafe("main", clRef) >= 0);
+
+        // Call field test
+        TEST_VERIFY(s.ExecFunctionSafe("fields_valid", clRef) >= 0);
         TEST_VERIFY(cl.intVal == 42);
         TEST_VERIFY(FLOAT_EQUAL(cl.floatVal, 3.14f));
         TEST_VERIFY(cl.boolVal == false);
         TEST_VERIFY(cl.stringVal == "New demo string");
         TEST_VERIFY(cl.colorVal == subcl.colorVal);
+
+        // Call fields error test
+        TEST_VERIFY(s.ExecFunctionSafe("get_wrong_field", clRef) < 0);
+
+        // Call methods test
+        TEST_VERIFY(s.ExecFunctionSafe("methods_valid", clRef) >= 0);
+
+        // Call methods errors tests
+        TEST_VERIFY(s.ExecFunctionSafe("incorect_args_count", clRef) < 0);
+        TEST_VERIFY(s.ExecFunctionSafe("over_6_args", clRef) < 0);
+        TEST_VERIFY(s.ExecFunctionSafe("wrong_arg_type", clRef) < 0);
+        TEST_VERIFY(s.ExecFunctionSafe("call_wrong_method", clRef) < 0);
+
+        // to string test
+        TEST_VERIFY(s.ExecFunctionSafe("tostring_test", clRef) >= 0);
+
+        // Check return complex types
+        try
+        {
+            DAVA::int32 nresults = s.ExecFunctionSafe("return_complex", clRef);
+            TEST_VERIFY(nresults == 3);
+            DAVA::Any r1 = s.GetResult(1);
+            TEST_VERIFY(!r1.IsEmpty());
+            TEST_VERIFY(r1.CanGet<DAVA::Color>());
+            DAVA::Any r2 = s.GetResult(2);
+            TEST_VERIFY(!r2.IsEmpty());
+            TEST_VERIFY(r2.CanGet<DAVA::AnyFn>());
+            DAVA::Any r3 = s.GetResult(3);
+            TEST_VERIFY(!r3.IsEmpty());
+            TEST_VERIFY(r3.CanGet<DAVA::Reflection>());
+            s.Pop(nresults);
+        }
+        catch (const DAVA::LuaException&)
+        {
+            TEST_VERIFY(false);
+        }
+    }
+
+    DAVA_TEST (BasicTest)
+    {
+        DAVA::LuaScript s;
+
+        const DAVA::String script = R"script(
+function without_results()
+    -- nothing return
+end
+
+function with_results(...)
+    return ...
+end
+
+function unsupported_results()
+    tbl = {}
+    fn = function() return nil end
+    -- th = thread?
+    return tbl, fn
+end
+
+)script";
+
+        TEST_VERIFY(s.ExecStringSafe(script) == 0);
+
+        // Without results test
+        DAVA::int32 nresults = s.ExecFunctionSafe("without_results");
+        TEST_VERIFY(nresults == 0);
+        // Exception
+        try
+        {
+            s.GetResult<DAVA::int32>(1);
+            TEST_VERIFY(false);
+        }
+        catch (const DAVA::LuaException&)
+        {
+            TEST_VERIFY(true);
+        }
+        // Safe
+        DAVA::Any r;
+        TEST_VERIFY(!s.GetResultSafe<DAVA::int32>(1, r));
+        TEST_VERIFY(r.IsEmpty());
+
+        // With results test without preferred types
+        nresults = s.ExecFunctionSafe("with_results",
+                                      DAVA::Any(),
+                                      DAVA::char8(8),
+                                      DAVA::char16(16),
+                                      DAVA::int8(8),
+                                      DAVA::int16(16),
+                                      DAVA::int32(32),
+                                      DAVA::int64(64),
+                                      DAVA::float32(32.f),
+                                      DAVA::float64(64.f),
+                                      DAVA::String("string"),
+                                      DAVA::WideString(L"wide string"),
+                                      bool(true),
+                                      DAVA::Reflection());
+        TEST_VERIFY(nresults == 13);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(13, r)); // Empty Reflection cast to nil in Lua and back cast to empty Any
+        TEST_VERIFY(r.IsEmpty());
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(12, r)); // bool
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<bool>());
+        TEST_VERIFY(r.Get<bool>() == true);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(11, r)); // wide string cast to UTF-8 string
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::String>());
+        TEST_VERIFY(r.Get<DAVA::String>() == "wide string");
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(10, r)); // string
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::String>());
+        TEST_VERIFY(r.Get<DAVA::String>() == "string");
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(9, r)); // float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(8, r)); // float32 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 32.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(7, r)); // int64 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(6, r)); // int32 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 32.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(5, r)); // int16 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 16.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(4, r)); // int8 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 8.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(3, r)); // char16 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 16.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(2, r)); // char8 casts as float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 8.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe(1, r)); // nil cast to empty Any
+        TEST_VERIFY(r.IsEmpty());
+        s.Pop(nresults);
+
+        // With results test with preferred types
+        nresults = s.ExecFunctionSafe("with_results",
+                                      DAVA::Any(),
+                                      DAVA::char8(8),
+                                      DAVA::char16(16),
+                                      DAVA::int8(8),
+                                      DAVA::int16(16),
+                                      DAVA::int32(32),
+                                      DAVA::int64(64),
+                                      DAVA::float32(32.f),
+                                      DAVA::float64(64.f),
+                                      DAVA::String("string"),
+                                      DAVA::WideString(L"wide string"),
+                                      bool(true),
+                                      DAVA::Reflection());
+        TEST_VERIFY(nresults == 13);
+        r.Clear();
+        TEST_VERIFY(!s.GetResultSafe<DAVA::Any>(-1, r)); // Empty Reflection cast to nil and can't cast to other type
+        TEST_VERIFY(r.IsEmpty());
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<bool>(-2, r)); // bool
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<bool>());
+        TEST_VERIFY(r.Get<bool>() == true);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::WideString>(-3, r)); // wide string
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::WideString>());
+        TEST_VERIFY(r.Get<DAVA::WideString>() == L"wide string");
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::String>(-4, r)); // string
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::String>());
+        TEST_VERIFY(r.Get<DAVA::String>() == "string");
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::float64>(-5, r)); // float64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float64>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::float32>(-6, r)); // float32
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::float32>());
+        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float32>(), 32.f));
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::int64>(-7, r)); // int64
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::int64>());
+        TEST_VERIFY(r.Get<DAVA::int64>() == 64);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::int32>(-8, r)); // int32
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::int32>());
+        TEST_VERIFY(r.Get<DAVA::int32>() == 32);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::int16>(-9, r)); // int16
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::int16>());
+        TEST_VERIFY(r.Get<DAVA::int16>() == 16);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::int8>(-10, r)); // int8
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::int8>());
+        TEST_VERIFY(r.Get<DAVA::int8>() == 8);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::char16>(-11, r)); // char16
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::char16>());
+        TEST_VERIFY(r.Get<DAVA::char16>() == 16);
+        r.Clear();
+        TEST_VERIFY(s.GetResultSafe<DAVA::char8>(-12, r)); // char8
+        TEST_VERIFY(!r.IsEmpty());
+        TEST_VERIFY(r.CanGet<DAVA::char8>());
+        TEST_VERIFY(r.Get<DAVA::char8>() == 8);
+        r.Clear();
+        TEST_VERIFY(!s.GetResultSafe<DAVA::Any>(-13, r)); // Empty Any cast to nil in Lua and can't cast to other type
+        TEST_VERIFY(r.IsEmpty());
+        s.Pop(nresults);
+
+        // Unsupported type test
+        nresults = s.ExecFunctionSafe("unsupported_results");
+        TEST_VERIFY(nresults == 2);
+        TEST_VERIFY(!s.GetResultSafe(1, r));
+        TEST_VERIFY(!s.GetResultSafe(2, r));
+        s.Pop(nresults);
+
+        // Dump test
+        nresults = s.ExecFunctionSafe("with_results",
+                                      DAVA::Any(),
+                                      DAVA::char8(8),
+                                      DAVA::char16(16),
+                                      DAVA::int8(8),
+                                      DAVA::int16(16),
+                                      DAVA::int32(32),
+                                      DAVA::int64(64),
+                                      DAVA::float32(32.f),
+                                      DAVA::float64(64.f),
+                                      DAVA::String("string"),
+                                      DAVA::WideString(L"wide string"),
+                                      bool(true),
+                                      DAVA::Reflection());
+        TEST_VERIFY(nresults == 13);
+        nresults += s.ExecFunctionSafe("unsupported_results");
+        TEST_VERIFY(nresults == 15);
+        s.DumpStackToLog(DAVA::Logger::LEVEL_INFO);
+        s.Pop(nresults);
     }
 
     DAVA_TEST (CompileStringErrorTest)
@@ -254,61 +574,6 @@ end
         DAVA::LuaScript moveScript(std::move(s));
 
         TEST_VERIFY(moveScript.ExecFunctionSafe("main") >= 0);
-    }
-
-    DAVA_TEST (PopResultsTest)
-    {
-        DAVA::LuaScript s;
-
-        const DAVA::String easy_script = R"script(
-return 42, "demo"
-)script";
-
-        DAVA::int32 nresults = s.ExecStringSafe(easy_script);
-        TEST_VERIFY(nresults == 2);
-
-        try
-        {
-            DAVA::Any r = s.PopResult<DAVA::String>();
-            TEST_VERIFY(r.CanGet<DAVA::String>());
-            TEST_VERIFY(r.Get<DAVA::String>() == "demo");
-        }
-        catch (const DAVA::LuaException&)
-        {
-            TEST_VERIFY(false);
-        }
-
-        DAVA::Any r;
-        TEST_VERIFY(s.PopResultSafe<DAVA::int32>(r));
-        TEST_VERIFY(!r.IsEmpty());
-        TEST_VERIFY(r.CanGet<DAVA::int32>());
-        TEST_VERIFY(r.Get<DAVA::int32>() == 42);
-    }
-
-    DAVA_TEST (PopResultsErrorTest)
-    {
-        DAVA::LuaScript s;
-
-        const DAVA::String easy_script = R"script(
---do nothing
-)script";
-
-        DAVA::int32 nresults = s.ExecStringSafe(easy_script);
-        TEST_VERIFY(nresults == 0);
-
-        try
-        {
-            DAVA::Any r = s.PopResult<DAVA::int32>();
-            TEST_VERIFY(false);
-        }
-        catch (const DAVA::LuaException&)
-        {
-            TEST_VERIFY(true);
-        }
-
-        DAVA::Any r;
-        TEST_VERIFY(!s.PopResultSafe<DAVA::int32>(r));
-        TEST_VERIFY(r.IsEmpty());
     }
 
     DAVA_TEST (LuaExceptionTest)
