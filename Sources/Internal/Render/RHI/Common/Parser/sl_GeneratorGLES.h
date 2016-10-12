@@ -7,11 +7,6 @@ namespace sl
 class GLESGenerator
 {
 public:
-    enum Target
-    {
-        Target_VertexShader,
-        Target_FragmentShader,
-    };
 
     explicit GLESGenerator(Allocator* allocator);
 
@@ -55,33 +50,33 @@ private:
     bool ChooseUniqueName(const char* base, char* dst, int dstLength) const;
 
 private:
-    static const int s_numReservedWords = 5;
-    static const char* s_reservedWord[s_numReservedWords];
+    static const int NumReservedWords = 5;
+    static const char* ReservedWord[NumReservedWords];
 
-    CodeWriter m_writer;
+    CodeWriter writer;
 
-    const HLSLTree* m_tree;
-    const char* m_entryName;
-    Target m_target;
-    bool m_outputPosition;
+    const HLSLTree* tree;
+    const char* entryName;
+    Target target;
+    bool outputPosition;
 
-    const char* m_outAttribPrefix;
-    const char* m_inAttribPrefix;
+    const char* outAttribPrefix;
+    const char* inAttribPrefix;
 
-    char m_matrixRowFunction[64];
-    char m_clipFunction[64];
-    char m_tex2DlodFunction[64];
-    char m_tex2DbiasFunction[64];
-    char m_tex3DlodFunction[64];
-    char m_texCUBEbiasFunction[64];
-    char m_scalarSwizzle2Function[64];
-    char m_scalarSwizzle3Function[64];
-    char m_scalarSwizzle4Function[64];
-    char m_sinCosFunction[64];
+    char matrixRowFunction[64];
+    char clipFunction[64];
+    char tex2DlodFunction[64];
+    char tex2DbiasFunction[64];
+    char tex3DlodFunction[64];
+    char texCUBEbiasFunction[64];
+    char scalarSwizzle2Function[64];
+    char scalarSwizzle3Function[64];
+    char scalarSwizzle4Function[64];
+    char sinCosFunction[64];
 
-    bool m_error;
+    bool hasError;
 
-    char m_reservedWord[s_numReservedWords][64];
+    char reservedWord[NumReservedWords][64];
 };
 
 } // namespace sl

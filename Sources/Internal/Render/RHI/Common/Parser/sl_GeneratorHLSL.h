@@ -8,10 +8,6 @@ class HLSLTree;
 struct HLSLFunction;
 struct HLSLStruct;
 
-/**
- * This class is used to generate HLSL which is compatible with the D3D9
- * compiler (i.e. no cbuffers).
- */
 class HLSLGenerator
 {
 public:
@@ -19,12 +15,6 @@ public:
     {
         MODE_DX11,
         MODE_DX9
-    };
-
-    enum Target
-    {
-        Target_VertexShader,
-        Target_PixelShader,
     };
 
     explicit HLSLGenerator(Allocator* allocator);
@@ -36,7 +26,7 @@ private:
     static const char* GetTypeName(const HLSLType& type);
     static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments);
 
-    const char* TranslateSemantic(const char* semantic, bool output, HLSLGenerator::Target target) const;
+    const char* TranslateSemantic(const char* semantic, bool output, Target target) const;
 
     void OutputExpressionList(HLSLExpression* expression);
     void OutputExpression(HLSLExpression* expression);
@@ -53,41 +43,13 @@ private:
     bool ChooseUniqueName(const char* base, char* dst, int dstLength) const;
 
 private:
-    CodeWriter m_writer;
+    CodeWriter writer;
 
-    const HLSLTree* m_tree;
-    Mode m_mode;
-    const char* m_entryName;
-    Target m_target;
-    bool m_isInsideBuffer;
-    /*
-    char m_textureSampler2DStruct[64];
-    char m_textureSampler2DCtor[64];
-    char m_textureSampler2DShadowStruct[64];
-    char m_textureSampler2DShadowCtor[64];
-    char m_textureSampler3DStruct[64];
-    char m_textureSampler3DCtor[64];
-    char m_textureSamplerCubeStruct[64];
-    char m_textureSamplerCubeCtor[64];
-    char m_tex2DFunction[64];
-    char m_tex2DProjFunction[64];
-    char m_tex2DLodFunction[64];
-    char m_tex2DBiasFunction[64];
-    char m_tex2DGradFunction[64];
-    char m_tex2DGatherFunction[64];
-    char m_tex2DSizeFunction[64];
-    char m_tex2DCmpFunction[64];
-    char m_tex2DMSFetchFunction[64];
-    char m_tex2DMSSizeFunction[64];
-    char m_tex3DFunction[64];
-    char m_tex3DLodFunction[64];
-    char m_tex3DBiasFunction[64];
-    char m_tex3DSizeFunction[64];
-    char m_texCubeFunction[64];
-    char m_texCubeLodFunction[64];
-    char m_texCubeBiasFunction[64];
-    char m_texCubeSizeFunction[64];
-*/
+    const HLSLTree* tree;
+    Mode mode;
+    const char* entryName;
+    Target target;
+    bool isInsideBuffer;
 };
 
 } // namespace sl

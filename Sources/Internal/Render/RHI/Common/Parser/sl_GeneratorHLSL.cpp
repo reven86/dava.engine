@@ -92,35 +92,12 @@ int HLSLGenerator::GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpr
 }
 
 HLSLGenerator::HLSLGenerator(Allocator* allocator)
-    : m_writer()
+    : writer()
 {
-    m_tree = NULL;
-    m_entryName = NULL;
-    m_target = Target_VertexShader;
-    m_isInsideBuffer = false;
-    /*
-    m_textureSampler2DStruct[0] = 0;
-    m_textureSampler2DCtor[0] = 0;
-    m_textureSampler3DStruct[0] = 0;
-    m_textureSampler3DCtor[0] = 0;
-    m_textureSamplerCubeStruct[0] = 0;
-    m_textureSamplerCubeCtor[0] = 0;
-    m_tex2DFunction[0] = 0;
-    m_tex2DProjFunction[0] = 0;
-    m_tex2DLodFunction[0] = 0;
-    m_tex2DBiasFunction[0] = 0;
-    m_tex2DGradFunction[0] = 0;
-    m_tex2DGatherFunction[0] = 0;
-    m_tex2DSizeFunction[0] = 0;
-    m_tex2DCmpFunction[0] = 0;
-    m_tex2DMSFetchFunction[0] = 0;
-    m_tex3DFunction[0] = 0;
-    m_tex3DLodFunction[0] = 0;
-    m_tex3DBiasFunction[0] = 0;
-    m_texCubeFunction[0] = 0;
-    m_texCubeLodFunction[0] = 0;
-    m_texCubeBiasFunction[0] = 0;
-*/
+    tree = NULL;
+    entryName = NULL;
+    target = TARGET_VERTEX;
+    isInsideBuffer = false;
 }
 
 // @@ We need a better way of doing semantic replacement:
@@ -128,88 +105,52 @@ HLSLGenerator::HLSLGenerator(Allocator* allocator)
 // - Return semantic, semantics associated to fields of the return structure, or output arguments, or fields of structures associated to output arguments -> output semantic replacement.
 // - Semantics associated input arguments or fields of the input arguments -> input semantic replacement.
 const char*
-HLSLGenerator::TranslateSemantic(const char* semantic, bool output, HLSLGenerator::Target target) const
+HLSLGenerator::TranslateSemantic(const char* semantic, bool output, Target target) const
 {
     const char* sem = nullptr;
 
-    if (target == HLSLGenerator::Target_VertexShader)
+    if (target == TARGET_VERTEX)
     {
         if (!stricmp(semantic, "SV_Position"))
-            sem = (output && m_mode == MODE_DX11) ? "SV_POSITION" : "POSITION";
+            sem = (output && mode == MODE_DX11) ? "SV_POSITION" : "POSITION";
         else if (!stricmp(semantic, "SV_Normal"))
             sem = "NORMAL";
     }
-    else if (target == HLSLGenerator::Target_PixelShader)
+    else if (target == TARGET_FRAGMENT)
     {
         if (!stricmp(semantic, "SV_Target"))
-            sem = (m_mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
+            sem = (mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
         else if (!stricmp(semantic, "SV_Target0"))
-            sem = (m_mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
+            sem = (mode == MODE_DX11) ? "SV_TARGET0" : "COLOR0";
         else if (!stricmp(semantic, "SV_Target1"))
-            sem = (m_mode == MODE_DX11) ? "SV_TARGET1" : "COLOR1";
+            sem = (mode == MODE_DX11) ? "SV_TARGET1" : "COLOR1";
         else if (!stricmp(semantic, "SV_Target2"))
-            sem = (m_mode == MODE_DX11) ? "SV_TARGET2" : "COLOR2";
+            sem = (mode == MODE_DX11) ? "SV_TARGET2" : "COLOR2";
         else if (!stricmp(semantic, "SV_Target3"))
-            sem = (m_mode == MODE_DX11) ? "SV_TARGET3" : "COLOR3";
+            sem = (mode == MODE_DX11) ? "SV_TARGET3" : "COLOR3";
     }
 
     return sem;
-    /*
-    if (target == HLSLGenerator::Target_VertexShader)
-    {
-        if (output)
-        {
-            if (String_Equal("POSITION", semantic))
-                return "SV_Position";
-        }
-    }
-    else if (target == HLSLGenerator::Target_PixelShader)
-    {
-        if (output)
-        {
-            if (String_Equal("DEPTH", semantic))
-                return "SV_Depth";
-            if (String_Equal("COLOR", semantic))
-                return "SV_Target";
-            if (String_Equal("COLOR0", semantic))
-                return "SV_Target0";
-            if (String_Equal("COLOR1", semantic))
-                return "SV_Target1";
-            if (String_Equal("COLOR2", semantic))
-                return "SV_Target2";
-            if (String_Equal("COLOR3", semantic))
-                return "SV_Target3";
-        }
-        else
-        {
-            if (String_Equal("VPOS", semantic))
-                return "SV_Position";
-            if (String_Equal("VFACE", semantic))
-                return "SV_IsFrontFace"; // bool   @@ Should we do type replacement too?
-        }
-    }
-    return NULL;
-*/
 }
 
-bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const char* entryName, std::string* code)
+bool HLSLGenerator::Generate(HLSLTree* tree_, Mode mode_, Target target_, const char* entryName_, std::string* code)
 {
-    m_tree = tree;
-    m_mode = mode;
-    m_entryName = entryName;
-    m_target = target;
-    m_isInsideBuffer = false;
+    tree = tree_;
+    mode = mode_;
+    entryName = entryName_;
+    target = target_;
+    isInsideBuffer = false;
 
-    m_writer.Reset(code);
-    //    m_writer.EnableLineNumbers(true);
-    if (m_mode == MODE_DX11)
-        m_writer.WriteLine(0, "#define FP_A8(t) (t).r");
+    writer.Reset(code);
+    //    writer.EnableLineNumbers(true);
+    if (mode == MODE_DX11)
+        writer.WriteLine(0, "#define FP_A8(t) (t).r");
     else
-        m_writer.WriteLine(0, "#define FP_A8(t) (t).a");
+        writer.WriteLine(0, "#define FP_A8(t) (t).a");
 
     // @@ Should we generate an entirely new copy of the tree so that we can modify it in place?
 
-    HLSLFunction* function = tree->FindFunction(entryName);
+    HLSLFunction* function = tree_->FindFunction(entryName);
 
     // Handle return value semantics
     if (function->semantic != NULL)
@@ -218,7 +159,7 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const cha
     }
     if (function->returnType.baseType == HLSLBaseType_UserDefined)
     {
-        HLSLStruct* s = tree->FindGlobalStruct(function->returnType.typeName);
+        HLSLStruct* s = tree_->FindGlobalStruct(function->returnType.typeName);
 
         HLSLStructField* sv_fields = NULL;
 
@@ -289,7 +230,7 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const cha
                 if (field->semantic)
                 {
                     field->hidden = false;
-                    if (target == Target_PixelShader && !output && String_EqualNoCase(field->semantic, "POSITION"))
+                    if (target == TARGET_FRAGMENT && !output && String_EqualNoCase(field->semantic, "POSITION"))
                     {
                         DVASSERT(String_EqualNoCase(field->sv_semantic, "SV_Position"));
                         field->hidden = true;
@@ -305,16 +246,16 @@ bool HLSLGenerator::Generate(HLSLTree* tree, Mode mode, Target target, const cha
         argument = argument->nextArgument;
     }
 
-    HLSLRoot* root = m_tree->GetRoot();
+    HLSLRoot* root = tree->GetRoot();
     OutputStatements(0, root->statement);
 
-    m_tree = NULL;
+    tree = NULL;
     return true;
 }
 
 const char* HLSLGenerator::GetResult() const
 {
-    return m_writer.GetResult();
+    return writer.GetResult();
 }
 
 void HLSLGenerator::OutputExpressionList(HLSLExpression* expression)
@@ -324,7 +265,7 @@ void HLSLGenerator::OutputExpressionList(HLSLExpression* expression)
     {
         if (numExpressions > 0)
         {
-            m_writer.Write(", ");
+            writer.Write(", ");
         }
         OutputExpression(expression);
         expression = expression->nextExpression;
@@ -341,45 +282,45 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
 
         if (IsSamplerType(identifierExpression->expressionType) && identifierExpression->global)
         {
-            if (m_mode == MODE_DX11)
+            if (mode == MODE_DX11)
             {
                 if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D || identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
                 {
-                    m_writer.Write("%s_texture.Sample( %s_sampler ", name, name);
+                    writer.Write("%s_texture.Sample( %s_sampler ", name, name);
                 }
             }
-            else if (m_mode == MODE_DX9)
+            else if (mode == MODE_DX9)
             {
                 if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D)
                 {
-                    m_writer.Write("tex2D( %s", name);
+                    writer.Write("tex2D( %s", name);
                 }
                 else if (identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
                 {
-                    m_writer.Write("texCUBE( %s", name);
+                    writer.Write("texCUBE( %s", name);
                 }
             }
         }
         else
         {
-            m_writer.Write("%s", name);
+            writer.Write("%s", name);
         }
     }
     else if (expression->nodeType == HLSLNodeType_CastingExpression)
     {
         HLSLCastingExpression* castingExpression = static_cast<HLSLCastingExpression*>(expression);
-        m_writer.Write("(");
+        writer.Write("(");
         OutputDeclaration(castingExpression->type, "");
-        m_writer.Write(")(");
+        writer.Write(")(");
         OutputExpression(castingExpression->expression);
-        m_writer.Write(")");
+        writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConstructorExpression)
     {
         HLSLConstructorExpression* constructorExpression = static_cast<HLSLConstructorExpression*>(expression);
-        m_writer.Write("%s(", GetTypeName(constructorExpression->type));
+        writer.Write("%s(", GetTypeName(constructorExpression->type));
         OutputExpressionList(constructorExpression->argument);
-        m_writer.Write(")");
+        writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_LiteralExpression)
     {
@@ -392,14 +333,14 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
             // Don't use printf directly so that we don't use the system locale.
             char buffer[64];
             String_FormatFloat(buffer, sizeof(buffer), literalExpression->fValue);
-            m_writer.Write("%s", buffer);
+            writer.Write("%s", buffer);
         }
         break;
         case HLSLBaseType_Int:
-            m_writer.Write("%d", literalExpression->iValue);
+            writer.Write("%d", literalExpression->iValue);
             break;
         case HLSLBaseType_Bool:
-            m_writer.Write("%s", literalExpression->bValue ? "true" : "false");
+            writer.Write("%s", literalExpression->bValue ? "true" : "false");
             break;
         default:
             DVASSERT(0);
@@ -436,23 +377,23 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
             pre = false;
             break;
         }
-        m_writer.Write("(");
+        writer.Write("(");
         if (pre)
         {
-            m_writer.Write("%s", op);
+            writer.Write("%s", op);
             OutputExpression(unaryExpression->expression);
         }
         else
         {
             OutputExpression(unaryExpression->expression);
-            m_writer.Write("%s", op);
+            writer.Write("%s", op);
         }
-        m_writer.Write(")");
+        writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_BinaryExpression)
     {
         HLSLBinaryExpression* binaryExpression = static_cast<HLSLBinaryExpression*>(expression);
-        m_writer.Write("(");
+        writer.Write("(");
         OutputExpression(binaryExpression->expression1);
         const char* op = "?";
         switch (binaryExpression->binaryOp)
@@ -511,36 +452,35 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         default:
             DVASSERT(0);
         }
-        m_writer.Write("%s", op);
+        writer.Write("%s", op);
         OutputExpression(binaryExpression->expression2);
-        m_writer.Write(")");
+        writer.Write(")");
     }
     else if (expression->nodeType == HLSLNodeType_ConditionalExpression)
     {
         HLSLConditionalExpression* conditionalExpression = static_cast<HLSLConditionalExpression*>(expression);
-        m_writer.Write("((");
+        writer.Write("((");
         OutputExpression(conditionalExpression->condition);
-        m_writer.Write(")?(");
+        writer.Write(")?(");
         OutputExpression(conditionalExpression->trueExpression);
-        m_writer.Write("):(");
+        writer.Write("):(");
         OutputExpression(conditionalExpression->falseExpression);
-        m_writer.Write("))");
+        writer.Write("))");
     }
     else if (expression->nodeType == HLSLNodeType_MemberAccess)
     {
         HLSLMemberAccess* memberAccess = static_cast<HLSLMemberAccess*>(expression);
-        m_writer.Write("(");
+        writer.Write("(");
         OutputExpression(memberAccess->object);
-        m_writer.Write(").%s", memberAccess->field);
-        //        m_writer.Write(".%s", memberAccess->field);
+        writer.Write(").%s", memberAccess->field);
     }
     else if (expression->nodeType == HLSLNodeType_ArrayAccess)
     {
         HLSLArrayAccess* arrayAccess = static_cast<HLSLArrayAccess*>(expression);
         OutputExpression(arrayAccess->array);
-        m_writer.Write("[");
+        writer.Write("[");
         OutputExpression(arrayAccess->index);
-        m_writer.Write("]");
+        writer.Write("]");
     }
     else if (expression->nodeType == HLSLNodeType_FunctionCall)
     {
@@ -562,49 +502,49 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
                 HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
                 DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
 
-                if (m_mode == MODE_DX11)
+                if (mode == MODE_DX11)
                 {
                     if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
                     {
-                        m_writer.Write("%s_texture.SampleLevel( %s_sampler ", identifier->name, identifier->name);
+                        writer.Write("%s_texture.SampleLevel( %s_sampler ", identifier->name, identifier->name);
 
                         for (HLSLExpression* expr = identifier->nextExpression; expr; expr = expr->nextExpression)
                         {
-                            m_writer.Write(", ");
+                            writer.Write(", ");
                             OutputExpression(expr);
                         }
-                        m_writer.Write(")");
+                        writer.Write(")");
                     }
                 }
-                else if (m_mode == MODE_DX9)
+                else if (mode == MODE_DX9)
                 {
                     DVASSERT(!"notimpl");
                     if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
                     {
-                        m_writer.Write("tex2D( %s", name);
+                        writer.Write("tex2D( %s", name);
                     }
                     else if (identifier->expressionType.baseType == HLSLBaseType_SamplerCube)
                     {
-                        m_writer.Write("texCUBE( %s", name);
+                        writer.Write("texCUBE( %s", name);
                     }
                 }
             }
             else
             {
                 OutputExpressionList(functionCall->argument);
-                m_writer.Write(")");
+                writer.Write(")");
             }
         }
         else
         {
-            m_writer.Write("%s(", name);
+            writer.Write("%s(", name);
             OutputExpressionList(functionCall->argument);
-            m_writer.Write(")");
+            writer.Write(")");
         }
     }
     else
     {
-        m_writer.Write("<unknown expression>");
+        writer.Write("<unknown expression>");
     }
 }
 
@@ -615,22 +555,22 @@ void HLSLGenerator::OutputArguments(HLSLArgument* argument)
     {
         if (numArgs > 0)
         {
-            m_writer.Write(", ");
+            writer.Write(", ");
         }
 
         switch (argument->modifier)
         {
         case HLSLArgumentModifier_In:
-            m_writer.Write("in ");
+            writer.Write("in ");
             break;
         case HLSLArgumentModifier_Out:
-            m_writer.Write("out ");
+            writer.Write("out ");
             break;
         case HLSLArgumentModifier_Inout:
-            m_writer.Write("inout ");
+            writer.Write("inout ");
             break;
         case HLSLArgumentModifier_Uniform:
-            m_writer.Write("uniform ");
+            writer.Write("uniform ");
             break;
         }
 
@@ -661,7 +601,7 @@ void HLSLGenerator::OutputAttributes(int indent, HLSLAttribute* attribute)
 
         if (attributeName != NULL)
         {
-            m_writer.WriteLine(indent, attribute->fileName, attribute->line, "[%s]", attributeName);
+            writer.WriteLine(indent, attribute->fileName, attribute->line, "[%s]", attributeName);
         }
 
         attribute = attribute->nextAttribute;
@@ -683,65 +623,65 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
         if (statement->nodeType == HLSLNodeType_Declaration)
         {
             HLSLDeclaration* declaration = static_cast<HLSLDeclaration*>(statement);
-            m_writer.BeginLine(indent, declaration->fileName, declaration->line);
+            writer.BeginLine(indent, declaration->fileName, declaration->line);
             OutputDeclaration(declaration);
-            m_writer.EndLine(";");
+            writer.EndLine(";");
         }
         else if (statement->nodeType == HLSLNodeType_Struct)
         {
             HLSLStruct* structure = static_cast<HLSLStruct*>(statement);
-            m_writer.WriteLine(indent, structure->fileName, structure->line, "struct %s {", structure->name);
+            writer.WriteLine(indent, structure->fileName, structure->line, "struct %s {", structure->name);
             HLSLStructField* field = structure->field;
             while (field != NULL)
             {
                 if (!field->hidden)
                 {
-                    m_writer.BeginLine(indent + 1, field->fileName, field->line);
+                    writer.BeginLine(indent + 1, field->fileName, field->line);
                     const char* semantic = field->sv_semantic ? field->sv_semantic : field->semantic;
                     OutputDeclaration(field->type, field->name, semantic);
-                    m_writer.Write(";");
-                    m_writer.EndLine();
+                    writer.Write(";");
+                    writer.EndLine();
                 }
                 field = field->nextField;
             }
-            m_writer.WriteLine(indent, "};");
+            writer.WriteLine(indent, "};");
         }
         else if (statement->nodeType == HLSLNodeType_Buffer)
         {
             HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
             HLSLDeclaration* field = buffer->field;
 
-            if (m_mode == MODE_DX11)
+            if (mode == MODE_DX11)
             {
-                m_writer.BeginLine(indent, buffer->fileName, buffer->line);
-                m_writer.Write("cbuffer %s", buffer->name);
+                writer.BeginLine(indent, buffer->fileName, buffer->line);
+                writer.Write("cbuffer %s", buffer->name);
                 if (buffer->registerName != NULL)
                 {
-                    m_writer.Write(" : register(%s)", buffer->registerName);
+                    writer.Write(" : register(%s)", buffer->registerName);
                 }
-                m_writer.EndLine(" {");
+                writer.EndLine(" {");
 
-                m_isInsideBuffer = true;
+                isInsideBuffer = true;
 
                 while (field != NULL)
                 {
                     if (!field->hidden)
                     {
-                        m_writer.BeginLine(indent + 1, field->fileName, field->line);
+                        writer.BeginLine(indent + 1, field->fileName, field->line);
                         OutputDeclaration(field->type, field->name, /*semantic=*/NULL, /*registerName*/ field->registerName, field->assignment);
-                        m_writer.Write(";");
-                        m_writer.EndLine();
+                        writer.Write(";");
+                        writer.EndLine();
                     }
                     field = (HLSLDeclaration*)field->nextStatement;
                 }
 
-                m_isInsideBuffer = false;
+                isInsideBuffer = false;
 
-                m_writer.WriteLine(indent, "};");
+                writer.WriteLine(indent, "};");
             }
-            else if (m_mode == MODE_DX9)
+            else if (mode == MODE_DX9)
             {
-                m_writer.WriteLine(indent, "uniform float4 %s[%u];", field->name, buffer->registerCount);
+                writer.WriteLine(indent, "uniform float4 %s[%u];", field->name, buffer->registerCount);
             }
         }
         else if (statement->nodeType == HLSLNodeType_Function)
@@ -753,101 +693,101 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             const char* functionName = function->name;
             const char* returnTypeName = GetTypeName(function->returnType);
 
-            m_writer.BeginLine(indent, function->fileName, function->line);
-            m_writer.Write("%s %s(", returnTypeName, functionName);
+            writer.BeginLine(indent, function->fileName, function->line);
+            writer.Write("%s %s(", returnTypeName, functionName);
 
             OutputArguments(function->argument);
 
             const char* semantic = function->sv_semantic ? function->sv_semantic : function->semantic;
             if (semantic != NULL)
             {
-                m_writer.Write(") : %s {", semantic);
+                writer.Write(") : %s {", semantic);
             }
             else
             {
-                m_writer.Write(") {");
+                writer.Write(") {");
             }
 
-            m_writer.EndLine();
+            writer.EndLine();
 
             OutputStatements(indent + 1, function->statement);
-            m_writer.WriteLine(indent, "};");
+            writer.WriteLine(indent, "};");
         }
         else if (statement->nodeType == HLSLNodeType_ExpressionStatement)
         {
             HLSLExpressionStatement* expressionStatement = static_cast<HLSLExpressionStatement*>(statement);
-            m_writer.BeginLine(indent, statement->fileName, statement->line);
+            writer.BeginLine(indent, statement->fileName, statement->line);
             OutputExpression(expressionStatement->expression);
-            m_writer.EndLine(";");
+            writer.EndLine(";");
         }
         else if (statement->nodeType == HLSLNodeType_ReturnStatement)
         {
             HLSLReturnStatement* returnStatement = static_cast<HLSLReturnStatement*>(statement);
             if (returnStatement->expression != NULL)
             {
-                m_writer.BeginLine(indent, returnStatement->fileName, returnStatement->line);
-                m_writer.Write("return ");
+                writer.BeginLine(indent, returnStatement->fileName, returnStatement->line);
+                writer.Write("return ");
                 OutputExpression(returnStatement->expression);
-                m_writer.EndLine(";");
+                writer.EndLine(";");
             }
             else
             {
-                m_writer.WriteLine(indent, returnStatement->fileName, returnStatement->line, "return;");
+                writer.WriteLine(indent, returnStatement->fileName, returnStatement->line, "return;");
             }
         }
         else if (statement->nodeType == HLSLNodeType_DiscardStatement)
         {
             HLSLDiscardStatement* discardStatement = static_cast<HLSLDiscardStatement*>(statement);
-            m_writer.WriteLine(indent, discardStatement->fileName, discardStatement->line, "discard;");
+            writer.WriteLine(indent, discardStatement->fileName, discardStatement->line, "discard;");
         }
         else if (statement->nodeType == HLSLNodeType_BreakStatement)
         {
             HLSLBreakStatement* breakStatement = static_cast<HLSLBreakStatement*>(statement);
-            m_writer.WriteLine(indent, breakStatement->fileName, breakStatement->line, "break;");
+            writer.WriteLine(indent, breakStatement->fileName, breakStatement->line, "break;");
         }
         else if (statement->nodeType == HLSLNodeType_ContinueStatement)
         {
             HLSLContinueStatement* continueStatement = static_cast<HLSLContinueStatement*>(statement);
-            m_writer.WriteLine(indent, continueStatement->fileName, continueStatement->line, "continue;");
+            writer.WriteLine(indent, continueStatement->fileName, continueStatement->line, "continue;");
         }
         else if (statement->nodeType == HLSLNodeType_IfStatement)
         {
             HLSLIfStatement* ifStatement = static_cast<HLSLIfStatement*>(statement);
-            m_writer.BeginLine(indent, ifStatement->fileName, ifStatement->line);
-            m_writer.Write("if (");
+            writer.BeginLine(indent, ifStatement->fileName, ifStatement->line);
+            writer.Write("if (");
             OutputExpression(ifStatement->condition);
-            m_writer.Write(") {");
-            m_writer.EndLine();
+            writer.Write(") {");
+            writer.EndLine();
             OutputStatements(indent + 1, ifStatement->statement);
-            m_writer.WriteLine(indent, "}");
+            writer.WriteLine(indent, "}");
             if (ifStatement->elseStatement != NULL)
             {
-                m_writer.WriteLine(indent, "else {");
+                writer.WriteLine(indent, "else {");
                 OutputStatements(indent + 1, ifStatement->elseStatement);
-                m_writer.WriteLine(indent, "}");
+                writer.WriteLine(indent, "}");
             }
         }
         else if (statement->nodeType == HLSLNodeType_ForStatement)
         {
             HLSLForStatement* forStatement = static_cast<HLSLForStatement*>(statement);
-            m_writer.BeginLine(indent, forStatement->fileName, forStatement->line);
-            m_writer.Write("for (");
+            writer.BeginLine(indent, forStatement->fileName, forStatement->line);
+            writer.Write("for (");
             OutputDeclaration(forStatement->initialization);
-            m_writer.Write("; ");
+            writer.Write("; ");
             OutputExpression(forStatement->condition);
-            m_writer.Write("; ");
+            writer.Write("; ");
             OutputExpression(forStatement->increment);
-            m_writer.Write(") {");
-            m_writer.EndLine();
+            writer.Write(") {");
+            writer.EndLine();
             OutputStatements(indent + 1, forStatement->statement);
-            m_writer.WriteLine(indent, "}");
+            writer.WriteLine(indent, "}");
         }
         else if (statement->nodeType == HLSLNodeType_BlockStatement)
         {
             HLSLBlockStatement* blockStatement = static_cast<HLSLBlockStatement*>(statement);
-            m_writer.WriteLine(indent, blockStatement->fileName, blockStatement->line, "{");
+            writer.WriteLine(indent, blockStatement->fileName, blockStatement->line, "{");
             OutputStatements(indent + 1, blockStatement->statement);
-            m_writer.WriteLine(indent, "}");
+            writer.WriteLine(indent, "}");
         }
         else if (statement->nodeType == HLSLNodeType_Technique)
         {
@@ -879,7 +819,7 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             sscanf(declaration->registerName, "s%d", &reg);
         }
 
-        if (m_mode == MODE_DX11)
+        if (mode == MODE_DX11)
         {
             const char* textureType = NULL;
             const char* samplerType = "SamplerState";
@@ -912,26 +852,26 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             {
                 if (reg != -1)
                 {
-                    m_writer.Write("%s %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->name, reg, samplerType, declaration->name, reg);
+                    writer.Write("%s %s_texture : register(t%d); %s %s_sampler : register(s%d)", textureType, declaration->name, reg, samplerType, declaration->name, reg);
                 }
                 else
                 {
-                    m_writer.Write("%s %s_texture; %s %s_sampler", textureType, declaration->name, samplerType, declaration->name);
+                    writer.Write("%s %s_texture; %s %s_sampler", textureType, declaration->name, samplerType, declaration->name);
                 }
             }
             else
             {
                 if (reg != -1)
                 {
-                    m_writer.Write("%s %s : register(t%d)", textureType, declaration->name, reg);
+                    writer.Write("%s %s : register(t%d)", textureType, declaration->name, reg);
                 }
                 else
                 {
-                    m_writer.Write("%s %s", textureType, declaration->name);
+                    writer.Write("%s %s", textureType, declaration->name);
                 }
             }
         }
-        else if (m_mode == MODE_DX9)
+        else if (mode == MODE_DX9)
         {
             const char* ttype = NULL;
 
@@ -945,9 +885,9 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             }
 
             DVASSERT(ttype);
-            m_writer.Write("%s %s", ttype, declaration->name);
+            writer.Write("%s %s", ttype, declaration->name);
             if (reg != -1)
-                m_writer.Write(" : TEXUNIT%i", reg);
+                writer.Write(" : TEXUNIT%i", reg);
         }
 
         return;
@@ -959,7 +899,7 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
     while (declaration != NULL)
     {
-        m_writer.Write(", ");
+        writer.Write(", ");
         OutputDeclarationBody(declaration->type, declaration->name, declaration->semantic, declaration->registerName, declaration->assignment);
         declaration = declaration->nextDeclaration;
     };
@@ -971,56 +911,56 @@ void HLSLGenerator::OutputDeclarationType(const HLSLType& type)
 
     if (type.flags & HLSLTypeFlag_Const)
     {
-        m_writer.Write("const ");
+        writer.Write("const ");
     }
     if (type.flags & HLSLTypeFlag_Static)
     {
-        m_writer.Write("static ");
+        writer.Write("static ");
     }
 
     // Interpolation modifiers.
     if (type.flags & HLSLTypeFlag_Centroid)
     {
-        m_writer.Write("centroid ");
+        writer.Write("centroid ");
     }
     if (type.flags & HLSLTypeFlag_Linear)
     {
-        m_writer.Write("linear ");
+        writer.Write("linear ");
     }
     if (type.flags & HLSLTypeFlag_NoInterpolation)
     {
-        m_writer.Write("nointerpolation ");
+        writer.Write("nointerpolation ");
     }
     if (type.flags & HLSLTypeFlag_NoPerspective)
     {
-        m_writer.Write("noperspective ");
+        writer.Write("noperspective ");
     }
     if (type.flags & HLSLTypeFlag_Sample) // @@ Only in shader model >= 4.1
     {
-        m_writer.Write("sample ");
+        writer.Write("sample ");
     }
 
-    m_writer.Write("%s ", typeName);
+    writer.Write("%s ", typeName);
 }
 
 void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic /*=NULL*/, const char* registerName /*=NULL*/, HLSLExpression* assignment /*=NULL*/)
 {
-    m_writer.Write("%s", name);
+    writer.Write("%s", name);
 
     if (type.array)
     {
         DVASSERT(semantic == NULL);
-        m_writer.Write("[");
+        writer.Write("[");
         if (type.arraySize != NULL)
         {
             OutputExpression(type.arraySize);
         }
-        m_writer.Write("]");
+        writer.Write("]");
     }
 
     if (semantic != NULL)
     {
-        m_writer.Write(" : %s", semantic);
+        writer.Write(" : %s", semantic);
     }
 
     if (registerName != NULL)
@@ -1028,23 +968,23 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         /*
         if (m_isInsideBuffer)
         {
-            m_writer.Write(" : packoffset(%s)", registerName);
+            writer.Write(" : packoffset(%s)", registerName);
         }
         else
         {
-            m_writer.Write(" : register(%s)", registerName);
+            writer.Write(" : register(%s)", registerName);
         }
 */
     }
 
     if (assignment != NULL && !IsSamplerType(type))
     {
-        m_writer.Write(" = ");
+        writer.Write(" = ");
         if (type.array)
         {
-            m_writer.Write("{ ");
+            writer.Write("{ ");
             OutputExpressionList(assignment);
-            m_writer.Write(" }");
+            writer.Write(" }");
         }
         else
         {
@@ -1063,7 +1003,7 @@ bool HLSLGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength)
 {
     // IC: Try without suffix first.
     String_Printf(dst, dstLength, "%s", base);
-    if (!m_tree->GetContainsString(base))
+    if (!tree->GetContainsString(base))
     {
         return true;
     }
@@ -1071,7 +1011,7 @@ bool HLSLGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength)
     for (int i = 1; i < 1024; ++i)
     {
         String_Printf(dst, dstLength, "%s%d", base, i);
-        if (!m_tree->GetContainsString(dst))
+        if (!tree->GetContainsString(dst))
         {
             return true;
         }

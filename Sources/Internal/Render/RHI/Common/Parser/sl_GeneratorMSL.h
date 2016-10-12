@@ -9,18 +9,9 @@ class HLSLTree;
 struct HLSLFunction;
 struct HLSLStruct;
 
-/**
- * This class is used to generate HLSL which is compatible with the D3D9
- * compiler (i.e. no cbuffers).
- */
 class MSLGenerator
 {
 public:
-    enum Target
-    {
-        Target_VertexShader,
-        Target_PixelShader,
-    };
 
     explicit MSLGenerator(Allocator* allocator);
 
@@ -41,17 +32,14 @@ private:
     void OutputDeclarationType(const HLSLType& type);
     void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* assignment = NULL);
 
-    /** Generates a name of the format "base+n" where n is an integer such that the name
-     * isn't used in the syntax tree. */
-    bool ChooseUniqueName(const char* base, char* dst, int dstLength) const;
 
 private:
-    CodeWriter m_writer;
+    CodeWriter writer;
 
-    const HLSLTree* m_tree;
-    const char* m_entryName;
-    Target m_target;
-    bool m_isInsideBuffer;
+    const HLSLTree* tree;
+    const char* entryName;
+    Target target;
+    bool isInsideBuffer;
 
     struct
     tex_t
@@ -60,7 +48,7 @@ private:
         HLSLBaseType type;
         unsigned unit;
     };
-    std::vector<tex_t> _tex;
+    std::vector<tex_t> texInfo;
 };
 
 } // namespace sl

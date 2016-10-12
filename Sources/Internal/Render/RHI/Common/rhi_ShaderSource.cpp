@@ -1184,7 +1184,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
         {
         case RHI_DX11:
         {
-            sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+            sl::Target target = (type == PROG_VERTEX) ? sl::TARGET_VERTEX : sl::TARGET_FRAGMENT;
 
             if (!hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX11, target, main, src))
                 src->clear();
@@ -1193,7 +1193,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
 
         case RHI_DX9:
         {
-            sl::HLSLGenerator::Target target = (type == PROG_VERTEX) ? sl::HLSLGenerator::Target_VertexShader : sl::HLSLGenerator::Target_PixelShader;
+            sl::Target target = (type == PROG_VERTEX) ? sl::TARGET_VERTEX : sl::TARGET_FRAGMENT;
 
             if (hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, src))
                 src->clear();
@@ -1202,7 +1202,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
 
         case RHI_GLES2:
         {
-            sl::GLESGenerator::Target target = (type == PROG_VERTEX) ? sl::GLESGenerator::Target_VertexShader : sl::GLESGenerator::Target_FragmentShader;
+            sl::Target target = (type == PROG_VERTEX) ? sl::TARGET_VERTEX : sl::TARGET_FRAGMENT;
 
             if (!gles_gen.Generate(ast, target, main, src))
                 src->clear();
@@ -1211,7 +1211,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
 
         case RHI_METAL:
         {
-            sl::MSLGenerator::Target target = (type == PROG_VERTEX) ? sl::MSLGenerator::Target_VertexShader : sl::MSLGenerator::Target_PixelShader;
+            sl::Target target = (type == PROG_VERTEX) ? sl::TARGET_VERTEX : sl::TARGET_FRAGMENT;
 
             if (!mtl_gen.Generate(ast, target, main, src))
                 src->clear();

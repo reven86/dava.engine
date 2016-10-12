@@ -197,6 +197,12 @@ struct StringPool
     Array<const char*> stringArray;
 };
 
+enum Target
+{
+    TARGET_VERTEX,
+    TARGET_FRAGMENT
+};
+
 
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
