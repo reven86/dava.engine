@@ -208,7 +208,7 @@ void Process(Engine& e)
 int DAVAMain(Vector<String> cmdLine)
 {
     Engine e;
-    DAVA::Vector<DAVA::String> modules = { "NetCore" };
+    DAVA::Vector<DAVA::String> modules = { "NetCore", "JobManager" };
     e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
