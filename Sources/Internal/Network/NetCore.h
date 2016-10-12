@@ -102,7 +102,7 @@ private:
     IOLoop loop; // Heart of NetCore and network library - event loop
     Set<IController*> trackedObjects; // Running objects
     Set<IController*> dyingObjects;
-    ServiceRegistrar registrar;
+    ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
     bool isFinishing;
     volatile bool allStopped; // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
