@@ -61,5 +61,6 @@ protected:
     bool isClean = true;
     bool canUndo = false;
     bool canRedo = false;
+    bool hasModifiedCommandsInRemoved = false;
 };
 }
