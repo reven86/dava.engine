@@ -23,7 +23,7 @@ DataEditor<T>::DataEditor(DataWrapper& holder_, Reflection reflection_)
 template <typename T>
 DataEditor<T>::~DataEditor()
 {
-    holder.SyncWithEditor(Reflection::Create(&copyValue).ref);
+    holder.SyncWithEditor(Reflection::Create(&copyValue));
 }
 
 template <typename T>

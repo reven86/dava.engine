@@ -195,6 +195,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     continuousUpdater->Stop();
     SaveContext();
     document = arg;
+    systemsManager->magnetLinesChanged.Emit({});
+    systemsManager->ClearHighlight();
     if (document.isNull())
     {
         systemsManager->packageNodeChanged.Emit(nullptr);
@@ -431,7 +433,7 @@ void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
         menu.addSeparator();
     }
     Vector2 davaPoint(localPos.x(), localPos.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPoint);
     if (CanChangeTextInControl(node))
     {
         QString name = QString::fromStdString(node->GetName());
@@ -666,7 +668,7 @@ void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
     QPoint point = event->pos();
 
     Vector2 davaPoint(point.x(), point.y());
-    ControlNode* node = systemsManager->ControlNodeUnderPoint(davaPoint);
+    ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPoint);
     if (!CanChangeTextInControl(node))
     {
         return;
@@ -727,9 +729,11 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         DVASSERT(nullptr != document);
-        Vector2 pos(event->pos().x(), event->pos().y());
-        auto node = systemsManager->ControlNodeUnderPoint(pos);
-        systemsManager->nodesHovered.Emit({ node });
+        QPoint pos = event->pos();
+        DAVA::Vector2 davaPos(pos.x(), pos.y());
+        ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPos);
+        systemsManager->HighlightNode(node);
+
         if (nullptr != node)
         {
             if (node->IsReadOnly())
@@ -764,18 +768,18 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
 
 void PreviewWidget::OnDragLeaved(QDragLeaveEvent*)
 {
-    systemsManager->nodesHovered.Emit({ nullptr });
+    systemsManager->ClearHighlight();
 }
 
 void PreviewWidget::OnDrop(QDropEvent* event)
 {
-    systemsManager->nodesHovered.Emit({ nullptr });
+    systemsManager->ClearHighlight();
     DVASSERT(nullptr != event);
     auto mimeData = event->mimeData();
     if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
         Vector2 pos(event->pos().x(), event->pos().y());
-        PackageBaseNode* node = systemsManager->ControlNodeUnderPoint(pos);
+        PackageBaseNode* node = systemsManager->GetControlNodeAtPoint(pos);
         String string = mimeData->text().toStdString();
         auto action = event->dropAction();
         uint32 index = 0;
@@ -843,6 +847,7 @@ void PreviewWidget::OnTransformStateChanged(bool inTransformState)
     {
         return;
     }
+    document->SetCanClose(!inTransformState);
     QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
     if (inTransformState)
     {

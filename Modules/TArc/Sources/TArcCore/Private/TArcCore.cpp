@@ -564,7 +564,7 @@ public:
         {
             fn.Invoke(args...);
         }
-        catch (const AnyFn::Exception& e)
+        catch (const DAVA::Exception& e)
         {
             Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
         }
