@@ -68,7 +68,8 @@ ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCoun
     , cpuCounterName(_cpuCounterName)
     , interestMarkers(_interestMarkers)
 {
-    focusOnCPUTrace = (cpuProfiler != nullptr);
+    for (RingArray<TraceData>& t : tracesData)
+        t = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
 }
 
 void ProfilerOverlay::Enable()
@@ -102,15 +103,15 @@ void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterN
     cpuProfiler = profiler;
     cpuCounterName = counterName;
 
-    if (focusOnCPUTrace && !cpuProfiler)
-        focusOnCPUTrace = false;
+    if (selectedTrace == TRACE_CPU && !cpuProfiler)
+        selectedTrace = TRACE_GPU;
 }
 
 void ProfilerOverlay::SetGPUProfiler(ProfilerGPU* profiler)
 {
     gpuProfiler = profiler;
-    if (!focusOnCPUTrace && !gpuProfiler)
-        focusOnCPUTrace = true;
+    if (selectedTrace == TRACE_GPU && !gpuProfiler)
+        selectedTrace = TRACE_GPU;
 }
 
 void ProfilerOverlay::ClearInterestMarkers()
@@ -126,10 +127,10 @@ void ProfilerOverlay::AddInterestMarker(const FastName& name)
 Vector<FastName> ProfilerOverlay::GetAvalibleMarkers() const
 {
     Vector<FastName> ret;
-    for (const TraceData::LegentElement& e : CPUTraceData.crbegin()->legend)
+    for (const TraceData::LegentElement& e : tracesData[TRACE_CPU].crbegin()->legend)
         ret.push_back(e.name);
 
-    for (const TraceData::LegentElement& e : GPUTraceData.crbegin()->legend)
+    for (const TraceData::LegentElement& e : tracesData[TRACE_GPU].crbegin()->legend)
         ret.push_back(e.name);
 
     return ret;
@@ -137,25 +138,25 @@ Vector<FastName> ProfilerOverlay::GetAvalibleMarkers() const
 
 void ProfilerOverlay::SelectNextMarker()
 {
-    const TraceData& focusedTrace = GetFocusedTrace();
-    int32 selectedIndex = FindLegendIndex(focusedTrace.legend, selectedMarker);
+    const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
+    int32 selectedIndex = FindLegendIndex(data.legend, selectedMarkers[selectedTrace]);
     if (selectedIndex == -1)
     {
         selectedIndex = 0;
     }
-    else if (selectedIndex < int32(focusedTrace.legend.size() - 1))
+    else if (selectedIndex < int32(data.legend.size() - 1))
     {
         ++selectedIndex;
     }
 
-    if (selectedIndex < int32(focusedTrace.legend.size()))
-        selectedMarker = focusedTrace.legend[selectedIndex].name;
+    if (selectedIndex < int32(data.legend.size()))
+        selectedMarkers[selectedTrace] = data.legend[selectedIndex].name;
 }
 
 void ProfilerOverlay::SelectPreviousMarker()
 {
-    const TraceData& focusedTrace = GetFocusedTrace();
-    int32 selectedIndex = FindLegendIndex(focusedTrace.legend, selectedMarker);
+    const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
+    int32 selectedIndex = FindLegendIndex(data.legend, selectedMarkers[selectedTrace]);
     if (selectedIndex == -1)
     {
         selectedIndex = 0;
@@ -165,27 +166,25 @@ void ProfilerOverlay::SelectPreviousMarker()
         --selectedIndex;
     }
 
-    if (selectedIndex < int32(focusedTrace.legend.size()))
-        selectedMarker = focusedTrace.legend[selectedIndex].name;
+    if (selectedIndex < int32(data.legend.size()))
+        selectedMarkers[selectedTrace] = data.legend[selectedIndex].name;
 }
 
 void ProfilerOverlay::SelectMarker(const FastName& name)
 {
-    const TraceData& focusedTrace = GetFocusedTrace();
-    if (FindLegendIndex(focusedTrace.legend, name) != -1)
-        selectedMarker = name;
+    const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
+    if (FindLegendIndex(data.legend, name) != -1)
+        selectedMarkers[selectedTrace] = name;
 }
 
-void ProfilerOverlay::SwitchFocus()
+void ProfilerOverlay::SelectTrace(eTrace trace)
 {
-    if (focusOnCPUTrace)
-        focusOnCPUTrace = (gpuProfiler == nullptr);
-    else
-        focusOnCPUTrace = (cpuProfiler != nullptr);
+    selectedTrace = trace;
+}
 
-    const TraceData& focusedTrace = GetFocusedTrace();
-    if (focusedTrace.legend.size())
-        selectedMarker = focusedTrace.legend.front().name;
+ProfilerOverlay::eTrace ProfilerOverlay::GetSelectedTrace()
+{
+    return selectedTrace;
 }
 
 void ProfilerOverlay::SetTraceHistoryOffset(uint32 offset)
@@ -206,7 +205,7 @@ void ProfilerOverlay::Update()
     if (gpuProfiler)
     {
         uint32 lastGPUFrameIndex = gpuProfiler->GetLastFrame().frameIndex;
-        if (GPUTraceData.crbegin()->frameIndex != lastGPUFrameIndex)
+        if (tracesData[TRACE_GPU].crbegin()->frameIndex != lastGPUFrameIndex)
         {
             while (!CPUFrameTraces.empty() && (CPUFrameTraces.front().frameIndex < lastGPUFrameIndex))
                 CPUFrameTraces.pop_front();
@@ -237,12 +236,12 @@ void ProfilerOverlay::Update()
 
     if (needUpdateGPUInfo)
     {
-        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex, &GPUTraceData.next());
+        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex, &tracesData[TRACE_GPU].next());
     }
 
     if (needUpdateCPUInfo)
     {
-        ProcessEventsTrace(CPUFrameTraces.front().trace, CPUFrameTraces.front().frameIndex, &CPUTraceData.next());
+        ProcessEventsTrace(CPUFrameTraces.front().trace, CPUFrameTraces.front().frameIndex, &tracesData[TRACE_CPU].next());
         CPUFrameTraces.pop_front();
     }
 
@@ -264,9 +263,6 @@ void ProfilerOverlay::Update()
                 current.filtered = prev.filtered * 0.99f + current.accurate * 0.01f;
             }
         }
-
-        if (!selectedMarker.IsValid())
-            SelectNextMarker();
     }
 
     if (cpuProfiler && cpuProfiler->IsStarted())
@@ -378,22 +374,15 @@ void ProfilerOverlay::Draw()
     DbgDraw::SetScreenSize(uint32(Renderer::GetFramebufferWidth()), uint32(Renderer::GetFramebufferHeight()));
     DbgDraw::SetNormalTextSize();
 
-    TraceData& currentCPUTrace = GetCurrentTrace(CPUTraceData);
-    TraceData& currentGPUTrace = GetCurrentTrace(GPUTraceData);
+    TraceData& currentCPUTrace = GetHistoricTrace(tracesData[TRACE_CPU]);
+    TraceData& currentGPUTrace = GetHistoricTrace(tracesData[TRACE_GPU]);
 
     Rect2i rect = Rect2i(0, 0, Renderer::GetFramebufferWidth(), GetEnoughRectHeight(currentCPUTrace));
-    DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect);
+    DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU));
 
     rect.y += rect.dy;
     rect.dy = GetEnoughRectHeight(currentGPUTrace);
-    DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect);
-
-    if (selectedMarker.IsValid())
-    {
-        rect.y += rect.dy;
-        rect.dy = ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
-        DrawHistory(markersHistory[selectedMarker].values, selectedMarker, rect);
-    }
+    DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU));
 
     int32 chartColumnCount = (Renderer::GetFramebufferHeight() - rect.y - rect.dy) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
     int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
@@ -406,7 +395,7 @@ void ProfilerOverlay::Draw()
     rect.dx = chartWidth;
     for (const FastName& m : interestMarkers)
     {
-        DrawHistory(markersHistory[m].values, m, rect);
+        DrawHistory(m, rect);
         rect.y += rect.dy;
         if ((rect.y + rect.dy) > Renderer::GetFramebufferHeight())
         {
@@ -440,9 +429,10 @@ void ProfilerOverlay::Draw()
     rhi::EndRenderPass(pass);
 }
 
-void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect)
+void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect, const FastName& selectedMarker, bool traceSelected)
 {
-    static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
+    static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .6f, .4f);
+    static const uint32 SELECTED_BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 SELECTED_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
     static const uint32 ARROW_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
@@ -455,13 +445,10 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
     Rect2i drawRect(rect);
     drawRect.x += PADDING / 2;
     drawRect.y += PADDING / 2;
-    drawRect.dx -= 2 * PADDING / 2;
-    drawRect.dy -= 2 * PADDING / 2;
+    drawRect.dx -= PADDING;
+    drawRect.dy -= PADDING;
 
-    DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, BACKGROUND_COLOR);
-
-    if (trace.rects.empty())
-        return;
+    DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, traceSelected ? SELECTED_BACKGROUND_COLOR : BACKGROUND_COLOR);
 
     int32 x0, x1, y0, y1;
 
@@ -500,12 +487,21 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
         y0 += ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE + 1;
     }
 
-    //Draw separator
+    //Draw selected marker history
+    if (selectedMarker.IsValid())
+        DrawHistory(selectedMarker, Rect2i(rect.x + PADDING / 2, y0, rect.dx - PADDING, ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT), false);
+
+    //Draw separators
+    x0 = drawRect.x + MARGIN;
+    x1 = drawRect.x + drawRect.dx - MARGIN;
+    ;
+    DbgDraw::Line2D(x0, y0, x1, y0, LINE_COLOR);
+
     int32 durationTextWidth = ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS * DbgDraw::NormalCharW;
     x0 = drawRect.x + MARGIN + legentWidth + durationTextWidth + MARGIN;
     x1 = x0;
+    y1 = y0;
     y0 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
-    y1 = drawRect.y + drawRect.dy - MARGIN;
     DbgDraw::Line2D(x0, y0, x1, y1, LINE_COLOR);
 
     //Draw traces rects
@@ -558,7 +554,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
     }
 }
 
-void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect)
+void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool drawBackground)
 {
     static const uint32 CHARTRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
     static const uint32 CHART_COLOR = rhi::NativeColorRGBA(.5f, .11f, .11f, 1.f);
@@ -569,11 +565,13 @@ void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, co
     static const int32 MARGIN = ProfilerOverlayDetails::OVERLAY_RECT_MARGIN;
     static const int32 PADDING = ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
 
+    const MarkerHistory::HistoryArray& history = markersHistory[name].values;
+
     Rect2i drawRect(rect);
     drawRect.x += PADDING / 2;
     drawRect.y += PADDING / 2;
-    drawRect.dx -= 2 * PADDING / 2;
-    drawRect.dy -= 2 * PADDING / 2;
+    drawRect.dx -= PADDING;
+    drawRect.dy -= PADDING;
 
     Rect2i chartRect(drawRect);
     chartRect.x += MARGIN + ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_WIDTH + MARGIN;
@@ -588,7 +586,8 @@ void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, co
     char strbuf[128];
     float32 ceilValue = float32((maxValue / ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP + 1) * ProfilerOverlayDetails::HISTORY_CHART_CEIL_STEP);
 
-    DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, CHARTRECT_COLOR);
+    if (drawBackground)
+        DbgDraw::FilledRect2D(drawRect.x, drawRect.y, drawRect.x + drawRect.dx, drawRect.y + drawRect.dy, CHARTRECT_COLOR);
 
     DbgDraw::Line2D(chartRect.x, chartRect.y, chartRect.x, chartRect.y + chartRect.dy, LINE_COLOR);
     DbgDraw::Line2D(chartRect.x, chartRect.y + chartRect.dy, chartRect.x + chartRect.dx, chartRect.y + chartRect.dy, LINE_COLOR);
@@ -638,12 +637,9 @@ void ProfilerOverlay::DrawHistory(const MarkerHistory::HistoryArray& history, co
 
 int32 ProfilerOverlay::GetEnoughRectHeight(const TraceData& trace)
 {
-    if (trace.rects.empty())
-        return 0;
-
     uint32 legendCount = Min(uint32(trace.legend.size()), ProfilerOverlayDetails::MAX_TRACE_LEGENT_ELEMENTS);
     const int32 MARGIN = ProfilerOverlayDetails::OVERLAY_RECT_MARGIN;
-    return MARGIN + DbgDraw::NormalCharH + MARGIN + int32(legendCount) * (DbgDraw::NormalCharH + 1) + MARGIN + ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
+    return MARGIN + DbgDraw::NormalCharH + MARGIN + int32(legendCount) * (DbgDraw::NormalCharH + 1) + ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT + ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
 }
 
 int32 ProfilerOverlay::FindLegendIndex(const Vector<TraceData::LegentElement>& legend, const FastName& marker)
@@ -658,14 +654,9 @@ int32 ProfilerOverlay::FindLegendIndex(const Vector<TraceData::LegentElement>& l
     return -1;
 }
 
-ProfilerOverlay::TraceData& ProfilerOverlay::GetCurrentTrace(RingArray<TraceData>& traceData)
+ProfilerOverlay::TraceData& ProfilerOverlay::GetHistoricTrace(RingArray<TraceData>& traceData)
 {
     return *(traceData.rbegin() + traceHistoryOffset);
-}
-
-ProfilerOverlay::TraceData& ProfilerOverlay::GetFocusedTrace()
-{
-    return focusOnCPUTrace ? GetCurrentTrace(CPUTraceData) : GetCurrentTrace(GPUTraceData);
 }
 
 }; //ns

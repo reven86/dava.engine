@@ -15,6 +15,14 @@ public:
     static const uint32 TRACE_HISTORY_SIZE = 10;
     static ProfilerOverlay* const globalProfilerOverlay;
 
+    enum eTrace
+    {
+        TRACE_CPU = 0,
+        TRACE_GPU,
+
+        TRACE_COUNT
+    };
+
     ProfilerOverlay(ProfilerCPU* cpuProfiler, const char* cpuCounterName, ProfilerGPU* gpuProfiler, const Vector<FastName>& interestMarkers = Vector<FastName>());
 
     void Enable();
@@ -32,10 +40,12 @@ public:
     Vector<FastName> GetAvalibleMarkers() const;
 
     //selection control
+    void SelectTrace(eTrace trace);
+    eTrace GetSelectedTrace();
+
     void SelectNextMarker();
     void SelectPreviousMarker();
     void SelectMarker(const FastName& name);
-    void SwitchFocus();
 
     //trace history control
     void SetTraceHistoryOffset(uint32 offset);
@@ -92,23 +102,23 @@ protected:
     void ProcessEventsTrace(const Vector<TraceEvent>& events, uint32 frameIndex, TraceData* trace);
 
     void Draw();
-    void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect);
-    void DrawHistory(const MarkerHistory::HistoryArray& history, const FastName& name, const Rect2i& rect);
+    void DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect, const FastName& selectedMarker, bool traceSelected = true);
+    void DrawHistory(const FastName& name, const Rect2i& rect, bool drawBackground = true);
 
     int32 GetEnoughRectHeight(const TraceData& trace);
     int32 FindLegendIndex(const Vector<TraceData::LegentElement>& legend, const FastName& marker);
-    TraceData& GetCurrentTrace(RingArray<TraceData>& traceData);
-    TraceData& GetFocusedTrace();
+    TraceData& GetHistoricTrace(RingArray<TraceData>& traceData);
 
     FastNameMap<MarkerHistory> markersHistory = FastNameMap<MarkerHistory>(128, MarkerHistory({ MarkerHistory::HistoryArray(MARKER_HISTORY_LENGTH), 0 }));
     FastNameMap<uint32> markersColor;
 
     Vector<FastName> interestMarkers;
-
-    RingArray<TraceData> GPUTraceData = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
-    RingArray<TraceData> CPUTraceData = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
     List<FrameTrace> CPUFrameTraces;
-    FastName selectedMarker;
+
+    RingArray<TraceData> tracesData[TRACE_COUNT];
+    eTrace selectedTrace = TRACE_CPU;
+
+    FastName selectedMarkers[TRACE_COUNT];
 
     ProfilerGPU* gpuProfiler = nullptr;
     ProfilerCPU* cpuProfiler = nullptr;
@@ -116,7 +126,6 @@ protected:
 
     uint32 traceHistoryOffset = 0;
 
-    bool focusOnCPUTrace = true;
     bool overlayEnabled = false;
 };
 }
