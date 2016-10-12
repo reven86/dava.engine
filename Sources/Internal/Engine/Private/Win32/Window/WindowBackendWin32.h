@@ -67,6 +67,7 @@ private:
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
     LRESULT OnMouseWheelEvent(int32 delta, int32 x, int32 y);
     LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
+    LRESULT OnTouch(uint32 ntouch, HTOUCHINPUT htouch);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
@@ -76,6 +77,7 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
     static eModifierKeys GetModifierKeys();
+    static eInputDevice GetInputEventSource(LPARAM messageExtraInfo);
 
 private:
     EngineBackend* engineBackend = nullptr;
@@ -91,6 +93,10 @@ private:
     bool closeRequestByApp = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
     int32 height = 0;
+    int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
+    int32 lastMouseMoveY = -1; // spurious mouse move events
+
+    Vector<TOUCHINPUT> touchInput;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];

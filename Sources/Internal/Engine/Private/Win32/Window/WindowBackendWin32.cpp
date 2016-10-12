@@ -233,10 +233,20 @@ LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
 
 LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
 {
-    eModifierKeys modifierKeys = GetModifierKeys();
-    float32 vx = static_cast<float32>(x);
-    float32 vy = static_cast<float32>(y);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
+    // Windows generates WM_MOUSEMOVE event for primary touch point so check and process
+    // mouse move only from mouse device. Also skip spurious move events as described in:
+    // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
+    eInputDevice source = GetInputEventSource(::GetMessageExtraInfo());
+    if (source == eInputDevice::MOUSE && x != lastMouseMoveX && y != lastMouseMoveY)
+    {
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 vx = static_cast<float32>(x);
+        float32 vy = static_cast<float32>(y);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
+
+        lastMouseMoveX = x;
+        lastMouseMoveY = y;
+    }
     return 0;
 }
 
@@ -252,62 +262,114 @@ LRESULT WindowBackend::OnMouseWheelEvent(int32 delta, int32 x, int32 y)
 
 LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y)
 {
-    eMouseButtons button = eMouseButtons::NONE;
-    MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
-    switch (message)
+    // Windows generates WM_xBUTTONDONW/WM_xBUTTONUP event for primary touch point so check and process
+    // mouse clicks only from mouse device.
+    eInputDevice source = GetInputEventSource(::GetMessageExtraInfo());
+    if (source == eInputDevice::MOUSE)
     {
-    case WM_LBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = eMouseButtons::LEFT;
-        break;
-    case WM_LBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = eMouseButtons::LEFT;
-        break;
-    case WM_LBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_RBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = eMouseButtons::RIGHT;
-        break;
-    case WM_RBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = eMouseButtons::RIGHT;
-        break;
-    case WM_RBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_MBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = eMouseButtons::MIDDLE;
-        break;
-    case WM_MBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = eMouseButtons::MIDDLE;
-        break;
-    case WM_MBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    case WM_XBUTTONDOWN:
-        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
-        break;
-    case WM_XBUTTONUP:
-        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
-        break;
-    case WM_XBUTTONDBLCLK:
-        // TODO: somehow handle mouse doubleclick
-        return 0;
-    default:
-        return 0;
-    }
+        eMouseButtons button = eMouseButtons::NONE;
+        MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
+        switch (message)
+        {
+        case WM_LBUTTONDOWN:
+            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+            button = eMouseButtons::LEFT;
+            break;
+        case WM_LBUTTONUP:
+            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+            button = eMouseButtons::LEFT;
+            break;
+        case WM_LBUTTONDBLCLK:
+            // TODO: somehow handle mouse doubleclick
+            return 0;
+        case WM_RBUTTONDOWN:
+            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+            button = eMouseButtons::RIGHT;
+            break;
+        case WM_RBUTTONUP:
+            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+            button = eMouseButtons::RIGHT;
+            break;
+        case WM_RBUTTONDBLCLK:
+            // TODO: somehow handle mouse doubleclick
+            return 0;
+        case WM_MBUTTONDOWN:
+            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+            button = eMouseButtons::MIDDLE;
+            break;
+        case WM_MBUTTONUP:
+            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+            button = eMouseButtons::MIDDLE;
+            break;
+        case WM_MBUTTONDBLCLK:
+            // TODO: somehow handle mouse doubleclick
+            return 0;
+        case WM_XBUTTONDOWN:
+            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+            button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
+            break;
+        case WM_XBUTTONUP:
+            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+            button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
+            break;
+        case WM_XBUTTONDBLCLK:
+            // TODO: somehow handle mouse doubleclick
+            return 0;
+        default:
+            return 0;
+        }
 
-    eModifierKeys modifierKeys = GetModifierKeys();
-    float32 vx = static_cast<float32>(x);
-    float32 vy = static_cast<float32>(y);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 vx = static_cast<float32>(x);
+        float32 vy = static_cast<float32>(y);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
+{
+    touchInput.resize(ntouch);
+    TOUCHINPUT* pinput = touchInput.data();
+    if (::GetTouchInputInfo(htouch, ntouch, pinput, sizeof(TOUCHINPUT)))
+    {
+        eModifierKeys modifierKeys = GetModifierKeys();
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f, modifierKeys);
+        for (TOUCHINPUT& touch : touchInput)
+        {
+            String flag;
+            if (touch.dwFlags & TOUCHEVENTF_MOVE)
+                flag += "TOUCHEVENTF_MOVE ";
+            if (touch.dwFlags & TOUCHEVENTF_DOWN)
+                flag += "TOUCHEVENTF_DOWN ";
+            if (touch.dwFlags & TOUCHEVENTF_UP)
+                flag += "TOUCHEVENTF_UP ";
+
+            POINT pt = { touch.x / 100, touch.y / 100 };
+            ::ScreenToClient(hwnd, &pt);
+            if (touch.dwFlags & (TOUCHEVENTF_PRIMARY | TOUCHEVENTF_MOVE))
+            {
+                // Remember move position of primary touch point to skip spurious move events as
+                // Windows generates WM_MOUSEMOVE event for primary touch point.
+                lastMouseMoveX = pt.x;
+                lastMouseMoveY = pt.y;
+            }
+
+            if (touch.dwFlags & TOUCHEVENTF_MOVE)
+                e.type = MainDispatcherEvent::TOUCH_MOVE;
+            else if (touch.dwFlags & TOUCHEVENTF_DOWN)
+                e.type = MainDispatcherEvent::TOUCH_DOWN;
+            else if (touch.dwFlags & TOUCHEVENTF_UP)
+                e.type = MainDispatcherEvent::TOUCH_UP;
+            else
+                continue;
+            e.touchEvent.touchId = static_cast<uint32>(touch.dwID);
+            e.touchEvent.x = static_cast<float32>(pt.x);
+            e.touchEvent.y = static_cast<float32>(pt.y);
+            mainDispatcher->PostEvent(e);
+        }
+        ::CloseTouchInputHandle(htouch);
+    }
     return 0;
 }
 
@@ -335,6 +397,8 @@ LRESULT WindowBackend::OnCreate()
 {
     RECT rc;
     ::GetClientRect(hwnd, &rc);
+
+    ::RegisterTouchWindow(hwnd, TWF_FINETOUCH | TWF_WANTPALM);
 
     width = rc.right - rc.left;
     height = rc.bottom - rc.top;
@@ -414,6 +478,12 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 x = GET_X_LPARAM(lparam);
         int32 y = GET_Y_LPARAM(lparam);
         lresult = OnMouseClickEvent(message, xbutton, x, y);
+    }
+    else if (message == WM_TOUCH)
+    {
+        uint32 ntouch = LOWORD(wparam);
+        HTOUCHINPUT htouch = reinterpret_cast<HTOUCHINPUT>(lparam);
+        lresult = OnTouch(ntouch, htouch);
     }
     else if (message == WM_KEYUP || message == WM_KEYDOWN || message == WM_SYSKEYUP || message == WM_SYSKEYDOWN)
     {
@@ -534,6 +604,21 @@ eModifierKeys WindowBackend::GetModifierKeys()
         }
     }
     return result;
+}
+
+eInputDevice WindowBackend::GetInputEventSource(LPARAM messageExtraInfo)
+{
+    // How to distinguish pen input from mouse and touch
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
+
+    const LPARAM MI_WP_SIGNATURE = 0xFF515700;
+    const LPARAM SIGNATURE_MASK = 0xFFFFFF00;
+
+    if ((messageExtraInfo & SIGNATURE_MASK) == MI_WP_SIGNATURE)
+    {
+        return eInputDevice::TOUCH_SURFACE;
+    }
+    return eInputDevice::MOUSE;
 }
 
 } // namespace Private
