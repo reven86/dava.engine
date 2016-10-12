@@ -141,8 +141,7 @@ void LuaScript::DumpStack(std::ostream& os) const
 void LuaScript::DumpStackToLog(Logger::eLogLevel level) const
 {
     std::ostringstream os;
-    LuaBridge::DumpStack(state->lua, os);
-
+    DumpStack(os);
     Logger* logger = Logger::Instance();
     if (logger)
     {

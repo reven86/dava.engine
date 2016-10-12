@@ -232,8 +232,7 @@ int32 AnyFn__call(lua_State* L)
     DVASSERT_MSG(nargs >= 0, "Lua stack corrupted!");
     if (nargs != argsTypes.size())
     {
-        luaL_error(L, "Incorrect number of arguments to invoke AnyFn (need %d, found %d)", argsTypes.size(), nargs);
-        return 0;
+        return luaL_error(L, "Incorrect number of arguments to invoke AnyFn (need %d, found %d)", argsTypes.size(), nargs);
     }
 
     Any result;
@@ -298,14 +297,12 @@ int32 AnyFn__call(lua_State* L)
             break;
         }
         default:
-            luaL_error(L, "Too much arguments (%d) to invoke AnyFn", nargs);
-            return 0;
+            return luaL_error(L, "Too much arguments (%d) to invoke AnyFn", nargs);
         }
     }
     catch (const LuaException& e)
     {
-        luaL_error(L, e.what());
-        return 0;
+        return luaL_error(L, e.what());
     }
     AnyToLua(L, result);
     return 1;
@@ -442,7 +439,7 @@ int32 Reflection__newindex(lua_State* L)
         name.Set(String(lua_tostring(L, 2)));
         break;
     default:
-        return luaL_error(L, "Wrong key type %d!", ltype);
+        return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
     Reflection refl = self.GetField(name).ref;
