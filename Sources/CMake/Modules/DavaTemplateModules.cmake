@@ -149,11 +149,14 @@ macro( modules_tree_info )
                 append_property( MODULES_INITIALIZATION_HPP ${FILE} ) 
             endif()
         endforeach() 
+        
+        list( APPEND MODULES_CODE  "set( MODULE_TYPE_${NAME_MODULE} ${MODULE_TYPE} )\n" )            
 
         if( MODULE_INITIALIZATION_NAMESPACE )
             list( APPEND MODULES_CODE  "set( MODULE_INITIALIZATION_NAMESPACE_${NAME_MODULE} ${MODULE_INITIALIZATION_NAMESPACE} )\n" )
-            append_property( MODULES_CODE ${MODULES_CODE} ) 
         endif()
+
+        append_property( MODULES_CODE ${MODULES_CODE} ) 
 
     endif()
 
@@ -206,6 +209,16 @@ macro( generated_initialization_module_code )
             if( MODULE_INITIALIZATION_NAMESPACE_${ITEM} )
                set( NAMESPACE_PREFIX "${MODULE_INITIALIZATION_NAMESPACE_${ITEM}}::" )
 
+            endif()
+            
+            message( "MODULE_TYPE ---->  ${MODULE_TYPE_${ITEM}} ")
+
+            if( ${MODULE_TYPE_${ITEM}} STREQUAL "INLINE" )
+                message("MODULE_TYPE IS INLINE !!!")
+            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "STATIC" )
+                message("MODULE_TYPE IS STATIC !!!")
+            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
+                message("MODULE_TYPE IS DYNAMIC !!!")
             endif()
 
             list( APPEND INIT_POINTERS "    ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
