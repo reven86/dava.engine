@@ -45,6 +45,10 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
         {
             ImageSystem::Save(newImagePath, savedImage);
         }
+        else
+        {
+            Logger::Error("Cannot unpack source image");
+        }
     }
 }
 
