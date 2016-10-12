@@ -254,14 +254,6 @@ ApplicationWindow {
                             updateOutputString();
                         }
                     }
-                    Connections {
-                        target: rowLayout_sourceFolder
-                        onPathChanged: {
-                            var path = rowLayout_sourceFolder.path;
-                            path = path.replace(/(\/|\\)+$/, "");
-                            rowLayout_buildFolder.path = path + "/_build" ;
-                        }
-                    }
                 }
 
                 RowLayoutPath {
