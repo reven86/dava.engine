@@ -47,7 +47,7 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
         }
         else
         {
-            Logger::Error("Cannot unpack source image");
+            Logger::Error("Cannot unapck image from %s and save it as %s", PixelFormatDescriptor::GetPixelFormatString(image->format), newImagePath.GetStringValue().c_str());
         }
     }
 }
