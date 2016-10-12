@@ -299,11 +299,11 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     // on MacOS slowly connect and then fast downloading
     StringStream ss;
 
-    ss << "init change state: " << static_cast<uint32>(packManager.GetInitState()) << '\n';
+    ss << "init change state: " << IPackManager::ToString(packManager.GetInitState()) << '\n';
 
     if (packManager.GetInitError() != IPackManager::InitError::AllGood)
     {
-        ss << "error: " << static_cast<uint32>(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
+        ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
 
         if (packManager.CanRetryInit())
         {
@@ -323,7 +323,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     // do every time full reinitialization
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks);
+    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: start init");
 
@@ -336,7 +336,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     pm.EnableRequesting();
 
-    packNameLoading->SetText(L"done: finish init");
+    packNameLoading->SetText(L"done: start initialize PackManager");
 }
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)

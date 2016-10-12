@@ -1,17 +1,30 @@
 #pragma once
 
+#include "PackManager/PackManager.h"
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/FileSystem.h"
 
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Engine.h"
+#endif
+
 namespace DAVA
 {
 class PackManagerImpl : public IPackManager
 {
 public:
+#ifdef __DAVAENGINE_COREV2__
+    explicit PackManagerImpl(Engine& engine_);
+    ~PackManagerImpl();
+    Engine& engine;
+    SigConnectionID sigConnectionUpdate = 0;
+#else
     PackManagerImpl() = default;
+    ~PackManagerImpl() = default;
+#endif
 
     void Initialize(const String& architecture_,
                     const FilePath& dirToDownloadPacks_,
@@ -41,7 +54,7 @@ public:
 
     void DisableRequesting() override;
 
-    void Update() override;
+    void Update(float) override;
 
     const String& FindPackName(const FilePath& relativePathInPack) const override;
 
@@ -83,8 +96,7 @@ public:
     static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
 
 private:
-    void ContinueInitialization();
-    void InitializePacksAndBuildIndex();
+    // initialization state functions
     void AskFooter();
     void GetFooter();
     void AskFileTable();
@@ -96,6 +108,11 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
+    // helper functions
+    void DeleteLocalDBFiles();
+    void ContinueInitialization();
+    void InitializePacksAndBuildIndex();
+    void UnmountAllPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
     mutable Mutex protectPM;

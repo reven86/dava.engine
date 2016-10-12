@@ -27,6 +27,8 @@ public:
         Ready
     };
 
+    static const String& ToString(InitState state);
+
     enum class InitError : uint32
     {
         AllGood,
@@ -38,6 +40,8 @@ public:
         LoadingPacksDataFailed,
         MountingDownloadedPackFailed
     };
+
+    static const String& ToString(InitError state);
 
     struct Pack
     {
@@ -132,7 +136,7 @@ public:
     virtual void DisableRequesting() = 0;
 
     /** internal method called per frame in framework (can thow exception) */
-    virtual void Update() = 0;
+    virtual void Update(float) = 0;
 
     /** return unique pack name or empty string */
     virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
