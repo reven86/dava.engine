@@ -383,7 +383,9 @@ LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
 
 LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    if ((key == VK_SHIFT && scanCode == 0x36) || isExtended)
+    // How to distinguish left and right shift, control and alt
+    // http://stackoverflow.com/a/15977613
+    if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
     {
         key |= 0x100;
     }
@@ -397,7 +399,13 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
+    // Windows translates some Ctrl key combinations into ASCII control characters.
+    // It seems to me that control character are not wanted by game to handle in character message.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
+    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
+    }
     return 0;
 }
 
@@ -498,13 +506,26 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_KEYUP || message == WM_KEYDOWN || message == WM_SYSKEYUP || message == WM_SYSKEYDOWN)
     {
         uint32 key = static_cast<uint32>(wparam);
-        uint32 scanCode = (static_cast<uint32>(lparam) << 16) & 0xFF;
+        uint32 scanCode = (static_cast<uint32>(lparam) >> 16) & 0xFF;
         bool isPressed = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
         bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
         // Forward WM_SYSKEYUP and WM_SYSKEYDOWN to DefWindowProc to allow system shortcuts: Alt+F4, etc
         isHandled = (message == WM_KEYUP || message == WM_KEYDOWN);
+    }
+    else if (message == WM_UNICHAR)
+    {
+        uint32 key = static_cast<uint32>(wparam);
+        if (key != UNICODE_NOCHAR)
+        {
+            bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
+            lresult = OnCharEvent(key, isRepeated);
+        }
+        else
+        {
+            lresult = TRUE;
+        }
     }
     else if (message == WM_CHAR)
     {

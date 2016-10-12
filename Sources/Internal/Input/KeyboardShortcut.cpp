@@ -33,13 +33,14 @@ KeyboardShortcut::KeyboardShortcut(const String& str)
     Split(str, "+", tokens);
 
 #if defined(__DAVAENGINE_COREV2__)
+    int modifiersPack = 0;
     for (const String& token : tokens)
     {
         String t = StringUtils::Trim(token);
-        int modifier = 0;
-        if (GlobalEnumMap<eModifierKeys>::Instance()->ToValue(token.c_str(), modifier))
+        int curModifier = 0;
+        if (GlobalEnumMap<eModifierKeys>::Instance()->ToValue(token.c_str(), curModifier))
         {
-            modifiers |= static_cast<eModifierKeys>(modifier);
+            modifiersPack |= curModifier;
         }
         else
         {
@@ -47,6 +48,7 @@ KeyboardShortcut::KeyboardShortcut(const String& str)
             key = InputSystem::Instance()->GetKeyboard().GetKeyByName(t);
         }
     }
+    modifiers = static_cast<eModifierKeys>(modifiersPack) & eModifierKeys::MASK;
 #else
     modifiers = 0;
     for (const String& token : tokens)
@@ -107,9 +109,11 @@ String KeyboardShortcut::ToString() const
 
 #if defined(__DAVAENGINE_COREV2__)
     int test = static_cast<int>(eModifierKeys::FIRST);
-    while (test <= static_cast<int>(eModifierKeys::LAST))
+    int last = static_cast<int>(eModifierKeys::LAST);
+    int modifiersPack = static_cast<int>(modifiers);
+    while (test <= last)
     {
-        if (test & static_cast<int>(modifiers))
+        if (test & modifiersPack)
         {
             stream << GlobalEnumMap<eModifierKeys>::Instance()->ToString(test) << "+";
         }

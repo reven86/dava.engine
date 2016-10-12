@@ -56,12 +56,15 @@ enum class eMouseButtons : uint32
 enum class eModifierKeys : uint32
 {
     NONE = 0, //!< No modifier keys are pressed
+
     FIRST = 0x01,
-    SHIFT = FIRST, //!< Any shift is pressed
+    SHIFT = 0x01, //!< Any shift is pressed
     CONTROL = 0x02, //!< Any control is pressed
     ALT = 0x04, //!< Any alt is pressed
     COMMAND = 0x08, //!< Any command key is pressed (macOS only)
     LAST = COMMAND,
+
+    MASK = LAST | ~LAST, //!< Value used to mask useful bits
 };
 
 // clang-format off
