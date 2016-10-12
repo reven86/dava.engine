@@ -154,6 +154,7 @@ void SuspendRendering();
 void ResumeRendering();
 
 void InvalidateCache();
+void SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp);
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle

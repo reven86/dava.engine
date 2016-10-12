@@ -330,8 +330,7 @@ void gles2_Uninitialize()
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_Reset(const ResetParam& param)
+static void gles2_Reset(const ResetParam& param)
 {
     _GLES2_DefaultFrameBuffer_Width = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
@@ -348,12 +347,17 @@ gles2_Reset(const ResetParam& param)
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_InvalidateCache()
+static void gles2_InvalidateCache()
 {
     PipelineStateGLES2::InvalidateCache();
     DepthStencilStateGLES2::InvalidateCache();
     TextureGLES2::InvalidateCache();
+}
+
+static void gles2_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    GLCommand cmd = { GLCommand::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecGL(&cmd, 1);
 }
 
 //------------------------------------------------------------------------------
@@ -505,6 +509,7 @@ void gles2_Initialize(const InitParam& param)
         DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
         DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+        DispatchGLES2.impl_SyncCPUGPU = &gles2_SynchronizeCPUGPU;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -651,6 +656,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_SyncCPUGPU = &gles2_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -746,6 +752,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_SyncCPUGPU = &gles2_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -841,6 +848,7 @@ void gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_ResumeRendering = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering = &SuspendGLES2;
     DispatchGLES2.impl_InvalidateCache = &gles2_InvalidateCache;
+    DispatchGLES2.impl_SyncCPUGPU = &gles2_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchGLES2);
 

@@ -22,6 +22,7 @@ Dispatch
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
+    void (*impl_SyncCPUGPU)(uint64* cpuTimestamp, uint64* gpuTimestamp);
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
     void (*impl_VertexBuffer_Delete)(Handle);

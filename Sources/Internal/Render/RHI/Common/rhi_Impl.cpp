@@ -171,6 +171,11 @@ void InvalidateCache()
         (*_Impl.impl_InvalidateCache)();
 }
 
+void SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    _Impl.impl_SyncCPUGPU(cpuTimestamp, gpuTimestamp);
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer

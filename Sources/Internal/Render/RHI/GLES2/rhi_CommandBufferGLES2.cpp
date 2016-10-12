@@ -12,14 +12,15 @@
 #include "Logger/Logger.h"
 
 using DAVA::Logger;
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
-    #include "Concurrency/ConditionVariable.h"
-    #include "Concurrency/LockGuard.h"
-    #include "Concurrency/AutoResetEvent.h"
-    #include "Concurrency/ManualResetEvent.h"
-    #include "Debug/ProfilerCPU.h"
-    #include "Debug/ProfilerMarkerNames.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/AutoResetEvent.h"
+#include "Concurrency/ManualResetEvent.h"
+#include "Platform/SystemTimer.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include "_gl.h"
 
@@ -2819,6 +2820,21 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
                 EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
 #endif
             }
+        }
+        break;
+        case GLCommand::SYNC_CPU_GPU:
+        {
+            GLint64 timestamp = 0;
+
+#if defined(__DAVAENGINE_IPHONE__)
+#else
+            if (_GLES2_TimeStampQuerySupported)
+            {
+                EXEC_GL(glGetInteger64v(GL_TIMESTAMP, &timestamp));
+            }
+#endif
+            *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
+            *reinterpret_cast<uint64*>(arg[1]) = uint64(timestamp);
         }
         break;
         }

@@ -175,7 +175,9 @@ GLCommand
         GET_QUERYOBJECT_UIV,
         DELETE_QUERIES,
 
-        GET_QUERY_RESULT_NO_WAIT
+        GET_QUERY_RESULT_NO_WAIT,
+
+        SYNC_CPU_GPU
     };
 
     Func func;
