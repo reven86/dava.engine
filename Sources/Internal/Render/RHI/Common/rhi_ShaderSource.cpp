@@ -1296,14 +1296,6 @@ ShaderSource::ConstBufferSize(uint32 bufIndex) const
     return buf[bufIndex].regCount;
 }
 
-//------------------------------------------------------------------------------
-/*
-ShaderProp::Scope
-ShaderSource::ConstBufferScope( uint32 bufIndex ) const
-{
-    return buf[bufIndex].scope;
-}
-*/
 
 //------------------------------------------------------------------------------
 
