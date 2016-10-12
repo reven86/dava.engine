@@ -20,7 +20,7 @@ public:
     class ScopedCounter
     {
     public:
-        ScopedCounter(const char* counterName, ProfilerCPU* profiler);
+        ScopedCounter(const char* counterName, ProfilerCPU* profiler, uint32 frame = 0U);
         ~ScopedCounter();
 
     private:
@@ -44,7 +44,6 @@ public:
     void DeleteSnapshot(int32 snapshot);
     void DeleteSnapshots();
 
-    void DumpJSON(std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
     void DumpLast(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
     void DumpAverage(const char* counterName, uint32 counterCount, std::ostream& stream, int32 snapshot = NO_SNAPSHOT_ID);
 
@@ -52,6 +51,7 @@ public:
     Vector<TraceEvent> GetTrace(const char* counterName, uint32 counterCount = 1, int32 snapshot = NO_SNAPSHOT_ID);
 
 protected:
+    static const FastName TRACE_ARG_FRAME;
     CounterArray* GetCounterArray(int32 snapshot);
 
     CounterArray* counters;
@@ -66,9 +66,11 @@ protected:
 #if PROFILER_CPU_ENABLED
 
 #define DAVA_PROFILER_CPU_SCOPE(counter_name) DAVA::ProfilerCPU::ScopedCounter time_profiler_scope_counter(counter_name, DAVA::ProfilerCPU::globalProfiler);
+#define DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(counter_name, index) DAVA::ProfilerCPU::ScopedCounter time_profiler_scope_counter(counter_name, DAVA::ProfilerCPU::globalProfiler, index);
 
 #else
 
 #define DAVA_PROFILER_CPU_SCOPE(counter_name)
+#define DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(counter_name, index)
 
 #endif

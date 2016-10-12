@@ -2102,8 +2102,11 @@ _GLES2_ExecuteQueuedCommands()
         PerfQueryGLES2::IssueQuery(framePerfQuery1);
     }
 
+    uint32 executedFrameIndex = 0;
     _GLES2_FrameSync.Lock();
     {
+        executedFrameIndex = _GLES2_Frame.begin()->number;
+
         Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
         _GLES2_Frame.erase(_GLES2_Frame.begin());
 
@@ -2116,7 +2119,7 @@ _GLES2_ExecuteQueuedCommands()
     {
         // do swap-buffers
 
-        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT);
+        DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT, executedFrameIndex);
         
 #if defined(__DAVAENGINE_WIN32__)
         Trace("rhi-gl.swap-buffers...\n");

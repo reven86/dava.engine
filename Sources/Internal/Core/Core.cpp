@@ -591,7 +591,7 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_PROCESS_FRAME);
+    DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(ProfilerCPUMarkerName::CORE_PROCESS_FRAME, globalFrameIndex);
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;

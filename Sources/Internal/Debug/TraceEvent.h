@@ -24,6 +24,7 @@ struct TraceEvent
     uint64 threadID;
     uint32 processID;
     EventPhase phase;
+    Vector<std::pair<FastName, uint32>> args;
 
     template <template <typename, typename> class Container, class TAlloc>
     static void DumpJSON(const Container<TraceEvent, TAlloc>& trace, std::ostream& stream);
@@ -56,6 +57,10 @@ void TraceEvent::DumpJSON(const Container<TraceEvent, TAlloc>& trace, std::ostre
 
         stream << "\"ph\": \"" << PHASE_STR[event.phase] << "\", ";
         stream << "\"name\": \"" << event.name.c_str() << "\"";
+
+        for (const std::pair<FastName, uint32>& arg : event.args)
+            stream << ", \"args\": { \"" << arg.first.c_str() << "\": " << arg.second << " }";
+
         stream << " }";
     }
 

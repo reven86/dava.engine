@@ -27,6 +27,7 @@ struct ProfilerCPU::Counter
     uint64 endTime = 0;
     const char* name = nullptr;
     uint64 threadID = 0;
+    uint32 frame = 0;
 };
 
 namespace ProfilerCPUDetails
@@ -73,9 +74,11 @@ bool NameEquals(const char* name1, const char* name2)
 }
 }
 
+const FastName ProfilerCPU::TRACE_ARG_FRAME("Frame Number");
+
 //////////////////////////////////////////////////////////////////////////
 
-ProfilerCPU::ScopedCounter::ScopedCounter(const char* counterName, ProfilerCPU* _profiler)
+ProfilerCPU::ScopedCounter::ScopedCounter(const char* counterName, ProfilerCPU* _profiler, uint32 frame)
 {
     profiler = _profiler;
     if (profiler->started)
@@ -87,13 +90,14 @@ ProfilerCPU::ScopedCounter::ScopedCounter(const char* counterName, ProfilerCPU* 
         c.endTime = 0;
         c.name = counterName;
         c.threadID = Thread::GetCurrentIdAsUInt64();
+        c.frame = frame;
     }
 }
 
 ProfilerCPU::ScopedCounter::~ScopedCounter()
 {
     // We don't write end time if profiler stopped cause
-    // in this moment thread may other dump counters.
+    // in this moment other thread may dump counters.
     // Potentially due to 'pseudo-thread-safe' (see ProfilerRingArray.h)
     // we can get invalid counter (only one, therefore there is 'if(started)' ).
     // We know it. But it performance reason.
@@ -249,11 +253,6 @@ void ProfilerCPU::DumpAverage(const char* counterName, uint32 counterCount, std:
     stream.flush();
 }
 
-void ProfilerCPU::DumpJSON(std::ostream& stream, int32 snapshot)
-{
-    TraceEvent::DumpJSON(GetTrace(snapshot), stream);
-}
-
 Vector<TraceEvent> ProfilerCPU::GetTrace(int32 snapshot)
 {
     DVASSERT((snapshot != NO_SNAPSHOT_ID || !started) && "Stop profiler before tracing");
@@ -266,6 +265,9 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(int32 snapshot)
             continue;
 
         trace.push_back({ FastName(c.name), c.startTime, c.endTime ? (c.endTime - c.startTime) : 0, c.threadID, 0, TraceEvent::PHASE_DURATION });
+
+        if (c.frame)
+            trace.back().args.push_back({ TRACE_ARG_FRAME, c.frame });
     }
 
     return trace;
@@ -297,6 +299,9 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 counter
                 break;
 
             trace.push_back({ FastName(it->name), it->startTime, it->endTime - it->startTime, it->threadID, 0, TraceEvent::PHASE_DURATION });
+
+            if (it->frame)
+                trace.back().args.push_back({ TRACE_ARG_FRAME, it->frame });
         }
     }
 

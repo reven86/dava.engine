@@ -18,6 +18,8 @@ ProfilerGPU* const ProfilerGPU::globalProfiler = &GLOBAL_GPU_PROFILER;
 ProfilerGPU* const ProfilerGPU::globalProfiler = nullptr;
 #endif
 
+const FastName ProfilerGPU::TRACE_ARG_FRAME("Frame Number");
+
 bool ProfilerGPU::PerfQueryPair::IsReady()
 {
     return (!query[0].IsValid() || rhi::PerfQueryIsReady(query[0])) && (!query[1].IsValid() || rhi::PerfQueryIsReady(query[1]));
@@ -40,7 +42,7 @@ Vector<TraceEvent> ProfilerGPU::FrameInfo::GetTrace() const
     });
 
     Vector<TraceEvent> trace;
-    trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION });
+    trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION, { { TRACE_ARG_FRAME, frameIndex } } });
     for (const MarkerInfo* m : sortedMarkers)
     {
         trace.push_back({ FastName(m->name), m->startTime, m->endTime - m->startTime, 0, 0, TraceEvent::PHASE_DURATION });

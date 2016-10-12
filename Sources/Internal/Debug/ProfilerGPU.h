@@ -47,6 +47,8 @@ public:
     bool IsStarted();
 
 protected:
+    static const FastName TRACE_ARG_FRAME;
+
     struct PerfQueryPair
     {
         bool IsReady();

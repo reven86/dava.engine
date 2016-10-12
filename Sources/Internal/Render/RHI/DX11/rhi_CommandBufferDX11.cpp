@@ -1210,8 +1210,11 @@ _ExecuteQueuedCommandsDX11()
                 PerfQueryDX11::IssueTimestamp(perfQueryFrame, pp->perfQuery1, _D3D11_ImmediateContext);
         }
 
+        uint32 executedFrameIndex = 0;
         _DX11_FrameSync.Lock();
         {
+            executedFrameIndex = _DX11_Frame.begin()->number;
+
             Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
             _DX11_Frame.erase(_DX11_Frame.begin());
 
@@ -1225,7 +1228,7 @@ _ExecuteQueuedCommandsDX11()
         // do present
         HRESULT hr;
         {
-            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT);
+            DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT, executedFrameIndex);
             hr = _D3D11_SwapChain->Present(1, 0);
         }
 

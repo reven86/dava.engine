@@ -1198,6 +1198,7 @@ _DX9_ExecuteQueuedCommands()
     if (_DX9_ResetPending == false)
     {
         PerfQueryDX9::PerfQueryFrameDX9* perfQueryFrame = nullptr;
+        uint32 executedFrameIndex = 0;
 
         if (rhi::NeedRestoreResources())
         {
@@ -1231,6 +1232,7 @@ _DX9_ExecuteQueuedCommands()
             {
                 _DX9_PrepareRenderPasses(pass, pass_h, frame_n);
                 perfQueryFrame = _DX9_Frame.front().perfQueryFrame;
+                executedFrameIndex = _DX9_Frame.front().number;
             }
             _DX9_FrameSync.Unlock();
 
@@ -1279,7 +1281,7 @@ _DX9_ExecuteQueuedCommands()
 
         HRESULT hr;
         {
-            DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT);
+            DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT, executedFrameIndex);
             hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
         }
 
