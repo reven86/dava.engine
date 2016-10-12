@@ -4,6 +4,16 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+void InitPreprocessing()
+{
+    mcpp__startup();
+}
+
+void ShutdownPreprocessing()
+{
+    mcpp__shutdown();
+}
+
 void PreProcessText(const char* text, const char** arg, unsigned argCount, std::string* result)
 {
     DVASSERT(text);

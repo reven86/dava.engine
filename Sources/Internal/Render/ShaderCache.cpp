@@ -5,6 +5,8 @@
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/RHI/Common/MCPP/_mcpp.h"
 
+#define RHI_TRACE_CACHE_USAGE 1
+
 namespace DAVA
 {
 namespace ShaderDescriptorCache
@@ -232,7 +234,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    mcpp__startup();
+    InitPreprocessing();
 
     const ShaderSourceCode& sourceCode = GetSourceCode(name);
 
@@ -240,35 +242,43 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     rhi::ShaderSource vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
     if (vSource == nullptr)
     {
-        DAVA_CPU_PROFILER_SCOPE("vSource2.Construct");
         char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
         memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
         vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
         vSource = &vSource2;
     }
+#if (RHI_TRACE_CACHE_USAGE)
+    else
+    {
+        Logger::Info("Using cached vertex shader: %s", vProgUid.c_str());
+    }
+#endif
 
     const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, sourceCode.fSrcHash);
     rhi::ShaderSource fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
     if (fSource == nullptr)
     {
-        DAVA_CPU_PROFILER_SCOPE("fSource2.Construct");
         char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
         memcpy(localBuffer, sourceCode.fragmentProgText, strlen(sourceCode.fragmentProgText));
         fSource2.Construct(rhi::PROG_FRAGMENT, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(fProgUid, sourceCode.fSrcHash, fSource2);
         fSource = &fSource2;
     }
+#if (RHI_TRACE_CACHE_USAGE)
+    else
+    {
+        Logger::Info("Using cached: %s", fProgUid.c_str());
+    }
+#endif
 
     {
-        DAVA_CPU_PROFILER_SCOPE("UpdateProgs");
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
     }
 
     ShaderDescriptor* res = nullptr;
     {
-        DAVA_CPU_PROFILER_SCOPE("AcquireRenderPipelineState");
         rhi::PipelineState::Descriptor psDesc;
         psDesc.vprogUid = vProgUid;
         psDesc.fprogUid = fProgUid;
@@ -286,8 +296,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         }
     }
     shaderDescriptors[key] = res;
-
-    mcpp__shutdown();
+    ShutdownPreprocessing();
 
     return res;
 }
