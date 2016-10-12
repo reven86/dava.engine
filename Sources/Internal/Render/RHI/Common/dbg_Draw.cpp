@@ -602,6 +602,8 @@ DbgDraw::Text2D(int x, int y, uint32 color, const char* format, ...)
         //            left  -= 0.5f;
         //            top   -= 0.5f;
         break;
+    case rhi::RHI_COUNT:
+        break; // to shut up goddamn warning
     }
 
     const float char_w = (dd->_small_text) ? float(SmallCharW) : float(NormalCharW);

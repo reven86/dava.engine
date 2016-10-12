@@ -79,6 +79,8 @@ ApiIsSupported(Api api)
     case RHI_GLES2:
         supported = true;
         break;
+    case rhi::RHI_COUNT:
+        break; // to shut up goddamn warning
     }
 
     return supported;
