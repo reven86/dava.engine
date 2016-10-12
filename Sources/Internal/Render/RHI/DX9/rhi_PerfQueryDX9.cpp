@@ -240,33 +240,42 @@ void RejectPerfQueryFrame(PerfQueryFrameDX9* frame)
 
 void ReleaseAll()
 {
-    DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
-
-    for (PerfQueryFrameDX9* frame : pendingPerfQueryFrameDX9)
-    {
-        frame->disjointQuery->Release();
-        frame->freqQuery->Release();
-        delete frame;
-    }
-    pendingPerfQueryFrameDX9.clear();
-
-    for (PerfQueryFrameDX9* frame : perfQueryFramePoolDX9)
-    {
-        frame->disjointQuery->Release();
-        frame->freqQuery->Release();
-        delete frame;
-    }
-    perfQueryFramePoolDX9.clear();
-
     PerfQueryDX9Pool::Iterator it = PerfQueryDX9Pool::Begin(), end = PerfQueryDX9Pool::End();
     for (; it != end; ++it)
     {
         if (it->query)
         {
+            Logger::Error("ReleaseQuery %x", it->query);
             it->query->Release();
             it->query = nullptr;
         }
     }
+
+    if (currentPerfQueryFrameDX9)
+    {
+        currentPerfQueryFrameDX9->disjointQuery->Release();
+        currentPerfQueryFrameDX9->freqQuery->Release();
+
+        currentPerfQueryFrameDX9->disjointQuery = nullptr;
+        currentPerfQueryFrameDX9->freqQuery = nullptr;
+    }
+
+    DAVA::LockGuard<DAVA::Mutex> guard(perfQueryFramePoolSyncDX9);
+
+    perfQueryFramePoolDX9.insert(perfQueryFramePoolDX9.end(), pendingPerfQueryFrameDX9.begin(), pendingPerfQueryFrameDX9.end());
+    pendingPerfQueryFrameDX9.clear();
+
+    for (PerfQueryFrameDX9* frame : perfQueryFramePoolDX9)
+    {
+        if (frame->disjointQuery)
+            frame->disjointQuery->Release();
+
+        if (frame->freqQuery)
+            frame->freqQuery->Release();
+        delete frame;
+    }
+    perfQueryFramePoolDX9.clear();
+
 }
 
 void ObtainPerfQueryMeasurment()
