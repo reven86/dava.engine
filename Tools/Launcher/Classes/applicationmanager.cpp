@@ -216,11 +216,18 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
         return "";
     }
     QString runPath = GetApplicationDirectory(branchID, appID);
-    if (runPath.isEmpty())
+    QString localAppPath = version->runPath;
+    if (localAppPath.isEmpty())
     {
-        return "";
+#ifdef Q_OS_WIN
+        localAppPath = appID + ".exe";
+#elif defined(Q_OS_MAC)
+        localAppPath = appID + ".app/Contents/MacOS/" + appID;
+#else
+#error "unsupported platform"
+#endif //platform
     }
-    runPath += version->runPath;
+    runPath += localAppPath;
     if (!QFile::exists(runPath))
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));

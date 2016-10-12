@@ -10,7 +10,7 @@
 #include <QJsonParseError>
 #include <QRegularExpression>
 
-namespace ConfigParser_local
+namespace ConfigParserDetails
 {
 bool GetLauncherVersionAndURL(const QJsonValue& value, QString& version, QString& url, QString& news)
 {
@@ -94,6 +94,38 @@ QString ProcessID(const QString& id)
     return result;
 }
 
+bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
+{
+    if (appName.isEmpty())
+    {
+        return false;
+    }
+    Application* app = branch->GetApplication(appName);
+    if (app == nullptr)
+    {
+        branch->applications.append(Application(appName));
+        app = &branch->applications.last();
+    }
+    QString verID = entry["build_type"].toString();
+    if (verID.isEmpty())
+    {
+        return false;
+    }
+    AppVersion* appVer = app->GetVersion(verID);
+    if (appVer == nullptr)
+    {
+        app->versions.append(AppVersion());
+        appVer = &app->versions.last();
+    }
+
+    appVer->id = ProcessID(verID);
+    appVer->url = entry["artifacts"].toString();
+    appVer->buildNum = entry["build_num"].toString();
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+
+    return (!appVer->url.isEmpty() && !appVer->id.isEmpty());
+}
+
 bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 {
     QJsonArray array = value.toArray();
@@ -127,35 +159,27 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         }
 
         QString appName = entry["build_name"].toString();
-        if (appName.isEmpty())
+        if (appName.startsWith("toolset", Qt::CaseInsensitive))
         {
-            isValid = false;
-            continue;
+            QString prefix =
+#ifdef Q_OS_WIN
+            "_win";
+#elif defined(Q_OS_MAC)
+            "_mac";
+#else
+#error "unsupported platform"
+#endif //platform
+            QStringList applications = { "AssetCacheServer", "ResourceEditor", "QuickEd" };
+            for (const QString& toolsetApp : applications)
+            {
+                isValid &= ExtractApp(toolsetApp + prefix, entry, branch, true);
+            }
         }
-        Application* app = branch->GetApplication(appName);
-        if (app == nullptr)
+        else
         {
-            branch->applications.append(Application(appName));
-            app = &branch->applications.last();
-        }
-        QString verID = entry["build_type"].toString();
-        if (verID.isEmpty())
-        {
-            isValid = false;
-            continue;
-        }
-        AppVersion* appVer = app->GetVersion(verID);
-        if (appVer == nullptr)
-        {
-            app->versions.append(AppVersion());
-            appVer = &app->versions.last();
+            isValid &= ExtractApp(appName, entry, branch, false);
         }
 
-        appVer->id = ProcessID(verID);
-        appVer->url = entry["artifacts"].toString();
-        appVer->runPath = entry["exe_location"].toString();
-        appVer->buildNum = entry["build_num"].toString();
-        isValid &= (!appVer->url.isEmpty() && !appVer->runPath.isEmpty());
     }
     //hotfix to sort downloaded items without rewriting mainWindow
     for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
@@ -297,7 +321,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         QJsonValue value = rootObj.value(key);
         if (key == "launcher")
         {
-            if (!ConfigParser_local::GetLauncherVersionAndURL(value, launcherVersion, launcherURL, webPageURL))
+            if (!ConfigParserDetails::GetLauncherVersionAndURL(value, launcherVersion, launcherURL, webPageURL))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong launcher version object"));
                 continue;
@@ -305,7 +329,7 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         }
         else if (key == "seo_list")
         {
-            if (!ConfigParser_local::GetLauncherStrings(value, strings))
+            if (!ConfigParserDetails::GetLauncherStrings(value, strings))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("wrong seo strings object"));
                 continue;
@@ -313,14 +337,14 @@ bool ConfigParser::ParseJSON(const QByteArray& configData)
         }
         else if (key == "branches")
         {
-            if (!ConfigParser_local::GetFavorites(value, favorites))
+            if (!ConfigParserDetails::GetFavorites(value, favorites))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading favorites list"));
             }
         }
         else if (key == "builds")
         {
-            if (!ConfigParser_local::GetBranches(value, branches))
+            if (!ConfigParserDetails::GetBranches(value, branches))
             {
                 ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, QObject::tr("error while reading branches list"));
             }
