@@ -18,6 +18,7 @@ protected:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
     void BeforeDestroyedInternal() override;
+    void ShowHelpInternal() override;
 
     DAVA::Camera* FindCamera(DAVA::Entity* rootNode) const;
 

@@ -139,3 +139,11 @@ void SceneImageDump::BeforeDestroyedInternal()
 {
     SceneConsoleHelper::FlushRHI();
 }
+
+void SceneImageDump::ShowHelpInternal()
+{
+    REConsoleModuleCommon::ShowHelpInternal();
+
+    DAVA::Logger::Info("Examples:");
+    DAVA::Logger::Info("\t-sceneimagedump -processfile /Users/SmokeTest/DataSource/3d/Maps/11-grass/test_scene.sc2 -camera TestCamera -width 1024 -height 1024 -gpu adreno -outfile /Users/screenshot.png");
+}
