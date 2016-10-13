@@ -433,7 +433,6 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
         key |= 0x100;
     }
 #elif defined(Q_OS_OSX)
-    qint32 key = qtEvent->nativeVirtualKey();
     if (key == 0)
     {
         key = ConvertQtKeyToSystemScanCode(qtEvent->key());
