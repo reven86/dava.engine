@@ -15,7 +15,7 @@ enum class eEngineRunMode : int32
     CONSOLE_MODE //!< Run engine as standalone console application
 };
 
-/** is a strongly typed enum class representing the status of mouse mode */
+/** Enum class representing the management cursor, using SetCursorCapture(mode) */
 enum class eCursorCapture : int32
 {
     OFF = 0, //!< Disable any capturing(send absolute xy)
