@@ -1,6 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
-#define __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
-
+#pragma once
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA
@@ -11,12 +9,14 @@ class DeviceInfoPrivateBase
 public:
     int32 GetCpuCount();
     DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
-    // default implementation, could be changed in inheritors
+
+    void OverrideGPUFamily(eGPUFamily newGPU);
+    void ResetGPUFamilyOverride();
+    eGPUFamily GetOverridenGPUFamily();
 
 private:
     Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;
+    eGPUFamily overridenGPU = GPU_INVALID;
 };
 
 } // namespace DAVA
-
-#endif // __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__

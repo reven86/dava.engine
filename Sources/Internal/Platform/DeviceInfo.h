@@ -147,6 +147,9 @@ public:
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
 
+    static void OverrideGPUFamily(eGPUFamily newGPU);
+    static void ResetGPUFamilyOverride();
+
     // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID
     // bool value - device's state: connected (true) or disconnected (false)

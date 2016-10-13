@@ -15,4 +15,19 @@ DeviceInfo::eHIDType type)
     return hidConnectionSignals[type];
 }
 
+void DeviceInfoPrivateBase::OverrideGPUFamily(eGPUFamily newGPU)
+{
+    overridenGPU = newGPU;
+}
+
+void DeviceInfoPrivateBase::ResetGPUFamilyOverride()
+{
+    overridenGPU = GPU_INVALID;
+}
+
+eGPUFamily DeviceInfoPrivateBase::GetOverridenGPUFamily()
+{
+    return overridenGPU;
+}
+
 } // namespace DAVA
