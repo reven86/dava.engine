@@ -1,6 +1,8 @@
 #ifndef __DAVA_UITEXTFIELDSTB_H__
 #define __DAVA_UITEXTFIELDSTB_H__
 
+//#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)
+
 #include "Base/BaseTypes.h"
 #include "Render/2D/TextBlock.h"
 #include "UI/Private/StbTextEditBridge.h"
@@ -15,12 +17,9 @@ class Color;
 class UIEvent;
 class Vector2;
 class TextBox;
+class UITextFieldDelegate;
 struct Rect;
 
-// This implementation simulate iOS/Android native controls,
-// so no hierarchy for internal UIStaticText, and call UpdateRect
-// every frame, and render directly in SyctemDraw. This helps
-// to find similar bugs in all implementations
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
@@ -29,6 +28,9 @@ public:
     friend class UITextField;
     TextFieldStbImpl(UITextField* control);
     ~TextFieldStbImpl();
+    void Initialize();
+    void OwnerIsDying();
+    void SetDelegate(UITextFieldDelegate*);
     void CopyDataFrom(TextFieldStbImpl* t);
     void OpenKeyboard();
     void CloseKeyboard();
@@ -109,5 +111,7 @@ private:
 };
 
 } // end namespace DAVA
+
+//#endif // defined(__DAVAENGINE_WIN32__) || define(__DAVAENGINE_MACOS__)
 
 #endif //__DAVA_UITEXTFIELDSTB_H__

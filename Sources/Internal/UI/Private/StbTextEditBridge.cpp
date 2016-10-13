@@ -160,6 +160,8 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 #define K_VKEY_CUT (K_VKEY | K_CTRL | int(DAVA::Key::KEY_X))
 #define K_VKEY_COPY (K_VKEY | K_CTRL | int(DAVA::Key::KEY_C))
 #define K_VKEY_PASTE (K_VKEY | K_CTRL | int(DAVA::Key::KEY_V))
+#define K_VKEY_DELETE_WORD (K_VKEY | K_CTRL | int(DAVA::Key::DELETE))
+#define K_VKEY_BACKSPACE_WORD (K_VKEY | K_CTRL | int(DAVA::Key::BACKSPACE))
 
 //#define STB_TEXTEDIT_K_PGUP
 //#define STB_TEXTEDIT_K_PGDOWN
@@ -229,6 +231,12 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     case K_VKEY_SELECT_ALL:
         SelectAll();
         return false;
+    case K_VKEY_DELETE_WORD:
+        SendRaw(STB_TEXTEDIT_K_WORDRIGHT | STB_TEXTEDIT_K_SHIFT);
+        return SendRaw(STB_TEXTEDIT_K_DELETE);
+    case K_VKEY_BACKSPACE_WORD:
+        SendRaw(STB_TEXTEDIT_K_WORDLEFT | STB_TEXTEDIT_K_SHIFT);
+        return SendRaw(STB_TEXTEDIT_K_BACKSPACE);
 #if ENABLE_CLIPBOARD
     case K_VKEY_CUT:
         return CutToClipboard(); // Can modify text
