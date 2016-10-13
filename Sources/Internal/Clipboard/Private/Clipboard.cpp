@@ -2,6 +2,8 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 #include "win32/ClipboardImplWin32.h"
+#elif defined(__DAVAENGINE_MACOS__)
+#include "osx/ClipboardImplOsx.h"
 #else
 #include "ClipboardImplStub.h"
 #endif

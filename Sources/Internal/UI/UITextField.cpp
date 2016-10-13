@@ -28,7 +28,7 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     TextFieldPlatformImpl(Window* /*w*/, UITextField* uiTextField)
 #else
-    TextFieldPlatformImpl(UITextField* control)
+    TextFieldPlatformImpl(UITextField* uiTextField)
 #endif
         : TextFieldStbImpl(uiTextField)
     {

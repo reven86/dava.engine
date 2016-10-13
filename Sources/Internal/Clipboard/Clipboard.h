@@ -8,50 +8,48 @@ namespace DAVA
 class IClipboardImpl;
 
 /**
- * \brief Helper to work with system clipboard
- */
+Helper to work with system clipboard.
+*/
 class Clipboard
 {
 public:
     /**
-     * \brief Constructor
-     */
+    Create instance of helper.
+    */
     Clipboard();
 
     /**
-     * \brief Destructor
-     */
+    Destroy instance.
+    */
     ~Clipboard();
 
     /**
-     * \brief Return status of clipboard helper
-     * \return true if helper ready to work with clipboard
-     */
+    Get status of clipboard helper.
+    Return true if helper ready to work with clipboard.
+    */
     bool IsReadyToUse() const;
 
     /**
-     * \brief Clear system clipboard
-     * \return true if successful
-     */
+    Clear system clipboard.
+    Return true if successful.
+    */
     bool ClearClipboard() const;
 
     /**
-     * \brief Check that system clipboard contains Unicode text
-     * \return true if system clipboard contains Unicode text
-     */
+    Check that system clipboard contains Unicode text.
+    Return true if successful.
+    */
     bool HasText() const;
 
     /**
-     * \brief Copy to system clipboard WideString as Unicode string
-     * \param[in] str input string
-     * \return true if successful
-     */
+    Copy to system clipboard specified WideString `str` as Unicode string.
+    Return true if successful.
+    */
     bool SetText(const WideString& str);
 
     /**
-     * \brief Get from system clipboard Unicode text data as WideString
-     * \return WideString with clipboard content
-     */
+    Get from system clipboard Unicode text data as WideString
+    */
     WideString GetText() const;
 
 private:
