@@ -231,6 +231,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     case sl::HLSLBaseType_Float4x4:
                         prop.type = rhi::ShaderProp::TYPE_FLOAT4X4;
                         break;
+                    default:
+                        break; // to shut up goddamn warning
                     }
 
                     for (sl::HLSLAttribute* a = decl->attributes; a; a = a->nextAttribute)
@@ -378,6 +380,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     case sl::HLSLBaseType_SamplerCube:
                         s.type = rhi::TEXTURE_TYPE_CUBE;
                         break;
+                    default:
+                        break; // to shut up goddamn warning
                     }
                     s.uid = FastName(decl->name);
                     Snprintf(regName, sizeof(regName), "s%u", sampler_reg);
@@ -530,6 +534,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     data_type = rhi::VDT_UINT8;
                     data_count = 4;
                     break;
+                default:
+                    break; // to shut up goddamn warning
                 }
 
                 char sem[128];
@@ -800,6 +806,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                 prop_decl[i].decl->type.flags |= sl::HLSLTypeFlag_Static | sl::HLSLTypeFlag_Property;
             }
             break;
+            default:
+                break; // to shut up goddamn warning
             }
 
             if (property[i].isBigArray)
@@ -1217,6 +1225,8 @@ ShaderSource::GetSourceCode(Api targetApi) const
                 src->clear();
         }
         break;
+        case RHI_COUNT:
+            break; // to shut up goddamn warning
         }
     }
 

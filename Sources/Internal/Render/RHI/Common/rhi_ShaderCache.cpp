@@ -964,7 +964,7 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_END               return OUT; }\n"
 
 ;
-
+/*
 static void
 PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedText)
 {
@@ -1023,6 +1023,8 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
     {
         src_len += sprintf(src + src_len, "%s", _ShaderDefine_GLES2);
     }
+    case RHI_COUNT:
+        break; // to shut up goddamn warning
     break;
 
     case RHI_METAL:
@@ -1189,11 +1191,14 @@ PreProcessSource(Api targetApi, const char* srcText, std::string* preprocessedTe
     case RHI_METAL:
         preprocessedText->insert(0, _ShaderHeader_Metal);
         break;
+
+    case RHI_COUNT:
+        break; // to shut up goddamn warning
     }
 
     //DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
-
+*/
 //------------------------------------------------------------------------------
 
 void UpdateProg(Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText)

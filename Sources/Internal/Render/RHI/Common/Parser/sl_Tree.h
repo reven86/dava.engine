@@ -84,9 +84,10 @@ enum HLSLBaseType
     HLSLBaseType_Sampler2DMS,
     HLSLBaseType_UserDefined, // struct
 
-    HLSLBaseType_Count,
-    HLSLBaseType_NumericCount = HLSLBaseType_LastNumeric - HLSLBaseType_FirstNumeric + 1
+    HLSLBaseType_Count //,
+    //    HLSLBaseType_NumericCount = HLSLBaseType_LastNumeric - HLSLBaseType_FirstNumeric + 1
 };
+const unsigned HLSLBaseType_NumericCount = HLSLBaseType_LastNumeric - HLSLBaseType_FirstNumeric + 1;
 
 inline bool IsSamplerType(HLSLBaseType baseType)
 {

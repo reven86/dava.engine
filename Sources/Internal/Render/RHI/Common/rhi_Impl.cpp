@@ -1030,6 +1030,8 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     case RHI_METAL:
         color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
         break;
+    case RHI_COUNT:
+        break; // to shut up goddamn warning
     }
 
     return color;
