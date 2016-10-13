@@ -125,7 +125,7 @@ public:
 
 protected:
     Camera *passMainCamera, *passDrawCamera;
-    float32 waterLevel;
+    float32 waterLevel = 0;
 };
 
 class WaterReflectionRenderPass : public WaterPrePass

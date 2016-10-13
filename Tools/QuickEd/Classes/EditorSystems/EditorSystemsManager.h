@@ -68,6 +68,7 @@ class AbstractProperty;
 class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
+class HUDSystem;
 
 class EditorSystemsManager : PackageListener
 {
@@ -89,7 +90,9 @@ public:
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    void HighlightNode(ControlNode* node);
+    void ClearHighlight();
+    ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
@@ -108,7 +111,6 @@ public:
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageNodeChanged;
-    DAVA::Signal<const DAVA::Vector<ControlNode*>&> nodesHovered;
     DAVA::Signal<bool> transformStateChanged; //indicates when user transform control
 
 private:
@@ -138,9 +140,7 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
-
-public:
-    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    HUDSystem* hudSystemPtr = nullptr;
 };
 
 template <class OutIt, class Predicate>
@@ -161,7 +161,6 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
     {
         *destination++ = node;
     }
-
     if (!stopPredicate(node))
     {
         int count = node->GetCount();
