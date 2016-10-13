@@ -100,6 +100,14 @@ ApplicationWindow {
         newItem.davaPath = rowLayout_davaFolder.path
         newItem.customOptions = textField_customOptions.text
         newItem.state = mutableContent.saveState();
+        
+        //now update current history, because we load fields from it.
+        for(var j = 0; j < history.length; ++j) {
+            if(history[j].source === source) {
+                history[j] = newItem;
+            }
+        }
+        
         if(found) {
             //add item to top and remove it
             --i;
