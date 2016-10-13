@@ -107,7 +107,7 @@ void Window::SetCursorVisibility(bool visible)
     }
 }
 
-bool Window::GetCursorVisible() const
+bool Window::GetCursorVisibility() const
 {
     return cursorVisible;
 }

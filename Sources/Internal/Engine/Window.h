@@ -86,7 +86,7 @@ public:
     void SetCursorVisibility(bool visible);
 
     /** Get cursor visibility.*/
-    bool GetCursorVisible() const;
+    bool GetCursorVisibility() const;
 
 public:
     // Signals
