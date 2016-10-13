@@ -317,35 +317,34 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-    uint32 button = ConvertButtons(qtEvent->button());
+    eMouseButtons button = ConvertMouseButton(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, false));
 }
 
 void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-    uint32 button = ConvertButtons(qtEvent->button());
+    eMouseButtons button = ConvertMouseButton(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, false));
 }
 
 void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
 }
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
-    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-    uint32 button = ConvertButtons(qtEvent->button());
-    float32 x = static_cast<float32>(qtEvent->x());
-    float32 y = static_cast<float32>(qtEvent->y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 2, false));
+    // Do not handle mouse double click as dava.engine internals produce double clicks
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
@@ -372,37 +371,46 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
         deltaX = delta.x();
         deltaY = delta.y();
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
 {
-#ifdef Q_OS_WIN
-    uint32 nativeModif = qtEvent->nativeModifiers();
-    uint32 nativeScanCode = qtEvent->nativeScanCode();
     uint32 key = qtEvent->nativeVirtualKey();
-    if ((1 << 24) & nativeModif)
+#if defined(Q_OS_WIN)
+    // How to distinguish left and right shift, control and alt: http://stackoverflow.com/a/15977613
+    uint32 lparam = qtEvent->nativeModifiers();
+    uint32 scanCode = qtEvent->nativeScanCode();
+    bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
+    if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
     {
         key |= 0x100;
     }
-    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
-    {
-        key |= 0x100;
-    }
-#else
-    uint32 key = qtEvent->nativeVirtualKey();
+#elif defined(Q_OS_OSX)
     if (key == 0)
     {
         key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
+#else
+#error "Unsupported platform"
 #endif
 
     bool isRepeated = qtEvent->isAutoRepeat();
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, isRepeated));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, modifierKeys, isRepeated));
+
     QString text = qtEvent->text();
     if (!text.isEmpty())
     {
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, isRepeated);
+#if defined(Q_OS_WIN)
+        // Windows translates some Ctrl key combinations into ASCII control characters.
+        // It seems to me that control character are not wanted by game to handle in character message.
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
+        if ((modifierKeys & (eModifierKeys::CONTROL | eModifierKeys::ALT)) != eModifierKeys::NONE)
+            return;
+#endif
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
         for (int i = 0, n = text.size(); i < n; ++i)
         {
             QCharRef charRef = text[i];
@@ -414,27 +422,28 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
 
 void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 {
-#ifdef Q_OS_WIN
-    uint32 nativeModif = qtEvent->nativeModifiers();
-    uint32 nativeScanCode = qtEvent->nativeScanCode();
     uint32 key = qtEvent->nativeVirtualKey();
-    if ((1 << 24) & nativeModif)
+#if defined(Q_OS_WIN)
+    // How to distinguish left and right shift, control and alt: http://stackoverflow.com/a/15977613
+    uint32 lparam = qtEvent->nativeModifiers();
+    uint32 scanCode = qtEvent->nativeScanCode();
+    bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
+    if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
     {
         key |= 0x100;
     }
-    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
-    {
-        key |= 0x100;
-    }
-#else
+#elif defined(Q_OS_OSX)
     qint32 key = qtEvent->nativeVirtualKey();
     if (key == 0)
     {
         key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
+#else
+#error "Unsupported platform"
 #endif
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, modifierKeys, false));
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -478,32 +487,55 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.releaseContextFunc = &ReleaseContext;
 }
 
-uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)
+eModifierKeys WindowBackend::GetModifierKeys() const
 {
-    UIEvent::MouseButton mouseButton = UIEvent::MouseButton::NONE;
+    eModifierKeys result = eModifierKeys::NONE;
+    Qt::KeyboardModifiers qmodifiers = QApplication::queryKeyboardModifiers();
+    if (qmodifiers & Qt::ShiftModifier)
+    {
+        result |= eModifierKeys::SHIFT;
+    }
+    if (qmodifiers & Qt::AltModifier)
+    {
+        result |= eModifierKeys::ALT;
+    }
+#if defined(Q_OS_OSX)
+    if (qmodifiers & Qt::ControlModifier)
+    {
+        result |= eModifierKeys::COMMAND;
+    }
+    if (qmodifiers & Qt::MetaModifier)
+    {
+        result |= eModifierKeys::CONTROL;
+    }
+#elif defined(Q_OS_WIN)
+    if (qmodifiers & Qt::ControlModifier)
+    {
+        result |= eModifierKeys::CONTROL;
+    }
+#else
+#error "Unsupported platform"
+#endif
+    return result;
+}
 
-    if (button == Qt::LeftButton)
+eMouseButtons WindowBackend::ConvertMouseButton(Qt::MouseButton button)
+{
+    switch (button)
     {
-        mouseButton = UIEvent::MouseButton::LEFT;
+    case Qt::LeftButton:
+        return eMouseButtons::LEFT;
+    case Qt::RightButton:
+        return eMouseButtons::RIGHT;
+    case Qt::MiddleButton:
+        return eMouseButtons::MIDDLE;
+    case Qt::XButton1:
+        return eMouseButtons::EXTENDED1;
+    case Qt::XButton2:
+        return eMouseButtons::EXTENDED2;
+    default:
+        return eMouseButtons::NONE;
     }
-    if (button == Qt::RightButton)
-    {
-        mouseButton = UIEvent::MouseButton::RIGHT;
-    }
-    if (button == Qt::MiddleButton)
-    {
-        mouseButton = UIEvent::MouseButton::MIDDLE;
-    }
-    if (button == Qt::XButton1)
-    {
-        mouseButton = UIEvent::MouseButton::EXTENDED1;
-    }
-    if (button == Qt::XButton2)
-    {
-        mouseButton = UIEvent::MouseButton::EXTENDED2;
-    }
-
-    return static_cast<uint32>(mouseButton);
 }
     
 #if defined(Q_OS_OSX)

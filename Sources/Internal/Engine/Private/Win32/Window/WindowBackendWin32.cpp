@@ -422,7 +422,7 @@ LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
     // Windows translates some Ctrl key combinations into ASCII control characters.
     // It seems to me that control character are not wanted by game to handle in character message.
     // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    if ((modifierKeys & (eModifierKeys::CONTROL | eModifierKeys::ALT)) == eModifierKeys::NONE)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
     }
