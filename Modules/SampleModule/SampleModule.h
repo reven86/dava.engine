@@ -11,9 +11,7 @@ namespace DAVA
     
 class ModuleManager;
 
-namespace Test
-{
-    
+  
 class SampleModule : public IModule
 {
 public:
@@ -38,5 +36,4 @@ private:
     Vector<eStatus> statusList;
 };
     
-};
 };

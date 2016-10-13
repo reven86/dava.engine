@@ -5,6 +5,7 @@
     #ifdef __DAVAENGINE_WIN32__
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
+    int i = 0;
 }
     #endif
 #endif

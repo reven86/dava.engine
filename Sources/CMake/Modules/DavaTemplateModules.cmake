@@ -210,24 +210,17 @@ macro( generated_initialization_module_code )
                set( NAMESPACE_PREFIX "${MODULE_INITIALIZATION_NAMESPACE_${ITEM}}::" )
 
             endif()
-            
-            message( "MODULE_TYPE ---->  ${MODULE_TYPE_${ITEM}} ")
 
-            if( ${MODULE_TYPE_${ITEM}} STREQUAL "INLINE" )
-                message("MODULE_TYPE IS INLINE !!!")
-            elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "STATIC" )
-                message("MODULE_TYPE IS STATIC !!!")
+            if( ${MODULE_TYPE_${ITEM}} STREQUAL "INLINE" OR ${MODULE_TYPE_${ITEM}} STREQUAL "STATIC" )
+                list( APPEND INIT_POINTERS "    ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
+				list( APPEND GET_MODULE_CODE "template <>\n${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
+				list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
+				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
+				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
             elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
-                message("MODULE_TYPE IS DYNAMIC !!!")
+                list( APPEND CTOR_CODE "    HMODULE _${ITEM} = LoadLibrary(L\"${NAMESPACE_PREFIX}${ITEM}\")\;\n")
             endif()
-
-            list( APPEND INIT_POINTERS "    ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
-
-            list( APPEND GET_MODULE_CODE "template <>\n${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
-            list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
-			
-            list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
-            list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )     
+              
         endforeach()
         list( APPEND INIT_POINTERS "}\;\n" )
 

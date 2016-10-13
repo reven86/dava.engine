@@ -4,8 +4,7 @@
 
 namespace DAVA
 {
-namespace Test
-{
+
 SampleDynamicModule::SampleDynamicModule(Engine* engine)
     : IModule(engine)
 {
@@ -21,5 +20,5 @@ void SampleDynamicModule::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
 }
-}
+
 }
