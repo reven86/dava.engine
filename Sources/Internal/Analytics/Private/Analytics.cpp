@@ -55,6 +55,15 @@ const KeyedArchive* Core::GetConfig() const
 
 void Core::AddBackend(const String& name, std::unique_ptr<IBackend> backend)
 {
+    DVASSERT_MSG(backends.find(name) == backends.end(),
+                 Format("Backend with name %s is already exist", name.c_str()).c_str());
+
+    if (backend == nullptr)
+    {
+        DVASSERT_MSG(false, "Empty backend");
+        return;
+    }
+
     backends[name] = std::move(backend);
 }
 

@@ -56,8 +56,6 @@ public:
 
     /**
     Set config to analytics system.
-    \param[in] newConfig Archive which contain analytics system configuration.
-
     Config should contain:
     - options for configuration of the system and backends
         Has key-value form, so access to it looks like config->GetString("option")
@@ -135,24 +133,22 @@ public:
     \endcode
 
     New config will be discarded if it doesn't exist (newConfig == nullptr) or 
-    common events filtration config doesn't exist; also assert will be shown.
+    common events filtration config doesn't exist.
     */
     void SetConfig(const KeyedArchive* newConfig);
 
-    /** Return config. */
+    /** Return config if exists, nullptr otherwise. */
     const KeyedArchive* GetConfig() const;
 
     /** 
-    Add backend to core. 
-    \param[in] name Name of the backend. Should be unique. 
-    \param[in] backend Backend object.
+    Add backend with unique name to Core. 
+    Undefined behavior will happen if backend name is non-unique.
+    Method has no effect if backend is empty (backend == nullptr).
     */
     void AddBackend(const String& name, std::unique_ptr<IBackend> backend);
 
     /** 
     Post event for filtration and processing.
-    \param[in] event Event for processing.
-
     Method filters events by using common and per-backend filtration config and then sends them to backends.
     If Core has not-started state, is not configured or has no backends, any event will not pass.
     If event don't satisfy common filtration config, it will not pass.
