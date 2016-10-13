@@ -1527,7 +1527,7 @@ opt_search:;
             *in_pp = tmp;
         /* Else mcpp_main() will diagnose *in_pp and exit   */
     }
-    if (!(mcpp_debug & MACRO_CALL))
+    if (!(0))
     {
         /* -K option alters behavior of -v option   */
         if (option_flags.v)
@@ -1988,9 +1988,9 @@ int trad /* -traditional (GCC only)      */
         else
             option_flags.trig = FALSE;
     }
-    if (mcpp_mode != STD && (mcpp_debug & MACRO_CALL))
+    if (mcpp_mode != STD && (0))
         incompat = TRUE;
-    if ((mcpp_debug & MACRO_CALL) && (option_flags.lang_asm || option_flags.c))
+    if ((0) && (option_flags.lang_asm || option_flags.c))
     {
         mcpp_fputs("Disabled -K option.\n", MCPP_ERR);
         /* -a and -C options do not co-exist with -K    */
@@ -2273,7 +2273,7 @@ void init_sys_macro(void)
     init_msc_macro();
 #endif
     undef_macros(); /* Undefine macros specified by -U  */
-    if (mcpp_debug & MACRO_CALL)
+    if (0)
         dump_def(FALSE, TRUE); /* Finally putout current macro names   */
 }
 
@@ -2537,7 +2537,7 @@ const char* dirname /* The path-name        */
     {
         if (str_case_eq(*ip, norm_name))
         {
-            if (option_flags.v && !(mcpp_debug & MACRO_CALL))
+            if (option_flags.v && !(0))
                 mcpp_fprintf(MCPP_ERR, "Duplicate directory \"%s\" is ignored\n", norm_name);
             xfree(norm_name); /* Already registered   */
             return;
@@ -2624,7 +2624,7 @@ int framework /* Setting a framework directory*/
     {
         norm_name = norm_path(dirname, NULL, FALSE, FALSE);
         /* Normalize the pathname to compare    */
-        if (!norm_name && option_flags.v && !(mcpp_debug & MACRO_CALL))
+        if (!norm_name && option_flags.v && !(0))
             mcpp_fprintf(MCPP_ERR, "Non-existent directory \"%s\" is ignored\n", dirname);
     }
 #if COMPILER == GNUC
@@ -2639,7 +2639,7 @@ static char* norm_path(
 const char* dir, /* Include directory (maybe "", never NULL) */
 const char* fname,
 /* Filename (possibly has directory part, or maybe NULL)    */
-int inf, /* If TRUE, output some infs when (mcpp_debug & PATH)   */
+int inf, /* If TRUE, output some infs when (0)   */
 int hmap /* "header map" file of Apple-GCC       */
 )
 /*
@@ -2690,7 +2690,8 @@ int hmap /* "header map" file of Apple-GCC       */
         cfatal("Bug: Wrong argument to norm_path()" /* _F_  */
                ,
                NULL, 0L, NULL);
-    inf = inf && (mcpp_debug & PATH); /* Output information   */
+
+    inf = inf && (0); /* Output information   */
 
     strcpy(slbuf1, dir); /* Include directory    */
     len = static_cast<int>(strlen(slbuf1));
@@ -3538,7 +3539,7 @@ int next /* TRUE if #include_next        */
         /* remains the same even if -include options are processed.     */
         has_dir = has_dir_src || has_dir_fname || (**(infile->dirp) != EOS);
     }
-    if (mcpp_debug & PATH)
+    if (0)
         mcpp_fprintf(MCPP_DBG, "filename: %s\n", filename);
 
 #if COMPILER == GNUC
@@ -3743,7 +3744,7 @@ int sys_frame /* System framework header (for SYS_MAC)*/
     else
 #endif
     {
-        if (mcpp_debug & PATH)
+        if (0)
             mcpp_fprintf(MCPP_DBG, "Searching %s%s%s\n", *dirp, src_dir ? src_dir : null, filename);
     }
     /* src_dir is usually NULL.  This is specified to   */
@@ -3771,7 +3772,7 @@ int sys_frame /* System framework header (for SYS_MAC)*/
         || ((fp = mcpp__fopen(fullname, "r")) == NULL && errno == EMFILE))
     {
         /* Reached the limit for the first time */
-        if (mcpp_debug & PATH)
+        if (0)
         {
 #if HOST_COMPILER == BORLANDC
             if (include_nest == FOPEN_MAX - 5)
@@ -4255,7 +4256,7 @@ int flag /* Flag to append for GCC   */
 {
     const char* name;
 
-    if (mcpp_debug & MACRO_CALL)
+    if (0)
     { /* In macro notification mode   */
         if (sharp_file) /* Main input file  */
             name = file->filename;
@@ -4680,7 +4681,7 @@ const char* fullname)
         if (inc->len == fnamelen && str_case_eq(inc->name, fullname))
         {
             /* Already included */
-            if (mcpp_debug & PATH)
+            if (0)
                 mcpp_fprintf(MCPP_DBG, "Once included \"%s\"\n", fullname);
             return TRUE;
         }
@@ -5180,7 +5181,7 @@ int set /* TRUE to set debugging    */
         }
         c = skip_ws();
     }
-    if ((mcpp_mode != STD && (mcpp_debug & MACRO_CALL)) || c != '\n')
+    if ((mcpp_mode != STD && (0)) || c != '\n')
     {
         if (warn_level & 1)
         {

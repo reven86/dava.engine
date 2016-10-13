@@ -632,7 +632,7 @@ char* out_end /* End of output buffer             */
         cfatal("Buffer overflow scanning token \"%s\"" /* _F_  */
                ,
                *out_pp, 0L, NULL);
-    if (mcpp_debug & TOKEN)
+    if (0)
         dump_token(token_type, *out_pp);
     if (mcpp_mode == POST_STD && token_type != SEP && infile->fp != NULL && (char_type[*infile->bptr & UCHARMAX] & SPA) == 0)
         insert_sep = INSERT_SEP; /* Insert token separator       */
@@ -664,7 +664,7 @@ int c /* First char of id     */
     if (c == IN_SRC)
     { /* Magic character  */
         *bp++ = c;
-        if ((mcpp_debug & MACRO_CALL) && !in_directive)
+        if ((0) && !in_directive)
         {
             *bp++ = get_ch(); /* Its 2-bytes      */
             *bp++ = get_ch(); /*      argument    */
@@ -1793,7 +1793,7 @@ int get_ch(void)
         squeezews = FALSE;
     }
 
-    if (mcpp_debug & GETC)
+    if (0)
     {
         mcpp_fprintf(MCPP_DBG, "get_ch(%s) '%c' line %ld, bptr = %d, buffer", file->fp ? cur_fullname : file->real_fname ? file->real_fname : file->filename ? file->filename : "NULL", *file->bptr & UCHARMAX, src_line, (int)(file->bptr - file->buffer));
         dump_string(NULL, file->buffer);
@@ -1879,7 +1879,7 @@ int get_ch(void)
         /* Else, it is normal includer file, and marked as 2.   */
         src_line--;
         newlines = 0; /* Clear the blank lines*/
-        if (mcpp_debug & MACRO_CALL) /* Should be re-initialized */
+        if (0) /* Should be re-initialized */
             com_cat_line.last_line = bsl_cat_line.last_line = 0L;
     }
     else if (file->filename)
@@ -2139,7 +2139,7 @@ size_t* sizp /* Size of the comment  */
             }
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp);
-            if ((mcpp_debug & MACRO_CALL) && compiling)
+            if ((0) && compiling)
             {
                 if (cat_line)
                 {
@@ -2154,7 +2154,7 @@ size_t* sizp /* Size of the comment  */
         case '\n': /* Line-crossing comment*/
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp) - 1; /* '-1' for '\n'    */
-            if ((mcpp_debug & MACRO_CALL) && compiling)
+            if ((0) && compiling)
             {
                 /* Save location informations   */
                 if (cat_line == 0) /* First line of catenation     */
@@ -2215,7 +2215,7 @@ int in_comment)
     if (infile == NULL) /* End of a source file */
         return NULL;
     ptr = infile->bptr = infile->buffer;
-    if ((mcpp_debug & MACRO_CALL) && src_line == 0) /* Initialize   */
+    if ((0) && src_line == 0) /* Initialize   */
         com_cat_line.last_line = bsl_cat_line.last_line = 0L;
 
     while (mcpp_fgets(ptr, (int)(infile->buffer + NBUFF - ptr), infile->fp) != NULL)
@@ -2226,7 +2226,7 @@ int in_comment)
             cwarn("Line number %.0s\"%ld\" got beyond range" /* _W1_ */
                   ,
                   NULL, src_line, NULL);
-        if (mcpp_debug & (TOKEN | GETC))
+        if (0)
         { /* Dump it to MCPP_DBG       */
             mcpp_fprintf(MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
             dump_string(NULL, ptr);
@@ -2275,7 +2275,7 @@ int in_comment)
                     /* <backslash><newline> (not MBCHAR)    */
                     ptr = infile->bptr += len; /* Splice the lines */
                     wrong_line = TRUE;
-                    if ((mcpp_debug & MACRO_CALL) && compiling)
+                    if ((0) && compiling)
                     {
                         /* Save location informations   */
                         if (cat_line == 0) /* First line of catenation */
@@ -2295,7 +2295,7 @@ int in_comment)
                       NULL, std_limits.str_len, NULL);
 #endif
         }
-        if ((mcpp_debug & MACRO_CALL) && compiling)
+        if ((0) && compiling)
         {
             if (cat_line && cat_line < MAX_CAT_LINE)
             {
@@ -2545,7 +2545,7 @@ void unget_ch(void)
             cfatal("Bug: Too much pushback", NULL, 0L, NULL); /* _F_  */
     }
 
-    if (mcpp_debug & GETC)
+    if (0)
         dump_unget("after unget");
 }
 
@@ -2776,7 +2776,7 @@ const char* arg3 /* Second string argument       */
             case IN_SRC:
                 if (!standard)
                     *tp++ = ' ';
-                if ((mcpp_debug & MACRO_CALL) && !in_directive)
+                if ((0) && !in_directive)
                     sp += 2; /* Skip two more bytes      */
                 break;
             case MAC_INF:
@@ -2990,7 +2990,7 @@ const char* text)
             mcpp_fprintf(MCPP_DBG, "<%d>", c);
             break;
         case MAC_INF:
-            if (!(mcpp_mode == STD && (mcpp_debug & MACRO_CALL)))
+            if (!(mcpp_mode == STD && (0)))
                 goto no_magic;
             /* Macro informations inserted by -K option */
             c2 = *cp++ & UCHARMAX;
@@ -3054,7 +3054,7 @@ const char* text)
         case IN_SRC:
             if (standard)
             {
-                if ((mcpp_debug & MACRO_CALL) && !in_directive)
+                if ((0) && !in_directive)
                 {
                     int num;
                     num = ((*cp++ & UCHARMAX) - 1) * UCHARMAX;

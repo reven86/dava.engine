@@ -288,7 +288,7 @@ int* pragma_op /* _Pragma() is found ? */
     macro_line = src_line; /* Line number for diag */
     macro_name = defp->name;
     rescan_level = 0;
-    trace_macro = (mcpp_mode == STD) && (mcpp_debug & MACRO_CALL) && !in_directive;
+    trace_macro = (mcpp_mode == STD) && (0) && !in_directive;
     if (trace_macro)
     {
         max_mac_num = INIT_MAC_INF;
@@ -365,7 +365,7 @@ int* pragma_op /* _Pragma() is found ? */
     macro_line = 0;
 exp_end:
     *out_p = EOS;
-    if (mcpp_debug & EXPAND)
+    if (0)
         dump_string("expand_std exit", out);
     macro_name = NULL;
     clear_exp_mac(); /* Clear the information for diagnostic */
@@ -643,7 +643,7 @@ int diag /* Output a diagnostic? */
             cwarn(mesg, "Lacking", (long)mac, "macro");
         if (arg > 0)
             cwarn(mesg, "Lacking", (long)arg, "argument");
-        if ((mac || arg) && (mcpp_debug & EXPAND))
+        if ((mac || arg) && (0))
             mcpp_fputs(
             "Imbalance of magics occurred (perhaps a moved magic), see <expand_std exit> and diagnostics.\n", MCPP_DBG);
     }
@@ -678,12 +678,12 @@ int in_src_n /* Index into in_src[]  */
     int m_num = 0; /* 'mac_num' of current macro   */
     MACRO_INF* m_inf = NULL; /* Pointer into mac_inf[]       */
 
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         dump_a_def("replace entry", defp, FALSE, TRUE, fp_debug);
         dump_unget("replace entry");
     }
-    if ((mcpp_debug & MACRO_CALL) && in_if)
+    if ((0) && in_if)
         mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
 
     enable_trace_macro = trace_macro && defp->nargs != DEF_PRAGMA;
@@ -793,7 +793,7 @@ int in_src_n /* Index into in_src[]  */
             if (expand_compat_mode)
             {
                 enable_repl(outer, FALSE); /* Enable re-expansion  */
-                if (mcpp_debug & EXPAND)
+                if (0)
                     dump_string("enabled re-expansion", outer ? outer->name : "<arg>");
             }
             else
@@ -804,7 +804,7 @@ int in_src_n /* Index into in_src[]  */
     }
 
     catbuf = xmalloc((size_t)(NMACWORK + IDMAX));
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
         dump_string("prescan entry", defp->repl);
@@ -824,7 +824,7 @@ int in_src_n /* Index into in_src[]  */
     }
     catbuf = xrealloc(catbuf, strlen(catbuf) + 1);
     /* Use memory sparingly */
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
         dump_string("prescan exit", catbuf);
@@ -833,7 +833,7 @@ int in_src_n /* Index into in_src[]  */
     if (nargs > 0)
     { /* Function-like macro with any argument    */
         expbuf = xmalloc((size_t)(NMACWORK + IDMAX));
-        if (mcpp_debug & EXPAND)
+        if (0)
         {
             mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
             dump_string("substitute entry", catbuf);
@@ -845,7 +845,7 @@ int in_src_n /* Index into in_src[]  */
         xfree(catbuf);
         expbuf = xrealloc(expbuf, strlen(expbuf) + 1);
         /* Use memory sparingly */
-        if (mcpp_debug & EXPAND)
+        if (0)
         {
             mcpp_fprintf(MCPP_DBG, "(%s)", defp->name);
             dump_string("substitute exit", expbuf);
@@ -868,7 +868,7 @@ int in_src_n /* Index into in_src[]  */
     xfree(expbuf);
     if (enable_trace_macro && out_p)
         out_p = close_macro_inf(out_p, m_num, in_src_n);
-    if (mcpp_debug & EXPAND)
+    if (0)
         dump_string("replace exit", out);
 
     if (trace_macro && defp->nargs == DEF_PRAGMA)
@@ -1269,7 +1269,7 @@ char** token_p /* Address of preceding token pointer   */
         unget_string(prev_token, NULL); /* Scan once more       */
         c = get_ch(); /* This line should be before the next line. */
         infile->fp = (FILE*)-1; /* To check token length*/
-        if (mcpp_debug & EXPAND)
+        if (0)
             dump_string("checking generated token", infile->buffer);
         scan_token(c, (workp = work_buf, &workp), work_end);
         infile->fp = NULL;
@@ -1865,7 +1865,7 @@ char* out /* Output buffer        */
     { /* '\\' outside of quotation has been found */
         int invalid = FALSE;
         unget_string(out, defp->name);
-        if (mcpp_debug & EXPAND)
+        if (0)
             dump_string("checking generated token", infile->buffer);
         scan_quote(get_ch(), work_buf, work_end, TRUE);
         /* Unterminated or too long string will be diagnosed    */
@@ -1913,7 +1913,7 @@ char* out_end /* End of output buffer */
         if (c == MAC_PARM)
         { /* Formal parameter     */
             c = *in++ & UCHARMAX; /* Parameter number     */
-            if (mcpp_debug & EXPAND)
+            if (0)
             {
                 mcpp_fprintf(MCPP_DBG, " (expanding arg[%d])", c);
                 dump_string(NULL, arglist[c - 1]);
@@ -2011,7 +2011,7 @@ char* out_end /* End of output buffer */
     int within_defined_arg_depth = 0;
 #endif
 
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         mcpp_fprintf(MCPP_DBG, "rescan_level--%d (%s) ", rescan_level + 1, outer ? outer->name : "<arg>");
         dump_string("rescan entry", in);
@@ -2216,7 +2216,7 @@ char* out_end /* End of output buffer */
         }
     }
     enable_repl(outer, TRUE); /* Enable macro for later text  */
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         mcpp_fprintf(MCPP_DBG, "rescan_level--%d (%s) ", rescan_level + 1, outer ? outer->name : "<arg>");
         dump_string("rescan exit", out);
@@ -2400,7 +2400,7 @@ int* pragma_op /* Flag of _Pragma (not used in prestd)     */
             cerror(macbuf_overflow, macro_name, 0L, macrobuf);
             longjmp(jump, 1);
         }
-        if (mcpp_debug & GETC)
+        if (0)
         {
             *mp = EOS;
             dump_string("macrobuf", macrobuf);
@@ -2420,7 +2420,7 @@ exp_end:
     }
 err_end:
     out_p = stpcpy(out, macrobuf);
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         dump_string("expand_prestd exit", out);
     }
@@ -2478,7 +2478,7 @@ DEFBUF* defp /* Definition of the macro      */
     int arg_len;
     int c;
 
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         dump_a_def("replace_pre entry", defp, FALSE, TRUE, fp_debug);
         dump_unget("replace_pre entry");
@@ -2528,7 +2528,7 @@ DEFBUF* defp /* Definition of the macro      */
     else
         unget_string(defp->repl, defp->name);
 
-    if (mcpp_debug & EXPAND)
+    if (0)
         dump_unget("replace_pre exit");
     if (defp->nargs >= 0)
         xfree(arglist_pre[0]);
@@ -2577,7 +2577,7 @@ DEFBUF* defp /* Current macro being replaced */
     *out_p = EOS;
     file->buffer = xrealloc(file->buffer, strlen(file->buffer) + 1);
     file->bptr = file->buffer; /* Truncate buffer      */
-    if (mcpp_debug & EXPAND)
+    if (0)
         dump_string("substitute_pre macroline", file->buffer);
     return;
 
@@ -2628,7 +2628,7 @@ int m_num /* Index into mac_inf[]             */
     MAGIC_SEQ mgc_prefix; /* MAC_INF seqs and spaces preceding an arg */
     int c;
 
-    if (mcpp_debug & EXPAND)
+    if (0)
         dump_unget("collect_args entry");
     args = (defp->nargs == DEF_PRAGMA) ? 1 : (defp->nargs & ~AVA_ARGS);
     if (args == 0) /* Need no argument         */
@@ -2782,7 +2782,7 @@ int m_num /* Index into mac_inf[]             */
         mac_inf[m_num].loc_args /* Truncate excess memory   */
         = (LOCATION*)xrealloc((char*)locs, (loc - locs) * sizeof(LOCATION));
 
-    if (mcpp_debug & EXPAND)
+    if (0)
     {
         if (nargs > 0)
         {

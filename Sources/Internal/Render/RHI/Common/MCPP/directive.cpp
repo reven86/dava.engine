@@ -289,7 +289,7 @@ void directive(void)
         hash = L_if;
     ifdo:
         c = do_if(hash, tp);
-        if (mcpp_debug & IF)
+        if (0)
         {
             mcpp_fprintf(MCPP_DBG, "#if (#elif, #ifdef, #ifndef) evaluate to %s.\n", compiling ? "TRUE" : "FALSE");
             mcpp_fprintf(MCPP_DBG, "line %ld: %s", src_line, infile->buffer);
@@ -322,7 +322,7 @@ void directive(void)
             else
                 compiling = TRUE;
         }
-        if ((mcpp_debug & MACRO_CALL) && (ifptr->stat & WAS_COMPILING))
+        if ((0) && (ifptr->stat & WAS_COMPILING))
         {
             sync_linenum();
             mcpp_fprintf(MCPP_OUT, "/*else %ld:%c*/\n", src_line, compiling ? 'T' : 'F'); /* Show that #else is seen  */
@@ -342,7 +342,7 @@ void directive(void)
         if (!compiling && (ifptr->stat & WAS_COMPILING))
             wrong_line = TRUE;
         compiling = (ifptr->stat & WAS_COMPILING);
-        if ((mcpp_debug & MACRO_CALL) && compiling)
+        if ((0) && compiling)
         {
             sync_linenum();
             mcpp_fprintf(MCPP_OUT, "/*endif %ld*/\n", src_line);
@@ -500,7 +500,7 @@ static int do_if(int hash, const char* directive_name)
         cerror(no_arg, NULL, 0L, NULL);
         return FALSE;
     }
-    if (mcpp_debug & MACRO_CALL)
+    if (0)
     {
         sync_linenum();
         mcpp_fprintf(MCPP_OUT, "/*%s %ld*/", directive_name, src_line);
@@ -509,7 +509,7 @@ static int do_if(int hash, const char* directive_name)
     { /* #if or #elif             */
         unget_ch();
         found = (eval_if() != 0L); /* Evaluate expression      */
-        if (mcpp_debug & MACRO_CALL)
+        if (0)
             in_if = FALSE; /* 'in_if' is dynamically set in eval_lex() */
         hash = L_ifdef; /* #if is now like #ifdef   */
     }
@@ -521,7 +521,7 @@ static int do_if(int hash, const char* directive_name)
             return FALSE; /* Next token is not an identifier  */
         }
         found = ((defp = look_id(identifier)) != NULL); /* Look in table*/
-        if (mcpp_debug & MACRO_CALL)
+        if (0)
         {
             if (found)
                 mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
@@ -536,7 +536,7 @@ static int do_if(int hash, const char* directive_name)
     {
         compiling = FALSE;
     }
-    if (mcpp_debug & MACRO_CALL)
+    if (0)
     {
         mcpp_fprintf(MCPP_OUT, "/*i %c*/\n", compiling ? 'T' : 'F');
         /* Report wheather the directive is evaluated TRUE or FALSE */
@@ -812,7 +812,7 @@ int predefine /* Predefine compiler-specific name */
     repl_base = repl_list;
     repl_end = &repl_list[NMACWORK];
     c = skip_ws();
-    if ((mcpp_debug & MACRO_CALL) && src_line) /* Start of definition  */
+    if ((0) && src_line) /* Start of definition  */
         def_start = infile->bptr - infile->buffer - 1;
     if (c == '\n')
     {
@@ -888,7 +888,7 @@ int predefine /* Predefine compiler-specific name */
         in_define = FALSE;
         return NULL; /* Syntax error         */
     }
-    if ((mcpp_debug & MACRO_CALL) && src_line)
+    if ((0) && src_line)
     {
         /* Remember location on source  */
         char* cp;
@@ -918,7 +918,7 @@ int predefine /* Predefine compiler-specific name */
         }
     } /* Else new or re-definition*/
     defp = install_macro(macroname, nargs, work_buf, repl_list, prevp, cmp, predefine);
-    if ((mcpp_debug & MACRO_CALL) && src_line)
+    if ((0) && src_line)
     {
         /* Get location on source file  */
         LINE_COL s_line_col, e_line_col;
@@ -1652,7 +1652,7 @@ const char* name /* Name of the macro    */
     if (standard && dp->push)
         return FALSE; /* 'Pushed' macro           */
     *prevp = dp->link; /* Link the previous and the next   */
-    if ((mcpp_debug & MACRO_CALL) && dp->mline)
+    if ((0) && dp->mline)
     {
         /* Notice this directive unless the macro is predefined     */
         mcpp_fprintf(MCPP_OUT, "/*undef %ld*//*%s*/\n", src_line, dp->name);
