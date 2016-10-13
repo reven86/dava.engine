@@ -130,6 +130,7 @@ void ProjectStructure::Impl::OnFileChanged(const QString& path)
 
 void ProjectStructure::Impl::OnDirChanged(const QString& path)
 {
+    DVASSERT(watcher != nullptr);
     QDir changedDir(path);
     QMutableSetIterator<QFileInfo> iter(projectFiles);
     while (iter.hasNext())
@@ -161,6 +162,7 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
 void ProjectStructure::Impl::AddFilesRecursively(const QDir& dir)
 {
     DVASSERT(dir.exists());
+    DVASSERT(watcher != nullptr);
     QStringList watchedDirectories = watcher->directories();
 
     QString absDirPath(dir.absolutePath());
