@@ -63,7 +63,6 @@
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "PackManager/Private/PackManagerImpl.h"
 #include "Analytics/Analytics.h"
-#include "Analytics/LoggingBackend.h"
 
 namespace DAVA
 {
@@ -257,8 +256,6 @@ void Core::CreateSingletons()
 
     packManager.reset(new PackManagerImpl);
     analyticsCore.reset(new Analytics::Core);
-    auto backend = std::make_unique<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
-    analyticsCore->AddBackend("LoggingBackend", std::move(backend));
 
     new LocalNotificationController();
 

@@ -1,5 +1,6 @@
 #include "Tests/UILoggingTest.h"
 #include "Analytics/Analytics.h"
+#include "Analytics/LoggingBackend.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
@@ -21,6 +22,8 @@ Analytics::Core& GetCore()
 UILoggingTest::UILoggingTest(TestBed& app)
     : BaseScreen(app, "UI Logging test")
 {
+    auto backend = std::make_unique<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
+    GetCore().AddBackend("LoggingBackend", std::move(backend));
 }
 
 void UILoggingTest::LoadResources()

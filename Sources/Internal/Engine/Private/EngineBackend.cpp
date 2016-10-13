@@ -668,8 +668,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->moduleManager->InitModules();
 
     context->analyticsCore = new Analytics::Core;
-    auto backend = std::make_unique<Analytics::LoggingBackend>("~doc:/AnalyticsLog.txt");
-    context->analyticsCore->AddBackend("LoggingBackend", std::move(backend));
 }
 
 void EngineBackend::DestroySubsystems()
