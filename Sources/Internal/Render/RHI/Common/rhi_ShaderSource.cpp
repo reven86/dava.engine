@@ -1203,7 +1203,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
         {
             sl::Target target = (type == PROG_VERTEX) ? sl::TARGET_VERTEX : sl::TARGET_FRAGMENT;
 
-            if (hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, src))
+            if (!hlsl_gen.Generate(ast, sl::HLSLGenerator::MODE_DX9, target, main, src))
                 src->clear();
         }
         break;
