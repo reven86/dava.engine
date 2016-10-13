@@ -9,6 +9,7 @@
 #include <QShortcut>
 #include <QAction>
 #include <QMenu>
+#include <QTimer>
 
 namespace ShortcutCheckerDetail
 {
@@ -141,9 +142,12 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
                 lastInputSequence = inputSequence;
                 lastShortcutTimestamp = event->timestamp();
                 ShortcutCheckerDetail::TriggerAction(action);
-                // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
-                // to fix this we will clear keyboard state in Dava if we found shortcut
-                DAVA::DavaQtKeyboard::ClearAllKeys();
+                QTimer::singleShot(0, []()
+                                   {
+                                       // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
+                                       // to fix this we will clear keyboard state in Dava if we found shortcut
+                                       DAVA::DavaQtKeyboard::ClearAllKeys();
+                                   });
                 event->accept();
                 return true;
             }
