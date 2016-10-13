@@ -739,11 +739,6 @@ static void mcpp_main(void)
              */
             int has_pragma;
 
-            if ((0) && !in_directive)
-            {
-                line_col.line = src_line; /* Location in source   */
-                line_col.col = infile->bptr - infile->buffer - 1;
-            }
             if (scan_token(c, (wp = out_ptr, &wp), out_wend) == NAM && (defp = is_macro(&wp)) != NULL)
             { /* A macro  */
                 wp = expand_macro(defp, out_ptr, out_wend, line_col, &has_pragma); /* Expand it completely */

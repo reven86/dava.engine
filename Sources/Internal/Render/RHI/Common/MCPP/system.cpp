@@ -1527,7 +1527,7 @@ opt_search:;
             *in_pp = tmp;
         /* Else mcpp_main() will diagnose *in_pp and exit   */
     }
-    if (!(0))
+
     {
         /* -K option alters behavior of -v option   */
         if (option_flags.v)
@@ -1987,13 +1987,6 @@ int trad /* -traditional (GCC only)      */
             incompat = TRUE;
         else
             option_flags.trig = FALSE;
-    }
-    if (mcpp_mode != STD && (0))
-        incompat = TRUE;
-    if ((0) && (option_flags.lang_asm || option_flags.c))
-    {
-        mcpp_fputs("Disabled -K option.\n", MCPP_ERR);
-        /* -a and -C options do not co-exist with -K    */
     }
     if (incompat)
     {
@@ -2535,7 +2528,7 @@ const char* dirname /* The path-name        */
     {
         if (str_case_eq(*ip, norm_name))
         {
-            if (option_flags.v && !(0))
+            if (option_flags.v)
                 mcpp_fprintf(MCPP_ERR, "Duplicate directory \"%s\" is ignored\n", norm_name);
             xfree(norm_name); /* Already registered   */
             return;
@@ -2622,7 +2615,7 @@ int framework /* Setting a framework directory*/
     {
         norm_name = norm_path(dirname, NULL, FALSE, FALSE);
         /* Normalize the pathname to compare    */
-        if (!norm_name && option_flags.v && !(0))
+        if (!norm_name && option_flags.v)
             mcpp_fprintf(MCPP_ERR, "Non-existent directory \"%s\" is ignored\n", dirname);
     }
 #if COMPILER == GNUC
@@ -2689,7 +2682,7 @@ int hmap /* "header map" file of Apple-GCC       */
                ,
                NULL, 0L, NULL);
 
-    inf = inf && (0); /* Output information   */
+    inf = FALSE; /* Output information   */
 
     strcpy(slbuf1, dir); /* Include directory    */
     len = static_cast<int>(strlen(slbuf1));
@@ -5150,7 +5143,7 @@ int set /* TRUE to set debugging    */
         }
         c = skip_ws();
     }
-    if ((mcpp_mode != STD && (0)) || c != '\n')
+    if (c != '\n')
     {
         if (warn_level & 1)
         {

@@ -145,7 +145,7 @@ void ViewSceneScreen::OnBack(BaseObject* caller, void* param, void* callerData)
 
 void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    ShaderDescriptorCache::RelaoadShaders();
+    ShaderDescriptorCache::ReloadShaders();
 
     List<NMaterial*> materials;
     scene->GetDataNodes(materials);

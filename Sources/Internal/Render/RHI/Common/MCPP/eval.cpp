@@ -529,9 +529,6 @@ static int eval_lex(void)
                 if (warn)
                 {
                     ev.val = (defp != NULL);
-                    if ((0) && !skip && defp)
-                        /* Annotate if the macro is in non-skipped expr.    */
-                        mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
                 }
                 if (c1 != '(' || skip_ws() == ')') /* Balanced ?   */
                     return VAL; /* Parsed ok            */

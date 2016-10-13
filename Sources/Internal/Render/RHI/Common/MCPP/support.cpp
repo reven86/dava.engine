@@ -662,11 +662,6 @@ int c /* First char of id     */
     if (c == IN_SRC)
     { /* Magic character  */
         *bp++ = c;
-        if ((0) && !in_directive)
-        {
-            *bp++ = get_ch(); /* Its 2-bytes      */
-            *bp++ = get_ch(); /*      argument    */
-        }
         c = get_ch();
     }
 
@@ -2128,39 +2123,10 @@ size_t* sizp /* Size of the comment  */
             }
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp);
-            if ((0) && compiling)
-            {
-                if (cat_line)
-                {
-                    cat_line++;
-                    com_cat_line.len[cat_line] /* Catenated length */
-                    = com_cat_line.len[cat_line - 1] + strlen(infile->buffer) - 1;
-                    /* '-1' for '\n'        */
-                    com_cat_line.last_line = src_line;
-                }
-            }
             return sp; /* End of comment       */
         case '\n': /* Line-crossing comment*/
             if (keep_spaces) /* Save the length      */
                 *sizp = *sizp + (sp - saved_sp) - 1; /* '-1' for '\n'    */
-            if ((0) && compiling)
-            {
-                /* Save location informations   */
-                if (cat_line == 0) /* First line of catenation     */
-                    com_cat_line.start_line = src_line;
-                if (cat_line >= MAX_CAT_LINE - 1)
-                {
-                    *sizp = 0; /* Discard the too long comment */
-                    cat_line = 0;
-                    if (warn_level & 4)
-                        cwarn(
-                        "Too long comment, discarded up to here" /* _W4_ */
-                        ,
-                        NULL, 0L, NULL);
-                }
-                cat_line++;
-                com_cat_line.len[cat_line] = com_cat_line.len[cat_line - 1] + strlen(infile->buffer) - 1;
-            }
             if ((saved_sp = sp = get_line(TRUE)) == NULL)
                 return NULL; /* End of file within comment   */
             /* Never happen, because at_eof() supplement closing*/
@@ -2204,8 +2170,6 @@ int in_comment)
     if (infile == NULL) /* End of a source file */
         return NULL;
     ptr = infile->bptr = infile->buffer;
-    if ((0) && src_line == 0) /* Initialize   */
-        com_cat_line.last_line = bsl_cat_line.last_line = 0L;
 
     while (mcpp_fgets(ptr, (int)(infile->buffer + NBUFF - ptr), infile->fp) != NULL)
     {
@@ -2259,16 +2223,6 @@ int in_comment)
                     /* <backslash><newline> (not MBCHAR)    */
                     ptr = infile->bptr += len; /* Splice the lines */
                     wrong_line = TRUE;
-                    if ((0) && compiling)
-                    {
-                        /* Save location informations   */
-                        if (cat_line == 0) /* First line of catenation */
-                            bsl_cat_line.start_line = src_line;
-                        if (cat_line < MAX_CAT_LINE)
-                            /* Record the catenated length  */
-                            bsl_cat_line.len[++cat_line] = strlen(infile->buffer) - 2;
-                        /* Else ignore  */
-                    }
                     continue;
                 }
             }
@@ -2278,15 +2232,6 @@ int in_comment)
                       ,
                       NULL, std_limits.str_len, NULL);
 #endif
-        }
-        if ((0) && compiling)
-        {
-            if (cat_line && cat_line < MAX_CAT_LINE)
-            {
-                bsl_cat_line.len[++cat_line] = strlen(infile->buffer) - 1;
-                /* Catenated length: '-1' for '\n'  */
-                bsl_cat_line.last_line = src_line;
-            }
         }
         return infile->bptr = infile->buffer; /* Logical line */
     }
@@ -2757,8 +2702,6 @@ const char* arg3 /* Second string argument       */
             case IN_SRC:
                 if (!standard)
                     *tp++ = ' ';
-                if ((0) && !in_directive)
-                    sp += 2; /* Skip two more bytes      */
                 break;
             case MAC_INF:
                 if (mcpp_mode != STD)
@@ -2971,8 +2914,7 @@ const char* text)
             mcpp_fprintf(MCPP_DBG, "<%d>", c);
             break;
         case MAC_INF:
-            if (!(mcpp_mode == STD && (0)))
-                goto no_magic;
+            goto no_magic;
             /* Macro informations inserted by -K option */
             c2 = *cp++ & UCHARMAX;
             if (option_flags.v || c2 == MAC_CALL_START || c2 == MAC_ARG_START)
@@ -3035,17 +2977,7 @@ const char* text)
         case IN_SRC:
             if (standard)
             {
-                if ((0) && !in_directive)
-                {
-                    int num;
-                    num = ((*cp++ & UCHARMAX) - 1) * UCHARMAX;
-                    num += (*cp++ & UCHARMAX) - 1;
-                    mcpp_fprintf(MCPP_DBG, "<SRC%d>", num);
-                }
-                else
-                {
-                    chr = "<SRC>";
-                }
+                chr = "<SRC>";
             }
             else
             { /* Control character    */

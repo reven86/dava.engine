@@ -288,7 +288,7 @@ int* pragma_op /* _Pragma() is found ? */
     macro_line = src_line; /* Line number for diag */
     macro_name = defp->name;
     rescan_level = 0;
-    trace_macro = (mcpp_mode == STD) && (0) && !in_directive;
+    trace_macro = FALSE;
     if (trace_macro)
     {
         max_mac_num = INIT_MAC_INF;
@@ -641,9 +641,6 @@ int diag /* Output a diagnostic? */
             cwarn(mesg, "Lacking", (long)mac, "macro");
         if (arg > 0)
             cwarn(mesg, "Lacking", (long)arg, "argument");
-        if ((mac || arg) && (0))
-            mcpp_fputs(
-            "Imbalance of magics occurred (perhaps a moved magic), see <expand_std exit> and diagnostics.\n", MCPP_DBG);
     }
 
     return buf;
