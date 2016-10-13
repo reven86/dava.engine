@@ -6,6 +6,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include <bitset>
+
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 

@@ -327,11 +327,31 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
             return 0;
         }
 
+        // Capture mouse on press to receive mouse clicks and moves outside window client rect while mouse button is down
+        ChangeMouseButtonState(button, type == MainDispatcherEvent::MOUSE_BUTTON_DOWN);
+        if (mouseButtonState.any())
+        {
+            if (::GetCapture() == nullptr)
+            {
+                ::SetCapture(hwnd);
+            }
+        }
+        else
+        {
+            ::ReleaseCapture();
+        }
+
         eModifierKeys modifierKeys = GetModifierKeys();
         float32 vx = static_cast<float32>(x);
         float32 vy = static_cast<float32>(y);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
     }
+    return 0;
+}
+
+LRESULT WindowBackend::OnCaptureChanged()
+{
+    mouseButtonState.reset();
     return 0;
 }
 
@@ -497,6 +517,10 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 y = GET_Y_LPARAM(lparam);
         lresult = OnMouseClickEvent(message, xbutton, x, y);
     }
+    else if (message == WM_CAPTURECHANGED)
+    {
+        lresult = OnCaptureChanged();
+    }
     else if (message == WM_TOUCH)
     {
         uint32 ntouch = LOWORD(wparam);
@@ -650,6 +674,12 @@ eInputDevice WindowBackend::GetInputEventSource(LPARAM messageExtraInfo)
         return eInputDevice::TOUCH_SURFACE;
     }
     return eInputDevice::MOUSE;
+}
+
+void WindowBackend::ChangeMouseButtonState(eMouseButtons button, bool pressed)
+{
+    size_t index = static_cast<size_t>(button) - 1;
+    mouseButtonState[index] = pressed;
 }
 
 } // namespace Private

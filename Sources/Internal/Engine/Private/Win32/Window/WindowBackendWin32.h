@@ -11,6 +11,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <bitset>
+
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
@@ -51,6 +53,9 @@ public:
     void ProcessPlatformEvents();
 
 private:
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
@@ -68,6 +73,7 @@ private:
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
     LRESULT OnMouseWheelEvent(int32 delta, int32 x, int32 y);
     LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
+    LRESULT OnCaptureChanged();
     LRESULT OnTouch(uint32 ntouch, HTOUCHINPUT htouch);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
@@ -79,6 +85,8 @@ private:
     static bool RegisterWindowClass();
     static eModifierKeys GetModifierKeys();
     static eInputDevice GetInputEventSource(LPARAM messageExtraInfo);
+
+    void ChangeMouseButtonState(eMouseButtons button, bool pressed);
 
 private:
     EngineBackend* engineBackend = nullptr;
@@ -97,6 +105,7 @@ private:
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
 
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
     Vector<TOUCHINPUT> touchInput;
 
     static bool windowClassRegistered;
