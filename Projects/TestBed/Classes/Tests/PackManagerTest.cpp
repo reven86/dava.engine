@@ -321,12 +321,9 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 {
     IPackManager& pm = *engine.GetContext()->packManager;
 
-    // do every time full reinitialization
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
-
     packNameLoading->SetText(L"done: start init");
 
+    pm.asyncConnectStateChanged.DisconnectAll();
     pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
@@ -359,9 +356,6 @@ void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, v
                           pm.DeletePack(pack.name);
                       }
                   });
-
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }

@@ -118,7 +118,7 @@ private:
     mutable Mutex protectPM;
 
     FilePath dirToDownloadedPacks;
-    FilePath pathToBasePacksDB;
+    FilePath dbFileName;
     String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
@@ -127,9 +127,8 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
-    FilePath dbZipInDoc;
-    FilePath dbZipInData;
-    FilePath dbInDoc;
+    FilePath dbLocalNameZipped;
+    FilePath dbLocalName;
 
     String initLocalDBFileName;
     String initErrorMsg;
@@ -138,6 +137,7 @@ private:
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
+    // first - relative file name in archive, second - file properties
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;

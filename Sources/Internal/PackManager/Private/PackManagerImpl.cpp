@@ -82,33 +82,51 @@ PackManagerImpl::~PackManagerImpl()
 
 void PackManagerImpl::Initialize(const String& architecture_,
                                  const FilePath& dirToDownloadPacks_,
-                                 const FilePath& pathToBasePacksDB_,
+                                 const FilePath& dbFileName_,
                                  const String& urlToServerSuperpack_,
                                  const Hints& hints_)
 {
     DVASSERT(Thread::IsMainThread());
 
-    pathToBasePacksDB = pathToBasePacksDB_;
+    LockGuard<Mutex> lock(protectPM); // just paranoia
+
+    dbFileName = dbFileName_;
     dirToDownloadedPacks = dirToDownloadPacks_;
+
+    FileSystem* fs = FileSystem::Instance();
+    if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
+    {
+        DAVA_THROW(DAVA::Exception, "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue());
+    }
 
     urlToSuperPack = urlToServerSuperpack_;
     architecture = architecture_;
-
     hints = hints_;
 
-    initState = InitState::LoadingRequestAskFooter;
+    initLocalDBFileName = dbFileName.GetFilename();
 
-    initLocalDBFileName = pathToBasePacksDB.GetFilename();
+    dbLocalNameZipped = dirToDownloadedPacks + initLocalDBFileName;
 
-    dbZipInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbZipInData = pathToBasePacksDB;
+    dbLocalName = dbLocalNameZipped;
+    dbLocalName.ReplaceExtension("");
 
-    // TODO on Windows user can change content of ~doc:/ but on iOS and Android this path is private for App
-    dbInDoc = FilePath("~doc:/" + initLocalDBFileName);
-    dbInDoc.ReplaceExtension("");
+    initPaused = false;
+
+    // if Initialize called second time
     fullSizeServerData = 0;
+    if (0 != downloadTaskId)
+    {
+        DownloadManager::Instance()->Cancel(downloadTaskId);
+        downloadTaskId = 0;
+    }
+    requestManager.reset();
+    db.reset();
+    // do not! packs.clear();
+    // later we will need remember all mounted packs and remount it back
+    packsIndex.clear();
+    initFileData.clear();
 
-    //initState = InitState::Starting;
+    initState = InitState::LoadingRequestAskFooter;
 }
 
 bool PackManagerImpl::IsInitialized() const
@@ -154,9 +172,8 @@ bool PackManagerImpl::CanRetryInit() const
     case InitState::DeleteDownloadedPacksIfNotMatchHash:
     case InitState::LoadingPacksDataFromLocalDB:
     case InitState::MountingDownloadedPacks:
-        return true;
     case InitState::Ready:
-        return false;
+        return true;
     }
     DVASSERT(false && "add state");
     return false;
@@ -483,9 +500,9 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
 
     FileSystem* fs = FileSystem::Instance();
 
-    if (fs->IsFile(dbInDoc) && fs->IsFile(dbZipInDoc))
+    if (fs->IsFile(dbLocalName) && fs->IsFile(dbLocalNameZipped))
     {
-        const uint32 localCrc32 = CRC32::ForFile(dbZipInDoc);
+        const uint32 localCrc32 = CRC32::ForFile(dbLocalNameZipped);
         auto it = initFileData.find(initLocalDBFileName);
         if (it != end(initFileData))
         {
@@ -593,18 +610,18 @@ void PackManagerImpl::UnpackingDB()
         DAVA_THROW(DAVA::Exception, "can't decompress buffer with local DB");
     }
 
-    WriteBufferToFile(buffer, dbZipInDoc);
+    WriteBufferToFile(buffer, dbLocalNameZipped);
 
-    RefPtr<File> fDb(File::Create(dbZipInDoc, File::OPEN | File::READ));
+    RefPtr<File> fDb(File::Create(dbLocalNameZipped, File::OPEN | File::READ));
 
-    ZipArchive zip(fDb, dbZipInDoc);
+    ZipArchive zip(fDb, dbLocalNameZipped);
     const auto& fileInfos = zip.GetFilesInfo();
     if (fileInfos.empty() || !zip.LoadFile(fileInfos.front().relativeFilePath, buffer))
     {
-        DAVA_THROW(DAVA::Exception, "can't unpack db from zip: " + dbZipInDoc.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't unpack db from zip: " + dbLocalNameZipped.GetStringValue());
     }
 
-    WriteBufferToFile(buffer, dbInDoc);
+    WriteBufferToFile(buffer, dbLocalName);
 
     buffer.clear();
     buffer.shrink_to_fit();
@@ -615,13 +632,15 @@ void PackManagerImpl::UnpackingDB()
 void PackManagerImpl::DeleteOldPacks()
 {
     //Logger::FrameworkDebug("pack manager delete_old_packs");
+
     // list all packs (dvpk files) downloaded
     // for each file calculate CRC32
     // check CRC32 with value in FileTable
+    // we can unmount only packs with new crc32
 
     ScopedPtr<FileList> fileList(new FileList(dirToDownloadedPacks));
 
-    for (uint32 i = 0; i > fileList->GetCount(); ++i)
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         const FilePath& path = fileList->GetPathname(i);
 
@@ -637,6 +656,7 @@ void PackManagerImpl::DeleteOldPacks()
                 {
                     if (crc32 != it->second->originalCrc32)
                     {
+                        FileSystem::Instance()->Unmount(path);
                         // delete old packfile
                         if (!FileSystem::Instance()->DeleteFile(path))
                         {
@@ -655,11 +675,9 @@ void PackManagerImpl::LoadPacksDataFromDB()
 {
     //Logger::FrameworkDebug("pack manager load_packs_data_from_db");
 
-    UnmountAllPacks(); // if any
-
     // now build all packs from localDB, later after request to server
     // we can delete localDB and replace with new from server if needed
-    db.reset(new PacksDB(dbInDoc, hints.dbInMemory));
+    db.reset(new PacksDB(dbLocalName, hints.dbInMemory));
 
     InitializePacksAndBuildIndex();
 
@@ -690,8 +708,13 @@ void PackManagerImpl::MountDownloadedPacks()
             try
             {
                 Pack& pack = GetPack(packPath.GetBasename());
-                fs->Mount(packPath, "Data/");
-                pack.state = Pack::Status::Mounted;
+                if (!fs->IsMounted(packPath))
+                {
+                    fs->Mount(packPath, "Data/");
+                }
+                // do not do! pack.state = Pack::Status::Mounted;
+                // client code should request pack first
+                // we need it for consistensy with pack dependency
             }
             catch (std::exception& ex)
             {
@@ -707,8 +730,8 @@ void PackManagerImpl::MountDownloadedPacks()
 void PackManagerImpl::DeleteLocalDBFiles()
 {
     FileSystem* fs = FileSystem::Instance();
-    fs->DeleteFile(dbInDoc);
-    fs->DeleteFile(dbZipInDoc);
+    fs->DeleteFile(dbLocalName);
+    fs->DeleteFile(dbLocalNameZipped);
 }
 
 void PackManagerImpl::UnmountAllPacks()
@@ -719,6 +742,17 @@ void PackManagerImpl::UnmountAllPacks()
         {
             FileSystem::Instance()->Unmount(pack.name);
         }
+    }
+}
+
+static void CheckPackCrc32(const FilePath& path, const uint32 hashFromDB)
+{
+    uint32 crc32ForFile = CRC32::ForFile(path);
+    if (crc32ForFile != hashFromDB)
+    {
+        FileSystem::Instance()->DeleteFile(path);
+        String msg = Format("crc32 not match for pack %s, crc32 from DB 0x%X crc32 from file 0x%X", path.GetStringValue(), hashFromDB, crc32ForFile);
+        DAVA_THROW(DAVA::Exception, msg);
     }
 }
 
@@ -747,6 +781,9 @@ void PackManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path
         try
         {
             const FilePath packPath = packsDir.GetStringValue() + packItem->name + RequestManager::packPostfix;
+
+            CheckPackCrc32(packPath, packItem->hashFromDB);
+
             fs->Mount(packPath, "Data/");
             packItem->state = Pack::Status::Mounted;
         }
@@ -756,6 +793,8 @@ void PackManagerImpl::MountPackWithDependencies(Pack& pack, const FilePath& path
             throw;
         }
     }
+
+    CheckPackCrc32(path, pack.hashFromDB);
     fs->Mount(path, "Data/");
     pack.state = Pack::Status::Mounted;
 }

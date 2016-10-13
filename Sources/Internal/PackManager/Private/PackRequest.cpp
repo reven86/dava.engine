@@ -119,7 +119,7 @@ void PackRequest::GetFooter()
                 if (packManagerImpl->GetInitFooter().infoCrc32 != footerOnServer.infoCrc32)
                 {
                     // server Superpack changed during current session
-                    DAVA_THROW(DAVA::Exception, "during pack request server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
+                    DAVA_THROW(DAVA::Exception, "during current session server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
                 }
 
                 StartLoadingPackFile();
