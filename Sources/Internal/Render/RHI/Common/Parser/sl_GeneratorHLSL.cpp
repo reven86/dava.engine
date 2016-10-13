@@ -518,13 +518,23 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
                 }
                 else if (mode == MODE_DX9)
                 {
-                    DVASSERT(!"notimpl");
                     if (identifier->expressionType.baseType == HLSLBaseType_Sampler2D)
                     {
-                        writer.Write("tex2D( %s", name);
+                        HLSLExpression* expr = identifier->nextExpression;
+
+                        writer.Write("tex2Dlod( %s, float4( ", identifier->name);
+                        OutputExpression(expr);
+                        writer.Write(".x, ");
+                        OutputExpression(expr);
+                        writer.Write(".y, ");
+                        writer.Write("0, ");
+
+                        OutputExpression(expr->nextExpression);
+                        writer.Write(" ) )");
                     }
                     else if (identifier->expressionType.baseType == HLSLBaseType_SamplerCube)
                     {
+                        DVASSERT(!"notimpl");
                         writer.Write("texCUBE( %s", name);
                     }
                 }
@@ -681,7 +691,15 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
             }
             else if (mode == MODE_DX9)
             {
-                writer.WriteLine(indent, "uniform float4 %s[%u];", field->name, buffer->registerCount);
+                if (field->annotation && !stricmp(field->annotation, "bigarray"))
+                {
+                    writer.WriteLine(indent, "uniform float4 %s[%u];", field->registerName, buffer->registerCount);
+                    writer.WriteLine(indent, "#define %s %s", field->name, field->registerName);
+                }
+                else
+                {
+                    writer.WriteLine(indent, "uniform float4 %s[%u];", field->name, buffer->registerCount);
+                }
             }
         }
         else if (statement->nodeType == HLSLNodeType_Function)
