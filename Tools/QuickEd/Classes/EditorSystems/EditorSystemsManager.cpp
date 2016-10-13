@@ -9,6 +9,7 @@
 #include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -60,7 +61,8 @@ EditorSystemsManager::EditorSystemsManager()
 
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
-    systems.emplace_back(new HUDSystem(this));
+    hudSystemPtr = new HUDSystem(this);
+    systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::EditorTransformSystem(this));
 }
@@ -107,16 +109,23 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     emulationModeChangedSignal.Emit(emulationMode);
 }
 
-ControlNode* EditorSystemsManager::ControlNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
 {
-    Vector<ControlNode*> nodesUnderPoint;
-    auto predicate = [point](const ControlNode* node) -> bool {
-        auto control = node->GetControl();
-        DVASSERT(control != nullptr);
-        return control->IsVisible() && control->IsPointInside(point);
-    };
-    CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
-    return nodesUnderPoint.empty() ? nullptr : nodesUnderPoint.back();
+    if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
+    {
+        return selectionSystemPtr->GetCommonNodeUnderPoint(point);
+    }
+    return selectionSystemPtr->GetNearestNodeUnderPoint(point);
+}
+
+void EditorSystemsManager::HighlightNode(ControlNode* node)
+{
+    hudSystemPtr->HighlightNodes({ node });
+}
+
+void EditorSystemsManager::ClearHighlight()
+{
+    hudSystemPtr->HighlightNodes({});
 }
 
 uint32 EditorSystemsManager::GetIndexOfNearestControl(const DAVA::Vector2& point) const
