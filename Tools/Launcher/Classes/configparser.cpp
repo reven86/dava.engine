@@ -179,7 +179,6 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         {
             isValid &= ExtractApp(appName, entry, branch, false);
         }
-
     }
     //hotfix to sort downloaded items without rewriting mainWindow
     for (auto branchIter = branches.begin(); branchIter != branches.end(); ++branchIter)
