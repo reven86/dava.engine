@@ -265,6 +265,7 @@ void WindowBackend::ProcessProperties()
 
 void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
 {
+    // Corresponding constants from android.view.MotionEvent
     enum
     {
         ACTION_DOWN = 0,
@@ -291,11 +292,7 @@ void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
     default:
         return;
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window,
-                                                                          type,
-                                                                          touchId,
-                                                                          x,
-                                                                          y));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, touchId, x, y, eModifierKeys::NONE));
 }
 
 } // namespace Private

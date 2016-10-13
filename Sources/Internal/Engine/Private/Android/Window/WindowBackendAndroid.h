@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
