@@ -26,7 +26,7 @@ QString FileSystemHelper::GetDir(const QString& path)
     QFileInfo fileInfo(path);
     if (fileInfo.isDir())
     {
-        return path;
+        return fileInfo.absoluteFilePath();
     }
     else if (fileInfo.isFile())
     {
