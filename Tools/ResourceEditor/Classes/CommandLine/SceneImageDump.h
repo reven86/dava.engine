@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 

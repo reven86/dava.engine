@@ -1,4 +1,5 @@
 #include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
 
@@ -38,6 +39,9 @@ REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& c
     , commandLine(commandLine_)
 {
     options.AddOption("-log", DAVA::VariantType(DAVA::String("i")), "Set up the level of logging: e - error, w - warning, i - info, d - debug, f - framework. Info is defualt value");
+
+    options.AddOption("-logfile", DAVA::VariantType(DAVA::String("")), "Path to file for logger output");
+
     options.AddOption("-h", DAVA::VariantType(false), "Help for command");
     options.AddOption("-teamcity", DAVA::VariantType(false), "Enable extra output in teamcity format");
 }
@@ -49,6 +53,12 @@ void REConsoleModuleCommon::PostInit()
     {
         DAVA::String logLevel = options.GetOption("-log").AsString();
         REConsoleModuleCommonDetail::SetupLogger(logLevel);
+
+        DAVA::FilePath logFile = options.GetOption("-logfile").AsString();
+        if (logFile.IsEmpty() == false)
+        {
+            DAVA::Logger::Instance()->SetLogPathname(logFile);
+        }
 
         bool useTeamcity = options.GetOption("-teamcity").AsBool();
         if (useTeamcity)

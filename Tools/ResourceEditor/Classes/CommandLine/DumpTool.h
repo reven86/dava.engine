@@ -5,12 +5,6 @@
 
 class DumpTool : public REConsoleModuleCommon
 {
-    enum eAction : DAVA::int32
-    {
-        ACTION_NONE = -1,
-        ACTION_DUMP_LINKS
-    };
-
 public:
     DumpTool(const DAVA::Vector<DAVA::String>& commandLine);
 
@@ -20,6 +14,11 @@ private:
     void BeforeDestroyedInternal() override;
     void ShowHelpInternal() override;
 
+    enum eAction : DAVA::int32
+    {
+        ACTION_NONE = -1,
+        ACTION_DUMP_LINKS
+    };
     eAction commandAction = ACTION_NONE;
     DAVA::String filename;
     DAVA::FilePath inFolder;

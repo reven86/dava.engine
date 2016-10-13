@@ -2,7 +2,6 @@
 
 #include "Render/TextureDescriptor.h"
 #include "TextureCompression/TextureConverter.h"
-
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
 class TextureDescriptorTool : public REConsoleModuleCommon

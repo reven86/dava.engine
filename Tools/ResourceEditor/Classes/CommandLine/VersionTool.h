@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
 class VersionTool : public REConsoleModuleCommon

@@ -162,7 +162,6 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
-    // TODO
     DAVA::String command = cmdLine[1];
     if (command == "-help")
     {
