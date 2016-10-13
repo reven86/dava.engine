@@ -135,6 +135,36 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 #define STB_TEXTEDIT_GETCHAR stb_getchar
 #define STB_TEXTEDIT_IS_SPACE stb_isspace
 
+#if defined(__DAVAENGINE_MACOS__)
+
+#define STB_TEXTEDIT_K_SHIFT (K_SHIFT)
+#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::Key::LEFT))
+#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::Key::RIGHT))
+#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::Key::UP))
+#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::Key::DOWN))
+#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::Key::HOME))
+#define STB_TEXTEDIT_K_LINESTART2 (K_VKEY | K_CMD | int(DAVA::Key::LEFT))
+#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::Key::END))
+#define STB_TEXTEDIT_K_LINEEND2 (K_VKEY | K_CMD | int(DAVA::Key::RIGHT))
+#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CMD | int(DAVA::Key::UP))
+//#define STB_TEXTEDIT_K_TEXTSTART2
+#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CMD | int(DAVA::Key::DOWN))
+//#define STB_TEXTEDIT_K_TEXTEND2
+#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_ALT | int(DAVA::Key::LEFT))
+#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_ALT | int(DAVA::Key::RIGHT))
+#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::Key::INSERT))
+#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::Key::DELETE))
+#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::Key::BACKSPACE))
+#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CMD | int(DAVA::Key::KEY_Z))
+#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CMD | K_SHIFT | int(DAVA::Key::KEY_Z))
+
+#define K_VKEY_SELECT_ALL (K_VKEY | K_CMD | int(DAVA::Key::KEY_A))
+#define K_VKEY_CUT (K_VKEY | K_CMD | int(DAVA::Key::KEY_X))
+#define K_VKEY_COPY (K_VKEY | K_CMD | int(DAVA::Key::KEY_C))
+#define K_VKEY_PASTE (K_VKEY | K_CMD | int(DAVA::Key::KEY_V))
+
+#else
+
 #define STB_TEXTEDIT_K_SHIFT (K_SHIFT)
 #define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::Key::LEFT))
 #define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::Key::RIGHT))
@@ -160,6 +190,8 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 #define K_VKEY_CUT (K_VKEY | K_CTRL | int(DAVA::Key::KEY_X))
 #define K_VKEY_COPY (K_VKEY | K_CTRL | int(DAVA::Key::KEY_C))
 #define K_VKEY_PASTE (K_VKEY | K_CTRL | int(DAVA::Key::KEY_V))
+
+#endif //defined(__DAVAENGINE_MACOS__)
 
 //#define STB_TEXTEDIT_K_PGUP
 //#define STB_TEXTEDIT_K_PGDOWN

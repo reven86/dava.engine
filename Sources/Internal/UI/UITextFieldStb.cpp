@@ -649,10 +649,12 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     WideString prevText(text);
 
     const KeyboardDevice& kDevice = InputSystem::Instance()->GetKeyboard();
+    bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
+#if defined(__DAVAENGINE_COREV2__)
     bool isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
     bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
-    bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
     bool isCmd = kDevice.IsKeyPressed(Key::LCMD) || kDevice.IsKeyPressed(Key::RCMD);
+#endif
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
