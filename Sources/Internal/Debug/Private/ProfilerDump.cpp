@@ -3,6 +3,7 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerGPU.h"
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Base/FastName.h"

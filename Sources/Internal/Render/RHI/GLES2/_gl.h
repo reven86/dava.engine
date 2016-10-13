@@ -60,7 +60,7 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-//Valid for clang. For MSVC and GCC should be #func##postfix
+//Valid for clang. For MSVC and GCC instead '#func postfix' should be '#func##postfix'
 #define GET_GL_FUNC(func, postfix)                                                 \
 {                                                                                  \
     func = reinterpret_cast<decltype(func)>(eglGetProcAddress(#func));             \

@@ -2824,17 +2824,49 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         case GLCommand::SYNC_CPU_GPU:
         {
-#if defined(__DAVAENGINE_IPHONE__)
-#else
             if (_GLES2_TimeStampQuerySupported)
             {
-                GLint64 timestamp = 0;
-                EXEC_GL(glGetInteger64v(GL_TIMESTAMP, &timestamp));
+                GLuint64 gpuTimestamp = 0, cpuTimestamp = 0;
+                GLuint query = 0;
 
-                *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
-                *reinterpret_cast<uint64*>(arg[1]) = uint64(timestamp) / 1000; //mcs
-            }
+#if defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_ANDROID__)
+
+                if (glGenQueries)
+                    GL_CALL(glGenQueries(1, &query));
+
+                if (query)
+                {
+                    if (glQueryCounter)
+                        GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+
+                    if (glGetQueryObjectui64v)
+                        GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
+
+                    cpuTimestamp = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                    if (glDeleteQueries)
+                        GL_CALL(glDeleteQueries(1, &query));
+                }
+
+#else
+
+                GL_CALL(glGenQueries(1, &query));
+
+                if (query)
+                {
+                    GL_CALL(glQueryCounter(query, GL_TIMESTAMP));
+                    GL_CALL(glGetQueryObjectui64v(query, GL_QUERY_RESULT, &gpuTimestamp));
+                    cpuTimestamp = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+                    GL_CALL(glDeleteQueries(1, &query));
+                }
+
 #endif
+
+                *reinterpret_cast<uint64*>(arg[0]) = cpuTimestamp;
+                *reinterpret_cast<uint64*>(arg[1]) = gpuTimestamp / 1000; //mcs
+            }
         }
         break;
         }
