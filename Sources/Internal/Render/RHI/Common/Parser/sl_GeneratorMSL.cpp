@@ -751,7 +751,7 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                 const char* returnTypeName = GetTypeName(function->returnType);
 
                 writer.BeginLine(indent, function->fileName, function->line);
-                writer.Write("%s %s(", returnTypeName, functionName);
+                writer.Write("inline %s %s(", returnTypeName, functionName);
 
                 OutputArguments(function->argument);
 
