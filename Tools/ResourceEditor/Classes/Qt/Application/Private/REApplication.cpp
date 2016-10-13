@@ -62,7 +62,11 @@ DAVA::KeyedArchive* CreateOptions()
 REApplication::REApplication(DAVA::Vector<DAVA::String>&& cmdLine_)
     : cmdLine(std::move(cmdLine_))
 {
-    isConsoleMode = (cmdLine.size() > 1);
+    if (cmdLine.size() > 1)
+    {
+        DAVA::String command = cmdLine[1];
+        isConsoleMode = (command != "--selftest");
+    }
 }
 
 DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
@@ -162,6 +166,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
+    DVASSERT(cmdLine.size() > 1);
+
     DAVA::String command = cmdLine[1];
     if (command == "-help")
     {
