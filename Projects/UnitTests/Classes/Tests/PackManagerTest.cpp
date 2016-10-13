@@ -115,7 +115,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
                 Logger::Info("updata pack manager");
 
-                packManager.Update();
+                packManager.Update(0.1f);
             }
 
             if (packManager.GetInitError() != IPackManager::InitError::AllGood)
@@ -148,7 +148,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 Thread::Sleep(100);
                 // we have to call Update() for downloadManager and packManager cause we in main thread
                 DownloadManager::Instance()->Update();
-                packManager.Update();
+                packManager.Update(0.1f);
             }
 
             Logger::Info("finish loading pack");
