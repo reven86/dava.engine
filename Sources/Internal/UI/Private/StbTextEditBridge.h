@@ -1,5 +1,4 @@
-#ifndef __DAVA_UITEXTFIELDSTBBRIDGE_H__
-#define __DAVA_UITEXTFIELDSTBBRIDGE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -233,4 +232,3 @@ inline StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() cons
 }
 }
 
-#endif //__DAVA_UITEXTFIELDSTBBRIDGE_H__

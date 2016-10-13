@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_CLIPBOARDIMPLSTUB_H__
-#define __DAVAENGINE_CLIPBOARDIMPLSTUB_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Clipboard/Private/IClipboardImpl.h"
@@ -45,5 +44,3 @@ inline WideString ClipboardImplStub::GetText() const
     return WideString();
 }
 }
-
-#endif //__DAVAENGINE_CLIPBOARDIMPLSTUB_H__

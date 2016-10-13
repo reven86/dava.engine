@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_CLIPBOARD_H__
-#define __DAVAENGINE_CLIPBOARD_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -56,5 +55,3 @@ private:
     IClipboardImpl* pImpl;
 };
 }
-
-#endif //__DAVAENGINE_CLIPBOARD_H__

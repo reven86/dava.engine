@@ -1,7 +1,5 @@
 #include "UITextFieldStb.h"
 
-//#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)
-
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
@@ -759,5 +757,3 @@ void TextFieldStbImpl::DropLastCursorAndSelection()
     lastSelEnd = INVALID_POS;
 }
 }
-
-//#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)

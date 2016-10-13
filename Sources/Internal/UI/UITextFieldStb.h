@@ -1,7 +1,4 @@
-#ifndef __DAVA_UITEXTFIELDSTB_H__
-#define __DAVA_UITEXTFIELDSTB_H__
-
-//#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/TextBlock.h"
@@ -111,7 +108,3 @@ private:
 };
 
 } // end namespace DAVA
-
-//#endif // defined(__DAVAENGINE_WIN32__) || define(__DAVAENGINE_MACOS__)
-
-#endif //__DAVA_UITEXTFIELDSTB_H__
