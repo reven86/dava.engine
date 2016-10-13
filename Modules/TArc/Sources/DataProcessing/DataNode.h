@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Functional/Signal.h"
-#include "Reflection/Public/ReflectedBase.h"
+#include "Reflection/ReflectedBase.h"
 #include "Reflection/Registrator.h"
 
 namespace DAVA

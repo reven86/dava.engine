@@ -135,8 +135,12 @@ private:
     void AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtPropertyData>& root,
                              std::unique_ptr<QtPropertyData>& curEntityData, bool isFirstInList);
 
+    void UpdateSelectionLazy();
+    SelectableGroup ExtractEntities(const SelectableGroup* selection);
+
 private:
     LazyUpdater* propertiesUpdater = nullptr;
+    LazyUpdater* selectionUpdater = nullptr;
     QtPosSaver posSaver;
     QSet<QString> scheme;
     QtPropertyData* favoriteGroup;
