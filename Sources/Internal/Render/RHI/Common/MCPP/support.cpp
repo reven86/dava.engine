@@ -632,8 +632,6 @@ char* out_end /* End of output buffer             */
         cfatal("Buffer overflow scanning token \"%s\"" /* _F_  */
                ,
                *out_pp, 0L, NULL);
-    if (0)
-        dump_token(token_type, *out_pp);
     if (mcpp_mode == POST_STD && token_type != SEP && infile->fp != NULL && (char_type[*infile->bptr & UCHARMAX] & SPA) == 0)
         insert_sep = INSERT_SEP; /* Insert token separator       */
     *out_pp = out;
@@ -1793,13 +1791,6 @@ int get_ch(void)
         squeezews = FALSE;
     }
 
-    if (0)
-    {
-        mcpp_fprintf(MCPP_DBG, "get_ch(%s) '%c' line %ld, bptr = %d, buffer", file->fp ? cur_fullname : file->real_fname ? file->real_fname : file->filename ? file->filename : "NULL", *file->bptr & UCHARMAX, src_line, (int)(file->bptr - file->buffer));
-        dump_string(NULL, file->buffer);
-        dump_unget("get entrance");
-    }
-
     /*
      * Read a character from the current input logical line or macro.
      * At EOS, either finish the current macro (freeing temporary storage)
@@ -1879,8 +1870,6 @@ int get_ch(void)
         /* Else, it is normal includer file, and marked as 2.   */
         src_line--;
         newlines = 0; /* Clear the blank lines*/
-        if (0) /* Should be re-initialized */
-            com_cat_line.last_line = bsl_cat_line.last_line = 0L;
     }
     else if (file->filename)
     { /* Expanding macro      */
@@ -2226,11 +2215,6 @@ int in_comment)
             cwarn("Line number %.0s\"%ld\" got beyond range" /* _W1_ */
                   ,
                   NULL, src_line, NULL);
-        if (0)
-        { /* Dump it to MCPP_DBG       */
-            mcpp_fprintf(MCPP_DBG, "\n#line %ld (%s)", src_line, cur_fullname);
-            dump_string(NULL, ptr);
-        }
         len = static_cast<int>(strlen(ptr));
         if (NBUFF - 1 <= ptr - infile->buffer + len && *(ptr + len - 1) != '\n')
         {
@@ -2544,9 +2528,6 @@ void unget_ch(void)
         if (infile->bptr < infile->buffer) /* Shouldn't happen */
             cfatal("Bug: Too much pushback", NULL, 0L, NULL); /* _F_  */
     }
-
-    if (0)
-        dump_unget("after unget");
 }
 
 FILEINFO* unget_string(

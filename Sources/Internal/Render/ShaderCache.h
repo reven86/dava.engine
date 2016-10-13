@@ -14,7 +14,7 @@ void Uninitialize();
 void Clear();
 void ClearDynamicBindigs();
 
-void RelaoadShaders();
+void ReloadShaders();
 
 void SetLoadingNotifyEnabled(bool enable);
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);

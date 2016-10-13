@@ -1,17 +1,18 @@
 #include "../dbg_Draw.h"
-    #include "../rhi_ShaderSource.h"
-    #include "../rhi_ShaderCache.h"
+#include "../Common/PreProcess.h"
+#include "../rhi_ShaderSource.h"
+#include "../rhi_ShaderCache.h"
 
-    #include "Math/Matrix4.h"
-    #include "Math/Vector.h"
+#include "Math/Matrix4.h"
+#include "Math/Vector.h"
 using DAVA::Vector3;
 
-    #include <stdio.h>
-    #include <stdarg.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    #define _vsnprintf vsnprintf
-    #endif
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#define _vsnprintf vsnprintf
+#endif
 
 //==============================================================================
 
@@ -857,6 +858,8 @@ void DbgDraw::_init()
 {
     // init PTC
 
+    InitPreprocessing();
+
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
 
@@ -910,6 +913,8 @@ void DbgDraw::_init()
         rhi::CreateVertexConstBuffers(_pc_pipeline_state, 1, &_pc_const);
     }
 
+    ShutdownPreprocessing();
+
     // init small-font texture
     {
         rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
@@ -952,14 +957,6 @@ void DbgDraw::_init()
         }
     }
 
-    // CRAP: hard-coded max vertex count
-    /*
-    _line_buf1.construct( 16*1024 );
-    _line_buf2.construct( 16*1024 );
-    _line_buf3.construct( 16*1024 );
-    _line_buf3.disable_depth_write();
-    _tri3d_buf.construct( 16*1024 );
-*/
     _normal_text2d_buf.construct(4 * 1024);
     _normal_text2d_buf.set_normal_text_size();
     _small_text2d_buf.construct(4 * 1024);

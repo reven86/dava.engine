@@ -3146,7 +3146,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 void QtMainWindow::OnReloadShaders()
 {
-    DAVA::ShaderDescriptorCache::RelaoadShaders();
+    DAVA::ShaderDescriptorCache::ReloadShaders();
 
     SceneTabWidget* tabWidget = GetSceneWidget();
     for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)

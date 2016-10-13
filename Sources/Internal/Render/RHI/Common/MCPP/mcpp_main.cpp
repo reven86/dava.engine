@@ -436,11 +436,6 @@ char** argv)
 fatal_error_exit:
 #if MCPP_LIB
     /* Free malloced memory */
-    if (0)
-    {
-        if (in_file != stdin_name)
-            xfree(in_file);
-    }
     clear_filelist();
     clear_symtable();
     clear_cur_work_dir();
@@ -453,8 +448,6 @@ fatal_error_exit:
     if (fp_err != stderr)
         mcpp__fclose(fp_err);
 
-    if (0)
-        print_heap();
     if (errors > 0 && option_flags.no_source_line == FALSE)
     {
         mcpp_fprintf(MCPP_ERR, "%d error%s in preprocessor.\n",
@@ -979,22 +972,6 @@ char* out /* 'out' is 'output' in actual  */
         }
         else if (out_end <= wp)
         { /* Too long line    */
-            if (0)
-            { /* -K option        */
-                /* Other than GCC or Visual C   */
-                /* scan_token() scans a comment as sequence of some */
-                /* tokens such as '/', '*', ..., '*', '/', since it */
-                /* does not expect comment.                         */
-                save = out_ptr;
-                while ((save = strrchr(save, '/')) != NULL)
-                {
-                    if (*(save - 1) == '*')
-                    { /* '*' '/' sequence */
-                        out_ptr = save + 1; /* Devide at the end*/
-                        break; /*      of a comment*/
-                    }
-                }
-            }
             save = save_string(out_ptr); /* Save the token   */
             *out_ptr++ = '\n'; /* Append newline   */
             *out_ptr = EOS;

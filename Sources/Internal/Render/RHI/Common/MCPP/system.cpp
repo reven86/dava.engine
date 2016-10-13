@@ -2273,8 +2273,6 @@ void init_sys_macro(void)
     init_msc_macro();
 #endif
     undef_macros(); /* Undefine macros specified by -U  */
-    if (0)
-        dump_def(FALSE, TRUE); /* Finally putout current macro names   */
 }
 
 void at_start(void)
@@ -3539,8 +3537,6 @@ int next /* TRUE if #include_next        */
         /* remains the same even if -include options are processed.     */
         has_dir = has_dir_src || has_dir_fname || (**(infile->dirp) != EOS);
     }
-    if (0)
-        mcpp_fprintf(MCPP_DBG, "filename: %s\n", filename);
 
 #if COMPILER == GNUC
     if (!full_path)
@@ -3741,12 +3737,7 @@ int sys_frame /* System framework header (for SYS_MAC)*/
         dirp = &null;
         goto search;
     }
-    else
 #endif
-    {
-        if (0)
-            mcpp_fprintf(MCPP_DBG, "Searching %s%s%s\n", *dirp, src_dir ? src_dir : null, filename);
-    }
     /* src_dir is usually NULL.  This is specified to   */
     /* search the source directory of the includer.     */
     if (src_dir && *src_dir != EOS)
@@ -3771,17 +3762,6 @@ int sys_frame /* System framework header (for SYS_MAC)*/
         /* Exceed the known limit of open files */
         || ((fp = mcpp__fopen(fullname, "r")) == NULL && errno == EMFILE))
     {
-        /* Reached the limit for the first time */
-        if (0)
-        {
-#if HOST_COMPILER == BORLANDC
-            if (include_nest == FOPEN_MAX - 5)
-#else
-            if (max_open == 0)
-#endif
-                mcpp_fprintf(MCPP_DBG,
-                             "#include nest reached at the maximum of system: %d, returned errno: %d\n", include_nest, errno);
-        }
         /*
          * Table of open files is full.
          * Remember the file position and close the includer.
@@ -4256,14 +4236,6 @@ int flag /* Flag to append for GCC   */
 {
     const char* name;
 
-    if (0)
-    { /* In macro notification mode   */
-        if (sharp_file) /* Main input file  */
-            name = file->filename;
-        else /* Output full-path-list, normalized    */
-            name = cur_fullname;
-    }
-    else
     { /* Usually, the path not "normalized"   */
         if (sharp_file)
         { /* Main input file  */
@@ -4680,9 +4652,6 @@ const char* fullname)
     {
         if (inc->len == fnamelen && str_case_eq(inc->name, fullname))
         {
-            /* Already included */
-            if (0)
-                mcpp_fprintf(MCPP_DBG, "Once included \"%s\"\n", fullname);
             return TRUE;
         }
     }

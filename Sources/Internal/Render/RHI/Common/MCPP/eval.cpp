@@ -304,8 +304,6 @@ expr_t eval_if(void)
 
     while (1)
     {
-        if (0)
-            mcpp_fprintf(MCPP_DBG, "In eval loop skip = %d, binop = %d, line is: %s\n", opp->skip, binop, infile->bptr);
         skip = opp->skip;
         op = eval_lex();
         skip = 0; /* Reset to be ready to return  */
@@ -322,8 +320,6 @@ expr_t eval_if(void)
         case OP_FAIL:
             return 0L; /* Token error          */
         }
-        if (0)
-            mcpp_fprintf(MCPP_DBG, "op = %s, opdope = %04o, binop = %d, skip = %d\n", opname[op], opdope[op], binop, opp->skip);
         if (op == VAL)
         { /* Value?               */
             if (binop != 0)
@@ -342,11 +338,6 @@ expr_t eval_if(void)
             }
             else
             {
-                if (0)
-                {
-                    dump_val("pushing ", &ev);
-                    mcpp_fprintf(MCPP_DBG, " onto value stack[%d]\n", (int)(valp - value));
-                }
                 valp->val = ev.val;
                 (valp++)->sign = ev.sign;
                 binop = 1; /* Binary operator or so should follow  */
@@ -370,9 +361,6 @@ expr_t eval_if(void)
 
         while (1)
         {
-            if (0)
-                mcpp_fprintf(MCPP_DBG, "op %s, prec %d, stacked op %s, prec %d, skip %d\n", opname[op], prec, opname[opp->op], opp->prec, opp->skip);
-
             /* Stack coming sub-expression of higher precedence.    */
             if (opp->prec < prec)
             {
@@ -433,14 +421,6 @@ expr_t eval_if(void)
                 { /* Other operators leave*/
                     opp->skip = op1; /*  skipping unchanged. */
                 }
-                if (0)
-                {
-                    mcpp_fprintf(MCPP_DBG, "stacking %s, ", opname[op]);
-                    if (&value[0] < valp)
-                        dump_val("valp[-1].val == ", valp - 1);
-                    mcpp_fprintf(MCPP_DBG, " at %s\n", infile->bptr);
-                    dump_stack(opstack, opp, value, valp);
-                }
                 break;
             }
 
@@ -486,11 +466,6 @@ expr_t eval_if(void)
             /* Evaluate op1.            Fall through            */
             default: /* Others:              */
                 opp--; /* Unstack the operator */
-                if (0)
-                {
-                    mcpp_fprintf(MCPP_DBG, "Stack before evaluation of %s\n", opname[op1]);
-                    dump_stack(opstack, opp, value, valp);
-                }
                 if (op1 == OP_COL)
                     skip = 0;
                 else
@@ -500,11 +475,6 @@ expr_t eval_if(void)
                     return 0L; /* Out of range or divide by 0  */
                 valp++;
                 skip = 0;
-                if (0)
-                {
-                    mcpp_fprintf(MCPP_DBG, "Stack after evaluation\n");
-                    dump_stack(opstack, opp, value, valp);
-                }
             } /* op1 switch end       */
 
             if (op1 == OP_END || op1 == OP_LPA || op1 == OP_QUE)
@@ -618,11 +588,6 @@ static int eval_lex(void)
         valp = eval_char(work_buf); /* 'valp' points 'ev'   */
         if (valp->sign == VAL_ERROR)
             break;
-        if (0)
-        {
-            dump_val("eval_char returns ", &ev);
-            mcpp_fputc('\n', MCPP_DBG);
-        }
         return VAL; /* Return a value       */
     case STR: /* String literal       */
     case WSTR: /* Wide string literal  */
@@ -633,11 +598,6 @@ static int eval_lex(void)
         valp = eval_num(work_buf); /* 'valp' points 'ev'   */
         if (valp->sign == VAL_ERROR)
             break;
-        if (0)
-        {
-            dump_val("eval_num returns ", &ev);
-            mcpp_fputc('\n', MCPP_DBG);
-        }
         return VAL;
     case OPE: /* Operator or punctuator   */
         return chk_ops();
@@ -797,12 +757,6 @@ static int do_sizeof(void)
         goto no_good;
     }
 
-    if (0)
-    {
-        if (sizp)
-            mcpp_fprintf(MCPP_DBG,
-                         "sizp->bits:0x%x sizp->size:0x%x sizp->psize:0x%x ev.val:0x%lx\n", sizp->bits, sizp->size, sizp->psize, (unsigned long)ev.val);
-    }
     return VAL;
 
 no_good:
@@ -877,12 +831,6 @@ basic:
         }
     }
 
-    if (0)
-    {
-        if (tp->token_name)
-            mcpp_fprintf(MCPP_DBG,
-                         "sizeof -- typecode:0x%x tp->token_name:\"%s\" tp->type:0x%x\n", typecode, tp->token_name, tp->type);
-    }
     return typecode |= tp->type; /* Or in the type bit   */
 }
 
@@ -1431,14 +1379,6 @@ int op)
     }
     v1 = (--valp)->val;
     sign1 = valp->sign;
-    if (0)
-    {
-        mcpp_fprintf(MCPP_DBG, "%s op %s", (is_binary(op)) ? "binary" : "unary", opname[op]);
-        dump_val(", v1 = ", valp);
-        if (is_binary(op))
-            dump_val(", v2 = ", valp + 1);
-        mcpp_fputc('\n', MCPP_DBG);
-    }
 
     if (standard && (sign1 == UNSIGNED || sign2 == UNSIGNED) && is_binary(op) && op != OP_ANA && op != OP_ORO && op != OP_SR && op != OP_SL)
     {

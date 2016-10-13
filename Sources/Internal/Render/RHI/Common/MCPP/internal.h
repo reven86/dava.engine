@@ -350,7 +350,6 @@ extern struct option_flags_
 } option_flags;
 
 #define standard TRUE
-#define mcpp_debug FALSE
 
 extern int mcpp_mode; /* Mode of preprocessing        */
 extern int stdc_val; /* Value of __STDC__            */

@@ -289,11 +289,6 @@ void directive(void)
         hash = L_if;
     ifdo:
         c = do_if(hash, tp);
-        if (0)
-        {
-            mcpp_fprintf(MCPP_DBG, "#if (#elif, #ifdef, #ifndef) evaluate to %s.\n", compiling ? "TRUE" : "FALSE");
-            mcpp_fprintf(MCPP_DBG, "line %ld: %s", src_line, infile->buffer);
-        }
         if (c == FALSE)
         { /* Error                */
             compiling = FALSE; /* Skip this group      */
@@ -500,17 +495,10 @@ static int do_if(int hash, const char* directive_name)
         cerror(no_arg, NULL, 0L, NULL);
         return FALSE;
     }
-    if (0)
-    {
-        sync_linenum();
-        mcpp_fprintf(MCPP_OUT, "/*%s %ld*/", directive_name, src_line);
-    }
     if (hash == L_if)
     { /* #if or #elif             */
         unget_ch();
         found = (eval_if() != 0L); /* Evaluate expression      */
-        if (0)
-            in_if = FALSE; /* 'in_if' is dynamically set in eval_lex() */
         hash = L_ifdef; /* #if is now like #ifdef   */
     }
     else
@@ -521,11 +509,6 @@ static int do_if(int hash, const char* directive_name)
             return FALSE; /* Next token is not an identifier  */
         }
         found = ((defp = look_id(identifier)) != NULL); /* Look in table*/
-        if (0)
-        {
-            if (found)
-                mcpp_fprintf(MCPP_OUT, "/*%s*/", defp->name);
-        }
     }
     if (found == (hash == L_ifdef))
     {
@@ -535,11 +518,6 @@ static int do_if(int hash, const char* directive_name)
     else
     {
         compiling = FALSE;
-    }
-    if (0)
-    {
-        mcpp_fprintf(MCPP_OUT, "/*i %c*/\n", compiling ? 'T' : 'F');
-        /* Report wheather the directive is evaluated TRUE or FALSE */
     }
     return TRUE;
 }

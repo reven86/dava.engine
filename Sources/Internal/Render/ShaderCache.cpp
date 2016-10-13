@@ -301,7 +301,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     return res;
 }
 
-void RelaoadShaders()
+void ReloadShaders()
 {
     DVASSERT(initialized);
 
@@ -314,6 +314,8 @@ void RelaoadShaders()
         SafeDeleteArray(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
+
+    InitPreprocessing();
 
     //reload shaders
     for (auto& shaderDescr : shaderDescriptors)
@@ -356,6 +358,8 @@ void RelaoadShaders()
             shader->requiredVertexFormat = 0;
         }
     }
+
+    ShutdownPreprocessing();
 }
 }
 };
