@@ -718,7 +718,7 @@ std::unique_ptr<UISystem> UIControlSystem::RemoveSystem(const UISystem* system)
     {
         std::unique_ptr<UISystem> systemPtr(it->release());
         systems.erase(it);
-        return std::move(systemPtr);
+        return systemPtr;
     }
 
     return nullptr;
