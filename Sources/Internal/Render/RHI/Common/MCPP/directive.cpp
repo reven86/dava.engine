@@ -774,7 +774,6 @@ int predefine /* Predefine compiler-specific name */
     int redefined; /* TRUE if redefined    */
     int dnargs = 0; /* defp->nargs          */
     int cmp; /* Result of name comparison    */
-    size_t def_start, def_end; /* Column of macro definition   */
 
     repl_base = repl_list;
     repl_end = &repl_list[NMACWORK];
