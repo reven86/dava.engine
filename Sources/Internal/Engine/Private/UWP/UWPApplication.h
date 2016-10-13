@@ -30,6 +30,11 @@ private:
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ arg);
     void OnUnhandledException(::Platform::Object^ sender, ::Windows::UI::Xaml::UnhandledExceptionEventArgs^ arg);
 
+    void OnBackPressed(::Platform::Object^ sender, ::Windows::Phone::UI::Input::BackPressedEventArgs^ args);
+    void OnBackRequested(::Platform::Object^ sender, ::Windows::UI::Core::BackRequestedEventArgs^ args);
+
+    void InstallEventHandlers();
+
 private:
     std::unique_ptr<EngineBackend> engineBackend;
     PlatformCore* core = nullptr;

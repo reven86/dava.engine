@@ -15,7 +15,7 @@ namespace Private
 class PlatformCore final
 {
 public:
-    PlatformCore(EngineBackend* engineBackend);
+    PlatformCore(EngineBackend* engineBackend_);
     ~PlatformCore();
 
     NativeService* GetNativeService() const;
@@ -32,13 +32,14 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
+    void OnBackPressed();
 
 private:
     void GameThread();
 
 private:
-    EngineBackend& engineBackend;
-    MainDispatcher& dispatcher;
+    EngineBackend* engineBackend = nullptr;
+    MainDispatcher* dispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool gameThreadRunning = false;

@@ -38,6 +38,7 @@ struct MainDispatcherEvent final
 
         FUNCTOR,
 
+        BACK_NAVIGATION,
         APP_SUSPENDED,
         APP_RESUMED,
 

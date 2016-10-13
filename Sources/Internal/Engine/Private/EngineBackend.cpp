@@ -405,6 +405,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_RESUMED:
         HandleAppResumed(e);
         break;
+    case MainDispatcherEvent::BACK_NAVIGATION:
+        HandleBackNavigation(e);
+        break;
     case MainDispatcherEvent::USER_CLOSE_REQUEST:
         HandleUserCloseRequest(e);
         break;
@@ -481,6 +484,18 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
             rhi::ResumeRendering();
         engine->resumed.Emit();
     }
+}
+
+void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
+{
+    UIEvent uie;
+    uie.key = Key::BACK;
+    uie.phase = UIEvent::Phase::KEY_UP;
+    uie.device = eInputDevice::KEYBOARD;
+    uie.timestamp = e.timestamp / 1000.0;
+
+    // TODO: get rid of UIControlSystem
+    UIControlSystem::Instance()->OnInput(&uie);
 }
 
 void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
