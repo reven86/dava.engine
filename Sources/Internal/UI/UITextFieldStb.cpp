@@ -1,5 +1,7 @@
 #include "UITextFieldStb.h"
 
+//#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)
+
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
@@ -40,6 +42,18 @@ TextFieldStbImpl::~TextFieldStbImpl()
     SafeRelease(staticText);
     SafeDelete(stb);
     control = nullptr;
+}
+
+void TextFieldStbImpl::Initialize()
+{
+}
+
+void TextFieldStbImpl::OwnerIsDying()
+{
+}
+
+void TextFieldStbImpl::SetDelegate(UITextFieldDelegate* d)
+{
 }
 
 void TextFieldStbImpl::CopyDataFrom(TextFieldStbImpl* t)
@@ -124,7 +138,7 @@ void TextFieldStbImpl::SetText(const WideString& newText)
 
 void TextFieldStbImpl::UpdateRect(const Rect&)
 {
-    // see comment for TextFieldPlatformImpl class above
+    // see comment for TextFieldStbImpl class above
 
     if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
@@ -745,3 +759,5 @@ void TextFieldStbImpl::DropLastCursorAndSelection()
     lastSelEnd = INVALID_POS;
 }
 }
+
+//#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_COREV2__)
