@@ -15,7 +15,7 @@ Reflection GetDataDefault(const DataContext& context, const ReflectedType* type)
     Reflection ret;
     if (context.HasData(type))
     {
-        ret = Reflection::Create(&context.GetData(type)).ref;
+        ret = Reflection::Create(&context.GetData(type));
     }
 
     return ret;
@@ -146,7 +146,7 @@ void DataWrapper::Sync(bool notifyListeners)
                 {
                     valuesEqual = impl->cachedValues[i] == newValue;
                 }
-                catch (const Any::Exception& e)
+                catch (const DAVA::Exception& e)
                 {
                     DAVA::Logger::Error("DataWrapper::Sync: %s", e.what());
                 }

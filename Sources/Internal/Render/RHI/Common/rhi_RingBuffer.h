@@ -38,6 +38,7 @@ inline RingBuffer::RingBuffer()
     , dataPtr(0)
     , cur(0)
     , memUsed(0)
+    , allocCount(0)
     , ownData(false)
 {
 }
