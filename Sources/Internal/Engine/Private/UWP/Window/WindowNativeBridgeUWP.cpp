@@ -23,12 +23,18 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
 {
 }
 
-void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
+void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_)
 {
-    DVASSERT(xamlWindow == nullptr);
-    DVASSERT(xamlWnd != nullptr);
+    using ::Windows::Foundation::Size;
+    using ::Windows::UI::ViewManagement::ApplicationView;
 
-    xamlWindow = xamlWnd;
+    DVASSERT(xamlWindow == nullptr);
+    DVASSERT(xamlWindow_ != nullptr);
+
+    xamlWindow = xamlWindow_;
+
+    // Limit minimum window size to some reasonable value
+    ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(128, 128));
 
     CreateBaseXamlUI();
     InstallEventHandlers();
@@ -207,19 +213,20 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
     eModifierKeys modifierKeys = GetModifierKeys();
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
         std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
 
-        float32 x = pointerPoint->Position.X;
-        float32 y = pointerPoint->Position.Y;
         eMouseButtons button = GetMouseButtonIndex(state);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_DOWN, button, x, y, 1, modifierKeys, false));
         mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
-        // TODO: implement later
+        uint32 touchId = pointerPoint->PointerId;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_DOWN, touchId, x, y, modifierKeys));
     }
 }
 
@@ -233,17 +240,18 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
     eModifierKeys modifierKeys = GetModifierKeys();
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
-        float32 x = pointerPoint->Position.X;
-        float32 y = pointerPoint->Position.Y;
         eMouseButtons button = GetMouseButtonIndex(mouseButtonState);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, false));
         mouseButtonState.reset();
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
-        // TODO: implement later
+        uint32 touchId = pointerPoint->PointerId;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, touchId, x, y, modifierKeys));
     }
 }
 
@@ -257,13 +265,13 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
 
     eModifierKeys modifierKeys = GetModifierKeys();
+    float32 x = pointerPoint->Position.X;
+    float32 y = pointerPoint->Position.Y;
     if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
     {
         std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
         std::bitset<MOUSE_BUTTON_COUNT> change = mouseButtonState ^ state;
 
-        float32 x = pointerPoint->Position.X;
-        float32 y = pointerPoint->Position.Y;
         MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, x, y, 1, modifierKeys, false);
         for (size_t i = 0, n = change.size(); i < n; ++i)
         {
@@ -280,7 +288,8 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
-        // TODO: implement later
+        uint32 touchId = pointerPoint->PointerId;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, touchId, x, y, modifierKeys));
     }
 }
 

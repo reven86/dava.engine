@@ -20,7 +20,7 @@ ref struct WindowNativeBridge sealed
 
     void* GetHandle() const;
 
-    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd);
+    void BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWindow_);
 
     void AddXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
     void RemoveXamlControl(Windows::UI::Xaml::UIElement ^ xamlControl);
