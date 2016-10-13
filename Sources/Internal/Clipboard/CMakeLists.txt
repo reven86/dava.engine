@@ -1,12 +1,13 @@
+set( MODULE_TYPE INLINE )
+
 set( HPP_FILES *.h   Private/*.h )
 set( CPP_FILES *.cpp Private/*.cpp )
-set( CPP_FILES_APPLE *.mm )
 
-set( HPP_FILES_ANDROID Private/android/*.cpp )
-set( CPP_FILES_ANDROID Private/android/*.h   )
+set( HPP_FILES_ANDROID Private/android/*.h )
+set( CPP_FILES_ANDROID Private/android/*.cpp )
 
 set( HPP_FILES_IOS Private/ios/*.h )
-set( CPP_FILES_IOS Private/ios/*.cpp Private/ios/*.mm  )
+set( CPP_FILES_IOS Private/ios/*.cpp Private/ios/*.mm )
 
 set( HPP_FILES_MACOS Private/osx/*.h )
 set( CPP_FILES_MACOS Private/osx/*.cpp Private/osx/*.mm )
