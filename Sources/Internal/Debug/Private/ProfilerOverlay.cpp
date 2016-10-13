@@ -268,7 +268,7 @@ void ProfilerOverlay::Update()
     if (cpuProfiler && cpuProfiler->IsStarted())
     {
         uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-        CPUFrameTraces.push_back({ std::move(cpuProfiler->GetTrace(cpuCounterName)), (currentFrameIndex - 1) });
+        CPUFrameTraces.push_back({ cpuProfiler->GetTrace(cpuCounterName), (currentFrameIndex - 1) });
     }
 }
 

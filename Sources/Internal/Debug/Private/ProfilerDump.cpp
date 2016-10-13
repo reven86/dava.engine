@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Debug/ProfilerDump.h"
 #include "Debug/TraceEvent.h"
 #include "Debug/ProfilerCPU.h"

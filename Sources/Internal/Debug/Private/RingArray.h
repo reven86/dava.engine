@@ -208,7 +208,7 @@ public:
         }
         inline iterator& operator++()
         {
-            add(1);
+            this->add(1);
             return *this;
         }
         inline iterator operator++(int)
@@ -219,7 +219,7 @@ public:
         }
         inline iterator& operator--()
         {
-            sub(1);
+            this->sub(1);
             return *this;
         }
         inline iterator operator--(int)
@@ -263,7 +263,7 @@ public:
         }
         inline reverse_iterator& operator++()
         {
-            radd(1);
+            this->radd(1);
             return *this;
         }
         inline reverse_iterator operator++(int)
@@ -274,7 +274,7 @@ public:
         }
         inline reverse_iterator& operator--()
         {
-            rsub(1);
+            this->rsub(1);
             return *this;
         }
         inline reverse_iterator operator--(int)
@@ -318,7 +318,7 @@ public:
         }
         inline const_iterator& operator++()
         {
-            add(1);
+            this->add(1);
             return *this;
         }
         inline const_iterator operator++(int)
@@ -329,7 +329,7 @@ public:
         }
         inline const_iterator& operator--()
         {
-            sub(1);
+            this->sub(1);
             return *this;
         }
         inline const_iterator operator--(int)
@@ -373,7 +373,7 @@ public:
         }
         inline const_reverse_iterator& operator++()
         {
-            radd(1);
+            this->radd(1);
             return *this;
         }
         inline const_reverse_iterator operator++(int)
@@ -384,7 +384,7 @@ public:
         }
         inline const_reverse_iterator& operator--()
         {
-            rsub(1);
+            this->rsub(1);
             return *this;
         }
         inline const_reverse_iterator operator--(int)
