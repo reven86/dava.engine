@@ -3,10 +3,12 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "Input/KeyboardDevice.h"
 
 namespace DAVA
 {
 class TextBox;
+class UIEvent;
 struct StbState;
 
 /**
@@ -15,29 +17,6 @@ struct StbState;
 class StbTextEditBridge
 {
 public:
-    /**
-     * \brief Control keys in stb_textedit
-     */
-    enum CotrolKeys : uint32
-    {
-        KEY_SHIFT_MASK = 0x00020000,
-        KEY_LEFT = 0x00010000,
-        KEY_RIGHT = 0x00010001,
-        KEY_UP = 0x00010002,
-        KEY_DOWN = 0x00010003,
-        KEY_LINESTART = 0x00010004,
-        KEY_LINEEND = 0x00010005,
-        KEY_TEXTSTART = 0x00010006,
-        KEY_TEXTEND = 0x00010007,
-        KEY_DELETE = 0x00010008,
-        KEY_BACKSPACE = 8,
-        KEY_UNDO = 0x00010009,
-        KEY_REDO = 0x00010010,
-        KEY_INSERT = 0x00010011,
-        KEY_WORDLEFT = 0x00010012,
-        KEY_WORDRIGHT = 0x00010013,
-    };
-
     /**
      * \brief Delegate to implement stb_textedit callbacks
      */
@@ -70,20 +49,24 @@ public:
         * \brief Service function for getting instance of TextBox from field
         * \return pointer to TextBox
         */
-        virtual const TextBox* GetTextBox() = 0;
+        virtual const TextBox* GetTextBox() const = 0;
 
         /**
         * \brief Service function for getting text length
         * \return text length
         */
-        virtual uint32 GetTextLength() = 0;
+        virtual uint32 GetTextLength() const = 0;
 
         /**
         * \brief Service function for getting character from text
         * \param[in] i character index
         * \return character
         */
-        virtual WideString::value_type GetCharAt(uint32 i) = 0;
+        virtual WideString::value_type GetCharAt(uint32 i) const = 0;
+
+        virtual WideString GetText() const = 0;
+
+        virtual bool IsCharAvaliable(WideString::value_type ch) const = 0;
     };
 
     /**
@@ -109,10 +92,29 @@ public:
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
     /**
+    
+    */
+    virtual bool SendKey(Key key, uint32 modifiers);
+
+    /**
      * \brief Send key to STB text edit
      * \param[in] codePoint key code
      */
-    virtual bool SendKey(uint32 codePoint);
+    virtual bool SendKeyChar(uint32 keyChar, uint32 modifiers);
+
+    virtual bool SendRaw(uint32 codePoint);
+
+    /**
+    * \brief Send mouse click to STB text edit
+    * \param[in] point mouse point (x,y) in control's local coordinates
+    */
+    virtual void Click(const Vector2& point);
+
+    /**
+    * \brief Send mouse drag event to STB text edit
+    * \param[in] point mouse point (x,y) in control's local coordinates
+    */
+    virtual void Drag(const Vector2& point);
 
     /**
      * \brief Cut (delete) selected text
@@ -124,18 +126,6 @@ public:
      * \param[in] str string to pasting
      */
     virtual bool Paste(const WideString& str);
-
-    /**
-     * \brief Send mouse click to STB text edit
-     * \param[in] point mouse point (x,y) in control's local coordinates
-     */
-    virtual void Click(const Vector2& point);
-
-    /**
-     * \brief Send mouse drag event to STB text edit
-     * \param[in] point mouse point (x,y) in control's local coordinates
-     */
-    virtual void Drag(const Vector2& point);
 
     /**
      * \brief Clear STB text edit undo stack
@@ -203,6 +193,20 @@ public:
      * \return if True that inserting mode is enabled
      */
     bool IsInsertMode() const;
+
+    /**
+    
+    */
+    void SelectWord();
+
+    /**
+
+    */
+    void SelectAll();
+
+    bool CutToClipboard();
+    bool CopyToClipboard();
+    bool PasteFromClipboard();
 
     /**
      * \brief Return delegate

@@ -1,6 +1,14 @@
 #include "StbTextEditBridge.h"
 #include "Debug/DVAssert.h"
 #include "Utils/TextBox.h"
+#include "UI/UIEvent.h"
+#include "Utils/StringUtils.h"
+#include "Render/2D/Font.h"
+
+#define ENABLE_CLIPBOARD 1
+#ifdef ENABLE_CLIPBOARD 
+#include "Clipboard/Clipboard.h"
+#endif // USE_CLIPBOARD
 
 #if __clang__
 #pragma clang diagnostic push
@@ -10,6 +18,12 @@
 #define STB_TEXTEDIT_CHARTYPE DAVA::WideString::value_type
 #define STB_TEXTEDIT_STRING DAVA::StbTextEditBridge
 #define STB_TEXTEDIT_NEWLINE L'\n'
+
+#define K_VKEY 0x00010000
+#define K_SHIFT 0x00020000
+#define K_CTRL 0x00040000
+#define K_ALT 0x00080000
+#define K_CMD 0x00100000
 
 #include <stb/stb_textedit.h>
 
@@ -96,6 +110,8 @@ inline int stb_stringlen(STB_TEXTEDIT_STRING* str)
 
 inline int stb_keytotext(int key)
 {
+    if (key & K_VKEY)
+        return -1;
     return key;
 }
 
@@ -119,22 +135,32 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 #define STB_TEXTEDIT_GETCHAR stb_getchar
 #define STB_TEXTEDIT_IS_SPACE stb_isspace
 
-#define STB_TEXTEDIT_K_SHIFT DAVA::StbTextEditBridge::KEY_SHIFT_MASK
-#define STB_TEXTEDIT_K_LEFT DAVA::StbTextEditBridge::KEY_LEFT
-#define STB_TEXTEDIT_K_RIGHT DAVA::StbTextEditBridge::KEY_RIGHT
-#define STB_TEXTEDIT_K_UP DAVA::StbTextEditBridge::KEY_UP
-#define STB_TEXTEDIT_K_DOWN DAVA::StbTextEditBridge::KEY_DOWN
-#define STB_TEXTEDIT_K_LINESTART DAVA::StbTextEditBridge::KEY_LINESTART
-#define STB_TEXTEDIT_K_LINEEND DAVA::StbTextEditBridge::KEY_LINEEND
-#define STB_TEXTEDIT_K_TEXTSTART DAVA::StbTextEditBridge::KEY_TEXTSTART
-#define STB_TEXTEDIT_K_TEXTEND DAVA::StbTextEditBridge::KEY_TEXTEND
-#define STB_TEXTEDIT_K_DELETE DAVA::StbTextEditBridge::KEY_DELETE
-#define STB_TEXTEDIT_K_BACKSPACE DAVA::StbTextEditBridge::KEY_BACKSPACE
-#define STB_TEXTEDIT_K_UNDO DAVA::StbTextEditBridge::KEY_UNDO
-#define STB_TEXTEDIT_K_REDO DAVA::StbTextEditBridge::KEY_REDO
-#define STB_TEXTEDIT_K_INSERT DAVA::StbTextEditBridge::KEY_INSERT
-#define STB_TEXTEDIT_K_WORDLEFT DAVA::StbTextEditBridge::KEY_WORDLEFT
-#define STB_TEXTEDIT_K_WORDRIGHT DAVA::StbTextEditBridge::KEY_WORDRIGHT
+#define STB_TEXTEDIT_K_SHIFT (K_SHIFT)
+#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::Key::LEFT))
+#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::Key::RIGHT))
+#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::Key::UP))
+#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::Key::DOWN))
+#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::Key::HOME))
+//#define STB_TEXTEDIT_K_LINESTART2 
+#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::Key::END))
+//#define STB_TEXTEDIT_K_LINEEND2       
+#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CTRL | int(DAVA::Key::HOME))
+//#define STB_TEXTEDIT_K_TEXTSTART2
+#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CTRL | int(DAVA::Key::END))
+//#define STB_TEXTEDIT_K_TEXTEND2 
+#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_CTRL | int(DAVA::Key::LEFT))
+#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_CTRL | int(DAVA::Key::RIGHT))
+#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::Key::INSERT))
+#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::Key::DELETE))
+#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::Key::BACKSPACE))
+#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CTRL | int(DAVA::Key::KEY_Z))
+#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CTRL | int(DAVA::Key::KEY_Y))
+
+#define K_VKEY_SELECT_ALL (K_VKEY | K_CTRL | int(DAVA::Key::KEY_A))
+#define K_VKEY_CUT (K_VKEY | K_CTRL | int(DAVA::Key::KEY_X))
+#define K_VKEY_COPY (K_VKEY | K_CTRL | int(DAVA::Key::KEY_C))
+#define K_VKEY_PASTE (K_VKEY | K_CTRL | int(DAVA::Key::KEY_V))
+
 //#define STB_TEXTEDIT_K_PGUP
 //#define STB_TEXTEDIT_K_PGDOWN
 
@@ -157,7 +183,7 @@ StbTextEditBridge::StbTextEditBridge(StbTextDelegate* delegate)
     : stb_state(new StbState())
     , delegate(delegate)
 {
-    DVASSERT_MSG(delegate, "StbTextEditBridge must be inited with delegate!");
+    DVASSERT_MSG(delegate, "StbTextEditBridge must be created with delegate!");
     stb_textedit_initialize_state(stb_state, 0);
 }
 
@@ -178,7 +204,77 @@ void StbTextEditBridge::CopyStbStateFrom(const StbTextEditBridge& c)
     Memcpy(stb_state, c.stb_state, sizeof(StbState));
 }
 
-bool StbTextEditBridge::SendKey(uint32 codePoint)
+bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
+{
+    uint32 code = K_VKEY | uint32(key);
+    if (modifiers & UIEvent::CONTROL_DOWN)
+    {
+        code |= K_CTRL;
+    }
+    if (modifiers & UIEvent::ALT_DOWN)
+    {
+        code |= K_ALT;
+    }
+    if (modifiers & UIEvent::SHIFT_DOWN)
+    {
+        code |= K_SHIFT;
+    }
+    if (modifiers & UIEvent::COMMAND_DOWN)
+    {
+        code |= K_CMD;
+    }
+
+    switch (code)
+    {
+    case K_VKEY_SELECT_ALL:
+        SelectAll();
+        return false;
+#if ENABLE_CLIPBOARD
+    case K_VKEY_CUT:
+        return CutToClipboard(); // Can modify text
+    case K_VKEY_COPY:
+        CopyToClipboard();
+        return false;
+    case K_VKEY_PASTE:
+        return PasteFromClipboard(); // Can modify text
+#endif
+    case STB_TEXTEDIT_K_UP:
+    case STB_TEXTEDIT_K_DOWN:
+        if (IsSingleLineMode())
+            return false;
+    default:
+        return SendRaw(code);
+    }
+}
+
+bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
+{
+    if ((modifiers & (UIEvent::CONTROL_DOWN | UIEvent::COMMAND_DOWN)))
+    {
+        // Skip chars with Ctrl or Command modifiers
+        return false;
+    }
+
+    switch (keyChar)
+    {
+    case '\b': // Skip backspace char (processed on SendKey)
+    case '\t': // Disable TAB for now
+        return false;
+    case '\r':
+        keyChar = '\n';
+    case '\n':
+        if (IsSingleLineMode())
+            return false;
+    default: // Send printable characters
+        if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
+        {
+            return SendRaw(keyChar); // Can modify text
+        }
+        return false;
+    }
+}
+
+bool DAVA::StbTextEditBridge::SendRaw(uint32 codePoint)
 {
     return stb_textedit_key(this, stb_state, codePoint) != 0;
 }
@@ -252,11 +348,78 @@ bool StbTextEditBridge::IsInsertMode() const
     return stb_state->insert_mode != 0;
 }
 
+void StbTextEditBridge::SelectWord()
+{
+    SendRaw(STB_TEXTEDIT_K_WORDLEFT);
+    SendRaw(STB_TEXTEDIT_K_WORDRIGHT | STB_TEXTEDIT_K_SHIFT);
+}
+
+void StbTextEditBridge::SelectAll()
+{
+    SetSelectionStart(0);
+    SetSelectionEnd(GetDelegate()->GetTextLength());
+    SetCursorPosition(GetDelegate()->GetTextLength());
+}
+
 void StbTextEditBridge::ClearUndoStack()
 {
     stb_state->undostate.undo_point = 0;
     stb_state->undostate.undo_char_point = 0;
     stb_state->undostate.redo_point = STB_TEXTEDIT_UNDOSTATECOUNT;
     stb_state->undostate.redo_char_point = STB_TEXTEDIT_UNDOCHARCOUNT;
+}
+
+bool StbTextEditBridge::CutToClipboard()
+{
+#if ENABLE_CLIPBOARD
+    uint32 selStart = std::min(GetSelectionStart(), GetSelectionEnd());
+    uint32 selEnd = std::max(GetSelectionStart(), GetSelectionEnd());
+    if (selStart < selEnd)
+    {
+        WideString selectedText = GetDelegate()->GetText().substr(selStart, selEnd - selStart);
+        if (Clipboard().SetText(selectedText))
+        {
+            return Cut();
+        }
+    }
+#endif
+    return false;
+}
+
+bool StbTextEditBridge::CopyToClipboard()
+{
+#if ENABLE_CLIPBOARD
+    uint32 selStart = std::min(GetSelectionStart(), GetSelectionEnd());
+    uint32 selEnd = std::max(GetSelectionStart(), GetSelectionEnd());
+    if (selStart < selEnd)
+    {
+        WideString selectedText = GetDelegate()->GetText().substr(selStart, selEnd - selStart);
+        return Clipboard().SetText(selectedText);
+    }
+#endif
+    return false;
+}
+
+bool StbTextEditBridge::PasteFromClipboard()
+{
+#if ENABLE_CLIPBOARD
+    WideString clipText;
+    Clipboard clip;
+    if (clip.HasText())
+    {
+        clipText = clip.GetText();
+        clipText.erase(std::remove_if(clipText.begin(), clipText.end(),
+                                      [&](WideString::value_type& ch)
+                                      {
+                                          return !GetDelegate()->IsCharAvaliable(ch);
+                                      }),
+                       clipText.end());
+        if (!clipText.empty())
+        {
+            return Paste(clipText);
+        }
+    }
+#endif
+    return false;
 }
 }

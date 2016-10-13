@@ -14,11 +14,6 @@
 
 #include <numeric>
 
-#define ENABLE_CLIPBOARD 1
-#ifdef ENABLE_CLIPBOARD 
-#include "Clipboard/Clipboard.h"
-#endif // USE_CLIPBOARD
-
 namespace DAVA
 {
 static float32 DEFAULT_CURSOR_WIDTH = 1.f;
@@ -248,6 +243,21 @@ void TextFieldStbImpl::GetText(WideString& output)
     output = text;
 }
 
+DAVA::WideString TextFieldStbImpl::GetText() const
+{
+    return text;
+}
+
+bool TextFieldStbImpl::IsCharAvaliable(WideString::value_type ch) const
+{
+    Font* f = GetFont();
+    if (f)
+    {
+        return ch == '\n' || f->IsCharAvaliable(static_cast<char16>(ch));
+    }
+    return false;
+}
+
 void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
 {
 }
@@ -439,17 +449,17 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
     return 0;
 }
 
-const TextBox* TextFieldStbImpl::GetTextBox()
+const TextBox* TextFieldStbImpl::GetTextBox() const
 {
     return staticText->GetTextBlock()->GetTextBox();
 }
 
-uint32 TextFieldStbImpl::GetTextLength()
+uint32 TextFieldStbImpl::GetTextLength() const
 {
     return uint32(text.length());
 }
 
-WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i)
+WideString::value_type TextFieldStbImpl::GetCharAt(uint32 i) const
 {
     return text.at(i);
 }
@@ -638,20 +648,22 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     bool textCanChanged = false;
     WideString prevText(text);
 
+    const KeyboardDevice& kDevice = InputSystem::Instance()->GetKeyboard();
+    bool isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
+    bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
+    bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
+    bool isCmd = kDevice.IsKeyPressed(Key::LCMD) || kDevice.IsKeyPressed(Key::RCMD);
+
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        const KeyboardDevice& kDevice = InputSystem::Instance()->GetKeyboard();
-        bool isShift = kDevice.IsKeyPressed(Key::LSHIFT) || kDevice.IsKeyPressed(Key::RSHIFT);
-        bool isCtrl = kDevice.IsKeyPressed(Key::LCTRL) || kDevice.IsKeyPressed(Key::RCTRL);
-        bool isAlt = kDevice.IsKeyPressed(Key::LALT) || kDevice.IsKeyPressed(Key::RALT);
-
         if ((currentInput->key == Key::ENTER || currentInput->key == Key::NUMPADENTER) && !isAlt)
         {
             if (control->GetDelegate())
             {
                 control->GetDelegate()->TextFieldShouldReturn(control);
             }
+            return;
         }
         else if (currentInput->key == Key::ESCAPE)
         {
@@ -659,121 +671,31 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
             {
                 control->GetDelegate()->TextFieldShouldCancel(control);
             }
+            return;
         }
-        else if (currentInput->key == Key::LEFT)
+        else
         {
-            if (isCtrl)
-            {
-                stb->SendKey(StbTextEditBridge::KEY_WORDLEFT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-            else
-            {
-                stb->SendKey(StbTextEditBridge::KEY_LEFT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-        }
-        else if (currentInput->key == Key::RIGHT)
-        {
-            if (isCtrl)
-            {
-                stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-            else
-            {
-                stb->SendKey(StbTextEditBridge::KEY_RIGHT | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-        }
-        else if (currentInput->key == Key::UP && !stb->IsSingleLineMode()) // Only in multiline text
-        {
-            stb->SendKey(StbTextEditBridge::KEY_UP | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-        }
-        else if (currentInput->key == Key::DOWN && !stb->IsSingleLineMode()) // Only in multiline text
-        {
-            stb->SendKey(StbTextEditBridge::KEY_DOWN | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-        }
-        else if (currentInput->key == Key::HOME)
-        {
-            if (isCtrl)
-            {
-                stb->SendKey(StbTextEditBridge::KEY_TEXTSTART | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-            else
-            {
-                stb->SendKey(StbTextEditBridge::KEY_LINESTART | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-        }
-        else if (currentInput->key == Key::END)
-        {
-            if (isCtrl)
-            {
-                stb->SendKey(StbTextEditBridge::KEY_TEXTEND | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-            else
-            {
-                stb->SendKey(StbTextEditBridge::KEY_LINEEND | (isShift ? StbTextEditBridge::KEY_SHIFT_MASK : 0));
-            }
-        }
-        else if (currentInput->key == Key::DELETE)
-        {
-            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_DELETE); // Can modify text
-        }
-        else if (currentInput->key == Key::INSERT)
-        {
-            stb->SendKey(StbTextEditBridge::KEY_INSERT);
-        }
-        else if (isCtrl && currentInput->key == Key::KEY_Y)
-        {
-            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_REDO); // Can modify text
-        }
-        else if (isCtrl && currentInput->key == Key::KEY_Z)
-        {
-            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_UNDO); // Can modify text
-        }
-        else if (isCtrl && currentInput->key == Key::KEY_A)
-        {
-            SelectAll();
-        }
-#if ENABLE_CLIPBOARD
-        else if (currentInput->key == Key::KEY_X && isCtrl)
-        {
-            textCanChanged = CutToClipboardInternal(); // Can modify text
-        }
-        else if (currentInput->key == Key::KEY_C && isCtrl)
-        {
-            CopyToClipboardInternal();
-        }
-        else if (currentInput->key == Key::KEY_V && isCtrl)
-        {
-            textCanChanged = PasteFromClipboardInternal(); // Can modify text
-        }
+            uint32 mod = currentInput->modifiers;
+#if defined(__DAVAENGINE_COREV2__)
+            mod |= isShift ? UIEvent::SHIFT_DOWN : 0;
+            mod |= isCtrl ? UIEvent::CONTROL_DOWN : 0;
+            mod |= isAlt ? UIEvent::ALT_DOWN : 0;
+            mod |= isCmd ? UIEvent::COMMAND_DOWN : 0;
 #endif
+            textCanChanged = stb->SendKey(currentInput->key, mod);
+        }
     }
-    else if (currentInput->phase == UIEvent::Phase::CHAR ||
-             currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
+    if (currentInput->phase == UIEvent::Phase::CHAR ||
+        currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
-        // Send Enter if it allowed
-        if ((currentInput->keyChar == '\r' || currentInput->keyChar == '\n') && control->IsMultiline())
-        {
-            textCanChanged = stb->SendKey('\n'); // Can modify text
-        }
-        // Send backspace
-        else if (currentInput->keyChar == '\b')
-        {
-            textCanChanged = stb->SendKey(StbTextEditBridge::KEY_BACKSPACE); // Can modify text
-        }
-#if 0 // Disable TAB for input now
-        // Send TAB
-        else if (currentInput->keyChar == '\t')
-        {
-            textCanChanged = stb->SendKey('\t'); // or SendKey(' '); // Can modify text
-        }
+        uint32 mod = currentInput->modifiers;
+#if defined(__DAVAENGINE_COREV2__)
+        mod |= isShift ? UIEvent::SHIFT_DOWN : 0;
+        mod |= isCtrl ? UIEvent::CONTROL_DOWN : 0;
+        mod |= isAlt ? UIEvent::ALT_DOWN : 0;
+        mod |= isCmd ? UIEvent::COMMAND_DOWN : 0;
 #endif
-        // Send printable characters (include Font check)
-        else if (iswprint(static_cast<wint_t>(currentInput->keyChar))
-                 && (control->GetFont() != nullptr && control->GetFont()->IsCharAvaliable(static_cast<char16>(currentInput->keyChar)))
-                 )
-        {
-            textCanChanged = stb->SendKey(currentInput->keyChar); // Can modify text
-        }
+        textCanChanged = stb->SendKeyChar(currentInput->keyChar, mod);
     }
     else if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
@@ -781,15 +703,11 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
         stb->Click(localPoint - staticTextOffset);
         if (currentInput->tapCount == 2)
         {
-            stb->SendKey(StbTextEditBridge::KEY_WORDLEFT);
-            stb->SendKey(StbTextEditBridge::KEY_WORDRIGHT | StbTextEditBridge::KEY_SHIFT_MASK);
+            stb->SelectWord();
         }
         else if (currentInput->tapCount > 2)
         {
-            uint32 length = GetTextLength();
-            stb->SetSelectionStart(0);
-            stb->SetSelectionEnd(length);
-            SetCursorPos(length);
+            stb->SelectAll();
         }
     }
     else if (currentInput->phase == UIEvent::Phase::DRAG)
@@ -815,71 +733,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
 
 void TextFieldStbImpl::SelectAll()
 {
-    stb->SetSelectionStart(0);
-    stb->SetSelectionEnd(GetTextLength());
-    stb->SetCursorPosition(GetTextLength());
-}
-
-bool TextFieldStbImpl::CutToClipboardInternal()
-{
-#if ENABLE_CLIPBOARD
-    uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    uint32 selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    if (selStart < selEnd)
-    {
-        WideString selectedText = text.substr(selStart, selEnd - selStart);
-        if (Clipboard().SetText(selectedText))
-        {
-            return stb->Cut();
-        }
-    }
-#endif
-    return false;
-}
-
-bool TextFieldStbImpl::CopyToClipboardInternal()
-{
-#if ENABLE_CLIPBOARD
-    uint32 selStart = std::min(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    uint32 selEnd = std::max(stb->GetSelectionStart(), stb->GetSelectionEnd());
-    if (selStart < selEnd)
-    {
-        WideString selectedText = text.substr(selStart, selEnd - selStart);
-        return Clipboard().SetText(selectedText);
-    }
-#endif
-    return false;
-}
-
-bool TextFieldStbImpl::PasteFromClipboardInternal()
-{
-#if ENABLE_CLIPBOARD
-    Font* font = control->GetFont();
-    // Can't paste any text without font
-    if (font != nullptr)
-    {
-        WideString clipText;
-        Clipboard clip;
-        if (clip.HasText())
-        {
-            clipText = clip.GetText();
-            // Remove not valid characters (include Font check)
-            clipText = StringUtils::RemoveNonPrintable(clipText);
-            StringUtils::RemoveEmoji(clipText);
-            clipText.erase(std::remove_if(clipText.begin(), clipText.end(), [font](WideString::value_type& ch)
-                                          {
-                                              return !font->IsCharAvaliable(static_cast<char16>(ch));
-                                          }),
-                           clipText.end());
-
-            if (!clipText.empty())
-            {
-                return stb->Paste(clipText);
-            }
-        }
-    }
-#endif
-    return false;
+    stb->SelectAll();
 }
 
 void TextFieldStbImpl::DropLastCursorAndSelection()

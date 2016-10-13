@@ -51,8 +51,8 @@ public:
     void GetText(WideString&);
     void SetInputEnabled(bool, bool hierarchic = true);
     void SetVisible(bool v);
-    void SetFont(Font* f);
     Font* GetFont() const;
+    void SetFont(Font* f);
     void SetTextColor(const Color& c);
     void SetShadowOffset(const Vector2& v);
     void SetShadowColor(const Color& c);
@@ -76,9 +76,11 @@ public:
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
-    const TextBox* GetTextBox() override;
-    uint32 GetTextLength() override;
-    WideString::value_type GetCharAt(uint32 i) override;
+    const TextBox* GetTextBox() const override;
+    uint32 GetTextLength() const override;
+    WideString::value_type GetCharAt(uint32 i) const override;
+    WideString GetText() const override;
+    bool IsCharAvaliable(WideString::value_type ch) const override;
 
 private:
     void DropLastCursorAndSelection();
@@ -86,10 +88,6 @@ private:
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
     void UpdateOffset(const Rect& visibleRect);
-
-    bool CutToClipboardInternal();
-    bool CopyToClipboardInternal();
-    bool PasteFromClipboardInternal();
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
