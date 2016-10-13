@@ -161,6 +161,12 @@ dx9_NeedRestoreResources()
     return needRestore;
 }
 
+static void dx9_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX9Command cmd = { DX9Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX9(&cmd, 1, false);
+}
+
 //------------------------------------------------------------------------------
 
 void DX9CheckMultisampleSupport()
@@ -352,6 +358,7 @@ void dx9_Initialize(const InitParam& param)
     DispatchDX9.impl_HostApi = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+    DispatchDX9.impl_SyncCPUGPU = &dx9_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchDX9);
 

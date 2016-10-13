@@ -153,6 +153,14 @@ dx11_ResumeRendering()
 
 //------------------------------------------------------------------------------
 
+static void dx11_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
+{
+    DX11Command cmd = { DX11Command::SYNC_CPU_GPU, { uint64(cpuTimestamp), uint64(gpuTimestamp) } };
+    ExecDX11(&cmd, 1);
+}
+
+//------------------------------------------------------------------------------
+
 void _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -349,6 +357,7 @@ void dx11_Initialize(const InitParam& param)
     DispatchDX11.impl_NeedRestoreResources = &dx11_NeedRestoreResources;
     DispatchDX11.impl_SuspendRendering = &dx11_SuspendRendering;
     DispatchDX11.impl_ResumeRendering = &dx11_ResumeRendering;
+    DispatchDX11.impl_SyncCPUGPU = &dx11_SynchronizeCPUGPU;
 
     SetDispatchTable(DispatchDX11);
 

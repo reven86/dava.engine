@@ -1,20 +1,21 @@
 #include "../Common/rhi_Pool.h"
-    #include "_dx11.h"
-    #include "rhi_DX11.h"
+#include "_dx11.h"
+#include "rhi_DX11.h"
 
-	#include "../rhi_Type.h"
-    #include "../Common/rhi_RingBuffer.h"
-    #include "../Common/dbg_StatSet.h"
+#include "../rhi_Type.h"
+#include "../Common/rhi_RingBuffer.h"
+#include "../Common/dbg_StatSet.h"
 
-    #include "Debug/DVAssert.h"
-    #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 using DAVA::Logger;
-    #include "Core/Core.h"
-    #include "Debug/ProfilerCPU.h"
-    #include "Debug/ProfilerMarkerNames.h"
-    #include "Concurrency/Thread.h"
-    #include "Concurrency/Semaphore.h"
-    #include "Concurrency/AutoResetEvent.h"
+#include "Core/Core.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Platform/SystemTimer.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/AutoResetEvent.h"
 
 #define LUMIA_1020_DEPTHBUF_WORKAROUND 1
 
@@ -1283,6 +1284,57 @@ _ExecDX11(DX11Command* command, uint32 cmdCount)
         case DX11Command::COPY_RESOURCE:
             _D3D11_ImmediateContext->CopyResource((ID3D11Resource*)(arg[0]), (ID3D11Resource*)(arg[1]));
             break;
+
+        case DX11Command::SYNC_CPU_GPU:
+        {
+            if (DeviceCaps().isPerfQuerySupported)
+            {
+                ID3D11Query *tsQuery = nullptr, *fqQuery = nullptr;
+                D3D11_QUERY_DESC desc;
+
+                desc.Query = D3D11_QUERY_TIMESTAMP;
+                desc.MiscFlags = 0;
+                _D3D11_Device->CreateQuery(&desc, &tsQuery);
+
+                desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+                desc.MiscFlags = 0;
+                HRESULT hr = _D3D11_Device->CreateQuery(&desc, &fqQuery);
+
+                if (tsQuery && fqQuery)
+                {
+                    _D3D11_ImmediateContext->Begin(fqQuery);
+                    _D3D11_ImmediateContext->End(tsQuery);
+                    _D3D11_ImmediateContext->End(fqQuery);
+
+                    uint64 timestamp = 0;
+                    while (S_FALSE == _D3D11_ImmediateContext->GetData(tsQuery, &timestamp, sizeof(uint64), 0))
+                    {
+                    };
+
+                    if (timestamp)
+                    {
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                        D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
+                        while (S_FALSE == _D3D11_ImmediateContext->GetData(fqQuery, &data, sizeof(data), 0))
+                        {
+                        };
+
+                        if (!data.Disjoint && data.Frequency)
+                        {
+                            *reinterpret_cast<uint64*>(arg[1]) = timestamp / (data.Frequency / 1000000); //mcs
+                        }
+                    }
+                }
+
+                if (tsQuery)
+                    tsQuery->Release();
+
+                if (fqQuery)
+                    fqQuery->Release();
+            }
+        }
+        break;
 
         default:
             DVASSERT(!"unknown DX11-cmd");

@@ -14,6 +14,7 @@ using DAVA::Logger;
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
+#include "Platform/SystemTimer.h"
 
 #include "_dx9.h"
 #include <vector>
@@ -1769,6 +1770,59 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
                                                              static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], BOOL(arg[5] != 0),
                                                              (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateDepthStencilSurface");
+        }
+        break;
+
+        case DX9Command::SYNC_CPU_GPU:
+        {
+            if (DeviceCaps().isPerfQuerySupported)
+            {
+                IDirect3DQuery9 *disjointQuery = nullptr, *freqQuery = nullptr, *tsQuery = nullptr;
+
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &disjointQuery);
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
+                _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &tsQuery);
+
+                if (disjointQuery && freqQuery && tsQuery)
+                {
+                    disjointQuery->Issue(D3DISSUE_BEGIN);
+                    freqQuery->Issue(D3DISSUE_END);
+                    tsQuery->Issue(D3DISSUE_END);
+                    disjointQuery->Issue(D3DISSUE_END);
+
+                    bool disjoint = true;
+                    uint64 frequency = 0, timestamp = 0;
+
+                    while (S_FALSE == tsQuery->GetData(&timestamp, sizeof(uint64), D3DGETDATA_FLUSH))
+                    {
+                    };
+                    if (timestamp)
+                    {
+                        *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+
+                        while (S_FALSE == disjointQuery->GetData(&disjoint, sizeof(bool), D3DGETDATA_FLUSH))
+                        {
+                        };
+                        while (S_FALSE == freqQuery->GetData(&frequency, sizeof(uint64), D3DGETDATA_FLUSH))
+                        {
+                        };
+
+                        if (!disjoint && frequency)
+                        {
+                            *reinterpret_cast<uint64*>(arg[1]) = timestamp / (frequency / 1000000); //mcs
+                        }
+                    }
+                }
+
+                if (disjointQuery)
+                    disjointQuery->Release();
+
+                if (freqQuery)
+                    freqQuery->Release();
+
+                if (tsQuery)
+                    tsQuery->Release();
+            }
         }
         break;
 

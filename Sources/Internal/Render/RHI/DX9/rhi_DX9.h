@@ -172,6 +172,8 @@ DX9Command
 
         CREATE_RENDER_TARGET,
         CREARE_DEPTHSTENCIL_SURFACE,
+
+        SYNC_CPU_GPU,
     };
 
     Func func;

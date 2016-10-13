@@ -2824,17 +2824,17 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         break;
         case GLCommand::SYNC_CPU_GPU:
         {
-            GLint64 timestamp = 0;
-
 #if defined(__DAVAENGINE_IPHONE__)
 #else
             if (_GLES2_TimeStampQuerySupported)
             {
+                GLint64 timestamp = 0;
                 EXEC_GL(glGetInteger64v(GL_TIMESTAMP, &timestamp));
+
+                *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+                *reinterpret_cast<uint64*>(arg[1]) = uint64(timestamp) / 1000; //mcs
             }
 #endif
-            *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
-            *reinterpret_cast<uint64*>(arg[1]) = uint64(timestamp);
         }
         break;
         }

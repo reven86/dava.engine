@@ -124,7 +124,8 @@ DX11Command
         MAP = 1,
         UNMAP = 2,
         UPDATE_SUBRESOURCE = 3,
-        COPY_RESOURCE = 4
+        COPY_RESOURCE = 4,
+        SYNC_CPU_GPU = 5,
     };
 
     Func func;
