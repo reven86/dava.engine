@@ -103,8 +103,12 @@ public:
     };
 
     /**
-     you can call after in GameCore::OnAppStarted (throw exception on error)
+     You can call after in GameCore::OnAppStarted (throw exception on error)
      complex async connect to server
+
+     You also should subscribe to all signals espesialy error states
+     before you call Initialize.
+     At least subscribe to `asyncConnectStateChanged` signal
     */
     virtual void Initialize(const String& architecture,
                             const FilePath& dirToDownloadPacks,

@@ -663,7 +663,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update();
+        packManager->Update(frameDelta);
 
         JobManager::Instance()->Update();
 

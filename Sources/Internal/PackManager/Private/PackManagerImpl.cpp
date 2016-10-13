@@ -67,6 +67,7 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
+#ifdef __DAVAENGINE_COREV2__
 PackManagerImpl::PackManagerImpl(Engine& engine_)
     : engine(engine_)
 {
@@ -79,6 +80,7 @@ PackManagerImpl::~PackManagerImpl()
     DVASSERT(Thread::IsMainThread());
     engine.update.Disconnect(sigConnectionUpdate);
 }
+#endif
 
 void PackManagerImpl::Initialize(const String& architecture_,
                                  const FilePath& dirToDownloadPacks_,
@@ -87,6 +89,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
                                  const Hints& hints_)
 {
     DVASSERT(Thread::IsMainThread());
+    // TODO check if signal asyncConnectStateChanged has any subscriber
 
     LockGuard<Mutex> lock(protectPM); // just paranoia
 
