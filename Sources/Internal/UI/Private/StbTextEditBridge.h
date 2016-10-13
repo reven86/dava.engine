@@ -231,4 +231,3 @@ inline StbTextEditBridge::StbTextDelegate* StbTextEditBridge::GetDelegate() cons
     return delegate;
 }
 }
-
