@@ -187,9 +187,9 @@ vp_main( vertex_in input )
                 output.varLightVec = v;       
             #endif
         #else
-            output.tbnToWorld0 = inTangent;
-            output.tbnToWorld1 = cross(inNormal, inTangent);
-            output.tbnToWorld2 = inNormal;            
+            output.tbnToWorld0 = half3(inTangent);
+            output.tbnToWorld1 = half3(cross(inNormal, inTangent));
+            output.tbnToWorld2 = half3(inNormal);            
         #endif       
     #endif
 
