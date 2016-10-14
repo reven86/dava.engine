@@ -52,6 +52,6 @@ public:
     WideString GetText() const;
 
 private:
-    std::unique_ptr<IClipboardImpl> pImpl = nullptr;
+    std::unique_ptr<IClipboardImpl> pImpl;
 };
 }
