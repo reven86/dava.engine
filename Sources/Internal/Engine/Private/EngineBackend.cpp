@@ -608,6 +608,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->virtualCoordSystem = new VirtualCoordinatesSystem();
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
+    context->fontManager = new FontManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
@@ -663,7 +664,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     if (!IsConsoleMode())
     {
-        context->fontManager = new FontManager();
         context->inputSystem = new InputSystem();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
@@ -694,10 +694,10 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->fontManager->Release();
         context->inputSystem->Release();
     }
 
+    context->fontManager->Release();
     context->uiControlSystem->Release();
     context->animationManager->Release();
     context->virtualCoordSystem->Release();
