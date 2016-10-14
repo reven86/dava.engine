@@ -40,8 +40,6 @@ public:
 
     const String& GetInitErrorMessage() const override;
 
-    bool CanRetryInit() const override;
-
     void RetryInit() override;
 
     bool IsPausedInit() const override;
@@ -54,7 +52,7 @@ public:
 
     void DisableRequesting() override;
 
-    void Update(float) override;
+    void Update(float);
 
     const String& FindPackName(const FilePath& relativePathInPack) const override;
 

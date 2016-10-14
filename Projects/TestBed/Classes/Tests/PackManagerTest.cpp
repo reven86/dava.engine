@@ -304,12 +304,8 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     if (packManager.GetInitError() != IPackManager::InitError::AllGood)
     {
         ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
-
-        if (packManager.CanRetryInit())
-        {
-            ss << "do you want to retry?\n";
-            packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
-        }
+        ss << "do you want to retry?\n";
+        packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
     }
 
     Logger::Info("%s", ss.str().c_str());

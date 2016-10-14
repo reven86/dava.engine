@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -663,7 +663,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update(frameDelta);
+        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 

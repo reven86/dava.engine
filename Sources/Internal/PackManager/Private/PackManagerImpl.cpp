@@ -4,6 +4,7 @@
 #include "FileSystem/Private/ZipArchive.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringUtils.h"
 #include "Compression/LZ4Compressor.h"
 #include "DLC/DLC.h"
 #include "Base/Exception.h"
@@ -34,6 +35,7 @@ const String& IPackManager::ToString(IPackManager::InitState state)
         "MountingDownloadedPacks",
         "Ready"
     };
+    DVASSERT(states.size() == 13);
     return states.at(static_cast<size_t>(state));
 }
 
@@ -49,6 +51,7 @@ const String& IPackManager::ToString(IPackManager::InitError state)
         "LoadingPacksDataFailed",
         "MountingDownloadedPackFailed"
     };
+    DVASSERT(states.size() == 8);
     return states.at(static_cast<size_t>(state));
 }
 
@@ -129,6 +132,9 @@ void PackManagerImpl::Initialize(const String& architecture_,
     packsIndex.clear();
     initFileData.clear();
 
+    initError = InitError::AllGood;
+    initPaused = false;
+
     initState = InitState::LoadingRequestAskFooter;
 }
 
@@ -157,50 +163,12 @@ const String& PackManagerImpl::GetInitErrorMessage() const
     return initErrorMsg;
 }
 
-bool PackManagerImpl::CanRetryInit() const
-{
-    DVASSERT(Thread::IsMainThread());
-
-    switch (initState)
-    {
-    case InitState::Starting:
-    case InitState::LoadingRequestAskFooter:
-    case InitState::LoadingRequestGetFooter:
-    case InitState::LoadingRequestAskFileTable:
-    case InitState::LoadingRequestGetFileTable:
-    case InitState::CalculateLocalDBHashAndCompare:
-    case InitState::LoadingRequestAskDB:
-    case InitState::LoadingRequestGetDB:
-    case InitState::UnpakingDB:
-    case InitState::DeleteDownloadedPacksIfNotMatchHash:
-    case InitState::LoadingPacksDataFromLocalDB:
-    case InitState::MountingDownloadedPacks:
-    case InitState::Ready:
-        return true;
-    }
-    DVASSERT(false && "add state");
-    return false;
-}
-
 void PackManagerImpl::RetryInit()
 {
     DVASSERT(Thread::IsMainThread());
 
-    if (CanRetryInit())
-    {
-        // for now just go to server check
-        initState = InitState::LoadingRequestAskFooter;
-        // clear error state
-        initError = InitError::AllGood;
-        if (initPaused)
-        {
-            initPaused = false;
-        }
-    }
-    else
-    {
-        DAVA_THROW(DAVA::Exception, "can't retry initialization from current state: ");
-    }
+    // clear error state
+    Initialize(architecture, dirToDownloadedPacks, dbPath, urlToSuperPack, hints);
 }
 
 bool PackManagerImpl::IsPausedInit() const
@@ -655,9 +623,11 @@ void PackManagerImpl::DeleteOldPacks()
 
             for (auto it = initFileData.begin(); it != initFileData.end(); ++it)
             {
-                if (String::npos != it->first.find(fileName))
+                const String& relativeFilePath = it->first;
+                if (StringUtils::EndsWith(relativeFilePath, fileName))
                 {
-                    if (crc32 != it->second->originalCrc32)
+                    const PackFormat::FileTableEntry* fileEntry = it->second;
+                    if (crc32 != fileEntry->originalCrc32)
                     {
                         FileSystem::Instance()->Unmount(path);
                         // delete old packfile
@@ -666,6 +636,12 @@ void PackManagerImpl::DeleteOldPacks()
                             DAVA_THROW(DAVA::Exception, "can't delete old packfile: " + path.GetStringValue());
                         }
                     }
+                }
+                else
+                {
+                    // this pack not exist in current superpack just delete it.
+                    // To leave more room for
+                    FileSystem::Instance()->DeleteFile(path);
                 }
             }
         }

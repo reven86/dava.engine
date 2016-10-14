@@ -15,16 +15,16 @@ public:
         Starting, //!< before any initialization code state
         LoadingRequestAskFooter, //!< connect to server superpack.dvpk for footer block
         LoadingRequestGetFooter, //!< download footer and parse it, findout filetable block size and position
-        LoadingRequestAskFileTable, // start loading filetable block from superpack.dvpk
-        LoadingRequestGetFileTable,
-        CalculateLocalDBHashAndCompare, //!< go to MountingDownloadedPacks if match
-        LoadingRequestAskDB, //!< skip if hash match
-        LoadingRequestGetDB, //!< skip if hash match
-        UnpakingDB, //!< skip if hash match
-        DeleteDownloadedPacksIfNotMatchHash, //!< skip if hash match
-        LoadingPacksDataFromLocalDB,
-        MountingDownloadedPacks,
-        Ready
+        LoadingRequestAskFileTable, //!< start loading filetable block from superpack.dvpk
+        LoadingRequestGetFileTable, //!< download filetable and fill info about every file on server superpack.dvpk
+        CalculateLocalDBHashAndCompare, //!< check if existing local DB hash match with remote DB on server, go to LoadingPacksDataFromLocalDB if match
+        LoadingRequestAskDB, //!< start loading DB from server
+        LoadingRequestGetDB, //!< download DB and check it's hash
+        UnpakingDB, //!< unpack DB from zip
+        DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
+        LoadingPacksDataFromLocalDB, //!< open local DB and build pack index for all packs
+        MountingDownloadedPacks, //!< mount all local packs downloaded and not mounted later
+        Ready //!< starting from this state client can call any method, second initialize will work too
     };
 
     static const String& ToString(InitState state);
@@ -124,8 +124,6 @@ public:
 
     virtual const String& GetInitErrorMessage() const = 0;
 
-    virtual bool CanRetryInit() const = 0;
-
     virtual void RetryInit() = 0;
 
     virtual bool IsPausedInit() const = 0;
@@ -138,9 +136,6 @@ public:
     virtual void EnableRequesting() = 0;
     /** disable user request processing */
     virtual void DisableRequesting() = 0;
-
-    /** internal method called per frame in framework (can thow exception) */
-    virtual void Update(float) = 0;
 
     /** return unique pack name or empty string */
     virtual const String& FindPackName(const FilePath& relativePathInArchive) const = 0;
@@ -168,7 +163,7 @@ public:
     /** order - [0..1] - 0 - first, 1 - last */
     virtual void SetRequestOrder(const String& packName, float order) = 0;
 
-    /** all packs state, valid till next call Update() */
+    /** all packs state, valid till next call frame update */
     virtual const Vector<Pack>& GetPacks() const = 0;
 
     virtual void DeletePack(const String& packName) = 0;
