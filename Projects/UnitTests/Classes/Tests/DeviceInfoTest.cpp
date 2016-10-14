@@ -33,14 +33,16 @@ DAVA_TESTCLASS (DeviceInfoTest)
 
         String manufacturer = DeviceInfo::GetManufacturer();
         TEST_VERIFY("Not yet implemented" != manufacturer);
+    }
 
+    DAVA_TEST (TestGPUOverride)
+    {
         eGPUFamily oldGPU = DeviceInfo::GetGPUFamily();
         eGPUFamily newGPU = oldGPU != GPU_TEGRA ? GPU_TEGRA : GPU_POWERVR_IOS;
-        DeviceInfo::OverrideGPUFamily(newGPU);
+        DeviceInfo::OverrideGPU(newGPU);
         TEST_VERIFY(DeviceInfo::GetGPUFamily() == newGPU);
 
-        DeviceInfo::ResetGPUFamilyOverride();
+        DeviceInfo::ResetGPUOverride();
         TEST_VERIFY(oldGPU == DeviceInfo::GetGPUFamily());
     }
-}
-;
+};

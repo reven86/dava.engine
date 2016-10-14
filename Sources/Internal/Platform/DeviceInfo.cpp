@@ -97,18 +97,18 @@ int32 DeviceInfo::GetZBufferSize()
 
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
-    eGPUFamily gpu = GetPrivateImpl()->GetOverridenGPUFamily();
+    eGPUFamily gpu = GetPrivateImpl()->GetOverridenGPU();
     return gpu != GPU_INVALID ? gpu : GetPrivateImpl()->GetGPUFamily();
 }
 
-void DeviceInfo::OverrideGPUFamily(eGPUFamily newGPU)
+void DeviceInfo::OverrideGPU(eGPUFamily newGPU)
 {
-    GetPrivateImpl()->OverrideGPUFamily(newGPU);
+    GetPrivateImpl()->OverrideGPU(newGPU);
 }
 
-void DeviceInfo::ResetGPUFamilyOverride()
+void DeviceInfo::ResetGPUOverride()
 {
-    GetPrivateImpl()->ResetGPUFamilyOverride();
+    GetPrivateImpl()->ResetGPUOverride();
 }
 
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
