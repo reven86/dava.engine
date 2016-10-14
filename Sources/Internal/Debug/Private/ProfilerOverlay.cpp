@@ -63,10 +63,10 @@ static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, Prof
 ProfilerOverlay* const ProfilerOverlay::globalProfilerOverlay = &GLOBAL_PROFILER_OVERLAY;
 
 ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCounterName, ProfilerGPU* _gpuProfiler, const Vector<FastName>& _interestMarkers)
-    : gpuProfiler(_gpuProfiler)
+    : interestMarkers(_interestMarkers)
+    , gpuProfiler(_gpuProfiler)
     , cpuProfiler(_cpuProfiler)
     , cpuCounterName(_cpuCounterName)
-    , interestMarkers(_interestMarkers)
 {
     for (RingArray<TraceData>& t : tracesData)
         t = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
@@ -96,6 +96,16 @@ void ProfilerOverlay::OnFrameEnd()
 
     Update();
     Draw();
+}
+
+void ProfilerOverlay::SetDrawScace(float32 scale)
+{
+    drawScale = scale;
+}
+
+float32 ProfilerOverlay::GetDrawScale() const
+{
+    return drawScale;
 }
 
 void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
@@ -358,7 +368,7 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint3
             eventStart = timestampsStack.back().first - events.front().timestamp;
             eventDuration = timestampsStack.back().second - timestampsStack.back().first;
             eventColor = markersColor[e.name];
-            eventDepth = timestampsStack.size() - 1;
+            eventDepth = int32(timestampsStack.size()) - 1;
 
             trace->rects.push_back({ eventStart, eventDuration, eventColor, eventDepth, e.name });
         }
@@ -370,23 +380,25 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint3
 
 void ProfilerOverlay::Draw()
 {
+    Size2i screenSize(int32(Renderer::GetFramebufferWidth() / drawScale), int32(Renderer::GetFramebufferHeight() / drawScale));
+
     DbgDraw::EnsureInited();
-    DbgDraw::SetScreenSize(uint32(Renderer::GetFramebufferWidth()), uint32(Renderer::GetFramebufferHeight()));
+    DbgDraw::SetScreenSize(screenSize.dx, screenSize.dy);
     DbgDraw::SetNormalTextSize();
 
     TraceData& currentCPUTrace = GetHistoricTrace(tracesData[TRACE_CPU]);
     TraceData& currentGPUTrace = GetHistoricTrace(tracesData[TRACE_GPU]);
 
-    Rect2i rect = Rect2i(0, 0, Renderer::GetFramebufferWidth(), GetEnoughRectHeight(currentCPUTrace));
+    Rect2i rect = Rect2i(0, 0, screenSize.dx, GetEnoughRectHeight(currentCPUTrace));
     DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU));
 
     rect.y += rect.dy;
     rect.dy = GetEnoughRectHeight(currentGPUTrace);
     DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU));
 
-    int32 chartColumnCount = (Renderer::GetFramebufferHeight() - rect.y - rect.dy) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
+    int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
     int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
-    int32 chartWidth = Renderer::GetFramebufferWidth() / chartRowCount;
+    int32 chartWidth = screenSize.dx / chartRowCount;
     int32 chartTableY = rect.y + rect.dy;
 
     rect.x = 0;
@@ -397,7 +409,7 @@ void ProfilerOverlay::Draw()
     {
         DrawHistory(m, rect);
         rect.y += rect.dy;
-        if ((rect.y + rect.dy) > Renderer::GetFramebufferHeight())
+        if ((rect.y + rect.dy) > screenSize.dy)
         {
             rect.x += chartWidth;
             rect.y = chartTableY;
@@ -481,7 +493,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
         DbgDraw::FilledRect2D(x0, y0, x1, y1, markersColor[element.name]);
         DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, textColor, element.name.c_str());
 
-        snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, element.duration);
+        snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, uint32(element.duration));
         DbgDraw::Text2D(x0 + legentWidth, y0, textColor, strbuf);
 
         y0 += ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE + 1;
@@ -627,7 +639,7 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
     snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->accurate, history.crbegin()->filtered);
-    int32 tdx = drawRect.dx - MARGIN - DbgDraw::NormalCharW * strlen(strbuf);
+    int32 tdx = drawRect.dx - MARGIN - int32(DbgDraw::NormalCharW * strlen(strbuf));
     DbgDraw::Text2D(drawRect.x + tdx, drawRect.y + MARGIN, TEXT_COLOR, strbuf);
 
     snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));

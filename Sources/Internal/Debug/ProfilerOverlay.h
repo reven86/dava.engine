@@ -32,6 +32,9 @@ public:
 
     void OnFrameEnd(); //should be called before rhi::Present();
 
+    void SetDrawScace(float32 scale);
+    float32 GetDrawScale() const;
+
     void SetCPUProfiler(ProfilerCPU* profiler, const char* counterName);
     void SetGPUProfiler(ProfilerGPU* profiler);
 
@@ -126,6 +129,8 @@ protected:
     const char* cpuCounterName = nullptr;
 
     uint32 traceHistoryOffset = 0;
+
+    float32 drawScale = 1.f;
 
     bool overlayEnabled = false;
 };
