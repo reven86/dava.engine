@@ -474,6 +474,10 @@ void gles2_Initialize(const InitParam& param)
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
+        if (param.defaultFrameBuffer != nullptr)
+        {
+            _GLES2_Default_FrameBuffer = reinterpret_cast<GLuint>(param.defaultFrameBuffer);
+        }
         if (glewInit() == GLEW_OK)
             success = true;
     }
