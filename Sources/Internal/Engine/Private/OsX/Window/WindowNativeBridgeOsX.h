@@ -8,6 +8,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 @class NSEvent;
@@ -58,6 +59,10 @@ struct WindowNativeBridge final
     void MouseMove(NSEvent* theEvent);
     void MouseWheel(NSEvent* theEvent);
     void KeyEvent(NSEvent* theEvent);
+    void FlagsChanged(NSEvent* theEvent);
+
+    static eModifierKeys GetModifierKeys(NSEvent* theEvent);
+    static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +76,7 @@ struct WindowNativeBridge final
 
     bool isAppHidden = false;
     bool isMiniaturized = false;
+    uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
 };
 
 } // namespace Private

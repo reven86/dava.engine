@@ -331,6 +331,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[60] = Key::RSHIFT;
 
     keyTranslator[57] = Key::CAPSLOCK;
+    keyTranslator[54] = Key::RCMD;
     keyTranslator[55] = Key::LCMD; // LGUI in SDL
     keyTranslator[0x31] = Key::SPACE;
 

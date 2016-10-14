@@ -141,6 +141,7 @@
 
 - (void)flagsChanged:(NSEvent*)theEvent
 {
+    bridge->FlagsChanged(theEvent);
 }
 
 @end
