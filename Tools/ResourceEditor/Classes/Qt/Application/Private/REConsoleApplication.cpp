@@ -52,10 +52,10 @@ void REConsoleApplication::OnLoopStarted()
     rendererParams.acquireContextFunc = []() {};
     rendererParams.releaseContextFunc = []() {};
 
-    rendererParams.maxIndexBufferCount = 0;
-    rendererParams.maxVertexBufferCount = 0;
-    rendererParams.maxConstBufferCount = 0;
-    rendererParams.maxTextureCount = 0;
+    rendererParams.maxIndexBufferCount = 16384;
+    rendererParams.maxVertexBufferCount = 16384;
+    rendererParams.maxConstBufferCount = 32767;
+    rendererParams.maxTextureCount = 2048;
 
     rendererParams.maxTextureSetCount = 0;
     rendererParams.maxSamplerStateCount = 0;
@@ -65,7 +65,7 @@ void REConsoleApplication::OnLoopStarted()
     rendererParams.maxCommandBuffer = 0;
     rendererParams.maxPacketListCount = 0;
 
-    rendererParams.shaderConstRingBufferSize = 0;
+    rendererParams.shaderConstRingBufferSize = 256 * 1024 * 1024;
 
     rendererParams.window = nullptr;
     rendererParams.width = 1024;
