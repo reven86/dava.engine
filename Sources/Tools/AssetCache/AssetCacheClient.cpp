@@ -4,7 +4,6 @@
 #include "Platform/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
-#include "Job/JobManager.h"
 #include "Preferences/PreferencesRegistrator.h"
 
 namespace DAVA
@@ -21,8 +20,6 @@ InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::Type
 AssetCacheClient::AssetCacheClient()
     : isActive(false)
 {
-    DVASSERT(JobManager::Instance() != nullptr);
-
     client.AddListener(this);
 }
 

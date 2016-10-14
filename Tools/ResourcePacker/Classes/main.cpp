@@ -208,7 +208,11 @@ void Process(Engine& e)
 int DAVAMain(Vector<String> cmdLine)
 {
     Engine e;
-    DAVA::Vector<DAVA::String> modules = { "NetCore", "JobManager" };
+    DAVA::Vector<DAVA::String> modules =
+    {
+      "NetCore", // AssetCacheClient
+      "LocalizationSystem" // ResourcePacker2D::SetCacheClient is using DateTime::GetLocalizedTime() to create cache item
+    };
     e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
