@@ -19,6 +19,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "Debug/ProfilerOverlay.h"
 
 namespace DAVA
 {
@@ -374,6 +375,9 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     }
 
     if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
+        return;
+
+    if (ProfilerOverlay::globalProfilerOverlay && ProfilerOverlay::globalProfilerOverlay->OnInput(newEvent))
         return;
 
     if (frameSkip <= 0)

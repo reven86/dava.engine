@@ -37,6 +37,8 @@ public:
     static void Line2D(int x1, int y1, int x2, int y2, uint32 color);
     static void Rect2D(int left, int top, int right, int bottom, uint32 color);
     static void FilledRect2D(int left, int top, int right, int bottom, uint32 color);
+    static void Triangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color);
+    static void FilledTriangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color);
 
 public:
     enum

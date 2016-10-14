@@ -855,6 +855,83 @@ void DbgDraw::Rect2D(int left, int top, int right, int bottom, uint32 color)
 
 //------------------------------------------------------------------------------
 
+void DbgDraw::Triangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color)
+{
+    DbgDraw* dd = Instance();
+    DVASSERT(dd->_inited);
+    unsigned v_cnt = 3 * 2;
+    Vertex_PC* v = dd->_line2d_buf.alloc_vertices(v_cnt);
+
+    if (v)
+    {
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0;
+        v->color = color;
+        ++v;
+
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0;
+        v->color = color;
+        ++v;
+
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0;
+        v->color = color;
+        ++v;
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0;
+        v->color = color;
+        ++v;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void DbgDraw::FilledTriangle2D(int x0, int y0, int x1, int y1, int x2, int y2, uint32 color)
+{
+    DbgDraw* dd = Instance();
+    DVASSERT(dd->_inited);
+    unsigned v_cnt = 3;
+    Vertex_PC* v = dd->_tri2d_buf.alloc_vertices(v_cnt);
+
+    if (v)
+    {
+        v->x = float(x0);
+        v->y = -float(y0);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+
+        v->x = float(x1);
+        v->y = -float(y1);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+
+        v->x = float(x2);
+        v->y = -float(y2);
+        v->z = 0.5f;
+        v->color = color;
+        ++v;
+    }
+}
+
+//------------------------------------------------------------------------------
+
 void DbgDraw::_init()
 {
     // init PTC

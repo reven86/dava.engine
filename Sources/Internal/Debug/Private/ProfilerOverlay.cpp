@@ -7,6 +7,8 @@
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
+#include "UI/UIEvent.h"
+#include "Input/InputSystem.h"
 #include <ostream>
 
 namespace DAVA
@@ -23,18 +25,25 @@ static const uint32 MARKER_HISTORY_NON_FILTERED_COUNT = 10;
 
 static const int32 OVERLAY_RECT_MARGIN = 3;
 static const int32 OVERLAY_RECT_PADDING = 4;
-static const int32 TRACE_LEGEND_ICON_SIZE = DbgDraw::NormalCharH;
+static const int32 TRACE_LIST_ICON_SIZE = DbgDraw::NormalCharH;
 static const int32 TRACE_RECT_HEIGHT = DbgDraw::NormalCharH;
 static const int32 TRACE_ARROW_HEIGHT = 18;
-static const int32 TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS = 12;
+static const int32 TRACE_LIST_DURATION_TEXT_WIDTH_CHARS = 12;
 static const int32 MIN_HIGHLIGHTED_TRACE_RECT_SIZE = 10;
+
+static const int32 OVERLAY_BUTTON_SIZE = 30;
 
 static const int32 HISTORY_CHART_TEXT_COLUMN_CHARS = 9;
 static const int32 HISTORY_CHART_TEXT_COLUMN_WIDTH = DbgDraw::NormalCharW * HISTORY_CHART_TEXT_COLUMN_CHARS;
 static const uint64 HISTORY_CHART_CEIL_STEP = 500; //mcs
 
 static const uint32 MAX_CPU_FRAME_TRACES = 6;
-static const uint32 MAX_TRACE_LEGENT_ELEMENTS = 9;
+static const uint32 MAX_TRACE_LIST_ELEMENTS_TO_DRAW = 7;
+
+static const char* BUTTON_CLOSE_TEXT = "Close (Ctrl + F12)";
+static const char* BUTTON_HISTORY_NEXT_TEXT = "Next Trace (Ctrl + Right) ->";
+static const char* BUTTON_HISTORY_PREV_TEXT = "<- Prev Trace (Ctrl + Left)";
+static const char* BUTTON_PROFILERS_START_STOP_TEXT = "Start/Stop (Ctrl + F11)";
 };
 
 static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::CORE_PROCESS_FRAME, ProfilerGPU::globalProfiler,
@@ -70,21 +79,13 @@ ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCoun
 {
     for (RingArray<TraceData>& t : tracesData)
         t = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
-}
 
-void ProfilerOverlay::Enable()
-{
-    overlayEnabled = true;
-}
+    Memset(buttonsText, 0, sizeof(buttons));
 
-void ProfilerOverlay::Disable()
-{
-    overlayEnabled = false;
-}
-
-bool ProfilerOverlay::IsEnabled()
-{
-    return overlayEnabled;
+    buttonsText[BUTTON_CLOSE] = ProfilerOverlayDetails::BUTTON_CLOSE_TEXT;
+    buttonsText[BUTTON_HISTORY_NEXT] = ProfilerOverlayDetails::BUTTON_HISTORY_NEXT_TEXT;
+    buttonsText[BUTTON_HISTORY_PREV] = ProfilerOverlayDetails::BUTTON_HISTORY_PREV_TEXT;
+    buttonsText[BUTTON_PROFILERS_START_STOP] = ProfilerOverlayDetails::BUTTON_PROFILERS_START_STOP_TEXT;
 }
 
 void ProfilerOverlay::OnFrameEnd()
@@ -96,16 +97,6 @@ void ProfilerOverlay::OnFrameEnd()
 
     Update();
     Draw();
-}
-
-void ProfilerOverlay::SetDrawScace(float32 scale)
-{
-    drawScale = scale;
-}
-
-float32 ProfilerOverlay::GetDrawScale() const
-{
-    return drawScale;
 }
 
 void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
@@ -137,10 +128,10 @@ void ProfilerOverlay::AddInterestMarker(const FastName& name)
 Vector<FastName> ProfilerOverlay::GetAvalibleMarkers() const
 {
     Vector<FastName> ret;
-    for (const TraceData::LegentElement& e : tracesData[TRACE_CPU].crbegin()->legend)
+    for (const TraceData::ListElement& e : tracesData[TRACE_CPU].crbegin()->list)
         ret.push_back(e.name);
 
-    for (const TraceData::LegentElement& e : tracesData[TRACE_GPU].crbegin()->legend)
+    for (const TraceData::ListElement& e : tracesData[TRACE_GPU].crbegin()->list)
         ret.push_back(e.name);
 
     return ret;
@@ -149,24 +140,24 @@ Vector<FastName> ProfilerOverlay::GetAvalibleMarkers() const
 void ProfilerOverlay::SelectNextMarker()
 {
     const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
-    int32 selectedIndex = FindLegendIndex(data.legend, selectedMarkers[selectedTrace]);
+    int32 selectedIndex = FindListIndex(data.list, selectedMarkers[selectedTrace]);
     if (selectedIndex == -1)
     {
         selectedIndex = 0;
     }
-    else if (selectedIndex < int32(data.legend.size() - 1))
+    else if (selectedIndex < int32(data.list.size() - 1))
     {
         ++selectedIndex;
     }
 
-    if (selectedIndex < int32(data.legend.size()))
-        selectedMarkers[selectedTrace] = data.legend[selectedIndex].name;
+    if (selectedIndex < int32(data.list.size()))
+        selectedMarkers[selectedTrace] = data.list[selectedIndex].name;
 }
 
 void ProfilerOverlay::SelectPreviousMarker()
 {
     const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
-    int32 selectedIndex = FindLegendIndex(data.legend, selectedMarkers[selectedTrace]);
+    int32 selectedIndex = FindListIndex(data.list, selectedMarkers[selectedTrace]);
     if (selectedIndex == -1)
     {
         selectedIndex = 0;
@@ -176,35 +167,135 @@ void ProfilerOverlay::SelectPreviousMarker()
         --selectedIndex;
     }
 
-    if (selectedIndex < int32(data.legend.size()))
-        selectedMarkers[selectedTrace] = data.legend[selectedIndex].name;
+    if (selectedIndex < int32(data.list.size()))
+        selectedMarkers[selectedTrace] = data.list[selectedIndex].name;
 }
 
 void ProfilerOverlay::SelectMarker(const FastName& name)
 {
     const TraceData& data = GetHistoricTrace(tracesData[selectedTrace]);
-    if (FindLegendIndex(data.legend, name) != -1)
+    if (FindListIndex(data.list, name) != -1)
         selectedMarkers[selectedTrace] = name;
 }
 
-void ProfilerOverlay::SelectTrace(eTrace trace)
+bool ProfilerOverlay::OnInput(UIEvent* input)
 {
-    selectedTrace = trace;
+    if (!interceptInput)
+        return false;
+
+    if (input->phase == UIEvent::Phase::KEY_DOWN && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LCTRL))
+    {
+        if (input->key == Key::F12)
+        {
+            SetEnabled(!IsEnabled());
+        }
+
+        if (overlayEnabled)
+        {
+            switch (input->key)
+            {
+            case Key::F11:
+                OnButtonPressed(BUTTON_PROFILERS_START_STOP);
+                break;
+
+            case Key::LEFT:
+                OnButtonPressed(BUTTON_HISTORY_PREV);
+                break;
+
+            case Key::RIGHT:
+                OnButtonPressed(BUTTON_HISTORY_NEXT);
+                break;
+
+            case Key::UP:
+                SelectPreviousMarker();
+                break;
+
+            case Key::DOWN:
+                SelectNextMarker();
+                break;
+
+            case Key::TAB:
+                SelectTrace((GetSelectedTrace() == ProfilerOverlay::TRACE_CPU) ? ProfilerOverlay::TRACE_GPU : ProfilerOverlay::TRACE_CPU);
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+    else
+    {
+        ProcessTouch(input);
+    }
+
+    return overlayEnabled;
 }
 
-ProfilerOverlay::eTrace ProfilerOverlay::GetSelectedTrace()
+void ProfilerOverlay::ProcessTouch(UIEvent* input)
 {
-    return selectedTrace;
+    if (input->phase == UIEvent::Phase::ENDED)
+    {
+        for (int32 i = 0; i < BUTTON_COUNT; ++i)
+        {
+            Point2i point = Point2i(int32(input->physPoint.x / overlayScale), int32(input->physPoint.y / overlayScale));
+            if (buttons[i].PointInside(point))
+                OnButtonPressed(eButton(i));
+        }
+    }
 }
 
-void ProfilerOverlay::SetTraceHistoryOffset(uint32 offset)
+void ProfilerOverlay::OnButtonPressed(eButton button)
 {
-    traceHistoryOffset = Clamp(offset, 0U, TRACE_HISTORY_SIZE - 1);
-}
+    switch (button)
+    {
+    case BUTTON_CLOSE:
+        SetEnabled(false);
+        break;
 
-uint32 ProfilerOverlay::GetTraceHistoryOffset() const
-{
-    return traceHistoryOffset;
+    case BUTTON_CPU_UP:
+        SelectTrace(TRACE_CPU);
+        SelectPreviousMarker();
+        break;
+
+    case BUTTON_CPU_DOWN:
+        SelectTrace(TRACE_CPU);
+        SelectNextMarker();
+        break;
+
+    case BUTTON_GPU_UP:
+        SelectTrace(TRACE_GPU);
+        SelectPreviousMarker();
+        break;
+
+    case BUTTON_GPU_DOWN:
+        SelectTrace(TRACE_GPU);
+        SelectNextMarker();
+        break;
+
+    case BUTTON_HISTORY_NEXT:
+        SetTraceHistoryOffset((GetTraceHistoryOffset() > 0) ? GetTraceHistoryOffset() - 1 : GetTraceHistoryOffset());
+        break;
+
+    case BUTTON_HISTORY_PREV:
+        SetTraceHistoryOffset(GetTraceHistoryOffset() + 1);
+        break;
+
+    case BUTTON_PROFILERS_START_STOP:
+        if (cpuProfiler->IsStarted())
+        {
+            cpuProfiler->Stop();
+            gpuProfiler->Stop();
+        }
+        else
+        {
+            cpuProfiler->Start();
+            gpuProfiler->Start();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void ProfilerOverlay::Update()
@@ -321,13 +412,13 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint3
 
         trace->minTimestamp = Min(trace->minTimestamp, e.timestamp);
 
-        auto found = std::find_if(trace->legend.begin(), trace->legend.end(), [&e](const TraceData::LegentElement& element) {
+        auto found = std::find_if(trace->list.begin(), trace->list.end(), [&e](const TraceData::ListElement& element) {
             return (element.name == e.name);
         });
 
-        if (found == trace->legend.end())
+        if (found == trace->list.end())
         {
-            trace->legend.push_back({ e.name, 0 });
+            trace->list.push_back({ e.name, 0 });
             trace->maxMarkerNameLen = Max(trace->maxMarkerNameLen, uint32(strlen(e.name.c_str())));
         }
 
@@ -374,13 +465,13 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint3
         }
     }
 
-    for (TraceData::LegentElement& e : trace->legend)
+    for (TraceData::ListElement& e : trace->list)
         e.duration = markersHistory[e.name].values.rbegin()->accurate;
 }
 
 void ProfilerOverlay::Draw()
 {
-    Size2i screenSize(int32(Renderer::GetFramebufferWidth() / drawScale), int32(Renderer::GetFramebufferHeight() / drawScale));
+    Size2i screenSize(int32(Renderer::GetFramebufferWidth() / overlayScale), int32(Renderer::GetFramebufferHeight() / overlayScale));
 
     DbgDraw::EnsureInited();
     DbgDraw::SetScreenSize(screenSize.dx, screenSize.dy);
@@ -389,14 +480,16 @@ void ProfilerOverlay::Draw()
     TraceData& currentCPUTrace = GetHistoricTrace(tracesData[TRACE_CPU]);
     TraceData& currentGPUTrace = GetHistoricTrace(tracesData[TRACE_GPU]);
 
+    //draw traces
     Rect2i rect = Rect2i(0, 0, screenSize.dx, GetEnoughRectHeight(currentCPUTrace));
-    DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU));
+    DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU), &buttons[BUTTON_CPU_UP], &buttons[BUTTON_CPU_DOWN]);
 
     rect.y += rect.dy;
     rect.dy = GetEnoughRectHeight(currentGPUTrace);
-    DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU));
+    DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU), &buttons[BUTTON_GPU_UP], &buttons[BUTTON_GPU_DOWN]);
 
-    int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
+    //draw markers history
+    int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
     int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
     int32 chartWidth = screenSize.dx / chartRowCount;
     int32 chartTableY = rect.y + rect.dy;
@@ -409,11 +502,33 @@ void ProfilerOverlay::Draw()
     {
         DrawHistory(m, rect);
         rect.y += rect.dy;
-        if ((rect.y + rect.dy) > screenSize.dy)
+        if ((rect.y + rect.dy) > (screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE))
         {
             rect.x += chartWidth;
             rect.y = chartTableY;
         }
+    }
+
+    //draw buttons
+    static const uint32 BUTTON_COLOR = rhi::NativeColorRGBA(.3f, .3f, .3f, .4f);
+    static const uint32 BUTTON_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
+    static const uint32 BUTTON_BORDER_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
+
+    int32 buttonWidth = screenSize.dx / 4;
+    int32 x0 = 0, x1 = 0, y0 = screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
+    for (int32 i = int32(BUTTON_HISTORY_PREV); i < int32(BUTTON_COUNT); ++i)
+    {
+        x1 += buttonWidth;
+        DbgDraw::FilledRect2D(x0, y0, x1, screenSize.dy, BUTTON_COLOR);
+        DbgDraw::Rect2D(x0, y0, x1, screenSize.dy, BUTTON_BORDER_COLOR);
+
+        int32 xAlign = (buttonWidth - int32(strlen(buttonsText[i]) * int32(DbgDraw::NormalCharW))) / 2;
+        int32 yAlign = (ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE - DbgDraw::NormalCharH) / 2;
+        DbgDraw::Text2D(x0 + xAlign, y0 + yAlign, BUTTON_TEXT_COLOR, buttonsText[i]);
+
+        buttons[i] = Rect2i(x0, y0, buttonWidth, ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE);
+
+        x0 += buttonWidth;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -441,7 +556,7 @@ void ProfilerOverlay::Draw()
     rhi::EndRenderPass(pass);
 }
 
-void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect, const FastName& selectedMarker, bool traceSelected)
+void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect, const FastName& selectedMarker, bool traceSelected, Rect2i* upButton, Rect2i* downButton)
 {
     static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .6f, .4f);
     static const uint32 SELECTED_BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
@@ -450,9 +565,12 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
     static const uint32 ARROW_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
     static const uint32 ARROW_OUTLINE_COLOR = rhi::NativeColorRGBA(.4f, 0.f, 0.f, 1.f);
     static const uint32 LINE_COLOR = rhi::NativeColorRGBA(.5f, 0.f, 0.f, 1.f);
+    static const uint32 BUTTON_COLOR = rhi::NativeColorRGBA(.3f, .3f, .3f, .6f);
+    static const uint32 BUTTON_ARROW_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, .6f);
 
     static const int32 MARGIN = ProfilerOverlayDetails::OVERLAY_RECT_MARGIN;
     static const int32 PADDING = ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
+    static const int32 BUTTON_ARROW_MARGIN = ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE / 6;
 
     Rect2i drawRect(rect);
     drawRect.x += PADDING / 2;
@@ -469,50 +587,76 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
     y0 = drawRect.y + MARGIN;
     DbgDraw::Text2D(x0, y0, TEXT_COLOR, traceHeader);
 
-    //Draw Legend (color rects + marker name) and total markers duration
-    int32 legentWidth = ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE + DbgDraw::NormalCharW + trace.maxMarkerNameLen * DbgDraw::NormalCharW + DbgDraw::NormalCharW;
-    y0 += DbgDraw::NormalCharH + MARGIN;
-    x1 = x0 + ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE;
+    //Draw List (color rects + marker name) and total markers duration
+    x0 = drawRect.x + MARGIN + ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE + MARGIN;
+    x1 = x0 + ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE;
+    y0 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
 
     char strbuf[256];
     uint32 textColor = 0;
 
-    int32 selectedIndex = FindLegendIndex(trace.legend, selectedMarker);
-    int32 maxElements = int32(ProfilerOverlayDetails::MAX_TRACE_LEGENT_ELEMENTS);
-    int32 elementsCount = int32(trace.legend.size());
+    int32 listWidth = ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE + DbgDraw::NormalCharW + trace.maxMarkerNameLen * DbgDraw::NormalCharW + DbgDraw::NormalCharW;
+    int32 selectedIndex = FindListIndex(trace.list, selectedMarker);
+    int32 maxElements = int32(ProfilerOverlayDetails::MAX_TRACE_LIST_ELEMENTS_TO_DRAW);
+    int32 elementsCount = int32(trace.list.size());
 
     int32 startIndex = Min(Max(selectedIndex - maxElements / 2, 0), Max(elementsCount - maxElements, 0));
     int32 endIndex = Min(elementsCount, startIndex + maxElements);
     for (int32 i = startIndex; i < endIndex; ++i)
     {
-        const TraceData::LegentElement& element = trace.legend[i];
+        const TraceData::ListElement& element = trace.list[i];
         textColor = (element.name == selectedMarker) ? SELECTED_COLOR : TEXT_COLOR;
 
-        y1 = y0 + ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE;
+        y1 = y0 + ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE;
 
         DbgDraw::FilledRect2D(x0, y0, x1, y1, markersColor[element.name]);
         DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, textColor, element.name.c_str());
 
-        snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS - 6, uint32(element.duration));
-        DbgDraw::Text2D(x0 + legentWidth, y0, textColor, strbuf);
+        snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LIST_DURATION_TEXT_WIDTH_CHARS - 6, uint32(element.duration));
+        DbgDraw::Text2D(x0 + listWidth, y0, textColor, strbuf);
 
-        y0 += ProfilerOverlayDetails::TRACE_LEGEND_ICON_SIZE + 1;
+        y0 += ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE + 1;
     }
 
+    //Draw up/down list buttons
+    x0 = drawRect.x + MARGIN;
+    y0 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
+    y1 = y0 + ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
+    x1 = x0 + ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
+
+    *upButton = Rect2i(x0, y0, x1 - x0, y1 - y0);
+    DbgDraw::FilledRect2D(x0, y0, x1, y1, BUTTON_COLOR);
+    DbgDraw::FilledTriangle2D(
+    x0 + (x1 - x0) / 2, y0 + BUTTON_ARROW_MARGIN,
+    x1 - BUTTON_ARROW_MARGIN, y1 - BUTTON_ARROW_MARGIN,
+    x0 + BUTTON_ARROW_MARGIN, y1 - BUTTON_ARROW_MARGIN,
+    BUTTON_ARROW_COLOR);
+
+    y1 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
+    y1 += Max(ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE * 2, (endIndex - startIndex) * (ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE + 1) - 1);
+    y0 = y1 - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
+
+    *downButton = Rect2i(x0, y0, x1 - x0, y1 - y0);
+    DbgDraw::FilledRect2D(x0, y0, x1, y1, BUTTON_COLOR);
+    DbgDraw::FilledTriangle2D(
+    x0 + (x1 - x0) / 2, y1 - BUTTON_ARROW_MARGIN,
+    x0 + BUTTON_ARROW_MARGIN, y0 + BUTTON_ARROW_MARGIN,
+    x1 - BUTTON_ARROW_MARGIN, y0 + BUTTON_ARROW_MARGIN,
+    BUTTON_ARROW_COLOR);
+
     //Draw selected marker history
+    y1 += 1;
     if (selectedMarker.IsValid())
-        DrawHistory(selectedMarker, Rect2i(rect.x + PADDING / 2, y0, rect.dx - PADDING, ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT), false);
+        DrawHistory(selectedMarker, Rect2i(rect.x + PADDING / 2, y1, rect.dx - PADDING, ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT), false);
 
     //Draw separators
     x0 = drawRect.x + MARGIN;
     x1 = drawRect.x + drawRect.dx - MARGIN;
-    ;
-    DbgDraw::Line2D(x0, y0, x1, y0, LINE_COLOR);
+    DbgDraw::Line2D(x0, y1, x1, y1, LINE_COLOR);
 
-    int32 durationTextWidth = ProfilerOverlayDetails::TRACE_LEGEND_DURATION_TEXT_WIDTH_CHARS * DbgDraw::NormalCharW;
-    x0 = drawRect.x + MARGIN + legentWidth + durationTextWidth + MARGIN;
+    int32 durationTextWidth = ProfilerOverlayDetails::TRACE_LIST_DURATION_TEXT_WIDTH_CHARS * DbgDraw::NormalCharW;
+    x0 = drawRect.x + MARGIN + ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE + MARGIN + listWidth + durationTextWidth + MARGIN;
     x1 = x0;
-    y1 = y0;
     y0 = drawRect.y + MARGIN + DbgDraw::NormalCharH + MARGIN;
     DbgDraw::Line2D(x0, y0, x1, y1, LINE_COLOR);
 
@@ -649,19 +793,21 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
 
 int32 ProfilerOverlay::GetEnoughRectHeight(const TraceData& trace)
 {
-    uint32 legendCount = Min(uint32(trace.legend.size()), ProfilerOverlayDetails::MAX_TRACE_LEGENT_ELEMENTS);
+    uint32 listElementsCount = Min(uint32(trace.list.size()), ProfilerOverlayDetails::MAX_TRACE_LIST_ELEMENTS_TO_DRAW);
+    int32 listHeight = Max(int32(listElementsCount) * (DbgDraw::NormalCharH + 1), ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE * 2);
+
     const int32 MARGIN = ProfilerOverlayDetails::OVERLAY_RECT_MARGIN;
-    return MARGIN + DbgDraw::NormalCharH + MARGIN + int32(legendCount) * (DbgDraw::NormalCharH + 1) + ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT + ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
+    return MARGIN + DbgDraw::NormalCharH + MARGIN + listHeight + ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT + ProfilerOverlayDetails::OVERLAY_RECT_PADDING;
 }
 
-int32 ProfilerOverlay::FindLegendIndex(const Vector<TraceData::LegentElement>& legend, const FastName& marker)
+int32 ProfilerOverlay::FindListIndex(const Vector<TraceData::ListElement>& list, const FastName& marker)
 {
-    auto found = std::find_if(legend.begin(), legend.end(), [&marker](const TraceData::LegentElement& element) {
+    auto found = std::find_if(list.begin(), list.end(), [&marker](const TraceData::ListElement& element) {
         return (element.name == marker);
     });
 
-    if (found != legend.end())
-        return int32(std::distance(legend.begin(), found));
+    if (found != list.end())
+        return int32(std::distance(list.begin(), found));
 
     return -1;
 }
