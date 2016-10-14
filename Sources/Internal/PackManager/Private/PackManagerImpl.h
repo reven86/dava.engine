@@ -118,7 +118,7 @@ private:
     mutable Mutex protectPM;
 
     FilePath dirToDownloadedPacks;
-    FilePath dbFileName;
+    FilePath dbPath;
     String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
@@ -130,7 +130,7 @@ private:
     FilePath dbLocalNameZipped;
     FilePath dbLocalName;
 
-    String initLocalDBFileName;
+    String dbName;
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;

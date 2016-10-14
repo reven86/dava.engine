@@ -93,7 +93,7 @@ void PackManagerImpl::Initialize(const String& architecture_,
 
     LockGuard<Mutex> lock(protectPM); // just paranoia
 
-    dbFileName = dbFileName_;
+    dbPath = dbFileName_;
     dirToDownloadedPacks = dirToDownloadPacks_;
 
     FileSystem* fs = FileSystem::Instance();
@@ -106,9 +106,9 @@ void PackManagerImpl::Initialize(const String& architecture_,
     architecture = architecture_;
     hints = hints_;
 
-    initLocalDBFileName = dbFileName.GetFilename();
+    dbName = dbPath.GetFilename();
 
-    dbLocalNameZipped = dirToDownloadedPacks + initLocalDBFileName;
+    dbLocalNameZipped = dirToDownloadedPacks + dbName;
 
     dbLocalName = dbLocalNameZipped;
     dbLocalName.ReplaceExtension("");
@@ -506,7 +506,7 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
     if (fs->IsFile(dbLocalName) && fs->IsFile(dbLocalNameZipped))
     {
         const uint32 localCrc32 = CRC32::ForFile(dbLocalNameZipped);
-        auto it = initFileData.find(initLocalDBFileName);
+        auto it = initFileData.find(dbName);
         if (it != end(initFileData))
         {
             // on server side we not compress
@@ -524,7 +524,7 @@ void PackManagerImpl::CompareLocalDBWitnRemoteHash()
         }
         else
         {
-            DAVA_THROW(DAVA::Exception, "can't find local DB in server superpack: " + initLocalDBFileName);
+            DAVA_THROW(DAVA::Exception, "can't find DB at server superpack: " + dbName);
         }
     }
     else
@@ -541,10 +541,10 @@ void PackManagerImpl::AskDB()
 
     DownloadManager* dm = DownloadManager::Instance();
 
-    auto it = initFileData.find(initLocalDBFileName);
+    auto it = initFileData.find(dbName);
     if (it == end(initFileData))
     {
-        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + initLocalDBFileName);
+        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + dbName);
     }
 
     const PackFormat::FileTableEntry& fileData = *(it->second);
@@ -595,10 +595,10 @@ void PackManagerImpl::UnpackingDB()
 
     uint32 buffCrc32 = CRC32::ForBuffer(reinterpret_cast<char*>(buffer.data()), static_cast<uint32>(buffer.size()));
 
-    auto it = initFileData.find(initLocalDBFileName);
+    auto it = initFileData.find(dbName);
     if (it == end(initFileData))
     {
-        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + initLocalDBFileName);
+        DAVA_THROW(DAVA::Exception, "can't find local DB file on server in superpack: " + dbName);
     }
 
     const PackFormat::FileTableEntry& fileData = *it->second;

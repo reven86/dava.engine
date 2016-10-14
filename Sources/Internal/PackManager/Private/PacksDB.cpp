@@ -138,10 +138,18 @@ void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const
 void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
-    packs.reserve(1420); // now we have 1420 packs
 
     try
     {
+        size_t numPacks = 0;
+        data->GetDB() << "SELECT count(*) FROM packs"
+        >> [&](int64 num)
+        {
+            numPacks = static_cast<size_t>(num);
+        };
+
+        packs.reserve(numPacks);
+
         auto selectQuery = data->GetDB() << "SELECT name, hash, is_gpu, size, dependency FROM packs";
 
         selectQuery >> [&](String name, String hash, int32 isGpu, int32 size, String dependency)
@@ -174,8 +182,6 @@ void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 
             packs.push_back(pack);
         };
-
-        packs.shrink_to_fit();
     }
     catch (std::exception& ex)
     {
