@@ -125,7 +125,7 @@ private:
         void CaptureBacktrace()
         {
             memset(backtrace, sizeof(backtrace), 0);
-            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetStackFrames(backtrace, MAX_BACKTRACE_SIZE));
+            backtraceFrameCount = static_cast<uint32>(DAVA::Debug::GetBacktrace(backtrace, MAX_BACKTRACE_SIZE));
         }
 #endif
     };
@@ -337,7 +337,7 @@ ResourcePool<T, RT, DT, nr>::LogUnrestoredBacktraces()
             Entry* entry = i.GetEntry();
             for (uint32 frame = Entry::FRAMES_TO_SKIP; frame < entry->backtraceFrameCount; ++frame)
             {
-                DAVA::String symbol = DAVA::Debug::GetSymbolFromAddr(entry->backtrace[frame]);
+                DAVA::String symbol = DAVA::Debug::GetFrameSymbol(entry->backtrace[frame]);
                 DAVA::Logger::Error(symbol.c_str());
             }
             ++unrestored;

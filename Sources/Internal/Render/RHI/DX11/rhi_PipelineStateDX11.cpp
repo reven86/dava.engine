@@ -333,7 +333,7 @@ public:
 private:
     void _EnsureMapped();
 
-    ProgType progType;
+    ProgType progType = PROG_VERTEX;
     ID3D11Buffer* buf;
     mutable float* value;
 #if !RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -358,6 +358,7 @@ ConstBufDX11::ConstBufDX11()
 #endif
     , buf_i(DAVA::InvalidIndex)
     , regCount(0)
+    , updatePending(true)
 {
 }
 

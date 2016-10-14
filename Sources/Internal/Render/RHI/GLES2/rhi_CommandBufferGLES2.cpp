@@ -39,7 +39,7 @@ public:
     ~CommandBufferGLES2_t();
     void Execute();
 
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
@@ -463,6 +463,7 @@ static bool gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
+    , usingDefaultFrameBuffer(true)
     , sync(InvalidHandle)
 {
 }

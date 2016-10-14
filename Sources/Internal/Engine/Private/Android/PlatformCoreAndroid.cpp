@@ -14,7 +14,7 @@
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 namespace DAVA
 {
@@ -109,7 +109,7 @@ void PlatformCore::GameThread()
     Logger::FrameworkDebug("=========== PlatformCore::GameThread: enter");
 
     Vector<String> cmdline;
-    GameMain(std::move(cmdline));
+    DAVAMain(std::move(cmdline));
 
     // Logger already is dead
     ANDROID_LOG_DEBUG("=========== PlatformCore::GameThread: leave");

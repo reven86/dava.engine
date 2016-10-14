@@ -107,7 +107,10 @@ void ProjectManager::OpenProject(const DAVA::FilePath& incomePath)
             DAVA::QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
             DAVA::SoundSystem::Instance()->InitFromQualitySettings();
 
-            dataSourceSceneFiles->SetProjectDirectory(dataSourcePath);
+            if (DAVA::FileSystem::Instance()->Exists(dataSourcePath))
+            {
+                dataSourceSceneFiles->SetProjectDirectory(dataSourcePath);
+            }
 
             bool reloadParticles = SettingsManager::GetValue(Settings::General_ReloadParticlesOnPojectOpening).AsBool();
             if (spritesPacker != nullptr && reloadParticles)

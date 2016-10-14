@@ -32,7 +32,7 @@ const String TestCoverageFileName = "Tests.cover";
 
 #if defined(__DAVAENGINE_COREV2__)
 
-int GameMain(Vector<String> cmdline)
+int DAVAMain(Vector<String> cmdline)
 {
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetString("title", "UnitTests");

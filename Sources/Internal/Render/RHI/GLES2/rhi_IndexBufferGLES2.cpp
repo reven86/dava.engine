@@ -42,6 +42,7 @@ RHI_IMPL_POOL_SIZE(IndexBufferGLES2_t, RESOURCE_INDEX_BUFFER, IndexBuffer::Descr
 
 IndexBufferGLES2_t::IndexBufferGLES2_t()
     : size(0)
+    , usage(GL_STATIC_DRAW)
     , uid(0)
     , isMapped(0)
     , updatePending(0)

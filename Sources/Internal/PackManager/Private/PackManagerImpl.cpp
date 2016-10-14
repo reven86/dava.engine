@@ -764,7 +764,7 @@ const IPackManager::Pack& PackManagerImpl::RequestPack(const String& packName)
                 }
                 catch (std::exception& ex)
                 {
-                    Logger::Info("%s", ex.what());
+                    Logger::Error("%s", ex.what());
                     requestManager->Push(packName, 1.0f); // 1.0f last order by default
                 }
             }

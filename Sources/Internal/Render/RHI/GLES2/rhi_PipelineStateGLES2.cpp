@@ -45,6 +45,7 @@ VertexDeclGLES2
 
     VertexDeclGLES2()
         : elemCount(0)
+        , streamCount(0)
         , vattrInited(false)
     {
         memset(stride, 0, sizeof(stride));
@@ -313,7 +314,7 @@ VertexDeclGLES2
         void* offset;
     };
 
-    Elem elem[VATTR_COUNT];
+    Elem elem[VATTR_COUNT]; //-V730_NOINIT
     unsigned elemCount;
     unsigned stride[MAX_VERTEX_STREAM_COUNT];
     unsigned streamCount;

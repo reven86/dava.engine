@@ -318,7 +318,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             impl->Set(key, value.Get<T>()); \
         } \
-        catch (const Any::Exception& exception) \
+        catch (const DAVA::Exception& exception) \
         { \
             Logger::Error("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -333,7 +333,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             retVal = Any(impl->Get(key, value.Get<T>())); \
         } \
-        catch (const Any::Exception& exception) \
+        catch (const DAVA::Exception& exception) \
         { \
             Logger::Error("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
