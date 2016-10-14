@@ -49,6 +49,21 @@ uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
     return (bitsPerPixel * width * height / 8);
 }
 
+uint32 Image::GetPitchInBytes(uint32 width, PixelFormat format)
+{
+    DVASSERT(width != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
+
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width / 8);
+}
+
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -80,6 +95,12 @@ Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, co
     }
 
     return image;
+}
+
+Image* Image::CreateFromImage(Image* image)
+{
+    DVASSERT(image != nullptr);
+    return Image::CreateFromData(image->width, image->height, image->format, image->data);
 }
 
 Image* Image::CreatePinkPlaceholder(bool checkers)
@@ -119,9 +140,8 @@ bool Image::Normalize()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    const int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    const uint32 pitch = width * formatSize;
-    const uint32 dataSize = height * pitch;
+    const uint32 pitch = GetPitchInBytes(width, format);
+    const uint32 dataSize = GetSizeInBytes(width, height, format);
 
     uint8* newImage0Data = new uint8[dataSize];
     Memset(newImage0Data, 0, dataSize);
@@ -139,58 +159,54 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
     Vector<Image*> imageSet;
 
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    if (!formatSize)
-        return imageSet;
+    Image* curImage = Image::CreateFromImage(this);
+    curImage->mipmapLevel = 0;
+    imageSet.push_back(curImage);
 
-    Image* image0 = SafeRetain(this);
-    uint32 imageWidth = width;
-    uint32 imageHeight = height;
-    uint32 curMipMapLevel = 0;
-    image0->mipmapLevel = curMipMapLevel++;
+    bool hasErrors = false;
 
-    if (isNormalMap)
-        image0->Normalize();
-
-    imageSet.push_back(image0);
-    while (imageHeight > 1 || imageWidth > 1)
+    if (isNormalMap && curImage->Normalize() == false)
     {
-        uint32 newWidth = imageWidth;
-        uint32 newHeight = imageHeight;
-        if (newWidth > 1)
-            newWidth >>= 1;
-        if (newHeight > 1)
-            newHeight >>= 1;
+        hasErrors = true;
+    }
 
-        Image* halfSizeImg = Image::Create(newWidth, newHeight, format);
-        imageSet.push_back(halfSizeImg);
+    while (hasErrors == false && (curImage->height > 1 || curImage->width > 1))
+    {
+        uint32 halfWidth = curImage->width;
+        uint32 halfHeight = curImage->height;
 
-        Memset(halfSizeImg->GetData(), 0, halfSizeImg->dataSize);
+        if (halfWidth > 1)
+            halfWidth >>= 1;
+        if (halfHeight > 1)
+            halfHeight >>= 1;
+
+        Image* halfImage = Image::Create(halfWidth, halfHeight, format);
+        halfImage->cubeFaceID = curImage->cubeFaceID;
+        halfImage->mipmapLevel = curImage->mipmapLevel + 1;
+        Memset(halfImage->GetData(), 0, halfImage->dataSize);
+
+        imageSet.push_back(halfImage);
 
         bool downScaled = ImageConvert::DownscaleTwiceBillinear(format, format,
-                                                                image0->data, imageWidth, imageHeight, imageWidth * formatSize,
-                                                                halfSizeImg->GetData(), newWidth, newHeight, newWidth * formatSize, isNormalMap);
+                                                                curImage->data, curImage->width, curImage->height, GetPitchInBytes(curImage->width, format),
+                                                                halfImage->GetData(), halfWidth, halfHeight, GetPitchInBytes(halfWidth, format), isNormalMap);
 
-        if (downScaled)
+        if (!downScaled)
         {
-            halfSizeImg->cubeFaceID = image0->cubeFaceID;
-            halfSizeImg->mipmapLevel = curMipMapLevel;
-
-            imageWidth = newWidth;
-            imageHeight = newHeight;
-
-            image0 = halfSizeImg;
-            curMipMapLevel++;
-        }
-        else
-        {
-            for (Image* img : imageSet)
-            {
-                img->Release();
-            }
-            imageSet.clear();
+            hasErrors = true;
             break;
         }
+
+        curImage = halfImage;
+    }
+
+    if (hasErrors)
+    {
+        for (Image* img : imageSet)
+        {
+            img->Release();
+        }
+        imageSet.clear();
     }
 
     return imageSet;
@@ -254,14 +270,13 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    uint8* newData = NULL;
-    uint32 newDataSize = 0;
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-
-    if (formatSize > 0)
+    if (PixelFormatDescriptor::IsFormatSizeByteDivisible(format))
     {
-        newDataSize = newWidth * newHeight * formatSize;
-        newData = new uint8[newDataSize];
+        uint32 pitch = GetPitchInBytes(width, format);
+
+        uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
+        uint32 newPitch = GetPitchInBytes(newWidth, format);
+        uint8* newData = new uint8[newDataSize];
         Memset(newData, 0, newDataSize);
 
         uint32 currentLine = 0;
@@ -270,20 +285,20 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 
         for (uint32 i = 0; i < newDataSize; ++i)
         {
-            if ((currentLine + 1) * newWidth * formatSize <= i)
+            if ((currentLine + 1) * newPitch <= i)
             {
                 currentLine++;
             }
 
-            indexOnLine = i - currentLine * newWidth * formatSize;
+            indexOnLine = i - currentLine * newPitch;
 
             if (currentLine < uint32(height))
             {
                 // within height of old image
-                if (indexOnLine < uint32(width * formatSize))
+                if (indexOnLine < pitch)
                 {
                     // we have data in old image for new image
-                    indexInOldData = currentLine * width * formatSize + indexOnLine;
+                    indexInOldData = currentLine * pitch + indexOnLine;
                     newData[i] = data[indexInOldData];
                 }
                 else
@@ -305,6 +320,10 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
         data = newData;
         dataSize = newDataSize;
     }
+    else
+    {
+        Logger::Warning("Unable to resize canvas for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format));
+    }
 }
 
 void Image::ResizeToSquare()
@@ -319,23 +338,28 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    PixelFormat format = imageToCopy->GetPixelFormat();
+
+    DVASSERT_MSG(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
+                 Format("Can't copy image region for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
+
     uint32 oldWidth = imageToCopy->GetWidth();
     uint32 oldHeight = imageToCopy->GetHeight();
     DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);
-
-    PixelFormat format = imageToCopy->GetPixelFormat();
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
     Image* newImage = Image::Create(newWidth, newHeight, format);
 
     uint8* oldData = imageToCopy->GetData();
     uint8* newData = newImage->data;
 
+    uint32 newPitch = GetPitchInBytes(newWidth, format);
+    uint32 bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) / 8;
+
     for (uint32 i = 0; i < newHeight; ++i)
     {
-        Memcpy((newData + newWidth * i * formatSize),
-               (oldData + (oldWidth * (yOffset + i) + xOffset) * formatSize),
-               formatSize * newWidth);
+        Memcpy((newData + i * newPitch),
+               (oldData + (oldWidth * (yOffset + i) + xOffset) * bytesPerPixel),
+               newPitch);
     }
 
     return newImage;
@@ -368,6 +392,9 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
         return;
     }
 
+    DVASSERT_MSG(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
+                 Format("Can't insert images for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
+
     uint32 insertWidth = (srcWidth == uint32(-1)) ? image->GetWidth() : srcWidth;
     uint32 insertHeight = (srcHeight == uint32(-1)) ? image->GetHeight() : srcHeight;
 
@@ -390,16 +417,16 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
     }
 
     PixelFormat format = GetPixelFormat();
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    uint32 bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) / 8;
 
     uint8* srcData = image->GetData();
     uint8* dstData = data;
 
     for (uint32 i = 0; i < insertHeight; ++i)
     {
-        Memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
-               srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
-               formatSize * insertWidth);
+        Memcpy(dstData + (width * (dstY + i) + dstX) * bytesPerPixel,
+               srcData + (image->GetWidth() * (srcY + i) + srcX) * bytesPerPixel,
+               bytesPerPixel * insertWidth);
     }
 }
 

@@ -52,9 +52,33 @@ protected:
 public:
     Image();
 
+    /**
+    creates new image with given `width`, `height`, `format`
+    image data is not initialized
+    */
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
+
+    /**
+    creates new image with given `width`, `height`, `format`
+    image data is initialized with given `data`
+    */
     static Image* CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data);
+
+    /**
+    creates new image by copying passed `image`
+    */
+    static Image* CreateFromImage(Image* image);
+
+    /**
+    return size of image with given `width`, `height`, `format`
+    */
     static uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format);
+
+    /**
+    returns length in bytes of image line.
+    pitch size consists of space used by line pixels plus possible additional space used for memory alignment for compressed formats
+    */
+    static uint32 GetPitchInBytes(uint32 width, PixelFormat format);
 
     static Image* CreatePinkPlaceholder(bool checkers = true);
     void MakePink(bool checkers = true);

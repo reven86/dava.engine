@@ -102,9 +102,9 @@ bool ConvertImageDirect(const Image* srcImage, Image* dstImage)
 {
     return ConvertImageDirect(srcImage->format, dstImage->format,
                               srcImage->data, srcImage->width, srcImage->height,
-                              srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
+                              Image::GetPitchInBytes(srcImage->width, srcImage->format),
                               dstImage->data, dstImage->width, dstImage->height,
-                              dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+                              Image::GetPitchInBytes(dstImage->width, dstImage->format));
 }
 
 bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
@@ -234,16 +234,15 @@ void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage /* = nullp
 {
     DVASSERT(srcImage);
 
-    auto srcPixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format);
     if (dstImage)
     {
-        DVASSERT(PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format) == srcPixelSize);
+        DVASSERT(PixelFormatDescriptor::GetPixelFormatSizeInBits(dstImage->format) == PixelFormatDescriptor::GetPixelFormatSizeInBits(srcImage->format));
         DVASSERT(srcImage->width == dstImage->width);
         DVASSERT(srcImage->height == dstImage->height);
     }
 
     SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height,
-                        srcImage->width * srcPixelSize,
+                        Image::GetPitchInBytes(srcImage->width, srcImage->format),
                         dstImage ? dstImage->data : nullptr);
 }
 

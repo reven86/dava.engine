@@ -261,10 +261,10 @@ void TilemaskEditorPanel::SplitImageToChannels(DAVA::Image* image, DAVA::Image*&
         images[i] = DAVA::Image::Create(width, height, DAVA::FORMAT_RGBA8888);
     }
 
-    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    DAVA::int32 pixelSizeInBytes = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::FORMAT_RGBA8888) / 8;
     for (DAVA::int32 i = 0; i < size; ++i)
     {
-        DAVA::int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSizeInBytes;
 
         images[0]->data[offset] = image->data[offset];
         images[0]->data[offset + 1] = image->data[offset];

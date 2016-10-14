@@ -29,8 +29,8 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
     {
         Image* savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
 
-        ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format),
-                                         savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
+        ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, Image::GetPitchInBytes(image->width, image->format),
+                                         savedImage->data, savedImage->width, savedImage->height, Image::GetPitchInBytes(savedImage->width, savedImage->format));
 
         ImageSystem::Save(newImagePath, savedImage);
         savedImage->Release();

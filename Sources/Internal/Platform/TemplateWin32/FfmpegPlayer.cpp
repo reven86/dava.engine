@@ -213,7 +213,7 @@ bool FfmpegPlayer::InitVideo()
 
     frameHeight = videoCodecContext->height;
     frameWidth = videoCodecContext->width;
-    frameBufferSize = frameWidth * frameHeight * PixelFormatDescriptor::GetPixelFormatSizeInBytes(pixelFormat);
+    frameBufferSize = Image::GetSizeInBytes(frameWidth, frameHeight, pixelFormat);
 
     DVASSERT(nullptr == videoDecodingThread)
 

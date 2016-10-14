@@ -151,10 +151,10 @@ Channels CreateSplittedImages(DAVA::Image* originalImage)
     DAVA::ScopedPtr<DAVA::Image> a(DAVA::Image::Create(originalImage->width, originalImage->height, DAVA::FORMAT_A8));
 
     DAVA::int32 size = originalImage->width * originalImage->height;
-    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    DAVA::int32 pixelSizeInBytes = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::FORMAT_RGBA8888) / 8;
     for (DAVA::int32 i = 0; i < size; ++i)
     {
-        DAVA::int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSizeInBytes;
         r->data[i] = originalImage->data[offset];
         g->data[i] = originalImage->data[offset + 1];
         b->data[i] = originalImage->data[offset + 2];
@@ -171,10 +171,10 @@ DAVA::Image* CreateMergedImage(const Channels& channels)
     }
     DAVA::Image* mergedImage = DAVA::Image::Create(channels.red->width, channels.red->height, DAVA::FORMAT_RGBA8888);
     DAVA::int32 size = mergedImage->width * mergedImage->height;
-    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    DAVA::int32 pixelSizeInBytes = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::FORMAT_RGBA8888) / 8;
     for (DAVA::int32 i = 0; i < size; ++i)
     {
-        DAVA::int32 offset = i * pixelSize;
+        DAVA::int32 offset = i * pixelSizeInBytes;
         mergedImage->data[offset] = channels.red->data[i];
         mergedImage->data[offset + 1] = channels.green->data[i];
         mergedImage->data[offset + 2] = channels.blue->data[i];
@@ -190,9 +190,9 @@ void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
         return;
     }
     DAVA::int32 size = image->width * image->height;
-    DAVA::int32 pixelSize = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+    DAVA::int32 pixelSizeInBytes = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::FORMAT_RGBA8888) / 8;
     DAVA::int32 offset = channel;
-    for (DAVA::int32 i = 0; i < size; ++i, offset += pixelSize)
+    for (DAVA::int32 i = 0; i < size; ++i, offset += pixelSizeInBytes)
     {
         image->data[offset] = value;
     }

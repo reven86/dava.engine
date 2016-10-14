@@ -16,9 +16,16 @@ class PixelFormatDescriptor
 public:
     static void SetHardwareSupportedFormats();
 
-    static int32 GetPixelFormatSizeInBytes(PixelFormat format);
     static int32 GetPixelFormatSizeInBits(PixelFormat format);
     static Size2i GetPixelFormatBlockSize(PixelFormat format);
+
+    /**
+    returns true if `format` has pixel size of 8, 16 etc and block size is (1,1).
+    Normally, uncompressed formats should return true while compressed formats should return false.
+    Function is especially useful for pixel ariphmetics: is format is byte divisible you can safely
+    operate with blocks of pixels, iterate over pixels etc.
+    */
+    static bool IsFormatSizeByteDivisible(PixelFormat format);
 
     static const char* GetPixelFormatString(const PixelFormat format);
     static PixelFormat GetPixelFormatByName(const FastName& formatName);
@@ -47,14 +54,4 @@ inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat f
     return GetPixelFormatDescriptor(format).pixelSize;
 }
 
-inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBytes(const PixelFormat format)
-{
-    int32 bits = GetPixelFormatSizeInBits(format);
-    if (bits < 8)
-    { // To detect wrong situations
-        Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
-    }
-
-    return bits / 8;
-}
 }
