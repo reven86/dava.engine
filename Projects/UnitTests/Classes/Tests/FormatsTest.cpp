@@ -62,10 +62,7 @@ DAVA_TESTCLASS (FormatsTest)
             const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-            continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-
+#if 0
             const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
                 continue;
@@ -86,6 +83,7 @@ DAVA_TESTCLASS (FormatsTest)
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
+#endif
         }
     }
     
@@ -109,9 +107,7 @@ DAVA_TESTCLASS (FormatsTest)
             const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
-            continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if 0
 
 #if defined(__DAVAENGINE_MACOS__)
             if (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
@@ -140,6 +136,7 @@ DAVA_TESTCLASS (FormatsTest)
                 float32 differencePersentage = (cmpRes.difference / (cmpRes.bytesCount * 256.f)) * 100.f;
                 TEST_VERIFY_WITH_MESSAGE(differencePersentage <= MAX_DIFFERENCE, Format("Difference=%f%%, Coincidence=%f%%", differencePersentage, 100.f - differencePersentage));
             }
+#endif
         }
     }
 #endif

@@ -77,7 +77,7 @@ namespace DAVA
 class JniMovieViewControl
 {
 public:
-    JniMovieViewControl(uint32 id);
+    JniMovieViewControl(uintptr_t id);
     void Initialize(const Rect& rect);
     void Uninitialize();
 

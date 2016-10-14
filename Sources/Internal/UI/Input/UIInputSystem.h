@@ -95,7 +95,6 @@ private:
 
     UIActionMap globalActions;
     UIInputMap globalInputMap;
-    int32 modifiers = 0;
 };
 }
 

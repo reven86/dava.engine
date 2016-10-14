@@ -793,7 +793,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetInternalStoragePathname();
 #endif
 }
@@ -803,7 +803,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetExternalStoragePathname();
 #endif
 }

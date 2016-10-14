@@ -19,7 +19,18 @@
     #pragma warning(pop)
 
 #else
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
     #include <miniz/miniz.c>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #endif
 
 #ifdef __clang__

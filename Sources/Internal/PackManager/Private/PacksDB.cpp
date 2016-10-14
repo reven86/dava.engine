@@ -1,8 +1,19 @@
 #include "PackManager/Private/PacksDB.h"
-#include <sqlite_modern_cpp.h>
 #include "MemoryManager/MemoryManager.h"
 #include "FileSystem/FileSystem.h"
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
+
+
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite_modern_cpp.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 namespace DAVA
 {

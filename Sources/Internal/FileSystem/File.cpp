@@ -484,7 +484,8 @@ String File::GetModificationDate(const FilePath& filePathname)
 #if defined(__DAVAENGINE_WINDOWS__)
         tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined(__DAVAENGINE_ANDROID__)
-        tm* utcTime = gmtime((const time_t*)&fileInfo.st_mtime);
+        long st_mtime = *(reinterpret_cast<long*>(&fileInfo.st_mtime));
+        tm* utcTime = gmtime(&st_mtime);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         tm* utcTime = gmtime(&fileInfo.st_mtimespec.tv_sec);
 #endif

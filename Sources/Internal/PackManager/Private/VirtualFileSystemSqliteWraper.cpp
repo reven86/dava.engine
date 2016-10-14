@@ -1,13 +1,21 @@
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
-
-#include <sqlite3.h>
-
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
 #include <ctime>
+
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite3.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 static bool loadDBinRAM = false;
 
