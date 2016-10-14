@@ -280,7 +280,7 @@ void PackManagerImpl::ContinueInitialization()
 
     if (newState != beforeState || initError != InitError::AllGood)
     {
-        asyncConnectStateChanged.Emit(*this);
+        initStateChanged.Emit(*this);
     }
 }
 
@@ -964,19 +964,29 @@ void PackManagerImpl::DeletePack(const String& packName)
     DVASSERT(Thread::IsMainThread());
 
     auto& pack = GetPack(packName);
-    if (pack.state == Pack::Status::Mounted)
+
+    // first modify pack
+    pack.state = Pack::Status::NotRequested;
+    pack.priority = 0.0f;
+    pack.downloadProgress = 0.f;
+    pack.downloadError = DLE_NO_ERROR;
+
+    // now remove archive from filesystem
+    FilePath archivePath = dirToDownloadedPacks + packName + RequestManager::packPostfix;
+    FileSystem* fs = FileSystem::Instance();
+    fs->Unmount(archivePath);
+    fs->DeleteFile(archivePath);
+
+    // now we in inconsistent state! some packs may depends on it
+    // and it's state may be `Pack::Status::Mounted`
+    // so just insure to find out all dependent packs and set state to it
+    // `Pack::Status::NotRequested`
+    for (auto& p : packs)
     {
-        // first modify DB
-        pack.state = Pack::Status::NotRequested;
-        pack.priority = 0.0f;
-        pack.downloadProgress = 0.f;
-
-        // now remove archive from filesystem
-        FileSystem* fs = FileSystem::Instance();
-        FilePath archivePath = dirToDownloadedPacks + packName + RequestManager::packPostfix;
-        fs->Unmount(archivePath);
-
-        fs->DeleteFile(archivePath);
+        db->ListDependentPacks(p.name, [&](const String& depName)
+                               {
+                                   GetPack(depName).state = Pack::Status::NotRequested;
+                               });
     }
 }
 

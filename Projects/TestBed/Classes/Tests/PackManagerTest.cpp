@@ -319,8 +319,8 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     packNameLoading->SetText(L"done: start init");
 
-    pm.asyncConnectStateChanged.DisconnectAll();
-    pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+    pm.initStateChanged.DisconnectAll();
+    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);

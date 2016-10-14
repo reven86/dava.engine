@@ -47,35 +47,41 @@ public:
     {
         enum class Status : uint32
         {
-            NotRequested,
-            Requested,
-            Downloading,
-            Mounted,
+            NotRequested, //!< initial state
+            Requested, //!< client made request and pack in queue
+            Downloading, //!< loading pack data from server superpack
+            Mounted, //!< if all good after loading and checking hash
             ErrorLoading, //!< downloadError - value returned from DLC DownloadManager
             OtherError //!< mount failed, check hash failed, file IO failed see otherErrorMsg
         };
 
-        Vector<String> dependency; /** names of dependency packs or empty */
+        Vector<String> dependency; //!< names of dependency packs or empty
 
-        String name; /** unique pack name */
-        String otherErrorMsg;
+        String name; //!< unique pack name
+        String otherErrorMsg; //!< extended error message
 
-        float32 downloadProgress = 0.f; /** 0.0f to 1.0f */
-        float32 priority = 0.f; /** 0.0f to 1.0f */
+        float32 downloadProgress = 0.f; //!< [0.0f to 1.0f]
+        float32 priority = 0.f; //!< [0.0f to 1.0f]
 
-        uint32 hashFromDB = 0;
+        uint32 hashFromDB = 0; //!< crc32 hash from local DB file
 
-        uint64 downloadedSize = 0;
-        uint64 totalSize = 0;
-        uint64 totalSizeFromDB = 0;
+        uint64 downloadedSize = 0; //!< current downloaded size, used only during loading
+        uint64 totalSize = 0; //!< current total size on file system
+        uint64 totalSizeFromDB = 0; //!< size from local DB
 
-        DownloadError downloadError = DLE_NO_ERROR;
-        Status state = Status::NotRequested;
+        DownloadError downloadError = DLE_NO_ERROR; //!< download manager error
+        Status state = Status::NotRequested; //!< current pack state
 
-        bool isGPU = false; /** depends on architecture */
+        bool isGPU = false; //!< value from local DB
     };
 
-    /** proxy interface to easily check pack request progress */
+    /**
+     Proxy interface to easily check pack request progress
+     to use it interface, for download progress you need to
+     connect to `requestProgressChanged` signal and then
+     call `RequestPack`. Also you can find reques by pack name
+     with `FindRequest`.
+    */
     class IRequest
     {
     public:
@@ -89,17 +95,18 @@ public:
         virtual const String& GetErrorMessage() const = 0;
     };
 
-    /** User have to wait till InitState become Ready */
-    Signal<IPackManager&> asyncConnectStateChanged;
+    /** you have to sibscribe to this signal before call `Initialize` */
+    Signal<IPackManager&> initStateChanged;
     /** signal user about every pack state change */
     Signal<const Pack&> packStateChanged;
+    /** you can track every pack download progress with this signal */
     Signal<const Pack&> packDownloadChanged;
     /** signal per user request with complete size of all depended packs */
     Signal<const IRequest&> requestProgressChanged;
 
     struct Hints
     {
-        bool dbInMemory = true; // on PC, Mac, Android preffer true RAM
+        bool dbInMemory = true; //!< on PC, Mac, Android preffer true RAM
     };
 
     /**
@@ -165,7 +172,12 @@ public:
 
     /** all packs state, valid till next call frame update */
     virtual const Vector<Pack>& GetPacks() const = 0;
-
+    /**
+     Unmount pack and then delete it, throw exception on error,
+     then collect from DB all dependent packs and set it's state to
+     `Pack::State::NotRequested`. Normaly you don't need to delete packs
+     manually
+     */
     virtual void DeletePack(const String& packName) = 0;
 
     virtual const FilePath& GetLocalPacksDirectory() const = 0;

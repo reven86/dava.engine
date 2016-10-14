@@ -135,6 +135,24 @@ void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const
     }
 }
 
+void PacksDB::ListDependentPacks(const String& pack, const Function<void(const String&)>& fn)
+{
+    try
+    {
+        data->GetDB() << "SELECT name FROM packs WHERE dependency LIKE ?"
+                      << "%" + pack + " %" // this space need to separete pack names
+        >> [&](String name)
+        {
+            fn(name);
+        };
+    }
+    catch (sqlite::sqlite_exception& ex)
+    {
+        Logger::Error("error while executing query to DB ListDependentPacks: %s", ex.what());
+        throw;
+    }
+}
+
 void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
