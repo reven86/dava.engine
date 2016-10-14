@@ -5,6 +5,7 @@
 
 #include "Platform/TemplateWin32/MovieViewControlWin32.h"
 
+#include "Render/Image/Image.h"
 #include "Platform/TemplateWin32/FfmpegPlayer.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "UI/UIControl.h"

@@ -53,5 +53,4 @@ inline int32 PixelFormatDescriptor::GetPixelFormatSizeInBits(const PixelFormat f
 {
     return GetPixelFormatDescriptor(format).pixelSize;
 }
-
 }

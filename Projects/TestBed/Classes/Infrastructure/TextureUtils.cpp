@@ -43,18 +43,19 @@ TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite* first, Sprite* 
 
 TextureUtils::CompareResult TextureUtils::CompareImages(Image* first, Image* second, PixelFormat format)
 {
+    CompareResult compareResult = { 0 };
+
     bool isFirstValid = PixelFormatDescriptor::IsFormatSizeByteDivisible(first->format);
     bool isSecondValid = PixelFormatDescriptor::IsFormatSizeByteDivisible(second->format);
     if (!isFirstValid || !isSecondValid)
     {
         DVASSERT_MSG(false, Format("Can't compare images of types %s and %s",
                                    PixelFormatDescriptor::GetPixelFormatString(first->format),
-                                   PixelFormatDescriptor::GetPixelFormatString(second->format)));
+                                   PixelFormatDescriptor::GetPixelFormatString(second->format))
+                            .c_str());
         compareResult.difference = 100;
         return compareResult;
     }
-
-    CompareResult compareResult = { 0 };
 
     if (first->GetWidth() != second->GetWidth() ||
         first->GetHeight() != second->GetHeight())

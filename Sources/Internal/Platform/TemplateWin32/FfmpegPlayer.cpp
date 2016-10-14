@@ -5,6 +5,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
+#include "Render/Image/Image.h"
 #include "Sound/SoundSystem.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
