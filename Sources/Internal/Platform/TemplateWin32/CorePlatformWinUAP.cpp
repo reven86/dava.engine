@@ -6,6 +6,7 @@
 
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
@@ -15,6 +16,8 @@ namespace DAVA
 {
 int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 {
+	Assert::SetupDefaultHandlers();
+
     std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
     core->InitArgs();
     core->Run();

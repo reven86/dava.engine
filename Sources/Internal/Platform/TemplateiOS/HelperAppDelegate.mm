@@ -4,6 +4,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/DeviceInfo.h"
 #include "Core/Core.h"
 
@@ -72,6 +73,8 @@ public:
 
 int DAVA::Core::Run(int argc, char* argv[], AppHandle handle)
 {
+	Assert::SetupDefaultHandlers();
+
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     CoreIOS* core = new CoreIOS();
     core->SetCommandLine(argc, argv);

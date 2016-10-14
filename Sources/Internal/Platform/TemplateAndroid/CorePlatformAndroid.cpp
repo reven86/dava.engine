@@ -16,6 +16,7 @@ extern void FrameworkWillTerminate();
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 namespace DAVA
 {
@@ -47,6 +48,8 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 {
+	Assert::SetupDefaultHandlers();
+
     SetCommandLine(cmdLine);
 }
 

@@ -1,6 +1,7 @@
 #if !defined(__DAVAENGINE_COREV2__)
 
 #import "Platform/TemplateMacOS/MainWindowController.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -119,6 +120,8 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+	Assert::SetupDefaultHandlers();
+
     NSAutoreleasePool* globalPool = 0;
     globalPool = [[NSAutoreleasePool alloc] init];
     CoreMacOSPlatform* core = new CoreMacOSPlatform();

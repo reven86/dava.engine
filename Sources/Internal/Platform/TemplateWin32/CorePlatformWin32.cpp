@@ -25,6 +25,7 @@
 
 #include "MemoryManager/MemoryProfiler.h"
 #include "Logger/Logger.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -38,6 +39,8 @@ uint32 GetKeyboardModifiers();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+	Assert::SetupDefaultHandlers();
+
 #if defined(DENY_RUN_MULTIPLE_APP_INSTANCES)
     if (AlreadyRunning())
     {

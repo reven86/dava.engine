@@ -1,4 +1,5 @@
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 #include "Platform/Qt5/MacOS/CoreMacOSPlatformQt.h"
 #include "Platform/Qt5/QtLayer.h"
 
@@ -13,6 +14,8 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+	Assert::SetupDefaultHandlers();
+
     DAVA::CoreMacOSPlatformQt* core = new DAVA::CoreMacOSPlatformQt();
     core->SetCommandLine(argc, argv);
     core->CreateSingletons();

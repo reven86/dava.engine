@@ -1,6 +1,7 @@
 #include "CorePlatformWin32Qt.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -23,6 +24,8 @@ void CoreWin32PlatformQt::Quit()
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+	Assert::SetupDefaultHandlers();
+
     CoreWin32PlatformQt* core = new CoreWin32PlatformQt();
     core->CreateSingletons();
     core->InitArgs();
