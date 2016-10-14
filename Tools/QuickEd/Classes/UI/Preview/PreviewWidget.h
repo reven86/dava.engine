@@ -137,6 +137,9 @@ public:
 
     bool inDragScreenState = false;
 
+    //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
+    ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
+
     //helper members to store space button and left mouse buttons states
     bool isSpacePressed = false;
     bool isMouseLeftButtonPressed = false;

@@ -637,10 +637,6 @@ void PreviewWidget::OnMousePressed(QMouseEvent* event)
     {
         isMouseMidButtonPressed = true;
     }
-    if (buttons & Qt::RightButton)
-    {
-        ShowMenu(event);
-    }
     UpdateDragScreenState();
     if (CanDragScreen())
     {
@@ -659,8 +655,17 @@ void PreviewWidget::OnMouseReleased(QMouseEvent* event)
     {
         isMouseMidButtonPressed = false;
     }
-
     UpdateDragScreenState();
+
+    if (event->button() == Qt::RightButton)
+    {
+        ShowMenu(event);
+    }
+    if (nodeToChangeTextOnMouseRelease != nullptr)
+    {
+        ChangeControlText(nodeToChangeTextOnMouseRelease);
+        nodeToChangeTextOnMouseRelease = nullptr;
+    }
 }
 
 void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
@@ -675,7 +680,7 @@ void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
     }
 
     // call "change text" after release event will pass
-    QTimer::singleShot(0, [node, this]() { ChangeControlText(node); });
+    nodeToChangeTextOnMouseRelease = node;
 }
 
 void PreviewWidget::OnMouseMove(QMouseEvent* event)
