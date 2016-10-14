@@ -12,8 +12,8 @@
 
 namespace DAVA
 {
-GameObjectManager::GameObjectManager()
-    : cameraScale(1.f, 1.f)
+GameObjectManager::GameObjectManager() //-V730 do not init objectEnumerator
+: cameraScale(1.f, 1.f)
 {
     isInUpdate = false;
 }

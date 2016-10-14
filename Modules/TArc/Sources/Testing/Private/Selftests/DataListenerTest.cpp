@@ -3,7 +3,7 @@
 
 #include "DataProcessing/DataNode.h"
 
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/ReflectedType.h"
 #include "Reflection/Registrator.h"
 
 class DataListenerNode : public DAVA::TArc::DataNode
