@@ -62,7 +62,7 @@ DAVA_TESTCLASS (FormatsTest)
             const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if 0
+#if defined(__DAVAENGINE_MACOS__)
             const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
                 continue;
@@ -107,14 +107,12 @@ DAVA_TESTCLASS (FormatsTest)
             const DAVA::FilePath compressedPathname = DAVA::FilePath::CreateWithNewExtension(pngPathname, ".dat");
             TestImageInfo(compressedPathname, requestedFormat);
 
-#if 0
-
 #if defined(__DAVAENGINE_MACOS__)
+
             if (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
             {
                 continue;
             }
-#endif //#if defined (__DAVAENGINE_MACOS__)
 
             const DAVA::PixelFormatDescriptor& descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
             if (descriptor.isHardwareSupported)
