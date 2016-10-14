@@ -140,7 +140,7 @@ void WindowBackend::TriggerPlatformEvents()
         catch (const JNI::Exception& e)
         {
             Logger::Error("WindowBackend::TriggerPlatformEvents failed: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
     }
 }
@@ -229,7 +229,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         catch (const JNI::Exception& e)
         {
             Logger::Error("[WindowBackend] failed to init java bridge: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window,

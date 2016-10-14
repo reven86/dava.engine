@@ -83,7 +83,7 @@ void WebViewControl::Initialize(const Rect& rect)
     catch (const JNI::Exception& e)
     {
         Logger::Error("[WebViewControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 

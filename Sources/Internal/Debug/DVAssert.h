@@ -79,6 +79,9 @@ void AddHandler(const Handler handler);
 
 /** Unregister specified `handler` (in case it has been added before) */
 void RemoveHandler(const Handler handler);
+
+/** Unregister all previously added handlers */
+void RemoveAllHandlers();
 }
 }
 

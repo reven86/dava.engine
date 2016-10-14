@@ -14,6 +14,13 @@ static Vector<Handler> registeredHandlers;
 
 static Mutex registeredHandlersMutex;
 
+void RemoveAllHandlers()
+{
+	LockGuard<Mutex> lock(registeredHandlersMutex);
+
+	registeredHandlers.clear();
+}
+
 void AddHandler(const Handler handler)
 {
     LockGuard<Mutex> lock(registeredHandlersMutex);

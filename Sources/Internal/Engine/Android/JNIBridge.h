@@ -29,7 +29,7 @@ DAVA_DECLARE_CUSTOM_JNI_TYPE(jstringArray, jobjectArray, "[Ljava/lang/String;");
             JNIEnv* env = DAVA::JNI::GetEnv(); \
             DAVA::JNI::CheckJavaException(env, true); \
         } catch (const DAVA::JNI::Exception& e) { \
-            DVASSERT_MSG(false, e.what()); \
+            DVASSERT(false, e.what()); \
         } \
     } while (0);
 

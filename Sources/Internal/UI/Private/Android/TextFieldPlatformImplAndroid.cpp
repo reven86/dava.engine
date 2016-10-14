@@ -119,7 +119,7 @@ void TextFieldPlatformImpl::Initialize()
     catch (const JNI::Exception& e)
     {
         Logger::Error("[TextFieldControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
