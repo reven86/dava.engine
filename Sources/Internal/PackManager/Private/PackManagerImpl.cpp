@@ -754,7 +754,12 @@ static void CheckPackCrc32(const FilePath& path, const uint32 hashFromDB)
     if (crc32ForFile != hashFromDB)
     {
         FileSystem::Instance()->DeleteFile(path);
-        String msg = Format("crc32 not match for pack %s, crc32 from DB 0x%X crc32 from file 0x%X", path.GetStringValue(), hashFromDB, crc32ForFile);
+        const char* str = path.GetStringValue().c_str();
+
+        String msg = Format(
+        "crc32 not match for pack %s, crc32 from DB 0x%X crc32 from file 0x%X",
+        str, hashFromDB, crc32ForFile);
+
         DAVA_THROW(DAVA::Exception, msg.c_str());
     }
 }

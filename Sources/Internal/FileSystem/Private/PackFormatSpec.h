@@ -6,7 +6,7 @@ namespace DAVA
 {
 namespace PackFormat
 {
-const Array<char8, 4> FileMarker = { 'D', 'V', 'P', 'K' };
+const Array<char8, 4> FileMarker{ { 'D', 'V', 'P', 'K' } };
 
 struct PackFile
 {
