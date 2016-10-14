@@ -45,6 +45,7 @@ private:
     QString prefix;
     QCompleter* completer = nullptr;
     DAVA::String lastUsedPath;
+    QStringList stringsToDisplay;
 
 public:
     INTROSPECTION(FindFileDialog,

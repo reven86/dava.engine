@@ -97,8 +97,9 @@ FindFileDialog::~FindFileDialog()
 
 void FindFileDialog::Init(const Vector<FilePath>& files)
 {
+    //init function can be called only once
+    DVASSERT(stringsToDisplay.isEmpty());
     //collect all items in short form
-    QStringList stringsToDisplay;
     for (const FilePath& filePath : files)
     {
         QString path = QString::fromStdString(filePath.GetAbsolutePathname());
@@ -147,6 +148,24 @@ bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
         }
         else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
         {
+            //check that we need to accept first valid item
+            QString currentText = ui->lineEdit->text();
+            if (!stringsToDisplay.contains(currentText))
+            {
+                QAbstractItemModel* completionModel = completer->completionModel();
+
+                if (completionModel->rowCount() > 0)
+                {
+                    //place first valid item to the lineEdit, because it's single current text holder
+                    QString text = completionModel->data(completionModel->index(0, 0), completer->completionRole()).toString();
+                    if (!text.isEmpty())
+                    {
+                        ui->lineEdit->setText(text);
+                        accept();
+                    }
+                }
+                return true;
+            }
             accept();
         }
     }
