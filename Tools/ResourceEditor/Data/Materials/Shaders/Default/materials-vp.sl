@@ -198,9 +198,9 @@ vertex_out
 [auto][a] property float3 boundingBoxSize;
 
     #if SPHERICAL_HARMONICS_9
-        [auto][sh] property float4 sphericalHarmonics[7];
+        [auto][sh] property float4 sphericalHarmonics[7] : "bigarray";
     #elif SPHERICAL_HARMONICS_4
-        [auto][sh] property float4 sphericalHarmonics[3];
+        [auto][sh] property float4 sphericalHarmonics[3] : "bigarray";
     #else
         [auto][sh] property float4 sphericalHarmonics;
     #endif
