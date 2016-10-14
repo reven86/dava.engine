@@ -97,17 +97,30 @@ void CorePlatformAndroid::ProcessFrame()
     }
 }
 
+void CorePlatformAndroid::SetScreenScaleMultiplier(float32 multiplier)
+{
+    DVASSERT(multiplier > 0.0f);
+    if (!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+
+        JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
+        Function<void(jfloat)> setScreenScaleMultiplier = javaClass.GetStaticMethod<void, jfloat>("setScreenScaleMultiplier");
+        setScreenScaleMultiplier(multiplier);
+    }
+}
+
 void CorePlatformAndroid::ApplyPendingViewSize()
 {
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] in");
-    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", pendingWidth, pendingHeight);
+    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d, surfW = %d, surfH = %d", pendingWidth, pendingHeight, backbufferWidth, backbufferHeight);
 
     viewSizeChanged = false;
 
     DeviceInfo::InitializeScreenInfo();
 
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(pendingWidth, pendingHeight);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
@@ -127,16 +140,16 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
     Logger::SetTag(logTag);
 }
 
-void CorePlatformAndroid::RenderReset(int32 w, int32 h)
+void CorePlatformAndroid::RenderReset(int32 w, int32 h, int32 viewWidth, int32 viewHeight)
 {
     Logger::Debug("[CorePlatformAndroid::RenderReset] start");
 
     renderIsActive = true;
 
-    pendingWidth = w;
-    pendingHeight = h;
-    backbufferWidth = int32(w * GetScreenScaleFactor());
-    backbufferHeight = int32(h * GetScreenScaleFactor());
+    pendingWidth = viewWidth;
+    pendingHeight = viewHeight;
+    backbufferWidth = w;
+    backbufferHeight = h;
 
     viewSizeChanged = true;
 

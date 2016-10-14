@@ -767,5 +767,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         Log.d(JNIConst.LOG_TAG, "[Activity::finishActivity] out");
     }
+
+    public static void setScreenScaleMultiplier(final float multiplier)
+    {
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                activity.surfaceView.setScreenScaleMultiplier(multiplier);
+            }
+        });
+    }
 }
 

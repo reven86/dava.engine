@@ -123,12 +123,10 @@ void android_gl_checkSurface()
 {
     if (needRecreateSurface)
     {
-#if defined(__DAVAENGINE_COREV2__)
         // Why this should work I do not fully understand, but this solution works
         // For more info see SDL sources: SDL2-2.0.4\src\core\android\SDL_android.c, Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed function
         // Also see http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
         eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-#endif
 
         eglDestroySurface(_display, _surface);
         _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
