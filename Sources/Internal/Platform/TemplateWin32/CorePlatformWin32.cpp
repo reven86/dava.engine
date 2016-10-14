@@ -1078,12 +1078,18 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_NCACTIVATE:
+    {
         // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
         // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
         // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
         // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
-        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+        InputSystem* inputSystem = InputSystem::Instance();
+        if (inputSystem != nullptr)
+        {
+            inputSystem->GetKeyboard().ClearAllKeys();
+        }
         break;
+    }
 
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:
