@@ -58,6 +58,8 @@ const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/Debu
 const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
 const FastName NMaterialName::DEBUG_DRAW_WIREFRAME = FastName("~res:/Materials/DebugDraw/Wireframe.material");
 
+const FastName NMaterialName::WATER_ALL_QUALITIES = FastName("~res:/Materials/WaterAllQualities.material");
+
 const FastName NMaterialTextureName::TEXTURE_ALBEDO("albedo");
 const FastName NMaterialTextureName::TEXTURE_NORMAL("normalmap");
 const FastName NMaterialTextureName::TEXTURE_DETAIL("detail");

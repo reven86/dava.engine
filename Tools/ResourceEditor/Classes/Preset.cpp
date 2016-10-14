@@ -13,8 +13,6 @@
 
 #include "Base/GlobalEnum.h"
 
-#include <QMessageBox>
-
 namespace Preset
 {
 using namespace DAVA;

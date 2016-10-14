@@ -7,7 +7,7 @@ class ImageSplitterTool : public REConsoleModuleCommon
 public:
     ImageSplitterTool(const DAVA::Vector<DAVA::String>& commandLine);
 
-private:
+protected:
     bool PostInitInternal() override;
     eFrameResult OnFrameInternal() override;
     void ShowHelpInternal() override;

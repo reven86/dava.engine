@@ -1,5 +1,4 @@
-#include "CommandLine/Private/Dump/SceneDumper.h"
-#include "CommandLine/Private/SceneConsoleHelper.h"
+#include "Utils/Dump/SceneDumper.h"
 #include "Utils/SceneUtils/SceneUtils.h"
 
 #include "FileSystem/KeyedArchive.h"
@@ -42,14 +41,11 @@ SceneDumper::SceneDumper(const FilePath& scenePath)
         Logger::Error("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str());
         SafeRelease(scene);
     }
-
-    SceneConsoleHelper::FlushRHI();
 }
 
 SceneDumper::~SceneDumper()
 {
     SafeRelease(scene);
-    SceneConsoleHelper::FlushRHI();
 }
 
 void SceneDumper::DumpLinksRecursive(Entity* entity, SceneDumper::SceneLinks& links) const

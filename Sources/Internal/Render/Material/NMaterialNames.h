@@ -64,6 +64,8 @@ public:
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
+
+    static const FastName WATER_ALL_QUALITIES;
 };
 
 class NMaterialTextureName

@@ -35,8 +35,8 @@ void SetupLogger(const DAVA::String& logLevelString)
 }
 
 REConsoleModuleCommon::REConsoleModuleCommon(const DAVA::Vector<DAVA::String>& commandLine_, const DAVA::String& moduleName)
-    : options(moduleName)
-    , commandLine(commandLine_)
+    : commandLine(commandLine_)
+    , options(moduleName)
 {
     options.AddOption("-log", DAVA::VariantType(DAVA::String("i")), "Set up the level of logging: e - error, w - warning, i - info, d - debug, f - framework. Info is defualt value");
 
