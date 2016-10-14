@@ -59,7 +59,7 @@ DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor* descriptor, c
                 {
                     DAVA::uint32 w = DAVA::Max(info.width >> m, 1u);
                     DAVA::uint32 h = DAVA::Max(info.height >> m, 1u);
-                    size += DAVA::Image::GetSizeInBytes(w, h, info.format);
+                    size += DAVA::ImageUtils::GetSizeInBytes(w, h, info.format);
                 }
             }
             else
@@ -190,7 +190,7 @@ void SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
         return;
     }
     DAVA::int32 size = image->width * image->height;
-    DAVA::int32 pixelSizeInBytes = DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBits(DAVA::FORMAT_RGBA8888) / 8;
+    static const DAVA::int32 pixelSizeInBytes = 4;
     DAVA::int32 offset = channel;
     for (DAVA::int32 i = 0; i < size; ++i, offset += pixelSizeInBytes)
     {

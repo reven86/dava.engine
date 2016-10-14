@@ -1087,7 +1087,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
     };
     auto MipSize = [d3dUsed, davaFormat, &MipSizeD3D](uint32 w, uint32 h)
     {
-        return d3dUsed ? MipSizeD3D(w, h) : Image::GetSizeInBytes(w, h, davaFormat);
+        return d3dUsed ? MipSizeD3D(w, h) : ImageUtils::GetSizeInBytes(w, h, davaFormat);
     };
 
     const uint32 largestImageSize = MipSize(info.width, info.height);

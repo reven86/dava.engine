@@ -78,7 +78,7 @@ void MovieViewControl::Play()
     Vector2 res = ffmpegPlayer->GetResolution();
     textureWidth = NextPowerOf2(static_cast<uint32>(res.dx));
     textureHeight = NextPowerOf2(static_cast<uint32>(res.dy));
-    uint32 size = Image::GetSizeInBytes(textureWidth, textureHeight, ffmpegPlayer->GetPixelFormat());
+    uint32 size = ImageUtils::GetSizeInBytes(textureWidth, textureHeight, ffmpegPlayer->GetPixelFormat());
 
     videoTextureBuffer.resize(size);
     Memset(videoTextureBuffer.data(), 0, size);

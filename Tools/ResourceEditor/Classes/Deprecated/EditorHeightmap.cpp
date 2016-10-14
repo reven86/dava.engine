@@ -596,9 +596,10 @@ void EditorHeightmap::DrawCopypasteRGBA(Image* src, Image* dst, Image* mask, con
     DVASSERT(src->height == dst->height);
     DVASSERT(src->format == dst->format);
 
-    DVASSERT_MSG(PixelFormatDescriptor::IsFormatSizeByteDivisible(dst->format),
+    DVASSERT_MSG(dst->format == FORMAT_RGBA8888,
                  Format("Can't use %s with format %s", __FUNCTION__, PixelFormatDescriptor::GetPixelFormatString(dst->format)).c_str());
-    int32 formatSizeInBytes = PixelFormatDescriptor::GetPixelFormatSizeInBits(dst->format) / 8;
+
+    static const int32 formatSizeInBytes = 4;
 
     //copy-paste
     uint8* srcData = src->data;
@@ -623,7 +624,7 @@ void EditorHeightmap::DrawCopypasteRGBA(Image* src, Image* dst, Image* mask, con
                     // mask size could be not equal to the copy/paste area size
                     uint32 maskY = iRow * mask->GetHeight() / height;
                     uint32 maskX = iCol * mask->GetWidth() / width;
-                    uint8 maskData = mask->data[(maskY * mask->width + maskX) * 4];
+                    uint8 maskData = mask->data[(maskY * mask->width + maskX) * formatSizeInBytes];
                     if (maskData)
                     {
                         int64 dstOffset = (dstIndex + xDst) * formatSizeInBytes;

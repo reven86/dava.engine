@@ -6,6 +6,40 @@
 
 namespace DAVA
 {
+namespace ImageUtils
+{
+uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
+{
+    DVASSERT(width != 0 && height != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
+
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1 || blockSize.dy != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+        height = height + ((-1 * height) % blockSize.dy);
+    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width * height / 8);
+}
+
+uint32 ImageUtils::GetPitchInBytes(uint32 width, PixelFormat format)
+{
+    DVASSERT(width != 0);
+    DVASSERT(format != PixelFormat::FORMAT_INVALID);
+
+    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
+    if (blockSize.dx != 1)
+    { // mathematics from PVR SDK
+        width = width + ((-1 * width) % blockSize.dx);
+    }
+
+    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    return (bitsPerPixel * width / 8);
+}
+}
+
 Image::Image()
     : dataSize(0)
     , width(0)
@@ -33,42 +67,11 @@ Image::~Image()
     height = 0;
 }
 
-uint32 Image::GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
-{
-    DVASSERT(width != 0 && height != 0);
-    DVASSERT(format != PixelFormat::FORMAT_INVALID);
-
-    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
-    if (blockSize.dx != 1 || blockSize.dy != 1)
-    { // mathematics from PVR SDK
-        width = width + ((-1 * width) % blockSize.dx);
-        height = height + ((-1 * height) % blockSize.dy);
-    }
-
-    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    return (bitsPerPixel * width * height / 8);
-}
-
-uint32 Image::GetPitchInBytes(uint32 width, PixelFormat format)
-{
-    DVASSERT(width != 0);
-    DVASSERT(format != PixelFormat::FORMAT_INVALID);
-
-    Size2i blockSize = PixelFormatDescriptor::GetPixelFormatBlockSize(format);
-    if (blockSize.dx != 1)
-    { // mathematics from PVR SDK
-        width = width + ((-1 * width) % blockSize.dx);
-    }
-
-    uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    return (bitsPerPixel * width / 8);
-}
-
 Image* Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    uint32 size = GetSizeInBytes(width, height, format);
+    uint32 size = ImageUtils::GetSizeInBytes(width, height, format);
     if (size > 0)
     {
         Image* image = new Image();
@@ -97,10 +100,12 @@ Image* Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, co
     return image;
 }
 
-Image* Image::CreateFromImage(Image* image)
+Image* Image::Clone() const
 {
-    DVASSERT(image != nullptr);
-    return Image::CreateFromData(image->width, image->height, image->format, image->data);
+    Image* image = Image::CreateFromData(width, height, format, data);
+    image->mipmapLevel = mipmapLevel;
+    image->cubeFaceID = cubeFaceID;
+    return image;
 }
 
 Image* Image::CreatePinkPlaceholder(bool checkers)
@@ -140,8 +145,8 @@ bool Image::Normalize()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    const uint32 pitch = GetPitchInBytes(width, format);
-    const uint32 dataSize = GetSizeInBytes(width, height, format);
+    const uint32 pitch = ImageUtils::GetPitchInBytes(width, format);
+    const uint32 dataSize = ImageUtils::GetSizeInBytes(width, height, format);
 
     uint8* newImage0Data = new uint8[dataSize];
     Memset(newImage0Data, 0, dataSize);
@@ -159,7 +164,7 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
     Vector<Image*> imageSet;
 
-    Image* curImage = Image::CreateFromImage(this);
+    Image* curImage = this->Clone();
     curImage->mipmapLevel = 0;
     imageSet.push_back(curImage);
 
@@ -188,8 +193,8 @@ Vector<Image*> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         imageSet.push_back(halfImage);
 
         bool downScaled = ImageConvert::DownscaleTwiceBillinear(format, format,
-                                                                curImage->data, curImage->width, curImage->height, GetPitchInBytes(curImage->width, format),
-                                                                halfImage->GetData(), halfWidth, halfHeight, GetPitchInBytes(halfWidth, format), isNormalMap);
+                                                                curImage->data, curImage->width, curImage->height, ImageUtils::GetPitchInBytes(curImage->width, format),
+                                                                halfImage->GetData(), halfWidth, halfHeight, ImageUtils::GetPitchInBytes(halfWidth, format), isNormalMap);
 
         if (!downScaled)
         {
@@ -221,7 +226,7 @@ bool Image::ResizeImage(uint32 newWidth, uint32 newHeight)
         return false;
 
     int32 formatSizeInBytes = formatDescriptor.pixelSize / 8;
-    const uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
+    const uint32 newDataSize = ImageUtils::GetSizeInBytes(newWidth, newHeight, format);
 
     uint8* newData = new uint8[newDataSize];
     Memset(newData, 0, newDataSize);
@@ -272,10 +277,10 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 
     if (PixelFormatDescriptor::IsFormatSizeByteDivisible(format))
     {
-        uint32 pitch = GetPitchInBytes(width, format);
+        uint32 pitch = ImageUtils::GetPitchInBytes(width, format);
 
-        uint32 newDataSize = GetSizeInBytes(newWidth, newHeight, format);
-        uint32 newPitch = GetPitchInBytes(newWidth, format);
+        uint32 newDataSize = ImageUtils::GetSizeInBytes(newWidth, newHeight, format);
+        uint32 newPitch = ImageUtils::GetPitchInBytes(newWidth, format);
         uint8* newData = new uint8[newDataSize];
         Memset(newData, 0, newDataSize);
 
@@ -322,7 +327,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     }
     else
     {
-        Logger::Warning("Unable to resize canvas for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format));
+        Logger::Error("Unable to resize canvas for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format));
     }
 }
 
@@ -352,7 +357,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
     uint8* oldData = imageToCopy->GetData();
     uint8* newData = newImage->data;
 
-    uint32 newPitch = GetPitchInBytes(newWidth, format);
+    uint32 newPitch = ImageUtils::GetPitchInBytes(newWidth, format);
     uint32 bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format) / 8;
 
     for (uint32 i = 0; i < newHeight; ++i)

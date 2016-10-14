@@ -66,14 +66,14 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image* first, Image* sec
         return compareResult;
     }
 
-    int32 imageSizeInBytes = Image::GetSizeInBytes(first->GetWidth(), first->GetHeight(), first->format);
+    int32 imageSizeInBytes = ImageUtils::GetSizeInBytes(first->GetWidth(), first->GetHeight(), first->format);
 
     int32 step = 1;
     int32 startIndex = 0;
 
     if (FORMAT_A8 == format)
     {
-        compareResult.bytesCount = Image::GetSizeInBytes(first->GetWidth(), first->GetHeight(), FORMAT_A8);
+        compareResult.bytesCount = ImageUtils::GetSizeInBytes(first->GetWidth(), first->GetHeight(), FORMAT_A8);
         step = 4;
         startIndex = 3;
     }

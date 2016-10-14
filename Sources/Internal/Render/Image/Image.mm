@@ -15,9 +15,9 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
 {
     DVASSERT(format == FORMAT_RGBA8888);
 
-    size_t bitsPerComponent = 8;
-    size_t bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    size_t bytesPerPixel = bitsPerPixel / 8;
+    static const size_t bitsPerComponent = 8;
+    static const size_t bitsPerPixel = 32;
+    static const size_t bytesPerPixel = 4;
     size_t bytesPerRow = width * bytesPerPixel;
     CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
     CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;

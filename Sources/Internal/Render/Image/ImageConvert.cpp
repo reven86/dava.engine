@@ -102,9 +102,9 @@ bool ConvertImageDirect(const Image* srcImage, Image* dstImage)
 {
     return ConvertImageDirect(srcImage->format, dstImage->format,
                               srcImage->data, srcImage->width, srcImage->height,
-                              Image::GetPitchInBytes(srcImage->width, srcImage->format),
+                              ImageUtils::GetPitchInBytes(srcImage->width, srcImage->format),
                               dstImage->data, dstImage->width, dstImage->height,
-                              Image::GetPitchInBytes(dstImage->width, dstImage->format));
+                              ImageUtils::GetPitchInBytes(dstImage->width, dstImage->format));
 }
 
 bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
@@ -242,7 +242,7 @@ void SwapRedBlueChannels(const Image* srcImage, const Image* dstImage /* = nullp
     }
 
     SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height,
-                        Image::GetPitchInBytes(srcImage->width, srcImage->format),
+                        ImageUtils::GetPitchInBytes(srcImage->width, srcImage->format),
                         dstImage ? dstImage->data : nullptr);
 }
 
