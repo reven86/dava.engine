@@ -65,6 +65,14 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnT
     WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
     wbackend->OnTouch(action, touchId, x, y);
 }
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnKeyPress(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint action, jint keyCode, jboolean isRepeated)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnKeyPress(action, keyCode, isRepeated == JNI_TRUE);
+}
+
 } // extern "C"
 
 namespace DAVA
@@ -293,6 +301,29 @@ void WindowBackend::OnTouch(int32 action, int32 touchId, float32 x, float32 y)
         return;
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, touchId, x, y, eModifierKeys::NONE));
+}
+
+void WindowBackend::OnKeyPress(int32 action, int32 keyCode, bool isRepeated)
+{
+    // Corresponding constants from android.view.KeyEvent
+    enum
+    {
+        ACTION_DOWN = 0,
+        ACTION_UP = 1,
+
+        KEYCODE_BACK = 4
+    };
+
+    if (keyCode == KEYCODE_BACK)
+    {
+        if (action == ACTION_UP)
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::BACK_NAVIGATION));
+        }
+    }
+    else
+    {
+    }
 }
 
 } // namespace Private

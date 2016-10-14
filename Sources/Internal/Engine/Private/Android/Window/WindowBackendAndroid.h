@@ -56,6 +56,7 @@ public:
     void SurfaceDestroyed();
     void ProcessProperties();
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);
+    void OnKeyPress(int32 action, int32 keyCode, bool isRepeated);
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);

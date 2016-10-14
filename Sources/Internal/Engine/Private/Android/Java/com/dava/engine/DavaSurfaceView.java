@@ -28,6 +28,7 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
     public static native void nativeSurfaceViewOnTouch(long windowBackendPointer, int action, int touchId, float x, float y);
+    public static native void nativeSurfaceViewOnKeyPress(long windowBackendPointer, int action, int keyCode, boolean isRepeated);
     
     public DavaSurfaceView(Context context, long windowBackendPtr)
     {
@@ -212,6 +213,9 @@ final class DavaSurfaceView extends SurfaceView
     public boolean onKey(View v, int keyCode, KeyEvent event)
     {
         int source = event.getSource();
+        int action = event.getAction();
+
+        boolean isRepeated = event.getRepeatCount() > 0;
 
         if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
             (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD)
@@ -220,7 +224,7 @@ final class DavaSurfaceView extends SurfaceView
         }
         if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
         {
-            // TODO: implement key press handling
+            nativeSurfaceViewOnKeyPress(windowBackendPointer, action, keyCode, isRepeated);
         }
         return false;
     }
