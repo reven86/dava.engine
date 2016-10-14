@@ -11,7 +11,7 @@ public:
     ClipboardImplStub() = default;
     ~ClipboardImplStub() override = default;
     bool IsReadyToUse() const override;
-    bool ClearClipboard() const override;
+    bool Clear() const override;
     bool HasText() const override;
     bool SetText(const WideString& str) override;
     WideString GetText() const override;
@@ -24,7 +24,7 @@ inline bool ClipboardImplStub::IsReadyToUse() const
     return false;
 }
 
-inline bool ClipboardImplStub::ClearClipboard() const
+inline bool ClipboardImplStub::Clear() const
 {
     return false;
 }

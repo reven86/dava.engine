@@ -7,18 +7,18 @@ namespace DAVA
 class IClipboardImpl;
 
 /**
-Helper to work with system clipboard.
+Class to work with system clipboard.
 */
 class Clipboard
 {
 public:
     /**
-    Create instance of helper.
+    Initialize work with system clipboard.
     */
     Clipboard();
 
     /**
-    Destroy instance.
+    Default destructor.
     */
     ~Clipboard();
 
@@ -32,7 +32,7 @@ public:
     Clear system clipboard.
     Return true if successful.
     */
-    bool ClearClipboard() const;
+    bool Clear() const;
 
     /**
     Check that system clipboard contains Unicode text.
@@ -52,6 +52,6 @@ public:
     WideString GetText() const;
 
 private:
-    IClipboardImpl* pImpl;
+    std::unique_ptr<IClipboardImpl> pImpl = nullptr;
 };
 }

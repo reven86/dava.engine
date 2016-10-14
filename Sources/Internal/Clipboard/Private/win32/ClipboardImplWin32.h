@@ -11,7 +11,7 @@ public:
     ClipboardImplWin32();
     ~ClipboardImplWin32() override;
     bool IsReadyToUse() const override;
-    bool ClearClipboard() const override;
+    bool Clear() const override;
     bool HasText() const override;
     bool SetText(const WideString& str) override;
     WideString GetText() const override;

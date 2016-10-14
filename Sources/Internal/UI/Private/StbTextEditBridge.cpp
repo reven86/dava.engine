@@ -4,11 +4,7 @@
 #include "UI/UIEvent.h"
 #include "Utils/StringUtils.h"
 #include "Render/2D/Font.h"
-
-#define ENABLE_CLIPBOARD 1
-#ifdef ENABLE_CLIPBOARD 
 #include "Clipboard/Clipboard.h"
-#endif // USE_CLIPBOARD
 
 #if __clang__
 #pragma clang diagnostic push
@@ -262,7 +258,6 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     case K_VKEY_BACKSPACE_WORD:
         SendRaw(STB_TEXTEDIT_K_WORDLEFT | STB_TEXTEDIT_K_SHIFT);
         return SendRaw(STB_TEXTEDIT_K_BACKSPACE);
-#if ENABLE_CLIPBOARD
     case K_VKEY_CUT:
         return CutToClipboard(); // Can modify text
     case K_VKEY_COPY:
@@ -270,7 +265,6 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
         return false;
     case K_VKEY_PASTE:
         return PasteFromClipboard(); // Can modify text
-#endif
     case STB_TEXTEDIT_K_UP:
     case STB_TEXTEDIT_K_DOWN:
         if (IsSingleLineMode())
@@ -404,7 +398,6 @@ void StbTextEditBridge::ClearUndoStack()
 
 bool StbTextEditBridge::CutToClipboard()
 {
-#if ENABLE_CLIPBOARD
     uint32 selStart = std::min(GetSelectionStart(), GetSelectionEnd());
     uint32 selEnd = std::max(GetSelectionStart(), GetSelectionEnd());
     if (selStart < selEnd)
@@ -415,13 +408,11 @@ bool StbTextEditBridge::CutToClipboard()
             return Cut();
         }
     }
-#endif
     return false;
 }
 
 bool StbTextEditBridge::CopyToClipboard()
 {
-#if ENABLE_CLIPBOARD
     uint32 selStart = std::min(GetSelectionStart(), GetSelectionEnd());
     uint32 selEnd = std::max(GetSelectionStart(), GetSelectionEnd());
     if (selStart < selEnd)
@@ -429,13 +420,11 @@ bool StbTextEditBridge::CopyToClipboard()
         WideString selectedText = GetDelegate()->GetText().substr(selStart, selEnd - selStart);
         return Clipboard().SetText(selectedText);
     }
-#endif
     return false;
 }
 
 bool StbTextEditBridge::PasteFromClipboard()
 {
-#if ENABLE_CLIPBOARD
     WideString clipText;
     Clipboard clip;
     if (clip.HasText())
@@ -452,7 +441,6 @@ bool StbTextEditBridge::PasteFromClipboard()
             return Paste(clipText);
         }
     }
-#endif
     return false;
 }
 }

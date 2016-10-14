@@ -26,7 +26,7 @@ public:
     Clear system clipboard.
     Return true if successful.
     */
-    virtual bool ClearClipboard() const = 0;
+    virtual bool Clear() const = 0;
 
     /**
     Check that system clipboard contains Unicode text.

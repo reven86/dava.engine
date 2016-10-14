@@ -19,7 +19,7 @@ bool ClipboardImplOsx::IsReadyToUse() const
     return [NSPasteboard generalPasteboard] != nil;
 }
 
-bool ClipboardImplOsx::ClearClipboard() const
+bool ClipboardImplOsx::Clear() const
 {
     NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
     if (pasteboard)

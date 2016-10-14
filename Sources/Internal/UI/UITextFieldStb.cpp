@@ -255,7 +255,7 @@ void TextFieldStbImpl::GetText(WideString& output)
     output = text;
 }
 
-DAVA::WideString TextFieldStbImpl::GetText() const
+WideString TextFieldStbImpl::GetText() const
 {
     return text;
 }
@@ -338,7 +338,7 @@ Color TextFieldStbImpl::GetTextColor()
     return staticText->GetTextColor();
 }
 
-DAVA::Vector2 TextFieldStbImpl::GetShadowOffset()
+Vector2 TextFieldStbImpl::GetShadowOffset()
 {
     return staticText->GetShadowOffset();
 }

@@ -11,13 +11,12 @@
 namespace DAVA
 {
 Clipboard::Clipboard()
+    : pImpl(std::make_unique<ClipboardImpl>())
 {
-    pImpl = new ClipboardImpl();
 }
 
 Clipboard::~Clipboard()
 {
-    SafeDelete(pImpl);
 }
 
 bool Clipboard::IsReadyToUse() const
@@ -25,9 +24,9 @@ bool Clipboard::IsReadyToUse() const
     return pImpl->IsReadyToUse();
 }
 
-bool Clipboard::ClearClipboard() const
+bool Clipboard::Clear() const
 {
-    return pImpl->ClearClipboard();
+    return pImpl->Clear();
 }
 
 bool Clipboard::HasText() const
