@@ -1,6 +1,8 @@
 #include "QtTools/FileDialogs/FindFileDialog.h"
 #include "ui_FindFileDialog.h"
 
+#include "Preferences/PreferencesRegistrator.h"
+
 #include "Debug/DVAssert.h"
 #include "FileSystem/FilePath.h"
 
@@ -14,7 +16,13 @@
 #include <QAbstractItemView>
 #include <QKeyEvent>
 
-QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
+using namespace DAVA;
+
+REGISTER_PREFERENCES_ON_START(FindFileDialog,
+                              PREF_ARG("lastUsedPath", String())
+                              )
+
+QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const String& extension, QWidget* parent)
 {
     //Qt::Popup do not prevent us to show another dialog
     static bool shown = false;
@@ -36,6 +44,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
         QFileInfo fileInfo(filePath);
         if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(extension).toLower())
         {
+            dialog.lastUsedPath = filePath.toStdString();
             return filePath;
         }
     }
@@ -55,13 +64,15 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
+FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const String& extension, QWidget* parent)
     : QDialog(parent, Qt::Popup)
     , ui(new Ui::FindFileDialog())
 {
-    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(extension);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    DAVA::String prefixStr = projectStructure->GetProjectDirectory().GetAbsolutePathname();
+    Vector<FilePath> files = projectStructure->GetFiles(extension);
+
+    String prefixStr = projectStructure->GetProjectDirectory().GetAbsolutePathname();
     prefix = QString::fromStdString(prefixStr);
 
     ui->setupUi(this);
@@ -79,17 +90,23 @@ FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const D
     }
 }
 
-void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
+FindFileDialog::~FindFileDialog()
+{
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+void FindFileDialog::Init(const Vector<FilePath>& files)
 {
     //collect all items in short form
     QStringList stringsToDisplay;
-    for (const DAVA::FilePath& filePath : files)
+    for (const FilePath& filePath : files)
     {
         QString path = QString::fromStdString(filePath.GetAbsolutePathname());
         stringsToDisplay << ToShortName(path);
     }
     stringsToDisplay.sort(Qt::CaseInsensitive);
     //the only way to not create model and use stringlist is a pass stringlist to the QCompleter c-tor :(
+
     completer = new QCompleter(stringsToDisplay, this);
     completer->setFilterMode(Qt::MatchContains);
     completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -99,6 +116,13 @@ void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
     completer->popup()->setTextElideMode(Qt::ElideLeft);
 
     ui->lineEdit->setCompleter(completer);
+
+    QString lastPath = QString::fromStdString(lastUsedPath);
+    lastPath = ToShortName(lastPath);
+    if (!stringsToDisplay.isEmpty() && stringsToDisplay.contains(lastPath))
+    {
+        ui->lineEdit->setText(lastPath);
+    }
 }
 
 bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
