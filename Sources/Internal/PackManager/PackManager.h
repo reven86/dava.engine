@@ -12,10 +12,10 @@ public:
     virtual ~IPackManager();
     enum class InitState : uint32
     {
-        Starting,
-        LoadingRequestAskFooter, //!< if no connection goto LoadingPacksDataFromDB try using only local packs
-        LoadingRequestGetFooter,
-        LoadingRequestAskFileTable,
+        Starting, //!< before any initialization code state
+        LoadingRequestAskFooter, //!< connect to server superpack.dvpk for footer block
+        LoadingRequestGetFooter, //!< download footer and parse it, findout filetable block size and position
+        LoadingRequestAskFileTable, // start loading filetable block from superpack.dvpk
         LoadingRequestGetFileTable,
         CalculateLocalDBHashAndCompare, //!< go to MountingDownloadedPacks if match
         LoadingRequestAskDB, //!< skip if hash match
