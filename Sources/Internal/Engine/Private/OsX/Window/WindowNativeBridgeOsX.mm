@@ -210,6 +210,8 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
         //event.device = DAVA::UIEvent::Device::MOUSE;
     }
 
+    const float32 scrollK = 10.0f;
+
     NSSize sz = [renderView frame].size;
     NSPoint pt = theEvent.locationInWindow;
 
@@ -217,13 +219,17 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     float32 y = sz.height - pt.y;
     float32 deltaX = [theEvent scrollingDeltaX];
     float32 deltaY = [theEvent scrollingDeltaY];
-    // Touchpad or other precise device send integer values (-3, -1, 0, 1, 40, etc) so apply scrool factor.
-    // Mouse sends float values from 0.1 for one wheel tick so pass unchanged.
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
-        const float32 scrollK = 10.0f;
+        // Touchpad or other precise device send integer values (-3, -1, 0, 1, 40, etc)
         deltaX /= scrollK;
         deltaY /= scrollK;
+    }
+    else
+    {
+        // Mouse sends float values from 0.1 for one wheel tick
+        deltaX *= scrollK;
+        deltaY *= scrollK;
     }
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
@@ -239,7 +245,9 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
 
-    if ([theEvent type] == NSKeyDown)
+    // macOS translates some Ctrl key combinations into ASCII control characters.
+    // It seems to me that control character are not wanted by game to handle in character message.
+    if ([theEvent type] == NSKeyDown && (modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
     {
         NSString* chars = [theEvent characters];
         NSUInteger n = [chars length];

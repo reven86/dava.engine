@@ -317,7 +317,7 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-    eMouseButtons button = ConvertMouseButton(qtEvent->button());
+    eMouseButtons button = GetMouseButton(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
     eModifierKeys modifierKeys = GetModifierKeys();
@@ -327,7 +327,7 @@ void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-    eMouseButtons button = ConvertMouseButton(qtEvent->button());
+    eMouseButtons button = GetMouseButton(qtEvent->button());
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
     eModifierKeys modifierKeys = GetModifierKeys();
@@ -400,22 +400,21 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
     eModifierKeys modifierKeys = GetModifierKeys();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, modifierKeys, isRepeated));
 
-    QString text = qtEvent->text();
-    if (!text.isEmpty())
+    // Windows and macOs translates some Ctrl key combinations into ASCII control characters.
+    // It seems to me that control character are not wanted by game to handle in character message.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
+    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
     {
-#if defined(Q_OS_WIN)
-        // Windows translates some Ctrl key combinations into ASCII control characters.
-        // It seems to me that control character are not wanted by game to handle in character message.
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-        if ((modifierKeys & (eModifierKeys::CONTROL | eModifierKeys::ALT)) != eModifierKeys::NONE)
-            return;
-#endif
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
-        for (int i = 0, n = text.size(); i < n; ++i)
+        QString text = qtEvent->text();
+        if (!text.isEmpty())
         {
-            QCharRef charRef = text[i];
-            e.keyEvent.key = charRef.unicode();
-            mainDispatcher->PostEvent(e);
+            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
+            for (int i = 0, n = text.size(); i < n; ++i)
+            {
+                QCharRef charRef = text[i];
+                e.keyEvent.key = charRef.unicode();
+                mainDispatcher->PostEvent(e);
+            }
         }
     }
 }
@@ -518,7 +517,7 @@ eModifierKeys WindowBackend::GetModifierKeys() const
     return result;
 }
 
-eMouseButtons WindowBackend::ConvertMouseButton(Qt::MouseButton button)
+eMouseButtons WindowBackend::GetMouseButton(Qt::MouseButton button)
 {
     switch (button)
     {

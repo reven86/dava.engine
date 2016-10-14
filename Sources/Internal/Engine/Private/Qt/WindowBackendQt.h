@@ -71,7 +71,7 @@ private:
     void OnKeyReleased(QKeyEvent* e) override;
 
     eModifierKeys GetModifierKeys() const;
-    eMouseButtons ConvertMouseButton(Qt::MouseButton button);
+    static eMouseButtons GetMouseButton(Qt::MouseButton button);
 #if defined(Q_OS_OSX)
     uint32 ConvertQtKeyToSystemScanCode(int key);
 #endif

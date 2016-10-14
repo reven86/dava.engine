@@ -365,14 +365,6 @@ LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
         MainDispatcherEvent e = MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, 0, 0.f, 0.f, modifierKeys);
         for (TOUCHINPUT& touch : touchInput)
         {
-            String flag;
-            if (touch.dwFlags & TOUCHEVENTF_MOVE)
-                flag += "TOUCHEVENTF_MOVE ";
-            if (touch.dwFlags & TOUCHEVENTF_DOWN)
-                flag += "TOUCHEVENTF_DOWN ";
-            if (touch.dwFlags & TOUCHEVENTF_UP)
-                flag += "TOUCHEVENTF_UP ";
-
             POINT pt = { touch.x / 100, touch.y / 100 };
             ::ScreenToClient(hwnd, &pt);
             if (touch.dwFlags & (TOUCHEVENTF_PRIMARY | TOUCHEVENTF_MOVE))
@@ -422,7 +414,7 @@ LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
     // Windows translates some Ctrl key combinations into ASCII control characters.
     // It seems to me that control character are not wanted by game to handle in character message.
     // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & (eModifierKeys::CONTROL | eModifierKeys::ALT)) == eModifierKeys::NONE)
+    if ((modifierKeys & eModifierKeys::CONTROL)) == eModifierKeys::NONE)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, modifierKeys, isRepeated));
     }
