@@ -15,6 +15,11 @@ DeviceInfo::eHIDType type)
     return hidConnectionSignals[type];
 }
 
+eGPUFamily DeviceInfoPrivateBase::GetGPU()
+{
+    return overridenGPU != GPU_INVALID ? overridenGPU : GetGPUFamily();
+}
+
 void DeviceInfoPrivateBase::OverrideGPU(eGPUFamily newGPU)
 {
     overridenGPU = newGPU;
@@ -23,11 +28,6 @@ void DeviceInfoPrivateBase::OverrideGPU(eGPUFamily newGPU)
 void DeviceInfoPrivateBase::ResetGPUOverride()
 {
     overridenGPU = GPU_INVALID;
-}
-
-eGPUFamily DeviceInfoPrivateBase::GetOverridenGPU() const
-{
-    return overridenGPU;
 }
 
 } // namespace DAVA
