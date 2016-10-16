@@ -27,14 +27,14 @@ def build_for_target(target, working_directory_path, root_project_path):
 def get_download_url():
 	return 'http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz'
 
-def _download_and_extract(working_directory_path, source_folder_path_prefix=''):
-	source_folder_path = os.path.join(working_directory_path, 'libogg_source' + source_folder_path_prefix)
+def _download_and_extract(working_directory_path):
+	source_folder_path = os.path.join(working_directory_path, 'libogg_source')
 	url = get_download_url()
 	build_utils.download_and_extract(url, working_directory_path, source_folder_path, build_utils.get_url_file_name_no_ext(url))	
 	return source_folder_path
 
 def _build_macos(working_directory_path, root_project_path):
-	source_folder_path = _download_and_extract(working_directory_path, '_macos')
+	source_folder_path = _download_and_extract(working_directory_path)
 
 	install_dir_macos = os.path.join(working_directory_path, 'gen/install_macos')
 	build_utils.build_with_autotools(source_folder_path, ['--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'], install_dir_macos, env=build_utils.get_autotools_macos_env(), postclean=False)

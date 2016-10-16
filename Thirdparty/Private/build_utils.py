@@ -52,7 +52,7 @@ def unzip_inplace(path):
 	extension = os.path.splitext(path)[1]
 	if extension == '.zip':
 		ref = zipfile.ZipFile(path, 'r')
-	elif extension == '.gz' or extension == '.tgz':
+	elif extension == '.gz' or extension == '.tgz' or extension=='.bz2':
 		ref = tarfile.open(path, 'r')
 	ref.extractall(os.path.dirname(path))
 	ref.close()
@@ -212,7 +212,11 @@ def get_url_file_name_no_ext(url):
 	parts = file_name.split('.')
 	# Handle special case for .tar.gz
 	# TODO: a better way?
-	last_index = -2 if parts[-1] == 'gz' else -1
+	ext = parts[-1]
+	if ext == 'gz' or ext == 'bz2':
+		last_index = -2
+	else:
+		last_index = -1
 	return '.'.join(parts[:last_index])
 
 def download_and_extract(download_url, working_directory_path, result_folder_path, inner_dir_name = None):
