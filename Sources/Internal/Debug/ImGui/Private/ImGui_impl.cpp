@@ -7,8 +7,6 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/DynamicBufferAllocator.h"
-#include "Debug/ProfilerCPU.h"
-#include "Debug/ProfilerGPU.h"
 #include "Platform/SystemTimer.h"
 
 namespace ImGuiImplDetails
@@ -19,6 +17,9 @@ static rhi::HPipelineState pipelineStatePC, pipelineStatePTC;
 static rhi::HConstBuffer constBufferPC, constBufferPTC;
 static rhi::HDepthStencilState depthState;
 static DAVA::uint32 vertexLayoutPC = 0, vertexLayoutPTC = 0;
+static rhi::HSamplerState fontSamplerState;
+static rhi::HTextureSet fontTextureSet;
+static rhi::HTexture fontTexture;
 
 static DAVA::Size2i framebufferSize = { 0, 0 };
 
@@ -39,7 +40,7 @@ static const char* vprogPC =
 "\n"
 "VPROG_BEGIN\n"
 "\n"
-"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.5);\n"
+"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.0);\n"
 "    float4  in_color    = VP_IN_COLOR;\n"
 "\n"
 "    VP_OUT_POSITION     = mul( XForm, float4(in_position,1.0) );\n"
@@ -80,7 +81,7 @@ static const char* vprogPTC =
 "\n"
 "VPROG_BEGIN\n"
 "\n"
-"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.5);\n"
+"    float3  in_position = float3(VP_IN_TEXCOORD0.x, -VP_IN_TEXCOORD0.y, 0.0);\n"
 "    float2  in_texcoord = VP_IN_TEXCOORD1;\n"
 "    float4  in_color    = VP_IN_COLOR;\n"
 "\n"
@@ -126,13 +127,18 @@ void ImGuiDrawFn(ImDrawData* data)
     passConfig.viewport.y = 0;
     passConfig.viewport.width = DAVA::uint32(framebufferSize.dx);
     passConfig.viewport.height = DAVA::uint32(framebufferSize.dy);
-    DAVA_PROFILER_GPU_RENDER_PASS(passConfig, IMGUI_RENDER_PASS_MARKER_NAME);
 
     DAVA::Matrix4 ortho(
     2.0f / framebufferSize.dx, 0.0f, 0.0f, -1.0f,
     0.0f, 2.0f / framebufferSize.dy, 0.0f, 1.0f,
-    0.0f, 0.0f, -(0.0f) / (0.0f - 1.0f), 0.0f,
+    0.0f, 0.0f, -1.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 1.0f);
+
+    if (rhi::DeviceCaps().isCenterPixelMapping)
+    {
+        ortho._03 -= 0.5f / framebufferSize.dx;
+        ortho._13 -= 0.5f / framebufferSize.dy;
+    }
 
     rhi::UpdateConstBuffer4fv(constBufferPC, 0, ortho.data, 4);
     rhi::UpdateConstBuffer4fv(constBufferPTC, 0, ortho.data, 4);
@@ -150,7 +156,22 @@ void ImGuiDrawFn(ImDrawData* data)
         Memcpy(ib.data, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.size() * sizeof(DAVA::uint16));
 
         DAVA::DynamicBufferAllocator::AllocResultVB vb = DAVA::DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ImDrawVert), cmdList->VtxBuffer.size());
-        Memcpy(vb.data, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.size() * sizeof(ImDrawVert));
+
+        if (rhi::HostApi() == rhi::RHI_DX9)
+        {
+            ImDrawVert* vxPtr = reinterpret_cast<ImDrawVert*>(vb.data);
+            for (ImDrawVert& vx : cmdList->VtxBuffer)
+            {
+                vxPtr->pos = vx.pos;
+                vxPtr->uv = vx.uv;
+                vxPtr->col = rhi::NativeColorRGBA(vx.col);
+                ++vxPtr;
+            }
+        }
+        else
+        {
+            Memcpy(vb.data, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.size() * sizeof(ImDrawVert));
+        }
 
         rhi::Packet packet;
         packet.vertexStreamCount = 1;
@@ -172,9 +193,8 @@ void ImGuiDrawFn(ImDrawData* data)
                 packet.renderPipelineState = pipelineStatePTC;
                 packet.vertexConst[0] = constBufferPTC;
 
-                DAVA::Texture* texture = reinterpret_cast<DAVA::Texture*>(cmd.TextureId);
-                packet.textureSet = texture->singleTextureSet;
-                packet.samplerState = texture->samplerStateHandle;
+                packet.textureSet = *reinterpret_cast<rhi::HTextureSet*>(&cmd.TextureId);
+                packet.samplerState = fontSamplerState;
                 packet.vertexLayoutUID = ImGuiImplDetails::vertexLayoutPTC;
             }
             else
@@ -187,12 +207,20 @@ void ImGuiDrawFn(ImDrawData* data)
             }
 
             packet.primitiveCount = cmd.ElemCount / 3;
+
             packet.scissorRect.x = DAVA::uint16(cmd.ClipRect.x);
             packet.scissorRect.y = DAVA::uint16(cmd.ClipRect.y);
             packet.scissorRect.width = DAVA::uint16(cmd.ClipRect.z - cmd.ClipRect.x);
             packet.scissorRect.height = DAVA::uint16(cmd.ClipRect.w - cmd.ClipRect.y);
 
+            if (packet.scissorRect.width && packet.scissorRect.height && (packet.scissorRect.width != framebufferSize.dx || packet.scissorRect.height != framebufferSize.dy))
+                packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
+            else
+                packet.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
+
             rhi::AddPacket(packetList, packet);
+
+            packet.startIndex += cmd.ElemCount;
         }
     }
 
@@ -214,13 +242,8 @@ void EnsureInited()
 {
     if (!ImGuiImplDetails::initialized)
     {
-        ImGuiImplDetails::framebufferSize.dx = int32(DAVA::Renderer::GetFramebufferWidth());
-        ImGuiImplDetails::framebufferSize.dy = int32(DAVA::Renderer::GetFramebufferHeight());
-
         ImGuiIO& io = ImGui::GetIO();
         io.RenderDrawListsFn = ImGuiImplDetails::ImGuiDrawFn;
-        ImGui::GetIO().DisplaySize.x = float32(ImGuiImplDetails::framebufferSize.dx);
-        ImGui::GetIO().DisplaySize.y = float32(ImGuiImplDetails::framebufferSize.dy);
 
         io.IniFilename = nullptr;
         io.LogFilename = nullptr;
@@ -257,13 +280,13 @@ void EnsureInited()
         vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
         ImGuiImplDetails::vertexLayoutPTC = rhi::VertexLayout::UniqueId(vLayout);
 
-        //font texture
-        uint8* pixels;
-        int32 width, height, bytes_per_pixel;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height, &bytes_per_pixel);
-        DAVA::Texture* fontTexture = DAVA::Texture::CreateFromData(DAVA::FORMAT_RGBA8888, pixels, width, height, true);
-        fontTexture->SetWrapMode(rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP);
-        io.Fonts->TexID = fontTexture;
+        //font sampler-state
+        rhi::SamplerState::Descriptor ss_desc;
+        ss_desc.fragmentSamplerCount = 1;
+        ss_desc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
+        ss_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
+        ss_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
+        ImGuiImplDetails::fontSamplerState = rhi::AcquireSamplerState(ss_desc);
 
         //depth state
         rhi::DepthStencilState::Descriptor ds_desc;
@@ -318,6 +341,67 @@ void EnsureInited()
 void BeginFrame()
 {
     ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
+
+    ImGuiImplDetails::framebufferSize.dx = int32(DAVA::Renderer::GetFramebufferWidth());
+    ImGuiImplDetails::framebufferSize.dy = int32(DAVA::Renderer::GetFramebufferHeight());
+
+    ImGui::GetIO().DisplaySize.x = float32(ImGuiImplDetails::framebufferSize.dx);
+    ImGui::GetIO().DisplaySize.y = float32(ImGuiImplDetails::framebufferSize.dy);
+
+    //check whether to recreate font texture
+    for (ImFont* font : ImGui::GetIO().Fonts->Fonts)
+    {
+        if (!font->IsLoaded())
+        {
+            if (ImGuiImplDetails::fontTexture.IsValid())
+                rhi::DeleteTexture(ImGuiImplDetails::fontTexture);
+
+            if (ImGuiImplDetails::fontTextureSet)
+                rhi::ReleaseTextureSet(ImGuiImplDetails::fontTextureSet);
+
+            ImGuiImplDetails::fontTexture = rhi::HTexture();
+            ImGuiImplDetails::fontTextureSet = rhi::HTextureSet();
+
+            break;
+        }
+    }
+
+    //create font texture if needed
+    if (!ImGuiImplDetails::fontTexture.IsValid())
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        uint8* pixels;
+        int32 width, height, bytes_per_pixel;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height, &bytes_per_pixel);
+
+        rhi::Texture::Descriptor tex_desc;
+        tex_desc.width = uint32(width);
+        tex_desc.height = uint32(height);
+        tex_desc.format = rhi::TextureFormat::TEXTURE_FORMAT_R8G8B8A8;
+        tex_desc.initialData[0] = pixels;
+        ImGuiImplDetails::fontTexture = rhi::CreateTexture(tex_desc);
+
+        rhi::TextureSetDescriptor set_desc;
+        set_desc.fragmentTextureCount = 1;
+        set_desc.fragmentTexture[0] = ImGuiImplDetails::fontTexture;
+        ImGuiImplDetails::fontTextureSet = rhi::AcquireTextureSet(set_desc);
+
+        io.Fonts->SetTexID(*reinterpret_cast<void**>(&ImGuiImplDetails::fontTextureSet));
+        io.Fonts->ClearTexData();
+    }
+
+    //check if need restore font texture after reset
+    if (ImGuiImplDetails::fontTexture.IsValid() && rhi::NeedRestoreTexture(ImGuiImplDetails::fontTexture))
+    {
+        ImGuiIO& io = ImGui::GetIO();
+
+        uint8* pixels;
+        int32 width, height, bytes_per_pixel;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height, &bytes_per_pixel);
+        rhi::UpdateTexture(ImGuiImplDetails::fontTexture, pixels, 0);
+        io.Fonts->SetTexID(*reinterpret_cast<void**>(&ImGuiImplDetails::fontTextureSet));
+        io.Fonts->ClearTexData();
+    }
 }
 
 void OnInput(UIEvent* input)
@@ -333,7 +417,7 @@ void OnInput(UIEvent* input)
         break;
 
     case UIEvent::Phase::WHEEL:
-        io.MouseWheel = input->wheelDelta.x;
+        io.MouseWheel += input->wheelDelta.y;
         break;
 
     case UIEvent::Phase::KEY_DOWN:
@@ -368,8 +452,13 @@ void OnInput(UIEvent* input)
 
 void Uninitialize()
 {
-    DAVA::Texture* fontTexture = reinterpret_cast<DAVA::Texture*>(ImGui::GetIO().Fonts->TexID);
-    DAVA::SafeRelease(fontTexture);
+    rhi::DeleteTexture(ImGuiImplDetails::fontTexture);
+    rhi::ReleaseTextureSet(ImGuiImplDetails::fontTextureSet);
+    rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePC);
+    rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePTC);
+    rhi::ReleaseDepthStencilState(ImGuiImplDetails::depthState);
+    rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPC);
+    rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPTC);
 
     ImGui::Shutdown();
 }
