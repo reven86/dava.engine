@@ -61,7 +61,8 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include <PackManager/Private/PackManagerImpl.h>
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Analytics/Analytics.h"
 
 namespace DAVA
 {
@@ -80,6 +81,7 @@ Core::Core()
         defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
     screenMetrics.userScale = defaultUserScale;
+    screenOrientation = SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
 }
 
 Core::~Core()
@@ -204,16 +206,16 @@ void Core::CreateSingletons()
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    Logger::Info("SoundSystem init start");
+    Logger::Debug("SoundSystem init start");
     try
     {
         new SoundSystem();
     }
     catch (std::exception& ex)
     {
-        Logger::Info("%s", ex.what());
+        Logger::Error("%s", ex.what());
     }
-    Logger::Info("SoundSystem init finish");
+    Logger::Debug("SoundSystem init finish");
 
     if (isConsoleMode)
     {
@@ -252,7 +254,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl());
+    packManager.reset(new PackManagerImpl);
+    analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
 
@@ -333,6 +336,8 @@ void Core::ReleaseSingletons()
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
+    analyticsCore.reset();
+
     DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
@@ -948,6 +953,12 @@ IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+Analytics::Core& Core::GetAnalyticsCore() const
+{
+    DVASSERT(analyticsCore);
+    return *analyticsCore;
 }
 
 const ModuleManager& Core::GetModuleManager() const

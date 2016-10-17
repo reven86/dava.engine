@@ -103,7 +103,7 @@ DAVA_TARC_TESTCLASS(ContextHierarchyTest)
         {
             GetGlobalContext().GetData<SharedData>();
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             return;
         }
