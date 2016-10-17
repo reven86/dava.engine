@@ -48,6 +48,8 @@
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
 #include "ModuleManager/ModuleManager.h"
+#include "Analytics/Analytics.h"
+#include "Analytics/LoggingBackend.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -675,10 +677,13 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     context->moduleManager = new ModuleManager();
     context->moduleManager->InitModules();
+
+    context->analyticsCore = new Analytics::Core;
 }
 
 void EngineBackend::DestroySubsystems()
 {
+    delete context->analyticsCore;
     context->moduleManager->ResetModules();
     delete context->moduleManager;
 
