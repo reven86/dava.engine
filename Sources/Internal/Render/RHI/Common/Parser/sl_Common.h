@@ -2,6 +2,8 @@
 
 #include "Debug/DVAssert.h"
 
+using DAVA::int32;
+
 namespace sl
 {
 class Allocator
@@ -29,20 +31,14 @@ public:
     }
 };
 
-int String_Printf(char* buffer, int size, const char* format, ...);
-int String_PrintfArgList(char* buffer, int size, const char* format, va_list args);
-int String_FormatFloat(char* buffer, int size, float value);
+int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args);
+int32 String_FormatFloat(char* buffer, int size, float value);
 bool String_Equal(const char* a, const char* b);
 bool String_EqualNoCase(const char* a, const char* b);
 double String_ToDouble(const char* str, char** end);
 int String_ToInteger(const char* str, char** end);
 
-// Engine/Log.h
 
-//void Log_Error(const char* format, ...);
-//void Log_ErrorArgList(const char* format, va_list args);
-
-// Engine/Array.h
 
 template <typename T>
 void ConstructRange(T* buffer, int new_size, int old_size)

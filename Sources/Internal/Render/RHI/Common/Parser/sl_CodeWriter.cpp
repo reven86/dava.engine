@@ -41,7 +41,7 @@ void CodeWriter::BeginLine(int indent, const char* fileName, int lineNumber)
         if (outputLine || outputFile)
         {
             char buffer[256];
-            String_Printf(buffer, sizeof(buffer), "#line %d", lineNumber);
+            Snprintf(buffer, sizeof(buffer), "#line %d", lineNumber);
             *m_buffer += buffer;
             if (outputFile && m_writeFileNames)
             {

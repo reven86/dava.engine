@@ -7,7 +7,7 @@
 
 namespace sl
 {
-int String_PrintfArgList(char* buffer, int size, const char* format, va_list args)
+int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args)
 {
     va_list tmp;
     va_copy(tmp, args);
@@ -25,21 +25,9 @@ int String_PrintfArgList(char* buffer, int size, const char* format, va_list arg
     return n;
 }
 
-int String_Printf(char* buffer, int size, const char* format, ...)
+int32 String_FormatFloat(char* buffer, int size, float value)
 {
-    va_list args;
-    va_start(args, format);
-
-    int n = String_PrintfArgList(buffer, size, format, args);
-
-    va_end(args);
-
-    return n;
-}
-
-int String_FormatFloat(char* buffer, int size, float value)
-{
-    return String_Printf(buffer, size, "%f", value);
+    return Snprintf(buffer, size, "%f", value);
 }
 
 bool String_Equal(const char* a, const char* b)

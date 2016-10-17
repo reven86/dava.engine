@@ -1020,7 +1020,7 @@ void HLSLGenerator::OutputDeclaration(const HLSLType& type, const char* name, co
 bool HLSLGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength) const
 {
     // IC: Try without suffix first.
-    String_Printf(dst, dstLength, "%s", base);
+    Snprintf(dst, dstLength, "%s", base);
     if (!tree->GetContainsString(base))
     {
         return true;
@@ -1028,7 +1028,7 @@ bool HLSLGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength)
 
     for (int i = 1; i < 1024; ++i)
     {
-        String_Printf(dst, dstLength, "%s%d", base, i);
+        Snprintf(dst, dstLength, "%s%d", base, i);
         if (!tree->GetContainsString(dst))
         {
             return true;

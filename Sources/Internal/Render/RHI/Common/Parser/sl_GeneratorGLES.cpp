@@ -1423,7 +1423,7 @@ bool GLESGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength)
 {
     for (int i = 0; i < 1024; ++i)
     {
-        String_Printf(dst, dstLength, "%s%d", base, i);
+        Snprintf(dst, dstLength, "%s%d", base, i);
         if (!tree->GetContainsString(dst))
         {
             return true;
