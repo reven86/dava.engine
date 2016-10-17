@@ -344,42 +344,42 @@ end
         TEST_VERIFY(s.GetResultSafe(9, r)); // float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 64.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(8, r)); // float32 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 32.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 32.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(7, r)); // int64 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 64.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(6, r)); // int32 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 32.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 32.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(5, r)); // int16 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 16.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 16.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(4, r)); // int8 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 8.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 8.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(3, r)); // char16 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 16.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 16.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(2, r)); // char8 casts as float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 8.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 8.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe(1, r)); // nil cast to empty Any
         TEST_VERIFY(r.IsEmpty());
@@ -429,7 +429,7 @@ end
         TEST_VERIFY(s.GetResultSafe<DAVA::float64>(-6, r)); // float64
         TEST_VERIFY(!r.IsEmpty());
         TEST_VERIFY(r.CanGet<DAVA::float64>());
-        TEST_VERIFY(FLOAT_EQUAL(r.Get<DAVA::float64>(), 64.f));
+        TEST_VERIFY(FLOAT_EQUAL_EPS(r.Get<DAVA::float64>(), 64.0, 1e-7));
         r.Clear();
         TEST_VERIFY(s.GetResultSafe<DAVA::float32>(-7, r)); // float32
         TEST_VERIFY(!r.IsEmpty());

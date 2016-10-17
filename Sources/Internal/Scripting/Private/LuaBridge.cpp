@@ -79,10 +79,9 @@ Get userdata from stack with index and return it as Any.
 Return empty any if can't get.
 Lua stack changes [-0, +0, -]
 */
-Any lua_todvany(lua_State* L, int32 index)
+Any* lua_todvany(lua_State* L, int32 index)
 {
-    Any* pAny = static_cast<Any*>(lua_touserdata(L, index));
-    return pAny != nullptr ? *pAny : Any();
+    return static_cast<Any*>(lua_touserdata(L, index));
 }
 
 /*
@@ -90,11 +89,11 @@ Check and get userdata from stack with index and return it as Any.
 Throw lua_error on incorrect Lua type.
 Lua stack changes [-0, +0, v]
 */
-Any lua_checkdvany(lua_State* L, int32 index)
+Any* lua_checkdvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
     DVASSERT_MSG(pAny, "Can't get Any ptr");
-    return *pAny;
+    return pAny;
 }
 
 /*
@@ -116,9 +115,8 @@ Lua stack changes [-0, +1, -]
 */
 int32 Any__tostring(lua_State* L)
 {
-    Any any = lua_checkdvany(L, 1);
-    void* pAny = lua_touserdata(L, 1);
-    lua_pushfstring(L, "Any: %s (%p)", any.IsEmpty() ? "<empty>" : any.GetType()->GetName(), pAny);
+    Any* pAny = lua_checkdvany(L, 1);
+    lua_pushfstring(L, "Any: %s (%p)", pAny->IsEmpty() ? "<empty>" : pAny->GetType()->GetName(), pAny);
     return 1;
 }
 
@@ -158,10 +156,9 @@ Get userdata from stack with specified index and return it as AnyFn.
 Return empty any if can't get.
 Lua stack changes [-0, +0, -]
 */
-AnyFn lua_todvanyfn(lua_State* L, int32 index)
+AnyFn* lua_todvanyfn(lua_State* L, int32 index)
 {
-    AnyFn* pAnyFn = static_cast<AnyFn*>(lua_touserdata(L, index));
-    return pAnyFn != nullptr ? *pAnyFn : AnyFn();
+    return static_cast<AnyFn*>(lua_touserdata(L, index));
 }
 
 /*
@@ -169,11 +166,11 @@ Check and get userdata from stack with specified index and return it as AnyFn.
 Throw lua_error on incorrect Lua type.
 Lua stack changes [-0, +0, v]
 */
-AnyFn lua_checkdvanyfn(lua_State* L, int32 index)
+AnyFn* lua_checkdvanyfn(lua_State* L, int32 index)
 {
     AnyFn* pAnyFn = static_cast<AnyFn*>(luaL_checkudata(L, index, AnyFnTName));
     DVASSERT_MSG(pAnyFn, "Can't get AnyFn ptr");
-    return *pAnyFn;
+    return pAnyFn;
 }
 
 /*
@@ -195,27 +192,34 @@ Lua stack changes [-0, +1, v]
 */
 int32 AnyFn__tostring(lua_State* L)
 {
-    AnyFn anyFn = lua_checkdvanyfn(L, 1);
-    void* pAny = lua_touserdata(L, 1);
+    AnyFn* pAnyFn = lua_checkdvanyfn(L, 1);
 
     String funcDef = "<non valid>";
-    if (anyFn.IsValid())
+    if (pAnyFn->IsValid())
     {
-        const auto& params = anyFn.GetInvokeParams();
+        const auto& params = pAnyFn->GetInvokeParams();
         if (params.retType)
         {
             funcDef += params.retType->GetName();
         }
         funcDef += " Func(";
+        bool first = true;
         for (const Type* t : params.argsType)
         {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                funcDef += ", ";
+            }
             funcDef += t->GetName();
-            funcDef += ", ";
         }
         funcDef += ")";
     }
 
-    lua_pushfstring(L, "Any: %s (%p)", funcDef.c_str(), pAny);
+    lua_pushfstring(L, "Any: %s (%p)", funcDef.c_str(), pAnyFn);
     return 1;
 }
 
@@ -225,9 +229,9 @@ Lua stack changes [-0, +(0|1), v]
 */
 int32 AnyFn__call(lua_State* L)
 {
-    AnyFn anyFn = lua_checkdvanyfn(L, 1);
+    AnyFn* self = lua_checkdvanyfn(L, 1);
     int32 nargs = lua_gettop(L) - 1; // Lower element in stack is AnyFn userdata
-    const Vector<const Type*>& argsTypes = anyFn.GetInvokeParams().argsType;
+    const Vector<const Type*>& argsTypes = self->GetInvokeParams().argsType;
 
     DVASSERT_MSG(nargs >= 0, "Lua stack corrupted!");
     if (nargs != argsTypes.size())
@@ -242,20 +246,20 @@ int32 AnyFn__call(lua_State* L)
         {
         case 0:
         {
-            result = anyFn.Invoke();
+            result = self->Invoke();
             break;
         }
         case 1:
         {
             Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            result = anyFn.Invoke(a1);
+            result = self->Invoke(a1);
             break;
         }
         case 2:
         {
             Any a1 = LuaToAny(L, 2, argsTypes[0]);
             Any a2 = LuaToAny(L, 3, argsTypes[1]);
-            result = anyFn.Invoke(a1, a2);
+            result = self->Invoke(a1, a2);
             break;
         }
         case 3:
@@ -263,7 +267,7 @@ int32 AnyFn__call(lua_State* L)
             Any a1 = LuaToAny(L, 2, argsTypes[0]);
             Any a2 = LuaToAny(L, 3, argsTypes[1]);
             Any a3 = LuaToAny(L, 4, argsTypes[2]);
-            result = anyFn.Invoke(a1, a2, a3);
+            result = self->Invoke(a1, a2, a3);
             break;
         }
         case 4:
@@ -272,7 +276,7 @@ int32 AnyFn__call(lua_State* L)
             Any a2 = LuaToAny(L, 3, argsTypes[1]);
             Any a3 = LuaToAny(L, 4, argsTypes[2]);
             Any a4 = LuaToAny(L, 5, argsTypes[3]);
-            result = anyFn.Invoke(a1, a2, a3, a4);
+            result = self->Invoke(a1, a2, a3, a4);
             break;
         }
         case 5:
@@ -282,7 +286,7 @@ int32 AnyFn__call(lua_State* L)
             Any a3 = LuaToAny(L, 4, argsTypes[2]);
             Any a4 = LuaToAny(L, 5, argsTypes[3]);
             Any a5 = LuaToAny(L, 6, argsTypes[4]);
-            result = anyFn.Invoke(a1, a2, a3, a4, a5);
+            result = self->Invoke(a1, a2, a3, a4, a5);
             break;
         }
         case 6:
@@ -293,7 +297,7 @@ int32 AnyFn__call(lua_State* L)
             Any a4 = LuaToAny(L, 5, argsTypes[3]);
             Any a5 = LuaToAny(L, 6, argsTypes[4]);
             Any a6 = LuaToAny(L, 7, argsTypes[5]);
-            result = anyFn.Invoke(a1, a2, a3, a4, a5, a6);
+            result = self->Invoke(a1, a2, a3, a4, a5, a6);
             break;
         }
         default:
@@ -331,10 +335,9 @@ Get userdata from stack with specified index and return it as Reflection.
 Return empty reflection if can't get.
 Lua stack changes [-0, +0, -]
 */
-Reflection lua_todvreflection(lua_State* L, int32 index)
+Reflection* lua_todvreflection(lua_State* L, int32 index)
 {
-    Reflection* pRef = static_cast<Reflection*>(lua_touserdata(L, index));
-    return pRef != nullptr ? *pRef : Reflection();
+    return static_cast<Reflection*>(lua_touserdata(L, index));
 }
 
 /*
@@ -342,11 +345,11 @@ Check and get userdata from stack with specified index and return it as Reflecti
 Throw lua_error on incorrect Lua type.
 Lua stack changes [-0, +0, v]
 */
-Reflection lua_checkdvreflection(lua_State* L, int32 index)
+Reflection* lua_checkdvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
     DVASSERT_MSG(pRef, "Can't get Reflection ptr");
-    return *pRef;
+    return pRef;
 }
 
 /*
@@ -368,9 +371,8 @@ Lua stack changes [-0, +1, -]
 */
 int32 Reflection__tostring(lua_State* L)
 {
-    Reflection refl = lua_checkdvreflection(L, 1);
-    void* pRef = lua_touserdata(L, 1);
-    lua_pushfstring(L, "Reflection: %s (%p)", refl.IsValid() ? refl.GetValueType()->GetName() : "<non valid>", pRef);
+    Reflection* pRefl = lua_checkdvreflection(L, 1);
+    lua_pushfstring(L, "Reflection: %s (%p)", pRefl->IsValid() ? pRefl->GetValueType()->GetName() : "<non valid>", pRefl);
     return 1;
 }
 
@@ -380,7 +382,7 @@ Lua stack changes [-0, +1, v]
 */
 int32 Reflection__index(lua_State* L)
 {
-    Reflection self = lua_checkdvreflection(L, 1);
+    Reflection* self = lua_checkdvreflection(L, 1);
 
     Any name;
     int ltype = lua_type(L, 2);
@@ -396,7 +398,7 @@ int32 Reflection__index(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self.GetField(name).ref;
+    Reflection refl = self->GetField(name).ref;
     if (refl.IsValid())
     {
         if (refl.HasFields() || refl.HasMethods())
@@ -409,7 +411,7 @@ int32 Reflection__index(lua_State* L)
         return 1;
     }
 
-    AnyFn method = self.GetMethod(name.Get<String>()).fn;
+    AnyFn method = self->GetMethod(name.Get<String>()).fn;
     if (method.IsValid())
     {
         lua_pushdvanyfn(L, method);
@@ -426,7 +428,7 @@ Lua stack changes [-0, +0, v]
 */
 int32 Reflection__newindex(lua_State* L)
 {
-    Reflection self = lua_checkdvreflection(L, 1);
+    Reflection* self = lua_checkdvreflection(L, 1);
 
     Any name;
     int ltype = lua_type(L, 2);
@@ -442,7 +444,7 @@ int32 Reflection__newindex(lua_State* L)
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
     }
 
-    Reflection refl = self.GetField(name).ref;
+    Reflection refl = self->GetField(name).ref;
     if (refl.IsValid())
     {
         try
@@ -563,33 +565,34 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
             if (lua_equalmetatable(L, AnyTName))
             {
                 lua_pop(L, 1); // stack -1
-                Any any = lua_todvany(L, index);
+                Any* any = lua_todvany(L, index);
                 if (preferredType
                     && !ISTYPE(Any)
-                    && any.GetType() != preferredType)
+                    && any->GetType() != preferredType)
                 {
                     THROWTYPE;
                 }
-                return any;
+                return *any;
             }
             else if (lua_equalmetatable(L, AnyFnTName))
             {
                 lua_pop(L, 1); // stack -1
+                AnyFn* pAnyFn = lua_todvanyfn(L, index);
                 if (preferredType && !ISTYPE(AnyFn))
                     THROWTYPE;
-                return Any(lua_todvanyfn(L, index));
+                return Any(*pAnyFn);
             }
             else if (lua_equalmetatable(L, ReflectionTName))
             {
                 lua_pop(L, 1); // stack -1
-                Reflection refl = lua_todvreflection(L, index);
+                Reflection* pRefl = lua_todvreflection(L, index);
                 if (preferredType
                     && !ISTYPE(Reflection)
-                    && refl.GetValueType() != preferredType)
+                    && pRefl->GetValueType() != preferredType)
                 {
                     THROWTYPE;
                 }
-                return Any(refl);
+                return Any(*pRefl);
             }
             else
             {
@@ -685,10 +688,11 @@ String PopString(lua_State* L)
 void DumpStack(lua_State* L, std::ostream& os)
 {
     int32 count = lua_gettop(L);
-    os << "Lua stack (top: " << count << ")" << (count > 0 ? ":" : "") << std::endl;
+    os << "Lua stack (top: " << count << ")" << (count > 0 ? ":" : "");
     for (int32 i = 1; i <= count; ++i)
     {
-        os << "  " << i << ") <" << luaL_typename(L, i) << ">";
+        os << std::endl
+           << "  " << i << ") <" << luaL_typename(L, i) << ">";
         int ltype = lua_type(L, i);
         switch (ltype)
         {
@@ -712,7 +716,6 @@ void DumpStack(lua_State* L, std::ostream& os)
         default:
             break;
         }
-        os << std::endl;
     }
 }
 }

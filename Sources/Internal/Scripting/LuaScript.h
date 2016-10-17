@@ -148,6 +148,20 @@ private:
     Throw LuaException on error.
     */
     int32 EndCallFunction(int32 nargs);
+
+    /**
+    Register error handling functions
+    */
+    void RegisterErrorHandlers();
+
+    /**
+    Push error handler function to Lua stack at specified index.
+    Return 1 if pushed or 0 if not. This return value can be used as `errfunc`
+    argument in `lua_pcall`.
+    */
+    int32 PushErrorHandler(int32 index);
+
+    int32 errorHandlerRef; //<! Unique index of error handler function in global Lua namespace
 };
 
 template <typename... T>
