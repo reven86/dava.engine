@@ -43,7 +43,7 @@ public:
 
     void Quit() override;
 
-    void RenderReset(int32 w, int32 h, int32 viewWidth, int32 viewHeight);
+    void RenderReset(int32 w, int32 h);
     void ProcessFrame();
 
     void SetScreenScaleMultiplier(float32 multiplier) override;

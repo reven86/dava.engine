@@ -99,14 +99,11 @@ void CorePlatformAndroid::ProcessFrame()
 
 void CorePlatformAndroid::SetScreenScaleMultiplier(float32 multiplier)
 {
-    DVASSERT(multiplier > 0.0f);
-    if (!FLOAT_EQUAL(Core::GetScreenScaleMultiplier(), multiplier))
+    float32 curMultiplier = Core::GetScreenScaleMultiplier();
+    if (!FLOAT_EQUAL(multiplier, curMultiplier))
     {
         Core::SetScreenScaleMultiplier(multiplier);
-
-        JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
-        Function<void(jfloat)> setScreenScaleMultiplier = javaClass.GetStaticMethod<void, jfloat>("setScreenScaleMultiplier");
-        setScreenScaleMultiplier(multiplier);
+        RenderReset(pendingWidth, pendingHeight);
     }
 }
 
@@ -140,16 +137,24 @@ void CorePlatformAndroid::CreateAndroidWindow(const char8* docPathEx, const char
     Logger::SetTag(logTag);
 }
 
-void CorePlatformAndroid::RenderReset(int32 w, int32 h, int32 viewWidth, int32 viewHeight)
+void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 {
     Logger::Debug("[CorePlatformAndroid::RenderReset] start");
 
     renderIsActive = true;
 
-    pendingWidth = viewWidth;
-    pendingHeight = viewHeight;
-    backbufferWidth = w;
-    backbufferHeight = h;
+    pendingWidth = w;
+    pendingHeight = h;
+
+    // Android is always using hardware scaler for rendering.
+    // By specifying a scaled size for the buffer, the hardware
+    // scaler will be enabled and we will benefit in our rendering
+    // to the specified window (buffer is going to be up-scaled
+    // or down-scaled to the window size).
+    // For more info see: http://android-developers.blogspot.com.by/2013/09/using-hardware-scaler-for-performance.html
+    float32 scale = Core::GetScreenScaleMultiplier();
+    backbufferWidth = static_cast<int32>(scale * w);
+    backbufferHeight = static_cast<int32>(scale * h);
 
     viewSizeChanged = true;
 

@@ -123,8 +123,6 @@ void VirtualCoordinatesSystem::ScreenSizeChanged()
         TextBlock::ScreenResolutionChanged();
     }
 
-    Logger::Info("InputOffset = (%f, %f), inputScaleFactor = %f", inputOffset.x, inputOffset.y, inputScaleFactor);
-
     RenderSystem2D::Instance()->ScreenSizeChanged();
     UIControlSystem::Instance()->ScreenSizeChanged(GetFullScreenVirtualRect());
 }

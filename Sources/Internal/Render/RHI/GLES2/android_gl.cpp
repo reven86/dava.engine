@@ -107,15 +107,9 @@ void android_gl_init(void* _window)
 void android_gl_reset(void* _window)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
-
     if (nullptr != _nativeWindow)
     {
-        ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
         needRecreateSurface = true;
-    }
-    else
-    {
-        needRecreateSurface = false;
     }
 }
 
@@ -127,10 +121,11 @@ void android_gl_checkSurface()
         // For more info see SDL sources: SDL2-2.0.4\src\core\android\SDL_android.c, Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed function
         // Also see http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
         eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
         eglDestroySurface(_display, _surface);
-        _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
+        ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
+
+        _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
         eglMakeCurrent(_display, _surface, _surface, _context);
 
         needRecreateSurface = false;

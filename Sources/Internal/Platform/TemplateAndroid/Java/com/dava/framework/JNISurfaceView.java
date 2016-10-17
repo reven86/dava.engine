@@ -28,7 +28,7 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode, int modifiers);
 
     private native void nativeSurfaceCreated(Surface surface);
-    private native void nativeSurfaceChanged(Surface surface, int width, int height, int viewWidth, int viewHeight);
+    private native void nativeSurfaceChanged(Surface surface, int width, int height);
     private native void nativeSurfaceDestroyed();
 
     private native void nativeProcessFrame();
@@ -477,29 +477,16 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             height = temp;
         }
 
-        int viewW = getWidth();
-        int viewH = getHeight();
-
-        if(viewW < viewH)
-        {
-            int temp = viewW;
-            viewW = viewH;
-            viewH = temp;
-        }
-        
         {
             if (width != surfaceWidth || height != surfaceHeight)
             {
                 surfaceWidth = width;
                 surfaceHeight = height;
 
-                final int viewWidth = viewW;
-                final int viewHeight = viewH;
-
                 queueEvent(new Runnable() {
                     public void run() {
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable in");
-                        nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight, viewWidth, viewHeight);
+                        nativeSurfaceChanged(surface, surfaceWidth, surfaceHeight);
                         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceChanged runnable out");
                     }
                 });
@@ -547,23 +534,5 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
         surface = null;
         Log.d(JNIConst.LOG_TAG, "JNISurfaceView surfaceDestroyed out");
-    }
-
-    void setScreenScaleMultiplier(float multiplier)
-    {
-        SurfaceHolder holder = getHolder();
-        if (holder != null)
-        {
-            if (0 != multiplier)
-            {
-                int w = (int)((float)getWidth() * multiplier);
-                int h = (int)((float)getHeight() * multiplier);
-                holder.setFixedSize(w, h);
-            }
-            else
-            {
-                holder.setSizeFromLayout();
-            }
-        }
     }
 }
