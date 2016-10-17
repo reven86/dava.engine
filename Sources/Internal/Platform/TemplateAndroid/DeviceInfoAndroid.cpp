@@ -82,7 +82,7 @@ String DeviceInfoPrivate::GetUDID()
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return StringToWString(JNI::ToString(getName()));
+    return UTF8Utils::EncodeToWideString(JNI::ToString(getName()));
 }
 
 int32 DeviceInfoPrivate::GetZBufferSize()

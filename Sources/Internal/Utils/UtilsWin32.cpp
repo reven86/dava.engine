@@ -40,7 +40,7 @@ String GenerateGUID()
 
 void OpenURL(const String& url)
 {
-    auto platform_string = ref new Platform::String(StringToWString(url).c_str());
+    auto platform_string = ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str());
     auto uri = ref new Windows::Foundation::Uri(platform_string);
     concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
     launchUriOperation.get();

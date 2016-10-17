@@ -956,7 +956,7 @@ void WinUAPXamlApp::SetTitleName()
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
-        WideString title = StringToWString(options->GetString("title", "[set application title using core options property 'title']"));
+        WideString title = UTF8Utils::EncodeToWideString(options->GetString("title", "[set application title using core options property 'title']"));
         ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(title.c_str());
     }
 }
@@ -1130,7 +1130,7 @@ Vector2 WinUAPXamlApp::GetWindowMinimumSize() const
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 <ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="dava_custom_textbox" TargetType="TextBox">
         <Setter Property="MinWidth" Value="0" />
@@ -1223,14 +1223,14 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
 <WebView x:Name="xamlWebView" Visibility="Collapsed"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
 )";
 
 const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
 <TextBox x:Name="xamlTextBox" Visibility="Collapsed"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </TextBox>
 )";

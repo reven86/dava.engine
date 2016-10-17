@@ -72,7 +72,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     }
     catch (Platform::Exception ^ e)
     {
-        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, WStringToString(e->Message->Data()).c_str());
+        Logger::Error("[DeviceInfo] failed to get AdvertisingId: hresult=0x%08X, message=%s", e->HResult, UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str());
     }
     gpu = GPUFamily();
     if (isMobileMode)

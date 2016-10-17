@@ -63,12 +63,12 @@ inline void StringReplace(String& repString, const String& needle, const String&
 #if defined(__DAVAENGINE_WIN_UAP__)
 inline Platform::String ^ StringToRTString(const String& s)
 {
-    return ref new Platform::String(StringToWString(s).c_str());
+    return ref new Platform::String(UTF8Utils::EncodeToWideString(s).c_str());
 }
 
 inline String RTStringToString(Platform::String ^ s)
 {
-    return WStringToString(s->Data());
+    return UTF8Utils::EncodeToUTF8(s->Data());
 }
 #endif
 

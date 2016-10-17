@@ -68,7 +68,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     //  - for main and other threads
     //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
     //      Also we block asserting thread to be able to retrieve user response: continue or break
-    Platform::String ^ text = ref new Platform::String(StringToWString(content).c_str());
+    Platform::String ^ text = ref new Platform::String(UTF8Utils::EncodeToWideString(content).c_str());
     if (!core->IsUIThread())
     {
         // If MainThreadDispatcher is in blocking call to UI thread we cannot show dialog box

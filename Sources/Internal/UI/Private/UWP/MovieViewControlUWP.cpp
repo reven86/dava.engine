@@ -441,7 +441,7 @@ void MovieViewControl::OnMediaEnded()
 void MovieViewControl::OnMediaFailed(::Windows::UI::Xaml::ExceptionRoutedEventArgs ^ args)
 {
     TellPlayingStatus(false);
-    String errMessage = WStringToString(args->ErrorMessage->Data());
+    String errMessage = UTF8Utils::EncodeToUTF8(args->ErrorMessage->Data());
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
 }
 

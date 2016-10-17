@@ -117,7 +117,7 @@ void InitSymbols()
             // If pdb file is placed somewhere else application will have no access to it
             // dbghelp functions are available only for desktop platfoms not mobile
             using Windows::Storage::ApplicationData;
-            String path = WStringToString(ApplicationData::Current->LocalFolder->Path->Data());
+            String path = UTF8Utils::EncodeToUTF8(ApplicationData::Current->LocalFolder->Path->Data());
             path += ";.";
             const char* symPath = path.c_str();
 #else

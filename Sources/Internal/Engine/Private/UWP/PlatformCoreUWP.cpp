@@ -155,7 +155,7 @@ void PlatformCore::OnResuming()
 
 void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg)
 {
-    Logger::Error("Unhandled exception: hresult=0x%08X, message=%s", arg->Exception, WStringToString(arg->Message->Data()).c_str());
+    Logger::Error("Unhandled exception: hresult=0x%08X, message=%s", arg->Exception, UTF8Utils::EncodeToUTF8(arg->Message->Data()).c_str());
 }
 
 void PlatformCore::GameThread()

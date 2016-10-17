@@ -379,7 +379,7 @@ void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView
     String url;
     if (args->Uri != nullptr)
     {
-        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
+        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
     Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
 
@@ -413,7 +413,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
     String url;
     if (args->Uri != nullptr)
     {
-        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
+        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
 
     if (args->IsSuccess)
@@ -514,7 +514,7 @@ void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
     {
-        Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(props.urlOrHtml).c_str()));
+        Uri^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(props.urlOrHtml).c_str()));
         nativeWebView->Navigate(uri);
     }
     else if (WebViewProperties::NAVIGATE_LOAD_HTML == props.navigateTo)
@@ -528,7 +528,7 @@ void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
         // as WebViews' backend can remember content id and reuse UriResolver instance
         // for another WebView control
         uint32 generatedContentId = Random::Instance()->Rand();
-        Platform::String^ contentId = ref new Platform::String(StringToWString(Format("%u", generatedContentId)).c_str());
+        Platform::String^ contentId = ref new Platform::String(UTF8Utils::EncodeToWideString(Format("%u", generatedContentId)).c_str());
 
         UriResolver^ resolver = ref new UriResolver(props.urlOrHtml, props.basePath);
         Uri^ uri = nativeWebView->BuildLocalStreamUri(contentId, "/johny23");
@@ -543,7 +543,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     using ::concurrency::task;
 
     // clang-format off
-    Platform::String^ script = ref new Platform::String(StringToWString(jsScript).c_str());
+    Platform::String^ script = ref new Platform::String(UTF8Utils::EncodeToWideString(jsScript).c_str());
 
     auto args = ref new Platform::Collections::Vector<Platform::String^>();
     args->Append(script);
@@ -555,7 +555,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
         window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
-                String jsResult = WStringToString(result->Data());
+                String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
@@ -563,7 +563,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
         core->RunOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
-                String jsResult = WStringToString(result->Data());
+                String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
@@ -574,7 +574,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
         } catch (Platform::Exception^ e) {
             // Exception can be thrown if a webpage has not been loaded into the WebView
             HRESULT hr = e->HResult;
-            Logger::Error("[WebView] failed to execute JS: hresult=0x%08X, message=%s", hr, WStringToString(e->Message->Data()).c_str());
+            Logger::Error("[WebView] failed to execute JS: hresult=0x%08X, message=%s", hr, UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str());
         }
     });
     // clang-format on
@@ -691,7 +691,7 @@ void WebViewControl::DeleteCookies(const String& url)
     using namespace ::Windows::Web::Http;
     using namespace ::Windows::Web::Http::Filters;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieManager ^ cookieManager = httpObj.CookieManager;
     HttpCookieCollection ^ cookies = cookieManager->GetCookies(uri);
@@ -714,18 +714,18 @@ String WebViewControl::GetCookie(const String& url, const String& name) const
 
     String result;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
-    Platform::String ^ cookieName = ref new Platform::String(StringToWString(name).c_str());
+    Platform::String ^ cookieName = ref new Platform::String(UTF8Utils::EncodeToWideString(name).c_str());
     IIterator<HttpCookie ^> ^ it = cookies->First();
     while (it->HasCurrent)
     {
         HttpCookie ^ cookie = it->Current;
         if (cookie->Name == cookieName)
         {
-            result = WStringToString(cookie->Value->Data());
+            result = UTF8Utils::EncodeToUTF8(cookie->Value->Data());
             break;
         }
         it->MoveNext();
@@ -742,7 +742,7 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 
     Map<String, String> result;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
@@ -750,7 +750,7 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
     while (it->HasCurrent)
     {
         HttpCookie ^ cookie = it->Current;
-        result.emplace(WStringToString(cookie->Name->Data()), WStringToString(cookie->Value->Data()));
+        result.emplace(UTF8Utils::EncodeToUTF8(cookie->Name->Data()), UTF8Utils::EncodeToUTF8(cookie->Value->Data()));
         it->MoveNext();
     }
     return result;
