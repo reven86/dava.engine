@@ -123,6 +123,7 @@ void FindFileDialog::Init(const Vector<FilePath>& files)
     if (!stringsToDisplay.isEmpty() && stringsToDisplay.contains(lastPath))
     {
         ui->lineEdit->setText(lastPath);
+        ui->lineEdit->selectAll();
     }
 }
 
@@ -150,7 +151,7 @@ bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
         {
             //check that we need to accept first valid item
             QString currentText = ui->lineEdit->text();
-            if (!stringsToDisplay.contains(currentText))
+            if (!currentText.isEmpty() && !stringsToDisplay.contains(currentText))
             {
                 QAbstractItemModel* completionModel = completer->completionModel();
 
