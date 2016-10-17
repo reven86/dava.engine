@@ -247,6 +247,13 @@ void DX11_InvalidateDevice(HRESULT hr)
 {
     DAVA::Logger::Error("DX11 Device removed/reset: %s", DX11_GetErrorText(hr));
     _D3D11_Device.store(nullptr);
+
+    /* Possible solution: */
+
+    /*
+    DVASSERT_MSG(0, "SORRY BRO");
+    exit(0);
+    // */
 }
 
 } // namespace rhi
