@@ -153,9 +153,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
 
         DVASSERT(s_desc.MaxAnisotropy >= 1);
 
-        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->fragmentSampler + s);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(CreateSamplerState(&s_desc, state->fragmentSampler + s), hr);
         if (FAILED(hr))
         {
             state->fragmentSampler[s] = nullptr;
@@ -184,9 +183,8 @@ dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
 
         DVASSERT(s_desc.MaxAnisotropy >= 1);
 
-        HRESULT hr = _D3D11_Device->CreateSamplerState(&s_desc, state->vertexSampler + s);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(CreateSamplerState(&s_desc, state->vertexSampler + s), hr);
         if (FAILED(hr))
         {
             state->vertexSampler[s] = nullptr;

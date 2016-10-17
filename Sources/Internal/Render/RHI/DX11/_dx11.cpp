@@ -1,15 +1,14 @@
 #include <dxgiformat.h>
-    #include "_dx11.h"
-
-    #include <stdio.h>
-
-    #include "../rhi_Public.h"
+#include "_dx11.h"
+#include <stdio.h>
+#include "../rhi_Public.h"
 
 //==============================================================================
 
 namespace rhi
 {
-ID3D11Device* _D3D11_Device = nullptr;
+std::atomic<ID3D11Device*> _D3D11_Device = nullptr;
+
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
 ID3D11RenderTargetView* _D3D11_RenderTargetView = nullptr;
@@ -23,14 +22,8 @@ ID3D11Debug* _D3D11_Debug = nullptr;
 ID3DUserDefinedAnnotation* _D3D11_UserAnnotation = nullptr;
 
 InitParam _DX11_InitParam;
-}
 
-//==============================================================================
-//
-//  publics:
-
-const char*
-D3D11ErrorText(HRESULT hr)
+const char* DX11_GetErrorText(HRESULT hr)
 {
     switch (hr)
     {
@@ -137,12 +130,7 @@ D3D11ErrorText(HRESULT hr)
     return text;
 }
 
-namespace rhi
-{
-//------------------------------------------------------------------------------
-
-DXGI_FORMAT
-DX11_TextureFormat(TextureFormat format)
+DXGI_FORMAT DX11_TextureFormat(TextureFormat format)
 {
     switch (format)
     {
@@ -253,6 +241,12 @@ uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
     }
 
     return sampleCount / 2;
+}
+
+void DX11_InvalidateDevice(HRESULT hr)
+{
+    DAVA::Logger::Error("DX11 Device removed/reset: %s", DX11_GetErrorText(hr));
+    _D3D11_Device.store(nullptr);
 }
 
 } // namespace rhi

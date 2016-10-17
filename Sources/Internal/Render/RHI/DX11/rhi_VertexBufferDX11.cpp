@@ -96,9 +96,8 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
             data.SysMemPitch = desc.size;
         }
 
-        HRESULT hr = _D3D11_Device->CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf);
-        CHECK_HR(hr)
-
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf), hr);
         if (SUCCEEDED(hr))
         {
             handle = VertexBufferDX11Pool::Alloc();
@@ -108,10 +107,6 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
             vb->usage = desc.usage;
             vb->buffer = buf;
             vb->isMapped = false;
-        }
-        else
-        {
-            Logger::Error("FAILED to create vertex-buffer:\n%s\n", D3D11ErrorText(hr));
         }
     }
 
