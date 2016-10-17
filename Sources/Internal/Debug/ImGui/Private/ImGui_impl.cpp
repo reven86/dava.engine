@@ -341,6 +341,8 @@ void EnsureInited()
 
 void OnFrame()
 {
+    DVASSERT(ImGuiImplDetails::initialized);
+
     ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
 
     ImGuiImplDetails::framebufferSize.dx = int32(DAVA::Renderer::GetFramebufferWidth());
@@ -443,7 +445,7 @@ void OnInput(UIEvent* input)
         break;
 
     case UIEvent::Phase::CHAR:
-        io.AddInputCharacter(input->keyChar);
+        io.AddInputCharacter(ImWchar(input->keyChar));
         break;
 
     default:
@@ -453,15 +455,18 @@ void OnInput(UIEvent* input)
 
 void Uninitialize()
 {
-    rhi::DeleteTexture(ImGuiImplDetails::fontTexture);
-    rhi::ReleaseTextureSet(ImGuiImplDetails::fontTextureSet);
-    rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePC);
-    rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePTC);
-    rhi::ReleaseDepthStencilState(ImGuiImplDetails::depthState);
-    rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPC);
-    rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPTC);
+    if (ImGuiImplDetails::initialized)
+    {
+        rhi::DeleteTexture(ImGuiImplDetails::fontTexture);
+        rhi::ReleaseTextureSet(ImGuiImplDetails::fontTextureSet);
+        rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePC);
+        rhi::ReleaseRenderPipelineState(ImGuiImplDetails::pipelineStatePTC);
+        rhi::ReleaseDepthStencilState(ImGuiImplDetails::depthState);
+        rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPC);
+        rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPTC);
 
-    ImGui::Shutdown();
+        ImGui::Shutdown();
+    }
 }
 
 } //ns ImGui
