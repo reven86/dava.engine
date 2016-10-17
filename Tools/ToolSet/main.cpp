@@ -5,6 +5,10 @@
 #include <libproc.h>
 #include <unistd.h>
 
+#import <Foundation/NSURL.h>
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
+
 int main(int argc, char** argv)
 {
     char path[PATH_MAX];
@@ -20,9 +24,11 @@ int main(int argc, char** argv)
         pathDir = pathExec.substr(0, last_slash_idx);
     }
 
-    openComand = "open " + pathDir;
+    NSString* nsPathDir = [NSString stringWithUTF8String:pathDir.c_str()];
 
-    system(openComand.c_str());
+    NSURL* fileURL = [NSURL fileURLWithPath:nsPathDir];
+
+    [[NSWorkspace sharedWorkspace] openURL:fileURL];
 
     return 1;
 }

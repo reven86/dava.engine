@@ -31,6 +31,16 @@ macro ( init_tool_set )
 
         add_executable( ${PROJECT_NAME} MACOSX_BUNDLE main.cpp ${RESOURCES_LIST} )
 
+        target_link_libraries( ${PROJECT_NAME}
+            "-framework Cocoa"
+            "-framework AppKit"
+            "-framework CoreData"
+            "-framework Foundation"
+        )
+
+        set_property (TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY 
+              COMPILE_FLAGS "-x objective-c++")
+
         set_target_properties ( ${PROJECT_NAME} PROPERTIES
                                 MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}"
                                 XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
