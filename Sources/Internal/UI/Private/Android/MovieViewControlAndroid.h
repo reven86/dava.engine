@@ -93,7 +93,7 @@ public:
     bool IsPlaying() const;
 
 private:
-    uint32 id;
+    uintptr_t id;
 
     JNI::JavaClass jniMovieViewControl;
     Function<void(jint, jfloat, jfloat, jfloat, jfloat)> initialize;
