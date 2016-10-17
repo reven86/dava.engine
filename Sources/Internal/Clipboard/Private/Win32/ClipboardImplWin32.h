@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Clipboard/Private/IClipboardImpl.h"
+#include "Clipboard/Private/IClipboard.h"
 
 namespace DAVA
 {
-class ClipboardImplWin32 : public IClipboardImpl
+class ClipboardImplWin32 : public IClipboard
 {
 public:
     ClipboardImplWin32();

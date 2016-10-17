@@ -10,79 +10,55 @@ class TextBox;
 class UIEvent;
 struct StbState;
 
-/**
-Class that implements bridge for stb_textedit.
-*/
+/** Class that implements bridge for stb_textedit. */
 class StbTextEditBridge
 {
 public:
-    /**
-    Delegate to implement stb_textedit callbacks.
-    */
+    /** Delegate to implement stb_textedit callbacks. */
     class StbTextDelegate
     {
     public:
-        /** 
-        Default destructor.
-        */
+        /** Default destructor. */
         virtual ~StbTextDelegate() = default;
 
-        /**
+        /** 
         Insert specified `string` with `length` to `position` in data structure.
         Return count of inserted characters.
         */
         virtual uint32 InsertText(uint32 position, const WideString::value_type* string, uint32 length) = 0;
 
-        /**
+        /** 
         Delete text with specified `length` on `position` from data structure.
         Return count of deleted characters.
         */
         virtual uint32 DeleteText(uint32 position, uint32 length) = 0;
 
-        /**
-        Get instance of TextBox strcuture from field.
-        */
+        /** Get instance of TextBox strcuture from field. */
         virtual const TextBox* GetTextBox() const = 0;
 
-        /**
-        Get text length.
-        */
+        /** Get text length. */
         virtual uint32 GetTextLength() const = 0;
 
-        /**
-        Get character at specified `index` from text.
-        */
+        /** Get character at specified `index` from text. */
         virtual WideString::value_type GetCharAt(uint32 index) const = 0;
 
-        /**
-        Get text from field.
-        */
+        /** Get text from field. */
         virtual WideString GetText() const = 0;
 
-        /**
-        Check that specified `character` is valid for current field.
-        */
+        /** Check that specified `character` is valid for current field. */
         virtual bool IsCharAvaliable(WideString::value_type character) const = 0;
     };
 
-    /**
-    Create StbTextEditBridge with specified valid `delegate`.
-    */
+    /** Create StbTextEditBridge with specified valid `delegate`. */
     StbTextEditBridge(StbTextDelegate* delegate);
 
-    /**
-    Copy constructor.
-    */
+    /** Copy constructor. */
     StbTextEditBridge(const StbTextEditBridge& c);
 
-    /**
-    Destructor.
-    */
+    /** Destructor. */
     virtual ~StbTextEditBridge();
 
-    /**
-    Copy class data to correct instance
-    */
+    /** Copy class data to correct instance. */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
     /**
@@ -115,19 +91,13 @@ public:
     */
     virtual void Drag(const Vector2& point);
 
-    /**
-    Cut (delete) selected text.
-    */
+    /** Cut (delete) selected text. */
     virtual bool Cut();
 
-    /**
-    Insert (replace selected) new specified `string` in field.
-    */
+    /** Insert (replace selected) new specified `string` in field. */
     virtual bool Paste(const WideString& string);
 
-    /**
-    Clear STB text edit undo stack.
-    */
+    /** Clear STB text edit undo stack. */
     virtual void ClearUndoStack();
 
     /**
@@ -172,29 +142,19 @@ public:
     */
     void SetCursorPosition(uint32 position) const;
 
-    /**
-    Enable or disable single line mode.
-    */
+    /** Enable or disable single line mode. */
     void SetSingleLineMode(bool signleLine);
 
-    /**
-    Return single line mode flag.
-    */
+    /** Return single line mode flag. */
     bool IsSingleLineMode() const;
 
-    /**
-    Return inserting mode flag.
-    */
+    /** Return inserting mode flag.*/
     bool IsInsertMode() const;
 
-    /**
-    Select word neer cursor position.
-    */
+    /** Select word neer cursor position. */
     void SelectWord();
 
-    /**
-    Select whole text.
-    */
+    /** Select whole text. */
     void SelectAll();
 
     /**
@@ -216,9 +176,7 @@ public:
     */
     bool PasteFromClipboard();
 
-    /**
-    Get pointer delegate instance
-    */
+    /** Get pointer delegate instance. */
     StbTextDelegate* GetDelegate() const;
 
 private:

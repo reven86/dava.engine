@@ -4,22 +4,16 @@
 
 namespace DAVA
 {
-class IClipboardImpl;
+class IClipboard;
 
-/**
-Class to work with system clipboard.
-*/
+/** Class to work with system clipboard. */
 class Clipboard
 {
 public:
-    /**
-    Initialize work with system clipboard.
-    */
+    /** Initialize work with system clipboard. */
     Clipboard();
 
-    /**
-    Default destructor.
-    */
+    /** Default destructor. */
     ~Clipboard();
 
     /**
@@ -46,12 +40,10 @@ public:
     */
     bool SetText(const WideString& str);
 
-    /**
-    Get from system clipboard Unicode text data as WideString
-    */
+    /** Get from system clipboard Unicode text data as WideString */
     WideString GetText() const;
 
 private:
-    std::unique_ptr<IClipboardImpl> pImpl;
+    std::unique_ptr<IClipboard> pImpl;
 };
 }

@@ -1,20 +1,15 @@
-#ifndef __DAVAENGINE_ICLIPBOARDIMPL_H__
-#define __DAVAENGINE_ICLIPBOARDIMPL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-/**
-Interface to implement platform clipboard helper.
-*/
-class IClipboardImpl
+/** Interface to implement platform clipboard helper. */
+class IClipboard
 {
 public:
-    /**
-    Destructor.
-    */
-    virtual ~IClipboardImpl() = default;
+    /** Destructor. */
+    virtual ~IClipboard() = default;
 
     /**
     Return status of clipboard helper.
@@ -40,11 +35,7 @@ public:
     */
     virtual bool SetText(const WideString& str) = 0;
 
-    /**
-    Get from system clipboard Unicode text data as WideString.
-    */
+    /** Get from system clipboard Unicode text data as WideString. */
     virtual WideString GetText() const = 0;
 };
 }
-
-#endif //__DAVAENGINE_ICLIPBOARDIMPL_H__
