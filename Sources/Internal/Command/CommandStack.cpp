@@ -28,7 +28,22 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
 
         if (currentIndex != commands.size() - 1)
         {
+            bool hasModifiedCommands = false;
+            for (size_t i = static_cast<size_t>(currentIndex + 1); i < commands.size(); ++i)
+            {
+                if (commands[i]->IsClean() == false)
+                {
+                    hasModifiedCommands = true;
+                    break;
+                }
+            }
+
             commands.erase(commands.begin() + (currentIndex + 1), commands.end());
+            if (cleanIndex > currentIndex)
+            {
+                cleanIndex = EMPTY_INDEX;
+                hasModifiedCommandsInRemoved = hasModifiedCommands;
+            }
         }
 
         if (isSingleCommand)
@@ -89,6 +104,7 @@ bool CommandStack::IsClean() const
 void CommandStack::SetClean()
 {
     cleanIndex = currentIndex;
+    hasModifiedCommandsInRemoved = false;
     UpdateCleanState();
 }
 
@@ -151,6 +167,12 @@ void CommandStack::UpdateCleanState()
         EmitCleanChanged(true);
         return;
     }
+
+    if (hasModifiedCommandsInRemoved == true)
+    {
+        EmitCleanChanged(false);
+        return;
+    }
     int32 begin = std::min(cleanIndex, currentIndex);
     int32 end = std::max(cleanIndex, currentIndex);
     DVASSERT(end > begin);
@@ -158,7 +180,7 @@ void CommandStack::UpdateCleanState()
     for (int32 index = begin; index != end && !containsModifiedCommands; ++index)
     {
         //we need to look only next commands after
-        const std::unique_ptr<Command>& command = commands.at(index + 1);
+        const std::unique_ptr<Command>& command = commands[index + 1];
         containsModifiedCommands |= (command->IsClean() == false);
     }
     EmitCleanChanged(!containsModifiedCommands);

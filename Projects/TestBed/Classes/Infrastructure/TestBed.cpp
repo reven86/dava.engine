@@ -31,6 +31,7 @@
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
+#include "Tests/UILoggingTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -230,6 +231,7 @@ void TestBed::RegisterTests()
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
+    new UILoggingTest(*this);
     //$UNITTEST_CTOR
 }
 

@@ -344,12 +344,18 @@ DAVA::String SceneEditor2::GetRedoText() const
 
 void SceneEditor2::Undo()
 {
-    commandStack->Undo();
+    if (commandStack->CanUndo())
+    {
+        commandStack->Undo();
+    }
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack->Redo();
+    if (commandStack->CanRedo())
+    {
+        commandStack->Redo();
+    }
 }
 
 void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)

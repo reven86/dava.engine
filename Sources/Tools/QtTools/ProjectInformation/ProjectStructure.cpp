@@ -35,7 +35,7 @@ private:
     void AddFilesRecursively(const QDir& dir);
 
     QSet<QFileInfo> projectFiles;
-    QFileSystemWatcher watcher;
+    QFileSystemWatcher* watcher = nullptr;
     QStringList supportedExtensions;
     QDir projectDir;
 };
@@ -65,8 +65,6 @@ DAVA::Vector<DAVA::FilePath> ProjectStructure::GetFiles(const DAVA::String& exte
 ProjectStructure::Impl::Impl(const Vector<String>& supportedExtensions_)
     : QObject(nullptr)
 {
-    QObject::connect(&watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
-    QObject::connect(&watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
     for (const String& extension : supportedExtensions_)
     {
         supportedExtensions << QString::fromStdString(extension).toLower();
@@ -77,21 +75,22 @@ void ProjectStructure::Impl::SetProjectDirectory(const FilePath& directory)
 {
     projectDir = QDir();
     projectFiles.clear();
-    const QStringList& directories = watcher.directories();
-    if (!directories.isEmpty())
-    {
-        watcher.removePaths(directories);
-    }
-    DVASSERT(watcher.files().isEmpty());
+    //we delete watcher because "remove paths" us not work. It was reproduced in DF-11828
+    delete watcher;
+    watcher = nullptr;
 
     if (!directory.IsEmpty())
     {
+        watcher = new QFileSystemWatcher(this);
+        QObject::connect(watcher, &QFileSystemWatcher::fileChanged, this, &Impl::OnFileChanged);
+        QObject::connect(watcher, &QFileSystemWatcher::directoryChanged, this, &Impl::OnDirChanged);
+
         QString directoryStr = QString::fromStdString(directory.GetAbsolutePathname());
         projectDir = QDir(directoryStr);
         DVASSERT(projectDir.exists());
-        DVASSERT(!watcher.directories().contains(directoryStr));
 
-        watcher.addPath(directoryStr);
+        DVASSERT(!watcher->directories().contains(directoryStr));
+        watcher->addPath(directoryStr);
         AddFilesRecursively(projectDir);
     }
 }
@@ -132,6 +131,7 @@ void ProjectStructure::Impl::OnFileChanged(const QString& path)
 
 void ProjectStructure::Impl::OnDirChanged(const QString& path)
 {
+    DVASSERT(watcher != nullptr);
     QDir changedDir(path);
     QMutableSetIterator<QFileInfo> iter(projectFiles);
     while (iter.hasNext())
@@ -144,13 +144,13 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
         }
     }
 
-    QStringList watchedDirectories = watcher.directories();
+    QStringList watchedDirectories = watcher->directories();
     for (const QString& dirPath : watchedDirectories)
     {
         QFileInfo fileInfo(dirPath);
         if (!fileInfo.isDir())
         {
-            watcher.removePath(dirPath);
+            watcher->removePath(dirPath);
         }
     }
 
@@ -163,7 +163,8 @@ void ProjectStructure::Impl::OnDirChanged(const QString& path)
 void ProjectStructure::Impl::AddFilesRecursively(const QDir& dir)
 {
     DVASSERT(dir.exists());
-    QStringList watchedDirectories = watcher.directories();
+    DVASSERT(watcher != nullptr);
+    QStringList watchedDirectories = watcher->directories();
 
     QString absDirPath(dir.absolutePath());
     QDirIterator dirIterator(absDirPath, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Hidden, QDirIterator::Subdirectories);
@@ -175,7 +176,7 @@ void ProjectStructure::Impl::AddFilesRecursively(const QDir& dir)
         QString absFilePath = fileInfo.absoluteFilePath();
         if (fileInfo.isDir() && !watchedDirectories.contains(absFilePath))
         {
-            watcher.addPath(absFilePath);
+            watcher->addPath(absFilePath);
             watchedDirectories.append(absFilePath);
         }
         if (fileInfo.isFile() && supportedExtensions.contains(fileInfo.suffix().toLower()))
