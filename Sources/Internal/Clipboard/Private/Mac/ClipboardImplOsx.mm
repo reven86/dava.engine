@@ -22,7 +22,7 @@ bool ClipboardImplOsx::IsReadyToUse() const
 bool ClipboardImplOsx::Clear() const
 {
     NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-    if (pasteboard)
+    if (pasteboard != nil)
     {
         [pasteboard clearContents];
         return true;
@@ -33,7 +33,7 @@ bool ClipboardImplOsx::Clear() const
 bool ClipboardImplOsx::HasText() const
 {
     NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-    if (pasteboard)
+    if (pasteboard != nil)
     {
         NSArray* classes = [[NSArray alloc] initWithObjects:[NSString class], nil];
         BOOL ok = [pasteboard canReadObjectForClasses:classes options:nil];
@@ -45,7 +45,7 @@ bool ClipboardImplOsx::HasText() const
 bool ClipboardImplOsx::SetText(const WideString& str)
 {
     NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-    if (pasteboard)
+    if (pasteboard != nil)
     {
         NSString* stringToWrite = NSStringFromWideString(str);
         [pasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -58,9 +58,9 @@ bool ClipboardImplOsx::SetText(const WideString& str)
 WideString ClipboardImplOsx::GetText() const
 {
     WideString outPut;
-    if (HasText())
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+    if (pasteboard != nil && HasText())
     {
-        NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
         NSString* s = [pasteboard stringForType:NSStringPboardType];
         WideString wstr = WideStringFromNSString(s);
         return wstr;
