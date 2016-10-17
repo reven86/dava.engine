@@ -757,7 +757,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>94</height>
+          <height>95</height>
          </rect>
         </property>
        </widget>
@@ -887,7 +887,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>94</height>
+          <height>96</height>
          </rect>
         </property>
        </widget>
@@ -2274,6 +2274,22 @@
   <action name="actionGenerate_Assert">
    <property name="text">
     <string>Generate Assert</string>
+   </property>
+  </action>
+  <action name="actionEnableSounds">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/QtIcons/rspeaker_off.png</normaloff>
+     <normalon>:/QtIcons/rspeaker_on.png</normalon>:/QtIcons/rspeaker_off.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mute</string>
+   </property>
+   <property name="toolTip">
+    <string>Mute scene sounds</string>
    </property>
   </action>
  </widget>
