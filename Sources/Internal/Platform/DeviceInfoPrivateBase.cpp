@@ -15,17 +15,17 @@ DeviceInfo::eHIDType type)
     return hidConnectionSignals[type];
 }
 
-eGPUFamily DeviceInfoPrivateBase::GetGPU()
+eGPUFamily DeviceInfoPrivateBase::GetGPUFamily()
 {
-    return overridenGPU != GPU_INVALID ? overridenGPU : GetGPUFamily();
+    return overridenGPU != GPU_INVALID ? overridenGPU : GetGPUFamilyImpl();
 }
 
-void DeviceInfoPrivateBase::OverrideGPU(eGPUFamily newGPU)
+void DeviceInfoPrivateBase::SetOverrideGPU(eGPUFamily newGPU)
 {
     overridenGPU = newGPU;
 }
 
-void DeviceInfoPrivateBase::ResetGPUOverride()
+void DeviceInfoPrivateBase::ResetOverrideGPU()
 {
     overridenGPU = GPU_INVALID;
 }

@@ -10,11 +10,11 @@ public:
     int32 GetCpuCount();
     DeviceInfo::HIDConnectionSignal& GetHIDConnectionSignal(DeviceInfo::eHIDType type);
 
-    eGPUFamily GetGPU();
-    virtual eGPUFamily GetGPUFamily() = 0;
+    eGPUFamily GetGPUFamily();
+    virtual eGPUFamily GetGPUFamilyImpl() = 0;
 
-    void OverrideGPU(eGPUFamily newGPU);
-    void ResetGPUOverride();
+    void SetOverrideGPU(eGPUFamily newGPU);
+    void ResetOverrideGPU();
 
 private:
     Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;

@@ -39,10 +39,10 @@ DAVA_TESTCLASS (DeviceInfoTest)
     {
         eGPUFamily oldGPU = DeviceInfo::GetGPUFamily();
         eGPUFamily newGPU = oldGPU != GPU_TEGRA ? GPU_TEGRA : GPU_POWERVR_IOS;
-        DeviceInfo::OverrideGPU(newGPU);
+        DeviceInfo::SetOverrideGPU(newGPU);
         TEST_VERIFY(DeviceInfo::GetGPUFamily() == newGPU);
 
-        DeviceInfo::ResetGPUOverride();
+        DeviceInfo::ResetOverrideGPU();
         TEST_VERIFY(oldGPU == DeviceInfo::GetGPUFamily());
     }
 };
