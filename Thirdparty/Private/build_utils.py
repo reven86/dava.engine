@@ -67,9 +67,11 @@ def apply_patch(patch, working_dir = '.'):
 		print "Failed with return code %s" % proc.returncode
 		raise
 
-def build_vs(project, configuration, platform='Win32', target = None):
+def build_vs(project, configuration, platform='Win32', target = None, toolset = None):
 	print "Building %s for %s ..." % (project, configuration)
 	args = ["c:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration, '/p:Platform=' + platform]
+	if not toolset is None:
+		args.append('/p:PlatformToolset=' + toolset)
 	if (not target is None):
 		args.append('/target:' + target)
 	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
