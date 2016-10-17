@@ -18,7 +18,7 @@ class PackManagerImpl : public IPackManager
 public:
 #ifdef __DAVAENGINE_COREV2__
     explicit PackManagerImpl(Engine& engine_);
-    ~PackManagerImpl();
+    ~PackManagerImpl() override;
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
 #else

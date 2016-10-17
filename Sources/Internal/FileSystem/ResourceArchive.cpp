@@ -48,7 +48,7 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
         DAVA_THROW(DAVA::Exception, "can't read from resource archive: " + fileName);
     }
 
-    if (PackFormat::FileMarker == lastFourBytes)
+    if (PackFormat::FILE_MARKER == lastFourBytes)
     {
         impl.reset(new PackArchive(f, fileName));
     }

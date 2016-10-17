@@ -6,6 +6,29 @@
 
 namespace DAVA
 {
+/**
+ Interface for requesting packs from server.
+
+ tipical workflow:
+ 1. connect to state change signal and to request update signal
+ 2. call Initialize to connect to server, wait for state become `Pack::Status::Ready`
+ 3. enable request with `EnableRequesting`
+ 4. request pack from server or mount local automaticaly on request
+ 5. findout in which pack has file by filePath
+
+ example:
+ ```
+ IPackManager& pm = *engine.GetContext()->packManager;
+ // if init failed we will know about it
+ pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+
+ pm.Initialize(gpuArchitecture, folderWithDownloadedPacks, dbFile, urlToServerSuperpack, IPackManager::Hints());
+
+ pm.EnableRequesting();
+ // now we can connect to request signal, and start requesting packs
+
+ ```
+*/
 class IPackManager
 {
 public:
@@ -43,6 +66,11 @@ public:
 
     static const String& ToString(InitError state);
 
+    /**
+     Pack with all details.
+     Read only data, you don't need to create or destroy Pack's.
+     During initialization all packs are created simultaneously.
+    */
     struct Pack
     {
         enum class Status : uint32
@@ -87,11 +115,17 @@ public:
     public:
         virtual ~IRequest();
 
+        /** return requested pack name */
         virtual const Pack& GetRootPack() const = 0;
+        /** recalculate fullsize with all dependencies */
         virtual uint64 GetFullSizeWithDependencies() const = 0;
+        /** recalculate current downloaded size */
         virtual uint64 GetDownloadedSize() const = 0;
+        /** return true in case error loading */
         virtual bool IsError() const = 0;
+        /** return pack during loading which error happend */
         virtual const Pack& GetErrorPack() const = 0;
+        /** detailed error message */
         virtual const String& GetErrorMessage() const = 0;
     };
 
@@ -129,7 +163,9 @@ public:
     virtual InitError GetInitError() const = 0;
 
     virtual const String& GetInitErrorMessage() const = 0;
-
+    /** If initialization failed you may call `RetryInit` and
+     initialization with last params restart from begining.
+    */
     virtual void RetryInit() = 0;
 
     virtual bool IsPausedInit() const = 0;

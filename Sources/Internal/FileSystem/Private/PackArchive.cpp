@@ -122,7 +122,7 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
         DAVA_THROW(DAVA::Exception, "crc32 not match in footer for: " + fileName);
     }
 
-    if (footerBlock.info.packArchiveMarker != FileMarker)
+    if (footerBlock.info.packArchiveMarker != FILE_MARKER)
     {
         DAVA_THROW(DAVA::Exception, "incorrect marker in pack file: " + fileName);
     }
