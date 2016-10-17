@@ -67,14 +67,16 @@ def apply_patch(patch, working_dir = '.'):
 		print "Failed with return code %s" % proc.returncode
 		raise
 
-def build_vs(project, configuration, platform='Win32', target = None, toolset = None):
+def build_vs(project, configuration, platform='Win32', target = None, toolset = None, env=None):
 	print "Building %s for %s ..." % (project, configuration)
 	args = ["c:/Program Files (x86)/MSBuild/14.0/Bin/MSBuild.exe", project, "/p:Configuration="+configuration, '/p:Platform=' + platform]
 	if not toolset is None:
 		args.append('/p:PlatformToolset=' + toolset)
 	if (not target is None):
 		args.append('/target:' + target)
-	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	if (not env is None):
+		args.append('/p:useenv=true')
+	proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 	for line in proc.stdout:
 		print_verbose(line)
 	proc.wait()
@@ -389,13 +391,22 @@ def get_autotools_android_x86_env(root_project_path, enable_stl=False):
 	return env
 
 def get_vs_x86_env():
-	return _get_vs_env('x86')
+	return _get_vs_env(build_config.vc12_path, 'x86')
 
 def get_vs_x64_env():
-	return _get_vs_env('x86_amd64')
+	return _get_vs_env(build_config.vc12_path, 'x86_amd64')
 
-def _get_vs_env(arch):
-	vsvars_path = '{}/vcvarsall.bat'.format(build_config.win32_vc_path)
+def get_vs15_x86_env():
+	return _get_vs_env(build_config.vc15_path, 'x86')
+
+def get_vs15_x64_env():
+	return _get_vs_env(build_config.vc15_path, 'x86_amd64')
+
+def get_vs15_arm_env():
+	return _get_vs_env(build_config.vc15_path, 'x86_arm')
+
+def _get_vs_env(vs_path, arch):
+	vsvars_path = '{}/vcvarsall.bat'.format(vs_path)
 
 	cmd = [vsvars_path, arch, '&', 'set']
 	sp = subprocess.Popen(cmd, stdout=subprocess.PIPE)
