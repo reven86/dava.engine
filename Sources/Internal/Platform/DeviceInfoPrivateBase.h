@@ -13,8 +13,8 @@ public:
     eGPUFamily GetGPUFamily();
     virtual eGPUFamily GetGPUFamilyImpl() = 0;
 
-    void SetOverrideGPU(eGPUFamily newGPU);
-    void ResetOverrideGPU();
+    void SetOverridenGPU(eGPUFamily newGPU);
+    void ResetOverridenGPU();
 
 private:
     Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;

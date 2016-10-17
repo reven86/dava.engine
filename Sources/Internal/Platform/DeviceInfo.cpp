@@ -100,14 +100,14 @@ eGPUFamily DeviceInfo::GetGPUFamily()
     return GetPrivateImpl()->GetGPUFamily();
 }
 
-void DeviceInfo::SetOverrideGPU(eGPUFamily newGPU)
+void DeviceInfo::SetOverridenGPU(eGPUFamily newGPU)
 {
-    GetPrivateImpl()->SetOverrideGPU(newGPU);
+    GetPrivateImpl()->SetOverridenGPU(newGPU);
 }
 
-void DeviceInfo::ResetOverrideGPU()
+void DeviceInfo::ResetOverridenGPU()
 {
-    GetPrivateImpl()->ResetOverrideGPU();
+    GetPrivateImpl()->ResetOverridenGPU();
 }
 
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()

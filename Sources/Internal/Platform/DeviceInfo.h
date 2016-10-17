@@ -148,9 +148,9 @@ public:
     static bool IsHIDConnected(eHIDType type);
 
     // Override real gpu family
-    static void SetOverrideGPU(eGPUFamily newGPU);
+    static void SetOverridenGPU(eGPUFamily newGPU);
     // Reset override
-    static void ResetOverrideGPU();
+    static void ResetOverridenGPU();
 
     // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID

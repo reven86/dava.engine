@@ -20,12 +20,12 @@ eGPUFamily DeviceInfoPrivateBase::GetGPUFamily()
     return overridenGPU != GPU_INVALID ? overridenGPU : GetGPUFamilyImpl();
 }
 
-void DeviceInfoPrivateBase::SetOverrideGPU(eGPUFamily newGPU)
+void DeviceInfoPrivateBase::SetOverridenGPU(eGPUFamily newGPU)
 {
     overridenGPU = newGPU;
 }
 
-void DeviceInfoPrivateBase::ResetOverrideGPU()
+void DeviceInfoPrivateBase::ResetOverridenGPU()
 {
     overridenGPU = GPU_INVALID;
 }
