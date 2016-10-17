@@ -1,14 +1,16 @@
 #include "BeastRunner.h"
+
+#if defined(__DAVAENGINE_BEAST__)
+
 #include "Scene/SceneEditor2.h"
 #include "Main/mainwindow.h"
 #include "Beast/BeastProxy.h"
 #include "Beast/LightmapsPacker.h"
 #include "Settings/SettingsManager.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
+#include "Utils/SceneUtils/SceneUtils.h"
 
 #include "DAVAEngine.h"
 
-#if defined(__DAVAENGINE_BEAST__)
 
 #include "SceneParser.h"
 
@@ -59,11 +61,6 @@ void BeastRunner::Run()
             cancelledManually |= waitDialog->WasCanceled();
         }
 
-        // if waitDialog is nullptr, it means that we are working in console mode
-        if (waitDialog == nullptr)
-        {
-            RenderObjectsFlusher::Flush();
-        }
         Sleep(15);
     }
 

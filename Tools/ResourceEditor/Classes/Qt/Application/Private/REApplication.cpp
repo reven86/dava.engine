@@ -24,8 +24,21 @@
 #include "Core/PerformanceSettings.h"
 #include "Base/BaseTypes.h"
 
+#include <QDir>
 #include <QFileInfo>
 #include <QCryptographicHash>
+
+#include "CommandLine/BeastCommandLineTool.h"
+#include "CommandLine/ConsoleHelpTool.h"
+#include "CommandLine/DumpTool.h"
+#include "CommandLine/SceneImageDump.h"
+#include "CommandLine/StaticOcclusionTool.h"
+#include "CommandLine/VersionTool.h"
+
+#include "CommandLine/ImageSplitterTool.h"
+#include "CommandLine/TextureDescriptorTool.h"
+#include "CommandLine/SceneSaverTool.h"
+#include "CommandLine/SceneExporterTool.h"
 
 namespace REApplicationDetail
 {
@@ -49,13 +62,11 @@ DAVA::KeyedArchive* CreateOptions()
 REApplication::REApplication(DAVA::Vector<DAVA::String>&& cmdLine_)
     : cmdLine(std::move(cmdLine_))
 {
-    /*
-     // TODO
-     if (something)
-     {
-        isConsoleMode = true;
-     }
-     */
+    if (cmdLine.size() > 1)
+    {
+        DAVA::String command = cmdLine[1];
+        isConsoleMode = (command != "--selftest");
+    }
 }
 
 DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
@@ -78,9 +89,13 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
 void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     if (isConsoleMode)
+    {
         CreateConsoleModules(tarcCore);
+    }
     else
+    {
         CreateGUIModules(tarcCore);
+    }
 }
 
 void REApplication::Init(DAVA::TArc::Core* tarcCore)
@@ -145,10 +160,60 @@ QString REApplication::GetInstanceKey() const
 
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
+    Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<REModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
 {
-    // TODO
+    DVASSERT(cmdLine.size() > 1);
+
+    DAVA::String command = cmdLine[1];
+    if (command == "-help")
+    {
+        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
+    }
+    else if (command == "-version")
+    {
+        tarcCore->CreateModule<VersionTool>(cmdLine);
+    }
+#if defined(__DAVAENGINE_BEAST__)
+    else if (command == "-beast")
+    {
+        tarcCore->CreateModule<BeastCommandLineTool>(cmdLine);
+    }
+#endif //#if defined (__DAVAENGINE_BEAST__)
+    else if (command == "-dump")
+    {
+        tarcCore->CreateModule<DumpTool>(cmdLine);
+    }
+    else if (command == "-sceneimagedump")
+    {
+        tarcCore->CreateModule<SceneImageDump>(cmdLine);
+    }
+    else if (command == "-staticocclusion")
+    {
+        tarcCore->CreateModule<StaticOcclusionTool>(cmdLine);
+    }
+    else if (command == "-imagesplitter")
+    {
+        tarcCore->CreateModule<ImageSplitterTool>(cmdLine);
+    }
+    else if (command == "-texdescriptor")
+    {
+        tarcCore->CreateModule<TextureDescriptorTool>(cmdLine);
+    }
+    else if (command == "-sceneexporter")
+    {
+        tarcCore->CreateModule<SceneExporterTool>(cmdLine);
+    }
+    else if (command == "-scenesaver")
+    {
+        tarcCore->CreateModule<SceneSaverTool>(cmdLine);
+    }
+    else
+    {
+        DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
+        tarcCore->CreateModule<ConsoleHelpTool>(cmdLine);
+    }
 }

@@ -38,11 +38,11 @@ protected:
 private:
     void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
     void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
-    void Init(DAVA::TArc::Core* tarcCore);
+    void Init(DAVA::TArc::Core* tarcCore) override;
     void Cleanup() override;
 
-    bool AllowMultipleInstances() const;
-    QString GetInstanceKey() const;
+    bool AllowMultipleInstances() const override;
+    QString GetInstanceKey() const override;
 
     bool isConsoleMode = false;
     DAVA::Vector<DAVA::String> cmdLine;

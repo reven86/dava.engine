@@ -23,7 +23,7 @@ public:
     }
 
     SceneEditor2* activeScene = nullptr;
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
 };
 }
 
