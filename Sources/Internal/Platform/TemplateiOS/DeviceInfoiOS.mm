@@ -345,7 +345,7 @@ int32 DeviceInfoPrivate::GetZBufferSize()
     return 24;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_POWERVR_IOS;
 }
