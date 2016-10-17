@@ -110,8 +110,7 @@ FresnelShlick(float _NdotL, float _fresnelBias, float _fresnelPow)
 }
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out output;
 

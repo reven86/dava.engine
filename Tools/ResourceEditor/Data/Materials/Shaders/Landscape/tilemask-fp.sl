@@ -62,8 +62,7 @@ uniform sampler2D cursorTexture;
 #endif
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

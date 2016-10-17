@@ -28,8 +28,7 @@ uniform sampler2D tex;
 #endif //TEXTURED
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

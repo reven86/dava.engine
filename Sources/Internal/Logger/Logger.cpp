@@ -278,6 +278,7 @@ void Logger::ErrorToFile(const FilePath& customLogFileName, const char8* text, .
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 {
+    return;
     Logger* log = Logger::Instance();
     if (nullptr != log && nullptr != lo)
         log->customOutputs.push_back(lo);
@@ -285,6 +286,7 @@ void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 
 void Logger::RemoveCustomOutput(DAVA::LoggerOutput* lo)
 {
+    return;
     Logger* log = Logger::Instance();
     if (nullptr != log && nullptr != lo)
     {

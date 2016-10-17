@@ -30,8 +30,7 @@ vertex_out
 [material][a] property float silhouetteExponent;
 
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

@@ -7,8 +7,7 @@ fragment_out
 
 [material][a] property float4  silhouetteColor;
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
     output.color = silhouetteColor;

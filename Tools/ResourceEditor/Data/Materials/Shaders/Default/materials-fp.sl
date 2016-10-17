@@ -173,8 +173,7 @@ FresnelShlickVec3( float NdotL, float3 Cspec )
 ////////////////////////////////////////////////////////////////////////////////
 //
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

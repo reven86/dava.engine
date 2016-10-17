@@ -114,8 +114,7 @@ vertex_out
 
 
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

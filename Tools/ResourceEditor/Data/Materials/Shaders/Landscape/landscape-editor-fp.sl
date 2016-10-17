@@ -29,8 +29,7 @@ uniform sampler2D cursorTexture;
 [material][instance] property float4 cursorCoordSize = float4(0,0,1,1);
 #endif
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

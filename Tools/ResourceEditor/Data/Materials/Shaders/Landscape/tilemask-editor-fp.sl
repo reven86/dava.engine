@@ -26,8 +26,7 @@ uniform sampler2D toolTexture;
 [material][instance] property float2 copypasteOffset = float2(0,0);
 #endif
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

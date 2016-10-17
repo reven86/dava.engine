@@ -49,8 +49,7 @@ uniform sampler2D vegetationmap;
 [material][a] property float4 vegWaveOffsety;
 //8 floats: xxxxyyyy (xy per layer)
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

@@ -30,8 +30,7 @@ sampler2D gradient;
 sampler2D contour;
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

@@ -34,8 +34,7 @@ JointTransformTangent( float3 inVec, float4 jointQuaternion )
     return inVec + jointQuaternion.w * t + cross(jointQuaternion.xyz, t); 
 }
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

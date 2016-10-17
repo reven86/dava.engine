@@ -16,8 +16,7 @@ sampler2D tex;
 [material][instance] property float smoothing;
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

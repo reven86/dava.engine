@@ -9,8 +9,7 @@ fragment_out
 
 [auto][instance] property float4 shadowColor = float4(1.0,0,0,1.0);
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

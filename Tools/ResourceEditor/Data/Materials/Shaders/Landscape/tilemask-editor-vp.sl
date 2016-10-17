@@ -12,8 +12,7 @@ vertex_out
     float2  uv       : TEXCOORD0;
 };
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 
