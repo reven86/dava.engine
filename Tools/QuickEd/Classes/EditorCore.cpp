@@ -154,6 +154,8 @@ void EditorCore::ConnectInternal()
 
 void EditorCore::Init(DAVA::Engine& engine)
 {
+    ResourcesManageHelper::InitInternalResources();
+
     EngineContext* context = engine.GetContext();
 
     context->logger->SetLogFilename("QuickEd.txt");
