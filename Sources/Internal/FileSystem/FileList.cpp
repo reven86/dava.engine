@@ -44,7 +44,12 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     DVASSERT(context != nullptr);
     pm = context->packManager;
 #else
-    IPackManager* pm = &Core::Instance()->GetPackManager();
+    IPackManager* pm = nullptr;
+    Core* core = Core::Instance();
+    if (core != nullptr)
+    {
+        pm = &(core->GetPackManager());
+    }
 #endif
 
     if (nullptr != pm && pm->IsInitialized())
