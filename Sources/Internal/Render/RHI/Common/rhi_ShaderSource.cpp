@@ -1173,7 +1173,7 @@ bool ShaderSource::Save(Api api, DAVA::File* out) const
 
 //------------------------------------------------------------------------------
 
-const std::string&
+const DAVA::String&
 ShaderSource::GetSourceCode(Api targetApi) const
 {
     static sl::Allocator alloc;
@@ -1182,7 +1182,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
     static sl::MSLGenerator mtl_gen(&alloc);
     const char* main = (type == PROG_VERTEX) ? "vp_main" : "fp_main";
     DVASSERT(targetApi < countof(code));
-    std::string* src = code + targetApi;
+    DAVA::String* src = code + targetApi;
 
     if (src->length() == 0)
     {

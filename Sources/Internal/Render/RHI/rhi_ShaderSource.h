@@ -79,7 +79,7 @@ public:
     bool Load(Api api, DAVA::File* in);
     bool Save(Api api, DAVA::File* out) const;
 
-    const std::string& GetSourceCode(Api targetApi) const;
+    const DAVA::String& GetSourceCode(Api targetApi) const;
     const ShaderPropList& Properties() const;
     const ShaderSamplerList& Samplers() const;
     const VertexLayout& ShaderVertexLayout() const;
@@ -104,9 +104,9 @@ private:
         bool isArray;
     };
 
-    std::string fileName;
+    DAVA::String fileName;
     sl::HLSLTree* ast;
-    mutable std::string code[RHI_COUNT];
+    mutable DAVA::String code[RHI_COUNT];
 
     ProgType type;
     uint32 codeLineCount;
