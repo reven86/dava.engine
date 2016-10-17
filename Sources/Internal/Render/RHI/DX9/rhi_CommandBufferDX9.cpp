@@ -557,8 +557,6 @@ void CommandBufferDX9_t::Execute()
         {
         case DX9__BEGIN:
         {
-            _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-
             if (isFirstInPass)
             {
                 const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];

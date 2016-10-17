@@ -234,6 +234,7 @@ namespace ImGui
 {
 using DAVA::uint8;
 using DAVA::int32;
+using DAVA::uint32;
 using DAVA::Key;
 using DAVA::UIEvent;
 using DAVA::float32;
@@ -338,7 +339,7 @@ void EnsureInited()
     }
 }
 
-void BeginFrame()
+void OnFrame()
 {
     ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
 
