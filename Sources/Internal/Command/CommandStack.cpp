@@ -28,7 +28,22 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
 
         if (currentIndex != commands.size() - 1)
         {
+            bool hasModifiedCommands = false;
+            for (size_t i = static_cast<size_t>(currentIndex + 1); i < commands.size(); ++i)
+            {
+                if (commands[i]->IsClean() == false)
+                {
+                    hasModifiedCommands = true;
+                    break;
+                }
+            }
+
             commands.erase(commands.begin() + (currentIndex + 1), commands.end());
+            if (cleanIndex > currentIndex)
+            {
+                cleanIndex = EMPTY_INDEX;
+                hasModifiedCommandsInRemoved = hasModifiedCommands;
+            }
         }
 
         if (isSingleCommand)
@@ -90,6 +105,7 @@ bool CommandStack::IsClean() const
 void CommandStack::SetClean()
 {
     cleanIndex = currentIndex;
+    hasModifiedCommandsInRemoved = false;
     UpdateCleanState();
 }
 
@@ -152,6 +168,12 @@ void CommandStack::UpdateCleanState()
     if (cleanIndex == currentIndex)
     {
         EmitCleanChanged(true);
+        return;
+    }
+
+    if (hasModifiedCommandsInRemoved == true)
+    {
+        EmitCleanChanged(false);
         return;
     }
     int32 begin = std::min(cleanIndex, currentIndex);
