@@ -16,7 +16,7 @@ static bool initialized = false;
 static rhi::HPipelineState pipelineStatePC, pipelineStatePTC;
 static rhi::HConstBuffer constBufferPC, constBufferPTC;
 static rhi::HDepthStencilState depthState;
-static DAVA::uint32 vertexLayoutPC = 0, vertexLayoutPTC = 0;
+static DAVA::uint32 vertexLayout = 0;
 static rhi::HSamplerState fontSamplerState;
 static rhi::HTextureSet fontTextureSet;
 static rhi::HTexture fontTexture;
@@ -185,6 +185,7 @@ void ImGuiDrawFn(ImDrawData* data)
         packet.vertexConstCount = 1;
         packet.fragmentConstCount = 0;
         packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        packet.vertexLayoutUID = ImGuiImplDetails::vertexLayout;
 
         for (ImDrawCmd& cmd : cmdList->CmdBuffer)
         {
@@ -195,7 +196,6 @@ void ImGuiDrawFn(ImDrawData* data)
 
                 packet.textureSet = *reinterpret_cast<rhi::HTextureSet*>(&cmd.TextureId);
                 packet.samplerState = fontSamplerState;
-                packet.vertexLayoutUID = ImGuiImplDetails::vertexLayoutPTC;
             }
             else
             {
@@ -203,7 +203,6 @@ void ImGuiDrawFn(ImDrawData* data)
                 packet.vertexConst[0] = constBufferPC;
                 packet.textureSet = rhi::HTextureSet();
                 packet.samplerState = rhi::HSamplerState();
-                packet.vertexLayoutUID = ImGuiImplDetails::vertexLayoutPC;
             }
 
             packet.primitiveCount = cmd.ElemCount / 3;
@@ -272,14 +271,9 @@ void EnsureInited()
         //vertex layouts
         rhi::VertexLayout vLayout;
         vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-        vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
-        ImGuiImplDetails::vertexLayoutPC = rhi::VertexLayout::UniqueId(vLayout);
-
-        vLayout.Clear();
-        vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
         vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
         vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
-        ImGuiImplDetails::vertexLayoutPTC = rhi::VertexLayout::UniqueId(vLayout);
+        ImGuiImplDetails::vertexLayout = rhi::VertexLayout::UniqueId(vLayout);
 
         //font sampler-state
         rhi::SamplerState::Descriptor ss_desc;
