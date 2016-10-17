@@ -1,9 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+
+#include <libproc.h>
+#include <unistd.h>
+
 int main(int argc, char** argv)
 {
-    std::string pathExec(argv[0]);
+    char path[PATH_MAX];
+    proc_pidpath(getpid(), path, PATH_MAX);
+
+    std::string pathExec(path);
     std::string pathDir, openComand;
 
     const size_t last_slash_idx = pathExec.rfind('/');
