@@ -8,6 +8,7 @@
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/DynamicBufferAllocator.h"
 #include "Platform/SystemTimer.h"
+#include "Debug/DVAssert.h"
 
 namespace ImGuiImplDetails
 {
@@ -435,7 +436,9 @@ void OnInput(UIEvent* input)
 
     case UIEvent::Phase::BEGAN:
     case UIEvent::Phase::ENDED:
-        io.MouseDown[int32(input->mouseButton) - 1] = (input->phase == UIEvent::Phase::BEGAN);
+        io.MouseDown[(input->mouseButton == UIEvent::MouseButton::NONE) ? 0 : int32(input->mouseButton) - 1] = (input->phase == UIEvent::Phase::BEGAN);
+        io.MousePos.x = input->physPoint.x;
+        io.MousePos.y = input->physPoint.y;
         break;
 
     case UIEvent::Phase::CHAR:
