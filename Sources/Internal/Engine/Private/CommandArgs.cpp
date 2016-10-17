@@ -15,7 +15,7 @@ namespace Private
 {
 Vector<String> GetCommandArgs(int argc, char* argv[])
 {
-#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)
     struct SkippedParams
     {
         String param;
@@ -26,13 +26,13 @@ Vector<String> GetCommandArgs(int argc, char* argv[])
     {
       { "-NSDocumentRevisionsDebugMode", true }
     };
-#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+#endif //#if defined(__DAVAENGINE_MACOS__)
 
     Vector<String> cmdargs;
     cmdargs.reserve(argc);
     for (int i = 0; i < argc; ++i)
     {
-#if defined(__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__)
 
         Vector<SkippedParams>::iterator it = std::find_if(skippedParams.begin(), skippedParams.end(), [&i, &argv](const SkippedParams& sp)
                                                           {
@@ -46,7 +46,7 @@ Vector<String> GetCommandArgs(int argc, char* argv[])
             }
             continue;
         }
-#endif //#if defined (__DAVAENGINE_DEBUG__) && defined(__DAVAENGINE_MACOS__)
+#endif //#if defined(__DAVAENGINE_MACOS__)
 
         cmdargs.push_back(argv[i]);
     }
