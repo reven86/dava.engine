@@ -205,11 +205,15 @@ void Process(Engine& e)
     ProcessRecourcePacker(e);
 }
 
-int GameMain(Vector<String> cmdLine)
+int DAVAMain(Vector<String> cmdLine)
 {
     Engine e;
-    DAVA::Vector<DAVA::String> modules = { "NetCore" };
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    DAVA::Vector<DAVA::String> modules =
+    {
+      "NetCore", // AssetCacheClient
+      "LocalizationSystem" // ResourcePacker2D::SetCacheClient is using DateTime::GetLocalizedTime() to create cache item
+    };
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
                      {

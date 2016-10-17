@@ -6,6 +6,9 @@
 #include "Core/Core.h"
 
 #include "steam/steam_api.h"
+
+#include <cstdlib>
+
 namespace DAVA
 {
 const String Steam::appIdPropertyKey = "steam_appid";
@@ -23,7 +26,7 @@ void Steam::Init()
         // Once you get a public Steam AppID assigned for this game, you need to replace k_uAppIdInvalid with it and
         // removed steam_appid.txt from the game depot.
         Logger::Error("Error SteamAPI Restart.");
-        return;
+        std::exit(0);
     }
 
     // Initialize SteamAPI, if this fails we bail out since we depend on Steam for lots of stuff.

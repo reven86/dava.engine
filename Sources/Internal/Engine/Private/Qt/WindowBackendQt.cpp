@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
 #include <QObject>
 
 namespace DAVA
@@ -490,6 +491,8 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.threadedRenderFrameCount = 1;
     params.acquireContextFunc = &AcqureContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
+    DVASSERT(renderWidget != nullptr);
+    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

@@ -109,10 +109,12 @@ gles2_TextureFormatSupported(TextureFormat format, ProgType)
     case TEXTURE_FORMAT_R16F:
     case TEXTURE_FORMAT_RG16F:
         supported = Half_Supported && RG_Supported;
+        break;
 
     case TEXTURE_FORMAT_R32F:
     case TEXTURE_FORMAT_RG32F:
         supported = Float_Supported && RG_Supported;
+        break;
 
     case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
@@ -472,6 +474,10 @@ void gles2_Initialize(const InitParam& param)
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
+        if (param.defaultFrameBuffer != nullptr)
+        {
+            _GLES2_Default_FrameBuffer = reinterpret_cast<GLuint>(param.defaultFrameBuffer);
+        }
         if (glewInit() == GLEW_OK)
             success = true;
     }

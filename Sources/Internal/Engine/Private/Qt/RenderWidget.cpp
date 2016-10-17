@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
@@ -14,6 +15,7 @@
 #include <QQuickItem>
 #include <QOpenGLContext>
 #include <QQuickItem>
+#include <QVariant>
 
 namespace DAVA
 {
@@ -65,6 +67,14 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
+    DVASSERT(isInPaint == false);
+    isInPaint = true;
+    SCOPE_EXIT
+    {
+        isInPaint = false;
+    };
+
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
     if (!nativeHandle.isValid())
     {
@@ -142,12 +152,6 @@ void RenderWidget::closeEvent(QCloseEvent* e)
 
 void RenderWidget::timerEvent(QTimerEvent* e)
 {
-    if (!quickWindow()->isVisible())
-    {
-        e->ignore();
-        return;
-    }
-
     QQuickWidget::timerEvent(e);
 }
 

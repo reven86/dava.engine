@@ -177,7 +177,15 @@ bool SceneExporterTool::PostInitInternal()
     for (uint32 i = 0; i < count; ++i)
     {
         String gpuName = options.GetOption(OptionName::GPU, i).AsString();
-        requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+        eGPUFamily gpu = GPUFamilyDescriptor::GetGPUByName(gpuName);
+        if (gpu == eGPUFamily::GPU_INVALID)
+        {
+            Logger::Error("Wrong gpu name: %s", gpuName.c_str());
+        }
+        else
+        {
+            requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+        }
     }
     if (requestedGPUs.empty())
     {

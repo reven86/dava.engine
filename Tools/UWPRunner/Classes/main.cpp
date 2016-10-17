@@ -28,10 +28,10 @@ int Process(Engine& e)
     return succeed ? 0 : 1;
 }
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 
     e.update.Connect([&e](float32)
                      {
