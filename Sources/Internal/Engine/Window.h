@@ -67,10 +67,10 @@ public:
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     /** Set cursor capture mode for current Window, if it has focus, see more about modes in eCursorCapture enum class.
-    *  Supported on Win32, OsX, WinUWP.
-    *  Remarks:
-    *  Turn off cursor capture, if Window lost focus.
-    *  Set cursor mode, after Window got focus.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        Turn off cursor capture, if Window lost focus.
+        Set cursor mode, after Window got focus.
     */
     void SetCursorCapture(eCursorCapture mode);
 
@@ -78,10 +78,10 @@ public:
     eCursorCapture GetCursorCapture() const;
 
     /** Set cursor visibility for current Window, if it has focus.
-    *  Supported on Win32, OsX, WinUWP.
-    *  Remarks:
-    *  Show cursor, if Window lost focus.
-    *  Hide cursor, after Window got focus.
+        Supported on Win32, OsX, WinUWP.
+        Remarks:
+        Show cursor, if Window lost focus.
+        Hide cursor, after Window got focus.
     */
     void SetCursorVisibility(bool visible);
 
