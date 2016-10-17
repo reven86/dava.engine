@@ -102,9 +102,9 @@ bool ConvertImageDirect(const Image* srcImage, Image* dstImage)
 {
     return ConvertImageDirect(srcImage->format, dstImage->format,
                               srcImage->data, srcImage->width, srcImage->height,
-                              srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
+                              srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBits(srcImage->format) / 8,
                               dstImage->data, dstImage->width, dstImage->height,
-                              dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+                              dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBits(dstImage->format) / 8);
 }
 
 bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat,
