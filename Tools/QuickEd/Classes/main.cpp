@@ -7,6 +7,7 @@ DAVA::KeyedArchive* CreateOptions()
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 1);
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetBool("trackFont", true);
     return appOptions;
 }
 
