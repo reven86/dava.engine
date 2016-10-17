@@ -12,7 +12,7 @@ if ( NOT WIN32 OR WINDOWS_UAP )
     message( FATAL_ERROR "This util can be built only on Windows Desktop platform" )
 endif()
 
-add_definitions( 
+add_definitions(
 -DQT_NETWORK_LIB
 -DQT_CORE_LIB
 -DQT_HAVE_MMX
@@ -43,7 +43,7 @@ set ( Generated          ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source ( SOURCE  "Classes"  ${PLATFORM_SPECIFIC_FOLDER} )
 
-list ( APPEND UNIFIED_IGNORE_LIST "Classes/Qt/corecon/corecon.cpp" )
+list ( APPEND UNIFIED_IGNORE_LIST "Classes/Qt" )
 
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
 set( LIBRARIES            ${QT_LIBRARIES} runtimeobject.lib XmlLite.lib wsclient.lib shlwapi.lib )

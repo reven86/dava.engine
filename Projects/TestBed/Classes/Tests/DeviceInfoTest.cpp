@@ -48,17 +48,17 @@ void DeviceInfoTest::UpdateTestInfo()
 
     infoStream << L"DeviceInfo\n";
     infoStream << L"GetPlatform() :" << int(DeviceInfo::GetPlatform()) << L"\n";
-    infoStream << L"GetPlatformString() :" << StringToWString(DeviceInfo::GetPlatformString()) << L"\n";
-    infoStream << L"GetVersion() :" << StringToWString(DeviceInfo::GetVersion()) << L"\n";
-    infoStream << L"GetManufacturer() :" << StringToWString(DeviceInfo::GetManufacturer()) << L"\n";
-    infoStream << L"GetModel() :" << StringToWString(DeviceInfo::GetModel()) << L"\n";
-    infoStream << L"GetLocale() :" << StringToWString(DeviceInfo::GetLocale()) << L"\n";
-    infoStream << L"GetRegion() :" << StringToWString(DeviceInfo::GetRegion()) << L"\n";
-    infoStream << L"GetTimeZone() :" << StringToWString(DeviceInfo::GetTimeZone()) << L"\n";
-    infoStream << L"GetUDID() :" << StringToWString(DeviceInfo::GetUDID()) << L"\n";
+    infoStream << L"GetPlatformString() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetPlatformString()) << L"\n";
+    infoStream << L"GetVersion() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetVersion()) << L"\n";
+    infoStream << L"GetManufacturer() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetManufacturer()) << L"\n";
+    infoStream << L"GetModel() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetModel()) << L"\n";
+    infoStream << L"GetLocale() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetLocale()) << L"\n";
+    infoStream << L"GetRegion() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetRegion()) << L"\n";
+    infoStream << L"GetTimeZone() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetTimeZone()) << L"\n";
+    infoStream << L"GetUDID() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetUDID()) << L"\n";
     infoStream << L"GetName() :" << DeviceInfo::GetName() << L"\n";
-    infoStream << L"GetHTTPProxyHost() :" << StringToWString(DeviceInfo::GetHTTPProxyHost()) << L"\n";
-    infoStream << L"GetHTTPNonProxyHosts() :" << StringToWString(DeviceInfo::GetHTTPNonProxyHosts()) << L"\n";
+    infoStream << L"GetHTTPProxyHost() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetHTTPProxyHost()) << L"\n";
+    infoStream << L"GetHTTPNonProxyHosts() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetHTTPNonProxyHosts()) << L"\n";
     infoStream << L"GetHTTPProxyPort() :" << DeviceInfo::GetHTTPProxyPort() << L"\n";
     infoStream << L"GetScreenInfo() :" << L"width: " << DeviceInfo::GetScreenInfo().width << L", height: " << DeviceInfo::GetScreenInfo().height << L", scale: " << DeviceInfo::GetScreenInfo().scale << L"\n";
     infoStream << L"GetZBufferSize() :" << DeviceInfo::GetZBufferSize() << L"\n";
@@ -66,7 +66,7 @@ void DeviceInfoTest::UpdateTestInfo()
     infoStream << L"GetNetworkInfo() :" << L"networkType: " << int(DeviceInfo::GetNetworkInfo().networkType) << L", signalStrength: " << int(DeviceInfo::GetNetworkInfo().signalStrength) << L"\n";
     infoStream << L"GetStoragesList() :" << L"Size: " << (DeviceInfo::GetStoragesList().size()) << L"\n";
     infoStream << L"GetCpuCount() :" << (DeviceInfo::GetCpuCount()) << L"\n";
-    infoStream << L"GetCarrierName() :" << StringToWString(DeviceInfo::GetCarrierName()) << L"\n";
+    infoStream << L"GetCarrierName() :" << UTF8Utils::EncodeToWideString(DeviceInfo::GetCarrierName()) << L"\n";
 
     infoStream << L"HIDDevices() :";
     infoStream << L"pointer(" << ((hidDevices[DeviceInfo::HID_POINTER_TYPE] = DeviceInfo::IsHIDConnected(DeviceInfo::HID_POINTER_TYPE)) ? "y" : "n") << "), ";

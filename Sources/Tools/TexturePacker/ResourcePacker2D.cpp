@@ -10,6 +10,7 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Platform/Process.h"
 #include "Render/TextureDescriptor.h"
@@ -541,10 +542,10 @@ void ResourcePacker2D::SetCacheClient(AssetCacheClient* cacheClient_, const Stri
 {
     cacheClient = cacheClient_;
 
-    cacheItemDescription.machineName = WStringToString(DeviceInfo::GetName());
+    cacheItemDescription.machineName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
 
     DateTime timeNow = DateTime::Now();
-    cacheItemDescription.creationDate = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+    cacheItemDescription.creationDate = UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
 
     cacheItemDescription.comment = comment;
 }

@@ -3,7 +3,7 @@
 #include "mongodb/mongo.h"
 #include "mongodb/gridfs.h"
 
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
 
 #include "FileSystem/KeyedArchive.h"
@@ -551,7 +551,7 @@ void MongodbClient::WriteData(MongodbObject* mongoObj, const String& key, Varian
         break;
         case VariantType::TYPE_WIDE_STRING:
         {
-            mongoObj->AddString(key, WStringToString(value->AsWideString()));
+            mongoObj->AddString(key, UTF8Utils::EncodeToUTF8(value->AsWideString()));
         }
         break;
         case VariantType::TYPE_BYTE_ARRAY:

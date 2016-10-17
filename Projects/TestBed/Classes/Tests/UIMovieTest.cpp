@@ -87,7 +87,7 @@ UIButton* UIMovieTest::CreateUIButton(Font* font, const Rect& rect, const String
 {
     UIButton* button = new UIButton(rect);
     button->SetStateFont(0xFF, font);
-    button->SetStateText(0xFF, StringToWString(text));
+    button->SetStateText(0xFF, UTF8Utils::EncodeToWideString(text));
     button->SetStateFontColor(0xFF, Color::White);
     button->SetDebugDraw(true);
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));

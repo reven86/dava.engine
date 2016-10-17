@@ -22,9 +22,6 @@ WideString WcharToWString(const wchar_t* s);
 
 bool IsDrawThread();
 
-inline WideString StringToWString(const String& s);
-inline String WStringToString(const WideString& s);
-
 WideString GetDeviceName();
 
 void DisableSleepTimer();
@@ -45,20 +42,13 @@ void Swap(T& v1, T& v2);
 
 /**
  \brief Function to compare strings case-insensitive
- \param[in] ext1 - first string 
- \param[in] ext2 - second string 
- \param[out] result of comparision 
+ \param[in] ext1 - first string
+ \param[in] ext2 - second string
+ \param[out] result of comparision
  */
 int32 CompareCaseInsensitive(const String& str1, const String& str2);
 
 //implementation
-
-inline WideString StringToWString(const String& s)
-{
-    WideString temp(s.length(), L' ');
-    std::copy(s.begin(), s.end(), temp.begin());
-    return temp;
-}
 
 inline void StringReplace(String& repString, const String& needle, const String& s)
 {
@@ -68,16 +58,6 @@ inline void StringReplace(String& repString, const String& needle, const String&
         repString.replace(thispos, needle.length(), s);
         lastpos = thispos + s.length();
     }
-}
-
-inline String WStringToString(const WideString& s)
-{
-    size_t len = s.length();
-    String temp(len, ' ');
-    //std::copy(s.begin(), s.end(), temp.begin());
-    for (size_t i = 0; i < len; ++i)
-        temp[i] = static_cast<char>(s[i]);
-    return temp;
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -163,7 +143,7 @@ protected:
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
 uint64 EglGetCurrentContext();
-	
+
 #endif
 
 // Open the URL in external browser.

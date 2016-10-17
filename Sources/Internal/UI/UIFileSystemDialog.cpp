@@ -1,13 +1,15 @@
 #include "UI/UIFileSystemDialog.h"
+
+#include <algorithm>
+
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "FileSystem/FileList.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include <algorithm>
 #include "Render/2D/FTFont.h"
 
 namespace DAVA
@@ -180,11 +182,11 @@ void UIFileSystemDialog::SaveFinishing()
         FilePath selectedFile(currentDir);
         if (textField->GetText().find(L".") != textField->GetText().npos)
         {
-            selectedFile += WStringToString(textField->GetText());
+            selectedFile += UTF8Utils::EncodeToUTF8(textField->GetText());
         }
         else
         {
-            selectedFile += (WStringToString(textField->GetText()) + extensionFilter[0]);
+            selectedFile += (UTF8Utils::EncodeToUTF8(textField->GetText()) + extensionFilter[0]);
         }
         OnFileSelected(selectedFile);
         GetParent()->RemoveControl(this);
@@ -306,7 +308,7 @@ void UIFileSystemDialog::OnIndexSelected(int32 index)
 
 void UIFileSystemDialog::RefreshList()
 {
-    workingPath->SetText(StringToWString(currentDir.GetAbsolutePathname()));
+    workingPath->SetText(UTF8Utils::EncodeToWideString(currentDir.GetAbsolutePathname()));
     if (operationType != OPERATION_CHOOSE_DIR)
     {
         positiveButton->SetDisabled(true);
@@ -375,7 +377,7 @@ void UIFileSystemDialog::RefreshList()
                 {
                     lastSelectedIndex = static_cast<int32>(fileUnits.size());
                     positiveButton->SetDisabled(false);
-                    textField->SetText(StringToWString(files->GetFilename(fu.indexInFileList)));
+                    textField->SetText(UTF8Utils::EncodeToWideString(files->GetFilename(fu.indexInFileList)));
                 }
                 String ext = fu.path.GetExtension();
                 std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
@@ -459,11 +461,11 @@ UIListCell* UIFileSystemDialog::CellAtIndex(UIList* forList, int32 index)
     UIStaticText* t = static_cast<UIStaticText*>(c->FindByName("CellText"));
     if (fileUnits[index].type == FUNIT_FILE)
     {
-        t->SetText(StringToWString(fileUnits[index].name));
+        t->SetText(UTF8Utils::EncodeToWideString(fileUnits[index].name));
     }
     else
     {
-        t->SetText(StringToWString("[" + fileUnits[index].name + "]"));
+        t->SetText(UTF8Utils::EncodeToWideString("[" + fileUnits[index].name + "]"));
     }
 
     if (index != lastSelectedIndex)
@@ -525,7 +527,7 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
         {
             if (fileUnits[selectedCell->GetIndex()].type == FUNIT_FILE)
             {
-                textField->SetText(StringToWString(files->GetPathname(fileUnits[lastSelectedIndex].indexInFileList).GetFilename()));
+                textField->SetText(UTF8Utils::EncodeToWideString(files->GetPathname(fileUnits[lastSelectedIndex].indexInFileList).GetFilename()));
                 positiveButton->SetDisabled(false);
             }
         }

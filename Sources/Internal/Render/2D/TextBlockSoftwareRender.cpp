@@ -2,7 +2,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/RenderCallbacks.h"
 #include "Core/Core.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -40,7 +40,7 @@ void TextBlockSoftwareRender::Prepare()
 
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
-	
+
 #if defined(LOCALIZATION_DEBUG)
     bufHeight = height;
     bufWidth = width;
@@ -58,13 +58,13 @@ void TextBlockSoftwareRender::Prepare()
     String addInfo;
     if (!textBlock->isMultilineEnabled)
     {
-        addInfo = WStringToString(textBlock->visualText.c_str());
+        addInfo = UTF8Utils::EncodeToUTF8(textBlock->visualText.c_str());
     }
     else
     {
         if (textBlock->multilineStrings.size() >= 1)
         {
-            addInfo = WStringToString(textBlock->multilineStrings[0].c_str());
+            addInfo = UTF8Utils::EncodeToUTF8(textBlock->multilineStrings[0].c_str());
         }
         else
         {

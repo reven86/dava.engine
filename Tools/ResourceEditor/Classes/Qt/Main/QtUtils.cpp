@@ -61,7 +61,7 @@ String SizeInBytesToString(float32 size)
 
 WideString SizeInBytesToWideString(float32 size)
 {
-    return StringToWString(SizeInBytesToString(size));
+    return UTF8Utils::EncodeToWideString(SizeInBytesToString(size));
 }
 
 bool IsKeyModificatorPressed(Key key)

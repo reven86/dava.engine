@@ -1,4 +1,4 @@
-#include "Utils.h"
+#include "UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <Objbase.h>
@@ -24,13 +24,13 @@ String GenerateGUID()
     Array<OLECHAR, 64> guidStringRaw{};
     ::StringFromGUID2(guid, guidStringRaw.data(), static_cast<int>(guidStringRaw.size()));
 
-    
+
 #ifndef OLE2ANSI
     // Convert to normal string
     // OLECHAR's type is wchar if OLE2ANSI is not defined, otherwise its type is char
     //
     WideString guidWideStr(guidStringRaw.data());
-    return WStringToString(guidWideStr);
+    return UTF8Utils::EncodeToUTF8(guidWideStr);
 #else
     return String(guidStringRaw.data());
 #endif
@@ -50,8 +50,8 @@ void OpenURL(const String& url)
 
 void OpenURL(const String& url)
 {
-    WideString urlWide = StringToWString(url);
-    ShellExecute(NULL, L"open", urlWide.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    WideString urlWide = UTF8Utils::EncodeToWideString(url);
+    ShellExecute(nullptr, L"open", urlWide.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 #endif //  __DAVAENGINE_WIN32__

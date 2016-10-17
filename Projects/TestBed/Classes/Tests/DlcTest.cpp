@@ -109,7 +109,7 @@ void DlcTest::LoadResources()
     gameVersionIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W + SPACE, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
     gameVersionIn->SetDebugDraw(true);
     String gameVer = options->GetString(gameVersion, defaultGameVersion);
-    gameVersionIn->SetText(StringToWString(gameVer));
+    gameVersionIn->SetText(UTF8Utils::EncodeToWideString(gameVer));
     gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
     gameVersionIn->SetDelegate(this);
     AddControl(gameVersionIn);
@@ -150,7 +150,7 @@ void DlcTest::LoadResources()
 
     uint64 spd = options->GetUInt64(downloadSpeed, 0);
     String spdStr(Format("%lld", spd));
-    dlSpeedIn->SetText(StringToWString(spdStr));
+    dlSpeedIn->SetText(UTF8Utils::EncodeToWideString(spdStr));
     dlSpeedIn->GetOrCreateComponent<UIFocusComponent>();
     dlSpeedIn->SetDelegate(this);
     AddControl(dlSpeedIn);
@@ -249,16 +249,16 @@ void DlcTest::LoadResources()
 void DlcTest::UpdateInfoStr()
 {
     infoStr = L"DLCWorkingDir: ";
-    infoStr += StringToWString(workingDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(workingDir.GetAbsolutePathname());
     infoStr += L"\nResourcesDir: ";
-    infoStr += StringToWString(destinationDir.GetAbsolutePathname());
+    infoStr += UTF8Utils::EncodeToWideString(destinationDir.GetAbsolutePathname());
     infoStr += L"\nURL: ";
     DAVA::String url = options->GetString(currentDownloadUrl, localServerUrl);
-    infoStr += StringToWString(url);
+    infoStr += UTF8Utils::EncodeToWideString(url);
     infoStr += L"\nDownloading threads count: ";
     uint32 currentThreadsCount = options->GetUInt32(downloadThreadsCount, defaultdownloadTreadsCount);
-    infoStr += StringToWString(Format("%d", currentThreadsCount));
-    infoStr += StringToWString(Format("\nSpeedLimit %d", 0));
+    infoStr += UTF8Utils::EncodeToWideString(Format("%d", currentThreadsCount));
+    infoStr += UTF8Utils::EncodeToWideString(Format("\nSpeedLimit %d", 0));
 
     if (nullptr != infoText)
     {
@@ -301,7 +301,7 @@ void DlcTest::Update(float32 timeElapsed)
         dlc->GetProgress(cur, total);
         DownloadStatistics stat = DownloadManager::Instance()->GetStatistics();
         String statText = Format("%lld kbytes / %lld kbytes    %lld kbytes/s", cur / 1024, total / 1024, stat.downloadSpeedBytesPerSec / 1024);
-        progressStatistics->SetText(StringToWString(statText));
+        progressStatistics->SetText(UTF8Utils::EncodeToWideString(statText));
 
         // update animation
         angle += 0.10f;
@@ -414,12 +414,12 @@ void DlcTest::TextFieldOnTextChanged(UITextField* textField, const WideString& n
 {
     if (gameVersionIn == textField)
     {
-        options->SetString(gameVersion, WStringToString(newText));
+        options->SetString(gameVersion, UTF8Utils::EncodeToUTF8(newText));
     }
 
     if (dlSpeedIn == textField)
     {
-        uint64 speedLimit = std::atoi(WStringToString(newText).c_str());
+        uint64 speedLimit = std::atoi(UTF8Utils::EncodeToUTF8(newText).c_str());
         options->SetUInt64(downloadSpeed, speedLimit);
     }
 }

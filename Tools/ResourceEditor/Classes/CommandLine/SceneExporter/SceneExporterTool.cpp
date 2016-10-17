@@ -8,6 +8,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"
+#include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
 
@@ -248,9 +249,9 @@ void SceneExporterTool::ProcessInternal()
         AssetCache::Error connected = cacheClient.ConnectSynchronously(connectionsParams);
         if (connected == AssetCache::Error::NO_ERRORS)
         {
-            String machineName = WStringToString(DeviceInfo::GetName());
+            String machineName = UTF8Utils::EncodeToUTF8(DeviceInfo::GetName());
             DateTime timeNow = DateTime::Now();
-            String timeString = WStringToString(timeNow.GetLocalizedDate()) + "_" + WStringToString(timeNow.GetLocalizedTime());
+            String timeString = UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedDate()) + "_" + UTF8Utils::EncodeToUTF8(timeNow.GetLocalizedTime());
 
             exporter.SetCacheClient(&cacheClient, machineName, timeString, "Resource Editor. Export scene");
         }
