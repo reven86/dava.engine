@@ -5,10 +5,6 @@ namespace sl
 {
 class Allocator;
 
-/**
- * This class is used for outputting code. It handles indentation and inserting #line markers
- * to match the desired output line numbers.
- */
 class CodeWriter
 {
 public:

@@ -24,8 +24,7 @@ const char* GLESGenerator::ReservedWord[] =
   "fract"
 };
 
-const char*
-GLESGenerator::GetTypeName(const HLSLType& type)
+const char* GLESGenerator::GetTypeName(const HLSLType& type)
 {
     switch (type.baseType)
     {
@@ -287,9 +286,14 @@ bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* 
         }
     }
 
-    //    OutputAttributes(entryFunction);
     OutputStatements(0, statement);
-    OutputEntryCaller(entryFunction);
+
+    writer.WriteLine(0, entryFunction->fileName, entryFunction->line, "void");
+    writer.WriteLine(0, "main()");
+    writer.WriteLine(0, "{");
+    writer.EndLine();
+    OutputStatements(1, entryFunction->statement);
+    writer.WriteLine(0, "}");
 
     tree = NULL;
 
@@ -655,44 +659,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                 writer.Write("(");
                 OutputExpression(memberAccess->object);
                 writer.Write(")");
-                /*
-                if (memberAccess->object->expressionType.baseType == HLSLBaseType_Float3x3 ||
-                    memberAccess->object->expressionType.baseType == HLSLBaseType_Float4x4)
-                {
-                    // Handle HLSL matrix "swizzling".
-                    // TODO: Properly handle multiple element selection such as _m00_m12
-                    const char* n = memberAccess->field;
-                    while (n[0] != 0)
-                    {
-                        if (n[0] != '_')
-                        {
-                            DVASSERT(0);
-                            break;
-                        }
-                        ++n;
-                        char base = '1';
-                        if (n[0] == 'm')
-                        {
-                            base = '0';
-                            ++n;
-                        }
-                        if (isdigit(n[0]) && isdigit(n[1]))
-                        {
-                            m_writer.Write("[%d][%d]", n[1] - base, n[0] - base);
-                            n += 2;
-                        }
-                        else
-                        {
-                            DVASSERT(0);
-                            break;
-                        }
-                    }
-                }
-                else
-*/
-                {
-                    writer.Write(".%s", memberAccess->field);
-                }
+                writer.Write(".%s", memberAccess->field);
             }
         }
     }
@@ -700,27 +667,10 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
     {
         HLSLArrayAccess* arrayAccess = static_cast<HLSLArrayAccess*>(expression);
 
-        /*
-        if (!arrayAccess->array->expressionType.array &&
-            (arrayAccess->array->expressionType.baseType == HLSLBaseType_Float3x3 ||
-             arrayAccess->array->expressionType.baseType == HLSLBaseType_Float4x4))
-        {
-            // GLSL access a matrix as m[c][r] while HLSL is m[r][c], so use our
-            // special row access function to convert.
-            m_writer.Write("%s(", m_matrixRowFunction);
-            OutputExpression(arrayAccess->array);
-            m_writer.Write(",");
-            OutputExpression(arrayAccess->index);
-            m_writer.Write(")");
-        }
-        else
-*/
-        {
-            OutputExpression(arrayAccess->array);
-            writer.Write("[");
-            OutputExpression(arrayAccess->index);
-            writer.Write("]");
-        }
+        OutputExpression(arrayAccess->array);
+        writer.Write("[");
+        OutputExpression(arrayAccess->index);
+        writer.Write("]");
     }
     else if (expression->nodeType == HLSLNodeType_FunctionCall)
     {
@@ -1200,112 +1150,6 @@ void GLESGenerator::OutputSetOutAttribute(const char* semantic, const char* resu
     {
         writer.WriteLine(1, "%s%s = %s;", outAttribPrefix, semantic, resultName);
     }
-}
-
-void GLESGenerator::OutputEntryCaller(HLSLFunction* entryFunction)
-{
-    //    m_writer.BeginLine( 0, entryFunction->fileName, entryFunction->line );
-    writer.WriteLine(0, entryFunction->fileName, entryFunction->line, "void");
-    writer.WriteLine(0, "main()");
-    writer.WriteLine(0, "{");
-    writer.EndLine();
-    OutputStatements(1, entryFunction->statement);
-    writer.WriteLine(0, "}");
-
-    /*
-    HLSLRoot* root = tree->GetRoot();
-
-    m_writer.WriteLine(0, "void main() {");
-
-    // Create local variables for each of the parameters we'll need to pass
-    // into the entry point function.
-    HLSLArgument* argument = entryFunction->argument;
-    while (argument != NULL)
-    {
-        m_writer.BeginLine(1);
-        OutputDeclaration(argument->type, argument->name);
-        m_writer.EndLine(";");
-
-        // Set the value for the local variable.
-        if (argument->type.baseType == HLSLBaseType_UserDefined)
-        {
-            HLSLStruct* structDeclaration = FindStruct(root, argument->type.typeName);
-            ASSERT(structDeclaration != NULL);
-            HLSLStructField* field = structDeclaration->field;
-            while (field != NULL)
-            {
-                if (field->semantic != NULL)
-                {
-                    const char* builtInSemantic = GetBuiltInSemantic(field->semantic);
-                    if (builtInSemantic)
-                    {
-                        m_writer.WriteLine(1, "%s.%s = %s;", GetSafeIdentifierName(argument->name), GetSafeIdentifierName(field->name), builtInSemantic);
-                    }
-                    else
-                    {
-                        m_writer.WriteLine(1, "%s.%s = %s%s;", GetSafeIdentifierName(argument->name), GetSafeIdentifierName(field->name), m_inAttribPrefix, field->semantic);
-                    }
-                }
-                field = field->nextField;
-            }
-        }
-        else if (argument->semantic != NULL)
-        {
-            const char* builtInSemantic = GetBuiltInSemantic(argument->semantic);
-            if (builtInSemantic)
-            {
-                m_writer.WriteLine(1, "%s = %s;", GetSafeIdentifierName(argument->name), builtInSemantic);
-            }
-            else
-            {
-                m_writer.WriteLine(1, "%s = %s%s;", GetSafeIdentifierName(argument->name), m_inAttribPrefix, argument->semantic);
-            }
-        }
-
-        argument = argument->nextArgument;
-    }
-
-    const char* resultName = "result";
-
-    // Call the original entry function.
-    m_writer.BeginLine(1);
-    m_writer.Write("%s %s = %s(", GetTypeName(entryFunction->returnType), resultName, m_entryName);
-
-    int numArgs = 0;
-    argument = entryFunction->argument;
-    while (argument != NULL)
-    {
-        if (numArgs > 0)
-        {
-            m_writer.Write(", ");
-        }
-        m_writer.Write("%s", GetSafeIdentifierName(argument->name));
-        argument = argument->nextArgument;
-        ++numArgs;
-    }
-    m_writer.EndLine(");");
-
-    // Copy values from the result into the out attributes as necessary.
-    if (entryFunction->returnType.baseType == HLSLBaseType_UserDefined)
-    {
-        HLSLStruct* structDeclaration = FindStruct(root, entryFunction->returnType.typeName);
-        ASSERT(structDeclaration != NULL);
-        HLSLStructField* field = structDeclaration->field;
-        while (field != NULL)
-        {
-            char fieldResultName[1024];
-            String_Printf(fieldResultName, sizeof(fieldResultName), "%s.%s", resultName, field->name);
-            OutputSetOutAttribute(field->semantic, fieldResultName);
-            field = field->nextField;
-        }
-    }
-    else if (entryFunction->semantic != NULL)
-    {
-        OutputSetOutAttribute(entryFunction->semantic, resultName);
-    }
-
-    m_writer.WriteLine(0, "}");
-*/
 }
 
 void GLESGenerator::OutputDeclaration(HLSLDeclaration* declaration)

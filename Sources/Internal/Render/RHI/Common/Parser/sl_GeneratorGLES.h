@@ -30,7 +30,6 @@ private:
 
     void OutputAttribute(const HLSLType& type, const char* semantic, const char* attribType, const char* prefix);
     void OutputAttributes(HLSLFunction* entryFunction);
-    void OutputEntryCaller(HLSLFunction* entryFunction);
     void OutputDeclaration(HLSLDeclaration* declaration);
     void OutputDeclaration(const HLSLType& type, const char* name);
 

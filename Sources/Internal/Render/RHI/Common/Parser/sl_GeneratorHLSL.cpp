@@ -981,20 +981,6 @@ void HLSLGenerator::OutputDeclarationBody(const HLSLType& type, const char* name
         writer.Write(" : %s", semantic);
     }
 
-    if (registerName != NULL)
-    {
-        /*
-        if (m_isInsideBuffer)
-        {
-            writer.Write(" : packoffset(%s)", registerName);
-        }
-        else
-        {
-            writer.Write(" : register(%s)", registerName);
-        }
-*/
-    }
-
     if (assignment != NULL && !IsSamplerType(type))
     {
         writer.Write(" = ");
@@ -1015,26 +1001,6 @@ void HLSLGenerator::OutputDeclaration(const HLSLType& type, const char* name, co
 {
     OutputDeclarationType(type);
     OutputDeclarationBody(type, name, semantic, registerName, assignment);
-}
-
-bool HLSLGenerator::ChooseUniqueName(const char* base, char* dst, int dstLength) const
-{
-    // IC: Try without suffix first.
-    Snprintf(dst, dstLength, "%s", base);
-    if (!tree->GetContainsString(base))
-    {
-        return true;
-    }
-
-    for (int i = 1; i < 1024; ++i)
-    {
-        Snprintf(dst, dstLength, "%s%d", base, i);
-        if (!tree->GetContainsString(dst))
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 } // namespace sl

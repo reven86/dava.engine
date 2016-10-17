@@ -169,19 +169,7 @@ bool MSLGenerator::Generate(HLSLTree* tree_, Target target_, const char* entryNa
       "inline vector_float4 mul( vector_float4 v, float4x4 m ) { return m*v; }",
       "inline vector_float4 mul( float4x4 m, vector_float4 v ) { return v*m; }",
       "inline vector_float3 mul( vector_float3 v, float3x3 m ) { return m*v; }",
-      /*
-      "inline float  lerp( float a, float b, float t ) { return mix( a, b, t ); }",
-      "inline vector_float2 lerp( vector_float2 a, vector_float2 b, float t ) { return mix( a, b, t ); }",
-      "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float t ) { return mix( a, b, t ); }",
-      "inline vector_float4 lerp( vector_float4 a, vector_float4 b, float t ) { return mix( a, b, t ); }",
 
-      "inline vector_float3 lerp( vector_float3 a, vector_float3 b, float3 t ) { return mix( a, b, t ); }",
-
-      "inline half  lerp( half a, half b, half t ) { return mix( a, b, t ); }",
-      "inline vector_half2 lerp( vector_half2 a, vector_half2 b, half t ) { return mix( a, b, t ); }",
-      "inline vector_half3 lerp( vector_half3 a, vector_half3 b, half t ) { return mix( a, b, t ); }",
-      "inline vector_half4 lerp( vector_half4 a, vector_half4 b, half t ) { return mix( a, b, t ); }",
-*/
       "#define FP_A8(t) (t).a",
 
       ""

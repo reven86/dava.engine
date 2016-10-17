@@ -38,9 +38,6 @@ private:
     void OutputDeclarationType(const HLSLType& type);
     void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* assignment = NULL);
 
-    /** Generates a name of the format "base+n" where n is an integer such that the name
-     * isn't used in the syntax tree. */
-    bool ChooseUniqueName(const char* base, char* dst, int dstLength) const;
 
 private:
     CodeWriter writer;
