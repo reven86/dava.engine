@@ -44,8 +44,8 @@ private:
 
     void DumpAverageToUI(DAVA::ProfilerCPU* profiler, DAVA::int32 snapshotID);
 
-    DAVA::UIButton* ProfilerTest::CreateButton(const DAVA::Rect& rect, const DAVA::WideString& text, const DAVA::Message& msg);
-    DAVA::UIStaticText* ProfilerTest::CreateStaticText(const DAVA::Rect& rect, const DAVA::WideString& text, DAVA::Font* font, const DAVA::Color& color);
+    DAVA::UIButton* CreateButton(const DAVA::Rect& rect, const DAVA::WideString& text, const DAVA::Message& msg);
+    DAVA::UIStaticText* CreateStaticText(const DAVA::Rect& rect, const DAVA::WideString& text, DAVA::Font* font, const DAVA::Color& color);
 
     DAVA::Font* textFont = nullptr;
     DAVA::Font* dumpFont = nullptr;
