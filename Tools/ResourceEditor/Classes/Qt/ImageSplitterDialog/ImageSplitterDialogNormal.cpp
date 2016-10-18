@@ -89,6 +89,9 @@ void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath& pathna
 
 DAVA::Image* ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image* firstImage, DAVA::Image* secondImage)
 {
+    DVASSERT(firstImage->format == FORMAT_RGBA8888);
+    DVASSERT(secondImage->format == FORMAT_RGBA8888);
+
     auto mergedImage = DAVA::Image::Create(firstImage->width, firstImage->height, DAVA::FORMAT_RGBA8888);
 
     DAVA::uint32 size = firstImage->width * firstImage->height;
