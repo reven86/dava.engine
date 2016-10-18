@@ -74,7 +74,7 @@ public:
             }
             else
             {
-                DVASSERT(false && "Unknown CALayer king while setting rendering scale factor");
+                DVASSERT(false && "Unknown CALayer kind while setting rendering scale factor");
             }
         }
 
