@@ -2,7 +2,7 @@
 #include "Render/RenderBase.h"
 #include "Render/Renderer.h"
 #include "UI/UIEvent.h"
-#include "Debug/ImGui/ImGui.h"
+#include "Debug/Private/ImGui.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RHI/rhi_ShaderSource.h"

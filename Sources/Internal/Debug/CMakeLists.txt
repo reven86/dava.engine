@@ -1,6 +1,6 @@
 
 set( HPP_FILES *.h )
-set( CPP_FILES *.cpp Private/*.cpp ImGui/Private/*.cpp)
+set( CPP_FILES *.cpp Private/*.cpp Private/imgui/*.cpp)
 set( CPP_FILES_APPLE *.mm  )
 set( ERASE_FILES_MACOS  UIAlertView_Modal.h
                         UIAlertView_Modal.mm 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Private/imgui.h"
+#include "imgui/imgui.h"
 
 namespace DAVA
 {
