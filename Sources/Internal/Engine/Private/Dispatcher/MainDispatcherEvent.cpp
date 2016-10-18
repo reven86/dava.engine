@@ -136,6 +136,17 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateLocalNotificationEvent(const String& uid)
+{
+    char8* buf = new char8[uid.length() + 1];
+    std::copy(begin(uid), end(uid), buf);
+    buf[uid.length()] = '\0';
+
+    MainDispatcherEvent e(LOCAL_NOTIFICATION);
+    e.localNotificationEvent.uid = buf;
+    return e;
+}
+
 } // namespace Private
 } // namespace DAVA
 

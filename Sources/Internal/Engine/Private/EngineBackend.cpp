@@ -406,6 +406,9 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
+    case MainDispatcherEvent::LOCAL_NOTIFICATION:
+        HandleLocalNotification(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -497,6 +500,13 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
             Quit(0);
         }
     }
+}
+
+void EngineBackend::HandleLocalNotification(const MainDispatcherEvent& e)
+{
+    String uid(e.localNotificationEvent.uid);
+    delete[] e.localNotificationEvent.uid;
+    Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uid);
 }
 
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)

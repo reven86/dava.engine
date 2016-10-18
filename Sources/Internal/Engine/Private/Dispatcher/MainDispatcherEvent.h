@@ -42,6 +42,8 @@ struct MainDispatcherEvent final
 
         USER_CLOSE_REQUEST,
         APP_TERMINATE,
+
+        LOCAL_NOTIFICATION,
     };
 
     /// Parameter for APP_TERMINATE event
@@ -118,6 +120,11 @@ struct MainDispatcherEvent final
         bool isRepeated;
     };
 
+    struct LocalNotificationEvent
+    {
+        const char8* uid;
+    };
+
     MainDispatcherEvent() = default;
     MainDispatcherEvent(eType type)
         : type(type)
@@ -146,6 +153,7 @@ struct MainDispatcherEvent final
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
         KeyEvent keyEvent;
+        LocalNotificationEvent localNotificationEvent;
     };
 
     static MainDispatcherEvent CreateAppTerminateEvent(bool triggeredBySystem);
@@ -162,6 +170,7 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, bool isRelative);
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
+    static MainDispatcherEvent CreateLocalNotificationEvent(const String& uid);
 };
 
 } // namespace Private

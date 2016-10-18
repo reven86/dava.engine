@@ -158,6 +158,11 @@ void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionE
     Logger::Error("Unhandled exception: hresult=0x%08X, message=%s", arg->Exception, WStringToString(arg->Message->Data()).c_str());
 }
 
+void PlatformCore::OnLocalNotification(const String& uid)
+{
+    dispatcher.PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uid));
+}
+
 void PlatformCore::GameThread()
 {
     Logger::FrameworkDebug("========== PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());

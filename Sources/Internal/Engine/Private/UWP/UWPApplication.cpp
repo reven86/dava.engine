@@ -44,10 +44,11 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
 
     if (args->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
     {
-        const String launchOptionsStr = UTF8Utils::EncodeToUTF8(args->Arguments->Data());
-        if (!launchOptionsStr.empty())
+        Platform::String^ launchArgs = args->Arguments;
+        if (!launchArgs->IsEmpty())
         {
-            LocalNotificationController::Instance()->OnNotificationPressed(launchOptionsStr);
+            const String& localNotoficationUID = UTF8Utils::EncodeToUTF8(launchArgs->Data());
+            core->OnLocalNotification(localNotoficationUID);
         }
     }
 }
