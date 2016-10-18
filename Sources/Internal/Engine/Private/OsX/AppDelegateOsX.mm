@@ -7,7 +7,8 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
-//remove it
+#include "Engine/EngineModule.h"
+#include "Engine/WindowNativeService.h"
 #include "Utils/NSStringUtils.h"
 #include "Notification/LocalNotificationController.h"
 
@@ -31,19 +32,15 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
-    if (NSDictionary *notificationPayload =
-        [[notification userInfo] objectForKey:NSApplicationLaunchRemoteNotificationKey])
-    {
-        NSLog(@"applicationDidFinishLaunching: notification 1!!! payload");
-    }
-    
-    
     NSUserNotification *userNotification = [notification userInfo][(id)@"NSApplicationLaunchUserNotificationKey"];
     if (userNotification.userInfo != nil)
     {
-        NSLog(@"applicationDidFinishLaunching: notification payload %@", userNotification.userInfo);
+        DAVA::String uidStr = DAVA::StringFromNSString([[userNotification userInfo] valueForKey:@"uid"]);
+        if (!uidStr.empty())
+        {
+            DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        }
     }
-
     bridge->ApplicationDidFinishLaunching();
 }
 
@@ -54,6 +51,7 @@
 
 - (void)applicationDidBecomeActive:(NSNotification*)notification
 {
+    [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
     bridge->ApplicationDidBecomeActive();
 }
 
@@ -89,12 +87,6 @@
     bridge->ApplicationWillTerminate();
 }
 
-- (void)application:(NSApplication *)application didReceiveRemoteNotification:(NSDictionary<NSString *,id> *)userInfo
-{
-    NSLog(@"didReceiveRemoteNotification: notification 1!!! payload");
-    [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-}
-
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
 {
     return YES;
@@ -103,9 +95,13 @@
 - (void) userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
 {
     DAVA::String uidStr =  DAVA::StringFromNSString([[notification userInfo] valueForKey:@"uid"]);
-    //DAVA::String uidStr =  DAVA::StringFromNSString([userInfo valueForKey:@"uid"]);
-    DAVA::LocalNotificationController::Instance()->OnNotificationPressed(uidStr);
-    DVASSERT_MSG(false, uidStr.c_str());
+    if (!uidStr.empty())
+    {
+        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
+        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        DAVA::Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
+        bridge->ApplicationWillFinishLaunching();
+    }
 }
 
 @end

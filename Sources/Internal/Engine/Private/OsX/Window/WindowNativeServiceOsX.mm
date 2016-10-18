@@ -29,6 +29,10 @@ void WindowNativeService::RemoveNSView(NSView* nsview)
 {
     [nsview removeFromSuperview];
 }
+void WindowNativeService::DoWindowDeminiaturize()
+{
+    [bridge->nswindow deminiaturize:bridge->windowDelegate];
+}
 
 } // namespace DAVA
 
