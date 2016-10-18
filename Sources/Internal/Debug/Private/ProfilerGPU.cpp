@@ -1,9 +1,10 @@
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Debug/DVAssert.h"
-#include "Core/Core.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
+#include "Engine/Engine.h"
+#include "Core/Core.h"
 #include <ostream>
 
 //==============================================================================
@@ -12,8 +13,12 @@ namespace DAVA
 {
 
 #if PROFILER_GPU_ENABLED
-static ProfilerGPU GLOBAL_GPU_PROFILER;
-ProfilerGPU* const ProfilerGPU::globalProfiler = &GLOBAL_GPU_PROFILER;
+struct ProfilerGPUDetails
+{
+    static ProfilerGPU GLOBAL_GPU_PROFILER;
+};
+ProfilerGPU ProfilerGPUDetails::GLOBAL_GPU_PROFILER;
+ProfilerGPU* const ProfilerGPU::globalProfiler = &ProfilerGPUDetails::GLOBAL_GPU_PROFILER;
 #else
 ProfilerGPU* const ProfilerGPU::globalProfiler = nullptr;
 #endif
@@ -42,11 +47,11 @@ Vector<TraceEvent> ProfilerGPU::FrameInfo::GetTrace() const
     });
 
     Vector<TraceEvent> trace;
-    trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION, { { TRACE_ARG_FRAME, frameIndex } } });
+    if (startTime && endTime)
+        trace.push_back({ FastName(ProfilerGPUMarkerName::GPU_FRAME), startTime, endTime - startTime, 0, 0, TraceEvent::PHASE_DURATION, { { TRACE_ARG_FRAME, frameIndex } } });
+
     for (const MarkerInfo* m : sortedMarkers)
-    {
         trace.push_back({ FastName(m->name), m->startTime, m->endTime - m->startTime, 0, 0, TraceEvent::PHASE_DURATION });
-    }
 
     return trace;
 }
@@ -143,18 +148,21 @@ void ProfilerGPU::CheckPendingFrames()
         }
     }
 }
-
 void ProfilerGPU::OnFrameEnd()
 {
     CheckPendingFrames();
 
     if (profilerStarted)
     {
-        currentFrame.perfQuery = GetPerfQueryPair();
+#ifdef __DAVAENGINE_COREV2__
+        currentFrame.globalFrameIndex = Engine::Instance()->GetGlobalFrameIndex();
+#else
         currentFrame.globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+#endif
+        currentFrame.perfQuery = GetPerfQueryPair();
         rhi::SetFramePerfQueries(currentFrame.perfQuery.query[0], currentFrame.perfQuery.query[1]);
-        pendingFrames.push_back(currentFrame);
 
+        pendingFrames.push_back(currentFrame);
         currentFrame.Reset();
     }
 }

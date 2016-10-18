@@ -9,11 +9,11 @@
 
 namespace DAVA
 {
+struct ProfilerGPUDetails;
 class ProfilerGPU
 {
 public:
-    ProfilerGPU(uint32 framesCount = 180);
-    ~ProfilerGPU();
+    static const FastName TRACE_ARG_FRAME;
 
     struct MarkerInfo
     {
@@ -47,7 +47,8 @@ public:
     bool IsStarted();
 
 protected:
-    static const FastName TRACE_ARG_FRAME;
+    ProfilerGPU(uint32 framesCount = 180);
+    ~ProfilerGPU();
 
     struct PerfQueryPair
     {
@@ -85,6 +86,8 @@ protected:
     Frame currentFrame;
 
     bool profilerStarted = false;
+
+    friend struct ProfilerGPUDetails;
 };
 
 } //ns DAVA

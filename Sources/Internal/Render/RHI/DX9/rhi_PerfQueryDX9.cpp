@@ -253,8 +253,10 @@ void ReleaseAll()
 
     if (currentPerfQueryFrameDX9)
     {
-        currentPerfQueryFrameDX9->disjointQuery->Release();
-        currentPerfQueryFrameDX9->freqQuery->Release();
+        if (currentPerfQueryFrameDX9->disjointQuery)
+            currentPerfQueryFrameDX9->disjointQuery->Release();
+        if (currentPerfQueryFrameDX9->freqQuery)
+            currentPerfQueryFrameDX9->freqQuery->Release();
 
         currentPerfQueryFrameDX9->disjointQuery = nullptr;
         currentPerfQueryFrameDX9->freqQuery = nullptr;

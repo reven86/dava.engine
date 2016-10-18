@@ -1032,7 +1032,7 @@ uint32 NativeColorRGBA(uint32 color)
         break;
     }
 
-    return color;
+    return c;
 }
 
 namespace MutableDeviceCaps

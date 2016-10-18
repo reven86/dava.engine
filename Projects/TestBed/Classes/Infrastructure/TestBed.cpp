@@ -30,6 +30,7 @@
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
 #include "Tests/UILoggingTest.h"
+#include "Tests/ProfilerTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -227,6 +228,7 @@ void TestBed::RegisterTests()
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
     new UILoggingTest(*this);
+    new ProfilerTest(*this);
     //$UNITTEST_CTOR
 }
 

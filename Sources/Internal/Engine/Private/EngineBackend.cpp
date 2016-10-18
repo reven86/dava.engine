@@ -49,6 +49,8 @@
 #include "ModuleManager/ModuleManager.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Debug/ProfilerCPU.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -288,6 +290,8 @@ void EngineBackend::OnFrameConsole()
 
 int32 EngineBackend::OnFrame()
 {
+    DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(ProfilerCPUMarkerName::ENGINE_ON_FRAME, globalFrameIndex);
+
     context->systemTimer->Start();
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);

@@ -4,8 +4,8 @@ namespace DAVA
 {
 namespace ProfilerCPUMarkerName
 {
-//Core flow
-extern const char* CORE_PROCESS_FRAME;
+//Engine flow
+extern const char* ENGINE_ON_FRAME;
 extern const char* CORE_BEGIN_FRAME;
 extern const char* CORE_END_FRAME;
 extern const char* CORE_JOB_MANAGER;

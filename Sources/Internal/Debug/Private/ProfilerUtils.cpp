@@ -1,4 +1,4 @@
-#include "Debug/ProfilerDump.h"
+#include "Debug/ProfilerUtils.h"
 #include "Debug/TraceEvent.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerGPU.h"
@@ -11,7 +11,7 @@
 
 namespace DAVA
 {
-namespace ProfilerDump
+namespace ProfilerUtils
 {
 void DumpCPUGPUTrace(ProfilerCPU* cpuProfiler, ProfilerGPU* gpuProfiler, std::ostream& stream)
 {

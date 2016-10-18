@@ -43,12 +43,13 @@ static const uint32 MAX_TRACE_LIST_ELEMENTS_TO_DRAW = 7;
 static const char* BUTTON_CLOSE_TEXT = "Close (Ctrl + F12)";
 static const char* BUTTON_HISTORY_NEXT_TEXT = "Next Trace (Ctrl + Right) ->";
 static const char* BUTTON_HISTORY_PREV_TEXT = "<- Prev Trace (Ctrl + Left)";
-static const char* BUTTON_PROFILERS_START_STOP_TEXT = "Start/Stop (Ctrl + F11)";
+static const char* BUTTON_PROFILERS_UNPAUSE_TEXT = "Unpause (Ctrl + F11)";
+static const char* BUTTON_PROFILERS_PAUSE_TEXT = "Pause (Ctrl + F11)";
 };
 
-static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::CORE_PROCESS_FRAME, ProfilerGPU::globalProfiler,
+static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::ENGINE_ON_FRAME, ProfilerGPU::globalProfiler,
                                                {
-                                               FastName(ProfilerCPUMarkerName::CORE_PROCESS_FRAME),
+                                               FastName(ProfilerCPUMarkerName::ENGINE_ON_FRAME),
                                                FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_UPDATE),
                                                FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_DRAW),
                                                FastName(ProfilerCPUMarkerName::SCENE_UPDATE),
@@ -78,14 +79,25 @@ ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCoun
     , cpuCounterName(_cpuCounterName)
 {
     for (RingArray<TraceData>& t : tracesData)
-        t = RingArray<TraceData>(std::size_t(TRACE_HISTORY_SIZE));
+        t = RingArray<TraceData>(TRACE_HISTORY_SIZE);
 
-    Memset(buttonsText, 0, sizeof(buttons));
+    Memset(buttonsText, 0, sizeof(buttonsText));
 
     buttonsText[BUTTON_CLOSE] = ProfilerOverlayDetails::BUTTON_CLOSE_TEXT;
     buttonsText[BUTTON_HISTORY_NEXT] = ProfilerOverlayDetails::BUTTON_HISTORY_NEXT_TEXT;
     buttonsText[BUTTON_HISTORY_PREV] = ProfilerOverlayDetails::BUTTON_HISTORY_PREV_TEXT;
-    buttonsText[BUTTON_PROFILERS_START_STOP] = ProfilerOverlayDetails::BUTTON_PROFILERS_START_STOP_TEXT;
+    buttonsText[BUTTON_PROFILERS_START_STOP] = ProfilerOverlayDetails::BUTTON_PROFILERS_UNPAUSE_TEXT;
+}
+
+void ProfilerOverlay::SetPaused(bool paused)
+{
+    overlayPaused = paused;
+    buttonsText[BUTTON_PROFILERS_START_STOP] = paused ? ProfilerOverlayDetails::BUTTON_PROFILERS_UNPAUSE_TEXT : ProfilerOverlayDetails::BUTTON_PROFILERS_PAUSE_TEXT;
+}
+
+bool ProfilerOverlay::IsPaused() const
+{
+    return overlayPaused;
 }
 
 void ProfilerOverlay::OnFrameEnd()
@@ -101,18 +113,16 @@ void ProfilerOverlay::OnFrameEnd()
 
 void ProfilerOverlay::SetCPUProfiler(ProfilerCPU* profiler, const char* counterName)
 {
+    if (cpuProfiler == profiler && cpuCounterName == counterName)
+        return;
+
     cpuProfiler = profiler;
     cpuCounterName = counterName;
 
     if (selectedTrace == TRACE_CPU && !cpuProfiler)
         selectedTrace = TRACE_GPU;
-}
 
-void ProfilerOverlay::SetGPUProfiler(ProfilerGPU* profiler)
-{
-    gpuProfiler = profiler;
-    if (selectedTrace == TRACE_GPU && !gpuProfiler)
-        selectedTrace = TRACE_GPU;
+    Reset();
 }
 
 void ProfilerOverlay::ClearInterestMarkers()
@@ -123,6 +133,16 @@ void ProfilerOverlay::ClearInterestMarkers()
 void ProfilerOverlay::AddInterestMarker(const FastName& name)
 {
     interestMarkers.push_back(name);
+}
+
+void ProfilerOverlay::AddInterestMarkers(const Vector<FastName>& markers)
+{
+    interestMarkers.insert(interestMarkers.end(), markers.begin(), markers.end());
+}
+
+const Vector<FastName> ProfilerOverlay::GetInterestMarkers() const
+{
+    return interestMarkers;
 }
 
 Vector<FastName> ProfilerOverlay::GetAvalibleMarkers() const
@@ -180,55 +200,55 @@ void ProfilerOverlay::SelectMarker(const FastName& name)
 
 bool ProfilerOverlay::OnInput(UIEvent* input)
 {
-    if (!interceptInput)
-        return false;
-
-    if (input->phase == UIEvent::Phase::KEY_DOWN && InputSystem::Instance()->GetKeyboard().IsKeyPressed(Key::LCTRL))
+    if (inputEnabled)
     {
-        if (input->key == Key::F12)
+        const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+        if (keyboard.IsKeyPressed(Key::LCTRL) && input->phase == UIEvent::Phase::KEY_DOWN && input->key == Key::F12)
         {
             SetEnabled(!IsEnabled());
         }
-
-        if (overlayEnabled)
+        else if (overlayEnabled)
         {
-            switch (input->key)
+            if (keyboard.IsKeyPressed(Key::LCTRL) && input->phase == UIEvent::Phase::KEY_DOWN)
             {
-            case Key::F11:
-                OnButtonPressed(BUTTON_PROFILERS_START_STOP);
-                break;
+                switch (input->key)
+                {
+                case Key::F11:
+                    OnButtonPressed(BUTTON_PROFILERS_START_STOP);
+                    break;
 
-            case Key::LEFT:
-                OnButtonPressed(BUTTON_HISTORY_PREV);
-                break;
+                case Key::LEFT:
+                    OnButtonPressed(BUTTON_HISTORY_PREV);
+                    break;
 
-            case Key::RIGHT:
-                OnButtonPressed(BUTTON_HISTORY_NEXT);
-                break;
+                case Key::RIGHT:
+                    OnButtonPressed(BUTTON_HISTORY_NEXT);
+                    break;
 
-            case Key::UP:
-                SelectPreviousMarker();
-                break;
+                case Key::UP:
+                    SelectPreviousMarker();
+                    break;
 
-            case Key::DOWN:
-                SelectNextMarker();
-                break;
+                case Key::DOWN:
+                    SelectNextMarker();
+                    break;
 
-            case Key::TAB:
-                SelectTrace((GetSelectedTrace() == ProfilerOverlay::TRACE_CPU) ? ProfilerOverlay::TRACE_GPU : ProfilerOverlay::TRACE_CPU);
-                break;
+                case Key::TAB:
+                    SelectTrace((GetSelectedTrace() == ProfilerOverlay::TRACE_CPU) ? ProfilerOverlay::TRACE_GPU : ProfilerOverlay::TRACE_CPU);
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+                }
+            }
+            else
+            {
+                ProcessTouch(input);
             }
         }
     }
-    else
-    {
-        ProcessTouch(input);
-    }
 
-    return overlayEnabled;
+    return inputEnabled && overlayEnabled;
 }
 
 void ProfilerOverlay::ProcessTouch(UIEvent* input)
@@ -281,16 +301,7 @@ void ProfilerOverlay::OnButtonPressed(eButton button)
         break;
 
     case BUTTON_PROFILERS_START_STOP:
-        if (cpuProfiler->IsStarted())
-        {
-            cpuProfiler->Stop();
-            gpuProfiler->Stop();
-        }
-        else
-        {
-            cpuProfiler->Start();
-            gpuProfiler->Start();
-        }
+        SetPaused(!IsPaused());
         break;
 
     default:
@@ -300,28 +311,13 @@ void ProfilerOverlay::OnButtonPressed(eButton button)
 
 void ProfilerOverlay::Update()
 {
-    bool needUpdateCPUInfo = false;
-    bool needUpdateGPUInfo = false;
+    if (overlayPaused)
+        return;
 
-    if (gpuProfiler)
-    {
-        uint32 lastGPUFrameIndex = gpuProfiler->GetLastFrame().frameIndex;
-        if (tracesData[TRACE_GPU].crbegin()->frameIndex != lastGPUFrameIndex)
-        {
-            while (!CPUFrameTraces.empty() && (CPUFrameTraces.front().frameIndex < lastGPUFrameIndex))
-                CPUFrameTraces.pop_front();
+    uint32 frameIndex = (gpuProfiler && gpuProfiler->IsStarted()) ? gpuProfiler->GetLastFrame().frameIndex : 0;
 
-            needUpdateCPUInfo = !CPUFrameTraces.empty();
-            needUpdateGPUInfo = true;
-        }
-
-        while (uint32(CPUFrameTraces.size()) > ProfilerOverlayDetails::MAX_CPU_FRAME_TRACES)
-            CPUFrameTraces.pop_front();
-    }
-    else if (cpuProfiler)
-    {
-        needUpdateCPUInfo = !CPUFrameTraces.empty();
-    }
+    bool needUpdateGPUInfo = gpuProfiler && gpuProfiler->IsStarted() && (tracesData[TRACE_GPU].crbegin()->frameIndex != frameIndex || frameIndex == 0);
+    bool needUpdateCPUInfo = cpuProfiler && cpuProfiler->IsStarted() && (tracesData[TRACE_CPU].crbegin()->frameIndex != frameIndex || frameIndex == 0);
 
     bool needUpdateHistory = needUpdateCPUInfo || needUpdateGPUInfo;
     if (needUpdateHistory)
@@ -337,13 +333,12 @@ void ProfilerOverlay::Update()
 
     if (needUpdateGPUInfo)
     {
-        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), gpuProfiler->GetLastFrame().frameIndex, &tracesData[TRACE_GPU].next());
+        ProcessEventsTrace(gpuProfiler->GetLastFrame().GetTrace(), &tracesData[TRACE_GPU].next());
     }
 
     if (needUpdateCPUInfo)
     {
-        ProcessEventsTrace(CPUFrameTraces.front().trace, CPUFrameTraces.front().frameIndex, &tracesData[TRACE_CPU].next());
-        CPUFrameTraces.pop_front();
+        ProcessEventsTrace(cpuProfiler->GetTrace(cpuCounterName, frameIndex), &tracesData[TRACE_CPU].next());
     }
 
     if (needUpdateHistory)
@@ -365,20 +360,23 @@ void ProfilerOverlay::Update()
             }
         }
     }
-
-    if (cpuProfiler && cpuProfiler->IsStarted())
-    {
-        uint32 currentFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-        CPUFrameTraces.push_back({ cpuProfiler->GetTrace(cpuCounterName), (currentFrameIndex - 1) });
-    }
 }
 
-void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint32 frameIndex, TraceData* trace)
+void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, TraceData* trace)
 {
-    trace->frameIndex = frameIndex;
+    trace->frameIndex = 0;
     trace->minTimestamp = uint64(-1);
     trace->maxTimestamp = 0;
     trace->rects.clear();
+
+    if (!events.empty())
+    {
+        for (const std::pair<FastName, uint32>& arg : events[0].args)
+        {
+            if (arg.first == ProfilerCPU::TRACE_ARG_FRAME)
+                trace->frameIndex = arg.second;
+        }
+    }
 
     uint64 eventStart, eventDuration;
     uint32 eventColor;
@@ -424,7 +422,6 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, uint3
 
         if (markersColor.count(e.name) == 0)
         {
-            static uint32 colorIndex = 0;
             markersColor.Insert(e.name, rhi::NativeColorRGBA(CIEDE2000Colors[colorIndex % CIEDE2000_COLORS_COUNT]));
             ++colorIndex;
         }
@@ -481,36 +478,45 @@ void ProfilerOverlay::Draw()
     TraceData& currentGPUTrace = GetHistoricTrace(tracesData[TRACE_GPU]);
 
     //draw traces
-    Rect2i rect = Rect2i(0, 0, screenSize.dx, GetEnoughRectHeight(currentCPUTrace));
-    DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU), &buttons[BUTTON_CPU_UP], &buttons[BUTTON_CPU_DOWN]);
-
-    rect.y += rect.dy;
-    rect.dy = GetEnoughRectHeight(currentGPUTrace);
-    DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU), &buttons[BUTTON_GPU_UP], &buttons[BUTTON_GPU_DOWN]);
-
-    //draw markers history
-    int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
-    int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
-    int32 chartWidth = screenSize.dx / chartRowCount;
-    int32 chartTableY = rect.y + rect.dy;
-
-    rect.x = 0;
-    rect.y = chartTableY;
-    rect.dy = ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
-    rect.dx = chartWidth;
-    for (const FastName& m : interestMarkers)
+    Rect2i rect = Rect2i(0, 0, screenSize.dx, 0);
+    if (cpuProfiler)
     {
-        DrawHistory(m, rect);
+        rect.dy = GetEnoughRectHeight(currentCPUTrace);
+        DrawTrace(currentCPUTrace, Format("CPU Frame %d", currentCPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_CPU], (selectedTrace == TRACE_CPU), &buttons[BUTTON_CPU_UP], &buttons[BUTTON_CPU_DOWN]);
+    }
+    if (gpuProfiler)
+    {
         rect.y += rect.dy;
-        if ((rect.y + rect.dy) > (screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE))
+        rect.dy = GetEnoughRectHeight(currentGPUTrace);
+        DrawTrace(currentGPUTrace, Format("GPU Frame %d", currentGPUTrace.frameIndex).c_str(), rect, selectedMarkers[TRACE_GPU], (selectedTrace == TRACE_GPU), &buttons[BUTTON_GPU_UP], &buttons[BUTTON_GPU_DOWN]);
+    }
+
+    //draw interest markers history
+    if (!interestMarkers.empty())
+    {
+        int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
+        int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
+        int32 chartWidth = screenSize.dx / chartRowCount;
+        int32 chartTableY = rect.y + rect.dy;
+
+        rect.x = 0;
+        rect.y = chartTableY;
+        rect.dy = ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
+        rect.dx = chartWidth;
+        for (const FastName& m : interestMarkers)
         {
-            rect.x += chartWidth;
-            rect.y = chartTableY;
+            DrawHistory(m, rect);
+            rect.y += rect.dy;
+            if ((rect.y + rect.dy) > (screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE))
+            {
+                rect.x += chartWidth;
+                rect.y = chartTableY;
+            }
         }
     }
 
     //draw buttons
-    static const uint32 BUTTON_COLOR = rhi::NativeColorRGBA(.3f, .3f, .3f, .4f);
+    static const uint32 BUTTON_COLOR = rhi::NativeColorRGBA(.3f, .3f, .3f, .8f);
     static const uint32 BUTTON_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 BUTTON_BORDER_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
 
@@ -558,8 +564,8 @@ void ProfilerOverlay::Draw()
 
 void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader, const Rect2i& rect, const FastName& selectedMarker, bool traceSelected, Rect2i* upButton, Rect2i* downButton)
 {
-    static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .6f, .4f);
-    static const uint32 SELECTED_BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
+    static const uint32 BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .7f, .5f);
+    static const uint32 SELECTED_BACKGROUND_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .8f, .5f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 SELECTED_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
     static const uint32 ARROW_COLOR = rhi::NativeColorRGBA(1.f, 0.f, 0.f, 1.f);
@@ -712,7 +718,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
 
 void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool drawBackground)
 {
-    static const uint32 CHARTRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, 1.f, .4f);
+    static const uint32 CHARTRECT_COLOR = rhi::NativeColorRGBA(0.f, 0.f, .8f, .5f);
     static const uint32 CHART_COLOR = rhi::NativeColorRGBA(.5f, .11f, .11f, 1.f);
     static const uint32 CHART_FILTERED_COLOR = rhi::NativeColorRGBA(1.f, .18f, .18f, 1.f);
     static const uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
@@ -815,6 +821,21 @@ int32 ProfilerOverlay::FindListIndex(const Vector<TraceData::ListElement>& list,
 ProfilerOverlay::TraceData& ProfilerOverlay::GetHistoricTrace(RingArray<TraceData>& traceData)
 {
     return *(traceData.rbegin() + traceHistoryOffset);
+}
+
+void ProfilerOverlay::Reset()
+{
+    markersHistory.clear();
+    markersColor.clear();
+
+    for (int32 i = 0; i < int32(TRACE_COUNT); ++i)
+    {
+        tracesData[i] = RingArray<TraceData>(TRACE_HISTORY_SIZE);
+        selectedMarkers[i] = FastName();
+    }
+
+    traceHistoryOffset = 0;
+    colorIndex = 0;
 }
 
 }; //ns

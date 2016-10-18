@@ -273,35 +273,42 @@ Vector<TraceEvent> ProfilerCPU::GetTrace(int32 snapshot)
     return trace;
 }
 
-Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 counterCount, int32 snapshot)
+Vector<TraceEvent> ProfilerCPU::GetTrace(const char* counterName, uint32 desiredFrameIndex, int32 snapshot)
 {
-    DVASSERT((snapshot != NO_SNAPSHOT_ID || !started || counterCount == 1) && "Stop profiler before tracing");
+    Vector<TraceEvent> trace;
 
+    bool found = false;
     CounterArray* array = GetCounterArray(snapshot);
     CounterArray::reverse_iterator begin = array->rbegin(), end = array->rend();
     CounterArray::reverse_iterator it = begin;
     for (; it != end; ++it)
     {
         if (it->endTime != 0 && (strcmp(counterName, it->name) == 0))
-            counterCount--;
-
-        if (counterCount == 0)
-            break;
+        {
+            if ((it->frame <= desiredFrameIndex || it->frame == 0 || desiredFrameIndex == 0))
+            {
+                found = true;
+                break;
+            }
+        }
     }
 
-    uint64 threadID = it->threadID;
-    Vector<TraceEvent> trace;
-    for (; it != begin; --it)
+    if (found)
     {
-        if (it->threadID == threadID)
+        uint64 threadID = it->threadID;
+        uint64 counterEndTime = it->endTime;
+        for (; it != begin; --it)
         {
-            if (it->endTime == 0)
-                break;
+            if (it->threadID == threadID)
+            {
+                if (it->endTime == 0 || it->startTime > counterEndTime)
+                    break;
 
-            trace.push_back({ FastName(it->name), it->startTime, it->endTime - it->startTime, it->threadID, 0, TraceEvent::PHASE_DURATION });
+                trace.push_back({ FastName(it->name), it->startTime, it->endTime - it->startTime, it->threadID, 0, TraceEvent::PHASE_DURATION });
 
-            if (it->frame)
-                trace.back().args.push_back({ TRACE_ARG_FRAME, it->frame });
+                if (it->frame)
+                    trace.back().args.push_back({ TRACE_ARG_FRAME, it->frame });
+            }
         }
     }
 
