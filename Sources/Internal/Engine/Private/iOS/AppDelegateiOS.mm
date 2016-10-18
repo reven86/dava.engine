@@ -8,6 +8,7 @@
 #include "Engine/EngineModule.h"
 #include "Utils/NSStringUtils.h"
 #include "Notification/LocalNotificationController.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 namespace DAVA
 {
@@ -24,7 +25,7 @@ extern CoreNativeBridge* coreNativeBridge;
     if ([application applicationState] != UIApplicationStateActive)
     {
         DAVA::String uidStr =  DAVA::StringFromNSString([[notification userInfo] valueForKey:@"uid"]);
-        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
     }
 }
 
@@ -42,7 +43,7 @@ extern CoreNativeBridge* coreNativeBridge;
         DAVA::String uidStr =  DAVA::StringFromNSString([[localNotif userInfo] valueForKey:@"uid"]);
         if (!uidStr.empty())
         {
-            DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+            bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         }
     }
     return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
