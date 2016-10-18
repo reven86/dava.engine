@@ -140,7 +140,7 @@
 
 #endif
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
 
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
