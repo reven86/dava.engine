@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -116,7 +116,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-        throw std::runtime_error(ss.str());
+        DAVA_THROW(DAVA::Exception, ss.str());
     }
     default:
         if (SEFuncPtr != nullptr)
@@ -128,7 +128,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
             StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-            throw std::runtime_error(ss.str());
+            DAVA_THROW(DAVA::Exception, ss.str());
         }
     }
 };
@@ -668,7 +668,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update();
+        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
