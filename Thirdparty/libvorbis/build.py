@@ -137,6 +137,7 @@ def _build_macos(working_directory_path, root_project_path):
 	build_utils.build_with_autotools(source_folder_path, ['--with-ogg=' + ogg_install_dir_macos, '--disable-examples', '--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'], install_dir_macos, env=build_utils.get_autotools_macos_env(), postclean=False)
 
 	shutil.copyfile(os.path.join(install_dir_macos, 'lib/libvorbis.a'), os.path.join(root_project_path, os.path.join('Libs/lib_CMake/mac/libvorbis_macos.a')))
+	shutil.copyfile(os.path.join(install_dir_macos, 'lib/libvorbisfile.a'), os.path.join(root_project_path, os.path.join('Libs/lib_CMake/mac/libvorbisfile_macos.a')))
 	_copy_headers(install_dir_macos, root_project_path)
 
 	return True
