@@ -277,7 +277,6 @@ void ReleaseAll()
         delete frame;
     }
     perfQueryFramePoolDX9.clear();
-
 }
 
 void ObtainPerfQueryMeasurment()
