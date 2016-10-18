@@ -2,6 +2,7 @@
 
 #include <sqlite3.h>
 
+#include "Base/Exception.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/Thread.h"
@@ -182,7 +183,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     if (flags & SQLITE_OPEN_MAIN_JOURNAL)
     {
         // do we need in memory jornal file?
-        throw std::runtime_error("not implemented");
+        DAVA_THROW(DAVA::Exception, "not implemented");
     }
 
     if (flags & SQLITE_OPEN_EXCLUSIVE)
@@ -228,7 +229,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
         DAVA::uint32 size = p->file->Read(data.data(), static_cast<DAVA::uint32>(data.size()));
         if (size != data.size())
         {
-            throw std::runtime_error("can't read DB in memory");
+            DAVA_THROW(DAVA::Exception, "can't read DB in memory");
         }
         p->file->Release();
 
