@@ -71,7 +71,7 @@ gles2_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-gles2_TextureFormatSupported(TextureFormat format)
+gles2_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -109,10 +109,12 @@ gles2_TextureFormatSupported(TextureFormat format)
     case TEXTURE_FORMAT_R16F:
     case TEXTURE_FORMAT_RG16F:
         supported = Half_Supported && RG_Supported;
+        break;
 
     case TEXTURE_FORMAT_R32F:
     case TEXTURE_FORMAT_RG32F:
         supported = Float_Supported && RG_Supported;
+        break;
 
     case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:

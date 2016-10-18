@@ -32,7 +32,7 @@ public:
     }
 
 protected:
-    void OnRenderSystemInitialized(DAVA::Window& w) override
+    void OnRenderSystemInitialized(DAVA::Window* w) override
     {
     }
 
@@ -166,7 +166,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetContextMng().DeleteContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -181,7 +181,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetContextMng().ActivateContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -196,7 +196,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetCtxAccessor().GetContext(1);
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }
@@ -211,7 +211,7 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         {
             TestControllerModule::instance->GetCtxAccessor().GetActiveContext();
         }
-        catch (std::runtime_error& e)
+        catch (std::runtime_error& /*e*/)
         {
             exeptionCatched = true;
         }

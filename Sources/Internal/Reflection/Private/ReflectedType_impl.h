@@ -1,11 +1,12 @@
 #pragma once
 
 #ifndef __DAVA_ReflectedType__
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/ReflectedType.h"
 #endif
 
-#include "Reflection/Public/Wrappers.h"
-#include "Reflection/Public/ReflectedObject.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedObject.h"
+#include "Reflection/Private/CtorWrapperDefault.h"
 
 namespace DAVA
 {
@@ -73,6 +74,19 @@ public:
         RunImpl(std::integral_constant<bool, CheckType::value>());
     }
 };
+
+template <typename T>
+CtorWrapper* GetDefaultCtor(std::true_type hasDefault)
+{
+    return new CtorWrapperDefault<T>();
+}
+
+template <typename T>
+CtorWrapper* GetDefaultCtor(std::false_type hasDefault)
+{
+    return nullptr;
+}
+
 } // namespace ReflectionDetail
 
 template <typename T>
@@ -85,20 +99,35 @@ ReflectedType* ReflectedType::Create()
 template <typename T>
 ReflectedType* ReflectedType::Edit()
 {
-    using DecayT = std::decay_t<T>;
+    using DecayT = Type::DecayT<T>;
     ReflectedType* ret = Create<DecayT>();
 
     if (nullptr == ret->type)
     {
         ret->type = Type::Instance<DecayT>();
         ret->rttiName = typeid(DecayT).name();
-        ret->structureWrapper.reset(StructureWrapperCreator<T>::Create());
-        ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<T>::Create());
+        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
+        ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
+
+        //        broken on vs 2013!
+        //        TODO: fix
+        //        ...
+        //
+        //        static const bool isDfConstructible = std::is_default_constructible<DecayT>::value;
+        //        static const bool isCpConstructible = std::is_copy_constructible<DecayT>::value;
+        //        static const bool isMvConstructible = std::is_move_constructible<DecayT>::value;
+        //        static const bool hasDefaultCtor = isDfConstructible && (isCpConstructible || isMvConstructible);
+        //
+        //         CtorWrapper* defaultCtor = ReflectionDetail::GetDefaultCtor<T>(std::integral_constant<bool, hasDefaultCtor>());
+        //         if (nullptr != defaultCtor)
+        //         {
+        //             ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
+        //         }
 
         typeToReflectedTypeMap[ret->type] = ret;
         rttiNameToReflectedTypeMap[ret->rttiName] = ret;
 
-        ReflectionDetail::ReflectionInitializerRunner<T>::Run();
+        ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 
     return ret;
@@ -130,7 +159,7 @@ const ReflectedType* ReflectedType::GetByPointer(const T* ptr)
 template <typename T, typename... Bases>
 void ReflectedType::RegisterBases()
 {
-    Type::RegisterBases<T, Bases...>();
+    TypeInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
 }
 
@@ -142,6 +171,11 @@ inline const Type* ReflectedType::GetType() const
 inline const String& ReflectedType::GetPermanentName() const
 {
     return permanentName;
+}
+
+inline const String& ReflectedType::GetRttiName() const
+{
+    return rttiName;
 }
 
 } // namespace DAVA

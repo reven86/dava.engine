@@ -47,10 +47,9 @@ int main(int argc, char* argv[])
         Q_INIT_RESOURCE(QtToolsResources);
         InitPVRTexTool();
 
-        Themes::InitFromQApplication();
-
         EditorCore editorCore;
         editorCore.Start();
+        Themes::InitFromQApplication();
 
         retCode = a.exec();
     }

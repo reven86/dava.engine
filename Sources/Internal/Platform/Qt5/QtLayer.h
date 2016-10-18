@@ -56,6 +56,7 @@ public:
 #endif
 
 private:
+    void UpdateModifiersState();
     QtLayerDelegate* delegate;
     bool isDAVAEngineEnabled;
 };

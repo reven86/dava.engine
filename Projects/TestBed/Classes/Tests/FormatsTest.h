@@ -6,11 +6,11 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class FormatsTest : public BaseScreen, public UIListDelegate
 {
 public:
-    FormatsTest(GameCore* g);
+    FormatsTest(TestBed& app);
 
     void LoadResources() override;
     void UnloadResources() override;

@@ -23,36 +23,35 @@ namespace Private
 class WindowBackend final
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
-    void* GetHandle() const;
-    MainDispatcher* GetDispatcher() const;
-    Window* GetWindow() const;
-    WindowNativeService* GetNativeService() const;
-
-    bool Create(float32 width, float32 height);
+    bool Create();
     void Resize(float32 width, float32 height);
-    void Close();
-    bool IsWindowReadyForRender() const;
-    void InitCustomRenderParams(rhi::InitParam& params);
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
+    bool IsWindowReadyForRender() const;
+    void InitCustomRenderParams(rhi::InitParam& params);
 
     void TriggerPlatformEvents();
     void ProcessPlatformEvents();
 
 private:
-    void EventHandler(const UIDispatcherEvent& e);
+    void UIEventHandler(const UIDispatcherEvent& e);
 
 private:
     EngineBackend* engineBackend = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
 
-    UIDispatcher platformDispatcher;
-
-    WindowNativeBridge* bridge = nullptr;
+    std::unique_ptr<WindowNativeBridge> bridge;
     std::unique_ptr<WindowNativeService> nativeService;
 
     size_t sigidAppBecomeOrResignActive = 0;
@@ -62,16 +61,6 @@ private:
     friend class PlatformCore;
     friend struct WindowNativeBridge;
 };
-
-inline MainDispatcher* WindowBackend::GetDispatcher() const
-{
-    return dispatcher;
-}
-
-inline Window* WindowBackend::GetWindow() const
-{
-    return window;
-}
 
 inline WindowNativeService* WindowBackend::GetNativeService() const
 {

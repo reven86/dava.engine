@@ -7,6 +7,7 @@
 
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Render/RenderBase.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Functional/Function.h"

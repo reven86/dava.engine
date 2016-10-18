@@ -1,6 +1,7 @@
-#if !defined(__DAVAENGINE_COREV2__)
-
 #include "Tests/PackManagerTest.h"
+#include "Infrastructure/TestBed.h"
+
+#include <Engine/Engine.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <PackManager/PackManager.h>
 #include <FileSystem/DynamicMemoryFile.h>
@@ -8,8 +9,9 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(GameCore* g)
-    : BaseScreen(g, "PackManagerTest")
+PackManagerTest::PackManagerTest(TestBed& app)
+    : BaseScreen(app, "PackManagerTest")
+    , engine(app.GetEngine())
 {
 }
 
@@ -297,17 +299,13 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
     // on MacOS slowly connect and then fast downloading
     StringStream ss;
 
-    ss << "init change state: " << static_cast<uint32>(packManager.GetInitState()) << '\n';
+    ss << "init change state: " << IPackManager::ToString(packManager.GetInitState()) << '\n';
 
     if (packManager.GetInitError() != IPackManager::InitError::AllGood)
     {
-        ss << "error: " << static_cast<uint32>(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
-
-        if (packManager.CanRetryInit())
-        {
-            ss << "do you want to retry?\n";
-            packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
-        }
+        ss << "error: " << IPackManager::ToString(packManager.GetInitError()) << " message: " << packManager.GetInitErrorMessage() << '\n';
+        ss << "do you want to retry?\n";
+        packManager.PauseInit(); // wait for user decide what to do! User can - PackManager.GetInit().Retry()
     }
 
     Logger::Info("%s", ss.str().c_str());
@@ -317,18 +315,12 @@ void PackManagerTest::OnInitChange(IPackManager& packManager)
 
 void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
-    if (pm.IsRequestingEnabled())
-    {
-        return;
-    }
-    // do every time full reinitialization
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks);
+    IPackManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: start init");
 
-    pm.asyncConnectStateChanged.Connect(this, &PackManagerTest::OnInitChange);
+    pm.initStateChanged.DisconnectAll();
+    pm.initStateChanged.Connect(this, &PackManagerTest::OnInitChange);
 
     String dbFile = sqliteDbFile;
     dbFile.replace(dbFile.find("{gpu}"), 5, gpuArchitecture);
@@ -337,7 +329,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
 
     pm.EnableRequesting();
 
-    packNameLoading->SetText(L"done: finish init");
+    packNameLoading->SetText(L"done: start initialize PackManager");
 }
 
 void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -350,27 +342,23 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
 
 void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     const Vector<IPackManager::Pack>& packs = pm.GetPacks();
 
     std::for_each(begin(packs), end(packs), [&pm](const IPackManager::Pack& pack)
                   {
-                      if (pack.state == IPackManager::Pack::Status::Mounted && pack.isReadOnly == false)
+                      if (pack.state == IPackManager::Pack::Status::Mounted)
                       {
                           pm.DeletePack(pack.name);
                       }
                   });
-
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
-    FileSystem::Instance()->CreateDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
 void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
+    IPackManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
 
     for (auto& pack : pm.GetPacks())
@@ -394,9 +382,8 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
-    IPackManager& pm = Core::Instance()->GetPackManager();
-
-    if (pm.GetInitState() < IPackManager::InitState::MountingLocalPacks)
+    IPackManager& pm = *engine.GetContext()->packManager;
+    if (pm.GetInitState() < IPackManager::InitState::Ready)
     {
         return;
     }
@@ -421,7 +408,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
 
 void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    IPackManager& pm = Core::Instance()->GetPackManager();
+    IPackManager& pm = *engine.GetContext()->packManager;
     WideString packName = packNextInput->GetText();
 
     pm.packStateChanged.DisconnectAll();
@@ -524,5 +511,3 @@ void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, 
 
     packNameLoading->SetText(out);
 }
-
-#endif // !__DAVAENGINE_COREV2__
