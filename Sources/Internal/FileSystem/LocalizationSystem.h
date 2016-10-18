@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCALIZATION_SYSTEM_H__
-#define __DAVAENGINE_LOCALIZATION_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -26,8 +25,8 @@ public:
 
     String GetCountryCode() const;
 
-    String GetLocalizedString(const String& utf8Key) const;
-    String GetLocalizedString(const String& utf8Key, const String& langId) const;
+    const String& GetLocalizedString(const String& utf8Key) const;
+    const String& GetLocalizedString(const String& utf8Key, const String& langId) const;
     void SetLocalizedString(const String& utf8Key, const String& utf8Value);
     void RemoveLocalizedString(const String& utf8Key);
 
@@ -72,12 +71,10 @@ private:
     YamlParser::YamlDataHolder* dataHolder;
 };
 
-inline String LocalizedUtf8String(const String& utf8Key)
+inline const String& LocalizedUtf8String(const String& utf8Key)
 {
     return LocalizationSystem::Instance()->GetLocalizedString(utf8Key);
 }
-DAVA_DEPRECATED(WideString LocalizedString(const WideString& key));
-DAVA_DEPRECATED(WideString LocalizedString(const String& utf8Key));
-};
 
-#endif // __DAVAENGINE_LOCALIZATION_SYSTEM_H__
+WideString LocalizedWideString(const String& utf8Key);
+};
