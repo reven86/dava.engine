@@ -7,7 +7,8 @@
 
 namespace rhi
 {
-std::atomic<ID3D11Device*> _D3D11_Device = nullptr;
+ID3D11Device* _D3D11_Device = nullptr;
+DAVA::Mutex _D3D11_DeviceLock;
 
 IDXGISwapChain* _D3D11_SwapChain = nullptr;
 ID3D11Texture2D* _D3D11_SwapChainBuffer = nullptr;
@@ -243,17 +244,35 @@ uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
     return sampleCount / 2;
 }
 
-void DX11_InvalidateDevice(HRESULT hr)
+void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line)
 {
-    DAVA::Logger::Error("DX11 Device removed/reset: %s", DX11_GetErrorText(hr));
-    _D3D11_Device.store(nullptr);
+    if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))
+    {
+        const char* actualError = DX11_GetErrorText(hr);
+        const char* reason = DX11_GetErrorText(_D3D11_Device->GetDeviceRemovedReason());
 
-    /* Possible solution: */
+        DAVA::String info = DAVA::Format("DX11 Device removed/reset:\n\n%s\n\n%s", actualError, reason);
 
-    /*
-    DVASSERT_MSG(0, "SORRY BRO");
-    exit(0);
-    // */
+    #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
+        // write to log if asserts are disabled
+        DAVA::Logger::Error(info.c_str());
+    #else
+        // assert will automatically write to log
+        DVASSERT_MSG(0, info.c_str());
+    #endif
+
+        if (_DX11_InitParam.renderingNotPossibleFunc)
+        {
+            _DX11_InitParam.renderingNotPossibleFunc();
+        }
+
+        _D3D11_Device = nullptr;
+    }
+    else if (FAILED(hr))
+    {
+        const char* errorText = DX11_GetErrorText(hr);
+        DAVA::Logger::Error("DX11 Device call %s\nat %s [%u] failed:\n%s", call, fileName, line, errorText);
+    }
 }
 
 } // namespace rhi

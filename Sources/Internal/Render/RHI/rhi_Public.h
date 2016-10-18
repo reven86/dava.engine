@@ -42,8 +42,9 @@ InitParam
 
     uint32 shaderConstRingBufferSize;
 
-    void (*acquireContextFunc)();
-    void (*releaseContextFunc)();
+    void (*acquireContextFunc)() = nullptr;
+    void (*releaseContextFunc)() = nullptr;
+    void (*renderingNotPossibleFunc)() = nullptr;
 
     InitParam()
         : width(0)
@@ -68,8 +69,6 @@ InitParam
         , maxCommandBuffer(0)
         , maxPacketListCount(0)
         , shaderConstRingBufferSize(0)
-        , acquireContextFunc(nullptr)
-        , releaseContextFunc(nullptr)
     {
     }
 };

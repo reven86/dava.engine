@@ -40,24 +40,22 @@
 #define CHECK_HR(hr) hr
 #endif
 
-#define DX11_GET_DEVICE (_D3D11_Device.load(std::memory_order_relaxed))
-
 #define DX11_DEVICE_CALL(F, HR) \
-do { \
-    if (DX11_GET_DEVICE) \
+{ \
+    _D3D11_DeviceLock.Lock(); \
+    if (_D3D11_Device) \
     {\
-        HRESULT callResult = DX11_GET_DEVICE->F; \
-        if ((callResult == DXGI_ERROR_DEVICE_REMOVED) || (callResult == DXGI_ERROR_DEVICE_RESET)) \
-        { \
-            DX11_InvalidateDevice(DX11_GET_DEVICE->GetDeviceRemovedReason()); \
-        } \
-        else if (FAILED(callResult))\
-        { \
-            DAVA::Logger::Error("DX11 Device call %s\nat %s [%u] failed:\n%s", #F, __FILE__, __LINE__, DX11_GetErrorText(callResult)); \
-        } \
-        HR = callResult; \
+        HR = _D3D11_Device->F; \
+        DX11_ProcessCallResult(HR, #F, __FILE__, __LINE__); \
+        _D3D11_DeviceLock.Unlock(); \
     }\
-} while (DX11_GET_DEVICE == nullptr);
+    else \
+    { \
+        DAVA::Logger::Error("DX11 Device is not ready, therefor call %s is not possible\nat %s [%u]", #F, __FILE__, __LINE__);\
+        _D3D11_DeviceLock.Unlock(); \
+        while (_D3D11_Device == nullptr) { DAVA::Thread::Sleep(1); } \
+    } \
+}
 
 namespace rhi
 {
@@ -69,9 +67,11 @@ const char* DX11_GetErrorText(HRESULT hr);
 
 void InitializeRenderThreadDX11(uint32 frameCount);
 void UninitializeRenderThreadDX11();
-void DX11_InvalidateDevice(HRESULT hr);
 
-extern std::atomic<ID3D11Device*> _D3D11_Device;
+void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const DAVA::uint32 line);
+
+extern ID3D11Device* _D3D11_Device;
+extern DAVA::Mutex _D3D11_DeviceLock;
 
 extern IDXGISwapChain* _D3D11_SwapChain;
 extern ID3D11Texture2D* _D3D11_SwapChainBuffer;

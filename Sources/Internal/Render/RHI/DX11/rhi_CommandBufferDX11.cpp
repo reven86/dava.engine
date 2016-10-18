@@ -1240,16 +1240,14 @@ _ExecuteQueuedCommandsDX11()
 
         // do present
 
-        HRESULT hr;
+        HRESULT hr = E_FAIL;
         {
             DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
             hr = _D3D11_SwapChain->Present(1, 0);
         }
-
-        CHECK_HR(hr)
-        if (hr == DXGI_ERROR_DEVICE_REMOVED)
         {
-            DX11_DEVICE_CALL(GetDeviceRemovedReason(), hr);
+            DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_DeviceLock);
+            DX11_ProcessCallResult(hr, "_D3D11_SwapChain->Present(1, 0)", __FILE__, __LINE__);
         }
 
         if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
