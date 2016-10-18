@@ -110,7 +110,7 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
     return screenInfo;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     eGPUFamily gpuFamily = GPU_INVALID;
 #ifdef __DAVAENGINE_COREV2__

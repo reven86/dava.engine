@@ -29,7 +29,7 @@ public:
     int GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo(const DeviceInfo::ScreenInfo& screenInfo_, bool fullInit);
