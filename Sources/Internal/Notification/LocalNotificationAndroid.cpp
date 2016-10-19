@@ -104,7 +104,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 
 extern "C"
 {
-JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaNotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
 {
     const char* str = env->GetStringUTFChars(uid, 0);
     DAVA::LocalNotificationController::Instance()->OnNotificationPressed(DAVA::String(str));
