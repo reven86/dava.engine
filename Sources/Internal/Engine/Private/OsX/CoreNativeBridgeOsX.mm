@@ -82,7 +82,8 @@ namespace DAVA
 namespace Private
 {
 CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
-    : core(core)
+    : core(core),
+    mainDispatcher(core->engineBackend->GetDispatcher())
 {
     // Force init NSApplication
     [NSApplication sharedApplication];

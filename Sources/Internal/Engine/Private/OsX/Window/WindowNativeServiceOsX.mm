@@ -32,6 +32,7 @@ void WindowNativeService::RemoveNSView(NSView* nsview)
 void WindowNativeService::DoWindowDeminiaturize()
 {
     [bridge->nswindow deminiaturize:bridge->windowDelegate];
+    [bridge->nswindow becomeKeyWindow];
 }
 
 } // namespace DAVA

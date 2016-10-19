@@ -11,6 +11,7 @@
 #include "Engine/WindowNativeService.h"
 #include "Utils/NSStringUtils.h"
 #include "Notification/LocalNotificationController.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 @implementation AppDelegate
 
@@ -35,10 +36,11 @@
     NSUserNotification *userNotification = [notification userInfo][(id)@"NSApplicationLaunchUserNotificationKey"];
     if (userNotification.userInfo != nil)
     {
-        DAVA::String uidStr = DAVA::StringFromNSString([[userNotification userInfo] valueForKey:@"uid"]);
-        if (!uidStr.empty())
+        NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
+        if (uid != nil && [uid length] != 0)
         {
-            DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+            DAVA::String uidStr = DAVA::StringFromNSString(uid);
+            bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         }
     }
     bridge->ApplicationDidFinishLaunching();
@@ -94,13 +96,13 @@
 
 - (void) userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
 {
-    DAVA::String uidStr =  DAVA::StringFromNSString([[notification userInfo] valueForKey:@"uid"]);
-    if (!uidStr.empty())
+    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+    if (uid != nil && [uid length] != 0)
     {
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:self];
-        DAVA::Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uidStr);
+        DAVA::String uidStr = DAVA::StringFromNSString(uid);
+        bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         DAVA::Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
-        bridge->ApplicationWillFinishLaunching();
     }
 }
 

@@ -94,7 +94,8 @@ void WindowNativeBridge::ApplicationDidHideUnhide(bool hidden)
 void WindowNativeBridge::WindowDidMiniaturize()
 {
     isMiniaturized = true;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
+    isVisible = false;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
 void WindowNativeBridge::WindowDidDeminiaturize()
@@ -104,9 +105,10 @@ void WindowNativeBridge::WindowDidDeminiaturize()
 
 void WindowNativeBridge::WindowDidBecomeKey()
 {
-    if (isMiniaturized || isAppHidden)
+    if (isMiniaturized || isAppHidden || !isVisible)
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        isVisible = true;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 }

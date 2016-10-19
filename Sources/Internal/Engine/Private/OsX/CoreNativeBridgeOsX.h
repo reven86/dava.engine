@@ -47,6 +47,7 @@ struct CoreNativeBridge final
 
     PlatformCore* core = nullptr;
 
+    MainDispatcher* mainDispatcher = nullptr;
     AppDelegate* appDelegate = nullptr;
     FrameTimer* frameTimer = nullptr;
 

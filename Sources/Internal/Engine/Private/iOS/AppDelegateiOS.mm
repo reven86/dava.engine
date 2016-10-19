@@ -24,8 +24,12 @@ extern CoreNativeBridge* coreNativeBridge;
 {
     if ([application applicationState] != UIApplicationStateActive)
     {
-        DAVA::String uidStr =  DAVA::StringFromNSString([[notification userInfo] valueForKey:@"uid"]);
-        bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+        if (uid != nil && [uid length] != 0)
+        {
+            const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
+            bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        }
     }
 }
 
@@ -37,12 +41,13 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    UILocalNotification *localNotif = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
-    if (localNotif != nil && [application applicationState] != UIApplicationStateActive)
+    UILocalNotification *notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+    if (notification != nil && [application applicationState] != UIApplicationStateActive)
     {
-        DAVA::String uidStr =  DAVA::StringFromNSString([[localNotif userInfo] valueForKey:@"uid"]);
-        if (!uidStr.empty())
+        NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+        if (uid != nil && [uid length] != 0)
         {
+            const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
             bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         }
     }

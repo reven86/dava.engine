@@ -71,6 +71,7 @@ struct WindowNativeBridge final
 
     bool isAppHidden = false;
     bool isMiniaturized = false;
+    bool isVisible = false;
 };
 
 } // namespace Private
