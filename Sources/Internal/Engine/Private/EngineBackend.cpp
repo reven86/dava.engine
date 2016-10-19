@@ -1,7 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Engine.h"
-
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
@@ -9,52 +8,43 @@
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
-#include "Render/Renderer.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-
-#include "Logger/Logger.h"
 #include "DAVAClassRegistrator.h"
-#include "FileSystem/FileSystem.h"
+#include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
-#include "Core/ApplicationCore.h"
-#include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
+#include "Debug/DVAssert.h"
+#include "Debug/Replay.h"
+#include "DLC/Downloader/CurlDownloader.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Input/InputSystem.h"
+#include "Job/JobManager.h"
+#include "Logger/Logger.h"
+#include "ModuleManager/ModuleManager.h"
+#include "Network/NetCore.h"
+#include "Notification/LocalNotificationController.h"
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
+#include "Render/2D/FTFont.h"
+#include "Render/2D/TextBlock.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Renderer.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
+#include "Sound/SoundEvent.h"
+#include "Sound/SoundSystem.h"
+#include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
-#include "Input/InputSystem.h"
-#include "Debug/DVAssert.h"
-#include "Render/2D/TextBlock.h"
-#include "Debug/Replay.h"
-#include "Sound/SoundSystem.h"
-#include "Sound/SoundEvent.h"
-#include "Input/InputSystem.h"
-#include "Platform/DPIHelper.h"
-#include "Base/AllocatorFactory.h"
-#include "Render/2D/FTFont.h"
-#include "Scene3D/SceneFile/VersionInfo.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "DLC/Downloader/DownloadManager.h"
-#include "DLC/Downloader/CurlDownloader.h"
-#include "Notification/LocalNotificationController.h"
-#include "Platform/DeviceInfo.h"
-#include "Render/Renderer.h"
-#include "UI/UIControlSystem.h"
-#include "Job/JobManager.h"
-#include "Network/NetCore.h"
-#include "PackManager/Private/PackManagerImpl.h"
-#include "ModuleManager/ModuleManager.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #endif
-
-#include "UI/UIEvent.h"
-#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
@@ -414,6 +404,13 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
+    case MainDispatcherEvent::GAMEPAD_MOTION:
+        HandleGamepadMotion(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_BUTTON_DOWN:
+    case MainDispatcherEvent::GAMEPAD_BUTTON_UP:
+        HandleGamepadButton(e);
+        break;
     default:
         if (e.window != nullptr)
         {
@@ -527,6 +524,50 @@ void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 void EngineBackend::PostUserCloseRequest()
 {
     dispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(nullptr));
+}
+
+void EngineBackend::HandleGamepadMotion(const MainDispatcherEvent& e)
+{
+    GamepadDevice& gamepad = context->inputSystem->GetGamepadDevice();
+
+    uint32 axis = e.gamepadEvent.axis;
+    float32 value = e.gamepadEvent.value;
+    uint32 davaKey = gamepad.GetDavaEventIdForSystemAxis(axis);
+    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
+    {
+        UIEvent uie;
+        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
+        uie.physPoint.x = value;
+        uie.point.x = value;
+        uie.phase = UIEvent::Phase::JOYSTICK;
+        uie.device = eInputDevice::GAMEPAD;
+        uie.timestamp = e.timestamp / 1000.0;
+
+        gamepad.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
+        context->inputSystem->ProcessInputEvent(&uie);
+    }
+}
+
+void EngineBackend::HandleGamepadButton(const MainDispatcherEvent& e)
+{
+    GamepadDevice& gamepad = context->inputSystem->GetGamepadDevice();
+
+    uint32 button = e.gamepadEvent.button;
+    float32 value = e.gamepadEvent.value;
+    uint32 davaKey = gamepad.GetDavaEventIdForSystemKeycode(button);
+    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
+    {
+        UIEvent uie;
+        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
+        uie.physPoint.x = value;
+        uie.point.x = value;
+        uie.phase = UIEvent::Phase::JOYSTICK;
+        uie.device = eInputDevice::GAMEPAD;
+        uie.timestamp = e.timestamp / 1000.0;
+
+        gamepad.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
+        context->inputSystem->ProcessInputEvent(&uie);
+    }
 }
 
 void EngineBackend::InitRenderer(Window* w)

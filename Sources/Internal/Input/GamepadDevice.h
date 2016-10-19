@@ -1,11 +1,9 @@
-#ifndef __GAMEPAD_DEVICE_H_
-#define __GAMEPAD_DEVICE_H_
+#pragma once
 
 #include "Base/BaseObject.h"
 
 namespace DAVA
 {
-#pragma pack(push, 1)
 class GamepadDevice : public BaseObject
 {
 public:
@@ -81,9 +79,24 @@ public:
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
     uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
+#else
+public:
+    static const uint8 INVALID_DAVAKEY = 0xFF;
+    static const uint32 MAX_TRANSLATOR_KEYS = 256;
+
+    uint8 GetDavaEventIdForSystemKeycode(int32 systemKey) const
+    {
+        return INVALID_DAVAKEY;
+    }
+    uint8 GetDavaEventIdForSystemAxis(int32 systemKey) const
+    {
+        return INVALID_DAVAKEY;
+    }
+    void OnTriggersAvailable(bool isAvailable)
+    {
+    }
 #endif
 };
-#pragma pack(pop)
 
 inline bool GamepadDevice::IsAvailable() const
 {
@@ -155,6 +168,4 @@ inline void GamepadDevice::GamepadDevice::OnTriggersAvailable(bool isAvailable)
         profile = GAMEPAD_PROFILE_NO_TRIGGERS;
 }
 #endif
-}
-
-#endif //__GAMEPAD_DEVICE_H_
+} // namespace DAVA

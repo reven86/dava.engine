@@ -2,6 +2,8 @@
 
 #if defined(__DAVAENGINE_COREV2__)
 
+#include <bitset>
+
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Math/Vector.h"
@@ -127,7 +129,9 @@ private:
     float32 userScale = 1.0f;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
-    Bitset<static_cast<size_t>(eMouseButtons::COUNT)> mouseButtonState;
+    // Shortcut for eMouseButtons::COUNT
+    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
+    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
 
     // Friends
     friend class Private::EngineBackend;

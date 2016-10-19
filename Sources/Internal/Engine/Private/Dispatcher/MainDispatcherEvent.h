@@ -32,6 +32,10 @@ struct MainDispatcherEvent final
         TOUCH_UP,
         TOUCH_MOVE,
 
+        GAMEPAD_BUTTON_DOWN,
+        GAMEPAD_BUTTON_UP,
+        GAMEPAD_MOTION,
+
         KEY_DOWN,
         KEY_UP,
         KEY_CHAR,
@@ -112,6 +116,23 @@ struct MainDispatcherEvent final
         float32 y;
     };
 
+    // Parameter for gamepad events:
+    //      - GAMEPAD_BUTTON_DOWN
+    //      - GAMEPAD_BUTTON_UP
+    //      - GAMEPAD_MOTION
+    struct GamepadEvent
+    {
+        uint32 deviceId;
+        uint32 button; // Button identifier as reported by system for GAMEPAD_BUTTON_DOWN and GAMEPAD_BUTTON_UP
+        uint32 axis; // Axis identifier as reported by system for GAMEPAD_MOTION
+        // Axis value for GAMEPAD_MOTION, usually normalized to [-1.0, 1.0] or [0.0, -1.0].
+        // Or button state for GAMEPAD_BUTTON_DOWN and GAMEPAD_BUTTON_UP.
+        // Some strange behaviour is necessary due to odd DAVA::GamepadDevice implementation:
+        //  - some buttons are translated into range [-1, 1], e.g. Dpad left is -1, Dpad right is 1, no Dpad is 0
+        //  - other buttons state (A, B, X, Y) are also interpreted in the following way: 1 if button is down, 0 - otherwise
+        float32 value;
+    };
+
     /// Parameter for events:
     ///     - KEY_DOWN
     ///     - KEY_UP
@@ -150,11 +171,18 @@ struct MainDispatcherEvent final
         WindowSizeEvent sizeEvent;
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
+        GamepadEvent gamepadEvent;
         KeyEvent keyEvent;
     };
 
+    template <typename F>
+    static MainDispatcherEvent CreateFunctorEvent(F&& functor);
+
     static MainDispatcherEvent CreateAppTerminateEvent(bool triggeredBySystem);
     static MainDispatcherEvent CreateUserCloseRequestEvent(Window* window);
+
+    static MainDispatcherEvent CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value);
+    static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button, float32 value);
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
@@ -168,6 +196,14 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y, eModifierKeys modifierKeys);
 };
+
+template <typename F>
+MainDispatcherEvent MainDispatcherEvent::CreateFunctorEvent(F&& functor)
+{
+    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
+    e.functor = std::forward<F>(functor);
+    return e;
+}
 
 } // namespace Private
 } // namespace DAVA

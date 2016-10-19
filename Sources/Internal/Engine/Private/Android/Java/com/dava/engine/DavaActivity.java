@@ -38,6 +38,7 @@ public final class DavaActivity extends Activity
 
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
+    protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
     // List of class instances loaded from boot_classes files on startup
     protected List<Object> bootstrapObjects = new LinkedList<Object>();
 
@@ -65,6 +66,11 @@ public final class DavaActivity extends Activity
     public static DavaCommandHandler commandHandler()
     {
         return activitySingleton.commandHandler;
+    }
+
+    public static DavaGamepadManager gamepadManager()
+    {
+        return activitySingleton.gamepadManager;
     }
 
     @Override
@@ -302,6 +308,7 @@ public final class DavaActivity extends Activity
                 isPaused = false;
                 nativeOnResume();
                 primarySurfaceView.handleResume();
+                gamepadManager.onResume();
             }
         }
     }
@@ -312,6 +319,7 @@ public final class DavaActivity extends Activity
         {
             isPaused = true;
             primarySurfaceView.handlePause();
+            gamepadManager.onPause();
             nativeOnPause();
         }
     }

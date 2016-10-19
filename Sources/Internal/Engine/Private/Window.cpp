@@ -266,27 +266,14 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = static_cast<UIEvent::MouseButton>(e.mouseEvent.button);
+    uie.mouseButton = e.mouseEvent.button;
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    // NOTE: Taken from CoreWin32Platform::OnMouseClick
-
-    //bool isAnyButtonDownBefore = mouseButtonState.any();
     bool isButtonDown = uie.phase == UIEvent::Phase::BEGAN;
     uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
     mouseButtonState[buttonIndex] = isButtonDown;
 
     uiControlSystem->OnInput(&uie);
-
-    //bool isAnyButtonDownAfter = mouseButtonState.any();
-    //if (isAnyButtonDownBefore && !isAnyButtonDownAfter)
-    //{
-    //    ReleaseCapture();
-    //}
-    //else if (!isAnyButtonDownBefore && isAnyButtonDownAfter)
-    //{
-    //    SetCapture(hWindow);
-    //}
 }
 
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
@@ -321,9 +308,9 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     uie.mouseButton = UIEvent::MouseButton::NONE;
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    // NOTE: Taken from CoreWin32Platform::OnMouseMove
     if (mouseButtonState.any())
     {
+        // Send DRAG phase instead of MOVE for each pressed mouse button
         uie.phase = UIEvent::Phase::DRAG;
 
         uint32 firstButton = static_cast<uint32>(eMouseButtons::FIRST);

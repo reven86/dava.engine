@@ -24,6 +24,28 @@ MainDispatcherEvent MainDispatcherEvent::CreateUserCloseRequestEvent(Window* win
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value)
+{
+    MainDispatcherEvent e(GAMEPAD_MOTION);
+    e.gamepadEvent.deviceId = deviceId;
+    e.gamepadEvent.axis = axis;
+    e.gamepadEvent.value = value;
+    e.gamepadEvent.button = 0;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button, float32 value)
+{
+    DVASSERT(gamepadButtonEventType == GAMEPAD_BUTTON_DOWN || gamepadButtonEventType == GAMEPAD_BUTTON_UP);
+
+    MainDispatcherEvent e(gamepadButtonEventType);
+    e.gamepadEvent.deviceId = deviceId;
+    e.gamepadEvent.button = button;
+    e.gamepadEvent.value = value;
+    e.gamepadEvent.axis = 0;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);

@@ -5,16 +5,36 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Window.h"
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
+#include "Input/InputSystem.h"
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
+extern DAVA::Private::AndroidBridge* androidBridge;
+
+extern "C"
+{
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaGamepadManager_nativeOnGamepadAdded(JNIEnv* env, jclass jclazz, jint deviceId, jstring name, jboolean hasTriggerButtons)
+{
+    using namespace DAVA;
+    String deviceName = JNI::JavaStringToString(name, env);
+    androidBridge->core->OnGamepadAdded(deviceId, deviceName, hasTriggerButtons == JNI_TRUE);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaGamepadManager_nativeOnGamepadRemoved(JNIEnv* env, jclass jclazz, jint deviceId)
+{
+    androidBridge->core->OnGamepadRemoved(deviceId);
+}
+
+} // extern "C"
 
 namespace DAVA
 {
@@ -113,6 +133,26 @@ void PlatformCore::GameThread()
 
     // Logger already is dead
     ANDROID_LOG_DEBUG("=========== PlatformCore::GameThread: leave");
+}
+
+void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)
+{
+    //mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([hasTriggerButtons]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([=]() {
+        Logger::Info("=========================== OnGamepadAdded: id=%d, name=%s, hasTriggerButtons=%d", deviceId, name.c_str(), hasTriggerButtons);
+        InputSystem::Instance()->GetGamepadDevice().SetAvailable(true);
+        InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(hasTriggerButtons);
+    }));
+}
+
+void PlatformCore::OnGamepadRemoved(int32 deviceId)
+{
+    //mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([=]() {
+        Logger::Info("=========================== OnGamepadAdded: id=%d", deviceId);
+        InputSystem::Instance()->GetGamepadDevice().SetAvailable(false);
+        InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(false);
+    }));
 }
 
 } // namespace Private
