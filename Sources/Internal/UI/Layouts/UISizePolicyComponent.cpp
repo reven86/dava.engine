@@ -5,6 +5,20 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UISizePolicyComponent)
+{
+    ReflectionRegistrator<UISizePolicyComponent>::Begin()
+    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicyAsInt, &UISizePolicyComponent::SetHorizontalPolicyFromInt)
+    .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)
+    .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)
+    .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)
+    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicyAsInt, &UISizePolicyComponent::SetVerticalPolicyFromInt)
+    .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)
+    .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)
+    .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)
+    .End();
+}
+
 UISizePolicyComponent::UISizePolicyComponent()
 {
     const float32 DEFAULT_VALUE = 100.0f;

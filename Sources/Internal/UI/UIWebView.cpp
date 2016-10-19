@@ -22,6 +22,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIWebView)
+{
+    ReflectionRegistrator<UIWebView>::Begin()
+    .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes)
+    .End();
+}
+
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)

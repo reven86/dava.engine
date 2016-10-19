@@ -3,12 +3,15 @@
 
 #include "UIControl.h"
 #include "IWebViewControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIWebView, UIControl);
+
 public:
     // Data detector types. May be a combination of several flags.
     enum eDataDetectorType

@@ -9,6 +9,8 @@ namespace DAVA
 {
 class UIStaticText : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIStaticText, UIControl);
+
 public:
     // Use NO_REQUIRED_SIZE to notify SetText that we don't want
     // to enable of any kind of static text fitting

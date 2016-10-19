@@ -22,6 +22,8 @@ class Font;
 
 class UIButton : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIButton, UIControl);
+
 public:
     /**
      \brief Creates button with requested size and position.

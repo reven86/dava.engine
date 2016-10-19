@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -9,6 +10,8 @@ class UIControl;
 
 class UIIgnoreLayoutComponent : public UIBaseComponent<UIComponent::IGNORE_LAYOUT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIIgnoreLayoutComponent, UIBaseComponent<UIComponent::IGNORE_LAYOUT_COMPONENT>);
+
 public:
     UIIgnoreLayoutComponent() = default;
     UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src);

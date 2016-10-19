@@ -8,6 +8,7 @@
 #include "Functional/Signal.h"
 #include "UIActionMap.h"
 #include "UIInputMap.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -15,6 +16,8 @@ class UIControl;
 
 class UIActionBindingComponent : public UIBaseComponent<UIComponent::ACTION_BINDING_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIActionBindingComponent, UIBaseComponent<UIComponent::ACTION_BINDING_COMPONENT>);
+
 public:
     UIActionBindingComponent();
     UIActionBindingComponent(const UIActionBindingComponent& src);

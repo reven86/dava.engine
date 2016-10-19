@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Registrator.h"
 
 #define MINIMUM_SLIDER_SIZE 30
 
@@ -27,6 +28,8 @@ public:
 
 class UIScrollBar : public UIControl
 { //TODO: add top and bottom buttons
+    DAVA_VIRTUAL_REFLECTION(UIScrollBar, UIControl);
+
 public:
     enum eScrollOrientation
     {

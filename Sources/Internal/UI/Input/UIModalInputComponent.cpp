@@ -2,6 +2,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIModalInputComponent)
+{
+    ReflectionRegistrator<UIModalInputComponent>::Begin()
+    .Field("enabled", &UIModalInputComponent::IsEnabled, &UIModalInputComponent::SetEnabled)
+    .End();
+}
+
 UIModalInputComponent::UIModalInputComponent()
 {
 }

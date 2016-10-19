@@ -6,6 +6,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(BaseObject)
+{
+    ReflectionRegistrator<BaseObject>::Begin()
+    .Field("referenceCount", &BaseObject::GetRetainCount, nullptr)
+    .End();
+}
+
 const String& BaseObject::GetClassName() const
 {
     return ObjectFactory::Instance()->GetName(this);

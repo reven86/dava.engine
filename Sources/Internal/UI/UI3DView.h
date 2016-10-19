@@ -15,6 +15,8 @@ namespace DAVA
 class Scene;
 class UI3DView : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UI3DView, UIControl);
+
 public:
     UI3DView(const Rect& rect = Rect());
 

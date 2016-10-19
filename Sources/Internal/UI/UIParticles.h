@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_PARTICLES__
 
 #include "UI/UIControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -11,6 +12,8 @@ class Camera;
 
 class UIParticles : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIParticles, UIControl);
+
 protected:
     virtual ~UIParticles();
 

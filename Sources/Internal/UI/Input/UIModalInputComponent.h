@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -11,6 +12,8 @@ class UIControl;
 
 class UIModalInputComponent : public UIBaseComponent<UIComponent::MODAL_INPUT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIModalInputComponent, UIBaseComponent<UIComponent::MODAL_INPUT_COMPONENT>);
+
 public:
     UIModalInputComponent();
     UIModalInputComponent(const UIModalInputComponent& src);

@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 #include "UI/UIScrollBar.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -12,6 +13,8 @@ class ScrollHelper;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
+    DAVA_VIRTUAL_REFLECTION(UIScrollView, UIControl);
+
 public:
     UIScrollView(const Rect& rect = Rect());
 

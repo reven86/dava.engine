@@ -143,6 +143,8 @@ private:
  */
 class UIList : public UIControl, public UIScrollBarDelegate
 {
+    DAVA_VIRTUAL_REFLECTION(UIList, UIControl);
+
 public:
     static const int32 maximumElementsCount = 100000;
     enum eListOrientation

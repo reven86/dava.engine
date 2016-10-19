@@ -4,6 +4,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIIgnoreLayoutComponent)
+{
+    ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()
+    .Field("enabled", &UIIgnoreLayoutComponent::IsEnabled, &UIIgnoreLayoutComponent::SetEnabled)
+    .End();
+}
+
 UIIgnoreLayoutComponent::UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src)
     : enabled(src.enabled)
 {

@@ -7,6 +7,12 @@ namespace DAVA
 {
 const int32 DEFAULT_TOUCH_TRESHOLD = 15; // Default value for finger touch tresshold
 
+DAVA_REFLECTION_IMPL(UIScrollViewContainer)
+{
+    ReflectionRegistrator<UIScrollViewContainer>::Begin()
+    .End();
+}
+
 UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
     : UIControl(rect)
     , state(STATE_NONE)

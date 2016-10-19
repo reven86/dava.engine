@@ -15,6 +15,15 @@ static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
 static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
 static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 
+DAVA_REFLECTION_IMPL(UISlider)
+{
+    ReflectionRegistrator<UISlider>::Begin()
+    .Field("minValue", &UISlider::GetMinValue, &UISlider::SetMinValue)
+    .Field("maxValue", &UISlider::GetMaxValue, &UISlider::SetMaxValue)
+    .Field("value", &UISlider::GetValue, &UISlider::SetValue)
+    .End();
+}
+
 UISlider::UISlider(const Rect& rect)
     : UIControl(rect)
     , minBackground(NULL)

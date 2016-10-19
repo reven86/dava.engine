@@ -9,6 +9,7 @@
 #include "DAVAConfig.h"
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
+#include "Reflection/Registrator.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -34,9 +35,10 @@ namespace DAVA
 class InspInfo;
 class KeyedArchive;
 
-class BaseObject : public InspBase
+class BaseObject : public InspBase, public ReflectedBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT)
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
+    DAVA_VIRTUAL_REFLECTION(BaseObject);
 
 protected:
     //! Destructor

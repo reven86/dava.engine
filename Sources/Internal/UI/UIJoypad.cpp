@@ -6,6 +6,14 @@ namespace DAVA
 {
 static const FastName UIJOYPAD_STICK_NAME("stick");
 
+DAVA_REFLECTION_IMPL(UIJoypad)
+{
+    ReflectionRegistrator<UIJoypad>::Begin()
+    .Field("deadAreaSize", &UIJoypad::GetDeadAreaSize, &UIJoypad::SetDeadAreaSize)
+    .Field("digitalSense", &UIJoypad::GetDigitalSense, &UIJoypad::SetDigitalSense)
+    .End();
+}
+
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)
     , stick(nullptr)

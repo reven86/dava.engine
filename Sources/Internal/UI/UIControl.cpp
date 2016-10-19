@@ -27,6 +27,30 @@ namespace DAVA
 {
 const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
 
+DAVA_REFLECTION_IMPL(UIControl)
+{
+    ReflectionRegistrator<UIControl>::Begin()
+    .Field("position", &UIControl::GetPosition, &UIControl::SetPosition)
+    .Field("size", &UIControl::GetSize, &UIControl::SetSize)
+    .Field("scale", &UIControl::GetScale, &UIControl::SetScale)
+    .Field("pivot", &UIControl::GetPivot, &UIControl::SetPivot)
+    .Field("angle", &UIControl::GetAngleInDegrees, &UIControl::SetAngleInDegrees)
+    .Field("visible", &UIControl::GetVisibilityFlag, &UIControl::SetVisibilityFlag)
+    .Field("enabled", &UIControl::GetEnabled, &UIControl::SetEnabledNotHierarchic)
+    .Field("selected", &UIControl::GetSelected, &UIControl::SetSelectedNotHierarchic)
+    .Field("clip", &UIControl::GetClipContents, &UIControl::SetClipContents)
+    .Field("noInput", &UIControl::GetNoInput, &UIControl::SetNoInput)
+    .Field("exclusiveInput", &UIControl::GetExclusiveInput, &UIControl::SetExclusiveInputNotHierarchic)
+    .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)
+    .Field("tag", &UIControl::GetTag, &UIControl::SetTag)
+    .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
+    .Field("background", &UIControl::GetBackground, &UIControl::SetBackground)
+    .Field("components", &UIControl::GetComponents, nullptr)
+    .Field("debugDraw", &UIControl::GetDebugDraw, &UIControl::SetDebugDrawNotHierarchic)
+    .Field("debugDrawColor", &UIControl::GetDebugDrawColor, &UIControl::SetDebugDrawColor)
+    .End();
+}
+
 static Mutex controlsListMutex;
 static Vector<const UIControl*> controlsList; //weak pointers
 

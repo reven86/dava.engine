@@ -29,6 +29,26 @@ const Color UIStaticText::HIGHLIGHT_COLORS[] = { DAVA::Color(1.0f, 0.0f, 0.0f, 0
                                                  DAVA::Color(1.0f, 0.0f, 1.0f, 0.4f),
                                                  DAVA::Color(0.0f, 1.0f, 0.0f, 0.4f) };
 #endif
+
+DAVA_REFLECTION_IMPL(UIStaticText)
+{
+    ReflectionRegistrator<UIStaticText>::Begin()
+    .Field("textColor", &UIStaticText::GetTextColor, &UIStaticText::SetTextColor)
+    .Field("textColorInheritType", &UIStaticText::GetTextColorInheritType, &UIStaticText::SetTextColorInheritType)
+    .Field("textPerPixelAccuracyType", &UIStaticText::GetTextPerPixelAccuracyType, &UIStaticText::SetTextPerPixelAccuracyType)
+    .Field("shadowOffset", &UIStaticText::GetShadowOffset, &UIStaticText::SetShadowOffset)
+    .Field("shadowColor", &UIStaticText::GetShadowColor, &UIStaticText::SetShadowColor)
+    .Field("multiline", &UIStaticText::GetMultilineType, &UIStaticText::SetMultilineType)
+    .Field("fitting", &UIStaticText::GetFittingOption, &UIStaticText::SetFittingOption)
+    .Field("textAlign", &UIStaticText::GetTextAlign, &UIStaticText::SetTextAlign)
+    .Field("textUseRtlAlign", &UIStaticText::GetTextUseRtlAlign, &UIStaticText::SetTextUseRtlAlign)
+    .Field("textMargins", &UIStaticText::GetMarginsAsVector4, &UIStaticText::SetMarginsAsVector4)
+    .Field("text", &UIStaticText::GetUtf8Text, &UIStaticText::SetUtf8TextWithoutRect)
+    .Field("font", &UIStaticText::GetFontPresetName, &UIStaticText::SetFontByPresetName)
+    .Field("forceBiDiSupport", &UIStaticText::IsForceBiDiSupportEnabled, &UIStaticText::SetForceBiDiSupportEnabled)
+    .End();
+}
+
 UIStaticText::UIStaticText(const Rect& rect)
     : UIControl(rect)
     , shadowOffset(0, 0)

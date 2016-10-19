@@ -4,6 +4,20 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UILinearLayoutComponent)
+{
+    ReflectionRegistrator<UILinearLayoutComponent>::Begin()
+    .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)
+    .Field("orientation", &UILinearLayoutComponent::GetOrientationAsInt, &UILinearLayoutComponent::SetOrientationFromInt)
+    .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)
+    .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)
+    .Field("spacing", &UILinearLayoutComponent::GetSpacing, &UILinearLayoutComponent::SetSpacing)
+    .Field("dynamicSpacing", &UILinearLayoutComponent::IsDynamicSpacing, &UILinearLayoutComponent::SetDynamicSpacing)
+    .Field("skipInvisible", &UILinearLayoutComponent::IsSkipInvisibleControls, &UILinearLayoutComponent::SetSkipInvisibleControls)
+    .Field("useRtl", &UILinearLayoutComponent::IsUseRtl, &UILinearLayoutComponent::SetUseRtl)
+    .End();
+}
+
 UILinearLayoutComponent::UILinearLayoutComponent()
 {
     SetEnabled(true);

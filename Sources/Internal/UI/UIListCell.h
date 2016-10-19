@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_LIST_CELL_H__
 
 #include "UI/UIButton.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -14,6 +15,7 @@ namespace DAVA
 class UIListCell : public UIButton
 {
     friend class UIList;
+    DAVA_VIRTUAL_REFLECTION(UIListCell, UIButton);
 
 public:
     /**

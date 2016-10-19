@@ -5,6 +5,14 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIFlowLayoutHintComponent)
+{
+    ReflectionRegistrator<UIFlowLayoutHintComponent>::Begin()
+    .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)
+    .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)
+    .End();
+}
+
 UIFlowLayoutHintComponent::UIFlowLayoutHintComponent()
 {
 }

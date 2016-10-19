@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -9,6 +10,8 @@ class UIControl;
 
 class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutHintComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>);
+
 public:
     UIFlowLayoutHintComponent();
     UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent& src);

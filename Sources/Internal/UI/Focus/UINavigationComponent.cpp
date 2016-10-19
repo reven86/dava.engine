@@ -2,6 +2,16 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UINavigationComponent)
+{
+    ReflectionRegistrator<UINavigationComponent>::Begin()
+    .Field("left", &UINavigationComponent::GetNextFocusLeft, &UINavigationComponent::SetNextFocusLeft)
+    .Field("right", &UINavigationComponent::GetNextFocusRight, &UINavigationComponent::SetNextFocusRight)
+    .Field("up", &UINavigationComponent::GetNextFocusUp, &UINavigationComponent::SetNextFocusUp)
+    .Field("down", &UINavigationComponent::GetNextFocusDown, &UINavigationComponent::SetNextFocusDown)
+    .End();
+}
+
 UINavigationComponent::UINavigationComponent()
 {
 }

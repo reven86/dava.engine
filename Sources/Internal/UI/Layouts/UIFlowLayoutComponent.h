@@ -2,11 +2,14 @@
 #define __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 class UIFlowLayoutComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>);
+
 public:
     enum eOrientation
     {

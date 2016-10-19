@@ -10,6 +10,15 @@ namespace DAVA
 /* this camera is required just for preparing draw data*/
 Camera* UIParticles::defaultCamera = nullptr;
 
+DAVA_REFLECTION_IMPL(UIParticles)
+{
+    ReflectionRegistrator<UIParticles>::Begin()
+    .Field("effectPath", &UIParticles::GetEffectPath, &UIParticles::SetEffectPath)
+    .Field("autoStart", &UIParticles::IsAutostart, &UIParticles::SetAutostart)
+    .Field("startDelay", &UIParticles::GetStartDelay, &UIParticles::SetStartDelay)
+    .End();
+}
+
 UIParticles::UIParticles(const Rect& rect)
     : UIControl(rect)
     , isAutostart(false)

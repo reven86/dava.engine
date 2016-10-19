@@ -3,6 +3,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIListCell)
+{
+    ReflectionRegistrator<UIListCell>::Begin()
+    .Field("identifier", &UIListCell::GetIdentifier, &UIListCell::SetIdentifier)
+    .End();
+}
+
 UIListCell::UIListCell(const Rect& rect, const String& cellIdentifier)
     : UIButton(rect)
     , currentIndex(-1)

@@ -53,6 +53,32 @@ public:
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UITextField)
+{
+    ReflectionRegistrator<UITextField>::Begin()
+    .Field("text", &UITextField::GetUtf8Text, &UITextField::SetUtf8Text)
+    .Field("font", &UITextField::GetFontPresetName, &UITextField::SetFontByPresetName)
+    .Field("textColor", &UITextField::GetTextColor, &UITextField::SetTextColor)
+    .Field("selectionColor", &UITextField::GetSelectionColor, &UITextField::SetSelectionColor)
+    .Field("shadowOffset", &UITextField::GetShadowOffset, &UITextField::SetShadowOffset)
+    .Field("shadowColor", &UITextField::GetShadowColor, &UITextField::SetShadowColor)
+    .Field("textAlign", &UITextField::GetTextAlign, &UITextField::SetTextAlign)
+    .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlignAsInt, &UITextField::SetTextUseRtlAlignFromInt)
+    .Field("maxLength", &UITextField::GetMaxLength, &UITextField::SetMaxLength)
+    .Field("isPassword", &UITextField::IsPassword, &UITextField::SetIsPassword)
+    .Field("isMultiline", &UITextField::IsMultiline, &UITextField::SetMultiline)
+    .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType)
+    .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType)
+    .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType)
+    .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType)
+    .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType)
+    .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType)
+    .Field("enableReturnKeyAutomatically", &UITextField::IsEnableReturnKeyAutomatically, &UITextField::SetEnableReturnKeyAutomatically)
+    .Field("startEditPolicy", &UITextField::GetStartEditPolicyAsInt, &UITextField::SetStartEditPolicyFromInt)
+    .Field("stopEditPolicy", &UITextField::GetStopEditPolicyAsInt, &UITextField::SetStopEditPolicyFromInt)
+    .End();
+}
+
 UITextField::UITextField(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)

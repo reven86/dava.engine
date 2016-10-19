@@ -8,6 +8,12 @@ namespace DAVA
 List<UIScreen*> UIScreen::appScreens;
 int32 UIScreen::groupIdCounter = -1;
 
+DAVA_REFLECTION_IMPL(UIScreen)
+{
+    ReflectionRegistrator<UIScreen>::Begin()
+    .End();
+}
+
 UIScreen::UIScreen(const Rect& rect)
     : UIControl(rect)
     , groupId(groupIdCounter)

@@ -9,6 +9,15 @@ namespace DAVA
 {
 static const int32 INVALID_INDEX = -1;
 
+DAVA_REFLECTION_IMPL(UIList)
+{
+    ReflectionRegistrator<UIList>::Begin()
+    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)
+    .Field("aggregatorPath", &UIList::GetAggregatorPath, &UIList::SetAggregatorPath)
+    .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)
+    .End();
+}
+
 float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {
     return 20.0f;

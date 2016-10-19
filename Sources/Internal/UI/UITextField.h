@@ -94,6 +94,8 @@ public:
  */
 class UITextField : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UITextField, UIControl);
+
 public:
     // Auto-capitalization type.
     enum eAutoCapitalizationType

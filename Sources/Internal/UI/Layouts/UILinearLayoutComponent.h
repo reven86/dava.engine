@@ -2,11 +2,14 @@
 #define __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 class UILinearLayoutComponent : public UIBaseComponent<UIComponent::LINEAR_LAYOUT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UILinearLayoutComponent, UIBaseComponent<UIComponent::LINEAR_LAYOUT_COMPONENT>);
+
 public:
     enum eOrientation
     {

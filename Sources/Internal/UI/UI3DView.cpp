@@ -12,6 +12,14 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UI3DView)
+{
+    ReflectionRegistrator<UI3DView>::Begin()
+    .Field("drawToFrameBuffer", &UI3DView::GetDrawToFrameBuffer, &UI3DView::SetDrawToFrameBuffer)
+    .Field("frameBufferScaleFactor", &UI3DView::GetFrameBufferScaleFactor, &UI3DView::SetFrameBufferScaleFactor)
+    .End();
+}
+
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)

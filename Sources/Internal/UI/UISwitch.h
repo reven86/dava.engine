@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 #include "UI/UIButton.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -22,6 +23,7 @@ class TogglePositionAnimation;
 class UISwitch : public UIControl
 {
     friend class TogglePositionAnimation;
+    DAVA_VIRTUAL_REFLECTION(UISwitch, UIControl);
 
 protected:
     virtual ~UISwitch();

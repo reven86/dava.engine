@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -11,6 +12,8 @@ class UIControl;
 
 class UIActionComponent : public UIBaseComponent<UIComponent::ACTION_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIActionComponent, UIBaseComponent<UIComponent::ACTION_COMPONENT>);
+
 public:
     UIActionComponent();
     UIActionComponent(const UIActionComponent& src);

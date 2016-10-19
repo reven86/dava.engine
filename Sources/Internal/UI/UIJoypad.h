@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -14,6 +15,8 @@ namespace DAVA
 
 class UIJoypad : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIJoypad, UIControl);
+
     enum eTouchID
     {
         TOUCH_INVALID_ID = -1

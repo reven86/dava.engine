@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -9,6 +10,8 @@ class UIControl;
 
 class UISizePolicyComponent : public UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UISizePolicyComponent, UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>);
+
 public:
     enum eSizePolicy
     {

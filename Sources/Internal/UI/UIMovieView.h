@@ -5,12 +5,15 @@
 
 #include "UI/UIControl.h"
 #include "UI/IMovieViewControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIMovieView, UIControl);
+
 public:
     UIMovieView(const Rect& rect = Rect());
 

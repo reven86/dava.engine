@@ -7,6 +7,8 @@ namespace DAVA
 {
 class UIAnchorComponent : public UIBaseComponent<UIComponent::ANCHOR_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIAnchorComponent, UIBaseComponent<UIComponent::ANCHOR_COMPONENT>);
+
 public:
     UIAnchorComponent();
     UIAnchorComponent(const UIAnchorComponent& src);

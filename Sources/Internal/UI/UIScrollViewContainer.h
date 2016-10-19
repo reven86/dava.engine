@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -10,6 +11,8 @@ class ScrollHelper;
 
 class UIScrollViewContainer : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIScrollViewContainer, UIControl);
+
 protected:
     virtual ~UIScrollViewContainer();
 

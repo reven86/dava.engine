@@ -7,6 +7,14 @@ namespace DAVA
 {
 static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 
+DAVA_REFLECTION_IMPL(UIScrollView)
+{
+    ReflectionRegistrator<UIScrollView>::Begin()
+    .Field("autoUpdate", &UIScrollView::IsAutoUpdate, &UIScrollView::SetAutoUpdate)
+    .Field("centerContent", &UIScrollView::IsCenterContent, &UIScrollView::SetCenterContent)
+    .End();
+}
+
 UIScrollView::UIScrollView(const Rect& rect)
     : UIControl(rect)
     , scrollContainer(new UIScrollViewContainer())

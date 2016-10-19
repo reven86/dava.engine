@@ -6,6 +6,7 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
@@ -13,6 +14,8 @@ class UIScreenTransition;
 class UIControlSystem;
 class UIScreen : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIScreen, UIControl);
+
 public:
     enum eFillBorderOrder
     {

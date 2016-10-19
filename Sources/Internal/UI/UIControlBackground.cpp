@@ -12,6 +12,28 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIControlBackground)
+{
+    ReflectionRegistrator<UIControlBackground>::Begin()
+    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType)
+    .Field<FilePath, const FilePath&>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
+    .Field<int32, int32>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
+    .Field("mask", &UIControlBackground::GetMaskSpritePath, &UIControlBackground::SetMaskSpriteFromPath)
+    .Field("detail", &UIControlBackground::GetDetailSpritePath, &UIControlBackground::SetDetailSpriteFromPath)
+    .Field("gradient", &UIControlBackground::GetGradientSpritePath, &UIControlBackground::SetGradientSpriteFromPath)
+    .Field("contour", &UIControlBackground::GetContourSpritePath, &UIControlBackground::SetContourSpriteFromPath)
+    .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification)
+    .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode)
+    .Field("color", &UIControlBackground::GetColor, &UIControlBackground::SetColor)
+    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit)
+    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy)
+    .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign)
+    .Field("leftRightStretchCap", &UIControlBackground::GetLeftRightStretchCap, &UIControlBackground::SetLeftRightStretchCap)
+    .Field("topBottomStretchCap", &UIControlBackground::GetTopBottomStretchCap, &UIControlBackground::SetTopBottomStretchCap)
+    .Field("margins", &UIControlBackground::GetMarginsAsVector4, &UIControlBackground::SetMarginsAsVector4)
+    .End();
+}
+
 UIControlBackground::UIControlBackground()
     : color(Color::White)
     , lastDrawPos(0, 0)

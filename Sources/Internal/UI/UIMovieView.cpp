@@ -29,6 +29,12 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIMovieView)
+{
+    ReflectionRegistrator<UIMovieView>::Begin()
+    .End();
+}
+
 UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)

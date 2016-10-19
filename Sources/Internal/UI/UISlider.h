@@ -3,12 +3,15 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 class UIButton;
 class UISlider : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UISlider, UIControl);
+
 protected:
     virtual ~UISlider();
 

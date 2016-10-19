@@ -12,6 +12,12 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIScreenTransition)
+{
+    ReflectionRegistrator<UIScreenTransition>::Begin()
+    .End();
+}
+
 UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);

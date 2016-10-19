@@ -5,11 +5,14 @@
 
 #include "UI/Components/UIComponent.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "Reflection/Registrator.h"
 
 namespace DAVA
 {
 class UINavigationComponent : public UIBaseComponent<UIComponent::NAVIGATION_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UINavigationComponent, UIBaseComponent<UIComponent::NAVIGATION_COMPONENT>);
+
 public:
     enum Direction
     {

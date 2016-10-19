@@ -9,6 +9,10 @@ class UIControl;
 
 class UIComponent : public BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(UIComponent, BaseObject)
+    {
+    }
+
 public:
     enum eType
     {
@@ -53,6 +57,13 @@ private:
 template <uint32 TYPE>
 class UIBaseComponent : public UIComponent
 {
+    DAVA_VIRTUAL_REFLECTION(UIBaseComponent<TYPE>, UIComponent)
+    {
+        ReflectionRegistrator<UIBaseComponent<TYPE>>::Begin()
+        .Field("type", &UIBaseComponent<TYPE>::GetType, nullptr)
+        .End();
+    }
+
 public:
     static const uint32 C_TYPE = TYPE;
 

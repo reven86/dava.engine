@@ -2,6 +2,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UITabOrderComponent)
+{
+    ReflectionRegistrator<UITabOrderComponent>::Begin()
+    .Field("tab", &UITabOrderComponent::GetTabOrder, &UITabOrderComponent::SetTabOrder)
+    .End();
+}
+
 UITabOrderComponent::UITabOrderComponent()
 {
 }

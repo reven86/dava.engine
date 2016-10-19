@@ -5,6 +5,13 @@
 
 namespace DAVA
 {
+DAVA_REFLECTION_IMPL(UIActionComponent)
+{
+    ReflectionRegistrator<UIActionComponent>::Begin()
+    .Field("action", &UIActionComponent::GetActionAsString, &UIActionComponent::SetActionFromString)
+    .End();
+}
+
 UIActionComponent::UIActionComponent()
 {
 }
