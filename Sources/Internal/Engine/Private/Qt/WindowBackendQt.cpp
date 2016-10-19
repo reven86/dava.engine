@@ -27,6 +27,18 @@ namespace DAVA
 {
 namespace Private
 {
+class DavaQtApplyModifier
+{
+public:
+    void operator()(DAVA::KeyboardDevice& keyboard, const Qt::KeyboardModifiers& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::Key davaModifier)
+    {
+        if (true == (currentModifiers.testFlag(qtModifier)))
+            keyboard.OnKeyPressed(davaModifier);
+        else
+            keyboard.OnKeyUnpressed(davaModifier);
+    }
+};
+
 class WindowBackend::OGLContextBinder
 {
 public:
@@ -300,6 +312,18 @@ void WindowBackend::OnDestroyed()
 
 void WindowBackend::OnFrame()
 {
+    // HACK Qt send key event to widget with focus not globaly
+    // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
+    // we miss key down event, so we have to check for SHIFT, ALT, CTRL
+    // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
+    using namespace DAVA;
+    Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    DavaQtApplyModifier mod;
+    mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
+    mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
+    mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
+
     engineBackend->OnFrame();
 }
 
