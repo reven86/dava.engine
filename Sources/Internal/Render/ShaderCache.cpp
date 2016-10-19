@@ -191,11 +191,19 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     if (loadingNotifyEnabled)
     {
-        String flags;
-        flags.reserve(16 * defines.size());
+        Vector<String> sortedKeys;
+        sortedKeys.reserve(defines.size());
         for (const auto& define : defines)
         {
-            flags += Format("%s=%d;", define.first.c_str(), define.second);
+            sortedKeys.emplace_back(DAVA::Format("%s=%d,", define.first.c_str(), define.second));
+        }
+        std::sort(sortedKeys.begin(), sortedKeys.end());
+
+        String flags;
+        flags.reserve(16 * defines.size());
+        for (const auto& define : sortedKeys)
+        {
+            flags += define;
         }
         Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
     }
