@@ -301,7 +301,7 @@ void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
     // delete
     QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
     deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WindowShortcut);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
     renderWidget->addAction(deleteSelection);
 
