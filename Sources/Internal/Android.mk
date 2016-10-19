@@ -254,6 +254,7 @@ DV_LOCAL_EXPORT_LDFLAGS := -fuse-ld=bfd
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := libc++abi
 DV_LOCAL_STATIC_LIBRARIES += liblz4
+DV_LOCAL_STATIC_LIBRARIES += libimgui
 
 ifeq ($(APP_STL), c++_shared)
 DV_LOCAL_SHARED_LIBRARIES += cxx-shared-prebuild
@@ -351,7 +352,6 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Debug/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Debug/Private/imgui/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
@@ -459,6 +459,7 @@ include $(BUILD_STATIC_LIBRARY)
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
 $(call import-add-path,$(DAVA_ROOT)/../External/lz4)
+$(call import-add-path,$(DAVA_ROOT)/../External/imgui)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -469,4 +470,5 @@ endif
 endif
 
 $(call import-module,lz4)
+$(call import-module,imgui)
 $(call import-module,android/cpufeatures)

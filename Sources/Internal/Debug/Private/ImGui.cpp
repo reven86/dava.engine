@@ -9,6 +9,7 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace ImGuiImplDetails
 {
@@ -238,6 +239,7 @@ using DAVA::uint32;
 using DAVA::Key;
 using DAVA::UIEvent;
 using DAVA::float32;
+using DAVA::Vector2;
 
 void EnsureInited()
 {
@@ -406,12 +408,15 @@ void OnInput(UIEvent* input)
 {
     ImGuiIO& io = ImGui::GetIO();
 
+    Vector2 physPoint = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(input->point);
+    int32 mouseButton = (input->device == UIEvent::Device::MOUSE) ? (int32(input->mouseButton) - 1) : 0;
+
     switch (input->phase)
     {
     case UIEvent::Phase::MOVE:
     case UIEvent::Phase::DRAG:
-        io.MousePos.x = input->physPoint.x;
-        io.MousePos.y = input->physPoint.y;
+        io.MousePos.x = physPoint.x;
+        io.MousePos.y = physPoint.y;
         break;
 
     case UIEvent::Phase::WHEEL:
@@ -436,9 +441,9 @@ void OnInput(UIEvent* input)
 
     case UIEvent::Phase::BEGAN:
     case UIEvent::Phase::ENDED:
-        io.MouseDown[(input->mouseButton == UIEvent::MouseButton::NONE) ? 0 : int32(input->mouseButton) - 1] = (input->phase == UIEvent::Phase::BEGAN);
-        io.MousePos.x = input->physPoint.x;
-        io.MousePos.y = input->physPoint.y;
+        io.MousePos.x = physPoint.x;
+        io.MousePos.y = physPoint.y;
+        io.MouseDown[mouseButton] = (input->phase == UIEvent::Phase::BEGAN);
         break;
 
     case UIEvent::Phase::CHAR:
