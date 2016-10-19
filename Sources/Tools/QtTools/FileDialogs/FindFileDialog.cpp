@@ -47,6 +47,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
             dialog.lastUsedPath = filePath.toStdString();
             return filePath;
         }
+        dialog.lastUsedPath = String();
     }
     return QString();
 }
