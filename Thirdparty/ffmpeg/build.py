@@ -4,7 +4,14 @@ import build_utils
 import subprocess
 import time
 
-# TODO: describe dependencies
+# This script follows officially supported build instructions
+# (https://www.ffmpeg.org/platform.html#Microsoft-Visual-C_002b_002b-or-Intel-C_002b_002b-Compiler-for-Windows)
+# So, the following dependencies should be satisified before invoking it:
+# - MSYS2 (http://msys2.github.io/) should be installed and its root should be in the PATH
+# - base-devel, diffutils, yasm should be installed via pacman:
+#   pacman -S base-devel
+#   pacman -S diffutils
+#   pacman -S yasm
 
 def get_supported_targets_for_build_platform(platform):
 	if platform == 'win32':
@@ -38,7 +45,7 @@ def _download_and_extract(working_directory_path):
 	return source_folder_path, c99_to_c89_folder_path
 
 def _patch_sources(source_folder_path, working_directory_path):
-	# Skip if we've already did the job once
+	# Skip if we've already done the job once
 	try:
 		if _patch_sources.did:
 			return
@@ -58,11 +65,11 @@ def _build_win32(working_directory_path, root_project_path):
 	install_path_debug_x64 = os.path.join(working_directory_path, 'gen/install_win32_debug_x64')
 	install_path_release_x86 = os.path.join(working_directory_path, 'gen/install_win32_release_x86')
 	install_path_release_x64 = os.path.join(working_directory_path, 'gen/install_win32_release_x64')
-
+	
 	msys2_cmd_template = ['msys2_shell.cmd', '-use-full-path', '-l', '-c']
 
 	# make clean is so dumb
-	bash_arg_clean_part = " && make clean && rm compat/msvcrt/snprintf.d && rm compat/msvcrt/snprintf.o && rm compat/msvcrt/strtod.o && rm compat/msvcrt/strtod.d"
+	bash_arg_clean_part = " && make clean && rm compat/msvcrt/snprintf.d && rm compat/msvcrt/snprintf.o && rm compat/strtod.o && rm compat/strtod.d"
 	bash_arg_template = 'cd {} && ./configure {} && make && make install' + bash_arg_clean_part
 
 	configure_args_debug_template = '--toolchain=msvc --prefix={} --disable-all --enable-static --disable-shared --enable-avcodec --enable-avdevice --enable-avfilter --enable-avformat --enable-swresample --enable-swscale --enable-gpl --enable-postproc'
@@ -96,6 +103,8 @@ def _build_win32(working_directory_path, root_project_path):
 	cmd = msys2_cmd_template[:]
 	cmd.append(bash_arg)
 	build_utils.run_process(cmd, process_cwd=source_folder_path, environment=env_x64)
+
+	_copy_headers(install_path_debug_x86, root_project_path)
 
 	_copy_libraries(install_path_debug_x86, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Debug/'))
 	_copy_libraries(install_path_release_x86, os.path.join(root_project_path, 'Libs/lib_CMake/win/x86/Release/'))
@@ -137,3 +146,11 @@ def _copy_libraries(install_dir_path, target_libs_folder_path):
 	libswscale_from = os.path.join(install_dir_path, 'lib/libswscale.a')
 	libswscale_to = os.path.join(target_libs_folder_path, 'swscale.lib')
 	shutil.copyfile(libswscale_from, libswscale_to)
+
+def _copy_headers(install_dir_path, root_project_path):
+	include_folder_from = os.path.join(install_dir_path, 'include')
+	include_folder_to = os.path.join(root_project_path, 'Libs/include/ffmpeg/')
+
+	if os.path.exists(include_folder_to):
+		shutil.rmtree(include_folder_to)
+	shutil.copytree(include_folder_from, include_folder_to)
