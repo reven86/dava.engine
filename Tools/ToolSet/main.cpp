@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <fstream>
+#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -14,6 +15,8 @@ int main(int argc, char** argv)
 
     std::string pathExec(path);
     std::string pathDir;
+
+    std::cout << path << "  !!!";
 
     const size_t last_slash_idx = pathExec.rfind('/');
 
@@ -24,7 +27,7 @@ int main(int argc, char** argv)
 
     std::string openScriptFile(pathDir + "/../Resources/OpenFinder.script");
 
-    std::ofstream openScriptStream(openScriptFile, std::ios::out);
+    std::fstream openScriptStream(openScriptFile, std::ios::out);
 
     openScriptStream << "tell application \"Finder\"\n";
     openScriptStream << "    open (\"" << pathDir << "/\" as POSIX file)\n";
@@ -36,5 +39,6 @@ int main(int argc, char** argv)
     sprintf(path, "osascript %s", openScriptFile.c_str());
     system(path);
 
+    std::cout << "openScriptFile " << openScriptFile;
     return 1;
 }
