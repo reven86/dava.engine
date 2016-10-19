@@ -85,6 +85,11 @@ void ApplicationCore::EndFrame()
     Renderer::EndFrame();
 }
 
+void ApplicationCore::OnRenderingIsNotPossible()
+{
+    DVASSERT(!"Rendering is not possible and no handler found. Application will likely crash or hang now.");
+}
+
 void ApplicationCore::OnSuspend()
 {
     SoundSystem::Instance()->Suspend();

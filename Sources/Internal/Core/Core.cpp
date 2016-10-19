@@ -296,7 +296,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
-    rendererParams.renderingNotPossibleFunc = RenderingNotPossibleHandler;
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -965,23 +968,6 @@ Analytics::Core& Core::GetAnalyticsCore() const
 const ModuleManager& Core::GetModuleManager() const
 {
     return moduleManager;
-}
-
-void Core::SetRenderingNotPossibleCallback(DAVA::Function<void()> cb)
-{
-    renderingNotPossibleCallback = cb;
-}
-
-void RenderingNotPossibleHandler()
-{
-    if (Core::Instance()->renderingNotPossibleCallback)
-    {
-        Core::Instance()->renderingNotPossibleCallback();
-    }
-    else
-    {
-        DVASSERT(!"Rendering is not possible and no handler found. Application will likely crash or hang now.");
-    }
 }
 
 } // namespace DAVA
