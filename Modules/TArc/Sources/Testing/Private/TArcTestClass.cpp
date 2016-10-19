@@ -51,6 +51,8 @@ protected:
 };
 }
 
+const double TestClass::testTimeLimit = 10.0; // seconds
+
 TestClass::~TestClass()
 {
     DVASSERT(core != nullptr);

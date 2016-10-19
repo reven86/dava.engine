@@ -6,18 +6,13 @@
 namespace DAVA
 {
 SpeedTreeComponent::SpeedTreeComponent()
-    :
-    trunkOscillationAmplitude(1.f)
-    ,
-    trunkOscillationSpring(2.f)
-    ,
-    trunkOscillationDamping(1.4f)
-    ,
-    leafsOscillationAmplitude(2.f)
-    ,
-    leafsOscillationSpeed(1.f)
-    ,
-    maxAnimatedLOD(0)
+    : trunkOscillationAmplitude(1.f)
+    , trunkOscillationSpring(2.f)
+    , trunkOscillationDamping(1.4f)
+    , leafsOscillationAmplitude(2.f)
+    , leafsOscillationSpeed(1.f)
+    , maxAnimatedLOD(0)
+    , leafTime(0)
 {
 }
 

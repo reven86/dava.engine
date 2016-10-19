@@ -20,6 +20,7 @@ DepthStencilStateDX11_t
 
     DepthStencilStateDX11_t()
         : state(nullptr)
+        , stencilRef(0)
     {
     }
 };

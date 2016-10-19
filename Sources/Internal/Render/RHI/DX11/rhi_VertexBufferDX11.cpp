@@ -35,6 +35,7 @@ RHI_IMPL_POOL(VertexBufferDX11_t, RESOURCE_VERTEX_BUFFER, VertexBuffer::Descript
 
 VertexBufferDX11_t::VertexBufferDX11_t()
     : size(0)
+    , usage(USAGE_STATICDRAW)
     , buffer(nullptr)
 #if !RHI_DX11__USE_DEFERRED_CONTEXTS
     , mappedData(nullptr)

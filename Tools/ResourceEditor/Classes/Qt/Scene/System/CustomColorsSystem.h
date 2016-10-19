@@ -41,7 +41,6 @@ private:
     DAVA::Rect GetUpdatedRect();
 
     void StoreOriginalState();
-    void CreateUndoPoint();
 
     void StoreSaveFileName(const DAVA::FilePath& filePath);
 
@@ -51,7 +50,7 @@ private:
     DAVA::String GetRelativePathToProjectPath(const DAVA::FilePath& absolutePath);
     DAVA::FilePath GetAbsolutePathFromProjectPath(const DAVA::String& relativePath);
 
-    void FinishEditing();
+    void FinishEditing(bool applyModification);
 
     std::unique_ptr<DAVA::Command> CreateSaveFileNameCommand(const DAVA::String& filePath);
 

@@ -36,6 +36,7 @@ RHI_IMPL_POOL(IndexBufferDX11_t, RESOURCE_VERTEX_BUFFER, IndexBuffer::Descriptor
 
 IndexBufferDX11_t::IndexBufferDX11_t()
     : size(0)
+    , usage(USAGE_STATICDRAW)
     , buffer(nullptr)
     , is32bit(false)
 #if !RHI_DX11__USE_DEFERRED_CONTEXTS
