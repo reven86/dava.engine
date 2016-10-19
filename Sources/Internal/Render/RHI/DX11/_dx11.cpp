@@ -59,10 +59,10 @@ const char* DX11_GetErrorText(HRESULT hr)
         return "DXGI_ERROR_DEVICE_HUNG: The application's device failed due to badly formed commands sent by the application. This is an design-time issue that should be investigated and fixed.";
 
     case DXGI_ERROR_DEVICE_REMOVED:
-        return "DXGI_ERROR_DEVICE_REMOVED: The video card has been physically removed from the system, or a driver upgrade for the video card has occurred. The application should destroy and recreate the device. For help debugging the problem, call ID3D10Device::GetDeviceRemovedReason.";
+        return "DXGI_ERROR_DEVICE_REMOVED: The video card has been physically removed from the system, or a driver upgrade for the video card has occurred.";
 
     case DXGI_ERROR_DEVICE_RESET:
-        return "DXGI_ERROR_DEVICE_RESET: The device failed due to a badly formed command. This is a run-time issue; The application should destroy and recreate the device.";
+        return "DXGI_ERROR_DEVICE_RESET: The device failed due to a badly formed command.";
 
     case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
         return "DXGI_ERROR_DRIVER_INTERNAL_ERROR: The driver encountered a problem and was put into the device removed state.";
