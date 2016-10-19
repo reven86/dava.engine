@@ -8,6 +8,7 @@
 #include "Render/DynamicBufferAllocator.h"
 
 #include "Render/ShaderCache.h"
+#include "Render/VisibilityQueryResults.h"
 
 namespace DAVA
 {
@@ -106,6 +107,9 @@ void RenderSystem2D::Init()
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
     currentPacket.vertexLayoutUID = vertexLayouts2d[1];
+#ifdef __DAVAENGINE_RENDERSTATS__
+    currentPacket.queryIndex = VisibilityQueryResults::QUERY_INDEX_UI;
+#endif
 
     vertexIndex = 0;
     indexIndex = 0;
@@ -152,6 +156,9 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
     renderPass2DConfig.PerfQueryIndex0 = PERFQUERY__2D_PASS_T0;
     renderPass2DConfig.PerfQueryIndex1 = PERFQUERY__2D_PASS_T1;
+#ifdef __DAVAENGINE_RENDERSTATS__
+    renderPass2DConfig.queryBuffer = VisibilityQueryResults::GetCurrentQueryBuffer();
+#endif
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
     currentPacketListHandle = packetList2DHandle;
