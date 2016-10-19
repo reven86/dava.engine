@@ -338,6 +338,8 @@ LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
                      $(wildcard $(LOCAL_PATH)/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Analytics/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Analytics/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
@@ -353,6 +355,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Debug/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/JNI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \

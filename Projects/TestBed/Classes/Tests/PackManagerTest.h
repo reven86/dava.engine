@@ -4,11 +4,11 @@
 #include <FileSystem/FilePath.h>
 #include <PackManager/PackManager.h>
 
-class GameCore;
+class TestBed;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest(GameCore* g);
+    PackManagerTest(TestBed& app);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
@@ -32,9 +32,10 @@ private:
     void OnRequestChange(const DAVA::IPackManager::IRequest& request);
     void OnInitChange(DAVA::IPackManager& init);
 
+    DAVA::Engine& engine;
+
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
-    DAVA::FilePath readOnlyDirWithPacks = "~res:/TestData/PackManagerTest/packs/read_only_packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
     DAVA::String urlToServerSuperpack = "http://127.0.0.1:2424/superpack.dvpk";
     //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/s000001/superpack.dvpk";

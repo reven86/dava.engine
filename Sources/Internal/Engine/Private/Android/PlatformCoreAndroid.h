@@ -22,6 +22,7 @@ public:
 
     void Init();
     void Run();
+    void PrepareToQuit();
     void Quit();
 
 private:
@@ -34,7 +35,7 @@ private:
 
 private:
     EngineBackend* engineBackend = nullptr;
-    MainDispatcher* dispatcher = nullptr;
+    MainDispatcher* mainDispatcher = nullptr;
     std::unique_ptr<NativeService> nativeService;
 
     bool quitGameThread = false;

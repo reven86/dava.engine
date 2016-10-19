@@ -68,6 +68,7 @@ class AbstractProperty;
 class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
+class HUDSystem;
 
 class EditorSystemsManager : PackageListener
 {
@@ -89,27 +90,28 @@ public:
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
-    ControlNode* ControlNodeUnderPoint(const DAVA::Vector2& point) const;
+    void HighlightNode(ControlNode* node);
+    void ClearHighlight();
+    ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
     void FocusNextChild();
     void FocusPreviousChild();
     void ClearSelection();
+    void SelectNode(ControlNode* node);
 
-    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
-    DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
-    DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
-    DAVA::Signal<bool> EmulationModeChangedSignal;
-    DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> PropertyChanged;
-    DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
-    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
-    DAVA::Signal<const DAVA::Vector2& /*new position*/> RootControlPositionChanged;
-    DAVA::Signal<PackageNode* /*node*/> PackageNodeChanged;
-    DAVA::Signal<const DAVA::Vector<ControlNode*>&> NodesHovered;
-    DAVA::Signal<bool> TransformStateChanged; //indicates when user transform control
-    std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
+    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
+    DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
+    DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
+    DAVA::Signal<bool> emulationModeChangedSignal;
+    DAVA::Signal<> canvasSizeChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
+    DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
+    DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
+    DAVA::Signal<PackageNode* /*node*/> packageNodeChanged;
+    DAVA::Signal<bool> transformStateChanged; //indicates when user transform control
 
 private:
     class InputLayerControl;
@@ -123,6 +125,7 @@ private:
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void SetPreviewMode(bool mode);
     void RefreshRootControls();
+    void OnTransformStateChanged(bool inTransformState);
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<InputLayerControl> inputLayerControl;
@@ -137,9 +140,7 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
-
-public:
-    DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    HUDSystem* hudSystemPtr = nullptr;
 };
 
 template <class OutIt, class Predicate>
@@ -160,7 +161,6 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
     {
         *destination++ = node;
     }
-
     if (!stopPredicate(node))
     {
         int count = node->GetCount();

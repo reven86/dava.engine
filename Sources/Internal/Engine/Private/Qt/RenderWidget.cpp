@@ -30,13 +30,11 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     window->installEventFilter(this);
     window->setClearBeforeRendering(false);
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
-RenderWidget::~RenderWidget()
-{
-    widgetDelegate->OnDestroyed();
-}
+RenderWidget::~RenderWidget() = default;
 
 void RenderWidget::OnFrame()
 {
@@ -44,7 +42,7 @@ void RenderWidget::OnFrame()
     if (!nativeHandle.isValid())
     {
         DAVA::Logger::Error("GL context is not valid!");
-        throw std::runtime_error("GL context is not valid!");
+        DAVA_THROW(DAVA::Exception, "GL context is not valid!");
     }
 
     if (initialized == false)
@@ -62,6 +60,14 @@ void RenderWidget::OnActiveFocusItemChanged()
     if (item != nullptr)
     {
         item->installEventFilter(this);
+    }
+}
+
+void RenderWidget::OnSceneGraphInvalidated()
+{
+    if (isClosing)
+    {
+        widgetDelegate->OnDestroyed();
     }
 }
 
@@ -83,6 +89,19 @@ void RenderWidget::hideEvent(QHideEvent* e)
 {
     widgetDelegate->OnVisibilityChanged(false);
     QQuickWidget::hideEvent(e);
+}
+
+void RenderWidget::closeEvent(QCloseEvent* e)
+{
+    if (widgetDelegate->OnUserCloseRequest())
+    {
+        isClosing = true;
+        e->accept();
+    }
+    else
+    {
+        e->ignore();
+    }
 }
 
 void RenderWidget::timerEvent(QTimerEvent* e)

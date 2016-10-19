@@ -86,7 +86,7 @@ public:
         }
     }
 
-    virtual void OnWindowCreated(DAVA::Window& w)
+    virtual void OnWindowCreated(DAVA::Window* w)
     {
     }
 
@@ -431,7 +431,7 @@ public:
         Impl::OnLoopStopped();
     }
 
-    void OnWindowCreated(Window& w) override
+    void OnWindowCreated(Window* w) override
     {
         Impl::OnWindowCreated(w);
         controllerModule->OnRenderSystemInitialized(w);
@@ -564,7 +564,7 @@ public:
         {
             fn.Invoke(args...);
         }
-        catch (const AnyFn::Exception& e)
+        catch (const DAVA::Exception& e)
         {
             Logger::Error("Operation (%d) call failed: %s", operationId, e.what());
         }
@@ -698,7 +698,7 @@ void Core::OnFrame(float32 delta)
     impl->OnFrame(delta);
 }
 
-void Core::OnWindowCreated(DAVA::Window& w)
+void Core::OnWindowCreated(DAVA::Window* w)
 {
     DVASSERT(impl);
     impl->OnWindowCreated(w);
