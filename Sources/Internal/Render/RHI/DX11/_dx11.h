@@ -45,7 +45,7 @@
     _D3D11_DeviceLock.Lock(); \
     if (_D3D11_Device) \
     {\
-        HR = _D3D11_Device->F; \
+        HR = F; \
         DX11_ProcessCallResult(HR, #F, __FILE__, __LINE__); \
         _D3D11_DeviceLock.Unlock(); \
     }\
@@ -53,7 +53,7 @@
     { \
         DAVA::Logger::Error("DX11 Device is not ready, therefor call %s is not possible\nat %s [%u]", #F, __FILE__, __LINE__);\
         _D3D11_DeviceLock.Unlock(); \
-        while (_D3D11_Device == nullptr) { DAVA::Thread::Sleep(1); } \
+        do { DAVA::Thread::Sleep(1); } while (_D3D11_Device == nullptr); \
     } \
 }
 

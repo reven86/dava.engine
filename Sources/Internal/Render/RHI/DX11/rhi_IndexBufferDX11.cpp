@@ -101,7 +101,7 @@ dx11_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
         D3D11_SUBRESOURCE_DATA* createBufferData = desc.initialData ? &data : nullptr;
 
         HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateBuffer(&desc11, createBufferData, &buf), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateBuffer(&desc11, createBufferData, &buf), hr);
         if (SUCCEEDED(hr))
         {
             handle = IndexBufferDX11Pool::Alloc();

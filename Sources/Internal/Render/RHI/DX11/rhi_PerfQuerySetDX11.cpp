@@ -79,7 +79,7 @@ dx11_PerfQuerySet_Create(uint32 maxTimestampCount)
         desc.MiscFlags = 0;
 
         HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateQuery(&desc, &(set->freq)), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(set->freq)), hr);
         if (SUCCEEDED(hr))
         {
             desc.Query = D3D11_QUERY_TIMESTAMP;
@@ -91,7 +91,7 @@ dx11_PerfQuerySet_Create(uint32 maxTimestampCount)
                 t->isUsed = false;
                 t->isReady = false;
 
-                DX11_DEVICE_CALL(CreateQuery(&desc, &(t->query)), hr);
+                DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(t->query)), hr);
                 if (FAILED(hr))
                 {
                     t->query = nullptr;
@@ -99,9 +99,9 @@ dx11_PerfQuerySet_Create(uint32 maxTimestampCount)
             }
 
             HRESULT hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateQuery(&desc, &(set->frameT0Query)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(set->frameT0Query)), hr);
             DVASSERT(SUCCEEDED(hr));
-            DX11_DEVICE_CALL(CreateQuery(&desc, &(set->frameT1Query)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(set->frameT1Query)), hr);
             DVASSERT(SUCCEEDED(hr));
         }
         else

@@ -104,7 +104,7 @@ ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, Texture
         }
 
         HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateRenderTargetView(tex2d, &desc, &rtv), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRenderTargetView(tex2d, &desc, &rtv), hr);
         if (SUCCEEDED(hr))
         {
             rt_view.emplace_back(rtv, level, face);
@@ -217,7 +217,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
     Handle handle = InvalidHandle;
     ID3D11Texture2D* tex2d = nullptr;
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, (useInitialData) ? data : nullptr, &tex2d), hr);
     if (SUCCEEDED(hr))
     {
         handle = TextureDX11Pool::Alloc();
@@ -256,7 +256,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
             ID3D11ShaderResourceView* srv = nullptr;
             hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateShaderResourceView(tex2d, &srv_desc, &srv), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateShaderResourceView(tex2d, &srv_desc, &srv), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_srv = srv;
@@ -272,7 +272,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
             desc2d.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
             hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateTexture2D(&desc2d, NULL, &copy), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&desc2d, NULL, &copy), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_copy = copy;
@@ -289,7 +289,7 @@ static Handle dx11_Texture_Create(const Texture::Descriptor& desc)
 
             ID3D11DepthStencilView* dsv = nullptr;
             hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateDepthStencilView(tex2d, &dsv_desc, &dsv), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(tex2d, &dsv_desc, &dsv), hr);
             if (SUCCEEDED(hr))
             {
                 tex->tex2d_dsv = dsv;

@@ -453,7 +453,7 @@ _GetRasterizerState(RasterizerParamDX11 param)
         desc.MultisampleEnable = FALSE;
         desc.AntialiasedLineEnable = FALSE;
 
-        DX11_DEVICE_CALL(CreateRasterizerState(&desc, &state), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRasterizerState(&desc, &state), hr);
         if (SUCCEEDED(hr))
         {
             RasterizerStateDX11 s;
@@ -503,7 +503,7 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
         if (!cb->context)
         {
             HRESULT hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateDeferredContext(0, &(cb->context)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
             if (SUCCEEDED(hr))
             {
                 hr = cb->context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)));
@@ -1243,11 +1243,7 @@ _ExecuteQueuedCommandsDX11()
         HRESULT hr = E_FAIL;
         {
             DAVA_CPU_PROFILER_SCOPE("SwapChain::Present");
-            hr = _D3D11_SwapChain->Present(1, 0);
-        }
-        {
-            DAVA::LockGuard<DAVA::Mutex> lock(_D3D11_DeviceLock);
-            DX11_ProcessCallResult(hr, "_D3D11_SwapChain->Present(1, 0)", __FILE__, __LINE__);
+            DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
         }
 
         if (perfQuerySet != InvalidHandle && !_DX11_PerfQuerySetPending)
@@ -2251,7 +2247,7 @@ void DiscardAll()
                     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
                     HRESULT hr = E_FAIL;
-                    DX11_DEVICE_CALL(CreateDeferredContext(0, &(cb->context)), hr);
+                    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
 
                     DVASSERT(cb->context);
                     cb->Reset();
@@ -2272,7 +2268,7 @@ void DiscardAll()
         _D3D11_SecondaryContext->Release();
 
         HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
     }
 #endif
     _DX11_ResetPending = false;

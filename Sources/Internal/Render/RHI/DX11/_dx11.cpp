@@ -251,7 +251,7 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         const char* actualError = DX11_GetErrorText(hr);
         const char* reason = DX11_GetErrorText(_D3D11_Device->GetDeviceRemovedReason());
 
-        DAVA::String info = DAVA::Format("DX11 Device removed/reset:\n\n%s\n\n%s", actualError, reason);
+        DAVA::String info = DAVA::Format("DX11 Device removed/reset\n%s\nat %s [%u]:\n\n%s\n\n%s", call, fileName, line, actualError, reason);
 
     #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
         // write to log if asserts are disabled

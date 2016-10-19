@@ -137,7 +137,7 @@ _CreateInputLayout(const VertexLayout& layout, const void* code, unsigned code_s
     }
 
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
     return vdecl;
 }
 
@@ -296,7 +296,7 @@ _CreateCompatibleInputLayout(const VertexLayout& vbLayout, const VertexLayout& v
     }
 
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->CreateInputLayout(elem, elemCount, code, code_sz, &vdecl), hr);
     return vdecl;
 }
 
@@ -414,7 +414,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
     desc.MiscFlags = 0;
 
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(CreateBuffer(&desc, nullptr, &buf), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->CreateBuffer(&desc, nullptr, &buf), hr);
     if (SUCCEEDED(hr))
     {
         progType = ptype;
@@ -698,7 +698,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     if (SUCCEEDED(hr))
     {
         hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateVertexShader(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader)), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateVertexShader(vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader)), hr);
         if (SUCCEEDED(hr))
         {
             ID3D11ShaderReflection* reflection = NULL;
@@ -768,7 +768,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
     if (SUCCEEDED(hr))
     {
         hr = E_FAIL;
-        DX11_DEVICE_CALL(CreatePixelShader(fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader)), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreatePixelShader(fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader)), hr);
         if (SUCCEEDED(hr))
         {
             ID3D11ShaderReflection* reflection = NULL;
@@ -860,7 +860,7 @@ dx11_PipelineState_Create(const PipelineState::Descriptor& desc)
             bs_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
             hr = E_FAIL;
-            DX11_DEVICE_CALL(CreateBlendState(&bs_desc, &(ps->blendState)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->CreateBlendState(&bs_desc, &(ps->blendState)), hr);
             if (SUCCEEDED(hr))
             {
                 ps->desc = desc;

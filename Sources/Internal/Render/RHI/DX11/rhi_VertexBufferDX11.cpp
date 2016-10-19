@@ -98,7 +98,7 @@ dx11_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
         }
 
         HRESULT hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateBuffer(&desc11, (desc.initialData) ? &data : NULL, &buf), hr);
         if (SUCCEEDED(hr))
         {
             handle = VertexBufferDX11Pool::Alloc();

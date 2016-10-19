@@ -260,6 +260,14 @@ public:
     Analytics::Core& GetAnalyticsCore() const;
     const ModuleManager& GetModuleManager() const;
 
+    /**
+    Callback to handle situation where rendering is not possible anymore.
+    Could be called from any thread which uses render functions (could be main, render, loading thread, etc)
+    Application should be gracefully closed with all required actions (dump memory, update analytics, etc),
+    Assumed to be "no-return" callback. Application behaviour after this callback assumed to be undefined.
+    */
+    void SetRenderingNotPossibleCallback(DAVA::Function<void()> cb);
+
 protected:
     eScreenOrientation screenOrientation;
 
@@ -296,6 +304,9 @@ private:
 
     std::unique_ptr<IPackManager> packManager;
     std::unique_ptr<Analytics::Core> analyticsCore;
+
+    friend void RenderingNotPossibleHandler();
+    DAVA::Function<void()> renderingNotPossibleCallback;
 };
 
 inline bool Core::IsActive()

@@ -132,7 +132,7 @@ dx11_SuspendRendering()
     IDXGIDevice3* dxgiDevice3 = NULL;
 
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3)), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice3), (void**)(&dxgiDevice3)), hr);
     if (SUCCEEDED(hr))
     {
         _D3D11_ImmediateContext->ClearState();
@@ -157,7 +157,7 @@ void _InitDX11()
 
     init_device_and_swapchain_uap(_DX11_InitParam.window);
     HRESULT hr = E_FAIL;
-    DX11_DEVICE_CALL(CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
     get_device_description(MutableDeviceCaps::Get().deviceDescription);
 
 #else
@@ -272,7 +272,7 @@ void _InitDX11()
             IDXGIAdapter* dxgiAdapter = NULL;
 
             hr = E_FAIL;
-            DX11_DEVICE_CALL(QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)(&dxgiDevice)), hr);
             if (SUCCEEDED(hr))
             {
                 if (SUCCEEDED(dxgiDevice->GetAdapter(&dxgiAdapter)))
@@ -291,16 +291,16 @@ void _InitDX11()
             }
 
             hr = E_FAIL;
-            DX11_DEVICE_CALL(QueryInterface(__uuidof(ID3D11Debug), (void**)(&_D3D11_Debug)), hr);
+            DX11_DEVICE_CALL(_D3D11_Device->QueryInterface(__uuidof(ID3D11Debug), (void**)(&_D3D11_Debug)), hr);
 
             hr = _D3D11_ImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation));
         }
 
         hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateRenderTargetView(_D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRenderTargetView(_D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView), hr);
 
         hr = E_FAIL;
-        DX11_DEVICE_CALL(CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
 
         D3D11_TEXTURE2D_DESC ds_desc = { 0 };
 
@@ -316,8 +316,8 @@ void _InitDX11()
         ds_desc.CPUAccessFlags = 0;
         ds_desc.MiscFlags = 0;
 
-        DX11_DEVICE_CALL(CreateTexture2D(&ds_desc, 0, &_D3D11_DepthStencilBuffer), hr);
-        DX11_DEVICE_CALL(CreateDepthStencilView(_D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateTexture2D(&ds_desc, 0, &_D3D11_DepthStencilBuffer), hr);
+        DX11_DEVICE_CALL(_D3D11_Device->CreateDepthStencilView(_D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView), hr);
     }
 
 #endif
