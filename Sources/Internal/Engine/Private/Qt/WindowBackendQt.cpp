@@ -266,7 +266,16 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
-    contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
+    // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
+    // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
+    // QQuickWidgetPrivate and we can get it only through context.
+    // In applications with QMainWindow (where RenderWidget is a part of MainWindow) it's good solution,
+    // But for TestBed for example this solution is not full,
+    // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
+    // I don't know what we can do with this.
+    // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
+    QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
+    contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
