@@ -3,105 +3,105 @@ import shutil
 import build_utils
 
 def get_supported_targets_for_build_platform(platform):
-	if platform == 'win32':
-		return ['win32', 'win10']
-	else:
-		return ['macos', 'ios', 'android']
+    if platform == 'win32':
+        return ['win32', 'win10']
+    else:
+        return ['macos', 'ios', 'android']
 
 def get_dependencies_for_target(target):
-	return []
+    return []
 
 def get_supported_build_platforms():
-	return ['win32', 'darwin']
+    return ['win32', 'darwin']
 
 def build_for_target(target, working_directory_path, root_project_path):
-	if target == 'win32':
-		return _build_win32(working_directory_path, root_project_path)
-	elif target == 'win10':
-		return _build_win10(working_directory_path, root_project_path)
-	elif target == 'macos':
-		return _build_macos(working_directory_path, root_project_path)
-	elif target == 'ios':
-		return _build_ios(working_directory_path, root_project_path)
-	elif target == 'android':
-		return _build_android(working_directory_path, root_project_path)
+    if target == 'win32':
+        return _build_win32(working_directory_path, root_project_path)
+    elif target == 'win10':
+        return _build_win10(working_directory_path, root_project_path)
+    elif target == 'macos':
+        return _build_macos(working_directory_path, root_project_path)
+    elif target == 'ios':
+        return _build_ios(working_directory_path, root_project_path)
+    elif target == 'android':
+        return _build_android(working_directory_path, root_project_path)
 
 def get_download_url():
-	return {'windows': 'http://download.icu-project.org/files/icu4c/57.1/icu4c-57_1-src.zip', 'others':'http://download.icu-project.org/files/icu4c/57.1/icu4c-57_1-src.tgz'}
+    return {'windows': 'http://download.icu-project.org/files/icu4c/57.1/icu4c-57_1-src.zip', 'others':'http://download.icu-project.org/files/icu4c/57.1/icu4c-57_1-src.tgz'}
 
 def _download_and_extract(working_directory_path, download_url_key, source_folder_path_prefix=''):
-	source_folder_path = os.path.join(working_directory_path, 'icu_source' + source_folder_path_prefix)
-	url = get_download_url()[download_url_key]
-	build_utils.download_and_extract(url, working_directory_path, source_folder_path, 'icu')	
-	return source_folder_path
+    source_folder_path = os.path.join(working_directory_path, 'icu_source' + source_folder_path_prefix)
+    url = get_download_url()[download_url_key]
+    build_utils.download_and_extract(url, working_directory_path, source_folder_path, 'icu')    
+    return source_folder_path
 
 def _patch_sources(source_folder_path, working_directory_path, patch_postifx):
-	try:
-		if _patch_sources.did:
-			return
-	except AttributeError:
-		pass
+    try:
+        if _patch_sources.did:
+            return
+    except AttributeError:
+        pass
 
-	# Apply fixes
-	build_utils.apply_patch(os.path.abspath('patch' + patch_postifx + '.diff'), working_directory_path)
+    # Apply fixes
+    build_utils.apply_patch(os.path.abspath('patch' + patch_postifx + '.diff'), working_directory_path)
 
-	_patch_sources.did = True
+    _patch_sources.did = True
 
 def _build_win32(working_directory_path, root_project_path):
-	source_folder_path = _download_and_extract(working_directory_path, 'windows', '_win32')
-	_patch_sources(source_folder_path, working_directory_path, '_win32')
-	
-	vc_solution_file_path = os.path.join(source_folder_path, 'source/allinone/allinone.sln')
-	build_utils.build_vs(vc_solution_file_path, 'Debug', 'Win32', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Release', 'Win32', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Debug', 'x64', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Release', 'x64', 'common')
+    source_folder_path = _download_and_extract(working_directory_path, 'windows', '_win32')
+    _patch_sources(source_folder_path, working_directory_path, '_win32')
+    
+    vc_solution_file_path = os.path.join(source_folder_path, 'source/allinone/allinone.sln')
+    build_utils.build_vs(vc_solution_file_path, 'Debug', 'Win32', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Release', 'Win32', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Debug', 'x64', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Release', 'x64', 'common')
 
 def _build_win10(working_directory_path, root_project_path):
-	source_folder_path = _download_and_extract(working_directory_path, 'windows', '_win10')
-	_patch_sources(source_folder_path, working_directory_path, '_win10')
+    source_folder_path = _download_and_extract(working_directory_path, 'windows', '_win10')
+    _patch_sources(source_folder_path, working_directory_path, '_win10')
 
-	vc_solution_file_path = os.path.join(source_folder_path, 'source/allinone/allinone.sln')
-	build_utils.build_vs(vc_solution_file_path, 'Debug', 'Win32', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Release', 'Win32', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Debug', 'x64', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Release', 'x64', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Debug', 'ARM', 'common')
-	build_utils.build_vs(vc_solution_file_path, 'Release', 'ARM', 'common')
+    vc_solution_file_path = os.path.join(source_folder_path, 'source/allinone/allinone.sln')
+    build_utils.build_vs(vc_solution_file_path, 'Debug', 'Win32', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Release', 'Win32', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Debug', 'x64', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Release', 'x64', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Debug', 'ARM', 'common')
+    build_utils.build_vs(vc_solution_file_path, 'Release', 'ARM', 'common')
 
 def _build_macos(working_directory_path, root_project_path):
-	# Guard execution to avoid multiple macos builds,
-	# since macos binaries should be built to cross-compile for android & ios
-	try:
-		if _build_macos.did:
-			return
-	except AttributeError:
-		pass
+    # Guard execution to avoid multiple macos builds,
+    # since macos binaries should be built to cross-compile for android & ios
+    try:
+        if _build_macos.did:
+            return
+    except AttributeError:
+        pass
 
-	source_folder_path = _download_and_extract(working_directory_path, 'others', '_macos')
+    source_folder_path = _download_and_extract(working_directory_path, 'others', '_macos')
 
-	install_dir_macos = os.path.join(working_directory_path, 'gen/install_macos')
-	build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'], install_dir_macos, env=build_utils.get_autotools_macos_env(), postclean=False)
+    install_dir_macos = os.path.join(working_directory_path, 'gen/install_macos')
+    build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'], install_dir_macos, env=build_utils.get_autotools_macos_env(), postclean=False)
 
-	_build_macos.did = True
+    _build_macos.did = True
 
 def _build_ios(working_directory_path, root_project_path):
-	_build_macos(working_directory_path, root_project_path)
+    _build_macos(working_directory_path, root_project_path)
 
-	source_folder_path = _download_and_extract(working_directory_path, 'others')
+    source_folder_path = _download_and_extract(working_directory_path, 'others')
 
-	install_dir_ios = os.path.join(working_directory_path, 'gen/install_ios')
-	build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=armv7-apple-darwin', '--disable-shared', '--enable-static'], install_dir_ios, env=build_utils.get_autotools_ios_env())
-	
+    install_dir_ios = os.path.join(working_directory_path, 'gen/install_ios')
+    build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=armv7-apple-darwin', '--disable-shared', '--enable-static'], install_dir_ios, env=build_utils.get_autotools_ios_env())
+    
 def _build_android(working_directory_path, root_project_path):
-	_build_macos(working_directory_path, root_project_path)
+    _build_macos(working_directory_path, root_project_path)
 
-	source_folder_path = _download_and_extract(working_directory_path, 'others')
+    source_folder_path = _download_and_extract(working_directory_path, 'others')
 
-	install_dir_android_arm = os.path.join(working_directory_path, 'gen/install_android_arm')
-	build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=arm-linux-androideabi', '--disable-shared', '--enable-static'], install_dir_android_arm, env=build_utils.get_autotools_android_arm_env(root_project_path, enable_stl=True))
+    install_dir_android_arm = os.path.join(working_directory_path, 'gen/install_android_arm')
+    build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=arm-linux-androideabi', '--disable-shared', '--enable-static'], install_dir_android_arm, env=build_utils.get_autotools_android_arm_env(root_project_path, enable_stl=True))
 
-	install_dir_android_x86 = os.path.join(working_directory_path, 'gen/install_android_x86')
-	build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=i686-linux-android', '--disable-shared', '--enable-static'], install_dir_android_x86, env=build_utils.get_autotools_android_x86_env(root_project_path, enable_stl=True))
+    install_dir_android_x86 = os.path.join(working_directory_path, 'gen/install_android_x86')
+    build_utils.build_with_autotools(os.path.join(source_folder_path, 'source'), ['--with-cross-build=' + os.path.abspath(source_folder_path + '_macos/source'), '--host=i686-linux-android', '--disable-shared', '--enable-static'], install_dir_android_x86, env=build_utils.get_autotools_android_x86_env(root_project_path, enable_stl=True))
 
 # TODO: Add copying headers & libraries when switching to new directories structure
