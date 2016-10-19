@@ -47,8 +47,8 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
         Platform::String^ launchArgs = args->Arguments;
         if (!launchArgs->IsEmpty())
         {
-            const String& localNotoficationUID = UTF8Utils::EncodeToUTF8(launchArgs->Data());
-            core->OnLocalNotification(localNotoficationUID);
+            String uidStr = UTF8Utils::EncodeToUTF8(launchArgs->Data());
+            engineBackend->GetDispatcher()->PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
         }
     }
 }

@@ -32,7 +32,6 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
-    void OnLocalNotification(const String& uid);
 
 private:
     void GameThread();
