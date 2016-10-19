@@ -25,8 +25,7 @@
 
 namespace DAVA
 {
-namespace Private
-{
+// DavaQtApplyModifier is a friend for KeyboardDevice, so it should be in DAVA namespace only.
 class DavaQtApplyModifier
 {
 public:
@@ -39,6 +38,8 @@ public:
     }
 };
 
+namespace Private
+{
 class WindowBackend::OGLContextBinder
 {
 public:
