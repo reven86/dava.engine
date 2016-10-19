@@ -5,9 +5,7 @@
 #include <libproc.h>
 #include <unistd.h>
 
-#import <Foundation/NSURL.h>
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+#include <fstream>
 
 int main(int argc, char** argv)
 {
@@ -15,7 +13,7 @@ int main(int argc, char** argv)
     proc_pidpath(getpid(), path, PATH_MAX);
 
     std::string pathExec(path);
-    std::string pathDir, openComand;
+    std::string pathDir;
 
     const size_t last_slash_idx = pathExec.rfind('/');
 
@@ -24,11 +22,19 @@ int main(int argc, char** argv)
         pathDir = pathExec.substr(0, last_slash_idx);
     }
 
-    NSString* nsPathDir = [NSString stringWithUTF8String:pathDir.c_str()];
+    std::string openScriptFile(pathDir + "/../Resources/OpenFinder.script");
 
-    NSURL* fileURL = [NSURL fileURLWithPath:nsPathDir];
+    std::ofstream openScriptStream(openScriptFile, std::ios::out);
 
-    [[NSWorkspace sharedWorkspace] openURL:fileURL];
+    openScriptStream << "tell application \"Finder\"\n";
+    openScriptStream << "    open (\"" << pathDir << "/\" as POSIX file)\n";
+    openScriptStream << "    activate\n";
+    openScriptStream << "end tell";
+
+    openScriptStream.close();
+
+    sprintf(path, "osascript %s", openScriptFile.c_str());
+    system(path);
 
     return 1;
 }
