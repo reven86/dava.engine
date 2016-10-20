@@ -37,6 +37,7 @@ Document::~Document()
     {
         delete context.second;
     }
+    DVASSERT(CanClose());
 }
 
 const FilePath& Document::GetPackageFilePath() const
@@ -140,4 +141,18 @@ void Document::OnFileChanged(const QString& path)
 void Document::OnCleanChanged(bool clean)
 {
     SetCanSave(fileExists && !clean);
+}
+
+bool Document::CanClose() const
+{
+    return canClose;
+}
+
+void Document::SetCanClose(bool canClose_)
+{
+    if (canClose != canClose_)
+    {
+        canClose = canClose_;
+        emit CanCloseChanged(canClose);
+    }
 }

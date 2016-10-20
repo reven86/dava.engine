@@ -81,7 +81,7 @@ StringType TrimRight(const StringType& string)
 }
 
 /**
-* \brief Remove from line non-printable characters and replace 
+* \brief Remove from line non-printable characters and replace
 *        unicode spaces into ASCII space.
 * \param [in] string The string.
 * \param [in] tabRule The kind of process \t symbol: -1 - keep tab symbol, 0..n - replace tab with 0..n spaces.
@@ -186,6 +186,14 @@ inline bool StartsWith(const String& str, const String& substr)
         return false;
     }
     return (str.compare(0, substr.size(), substr) == 0);
+}
+
+inline bool EndsWith(const String& str, const String& end)
+{
+    size_t lineSize = str.size();
+    size_t endSize = end.size();
+    return lineSize >= endSize &&
+    0 == str.compare(lineSize - endSize, endSize, end);
 }
 } // end namespace StringUtils
 } // end namespace DAVA
