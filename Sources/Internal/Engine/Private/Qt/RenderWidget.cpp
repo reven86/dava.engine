@@ -6,6 +6,7 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Exception.h"
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
