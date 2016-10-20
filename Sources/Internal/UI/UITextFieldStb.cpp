@@ -270,6 +270,11 @@ bool TextFieldStbImpl::IsCharAvaliable(WideString::value_type ch) const
     return false;
 }
 
+bool TextFieldStbImpl::IsUserCanCopy() const
+{
+    return control && !control->IsPassword();
+}
+
 void TextFieldStbImpl::SetInputEnabled(bool, bool hierarchic /*= true*/)
 {
 }

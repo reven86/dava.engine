@@ -47,6 +47,18 @@ public:
 
         /** Check that specified `character` is valid for current field. */
         virtual bool IsCharAvaliable(WideString::value_type character) const = 0;
+
+        /** Allow copy or cut selected text to clipnoard. */
+        virtual bool IsUserCanCopy() const
+        {
+            return true;
+        }
+
+        /** Allow paste specified string from clipbaord to field. */
+        virtual bool IsUserCanPaste() const
+        {
+            return true;
+        }
     };
 
     /** Create StbTextEditBridge with specified valid `delegate`. */
