@@ -87,11 +87,6 @@ protected:
     // Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
     bool isLeftSelected : 1;
-
-public:
-    INTROSPECTION_EXTEND(UISwitch, UIControl,
-                         nullptr
-                         );
 };
 }
 #endif //__DAVAENGINE_UI_SWITCH_H__

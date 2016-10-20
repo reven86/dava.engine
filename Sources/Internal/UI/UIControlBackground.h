@@ -363,24 +363,6 @@ public:
 
     int32 GetGradientBlendMode() const;
     void SetGradientBlendMode(int32 mode);
-
-    INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
-                         PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("mask", "Mask", GetMaskSpritePath, SetMaskSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("detail", "Detail", GetDetailSpritePath, SetDetailSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("gradient", "Gradient", GetGradientSpritePath, SetGradientSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("contour", "Contour", GetContourSpritePath, SetContourSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spriteModification", InspDesc("Sprite Modification", GlobalEnumMap<eSpriteModification>::Instance(), InspDesc::T_FLAGS), GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("gradientMode", InspDesc("Gradient Mode", GlobalEnumMap<eGradientBlendMode>::Instance()), GetGradientBlendMode, SetGradientBlendMode, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("align", InspDesc("Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetAlign, SetAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftRightStretchCap", "Left-Right Stretch Cap", GetLeftRightStretchCap, SetLeftRightStretchCap, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topBottomStretchCap", "Top-Bottom Stretch Cap", GetTopBottomStretchCap, SetTopBottomStretchCap, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("margins", "Margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT));
 };
 
 // Implementation

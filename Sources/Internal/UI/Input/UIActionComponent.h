@@ -35,10 +35,6 @@ private:
     void SetActionFromString(const String& value);
 
     FastName action;
-
-public:
-    INTROSPECTION_EXTEND(UIActionComponent, UIComponent,
-                         PROPERTY("action", "Action", GetActionAsString, SetActionFromString, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

@@ -79,17 +79,6 @@ private:
     Bitset<eFlags::FLAG_COUNT> flags;
     float32 padding = 0.0f;
     float32 spacing = 0.0f;
-
-public:
-    INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT | I_LOAD));
 };
 }
 

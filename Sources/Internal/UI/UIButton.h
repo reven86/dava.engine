@@ -356,10 +356,6 @@ public:
     void SetInternalControl(int32 index, UIControl* control) override;
     String GetInternalControlName(int32 index) const override;
     String GetInternalControlDescriptions() const override;
-
-    INTROSPECTION_EXTEND(UIButton, UIControl,
-                         nullptr
-                         )
 };
 };
 

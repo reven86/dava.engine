@@ -35,11 +35,6 @@ public:
 private:
     bool enabled = true;
     bool requestFocus = false;
-
-public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

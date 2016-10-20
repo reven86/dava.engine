@@ -58,11 +58,6 @@ private:
     String identifier;
 
     void* cellStore;
-
-public:
-    INTROSPECTION_EXTEND(UIListCell, UIButton,
-                         PROPERTY("identifier", "Cell identifier", GetIdentifier, SetIdentifier, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 }
 

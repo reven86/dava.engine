@@ -24,11 +24,6 @@ private:
 
 public:
     UIFocusGroupComponent* Clone() const override;
-
-private:
-public:
-    INTROSPECTION_EXTEND(UIFocusGroupComponent, UIComponent,
-                         nullptr);
 };
 }
 

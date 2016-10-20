@@ -32,10 +32,6 @@ public:
 
 private:
     bool enabled = true;
-
-public:
-    INTROSPECTION_EXTEND(UIModalInputComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

@@ -52,13 +52,6 @@ public:
 
 private:
     String nextFocusPath[DIRECTION_COUNT];
-
-public:
-    INTROSPECTION_EXTEND(UINavigationComponent, UIComponent,
-                         PROPERTY("left", "Next Focus Left", GetNextFocusLeft, SetNextFocusLeft, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("right", "Next Focus Right", GetNextFocusRight, SetNextFocusRight, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("up", "Next Focus Up", GetNextFocusUp, SetNextFocusUp, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("down", "Next Focus Down", GetNextFocusDown, SetNextFocusDown, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

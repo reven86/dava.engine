@@ -61,11 +61,6 @@ private:
     UIActionMap actionMap;
     UIInputMap inputMap;
     bool blockOtherKeyboardShortcuts = true;
-
-public:
-    INTROSPECTION_EXTEND(UIActionBindingComponent, UIComponent,
-                         PROPERTY("actions", "Actions", GetActionsAsString, SetActionsFromString, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("blockOtherShortcuts", "Block Other Keyboard Shortcuts", IsBlockOtherKeyboardShortcuts, SetBlockOtherKeyboardShortcuts, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

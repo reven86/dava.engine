@@ -1318,25 +1318,6 @@ public:
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
     inline void SetDebugDrawNotHierarchic(bool val);
-
-    INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisibilityFlag, SetVisibilityFlag, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("exclusiveInput", "Exclusive Input", GetExclusiveInput, SetExclusiveInputNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
 };
 
 Vector2 UIControl::GetPivotPoint() const

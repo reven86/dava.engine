@@ -1,7 +1,7 @@
 #ifndef __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
 #define __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
 
-#include "Base/IntrospectionBase.h"
+#include "Base/Introspection.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"

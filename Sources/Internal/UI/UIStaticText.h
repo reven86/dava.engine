@@ -170,23 +170,6 @@ public:
 
     Vector4 GetMarginsAsVector4() const;
     void SetMarginsAsVector4(const Vector4& margins);
-
-    INTROSPECTION_EXTEND(UIStaticText, UIControl,
-                         PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("text", "Text", GetUtf8Text, SetUtf8TextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

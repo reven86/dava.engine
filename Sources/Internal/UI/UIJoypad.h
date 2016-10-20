@@ -72,12 +72,6 @@ private:
 
     Vector2 digitalVector;
     Vector2 analogVector;
-
-public:
-    INTROSPECTION_EXTEND(UIJoypad, UIControl,
-                         PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 };
 

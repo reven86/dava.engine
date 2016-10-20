@@ -36,10 +36,6 @@ public:
 
 private:
     int32 tabOrder = 0;
-
-public:
-    INTROSPECTION_EXTEND(UITabOrderComponent, UIComponent,
-                         PROPERTY("tab", "Tab Order", GetTabOrder, SetTabOrder, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

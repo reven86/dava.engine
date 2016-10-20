@@ -87,13 +87,6 @@ private:
     bool needHandleAutoStart;
 
     static Camera* defaultCamera;
-
-public:
-    INTROSPECTION_EXTEND(UIParticles, UIControl,
-                         PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 };
 

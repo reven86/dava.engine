@@ -84,12 +84,6 @@ public:
     void SetBackgroundComponent(int32 index, UIControlBackground* bg) override;
     String GetBackgroundComponentName(int32 index) const override;
 
-    INTROSPECTION_EXTEND(UISlider, UIControl,
-                         PROPERTY("minValue", "Min Value", GetMinValue, SetMinValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
-                         );
-
 private:
     static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
 };
