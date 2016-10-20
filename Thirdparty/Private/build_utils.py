@@ -22,9 +22,7 @@ def download(url, file_name):
     u = urllib2.urlopen(url)
     f = open(file_name, 'wb')
     meta = u.info()
-    print meta
-    print meta.getheaders("Content-Length")
-
+    
     content_length = meta.getheaders("Content-Length")
 
     if content_length:
