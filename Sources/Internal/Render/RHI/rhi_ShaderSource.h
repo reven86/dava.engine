@@ -75,6 +75,7 @@ public:
     ~ShaderSource();
 
     bool Construct(ProgType progType, const char* srcText, const std::vector<std::string>& defines);
+    void InlineFunctions();
     bool Construct(ProgType progType, const char* srcText);
     bool Load(Api api, DAVA::File* in);
     bool Save(Api api, DAVA::File* out) const;

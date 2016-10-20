@@ -140,6 +140,9 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     {
         success = ProcessMetaData(ast);
         type = progType;
+
+        if (success)
+            InlineFunctions();
     }
     else
     {
@@ -150,6 +153,418 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     }
 
     return success;
+}
+void ShaderSource::InlineFunctions()
+{
+    // find global function declarations
+
+    std::vector<sl::HLSLFunction*> global_func_decl;
+
+    for (sl::HLSLStatement* statement = ast->GetRoot()->statement; statement; statement = statement->nextStatement)
+    {
+        if (statement->nodeType == sl::HLSLNodeType_Function)
+        {
+            sl::HLSLFunction* function = (sl::HLSLFunction*)statement;
+
+            if (stricmp(function->name, "vp_main") && stricmp(function->name, "fp_main"))
+                global_func_decl.push_back(function);
+        }
+    }
+
+    //-unsigned inlined_cnt = 0;
+    for (unsigned i = 0; i != global_func_decl.size(); ++i)
+    {
+        sl::HLSLFunction* func_decl = global_func_decl[i];
+        std::vector<sl::HLSLFunctionCall*> fcall;
+
+        //-Logger::Info(global_func_decl[i]->name);
+
+        class
+        FindFunctionCall
+        : public sl::HLSLTreeVisitor
+        {
+        public:
+            const char* name;
+            std::vector<sl::HLSLFunctionCall*>* call;
+
+            FindFunctionCall(const char* n, std::vector<sl::HLSLFunctionCall*>* c)
+                : name(n)
+                , call(c)
+            {
+            }
+            virtual void VisitFunctionCall(sl::HLSLFunctionCall* node)
+            {
+                if (stricmp(node->function->name, name) == 0)
+                    call->push_back(node);
+
+                HLSLTreeVisitor::VisitFunctionCall(node);
+            }
+        };
+
+        FindFunctionCall(func_decl->name, &fcall).VisitRoot(ast->GetRoot());
+
+        class
+        FindStatementExpression
+        : public sl::HLSLTreeVisitor
+        {
+        public:
+            FindStatementExpression(sl::HLSLFunctionCall* fc)
+                : _fcall(fc)
+                , _cur_expr(nullptr)
+                , _cur_statement(nullptr)
+                , _cur_statement_parent(nullptr)
+                , expr(nullptr)
+                , statement(nullptr)
+            {
+            }
+
+            sl::HLSLExpression* expr;
+            sl::HLSLStatement* statement;
+
+            virtual void VisitStatements(sl::HLSLStatement* statement)
+            {
+                _cur_statement = statement;
+                HLSLTreeVisitor::VisitStatements(statement);
+            }
+            virtual void VisitDeclaration(sl::HLSLDeclaration* node)
+            {
+                _cur_statement = node;
+
+                //                if( node->assignment )
+                //                    _expr.push_back( node->assignment );
+                HLSLTreeVisitor::VisitDeclaration(node);
+            }
+            /*
+            virtual void VisitConstructorExpression(sl::HLSLConstructorExpression* node)
+            {
+                _expr.clear();
+                _expr.push_back(node);
+//                HLSLTreeVisitor::VisitConstructorExpression( node );
+            }
+*/
+            virtual void VisitExpressionStatement(sl::HLSLExpressionStatement* node)
+            {
+                _cur_statement = node;
+                sl::HLSLTreeVisitor::VisitExpressionStatement(node);
+            }
+            virtual void VisitBlockStatement(sl::HLSLBlockStatement* node)
+            {
+                _cur_statement = node->statement;
+                _cur_statement_parent = node;
+                sl::HLSLTreeVisitor::VisitBlockStatement(node);
+            }
+            virtual void VisitExpression(sl::HLSLExpression* node)
+            {
+                _expr.push_back(node);
+                sl::HLSLTreeVisitor::VisitExpression(node);
+                if (_expr.size())
+                    _expr.resize(_expr.size() - 1);
+            }
+            virtual void VisitFunctionCall(sl::HLSLFunctionCall* node)
+            {
+                if (node == _fcall)
+                {
+                    if (_expr.size() > 1)
+                        expr = _expr[_expr.size() - 2];
+                    statement = _cur_statement;
+                }
+                HLSLTreeVisitor::VisitFunctionCall(node);
+            }
+
+        private:
+            std::vector<sl::HLSLExpression*> _expr;
+            std::vector<sl::HLSLExpression**> _pexpr;
+
+            sl::HLSLFunctionCall* _fcall;
+            sl::HLSLExpression* _cur_expr;
+            sl::HLSLStatement* _cur_statement;
+            sl::HLSLStatement* _cur_statement_parent;
+        };
+
+        //-Logger::Info("  %u calls found\n",unsigned(fcall.size()));
+        bool keep_func_def = false;
+        if (fcall.size() > 1)
+        {
+            fcall.clear();
+            keep_func_def = true;
+        }
+        for (unsigned k = 0; k != fcall.size(); ++k)
+        {
+            //-Logger::Info("\"%s\" call = %p\n", func_decl->name, fcall[k]);
+            FindStatementExpression find_statement_expression(fcall[k]);
+
+            find_statement_expression.VisitRoot(ast->GetRoot());
+
+            if (find_statement_expression.statement)
+            {
+                class
+                FindParentPrev
+                : public sl::HLSLTreeVisitor
+                {
+                public:
+                    sl::HLSLStatement* target;
+
+                    sl::HLSLStatement* parent;
+                    sl::HLSLStatement* prev;
+
+                    FindParentPrev()
+                        : target(nullptr)
+                        , parent(nullptr)
+                        , prev(nullptr)
+                    {
+                    }
+
+                    virtual void VisitFunction(sl::HLSLFunction* func)
+                    {
+                        sl::HLSLTreeVisitor::VisitFunction(func);
+                    }
+                    virtual void VisitStatements(sl::HLSLStatement* statement)
+                    {
+                        for (sl::HLSLStatement* s = statement; s; s = s->nextStatement)
+                        {
+                            if (s->nextStatement == target)
+                            {
+                                prev = s;
+                                break;
+                            }
+                        }
+
+                        switch (statement->nodeType)
+                        {
+                        case sl::HLSLNodeType_BlockStatement:
+                        {
+                            sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)statement;
+
+                            if (block->statement == target)
+                            {
+                                parent = statement;
+                            }
+                            else
+                            {
+                                for (sl::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
+                                {
+                                    if (bs->nextStatement == target)
+                                    {
+                                        parent = block;
+                                        prev = bs;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        }
+
+                        sl::HLSLTreeVisitor::VisitStatements(statement);
+                    }
+                    virtual void VisitBlockStatement(sl::HLSLBlockStatement* node)
+                    {
+                        sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)node;
+
+                        if (block->statement == target)
+                        {
+                            parent = block;
+                        }
+                        else
+                        {
+                            for (sl::HLSLStatement* bs = block->statement; bs; bs = bs->nextStatement)
+                            {
+                                if (bs->nextStatement == target)
+                                {
+                                    parent = block;
+                                    prev = bs;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                };
+
+                FindParentPrev find_parent_prev;
+                find_parent_prev.target = find_statement_expression.statement;
+                find_parent_prev.VisitRoot(ast->GetRoot());
+
+                sl::HLSLStatement* statement = find_statement_expression.statement;
+                sl::HLSLDeclaration* rv_decl = ast->AddNode<sl::HLSLDeclaration>(statement->fileName, statement->line);
+                sl::HLSLBlockStatement* func_block = ast->AddNode<sl::HLSLBlockStatement>(statement->fileName, statement->line);
+                char ret_name[128];
+
+                Snprintf(ret_name, sizeof(ret_name), "__ret_%s_%u", func_decl->name, k);
+
+                rv_decl->type.baseType = func_decl->returnType.baseType;
+                rv_decl->name = ast->AddString(ret_name);
+
+                if (find_statement_expression.statement->nodeType == sl::HLSLNodeType_Declaration
+                    && ((sl::HLSLDeclaration*)(find_statement_expression.statement))->assignment == fcall[k]
+                    )
+                {
+                    sl::HLSLDeclaration* decl = (sl::HLSLDeclaration*)(find_statement_expression.statement);
+                    sl::HLSLIdentifierExpression* val = ast->AddNode<sl::HLSLIdentifierExpression>(statement->fileName, statement->line);
+
+                    val->name = ast->AddString(ret_name);
+
+                    DVASSERT(decl->assignment == fcall[k]);
+                    decl->assignment = val;
+                }
+                else
+                {
+                    switch (find_statement_expression.expr->nodeType)
+                    {
+                    case sl::HLSLNodeType_BinaryExpression:
+                    {
+                        sl::HLSLBinaryExpression* bin = (sl::HLSLBinaryExpression*)(find_statement_expression.expr);
+                        sl::HLSLExpression** ce = NULL;
+
+                        if (bin->expression1 == fcall[k])
+                            ce = &(bin->expression1);
+                        else if (bin->expression2 == fcall[k])
+                            ce = &(bin->expression2);
+
+                        DVASSERT(ce);
+
+                        sl::HLSLIdentifierExpression* val = ast->AddNode<sl::HLSLIdentifierExpression>(statement->fileName, statement->line);
+
+                        val->name = ast->AddString(ret_name);
+                        (*ce) = val;
+                    }
+                    break;
+                    case sl::HLSLNodeType_FunctionCall:
+                    {
+                        sl::HLSLFunctionCall* call = (sl::HLSLFunctionCall*)(find_statement_expression.expr);
+                        sl::HLSLExpression* prev_arg = call->argument;
+
+                        for (sl::HLSLExpression* arg = call->argument; arg; arg = arg->nextExpression)
+                        {
+                            if (arg == fcall[k])
+                            {
+                                sl::HLSLIdentifierExpression* val = ast->AddNode<sl::HLSLIdentifierExpression>(statement->fileName, statement->line);
+
+                                val->name = ast->AddString(ret_name);
+                                val->nextExpression = arg->nextExpression;
+                                if (arg == call->argument)
+                                    call->argument = val;
+                                else
+                                    prev_arg->nextExpression = val;
+                                break;
+                            }
+                            prev_arg = arg;
+                        }
+                    }
+                    break;
+                    }
+                }
+
+                sl::HLSLStatement* func_parent = NULL;
+                sl::HLSLFunction* func = ast->FindFunction(func_decl->name, &func_parent);
+                sl::HLSLStatement* func_ret_parent = NULL;
+                sl::HLSLExpression* func_ret = NULL;
+                DVASSERT(func);
+                DVASSERT(func_parent);
+
+                sl::HLSLStatement* sp = NULL;
+                for (sl::HLSLStatement* fs = func->statement; fs; fs = fs->nextStatement)
+                {
+                    if (fs->nodeType == sl::HLSLNodeType_ReturnStatement)
+                    {
+                        func_ret = ((sl::HLSLReturnStatement*)(fs))->expression;
+                        func_ret_parent = sp;
+                        break;
+                    }
+                    sp = fs;
+                }
+                DVASSERT(func_ret);
+
+                std::vector<sl::HLSLDeclaration*> arg;
+
+                {
+                    int a = 0;
+                    for (sl::HLSLExpression *e = fcall[k]->argument; e; e = e->nextExpression, ++a)
+                    {
+                        sl::HLSLDeclaration* arg_decl = ast->AddNode<sl::HLSLDeclaration>(statement->fileName, statement->line);
+
+                        int aa = 0;
+                        for (sl::HLSLArgument *fa = func->argument; fa; fa = fa->nextArgument, ++aa)
+                        {
+                            if (aa == a)
+                            {
+                                arg_decl->name = fa->name;
+                                arg_decl->type = fa->type;
+                                break;
+                            }
+                        }
+
+                        arg_decl->assignment = e;
+                        arg.push_back(arg_decl);
+                    }
+                }
+
+                sl::HLSLBinaryExpression* ret_ass = ast->AddNode<sl::HLSLBinaryExpression>(statement->fileName, statement->line);
+                sl::HLSLIdentifierExpression* ret_var = ast->AddNode<sl::HLSLIdentifierExpression>(statement->fileName, statement->line);
+                sl::HLSLExpressionStatement* ret_statement = ast->AddNode<sl::HLSLExpressionStatement>(statement->fileName, statement->line);
+
+                ret_statement->expression = ret_ass;
+                ret_var->name = ast->AddString(ret_name);
+                ret_ass->binaryOp = sl::HLSLBinaryOp_Assign;
+                ret_ass->expressionType = func_decl->returnType;
+                ret_ass->expression1 = ret_var;
+                ret_ass->expression2 = func_ret;
+
+                if (func_ret_parent)
+                {
+                    func_ret_parent->nextStatement = ret_statement;
+                }
+                else
+                {
+                    // func has exactly one statement
+                    func->statement = ret_statement;
+                }
+
+                if (find_parent_prev.parent && !find_parent_prev.prev)
+                {
+                    DVASSERT(find_parent_prev.parent->nodeType == sl::HLSLNodeType_BlockStatement);
+                    sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)(find_parent_prev.parent);
+                    sl::HLSLStatement* next = block->statement;
+
+                    block->statement = rv_decl;
+                    rv_decl->nextStatement = func_block;
+                    func_block->nextStatement = next;
+                }
+                else
+                {
+                    find_parent_prev.prev->nextStatement = rv_decl;
+                    rv_decl->nextStatement = func_block;
+                    func_block->nextStatement = statement;
+                }
+
+                DVASSERT(arg.size());
+                func_block->statement = arg[0];
+                for (int i = 1; i < arg.size(); ++i)
+                {
+                    arg[i - 1]->nextStatement = arg[i];
+                }
+                arg[arg.size() - 1]->nextStatement = func->statement;
+            }
+            else
+            {
+                Logger::Info("  crap!\n");
+            }
+
+            //-            ++inlined_cnt;
+        } // for each func.call
+
+        // remove func definition
+        if (!keep_func_def)
+        {
+            sl::HLSLStatement* func_parent = NULL;
+            sl::HLSLFunction* func = ast->FindFunction(func_decl->name, &func_parent);
+
+            if (func && func_parent)
+                func_parent->nextStatement = func->nextStatement;
+        }
+
+    } // for each func
+    //-if(inlined_cnt)
+    //-Logger::Info("inlined %u func.call(s)\n",inlined_cnt);
 }
 
 //------------------------------------------------------------------------------
@@ -1232,7 +1647,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
 
 #if 0
 {
-    Logger::Info("src-code (api=%i) :",int(targetApi));
+    Logger::Info("generated src-code (api=%i) :",int(targetApi));
 
     char ss[64 * 1024];
     unsigned line_cnt = 0;
