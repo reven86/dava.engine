@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -61,7 +61,8 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include <PackManager/Private/PackManagerImpl.h>
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Analytics/Analytics.h"
 
 namespace DAVA
 {
@@ -114,7 +115,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-        throw std::runtime_error(ss.str());
+        DAVA_THROW(DAVA::Exception, ss.str());
     }
     default:
         if (SEFuncPtr != nullptr)
@@ -126,7 +127,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
             StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-            throw std::runtime_error(ss.str());
+            DAVA_THROW(DAVA::Exception, ss.str());
         }
     }
 };
@@ -253,7 +254,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl());
+    packManager.reset(new PackManagerImpl);
+    analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
 
@@ -334,6 +336,8 @@ void Core::ReleaseSingletons()
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
+    analyticsCore.reset();
+
     DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
@@ -663,7 +667,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update();
+        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
@@ -949,6 +953,12 @@ IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+Analytics::Core& Core::GetAnalyticsCore() const
+{
+    DVASSERT(analyticsCore);
+    return *analyticsCore;
 }
 
 const ModuleManager& Core::GetModuleManager() const
