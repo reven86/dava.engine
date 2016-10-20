@@ -248,8 +248,18 @@ if __name__ == "__main__":
         # Build
         print 'Selected libraries: ' + str(libraries_to_process)
         print 'Selected targets: ' + str(targets_to_process) + '\n'
+        failed = []
         for lib in libraries_to_process:
-            build_library(lib, targets_to_process, args.skip_dependencies)
+            result = build_library(lib, targets_to_process, args.skip_dependencies)
+            if result is False:
+                failed.append(lib)
+
+        if not failed:
+            print '\nFinished. {} library(s) were successfully built'.format(
+                len(libraries_to_process))
+        else:
+            print '\nFinished. Builders failed for these libraries: {}'.format(
+                str(failed))
 
         # Clean
         if not args.no_clean:

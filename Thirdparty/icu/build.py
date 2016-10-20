@@ -48,9 +48,10 @@ def _download_and_extract(
 
 def _patch_sources(source_folder_path, working_directory_path, patch_postifx):
     try:
-        if _patch_sources.did:
+        if source_folder_path in _patch_sources.cache:
             return
     except AttributeError:
+        _patch_sources.cache = []
         pass
 
     # Apply fixes
@@ -58,7 +59,7 @@ def _patch_sources(source_folder_path, working_directory_path, patch_postifx):
         os.path.abspath('patch' + patch_postifx + '.diff'),
         working_directory_path)
 
-    _patch_sources.did = True
+    _patch_sources.cache.append(source_folder_path)
 
 
 def _build_win32(working_directory_path, root_project_path):
