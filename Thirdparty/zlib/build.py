@@ -14,12 +14,6 @@ def get_dependencies_for_target(target):
     return []
 
 
-def get_supported_build_platforms():
-    # Shouldn't be built on macOS since it's already bundled
-    # in macOS sdk, iOS sdk, Android sdk
-    return ['win32']
-
-
 def build_for_target(target, working_directory_path, root_project_path):
     if target == 'win32':
         _build_win32(working_directory_path, root_project_path)

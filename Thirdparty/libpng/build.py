@@ -18,10 +18,6 @@ def get_dependencies_for_target(target):
         return []
 
 
-def get_supported_build_platforms():
-    return ['win32', 'darwin']
-
-
 def build_for_target(target, working_directory_path, root_project_path):
     if target == 'win32':
         _build_win32(working_directory_path, root_project_path)

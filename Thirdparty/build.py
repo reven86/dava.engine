@@ -65,12 +65,13 @@ def build_library(name, targets, skip_dependencies):
     builder = import_library_builder_module(name)
 
     current_platform = sys.platform
+    supported_targets = builder.get_supported_targets(current_platform)
 
     # Check if it should be built on current platform
-    library_build_platforms = builder.get_supported_build_platforms()
-    if current_platform not in library_build_platforms:
+    if not supported_targets:
         print ('Skipping library \"{}\" since it can\'t or shouldn\'t be built'
-               'on current platform').format(name)
+               'on current platform '
+               '(build.py reported no supported targets)').format(name)
         return False
 
     # Check dependencies
@@ -94,8 +95,6 @@ def build_library(name, targets, skip_dependencies):
 
     # Change working directory to builder's one
     os.chdir(name)
-
-    supported_targets = builder.get_supported_targets(current_platform)
 
     result = True
 
