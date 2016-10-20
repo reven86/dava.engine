@@ -785,6 +785,8 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
     DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
 
+    DVASSERT(frame.readyToExecute);
+
     StatSet::ResetAll();
 
     Trace("rhi-dx11.exec-queued-cmd\n");

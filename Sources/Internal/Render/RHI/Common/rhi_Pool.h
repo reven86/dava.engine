@@ -1,6 +1,7 @@
 #pragma once
 
 #define RHI_RESOURCE_INCLUDE_BACKTRACE 0
+#define RHI_LOG_POOL_ERRORS 1
 
 #include "../rhi_Type.h"
 #include "Concurrency/Spinlock.h"
@@ -203,8 +204,6 @@ inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
     (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
     ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
 
-    DVASSERT(handle != InvalidHandle);
-
     return handle;
 }
 
@@ -241,6 +240,21 @@ inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
     Entry* e = Object + index;
     DVASSERT(e->allocated);
     DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
+
+#if RHI_LOG_POOL_ERRORS
+    if (h == InvalidHandle)
+        Logger::Error("Pool<%d>::Get - InvalidHandle", RT);
+    uint32 requestedType = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
+    uint32 reqestedGeneration = ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT);
+    if (requestedType != RT)
+        Logger::Error("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, requestedType, index, reqestedGeneration);
+    if (index >= ObjectCount)
+        Logger::Error("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, requestedType, index, reqestedGeneration);
+    if (!e->allocated)
+        Logger::Error("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, requestedType, index, reqestedGeneration, e->generation);
+    if (e->generation)
+        Logger::Error("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, requestedType, index, reqestedGeneration, e->generation);
+#endif
 
     return &(e->object);
 }
