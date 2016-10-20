@@ -4,6 +4,7 @@
 #include "Utils/StringFormat.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "PackManager/Private/PackManagerImpl.h"
+#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -95,7 +96,7 @@ PackRequest& RequestManager::Find(const String& packName)
                            });
     if (it == end(items))
     {
-        throw std::runtime_error("can't fined pack by name: " + packName);
+        DAVA_THROW(DAVA::Exception, "can't fined pack by name: " + packName);
     }
     return *it;
 }
@@ -128,7 +129,7 @@ void RequestManager::Push(const String& packName, float32 priority)
 {
     if (IsInQueue(packName))
     {
-        throw std::runtime_error("second time push same pack in queue, pack: " + packName);
+        DAVA_THROW(DAVA::Exception, "second time push same pack in queue, pack: " + packName);
     }
 
     IPackManager::Pack& pack = packManager.GetPack(packName);

@@ -501,7 +501,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 
     footerBlock.info.filesTableSize = fileTableSize;
     footerBlock.info.filesTableCrc32 = CRC32::ForBuffer(tmpFileTable.data(), tmpFileTable.size());
-    footerBlock.info.packArchiveMarker = PackFormat::FileMarker;
+    footerBlock.info.packArchiveMarker = PackFormat::FILE_MARKER;
     footerBlock.info.numFiles = static_cast<uint32>(filesDataBlock.files.size());
     footerBlock.info.namesSizeCompressed = static_cast<uint32>(namesBlock.compressedNames.size());
     footerBlock.info.namesSizeOriginal = static_cast<uint32>(namesOriginal.size());

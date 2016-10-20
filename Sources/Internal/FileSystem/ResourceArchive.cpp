@@ -4,6 +4,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Logger/Logger.h"
+#include "Base/Exception.h"
 
 //     +---------------+       +-------------------+
 //     |ResourceArchive+-------+ResourceArchiveImpl|
@@ -25,7 +26,7 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
     RefPtr<File> f(File::Create(fileName, File::OPEN | File::READ));
     if (!f)
     {
-        throw std::runtime_error("can't open resource archive: " + fileName);
+        DAVA_THROW(DAVA::Exception, "can't open resource archive: " + fileName);
     }
 
     Array<char8, 4> lastFourBytes;
@@ -33,22 +34,22 @@ ResourceArchive::ResourceArchive(const FilePath& archiveName)
     uint64 fSize = f->GetSize();
     if (fSize < 4)
     {
-        throw std::runtime_error("file not dvpk and not zip archive: " + fileName);
+        DAVA_THROW(DAVA::Exception, "file not dvpk and not zip archive: " + fileName);
     }
 
     if (!f->Seek(fSize - 4, File::SEEK_FROM_START))
     {
-        throw std::runtime_error("can't seek to last 4 bytes DVPK marker");
+        DAVA_THROW(DAVA::Exception, "can't seek to last 4 bytes DVPK marker");
     }
 
     uint32 count = f->Read(lastFourBytes.data(), static_cast<uint32>(lastFourBytes.size()));
 
     if (count != lastFourBytes.size())
     {
-        throw std::runtime_error("can't read from resource archive: " + fileName);
+        DAVA_THROW(DAVA::Exception, "can't read from resource archive: " + fileName);
     }
 
-    if (PackFormat::FileMarker == lastFourBytes)
+    if (PackFormat::FILE_MARKER == lastFourBytes)
     {
         impl.reset(new PackArchive(f, fileName));
     }
