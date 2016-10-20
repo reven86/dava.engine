@@ -1030,6 +1030,13 @@ void GLESGenerator::OutputStatements(int indent, HLSLStatement* statement, const
             OutputStatements(indent + 1, forStatement->statement, returnType);
             writer.WriteLine(indent, "}");
         }
+        else if (statement->nodeType == HLSLNodeType_BlockStatement)
+        {
+            HLSLBlockStatement* blockStatement = static_cast<HLSLBlockStatement*>(statement);
+            writer.WriteLine(indent, blockStatement->fileName, blockStatement->line, "{");
+            OutputStatements(indent + 1, blockStatement->statement);
+            writer.WriteLine(indent, "}");
+        }
         else
         {
             // Unhanded statement type.
