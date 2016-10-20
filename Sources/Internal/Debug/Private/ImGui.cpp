@@ -241,104 +241,104 @@ using DAVA::UIEvent;
 using DAVA::float32;
 using DAVA::Vector2;
 
-void EnsureInited()
+void Initialize()
 {
-    if (!ImGuiImplDetails::initialized)
+    DVASSERT(!ImGuiImplDetails::initialized);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.RenderDrawListsFn = ImGuiImplDetails::ImGuiDrawFn;
+
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
+
+    io.KeyMap[ImGuiKey_Tab] = int32(Key::TAB);
+    io.KeyMap[ImGuiKey_LeftArrow] = int32(Key::LEFT);
+    io.KeyMap[ImGuiKey_RightArrow] = int32(Key::RIGHT);
+    io.KeyMap[ImGuiKey_UpArrow] = int32(Key::UP);
+    io.KeyMap[ImGuiKey_DownArrow] = int32(Key::DOWN);
+    io.KeyMap[ImGuiKey_PageUp] = int32(Key::PGUP);
+    io.KeyMap[ImGuiKey_PageDown] = int32(Key::PGDN);
+    io.KeyMap[ImGuiKey_Home] = int32(Key::HOME);
+    io.KeyMap[ImGuiKey_End] = int32(Key::END);
+    io.KeyMap[ImGuiKey_Delete] = int32(Key::DELETE);
+    io.KeyMap[ImGuiKey_Backspace] = int32(Key::BACKSPACE);
+    io.KeyMap[ImGuiKey_Enter] = int32(Key::ENTER);
+    io.KeyMap[ImGuiKey_Escape] = int32(Key::ESCAPE);
+    io.KeyMap[ImGuiKey_A] = int32(Key::KEY_A);
+    io.KeyMap[ImGuiKey_C] = int32(Key::KEY_C);
+    io.KeyMap[ImGuiKey_V] = int32(Key::KEY_V);
+    io.KeyMap[ImGuiKey_X] = int32(Key::KEY_X);
+    io.KeyMap[ImGuiKey_Y] = int32(Key::KEY_Y);
+    io.KeyMap[ImGuiKey_Z] = int32(Key::KEY_Z);
+
+    //vertex layouts
+    rhi::VertexLayout vLayout;
+    vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
+    vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    ImGuiImplDetails::vertexLayout = rhi::VertexLayout::UniqueId(vLayout);
+
+    //font sampler-state
+    rhi::SamplerState::Descriptor ss_desc;
+    ss_desc.fragmentSamplerCount = 1;
+    ss_desc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
+    ss_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
+    ss_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
+    ImGuiImplDetails::fontSamplerState = rhi::AcquireSamplerState(ss_desc);
+
+    //depth state
+    rhi::DepthStencilState::Descriptor ds_desc;
+    ds_desc.depthTestEnabled = false;
+    ds_desc.depthWriteEnabled = false;
+    ImGuiImplDetails::depthState = rhi::AcquireDepthStencilState(ds_desc);
+
+    //pc pipeline state
+    rhi::ShaderSource vp_pc;
+    rhi::ShaderSource fp_pc;
+
+    if (vp_pc.Construct(rhi::PROG_VERTEX, ImGuiImplDetails::vprogPC) && fp_pc.Construct(rhi::PROG_FRAGMENT, ImGuiImplDetails::fprogPC))
     {
-        ImGuiIO& io = ImGui::GetIO();
-        io.RenderDrawListsFn = ImGuiImplDetails::ImGuiDrawFn;
+        rhi::PipelineState::Descriptor ps_desc;
 
-        io.IniFilename = nullptr;
-        io.LogFilename = nullptr;
+        ps_desc.vertexLayout = vp_pc.ShaderVertexLayout();
+        ps_desc.vprogUid = DAVA::FastName("imgui.vp.pc");
+        ps_desc.fprogUid = DAVA::FastName("imgui.fp.pc");
+        ps_desc.blending = fp_pc.Blending();
 
-        io.KeyMap[ImGuiKey_Tab] = int32(Key::TAB);
-        io.KeyMap[ImGuiKey_LeftArrow] = int32(Key::LEFT);
-        io.KeyMap[ImGuiKey_RightArrow] = int32(Key::RIGHT);
-        io.KeyMap[ImGuiKey_UpArrow] = int32(Key::UP);
-        io.KeyMap[ImGuiKey_DownArrow] = int32(Key::DOWN);
-        io.KeyMap[ImGuiKey_PageUp] = int32(Key::PGUP);
-        io.KeyMap[ImGuiKey_PageDown] = int32(Key::PGDN);
-        io.KeyMap[ImGuiKey_Home] = int32(Key::HOME);
-        io.KeyMap[ImGuiKey_End] = int32(Key::END);
-        io.KeyMap[ImGuiKey_Delete] = int32(Key::DELETE);
-        io.KeyMap[ImGuiKey_Backspace] = int32(Key::BACKSPACE);
-        io.KeyMap[ImGuiKey_Enter] = int32(Key::ENTER);
-        io.KeyMap[ImGuiKey_Escape] = int32(Key::ESCAPE);
-        io.KeyMap[ImGuiKey_A] = int32(Key::KEY_A);
-        io.KeyMap[ImGuiKey_C] = int32(Key::KEY_C);
-        io.KeyMap[ImGuiKey_V] = int32(Key::KEY_V);
-        io.KeyMap[ImGuiKey_X] = int32(Key::KEY_X);
-        io.KeyMap[ImGuiKey_Y] = int32(Key::KEY_Y);
-        io.KeyMap[ImGuiKey_Z] = int32(Key::KEY_Z);
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_pc.SourceCode());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_pc.SourceCode());
 
-        //vertex layouts
-        rhi::VertexLayout vLayout;
-        vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
-        vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
-        ImGuiImplDetails::vertexLayout = rhi::VertexLayout::UniqueId(vLayout);
-
-        //font sampler-state
-        rhi::SamplerState::Descriptor ss_desc;
-        ss_desc.fragmentSamplerCount = 1;
-        ss_desc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
-        ss_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
-        ss_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
-        ImGuiImplDetails::fontSamplerState = rhi::AcquireSamplerState(ss_desc);
-
-        //depth state
-        rhi::DepthStencilState::Descriptor ds_desc;
-        ds_desc.depthTestEnabled = false;
-        ds_desc.depthWriteEnabled = false;
-        ImGuiImplDetails::depthState = rhi::AcquireDepthStencilState(ds_desc);
-
-        //pc pipeline state
-        rhi::ShaderSource vp_pc;
-        rhi::ShaderSource fp_pc;
-
-        if (vp_pc.Construct(rhi::PROG_VERTEX, ImGuiImplDetails::vprogPC) && fp_pc.Construct(rhi::PROG_FRAGMENT, ImGuiImplDetails::fprogPC))
-        {
-            rhi::PipelineState::Descriptor ps_desc;
-
-            ps_desc.vertexLayout = vp_pc.ShaderVertexLayout();
-            ps_desc.vprogUid = DAVA::FastName("imgui.vp.pc");
-            ps_desc.fprogUid = DAVA::FastName("imgui.fp.pc");
-            ps_desc.blending = fp_pc.Blending();
-
-            rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_pc.SourceCode());
-            rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_pc.SourceCode());
-
-            ImGuiImplDetails::pipelineStatePC = rhi::AcquireRenderPipelineState(ps_desc);
-            rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePC, 1, &ImGuiImplDetails::constBufferPC);
-        }
-
-        //ptc pipeline-state
-        rhi::ShaderSource vp_ptc;
-        rhi::ShaderSource fp_ptc;
-
-        if (vp_ptc.Construct(rhi::PROG_VERTEX, ImGuiImplDetails::vprogPTC) && fp_ptc.Construct(rhi::PROG_FRAGMENT, ImGuiImplDetails::fprogPTC))
-        {
-            rhi::PipelineState::Descriptor ps_desc;
-
-            ps_desc.vertexLayout = vp_ptc.ShaderVertexLayout();
-            ps_desc.vprogUid = DAVA::FastName("imgui.vp.ptc");
-            ps_desc.fprogUid = DAVA::FastName("imgui.fp.ptc");
-            ps_desc.blending = fp_ptc.Blending();
-
-            rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode());
-            rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode());
-
-            ImGuiImplDetails::pipelineStatePTC = rhi::AcquireRenderPipelineState(ps_desc);
-            rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePTC, 1, &ImGuiImplDetails::constBufferPTC);
-        }
-
-        ImGuiImplDetails::initialized = true;
+        ImGuiImplDetails::pipelineStatePC = rhi::AcquireRenderPipelineState(ps_desc);
+        rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePC, 1, &ImGuiImplDetails::constBufferPC);
     }
+
+    //ptc pipeline-state
+    rhi::ShaderSource vp_ptc;
+    rhi::ShaderSource fp_ptc;
+
+    if (vp_ptc.Construct(rhi::PROG_VERTEX, ImGuiImplDetails::vprogPTC) && fp_ptc.Construct(rhi::PROG_FRAGMENT, ImGuiImplDetails::fprogPTC))
+    {
+        rhi::PipelineState::Descriptor ps_desc;
+
+        ps_desc.vertexLayout = vp_ptc.ShaderVertexLayout();
+        ps_desc.vprogUid = DAVA::FastName("imgui.vp.ptc");
+        ps_desc.fprogUid = DAVA::FastName("imgui.fp.ptc");
+        ps_desc.blending = fp_ptc.Blending();
+
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode());
+
+        ImGuiImplDetails::pipelineStatePTC = rhi::AcquireRenderPipelineState(ps_desc);
+        rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePTC, 1, &ImGuiImplDetails::constBufferPTC);
+    }
+
+    ImGuiImplDetails::initialized = true;
 }
 
-void OnFrame()
+void OnFrameBegin()
 {
-    DVASSERT(ImGuiImplDetails::initialized);
+    if (!ImGuiImplDetails::initialized)
+        return;
 
     ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
 
@@ -402,10 +402,21 @@ void OnFrame()
         io.Fonts->SetTexID(*reinterpret_cast<void**>(&ImGuiImplDetails::fontTextureSet));
         io.Fonts->ClearTexData();
     }
+
+    ImGui::NewFrame();
+}
+
+void OnFrameEnd()
+{
+    if (ImGuiImplDetails::initialized)
+        ImGui::Render();
 }
 
 void OnInput(UIEvent* input)
 {
+    if (!ImGuiImplDetails::initialized)
+        return;
+
     ImGuiIO& io = ImGui::GetIO();
 
     Vector2 physPoint = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(input->point);
@@ -468,6 +479,8 @@ void Uninitialize()
         rhi::DeleteConstBuffer(ImGuiImplDetails::constBufferPTC);
 
         ImGui::Shutdown();
+
+        ImGuiImplDetails::initialized = false;
     }
 }
 
