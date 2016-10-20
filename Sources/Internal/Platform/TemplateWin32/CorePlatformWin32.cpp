@@ -39,7 +39,7 @@ uint32 GetKeyboardModifiers();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
 #if defined(DENY_RUN_MULTIPLE_APP_INSTANCES)
     if (AlreadyRunning())

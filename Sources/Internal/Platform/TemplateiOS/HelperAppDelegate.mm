@@ -73,7 +73,7 @@ public:
 
 int DAVA::Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     CoreIOS* core = new CoreIOS();

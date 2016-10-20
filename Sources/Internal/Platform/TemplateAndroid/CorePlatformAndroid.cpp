@@ -48,7 +48,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     SetCommandLine(cmdLine);
 }

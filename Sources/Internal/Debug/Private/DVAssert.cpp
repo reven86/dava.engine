@@ -16,9 +16,9 @@ static Mutex registeredHandlersMutex;
 
 void RemoveAllHandlers()
 {
-	LockGuard<Mutex> lock(registeredHandlersMutex);
+    LockGuard<Mutex> lock(registeredHandlersMutex);
 
-	registeredHandlers.clear();
+    registeredHandlers.clear();
 }
 
 void AddHandler(const Handler handler)

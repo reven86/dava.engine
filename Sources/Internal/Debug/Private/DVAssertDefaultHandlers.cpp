@@ -22,8 +22,8 @@ FailBehaviour DefaultLoggerHandler(const AssertInfo& assertInfo)
 
     Logger::Error(Debug::GetBacktraceString(assertInfo.backtrace).c_str());
 
-	// Even though it's more appropriate to return FailBehaviour::Default,
-	// return FailBehaviour::Continue to match behaviour of an old assert system
+    // Even though it's more appropriate to return FailBehaviour::Default,
+    // return FailBehaviour::Continue to match behaviour of an old assert system
     return FailBehaviour::Continue;
 }
 
@@ -53,14 +53,14 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
 
 void SetupDefaultHandlers()
 {
-	RemoveAllHandlers();
+    RemoveAllHandlers();
 
 #ifdef ENABLE_ASSERT_LOGGING
-	AddHandler(DefaultLoggerHandler);
+    AddHandler(DefaultLoggerHandler);
 #endif
 
 #ifdef ENABLE_ASSERT_MESSAGE
-	AddHandler(DefaultDialogBoxHandler);
+    AddHandler(DefaultDialogBoxHandler);
 #endif
 }
 }

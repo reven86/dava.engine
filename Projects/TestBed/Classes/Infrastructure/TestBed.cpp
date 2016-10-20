@@ -45,8 +45,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     using namespace DAVA;
     using namespace Net;
 
-	Assert::AddHandler(Assert::DefaultLoggerHandler);
-	Assert::AddHandler(Assert::DefaultDialogBoxHandler);
+    Assert::AddHandler(Assert::DefaultLoggerHandler);
+    Assert::AddHandler(Assert::DefaultDialogBoxHandler);
 
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);

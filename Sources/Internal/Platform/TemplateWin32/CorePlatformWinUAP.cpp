@@ -16,7 +16,7 @@ namespace DAVA
 {
 int Core::Run(int /*argc*/, char* /*argv*/ [], AppHandle /*handle*/)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
     core->InitArgs();

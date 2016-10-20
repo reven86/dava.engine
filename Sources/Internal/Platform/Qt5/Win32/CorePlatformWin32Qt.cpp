@@ -24,7 +24,7 @@ void CoreWin32PlatformQt::Quit()
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     CoreWin32PlatformQt* core = new CoreWin32PlatformQt();
     core->CreateSingletons();

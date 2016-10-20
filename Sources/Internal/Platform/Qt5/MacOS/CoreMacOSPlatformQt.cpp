@@ -14,7 +14,7 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     DAVA::CoreMacOSPlatformQt* core = new DAVA::CoreMacOSPlatformQt();
     core->SetCommandLine(argc, argv);

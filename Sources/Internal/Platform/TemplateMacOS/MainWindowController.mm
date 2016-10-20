@@ -120,7 +120,7 @@ namespace DAVA
 {
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-	Assert::SetupDefaultHandlers();
+    Assert::SetupDefaultHandlers();
 
     NSAutoreleasePool* globalPool = 0;
     globalPool = [[NSAutoreleasePool alloc] init];
