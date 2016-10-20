@@ -25,20 +25,10 @@ int main(int argc, char** argv)
         pathDir = pathExec.substr(0, last_slash_idx);
     }
 
-    std::string openScriptFile(pathDir + "/../Resources/OpenFinder.script");
-
-    std::fstream openScriptStream(openScriptFile, std::ios::out);
-
-    openScriptStream << "tell application \"Finder\"\n";
-    openScriptStream << "    open (\"" << pathDir << "/\" as POSIX file)\n";
-    openScriptStream << "    activate\n";
-    openScriptStream << "end tell";
-
-    openScriptStream.close();
-
-    sprintf(path, "osascript %s", openScriptFile.c_str());
+    sprintf(path, "sh %s/../Resources/open.sh %s", pathDir.c_str(), pathDir.c_str());
     system(path);
 
-    std::cout << "openScriptFile " << openScriptFile;
+    // std::string openScriptFile(pathDir + "/../Resources/OpenFinder.script");
+
     return 1;
 }

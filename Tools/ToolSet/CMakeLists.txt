@@ -25,27 +25,20 @@ endmacro ()
 macro ( init_tool_set )
     project( ToolSet )
     if( APPLE )
+
+        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
+
         set( MACOS_PLIST            ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
         set( MACOS_ICO              ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
-        set( RESOURCES_LIST         ${MACOS_PLIST} ${MACOS_ICO} )
+        set( RESOURCES_LIST         ${MACOS_ICO} ${CMAKE_CURRENT_LIST_DIR}/open.sh )
 
         add_executable( ${PROJECT_NAME} MACOSX_BUNDLE main.cpp ${RESOURCES_LIST} )
-
-        target_link_libraries( ${PROJECT_NAME}
-            "-framework Cocoa"
-            "-framework AppKit"
-            "-framework CoreData"
-            "-framework Foundation"
-        )
-
-        set_property (TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY 
-              COMPILE_FLAGS "-x objective-c++")
 
         set_target_properties ( ${PROJECT_NAME} PROPERTIES
                                 MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}"
                                 XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                                RESOURCE "${MACOS_ICO}"
-                                XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR ${CMAKE_BINARY_DIR}/app
+                                RESOURCE "${RESOURCES_LIST}"
+                                XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR ${DEPLOY_DIR}
                               )
 
         add_dependencies( ${PROJECT_NAME} ${TARGETS_LIST} )
