@@ -53,7 +53,7 @@
     { \
         DAVA::Logger::Error("DX11 Device is not ready, therefor call %s is not possible\nat %s [%u]", #F, __FILE__, __LINE__);\
         _D3D11_DeviceLock.Unlock(); \
-        do { DAVA::Thread::Sleep(1); } while (true); \
+        do { Sleep(1); } while (true); \
     } \
 }
 
