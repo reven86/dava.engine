@@ -13,6 +13,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
+import android.util.Log;
+
 import java.util.Calendar;
 
 public class DavaNotificationProvider {
@@ -64,7 +66,9 @@ public class DavaNotificationProvider {
 	
     static void NotificationPressed(String uid)
     {
+        Log.d("DavaNotificationProvider", "!!! NotificationPressed1");
     	if (isInited) {
+        Log.d("DavaNotificationProvider", "!!! NotificationPressed2");
     		onNotificationPressed(uid);
     	}
     }
@@ -89,10 +93,12 @@ public class DavaNotificationProvider {
 	}
 	
     static void NotifyText(String uid, String title, String text, boolean useSound) {
+        Log.d("DavaNotificationProvider", "NotifyText 1");
 		if (isInited) {
 			CleanBuilder();
 			
 			Uri uri = null;
+        Log.d("DavaNotificationProvider", "NotifyText 2");
 	        if (useSound)
 	        {
 	            uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);    
@@ -102,6 +108,7 @@ public class DavaNotificationProvider {
 					.setContentText(text)
 					.setSound(uri);
 
+        Log.d("DavaNotificationProvider", "NotifyText 3");
 	        
 			notificationManager.notify(uid, 0, builder.build());
 		}
@@ -143,19 +150,23 @@ public class DavaNotificationProvider {
 		if (isInited) {
 			activity = DavaActivity.instance();
 
-            //icon = activity.GetNotificationIcon();
+            icon = activity.GetNotificationIcon();
             builder.setSmallIcon(icon);
 		}
 	}
     
 	public DavaNotificationProvider(Context context)
 	{
-		context = context;
+//		context = context;
 		activity = DavaActivity.instance();
+		context = activity.getApplication();
 		
 		assetsManager = context.getAssets();
 		notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		builder = new NotificationCompat.Builder(context);
+
+        icon = activity.GetNotificationIcon();
+        builder.setSmallIcon(icon);
 
 		isInited = null != builder && null != notificationManager && null != assetsManager;
 

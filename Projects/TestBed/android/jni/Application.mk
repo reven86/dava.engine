@@ -8,7 +8,7 @@ APP_CPPFLAGS += -D__DAVAENGINE_DEBUG__
 # http://en.cppreference.com/w/cpp/numeric/fenv
 #APP_CFLAGS += -fnon-call-exceptions
 APP_OPTIM := debug
-#APP_CFLAGS += -DUSE_LOCAL_RESOURCES #use local resources
+APP_CFLAGS += -DUSE_LOCAL_RESOURCES #use local resources
 
 #release
 #APP_CFLAGS += -O2

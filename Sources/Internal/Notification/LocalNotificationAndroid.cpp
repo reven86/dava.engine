@@ -10,7 +10,11 @@
 namespace DAVA
 {
 LocalNotificationAndroid::LocalNotificationAndroid(const String& _id)
+#if defined(__DAVAENGINE_COREV2__)
+    : notificationProvider("com/dava/engine/DavaNotificationProvider")
+#else
     : notificationProvider("com/dava/framework/JNINotificationProvider")
+#endif
 {
     notificationId = _id;
 
@@ -104,7 +108,11 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 
 extern "C"
 {
+#if defined(__DAVAENGINE_COREV2__)
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaNotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
+#else
+JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
+#endif
 {
     const char* str = env->GetStringUTFChars(uid, 0);
     DAVA::LocalNotificationController::Instance()->OnNotificationPressed(DAVA::String(str));

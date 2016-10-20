@@ -1,5 +1,4 @@
-package com.dava.engine;
-//package com.dava.framework;
+package com.dava.framework;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -16,7 +15,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d("Local Notifications", "ScheduledNotificationReceiver onReceive");
-        DavaActivity activity = DavaActivity.instance();
+        JNIActivity activity = JNIActivity.GetActivity();
         Intent tapIntent;
         if(activity != null) {
             tapIntent = new Intent(context, activity.getClass());

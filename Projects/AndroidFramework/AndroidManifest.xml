@@ -8,7 +8,7 @@
         android:targetSdkVersion="23" />
 
     <application>
-        <receiver android:name="com.dava.framework.ScheduledNotificationReceiver"/>
+        <receiver android:name="com.dava.engine.ScheduledNotificationReceiver"/>
     </application>
 
 </manifest>

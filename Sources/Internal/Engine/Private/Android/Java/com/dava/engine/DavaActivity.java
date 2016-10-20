@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -58,6 +59,11 @@ public final class DavaActivity extends Activity
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
 
+    public int GetNotificationIcon()
+	{
+        return android.R.drawable.sym_def_app_icon;
+    }
+
     public static DavaActivity instance()
     {
         return activitySingleton;
@@ -95,6 +101,22 @@ public final class DavaActivity extends Activity
         splashView = new DavaSplashView(this);
 		notificationProvider = new DavaNotificationProvider(this);
         
+        {
+            final Intent intent = getIntent();
+            DavaActivity.commandHandler().post(new Runnable()
+			{
+                @Override
+                public void run() {
+                    if (null != intent) {
+                        String uid = intent.getStringExtra("uid");
+                        if (uid != null) {
+                            notificationProvider.NotificationPressed(uid);
+                        }
+                    }
+                }
+            });
+        }
+
         layout = new FrameLayout(this);
         layout.addView(splashView);
         setContentView(layout);
