@@ -79,6 +79,9 @@ def _copy_headers(source_folder_path, root_project_path):
     gmock_to_dir = os.path.join(root_project_path, 'Libs/include/googlemock/gmock')
     gtest_from_dir = os.path.join(source_folder_path, 'googletest/include/gtest')
     gtest_to_dir = os.path.join(root_project_path, 'Libs/include/googlemock/gtest')
+    scripts_from_dir = os.path.join(source_folder_path, 'googlemock/scripts')
+    scripts_to_dir = os.path.join(root_project_path, 'Thirdparty/googlemock/scripts')
     build_utils.clean_copy_includes(gmock_from_dir, gmock_to_dir)
     build_utils.clean_copy_includes(gtest_from_dir, gtest_to_dir)
+    build_utils.clean_copy_includes(scripts_from_dir, scripts_to_dir)
 
