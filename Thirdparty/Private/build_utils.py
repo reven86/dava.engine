@@ -201,7 +201,7 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
         print_verbose(line)
     sp.wait()
 
-def get_android_ndk_folder_path(root_project_path):
+def get_android_ndk_path(root_project_path):
     config_file_path = os.path.join(root_project_path, 'DavaConfig.in')
     for line in open(config_file_path):
         splitted = line.strip().split('=')
@@ -274,7 +274,7 @@ def _run_process_iter(args, process_cwd='.', environment=None, shell=False):
         raise subprocess.CalledProcessError(return_code, args)
 
 def android_ndk_make_toolchain(root_project_path, arch, platform, system, install_dir):
-    android_ndk_root = get_android_ndk_folder_path(root_project_path)
+    android_ndk_root = get_android_ndk_path(root_project_path)
 
     exec_path = os.path.join(android_ndk_root, 'build/tools')
 
@@ -334,7 +334,7 @@ def get_autotools_ios_env():
     return env
 
 def get_autotools_android_arm_env(root_project_path, enable_stl=False):
-    android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
+    android_ndk_folder_path = get_android_ndk_path(root_project_path)
     android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64')
     cross_path = os.path.join(android_prefix, 'bin/arm-linux-androideabi')
     sysroot_path = os.path.join(android_ndk_folder_path, 'platforms/android-14/arch-arm')
@@ -364,7 +364,7 @@ def get_autotools_android_arm_env(root_project_path, enable_stl=False):
     return env
 
 def get_autotools_android_x86_env(root_project_path, enable_stl=False):
-    android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
+    android_ndk_folder_path = get_android_ndk_path(root_project_path)
     android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/x86-4.9/prebuilt/darwin-x86_64')
     cross_path = os.path.join(android_prefix, 'bin/i686-linux-android')
     sysroot_path = os.path.join(android_ndk_folder_path, 'platforms/android-14/arch-x86')
@@ -549,7 +549,7 @@ def build_and_copy_libraries_android_cmake(
     build_android_x86_folder = os.path.join(gen_folder_path, 'build_android_x86')
 
     toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/android.toolchain.cmake')
-    android_ndk_folder_path = get_android_ndk_folder_path(root_project_path)
+    android_ndk_folder_path = get_android_ndk_path(root_project_path)
 
     cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, arm_abi)
     cmake_generate_build_ndk(build_android_x86_folder, source_folder_path, toolchain_filepath, android_ndk_folder_path, 'x86')
@@ -598,3 +598,12 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
         if postclean:
             cmd = [make_exec_name, 'clean']
             run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
+
+
+def run_once(fn):
+    def wrapper(*args, **kwargs):
+        if not wrapper.did:
+            fn(*args, **kwargs)
+            wrapper.did = True
+    wrapper.did = False
+    return wrapper
