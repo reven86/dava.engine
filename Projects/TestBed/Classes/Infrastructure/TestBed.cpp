@@ -45,6 +45,9 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     using namespace DAVA;
     using namespace Net;
 
+	Assert::AddHandler(Assert::DefaultLoggerHandler);
+	Assert::AddHandler(Assert::DefaultDialogBoxHandler);
+
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
@@ -91,9 +94,6 @@ TestBed::TestBed(Engine& engine)
     , currentScreen(nullptr)
     , testListScreen(nullptr)
 {
-    Assert::AddHandler(Assert::DefaultLoggerHandler);
-    Assert::AddHandler(Assert::DefaultDialogBoxHandler);
-
     engine.gameLoopStarted.Connect(this, &TestBed::OnGameLoopStarted);
     engine.gameLoopStopped.Connect(this, &TestBed::OnGameLoopStopped);
     engine.cleanup.Connect(this, &TestBed::OnEngineCleanup);
