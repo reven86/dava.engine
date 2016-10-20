@@ -309,7 +309,6 @@ void EngineBackend::OnBeginFrame()
 {
     Renderer::BeginFrame();
 
-    context->inputSystem->OnBeforeUpdate();
     engine->beginFrame.Emit();
 }
 
@@ -493,8 +492,7 @@ void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
     uie.device = eInputDevice::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
 
-    // TODO: get rid of UIControlSystem
-    UIControlSystem::Instance()->OnInput(&uie);
+    context->inputSystem->HandleInputEvent(&uie);
 }
 
 void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
@@ -530,46 +528,12 @@ void EngineBackend::PostUserCloseRequest()
 
 void EngineBackend::HandleGamepadMotion(const MainDispatcherEvent& e)
 {
-    GamepadDevice& gamepad = context->inputSystem->GetGamepadDevice();
-
-    uint32 axis = e.gamepadEvent.axis;
-    float32 value = e.gamepadEvent.value;
-    uint32 davaKey = gamepad.GetDavaEventIdForSystemAxis(axis);
-    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
-    {
-        UIEvent uie;
-        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
-        uie.physPoint.x = value;
-        uie.point.x = value;
-        uie.phase = UIEvent::Phase::JOYSTICK;
-        uie.device = eInputDevice::GAMEPAD;
-        uie.timestamp = e.timestamp / 1000.0;
-
-        gamepad.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
-        context->inputSystem->ProcessInputEvent(&uie);
-    }
+    context->inputSystem->HandleGamepadMotion(e);
 }
 
 void EngineBackend::HandleGamepadButton(const MainDispatcherEvent& e)
 {
-    GamepadDevice& gamepad = context->inputSystem->GetGamepadDevice();
-
-    uint32 button = e.gamepadEvent.button;
-    float32 value = e.gamepadEvent.value;
-    uint32 davaKey = gamepad.GetDavaEventIdForSystemKeycode(button);
-    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
-    {
-        UIEvent uie;
-        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
-        uie.physPoint.x = value;
-        uie.point.x = value;
-        uie.phase = UIEvent::Phase::JOYSTICK;
-        uie.device = eInputDevice::GAMEPAD;
-        uie.timestamp = e.timestamp / 1000.0;
-
-        gamepad.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
-        context->inputSystem->ProcessInputEvent(&uie);
-    }
+    context->inputSystem->HandleGamepadButton(e);
 }
 
 void EngineBackend::InitRenderer(Window* w)
@@ -715,7 +679,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     if (!IsConsoleMode())
     {
         context->fontManager = new FontManager();
-        context->inputSystem = new InputSystem();
+        context->inputSystem = new InputSystem(context->uiControlSystem);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
@@ -745,7 +709,7 @@ void EngineBackend::DestroySubsystems()
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
         context->fontManager->Release();
-        context->inputSystem->Release();
+        delete context->inputSystem;
     }
 
     context->uiControlSystem->Release();

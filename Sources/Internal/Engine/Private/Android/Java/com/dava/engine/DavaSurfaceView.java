@@ -188,7 +188,7 @@ final class DavaSurfaceView extends SurfaceView
 
         // Some SOURCE_GAMEPAD and SOURCE_DPAD events are also SOURCE_KEYBOARD. So first check and process events
         // from gamepad and then from keyboard if not processed.
-        if (source == InputDevice.SOURCE_GAMEPAD || source == InputDevice.SOURCE_DPAD)
+        if ((source & (InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) != 0)
         {
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
             return true;

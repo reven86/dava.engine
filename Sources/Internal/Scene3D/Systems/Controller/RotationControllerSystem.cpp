@@ -25,14 +25,22 @@ RotationControllerSystem::RotationControllerSystem(Scene* scene)
     , rotationSpeed(0.15f)
     , oldCamera(NULL)
 {
+#if defined(__DAVAENGINE_COREV2__)
+// inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevice::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
+#else
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
     //    InputSystem::Instance()->AddInputCallback(*inputCallback);
+#endif
 }
 
 RotationControllerSystem::~RotationControllerSystem()
 {
+#if defined(__DAVAENGINE_COREV2__)
+// InputSystem::Instance()->RemoveHandler(inputHandlerToken);
+#else
     //    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
     SafeDelete(inputCallback);
+#endif
 }
 
 void RotationControllerSystem::AddEntity(Entity* entity)
@@ -59,11 +67,21 @@ void RotationControllerSystem::Process(float32 timeElapsed)
     }
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+bool RotationControllerSystem::Input(UIEvent* event)
+#else
 void RotationControllerSystem::Input(UIEvent* event)
+#endif
 {
     const uint32 size = static_cast<uint32>(entities.size());
     if (0 == size)
+    {
+#if defined(__DAVAENGINE_COREV2__)
+        return false;
+#else
         return;
+#endif
+    }
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     if (event->mouseButton == UIEvent::MouseButton::RIGHT || event->mouseButton == UIEvent::MouseButton::MIDDLE)
@@ -81,7 +99,13 @@ void RotationControllerSystem::Input(UIEvent* event)
 
             Camera* camera = GetScene()->GetDrawCamera();
             if (!camera)
+            {
+#if defined(__DAVAENGINE_COREV2__)
+                return false;
+#else
                 return;
+#endif
+            }
 
             //Find active wasd component
             for (uint32 i = 0; i < size; ++i)
@@ -112,6 +136,9 @@ void RotationControllerSystem::Input(UIEvent* event)
             }
         }
     }
+#if defined(__DAVAENGINE_COREV2__)
+    return false;
+#endif
 }
 
 void RotationControllerSystem::RotateDirection(Camera* camera)

@@ -22,12 +22,16 @@ enum class eEngineRunMode : int32
 enum class eInputDevice : uint32
 {
     UNKNOWN = 0, //!< Special value used in some case to specify that input device is unrecognized
-    TOUCH_SURFACE, //!< Touch surface like touch screen on mobile devices
-    MOUSE,
-    KEYBOARD,
-    GAMEPAD,
-    PEN,
-    TOUCH_PAD, //!< Touch pad which can be found on notebooks
+    TOUCH_SURFACE = 0x01, //!< Touch surface like touch screen on mobile devices
+    MOUSE = 0x02,
+    KEYBOARD = 0x04,
+    GAMEPAD = 0x08,
+    PEN = 0x10,
+    TOUCH_PAD = 0x20, //!< Touch pad which can be found on notebooks
+
+    CLASS_POINTER = TOUCH_SURFACE | MOUSE | PEN | TOUCH_PAD,
+    CLASS_KEYBOARD = KEYBOARD,
+    CLASS_GAMEPAD = GAMEPAD,
 };
 
 /**
@@ -96,5 +100,6 @@ enum class eModifierKeys : uint32
 // clang-format on
 
 DAVA_DEFINE_ENUM_OPERATORS(eModifierKeys)
+DAVA_DEFINE_ENUM_OPERATORS(eInputDevice)
 
 } // namespace DAVA

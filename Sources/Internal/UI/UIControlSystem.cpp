@@ -19,6 +19,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "Input/MouseDevice.h"
 
 namespace DAVA
 {

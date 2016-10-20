@@ -1,4 +1,7 @@
+#include "Infrastructure/TestBed.h"
 #include "Tests/KeyboardTest.h"
+
+#include <Engine/Engine.h>
 #include <Input/InputCallback.h>
 #include <UI/Focus/UIFocusComponent.h>
 
@@ -30,18 +33,20 @@ UIControl* redBox = nullptr;
 class CustomText : public UIStaticText
 {
 public:
-    CustomText(const Rect& rect)
+    InputSystem* inputSystem = nullptr;
+    uint32 gamepadInputToken = 0;
+
+    CustomText(const Rect& rect, InputSystem* inputSystem_)
         : UIStaticText(rect)
+        , inputSystem(inputSystem_)
     {
         UIStaticText::SetInputEnabled(true);
 
-        InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
-        InputSystem::Instance()->AddInputCallback(gamepadCallback);
+        gamepadInputToken = inputSystem->AddHandler(eInputDevice::CLASS_GAMEPAD, MakeFunction(this, &CustomText::OnGamepadEvent));
     }
     ~CustomText()
     {
-        InputCallback gamepadCallback(this, &CustomText::OnGamepadEvent, InputSystem::INPUT_DEVICE_JOYSTICK);
-        InputSystem::Instance()->RemoveInputCallback(gamepadCallback);
+        inputSystem->RemoveHandler(gamepadInputToken);
     }
 
     bool SystemProcessInput(UIEvent* currentInput) override
@@ -50,12 +55,6 @@ public:
         if (currentInput->phase == UIEvent::Phase::GESTURE)
         {
             OnGestureEvent(currentInput);
-        }
-        else if (currentInput->device == UIEvent::Device::GAMEPAD)
-        {
-            // this code never happen
-            DVASSERT(false);
-            OnGamepadEvent(currentInput);
         }
         else
         {
@@ -149,7 +148,7 @@ private:
         redBox->SetPosition(newPos);
     }
 
-    void OnGamepadEvent(UIEvent* event)
+    bool OnGamepadEvent(UIEvent* event)
     {
         //Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
 
@@ -205,6 +204,7 @@ private:
         default:
             Logger::Error("not handled gamepad input event element: %d", event->element);
         }
+        return false;
     }
 
     bool OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
@@ -400,6 +400,7 @@ CustomText* customText = nullptr;
 
 KeyboardTest::KeyboardTest(TestBed& app)
     : BaseScreen(app, "KeyboardTest")
+    , app(app)
 {
 }
 
@@ -418,7 +419,7 @@ void KeyboardTest::LoadResources()
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewText);
 
-    customText = new CustomText(Rect(20, 230, 200, 400));
+    customText = new CustomText(Rect(20, 230, 200, 400), app.GetEngine().GetContext()->inputSystem);
     customText->SetDebugDraw(true);
     customText->SetTextColor(Color::White);
     customText->SetFont(font);

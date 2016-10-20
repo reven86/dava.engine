@@ -273,7 +273,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
     mouseButtonState[buttonIndex] = isButtonDown;
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
@@ -295,7 +295,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
         swap(uie.wheelDelta.x, uie.wheelDelta.y);
     }
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
@@ -320,13 +320,13 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
             if (mouseButtonState[buttonIndex - 1])
             {
                 uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
-                uiControlSystem->OnInput(&uie);
+                inputSystem->HandleInputEvent(&uie);
             }
         }
     }
     else
     {
-        uiControlSystem->OnInput(&uie);
+        inputSystem->HandleInputEvent(&uie);
     }
 }
 
@@ -342,7 +342,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     uie.touchId = e.touchEvent.touchId;
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
@@ -355,7 +355,7 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
     uie.touchId = e.touchEvent.touchId;
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
@@ -379,7 +379,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
         uie.phase = UIEvent::Phase::KEY_UP;
     }
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
     if (pressed)
     {
         keyboard.OnKeyPressed(uie.key);
@@ -399,7 +399,7 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    uiControlSystem->OnInput(&uie);
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::ClearMouseButtons()
@@ -419,7 +419,7 @@ void Window::ClearMouseButtons()
         if (mouseButtonState[buttonIndex - 1])
         {
             uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
-            uiControlSystem->OnInput(&uie);
+            inputSystem->HandleInputEvent(&uie);
         }
     }
     mouseButtonState.reset();

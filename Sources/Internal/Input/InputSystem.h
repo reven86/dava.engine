@@ -1,5 +1,106 @@
-#ifndef __DAVAENGINE_INPUT_SYSTEM_H__
-#define __DAVAENGINE_INPUT_SYSTEM_H__
+#pragma once
+
+#if defined(__DAVAENGINE_COREV2__)
+
+#include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "Engine/EngineTypes.h"
+#include "Functional/Function.h"
+
+namespace DAVA
+{
+/**
+    \defgroup input Input System
+*/
+
+class UIControlSystem;
+class UIEvent;
+class KeyboardDevice;
+class GamepadDevice;
+class MouseDevice;
+namespace Private
+{
+class EngineBackend;
+struct MainDispatcherEvent;
+}
+
+class InputSystem final
+{
+    friend class Window;
+    friend class Private::EngineBackend;
+
+public:
+    // Temporal method for backward compatibility
+    // TODO: remove InputSystem::Instance() method
+    static InputSystem* Instance();
+
+    uint32 AddHandler(eInputDevice inputDeviceMask, const Function<bool(UIEvent*)>& callback);
+    void ChangeHandlerDeviceMask(uint32 token, eInputDevice newInputDeviceMask);
+    void RemoveHandler(uint32 token);
+
+    KeyboardDevice& GetKeyboard();
+    GamepadDevice& GetGamepadDevice();
+
+    // TODO: remove method after pinning merged
+    MouseDevice& GetMouseDevice();
+
+private:
+    InputSystem(UIControlSystem* uiControlSystem_);
+    ~InputSystem();
+
+    InputSystem(const InputSystem&) = delete;
+    InputSystem& operator=(const InputSystem&) = delete;
+
+    void OnAfterUpdate();
+    void HandleInputEvent(UIEvent* uie);
+    void HandleGamepadMotion(const Private::MainDispatcherEvent& e);
+    void HandleGamepadButton(const Private::MainDispatcherEvent& e);
+
+private:
+    UIControlSystem* uiControlSystem = nullptr;
+    RefPtr<KeyboardDevice> keyboard;
+    RefPtr<GamepadDevice> gamepad;
+    RefPtr<MouseDevice> mouse;
+
+    struct InputHandler
+    {
+        InputHandler(uint32 token_, eInputDevice inputDeviceMask_, const Function<bool(UIEvent*)>& callback_);
+
+        uint32 token;
+        eInputDevice inputDeviceMask;
+        Function<bool(UIEvent*)> callback;
+    };
+
+    Vector<InputHandler> handlers;
+    uint32 nextHandlerToken = 1;
+    bool pendingHandlerRemoval = false;
+};
+
+inline InputSystem::InputHandler::InputHandler(uint32 token_, eInputDevice inputDeviceMask_, const Function<bool(UIEvent*)>& callback_)
+    : token(token_)
+    , inputDeviceMask(inputDeviceMask_)
+    , callback(callback_)
+{
+}
+
+inline KeyboardDevice& InputSystem::GetKeyboard()
+{
+    return *keyboard;
+}
+
+inline GamepadDevice& InputSystem::GetGamepadDevice()
+{
+    return *gamepad;
+}
+
+inline MouseDevice& InputSystem::GetMouseDevice()
+{
+    return *mouse;
+}
+
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -94,4 +195,4 @@ inline bool InputSystem::GetMultitouchEnabled() const
 }
 };
 
-#endif
+#endif // !__DAVAENGINE_COREV2__

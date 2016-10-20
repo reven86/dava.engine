@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
+#include <Input/MouseDevice.h>
 
 using namespace DAVA;
 

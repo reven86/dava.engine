@@ -16,6 +16,7 @@ protected:
 private:
     void OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData);
 
+    TestBed& app;
     DAVA::UIStaticText* previewText = nullptr;
     DAVA::UIButton* resetButton = nullptr;
     DAVA::UIControl* gamepad = nullptr;
