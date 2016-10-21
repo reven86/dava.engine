@@ -62,7 +62,7 @@ private:
 
     bool willQuit;
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     Vector<TOUCHINPUT> inputTouchBuffer;
 
     float32 minWindowWidth = 0.0f;

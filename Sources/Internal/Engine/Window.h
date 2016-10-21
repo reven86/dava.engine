@@ -128,7 +128,7 @@ private:
     float32 userScale = 1.0f;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
 
-    Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
+    std::bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
     // Friends
     friend class Private::EngineBackend;

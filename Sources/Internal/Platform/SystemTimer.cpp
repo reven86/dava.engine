@@ -1,5 +1,6 @@
 #include <chrono>
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 #include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
 #include "DAVAConfig.h"
