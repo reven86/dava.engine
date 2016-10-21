@@ -113,7 +113,7 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
             if (cmd[q].retval == S_OK)
             {
                 if (resultIndex < uint32(buf->results.size()))
-                    buf->results[resultIndex] = results[q];
+                    buf->results[resultIndex] += results[q];
 
                 QueryDX9Pool.push_back(buf->pendingQueries[q].first);
 
@@ -257,7 +257,7 @@ void ReleaseQueryPool()
     std::vector<DX9Command> cmd;
     for (IDirect3DQuery9* iq : QueryDX9Pool)
     {
-        cmd.push_back({ DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(iq)) } });
+        cmd.push_back({ DX9Command::RELEASE, { uint64(&iq) } });
     }
     ExecDX9(cmd.data(), uint32(cmd.size()), false);
 

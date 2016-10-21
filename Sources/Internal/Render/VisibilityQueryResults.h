@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "RHI/rhi_Public.h"
 #include "RHI/rhi_Type.h"
 
 namespace DAVA
@@ -19,11 +20,12 @@ enum eQueryIndex
     QUERY_INDEX_LAYER_VEGETATION,
     QUERY_INDEX_LAYER_DEBUG_DRAW,
     QUERY_INDEX_UI,
+    QUERY_INDEX_ALPHABLEND,
 
     QUERY_INDEX_COUNT,
 };
 
-rhi::HQueryBuffer GetCurrentQueryBuffer();
+rhi::HQueryBuffer GetQueryBuffer();
 
 uint32 GetResult(eQueryIndex index);
 FastName GetQueryIndexName(eQueryIndex index);

@@ -222,7 +222,7 @@ bool RenderPass::BeginRenderPass()
     bool success = false;
 
 #ifdef __DAVAENGINE_RENDERSTATS__
-    passConfig.queryBuffer = VisibilityQueryResults::GetCurrentQueryBuffer();
+    passConfig.queryBuffer = VisibilityQueryResults::GetQueryBuffer();
 #endif
 
     DVASSERT(renderTargetProperties.width > 0);
