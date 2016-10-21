@@ -659,7 +659,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new PackManagerImpl;
+                context->packManager = new PackManagerImpl(*engine);
             }
         }
     }

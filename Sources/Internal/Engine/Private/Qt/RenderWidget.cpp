@@ -79,7 +79,7 @@ void RenderWidget::OnFrame()
     if (!nativeHandle.isValid())
     {
         DAVA::Logger::Error("GL context is not valid!");
-        throw std::runtime_error("GL context is not valid!");
+        DAVA_THROW(DAVA::Exception, "GL context is not valid!");
     }
 
     widgetDelegate->OnFrame();
