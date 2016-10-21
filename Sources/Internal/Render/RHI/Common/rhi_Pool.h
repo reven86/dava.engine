@@ -246,14 +246,15 @@ inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
         Logger::Error("Pool<%d>::Get - InvalidHandle", RT);
     uint32 requestedType = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
     uint32 reqestedGeneration = ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT);
+    uint32 resource = RT;
     if (requestedType != RT)
-        Logger::Error("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, requestedType, index, reqestedGeneration);
+        Logger::Error("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", resource, requestedType, index, reqestedGeneration);
     if (index >= ObjectCount)
-        Logger::Error("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, requestedType, index, reqestedGeneration);
+        Logger::Error("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", resource, requestedType, index, reqestedGeneration);
     if (!e->allocated)
-        Logger::Error("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, requestedType, index, reqestedGeneration, e->generation);
-    if (e->generation)
-        Logger::Error("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, requestedType, index, reqestedGeneration, e->generation);
+        Logger::Error("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", resource, requestedType, index, reqestedGeneration, e->generation);
+    if (e->generation != reqestedGeneration)
+        Logger::Error("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) last valid generation was %d", resource, requestedType, index, reqestedGeneration, e->generation);
 #endif
 
     return &(e->object);
