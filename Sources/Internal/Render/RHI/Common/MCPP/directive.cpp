@@ -51,8 +51,6 @@
 
 static int do_if(int hash, const char* directive_name);
 /* #if, #elif, #ifdef, #ifndef      */
-static void sync_linenum(void);
-/* Synchronize number of newlines   */
 static long do_line(void);
 /* Process #line directive          */
 static int get_parm(void);
@@ -509,24 +507,6 @@ static int do_if(int hash, const char* directive_name)
         compiling = FALSE;
     }
     return TRUE;
-}
-
-static void sync_linenum(void)
-/*
- * Put out newlines or #line line to synchronize line number with the
- * annotations about #if, #elif, #ifdef, #ifndef, #else or #endif on -K option.
- */
-{
-    if (wrong_line || newlines > 10)
-    {
-        sharp(NULL, 0);
-    }
-    else
-    {
-        while (newlines-- > 0)
-            mcpp_fputc('\n', MCPP_OUT);
-    }
-    newlines = -1;
 }
 
 static long do_line(void)

@@ -111,8 +111,6 @@ static char* cat_line(int del_bsl);
 /* Splice the line              */
 static void put_line(char* out, FILE* fp);
 /* Put out a logical line       */
-static void dump_token(int token_type, const char* cp);
-/* Dump a token and its type    */
 
 #define EXP_MAC_IND_MAX 16
 /* Information of current expanding macros for diagnostic   */
@@ -2085,7 +2083,6 @@ size_t* sizp /* Size of the comment  */
 {
     int c;
     char* saved_sp = NULL;
-    int cat_line = 0; /* Number of catenated lines    */
 
     if (keep_spaces)
     {
@@ -2165,7 +2162,6 @@ int in_comment)
     int converted = FALSE;
     int len; /* Line length - alpha  */
     char* ptr;
-    int cat_line = 0; /* Number of catenated lines    */
 
     if (infile == NULL) /* End of a source file */
         return NULL;
@@ -3029,22 +3025,6 @@ const char* why)
 
     for (file = infile; file != NULL; file = file->parent)
         dump_string(file->real_fname ? file->real_fname : file->filename ? file->filename : "NULL", file->bptr);
-}
-
-static void dump_token(
-int token_type,
-const char* cp /* Token        */
-)
-/*
- * Dump a token.
- */
-{
-    static const char* const t_type[] = {
-        "NAM", "NUM", "STR", "WSTR", "CHR", "WCHR", "OPE", "SPE", "SEP",
-    };
-
-    mcpp_fputs("token", MCPP_DBG);
-    dump_string(t_type[token_type - NAM], cp);
 }
 
 /*

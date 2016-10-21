@@ -196,17 +196,8 @@ bool KeyedArchive::Load(const uint8* data, uint32 size)
 
 bool KeyedArchive::LoadFromYamlFile(const FilePath& pathName)
 {
-    YamlParser* parser = YamlParser::Create(pathName);
-    if (nullptr == parser)
-    {
-        return false;
-    }
-
-    YamlNode* rootNode = parser->GetRootNode();
-    bool retValue = LoadFromYamlNode(rootNode);
-
-    SafeRelease(parser);
-    return retValue;
+    ScopedPtr<YamlParser> parser(YamlParser::Create(pathName));
+    return (parser.get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
 }
 
 bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)

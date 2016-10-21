@@ -78,8 +78,6 @@ static int look_type(int typecode);
 /* Look for type of the name    */
 static void dump_val(const char* msg, const VAL_SIGN* valp);
 /* Print value of an operand    */
-static void dump_stack(const OPTAB* opstack, const OPTAB* opp, const VAL_SIGN* value, const VAL_SIGN* valp);
-/* Print stacked operators      */
 
 /* For debug and error messages.    */
 static const char* const opname[OP_END + 1] = {
@@ -1757,50 +1755,6 @@ int ll_overflow /* Flag of overflow in long long    */
     {
         cerror(out_of_range, op_name, 0L, NULL);
         (*valpp)->sign = VAL_ERROR;
-    }
-}
-
-static void dump_val(
-const char* msg,
-const VAL_SIGN* valp)
-/*
- * Dump a value by internal representation.
- */
-{
-#if HAVE_LONG_LONG
-    const char* const format = "%s(%ssigned long long) 0x%016" LL_FORM "x";
-#else
-    const char* const format = "%s(%ssigned long) 0x%08lx";
-#endif
-    int sign = valp->sign;
-
-    mcpp_fprintf(MCPP_DBG, format, msg, sign ? "" : "un", valp->val);
-}
-
-static void dump_stack(
-const OPTAB* opstack, /* Operator stack               */
-const OPTAB* opp, /* Pointer into operator stack  */
-const VAL_SIGN* value, /* Value stack                  */
-const VAL_SIGN* valp /* -> value vector              */
-)
-/*
- * Dump stacked operators and values.
- */
-{
-    if (opstack < opp)
-        mcpp_fprintf(MCPP_DBG, "Index op prec skip name -- op stack at %s", infile->bptr);
-
-    while (opstack < opp)
-    {
-        mcpp_fprintf(MCPP_DBG, " [%2d] %2d %04o    %d %s\n", (int)(opp - opstack), opp->op, opp->prec, opp->skip, opname[opp->op]);
-        opp--;
-    }
-
-    while (value <= --valp)
-    {
-        mcpp_fprintf(MCPP_DBG, "value[%d].val = ", (int)(valp - value));
-        dump_val("", valp);
-        mcpp_fputc('\n', MCPP_DBG);
     }
 }
 

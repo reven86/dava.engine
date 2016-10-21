@@ -13,8 +13,8 @@ namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vertexProgText = nullptr;
-    char8* fragmentProgText = nullptr;
+    Vector<char> vertexProgText;
+    Vector<char> fragmentProgText;
 
     FilePath vertexProgSourcePath;
     FilePath fragmentProgSourcePath;
@@ -48,14 +48,7 @@ void Uninitialize()
 void Clear()
 {
     DVASSERT(initialized);
-
     LockGuard<Mutex> guard(shaderCacheMutex);
-
-    for (auto& it : shaderSourceCodes)
-    {
-        SafeDeleteArray(it.second.vertexProgText);
-        SafeDeleteArray(it.second.fragmentProgText);
-    }
     shaderSourceCodes.clear();
 }
 
@@ -105,14 +98,14 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
     if (fp)
     {
         uint32 fileSize = static_cast<uint32>(fp->GetSize());
-        sourceCode.vertexProgText = new char8[fileSize + 1];
+        sourceCode.vertexProgText.resize(fileSize + 1);
         sourceCode.vertexProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.vertexProgText), fileSize);
+        uint32 dataRead = fp->Read(sourceCode.vertexProgText.data(), fileSize);
         if (dataRead != fileSize)
         {
-            SafeDeleteArray(sourceCode.vertexProgText);
-
             loaded = false;
+            sourceCode.vertexProgText.resize(1);
+            sourceCode.vertexProgText.shrink_to_fit();
             Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
@@ -125,7 +118,7 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
 
     if (!loaded)
     {
-        sourceCode.vertexProgText = new char[1];
+        sourceCode.vertexProgText.resize(1);
         sourceCode.vertexProgText[0] = 0;
     }
 
@@ -135,13 +128,14 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
     if (fp)
     {
         uint32 fileSize = static_cast<uint32>(fp->GetSize());
-        sourceCode.fragmentProgText = new char8[fileSize + 1];
+        sourceCode.fragmentProgText.resize(fileSize + 1);
         sourceCode.fragmentProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read(reinterpret_cast<uint8*>(sourceCode.fragmentProgText), fileSize);
+        uint32 dataRead = fp->Read(sourceCode.fragmentProgText.data(), fileSize);
         if (dataRead != fileSize)
         {
-            SafeDeleteArray(sourceCode.fragmentProgText);
             loaded = false;
+            sourceCode.fragmentProgText.resize(1);
+            sourceCode.fragmentProgText.shrink_to_fit();
             Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
@@ -154,12 +148,12 @@ void LoadFromSource(const String& source, ShaderSourceCode& sourceCode)
 
     if (!loaded)
     {
-        sourceCode.fragmentProgText = new char[1];
+        sourceCode.fragmentProgText.resize(1);
         sourceCode.fragmentProgText[0] = 0;
     }
 
-    sourceCode.vSrcHash = HashValue_N(sourceCode.vertexProgText, static_cast<uint32>(strlen(sourceCode.vertexProgText)));
-    sourceCode.fSrcHash = HashValue_N(sourceCode.fragmentProgText, static_cast<uint32>(strlen(sourceCode.fragmentProgText)));
+    sourceCode.vSrcHash = HashValue_N(sourceCode.vertexProgText.data(), static_cast<uint32>(strlen(sourceCode.vertexProgText.data())));
+    sourceCode.fSrcHash = HashValue_N(sourceCode.fragmentProgText.data(), static_cast<uint32>(strlen(sourceCode.fragmentProgText.data())));
 }
 
 const ShaderSourceCode& GetSourceCode(const FastName& name)
@@ -242,7 +236,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    InitPreprocessing();
+    ShaderPreprocessScope preprocessScope;
 
     const ShaderSourceCode& sourceCode = GetSourceCode(name);
 
@@ -251,7 +245,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (vSource == nullptr)
     {
         char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-        Memcpy(localBuffer, sourceCode.vertexProgText, strlen(sourceCode.vertexProgText));
+        Memcpy(localBuffer, sourceCode.vertexProgText.data(), strlen(sourceCode.vertexProgText.data()));
         vSource2.Construct(rhi::PROG_VERTEX, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(vProgUid, sourceCode.vSrcHash, vSource2);
         vSource = &vSource2;
@@ -268,7 +262,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     if (fSource == nullptr)
     {
         char localBuffer[RHI_SHADER_SOURCE_BUFFER_SIZE] = {};
-        memcpy(localBuffer, sourceCode.fragmentProgText, strlen(sourceCode.fragmentProgText));
+        memcpy(localBuffer, sourceCode.fragmentProgText.data(), strlen(sourceCode.fragmentProgText.data()));
         fSource2.Construct(rhi::PROG_FRAGMENT, localBuffer, progDefines);
         rhi::ShaderSourceCache::Update(fProgUid, sourceCode.fSrcHash, fSource2);
         fSource = &fSource2;
@@ -304,7 +298,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         }
     }
     shaderDescriptors[key] = res;
-    ShutdownPreprocessing();
 
     return res;
 }
@@ -314,16 +307,9 @@ void ReloadShaders()
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
-
-    //clear cached source files
-    for (auto& it : shaderSourceCodes)
-    {
-        SafeDeleteArray(it.second.vertexProgText);
-        SafeDeleteArray(it.second.fragmentProgText);
-    }
     shaderSourceCodes.clear();
 
-    InitPreprocessing();
+    ShaderPreprocessScope preprocessScope;
 
     //reload shaders
     for (auto& shaderDescr : shaderDescriptors)
@@ -341,8 +327,8 @@ void ReloadShaders()
             progDefines.push_back(String(it.first.c_str()));
             progDefines.push_back(Format("%d", it.second));
         }
-        vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-        fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+        vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
+        fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
 
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vSource.SourceCode());
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fSource.SourceCode());
@@ -366,8 +352,6 @@ void ReloadShaders()
             shader->requiredVertexFormat = 0;
         }
     }
-
-    ShutdownPreprocessing();
 }
 }
 };

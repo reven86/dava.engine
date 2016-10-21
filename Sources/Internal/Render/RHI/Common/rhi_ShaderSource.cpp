@@ -162,8 +162,8 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
 
         while (!in->IsEof())
         {
-            char line[4 * 1024];
-            uint32 lineLen = in->ReadLine(line, sizeof(line));
+            char line[4 * 1024] = { };
+            in->ReadLine(line, sizeof(line));
             #if RHI__USE_STD_REGEX
             std::cmatch match;
             bool isComment = std::regex_match(line, match, comment_re);

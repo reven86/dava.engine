@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-void InitPreprocessing()
+ShaderPreprocessScope::ShaderPreprocessScope()
 {
     mcpp__startup();
 }
 
-void ShutdownPreprocessing()
+ShaderPreprocessScope::~ShaderPreprocessScope()
 {
     mcpp__shutdown();
 }

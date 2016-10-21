@@ -87,8 +87,6 @@ static void skip_macro(void);
 /* Skip the rest of macro call      */
 static void diag_macro(int severity, const char* format, const char* arg1, long arg2, const char* arg3, const DEFBUF* defp1, const DEFBUF* defp2);
 /* Supplement diagnostic information*/
-static void dump_args(const char* why, int nargs, const char** arglist);
-/* Dump arguments list              */
 
 static int rescan_level; /* Times of macro rescan    */
 
@@ -3120,24 +3118,6 @@ const DEFBUF* defp2 /*   2  */
         cerror(format, arg1, arg2, arg3);
     else
         cwarn(format, arg1, arg2, arg3);
-}
-
-static void dump_args(
-const char* why,
-int nargs,
-const char** arglist)
-/*
- * Dump arguments list.
- */
-{
-    int i;
-
-    mcpp_fprintf(MCPP_DBG, "dump of %d actual arguments %s\n", nargs, why);
-    for (i = 0; i < nargs; i++)
-    {
-        mcpp_fprintf(MCPP_DBG, "arg[%d]", i + 1);
-        dump_string(NULL, arglist[i]);
-    }
 }
 
 #ifdef __clang__

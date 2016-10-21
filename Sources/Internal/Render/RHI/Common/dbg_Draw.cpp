@@ -858,7 +858,7 @@ void DbgDraw::_init()
 {
     // init PTC
 
-    InitPreprocessing();
+    ShaderPreprocessScope preprocessScope;
 
     rhi::ShaderSource vp_ptc;
     rhi::ShaderSource fp_ptc;
@@ -912,8 +912,6 @@ void DbgDraw::_init()
         _pc_pipeline_state = rhi::AcquireRenderPipelineState(desc);
         rhi::CreateVertexConstBuffers(_pc_pipeline_state, 1, &_pc_const);
     }
-
-    ShutdownPreprocessing();
 
     // init small-font texture
     {
