@@ -96,7 +96,7 @@ private:
     StbTextEditBridge* stb = nullptr;
     WideString text;
     float32 cursorTime = 0.0f;
-    int32 maxLength;
+    int32 maxLength = 0;
     bool needRedraw = true;
     bool showCursor = true;
     bool isEditing = false;

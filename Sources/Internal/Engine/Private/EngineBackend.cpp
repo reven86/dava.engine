@@ -47,6 +47,8 @@
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
 #include "ModuleManager/ModuleManager.h"
+#include "Analytics/Analytics.h"
+#include "Analytics/LoggingBackend.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -85,9 +87,9 @@ EngineBackend::~EngineBackend()
     instance = nullptr;
 }
 
-void EngineBackend::EngineCreated(Engine* e)
+void EngineBackend::EngineCreated(Engine* engine_)
 {
-    engine = e;
+    engine = engine_;
     dispatcher->LinkToCurrentThread();
 }
 
@@ -96,13 +98,7 @@ void EngineBackend::EngineDestroyed()
     engine = nullptr;
 }
 
-void EngineBackend::SetOptions(KeyedArchive* options_)
-{
-    DVASSERT(options_ != nullptr);
-    options.Set(options_);
-}
-
-KeyedArchive* EngineBackend::GetOptions()
+const KeyedArchive* EngineBackend::GetOptions() const
 {
     return options.Get();
 }
@@ -131,9 +127,16 @@ Window* EngineBackend::InitializePrimaryWindow()
     return primaryWindow;
 }
 
-void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
+void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_)
 {
+    DVASSERT(isInitialized == false && "Engine::Init is called more than once");
+
     runMode = engineRunMode;
+    if (options_ != nullptr)
+    {
+        // For now simply transfer ownership without incrementing reference count
+        options.Set(options_);
+    }
 
     // Do not initialize PlatformCore in console mode as console mode is fully
     // implemented in EngineBackend
@@ -164,10 +167,14 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
     context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
+
+    isInitialized = true;
 }
 
 int EngineBackend::Run()
 {
+    DVASSERT(isInitialized == true && "Engine::Init is not called");
+
     if (IsConsoleMode())
     {
         RunConsole();
@@ -179,9 +186,9 @@ int EngineBackend::Run()
     return exitCode;
 }
 
-void EngineBackend::Quit(int exitCode)
+void EngineBackend::Quit(int exitCode_)
 {
-    this->exitCode = exitCode;
+    exitCode = exitCode_;
     switch (runMode)
     {
     case eEngineRunMode::GUI_STANDALONE:
@@ -511,7 +518,13 @@ void EngineBackend::PostUserCloseRequest()
 
 void EngineBackend::InitRenderer(Window* w)
 {
-    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
+    DVASSERT(rhi::ApiIsSupported(renderer));
+    if (!rhi::ApiIsSupported(renderer))
+    {
+        // Fall back to GL if given renderer is not supported
+        renderer = rhi::RHI_GLES2;
+    }
 
     rhi::InitParam rendererParams;
     rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
@@ -638,7 +651,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new PackManagerImpl;
+                context->packManager = new PackManagerImpl(*engine);
             }
         }
     }
@@ -653,10 +666,13 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     context->moduleManager = new ModuleManager();
     context->moduleManager->InitModules();
+
+    context->analyticsCore = new Analytics::Core;
 }
 
 void EngineBackend::DestroySubsystems()
 {
+    delete context->analyticsCore;
     context->moduleManager->ResetModules();
     delete context->moduleManager;
 

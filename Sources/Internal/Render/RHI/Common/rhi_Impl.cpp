@@ -756,14 +756,14 @@ TextureStride(TextureFormat format, Size2i size, uint32 level)
 
     case TEXTURE_FORMAT_DXT1:
     {
-        stride = (width * 8) / 4;
+        stride = 8 * std::max(1u, (width + 3) / 4);
     }
     break;
 
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
     {
-        stride = (width * 16) / 4;
+        stride = 16 * std::max(1u, (width + 3) / 4);
     }
     break;
 
