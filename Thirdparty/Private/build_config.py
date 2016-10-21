@@ -61,11 +61,11 @@ def get_cmake_generator_win10_x86():
 
 
 def get_cmake_generator_win10_x64():
-    return '{} Win64'.get_cmake_generator_win10_x86()
+    return '{} Win64'.format(get_cmake_generator_win10_x86())
 
 
 def get_cmake_generator_win10_arm():
-    return '{} ARM'.get_cmake_generator_win10_x86()
+    return '{} ARM'.format(get_cmake_generator_win10_x86())
 
 
 def get_cmake_generator_macos():
