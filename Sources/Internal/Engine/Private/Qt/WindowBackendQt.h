@@ -66,6 +66,7 @@ private:
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, float32 dpi) override;
     void OnVisibilityChanged(bool isVisible) override;
+    void OnFocusChanged(bool isFocused) override;
 
     void OnMousePressed(QMouseEvent* e) override;
     void OnMouseReleased(QMouseEvent* e) override;

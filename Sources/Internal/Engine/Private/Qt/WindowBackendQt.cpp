@@ -340,6 +340,11 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
+void WindowBackend::OnFocusChanged(bool isFocused)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isFocused));
+}
+
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;

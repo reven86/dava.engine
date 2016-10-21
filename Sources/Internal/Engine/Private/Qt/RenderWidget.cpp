@@ -102,10 +102,12 @@ bool RenderWidget::IsInitialized()
 void RenderWidget::OnActiveFocusItemChanged()
 {
     QQuickItem* item = quickWindow()->activeFocusItem();
-    if (item != nullptr)
+    bool focusRequested = item != nullptr;
+    if (focusRequested)
     {
         item->installEventFilter(this);
     }
+    widgetDelegate->OnFocusChanged(focusRequested);
 }
 
 void RenderWidget::OnSceneGraphInvalidated()

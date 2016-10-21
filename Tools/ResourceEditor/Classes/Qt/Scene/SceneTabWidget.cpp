@@ -301,12 +301,11 @@ void SceneTabWidget::SetCurrentTab(int index)
             curScene->SetViewportRect(dava3DView->GetRect());
 
             curScene->Activate();
-
-            if (renderWidget != nullptr)
-            {
-                renderWidget->setEnabled(true);
-            }
         }
+    }
+    if (renderWidget != nullptr)
+    {
+        renderWidget->setEnabled(true);
     }
 }
 
