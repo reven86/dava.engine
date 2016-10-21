@@ -33,20 +33,19 @@ int BaseApplication::RunImpl()
 
     // TODO remove this retain after merge with PR-2443
     SafeRetain(initInfo.options.Get());
-    e.SetOptions(initInfo.options.Get());
 
     e.cleanup.Connect(this, &BaseApplication::Cleanup);
 
     if (CommandLineParser::CommandIsFound("--selftest"))
     {
-        e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules);
+        e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
         TestCore testCore(e);
         return e.Run();
     }
     else
     {
-        e.Init(initInfo.runMode, initInfo.modules);
+        e.Init(initInfo.runMode, initInfo.modules, initInfo.options.Get());
 
         Core core(e);
         Init(&core);
