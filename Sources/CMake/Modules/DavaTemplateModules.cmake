@@ -218,7 +218,6 @@ macro( generated_initialization_module_code )
 				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
 				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
             elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "DYNAMIC" )
-                list( APPEND CTOR_CODE "    HMODULE _${ITEM} = LoadLibrary(L\"${NAMESPACE_PREFIX}${ITEM}\")\;\n")
             endif()
               
         endforeach()

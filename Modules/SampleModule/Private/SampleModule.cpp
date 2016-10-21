@@ -1,5 +1,3 @@
-#pragma once
-
 #include "SampleModule.h"
 
 namespace DAVA
