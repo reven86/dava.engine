@@ -1,5 +1,6 @@
 import os
 import build_utils
+import build_config
 
 
 def get_supported_targets(platform):
@@ -65,13 +66,21 @@ def _build_win32(working_directory_path, root_project_path):
     vc_solution_file_path = os.path.join(
         source_folder_path, 'win32/VS2010/libogg_static.sln')
     build_utils.build_vs(
-        vc_solution_file_path, 'Debug', 'Win32', 'libogg_static', 'v120')
+        vc_solution_file_path,
+        'Debug', 'Win32', 'libogg_static',
+        build_config.get_msvc_toolset_ver_win32())
     build_utils.build_vs(
-        vc_solution_file_path, 'Release', 'Win32', 'libogg_static', 'v120')
+        vc_solution_file_path,
+        'Release', 'Win32', 'libogg_static',
+        build_config.get_msvc_toolset_ver_win32())
     build_utils.build_vs(
-        vc_solution_file_path, 'Debug', 'x64', 'libogg_static', 'v120')
+        vc_solution_file_path,
+        'Debug', 'x64', 'libogg_static',
+        build_config.get_msvc_toolset_ver_win32())
     build_utils.build_vs(
-        vc_solution_file_path, 'Release', 'x64', 'libogg_static', 'v120')
+        vc_solution_file_path,
+        'Release', 'x64', 'libogg_static',
+        build_config.get_msvc_toolset_ver_win32())
 
 
 def _build_win10(working_directory_path, root_project_path):

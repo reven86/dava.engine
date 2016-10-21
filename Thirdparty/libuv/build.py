@@ -1,6 +1,7 @@
 import os
 import shutil
 import build_utils
+import build_config
 
 
 def get_supported_targets(platform):
@@ -57,7 +58,8 @@ def _build_win32(working_directory_path, root_project_path):
     os.makedirs(build_folder_path_x64_debug)
     os.makedirs(build_folder_path_x64_release)
 
-    x86_env = build_utils.get_vs_x86_env()
+    x86_env = build_utils.get_win32_vs_x86_env()
+    x86_env['GYP_MSVS_VERSION'] = build_config.get_gyp_msvs_version()
     build_utils.run_process(
         ['vcbuild.bat', 'debug', 'x86'],
         process_cwd=source_folder_path,
@@ -83,7 +85,8 @@ def _build_win32(working_directory_path, root_project_path):
         process_cwd=source_folder_path,
         shell=True)
 
-    x64_env = build_utils.get_vs_x64_env()
+    x64_env = build_utils.get_win32_vs_x64_env()
+    x64_env['GYP_MSVS_VERSION'] = build_config.get_gyp_msvs_version()
     build_utils.run_process(
         ['vcbuild.bat', 'debug', 'x64'],
         process_cwd=source_folder_path,

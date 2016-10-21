@@ -72,7 +72,7 @@ def _patch_sources(
         ['nmake', '/f', 'makefile.vc', 'setup-v10'],
         process_cwd=source_folder_path,
         shell=True,
-        environment=build_utils.get_vs_x86_env())
+        environment=build_utils.get_win32_vs_x86_env())
     build_utils.apply_patch(
         os.path.abspath(patch_file_path), working_directory_path)
 

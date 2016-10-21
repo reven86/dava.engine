@@ -75,8 +75,8 @@ def _build_win32(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
 
     configure_exec = ['perl', 'Configure']
-    vs_x86_env = build_utils.get_vs_x86_env()
-    vs_x64_env = build_utils.get_vs_x64_env()
+    vs_x86_env = build_utils.get_win32_vs_x86_env()
+    vs_x64_env = build_utils.get_win32_vs_x64_env()
 
     win32_configure_args_base = list(_configure_args)
     win32_configure_args_base.append('no-shared')

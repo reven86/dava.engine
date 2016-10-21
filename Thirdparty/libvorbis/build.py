@@ -1,6 +1,7 @@
 import os
 import shutil
 import build_utils
+import build_config
 
 
 def get_supported_targets(platform):
@@ -68,22 +69,22 @@ def _build_win32(working_directory_path, root_project_path):
     vc_solution_file_path = os.path.join(
         source_folder_path, 'win32/VS2010/vorbis_static.sln')
 
-    env = build_utils.get_vs_x86_env()
+    env = build_utils.get_win32_vs_x86_env()
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'Win32',
-        'libvorbis_static', 'v120', env=env)
+        'libvorbis_static', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'Win32',
-        'libvorbis_static', 'v120', env=env)
+        'libvorbis_static', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'Win32',
-        'libvorbisfile', 'v120', env=env)
+        'libvorbisfile', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'Win32',
-        'libvorbisfile', 'v120', env=env)
+        'libvorbisfile', build_config.get_msvc_toolset_ver_win32(), env=env)
 
-    env = build_utils.get_vs_x64_env()
+    env = build_utils.get_win32_vs_x64_env()
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'x64',
@@ -164,21 +165,21 @@ def _build_win10(working_directory_path, root_project_path):
     vc_solution_file_path = os.path.join(
         source_folder_path, 'win32/VS2010/vorbis_static.sln')
 
-    env = build_utils.get_vs15_x86_env()
+    env = build_utils.get_win10_vs_x86_env()
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'Win32', 'libvorbis_static', env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'Win32', 'libvorbis_static', env=env)
 
-    env = build_utils.get_vs15_x64_env()
+    env = build_utils.get_win10_vs_x64_env()
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'x64', 'libvorbis_static', env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'x64', 'libvorbis_static', env=env)
 
-    env = build_utils.get_vs15_arm_env()
+    env = build_utils.get_win10_vs_arm_env()
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'ARM', 'libvorbis_static', env=env)

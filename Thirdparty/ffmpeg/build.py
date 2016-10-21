@@ -97,8 +97,8 @@ def _build_win32(working_directory_path, root_project_path):
         '--enable-gpl --enable-postproc')
     configure_args_release_template = configure_args_debug_template + ' --disable-debug'
 
-    env_x86 = build_utils.get_vs_x86_env()
-    env_x64 = build_utils.get_vs_x64_env()
+    env_x86 = build_utils.get_win32_vs_x86_env()
+    env_x64 = build_utils.get_win32_vs_x64_env()
     env_x86['PATH'] = c99_to_c89_folder_path + ';' + env_x86['PATH']
     env_x64['PATH'] = c99_to_c89_folder_path + ';' + env_x64['PATH']
 

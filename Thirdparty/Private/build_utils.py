@@ -10,9 +10,11 @@ import build_config
 
 verbose = False
 
+
 def print_verbose(msg):
     if verbose:
         print msg
+
 
 def download(url, file_name):
     path = os.path.dirname(file_name)
@@ -22,7 +24,7 @@ def download(url, file_name):
     u = urllib2.urlopen(url)
     f = open(file_name, 'wb')
     meta = u.info()
-    
+
     content_length = meta.getheaders("Content-Length")
 
     if content_length:
@@ -49,9 +51,11 @@ def download(url, file_name):
 
     f.close()
 
+
 def download_if_doesnt_exist(url, file_name):
     if not os.path.exists(file_name):
         download(url, file_name)
+
 
 def unzip_inplace(path):
     print "Unarchiving %s ..." % (path)
@@ -64,6 +68,7 @@ def unzip_inplace(path):
     ref.extractall(os.path.dirname(path))
     ref.close()
 
+
 def apply_patch(patch, working_dir = '.'):
     print "Applying patch %s" % patch
     proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = working_dir)
@@ -73,6 +78,7 @@ def apply_patch(patch, working_dir = '.'):
     if proc.returncode != 0:
         print "Failed with return code %s" % proc.returncode
         raise
+
 
 def build_vs(project, configuration, platform='Win32', target = None, toolset = None, env=None):
     print "Building %s for %s ..." % (project, configuration)
@@ -92,6 +98,7 @@ def build_vs(project, configuration, platform='Win32', target = None, toolset = 
         print "Failed with return code %s" % proc.returncode
         raise
 
+
 def build_xcode_target(project, target, configuration):
     print "Building %s for %s ..." % (project, configuration)
     proc = subprocess.Popen(["xcodebuild", "-project", project, "-target", target, "-configuration", configuration, "build"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -101,6 +108,7 @@ def build_xcode_target(project, target, configuration):
     if proc.returncode != 0:
         print "Failed with return code %s" % proc.returncode
         raise
+
 
 def build_xcode_alltargets(project, configuration):
     print "Building %s for %s ..." % (project, configuration)
@@ -112,10 +120,12 @@ def build_xcode_alltargets(project, configuration):
         print "Failed with return code %s" % proc.returncode
         raise
 
+
 def copy_files(from_dir, to_dir, wildcard):
     print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
     for file in glob.glob(from_dir+"/"+wildcard):
         shutil.copy(file, to_dir)
+
 
 def clean_copy_includes(from_dir, to_dir):
     print "Copying includes from %s to %s" % (from_dir, to_dir)
@@ -123,9 +133,11 @@ def clean_copy_includes(from_dir, to_dir):
         shutil.rmtree(to_dir)
     shutil.copytree(from_dir, to_dir)
 
+
 def clear_files(dir, wildcard):
     print "Deleting %s in %s" % (wildcard, dir)
     map(os.remove, glob.glob(wildcard))
+
 
 def copy_folder_recursive(src, dest, ignore=None):
     if os.path.isdir(src):
@@ -144,8 +156,10 @@ def copy_folder_recursive(src, dest, ignore=None):
     else:
         shutil.copyfile(src, dest)
 
+
 def cmake_build(solution_folder_path, configuration):
     run_process("cmake --build . --config " + configuration, process_cwd=solution_folder_path, shell=True)
+
 
 def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args = []):
     if not os.path.exists(output_folder_path):
@@ -161,19 +175,22 @@ def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_a
         print_verbose(line)
     sp.wait()
 
+
 def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator, sln_name, target, configuration, cmake_additional_args = []):
     cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
     build_vs(os.path.join(output_folder_path, sln_name), 'Debug', configuration, target)
     build_vs(os.path.join(output_folder_path, sln_name), 'Release', configuration, target)
 
+
 def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_generator, project, target, cmake_additional_args = []):
     cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
     build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
 
+
 def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi):
     if not os.path.exists(output_folder_path):
         os.makedirs(output_folder_path)
- 
+
     cmd = ['cmake', '-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath, '-DANDROID_NDK=' + android_ndk_path, '-DCMAKE_BUILD_TYPE=Release', '-DANDROID_ABI=' + abi]
     if (sys.platform == 'win32'):
         cmd.extend(['-G', 'MinGW Makefiles', '-DCMAKE_MAKE_PROGRAM=' + os.path.join(android_ndk_path, 'prebuilt\\windows-x86_64\\bin\\make.exe')])
@@ -189,6 +206,7 @@ def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_file
     for line in sp.stdout:
         print_verbose(line)
     sp.wait()
+
 
 def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []):
     cmd = ['ndk-build', 'NDK_OUT=' + output_path]
@@ -209,6 +227,7 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
         print_verbose(line)
     sp.wait()
 
+
 def get_android_ndk_path(root_project_path):
     config_file_path = os.path.join(root_project_path, 'DavaConfig.in')
     for line in open(config_file_path):
@@ -219,8 +238,10 @@ def get_android_ndk_path(root_project_path):
 
     return None
 
+
 def get_url_file_name(url):
     return url.split('/')[-1]
+
 
 def get_url_file_name_no_ext(url):
     file_name = get_url_file_name(url)
@@ -233,6 +254,7 @@ def get_url_file_name_no_ext(url):
     else:
         last_index = -1
     return '.'.join(parts[:last_index])
+
 
 def download_and_extract(download_url, working_directory_path, result_folder_path, inner_dir_name = None):
     download_data = (download_url, result_folder_path)
@@ -260,10 +282,12 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
     download_and_extract.cache.append(download_data)
 
+
 def run_process(args, process_cwd='.', environment=None, shell=False):
     print 'running process: ' + ' '.join(args)
     for output_line in _run_process_iter(args, process_cwd, environment, shell):
         print_verbose(output_line)
+
 
 def _run_process_iter(args, process_cwd='.', environment=None, shell=False):
     if environment is None:
@@ -281,6 +305,7 @@ def _run_process_iter(args, process_cwd='.', environment=None, shell=False):
     if return_code != 0:
         raise subprocess.CalledProcessError(return_code, args)
 
+
 def android_ndk_make_toolchain(root_project_path, arch, platform, system, install_dir):
     android_ndk_root = get_android_ndk_path(root_project_path)
 
@@ -288,6 +313,7 @@ def android_ndk_make_toolchain(root_project_path, arch, platform, system, instal
 
     cmd = ['sh', 'make-standalone-toolchain.sh', '--arch=' + arch, '--platform=' + platform, '--system=' + system, '--install-dir=' + install_dir, '--ndk-dir=' + android_ndk_root]
     run_process(cmd, process_cwd=exec_path)
+
 
 def get_xcode_developer_path():
     sp = subprocess.Popen(['xcode-select', '-print-path'], stdout=subprocess.PIPE)
@@ -298,6 +324,7 @@ def get_xcode_developer_path():
         print 'Error while getting xcode developer path: ' + stderr
         return None
 
+
 def make_fat_darwin_binary(input_files_pathes, output_file_path):
     output_directory_path = os.path.dirname(output_file_path)
     if not os.path.exists(output_directory_path):
@@ -306,6 +333,7 @@ def make_fat_darwin_binary(input_files_pathes, output_file_path):
     args = ['lipo', '-output', output_file_path, '-create']
     args.extend(input_files_pathes)
     run_process(args)
+
 
 def get_autotools_macos_env():
     xcode_developer_path = get_xcode_developer_path()
@@ -324,6 +352,7 @@ def get_autotools_macos_env():
 
     return env
 
+
 def get_autotools_ios_env():
     xcode_developer_path = get_xcode_developer_path()
     cc_path = os.path.join(xcode_developer_path, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/clang')
@@ -340,6 +369,7 @@ def get_autotools_ios_env():
     env['CXXCPP'] = '{} -E'.format(env['CXX'])
 
     return env
+
 
 def get_autotools_android_arm_env(root_project_path, enable_stl=False):
     android_ndk_folder_path = get_android_ndk_path(root_project_path)
@@ -371,6 +401,7 @@ def get_autotools_android_arm_env(root_project_path, enable_stl=False):
 
     return env
 
+
 def get_autotools_android_x86_env(root_project_path, enable_stl=False):
     android_ndk_folder_path = get_android_ndk_path(root_project_path)
     android_prefix = os.path.join(android_ndk_folder_path, 'toolchains/x86-4.9/prebuilt/darwin-x86_64')
@@ -401,20 +432,26 @@ def get_autotools_android_x86_env(root_project_path, enable_stl=False):
 
     return env
 
-def get_vs_x86_env():
-    return _get_vs_env(build_config.vc12_path, 'x86')
 
-def get_vs_x64_env():
-    return _get_vs_env(build_config.vc12_path, 'x86_amd64')
+def get_win32_vs_x86_env():
+    return _get_vs_env(build_config.get_vs_vc_path_win32(), 'x86')
 
-def get_vs15_x86_env():
-    return _get_vs_env(build_config.vc15_path, 'x86')
 
-def get_vs15_x64_env():
-    return _get_vs_env(build_config.vc15_path, 'x86_amd64')
+def get_win32_vs_x64_env():
+    return _get_vs_env(build_config.get_vs_vc_path_win32(), 'x86_amd64')
 
-def get_vs15_arm_env():
-    return _get_vs_env(build_config.vc15_path, 'x86_arm')
+
+def get_win10_vs_x86_env():
+    return _get_vs_env(build_config._get_vs_vc_path_win10(), 'x86')
+
+
+def get_win10_vs_x64_env():
+    return _get_vs_env(build_config._get_vs_vc_path_win10(), 'x86_amd64')
+
+
+def get_win10_vs_arm_env():
+    return _get_vs_env(build_config._get_vs_vc_path_win10(), 'x86_arm')
+
 
 def _get_vs_env(vs_path, arch):
     vsvars_path = '{}/vcvarsall.bat'.format(vs_path)
@@ -436,6 +473,7 @@ def _get_vs_env(vs_path, arch):
 
 # Default builders
 
+
 def build_and_copy_libraries_win32_cmake(
         gen_folder_path, source_folder_path, root_project_path,
         solution_name, target_name,
@@ -448,11 +486,11 @@ def build_and_copy_libraries_win32_cmake(
     build_x64_folder = os.path.join(gen_folder_path, 'build_win32_x64')
 
     # Generate & build
-    cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.win32_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
-    cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.win32_x64_cmake_generator, solution_name, target_name, 'x64', cmake_additional_args)
-    
+    cmake_generate_build_vs(build_x86_folder, source_folder_path, build_config.get_cmake_generator_win32_x86(), solution_name, target_name, 'Win32', cmake_additional_args)
+    cmake_generate_build_vs(build_x64_folder, source_folder_path, build_config.get_cmake_generator_win32_x64(), solution_name, target_name, 'x64', cmake_additional_args)
+
     # Move built files into Libs/lib_CMake
-    # TODO: update pathes after switching to new folders structure  
+    # TODO: update pathes after switching to new folders structure
 
     lib_path_x86_debug = os.path.join(build_x86_folder, os.path.join(target_lib_subdir, 'Debug', built_lib_name_debug))
     lib_path_x86_release = os.path.join(build_x86_folder, os.path.join(target_lib_subdir, 'Release', built_lib_name_release))
@@ -463,8 +501,9 @@ def build_and_copy_libraries_win32_cmake(
     shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x86/Release', result_lib_name_x86_release)))
     shutil.copyfile(lib_path_x64_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x64/Debug', result_lib_name_x64_debug)))
     shutil.copyfile(lib_path_x64_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x64/Release', result_lib_name_x64_release)))
-    
+
     return (build_x86_folder, build_x64_folder)
+
 
 def build_and_copy_libraries_win10_cmake(
         gen_folder_path, source_folder_path, root_project_path,
@@ -483,9 +522,9 @@ def build_and_copy_libraries_win10_cmake(
     cmake_additional_args.extend(cmake_win10_flags)
 
     # Generate & build
-    cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, build_config.win10_x86_cmake_generator, solution_name, target_name, 'Win32', cmake_additional_args)
-    cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, build_config.win10_x64_cmake_generator, solution_name, target_name, 'x64', cmake_additional_args)
-    cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, build_config.win10_arm_cmake_generator, solution_name, target_name, 'ARM', cmake_additional_args)
+    cmake_generate_build_vs(build_win10_x86_folder, source_folder_path, build_config.get_cmake_generator_win10_x86(), solution_name, target_name, 'Win32', cmake_additional_args)
+    cmake_generate_build_vs(build_win10_x64_folder, source_folder_path, build_config.get_cmake_generator_win10_x64(), solution_name, target_name, 'x64', cmake_additional_args)
+    cmake_generate_build_vs(build_win10_arm_folder, source_folder_path, build_config.get_cmake_generator_win10_arm(), solution_name, target_name, 'ARM', cmake_additional_args)
 
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure  
@@ -506,6 +545,7 @@ def build_and_copy_libraries_win10_cmake(
 
     return (build_win10_x86_folder, build_win10_x64_folder, build_win10_arm_folder)
 
+
 def build_and_copy_libraries_macos_cmake(
         gen_folder_path, source_folder_path, root_project_path,
         project_name, target_name,
@@ -525,6 +565,7 @@ def build_and_copy_libraries_macos_cmake(
 
     return build_folder_macos
 
+
 def build_and_copy_libraries_ios_cmake(
         gen_folder_path, source_folder_path, root_project_path,
         project_name, target_name,
@@ -537,7 +578,7 @@ def build_and_copy_libraries_ios_cmake(
     cmake_additional_args.append('-DCMAKE_TOOLCHAIN_FILE=' + toolchain_filepath)
 
     cmake_generate_build_xcode(build_folder_ios, source_folder_path, build_config.macos_cmake_generator, project_name, target_name, cmake_additional_args)
-    
+
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure
 
@@ -546,6 +587,7 @@ def build_and_copy_libraries_ios_cmake(
     shutil.copyfile(lib_path_ios_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/ios', result_lib_name_release)))
 
     return build_folder_ios
+
 
 def build_and_copy_libraries_android_cmake(
         gen_folder_path, source_folder_path, root_project_path,
@@ -572,6 +614,7 @@ def build_and_copy_libraries_android_cmake(
     shutil.copyfile(lib_path_android_x86, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/android/x86', result_lib_name_release)))
 
     return (build_android_x86_folder, build_android_armeabiv7a_folder)
+
 
 def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make', postclean=True):
     if isinstance(configure_exec_name, list):

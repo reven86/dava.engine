@@ -1,7 +1,7 @@
 import os
 import shutil
 import build_utils
-
+import build_config
 
 def get_supported_targets(platform):
     if platform == 'win32':
@@ -72,23 +72,31 @@ def _build_win32(working_directory_path, root_project_path):
             working_directory_path,
             '../libogg/libogg_source/include'))
 
-    env = build_utils.get_vs_x86_env()
+    env = build_utils.get_win32_vs_x86_env()
     env['INCLUDE'] = libogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path,
-        'Debug', 'Win32', 'libtheora_static', 'v120', env=env)
+        'Debug', 'Win32', 'libtheora_static',
+        build_config.get_msvc_toolset_ver_win32(),
+        env=env)
     build_utils.build_vs(
         vc_solution_file_path,
-        'Release', 'Win32', 'libtheora_static', 'v120', env=env)
+        'Release', 'Win32', 'libtheora_static',
+        build_config.get_msvc_toolset_ver_win32(),
+        env=env)
 
-    env = build_utils.get_vs_x64_env()
+    env = build_utils.get_win32_vs_x64_env()
     env['INCLUDE'] = libogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path,
-        'Debug', 'x64', 'libtheora_static', 'v120', env=env)
+        'Debug', 'x64', 'libtheora_static',
+        build_config.get_msvc_toolset_ver_win32(),
+        env=env)
     build_utils.build_vs(
         vc_solution_file_path,
-        'Release', 'x64', 'libtheora_static', 'v120', env=env)
+        'Release', 'x64', 'libtheora_static',
+        build_config.get_msvc_toolset_ver_win32(),
+        env=env)
 
     libraries_win_root = os.path.join(root_project_path, 'Libs/lib_CMake/win')
 
@@ -129,7 +137,7 @@ def _build_win10(working_directory_path, root_project_path):
         working_directory_path,
         '../libogg/libogg_source_win10/include'))
 
-    env = build_utils.get_vs15_x86_env()
+    env = build_utils.get_win10_vs_x86_env()
     env['INCLUDE'] = libogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path,
@@ -138,7 +146,7 @@ def _build_win10(working_directory_path, root_project_path):
         vc_solution_file_path,
         'Release', 'Win32', 'libtheora_static', env=env)
 
-    env = build_utils.get_vs15_x64_env()
+    env = build_utils.get_win10_vs_x64_env()
     env['INCLUDE'] = libogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path,
@@ -147,7 +155,7 @@ def _build_win10(working_directory_path, root_project_path):
         vc_solution_file_path,
         'Release', 'x64', 'libtheora_static', env=env)
 
-    env = build_utils.get_vs15_arm_env()
+    env = build_utils.get_win10_vs_arm_env()
     env['INCLUDE'] = libogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path,

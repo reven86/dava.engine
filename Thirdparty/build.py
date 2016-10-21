@@ -7,6 +7,7 @@ import sys
 import traceback
 import shutil
 import stat
+import time
 
 
 # Allow importing from Private folder
@@ -253,12 +254,14 @@ if __name__ == "__main__":
         print 'Selected libraries: ' + str(libraries_to_process)
         print 'Selected targets: ' + str(targets_to_process) + '\n'
         failed = []
+        start = time.time()
         for lib in libraries_to_process:
             result = build_library(lib, targets_to_process, args.skip_dependencies)
             if result is False:
                 failed.append(lib)
                 if not args.ignore_errors:
                     break
+        end = time.time()
 
         if not failed:
             print '\nFinished. Successfully built: {} library(s)'.format(
@@ -266,6 +269,9 @@ if __name__ == "__main__":
         else:
             print '\nFinished. Builders failed for these libraries: {}'.format(
                 str(failed))
+
+        time_spent = end - start
+        print 'Time spent: ' + str(round(time_spent, 1)) + ' seconds'
 
         # Clean
         if not args.no_clean:
