@@ -579,7 +579,7 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
     if (packageRef.Get() != nullptr)
     {
-        Document* document = new Document(packageRef, this);
+        Document* document = new Document(packageRef, nullptr, this); //TODO fix
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
         return document;

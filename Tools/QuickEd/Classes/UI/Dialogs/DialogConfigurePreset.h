@@ -1,20 +1,25 @@
-#ifndef __DIALOG_CONFIGURE_RESET_H__
-#define __DIALOG_CONFIGURE_RESET_H__
+#pragma once
 
-#include "ui_DialogConfigurePreset.h"
+#include <QDialog>
+#include <memory>
 
+class EditorFontSystem;
 namespace DAVA
 {
 class Font;
 }
+namespace Ui
+{
+class DialogConfigurePreset;
+}
 
-class DialogConfigurePreset : public QDialog, public Ui::DialogConfigurePreset
+class DialogConfigurePreset : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit DialogConfigurePreset(const QString& originalPresetName, QWidget* parent = nullptr);
-    ~DialogConfigurePreset() = default;
+    explicit DialogConfigurePreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
+    ~DialogConfigurePreset();
 private slots:
     void initPreset();
     void OnDefaultFontChanged(const QString& arg);
@@ -32,7 +37,8 @@ private:
     void UpdateDefaultFontWidgets();
     void UpdateLocalizedFontWidgets();
     void SetFont(const QString& font, const int fontSize, const QString& locale);
-    const QString originalPresetName;
-};
 
-#endif // __DIALOG_CONFIGURE_RESET_H__
+    std::unique_ptr<Ui::DialogConfigurePreset> ui;
+    const QString originalPresetName;
+    EditorFontSystem* editorFontSystem = nullptr;
+};

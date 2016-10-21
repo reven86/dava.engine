@@ -1,33 +1,40 @@
 #include "DialogAddPreset.h"
-#include "EditorCore.h"
+
+#include "Project/EditorFontSystem.h"
+#include "ui_DialogAddPreset.h"
 
 #include <QCompleter>
+#include <QPushButton>
 
 using namespace DAVA;
 
-DialogAddPreset::DialogAddPreset(const QString& originalPresetNameArg, QWidget* parent)
+DialogAddPreset::DialogAddPreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetNameArg, QWidget* parent)
     : QDialog(parent)
+    , ui(new Ui::DialogAddPreset())
+    , editorFontSystem(aEditorFontSystem)
 {
-    setupUi(this);
-    comboBox_baseFontPresetName->addItem("");
-    comboBox_baseFontPresetName->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
-    comboBox_baseFontPresetName->setCurrentText(originalPresetNameArg);
-    lineEdit_newFontPresetName->setText(originalPresetNameArg);
+    ui->setupUi(this);
+    ui->comboBox_baseFontPresetName->addItem("");
+    ui->comboBox_baseFontPresetName->addItems(editorFontSystem->GetDefaultPresetNames());
+    ui->comboBox_baseFontPresetName->setCurrentText(originalPresetNameArg);
+    ui->lineEdit_newFontPresetName->setText(originalPresetNameArg);
 
-    lineEdit_newFontPresetName->setCompleter(new QCompleter(GetEditorFontSystem()->GetDefaultPresetNames(), lineEdit_newFontPresetName));
+    ui->lineEdit_newFontPresetName->setCompleter(new QCompleter(editorFontSystem->GetDefaultPresetNames(), ui->lineEdit_newFontPresetName));
 
-    connect(lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
-    connect(comboBox_baseFontPresetName, &QComboBox::currentTextChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &DialogAddPreset::reject);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &DialogAddPreset::OnAccept);
+    connect(ui->lineEdit_newFontPresetName, &QLineEdit::textChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
+    connect(ui->comboBox_baseFontPresetName, &QComboBox::currentTextChanged, this, &DialogAddPreset::OnNewPresetNameChanged);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &DialogAddPreset::reject);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &DialogAddPreset::OnAccept);
 
     OnNewPresetNameChanged();
 }
 
+DialogAddPreset::~DialogAddPreset() = default;
+
 void DialogAddPreset::OnNewPresetNameChanged()
 {
-    QString baseName = comboBox_baseFontPresetName->currentText();
-    QString newName = lineEdit_newFontPresetName->text();
+    QString baseName = ui->comboBox_baseFontPresetName->currentText();
+    QString newName = ui->lineEdit_newFontPresetName->text();
     QString resultText;
     bool enabled = false;
     if (newName.isEmpty())
@@ -40,7 +47,7 @@ void DialogAddPreset::OnNewPresetNameChanged()
         enabled = false;
         resultText = tr("names match!");
     }
-    else if (GetEditorFontSystem()->GetDefaultPresetNames().contains(newName))
+    else if (editorFontSystem->GetDefaultPresetNames().contains(newName))
     {
         enabled = false;
         resultText = tr("This preset name already exists in the system");
@@ -50,16 +57,16 @@ void DialogAddPreset::OnNewPresetNameChanged()
         enabled = true;
         resultText = tr("New font preset will be created");
     }
-    label_info->setText(resultText);
-    buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
+    ui->label_info->setText(resultText);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
 
 void DialogAddPreset::OnAccept()
 {
-    auto editorFontSystem = GetEditorFontSystem();
-    if (!editorFontSystem->GetDefaultPresetNames().contains(lineEdit_newFontPresetName->text()))
+    if (!editorFontSystem->GetDefaultPresetNames().contains(ui->lineEdit_newFontPresetName->text()))
     {
-        editorFontSystem->CreateNewPreset(comboBox_baseFontPresetName->currentText().toStdString(), lineEdit_newFontPresetName->text().toStdString());
+        editorFontSystem->CreateNewPreset(ui->comboBox_baseFontPresetName->currentText().toStdString(),
+                                          ui->lineEdit_newFontPresetName->text().toStdString());
         editorFontSystem->SaveLocalizedFonts();
     }
     accept();

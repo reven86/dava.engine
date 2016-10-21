@@ -13,23 +13,16 @@
 
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(Project,
-                              PREF_ARG("projectsHistory", DAVA::String()),
-                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
-                              )
-
 Project::Project(QObject* parent)
     : QObject(parent)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , isOpen(false)
 {
-    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 Project::~Project()
 {
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 bool Project::Open(const QString& path)
@@ -79,6 +72,24 @@ bool Project::OpenInternal(const QString& path)
     YamlNode* projectRoot = parser->GetRootNode();
     if (nullptr != projectRoot)
     {
+        const YamlNode* dataFoldersNode = projectRoot->Get("DataFolders");
+
+        // Get font node
+        if (nullptr != dataFoldersNode)
+        {
+            for (uint32 i = 0; i < dataFoldersNode->GetCount(); i++)
+            {
+                auto it = dataFoldersNode->Get(i)->AsMap().begin();
+                String key = it->first;
+                FilePath path = FilePath(projectPath.GetAbsolutePathname() + it->second->AsString());
+                dataFolders.push_back(std::make_pair(key, path));
+            }
+        }
+        else
+        {
+            dataFolders.push_back(std::make_pair("Default", "./Data/"));
+        }
+
         const YamlNode* fontNode = projectRoot->Get("font");
 
         // Get font node
@@ -223,14 +234,14 @@ void Project::SetIsOpen(bool arg)
     {
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
         QString newProjectPath = GetProjectPath() + GetProjectName();
-        QStringList projectsPathes = GetProjectsHistory();
-        projectsPathes.removeAll(newProjectPath);
-        projectsPathes += newProjectPath;
-        while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
-        {
-            projectsPathes.removeFirst();
-        }
-        projectsHistory = projectsPathes.join('\n').toStdString();
+        //         QStringList projectsPathes = GetProjectsHistory(); TODO fix
+        //         projectsPathes.removeAll(newProjectPath);
+        //         projectsPathes += newProjectPath;
+        //         while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
+        //         {
+        //             projectsPathes.removeFirst();
+        //         }
+        //         projectsHistory = projectsPathes.join('\n').toStdString();
     }
     emit IsOpenChanged(arg);
 }
@@ -243,12 +254,6 @@ QString Project::GetProjectPath() const
 QString Project::GetProjectName() const
 {
     return projectName;
-}
-
-QStringList Project::GetProjectsHistory() const
-{
-    QString history = QString::fromStdString(projectsHistory);
-    return history.split("\n", QString::SkipEmptyParts);
 }
 
 void Project::SetProjectPath(QString arg)

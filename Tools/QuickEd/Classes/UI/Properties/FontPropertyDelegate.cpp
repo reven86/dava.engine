@@ -24,7 +24,7 @@ QWidget* FontPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionV
     QComboBox* comboBox = new QComboBox(parent);
     comboBox->setObjectName("comboBox");
     comboBox->addItem("");
-    comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
+    //comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());TODO fix
     connect(comboBox, &QComboBox::currentTextChanged, this, &FontPropertyDelegate::valueChanged);
     return comboBox;
 }
@@ -80,12 +80,12 @@ void FontPropertyDelegate::addPresetClicked()
     if (!editor)
         return;
     QComboBox* comboBox = editor->findChild<QComboBox*>("comboBox");
-    DialogAddPreset dialogAddPreset(comboBox->currentText(), qApp->activeWindow());
+    DialogAddPreset dialogAddPreset(nullptr, comboBox->currentText(), qApp->activeWindow());
     if (dialogAddPreset.exec())
     {
         comboBox->clear();
-        comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());
-        comboBox->setCurrentText(dialogAddPreset.lineEdit_newFontPresetName->text());
+        //comboBox->addItems(GetEditorFontSystem()->GetDefaultPresetNames());TODO fix
+        //comboBox->setCurrentText(dialogAddPreset.lineEdit_newFontPresetName->text());TODO fix
 
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
@@ -103,7 +103,7 @@ void FontPropertyDelegate::configurePresetClicked()
         return;
 
     QComboBox* comboBox = editor->findChild<QComboBox*>("comboBox");
-    DialogConfigurePreset dialogConfigurePreset(comboBox->currentText(), qApp->activeWindow());
+    DialogConfigurePreset dialogConfigurePreset(nullptr, comboBox->currentText(), qApp->activeWindow()); //TODO fix
     if (dialogConfigurePreset.exec())
     {
         BasePropertyDelegate::SetValueModified(editor, true);

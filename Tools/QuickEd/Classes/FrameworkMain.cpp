@@ -7,6 +7,10 @@ using namespace DAVA;
 
 void FrameworkDidLaunched()
 {
+    FileSystem* fs = FileSystem::Instance();
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
+
     KeyedArchive* appOptions = new KeyedArchive();
 
     appOptions->SetInt32("fullscreen", 0);

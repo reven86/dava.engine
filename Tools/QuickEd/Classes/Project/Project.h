@@ -10,7 +10,7 @@
 class PackageNode;
 class QFileInfo;
 
-class Project : public QObject, public DAVA::InspBase
+class Project : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
@@ -43,8 +43,6 @@ public:
     QString GetProjectPath() const;
     QString GetProjectName() const;
 
-    QStringList GetProjectsHistory() const;
-
 signals:
     void IsOpenChanged(bool arg);
     void ProjectPathChanged(QString arg);
@@ -58,16 +56,8 @@ private:
     bool isOpen = false;
     DAVA::FilePath projectPath;
     DAVA::Vector<DAVA::FilePath> libraryPackages;
+    DAVA::Vector<std::pair<DAVA::String, DAVA::FilePath>> dataFolders;
     QString projectName;
-    DAVA::String projectsHistory;
-    DAVA::uint32 projectsHistorySize;
-
-public:
-    INTROSPECTION(Project,
-                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                  //maximum size of projects history
-                  MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
-                  )
 };
 
 #endif // QUICKED__PROJECT_H__

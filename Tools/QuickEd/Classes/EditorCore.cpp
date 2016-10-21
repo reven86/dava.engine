@@ -16,14 +16,17 @@
 
 using namespace DAVA;
 
-REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
+REGISTER_PREFERENCES_ON_START(EditorCore,
+                              PREF_ARG("isUsingAssetCache", false),
+                              PREF_ARG("projectsHistory", DAVA::String()),
+                              PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
+                              )
 
 EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , Singleton<EditorCore>()
     , spritesPacker(std::make_unique<SpritesPacker>())
     , cacheClient(nullptr)
-    , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
@@ -35,15 +38,10 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
-    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
+    mainWindow->RebuildRecentMenu(GetProjectsHistory());
 
-    connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
-    connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
-    connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    connect(project, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
-    connect(project, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
-    connect(project, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
+    connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
 
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
@@ -53,11 +51,6 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-
-    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
-    EditorLocalizationSystem* editorLocalizationSystem = project->GetEditorLocalizationSystem();
-    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
-    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
     auto previewWidget = mainWindow->previewWidget;
 
@@ -105,10 +98,10 @@ MainWindow* EditorCore::GetMainWindow() const
     return mainWindow.get();
 }
 
-Project* EditorCore::GetProject() const
-{
-    return project;
-}
+// Project* EditorCore::GetProject() const
+// {
+//     return project;
+// }
 
 void EditorCore::Start()
 {
@@ -140,7 +133,7 @@ void EditorCore::OnReloadSpritesFinished()
 
 void EditorCore::OnGLWidgedInitialized()
 {
-    QStringList projectsPathes = project->GetProjectsHistory();
+    QStringList projectsPathes = GetProjectsHistory();
     if (!projectsPathes.isEmpty())
     {
         OpenProject(projectsPathes.last());
@@ -262,7 +255,8 @@ void EditorCore::OpenProject(const QString& path)
         QString message = tr("Can not open project %1").arg(path);
         resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
     }
-    mainWindow->OnProjectOpened(resultList, project);
+
+    mainWindow->OnProjectOpened(resultList, project.get());
 }
 
 bool EditorCore::CloseProject()
@@ -375,4 +369,38 @@ void EditorCore::DisableCacheClient()
         cacheClient->Disconnect();
         cacheClient.reset();
     }
+}
+
+void EditorCore::OnProjectOpen(const Project* newProject)
+{
+    connect(newProject, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
+    connect(newProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
+    connect(newProject, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
+    connect(newProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+    connect(newProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
+
+    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
+    EditorLocalizationSystem* editorLocalizationSystem = newProject->GetEditorLocalizationSystem();
+    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
+    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+}
+
+void EditorCore::OnProjectClose(const Project* currProject)
+{
+    disconnect(currProject, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
+    disconnect(currProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
+    disconnect(currProject, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
+    disconnect(currProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
+    disconnect(currProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
+
+    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
+    EditorLocalizationSystem* editorLocalizationSystem = currProject->GetEditorLocalizationSystem();
+    disconnect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
+    disconnect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+}
+
+QStringList EditorCore::GetProjectsHistory() const
+{
+    QString history = QString::fromStdString(projectsHistory);
+    return history.split("\n", QString::SkipEmptyParts);
 }

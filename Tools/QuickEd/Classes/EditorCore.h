@@ -27,7 +27,7 @@ public:
     explicit EditorCore(QObject* parent = nullptr);
     ~EditorCore();
     MainWindow* GetMainWindow() const;
-    Project* GetProject() const;
+    //Project* GetProject() const;
     void Start();
 
 private slots:
@@ -59,23 +59,34 @@ private:
     void EnableCacheClient();
     void DisableCacheClient();
 
+    void OnProjectOpen(const Project* project);
+    void OnProjectClose(const Project* project);
+
+    QStringList GetProjectsHistory() const;
+
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
-    Project* project = nullptr;
+    std::unique_ptr<Project> project;
     DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
 
+    DAVA::String projectsHistory;
+    DAVA::uint32 projectsHistorySize;
+
 public:
     INTROSPECTION(EditorCore,
                   PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_PREFERENCE)
+                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  //maximum size of projects history
+                  MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 };
 
-inline EditorFontSystem* GetEditorFontSystem()
-{
-    return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
-}
+// inline EditorFontSystem* GetEditorFontSystem()
+// {
+//     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
+// }

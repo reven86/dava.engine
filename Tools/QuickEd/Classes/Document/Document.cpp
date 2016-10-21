@@ -7,18 +7,21 @@
 #include "Model/YamlPackageSerializer.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
-#include "EditorCore.h"
+#include "Project/EditorFontSystem.h"
+#include <QFileSystemWatcher>
+#include <QFile>
 
 using namespace DAVA;
 using namespace std;
 using namespace placeholders;
 
-Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
+Document::Document(const RefPtr<PackageNode>& package_, EditorFontSystem* aEditorFontSystem, QObject* parent)
     : QObject(parent)
     , package(package_)
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , commandStack(new CommandStack())
     , fileSystemWatcher(new QFileSystemWatcher(this))
+    , editorFontSystem(aEditorFontSystem)
 {
     QString path = GetPackageAbsolutePath();
     DVASSERT(QFile::exists(path));
@@ -26,7 +29,7 @@ Document::Document(const RefPtr<PackageNode>& package_, QObject* parent)
     {
         DAVA::Logger::Error("can not add path to the file watcher: %s", path.toUtf8().data());
     }
-    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
+    connect(editorFontSystem, &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
     connect(fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &Document::OnFileChanged, Qt::DirectConnection);
     commandStack->cleanChanged.Connect(this, &Document::OnCleanChanged);
 }
