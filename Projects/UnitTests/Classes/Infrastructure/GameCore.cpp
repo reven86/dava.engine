@@ -32,7 +32,7 @@ const String TestCoverageFileName = "Tests.cover";
 
 #if defined(__DAVAENGINE_COREV2__)
 
-int GameMain(Vector<String> cmdline)
+int DAVAMain(Vector<String> cmdline)
 {
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetString("title", "UnitTests");
@@ -64,8 +64,7 @@ int GameMain(Vector<String> cmdline)
     };
 
     Engine e;
-    e.SetOptions(appOptions);
-    e.Init(eEngineRunMode::GUI_STANDALONE, modules);
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules, appOptions);
 
     GameCore g(e);
     e.Run();

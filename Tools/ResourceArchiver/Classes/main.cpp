@@ -7,7 +7,7 @@
 #include "ArchiveListTool.h"
 #include "ResultCodes.h"
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
 #if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WIN32__)
 #error "ResourceArchiver compiles only for win32 or macos"
@@ -22,7 +22,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     EngineContext* context = e.GetContext();
     context->logger->SetLogLevel(Logger::LEVEL_INFO);

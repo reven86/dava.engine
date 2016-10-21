@@ -230,7 +230,7 @@ void Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv* env, jobj
 {
     if (core)
     {
-        DAVA::Logger::Info("__ LOW MEMORY ___  %p", env);
+        DAVA::Logger::Error("__ LOW MEMORY ___  %p", env);
     }
 }
 void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv* env, jobject classthis)

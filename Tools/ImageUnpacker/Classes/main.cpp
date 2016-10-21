@@ -1,3 +1,4 @@
+#include "ResaveUtility.h"
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
 #include "Render/Image/Image.h"
@@ -21,9 +22,13 @@ void PrintUsage()
     printf("\t-file - pvr or dds file to unpack as png\n");
     printf("\t-folder - folder with pvr or dds files to unpack as png\n");
     printf("\t-saveas -ext -folder - will open png files from folder and save as ext parameter mean\n");
+    printf("\t-resave -ext -folder/-file/-filelist - will open and save *.ext files\n");
 
-    printf("Example:\n");
-    printf("\t-saveas -ext .tga -folder /Users/nickname/test/");
+    printf("\nExample:\n");
+    printf("\t-saveas -ext .tga -folder /Users/nickname/test/\n");
+    printf("\t-resave -ext .png -folder /Users/TestData/\n");
+    printf("\t-resave -file /Users/TestData/test.png\n");
+    printf("\t-resave -filelist /Users/TestData/filelist.txt\n");
 }
 
 void SaveSingleImage(const FilePath& newImagePath, Image* image)
@@ -34,13 +39,22 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
     }
     else
     {
-        Image* savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+        ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, FORMAT_RGBA8888));
 
-        ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format),
-                                         savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
+        bool unpacked = ImageConvert::ConvertImage(image, savedImage); //unpack compressed images (PVR2-4, DXT1-5, ...)
+        if (!unpacked)
+        { // unpack uncompressed images
+            unpacked = ImageConvert::ConvertImageDirect(image, savedImage);
+        }
 
-        ImageSystem::Save(newImagePath, savedImage);
-        savedImage->Release();
+        if (unpacked)
+        {
+            ImageSystem::Save(newImagePath, savedImage);
+        }
+        else
+        {
+            Logger::Error("Cannot unapck image from %s and save it as %s", PixelFormatDescriptor::GetPixelFormatString(image->format), newImagePath.GetStringValue().c_str());
+        }
     }
 }
 
@@ -147,15 +161,18 @@ void ResavePNG(const FilePath& folderPath, const String& extension)
 
 void ProcessImageUnpacker()
 {
-#if RHI_COMPLETE
-    RenderManager::Create(Core::RENDERER_OPENGL);
-#endif //#if RHI_COMPLETE
-
     FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
     FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
 
     bool needShowUsage = true;
-    if (CommandLineParser::CommandIsFound("-saveas") && sourceFolderPath.IsEmpty() == false)
+    if (CommandLineParser::CommandIsFound("-resave"))
+    {
+        ResaveUtility utility;
+        utility.Resave();
+
+        needShowUsage = false;
+    }
+    else if (CommandLineParser::CommandIsFound("-saveas") && sourceFolderPath.IsEmpty() == false)
     {
         String ext = CommandLineParser::GetCommandParam(String("-ext"));
         if (!ext.empty())
@@ -187,10 +204,6 @@ void ProcessImageUnpacker()
     {
         PrintUsage();
     }
-
-#if RHI_COMPLETE
-    RenderManager::Instance()->Release();
-#endif //#if RHI_COMPLETE
 }
 
 void Process(Engine& e)
@@ -210,10 +223,10 @@ void Process(Engine& e)
     ProcessImageUnpacker();
 }
 
-int GameMain(Vector<String> cmdline)
+int DAVAMain(Vector<String> cmdline)
 {
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, {});
+    e.Init(eEngineRunMode::CONSOLE_MODE, {}, nullptr);
 
     e.update.Connect([&e](float32)
                      {

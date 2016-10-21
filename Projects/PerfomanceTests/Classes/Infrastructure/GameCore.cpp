@@ -387,7 +387,7 @@ KeyedArchive* CreateOptions()
     return appOptions;
 }
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     Vector<String> modules =
     {
@@ -398,8 +398,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
       "DownloadManager",
     };
     DAVA::Engine e;
-    e.SetOptions(CreateOptions());
-    e.Init(eEngineRunMode::GUI_STANDALONE, modules);
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
 
     GameCore core(e);
     return e.Run();

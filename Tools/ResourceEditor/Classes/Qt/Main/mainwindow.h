@@ -9,7 +9,10 @@
 #include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
+#include "QtTools/Utils/ShortcutChecker.h"
+
 #include "DAVAEngine.h"
+#include "Base/Platform.h"
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -89,6 +92,7 @@ public slots:
     void OnProjectClose();
     void OnSceneNew();
     void OnSceneOpen();
+    void OnSceneOpenQuickly();
     void OnSceneSave();
     void OnSceneSaveAs();
     void OnSceneSaveToFolder();
@@ -311,6 +315,10 @@ private:
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
+
+#if defined(__DAVAENGINE_MACOS__)
+    ShortcutChecker shortcutChecker;
+#endif
 
 private:
     struct EmitterDescriptor

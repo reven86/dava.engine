@@ -28,7 +28,7 @@ int Process(Engine& e)
     return static_cast<int>(cacheClient.GetExitCode());
 }
 
-int GameMain(Vector<String> cmdLine)
+int DAVAMain(Vector<String> cmdLine)
 {
     Vector<String> modules =
     {
@@ -37,7 +37,7 @@ int GameMain(Vector<String> cmdLine)
       "LocalizationSystem"
     };
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
                      {

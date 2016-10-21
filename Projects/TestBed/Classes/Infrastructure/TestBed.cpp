@@ -37,7 +37,7 @@
 
 void CheckDeviceInfoValid();
 
-int GameMain(DAVA::Vector<DAVA::String> cmdline)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
     using namespace DAVA;
     using namespace Net;
@@ -75,8 +75,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdline)
     };
 
     Engine e;
-    e.SetOptions(appOptions);
-    e.Init(runmode, modules);
+    e.Init(runmode, modules, appOptions);
 
     CheckDeviceInfoValid();
 
@@ -109,9 +108,9 @@ TestBed::TestBed(Engine& engine)
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->Resize(1024.f, 768.f);
         w->sizeScaleChanged.Connect(this, &TestBed::OnWindowSizeChanged);
-    }
 
-    engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+        engine.GetContext()->uiControlSystem->SetClearColor(Color::Black);
+    }
 }
 
 void TestBed::OnGameLoopStarted()

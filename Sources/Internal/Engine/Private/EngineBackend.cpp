@@ -27,6 +27,7 @@
 #include "Debug/DVAssert.h"
 #include "Render/2D/TextBlock.h"
 #include "Debug/Replay.h"
+#include "Debug/CPUProfiler.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
 #include "Input/InputSystem.h"
@@ -85,9 +86,9 @@ EngineBackend::~EngineBackend()
     instance = nullptr;
 }
 
-void EngineBackend::EngineCreated(Engine* e)
+void EngineBackend::EngineCreated(Engine* engine_)
 {
-    engine = e;
+    engine = engine_;
     dispatcher->LinkToCurrentThread();
 }
 
@@ -96,13 +97,7 @@ void EngineBackend::EngineDestroyed()
     engine = nullptr;
 }
 
-void EngineBackend::SetOptions(KeyedArchive* options_)
-{
-    DVASSERT(options_ != nullptr);
-    options.Set(options_);
-}
-
-KeyedArchive* EngineBackend::GetOptions()
+const KeyedArchive* EngineBackend::GetOptions() const
 {
     return options.Get();
 }
@@ -131,9 +126,16 @@ Window* EngineBackend::InitializePrimaryWindow()
     return primaryWindow;
 }
 
-void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules)
+void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_)
 {
+    DVASSERT(isInitialized == false && "Engine::Init is called more than once");
+
     runMode = engineRunMode;
+    if (options_ != nullptr)
+    {
+        // For now simply transfer ownership without incrementing reference count
+        options.Set(options_);
+    }
 
     // Do not initialize PlatformCore in console mode as console mode is fully
     // implemented in EngineBackend
@@ -164,10 +166,14 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     context->virtualCoordSystem->SetVirtualScreenSize(1024, 768);
     context->virtualCoordSystem->RegisterAvailableResourceSize(1024, 768, "Gfx");
     RegisterDAVAClasses();
+
+    isInitialized = true;
 }
 
 int EngineBackend::Run()
 {
+    DVASSERT(isInitialized == true && "Engine::Init is not called");
+
     if (IsConsoleMode())
     {
         RunConsole();
@@ -179,9 +185,9 @@ int EngineBackend::Run()
     return exitCode;
 }
 
-void EngineBackend::Quit(int exitCode)
+void EngineBackend::Quit(int exitCode_)
 {
-    this->exitCode = exitCode;
+    exitCode = exitCode_;
     switch (runMode)
     {
     case eEngineRunMode::GUI_STANDALONE:
@@ -260,6 +266,7 @@ void EngineBackend::OnEngineCleanup()
 
 void EngineBackend::DoEvents()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::DoEvents");
     dispatcher->ProcessEvents();
     for (Window* w : aliveWindows)
     {
@@ -281,6 +288,7 @@ void EngineBackend::OnFrameConsole()
 
 int32 EngineBackend::OnFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnFrame");
     context->systemTimer->Start();
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
@@ -310,6 +318,7 @@ int32 EngineBackend::OnFrame()
 
 void EngineBackend::OnBeginFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnBeginFrame");
     Renderer::BeginFrame();
 
     context->inputSystem->OnBeforeUpdate();
@@ -318,6 +327,7 @@ void EngineBackend::OnBeginFrame()
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnUpdate");
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
@@ -331,6 +341,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnDraw");
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
@@ -345,6 +356,7 @@ void EngineBackend::OnDraw()
 
 void EngineBackend::OnEndFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnEndFrame");
     context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();
@@ -511,7 +523,13 @@ void EngineBackend::PostUserCloseRequest()
 
 void EngineBackend::InitRenderer(Window* w)
 {
-    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer"));
+    rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
+    DVASSERT(rhi::ApiIsSupported(renderer));
+    if (!rhi::ApiIsSupported(renderer))
+    {
+        // Fall back to GL if given renderer is not supported
+        renderer = rhi::RHI_GLES2;
+    }
 
     rhi::InitParam rendererParams;
     rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
@@ -590,6 +608,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->virtualCoordSystem = new VirtualCoordinatesSystem();
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
+    context->fontManager = new FontManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
@@ -645,7 +664,6 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 
     if (!IsConsoleMode())
     {
-        context->fontManager = new FontManager();
         context->inputSystem = new InputSystem();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
@@ -676,10 +694,10 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->fontManager->Release();
         context->inputSystem->Release();
     }
 
+    context->fontManager->Release();
     context->uiControlSystem->Release();
     context->animationManager->Release();
     context->virtualCoordSystem->Release();

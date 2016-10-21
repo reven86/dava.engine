@@ -150,6 +150,7 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     }
 
     FinishEditing();
+    needCreateUndo = false;
 
     selectionSystem->SetLocked(false);
     modifSystem->SetLocked(false);

@@ -7,18 +7,13 @@ namespace REConsoleModuleCommonDetail
 {
 void SetupLogger(const DAVA::String& logLevelString)
 {
-    //        enum DAVA::Logger::eLogLevel
-    //        {
-    //            LEVEL_FRAMEWORK = 0,
-    //            LEVEL_DEBUG,
-    //            LEVEL_INFO,
-    //            LEVEL_WARNING,
-    //            LEVEL_ERROR,
-    //        };
-
     DAVA::Vector<DAVA::String> levels =
     {
-      "f", "d", "i", "w", "e"
+      "f", // LEVEL_FRAMEWORK
+      "d", // LEVEL_DEBUG
+      "i", // LEVEL_INFO
+      "w", // LEVEL_WARNING
+      "e" // LEVEL_ERROR
     };
 
     DAVA::Logger::eLogLevel requestedLevel = DAVA::Logger::LEVEL_INFO;

@@ -57,7 +57,7 @@ int Process(Engine& e)
     return a.exec();
 }
 
-int GameMain(DAVA::Vector<DAVA::String> cmdLine)
+int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
 {
     Vector<String> modules =
     {
@@ -65,7 +65,7 @@ int GameMain(DAVA::Vector<DAVA::String> cmdLine)
       "NetCore"
     };
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
     e.update.Connect([&e](float32)
                      {

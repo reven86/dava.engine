@@ -7,14 +7,24 @@
 
 RenderContextGuard::RenderContextGuard()
 {
-    DAVA::Window* window = DAVA::Engine::Instance()->PrimaryWindow();
-    window->GetNativeService()->AcqureContext();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    if (!engine->IsConsoleMode())
+    {
+        DAVA::Window* window = engine->PrimaryWindow();
+        window->GetNativeService()->AcqureContext();
+    }
 }
 
 RenderContextGuard::~RenderContextGuard()
 {
-    DAVA::Window* window = DAVA::Engine::Instance()->PrimaryWindow();
-    window->GetNativeService()->ReleaseContext();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    if (!engine->IsConsoleMode())
+    {
+        DAVA::Window* window = engine->PrimaryWindow();
+        window->GetNativeService()->ReleaseContext();
+    }
 }
 
 #endif

@@ -21,6 +21,7 @@ InitParam
     float32 scaleX;
     float32 scaleY;
     void* window;
+    void* defaultFrameBuffer;
     uint32 fullScreen : 1;
     uint32 threadedRenderEnabled : 1;
     uint32 vsyncEnabled : 1;
@@ -51,6 +52,7 @@ InitParam
         , scaleX(1.f)
         , scaleY(1.f)
         , window(nullptr)
+        , defaultFrameBuffer(nullptr)
         , fullScreen(false)
         , threadedRenderEnabled(false)
         , vsyncEnabled(true)
@@ -388,6 +390,7 @@ Packet
         , vertexConstCount(0)
         , fragmentConstCount(0)
         , primitiveCount(0)
+        , primitiveType(PRIMITIVE_TRIANGLELIST)
         , instanceCount(0)
         , baseInstance(0)
         , queryIndex(DAVA::InvalidIndex)

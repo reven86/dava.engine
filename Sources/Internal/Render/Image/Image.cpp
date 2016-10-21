@@ -352,12 +352,17 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    if (image == nullptr)
+    {
+        return;
+    }
+
     if (GetPixelFormat() != image->GetPixelFormat())
     {
         return;
     }
 
-    if (image == NULL || dstX >= width || dstY >= height ||
+    if (dstX >= width || dstY >= height ||
         srcX >= image->GetWidth() || srcY >= image->GetHeight())
     {
         return;

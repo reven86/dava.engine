@@ -1,6 +1,6 @@
 #include "ApplyMaterialPresetCommand.h"
 
-#include "Commands2/RECommandIDs.h"
+#include "Classes/Commands2/RECommandIDs.h"
 #include "Classes/Qt/Project/ProjectManager.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
