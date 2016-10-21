@@ -28,7 +28,7 @@ enum eQueryIndex
 rhi::HQueryBuffer GetQueryBuffer();
 
 uint32 GetResult(eQueryIndex index);
-FastName GetQueryIndexName(eQueryIndex index);
+const FastName& GetQueryIndexName(eQueryIndex index);
 
 void EndFrame();
 void Cleanup();

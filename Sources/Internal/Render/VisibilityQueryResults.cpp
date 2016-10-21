@@ -56,7 +56,7 @@ uint32 GetResult(eQueryIndex index)
     return frameVisibilityResults[index];
 }
 
-FastName GetQueryIndexName(eQueryIndex index)
+const FastName& GetQueryIndexName(eQueryIndex index)
 {
     static const FastName queryIndexNames[QUERY_INDEX_COUNT] =
     {
