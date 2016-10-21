@@ -45,7 +45,7 @@ public final class DavaActivity extends Activity
     private DavaSurfaceView primarySurfaceView;
     private DavaSplashView splashView;
     private ViewGroup layout;
-	private DavaNotificationProvider notificationProvider;
+    private DavaNotificationProvider notificationProvider;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -59,11 +59,6 @@ public final class DavaActivity extends Activity
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
 
-    public int GetNotificationIcon()
-	{
-        return android.R.drawable.sym_def_app_icon;
-    }
-
     public static DavaActivity instance()
     {
         return activitySingleton;
@@ -72,6 +67,19 @@ public final class DavaActivity extends Activity
     public static DavaCommandHandler commandHandler()
     {
         return activitySingleton.commandHandler;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent)
+    {
+        if (null != intent)
+        {
+            String uid = intent.getStringExtra("uid");
+            if (uid != null)
+            {
+                notificationProvider.NotificationPressed(uid);
+            }
+        }
     }
 
     @Override
@@ -99,24 +107,8 @@ public final class DavaActivity extends Activity
         hideNavigationBar();
         
         splashView = new DavaSplashView(this);
-		notificationProvider = new DavaNotificationProvider(this);
+        notificationProvider = new DavaNotificationProvider(this);
         
-        {
-            final Intent intent = getIntent();
-            DavaActivity.commandHandler().post(new Runnable()
-			{
-                @Override
-                public void run() {
-                    if (null != intent) {
-                        String uid = intent.getStringExtra("uid");
-                        if (uid != null) {
-                            notificationProvider.NotificationPressed(uid);
-                        }
-                    }
-                }
-            });
-        }
-
         layout = new FrameLayout(this);
         layout.addView(splashView);
         setContentView(layout);

@@ -1,5 +1,4 @@
 package com.dava.engine;
-//package com.dava.framework;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,22 +10,30 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-public class ScheduledNotificationReceiver extends BroadcastReceiver {
+public class ScheduledNotificationReceiver extends BroadcastReceiver
+{
+    public static final String LOG_TAG = "DAVA";
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        Log.d("Local Notifications", "ScheduledNotificationReceiver onReceive");
+    public void onReceive(Context context, Intent intent)
+    {
         DavaActivity activity = DavaActivity.instance();
         Intent tapIntent;
-        if(activity != null) {
+        if(activity != null)
+        {
             tapIntent = new Intent(context, activity.getClass());
-        } else {
+        }
+        else
+        {
             String activityClassName = intent.getStringExtra("activityClassName");
-            try {
+            try
+            {
                 Class<?> activityClass = Class.forName(activityClassName);
                 tapIntent = new Intent(context, activityClass);
-            } catch (ClassNotFoundException e) {
-                Log.d("Local Notifications", "Incorrect activityClassName");
+            }
+            catch (ClassNotFoundException e)
+            {
+                Log.d(LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
                 return;
             }
         }
@@ -41,7 +48,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver {
         }
         String uid = intent.getStringExtra("uid");
         builder.setContentTitle(intent.getStringExtra("title"))
-        	   .setContentText(intent.getStringExtra("text"))
+               .setContentText(intent.getStringExtra("text"))
                .setSmallIcon(intent.getIntExtra("icon", 0))
                .setContentIntent(pendingIntent)
                .setAutoCancel(true)
