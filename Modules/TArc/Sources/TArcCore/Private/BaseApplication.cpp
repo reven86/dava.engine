@@ -41,6 +41,11 @@ int BaseApplication::RunImpl()
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
         TestCore testCore(e);
+
+        EngineContext* engineContext = e.GetContext();
+        DVASSERT(engineContext);
+        Init(*engineContext);
+
         return e.Run();
     }
     else
@@ -52,6 +57,10 @@ int BaseApplication::RunImpl()
         CreateModules(&core);
         return e.Run();
     }
+}
+
+void BaseApplication::Init(EngineContext& /*engineContext*/)
+{
 }
 
 void BaseApplication::Init(Core* /*tarcCore*/)
