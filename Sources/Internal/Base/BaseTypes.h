@@ -1,9 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-#include "Base/TemplateHelpers.h"
-#include "Base/DllApi.h"
-
 #include <array>
 #include <memory>
 #include <string>
@@ -11,16 +7,13 @@
 #include <list>
 #include <map>
 #include <vector>
-#include <algorithm>
 #include <set>
 #include <stack>
 #include <queue>
 #include <array>
-#include <bitset>
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
-#include <cerrno>
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/AllocPools.h"
@@ -140,30 +133,12 @@ template <typename Key,
           typename KeyEqual = std::equal_to<Key>>
 using UnorderedMultiMap = std::unordered_multimap<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
-template <size_t Bits>
-using Bitset = std::bitset<Bits>;
-
 #ifdef min
 #undef min
 #endif
 #ifdef max
 #undef max
 #endif
-
-/*
- Useful functions to offset pointer by specified number of bytes without long cast sequences.
-*/
-template <typename T>
-inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
-{
-    return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + offset);
-}
-
-template <typename T>
-inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
-{
-    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr) + offset);
-}
 
 template <class T>
 inline T Min(T a, T b)
@@ -188,12 +163,6 @@ inline T Clamp(T val, T a, T b)
 {
     return Min(b, Max(val, a));
 }
-
-#if defined(__DAVAENGINE_WINDOWS__)
-#define Snprintf _snprintf
-#else
-#define Snprintf snprintf
-#endif
 
 #define Memcmp std::memcmp
 #define Memcpy std::memcpy
@@ -245,12 +214,6 @@ enum eAlign
     ALIGN_BOTTOM = 0x20, //!<Align graphical object by the bottom side.
     ALIGN_HJUSTIFY = 0x40 //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
-
-template <typename T, size_t N>
-DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
-{
-    return N;
-}
     
 #ifndef REMOVE_IN_RELEASE
 #if defined(__DAVAENGINE_DEBUG__)

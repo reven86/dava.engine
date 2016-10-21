@@ -140,4 +140,10 @@
 
 #endif
 
+#if defined(__DAVAENGINE_WINDOWS__)
+#define Snprintf _snprintf
+#else
+#define Snprintf snprintf
+#endif
+
 #endif // __DAVAENGINE_PLATFORM__
