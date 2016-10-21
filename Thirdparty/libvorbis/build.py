@@ -88,16 +88,16 @@ def _build_win32(working_directory_path, root_project_path):
     env['INCLUDE'] = ogg_include_path + ';' + env['INCLUDE']
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'x64',
-        'libvorbis_static', 'v120', env=env)
+        'libvorbis_static', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'x64',
-        'libvorbis_static', 'v120', env=env)
+        'libvorbis_static', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Debug', 'x64',
-        'libvorbisfile', 'v120', env=env)
+        'libvorbisfile', build_config.get_msvc_toolset_ver_win32(), env=env)
     build_utils.build_vs(
         vc_solution_file_path, 'Release', 'x64',
-        'libvorbisfile', 'v120', env=env)
+        'libvorbisfile', build_config.get_msvc_toolset_ver_win32(), env=env)
 
     libs_win_root = os.path.join(root_project_path, 'Libs/lib_CMake/win')
 
