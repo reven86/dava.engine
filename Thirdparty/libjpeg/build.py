@@ -81,7 +81,7 @@ def _patch_sources(
 
 def _build_win32(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(
-        working_directory_path, 'win', source_folder_path_prefix='_win32')
+        working_directory_path, 'win', source_folder_postfix='_win32')
     _patch_sources(
         source_folder_path, working_directory_path, 'patch_win32.diff')
 

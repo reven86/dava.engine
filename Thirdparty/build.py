@@ -189,6 +189,10 @@ def parse_args():
         '--no-clean',
         action='store_true',
         help='do not clean temporary output folder')
+    parser.add_argument(
+        '--ignore-errors',
+        action='store_true',
+        help='do not halt execution if a builder failed')
 
     args = parser.parse_args()
 
@@ -253,9 +257,11 @@ if __name__ == "__main__":
             result = build_library(lib, targets_to_process, args.skip_dependencies)
             if result is False:
                 failed.append(lib)
+                if not args.ignore_errors:
+                    break
 
         if not failed:
-            print '\nFinished. {} library(s) were successfully built'.format(
+            print '\nFinished. Successfully built: {} library(s)'.format(
                 len(libraries_to_process))
         else:
             print '\nFinished. Builders failed for these libraries: {}'.format(
