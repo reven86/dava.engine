@@ -17,6 +17,7 @@ struct UIDispatcherEvent final
         RESIZE_WINDOW,
         CREATE_WINDOW,
         CLOSE_WINDOW,
+        SET_TITLE,
         FUNCTOR,
     };
 
@@ -26,12 +27,29 @@ struct UIDispatcherEvent final
         float32 height;
     };
 
+    struct SetTitleEvent
+    {
+        const char8* title;
+    };
+
+    UIDispatcherEvent() = default;
+    UIDispatcherEvent(eType type)
+        : type(type)
+    {
+    }
+
     eType type = DUMMY;
     Function<void()> functor;
     union
     {
         ResizeEvent resizeEvent;
+        SetTitleEvent setTitleEvent;
     };
+
+    static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
+    static UIDispatcherEvent CreateCloseEvent();
+    static UIDispatcherEvent CreateSetTitleEvent(const String& title);
+    static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 
 } // namespace Private

@@ -16,7 +16,7 @@ using DAVA::Logger;
     #include "Concurrency/LockGuard.h"
     #include "Concurrency/AutoResetEvent.h"
     #include "Concurrency/ManualResetEvent.h"
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
 
 #include "_gl.h"
 
@@ -307,7 +307,7 @@ public:
 
     static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
@@ -335,9 +335,6 @@ RHI_IMPL_POOL(RenderPassGLES2_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectGLES2_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
 const uint64 CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
-
-static bool _GLES2_CmdBufIsBeingExecuted = false;
-static DAVA::Spinlock _GLES2_CmdBufIsBeingExecutedSync;
 
 static GLCommand* _GLES2_PendingImmediateCmd = nullptr;
 static uint32 _GLES2_PendingImmediateCmdCount = 0;
@@ -370,7 +367,6 @@ static std::vector<FrameGLES2> _GLES2_Frame;
 static bool _GLES2_FrameStarted = false;
 static unsigned _GLES2_FrameNumber = 1;
 static DAVA::Spinlock _GLES2_FrameSync;
-//static DAVA::Mutex              _FrameSync;
 
 static DAVA::AutoResetEvent _GLES2_FramePreparedEvent(false, 400);
 static DAVA::AutoResetEvent _GLES2_FrameDoneEvent(false, 400);
@@ -381,6 +377,7 @@ static Handle
 gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf)
 {
     DVASSERT(cmdBufCount);
+    DVASSERT(passConf.IsValid());
 
     Handle handle = RenderPassPoolGLES2::Alloc();
     RenderPassGLES2_t* pass = RenderPassPoolGLES2::Get(handle);
@@ -918,15 +915,14 @@ gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
+    , usingDefaultFrameBuffer(true)
     , text(nullptr)
-    ,
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    cmdData(nullptr)
+    , cmdData(nullptr)
     , cmdDataSize(0)
     , curUsedSize(0)
-    ,
 #endif
-    sync(InvalidHandle)
+    , sync(InvalidHandle)
 {
 }
 
@@ -1067,7 +1063,8 @@ CommandBufferGLES2_t::Command(uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
 
 void CommandBufferGLES2_t::Execute()
 {
-    //SCOPED_NAMED_TIMING("gl.exec");
+    DAVA_CPU_PROFILER_SCOPE("cb::Execute");
+
     Handle cur_ps = InvalidHandle;
     uint32 cur_vdecl = VertexLayout::InvalidUID;
     uint32 cur_base_vert = 0;
@@ -1144,28 +1141,45 @@ void CommandBufferGLES2_t::Execute()
                 def_viewport[0] = 0;
                 def_viewport[1] = 0;
 
-                if (passCfg.colorBuffer[0].texture != InvalidHandle)
-                {
-                    Size2i sz = TextureGLES2::Size(passCfg.colorBuffer[0].texture);
+                const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
+                Handle targetColorTexture = color0.texture;
+                Handle targetDepthTexture = passCfg.depthStencilBuffer.texture;
 
-                    TextureGLES2::SetAsRenderTarget(passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, passCfg.colorBuffer[0].textureFace, passCfg.colorBuffer[0].textureLevel);
+                if (targetColorTexture != InvalidHandle)
+                {
+                    if (passCfg.UsingMSAA())
+                    {
+                        DVASSERT(color0.multisampleTexture != InvalidHandle);
+                        targetColorTexture = color0.multisampleTexture;
+                        targetDepthTexture = passCfg.depthStencilBuffer.multisampleTexture;
+                    }
+
+                    TextureGLES2::SetAsRenderTarget(targetColorTexture, targetDepthTexture, color0.textureFace, color0.textureLevel);
+
+                    Size2i sz = TextureGLES2::Size(targetColorTexture);
                     def_viewport[2] = sz.dx;
                     def_viewport[3] = sz.dy;
                 }
                 else
                 {
-                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
+                    if (passCfg.UsingMSAA())
+                    {
+                        DVASSERT(color0.multisampleTexture != InvalidHandle);
+                        TextureGLES2::SetAsRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureFace, color0.textureLevel);
+                    }
+                    else if (_GLES2_Bound_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
                         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
-                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+                        _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
+
+                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
                 }
 
-                if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
+                if (color0.loadAction == LOADACTION_CLEAR)
                 {
-                    GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                    GL_CALL(glClearColor(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]));
                     flags |= GL_COLOR_BUFFER_BIT;
                 }
 
@@ -1207,25 +1221,28 @@ void CommandBufferGLES2_t::Execute()
             if (isLastInPass)
             {
                 if (cur_query_buf != InvalidHandle)
-                    QueryBufferGLES2::QueryComplete(cur_query_buf);
-
-#if defined(__DAVAENGINE_IPHONE__)
-                if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer) //defualt framebuffer is discard once after frame
                 {
-                    GLenum discards[3];
-                    int32 discardsCount = 0;
-                    if (passCfg.colorBuffer[0].storeAction == STOREACTION_NONE)
-                        discards[discardsCount++] = GL_COLOR_ATTACHMENT0;
-                    if (passCfg.depthStencilBuffer.storeAction == STOREACTION_NONE)
-                    {
-                        discards[discardsCount++] = GL_DEPTH_ATTACHMENT;
-                        discards[discardsCount++] = GL_STENCIL_ATTACHMENT;
-                    }
-
-                    if (discardsCount != 0)
-                        GL_CALL(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+                    QueryBufferGLES2::QueryComplete(cur_query_buf);
                 }
-#endif
+
+                if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].texture);
+                }
+
+                if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
+                {
+                    TextureGLES2::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].texture);
+                }
+
+            #if defined(__DAVAENGINE_IPHONE__)
+                if (_GLES2_Bound_FrameBuffer != _GLES2_Default_FrameBuffer) // defualt framebuffer is discard once after frame
+                {
+                    bool discardColor = (passCfg.colorBuffer[0].storeAction != STOREACTION_STORE);
+                    bool discardDepthStencil = (passCfg.depthStencilBuffer.storeAction != STOREACTION_STORE);
+                    ios_gl_discard_framebuffer(discardColor, discardDepthStencil);
+                }
+            #endif
             }
         }
         break;
@@ -1537,8 +1554,6 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__DRAW_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const CommandGLES2_DrawPrimitive*>(cmd))->mode;
@@ -1593,8 +1608,6 @@ void CommandBufferGLES2_t::Execute()
 
         case GLES2__DRAW_INDEXED_PRIMITIVE:
         {
-//++dip_cnt;
-//{SCOPED_NAMED_TIMING("gl.DIP")}
             #if RHI_GLES2__USE_CMDBUF_PACKING
             unsigned v_cnt = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->vertexCount;
             int mode = (static_cast<const CommandGLES2_DrawIndexedPrimitive*>(cmd))->mode;
@@ -1746,7 +1759,6 @@ void CommandBufferGLES2_t::Execute()
             uint32 baseInst = uint32(arg[5]);
             c += 6;
             #endif
-            //{SCOPED_NAMED_TIMING("gl.DIP")}
 
             if (last_ps != cur_ps)
             {
@@ -1833,13 +1845,9 @@ void CommandBufferGLES2_t::Execute()
             _GLES2_PendingImmediateCmdSync.Lock();
             if (_GLES2_PendingImmediateCmd)
             {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
-
                 _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                 _GLES2_PendingImmediateCmd = nullptr;
                 _GLES2_PendingImmediateCmdCount = 0;
-
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
 
@@ -1919,6 +1927,8 @@ _RejectAllFrames()
 static void
 _GLES2_ExecuteQueuedCommands()
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
+
     StatSet::ResetAll();
 
     Trace("rhi-gl.exec-queued-cmd\n");
@@ -1979,9 +1989,7 @@ _GLES2_ExecuteQueuedCommands()
             Handle cb_h = pp->cmdBuf[b];
             CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
             cb->Execute();
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "cb::exec");
 
             if (cb->sync != InvalidHandle)
             {
@@ -2010,7 +2018,7 @@ _GLES2_ExecuteQueuedCommands()
     {
         // do swap-buffers
 
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
+        DAVA_CPU_PROFILER_SCOPE("rhi::SwapBuffers");
         
 #if defined(__DAVAENGINE_WIN32__)
         Trace("rhi-gl.swap-buffers...\n");
@@ -2033,8 +2041,6 @@ _GLES2_ExecuteQueuedCommands()
         }
 
 #endif
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "gl_end_frame");
     }
 
     // update sync-objects
@@ -2053,7 +2059,7 @@ _GLES2_ExecuteQueuedCommands()
 static void
 gles2_Present(Handle sync)
 {
-    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
+    DAVA_CPU_PROFILER_SCOPE("rhi::Present");
 
     if (_GLES2_RenderThreadFrameCount)
     {
@@ -2078,23 +2084,22 @@ gles2_Present(Handle sync)
             _GLES2_FramePreparedEvent.Signal();
         }
 
-        uint32 frame_cnt = 0;
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
-        do
         {
-            _GLES2_FrameSync.Lock();
-            frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
-            _GLES2_FrameSync.Unlock();
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrameExecution");
 
-            if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+            uint32 frame_cnt = 0;
+            do
             {
-                _GLES2_FrameDoneEvent.Wait();
-            }
-            //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-        }
-        while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+                _GLES2_FrameSync.Lock();
+                frame_cnt = static_cast<uint32>(_GLES2_Frame.size());
+                _GLES2_FrameSync.Unlock();
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "core_wait_renderer");
+                if (frame_cnt >= _GLES2_RenderThreadFrameCount)
+                {
+                    _GLES2_FrameDoneEvent.Wait();
+                }
+            } while (frame_cnt >= _GLES2_RenderThreadFrameCount);
+        }
     }
     else
     {
@@ -2107,8 +2112,6 @@ gles2_Present(Handle sync)
 
         _GLES2_ExecuteQueuedCommands();
     }
-
-    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::present");
 }
 
 //------------------------------------------------------------------------------
@@ -2127,24 +2130,23 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
     bool do_exit = false;
     while (!do_exit)
     {
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
+        DAVA_CPU_PROFILER_SCOPE("rhi::RenderLoop");
 
+        if (_GLES2_RenderThreadSuspended.Get())
         {
-            if (_GLES2_RenderThreadSuspended.Get())
-            {
-                GL_CALL(glFinish());
-                _GLES2_RenderThreadSuspendSyncReached = true;
-                _GLES2_RenderThreadSuspendSync.Wait();
-            }
+            GL_CALL(glFinish());
+            _GLES2_RenderThreadSuspendSyncReached = true;
+            _GLES2_RenderThreadSuspendSync.Wait();
+        }
             
 
 #if defined __DAVAENGINE_ANDROID__
-            android_gl_checkSurface();
+        android_gl_checkSurface();
 #elif defined __DAVAENGINE_IPHONE__
-            ios_gl_check_layer();
+        ios_gl_check_layer();
 #endif
-
-            TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
+        {
+            DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
 
             // CRAP: busy-wait
             bool do_wait = true;
@@ -2160,18 +2162,12 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                 _GLES2_PendingImmediateCmdSync.Lock();
                 if (_GLES2_PendingImmediateCmd)
                 {
-                    TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                     _ExecGL(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
                     _GLES2_PendingImmediateCmd = nullptr;
                     _GLES2_PendingImmediateCmdCount = 0;
-                    //Trace("exec-imm-cmd done\n");
-                    TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "immediate_cmd");
                 }
                 _GLES2_PendingImmediateCmdSync.Unlock();
 
-                //            _CmdQueueSync.Lock();
-                //            cnt = _RenderQueue.size();
-                //            _CmdQueueSync.Unlock();
                 _GLES2_FrameSync.Lock();
                 do_wait = !(_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute) && !_GLES2_RenderThreadSuspended.Get();
                 _GLES2_FrameSync.Unlock();
@@ -2181,19 +2177,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
                     _GLES2_FramePreparedEvent.Wait();
                 }
             }
-            TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "renderer_wait_core");
-
-            if (!do_exit)
-            {
-                TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-                _GLES2_ExecuteQueuedCommands();
-                TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "exec_que_cmds");
-            }
-
-            _GLES2_FrameDoneEvent.Signal();
         }
 
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "rhi::render_loop");
+        if (!do_exit)
+        {
+            _GLES2_ExecuteQueuedCommands();
+        }
+
+        _GLES2_FrameDoneEvent.Signal();
     }
 
     Logger::Info("[RHI] render-thread finished");
@@ -2294,6 +2285,8 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL(GLCommand* command, uint32 cmdCount)
 {
+    DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteImmidiateCmds");
+
     int err = GL_NO_ERROR;
 
 #if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
@@ -2612,7 +2605,19 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
 
         case GLCommand::RENDERBUFFER_STORAGE:
         {
-            GL_CALL(glRenderbufferStorage(GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3])));
+            GLenum target = static_cast<GLenum>(arg[0]);
+            GLenum internalFormat = static_cast<GLenum>(arg[1]);
+            GLsizei width = static_cast<GLenum>(arg[2]);
+            GLsizei height = static_cast<GLenum>(arg[3]);
+            GLuint samples = static_cast<GLsizei>(arg[4]);
+            if (samples > 1)
+            {
+                GL_CALL(glRenderbufferStorageMultisample(target, samples, internalFormat, width, height));
+            }
+            else
+            {
+                GL_CALL(glRenderbufferStorage(target, internalFormat, width, height));
+            }
             cmd->status = err;
         }
         break;
@@ -2716,7 +2721,7 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
         bool executed = false;
 
         // CRAP: busy-wait
-        TRACE_BEGIN_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
+        DAVA_CPU_PROFILER_SCOPE("rhi::WaitImmediateCmd");
 
         while (!scheduled)
         {
@@ -2746,8 +2751,6 @@ void ExecGL(GLCommand* command, uint32 cmdCount, bool force_immediate)
                 DAVA::Thread::Yield();
             }
         }
-
-        TRACE_END_EVENT((uint32)DAVA::Thread::GetCurrentId(), "", "wait_immediate_cmd");
     }
 }
 

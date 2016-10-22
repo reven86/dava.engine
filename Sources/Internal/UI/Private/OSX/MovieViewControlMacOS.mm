@@ -417,7 +417,7 @@ bool MovieViewControl::IsPlaying() const
 }
 
 #if defined(__DAVAENGINE_COREV2__)
-void MovieViewControl::OnWindowVisibilityChanged(Window& w, bool visible)
+void MovieViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     SetVisible(visible);
 }

@@ -57,6 +57,13 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
                            outputGfxDirectory.GetAbsolutePathname().c_str(),
                            rootDirectory.GetAbsolutePathname().c_str());
 
+    if (FileSystem::Instance()->Exists(inputGfxDirectory) == false)
+    {
+        AddError(Format("Input folder is not exist: '%s'", inputGfxDirectory.GetStringValue().c_str()));
+        SetRunning(false);
+        return;
+    }
+
     for (eGPUFamily gpu : forGPUs)
     {
         Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != gpu) ? GlobalEnumMap<eGPUFamily>::Instance()->ToString(gpu) : "Unknown");
@@ -84,6 +91,7 @@ void ResourcePacker2D::PackResources(const Vector<eGPUFamily>& forGPUs)
     else
     {
         AddError(Format("Unknown algorithm: '%s'", alg.c_str()));
+        SetRunning(false);
         return;
     }
 
@@ -244,6 +252,27 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath& flagsPathname)
     return tokens;
 }
 
+uint32 ResourcePacker2D::GetMaxTextureSize() const
+{
+    uint32 maxTextureSize = TexturePacker::DEFAULT_TEXTURE_SIZE;
+    String tsizeValue = CommandLineParser::Instance()->GetParamForFlag("--tsize");
+    if (!tsizeValue.empty())
+    {
+        uint32 fetchedValue;
+        int fetchedCount = sscanf(tsizeValue.c_str(), "%u", &fetchedValue);
+        if (fetchedCount == 1 && IsPowerOf2(fetchedValue))
+        {
+            maxTextureSize = fetchedValue;
+        }
+        else
+        {
+            Logger::Warning("--tsize value '%s' is incorrect: should be uint of power of 2. Using default value: %u", tsizeValue.c_str(), maxTextureSize);
+        }
+    }
+
+    return maxTextureSize;
+}
+
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<PackingAlgorithm>& packAlgorithms, const Vector<String>& passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
@@ -371,7 +400,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                 else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
                     marginInPixels = 4;
 
-                uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? 4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+                uint32 maxTextureSize = GetMaxTextureSize();
+
                 bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
                 bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
                 bool verbose = CommandLineParser::Instance()->GetVerbose();
@@ -431,10 +461,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                         {
                             packer.SetUseOnlySquareTextures();
                         }
-                        if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-                        {
-                            packer.SetMaxTextureSize(4096);
-                        }
+                        packer.SetMaxTextureSize(maxTextureSize);
                     }
 
                     packer.SetTwoSideMargin(useTwoSideMargin);

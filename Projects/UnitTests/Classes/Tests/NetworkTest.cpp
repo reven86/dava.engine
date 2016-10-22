@@ -262,22 +262,24 @@ DAVA_TESTCLASS (NetworkTest)
     NetCore::TrackId serverId = NetCore::INVALID_TRACK_ID;
     NetCore::TrackId clientId = NetCore::INVALID_TRACK_ID;
 
-    void SetUp(const String& testName) override
+    void Update(float32 timeElapsed, const String& testName) override
     {
         if (testName == "TestEcho")
         {
-            NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
+            echoTestDone = echoServer.IsTestDone() && echoClient.IsTestDone();
+            if (echoTestDone)
+            {
+                TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesSent());
+                TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesDelivered());
 
-            NetConfig serverConfig(SERVER_ROLE);
-            serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
-            serverConfig.AddService(SERVICE_ECHO);
+                TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesSent());
+                TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesDelivered());
 
-            NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
-
-            // Server config must be recreated first due to restrictions of service management
-            serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
-            clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
+                TEST_VERIFY(echoServer.BytesRecieved() == echoClient.BytesRecieved());
+            }
         }
+
+        TestClass::Update(timeElapsed, testName);
     }
 
     void TearDown(const String& testName) override
@@ -293,6 +295,8 @@ DAVA_TESTCLASS (NetworkTest)
             serverId = NetCore::INVALID_TRACK_ID;
             clientId = NetCore::INVALID_TRACK_ID;
         }
+
+        TestClass::TearDown(testName);
     }
 
     bool TestComplete(const String& testName) const override
@@ -325,7 +329,7 @@ DAVA_TESTCLASS (NetworkTest)
         TEST_VERIFY("239.192.100.1" == IPAddress("239.192.100.1").ToString());
 
         // Test address
-        TEST_VERIFY(IPAddress("192.168.0.4") == IPAddress("192.168.0.4"));
+        TEST_VERIFY(IPAddress("192.168.0.4") == IPAddress("192.168.0.4")); //-V501 test operator==
         TEST_VERIFY(String("192.168.0.4") == IPAddress("192.168.0.4").ToString());
         TEST_VERIFY(IPAddress("192.168.0.4").ToString() == IPAddress::FromString("192.168.0.4").ToString());
         TEST_VERIFY(false == IPAddress("192.168.0.4").IsUnspecified());
@@ -341,7 +345,7 @@ DAVA_TESTCLASS (NetworkTest)
         TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress("192.168.1.45"));
         TEST_VERIFY(Endpoint("192.168.1.45", 1234).Address() == IPAddress::FromString("192.168.1.45"));
 
-        TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234));
+        TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234)); //-V501 test operator==
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1235))); // Different ports
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234))); // Different addressess
     }
@@ -372,17 +376,17 @@ DAVA_TESTCLASS (NetworkTest)
 
     DAVA_TEST (TestEcho)
     {
-        echoTestDone = echoServer.IsTestDone() && echoClient.IsTestDone();
-        if (echoTestDone)
-        {
-            TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesSent());
-            TEST_VERIFY(echoServer.BytesRecieved() == echoServer.BytesDelivered());
+        NetCore::Instance()->RegisterService(SERVICE_ECHO, MakeFunction(this, &NetworkTest::CreateEcho), MakeFunction(this, &NetworkTest::DeleteEcho));
 
-            TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesSent());
-            TEST_VERIFY(echoClient.BytesRecieved() == echoClient.BytesDelivered());
+        NetConfig serverConfig(SERVER_ROLE);
+        serverConfig.AddTransport(TRANSPORT_TCP, Endpoint(ECHO_PORT));
+        serverConfig.AddService(SERVICE_ECHO);
 
-            TEST_VERIFY(echoServer.BytesRecieved() == echoClient.BytesRecieved());
-        }
+        NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
+
+        // Server config must be recreated first due to restrictions of service management
+        serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
+        clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
     }
 
     IChannelListener* CreateEcho(uint32 serviceId, void* context)

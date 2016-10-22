@@ -1,7 +1,5 @@
-APP_STL := gnustl_static
-APP_GNUSTL_FORCE_CPP_FEATURES := rtti
-
-#APP_CFLAGS = -marm -g
+APP_STL := c++_shared
+APP_CPPFLAGS := -frtti -fexceptions
 
 #debug
 APP_CFLAGS += -DNDK_DEBUG=1 -O0
@@ -16,7 +14,8 @@ APP_OPTIM := debug
 APP_CFLAGS += -Wno-invalid-offsetof
 APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 
-APP_ABI := armeabi-v7a #x86
+APP_ABI += armeabi-v7a
+APP_ABI += x86
 APP_PLATFORM := android-14
 
 NDK_TOOLCHAIN_VERSION=clang

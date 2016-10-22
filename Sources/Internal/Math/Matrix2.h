@@ -1,7 +1,6 @@
-#ifndef __DAVAENGINE_MATH2DMATRIX2_H__
-#define __DAVAENGINE_MATH2DMATRIX2_H__
+#pragma once
 
-#include <math.h>
+#include <cmath>
 #include "Base/BaseTypes.h"
 #include "Math/MathDefines.h"
 #include "Math/MathConstants.h"
@@ -92,8 +91,8 @@ inline void Matrix2::SetIdentity()
 
 inline void Matrix2::BuildRotation(float32 angle)
 {
-    float32 cosA = cosf(angle);
-    float32 sinA = sinf(angle);
+    float32 cosA = std::cos(angle);
+    float32 sinA = std::sin(angle);
 
     data[0] = cosA;
     data[1] = sinA;
@@ -166,7 +165,3 @@ inline bool Matrix2::operator!=(const Matrix2& _m) const
 }
 
 }; // end of namespace DAVA
-
-
-
-#endif // __DAVAENGINE_MATH2DMATRIX2_H__

@@ -140,7 +140,6 @@ void REApplication::RunWindow()
     REAppDetails::FixOSXFonts();
     DAVA::QtLayer::MakeAppForeground(false);
 #endif
-    Themes::InitFromQApplication();
 
     ToolsAssetGuard::Instance()->Init();
 
@@ -177,8 +176,11 @@ void REApplication::RunWindow()
     mainWindow->EnableGlobalTimeout(true);
     DavaGLWidget* glWidget = mainWindow->GetSceneWidget()->GetDavaWidget();
 
-    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch);
+    QObject::connect(glWidget, &DavaGLWidget::Initialized, &launcher, &ResourceEditorLauncher::Launch, Qt::QueuedConnection);
     mainWindow->show();
+    // Init themes after window has been shown to avoid font size changing in QTreeView for elided and full text
+    Themes::InitFromQApplication();
+    SceneSignals::Instance()->ThemeChanged();
     exec();
 
     DAVA::SafeDelete(mainWindow);
@@ -212,7 +214,7 @@ void REApplication::RunConsole()
     DAVA::VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
 
-    DAVA::Texture::SetDefaultGPU(DAVA::eGPUFamily::GPU_ORIGIN);
+    DAVA::Texture::SetGPULoadingOrder({ DAVA::eGPUFamily::GPU_ORIGIN });
 
     cmdLineManager->Process();
 }

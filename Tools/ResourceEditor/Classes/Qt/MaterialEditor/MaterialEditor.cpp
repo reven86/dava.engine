@@ -25,13 +25,14 @@
 #include "Commands2/MaterialRemoveTexture.h"
 #include "Commands2/MaterialConfigCommands.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/ApplyMaterialPresetCommand.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
@@ -288,7 +289,7 @@ private:
             baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(group));
 
             // Add unknown value:
-            group->AddAllowedValue(DAVA::VariantType(DAVA::String()), "Unknown");
+            group->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Unknown");
 
             // fill allowed values for material group
             for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
@@ -480,9 +481,9 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     : QDialog(parent)
     , ui(new Ui::MaterialEditor)
     , templatesFilterModel(nullptr)
-    , lastCheckState(CHECKED_ALL)
     , validator(new ConfigNameValidator(this))
 {
+    lastCheckState = ApplyMaterialPresetCommand::PROPERTIES | ApplyMaterialPresetCommand::TEMPLATE | ApplyMaterialPresetCommand::GROUP;
     DAVA::Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
     materialPropertiesUpdater = new LazyUpdater(fn, this);
 
@@ -539,7 +540,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
         ui->materialProperty->header()->resizeSection(1, v2.AsInt32());
 
     DAVA::VariantType savePath = posSaver.LoadValue("lastSavePath");
-    DAVA::VariantType loadState = posSaver.LoadValue("lastLoadState");
+    DAVA::VariantType loadState = posSaver.LoadValue("lastLoadPresetState");
     if (savePath.GetType() == DAVA::VariantType::TYPE_FILEPATH)
         lastSavePath = savePath.AsFilePath();
     if (loadState.GetType() == DAVA::VariantType::TYPE_UINT32)
@@ -561,7 +562,7 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("splitPosProperties", v1);
     posSaver.SaveValue("splitPosPreview", v2);
     posSaver.SaveValue("lastSavePath", DAVA::VariantType(lastSavePath));
-    posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
+    posSaver.SaveValue("lastLoadPresetState", DAVA::VariantType(lastCheckState));
 }
 
 QtPropertyData* MaterialEditor::AddSection(const DAVA::FastName& sectionName)
@@ -758,7 +759,10 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommandNotific
         materialPropertiesUpdater->Update();
     }
 
-    if (commandNotification.MatchCommandIDs({ CMDID_MATERIAL_CHANGE_CURRENT_CONFIG, CMDID_MATERIAL_CREATE_CONFIG, CMDID_MATERIAL_REMOVE_CONFIG }))
+    if (commandNotification.MatchCommandIDs({ CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
+                                              CMDID_MATERIAL_CREATE_CONFIG,
+                                              CMDID_MATERIAL_REMOVE_CONFIG,
+                                              CMDID_MATERIAL_APPLY_PRESET }))
     {
         RefreshMaterialProperties();
     }
@@ -1172,12 +1176,8 @@ void MaterialEditor::OnMaterialSave(bool checked)
             materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
             materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
 
-            DAVA::ScopedPtr<DAVA::KeyedArchive> materialArchive(new DAVA::KeyedArchive());
-            StoreMaterialToPreset(curMaterials.front(), materialArchive, &materialContext);
-
             DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
-            presetArchive->SetUInt32("serializationContextVersion", materialContext.GetVersion());
-            presetArchive->SetArchive("content", materialArchive);
+            ApplyMaterialPresetCommand::StoreMaterialPreset(presetArchive, curMaterials.front(), materialContext);
             presetArchive->SaveToYamlFile(lastSavePath);
         }
     }
@@ -1198,22 +1198,17 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         {
             lastSavePath = inputFile.toLatin1().data();
 
-            DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
-            presetArchive->LoadFromYamlFile(lastSavePath);
+            std::unique_ptr<ApplyMaterialPresetCommand> command = std::make_unique<ApplyMaterialPresetCommand>(lastSavePath, curMaterials.front(), activeScene);
 
             // not checking version right now
             // version info is reserved for future use
-            if (presetArchive->IsKeyExists("content"))
+            if (command->IsValidPreset())
             {
-                DAVA::KeyedArchive* materialArchive = presetArchive->GetArchive("content");
-                DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
-                DAVA::SerializationContext materialContext;
-                materialContext.SetScene(activeScene);
-                materialContext.SetScenePath(ProjectManager::Instance()->GetProjectPath());
-                materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
-                UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
-                materialContext.ResolveMaterialBindings();
-                activeScene->SetChanged();
+                if (ExecMaterialLoadingDialog(lastCheckState, inputFile))
+                {
+                    command->Init(lastCheckState);
+                    activeScene->Exec(std::move(command));
+                }
             }
             else
             {
@@ -1226,26 +1221,26 @@ void MaterialEditor::OnMaterialLoad(bool checked)
     RefreshMaterialProperties();
 }
 
-DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString& inputFile)
+bool MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32& userChoise, const QString& inputFile)
 {
     DAVA::uint32 ret = 0;
 
-    QDialog* dlg = new QDialog(this);
+    QDialog dlg;
     QVBoxLayout* dlgLayout = new QVBoxLayout();
     dlgLayout->setMargin(10);
     dlgLayout->setSpacing(15);
 
-    dlg->setWindowTitle("Loading material preset...");
-    dlg->setWindowFlags(Qt::Tool);
-    dlg->setLayout(dlgLayout);
+    dlg.setWindowTitle("Loading material preset...");
+    dlg.setWindowFlags(Qt::Tool);
+    dlg.setLayout(dlgLayout);
 
-    QLineEdit* pathLine = new QLineEdit(dlg);
+    QLineEdit* pathLine = new QLineEdit(&dlg);
     pathLine->setText(inputFile);
     pathLine->setReadOnly(false);
     pathLine->setToolTip(inputFile);
     dlgLayout->addWidget(pathLine);
 
-    QGroupBox* groupbox = new QGroupBox("Load parameters", dlg);
+    QGroupBox* groupbox = new QGroupBox("Load parameters", &dlg);
     dlgLayout->addWidget(groupbox);
 
     QCheckBox* templateChBox = new QCheckBox(QString(UIName::Template.c_str()), groupbox);
@@ -1253,10 +1248,10 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     QCheckBox* propertiesChBox = new QCheckBox(QString(UIName::Properties.c_str()), groupbox);
     QCheckBox* texturesChBox = new QCheckBox(QString(UIName::Textures.c_str()), groupbox);
 
-    templateChBox->setChecked((bool)(initialState & CHECKED_TEMPLATE));
-    groupChBox->setChecked((bool)(initialState & CHECKED_GROUP));
-    propertiesChBox->setChecked((bool)(initialState & CHECKED_PROPERTIES));
-    texturesChBox->setChecked((bool)(initialState & CHECKED_TEXTURES));
+    templateChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::TEMPLATE));
+    groupChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::GROUP));
+    propertiesChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::PROPERTIES));
+    texturesChBox->setChecked((bool)(userChoise & ApplyMaterialPresetCommand::TEXTURES));
 
     QGridLayout* gridLayout = new QGridLayout();
     groupbox->setLayout(gridLayout);
@@ -1266,221 +1261,28 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     gridLayout->addWidget(propertiesChBox, 0, 1);
     gridLayout->addWidget(texturesChBox, 1, 1);
 
-    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dlg);
     dlgLayout->addWidget(buttons);
 
-    QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
-    QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+    QObject::connect(buttons, SIGNAL(accepted()), &dlg, SLOT(accept()));
+    QObject::connect(buttons, SIGNAL(rejected()), &dlg, SLOT(reject()));
 
-    if (QDialog::Accepted == dlg->exec())
+    QDialog::DialogCode retCode = static_cast<QDialog::DialogCode>(dlg.exec());
+
+    if (QDialog::Accepted == retCode)
     {
+        userChoise = 0;
         if (templateChBox->checkState() == Qt::Checked)
-            ret |= CHECKED_TEMPLATE;
+            userChoise |= ApplyMaterialPresetCommand::TEMPLATE;
         if (groupChBox->checkState() == Qt::Checked)
-            ret |= CHECKED_GROUP;
+            userChoise |= ApplyMaterialPresetCommand::GROUP;
         if (propertiesChBox->checkState() == Qt::Checked)
-            ret |= CHECKED_PROPERTIES;
+            userChoise |= ApplyMaterialPresetCommand::PROPERTIES;
         if (texturesChBox->checkState() == Qt::Checked)
-            ret |= CHECKED_TEXTURES;
+            userChoise |= ApplyMaterialPresetCommand::TEXTURES;
     }
 
-    delete dlg;
-    return ret;
-}
-
-void MaterialEditor::StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                                           DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const
-{
-    DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-
-    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
-    for (const auto& texName : membersList)
-    {
-        if (material->HasLocalTexture(texName))
-        {
-            auto texturePath = material->GetLocalTexture(texName)->GetPathname();
-            if (!texturePath.IsEmpty())
-            {
-                DAVA::String textureRelativePath = texturePath.GetRelativePathname(context->GetScenePath());
-                if (textureRelativePath.size() > 0)
-                {
-                    texturesArchive->SetString(texName.c_str(), textureRelativePath);
-                }
-            }
-        }
-    }
-}
-
-void MaterialEditor::StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                                        DAVA::KeyedArchive* flagsArchive) const
-{
-    DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
-    for (const auto& flagName : membersList)
-    {
-        if (material->HasLocalFlag(flagName))
-        {
-            flagsArchive->SetInt32(flagName.c_str(), material->GetLocalFlagValue(flagName));
-        }
-    }
-}
-
-void MaterialEditor::StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-                                             DAVA::KeyedArchive* propertiesArchive) const
-{
-    DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
-    for (const auto& propertyName : membersList)
-    {
-        if (material->HasLocalProperty(propertyName))
-        {
-            rhi::ShaderProp::Type propertyType = material->GetLocalPropType(propertyName);
-            const DAVA::float32* propertyValue = material->GetLocalPropValue(propertyName);
-            DAVA::uint32 arraySize = material->GetLocalPropArraySize(propertyName);
-            DAVA::uint32 dataSize = static_cast<DAVA::uint32>(sizeof(DAVA::float32) * DAVA::ShaderDescriptor::CalculateDataSize(propertyType, 1));
-
-            DAVA::ScopedPtr<DAVA::KeyedArchive> prop(new DAVA::KeyedArchive());
-            prop->SetUInt32("type", static_cast<DAVA::uint32>(propertyType));
-            prop->SetUInt32("size", arraySize);
-            prop->SetByteArray("data", reinterpret_cast<const DAVA::uint8*>(propertyValue), dataSize);
-            propertiesArchive->SetArchive(propertyName.c_str(), prop);
-        }
-    }
-}
-
-void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* archive,
-                                           DAVA::SerializationContext* context) const
-{
-    const DAVA::InspInfo* info = material->GetTypeInfo();
-
-    DAVA::ScopedPtr<DAVA::KeyedArchive> texturesArchive(new DAVA::KeyedArchive());
-    DAVA::ScopedPtr<DAVA::KeyedArchive> flagsArchive(new DAVA::KeyedArchive());
-    DAVA::ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());
-
-    const DAVA::InspMember* materialMember = info->Member(DAVA::FastName("localTextures"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialTextures(material, materialMember, texturesArchive, context);
-
-    materialMember = info->Member(DAVA::FastName("localFlags"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialFlags(material, materialMember, flagsArchive);
-
-    materialMember = info->Member(DAVA::FastName("localProperties"));
-    if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-        StoreMaterialProperties(material, materialMember, propertiesArchive);
-
-    archive->SetArchive("flags", flagsArchive);
-    archive->SetArchive("textures", texturesArchive);
-    archive->SetArchive("properties", propertiesArchive);
-
-    auto fxName = material->GetLocalFXName();
-    if (fxName.IsValid())
-        archive->SetFastName("fxname", fxName);
-
-    auto qualityGroup = material->GetQualityGroup();
-    if (qualityGroup.IsValid())
-        archive->SetFastName("group", qualityGroup);
-}
-
-void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive)
-{
-    const auto properties = properitesArchive->GetArchieveData();
-    for (const auto& pm : properties)
-    {
-        DVASSERT(DAVA::VariantType::TYPE_KEYED_ARCHIVE == pm.second->type);
-
-        DAVA::FastName propName(pm.first);
-        DAVA::KeyedArchive* propertyArchive = pm.second->AsKeyedArchive();
-
-        /*
-         * Here we are checking if propData if valid, because yaml parser can 
-         * completely delete (skip) byte array node if it contains invalid data
-         */
-        const DAVA::float32* propData = reinterpret_cast<const DAVA::float32*>(propertyArchive->GetByteArray("data"));
-        if (nullptr != propData)
-        {
-            rhi::ShaderProp::Type propType = static_cast<rhi::ShaderProp::Type>(propertyArchive->GetUInt32("type"));
-            DAVA::uint32 propSize = propertyArchive->GetUInt32("size");
-
-            if (material->HasLocalProperty(propName))
-            {
-                auto existingType = material->GetLocalPropType(propName);
-                auto existingSize = material->GetLocalPropArraySize(propName);
-                if ((existingType == propType) && (existingSize == propSize))
-                {
-                    material->SetPropertyValue(propName, propData);
-                }
-            }
-            else
-            {
-                material->AddProperty(propName, propData, propType, propSize);
-            }
-        }
-    }
-}
-
-void MaterialEditor::UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive)
-{
-    const auto flags = flagsArchive->GetArchieveData();
-    for (const auto& fm : flags)
-    {
-        if (material->HasLocalFlag(DAVA::FastName(fm.first)))
-            material->SetFlag(DAVA::FastName(fm.first), fm.second->AsInt32());
-        else
-            material->AddFlag(DAVA::FastName(fm.first), fm.second->AsInt32());
-    }
-}
-
-void MaterialEditor::UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
-                                                      const DAVA::FilePath& scenePath)
-{
-    const auto& texturesMap = texturesArchive->GetArchieveData();
-    for (const auto& tm : texturesMap)
-    {
-        auto texture = DAVA::Texture::CreateFromFile(scenePath + tm.second->AsString());
-
-        DAVA::FastName textureName(tm.first);
-        if (material->HasLocalTexture(textureName))
-        {
-            material->SetTexture(textureName, texture);
-        }
-        else
-        {
-            material->AddTexture(textureName, texture);
-        }
-    }
-}
-
-void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-                                                         DAVA::SerializationContext* context, DAVA::uint32 options)
-{
-    if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
-    {
-        material->SetQualityGroup(preset->GetFastName("group"));
-    }
-
-    if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
-    {
-        material->SetFXName(preset->GetFastName("fxname"));
-    }
-
-    if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("flags"))
-    {
-        UpdateMaterialFlagsFromPreset(material, preset->GetArchive("flags"));
-    }
-
-    if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("properties"))
-    {
-        UpdateMaterialPropertiesFromPreset(material, preset->GetArchive("properties"));
-    }
-
-    if ((options & CHECKED_TEXTURES) && preset->IsKeyExists("textures"))
-    {
-        UpdateMaterialTexturesFromPreset(material, preset->GetArchive("textures"), context->GetScenePath());
-    }
+    return retCode == QDialog::Accepted;
 }
 
 void MaterialEditor::RefreshMaterialProperties()

@@ -44,6 +44,8 @@ public:
 
     static const DAVA::FastName General_AutoConvertation;
 
+    static const DAVA::FastName Internal_EnableSounds;
+
     static const DAVA::FastName Scene_GridStep;
     static const DAVA::FastName Scene_GridSize;
     static const DAVA::FastName Scene_CameraSpeed0;
@@ -75,6 +77,9 @@ public:
     static const DAVA::FastName Scene_Sound_SoundObjectDraw;
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor;
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor;
+
+    static const DAVA::FastName Scene_Grab_Size_Width;
+    static const DAVA::FastName Scene_Grab_Size_Height;
 
     static const DAVA::FastName General_Mouse_InvertWheel;
     static const DAVA::FastName General_Mouse_WheelMoveCamera;

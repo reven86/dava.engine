@@ -1,8 +1,6 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
-
-#include "Reflection/Public/ReflectedType.h"
-#include "Reflection/Public/Wrappers.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {
@@ -21,19 +19,13 @@ void ReflectedType::SetPermanentName(const String& name) const
     rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
-// TODO:
-//
-// this is example access methods for ctorsWrappers
-// should be reviewed and rewrited later
-//
-/*
-const CtorWrapper *ReflectedType::GetCtor() const
+const CtorWrapper* ReflectedType::GetCtor(const AnyFn::Params& params) const
 {
     const CtorWrapper* ret = nullptr;
 
     for (auto& it : ctorWrappers)
     {
-        if (it->GetParamsList().size() == 0)
+        if (it->GetInvokeParams() == params)
         {
             ret = it.get();
             break;
@@ -43,23 +35,7 @@ const CtorWrapper *ReflectedType::GetCtor() const
     return ret;
 }
 
-const CtorWrapper *ReflectedType::GetCtor(const Vector<const Type *> &params) const
-{
-    const CtorWrapper* ret = nullptr;
-
-    for (auto& it : ctorWrappers)
-    {
-        if (it->GetParamsList() == params)
-        {
-            ret = it.get();
-            break;
-        }
-    }
-
-    return ret;
-}
-
-const Set<const CtorWrapper *> &ReflectedType::GetCtors() const
+Vector<const CtorWrapper*> ReflectedType::GetCtors() const
 {
     Vector<const CtorWrapper*> ret;
 
@@ -71,7 +47,11 @@ const Set<const CtorWrapper *> &ReflectedType::GetCtors() const
 
     return ret;
 }
-*/
+
+const DtorWrapper* ReflectedType::GetDtor() const
+{
+    return dtorWrapper.get();
+}
 
 const ReflectedType* ReflectedType::GetByType(const Type* type)
 {
@@ -113,5 +93,3 @@ const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
 }
 
 } // namespace DAVA
-
-#endif

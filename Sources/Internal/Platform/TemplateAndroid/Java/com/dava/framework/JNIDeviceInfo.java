@@ -1,6 +1,7 @@
 package com.dava.framework;
 
 import com.dava.engine.DavaActivity;
+import com.dava.engine.DavaSplashView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -28,9 +30,13 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
 import android.util.Log;
+import android.view.Display;
 
 public class JNIDeviceInfo {
     final static String TAG = "JNIDeviceInfo";
+    
+    public static int zBufferSize = 0;
+    public static byte gpuFamily = DavaSplashView.GPU_INVALID;
 
     public static String GetVersion()
     {
@@ -104,24 +110,63 @@ public class JNIDeviceInfo {
     
     public static int GetZBufferSize()
     {
-        return JNIConfigChooser.GetDepthBufferSize();
+        if (DavaActivity.instance() != null)
+        {
+            return zBufferSize;
+        } else
+        {
+            return JNIConfigChooser.GetDepthBufferSize();   
+        }
+    }
+    
+    public static byte GetGpuFamily()
+    {
+        return gpuFamily;
     }
     
     public static String GetHTTPProxyHost()
-    {		
+    {
         return System.getProperty("http.proxyHost");
     }
     
     public static int GetHTTPProxyPort()
     {
         String portStr = System.getProperty("http.proxyPort");
-        int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+        int proxyPort = Integer.parseInt((portStr != null ? portStr : "0"));
         return proxyPort;
     }
     
     public static String GetHTTPNonProxyHosts()
     {
         return System.getProperty("http.nonProxyHosts");
+    }
+    
+    private static Point GetDefaultDisplaySize()
+    {
+        Display display = null;
+    	if (JNIActivity.GetActivity() != null)
+        {
+    	    display = JNIActivity.GetActivity().getWindowManager().getDefaultDisplay();
+        }
+        else
+        {
+            display = DavaActivity.instance().getWindowManager().getDefaultDisplay();
+        }
+    	Point size = new Point();
+    	display.getRealSize(size);
+        return size;
+    }
+        
+    public static int GetDefaultDisplayWidth()
+    {
+    	Point size = GetDefaultDisplaySize();
+    	return size.x;
+    }
+    
+    public static int GetDefaultDisplayHeight()
+    {
+    	Point size = GetDefaultDisplaySize();
+    	return size.y;
     }
         
     private static final int NETWORK_TYPE_NOT_CONNECTED = 0;

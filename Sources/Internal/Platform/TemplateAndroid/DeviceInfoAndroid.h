@@ -31,7 +31,7 @@ public:
     int32 GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
@@ -67,6 +67,9 @@ private:
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
     Function<jstring()> getCarrierName;
+    Function<jint()> getDefaultDisplayWidth;
+    Function<jint()> getDefaultDisplayHeight;
+    Function<jbyte()> getGpuFamily;
 
     DeviceInfo::ScreenInfo screenInfo;
 };

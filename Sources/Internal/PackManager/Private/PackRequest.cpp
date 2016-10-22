@@ -5,6 +5,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "DLC/DLC.h"
+#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -69,12 +70,12 @@ void PackRequest::AskFooter()
                     {
                         if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
                         {
-                            throw std::runtime_error("can't get size of file on server side");
+                            DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
                         }
                     }
                     else
                     {
-                        throw std::runtime_error("can't get size of superpack from server");
+                        DAVA_THROW(DAVA::Exception, "can't get size of superpack from server");
                     }
                 }
             }
@@ -84,7 +85,7 @@ void PackRequest::AskFooter()
     {
         if (fullSizeServerData < sizeof(PackFormat::PackFile))
         {
-            throw std::runtime_error("too small superpack on server");
+            DAVA_THROW(DAVA::Exception, "too small superpack on server");
         }
 
         uint64 downloadOffset = fullSizeServerData - sizeof(footerOnServer);
@@ -112,13 +113,13 @@ void PackRequest::GetFooter()
                 uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&footerOnServer.info), sizeof(footerOnServer.info));
                 if (crc32 != footerOnServer.infoCrc32)
                 {
-                    throw std::runtime_error("downloaded superpack footer is broken: " + packManagerImpl->GetSuperPackUrl());
+                    DAVA_THROW(DAVA::Exception, "downloaded superpack footer is broken: " + packManagerImpl->GetSuperPackUrl());
                 }
 
                 if (packManagerImpl->GetInitFooter().infoCrc32 != footerOnServer.infoCrc32)
                 {
                     // server Superpack changed during current session
-                    throw std::runtime_error("during pack request server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
+                    DAVA_THROW(DAVA::Exception, "during current session server superpack file changed, crc32 not match, url: " + packManagerImpl->GetSuperPackUrl());
                 }
 
                 StartLoadingPackFile();
@@ -135,7 +136,7 @@ void PackRequest::GetFooter()
     }
     else
     {
-        throw std::runtime_error("can't get status for download task");
+        DAVA_THROW(DAVA::Exception, "can't get status for download task");
     }
 }
 
@@ -238,7 +239,7 @@ bool PackRequest::IsLoadingPackFileFinished()
         }
         else
         {
-            throw std::runtime_error(Format("can't get download error code for pack file for pack: %s", subRequest.pack->name.c_str()));
+            DAVA_THROW(DAVA::Exception, Format("can't get download error code for pack file for pack: %s", subRequest.pack->name.c_str()));
         }
     }
     break;
@@ -267,6 +268,7 @@ void PackRequest::SetErrorStatusAndFireSignal(PackRequest::SubRequest& subReques
 
 void PackRequest::StartCheckHash()
 {
+    DVASSERT(Thread::IsMainThread());
     DVASSERT(!dependencies.empty());
 
     SubRequest& subRequest = dependencies.at(0);
@@ -278,7 +280,7 @@ void PackRequest::StartCheckHash()
 
     if (!FileSystem::Instance()->IsFile(packPath))
     {
-        throw std::runtime_error("can't find just downloaded pack: " + packPath.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't find just downloaded pack: " + packPath.GetStringValue());
     }
 
     uint32 realCrc32FromPack = CRC32::ForFile(packPath);
@@ -373,6 +375,8 @@ void PackRequest::ClearSuperpackData()
 
 void PackRequest::Update()
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!IsDone() && !IsError())
     {
         SubRequest& subRequest = dependencies.at(0);

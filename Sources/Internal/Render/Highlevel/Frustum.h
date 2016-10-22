@@ -38,12 +38,7 @@ public:
         EFR_INTERSECT = 0x2,
     };
 
-protected:
-    ~Frustum();
-
 public:
-    Frustum();
-
     //! \brief Set view frustum from matrix information
     //! \param viewProjection view * projection matrix
     void Build(const Matrix4& viewProjection, bool zeroBaseClipRange);
@@ -114,8 +109,8 @@ public:
     void DebugDraw(RenderHelper* drawer);
 
 private:
-    int32 planeCount;
-    uint32 planeAccesBits;
+    int32 planeCount = 0;
+    uint32 planeAccesBits = 0;
     Plane planeArray[6];
 };
 };

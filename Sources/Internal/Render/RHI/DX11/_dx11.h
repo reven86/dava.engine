@@ -42,6 +42,7 @@ namespace rhi
 struct InitParam;
 
 DXGI_FORMAT DX11_TextureFormat(TextureFormat format);
+uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 
 void InitializeRenderThreadDX11(uint32 frameCount);
 void UninitializeRenderThreadDX11();
@@ -49,7 +50,6 @@ void UninitializeRenderThreadDX11();
 extern ID3D11Device* _D3D11_Device;
 extern IDXGISwapChain* _D3D11_SwapChain;
 extern ID3D11Texture2D* _D3D11_SwapChainBuffer;
-extern ID3D11Texture2D* _D3D11_SwapChainBufferCopy;
 extern ID3D11RenderTargetView* _D3D11_RenderTargetView;
 extern ID3D11Texture2D* _D3D11_DepthStencilBuffer;
 extern ID3D11DepthStencilView* _D3D11_DepthStencilView;

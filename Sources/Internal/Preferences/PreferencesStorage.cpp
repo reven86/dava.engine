@@ -256,7 +256,6 @@ DAVA::VariantType PreferencesStorage::GetDefaultValue(const DAVA::InspMember* me
 {
     if (member == nullptr)
     {
-        DVASSERT(member == nullptr);
         return DAVA::VariantType();
     }
     const DAVA::InspInfo* inspInfo = member->GetParentInsp();

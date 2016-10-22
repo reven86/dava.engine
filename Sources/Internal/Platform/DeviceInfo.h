@@ -1,5 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO__
-#define __FRAMEWORK__DEVICEINFO__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
@@ -148,6 +147,11 @@ public:
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
 
+    // Override real gpu family
+    static void SetOverridenGPU(eGPUFamily newGPU);
+    // Reset override
+    static void ResetOverridenGPU();
+
     // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID
     // bool value - device's state: connected (true) or disconnected (false)
@@ -159,4 +163,3 @@ private:
     static DeviceInfoPrivate* GetPrivateImpl();
 };
 };
-#endif /* defined(__FRAMEWORK__DEVICEINFO__) */

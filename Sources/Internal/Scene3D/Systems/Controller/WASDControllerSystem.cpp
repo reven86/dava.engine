@@ -12,6 +12,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "Utils/Utils.h"
+#include "Debug/CPUProfiler.h"
 
 namespace DAVA
 {
@@ -39,6 +40,8 @@ void WASDControllerSystem::RemoveEntity(Entity* entity)
 
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
+    DAVA_CPU_PROFILER_SCOPE("WASDControllerSystem::Process")
+
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
 
     const uint32 size = static_cast<uint32>(entities.size());
@@ -46,7 +49,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         return;
 
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL) || keyboard.IsKeyPressed(Key::LSHIFT))
+    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL))
     {
         return;
     }

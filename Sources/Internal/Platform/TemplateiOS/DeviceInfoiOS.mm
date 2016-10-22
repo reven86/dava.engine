@@ -4,7 +4,7 @@
 
 #include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
-#include "Utils/NsStringUtils.h"
+#import "Utils/NSStringUtils.h"
 #include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
@@ -320,13 +320,13 @@ WideString DeviceInfoPrivate::GetName()
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
@@ -345,7 +345,7 @@ int32 DeviceInfoPrivate::GetZBufferSize()
     return 24;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_POWERVR_IOS;
 }

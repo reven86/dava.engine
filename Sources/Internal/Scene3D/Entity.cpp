@@ -6,7 +6,6 @@
 #include "Render/RenderHelper.h"
 #include "Scene3D/SceneFileV2.h"
 #include "FileSystem/FileSystem.h"
-#include "Debug/Stats.h"
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"

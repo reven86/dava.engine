@@ -17,13 +17,11 @@ Dispatch
     void (*impl_Present)(Handle);
     Api (*impl_HostApi)();
     bool (*impl_NeedRestoreResources)();
-    bool (*impl_TextureFormatSupported)(TextureFormat);
+    bool (*impl_TextureFormatSupported)(TextureFormat, ProgType);
 
     void (*impl_SuspendRendering)();
     void (*impl_ResumeRendering)();
     void (*impl_InvalidateCache)();
-
-    const RenderDeviceCaps& (*impl_DeviceCaps)();
 
     Handle (*impl_VertexBuffer_Create)(const VertexBuffer::Descriptor& desc);
     void (*impl_VertexBuffer_Delete)(Handle);

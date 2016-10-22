@@ -45,6 +45,7 @@
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 #include "Scene/System/PathSystem.h"
+#include "Render/Highlevel/RenderObject.h"
 
 #include "Deprecated/SceneValidator.h"
 
@@ -59,6 +60,7 @@ PropertyEditor::PropertyEditor(QWidget* parent /* = 0 */, bool connectToSceneSig
 {
     DAVA::Function<void()> fn(this, &PropertyEditor::ResetProperties);
     propertiesUpdater = new LazyUpdater(fn, this);
+    selectionUpdater = new LazyUpdater(DAVA::MakeFunction(this, &PropertyEditor::UpdateSelectionLazy), this);
 
     if (connectToSceneSignals)
     {
@@ -109,24 +111,13 @@ void PropertyEditor::Init(Ui::MainWindow* mainWindowUi, const std::shared_ptr<Gl
 
 void PropertyEditor::SetEntities(const SelectableGroup* selected)
 {
-    ClearCurrentNodes();
-    SCOPE_EXIT
+    SelectableGroup group = ExtractEntities(selected);
+    if (group != curNodes)
     {
+        ClearCurrentNodes();
+        curNodes = group;
         ResetProperties();
         SaveScheme("~doc:/PropEditorDefault.scheme");
-    };
-
-    if (selected == nullptr || selected->IsEmpty())
-        return;
-
-    for (auto entity : selected->ObjectsOfType<DAVA::Entity>())
-    {
-        GetOrCreateCustomProperties(entity);
-    }
-
-    for (const auto& item : selected->GetContent())
-    {
-        curNodes.Add(item.GetContainedObject(), item.GetBoundingBox());
     }
 }
 
@@ -212,6 +203,38 @@ void PropertyEditor::AddEntityProperties(DAVA::Entity* node, std::unique_ptr<QtP
             }
         }
     }
+}
+
+void PropertyEditor::UpdateSelectionLazy()
+{
+    SceneEditor2* activeScene = sceneHolder.GetScene();
+    if (activeScene)
+    {
+        SetEntities(&activeScene->selectionSystem->GetSelection());
+    }
+    else
+    {
+        SetEntities(nullptr);
+    }
+}
+
+SelectableGroup PropertyEditor::ExtractEntities(const SelectableGroup* selection)
+{
+    SelectableGroup entities;
+    if (selection == nullptr || selection->IsEmpty())
+        return entities;
+
+    for (auto entity : selection->ObjectsOfType<DAVA::Entity>())
+    {
+        GetOrCreateCustomProperties(entity);
+    }
+
+    for (const auto& item : selection->GetContent())
+    {
+        entities.Add(item.GetContainedObject(), item.GetBoundingBox());
+    }
+
+    return entities;
 }
 
 void PropertyEditor::ResetProperties()
@@ -401,8 +424,8 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData* data)
                         QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
 
-                    if ((renderObject->GetType() == RenderObject::TYPE_MESH) ||
-                        (renderObject->GetType() == RenderObject::TYPE_RENDEROBJECT))
+                    if ((renderObject->GetType() == DAVA::RenderObject::TYPE_MESH) ||
+                        (renderObject->GetType() == DAVA::RenderObject::TYPE_RENDEROBJECT))
                     {
                         QtPropertyToolButton* convertRenderObject = CreateButton(data, SharedIcon(":/QtIcons/sphere.png"), "Make billboard");
                         QObject::connect(convertRenderObject, &QtPropertyToolButton::clicked, this, &PropertyEditor::OnConvertRenderObjectToBillboard);
@@ -734,7 +757,7 @@ void PropertyEditor::sceneDeactivated(SceneEditor2* scene)
 
 void PropertyEditor::sceneSelectionChanged(SceneEditor2* scene, const SelectableGroup* selected, const SelectableGroup* deselected)
 {
-    SetEntities(selected);
+    selectionUpdater->Update();
 }
 
 template <typename T>
@@ -1566,7 +1589,7 @@ void PropertyEditor::OnConvertRenderObjectToBillboard()
             DAVA::Entity* entity = obj.AsEntity();
             if (entity != nullptr)
             {
-                RenderComponent* component = GetRenderComponent(entity);
+                DAVA::RenderComponent* component = DAVA::GetRenderComponent(entity);
                 if (component != nullptr)
                 {
                     DAVA::RenderObject* ro = component->GetRenderObject();

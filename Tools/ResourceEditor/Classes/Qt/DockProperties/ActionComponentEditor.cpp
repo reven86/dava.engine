@@ -10,7 +10,7 @@
 #include <QLineEdit>
 #include <QRegExpValidator>
 
-namespace
+namespace ActionComponentEditorDetail
 {
 enum eColumns
 {
@@ -45,6 +45,11 @@ QString EVENT_TYPE_NAME[] =
   "Added",
   "User",
 };
+
+QString GetColumnWidthsKey()
+{
+    return QString("column-widths");
+}
 }
 
 ActionComponentEditor::ActionComponentEditor(QWidget* parent)
@@ -53,13 +58,30 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
     , isModified(false)
 {
     ui->setupUi(this);
+    posSaver.Attach(this);
 
     targetComponent = NULL;
     connect(ui->buttonAddItem, SIGNAL(clicked()), SLOT(OnAddAction()));
     connect(ui->buttonRemoveItem, SIGNAL(clicked()), SLOT(OnRemoveAction()));
     connect(ui->tableActions, SIGNAL(itemSelectionChanged()), SLOT(OnSelectedItemChanged()));
 
-    ui->tableActions->resizeColumnsToContents();
+    DAVA::VariantType widths = posSaver.LoadValue(ActionComponentEditorDetail::GetColumnWidthsKey());
+    if (widths.type == DAVA::VariantType::TYPE_BYTE_ARRAY)
+    {
+        DAVA::int32 size = widths.AsByteArraySize() / sizeof(int);
+        DVASSERT(size == ui->tableActions->columnCount());
+        const DAVA::uint8* data = widths.AsByteArray();
+        const int* intData = reinterpret_cast<const int*>(data);
+        for (int i = 0; i < size; ++i)
+        {
+            ui->tableActions->setColumnWidth(i, intData[i]);
+        }
+    }
+    else
+    {
+        ui->tableActions->resizeColumnsToContents();
+    }
+
     ui->buttonRemoveItem->setEnabled(false);
 
     editDelegate.setParent(ui->tableActions);
@@ -80,6 +102,16 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
 
 ActionComponentEditor::~ActionComponentEditor()
 {
+    int columnCount = ui->tableActions->columnCount();
+    DAVA::Vector<int> widths;
+    widths.reserve(columnCount);
+
+    for (int i = 0; i < columnCount; ++i)
+    {
+        widths.push_back(ui->tableActions->columnWidth(i));
+    }
+    DAVA::VariantType value(reinterpret_cast<DAVA::uint8*>(widths.data()), widths.size() * sizeof(int));
+    posSaver.SaveValue(ActionComponentEditorDetail::GetColumnWidthsKey(), value);
     delete ui;
 }
 
@@ -94,6 +126,8 @@ void ActionComponentEditor::SetComponent(DAVA::ActionComponent* component)
 
 void ActionComponentEditor::UpdateTableFromComponent(DAVA::ActionComponent* component)
 {
+    using namespace ActionComponentEditorDetail;
+
     ui->tableActions->clearContents();
 
     int actionCount = component->GetCount();
@@ -126,7 +160,6 @@ void ActionComponentEditor::UpdateTableFromComponent(DAVA::ActionComponent* comp
             ui->tableActions->setItem(i, COLUMN_STOPWHENEMPTY_INDEX, stopWhenEmptyTableItem);
         }
 
-        ui->tableActions->resizeColumnsToContents();
         ui->tableActions->resizeRowsToContents();
     }
 }
@@ -219,9 +252,6 @@ bool ActionComponentEditor::IsActionPresent(const DAVA::ActionComponent::Action 
 
 void ActionComponentEditor::Update()
 {
-    ui->tableActions->resizeColumnsToContents();
-    ui->tableActions->resizeRowsToContents();
-
     ui->buttonAddItem->setEnabled(!IsActionPresent(GetDefaultAction()));
     isModified = true;
 }
@@ -250,9 +280,19 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject* parent)
     eventTypes["User"] = DAVA::ActionComponent::Action::EVENT_CUSTOM;
 }
 
+void ActionItemEditDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QStyleOptionViewItem opt = option;
+    // We should set font family manually, to set familyResolved flag in font.
+    // If we don't do this, Qt will get resolve family almost randomly
+    opt.font.setFamily(opt.font.family());
+    QStyledItemDelegate::paint(painter, opt, index);
+}
+
 QWidget* ActionItemEditDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
                                               const QModelIndex& index) const
 {
+    using namespace ActionComponentEditorDetail;
     QWidget* editor = NULL;
 
     switch (index.column())
@@ -371,6 +411,7 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget* parent, const QStyleOptio
 
 void ActionItemEditDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
+    using namespace ActionComponentEditorDetail;
     const DAVA::ActionComponent::Action& currentAction = targetComponent->Get(index.row());
 
     switch (index.column())
@@ -471,6 +512,7 @@ void ActionItemEditDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 void ActionItemEditDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
                                           const QModelIndex& index) const
 {
+    using namespace ActionComponentEditorDetail;
     DAVA::ActionComponent::Action& currentAction = targetComponent->Get(index.row());
 
     switch (index.column())

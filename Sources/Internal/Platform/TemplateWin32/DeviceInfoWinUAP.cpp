@@ -128,12 +128,12 @@ String DeviceInfoPrivate::GetTimeZone()
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return "Not yet implemented";
+    return "";
 }
 
 int DeviceInfoPrivate::GetHTTPProxyPort()
@@ -161,7 +161,7 @@ WideString DeviceInfoPrivate::GetName()
     return deviceName;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return gpu;
 }

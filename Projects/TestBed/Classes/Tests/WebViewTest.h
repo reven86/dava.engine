@@ -6,11 +6,11 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class WebViewTest : public BaseScreen
 {
 public:
-    WebViewTest(GameCore* g);
+    WebViewTest(TestBed& app);
 
 protected:
     void LoadResources() override;
