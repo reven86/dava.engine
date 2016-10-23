@@ -29,19 +29,23 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspB
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
+
+    void ShowResultList(const DAVA::ResultList& resultList);
+
     void AttachDocumentGroup(DocumentGroup* documentGroup);
 
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
     QComboBox* GetComboBoxLanguage();
-    void RebuildRecentMenu(const QStringList& lastProjectsPathes);
+    void SetRecentProjects(const QStringList& lastProjectsPathes);
+    void SetLocales(const QStringList& availableLangs, const QString& currentLang);
 
 signals:
-    void CloseProject();
+    //void CloseProject();
     void ActionExitTriggered();
     void RecentMenuTriggered(QAction*);
-    void ActionOpenProjectTriggered(QString projectPath);
+    //void ActionOpenProjectTriggered(QString projectPath);
     void OpenPackageFile(QString path);
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
@@ -55,7 +59,7 @@ public slots:
 
 private slots:
     void OnShowHelp();
-    void OnOpenProjectAction();
+    //void OnOpenProjectAction();
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
@@ -66,7 +70,6 @@ private slots:
 
 private:
     void InitLanguageBox();
-    void FillComboboxLanguages(const Project* core);
     void InitRtlBox();
     void InitBiDiSupportBox();
     void InitGlobalClasses();

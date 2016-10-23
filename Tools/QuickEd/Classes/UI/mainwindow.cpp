@@ -161,13 +161,12 @@ void MainWindow::InitLanguageBox()
     toolBarPlugins->addWidget(wrapper);
 }
 
-void MainWindow::FillComboboxLanguages(const Project* project)
+void MainWindow::SetLocales(const QStringList& availableLangs, const QString& currentLang)
 {
-    QString currentText = project->GetEditorLocalizationSystem()->GetCurrentLocale();
     bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
     comboboxLanguage->clear();
-    comboboxLanguage->addItems(project->GetEditorLocalizationSystem()->GetAvailableLocaleNames());
-    comboboxLanguage->setCurrentText(currentText);
+    comboboxLanguage->addItems(availableLangs);
+    comboboxLanguage->setCurrentText(currentLang);
     comboboxLanguage->blockSignals(wasBlocked);
 }
 
@@ -215,11 +214,11 @@ void MainWindow::InitMenu()
 {
     SetupViewMenu();
 
-    connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProjectAction);
-    connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
+    //connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProjectAction);
+    //connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
 
-    connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
-    connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
+    //connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
+    //connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
     connect(actionZoomOut, &QAction::triggered, previewWidget, &PreviewWidget::OnDecrementScale);
     connect(actionZoomIn, &QAction::triggered, previewWidget, &PreviewWidget::OnIncrementScale);
@@ -334,7 +333,7 @@ void MainWindow::SetupBackgroundMenu()
     }
 }
 
-void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
+void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
 {
     menuRecent->clear();
     for (auto& projectPath : lastProjectsPathes)
@@ -346,6 +345,24 @@ void MainWindow::RebuildRecentMenu(const QStringList& lastProjectsPathes)
     menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
 }
 
+void MainWindow::ShowResultList(const DAVA::ResultList& resultList)
+{
+    QStringList errors;
+    for (const Result& result : resultList.GetResults())
+    {
+        if (result.type == Result::RESULT_ERROR ||
+            result.type == Result::RESULT_FAILURE)
+        {
+            errors << QString::fromStdString(result.message);
+        }
+    }
+
+    if (!errors.empty())
+    {
+        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+    }
+}
+
 void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
 {
     menuTools->setEnabled(resultList);
@@ -354,10 +371,6 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     if (resultList)
     {
         UpdateProjectSettings();
-
-        RebuildRecentMenu(project->GetProjectsHistory());
-        FillComboboxLanguages(project);
-        this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
     }
     else
     {
@@ -371,25 +384,25 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
     }
 }
 
-void MainWindow::OnOpenProjectAction()
-{
-    QString defaultPath = currentProjectPath;
-    if (defaultPath.isNull() || defaultPath.isEmpty())
-    {
-        defaultPath = QDir::currentPath();
-    }
-
-    QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-                                                      defaultPath,
-                                                      tr("Project (*.uieditor)"));
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-    projectPath = QDir::toNativeSeparators(projectPath);
-
-    emit ActionOpenProjectTriggered(projectPath);
-}
+// void MainWindow::OnOpenProjectAction()
+// {
+//     QString defaultPath = currentProjectPath;
+//     if (defaultPath.isNull() || defaultPath.isEmpty())
+//     {
+//         defaultPath = QDir::currentPath();
+//     }
+//
+//     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
+//                                                       defaultPath,
+//                                                       tr("Project (*.uieditor)"));
+//     if (projectPath.isEmpty())
+//     {
+//         return;
+//     }
+//     projectPath = QDir::toNativeSeparators(projectPath);
+//
+//     emit ActionOpenProjectTriggered(projectPath);
+// }
 
 void MainWindow::UpdateProjectSettings()
 {

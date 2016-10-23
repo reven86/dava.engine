@@ -360,7 +360,7 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 void PreviewWidget::OnGLInitialized()
 {
     DVASSERT(nullptr == systemsManager);
-    systemsManager.reset(new EditorSystemsManager());
+    systemsManager.reset(new EditorSystemsManager(davaGLWidget));
     scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
     scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
     systemsManager->canvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);

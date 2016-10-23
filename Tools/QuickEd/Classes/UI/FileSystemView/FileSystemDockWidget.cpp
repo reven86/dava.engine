@@ -5,6 +5,7 @@
 
 
 #include "ValidatedTextInputDialog.h"
+#include "UI/FileSystemView/MultipleFileSystemModel.h"
 #include "FileSystemModel.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
@@ -51,7 +52,8 @@ QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
-    , model(new FileSystemModel(this))
+    //, model(new FileSystemModel(this))
+    , model(new MultipleFileSystemModel(this))
 {
     DAVA::Vector<DAVA::String> extensions = { "yaml" };
     projectStructure.reset(new ProjectStructure(extensions));
@@ -68,7 +70,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
 
-    connect(model, &QFileSystemModel::directoryLoaded, this, &FileSystemDockWidget::OnDirectoryLoaded);
+    connect(model, &MultipleFileSystemModel::directoryLoaded, this, &FileSystemDockWidget::OnDirectoryLoaded);
 
     ui->treeView->setModel(model);
     ui->treeView->hideColumn(0);
@@ -141,8 +143,9 @@ void FileSystemDockWidget::SetProjectDir(const QString& path)
         QDir dir(path);
         QString uiPath = dir.path() + Project::GetScreensRelativePath();
 
-        auto index = model->setRootPath(uiPath);
-        ui->treeView->setRootIndex(index);
+        auto index = model->setRootPath(0, uiPath);
+        model->setRootPath(1, uiPath);
+        ui->treeView->setRootIndex(QModelIndex());
         ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
 
@@ -220,7 +223,7 @@ QString FileSystemDockWidget::GetPathByCurrentPos(ePathType pathType)
     QString path;
     if (!index.isValid())
     {
-        path = model->rootPath();
+        path = model->rootPath(0);
     }
     else
     {

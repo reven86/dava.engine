@@ -18,27 +18,36 @@ class SpritesPacker;
 namespace DAVA
 {
 class AssetCacheClient;
+class ResultList;
 }
 
-class EditorCore : public QObject, public DAVA::Singleton<EditorCore>, public DAVA::InspBase
+class EditorCore
+: public QObject
+  ,
+  public DAVA::InspBase
 {
     Q_OBJECT
 public:
     explicit EditorCore(QObject* parent = nullptr);
     ~EditorCore();
-    MainWindow* GetMainWindow() const;
+
+    //MainWindow* GetMainWindow() const;
     //Project* GetProject() const;
     void Start();
 
 private slots:
-    bool CloseProject();
+    void OnNewProject();
+    void OnOpenProject();
+    void OnCloseProject();
+    void OnExit();
+
+    void OnRecentMenu(QAction*);
+
     void OnReloadSpritesStarted();
     void OnReloadSpritesFinished();
 
-    void OnProjectPathChanged(const QString& path);
+    //void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
-
-    void RecentMenu(QAction*);
 
     void UpdateLanguage();
 
@@ -46,18 +55,21 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
-    void OnExit();
-    void OnNewProject();
     void OnProjectOpenChanged(bool arg);
 
 private:
+    static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path);
+
     void OpenProject(const QString& path);
+    bool CloseProject();
 
     bool IsUsingAssetCache() const;
     void SetUsingAssetCacheEnabled(bool enabled);
 
     void EnableCacheClient();
     void DisableCacheClient();
+
+    QString CreateNewProject(DAVA::Result* result /*=nullptr*/);
 
     void OnProjectOpen(const Project* project);
     void OnProjectClose(const Project* project);
@@ -85,8 +97,3 @@ public:
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 };
-
-// inline EditorFontSystem* GetEditorFontSystem()
-// {
-//     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
-// }

@@ -12,15 +12,15 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(EditorSystemsManager* parent)
+CursorSystem::CursorSystem(EditorSystemsManager* parent, DavaGLWidget* aDavaGLWidget)
     : BaseEditorSystem(parent)
+    , davaGLWidget(aDavaGLWidget)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
-    DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->previewWidget->GetGLWidget();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
         davaGLWidget->UnsetCursor();

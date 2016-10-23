@@ -10,6 +10,7 @@ struct Result
 {
     enum ResultType
     {
+        RESULT_WARNING,
         RESULT_SUCCESS,
         RESULT_FAILURE,
         RESULT_ERROR

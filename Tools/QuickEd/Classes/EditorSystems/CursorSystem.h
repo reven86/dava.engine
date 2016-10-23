@@ -10,7 +10,7 @@
 class CursorSystem final : public BaseEditorSystem
 {
 public:
-    explicit CursorSystem(EditorSystemsManager* doc);
+    explicit CursorSystem(EditorSystemsManager* doc, DavaGLWidget* aDavaGLWidget);
     ~CursorSystem() override = default;
 
 private:
@@ -20,6 +20,8 @@ private:
     QPixmap CreatePixmap(const QString& address) const;
 
     static QMap<QString, QPixmap> cursorpixes;
+
+    DavaGLWidget* davaGLWidget = nullptr;
 };
 
 #endif // __QUICKED_TREE_SYSTEM_H__

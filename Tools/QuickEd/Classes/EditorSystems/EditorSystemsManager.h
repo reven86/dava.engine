@@ -69,6 +69,7 @@ class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
 class HUDSystem;
+class DavaGLWidget;
 
 class EditorSystemsManager : PackageListener
 {
@@ -76,7 +77,7 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
-    explicit EditorSystemsManager();
+    explicit EditorSystemsManager(DavaGLWidget* davaGLWidget);
     ~EditorSystemsManager();
 
     DAVA::UIControl* GetRootControl() const;

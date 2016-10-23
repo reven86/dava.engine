@@ -27,10 +27,15 @@ int main(int argc, char* argv[])
 {
     DAVA::QtLayer qtLayer;
     DAVA::Core::Run(argc, argv);
+    DAVA::FileSystem* fs = DAVA::FileSystem::Instance();
+
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
+
     DAVA::Logger::Instance()->SetLogFilename("QuickEd.txt");
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
     const char* settingsPath = "QuickEdSettings.archive";
-    DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+    DAVA::FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
     int retCode = 0;
     {
@@ -41,7 +46,7 @@ int main(int argc, char* argv[])
         qApp->setApplicationName("QuickEd");
 
         const char* settingsPath = "QuickEdSettings.archive";
-        DAVA::FilePath localPrefrencesPath(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory() + settingsPath);
+        DAVA::FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
         PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
 
         Q_INIT_RESOURCE(QtToolsResources);

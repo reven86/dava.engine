@@ -61,7 +61,8 @@ private:
     QString GetPathByCurrentPos(ePathType pathType);
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    QFileSystemModel* model = nullptr;
+    //    QFileSystemModel* model = nullptr;
+    class MultipleFileSystemModel* model = nullptr;
     QAction* newFolderAction = nullptr;
     QAction* newFileAction = nullptr;
     QAction* deleteAction = nullptr;

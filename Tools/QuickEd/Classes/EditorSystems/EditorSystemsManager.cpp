@@ -39,7 +39,7 @@ private:
     EditorSystemsManager* systemManager = nullptr;
 };
 
-EditorSystemsManager::EditorSystemsManager()
+EditorSystemsManager::EditorSystemsManager(DavaGLWidget* davaGLWidget)
     : rootControl(new UIControl())
     , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
@@ -63,8 +63,8 @@ EditorSystemsManager::EditorSystemsManager()
     systems.emplace_back(selectionSystemPtr);
     hudSystemPtr = new HUDSystem(this);
     systems.emplace_back(hudSystemPtr);
-    systems.emplace_back(new CursorSystem(this));
-    systems.emplace_back(new ::EditorTransformSystem(this));
+    systems.emplace_back(new CursorSystem(this, davaGLWidget));
+    systems.emplace_back(new EditorTransformSystem(this));
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;

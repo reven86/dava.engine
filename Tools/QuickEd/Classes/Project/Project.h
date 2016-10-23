@@ -7,57 +7,59 @@
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
 
-class PackageNode;
-class QFileInfo;
-
 class Project : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
-    Q_PROPERTY(QString projectPath READ GetProjectPath NOTIFY ProjectPathChanged)
-    Q_PROPERTY(QString projectName READ GetProjectName NOTIFY ProjectNameChanged)
+    //     Q_PROPERTY(QString projectPath READ GetProjectPath NOTIFY ProjectPathChanged)
+    //     Q_PROPERTY(QString projectName READ GetProjectName NOTIFY ProjectNameChanged)
 
 public:
-    explicit Project(QObject* parent = nullptr);
+    struct Settings
+    {
+        const DAVA::FilePath projectPath;
+        DAVA::FilePath fontsPath;
+        DAVA::FilePath stringLocalizationsPath;
+        DAVA::String currentLocale;
+        DAVA::Vector<DAVA::FilePath> libraryPackages;
+        DAVA::Vector<std::pair<DAVA::String, DAVA::FilePath>> dataFolders;
+    };
+
+    Project(const Settings& aSettings);
     ~Project();
-    bool Open(const QString& path);
-    void Close();
-    bool CanOpenProject(const QString& path) const;
+
+public:
+    QString GetProjectPath() const;
+    QString GetProjectName() const;
+
+    //bool Open(const QString& path);
+    //void Close();
+    //bool CanOpenProject(const QString& path) const;
 
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
     const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
     static const QString& GetScreensRelativePath();
     static const QString& GetProjectFileName();
-    QString CreateNewProject(DAVA::Result* result = nullptr);
+    //QString CreateNewProject(DAVA::Result* result = nullptr);
 
 private:
-    bool OpenInternal(const QString& path);
-
-    EditorFontSystem* editorFontSystem;
-    EditorLocalizationSystem* editorLocalizationSystem;
-
-    //properties
-public:
-    bool IsOpen() const;
-    QString GetProjectPath() const;
-    QString GetProjectName() const;
+    //bool OpenInternal(const QString& path);
 
 signals:
-    void IsOpenChanged(bool arg);
-    void ProjectPathChanged(QString arg);
-    void ProjectNameChanged(QString arg);
+    //void IsOpenChanged(bool arg);
+    //void ProjectPathChanged(QString arg);
+    //void ProjectNameChanged(QString arg);
 
 private:
-    void SetProjectPath(QString arg);
-    void SetProjectName(QString arg);
-    void SetIsOpen(bool arg);
+    //void SetProjectPath(QString arg);
+    //void SetProjectName(QString arg);
 
-    bool isOpen = false;
-    DAVA::FilePath projectPath;
-    DAVA::Vector<DAVA::FilePath> libraryPackages;
-    DAVA::Vector<std::pair<DAVA::String, DAVA::FilePath>> dataFolders;
-    QString projectName;
+    Settings settings;
+    const DAVA::FilePath projectDirectory;
+    const DAVA::String projectName;
+
+    std::unique_ptr<EditorFontSystem> editorFontSystem;
+    std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
 };
 
 #endif // QUICKED__PROJECT_H__
