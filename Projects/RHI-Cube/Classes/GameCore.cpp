@@ -14,9 +14,6 @@
 
     #include "FileSystem/DynamicMemoryFile.h"
 
-    #define PROFILER_ENABLED 1
-    #include "Debug/Profiler.h"
-
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -563,6 +560,47 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+    //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.sl";
+    const char* src = "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/water-fp.sl";
+    //    const char * src = "../../Tools/ResourceEditor/Data/Materials/Shaders/ShadowVolume/shadowvolume-vp.sl";
+    File* file = File::Create(src, File::OPEN | File::READ);
+
+    if (file)
+    {
+        rhi::ShaderSource vp(src);
+        uint32 sz = file->GetSize();
+        char buf[64 * 1024];
+
+        DVASSERT(sz < sizeof(buf));
+        file->Read(buf, sz);
+        buf[sz] = '\0';
+
+        std::vector<std::string> defines;
+
+        /*        
+        defines.push_back( "VERTEX_LIT" );
+        defines.push_back( "1" );
+        defines.push_back( "NORMALIZED_BLINN_PHONG" );
+        defines.push_back( "1" );        
+*/
+        /*
+        defines.push_back("FOG_LINEAR");defines.push_back("1");
+        defines.push_back("SKINNING");defines.push_back("1");
+        defines.push_back("VERTEX_FOG");defines.push_back("1");
+*/
+        defines.push_back("PIXEL_LIT");
+        defines.push_back("1");
+        defines.push_back("REAL_REFLECTION");
+        defines.push_back("1");
+
+        if (vp.Construct(rhi::PROG_FRAGMENT, buf, defines))
+        {
+            //            vp.InlineFunctions();
+            vp.GetSourceCode(rhi::HostApi());
+            vp.Dump();
+        }
+    }
+
     /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -835,61 +873,7 @@ void GameCore::OnForeground()
 
 void GameCore::Update(float32 timeElapsed)
 {
-    static float screenshot_ttw = 5.0f;
-
-    screenshot_ttw -= timeElapsed;
-    if (screenshot_ttw < 0)
-    {
-        rhi::TakeScreenshot(&ScreenShotCallback);
-        screenshot_ttw = 5.0f;
-    }
-
     //    sceneRenderTest->Update(timeElapsed);
-
-    static bool old_s_pressed = false;
-    bool new_s_pressed = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DAVA::Key::KEY_S);
-
-    if (!old_s_pressed && new_s_pressed)
-    {
-        DAVA::Logger::Info("taking screenshot...");
-        rhi::TakeScreenshot(&GameCore::ScreenShotCallback);
-    }
-    old_s_pressed = new_s_pressed;
-
-    static std::vector<profiler::CounterInfo> counter;
-
-    if (profiler::GetAverageCounters(&counter))
-    {
-    }
-
-    {
-        int maxLen = 0;
-        int x0 = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx - 12 * (DbgDraw::SmallCharW + 1);
-        int y0 = 10;
-
-        for (uint32 i = 0; i != counter.size(); ++i)
-        {
-            int len = strlen(counter[i].name);
-
-            if (len > maxLen)
-                maxLen = len;
-        }
-        x0 -= maxLen * (DbgDraw::SmallCharW + 1);
-
-        DbgDraw::SetSmallTextSize();
-        for (uint32 i = 0; i != counter.size(); ++i)
-        {
-            char text[128];
-
-            memset(text, ' ', sizeof(text));
-            int l = sprintf(text, "%s", counter[i].name);
-            text[l] = ' ';
-            sprintf(text + maxLen, "  %5u  %u", counter[i].count, counter[i].timeUs);
-
-            //        DbgDraw::Text2D( 100, 100+i*(DbgDraw::SmallCharH+1), 0xFFFFFFFF, "%s %u", counter[i].name, counter[i].timeUs );
-            DbgDraw::Text2D(x0, y0 + i * (DbgDraw::SmallCharH + 1), 0xFFFFFFFF, text);
-        }
-    }
 }
 
 void GameCore::BeginFrame()
@@ -1140,7 +1124,7 @@ void GameCore::SetupInstancedCube()
 
 void GameCore::DrawInstancedCube()
 {
-    SCOPED_NAMED_TIMING("app-draw");
+//    SCOPED_NAMED_TIMING("app-draw");
     #define USE_SECOND_CB 1
 
     rhi::RenderPassConfig pass_desc;
@@ -1298,7 +1282,7 @@ void GameCore::Draw()
 
 void GameCore::rhiDraw()
 {
-    SCOPED_NAMED_TIMING("GameCore::Draw");
+//    SCOPED_NAMED_TIMING("GameCore::Draw");
 //-    ApplicationCore::BeginFrame();
 
 #define DRAW_TANK 0
@@ -1418,7 +1402,7 @@ void GameCore::rhiDraw()
 
 void GameCore::manticoreDraw()
 {
-    SCOPED_NAMED_TIMING("app-draw");
+//    SCOPED_NAMED_TIMING("app-draw");
     #define USE_SECOND_CB 0
 
     rhi::RenderPassConfig pass_desc;
@@ -1920,7 +1904,7 @@ void GameCore::rtDraw()
 
 void GameCore::EndFrame()
 {
-    SCOPED_NAMED_TIMING("GameCore::EndFrame");
+    //    SCOPED_NAMED_TIMING("GameCore::EndFrame");
     rhi::Present();
 
     // rendering stats

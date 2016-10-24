@@ -1,5 +1,7 @@
 #include "sl_Tree.h"
 
+using DAVA::Logger;
+
 namespace sl
 {
 HLSLTree::HLSLTree(Allocator* allocator)
@@ -1310,6 +1312,271 @@ void GroupParameters(HLSLTree* tree)
 
         // Add buffer to statements.
         AddSingleStatement(root, statementBeforeBuffers, perPassBuffer);
+    }
+}
+
+TreeDump::TreeDump()
+    : indent(0)
+{
+}
+
+void TreeDump::VisitDeclaration(HLSLDeclaration* node)
+{
+    HLSLDeclaration* decl = (HLSLDeclaration*)node;
+
+    Logger::Info("%s[declaration]  \"%s\"\n", _IndentString(indent), node->name);
+    if (decl->assignment)
+    {
+        if (decl->assignment->nodeType == HLSLNodeType_ArrayAccess)
+        {
+            HLSLArrayAccess* aa = (HLSLArrayAccess*)(decl->assignment);
+
+            if (aa->array->nodeType == HLSLNodeType_IdentifierExpression)
+            {
+                HLSLIdentifierExpression* ie = (HLSLIdentifierExpression*)(aa->array);
+
+                Logger::Info("    [array-access]  \"%s\"\n", ie->name);
+            }
+
+            //-            M4::Log_Error("    aa  \"%s\"\n", aa->fileName);
+        }
+        else if (decl->assignment->nodeType == HLSLNodeType_MemberAccess)
+        {
+            HLSLMemberAccess* ma = (HLSLMemberAccess*)(decl->assignment);
+
+            Logger::Info("    [member-access]  \"%s\"\n", ma->field);
+        }
+        else if (decl->assignment->nodeType == HLSLNodeType_ConstructorExpression)
+        {
+            HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)(decl->assignment);
+            const char* tname = "";
+
+            Logger::Info("    [ctor]  \"%s\"\n", tname);
+        }
+    }
+    HLSLTreeVisitor::VisitDeclaration(node);
+}
+
+void TreeDump::VisitStruct(HLSLStruct* node)
+{
+    Logger::Info("%s[struct]  \"%s\"\n", _IndentString(indent), node->name);
+    HLSLTreeVisitor::VisitStruct(node);
+}
+
+void TreeDump::VisitFunction(HLSLFunction* func)
+{
+    Logger::Info("%s[function]  \"%s\"\n", _IndentString(indent), func->name);
+
+    for (HLSLStatement* s = func->statement; s; s = s->nextStatement)
+    {
+        _DumpStatement(s, indent + 1);
+    }
+}
+
+const char* TreeDump::_IndentString(int indent)
+{
+    static char text[256];
+
+    memset(text, ' ', indent * 2);
+    text[indent * 2] = '\0';
+    return text;
+}
+
+void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
+{
+    switch (s->nodeType)
+    {
+    case HLSLNodeType_Declaration:
+    {
+        HLSLDeclaration* decl = (HLSLDeclaration*)s;
+
+        Logger::Info("%s[decl]  \"%s\"\n", _IndentString(indent), decl->name);
+        for (HLSLExpression* e = decl->assignment; e; e = e->nextExpression)
+        {
+            _DumpExpression(e, indent + 1);
+        }
+    }
+    break;
+
+    case HLSLNodeType_Expression:
+    {
+        Logger::Info("  expr\n");
+    }
+    break;
+
+    case HLSLNodeType_ExpressionStatement:
+    {
+        HLSLExpressionStatement* st = (HLSLExpressionStatement*)s;
+
+        Logger::Info("%s[expr.statement]\n", _IndentString(indent));
+        _DumpExpression(st->expression, indent + 1);
+    }
+    break;
+
+    case HLSLNodeType_ReturnStatement:
+    {
+        HLSLReturnStatement* ret = (HLSLReturnStatement*)s;
+
+        Logger::Info("%s[return]\n", _IndentString(indent));
+
+        for (HLSLExpression* e = ret->expression; e; e = e->nextExpression)
+        {
+            _DumpExpression(e, indent + 1);
+        }
+    }
+    break;
+
+    case HLSLNodeType_BlockStatement:
+    {
+        HLSLBlockStatement* block = (HLSLBlockStatement*)s;
+
+        Logger::Info("%s[block]\n", _IndentString(indent));
+        for (HLSLStatement* b = block->statement; b; b = b->nextStatement)
+        {
+            _DumpStatement(b, indent + 1);
+        }
+        /*
+            Log_Error( "%sblock\n", _IndentString(indent) );
+            for( HLSLStatement* b=block->statement; b; b=b->nextStatement )
+            {
+                for( HLSLAttribute* a=block->attributes; a; a=a->nextAttribute )
+                {
+                    if( a->argument )
+                        _DumpExpression( a->argument, indent+1, false );
+                }
+            }
+*/
+    }
+    break;
+    }
+}
+
+void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subexpr)
+{
+    switch (expr->nodeType)
+    {
+    case HLSLNodeType_ConstructorExpression:
+    {
+        HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)expr;
+
+        Logger::Info("%s[ctor]\n", _IndentString(indent));
+        _DumpExpression(ctor->argument, indent + 1);
+    }
+    break;
+
+    case HLSLNodeType_BinaryExpression:
+    {
+        HLSLBinaryExpression* bin = (HLSLBinaryExpression*)expr;
+        const char* op = "";
+
+        switch (bin->binaryOp)
+        {
+        case HLSLBinaryOp_And:
+            op = "and";
+            break;
+        case HLSLBinaryOp_Or:
+            op = "or";
+            break;
+        case HLSLBinaryOp_Add:
+            op = "add";
+            break;
+        case HLSLBinaryOp_Sub:
+            op = "sub";
+            break;
+        case HLSLBinaryOp_Mul:
+            op = "mul";
+            break;
+        case HLSLBinaryOp_Div:
+            op = "div";
+            break;
+        case HLSLBinaryOp_Less:
+            op = "less";
+            break;
+        case HLSLBinaryOp_Greater:
+            op = "greater";
+            break;
+        case HLSLBinaryOp_LessEqual:
+            op = "lesseq";
+            break;
+        case HLSLBinaryOp_GreaterEqual:
+            op = "gequal";
+            break;
+        case HLSLBinaryOp_Equal:
+            op = "equal";
+            break;
+        case HLSLBinaryOp_NotEqual:
+            op = "nequal";
+            break;
+        case HLSLBinaryOp_BitAnd:
+            op = "bit-and";
+            break;
+        case HLSLBinaryOp_BitOr:
+            op = "bit-or";
+            break;
+        case HLSLBinaryOp_BitXor:
+            op = "bit-xor";
+            break;
+        case HLSLBinaryOp_Assign:
+            op = "assign";
+            break;
+        case HLSLBinaryOp_AddAssign:
+            op = "add-assign";
+            break;
+        case HLSLBinaryOp_SubAssign:
+            op = "sub-assign";
+            break;
+        case HLSLBinaryOp_MulAssign:
+            op = "mul-assign";
+            break;
+        case HLSLBinaryOp_DivAssign:
+            op = "div-assign";
+            break;
+        }
+
+        Logger::Info("%s[bin.expr] %s\n", _IndentString(indent), op);
+        _DumpExpression(bin->expression1, indent + 1);
+        _DumpExpression(bin->expression2, indent + 1);
+    }
+    break;
+
+    case HLSLNodeType_IdentifierExpression:
+    {
+        HLSLIdentifierExpression* var = (HLSLIdentifierExpression*)(expr);
+
+        Logger::Info("%s[identifier] \"%s\"\n", _IndentString(indent), var->name);
+    }
+    break;
+
+    case HLSLNodeType_MemberAccess:
+    {
+        HLSLMemberAccess* member = (HLSLMemberAccess*)(expr);
+
+        Logger::Info("%s[member.access] \"%s\"\n", _IndentString(indent), member->field);
+        _DumpExpression(member->object, indent + 1, false);
+    }
+    break;
+
+    case HLSLNodeType_FunctionCall:
+    {
+        HLSLFunctionCall* call = (HLSLFunctionCall*)(expr);
+
+        Logger::Info("%s[call] \"%s\"\n", _IndentString(indent), call->function->name);
+        int a = 0;
+        for (HLSLExpression *e = call->argument; e; e = e->nextExpression, ++a)
+        {
+            Logger::Info("%sarg%i\n", _IndentString(indent + 1), a);
+            _DumpExpression(e, indent + 2, false);
+        }
+    }
+    break;
+    }
+
+    if (dump_subexpr)
+    {
+        for (HLSLExpression* e = expr->nextExpression; e; e = e->nextExpression)
+        {
+            _DumpExpression(e, indent + 1);
+        }
     }
 }
 

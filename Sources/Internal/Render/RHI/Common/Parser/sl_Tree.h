@@ -877,6 +877,22 @@ public:
     HLSLStruct* FindGlobalStruct(HLSLRoot* root, const char* name);
 };
 
+class TreeDump
+: public HLSLTreeVisitor
+{
+public:
+    TreeDump();
+    virtual void VisitDeclaration(HLSLDeclaration* node);
+    virtual void VisitStruct(HLSLStruct* node);
+    virtual void VisitFunction(HLSLFunction* func);
+
+private:
+    static const char* _IndentString(int indent);
+    static void _DumpStatement(HLSLStatement* s, int indent);
+    static void _DumpExpression(HLSLExpression* expr, int indent, bool dump_subexpr = true);
+    int indent;
+};
+
 // Tree transformations:
 extern void PruneTree(HLSLTree* tree, const char* entryName0, const char* entryName1 = NULL);
 extern void SortTree(HLSLTree* tree);
