@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_PLATFORM__
-#define __DAVAENGINE_PLATFORM__
+#pragma once
 
 #include "DAVAConfig.h"
 
@@ -81,7 +80,6 @@
 #if defined(__DAVAENGINE_WINDOWS__)
 
 //Platform defines
-#define __DAVASOUND_AL__
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
 #define NOMINMAX // undef macro min and max from windows headers
@@ -99,9 +97,7 @@
 
 //Detection of windows platform type
 #if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#define __DAVAENGINE_WIN32__
 #elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-#define __DAVAENGINE_WIN_UAP__
 #define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
 #endif
@@ -118,5 +114,3 @@
 #else
 #define Snprintf snprintf
 #endif
-
-#endif // __DAVAENGINE_PLATFORM__

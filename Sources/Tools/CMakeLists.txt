@@ -33,7 +33,9 @@ if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} )#tmp
     save_property( PROPERTY_LIST  DEFINITIONS )
 endif()
 
-add_library                 ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${PROJECT_HEADER_FILE_ONLY} )
+load_property ( PROPERTY_LIST   DEFINITIONS DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+add_definitions ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
+add_library ( ${PROJECT_NAME} STATIC ${PROJECT_SOURCE_FILES} ${PROJECT_HEADER_FILE_ONLY} )
 
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )

@@ -1,9 +1,4 @@
-/*
-	__DAVAENGINE_IPHONE__ this define must be set in preprocessor macros for all projects that compiled using DAVAEngine for iPhone
- */
-
-#ifndef __DAVAENGINE_CONFIG_H__
-#define __DAVAENGINE_CONFIG_H__
+#pragma once
 
 #ifndef DISABLE_AUTOTESTS
 #ifndef __DAVAENGINE_AUTOTESTING__
@@ -61,5 +56,3 @@
 
 //Uncomment this define to using C++11 concurrency instead native
 //#define USE_CPP11_CONCURRENCY
-
-#endif // __DAVAENGINE_CONFIG_H__

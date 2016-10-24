@@ -27,6 +27,8 @@ set( Generated ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 generated_unity_sources        ( ADDED_SRC )
 	
 generate_source_groups_project ( GROUP_FOLDERS Generated )
+load_property				   ( PROPERTY_LIST   DEFINITIONS DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+add_definitions				   ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} )
 add_library                    ( ${PROJECT_NAME} STATIC ${ADDED_SRC} )
 
 
