@@ -305,8 +305,8 @@ void Initialize()
         ps_desc.fprogUid = DAVA::FastName("imgui.fp.pc");
         ps_desc.blending = fp_pc.Blending();
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_pc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_pc.SourceCode());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_pc.GetSourceCode(rhi::HostApi()).c_str());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_pc.GetSourceCode(rhi::HostApi()).c_str());
 
         ImGuiImplDetails::pipelineStatePC = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePC, 1, &ImGuiImplDetails::constBufferPC);
@@ -325,8 +325,8 @@ void Initialize()
         ps_desc.fprogUid = DAVA::FastName("imgui.fp.ptc");
         ps_desc.blending = fp_ptc.Blending();
 
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode());
-        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.GetSourceCode(rhi::HostApi()).c_str());
+        rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.GetSourceCode(rhi::HostApi()).c_str());
 
         ImGuiImplDetails::pipelineStatePTC = rhi::AcquireRenderPipelineState(ps_desc);
         rhi::CreateVertexConstBuffers(ImGuiImplDetails::pipelineStatePTC, 1, &ImGuiImplDetails::constBufferPTC);

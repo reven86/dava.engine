@@ -5,7 +5,7 @@
     #include "MCPP/mcpp_lib.h"
 
     #define PROFILER_ENABLED 1
-    #include "Debug/Profiler.h"
+//-    #include "Debug/Profiler.h"
 
     #include <stdio.h>
     #include <stdarg.h>
