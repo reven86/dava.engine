@@ -3,6 +3,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/Private/ZipArchive.h"
 #include "Base/RefPtr.h"
+#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -12,7 +13,7 @@ AssetsManagerAndroid::AssetsManagerAndroid(const String& apkFileName)
     RefPtr<File> file(File::Create(apkPath, File::OPEN | File::READ));
     if (!file)
     {
-        throw std::runtime_error("[AssetsManager::Init] can't open: " + apkFileName);
+        DAVA_THROW(DAVA::Exception, "[AssetsManager::Init] can't open: " + apkFileName);
     }
 
     apk.reset(new ZipArchive(file, apkPath));

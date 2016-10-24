@@ -3,6 +3,7 @@
 #include "Compression/LZ4Compressor.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
+#include "Base/Exception.h"
 
 #include <mutex>
 
@@ -27,7 +28,7 @@ void PackArchive::ExtractFileTableData(const PackFormat::PackFile::FooterBlock& 
     originalNamesBuffer.resize(footerBlock.info.namesSizeOriginal);
     if (!LZ4HCCompressor().Decompress(compressedNamesBuffer, originalNamesBuffer))
     {
-        throw std::runtime_error("can't uncompress file names");
+        DAVA_THROW(DAVA::Exception, "can't uncompress file names");
     }
 
     fileNames = String(begin(originalNamesBuffer), end(originalNamesBuffer));
@@ -57,7 +58,7 @@ void PackArchive::FillFilesInfo(const PackFormat::PackFile& packFile,
 
     if (numFiles != fileTable.size())
     {
-        throw std::runtime_error("number of file names not match with table");
+        DAVA_THROW(DAVA::Exception, "number of file names not match with table");
     }
 
     // now fill support structures for fast search by filename
@@ -94,36 +95,36 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
 
     if (!file)
     {
-        throw std::runtime_error("can't Open file: " + fileName);
+        DAVA_THROW(DAVA::Exception, "can't Open file: " + fileName);
     }
 
     uint64 size = file->GetSize();
     if (size < sizeof(packFile.footer))
     {
-        throw std::runtime_error("file size less then pack footer: " + fileName);
+        DAVA_THROW(DAVA::Exception, "file size less then pack footer: " + fileName);
     }
 
     if (!file->Seek(size - sizeof(packFile.footer), File::SEEK_FROM_START))
     {
-        throw std::runtime_error("can't seek to footer in file: " + fileName);
+        DAVA_THROW(DAVA::Exception, "can't seek to footer in file: " + fileName);
     }
 
     auto& footerBlock = packFile.footer;
     uint32 numBytesRead = file->Read(&footerBlock, sizeof(footerBlock));
     if (numBytesRead != sizeof(footerBlock))
     {
-        throw std::runtime_error("can't read footer from packfile: " + fileName);
+        DAVA_THROW(DAVA::Exception, "can't read footer from packfile: " + fileName);
     }
 
     uint32 crc32footer = CRC32::ForBuffer(reinterpret_cast<char*>(&packFile.footer.info), sizeof(packFile.footer.info));
     if (crc32footer != packFile.footer.infoCrc32)
     {
-        throw std::runtime_error("crc32 not match in footer for: " + fileName);
+        DAVA_THROW(DAVA::Exception, "crc32 not match in footer for: " + fileName);
     }
 
-    if (footerBlock.info.packArchiveMarker != FileMarker)
+    if (footerBlock.info.packArchiveMarker != FILE_MARKER)
     {
-        throw std::runtime_error("incorrect marker in pack file: " + fileName);
+        DAVA_THROW(DAVA::Exception, "incorrect marker in pack file: " + fileName);
     }
 
     if (footerBlock.info.numFiles > 0)
@@ -135,19 +136,19 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
 
         if (!file->Seek(startFilesTableBlock, File::SEEK_FROM_START))
         {
-            throw std::runtime_error("can't seek to filesTable block in file: " + fileName);
+            DAVA_THROW(DAVA::Exception, "can't seek to filesTable block in file: " + fileName);
         }
 
         numBytesRead = file->Read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
         if (numBytesRead != packFile.footer.info.filesTableSize)
         {
-            throw std::runtime_error("can't read filesTable block from file: " + fileName);
+            DAVA_THROW(DAVA::Exception, "can't read filesTable block from file: " + fileName);
         }
 
         uint32 crc32filesTable = CRC32::ForBuffer(tmpBuffer.data(), packFile.footer.info.filesTableSize);
         if (crc32filesTable != packFile.footer.info.filesTableCrc32)
         {
-            throw std::runtime_error("crc32 not match in filesTable in file: " + fileName);
+            DAVA_THROW(DAVA::Exception, "crc32 not match in filesTable in file: " + fileName);
         }
 
         String fileNames;
@@ -198,7 +199,7 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
 
     if (!file)
     {
-        throw std::runtime_error("can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
+        DAVA_THROW(DAVA::Exception, "can't open: " + relativeFilePath + " from pack: " + archiveName.GetStringValue());
     }
 
     bool isOk = file->Seek(fileEntry.startPosition, File::SEEK_FROM_START);
