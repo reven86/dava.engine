@@ -191,7 +191,6 @@ Map<String, TestCoverageInfo> TestCore::GetTestCoverage()
         {
             result.emplace(x.name, std::move(x.testedFiles));
         }
-        x.runTest = x.runTest;
     }
     return result;
 }
