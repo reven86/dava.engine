@@ -229,33 +229,18 @@ ResourcePool<T, RT, DT, nr>::Free(Handle h)
 }
 
 //------------------------------------------------------------------------------
+#define HANDLE_DECOMPOSE(h) ((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT), ((h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT), ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT)
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
 {
-    DVASSERT(h != InvalidHandle);
-    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+    DVASSERT_MSG(h != InvalidHandle, DAVA::Format("Pool<%d>::Get - InvalidHandle", RT).c_str());
+    DVASSERT_MSG(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
-    DVASSERT(index < ObjectCount);
+    DVASSERT_MSG(index < ObjectCount, DAVA::Format("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     Entry* e = Object + index;
-    DVASSERT(e->allocated);
-    DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
-
-#if RHI_LOG_POOL_ERRORS
-    if (h == InvalidHandle)
-        Logger::Error("Pool<%d>::Get - InvalidHandle", RT);
-    uint32 requestedType = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
-    uint32 reqestedGeneration = ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT);
-    uint32 resource = RT;
-    if (requestedType != RT)
-        Logger::Error("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", resource, requestedType, index, reqestedGeneration);
-    if (index >= ObjectCount)
-        Logger::Error("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", resource, requestedType, index, reqestedGeneration);
-    if (!e->allocated)
-        Logger::Error("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", resource, requestedType, index, reqestedGeneration, e->generation);
-    if (e->generation != reqestedGeneration)
-        Logger::Error("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) last valid generation was %d", resource, requestedType, index, reqestedGeneration, e->generation);
-#endif
+    DVASSERT_MSG(e->allocated, DAVA::Format("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
+    DVASSERT_MSG(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT), DAVA::Format("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) current valid generation is %d", int32(RT), HANDLE_DECOMPOSE(h), e->generation).c_str());
 
     return &(e->object);
 }
