@@ -38,8 +38,7 @@ public:
     void OnGameLoopStopped();
     void OnEngineCleanup();
 
-    void OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size);
-    void OnWindowPhysicalSizeChanged(DAVA::Window* w, DAVA::Size2f size);
+    void OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size, DAVA::Size2f surfaceSize);
     void OnWindowCreated(DAVA::Window* w);
     void OnWindowDestroyed(DAVA::Window* w);
 

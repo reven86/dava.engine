@@ -93,7 +93,7 @@ private:
     void StopLoading();
     bool IsEmail(const String& url);
 
-    void OnSurfaceSizeChanged(Window*, Size2f);
+    void OnWindowSizeChanged(Window*, Size2f, Size2f);
     void OnMouseMove(UIEvent* input);
     void OnMouseClick(UIEvent* input);
     void OnMouseWheel(UIEvent* input);
@@ -109,8 +109,7 @@ private:
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;
     bool pageLoaded = false;
-    int needRedraw = 0;
-    SigConnectionID onSurfSzChangedId;
+    SigConnectionID onWindowSizeChangedId;
 };
 
 } // namespace DAVA

@@ -148,15 +148,19 @@ void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 void WindowBackend::HandleSizeChanged(int32 w, int32 h)
 {
     // Do not send excessive size changed events
-    if (width != w || height != h)
+    if (lastWidth != w || lastHeight != h)
     {
-        width = w;
-        height = h;
+        lastWidth = w;
+        lastHeight = h;
 
-        float32 w_ = static_cast<float32>(width);
-        float32 h_ = static_cast<float32>(height);
+        float32 width = static_cast<float32>(lastWidth);
+        float32 height = static_cast<float32>(lastHeight);
 
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w_, h_, w_, h_));
+        // on win32 surfaceWidth/surfaceHeight is same as window width/height
+        float32 surfaceWidth = width;
+        float32 surfaceHeight = height;
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, width, width, surfaceWidth, surfaceHeight));
     }
 }
 
@@ -226,7 +230,7 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
-LRESULT WindowBackend::OnDpiChaged()
+LRESULT WindowBackend::OnDpiChanged()
 {
     float32 curDpi = GetCurrentDpi();
     if (dpi != curDpi)
@@ -348,14 +352,16 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
-    width = rc.right - rc.left;
-    height = rc.bottom - rc.top;
+    lastWidth = rc.right - rc.left;
+    lastHeight = rc.bottom - rc.top;
 
-    float32 w = static_cast<float32>(width);
-    float32 h = static_cast<float32>(height);
+    float32 width = static_cast<float32>(lastWidth);
+    float32 height = static_cast<float32>(lastHeight);
+    float32 surfaceWidth = width;
+    float32 surfaceHeight = height;
     float32 dpi = GetCurrentDpi();
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }
@@ -390,15 +396,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
-    }
-    else if (message == WM_DPICHANGED)
-    {
-        RECT* suggestedSize = reinterpret_cast<RECT*>(lparam);
-        float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
-        float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
-        Resize(w, h);
-
-        lresult = OnDpiChaged();
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -474,6 +471,15 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_DESTROY)
     {
         lresult = OnDestroy();
+    }
+    else if (message == WM_DPICHANGED)
+    {
+        RECT* suggestedSize = reinterpret_cast<RECT*>(lparam);
+        float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
+        float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
+        Resize(w, h);
+
+        lresult = OnDpiChanged();
     }
     else
     {
@@ -556,7 +562,8 @@ float32 WindowBackend::GetCurrentDpi() const
 
     if (nullptr != fn)
     {
-        UINT x = 0, y = 0;
+        UINT x = 0;
+        UINT y = 0;
         HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
         (*fn)(monitor, MDT_EFFECTIVE_DPI, &x, &y);
 

@@ -147,7 +147,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
 
 void Window::FinishEventHandlingOnCurrentFrame()
 {
-    sizeEventMerged = false;
+    sizeEventsMerged = false;
     windowBackend->TriggerPlatformEvents();
 }
 
@@ -157,7 +157,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 
     dpi = e.sizeEvent.dpi;
     MergeSizeChangedEvents(e);
-    sizeEventMerged = true;
+    sizeEventsMerged = true;
 
     engineBackend->InitRenderer(this);
 
@@ -168,9 +168,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     UpdateVirtualCoordinatesSystem();
 
     engineBackend->OnWindowCreated(this);
-
-    sizeChanged.Emit(this, GetSize());
-    surfaceSizeChanged.Emit(this, GetSurfaceSize());
+    sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
@@ -187,20 +185,19 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 {
-    if (!sizeEventMerged)
+    if (!sizeEventsMerged)
     {
         Logger::FrameworkDebug("=========== WINDOW_SIZE_CHANGED");
 
         MergeSizeChangedEvents(e);
-        sizeEventMerged = true;
+        sizeEventsMerged = true;
 
         engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
         if (windowBackend->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
 
-            sizeChanged.Emit(this, GetSize());
-            surfaceSizeChanged.Emit(this, GetSurfaceSize());
+            sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
         }
     }
 }

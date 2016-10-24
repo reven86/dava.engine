@@ -47,7 +47,7 @@ public:
     Size2f GetSurfaceSize() const;
 
     float32 GetSurfaceScale() const;
-    bool SetSurfaceScale(float scale);
+    bool SetSurfaceScale(float32 scale);
 
     void Close();
     void SetTitle(const String& title);
@@ -63,8 +63,7 @@ public:
     Signal<Window*, bool> visibilityChanged;
     Signal<Window*, bool> focusChanged;
     Signal<Window*, float32> dpiChanged;
-    Signal<Window*, Size2f> sizeChanged;
-    Signal<Window*, Size2f> surfaceSizeChanged;
+    Signal<Window*, Size2f, Size2f> sizeChanged;
     //Signal<Window*> beginUpdate;
     //Signal<Window*> beginDraw;
     Signal<Window*, float32> update;
@@ -115,7 +114,7 @@ private:
     bool isPrimary = false;
     bool isVisible = false;
     bool hasFocus = false;
-    bool sizeEventMerged = false; // Flag indicating that compressed size events are handled on current frame
+    bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
 
     float32 dpi = 0.0f;
     float32 width = 0.0f;
@@ -141,68 +140,6 @@ inline bool Window::HasFocus() const
 {
     return hasFocus;
 }
-
-/*
-inline float32 Window::GetWidth() const
-{
-    return width;
-}
-
-inline float32 Window::GetHeight() const
-{
-    return height;
-}
-
-inline float32 Window::GetRenderSurfaceWidth() const
-{
-    return width * scaleX * userScale;
-}
-
-inline float32 Window::GetRenderSurfaceHeight() const
-{
-    return height * scaleY * userScale;
-}
-
-inline float32 Window::GetScaleX() const
-{
-    return scaleX;
-}
-
-inline float32 Window::GetScaleY() const
-{
-    return scaleY;
-}
-
-inline float32 Window::GetUserScale() const
-{
-    return userScale;
-}
-
-inline float32 Window::GetRenderSurfaceScaleX() const
-{
-    return scaleX * userScale;
-}
-
-inline float32 Window::GetRenderSurfaceScaleY() const
-{
-    return scaleY * userScale;
-}
-
-inline Vector2 Window::GetSize() const
-{
-    return Vector2(GetWidth(), GetHeight());
-}
-
-inline Vector2 Window::GetScale() const
-{
-    return Vector2(GetScaleX(), GetScaleY());
-}
-
-inline void Window::Resize(Vector2 size)
-{
-    Resize(size.dx, size.dy);
-}
-*/
 
 inline float32 Window::GetDPI() const
 {

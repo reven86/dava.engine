@@ -107,7 +107,6 @@ TestBed::TestBed(Engine& engine)
 
         Window* w = engine.PrimaryWindow();
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
-        w->surfaceSizeChanged.Connect(this, &TestBed::OnWindowPhysicalSizeChanged);
         w->SetTitle("[Testbed] The one who owns a minigun fears not");
         w->SetSize({ 1024.f, 768.f });
 
@@ -165,14 +164,9 @@ void TestBed::OnWindowDestroyed(DAVA::Window* w)
     Logger::Error("****** TestBed::OnWindowDestroyed");
 }
 
-void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size)
+void TestBed::OnWindowSizeChanged(DAVA::Window* w, DAVA::Size2f size, DAVA::Size2f surfaceSize)
 {
-    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f", size.dx, size.dy);
-}
-
-void TestBed::OnWindowPhysicalSizeChanged(DAVA::Window* w, DAVA::Size2f surfaceSize)
-{
-    Logger::Debug("********** TestBed::OnWindowSurfaceSizeChanged: w=%.1f, h=%.1f", surfaceSize.dx, surfaceSize.dy);
+    Logger::Debug("********** TestBed::OnWindowSizeChanged: w=%.1f, h=%.1f, surfaceW=%.1f, surfaceH=%.1f", size.dx, size.dy, surfaceSize.dx, surfaceSize.dy);
 }
 
 void TestBed::OnSuspended()

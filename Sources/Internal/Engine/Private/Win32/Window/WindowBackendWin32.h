@@ -62,7 +62,7 @@ private:
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
-    LRESULT OnDpiChaged();
+    LRESULT OnDpiChanged();
     LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
@@ -90,8 +90,8 @@ private:
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
-    int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
-    int32 height = 0;
+    int32 lastWidth = 0; // Track current window size to not post excessive WINDOW_SIZE_CHANGED events
+    int32 lastHeight = 0;
 
     const float32 defaultDpi = 96.0f;
     float32 dpi = defaultDpi;

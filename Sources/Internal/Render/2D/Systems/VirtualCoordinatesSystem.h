@@ -11,7 +11,7 @@ namespace DAVA
 #if !defined(__DAVAENGINE_COREV2__)
 class VirtualCoordinatesSystem : public Singleton<VirtualCoordinatesSystem>
 #else
-class VirtualCoordinatesSystem
+class VirtualCoordinatesSystem final
 #endif
 {
     struct ResourceSpaceSize
