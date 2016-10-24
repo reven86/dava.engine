@@ -757,7 +757,14 @@ union luai_Cast { double l_d; long l_l; };
 ** without modifying the main part of the file.
 */
 
-
+/* on Windows 10 getenv(), system() and LoadLibrary() not availabe */
+#if defined(LUA_WIN)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define getenv(x) (NULL)
+#define system(x) (-1)
+#undef LUA_DL_DLL
+#endif
+#endif
 
 #endif
 
