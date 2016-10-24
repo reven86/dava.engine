@@ -12,7 +12,6 @@ struct HLSLStruct;
 class MSLGenerator
 {
 public:
-
     explicit MSLGenerator(Allocator* allocator);
 
     bool Generate(HLSLTree* tree, Target target, const char* entryName, std::string* code);
@@ -31,7 +30,6 @@ private:
     void OutputDeclaration(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* defaultValue = NULL);
     void OutputDeclarationType(const HLSLType& type);
     void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* assignment = NULL);
-
 
 private:
     CodeWriter writer;

@@ -38,8 +38,6 @@ bool String_EqualNoCase(const char* a, const char* b);
 double String_ToDouble(const char* str, char** end);
 int String_ToInteger(const char* str, char** end);
 
-
-
 template <typename T>
 void ConstructRange(T* buffer, int new_size, int old_size)
 {

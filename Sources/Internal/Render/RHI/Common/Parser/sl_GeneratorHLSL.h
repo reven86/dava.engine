@@ -38,7 +38,6 @@ private:
     void OutputDeclarationType(const HLSLType& type);
     void OutputDeclarationBody(const HLSLType& type, const char* name, const char* semantic = NULL, const char* registerName = NULL, HLSLExpression* assignment = NULL);
 
-
 private:
     CodeWriter writer;
 

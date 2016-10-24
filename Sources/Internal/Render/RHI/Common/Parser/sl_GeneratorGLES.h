@@ -7,7 +7,6 @@ namespace sl
 class GLESGenerator
 {
 public:
-
     explicit GLESGenerator(Allocator* allocator);
 
     bool Generate(const HLSLTree* tree, Target target, const char* entryName, std::string* code);

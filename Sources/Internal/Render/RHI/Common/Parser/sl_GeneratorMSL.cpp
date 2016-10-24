@@ -1020,5 +1020,4 @@ void MSLGenerator::OutputDeclaration(const HLSLType& type, const char* name, con
     OutputDeclarationBody(type, name, semantic, registerName, assignment);
 }
 
-
 } // namespace sl

@@ -1721,7 +1721,6 @@ ShaderSource::ConstBufferSize(uint32 bufIndex) const
     return buf[bufIndex].regCount;
 }
 
-
 //------------------------------------------------------------------------------
 
 ShaderProp::Source
