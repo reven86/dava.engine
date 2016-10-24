@@ -5,6 +5,10 @@
 #include <libproc.h>
 #include <unistd.h>
 
+#import <Foundation/NSURL.h>
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
+
 #include <fstream>
 #include <iostream>
 
@@ -25,10 +29,23 @@ int main(int argc, char** argv)
         pathDir = pathExec.substr(0, last_slash_idx);
     }
 
-    sprintf(path, "sh %s/../Resources/open.sh %s", pathDir.c_str(), pathDir.c_str());
+    NSString* tempFileTemplate =
+    [NSTemporaryDirectory() stringByAppendingPathComponent:@"OpenFinder.script"];
+
+    std::string openScriptFile([tempFileTemplate UTF8String]);
+
+    std::fstream openScriptStream(openScriptFile, std::ios::out);
+
+    openScriptStream << "tell application \"Finder\"\n";
+    openScriptStream << "    open (\"" << pathDir << "/\" as POSIX file)\n";
+    openScriptStream << "    activate\n";
+    openScriptStream << "end tell";
+
+    openScriptStream.close();
+
+    sprintf(path, "osascript %s", openScriptFile.c_str());
     system(path);
 
-    // std::string openScriptFile(pathDir + "/../Resources/OpenFinder.script");
-
+    std::cout << "openScriptFile " << openScriptFile;
     return 1;
 }
