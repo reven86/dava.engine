@@ -1,17 +1,15 @@
 
 MACRO ( FILE_TREE_CHECK arg_folders ) 
-    find_package( PythonInterp   )
-
     set( TARGET_FILE_TREE_FOUND false )
 
-    if( PYTHONINTERP_FOUND AND NOT IGNORE_FILE_TREE_CHECK )
+    if( NOT IGNORE_FILE_TREE_CHECK )
         set( TARGET_FILE_TREE_FOUND true )
 
         string(REPLACE ";" " " folders "${arg_folders}" )
         string(REPLACE "\"" "" folders "${arg_folders}" )
 
         EXECUTE_PROCESS(
-            COMMAND ${PYTHON_EXECUTABLE} "${DAVA_SCRIPTS_FILES_PATH}/file_tree_hash.py" ${folders}
+            COMMAND "python" "${DAVA_SCRIPTS_FILES_PATH}/file_tree_hash.py" ${folders}
             OUTPUT_VARIABLE FILE_TREE_HASH
         )
 
