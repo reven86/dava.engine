@@ -137,6 +137,7 @@ bool GamepadDeviceImpl::HandleGamepadAdded(uint32 id)
     if (gamepadId == 0)
     {
         gamepadId = id;
+        gamepadDevice->profile = eGamepadProfiles::EXTENDED;
     }
     return gamepadId != 0;
 }

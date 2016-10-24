@@ -86,6 +86,7 @@ bool GamepadDeviceImpl::HandleGamepadAdded(uint32 /*id*/)
         if (gamepads->Size != 0)
         {
             gamepad = gamepads->GetAt(0);
+            gamepadDevice->profile = eGamepadProfiles::EXTENDED;
         }
     }
     return gamepad != nullptr;

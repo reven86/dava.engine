@@ -28,6 +28,7 @@ class GamepadDevice final : public BaseObject
 
 public:
     bool IsPresent() const;
+    eGamepadProfiles GetProfile() const;
 
     float32 operator[](eGamepadElements element) const;
     float32 GetElementState(eGamepadElements element) const;
@@ -47,6 +48,7 @@ private:
     InputSystem* inputSystem = nullptr;
     std::unique_ptr<Private::GamepadDeviceImpl> impl;
     bool isPresent = false;
+    eGamepadProfiles profile = eGamepadProfiles::SIMPLE;
 
     static const size_t ELEMENT_COUNT = static_cast<size_t>(eGamepadElements::LAST) + 1;
     float32 elementValues[ELEMENT_COUNT];
@@ -57,6 +59,11 @@ private:
 inline bool GamepadDevice::IsPresent() const
 {
     return isPresent;
+}
+
+inline eGamepadProfiles GamepadDevice::GetProfile() const
+{
+    return profile;
 }
 
 inline float32 GamepadDevice::operator[](eGamepadElements element) const

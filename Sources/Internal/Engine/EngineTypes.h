@@ -95,6 +95,16 @@ enum class eGamepadElements : uint32
     LAST = DPAD_Y,
 };
 
+/**
+    \ingroup engine
+    Constants that name gamepad profiles.
+*/
+enum class eGamepadProfiles : uint32
+{
+    SIMPLE = 0, //!< Two shoulder buttons, directional pad
+    EXTENDED, //!< Two shoulder buttons, two triggers, two thumbsticks, directional pad
+};
+
 // clang-format off
 /**
     \ingroup engine
