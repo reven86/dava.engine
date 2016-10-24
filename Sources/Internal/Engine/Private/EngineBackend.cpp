@@ -235,11 +235,6 @@ void EngineBackend::OnGameLoopStopped()
     dyingWindows.clear();
 
     engine->gameLoopStopped.Emit();
-    if (!IsConsoleMode())
-    {
-        if (Renderer::IsInitialized())
-            Renderer::Uninitialize();
-    }
 }
 
 void EngineBackend::OnEngineCleanup()
@@ -247,6 +242,13 @@ void EngineBackend::OnEngineCleanup()
     engine->cleanup.Emit();
 
     DestroySubsystems();
+
+    if (!IsConsoleMode())
+    {
+        if (Renderer::IsInitialized())
+            Renderer::Uninitialize();
+    }
+
     delete context;
     delete dispatcher;
     delete platformCore;
