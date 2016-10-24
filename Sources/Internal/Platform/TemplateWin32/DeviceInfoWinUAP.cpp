@@ -161,7 +161,7 @@ WideString DeviceInfoPrivate::GetName()
     return deviceName;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return gpu;
 }

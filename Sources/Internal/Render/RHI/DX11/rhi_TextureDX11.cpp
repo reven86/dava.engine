@@ -499,6 +499,11 @@ void dx11_Texture_Update(Handle tex, const void* data, uint32 level, TextureFace
     dx11_Texture_Unmap(tex);
 }
 
+bool dx11_Texture_NeedRestore(Handle tex)
+{
+    return false;
+}
+
 //==============================================================================
 
 namespace TextureDX11
@@ -515,6 +520,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_Texture_Map = &dx11_Texture_Map;
     dispatch->impl_Texture_Unmap = &dx11_Texture_Unmap;
     dispatch->impl_Texture_Update = &dx11_Texture_Update;
+    dispatch->impl_Texture_NeedRestore = &dx11_Texture_NeedRestore;
 }
 
 void SetToRHIFragment(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
