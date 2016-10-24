@@ -152,6 +152,11 @@ public:
     static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
 #endif
 
+    // Override real gpu family
+    static void SetOverridenGPU(eGPUFamily newGPU);
+    // Reset override
+    static void ResetOverridenGPU();
+
     // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID
     // bool value - device's state: connected (true) or disconnected (false)

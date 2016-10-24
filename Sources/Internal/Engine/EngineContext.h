@@ -38,6 +38,11 @@ namespace Net
 class NetCore;
 }
 
+namespace Analytics
+{
+class Core;
+}
+
 class EngineContext final
 {
 public:
@@ -68,6 +73,8 @@ public:
 
     ModuleManager* moduleManager = nullptr;
     IPackManager* packManager = nullptr;
+    Analytics::Core* analyticsCore = nullptr;
+
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif

@@ -30,7 +30,7 @@ public:
     String GetHTTPNonProxyHosts();
     int32 GetHTTPProxyPort();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     bool IsHIDConnected(DeviceInfo::eHIDType type);

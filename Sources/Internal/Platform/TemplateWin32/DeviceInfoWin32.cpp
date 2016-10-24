@@ -287,7 +287,7 @@ WideString DeviceInfoPrivate::GetName()
     return WideString();
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_DX11;
 }

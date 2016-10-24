@@ -7,6 +7,7 @@
 #include "Debug/Replay.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/UISystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
@@ -33,9 +34,13 @@ UIControlSystem::UIControlSystem()
     baseGeometricData.scale = Vector2(1.0f, 1.0f);
     baseGeometricData.angle = 0;
 
-    layoutSystem = new UILayoutSystem();
-    styleSheetSystem = new UIStyleSheetSystem();
-    inputSystem = new UIInputSystem();
+    AddSystem(std::make_unique<UIInputSystem>());
+    AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIStyleSheetSystem>());
+
+    inputSystem = GetSystem<UIInputSystem>();
+    layoutSystem = GetSystem<UILayoutSystem>();
+    styleSheetSystem = GetSystem<UIStyleSheetSystem>();
 
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
@@ -90,9 +95,11 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
-    SafeDelete(styleSheetSystem);
-    SafeDelete(layoutSystem);
-    SafeDelete(inputSystem);
+    inputSystem = nullptr;
+    styleSheetSystem = nullptr;
+    layoutSystem = nullptr;
+
+    systems.clear();
     SafeDelete(screenshoter);
     SafeDelete(vcs);
 }
@@ -316,6 +323,11 @@ void UIControlSystem::Update()
 
     float32 timeElapsed = SystemTimer::FrameDelta();
 
+    for (auto& system : systems)
+    {
+        system->Process(timeElapsed);
+    }
+
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
         if (currentScreenTransition)
@@ -500,16 +512,6 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
     GetFocusSystem()->SetFocusedControl(newFocused);
 }
 
-void UIControlSystem::OnControlVisible(UIControl* control)
-{
-    inputSystem->OnControlVisible(control);
-}
-
-void UIControlSystem::OnControlInvisible(UIControl* control)
-{
-    inputSystem->OnControlInvisible(control);
-}
-
 UIControl* UIControlSystem::GetFocusedControl() const
 {
     return GetFocusSystem()->GetFocusedControl();
@@ -599,7 +601,7 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
-    int32 tapCount = 0;
+    int32 tapCount = 1;
 
     // Observe double click:
     // doubleClickTime - interval between newEvent and lastEvent,
@@ -607,7 +609,6 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
         DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
-        tapCount = 1;
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
@@ -659,6 +660,90 @@ void UIControlSystem::SetBiDiSupportEnabled(bool support)
 bool UIControlSystem::IsHostControl(const UIControl* control) const
 {
     return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
+}
+
+void UIControlSystem::RegisterControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->RegisterControl(control);
+    }
+}
+
+void UIControlSystem::UnregisterControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->UnregisterControl(control);
+    }
+}
+
+void UIControlSystem::RegisterVisibleControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->OnControlVisible(control);
+    }
+}
+
+void UIControlSystem::UnregisterVisibleControl(UIControl* control)
+{
+    for (auto& system : systems)
+    {
+        system->OnControlInvisible(control);
+    }
+}
+
+void UIControlSystem::RegisterComponent(UIControl* control, UIComponent* component)
+{
+    for (auto& system : systems)
+    {
+        system->RegisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::UnregisterComponent(UIControl* control, UIComponent* component)
+{
+    for (auto& system : systems)
+    {
+        system->UnregisterComponent(control, component);
+    }
+}
+
+void UIControlSystem::AddSystem(std::unique_ptr<UISystem> system, const UISystem* insertBeforeSystem)
+{
+    if (insertBeforeSystem)
+    {
+        auto insertIt = std::find_if(systems.begin(), systems.end(),
+                                     [insertBeforeSystem](const std::unique_ptr<UISystem>& systemPtr)
+                                     {
+                                         return systemPtr.get() == insertBeforeSystem;
+                                     });
+        DVASSERT(insertIt != systems.end());
+        systems.insert(insertIt, std::move(system));
+    }
+    else
+    {
+        systems.push_back(std::move(system));
+    }
+}
+
+std::unique_ptr<UISystem> UIControlSystem::RemoveSystem(const UISystem* system)
+{
+    auto it = std::find_if(systems.begin(), systems.end(),
+                           [system](const std::unique_ptr<UISystem>& systemPtr)
+                           {
+                               return systemPtr.get() == system;
+                           });
+
+    if (it != systems.end())
+    {
+        std::unique_ptr<UISystem> systemPtr(it->release());
+        systems.erase(it);
+        return systemPtr;
+    }
+
+    return nullptr;
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const

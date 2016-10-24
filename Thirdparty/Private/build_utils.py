@@ -241,7 +241,22 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 	# Rename version-dependent folder name to simpler one
 	# In case other builder will need to use this folder
 	if inner_dir_name is not None:
-		shutil.move(os.path.join(working_directory_path, inner_dir_name), result_folder_path)
+		extracted_path = os.path.join(working_directory_path, inner_dir_name)
+		if not os.path.exists(result_folder_path):
+			shutil.move(extracted_path, result_folder_path)
+		else:
+			def deepmove(src, dst):
+				if not os.path.exists(dst):
+					os.mkdir(dst)
+				for item in os.listdir(src):
+					s = os.path.join(src, item)
+					d = os.path.join(dst, item)
+					if os.path.isdir(s):
+						deepmove(s, d)
+					else:
+						shutil.move(s, d)
+				os.rmdir(src)
+			deepmove(extracted_path, result_folder_path)
 
 	download_and_extract.cache.append(download_data)
 
@@ -300,7 +315,7 @@ def build_and_copy_libraries_win32_cmake(
 		built_lib_name_debug, built_lib_name_release,
 		result_lib_name_x86_debug, result_lib_name_x86_release,
 		result_lib_name_x64_debug, result_lib_name_x64_release,
-		cmake_additional_args = []):
+		cmake_additional_args = [], target_lib_subdir = ''):
 	# Folders for the library to be built into
 	build_x86_folder = os.path.join(gen_folder_path, 'build_win32_x86')
 	build_x64_folder = os.path.join(gen_folder_path, 'build_win32_x64')
@@ -312,10 +327,10 @@ def build_and_copy_libraries_win32_cmake(
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure	
 
-	lib_path_x86_debug = os.path.join(build_x86_folder, os.path.join('Debug', built_lib_name_debug))
-	lib_path_x86_release = os.path.join(build_x86_folder, os.path.join('Release', built_lib_name_release))
-	lib_path_x64_debug = os.path.join(build_x64_folder, os.path.join('Debug', built_lib_name_debug))
-	lib_path_x64_release = os.path.join(build_x64_folder, os.path.join('Release', built_lib_name_release))
+	lib_path_x86_debug = os.path.join(build_x86_folder, os.path.join(target_lib_subdir, 'Debug', built_lib_name_debug))
+	lib_path_x86_release = os.path.join(build_x86_folder, os.path.join(target_lib_subdir, 'Release', built_lib_name_release))
+	lib_path_x64_debug = os.path.join(build_x64_folder, os.path.join(target_lib_subdir, 'Debug', built_lib_name_debug))
+	lib_path_x64_release = os.path.join(build_x64_folder, os.path.join(target_lib_subdir, 'Release', built_lib_name_release))
 
 	shutil.copyfile(lib_path_x86_debug, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x86/Debug', result_lib_name_x86_debug)))
 	shutil.copyfile(lib_path_x86_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/win/x86/Release', result_lib_name_x86_release)))
@@ -369,7 +384,7 @@ def build_and_copy_libraries_macos_cmake(
 		project_name, target_name,
 		built_lib_name_release,
 		result_lib_name_release,
-		cmake_additional_args = []):
+		cmake_additional_args = [], target_lib_subdir=''):
 	build_folder_macos = os.path.join(gen_folder_path, 'build_macos')
 
 	cmake_generate_build_xcode(build_folder_macos, source_folder_path, build_config.macos_cmake_generator, project_name, target_name, cmake_additional_args)
@@ -377,7 +392,7 @@ def build_and_copy_libraries_macos_cmake(
 	# Move built files into Libs/lib_CMake
 	# TODO: update pathes after switching to new folders structure
 
-	lib_path_macos_release = os.path.join(build_folder_macos, os.path.join('Release', built_lib_name_release))
+	lib_path_macos_release = os.path.join(build_folder_macos, os.path.join(target_lib_subdir, 'Release', built_lib_name_release))
 
 	shutil.copyfile(lib_path_macos_release, os.path.join(root_project_path, os.path.join('Libs/lib_CMake/mac', result_lib_name_release)))
 
