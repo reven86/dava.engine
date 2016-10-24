@@ -758,14 +758,14 @@ TextureStride(TextureFormat format, Size2i size, uint32 level)
 
     case TEXTURE_FORMAT_DXT1:
     {
-        stride = (width * 8) / 4;
+        stride = 8 * std::max(1u, (width + 3) / 4);
     }
     break;
 
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
     {
-        stride = (width * 16) / 4;
+        stride = 16 * std::max(1u, (width + 3) / 4);
     }
     break;
 
@@ -1001,8 +1001,7 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
 
 //------------------------------------------------------------------------------
 
-uint32
-NativeColorRGBA(float red, float green, float blue, float alpha)
+uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
 {
     uint32 color = 0;
     int r = int(red * 255.0f);
@@ -1035,6 +1034,26 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     }
 
     return color;
+}
+
+uint32 NativeColorRGBA(uint32 color)
+{
+    uint32 c = 0;
+
+    switch (HostApi())
+    {
+    case RHI_DX9:
+        c = (color & 0xff000000) | ((color & 0x000000ff) << 16) | (color & 0x0000ff00) | ((color & 0x00ff0000) >> 16);
+        break;
+
+    case RHI_DX11:
+    case RHI_GLES2:
+    case RHI_METAL:
+        c = color;
+        break;
+    }
+
+    return c;
 }
 
 namespace MutableDeviceCaps
