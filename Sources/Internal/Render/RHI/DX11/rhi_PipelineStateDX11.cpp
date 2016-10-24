@@ -425,7 +425,7 @@ void ConstBufDX11::Construct(ProgType ptype, unsigned bufIndex, unsigned regCnt)
     }
     else
     {
-        Logger::Error("FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr));
+        Logger::Error("FAILED to create index-buffer:\n%s\n", DX11_GetErrorText(hr));
     }
 }
 
