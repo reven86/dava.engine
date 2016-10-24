@@ -197,7 +197,7 @@ void TestBed::OnUpdateConsole(DAVA::float32 frameDelta)
 
 void TestBed::RunOnlyThisTest()
 {
-    runOnlyThisTest = "NotificationScreen";
+    //runOnlyThisTest = "NotificationScreen";
 }
 
 void TestBed::OnError()

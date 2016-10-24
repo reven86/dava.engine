@@ -6,6 +6,7 @@
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Concurrency/LockGuard.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -114,9 +115,18 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaNotificationProvider_onNotificat
 JNIEXPORT void JNICALL Java_com_dava_framework_JNINotificationProvider_onNotificationPressed(JNIEnv* env, jobject classthis, jstring uid)
 #endif
 {
+#if defined(__DAVAENGINE_COREV2__)
+    DAVA::String str(env->GetStringUTFChars(uid, 0));
+    auto function = [str]()
+    {
+        DAVA::LocalNotificationController::Instance()->OnNotificationPressed(DAVA::String(str));
+    };
+    DAVA::Engine::Instance()->RunAsyncOnMainThread(function);
+#else
     const char* str = env->GetStringUTFChars(uid, 0);
     DAVA::LocalNotificationController::Instance()->OnNotificationPressed(DAVA::String(str));
     env->ReleaseStringUTFChars(uid, str);
+#endif
 }
 }
 
