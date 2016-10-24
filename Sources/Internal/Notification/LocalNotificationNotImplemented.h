@@ -2,6 +2,7 @@
 #define __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 

@@ -3,6 +3,14 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
 endif()
 
+function (append_property KEY_PROP  VALUE)
+    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
+    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
+    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
+endfunction()
+
+
 include ( GlobalVariables      )
 
 if ( DAVA_MEMORY_PROFILER )
@@ -522,13 +530,6 @@ macro(add_target_properties _target _name)
 endmacro()
 
 #
-function (append_property KEY_PROP  VALUE)
-    GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
-    LIST(APPEND PROP_LIST_VALUE ${VALUE} )
-    list( REMOVE_DUPLICATES PROP_LIST_VALUE )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} "${PROP_LIST_VALUE}")
-endfunction()
-
 
 function (reset_property KEY_PROP )
     SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )

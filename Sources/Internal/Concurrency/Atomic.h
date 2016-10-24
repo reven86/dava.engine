@@ -1,8 +1,8 @@
 #ifndef __DAVAENGINE_ATOMIC_H__
 #define __DAVAENGINE_ATOMIC_H__
 
-#include <type_traits>
 #include "Base/Platform.h"
+#include <type_traits>
 
 #ifdef USE_CPP11_CONCURRENCY
 #include <atomic> //for std::atomic

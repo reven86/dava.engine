@@ -70,36 +70,15 @@
 #if defined(__GNUC__) && \
 (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__))
 
-#define __DAVAENGINE_APPLE__
-
 #include <AvailabilityMacros.h>
 #include <TargetConditionals.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <unistd.h>
-
-//Detection of iPhone
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-
-#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
-#define __DAVAENGINE_IPHONE__
 #endif
-
-//Detection of MacOS
-#else
-#define __DAVAENGINE_MACOS__
-#endif
-
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-#define __DAVAENGINE_MACOS_VERSION_10_6__
-#endif
-
-#define __DAVASOUND_AL__
 
 //Detection of Windows
-#elif defined(_WIN32) || defined(_WIN64)
-
-#define __DAVAENGINE_WINDOWS__
+#if defined(__DAVAENGINE_WINDOWS__)
 
 //Platform defines
 #define __DAVASOUND_AL__
@@ -131,12 +110,6 @@
 #if defined(__DAVAENGINE_WIN_UAP__) && !defined(USE_CPP11_CONCURRENCY)
 #define USE_CPP11_CONCURRENCY
 #endif
-
-//Detection of Android
-#elif defined(__ANDROID__) || defined(ANDROID)
-
-#define __DAVAENGINE_ANDROID__
-#undef __DAVASOUND_AL__
 
 #endif
 

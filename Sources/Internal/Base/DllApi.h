@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Base/Platform.h"
-
 #ifdef __DAVAENGINE_WINDOWS__
 #ifdef DAVA_ENGINE_EXPORTS
 #define DAVA_ENGINE_API __declspec(dllexport)
