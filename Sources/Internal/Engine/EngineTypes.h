@@ -71,6 +71,30 @@ enum class eModifierKeys : uint32
     MASK = LAST | ~LAST, //!< Value used to mask useful bits
 };
 
+/**
+    \ingroup engine
+    Constants that name gamepad elements - buttons and axes.
+*/
+enum class eGamepadElements : uint32
+{
+    A = 0,
+    B,
+    X,
+    Y,
+    LEFT_SHOULDER,
+    RIGHT_SHOULDER,
+    LEFT_TRIGGER,
+    RIGHT_TRIGGER,
+    LEFT_THUMBSTICK_X,
+    LEFT_THUMBSTICK_Y,
+    RIGHT_THUMBSTICK_X,
+    RIGHT_THUMBSTICK_Y,
+    DPAD_X,
+    DPAD_Y,
+
+    LAST = DPAD_Y,
+};
+
 // clang-format off
 /**
     \ingroup engine

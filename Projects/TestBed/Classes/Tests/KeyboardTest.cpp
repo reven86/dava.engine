@@ -203,47 +203,47 @@ bool KeyboardTest::OnGamepadEvent(UIEvent* event)
 
     switch (event->element)
     {
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_A:
+    case eGamepadElements::A:
         UpdateGamepadElement("button_a", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_B:
+    case eGamepadElements::B:
         UpdateGamepadElement("button_b", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_X:
+    case eGamepadElements::X:
         UpdateGamepadElement("button_x", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_Y:
+    case eGamepadElements::Y:
         UpdateGamepadElement("button_y", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_LS:
+    case eGamepadElements::LEFT_SHOULDER:
         UpdateGamepadElement("shift_left", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_BUTTON_RS:
+    case eGamepadElements::RIGHT_SHOULDER:
         UpdateGamepadElement("shift_right", event->point.x == 1);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_LT:
+    case eGamepadElements::LEFT_TRIGGER:
         UpdateGamepadElement("triger_left", event->point.x > 0);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_RT:
+    case eGamepadElements::RIGHT_TRIGGER:
         UpdateGamepadElement("triger_right", event->point.x > 0);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LX:
+    case eGamepadElements::LEFT_THUMBSTICK_X:
         UpdateGamepadStickX("stick_left", event->point.x);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_AXIS_LY:
+    case eGamepadElements::LEFT_THUMBSTICK_Y:
         UpdateGamepadStickY("stick_left", event->point.x);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RX:
+    case eGamepadElements::RIGHT_THUMBSTICK_X:
         UpdateGamepadStickX("stick_right", event->point.x);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_AXIS_RY:
+    case eGamepadElements::RIGHT_THUMBSTICK_Y:
         UpdateGamepadStickY("stick_right", event->point.x);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_DPAD_X:
+    case eGamepadElements::DPAD_X:
         UpdateGamepadElement("button_left", event->point.x < 0);
         UpdateGamepadElement("button_right", event->point.x > 0);
         break;
-    case GamepadDevice::GAMEPAD_ELEMENT_DPAD_Y:
+    case eGamepadElements::DPAD_Y:
         UpdateGamepadElement("button_up", event->point.x > 0);
         UpdateGamepadElement("button_down", event->point.x < 0);
         break;

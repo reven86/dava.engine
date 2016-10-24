@@ -93,8 +93,6 @@ void PlatformCore::Quit()
 
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnCreate");
-
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
     WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
     return primaryWindowBackend;
@@ -102,23 +100,17 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnResume");
-
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
 void PlatformCore::ActivityOnPause()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnPause");
-
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 }
 
 void PlatformCore::ActivityOnDestroy()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::ActivityOnDestroy");
-
     // Dispatch application termination request initiated by system, i.e. android activity is finishing
     // Do nonblocking call as Java part will wait until native thread is finished
     engineBackend->PostAppTerminate(true);
@@ -126,33 +118,18 @@ void PlatformCore::ActivityOnDestroy()
 
 void PlatformCore::GameThread()
 {
-    Logger::FrameworkDebug("=========== PlatformCore::GameThread: enter");
-
     Vector<String> cmdline;
     DAVAMain(std::move(cmdline));
-
-    // Logger already is dead
-    ANDROID_LOG_DEBUG("=========== PlatformCore::GameThread: leave");
 }
 
 void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)
 {
-    //mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([hasTriggerButtons]() {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([=]() {
-        Logger::Info("=========================== OnGamepadAdded: id=%d, name=%s, hasTriggerButtons=%d", deviceId, name.c_str(), hasTriggerButtons);
-        InputSystem::Instance()->GetGamepadDevice().SetAvailable(true);
-        InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(hasTriggerButtons);
-    }));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(deviceId));
 }
 
 void PlatformCore::OnGamepadRemoved(int32 deviceId)
 {
-    //mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([]() {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([=]() {
-        Logger::Info("=========================== OnGamepadAdded: id=%d", deviceId);
-        InputSystem::Instance()->GetGamepadDevice().SetAvailable(false);
-        InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(false);
-    }));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(deviceId));
 }
 
 } // namespace Private

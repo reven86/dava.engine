@@ -9,6 +9,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
+#include "Engine/Private/Android/AndroidJavaConst.h"
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
@@ -100,68 +101,6 @@ namespace DAVA
 {
 namespace Private
 {
-// Corresponding necessary constants from android.view.MotionEvent
-struct AMotionEvent
-{
-    // Actions
-    enum
-    {
-        ACTION_DOWN = 0,
-        ACTION_UP = 1,
-        ACTION_MOVE = 2,
-        ACTION_POINTER_DOWN = 5,
-        ACTION_POINTER_UP = 6,
-        ACTION_HOVER_MOVE = 7,
-        ACTION_SCROLL = 8,
-    };
-
-    // Mouse buttons
-    enum
-    {
-        BUTTON_PRIMARY = 0x01,
-        BUTTON_SECONDARY = 0x02,
-        BUTTON_TERTIARY = 0x04,
-    };
-
-    // Joystick axes
-    enum
-    {
-        AXIS_Y = 0x01,
-        AXIS_RZ = 0x0E,
-        AXIS_RY = 0x0D,
-    };
-};
-
-// Corresponding necessary constants from android.view.KeyEvent
-struct AKeyEvent
-{
-    // Actions
-    enum
-    {
-        ACTION_DOWN = 0,
-        ACTION_UP = 1,
-    };
-
-    // Keycodes
-    enum
-    {
-        KEYCODE_BACK = 4,
-
-        KEYCODE_DPAD_UP = 0x13,
-        KEYCODE_DPAD_DOWN = 0x14,
-        KEYCODE_DPAD_LEFT = 0x15,
-        KEYCODE_DPAD_RIGHT = 0x16,
-
-        // KEYCODE_DPAD_UP_LEFT = 0x10C,
-        // KEYCODE_DPAD_DOWN_LEFT = 0x10D,
-        // KEYCODE_DPAD_UP_RIGHT = 0x10E,
-        // KEYCODE_DPAD_DOWN_RIGHT = 0x10F,
-
-        META_SHIFT_ON = 0x01,
-        META_ALT_ON = 0x02,
-        META_CTRL_ON = 0x00001000,
-    };
-};
 
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
@@ -448,39 +387,12 @@ void WindowBackend::OnKeyEvent(int32 action, int32 keyCode, int32 unicodeChar, i
 
 void WindowBackend::OnGamepadButton(int32 deviceId, int32 action, int32 keyCode)
 {
-    // In DAVA::GamepadDevice Dpad buttons are interpreted as range [-1, 1], other buttons are expected to have value
-    // 1 for down state and 0 for up state.
-    float32 value = 0.f;
-    if (action == AKeyEvent::ACTION_DOWN)
-    {
-        switch (keyCode)
-        {
-        case AKeyEvent::KEYCODE_DPAD_DOWN:
-            value = -1.f;
-            break;
-        case AKeyEvent::KEYCODE_DPAD_LEFT:
-            value = -1.f;
-            break;
-        case AKeyEvent::KEYCODE_DPAD_UP:
-        case AKeyEvent::KEYCODE_DPAD_RIGHT:
-        default:
-            value = 1.f;
-            break;
-        }
-    }
-
     MainDispatcherEvent::eType type = action == AKeyEvent::ACTION_DOWN ? MainDispatcherEvent::GAMEPAD_BUTTON_DOWN : MainDispatcherEvent::GAMEPAD_BUTTON_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadButtonEvent(deviceId, type, keyCode, value));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadButtonEvent(deviceId, type, keyCode));
 }
 
 void WindowBackend::OnGamepadMotion(int32 deviceId, int32 axis, float32 value)
 {
-    // Invert joystick Y-axis
-    // TODO: find out why Y-axis should be inverted
-    if (axis == AMotionEvent::AXIS_Y || axis == AMotionEvent::AXIS_RZ || axis == AMotionEvent::AXIS_RY)
-    {
-        value = -value;
-    }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadMotionEvent(deviceId, axis, value));
 }
 

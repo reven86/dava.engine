@@ -142,7 +142,11 @@ public:
         Key key;
         char32_t keyChar; // unicode utf32 char
         MouseButton mouseButton;
+#if defined(__DAVAENGINE_COREV2__)
+        eGamepadElements element;
+#else
         GamepadDevice::eDavaGamepadElement element;
+#endif
         WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
         Gesture gesture; // pinch/rotate/swipe
     };

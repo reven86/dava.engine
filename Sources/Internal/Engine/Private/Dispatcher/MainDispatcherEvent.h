@@ -48,6 +48,9 @@ struct MainDispatcherEvent final
 
         USER_CLOSE_REQUEST,
         APP_TERMINATE,
+
+        GAMEPAD_ADDED,
+        GAMEPAD_REMOVED,
     };
 
     /// Parameter for APP_TERMINATE event
@@ -181,8 +184,10 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateAppTerminateEvent(bool triggeredBySystem);
     static MainDispatcherEvent CreateUserCloseRequestEvent(Window* window);
 
+    static MainDispatcherEvent CreateGamepadAddedEvent(uint32 deviceId);
+    static MainDispatcherEvent CreateGamepadRemovedEvent(uint32 deviceId);
     static MainDispatcherEvent CreateGamepadMotionEvent(uint32 deviceId, uint32 axis, float32 value);
-    static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button, float32 value);
+    static MainDispatcherEvent CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button);
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);

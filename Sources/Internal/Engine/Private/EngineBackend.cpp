@@ -314,6 +314,8 @@ void EngineBackend::OnBeginFrame()
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
+    engine->update.Emit(frameDelta);
+
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
@@ -321,8 +323,6 @@ void EngineBackend::OnUpdate(float32 frameDelta)
     {
         w->Update(frameDelta);
     }
-
-    engine->update.Emit(frameDelta);
 }
 
 void EngineBackend::OnDraw()
@@ -406,11 +406,17 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
         HandleAppTerminate(e);
         break;
     case MainDispatcherEvent::GAMEPAD_MOTION:
-        HandleGamepadMotion(e);
+        context->inputSystem->HandleGamepadMotion(e);
         break;
     case MainDispatcherEvent::GAMEPAD_BUTTON_DOWN:
     case MainDispatcherEvent::GAMEPAD_BUTTON_UP:
-        HandleGamepadButton(e);
+        context->inputSystem->HandleGamepadButton(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_ADDED:
+        context->inputSystem->HandleGamepadAdded(e);
+        break;
+    case MainDispatcherEvent::GAMEPAD_REMOVED:
+        context->inputSystem->HandleGamepadRemoved(e);
         break;
     default:
         if (e.window != nullptr)
@@ -524,16 +530,6 @@ void EngineBackend::PostAppTerminate(bool triggeredBySystem)
 void EngineBackend::PostUserCloseRequest()
 {
     dispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(nullptr));
-}
-
-void EngineBackend::HandleGamepadMotion(const MainDispatcherEvent& e)
-{
-    context->inputSystem->HandleGamepadMotion(e);
-}
-
-void EngineBackend::HandleGamepadButton(const MainDispatcherEvent& e)
-{
-    context->inputSystem->HandleGamepadButton(e);
 }
 
 void EngineBackend::InitRenderer(Window* w)
@@ -679,7 +675,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     if (!IsConsoleMode())
     {
         context->fontManager = new FontManager();
-        context->inputSystem = new InputSystem(context->uiControlSystem);
+        context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }

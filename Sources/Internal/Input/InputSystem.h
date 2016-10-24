@@ -13,6 +13,7 @@ namespace DAVA
     \defgroup input Input System
 */
 
+class Engine;
 class UIControlSystem;
 class UIEvent;
 class KeyboardDevice;
@@ -28,6 +29,7 @@ class InputSystem final
 {
     friend class Window;
     friend class Private::EngineBackend;
+    friend class GamepadDevice;
 
 public:
     // Temporal method for backward compatibility
@@ -45,16 +47,20 @@ public:
     MouseDevice& GetMouseDevice();
 
 private:
-    InputSystem(UIControlSystem* uiControlSystem_);
+    InputSystem(Engine* engine);
     ~InputSystem();
 
     InputSystem(const InputSystem&) = delete;
     InputSystem& operator=(const InputSystem&) = delete;
 
+    void Update(float32 frameDelta);
     void OnAfterUpdate();
     void HandleInputEvent(UIEvent* uie);
     void HandleGamepadMotion(const Private::MainDispatcherEvent& e);
     void HandleGamepadButton(const Private::MainDispatcherEvent& e);
+
+    void HandleGamepadAdded(const Private::MainDispatcherEvent& e);
+    void HandleGamepadRemoved(const Private::MainDispatcherEvent& e);
 
 private:
     UIControlSystem* uiControlSystem = nullptr;

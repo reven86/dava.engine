@@ -1,3 +1,116 @@
+#if defined(__DAVAENGINE_COREV2__)
+
+#include <algorithm>
+
+#include "Input/GamepadDevice.h"
+
+#include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
+#include "Input/InputSystem.h"
+#include "UI/UIEvent.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Input/GamepadDeviceImplAndroid.h"
+#else
+namespace DAVA
+{
+namespace Private
+{
+// Dummy GamepadDeviceImpl implementation for platforms that do not support gamepads for now.
+class GamepadDeviceImpl final
+{
+public:
+    GamepadDeviceImpl(GamepadDevice*)
+    {
+    }
+
+    void Update()
+    {
+    }
+
+    void HandleGamepadMotion(const MainDispatcherEvent&)
+    {
+    }
+    void HandleGamepadButton(const MainDispatcherEvent&)
+    {
+    }
+
+    bool HandleGamepadAdded(uint32)
+    {
+        return false;
+    }
+    bool HandleGamepadRemoved(uint32)
+    {
+        return false;
+    }
+};
+} // namespace Private
+} // namespace DAVA
+#endif
+
+namespace DAVA
+{
+GamepadDevice::GamepadDevice(InputSystem* inputSystem_)
+    : inputSystem(inputSystem_)
+    , impl(new Private::GamepadDeviceImpl(this))
+{
+    std::fill(std::begin(elementValues), std::end(elementValues), float32(0));
+    std::fill(std::begin(elementTimestamps), std::end(elementTimestamps), uint64(0));
+}
+
+GamepadDevice::~GamepadDevice() = default;
+
+void GamepadDevice::Update()
+{
+    if (isPresent)
+    {
+        impl->Update();
+        for (size_t i = 0; i < ELEMENT_COUNT; ++i)
+        {
+            if (elementChangedMask[i])
+            {
+                UIEvent uie;
+                uie.element = static_cast<eGamepadElements>(i);
+                uie.physPoint.x = elementValues[i];
+                uie.point.x = elementValues[i];
+                uie.phase = UIEvent::Phase::JOYSTICK;
+                uie.device = eInputDevice::GAMEPAD;
+                uie.timestamp = elementTimestamps[i] / 1000.0;
+
+                inputSystem->HandleInputEvent(&uie);
+            }
+        }
+        elementChangedMask.reset();
+    }
+}
+
+void GamepadDevice::HandleGamepadAdded(const Private::MainDispatcherEvent& e)
+{
+    uint32 deviceId = e.gamepadEvent.deviceId;
+    Logger::Debug("======================== GamepadDevice::HandleGamepadAdded: %u", deviceId);
+    isPresent = impl->HandleGamepadAdded(deviceId);
+}
+
+void GamepadDevice::HandleGamepadRemoved(const Private::MainDispatcherEvent& e)
+{
+    uint32 deviceId = e.gamepadEvent.deviceId;
+    Logger::Debug("======================== GamepadDevice::HandleGamepadRemoved: %u", deviceId);
+    isPresent = impl->HandleGamepadAdded(deviceId);
+}
+
+void GamepadDevice::HandleGamepadMotion(const Private::MainDispatcherEvent& e)
+{
+    impl->HandleGamepadMotion(e);
+}
+
+void GamepadDevice::HandleGamepadButton(const Private::MainDispatcherEvent& e)
+{
+    impl->HandleGamepadButton(e);
+}
+
+} // namespace DAVA
+
+#else // __DAVAENGINE_COREV2__
+
 #include "GamepadDevice.h"
 
 namespace DAVA
@@ -57,3 +170,5 @@ void GamepadDevice::InitInternal()
 }
 #endif
 }
+
+#endif // !__DAVAENGINE_COREV2__

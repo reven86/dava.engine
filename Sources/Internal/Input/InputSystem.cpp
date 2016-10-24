@@ -16,35 +16,16 @@ InputSystem* InputSystem::Instance()
     return Engine::Instance()->GetContext()->inputSystem;
 }
 
-InputSystem::InputSystem(UIControlSystem* uiControlSystem_)
-    : uiControlSystem(uiControlSystem_)
+InputSystem::InputSystem(Engine* engine)
+    : uiControlSystem(engine->GetContext()->uiControlSystem)
     , keyboard(new KeyboardDevice())
-    , gamepad(new GamepadDevice())
+    , gamepad(new GamepadDevice(this))
     , mouse(new MouseDevice())
 {
+    engine->update.Connect(MakeFunction(this, &InputSystem::Update));
 }
 
 InputSystem::~InputSystem() = default;
-
-void InputSystem::HandleInputEvent(UIEvent* uie)
-{
-    bool handled = false;
-    for (const InputHandler& h : handlers)
-    {
-        if ((h.inputDeviceMask & uie->device) != eInputDevice::UNKNOWN)
-        {
-            handled |= h.callback(uie);
-            if (handled)
-            {
-                break;
-            }
-        }
-    }
-    if (!handled && uiControlSystem != nullptr)
-    {
-        uiControlSystem->OnInput(uie);
-    }
-}
 
 uint32 InputSystem::AddHandler(eInputDevice inputDeviceMask, const Function<bool(UIEvent*)>& callback)
 {
@@ -78,6 +59,11 @@ void InputSystem::RemoveHandler(uint32 token)
     }
 }
 
+void InputSystem::Update(float32 frameDelta)
+{
+    gamepad->Update();
+}
+
 void InputSystem::OnAfterUpdate()
 {
     keyboard->OnFinishFrame();
@@ -88,44 +74,44 @@ void InputSystem::OnAfterUpdate()
     }
 }
 
+void InputSystem::HandleInputEvent(UIEvent* uie)
+{
+    bool handled = false;
+    for (const InputHandler& h : handlers)
+    {
+        if ((h.inputDeviceMask & uie->device) != eInputDevice::UNKNOWN)
+        {
+            handled |= h.callback(uie);
+            if (handled)
+            {
+                break;
+            }
+        }
+    }
+    if (!handled && uiControlSystem != nullptr)
+    {
+        uiControlSystem->OnInput(uie);
+    }
+}
+
 void InputSystem::HandleGamepadMotion(const Private::MainDispatcherEvent& e)
 {
-    uint32 axis = e.gamepadEvent.axis;
-    float32 value = e.gamepadEvent.value;
-    uint32 davaKey = gamepad->GetDavaEventIdForSystemAxis(axis);
-    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
-    {
-        UIEvent uie;
-        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
-        uie.physPoint.x = value;
-        uie.point.x = value;
-        uie.phase = UIEvent::Phase::JOYSTICK;
-        uie.device = eInputDevice::GAMEPAD;
-        uie.timestamp = e.timestamp / 1000.0;
-
-        gamepad->SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
-        HandleInputEvent(&uie);
-    }
+    gamepad->HandleGamepadMotion(e);
 }
 
 void InputSystem::HandleGamepadButton(const Private::MainDispatcherEvent& e)
 {
-    uint32 button = e.gamepadEvent.button;
-    float32 value = e.gamepadEvent.value;
-    uint32 davaKey = gamepad->GetDavaEventIdForSystemKeycode(button);
-    if (davaKey != GamepadDevice::INVALID_DAVAKEY)
-    {
-        UIEvent uie;
-        uie.element = static_cast<GamepadDevice::eDavaGamepadElement>(davaKey);
-        uie.physPoint.x = value;
-        uie.point.x = value;
-        uie.phase = UIEvent::Phase::JOYSTICK;
-        uie.device = eInputDevice::GAMEPAD;
-        uie.timestamp = e.timestamp / 1000.0;
+    gamepad->HandleGamepadButton(e);
+}
 
-        gamepad->SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
-        HandleInputEvent(&uie);
-    }
+void InputSystem::HandleGamepadAdded(const Private::MainDispatcherEvent& e)
+{
+    gamepad->HandleGamepadAdded(e);
+}
+
+void InputSystem::HandleGamepadRemoved(const Private::MainDispatcherEvent& e)
+{
+    gamepad->HandleGamepadRemoved(e);
 }
 
 } // namespace DAVA
