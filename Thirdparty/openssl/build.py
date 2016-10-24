@@ -1,3 +1,6 @@
+# Windows builds require perl to be in PATH
+
+
 import os
 import shutil
 import build_utils

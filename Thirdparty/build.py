@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
         if not failed:
             print '\nFinished. Successfully built: {} library(s)'.format(
-                len(libraries_to_process))
+                len(invoked_builders))
         else:
             print '\nFinished. Builders failed for these libraries: {}'.format(
                 str(failed))
