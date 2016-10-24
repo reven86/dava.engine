@@ -21,7 +21,11 @@ Project::Project(const Settings& aSettings)
     , projectDirectory(aSettings.projectPath.GetDirectory())
     , projectName(aSettings.projectPath.GetFilename())
 {
-    FilePath::AddResourcesFolder(projectDirectory + "Data/");
+    for (auto& folderInfo : settings.dataFolders)
+    {
+        FilePath::AddResourcesFolder(projectDirectory + folderInfo.second);
+    }
+    //FilePath::AddResourcesFolder(projectDirectory + "Data/");
 
     editorFontSystem->SetDefaultFontsPath(settings.fontsPath);
     //editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
@@ -35,7 +39,10 @@ Project::~Project()
 {
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
-    FilePath::RemoveResourcesFolder(projectDirectory + "Data/");
+    for (auto& folderInfo : settings.dataFolders)
+    {
+        FilePath::RemoveResourcesFolder(projectDirectory + folderInfo.second);
+    }
 
     //SetProjectName("");
     //SetProjectPath("");
@@ -181,7 +188,7 @@ EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
 
 const QString& Project::GetScreensRelativePath()
 {
-    static const QString relativePath("/Data/UI");
+    static const QString relativePath("/UI");
     return relativePath;
 }
 
@@ -189,6 +196,11 @@ const QString& Project::GetProjectFileName()
 {
     static const QString projectFile("ui.uieditor");
     return projectFile;
+}
+
+const DAVA::Vector<std::pair<DAVA::String, DAVA::String>>& Project::GetDataFolders() const
+{
+    return settings.dataFolders;
 }
 
 // QString Project::CreateNewProject(Result* result /*=nullptr*/)
@@ -254,8 +266,12 @@ const QString& Project::GetProjectFileName()
 //     }
 //     emit IsOpenChanged(arg);
 // }
-
 QString Project::GetProjectPath() const
+{
+    return QString::fromStdString(settings.projectPath.GetAbsolutePathname());
+}
+
+QString Project::GetProjectDirectory() const
 {
     return QString::fromStdString(projectDirectory.GetAbsolutePathname());
 }

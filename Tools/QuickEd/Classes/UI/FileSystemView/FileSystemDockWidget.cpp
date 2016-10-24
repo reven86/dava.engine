@@ -77,6 +77,8 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     ui->treeView->hideColumn(1);
     ui->treeView->hideColumn(2);
     ui->treeView->hideColumn(3);
+    ui->treeView->setRootIndex(QModelIndex());
+    ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
 
@@ -133,30 +135,35 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::SetProjectDir(const QString& path)
+void FileSystemDockWidget::AddDirectory(const QString& path, const QString& displayName)
 {
-    isAvailable = !path.isEmpty();
-    findInFilesAction->setEnabled(isAvailable);
+    QFileInfo fileInfo(path);
+
+    bool isPathAvailable = fileInfo.isDir() && fileInfo.exists();
+    isAvailable |= isPathAvailable;
+
+    if (isPathAvailable)
+    {
+        auto fRoot = model->addPath(path, displayName);
+        ui->treeView->expand(fRoot);
+        projectStructure->SetProjectDirectory(path.toStdString());
+    }
 
     if (isAvailable)
     {
-        QDir dir(path);
-        QString uiPath = dir.path() + Project::GetScreensRelativePath();
-
-        auto index = model->setRootPath(0, uiPath);
-        model->setRootPath(1, uiPath);
-        ui->treeView->setRootIndex(QModelIndex());
-        ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
         ui->treeView->showColumn(0);
 
-        projectStructure->SetProjectDirectory(uiPath.toStdString());
+        findInFilesAction->setEnabled(true);
     }
-    else
-    {
-        ui->treeView->hideColumn(0);
+}
 
-        projectStructure->SetProjectDirectory(DAVA::FilePath());
-    }
+void FileSystemDockWidget::RemoveAllDirectories()
+{
+    model->delAllPaths();
+    ui->treeView->hideColumn(0);
+    projectStructure->SetProjectDirectory(DAVA::FilePath());
+    isAvailable = false;
+    findInFilesAction->setEnabled(false);
 }
 
 void FileSystemDockWidget::FindInFiles()
@@ -223,7 +230,7 @@ QString FileSystemDockWidget::GetPathByCurrentPos(ePathType pathType)
     QString path;
     if (!index.isValid())
     {
-        path = model->rootPath(0);
+        //path = model->rootPath(0);
     }
     else
     {

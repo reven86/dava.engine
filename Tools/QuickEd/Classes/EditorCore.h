@@ -55,10 +55,9 @@ private slots:
     void OnBiDiSupportChanged(bool support);
     void OnGlobalStyleClassesChanged(const QString& classesStr);
 
-    void OnProjectOpenChanged(bool arg);
-
 private:
     static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path);
+    static std::tuple<QString, DAVA::ResultList> CreateNewProject();
 
     void OpenProject(const QString& path);
     bool CloseProject();
@@ -69,12 +68,16 @@ private:
     void EnableCacheClient();
     void DisableCacheClient();
 
-    QString CreateNewProject(DAVA::Result* result /*=nullptr*/);
-
     void OnProjectOpen(const Project* project);
+
     void OnProjectClose(const Project* project);
 
-    QStringList GetProjectsHistory() const;
+    const QStringList& GetRecentProjects() const;
+    QString GetLastProject() const;
+    void AddRecentProject(const QString& projectPath);
+
+    DAVA::String GetRecentProjectsAsString() const;
+    void SetRecentProjectsFromString(const DAVA::String& str);
 
     std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
@@ -86,13 +89,14 @@ private:
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
     bool assetCacheEnabled;
 
-    DAVA::String projectsHistory;
+    QStringList recentProjects;
+
     DAVA::uint32 projectsHistorySize;
 
 public:
     INTROSPECTION(EditorCore,
                   PROPERTY("isUsingAssetCache", "Asset cache/Use asset cache", IsUsingAssetCache, SetUsingAssetCacheEnabled, DAVA::I_PREFERENCE)
-                  MEMBER(projectsHistory, "ProjectInternal/ProjectsHistory", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  PROPERTY("projectsHistory", "ProjectInternal/ProjectsHistory", GetRecentProjectsAsString, SetRecentProjectsFromString, DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   //maximum size of projects history
                   MEMBER(projectsHistorySize, "Project/projects history size", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )

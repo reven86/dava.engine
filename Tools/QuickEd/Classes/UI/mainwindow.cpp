@@ -345,7 +345,7 @@ void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
     menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
 }
 
-void MainWindow::ShowResultList(const DAVA::ResultList& resultList)
+void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
 {
     QStringList errors;
     for (const Result& result : resultList.GetResults())
@@ -359,7 +359,7 @@ void MainWindow::ShowResultList(const DAVA::ResultList& resultList)
 
     if (!errors.empty())
     {
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+        QMessageBox::warning(qApp->activeWindow(), title, errors.join('\n'));
     }
 }
 
@@ -367,7 +367,7 @@ void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* pr
 {
     menuTools->setEnabled(resultList);
     toolBarPlugins->setEnabled(resultList);
-    currentProjectPath = project->GetProjectPath() + project->GetProjectName();
+    currentProjectPath = project->GetProjectDirectory() + project->GetProjectName();
     if (resultList)
     {
         UpdateProjectSettings();

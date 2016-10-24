@@ -30,7 +30,7 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
-    void ShowResultList(const DAVA::ResultList& resultList);
+    void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
     void AttachDocumentGroup(DocumentGroup* documentGroup);
 

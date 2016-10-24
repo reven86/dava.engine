@@ -42,7 +42,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
-    mainWindow->SetRecentProjects(GetProjectsHistory());
+    mainWindow->SetRecentProjects(GetRecentProjects());
 
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(mainWindow->actionOpen_project, &QAction::triggered, this, &EditorCore::OnOpenProject);
@@ -141,10 +141,10 @@ void EditorCore::OnReloadSpritesFinished()
 
 void EditorCore::OnGLWidgedInitialized()
 {
-    QStringList projectsPathes = GetProjectsHistory();
-    if (!projectsPathes.isEmpty())
+    QString lastProjectPath = GetLastProject();
+    if (!lastProjectPath.isEmpty())
     {
-        OpenProject(projectsPathes.last());
+        OpenProject(lastProjectPath);
     }
 }
 
@@ -253,10 +253,15 @@ void EditorCore::OpenProject(const QString& path)
     ResultList resultList;
     std::unique_ptr<Project> newProject;
 
-    std::tie(project, resultList) = CreateProject(path);
+    std::tie(newProject, resultList) = CreateProject(path);
 
-    OnProjectOpen(project.get());
-    mainWindow->ShowResultList(resultList);
+    if (newProject.get())
+    {
+        project = std::move(newProject);
+        OnProjectOpen(project.get());
+    }
+
+    mainWindow->ShowResultList(tr("Error while loading project"), resultList);
 }
 
 std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const QString& path)
@@ -315,14 +320,14 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
             {
                 auto it = dataFoldersNode->Get(i)->AsMap().begin();
                 String key = it->first;
-                FilePath path = FilePath(it->second->AsString());
+                String path = it->second->AsString();
                 settings.dataFolders.push_back(std::make_pair(key, path));
             }
         }
         else
         {
-            FilePath defaultDirectory = FilePath("./Data/");
-            QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory.GetStringValue()));
+            String defaultDirectory = "./Data/";
+            QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
             resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
             settings.dataFolders.push_back(std::make_pair("Default", defaultDirectory));
         }
@@ -380,6 +385,39 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
     return std::make_tuple(std::make_unique<Project>(settings), resultList);
 }
 
+std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
+{
+    DAVA::ResultList resultList;
+
+    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
+    if (projectDirPath.isEmpty())
+    {
+        return std::make_tuple(QString(), resultList);
+    }
+    bool needOverwriteProjectFile = true;
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = Project::GetProjectFileName();
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        resultList.AddResult(Result::RESULT_FAILURE, String("Project file exists!"));
+        return std::make_tuple(QString(), resultList);
+    }
+    QFile projectFile(fullProjectFilePath);
+    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
+    {
+        resultList.AddResult(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
+        return std::make_tuple(QString(), resultList);
+    }
+    if (!projectDir.mkpath(projectDir.canonicalPath() + Project::GetScreensRelativePath()))
+    {
+        resultList.AddResult(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
+        return std::make_tuple(QString(), resultList);
+    }
+
+    return std::make_tuple(fullProjectFilePath, resultList);
+}
+
 void EditorCore::OnCloseProject()
 {
     CloseProject();
@@ -430,32 +468,6 @@ void EditorCore::OnExit()
     }
 }
 
-void EditorCore::OnNewProject()
-{
-    Result result;
-    auto projectPath = CreateNewProject(&result);
-    if (result)
-    {
-        OpenProject(projectPath);
-    }
-    else if (result.type == Result::RESULT_ERROR)
-    {
-        QMessageBox::warning(qApp->activeWindow(), tr("error while creating project"), tr("Can not create new project: %1").arg(result.message.c_str()));
-    }
-}
-
-void EditorCore::OnProjectOpenChanged(bool isOpen)
-{
-    if (isOpen)
-    {
-        mainWindow->libraryWidget->SetLibraryPackages(project->GetLibraryPackages());
-    }
-    else
-    {
-        mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
-    }
-}
-
 bool EditorCore::IsUsingAssetCache() const
 {
     return assetCacheEnabled;
@@ -501,9 +513,24 @@ void EditorCore::DisableCacheClient()
 
 void EditorCore::OnProjectOpen(const Project* newProject)
 {
+    AddRecentProject(newProject->GetProjectPath());
+
+    mainWindow->SetRecentProjects(GetRecentProjects());
+
     mainWindow->actionClose_project->setEnabled(true);
     mainWindow->fileSystemDockWidget->setEnabled(true);
-    mainWindow->fileSystemDockWidget->SetProjectDir(newProject->GetProjectPath());
+    mainWindow->menuTools->setEnabled(true);
+    mainWindow->toolBarPlugins->setEnabled(true);
+
+    for (auto& item : newProject->GetDataFolders())
+    {
+        QString path = newProject->GetProjectDirectory() + QString::fromStdString(item.second) + Project::GetScreensRelativePath();
+        QString displayName = QString::fromStdString(item.first);
+
+        mainWindow->fileSystemDockWidget->AddDirectory(path, displayName);
+    }
+    mainWindow->libraryWidget->SetLibraryPackages(newProject->GetLibraryPackages());
+
     //connect(newProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     //connect(newProject, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
     //connect(newProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
@@ -511,7 +538,6 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 
     EditorLocalizationSystem* editorLocalizationSystem = newProject->GetEditorLocalizationSystem();
 
-    mainWindow->SetRecentProjects(GetProjectsHistory());
     mainWindow->SetLocales(editorLocalizationSystem->GetAvailableLocaleNames(), editorLocalizationSystem->GetCurrentLocale());
     mainWindow->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -551,7 +577,11 @@ void EditorCore::OnProjectClose(const Project* currProject)
 {
     mainWindow->actionClose_project->setEnabled(false);
     mainWindow->fileSystemDockWidget->setEnabled(false);
-    mainWindow->fileSystemDockWidget->SetProjectDir(QString());
+    mainWindow->menuTools->setEnabled(false);
+    mainWindow->toolBarPlugins->setEnabled(false);
+
+    mainWindow->fileSystemDockWidget->RemoveAllDirectories();
+    mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
 
     //disconnect(currProject, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
     //disconnect(currProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
@@ -567,10 +597,39 @@ void EditorCore::OnProjectClose(const Project* currProject)
     DisableCacheClient();
 }
 
-QStringList EditorCore::GetProjectsHistory() const
+const QStringList& EditorCore::GetRecentProjects() const
 {
-    QString history = QString::fromStdString(projectsHistory);
-    return history.split("\n", QString::SkipEmptyParts);
+    return recentProjects;
+}
+
+QString EditorCore::GetLastProject() const
+{
+    if (!recentProjects.empty())
+    {
+        return recentProjects.last();
+    }
+
+    return QString();
+}
+
+void EditorCore::AddRecentProject(const QString& projectPath)
+{
+    recentProjects.removeAll(projectPath);
+    recentProjects += projectPath;
+    while (static_cast<DAVA::uint32>(recentProjects.size()) > projectsHistorySize)
+    {
+        recentProjects.removeFirst();
+    }
+}
+
+String EditorCore::GetRecentProjectsAsString() const
+{
+    return recentProjects.join('\n').toStdString();
+}
+
+void EditorCore::SetRecentProjectsFromString(const String& history)
+{
+    recentProjects = QString::fromStdString(history).split("\n", QString::SkipEmptyParts);
 }
 
 void EditorCore::OnOpenProject()
@@ -578,16 +637,16 @@ void EditorCore::OnOpenProject()
     QString defaultPath;
     if (project.get() != nullptr)
     {
-        defaultPath = project->GetProjectPath() + project->GetProjectName();
+        defaultPath = project->GetProjectDirectory() + project->GetProjectName();
     }
     else
     {
         defaultPath = QDir::currentPath();
     }
 
-    QString projectPath = FileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
-                                                      defaultPath,
-                                                      tr("Project (*.uieditor)"));
+    QString projectPath = QFileDialog::getOpenFileName(mainWindow.get(), tr("Select a project file"),
+                                                       defaultPath,
+                                                       tr("Project (*.uieditor)"));
 
     if (projectPath.isEmpty())
     {
@@ -598,43 +657,18 @@ void EditorCore::OnOpenProject()
     OpenProject(projectPath);
 }
 
-QString EditorCore::CreateNewProject(Result* result /*=nullptr*/)
+void EditorCore::OnNewProject()
 {
-    if (result == nullptr)
-    {
-        Result dummy; //code cleaner
-        result = &dummy;
-    }
-    QString projectDirPath = QFileDialog::getExistingDirectory(qApp->activeWindow(), tr("Select directory for new project"));
-    if (projectDirPath.isEmpty())
-    {
-        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
-        return "";
-    }
-    bool needOverwriteProjectFile = true;
-    QDir projectDir(projectDirPath);
-    const QString projectFileName = Project::GetProjectFileName();
-    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
-    if (QFile::exists(fullProjectFilePath))
-    {
-        if (QMessageBox::Yes == QMessageBox::question(qApp->activeWindow(), tr("Project file exists!"), tr("Project file %1 exists! Open this project?").arg(fullProjectFilePath)))
-        {
-            return fullProjectFilePath;
-        }
+    ResultList resultList;
+    QString newProjectPath;
 
-        *result = Result(Result::RESULT_FAILURE, String("Operation cancelled"));
-        return "";
-    }
-    QFile projectFile(fullProjectFilePath);
-    if (!projectFile.open(QFile::WriteOnly | QFile::Truncate)) // create project file
+    std::tie(newProjectPath, resultList) = CreateNewProject();
+
+    if (!newProjectPath.isEmpty())
     {
-        *result = Result(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
-        return "";
+        OpenProject(newProjectPath);
+        return;
     }
-    if (!projectDir.mkpath(projectDir.canonicalPath() + Project::GetScreensRelativePath()))
-    {
-        *result = Result(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
-        return "";
-    }
-    return fullProjectFilePath;
+
+    mainWindow->ShowResultList(tr("Error while creating project"), resultList);
 }

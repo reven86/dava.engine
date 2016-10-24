@@ -21,7 +21,7 @@ public:
         DAVA::FilePath stringLocalizationsPath;
         DAVA::String currentLocale;
         DAVA::Vector<DAVA::FilePath> libraryPackages;
-        DAVA::Vector<std::pair<DAVA::String, DAVA::FilePath>> dataFolders;
+        DAVA::Vector<std::pair<DAVA::String, DAVA::String>> dataFolders;
     };
 
     Project(const Settings& aSettings);
@@ -29,6 +29,7 @@ public:
 
 public:
     QString GetProjectPath() const;
+    QString GetProjectDirectory() const;
     QString GetProjectName() const;
 
     //bool Open(const QString& path);
@@ -40,6 +41,8 @@ public:
     const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
     static const QString& GetScreensRelativePath();
     static const QString& GetProjectFileName();
+
+    const DAVA::Vector<std::pair<DAVA::String, DAVA::String>>& GetDataFolders() const;
     //QString CreateNewProject(DAVA::Result* result = nullptr);
 
 private:

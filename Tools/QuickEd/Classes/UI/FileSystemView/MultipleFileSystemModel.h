@@ -2,6 +2,7 @@
 
 #include <QAbstractItemModel>
 #include <QDir>
+#include <memory>
 
 class QFileSystemModel;
 
@@ -21,17 +22,38 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
+    QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool hasChildren(const QModelIndex& parent = QModelIndex()) const override;
+
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    QMap<int, QVariant> itemData(const QModelIndex& index) const override;
+    bool setItemData(const QModelIndex& index, const QMap<int, QVariant>& roles) override;
+
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+    Qt::DropActions supportedDropActions() const override;
+
     void fetchMore(const QModelIndex& parent) override;
     bool canFetchMore(const QModelIndex& parent) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
-    QModelIndex setRootPath(int subModelIndex, const QString& path);
-    QString rootPath(int subModelIndex) const;
+    QModelIndex addPath(const QString& path, const QString& alias);
+
+    void delPath(const QString& path);
+    void delAllPaths();
 
     QModelIndex index(const QString& path, int column = 0) const;
+
     void setFilter(QDir::Filters aFilters);
     QDir::Filters filter() const;
 
@@ -55,29 +77,55 @@ public:
 
 private slots:
     void source_dataChanged(const QModelIndex& topleft, const QModelIndex& bottomright, const QVector<int>& roles);
-    void source_layoutChanged(const QList<QPersistentModelIndex>& parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
-    void source_layoutAboutToBeChanged(const QList<QPersistentModelIndex>& parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
     void source_rowsAboutToBeInserted(QModelIndex p, int from, int to);
     void source_rowsInserted(QModelIndex p, int, int);
     void source_rowsAboutToBeRemoved(QModelIndex, int, int);
     void source_rowsRemoved(QModelIndex, int, int);
-    void source_modelReset();
-    void source_directoryLoaded(const QString& path);
-    void source_rootPathChanged(const QString& newPath);
-    void source_fileRenamed(const QString& path, const QString& oldName, const QString& newName);
 
 private:
-    QModelIndex mapToSource(const QModelIndex& index) const;
-    QModelIndex mapFromSource(const QModelIndex& index) const;
-    QFileSystemModel* mapSourceToModel(const QModelIndex& index) const;
+    struct FileSystemInfo
+    {
+        QString path;
+        QString alias;
+        QFileSystemModel* model = nullptr;
+        QModelIndex root;
+        //mutable QMap<QModelIndex, QModelIndex> mappingToSource;
+        //mutable QMap<QModelIndex, QModelIndex> mappingFromSource;
+    };
+
+    void ConnectToModel(QFileSystemModel* model);
+    void DisconnectFromModel(QFileSystemModel* model);
+
+    bool IsProxyRoot(const QModelIndex& parent) const;
+
+    const QModelIndex& MapToSource(const QModelIndex& proxyIndex) const;
+    const QModelIndex& MapFromSource(const QModelIndex& sourceIndex) const;
+
+    QFileSystemModel* GetModel(const QModelIndex& sourceIndex) const;
+    const QModelIndex& GetRoot(const QModelIndex& sourceIndex) const;
+    int GetModelIndex(const QModelIndex& sourceIndex) const;
+
+    const FileSystemInfo& GetInfo(const QModelIndex& sourceIndex) const;
+
+    QFileSystemModel* GetModel(int index) const
+    {
+        return fileSystemModels[index].model;
+    }
+    const QModelIndex& GetRoot(int index) const
+    {
+        return fileSystemModels[index].root;
+    }
+    const QString& GetAlias(int index) const
+    {
+        return fileSystemModels[index].alias;
+    }
 
     QDir::Filters filters;
     bool readOnlyEnable = false;
     bool nameFilterEnabled = false;
     QStringList localNameFilters;
 
-    QVector<QFileSystemModel*> fileSystemModels;
-    QVector<QModelIndex> fileSystemRootIndex;
+    QVector<FileSystemInfo> fileSystemModels;
 
     mutable QMap<QModelIndex, QModelIndex> mappingToSource;
     mutable QMap<QModelIndex, QModelIndex> mappingFromSource;
