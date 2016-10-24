@@ -32,6 +32,8 @@ struct MainDispatcherEvent final
         TOUCH_UP,
         TOUCH_MOVE,
 
+        TRACKPAD_GESTURE,
+
         GAMEPAD_BUTTON_DOWN,
         GAMEPAD_BUTTON_UP,
         GAMEPAD_MOTION,
@@ -119,6 +121,16 @@ struct MainDispatcherEvent final
         float32 y;
     };
 
+    // Parameter for TRACKPAD_GESTURE event
+    struct TrackpadGestureEvent
+    {
+        float32 magnification;
+        float32 rotation;
+        float32 deltaX;
+        float32 deltaY;
+        eModifierKeys modifierKeys;
+    };
+
     // Parameter for gamepad events:
     //      - GAMEPAD_BUTTON_DOWN
     //      - GAMEPAD_BUTTON_UP
@@ -174,6 +186,7 @@ struct MainDispatcherEvent final
         WindowSizeEvent sizeEvent;
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
+        TrackpadGestureEvent trackpadGestureEvent;
         GamepadEvent gamepadEvent;
         KeyEvent keyEvent;
     };
@@ -200,6 +213,9 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y, eModifierKeys modifierKeys);
+    static MainDispatcherEvent CreateWindowMagnificationGestureEvent(Window* window, float32 magnification, eModifierKeys modifierKeys);
+    static MainDispatcherEvent CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys);
+    static MainDispatcherEvent CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys);
 };
 
 template <typename F>

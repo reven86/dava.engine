@@ -103,6 +103,7 @@ private:
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
     void HandleTouchClick(const Private::MainDispatcherEvent& e);
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
+    void HandleTrackpadGesture(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
 

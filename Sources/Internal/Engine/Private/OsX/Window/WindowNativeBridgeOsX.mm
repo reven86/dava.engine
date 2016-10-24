@@ -301,6 +301,28 @@ void WindowNativeBridge::FlagsChanged(NSEvent* theEvent)
     lastModifierFlags = newModifierFlags;
 }
 
+void WindowNativeBridge::MagnifyWithEvent(NSEvent* theEvent)
+{
+    eModifierKeys modifierKeys = GetModifierKeys(theEvent);
+    float32 magnification = [theEvent magnification];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, magnification, modifierKeys));
+}
+
+void WindowNativeBridge::RotateWithEvent(NSEvent* theEvent)
+{
+    eModifierKeys modifierKeys = GetModifierKeys(theEvent);
+    float32 rotation = [theEvent rotation];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowRotationGestureEvent(window, rotation, modifierKeys));
+}
+
+void WindowNativeBridge::SwipeWithEvent(NSEvent* theEvent)
+{
+    eModifierKeys modifierKeys = GetModifierKeys(theEvent);
+    float32 deltaX = [theEvent deltaX];
+    float32 deltaY = [theEvent deltaY];
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSwipeGestureEvent(window, deltaX, deltaY, modifierKeys));
+}
+
 eModifierKeys WindowNativeBridge::GetModifierKeys(NSEvent* theEvent)
 {
     // TODO: NSControlKeyMask, NSAlternateKeyMask, etc are deprecated in xcode 8 and replaced with NSEventModifierFlagControl, ...

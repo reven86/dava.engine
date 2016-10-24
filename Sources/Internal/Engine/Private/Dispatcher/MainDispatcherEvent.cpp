@@ -178,6 +178,39 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateWindowMagnificationGestureEvent(Window* window, float32 magnification, eModifierKeys modifierKeys)
+{
+    MainDispatcherEvent e(TRACKPAD_GESTURE, window);
+    e.trackpadGestureEvent.magnification = magnification;
+    e.trackpadGestureEvent.rotation = 0;
+    e.trackpadGestureEvent.deltaX = 0;
+    e.trackpadGestureEvent.deltaY = 0;
+    e.trackpadGestureEvent.modifierKeys = modifierKeys;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys)
+{
+    MainDispatcherEvent e(TRACKPAD_GESTURE, window);
+    e.trackpadGestureEvent.magnification = 0;
+    e.trackpadGestureEvent.rotation = rotation;
+    e.trackpadGestureEvent.deltaX = 0;
+    e.trackpadGestureEvent.deltaY = 0;
+    e.trackpadGestureEvent.modifierKeys = modifierKeys;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys)
+{
+    MainDispatcherEvent e(TRACKPAD_GESTURE, window);
+    e.trackpadGestureEvent.magnification = 0;
+    e.trackpadGestureEvent.rotation = 0;
+    e.trackpadGestureEvent.deltaX = deltaX;
+    e.trackpadGestureEvent.deltaY = deltaY;
+    e.trackpadGestureEvent.modifierKeys = modifierKeys;
+    return e;
+}
+
 } // namespace Private
 } // namespace DAVA
 

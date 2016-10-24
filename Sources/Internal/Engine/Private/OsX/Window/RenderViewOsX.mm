@@ -147,6 +147,21 @@
     bridge->FlagsChanged(theEvent);
 }
 
+- (void)magnifyWithEvent:(NSEvent*)theEvent
+{
+    bridge->MagnifyWithEvent(theEvent);
+}
+
+- (void)rotateWithEvent:(NSEvent*)theEvent
+{
+    bridge->RotateWithEvent(theEvent);
+}
+
+- (void)swipeWithEvent:(NSEvent*)theEvent
+{
+    bridge->SwipeWithEvent(theEvent);
+}
+
 @end
 
 #endif // __DAVAENGINE_MACOS__

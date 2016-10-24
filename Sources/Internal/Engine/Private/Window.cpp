@@ -115,6 +115,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::TOUCH_MOVE:
         HandleTouchMove(e);
         break;
+    case MainDispatcherEvent::TRACKPAD_GESTURE:
+        HandleTrackpadGesture(e);
+        break;
     case MainDispatcherEvent::KEY_DOWN:
     case MainDispatcherEvent::KEY_UP:
         HandleKeyPress(e);
@@ -354,6 +357,21 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
     uie.modifiers = e.keyEvent.modifierKeys;
+
+    inputSystem->HandleInputEvent(&uie);
+}
+
+void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
+{
+    UIEvent uie;
+    uie.timestamp = e.timestamp / 1000.0;
+    uie.modifiers = e.trackpadGestureEvent.modifierKeys;
+    uie.device = eInputDevice::TOUCH_PAD;
+    uie.phase = UIEvent::Phase::GESTURE;
+    uie.gesture.magnification = e.trackpadGestureEvent.magnification;
+    uie.gesture.rotation = e.trackpadGestureEvent.rotation;
+    uie.gesture.dx = e.trackpadGestureEvent.deltaX;
+    uie.gesture.dy = e.trackpadGestureEvent.deltaY;
 
     inputSystem->HandleInputEvent(&uie);
 }

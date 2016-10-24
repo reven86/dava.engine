@@ -60,6 +60,9 @@ struct WindowNativeBridge final
     void MouseWheel(NSEvent* theEvent);
     void KeyEvent(NSEvent* theEvent);
     void FlagsChanged(NSEvent* theEvent);
+    void MagnifyWithEvent(NSEvent* theEvent);
+    void RotateWithEvent(NSEvent* theEvent);
+    void SwipeWithEvent(NSEvent* theEvent);
 
     static eModifierKeys GetModifierKeys(NSEvent* theEvent);
     static eMouseButtons GetMouseButton(NSEvent* theEvent);
