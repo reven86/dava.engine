@@ -27,6 +27,8 @@ class GamepadDevice final : public BaseObject
     friend class Private::GamepadDeviceImpl;
 
 public:
+    bool IsPresent() const;
+
     float32 operator[](eGamepadElements element) const;
     float32 GetElementState(eGamepadElements element) const;
 
@@ -51,6 +53,11 @@ private:
     uint64 elementTimestamps[ELEMENT_COUNT];
     std::bitset<ELEMENT_COUNT> elementChangedMask;
 };
+
+inline bool GamepadDevice::IsPresent() const
+{
+    return isPresent;
+}
 
 inline float32 GamepadDevice::operator[](eGamepadElements element) const
 {

@@ -74,8 +74,6 @@ void PlatformCore::Quit()
 
 void PlatformCore::OnLaunched()
 {
-    Logger::FrameworkDebug("========== CoreWinUWP::OnLaunched: thread=%d", GetCurrentThreadId());
-
     if (!gameThreadRunning)
     {
         Thread* gameThread = Thread::Create(MakeFunction(this, &PlatformCore::GameThread));
@@ -91,7 +89,6 @@ void PlatformCore::OnLaunched()
 
 void PlatformCore::OnActivated()
 {
-    Logger::FrameworkDebug("========== CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
 }
 
 static void InitScreenSizeInfo()
@@ -119,8 +116,6 @@ static void InitScreenSizeInfo()
 
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
-    Logger::FrameworkDebug("========== CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
-
     static bool firstTimeMainWindowsCreated = true;
     if (firstTimeMainWindowsCreated)
     {
@@ -139,15 +134,11 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 
 void PlatformCore::OnSuspending()
 {
-    Logger::FrameworkDebug("========== CoreWinUWP::OnSuspending: thread=%d", GetCurrentThreadId());
-
     dispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
 void PlatformCore::OnResuming()
 {
-    Logger::FrameworkDebug("========== CoreWinUWP::OnResuming: thread=%d", GetCurrentThreadId());
-
     dispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -161,15 +152,20 @@ void PlatformCore::OnBackPressed()
     dispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::BACK_NAVIGATION));
 }
 
+void PlatformCore::OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ /*gamepad*/)
+{
+    dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(0));
+}
+
+void PlatformCore::OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ /*gamepad*/)
+{
+    dispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
+}
+
 void PlatformCore::GameThread()
 {
-    Logger::FrameworkDebug("========== PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
-
     Vector<String> cmdline = engineBackend->GetCommandLine();
     DAVAMain(std::move(cmdline));
-
-    // DAVA::Logger is already dead
-    OutputDebugStringA("========== PlatformCore::GameThread leave\n");
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();

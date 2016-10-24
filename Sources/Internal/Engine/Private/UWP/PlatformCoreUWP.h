@@ -33,6 +33,8 @@ public:
     void OnResuming();
     void OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg);
     void OnBackPressed();
+    void OnGamepadAdded(::Windows::Gaming::Input::Gamepad ^ gamepad);
+    void OnGamepadRemoved(::Windows::Gaming::Input::Gamepad ^ gamepad);
 
 private:
     void GameThread();

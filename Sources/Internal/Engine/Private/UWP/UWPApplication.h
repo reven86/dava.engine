@@ -33,6 +33,9 @@ private:
     void OnBackPressed(::Platform::Object^ sender, ::Windows::Phone::UI::Input::BackPressedEventArgs^ args);
     void OnBackRequested(::Platform::Object^ sender, ::Windows::UI::Core::BackRequestedEventArgs^ args);
 
+    void OnGamepadAdded(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
+    void OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad);
+
     void InstallEventHandlers();
 
 private:

@@ -73,12 +73,23 @@ void UWPApplication::OnBackRequested(::Platform::Object^ /*sender*/, ::Windows::
     args->Handled = true;
 }
 
+void UWPApplication::OnGamepadAdded(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad)
+{
+    core->OnGamepadAdded(gamepad);
+}
+
+void UWPApplication::OnGamepadRemoved(::Platform::Object^ sender, ::Windows::Gaming::Input::Gamepad^ gamepad)
+{
+    core->OnGamepadRemoved(gamepad);
+}
+
 void UWPApplication::InstallEventHandlers()
 {
     using namespace ::Platform;
     using namespace ::Windows::Foundation;
     using namespace ::Windows::UI::Xaml;
     using namespace ::Windows::UI::Core;
+    using namespace ::Windows::Gaming::Input;
     using namespace ::Windows::Phone::UI::Input;
     using ::Windows::Foundation::Metadata::ApiInformation;
 
@@ -91,6 +102,9 @@ void UWPApplication::InstallEventHandlers()
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &UWPApplication::OnBackPressed);
     }
+
+    Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadAdded);
+    Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &UWPApplication::OnGamepadRemoved);
 }
 
 } // namespace Private

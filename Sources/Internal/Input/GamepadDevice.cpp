@@ -10,6 +10,8 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Input/GamepadDeviceImplAndroid.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "Input/GamepadDeviceImplWin10.h"
 #else
 namespace DAVA
 {
@@ -94,7 +96,7 @@ void GamepadDevice::HandleGamepadRemoved(const Private::MainDispatcherEvent& e)
 {
     uint32 deviceId = e.gamepadEvent.deviceId;
     Logger::Debug("======================== GamepadDevice::HandleGamepadRemoved: %u", deviceId);
-    isPresent = impl->HandleGamepadAdded(deviceId);
+    isPresent = impl->HandleGamepadRemoved(deviceId);
 }
 
 void GamepadDevice::HandleGamepadMotion(const Private::MainDispatcherEvent& e)
