@@ -259,11 +259,11 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
         SendRaw(STB_TEXTEDIT_K_WORDLEFT | STB_TEXTEDIT_K_SHIFT);
         return SendRaw(STB_TEXTEDIT_K_BACKSPACE);
     case K_VKEY_CUT:
-        return delegate->IsUserCanCopy() && CutToClipboard(); // Can modify text
+        return delegate->IsCopyToClipboardAllowed() && CutToClipboard(); // Can modify text
     case K_VKEY_COPY:
-        return delegate->IsUserCanCopy() && CopyToClipboard();
+        return delegate->IsCopyToClipboardAllowed() && CopyToClipboard();
     case K_VKEY_PASTE:
-        return delegate->IsUserCanPaste() && PasteFromClipboard(); // Can modify text
+        return delegate->IsPasteFromClipboardAllowed() && PasteFromClipboard(); // Can modify text
     case STB_TEXTEDIT_K_UP:
     case STB_TEXTEDIT_K_DOWN:
         if (IsSingleLineMode())

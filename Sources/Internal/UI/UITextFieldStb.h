@@ -80,7 +80,7 @@ public:
     WideString::value_type GetCharAt(uint32 i) const override;
     WideString GetText() const override;
     bool IsCharAvaliable(WideString::value_type ch) const override;
-    bool IsUserCanCopy() const override;
+    bool IsCopyToClipboardAllowed() const override;
 
 private:
     void DropLastCursorAndSelection();

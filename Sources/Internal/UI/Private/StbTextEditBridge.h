@@ -49,13 +49,13 @@ public:
         virtual bool IsCharAvaliable(WideString::value_type character) const = 0;
 
         /** Allow copy or cut selected text to clipnoard. */
-        virtual bool IsUserCanCopy() const
+        virtual bool IsCopyToClipboardAllowed() const
         {
             return true;
         }
 
         /** Allow paste specified string from clipbaord to field. */
-        virtual bool IsUserCanPaste() const
+        virtual bool IsPasteFromClipboardAllowed() const
         {
             return true;
         }
