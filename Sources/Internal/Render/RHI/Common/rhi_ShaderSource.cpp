@@ -538,7 +538,7 @@ void ShaderSource::InlineFunctions()
 
                 DVASSERT(arg.size());
                 func_block->statement = arg[0];
-                for (int i = 1; i < arg.size(); ++i)
+                for (int i = 1; i < int(arg.size()); ++i)
                 {
                     arg[i - 1]->nextStatement = arg[i];
                 }
