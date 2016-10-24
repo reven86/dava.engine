@@ -5,6 +5,10 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+@class GCController;
+@class GCExtendedGamepad;
+@class GCGamepad;
+
 namespace DAVA
 {
 class GamepadDevice;
@@ -17,6 +21,8 @@ public:
     GamepadDeviceImpl(GamepadDevice* gamepadDevice);
 
     void Update();
+    void ReadExtendedGamepadElements(GCExtendedGamepad* gamepad, float32 buf[]);
+    void ReadGamepadElements(GCGamepad* gamepad, float32 buf[]);
 
     void HandleGamepadMotion(const MainDispatcherEvent&)
     {
@@ -29,6 +35,7 @@ public:
     bool HandleGamepadRemoved(uint32 id);
 
     GamepadDevice* gamepadDevice = nullptr;
+    GCController* controller = nullptr;
 };
 
 } // namespace Private

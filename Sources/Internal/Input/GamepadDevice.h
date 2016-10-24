@@ -160,22 +160,6 @@ public:
 private:
     uint8 keyTranslator[MAX_TRANSLATOR_KEYS];
     uint8 axisTranslator[MAX_TRANSLATOR_KEYS];
-#else
-public:
-    static const uint8 INVALID_DAVAKEY = 0xFF;
-    static const uint32 MAX_TRANSLATOR_KEYS = 256;
-
-    uint8 GetDavaEventIdForSystemKeycode(int32 systemKey) const
-    {
-        return INVALID_DAVAKEY;
-    }
-    uint8 GetDavaEventIdForSystemAxis(int32 systemKey) const
-    {
-        return INVALID_DAVAKEY;
-    }
-    void OnTriggersAvailable(bool isAvailable)
-    {
-    }
 #endif
 };
 
