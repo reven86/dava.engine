@@ -46,16 +46,43 @@ bool SkipMatchedShortcut(const QAction* action, const QKeyEvent* event)
     return false;
 }
 
-void TriggerAction(QShortcut* shortcut)
+bool TriggerAction(QShortcut* shortcut)
 {
     shortcut->activated();
+    return true;
 }
 
-void TriggerAction(QAction* action)
+bool TriggerAction(QAction* action)
 {
-    if (action->isEnabled())
+    bool enabled = action->isEnabled();
+    if (enabled)
     {
         action->trigger();
+    }
+    return enabled;
+}
+
+Qt::ShortcutContext GetContext(QShortcut* shortcut)
+{
+    return shortcut->context();
+}
+
+Qt::ShortcutContext GetContext(QAction* action)
+{
+    return action->shortcutContext();
+}
+
+template <typename T>
+bool CheckContext(T* action)
+{
+    Qt::ShortcutContext context = GetContext(action);
+    QWidget* parentWidget = action->parentWidget();
+    switch (context)
+    {
+    case Qt::WidgetShortcut:
+        return parentWidget->hasFocus();
+    default:
+        return true;
     }
 }
 }
@@ -139,20 +166,26 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
         {
             if (seq.matches(inputSequence) == QKeySequence::ExactMatch && !ShortcutCheckerDetail::SkipMatchedShortcut(action, event))
             {
-                lastInputSequence = inputSequence;
-                lastShortcutTimestamp = event->timestamp();
-                ShortcutCheckerDetail::TriggerAction(action);
-                QTimer::singleShot(0, []()
-                                   {
-                                       // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
-                                       // to fix this we will clear keyboard state in Dava if we found shortcut
-                                       DAVA::DavaQtKeyboard::ClearAllKeys();
-                                   });
-                event->accept();
-                return true;
+                if (ShortcutCheckerDetail::CheckContext(action) == false)
+                {
+                    continue;
+                }
+                if (ShortcutCheckerDetail::TriggerAction(action))
+                {
+                    lastInputSequence = inputSequence;
+                    lastShortcutTimestamp = event->timestamp();
+                    ;
+                    QTimer::singleShot(0, []()
+                                       {
+                                           // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
+                                           // to fix this we will clear keyboard state in Dava if we found shortcut
+                                           DAVA::DavaQtKeyboard::ClearAllKeys();
+                                       });
+                    event->accept();
+                    return true;
+                }
             }
         }
     }
-
     return false;
 }
