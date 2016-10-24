@@ -86,6 +86,7 @@ static bool _Metal_NextDrawablePending = false;
 static bool _Metal_PresentDrawablePending = false;
 id<CAMetalDrawable> _Metal_currentDrawable = nil;
 id<MTLCommandBuffer> _Metal_currentCommandBuffer = nil;
+id<MTLRenderCommandEncoder> _Metal_currentCommandEncoder = nil;
 
 void CommandBufferMetal_t::_ApplyVertexData(unsigned firstVertex)
 {
@@ -133,12 +134,6 @@ void CommandBufferMetal_t::Execute()
                 }];
             }
 
-            #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            if (static_cast<const SWCommand_End*>(cmd)->doCommit)
-            {
-                [buf commit];
-            }
-            #endif
         }
         break;
 
@@ -593,10 +588,6 @@ bool RenderPassMetal_t::Initialize()
         cb->sampleCount = rhi::TextureSampleCountForAAType(cfg.antialiasingType);
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
-
-        #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-        cb->do_commit_on_end = !do_present;
-        #endif
     }
     else
     {
@@ -622,9 +613,6 @@ bool RenderPassMetal_t::Initialize()
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
 
-            #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            cb->do_commit_on_end = !do_present;
-            #endif
         }
     }
 
@@ -704,10 +692,6 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
         for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
             cb->cur_vb[s] = InvalidHandle;
 
-        #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-        cb->do_commit_on_end = !pass->do_present;
-        #endif
-
         pass->cmdBuf[0] = cb_h;
         cmdBuf[0] = cb_h;
     }
@@ -734,10 +718,6 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
             cb->sampleCount = passConf.sampleCount;
             for (unsigned s = 0; s != countof(cb->cur_vb); ++s)
                 cb->cur_vb[s] = InvalidHandle;
-            
-            #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-            cb->do_commit_on_end = !pass->do_present;
-            #endif
 
             pass->cmdBuf[i] = cb_h;
             cmdBuf[i] = cb_h;
@@ -844,17 +824,9 @@ static void metal_CommandBuffer_End(Handle cmdBuf, Handle syncObject)
         }];
     }
     
-    #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-    if (cb->do_commit_on_end)
-        [cb->buf commit];
-    #endif
-    
 #else
     SWCommand_End* cmd = cb->allocCmd<SWCommand_End>();
     cmd->syncObject = syncObject;
-    #if RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-    cmd->doCommit = cb->do_commit_on_end;
-    #endif
 #endif
 }
 
@@ -1683,14 +1655,11 @@ static void Metal_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             CommandBufferPoolMetal::Free(cbh);
         }
 
-        #if !RHI_METAL__COMMIT_COMMAND_BUFFER_ON_END
-        MTL_TRACE("  .commit %u   %p", (p - pass.begin()), (void*)(rp->buf));
-        [rp->buf commit];
-        #endif
-
         rp->desc = nullptr;
 
 #if RHI_METAL__USE_NATIVE_COMMAND_BUFFERS
+        [rp->buf commit];
+
         [rp->buf release];
         rp->buf = nil;
         [rp->encoder release];
