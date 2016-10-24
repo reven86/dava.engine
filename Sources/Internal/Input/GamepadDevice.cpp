@@ -12,6 +12,8 @@
 #include "Input/GamepadDeviceImplAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #include "Input/GamepadDeviceImplWin10.h"
+#elif defined(__DAVAENGINE_IPHONE__)
+#include "Input/GamepadDeviceImplIos.h"
 #else
 namespace DAVA
 {
