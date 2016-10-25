@@ -301,7 +301,7 @@ void WindowBackend::OnMouseEvent(int32 action, int32 nativeButtonState, float32 
     {
     case AMotionEvent::ACTION_MOVE:
     case AMotionEvent::ACTION_HOVER_MOVE:
-        if (lastMouseMoveX != x && lastMouseMoveY != y)
+        if (lastMouseMoveX != x || lastMouseMoveY != y)
         {
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
             lastMouseMoveX = x;

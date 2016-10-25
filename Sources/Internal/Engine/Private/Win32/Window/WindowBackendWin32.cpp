@@ -245,7 +245,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
     // mouse move only from mouse device. Also skip spurious move events as described in:
     // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
     eInputDevice source = GetInputEventSource(::GetMessageExtraInfo());
-    if (source == eInputDevice::MOUSE && x != lastMouseMoveX && y != lastMouseMoveY)
+    if (source == eInputDevice::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
     {
         eModifierKeys modifierKeys = GetModifierKeys();
         float32 vx = static_cast<float32>(x);
