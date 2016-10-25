@@ -20,6 +20,7 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
+    , isFullscreen(windowBackend->GetInitialWindowingMode() == Window::eWindowingMode::FULLSCREEN)
 {
 }
 
@@ -113,6 +114,27 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
+void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
+{
+    using ::Windows::UI::ViewManagement::ApplicationView;
+    bool isFullscreenRequested = newMode == Window::eWindowingMode::FULLSCREEN;
+
+    if (isFullscreen == isFullscreenRequested)
+    {
+        return;
+    }
+
+    ApplicationView ^ view = ApplicationView::GetForCurrentView();
+    if (isFullscreenRequested)
+    {
+        view->TryEnterFullScreenMode();
+    }
+    else
+    {
+        view->ExitFullScreenMode();
+    }
+}
+
 void WindowNativeBridge::OnTriggerPlatformEvents()
 {
     windowBackend->ProcessPlatformEvents();
@@ -154,6 +176,8 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
 
 void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
 {
+    CheckWindowingModeChanging();
+
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
@@ -163,11 +187,37 @@ void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Window
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
+    CheckWindowingModeChanging();
+
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY));
+}
+
+void WindowNativeBridge::CheckWindowingModeChanging()
+{
+    using ::Windows::UI::ViewManagement::ApplicationView;
+    bool actualFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
+
+    if (actualFullscreen != isFullscreen)
+    {
+        isFullscreen = actualFullscreen;
+        Window::eWindowingMode windowingMode;
+
+        if (isFullscreen)
+        {
+            windowingMode = Window::eWindowingMode::FULLSCREEN;
+        }
+        else
+        {
+            windowingMode = Window::eWindowingMode::WINDOWED;
+        }
+
+        MainDispatcherEvent event = MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, static_cast<int32>(windowingMode));
+        mainDispatcher->PostEvent(event);
+    }
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)

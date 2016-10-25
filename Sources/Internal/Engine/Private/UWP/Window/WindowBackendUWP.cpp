@@ -41,6 +41,16 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
+void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
+}
+
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
+{
+    return Window::eWindowingMode::WINDOWED;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
@@ -91,6 +101,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_WINDOWING_MODE:
+        bridge->SetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
