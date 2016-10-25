@@ -193,11 +193,11 @@ void ProfilerTest::TestFunction1()
     DAVA_PROFILER_CPU_SCOPE(PROFILER_TEST_FUNC1_MARKER);
     DAVA_PROFILER_CPU_SCOPE_CUSTOM(PROFILER_TEST_FUNC1_MARKER, customCPUProfiler);
 
-    Matrix4 mat1 = Matrix4::IDENTITY;
-    Matrix4 mat2 = Matrix4::MakeTranslation(Vector3(1.f, 1.f, 1.f));
+    volatile Matrix4 mat1 = Matrix4::IDENTITY;
+    volatile Matrix4 mat2 = Matrix4::MakeTranslation(Vector3(1.f, 1.f, 1.f));
 
     for (int32 i = 0; i < 10000; ++i)
-        mat1 = mat1 * mat2;
+        const_cast<Matrix4&>(mat1) = const_cast<Matrix4&>(mat1) * const_cast<Matrix4&>(mat2);
 }
 
 void ProfilerTest::TestFunction2()
@@ -205,11 +205,11 @@ void ProfilerTest::TestFunction2()
     DAVA_PROFILER_CPU_SCOPE(PROFILER_TEST_FUNC2_MARKER);
     DAVA_PROFILER_CPU_SCOPE_CUSTOM(PROFILER_TEST_FUNC2_MARKER, customCPUProfiler);
 
-    Matrix4 mat1 = Matrix4::IDENTITY;
-    Matrix4 mat2 = Matrix4::MakeRotation(Vector3(1.f, 1.f, 1.f), 1.f);
+    volatile Matrix4 mat1 = Matrix4::IDENTITY;
+    volatile Matrix4 mat2 = Matrix4::MakeRotation(Vector3(1.f, 1.f, 1.f), 1.f);
 
     for (int32 i = 0; i < 10000; ++i)
-        mat1 = mat1 * mat2;
+        const_cast<Matrix4&>(mat1) = const_cast<Matrix4&>(mat1) * const_cast<Matrix4&>(mat2);
 }
 
 void ProfilerTest::DumpAverageToUI(DAVA::ProfilerCPU* profiler, DAVA::int32 snapshotID)
