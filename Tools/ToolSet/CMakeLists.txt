@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 
+project( ToolSet )
+
 set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include ( CMake-common )
 
@@ -19,50 +21,7 @@ macro ( add_tool TARGET_NAME )
     endif() 
 
     set( DEPLOY_DIR ${OLD_DEPLOY_DIR} )
-    list( APPEND TARGETS_LIST ${TARGET_NAME} )
 endmacro ()
-
-macro ( init_tool_set )
-    project( ToolSet )
-    if( APPLE )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
-
-        set( MACOS_PLIST            ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
-        set( MACOS_ICO              ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
-        set( RESOURCES_LIST         ${MACOS_ICO} )      
-
-        add_executable( ${PROJECT_NAME} MACOSX_BUNDLE main.cpp ${RESOURCES_LIST} )
-
-        target_link_libraries( ${PROJECT_NAME}
-            "-framework Cocoa"
-            "-framework AppKit"
-            "-framework CoreData"
-            "-framework Foundation"
-        )
-
-        set_property (TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY 
-              COMPILE_FLAGS "-x objective-c++")  
-
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES
-                                MACOSX_BUNDLE_INFO_PLIST "${MACOS_PLIST}"
-                                XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS YES
-                                RESOURCE "${RESOURCES_LIST}"
-                                XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR ${DEPLOY_DIR}
-                              )
-
-        add_dependencies( ${PROJECT_NAME} ${TARGETS_LIST} )
-        set( MACOS_PLIST )
-        set( MACOS_ICO )
-        set( RESOURCES_LIST )      
-    endif()
-
-    get_property( QT5_FOUND GLOBAL PROPERTY QT5_FOUND )
-    if( QT5_FOUND )
-        find_package( QT5 REQUIRED)
-        qt_deploy( )
-    endif()
-
-endmacro()
 
 ############
 
@@ -77,7 +36,6 @@ set( IGNORE_FILE_TREE_CHECK 1 )
 find_package ( DavaTools     REQUIRED )
 
 ## other
-set( MAC_DISABLE_BUNDLE    )
 set( DEFINITIONS           )
 set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app_other )
 set( DEPLOY_DIR_EXECUTABLE )
@@ -97,15 +55,15 @@ reset_property ( MIX_APP_DATA )
 
 ## tools
 
-set( MAC_DISABLE_BUNDLE true )
-set( TARGETS_LIST )
 set( POSTPONED_MIX_DATA 1 )
-set( QT_POST_DEPLOY 1 )
+set( QT_POST_DEPLOY 0 )
 
 set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
-set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/Libs )
-set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/Resources )
-set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR_MACOS}/ToolSet.app/Contents/MacOS )
+set( DEPLOY_DIR_LIBS_MACOS        ${DEPLOY_DIR_MACOS}/Libs )
+set( DEPLOY_DIR_DATA_MACOS        ${DEPLOY_DIR_MACOS} )
+set( DEPLOY_DIR_EXECUTABLE_MACOS  ${DEPLOY_DIR_MACOS} )
+set( ADDED_LD_RUNPATHES           "@executable_path/../../Libs @executable_path/../../../Libs" )
+
 
 set( DEPLOY_DIR_WIN               ${CMAKE_BINARY_DIR}/app )
 set( DEPLOY_DIR_LIBS_WIN          )
@@ -119,9 +77,11 @@ set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
 
 
 reset_property ( MIX_APP_DATA )
-
+    set( DEFINITIONS -DDAVA_MACOS_DATA_PATH="/../Data/" )
     add_tool     ( ResourceEditor   )
     add_tool     ( QuickEd          )
+    set( DEFINITIONS  )
+
 ##
     add_tool     ( ResourceArchiver )
     add_tool     ( ResourcePacker   )
@@ -130,7 +90,6 @@ reset_property ( MIX_APP_DATA )
     add_tool     ( AssetCacheClient )
     add_tool     ( AssetCacheServer )
 
-    init_tool_set()
     processing_mix_data()
 
 ############

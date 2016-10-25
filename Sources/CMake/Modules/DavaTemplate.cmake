@@ -169,10 +169,12 @@ elseif( MACOS )
     list ( APPEND DYLIB_FILES     "${DYLIB_FILES}" "${MACOS_DYLIB}" )
 
     list( APPEND RESOURCES_LIST  ${APP_DATA}  )
-    list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
-    list( APPEND RESOURCES_LIST  ${MACOS_XIB}   )
-    list( APPEND RESOURCES_LIST  ${MACOS_PLIST} )
-    list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
+    list( APPEND RESOURCES_LIST  ${MACOS_XIB} )
+    list( APPEND RESOURCES_LIST  ${MACOS_ICO} )
+
+    if( NOT DEPLOY_DIR_LIBS )
+        list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
+    endif()
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
 
@@ -571,7 +573,7 @@ elseif( MACOS )
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
     if( DAVA_FOUND )
-        set(LD_RUNPATHES "@executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
+        set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
             set( LD_RUNPATHES "${LD_RUNPATHES} ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/" )
         endif()
@@ -854,7 +856,7 @@ if( DEPLOY )
 
         endif()
 
-        if( MACOS AND MAC_DISABLE_BUNDLE )
+        if( MACOS AND (DEPLOY_DIR_LIBS OR MAC_DISABLE_BUNDLE) )
             if( NOT DEPLOY_DIR_LIBS )
                 set( DEPLOY_DIR_LIBS ${DEPLOY_DIR}/Libs )
             endif()
