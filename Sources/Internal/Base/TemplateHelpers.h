@@ -7,13 +7,11 @@
 #include <type_traits>
 #include <utility>
 #include <cassert>
+#include <cstdlib>
 
 namespace DAVA
 {
-// Leave it for compatibility
-#define COMPILER_ASSERT(expr) static_assert(expr, #expr)
-
-// Template for intergal constant types
+// Template for integral constant types
 template <typename T, T Value>
 struct IntegralConstant
 {
@@ -382,8 +380,8 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 
 #define SCOPE_EXIT auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = ::DAVA::ScopeGuardOnExit() + [&]()
 
-template <typename T, size_t N>
-DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
+template <typename T, std::size_t N>
+DAVA_CONSTEXPR std::size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
 {
     return N;
 }
