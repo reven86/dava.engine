@@ -71,7 +71,7 @@ private:
     LRESULT OnGetMinMaxInfo(MINMAXINFO* minMaxInfo);
     LRESULT OnSetKillFocus(bool hasFocus);
     LRESULT OnMouseMoveEvent(int32 x, int32 y);
-    LRESULT OnMouseWheelEvent(int32 delta, int32 x, int32 y);
+    LRESULT OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y);
     LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
     LRESULT OnCaptureChanged();
     LRESULT OnTouch(uint32 ntouch, HTOUCHINPUT htouch);

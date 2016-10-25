@@ -298,12 +298,19 @@ void WindowNativeBridge::OnPointerWheelChanged(::Platform::Object ^ sender, ::Wi
     using namespace ::Windows::UI::Input;
 
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
+    PointerPointProperties ^ prop = pointerPoint->Properties;
 
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
-    float32 deltaY = static_cast<float32>(pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA);
+    float32 deltaX = 0.f;
+    float32 deltaY = static_cast<float32>(prop->MouseWheelDelta / WHEEL_DELTA);
+    if (prop->IsHorizontalMouseWheel)
+    {
+        using std::swap;
+        std::swap(deltaX, deltaY);
+    }
     eModifierKeys modifierKeys = GetModifierKeys();
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, 0.f, deltaY, modifierKeys, false));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
 }
 
 eModifierKeys WindowNativeBridge::GetModifierKeys() const

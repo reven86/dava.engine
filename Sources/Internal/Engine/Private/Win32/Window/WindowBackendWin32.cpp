@@ -258,13 +258,14 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
     return 0;
 }
 
-LRESULT WindowBackend::OnMouseWheelEvent(int32 delta, int32 x, int32 y)
+LRESULT WindowBackend::OnMouseWheelEvent(int32 deltaX, int32 deltaY, int32 x, int32 y)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
     float32 vx = static_cast<float32>(x);
     float32 vy = static_cast<float32>(y);
-    float32 vdelta = static_cast<float32>(delta);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, 0.f, vdelta, modifierKeys, false));
+    float32 vdeltaX = static_cast<float32>(deltaX);
+    float32 vdeltaY = static_cast<float32>(deltaY);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, vx, vy, vdeltaX, vdeltaY, modifierKeys, false));
     return 0;
 }
 
@@ -495,12 +496,18 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         int32 y = GET_Y_LPARAM(lparam);
         lresult = OnMouseMoveEvent(x, y);
     }
-    else if (message == WM_MOUSEWHEEL)
+    else if (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)
     {
-        int32 delta = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+        int32 deltaX = 0;
+        int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+        if (message == WM_MOUSEHWHEEL)
+        {
+            using std::swap;
+            std::swap(deltaX, deltaY);
+        }
         int32 x = GET_X_LPARAM(lparam);
         int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseWheelEvent(delta, x, y);
+        lresult = OnMouseWheelEvent(deltaX, deltaY, x, y);
     }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {

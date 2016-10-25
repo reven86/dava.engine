@@ -289,15 +289,6 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
     uie.modifiers = e.keyEvent.modifierKeys;
 
-    // TODO: let input system decide what to do when shift is pressed while wheelling
-    // Now use implementation from current core
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT))
-    {
-        using std::swap;
-        swap(uie.wheelDelta.x, uie.wheelDelta.y);
-    }
-
     inputSystem->HandleInputEvent(&uie);
 }
 
