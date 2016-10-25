@@ -96,7 +96,8 @@ static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
 
 static const char* GetBuiltInSemantic(const char* semantic)
 {
-    int numBuiltInSemantics = sizeof(_builtInSemantics) / (2 * sizeof(const char*));
+    //    int numBuiltInSemantics = sizeof(_builtInSemantics) / (2 * sizeof(const char*));
+    int numBuiltInSemantics = (sizeof(_builtInSemantics) / sizeof(_builtInSemantics[0])) / 2;
     for (int i = 0; i < numBuiltInSemantics; ++i)
     {
         if (String_EqualNoCase(semantic, _builtInSemantics[i * 2 + 0]))

@@ -93,6 +93,8 @@ int HLSLGenerator::GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpr
 
 HLSLGenerator::HLSLGenerator(Allocator* allocator)
     : writer()
+    ,
+    mode(MODE_DX11)
 {
     tree = NULL;
     entryName = NULL;

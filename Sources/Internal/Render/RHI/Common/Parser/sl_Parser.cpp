@@ -1865,23 +1865,23 @@ bool HLSLParser::ParseDeclaration(HLSLDeclaration*& declaration)
             }
         }
 
-        HLSLDeclaration* declaration = m_tree->AddNode<HLSLDeclaration>(fileName, line);
-        declaration->type = type;
-        declaration->name = name;
+        HLSLDeclaration* decl = m_tree->AddNode<HLSLDeclaration>(fileName, line);
+        decl->type = type;
+        decl->name = name;
 
-        DeclareVariable(declaration->name, declaration->type);
+        DeclareVariable(decl->name, decl->type);
 
         // Handle option assignment of the declared variables(s).
-        if (!ParseDeclarationAssignment(declaration))
+        if (!ParseDeclarationAssignment(decl))
         {
             return false;
         }
 
         if (firstDeclaration == NULL)
-            firstDeclaration = declaration;
+            firstDeclaration = decl;
         if (lastDeclaration != NULL)
-            lastDeclaration->nextDeclaration = declaration;
-        lastDeclaration = declaration;
+            lastDeclaration->nextDeclaration = decl;
+        lastDeclaration = decl;
 
     } while (Accept(','));
 

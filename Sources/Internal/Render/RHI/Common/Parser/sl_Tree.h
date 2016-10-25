@@ -271,6 +271,7 @@ struct HLSLAttribute : public HLSLNode
     static const HLSLNodeType s_type = HLSLNodeType_Attribute;
     HLSLAttribute()
     {
+        attributeType = HLSLAttributeType_Custom;
         argument = NULL;
         nextAttribute = NULL;
         attrText = NULL;
@@ -308,6 +309,7 @@ struct HLSLStruct : public HLSLStatement
     HLSLStruct()
     {
         name = NULL;
+        usage = struct_Generic;
         field = NULL;
     }
     const char* name;
@@ -344,6 +346,7 @@ struct HLSLBuffer : public HLSLStatement
     {
         name = NULL;
         registerName = NULL;
+        registerCount = 0;
         field = NULL;
     }
     const char* name;
@@ -503,6 +506,7 @@ struct HLSLUnaryExpression : public HLSLExpression
     static const HLSLNodeType s_type = HLSLNodeType_UnaryExpression;
     HLSLUnaryExpression()
     {
+        unaryOp = HLSLUnaryOp_Not;
         expression = NULL;
     }
     HLSLUnaryOp unaryOp;
@@ -514,6 +518,7 @@ struct HLSLBinaryExpression : public HLSLExpression
     static const HLSLNodeType s_type = HLSLNodeType_BinaryExpression;
     HLSLBinaryExpression()
     {
+        binaryOp = HLSLBinaryOp_Assign;
         expression1 = NULL;
         expression2 = NULL;
     }
@@ -631,6 +636,7 @@ struct HLSLStateAssignment : public HLSLNode
     static const HLSLNodeType s_type = HLSLNodeType_StateAssignment;
     HLSLStateAssignment()
     {
+        d3dRenderState = 0;
         stateName = NULL;
         sValue = NULL;
         nextStateAssignment = NULL;
