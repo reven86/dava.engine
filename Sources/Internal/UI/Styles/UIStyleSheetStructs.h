@@ -6,6 +6,7 @@
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
 #include "Animation/Interpolation.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -21,13 +22,11 @@ struct UIStyleSheetPropertyGroup
     String prefix;
     ePropertyOwner propertyOwner;
     uint32 componentType;
-    const InspInfo* typeInfo;
 
-    UIStyleSheetPropertyGroup(const String& prefix_, ePropertyOwner owner_, uint32 componentType_, const InspInfo* typeInfo_)
+    UIStyleSheetPropertyGroup(const String& prefix_, ePropertyOwner owner_, uint32 componentType_)
         : prefix(prefix_)
         , propertyOwner(owner_)
         , componentType(componentType_)
-        , typeInfo(typeInfo_)
     {
     }
 };
@@ -37,17 +36,18 @@ struct UIStyleSheetPropertyDescriptor
     UIStyleSheetPropertyGroup* group;
 
     FastName name;
-    VariantType defaultValue;
-    const InspMember* memberInfo = nullptr;
+    Any defaultValue;
+    String fieldName;
 
-    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const VariantType& defaultValue_)
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const Any& defaultValue_, const String& fieldName)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
+        , fieldName(fieldName)
     {
     }
 
-    String GetFullName() const
+    inline String GetFullName() const
     {
         if (group->prefix.empty())
             return String(name.c_str());
@@ -59,12 +59,9 @@ struct UIStyleSheetPropertyDescriptor
 struct UIStyleSheetSelector
 {
     UIStyleSheetSelector()
-        :
-        className("")
-        ,
-        name()
-        ,
-        stateMask(0)
+        : className("")
+        , name()
+        , stateMask(0)
     {
     }
 
@@ -76,17 +73,16 @@ struct UIStyleSheetSelector
 
 struct UIStyleSheetProperty
 {
-    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f)
-        :
-        propertyIndex(aPropertyIndex)
-        ,
-        value(aValue)
-        ,
-        transitionFunction(aTransitionFunction)
-        ,
-        transitionTime(aTransitionTime)
-        ,
-        transition(aTransition)
+    UIStyleSheetProperty(uint32 aPropertyIndex,
+                         const VariantType& aValue,
+                         bool aTransition = false,
+                         Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR,
+                         float32 aTransitionTime = 0.0f)
+        : propertyIndex(aPropertyIndex)
+        , value(aValue)
+        , transitionFunction(aTransitionFunction)
+        , transitionTime(aTransitionTime)
+        , transition(aTransition)
     {
     }
 
