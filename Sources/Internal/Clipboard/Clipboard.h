@@ -1,62 +1,49 @@
-#ifndef __DAVAENGINE_CLIPBOARD_H__
-#define __DAVAENGINE_CLIPBOARD_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-class IClipboardImpl;
+class IClipboard;
 
-/**
- * \brief Helper to work with system clipboard
- */
+/** Class to work with system clipboard. */
 class Clipboard
 {
 public:
-    /**
-     * \brief Constructor
-     */
+    /** Initialize work with system clipboard. */
     Clipboard();
 
-    /**
-     * \brief Destructor
-     */
+    /** Default destructor. */
     ~Clipboard();
 
     /**
-     * \brief Return status of clipboard helper
-     * \return true if helper ready to work with clipboard
-     */
+    Get status of clipboard helper.
+    Return true if helper ready to work with clipboard.
+    */
     bool IsReadyToUse() const;
 
     /**
-     * \brief Clear system clipboard
-     * \return true if successful
-     */
-    bool ClearClipboard() const;
+    Clear system clipboard.
+    Return true if successful.
+    */
+    bool Clear() const;
 
     /**
-     * \brief Check that system clipboard contains Unicode text
-     * \return true if system clipboard contains Unicode text
-     */
+    Check that system clipboard contains Unicode text.
+    Return true if successful.
+    */
     bool HasText() const;
 
     /**
-     * \brief Copy to system clipboard WideString as Unicode string
-     * \param[in] str input string
-     * \return true if successful
-     */
+    Copy to system clipboard specified WideString `str` as Unicode string.
+    Return true if successful.
+    */
     bool SetText(const WideString& str);
 
-    /**
-     * \brief Get from system clipboard Unicode text data as WideString
-     * \return WideString with clipboard content
-     */
+    /** Get from system clipboard Unicode text data as WideString */
     WideString GetText() const;
 
 private:
-    IClipboardImpl* pImpl;
+    std::unique_ptr<IClipboard> pImpl;
 };
 }
-
-#endif //__DAVAENGINE_CLIPBOARD_H__

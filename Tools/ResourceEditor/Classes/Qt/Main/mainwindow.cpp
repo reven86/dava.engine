@@ -1187,6 +1187,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionWayEditor->setEnabled(enable);
     ui->actionForceFirstLODonLandscape->setEnabled(enable);
+    ui->actionEnableVisibilitySystem->setEnabled(enable);
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
@@ -3360,6 +3361,8 @@ void QtMainWindow::RemoveSelection()
 bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
 {
     SceneEditor2* scene = GetCurrentScene();
+    DVASSERT_MSG(scene != nullptr, "Switching visibility tool requires an opened scene");
+
     DAVA::int32 enabledTools = scene->GetEnabledTools();
     if (enabled && (enabledTools != 0))
     {
