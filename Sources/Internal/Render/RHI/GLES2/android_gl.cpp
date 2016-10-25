@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
+#include "Concurrency/LockGuard.h"
 
 #ifdef __DAVAENGINE_ANDROID__
 
@@ -22,6 +23,7 @@ static ANativeWindow* _nativeWindow = nullptr;
 static GLint backingWidth = 0;
 static GLint backingHeight = 0;
 static bool needRecreateSurface = false;
+static DAVA::Mutex surfaceMutex;
 
 PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
@@ -112,6 +114,8 @@ void android_gl_init(void* _window)
 
 void android_gl_reset(void* _window, GLint width, GLint height)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
+
     _nativeWindow = static_cast<ANativeWindow*>(_window);
     if (nullptr != _nativeWindow || backingWidth != width || backingHeight != height)
     {
@@ -123,6 +127,8 @@ void android_gl_reset(void* _window, GLint width, GLint height)
 
 bool android_gl_checkSurface()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
+
     if (needRecreateSurface)
     {
         // Why this should work I do not fully understand, but this solution works
