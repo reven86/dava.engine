@@ -48,6 +48,12 @@ private:
     SigConnectionID appMinimizedRestoredConnectionId;
 #endif
 
+#if defined(__DAVAENGINE_STEAM__)
+    SigConnectionID overlayConnectionId = 0;
+    bool wasVisible = false;
+    void OnSteamOverlayChanged(bool overlayActivated);
+#endif
+
 private:
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
