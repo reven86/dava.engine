@@ -13,6 +13,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/Window.h"
 
 namespace rhi
 {

@@ -8,6 +8,7 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Engine/Window.h"
 
 namespace rhi
 {
@@ -46,6 +47,7 @@ public:
 
 private:
     void UIEventHandler(const UIDispatcherEvent& e);
+    bool IsWindowsPhone() const;
 
     EngineBackend* engineBackend = nullptr;
     Window* window = nullptr; // Window frontend reference

@@ -7,6 +7,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Window.h"
 
 namespace DAVA
 {

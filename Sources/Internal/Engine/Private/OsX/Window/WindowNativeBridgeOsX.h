@@ -9,6 +9,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Window.h"
 
 @class NSEvent;
 @class NSWindow;
@@ -38,6 +39,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
+    void SetWindowingMode(Window::eWindowingMode newMode);
 
     void TriggerPlatformEvents();
 
@@ -53,6 +55,8 @@ struct WindowNativeBridge final
     void WindowDidChangeScreen();
     bool WindowShouldClose();
     void WindowWillClose();
+    void WindowWillEnterFullScreen();
+    void WindowWillExitFullScreen();
 
     void MouseClick(NSEvent* theEvent);
     void MouseMove(NSEvent* theEvent);
@@ -71,6 +75,7 @@ struct WindowNativeBridge final
 
     bool isAppHidden = false;
     bool isMiniaturized = false;
+    bool isFullscreen;
 };
 
 } // namespace Private

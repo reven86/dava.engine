@@ -33,6 +33,7 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
 
     CreateBaseXamlUI();
     InstallEventHandlers();
+    CheckWindowingModeChanging();
 
     float32 w = xamlWindow->Bounds.Width;
     float32 h = xamlWindow->Bounds.Height;
@@ -198,6 +199,11 @@ void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls
 
 void WindowNativeBridge::CheckWindowingModeChanging()
 {
+    if (windowBackend->IsWindowsPhone())
+    {
+        return;
+    }
+
     using ::Windows::UI::ViewManagement::ApplicationView;
     bool actualFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
 

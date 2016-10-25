@@ -9,6 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/UWP/PlatformCoreUWP.h"
 #include "Engine/Private/UWP/Window/WindowNativeBridgeUWP.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -43,12 +44,25 @@ void WindowBackend::SetTitle(const String& title)
 
 void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
 {
+    // Windowing mode cannot be changed on phones
+    if (IsWindowsPhone())
+    {
+        return;
+    }
+
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
 }
 
 Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
 {
-    return Window::eWindowingMode::WINDOWED;
+    if (IsWindowsPhone())
+    {
+        return Window::eWindowingMode::FULLSCREEN;
+    }
+    else
+    {
+        return Window::eWindowingMode::WINDOWED;
+    }
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -111,6 +125,11 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     default:
         break;
     }
+}
+
+bool WindowBackend::IsWindowsPhone() const
+{
+    return DeviceInfo::GetPlatform() == DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP;
 }
 
 } // namespace Private

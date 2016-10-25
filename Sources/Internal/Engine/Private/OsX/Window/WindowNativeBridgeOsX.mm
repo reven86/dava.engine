@@ -26,6 +26,7 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
+    , isFullscreen(windowBackend->GetInitialWindowingMode() == Window::eWindowingMode::FULLSCREEN)
 {
 }
 
@@ -78,6 +79,23 @@ void WindowNativeBridge::SetTitle(const char8* title)
     NSString* nsTitle = [NSString stringWithUTF8String:title];
     [nswindow setTitle:nsTitle];
     [nsTitle release];
+}
+
+void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
+{
+    // fullscreen for new 10.7+ MacOS
+    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_7)
+    {
+        DVASSERT_MSG(false, "Fullscreen isn't supported for this MacOS version");
+        return;
+    }
+
+    bool isFullscreenRequested = newMode == Window::eWindowingMode::FULLSCREEN;
+
+    if (isFullscreen != isFullscreenRequested)
+    {
+        [nswindow toggleFullScreen:nil];
+    }
 }
 
 void WindowNativeBridge::TriggerPlatformEvents()
@@ -152,6 +170,18 @@ void WindowNativeBridge::WindowWillClose()
 
     [renderView release];
     [windowDelegate release];
+}
+
+void WindowNativeBridge::WindowWillEnterFullScreen()
+{
+    int32 mode = static_cast<int32>(Window::eWindowingMode::FULLSCREEN);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
+}
+
+void WindowNativeBridge::WindowWillExitFullScreen()
+{
+    int32 mode = static_cast<int32>(Window::eWindowingMode::WINDOWED);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
