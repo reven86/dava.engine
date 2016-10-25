@@ -454,9 +454,7 @@ _GetRasterizerState(RasterizerParamDX11 param)
         desc.MultisampleEnable = FALSE;
         desc.AntialiasedLineEnable = FALSE;
 
-        hr = _D3D11_Device->CreateRasterizerState(&desc, &state);
-        CHECK_HR(hr);
-
+        DX11_DEVICE_CALL(_D3D11_Device->CreateRasterizerState(&desc, &state), hr);
         if (SUCCEEDED(hr))
         {
             RasterizerStateDX11 s;
@@ -505,9 +503,8 @@ dx11_RenderPass_Allocate(const RenderPassConfig& passDesc, uint32 cmdBufCount, H
         #if RHI_DX11__USE_DEFERRED_CONTEXTS
         if (!cb->context)
         {
-            HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
-            CHECK_HR(hr);
-
+            HRESULT hr = E_FAIL;
+            DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
             if (SUCCEEDED(hr))
             {
                 hr = cb->context->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)));
@@ -1227,20 +1224,15 @@ _ExecuteQueuedCommandsDX11()
         PerfQueryDX11::EndFrame(perfQueryFrame, _D3D11_ImmediateContext);
 
         // do present
-        HRESULT hr;
+        HRESULT hr = E_FAIL;
         {
             DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(DAVA::ProfilerCPUMarkerName::RHI_DEVICE_PRESENT, executedFrameIndex);
-            hr = _D3D11_SwapChain->Present(1, 0);
+            DX11_DEVICE_CALL(_D3D11_SwapChain->Present(1, 0), hr);
         }
 
         PerfQueryDX11::EndMeasurment(perfQueryFrame, _D3D11_ImmediateContext);
 
-        CHECK_HR(hr);
-        if (hr == DXGI_ERROR_DEVICE_REMOVED)
-            CHECK_HR(_D3D11_Device->GetDeviceRemovedReason());
-
         // update sync-objects
-
         for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
         {
             if (s->is_used && (frame_n - s->frame >= 2))
@@ -2283,8 +2275,8 @@ void DiscardAll()
                 {
                     CommandBufferDX11_t* cb = CommandBufferPoolDX11::Get(*b);
 
-                    HRESULT hr = _D3D11_Device->CreateDeferredContext(0, &(cb->context));
-                    CHECK_HR(hr)
+                    HRESULT hr = E_FAIL;
+                    DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &(cb->context)), hr);
 
                     DVASSERT(cb->context);
                     cb->Reset();
@@ -2304,7 +2296,8 @@ void DiscardAll()
         cl->Release();
         _D3D11_SecondaryContext->Release();
 
-        CHECK_HR(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext));
+        HRESULT hr = E_FAIL;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateDeferredContext(0, &_D3D11_SecondaryContext), hr);
     }
 #endif
     _DX11_ResetPending = false;

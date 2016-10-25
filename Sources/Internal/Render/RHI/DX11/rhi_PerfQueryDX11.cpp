@@ -72,13 +72,11 @@ static Handle dx11_PerfQuery_Create()
         D3D11_QUERY_DESC desc;
         desc.Query = D3D11_QUERY_TIMESTAMP;
         desc.MiscFlags = 0;
-        HRESULT hr = _D3D11_Device->CreateQuery(&desc, &(perfQuery->query));
-        CHECK_HR(hr);
 
-        if (hr == S_OK)
-        {
-        }
-        else
+        HRESULT hr;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(perfQuery->query)), hr);
+
+        if (hr != S_OK)
         {
             PerfQueryDX11Pool::Free(handle);
             handle = InvalidHandle;
@@ -233,8 +231,9 @@ PerfQueryFrameDX11* NextPerfQueryFrame()
         D3D11_QUERY_DESC desc;
         desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
         desc.MiscFlags = 0;
-        HRESULT hr = _D3D11_Device->CreateQuery(&desc, &(currentPerfQueryFrameDX11->freqQuery));
-        CHECK_HR(hr);
+
+        HRESULT hr;
+        DX11_DEVICE_CALL(_D3D11_Device->CreateQuery(&desc, &(currentPerfQueryFrameDX11->freqQuery)), hr);
     }
 
     return currentPerfQueryFrameDX11;
