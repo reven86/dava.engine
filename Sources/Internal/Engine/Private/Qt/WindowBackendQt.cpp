@@ -340,11 +340,6 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
-void WindowBackend::OnFocusChanged(bool isFocused)
-{
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isFocused));
-}
-
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
     const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
@@ -367,6 +362,13 @@ void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+}
+
+void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
+{
+    float32 x = static_cast<float32>(qtEvent->pos().x());
+    float32 y = static_cast<float32>(qtEvent->pos().y());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 

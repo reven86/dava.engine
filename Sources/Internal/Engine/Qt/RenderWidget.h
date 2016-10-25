@@ -15,7 +15,7 @@ class RenderWidget final : public QQuickWidget
 {
     Q_OBJECT
 public:
-    class WindowDelegate
+    class IWindowDelegate
     {
     public:
         virtual void OnCreated() = 0;
@@ -24,11 +24,11 @@ public:
         virtual void OnFrame() = 0;
         virtual void OnResized(uint32 width, uint32 height, float32 dpi) = 0;
         virtual void OnVisibilityChanged(bool isVisible) = 0;
-        virtual void OnFocusChanged(bool isFocused) = 0;
 
         virtual void OnMousePressed(QMouseEvent* e) = 0;
         virtual void OnMouseReleased(QMouseEvent* e) = 0;
         virtual void OnMouseMove(QMouseEvent* e) = 0;
+        virtual void OnDragMoved(QDragMoveEvent* e) = 0;
         virtual void OnMouseDBClick(QMouseEvent* e) = 0;
         virtual void OnWheel(QWheelEvent* e) = 0;
 
@@ -36,7 +36,7 @@ public:
         virtual void OnKeyReleased(QKeyEvent* e) = 0;
     };
 
-    class ClientDelegate
+    class IClientDelegate
     {
     public:
         virtual void OnMousePressed(QMouseEvent* e)
@@ -81,7 +81,7 @@ public:
 
     Q_SIGNAL void Resized(uint32 width, uint32 height);
 
-    void SetClientDelegate(ClientDelegate* delegate);
+    void SetClientDelegate(IClientDelegate* delegate);
 
 protected:
     bool eventFilter(QObject* object, QEvent* e) override;
@@ -91,9 +91,9 @@ protected:
     void closeEvent(QCloseEvent* e) override;
     void timerEvent(QTimerEvent* e) override;
     void dragEnterEvent(QDragEnterEvent* e) override;
-    void dragMoveEvent(QDragMoveEvent* e) override;
     void dragLeaveEvent(QDragLeaveEvent* e) override;
     void dropEvent(QDropEvent* e) override;
+    void dragMoveEvent(QDragMoveEvent* e) override;
 
     void mousePressEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
@@ -107,7 +107,7 @@ protected:
     bool event(QEvent* e) override;
 
 private:
-    RenderWidget(WindowDelegate* widgetDelegate, uint32 width, uint32 height);
+    RenderWidget(IWindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
 
     Q_SLOT void OnCreated();
@@ -121,8 +121,8 @@ private:
     bool IsInitialized();
 
 private:
-    WindowDelegate* widgetDelegate = nullptr;
-    ClientDelegate* clientDelegate = nullptr;
+    IWindowDelegate* widgetDelegate = nullptr;
+    IClientDelegate* clientDelegate = nullptr;
     bool keyEventRecursiveGuard = false;
 
     bool isClosing = false;

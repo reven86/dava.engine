@@ -8,19 +8,21 @@
 
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
+
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
+
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
-#include <QQuickWindow>
 #include <QQuickItem>
 #include <QOpenGLContext>
-#include <QQuickItem>
 #include <QVariant>
 
 namespace DAVA
 {
 const char* initializedPropertyName = "initialized";
-RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32 width, uint32 height)
+RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
 {
     setAcceptDrops(true);
@@ -42,7 +44,7 @@ RenderWidget::RenderWidget(RenderWidget::WindowDelegate* widgetDelegate_, uint32
 
 RenderWidget::~RenderWidget() = default;
 
-void RenderWidget::SetClientDelegate(ClientDelegate* delegate)
+void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 {
     DVASSERT(nullptr == clientDelegate);
     clientDelegate = delegate;
@@ -107,7 +109,9 @@ void RenderWidget::OnActiveFocusItemChanged()
     {
         item->installEventFilter(this);
     }
-    widgetDelegate->OnFocusChanged(focusRequested);
+
+    KeyboardDevice& kd = InputSystem::Instance()->GetKeyboard();
+    kd.ClearAllKeys(); //we need only reset keyboard status on focus changing
 }
 
 void RenderWidget::OnSceneGraphInvalidated()
@@ -167,6 +171,7 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent* e)
 
 void RenderWidget::dragMoveEvent(QDragMoveEvent* e)
 {
+    widgetDelegate->OnDragMoved(e);
     if (clientDelegate != nullptr)
     {
         clientDelegate->OnDragMoved(e);
@@ -272,6 +277,7 @@ bool RenderWidget::event(QEvent* e)
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
         clientDelegate->OnNativeGuesture(gestureEvent);
     }
+
     return QQuickWidget::event(e);
 }
 

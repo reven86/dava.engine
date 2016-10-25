@@ -22,7 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public TrackedObject, private RenderWidget::WindowDelegate
+class WindowBackend final : public TrackedObject, private RenderWidget::IWindowDelegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -66,11 +66,11 @@ private:
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, float32 dpi) override;
     void OnVisibilityChanged(bool isVisible) override;
-    void OnFocusChanged(bool isFocused) override;
 
     void OnMousePressed(QMouseEvent* e) override;
     void OnMouseReleased(QMouseEvent* e) override;
     void OnMouseMove(QMouseEvent* e) override;
+    void OnDragMoved(QDragMoveEvent* e) override;
     void OnMouseDBClick(QMouseEvent* e) override;
     void OnWheel(QWheelEvent* e) override;
     void OnKeyPressed(QKeyEvent* e) override;

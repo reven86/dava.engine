@@ -26,7 +26,7 @@
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
 {
-    this->setMouseTracking(true);
+    setMouseTracking(true);
 
     // create Qt controls and add them into layout
     //
@@ -496,6 +496,15 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
     else
     {
         TabBarDataDropped(data);
+    }
+}
+
+void SceneTabWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    QObject* object = GetRenderWidget();
+    if (object != nullptr)
+    { //simulate catching events at RenderWidget. I guess we should inherit SceneTabWidget from RenderWidget::IClientDelegate
+        object->event(event);
     }
 }
 
