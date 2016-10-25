@@ -3,6 +3,9 @@
 #include "Base/BaseTypes.h"
 #include <QKeySequence>
 
+//QT_BUG this file is created to prevent Qt bug https://bugreports.qt.io/browse/QTBUG-50865.
+//QT_BUG recheck it after change Qt version to 5.7 or later
+
 class QObject;
 class QKeyEvent;
 
