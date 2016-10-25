@@ -174,7 +174,6 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
                 {
                     lastInputSequence = inputSequence;
                     lastShortcutTimestamp = event->timestamp();
-                    ;
                     QTimer::singleShot(0, []()
                                        {
                                            // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
