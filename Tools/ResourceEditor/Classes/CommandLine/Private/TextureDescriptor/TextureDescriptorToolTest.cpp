@@ -162,6 +162,20 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
         REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
     }
 
+    void CreateEmptyDescriptorWithImage(const DAVA::FilePath& texturePathname)
+    {
+        using namespace DAVA;
+
+        FilePath pngPathname = FilePath::CreateWithNewExtension(texturePathname, ".png");
+
+        ScopedPtr<Image> image(Image::Create(16u, 16u, PixelFormat::FORMAT_RGBA8888));
+        uint8 byte = Random::Instance()->Rand(255);
+        Memset(image->data, byte, image->dataSize);
+
+        ImageSystem::Save(pngPathname, image, image->format);
+        TextureDescriptorUtils::CreateOrUpdateDescriptor(pngPathname);
+    }
+
     DAVA_TEST (SetCompressionTest)
     {
         using namespace DAVA;
@@ -170,8 +184,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
         FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
 
         { // file
-            std::unique_ptr<TextureDescriptor> sourceDescriptor(new TextureDescriptor());
-            sourceDescriptor->Save(texPathname);
+            CreateEmptyDescriptorWithImage(texPathname);
 
             Vector<String> cmdLine =
             {
@@ -195,7 +208,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "-convert",
               "-m",
               "-quality",
-              "-2"
+              "-2",
+              "-f"
             };
             std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
             REConsoleModuleTestUtils::ExecuteModule(tool.get());
@@ -227,8 +241,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
         }
 
         { // folder
-            std::unique_ptr<TextureDescriptor> sourceDescriptor(new TextureDescriptor());
-            sourceDescriptor->Save(texPathname);
+            CreateEmptyDescriptorWithImage(texPathname);
 
             Vector<String> cmdLine =
             {

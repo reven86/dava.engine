@@ -33,9 +33,7 @@ DAVA_TARC_TESTCLASS(SceneImageDumpTest)
     {
         using namespace DAVA;
 
-        Vector<eGPUFamily> gpuLoadingOrder = Texture::GetGPULoadingOrder();
-        Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
-
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SIDTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SIDTestDetail::scenePathnameStr);
 
@@ -66,6 +64,5 @@ DAVA_TARC_TESTCLASS(SceneImageDumpTest)
         TEST_VERIFY(info.height == 64);
 
         REConsoleModuleTestUtils::ClearTestFolder(SIDTestDetail::projectStr);
-        Texture::SetGPULoadingOrder(gpuLoadingOrder);
     }
 };

@@ -39,7 +39,6 @@ private:
     void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
     void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
     void Init(DAVA::EngineContext& engineContext) override;
-    void Init(DAVA::TArc::Core* tarcCore) override;
     void Cleanup() override;
 
     bool AllowMultipleInstances() const override;

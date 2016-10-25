@@ -42,6 +42,21 @@ int BaseApplication::RunImpl()
 
         TestCore testCore(e);
 
+        class ErrorOutput : public DAVA::LoggerOutput
+        {
+        public:
+            void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override
+            {
+                if (ll >= DAVA::Logger::LEVEL_ERROR)
+                {
+                    int a = 0;
+                    a++;
+                }
+            }
+        };
+
+        DAVA::Logger::AddCustomOutput(new ErrorOutput());
+
         EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
         Init(*engineContext);
@@ -63,8 +78,10 @@ void BaseApplication::Init(EngineContext& /*engineContext*/)
 {
 }
 
-void BaseApplication::Init(Core* /*tarcCore*/)
+void BaseApplication::Init(Core* tarcCore)
 {
+    DVASSERT(tarcCore != nullptr);
+    Init(tarcCore->GetEngineContext());
 }
 
 void BaseApplication::Cleanup()

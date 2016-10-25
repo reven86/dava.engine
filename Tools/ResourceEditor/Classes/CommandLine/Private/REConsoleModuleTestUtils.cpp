@@ -6,6 +6,8 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 
+#include <memory>
+
 namespace RECMTUDetail
 {
 using namespace DAVA;
@@ -17,7 +19,6 @@ bool CreateImageFile(const FilePath& imagePathname, uint32 width, uint32 height,
     uint8 byte = Random::Instance()->Rand(255);
     Memset(image->data, byte, image->dataSize);
 
-    FileSystem::Instance()->CreateDirectory(imagePathname.GetDirectory(), true);
     eErrorCode saved = ImageSystem::Save(imagePathname, image, image->format);
     return (saved == eErrorCode::SUCCESS);
 }
@@ -77,8 +78,15 @@ bool CreateTextureFiles(const FilePath& texturePathname, uint32 width, uint32 he
             descriptor->compression[eGPUFamily::GPU_TEGRA].format = PixelFormat::FORMAT_RGB565;
             descriptor->compression[eGPUFamily::GPU_DX11].format = PixelFormat::FORMAT_A8;
 
+            descriptor->compression[eGPUFamily::GPU_POWERVR_IOS].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
+            descriptor->compression[eGPUFamily::GPU_POWERVR_ANDROID].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
+            descriptor->compression[eGPUFamily::GPU_ADRENO].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
+            descriptor->compression[eGPUFamily::GPU_MALI].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
+            descriptor->compression[eGPUFamily::GPU_TEGRA].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
+            descriptor->compression[eGPUFamily::GPU_DX11].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
             descriptor->SetGenerateMipmaps(true);
             descriptor->Save();
+
             return true;
         }
     }
@@ -89,13 +97,16 @@ void CreateR2OCustomProperty(Entity* entity, const FilePath& scenePathname)
 {
     String entityName = entity->GetName().c_str();
 
-    FilePath entityPathname = scenePathname;
-    entityPathname.ReplaceBasename(entityName);
+    FilePath referencePathname = scenePathname;
+    referencePathname.ReplaceBasename(entityName);
     FilePath folderPathname = scenePathname.GetDirectory();
 
     CustomPropertiesComponent* cp = new CustomPropertiesComponent();
-    cp->GetArchive()->SetString("editor.referenceToOwner", entityPathname.GetAbsolutePathname());
+    cp->GetArchive()->SetString("editor.referenceToOwner", referencePathname.GetAbsolutePathname());
     entity->AddComponent(cp);
+
+    ScopedPtr<Scene> referenceScene(new Scene());
+    referenceScene->SaveScene(referencePathname, false);
 }
 
 Entity* CreateLandscapeEnity(const FilePath& scenePathname)
@@ -224,27 +235,38 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
           FastName("layer_3")
         };
 
+        FilePath texturePathname = scenePathname;
+        texturePathname.ReplaceFilename("vegetation.texture.tex");
+        CreateTextureFiles(texturePathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
+        ScopedPtr<Texture> vegetationTexture(Texture::CreateFromFile(texturePathname));
+
         for (uint32 i = 0; i < VEGETATION_ENTITY_LAYER_NAMES.size(); ++i)
         {
             ScopedPtr<Entity> vegetationLayer(new Entity());
             vegetationLayer->SetName(VEGETATION_ENTITY_LAYER_NAMES[i]);
 
-            ScopedPtr<NMaterial> material(CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE));
+            ScopedPtr<NMaterial> material(CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
+            material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, vegetationTexture);
+
+            ScopedPtr<NMaterial> instanceMaterial(CreateMaterial(VEGETATION_ENTITY_LAYER_NAMES[i], NMaterialName::TEXTURED_OPAQUE_NOCULL));
+            instanceMaterial->SetParent(material);
+
             ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
             ScopedPtr<RenderBatch> batch(new RenderBatch());
-            batch->SetMaterial(material);
+            batch->SetMaterial(instanceMaterial);
             batch->SetPolygonGroup(geometry);
 
             ScopedPtr<RenderObject> ro(new RenderObject());
             ro->AddRenderBatch(batch);
             RenderComponent* rc = new RenderComponent(ro);
             vegetationLayer->AddComponent(rc);
-
+            vegetationLayer->AddComponent(new LodComponent());
             vegetationGeometry->AddNode(vegetationLayer);
         }
 
         scene->AddNode(vegetationGeometry);
-        scene->SaveScene(customGeometryPathname, true);
+        scene->Update(0.1f);
+        scene->SaveScene(customGeometryPathname, false);
     }
 
     Entity* entity = new Entity();
@@ -256,7 +278,7 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
     FilePath lightmapPathname = scenePathname;
     lightmapPathname.ReplaceFilename("vegetation.lightmap.tex");
     CreateTextureFiles(lightmapPathname, 128, 128u, PixelFormat::FORMAT_RGBA8888);
-    ro->SetLightmap(lightmapPathname);
+    ro->SetLightmapAndGenerateDensityMap(lightmapPathname);
 
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
@@ -265,14 +287,18 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
     return entity;
 }
 
-//TODO: create particels
-
 Entity* CreateCameraEntity(const FilePath& scenePathname)
 {
     Entity* entity = new Entity();
     entity->SetName(FastName("camera"));
 
     ScopedPtr<Camera> camera(new Camera());
+    camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+    camera->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+    camera->SetTarget(Vector3(0.0f, 0.1f, 0.0f));
+    camera->SetupPerspective(90.f, 320.0f / 480.0f, 1.f, 5000.f);
+    camera->SetAspect(1.0f);
+
     entity->AddComponent(new CameraComponent(camera));
 
     CreateR2OCustomProperty(entity, scenePathname);
@@ -328,10 +354,37 @@ Entity* CreateStaticOcclusionEntity(const FilePath& scenePathname)
 }
 }
 
+class REConsoleModuleTestUtils::TextureLoadingGuard::Impl final
+{
+public:
+    Impl(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+    {
+        gpuLoadingOrder = DAVA::Texture::GetGPULoadingOrder();
+        DAVA::Texture::SetGPULoadingOrder(newLoadingOrder);
+    }
+
+    ~Impl()
+    {
+        DAVA::Texture::SetGPULoadingOrder(gpuLoadingOrder);
+    }
+
+private:
+    DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
+};
+
+REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+    : impl(new REConsoleModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
+      {
+      };
+
+REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+{
+    return TextureLoadingGuard(newLoadingOrder);
+}
+
 void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
 {
     DVASSERT(module != nullptr);
-
     module->PostInit();
 
     while (module->OnFrame() != REConsoleModuleCommon::eFrameResult::FINISHED)
@@ -364,7 +417,15 @@ void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath&
 void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
 {
     using namespace DAVA;
+
+    FileSystem::Instance()->CreateDirectory(scenePathname.GetDirectory(), false);
+
     ScopedPtr<Scene> scene(new Scene());
+
+    ScopedPtr<Entity> cameraEntity(RECMTUDetail::CreateCameraEntity(scenePathname));
+    scene->AddNode(cameraEntity);
+    Camera* camera = GetCamera(cameraEntity);
+    scene->SetCurrentCamera(camera);
 
     ScopedPtr<Entity> landscape(RECMTUDetail::CreateLandscapeEnity(scenePathname));
     scene->AddNode(landscape);
@@ -378,13 +439,8 @@ void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
     ScopedPtr<Entity> box(RECMTUDetail::CreateBoxEntity(scenePathname));
     scene->AddNode(box);
 
-    //    { //Temporary disabled
-    //        ScopedPtr<Entity> vegetation(RECMTUDetail::CreateVegetationEntity(scenePathname));
-    //        scene->AddNode(vegetation);
-    //    }
-
-    ScopedPtr<Entity> camera(RECMTUDetail::CreateCameraEntity(scenePathname));
-    scene->AddNode(camera);
+    ScopedPtr<Entity> vegetation(RECMTUDetail::CreateVegetationEntity(scenePathname));
+    scene->AddNode(vegetation);
 
     ScopedPtr<Entity> lights(RECMTUDetail::CreateLightsEntity(scenePathname));
     scene->AddNode(lights);
@@ -392,6 +448,7 @@ void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
     ScopedPtr<Entity> occlusion(RECMTUDetail::CreateStaticOcclusionEntity(scenePathname));
     scene->AddNode(occlusion);
 
-    FileSystem::Instance()->CreateDirectory(scenePathname.GetDirectory(), true);
+    scene->Update(0.1f);
+
     scene->SaveScene(scenePathname, true);
 }

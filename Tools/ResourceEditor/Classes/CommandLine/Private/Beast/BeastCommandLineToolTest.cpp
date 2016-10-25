@@ -75,9 +75,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     {
         using namespace DAVA;
 
-        Vector<eGPUFamily> gpuLoadingOrder = Texture::GetGPULoadingOrder();
-        Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
-
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateLoadingGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
 
@@ -97,7 +95,6 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         TestScene();
 
         REConsoleModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
-        Texture::SetGPULoadingOrder(gpuLoadingOrder);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

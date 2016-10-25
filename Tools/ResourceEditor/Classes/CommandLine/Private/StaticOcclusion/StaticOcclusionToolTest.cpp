@@ -45,9 +45,7 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
     {
         using namespace DAVA;
 
-        Vector<eGPUFamily> gpuLoadingOrder = Texture::GetGPULoadingOrder();
-        Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
-
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SOTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SOTestDetail::scenePathnameStr);
 
@@ -68,7 +66,6 @@ DAVA_TARC_TESTCLASS(StaticOcclusionToolTest)
         TEST_VERIFY(CountSODataComponents(SOTestDetail::scenePathnameStr) == 1);
 
         REConsoleModuleTestUtils::ClearTestFolder(SOTestDetail::projectStr);
-        Texture::SetGPULoadingOrder(gpuLoadingOrder);
     }
 }
 ;

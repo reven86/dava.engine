@@ -16,10 +16,57 @@ const DAVA::String newScenePathnameStr = newProjectStr + "DataSource/3d/Scene/te
 
 DAVA_TARC_TESTCLASS(SceneSaverToolTest)
 {
+    void EnumerateDescriptors(const DAVA::FilePath& folder, DAVA::List<DAVA::FilePath>& pathes)
+    {
+        using namespace DAVA;
+
+        ScopedPtr<FileList> fileList(new FileList(folder));
+        for (uint32 i = 0; i < fileList->GetCount(); ++i)
+        {
+            const FilePath& pathname = fileList->GetPathname(i);
+            if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
+            {
+                EnumerateDescriptors(pathname, pathes);
+            }
+            else if (pathname.IsEqualToExtension(".tex"))
+            {
+                pathes.push_back(pathname);
+            }
+        }
+    }
+
+    bool CreateDummyCompressedFiles(const DAVA::FilePath& folder)
+    {
+        using namespace DAVA;
+
+        List<FilePath> pathes;
+        EnumerateDescriptors(folder, pathes);
+
+        for (const FilePath& pathname : pathes)
+        {
+            std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(pathname));
+            if (descriptor)
+            {
+                for (int32 gpu = 0; gpu < eGPUFamily::GPU_DEVICE_COUNT; ++gpu)
+                {
+                    FilePath compressedPath = descriptor->CreateMultiMipPathnameForGPU(static_cast<eGPUFamily>(gpu));
+                    ScopedPtr<File> dummyFile(File::Create(compressedPath, File::CREATE | File::WRITE));
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     DAVA_TEST (SaveSceneTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
@@ -27,6 +74,8 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
             REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::newProjectStr);
             FilePath dataSourcePath = SSTestDetail::projectStr + "DataSource/3d/";
             FilePath newDataSourcePath = SSTestDetail::newProjectStr + "DataSource/3d/";
+
+            TEST_VERIFY(CreateDummyCompressedFiles(dataSourcePath));
 
             Vector<String> cmdLine =
             {
@@ -57,6 +106,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
@@ -85,6 +135,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SSTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SSTestDetail::scenePathnameStr);
 
@@ -103,7 +154,7 @@ DAVA_TARC_TESTCLASS(SceneSaverToolTest)
         std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<SceneSaverTool>(cmdLine);
         REConsoleModuleTestUtils::ExecuteModule(tool.get());
 
-        TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "quality.yaml"));
+        TEST_VERIFY(FileSystem::Instance()->Exists(SSTestDetail::projectStr + "Data/quality.yaml"));
 
         REConsoleModuleTestUtils::ClearTestFolder(SSTestDetail::projectStr);
     }

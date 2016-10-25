@@ -123,9 +123,7 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
     {
         using namespace DAVA;
 
-        Vector<eGPUFamily> gpuLoadingOrder = Texture::GetGPULoadingOrder();
-        Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
-
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
 
@@ -148,7 +146,6 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
         TestLinks();
 
         REConsoleModuleTestUtils::ClearTestFolder(DTestDetail::projectStr);
-        Texture::SetGPULoadingOrder(gpuLoadingOrder);
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

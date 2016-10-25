@@ -54,8 +54,6 @@ msaa:
   - 
    quality: "MSAA_2X"
   -
-   quality: "FXAA"
-  -
    quality: "NONE"
 
 materials:

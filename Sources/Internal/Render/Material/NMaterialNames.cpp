@@ -14,6 +14,7 @@ const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/M
 const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/Textured.VertexColor.Alphablend.material");
 const FastName NMaterialName::DECAL_OPAQUE = FastName("~res:/Materials/Decal.Opaque.material");
 const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
+const FastName NMaterialName::TEXTURED_OPAQUE_NOCULL = FastName("~res:/Materials/Textured.Opaque.NoCull.material");
 const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/Textured.VertexColor.Opaque.material");
 const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
 const FastName NMaterialName::SHADOWRECT = FastName("~res:/Materials/ShadowRect.material");

@@ -130,39 +130,6 @@ void REApplication::Init(DAVA::EngineContext& engineContext)
     engineContext.performanceSettings->SetPsPerformanceMaxFPS(10.0f);
 }
 
-void REApplication::Init(DAVA::TArc::Core* tarcCore)
-{
-#if defined(__DAVAENGINE_MACOS__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
-#elif defined(__DAVAENGINE_WIN32__)
-    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
-#endif
-    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
-
-    DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
-    DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
-    DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
-    DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
-
-    DAVA::EngineContext& engineContext = tarcCore->GetEngineContext();
-    engineContext.logger->SetLogFilename("ResEditor.txt");
-
-    config = new EditorConfig();
-    settingsManager = new SettingsManager();
-    sceneValidator = new SceneValidator();
-    beastProxy = new BEAST_PROXY_TYPE();
-
-    const char* settingsPath = "ResourceEditorSettings.archive";
-    DAVA::FilePath localPrefrencesPath(engineContext.fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
-    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
-    SettingsManager::UpdateGPUSettings();
-
-    engineContext.logger->Log(DAVA::Logger::LEVEL_INFO, QString("Qt version: %1").arg(QT_VERSION_STR).toStdString().c_str());
-    engineContext.virtualCoordSystem->EnableReloadResourceOnResize(false);
-    engineContext.performanceSettings->SetPsPerformanceMinFPS(5.0f);
-    engineContext.performanceSettings->SetPsPerformanceMaxFPS(10.0f);
-}
-
 void REApplication::Cleanup()
 {
     DAVA::SafeRelease(beastProxy);

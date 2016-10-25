@@ -77,6 +77,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 
@@ -91,9 +92,9 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "ResourceEditor",
               "-sceneexporter",
               "-indir",
-              dataPath.GetAbsolutePathname(),
-              "-outdir",
               dataSourcePath.GetAbsolutePathname(),
+              "-outdir",
+              dataPath.GetAbsolutePathname(),
               "-processfile",
               sceneRelativePathname,
               "-gpu",
@@ -117,10 +118,10 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-sceneexporter",
               "-scene",
               "-indir",
-              FilePath(dataPath).GetAbsolutePathname(),
-              "-outdir",
               FilePath(dataSourcePath).GetAbsolutePathname(),
-              "-processfolder",
+              "-outdir",
+              FilePath(dataPath).GetAbsolutePathname(),
+              "-processdir",
               "./",
               "-gpu",
               "mali,adreno",
@@ -143,10 +144,11 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 
-        FilePath dataPath = SETestDetail::projectStr + "Data/3d";
+        FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
 
         {
@@ -158,9 +160,9 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "ResourceEditor",
               "-sceneexporter",
               "-indir",
-              dataPath.GetAbsolutePathname(),
-              "-outdir",
               dataSourcePath.GetAbsolutePathname(),
+              "-outdir",
+              dataPath.GetAbsolutePathname(),
               "-processfile",
               textureRelativePathname,
               "-gpu",
@@ -184,10 +186,10 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
               "-sceneexporter",
               "-texture",
               "-indir",
-              FilePath(dataPath).GetAbsolutePathname(),
-              "-outdir",
               FilePath(dataSourcePath).GetAbsolutePathname(),
-              "-processfolder",
+              "-outdir",
+              FilePath(dataPath).GetAbsolutePathname(),
+              "-processdir",
               "./",
               "-gpu",
               "mali,adreno",
@@ -209,10 +211,11 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 
-        FilePath dataPath = SETestDetail::projectStr + "Data/3d";
+        FilePath dataPath = SETestDetail::projectStr + "Data/3d/";
         FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
         FilePath texturePathname = FindTexturePathname(dataSourcePath);
 
@@ -238,9 +241,9 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
           "ResourceEditor",
           "-sceneexporter",
           "-indir",
-          dataPath.GetAbsolutePathname(),
-          "-outdir",
           dataSourcePath.GetAbsolutePathname(),
+          "-outdir",
+          dataPath.GetAbsolutePathname(),
           "-processfilelist",
           linksFilePathname.GetAbsolutePathname(),
           "-gpu",
