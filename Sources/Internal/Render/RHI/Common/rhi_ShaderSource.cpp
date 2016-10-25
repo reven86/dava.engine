@@ -1526,7 +1526,6 @@ bool ShaderSource::Save(Api api, DAVA::File* out) const
 
     if (code[api].length() == 0)
     {
-        DVASSERT(ast);
         if (ast)
             GetSourceCode(api);
         else
