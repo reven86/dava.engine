@@ -21,6 +21,23 @@ QString FileSystemHelper::ResolveUrl(const QString& url) const
     return resolvedUrl;
 }
 
+QString FileSystemHelper::GetDir(const QString& path)
+{
+    QFileInfo fileInfo(path);
+    if (fileInfo.isDir())
+    {
+        return fileInfo.absoluteFilePath();
+    }
+    else if (fileInfo.isFile())
+    {
+        return fileInfo.absolutePath();
+    }
+    else
+    {
+        return QString();
+    }
+}
+
 QString FileSystemHelper::NormalizePath(const QString& path)
 {
     if (path.isEmpty())

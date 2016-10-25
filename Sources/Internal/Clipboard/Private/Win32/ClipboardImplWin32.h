@@ -1,18 +1,17 @@
-#ifndef __DAVAENGINE_CLIPBOARDIMPLWIN32_H__
-#define __DAVAENGINE_CLIPBOARDIMPLWIN32_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
-#include "Clipboard/Private/IClipboardImpl.h"
+#include "Clipboard/Private/IClipboard.h"
 
 namespace DAVA
 {
-class ClipboardImplWin32 : public IClipboardImpl
+class ClipboardImplWin32 : public IClipboard
 {
 public:
     ClipboardImplWin32();
     ~ClipboardImplWin32() override;
     bool IsReadyToUse() const override;
-    bool ClearClipboard() const override;
+    bool Clear() const override;
     bool HasText() const override;
     bool SetText(const WideString& str) override;
     WideString GetText() const override;
@@ -23,5 +22,3 @@ private:
 
 using ClipboardImpl = ClipboardImplWin32;
 }
-
-#endif //__DAVAENGINE_CLIPBOARDIMPLWIN32_H__
