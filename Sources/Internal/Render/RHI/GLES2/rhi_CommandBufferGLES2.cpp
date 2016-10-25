@@ -2146,6 +2146,12 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             GL_CALL(glFinish());
             _GLES2_RenderThreadSuspendSyncReached = true;
             _GLES2_RenderThreadSuspendSync.Wait();
+
+#if defined __DAVAENGINE_ANDROID__
+            android_gl_checkSurface();
+#elif defined __DAVAENGINE_IPHONE__
+            ios_gl_check_layer();
+#endif
         }
 
         {
