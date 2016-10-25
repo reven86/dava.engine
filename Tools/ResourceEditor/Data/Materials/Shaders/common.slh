@@ -228,11 +228,3 @@
     #define VIEW_ALBEDO 1
 #endif
 
-#define min10float  half
-#define min10float2 half2
-#define min10float3 half3
-#define min10float4 half4
-
-
-//- #define FP_A8(t) (t).r
-
