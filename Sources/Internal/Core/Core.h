@@ -29,6 +29,12 @@ using AppHandle = uint32;
 #endif
 
 class IPackManager;
+
+namespace Analytics
+{
+class Core;
+}
+
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms.
@@ -251,6 +257,7 @@ public:
     Signal<float32> updated;
 
     IPackManager& GetPackManager() const;
+    Analytics::Core& GetAnalyticsCore() const;
     const ModuleManager& GetModuleManager() const;
 
 protected:
@@ -288,6 +295,7 @@ private:
     ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
+    std::unique_ptr<Analytics::Core> analyticsCore;
 };
 
 inline bool Core::IsActive()

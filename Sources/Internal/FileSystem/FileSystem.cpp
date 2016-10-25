@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 
 #include "Base/Platform.h"
+#include "Base/Exception.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -793,7 +794,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetInternalStoragePathname();
 #endif
 }
@@ -803,7 +804,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetExternalStoragePathname();
 #endif
 }
@@ -1067,7 +1068,7 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
     {
         if (fullSize > std::numeric_limits<uint32>::max())
         {
-            throw std::runtime_error("size of file: more 4Gb use 64 bit version");
+            DAVA_THROW(DAVA::Exception, "size of file: more 4Gb use 64 bit version");
         }
         size = static_cast<uint32>(fullSize);
         return true;

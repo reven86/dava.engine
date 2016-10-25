@@ -1,5 +1,4 @@
-#ifndef __DAVA_UITEXTFIELDSTB_H__
-#define __DAVA_UITEXTFIELDSTB_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/TextBlock.h"
@@ -15,12 +14,9 @@ class Color;
 class UIEvent;
 class Vector2;
 class TextBox;
+class UITextFieldDelegate;
 struct Rect;
 
-// This implementation simulate iOS/Android native controls,
-// so no hierarchy for internal UIStaticText, and call UpdateRect
-// every frame, and render directly in SyctemDraw. This helps
-// to find similar bugs in all implementations
 class TextFieldStbImpl : public StbTextEditBridge::StbTextDelegate
 {
 public:
@@ -29,6 +25,9 @@ public:
     friend class UITextField;
     TextFieldStbImpl(UITextField* control);
     ~TextFieldStbImpl();
+    void Initialize();
+    void OwnerIsDying();
+    void SetDelegate(UITextFieldDelegate*);
     void CopyDataFrom(TextFieldStbImpl* t);
     void OpenKeyboard();
     void CloseKeyboard();
@@ -51,8 +50,8 @@ public:
     void GetText(WideString&);
     void SetInputEnabled(bool, bool hierarchic = true);
     void SetVisible(bool v);
-    void SetFont(Font* f);
     Font* GetFont() const;
+    void SetFont(Font* f);
     void SetTextColor(const Color& c);
     void SetShadowOffset(const Vector2& v);
     void SetShadowColor(const Color& c);
@@ -76,9 +75,12 @@ public:
     // StbTextEditBridge::StbTextDelegate
     uint32 InsertText(uint32 position, const WideString::value_type* str, uint32 length) override;
     uint32 DeleteText(uint32 position, uint32 length) override;
-    const TextBox* GetTextBox() override;
-    uint32 GetTextLength() override;
-    WideString::value_type GetCharAt(uint32 i) override;
+    const TextBox* GetTextBox() const override;
+    uint32 GetTextLength() const override;
+    WideString::value_type GetCharAt(uint32 i) const override;
+    WideString GetText() const override;
+    bool IsCharAvaliable(WideString::value_type ch) const override;
+    bool IsCopyToClipboardAllowed() const override;
 
 private:
     void DropLastCursorAndSelection();
@@ -86,10 +88,6 @@ private:
     void UpdateSelection(uint32 start, uint32 end);
     void UpdateCursor(uint32 cursorPos, bool insertMode);
     void UpdateOffset(const Rect& visibleRect);
-
-    bool CutToClipboardInternal();
-    bool CopyToClipboardInternal();
-    bool PasteFromClipboardInternal();
 
     UIStaticText* staticText = nullptr; // Control for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
@@ -111,5 +109,3 @@ private:
 };
 
 } // end namespace DAVA
-
-#endif //__DAVA_UITEXTFIELDSTB_H__

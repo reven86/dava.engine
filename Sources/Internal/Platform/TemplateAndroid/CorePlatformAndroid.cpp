@@ -25,7 +25,7 @@ AndroidSystemDelegate::AndroidSystemDelegate(JavaVM* vm)
 
     this->vm = vm;
     environment = NULL;
-    if (vm->GetEnv((void**)&environment, JNI_VERSION_1_4) != JNI_OK)
+    if (vm->GetEnv(reinterpret_cast<void**>(&environment), JNI_VERSION_1_4) != JNI_OK)
     {
         Logger::Debug("Failed to get the environment using GetEnv()");
     }
@@ -161,8 +161,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
     if (wasCreated)
     {
         rhi::ResetParam params;
-        params.width = (uint32)backbufferWidth;
-        params.height = (uint32)backbufferHeight;
+        params.width = static_cast<uint32>(backbufferWidth);
+        params.height = static_cast<uint32>(backbufferHeight);
         params.window = rendererParams.window;
         Renderer::Reset(params);
     }
@@ -171,8 +171,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         wasCreated = true;
 
         ApplyPendingViewSize();
-        rendererParams.width = (uint32)backbufferWidth;
-        rendererParams.height = (uint32)backbufferHeight;
+        rendererParams.width = static_cast<uint32>(backbufferWidth);
+        rendererParams.height = static_cast<uint32>(backbufferHeight);
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();

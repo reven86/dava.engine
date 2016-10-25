@@ -105,6 +105,8 @@ public:
 
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
+    static const DAVA::FastName Internal_EnableSounds;
+    static const DAVA::FastName Internal_GizmoEnabled;
 
     static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings

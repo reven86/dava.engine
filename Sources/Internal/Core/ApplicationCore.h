@@ -249,7 +249,15 @@ protected:
 		\brief Called after draw is finished.
 	 */
     virtual void EndFrame();
-	
+
+    /**
+        \brief Callback to handle situation where rendering is not possible anymore.
+        Could be called from any thread which uses render functions (could be main, render, loading thread, etc)
+        Application should be gracefully closed with all required actions (dump memory, update analytics, etc),
+        Assumed to be "no-return" callback. Application behaviour after this callback assumed to be undefined.
+    */
+    virtual void OnRenderingIsNotPossible();
+
 #if defined(__DAVAENGINE_ANDROID__)
 protected:
     /**
