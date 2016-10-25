@@ -1966,8 +1966,6 @@ _GLES2_ExecuteQueuedCommands()
         pass_h = _GLES2_Frame.begin()->pass;
         frame_n = _GLES2_Frame.begin()->number;
         sync_h = _GLES2_Frame.begin()->sync;
-
-        _GLES2_Frame.erase(_GLES2_Frame.begin());
     }
     else
     {
@@ -2016,8 +2014,15 @@ _GLES2_ExecuteQueuedCommands()
         Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
     }
 
-    for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-        RenderPassPoolGLES2::Free(*p);
+    _GLES2_FrameSync.Lock();
+    {
+        Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
+        _GLES2_Frame.erase(_GLES2_Frame.begin());
+
+        for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
+            RenderPassPoolGLES2::Free(*p);
+    }
+    _GLES2_FrameSync.Unlock();
 
     if (_GLES2_Context && do_execute)
     {
@@ -2141,6 +2146,12 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             GL_CALL(glFinish());
             _GLES2_RenderThreadSuspendSyncReached = true;
             _GLES2_RenderThreadSuspendSync.Wait();
+
+#if defined __DAVAENGINE_ANDROID__
+            android_gl_checkSurface();
+#elif defined __DAVAENGINE_IPHONE__
+            ios_gl_check_layer();
+#endif
         }
 
         {
