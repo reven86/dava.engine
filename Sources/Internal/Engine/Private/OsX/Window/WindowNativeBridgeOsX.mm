@@ -174,12 +174,14 @@ void WindowNativeBridge::WindowWillClose()
 
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
+    isFullscreen = true;
     int32 mode = static_cast<int32>(Window::eWindowingMode::FULLSCREEN);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
+    isFullscreen = false;
     int32 mode = static_cast<int32>(Window::eWindowingMode::WINDOWED);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 }
