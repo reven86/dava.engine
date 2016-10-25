@@ -16,7 +16,7 @@ struct SteamCallbacks
     }
     // Place other Steam callbacks here
 };
-static std::unique_ptr<SteamCallbacks> steamCallbacks;
+static SteamCallbacks* steamCallbacks = nullptr;
 
 const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
@@ -58,12 +58,12 @@ void Steam::Init()
 
     isInited = true;
 
-    steamCallbacks = std::make_unique<SteamCallbacks>();
+    steamCallbacks = new SteamCallbacks();
 }
 
 void Steam::Deinit()
 {
-    steamCallbacks.release();
+    SafeDelete(steamCallbacks);
 
     // Shutdown the SteamAPI
     SteamAPI_Shutdown();
