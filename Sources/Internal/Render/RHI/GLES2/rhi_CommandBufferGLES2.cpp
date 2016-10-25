@@ -361,6 +361,7 @@ FrameGLES2
     Handle sync;
     std::vector<Handle> pass;
     uint32 readyToExecute : 1;
+    uint32 needReject : 1;
 };
 
 static std::vector<FrameGLES2> _GLES2_Frame;
@@ -416,6 +417,7 @@ gles2_RenderPass_Begin(Handle pass)
         _GLES2_Frame.back().number = _GLES2_FrameNumber;
         _GLES2_Frame.back().sync = rhi::InvalidHandle;
         _GLES2_Frame.back().readyToExecute = false;
+        _GLES2_Frame.back().needReject = false;
 
         Trace("\n\n-------------------------------\nframe %u started\n", _GLES2_FrameNumber);
         _GLES2_FrameStarted = true;
@@ -1872,7 +1874,6 @@ void CommandBufferGLES2_t::Execute()
 
 //------------------------------------------------------------------------------
 
-#ifdef __DAVAENGINE_ANDROID__
 static void
 _RejectAllFrames()
 {
@@ -1914,13 +1915,13 @@ _RejectAllFrames()
         }
         else
         {
+            f->needReject = true;
             ++f;
         }
     }
 
     _GLES2_FrameSync.Unlock();
 }
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -1934,8 +1935,10 @@ _GLES2_ExecuteQueuedCommands()
     Trace("rhi-gl.exec-queued-cmd\n");
     std::vector<RenderPassGLES2_t*> pass;
     std::vector<Handle> pass_h;
+    Handle sync_h = InvalidHandle;
     unsigned frame_n = 0;
     bool do_exit = false;
+    bool do_execute = false;
 
     _GLES2_FrameSync.Lock();
     if (_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute)
@@ -1959,62 +1962,64 @@ _GLES2_ExecuteQueuedCommands()
                 pass.push_back(pp);
         }
 
+        do_execute = !_GLES2_Frame.begin()->needReject;
         pass_h = _GLES2_Frame.begin()->pass;
         frame_n = _GLES2_Frame.begin()->number;
+        sync_h = _GLES2_Frame.begin()->sync;
+
+        _GLES2_Frame.erase(_GLES2_Frame.begin());
     }
     else
     {
         do_exit = true;
     }
-    if (_GLES2_Frame.size() && (_GLES2_Frame.begin()->sync != InvalidHandle))
+    _GLES2_FrameSync.Unlock();
+
+    if (sync_h != InvalidHandle)
     {
-        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(_GLES2_Frame.begin()->sync);
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(sync_h);
 
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
-    _GLES2_FrameSync.Unlock();
 
     if (do_exit)
         return;
 
-    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-    for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    if (do_execute)
     {
-        RenderPassGLES2_t* pp = *p;
-
-        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
+        for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
         {
-            Handle cb_h = pp->cmdBuf[b];
-            CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+            RenderPassGLES2_t* pp = *p;
 
-            cb->Execute();
-
-            if (cb->sync != InvalidHandle)
+            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
-                SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
+                Handle cb_h = pp->cmdBuf[b];
+                CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-                sync->frame = frame_n;
-                sync->is_signaled = false;
-                sync->is_used = true;
+                cb->Execute();
+
+                if (cb->sync != InvalidHandle)
+                {
+                    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
+
+                    sync->frame = frame_n;
+                    sync->is_signaled = false;
+                    sync->is_used = true;
+                }
+
+                CommandBufferPoolGLES2::Free(cb_h);
             }
-
-            CommandBufferPoolGLES2::Free(cb_h);
         }
-    }
-
-    _GLES2_FrameSync.Lock();
-    {
         Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
-        _GLES2_Frame.erase(_GLES2_Frame.begin());
-
-        for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
-            RenderPassPoolGLES2::Free(*p);
     }
-    _GLES2_FrameSync.Unlock();
 
-    if (_GLES2_Context)
+    for (std::vector<Handle>::iterator p = pass_h.begin(), p_end = pass_h.end(); p != p_end; ++p)
+        RenderPassPoolGLES2::Free(*p);
+
+    if (_GLES2_Context && do_execute)
     {
         // do swap-buffers
 
@@ -2044,7 +2049,6 @@ _GLES2_ExecuteQueuedCommands()
     }
 
     // update sync-objects
-
     _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
@@ -2138,13 +2142,7 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             _GLES2_RenderThreadSuspendSyncReached = true;
             _GLES2_RenderThreadSuspendSync.Wait();
         }
-            
 
-#if defined __DAVAENGINE_ANDROID__
-        android_gl_checkSurface();
-#elif defined __DAVAENGINE_IPHONE__
-        ios_gl_check_layer();
-#endif
         {
             DAVA_CPU_PROFILER_SCOPE("rhi::WaitFrame");
 
@@ -2181,6 +2179,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         if (!do_exit)
         {
+#if defined __DAVAENGINE_ANDROID__
+            if (android_gl_checkSurface())
+                _RejectAllFrames();
+#elif defined __DAVAENGINE_IPHONE__
+            if (ios_gl_check_layer())
+                _RejectAllFrames();
+#endif
+
             _GLES2_ExecuteQueuedCommands();
         }
 

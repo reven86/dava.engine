@@ -1,22 +1,27 @@
 #include "Base/Platform.h"
 #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
 
 #ifdef __DAVAENGINE_ANDROID__
-
-#include "android_gl.h"
-#include "_gl.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES/gl.h>
 #include <android/native_window.h>
 
+#include "android_gl.h"
+#include "_gl.h"
+
 static EGLDisplay _display = EGL_NO_DISPLAY;
 static EGLSurface _surface = EGL_NO_SURFACE;
 static EGLContext _context = EGL_NO_CONTEXT;
 static EGLint _format = 0;
 static EGLConfig _config = 0;
+
 static ANativeWindow* _nativeWindow = nullptr;
+static GLint backingWidth = 0;
+static GLint backingHeight = 0;
+static bool needRecreateSurface = false;
 
 PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
@@ -25,8 +30,6 @@ PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC glBlitFramebuffer = nullptr;
 PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE glRenderbufferStorageMultisample = nullptr;
 PFNGL_DEBUGMESSAGECONTROLKHRPROC glDebugMessageControl;
 PFNGL_DEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback;
-
-static bool needRecreateSurface = false;
 
 static const EGLint contextAttribs[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -95,6 +98,9 @@ void android_gl_init(void* _window)
 
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
 
+    backingWidth = _GLES2_DefaultFrameBuffer_Width;
+    backingHeight = _GLES2_DefaultFrameBuffer_Height;
+
     ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
     _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
@@ -104,16 +110,18 @@ void android_gl_init(void* _window)
     eglMakeCurrent(_display, _surface, _surface, _context);
 }
 
-void android_gl_reset(void* _window)
+void android_gl_reset(void* _window, GLint width, GLint height)
 {
     _nativeWindow = static_cast<ANativeWindow*>(_window);
-    if (nullptr != _nativeWindow)
+    if (nullptr != _nativeWindow || backingWidth != width || backingHeight != height)
     {
         needRecreateSurface = true;
+        backingWidth = width;
+        backingHeight = height;
     }
 }
 
-void android_gl_checkSurface()
+bool android_gl_checkSurface()
 {
     if (needRecreateSurface)
     {
@@ -123,13 +131,20 @@ void android_gl_checkSurface()
         eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroySurface(_display, _surface);
 
+        _GLES2_DefaultFrameBuffer_Width = backingWidth;
+        _GLES2_DefaultFrameBuffer_Height = backingHeight;
+
         ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
 
         _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
         eglMakeCurrent(_display, _surface, _surface, _context);
 
         needRecreateSurface = false;
+
+        return true;
     }
+
+    return false;
 }
 
 bool android_gl_end_frame()
