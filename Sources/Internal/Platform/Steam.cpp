@@ -14,7 +14,7 @@ struct SteamCallbacks
     {
         Steam::GameOverlayActivated.Emit(pParam->m_bActive != 0);
     }
-    // Place over Steam callback here
+    // Place other Steam callbacks here
 };
 static std::unique_ptr<SteamCallbacks> steamCallbacks;
 
