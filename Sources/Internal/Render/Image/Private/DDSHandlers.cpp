@@ -13,7 +13,7 @@ namespace DAVA
 {
 
 #ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) (static_cast<uint32>(static_cast<uint8>(ch0)) | (static_cast<uint32>(static_cast<uint8>(ch1)) << 8) | (static_cast<uint32>(static_cast<uint8>(ch2)) << 16) | (static_cast<uint32>(static_cast<uint8>(ch3)) << 24))
 #endif
 
 const uint32 FOURCC_CRC = MAKEFOURCC('C', 'R', 'C', '_');
