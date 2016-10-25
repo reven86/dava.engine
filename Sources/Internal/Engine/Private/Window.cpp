@@ -88,8 +88,14 @@ void Window::SetCursorCapture(eCursorCapture mode)
 {
     if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE)*/) // TODO: Add platfom's caps check
     {
-        cursorCapture = mode;
-        windowBackend->SetCursorCapture(mode);
+        if (cursorCapture != mode)
+        {
+            cursorCapture = mode;
+            if (eCursorCapture::PINNING != mode || !deferredCursorCaptureOn)
+            {
+                windowBackend->SetCursorCapture(mode);
+            }
+        }
     }
 }
 
@@ -134,6 +140,10 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         if (!hasFocus)
         {
             return; // if no focus - skip all input events
+        }
+        if (HandleCursorCapture(e))
+        {
+            return;
         }
     }
     switch (e.type)
@@ -278,6 +288,38 @@ void Window::UpdateVirtualCoordinatesSystem()
     virtualCoordSystem->ScreenSizeChanged();
 }
 
+bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
+{
+    using Private::MainDispatcherEvent;
+    if (deferredCursorCaptureOn)
+    {
+        bool eventFilter = (MainDispatcherEvent::MOUSE_MOVE != e.type);
+        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_UP != e.type);
+        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type);
+        if (eventFilter)
+        {
+            deferredCursorCaptureOn = false;
+            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+            return false;
+        }
+        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        {
+            // check, only mouse release event in work rect tern on capture mode
+            bool mclickInRect = true;
+            mclickInRect &= (e.mouseEvent.x >= 0.f && e.mouseEvent.x <= GetWidth());
+            mclickInRect &= (e.mouseEvent.y >= 0.f && e.mouseEvent.y <= GetHeight());
+            if (mclickInRect && hasFocus)
+            {
+                deferredCursorCaptureOn = false;
+                windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+                // return true, skip this event
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
@@ -285,12 +327,23 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     inputSystem->GetKeyboard().ClearAllKeys();
     ClearMouseButtons();
     hasFocus = e.stateEvent.state != 0;
-    if (!hasFocus)
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
-        cursorCapture = eCursorCapture::OFF;
-        windowBackend->SetCursorCapture(cursorCapture);
-        cursorVisible = true;
-        windowBackend->SetCursorVisibility(cursorVisible);
+        if (hasFocus)
+        {
+            if (eCursorCapture::PINNING != cursorCapture)
+            {
+                windowBackend->SetCursorCapture(cursorCapture);
+            }
+        }
+        else
+        {
+            if (eCursorCapture::OFF != cursorCapture)
+            {
+                windowBackend->SetCursorCapture(eCursorCapture::OFF);
+            }
+        }
+        deferredCursorCaptureOn = (cursorCapture == eCursorCapture::PINNING);
     }
     focusChanged.Emit(this, hasFocus);
 }

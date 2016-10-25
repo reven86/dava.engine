@@ -69,8 +69,9 @@ public:
     /** Set cursor capture mode for current Window, if it has focus, see more about modes in eCursorCapture enum class.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        Turn off cursor capture, if Window lost focus.
-        Set cursor mode, after Window got focus.
+        When the Window loses focus, itself release cursor capture.
+        The Window sets the last mode, after the focus was received.
+        If the last mode is pinning, it will set after any keyboard event(mouse wheel too) or mouse press event inside client area.
     */
     void SetCursorCapture(eCursorCapture mode);
 
@@ -80,8 +81,8 @@ public:
     /** Set cursor visibility for current Window, if it has focus.
         Supported on Win32, OsX, WinUWP.
         Remarks:
-        Show cursor, if Window lost focus.
-        Hide cursor, after Window got focus.
+        When the Window loses focus, itself recover cursor visibility.
+        The Window sets the last cursor visibility, after the focus was received.
     */
     void SetCursorVisibility(bool visible);
 
@@ -132,6 +133,8 @@ private:
     void ClearMouseButtons();
 
 private:
+    bool HandleCursorCapture(const Private::MainDispatcherEvent& e);
+
     Private::EngineBackend* engineBackend = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
     std::unique_ptr<Private::WindowBackend> windowBackend;
@@ -153,6 +156,7 @@ private:
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
+    bool deferredCursorCaptureOn = false;
     // Friends
     friend class Private::EngineBackend;
     friend class Private::PlatformCore;

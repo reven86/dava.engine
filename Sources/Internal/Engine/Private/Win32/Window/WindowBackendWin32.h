@@ -61,6 +61,7 @@ private:
     void DoSetTitle(const char8* title);
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
+    void UpdateClipCursor();
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);

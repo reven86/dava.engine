@@ -28,7 +28,6 @@ private:
     void OnMulDown(DAVA::BaseObject* sender, void* data, void* callerData);
     void On3DViewControllClick(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
-    void FocusChanged(DAVA::Window* window, bool hasFocus);
 
     DAVA::Window* primaryWindow = nullptr;
 
@@ -42,5 +41,4 @@ private:
 
     bool cursorCaptured = false;
     bool cursorVisible = true;
-    DAVA::SigConnectionID focusChangedId = DAVA::SigConnectionID();
 };

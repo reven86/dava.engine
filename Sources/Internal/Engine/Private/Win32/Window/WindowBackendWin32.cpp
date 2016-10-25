@@ -206,6 +206,20 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
             break;
         }
         }
+        UpdateClipCursor();
+    }
+}
+
+void WindowBackend::UpdateClipCursor()
+{
+    ClipCursor(nullptr);
+    if (captureMode == eCursorCapture::PINNING)
+    {
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        ClientToScreen(hwnd, (LPPOINT)&rect);
+        ClientToScreen(hwnd, (LPPOINT)&rect + 1);
+        ClipCursor(&rect);
     }
 }
 
@@ -480,7 +494,11 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
 {
     // Intentionally use 'if' instead of 'switch'
     LRESULT lresult = 0;
-    if (message == WM_SIZE)
+    if (message == WM_WINDOWPOSCHANGED)
+    {
+        UpdateClipCursor();
+    }
+    else if (message == WM_SIZE)
     {
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);

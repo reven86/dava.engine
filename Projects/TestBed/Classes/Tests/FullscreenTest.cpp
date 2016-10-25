@@ -17,8 +17,6 @@ FullscreenTest::FullscreenTest(TestBed& app)
 
 void FullscreenTest::LoadResources()
 {
-    focusChangedId = Engine::Instance()->PrimaryWindow()->focusChanged.Connect(this, &FullscreenTest::FocusChanged);
-
     BaseScreen::LoadResources();
 
     GetBackground()->SetColor(Color::White);
@@ -189,8 +187,6 @@ void FullscreenTest::LoadResources()
 
 void FullscreenTest::UnloadResources()
 {
-    Engine::Instance()->PrimaryWindow()->focusChanged.Disconnect(focusChangedId);
-
     if (ui3dview->GetScene())
     {
         ui3dview->GetScene()->RemoveSystem(rotationControllerSystem);
@@ -316,16 +312,6 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
         break;
     }
 
-    UpdateMode();
-}
-
-void FullscreenTest::FocusChanged(DAVA::Window* window, bool hasFocus)
-{
-    if (!hasFocus)
-    {
-        cursorCaptured = false;
-        cursorVisible = true;
-    }
     UpdateMode();
 }
 
