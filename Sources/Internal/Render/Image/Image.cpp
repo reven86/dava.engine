@@ -24,7 +24,7 @@ uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
     return (bitsPerPixel * width * height / 8);
 }
 
-uint32 ImageUtils::GetPitchInBytes(uint32 width, PixelFormat format)
+uint32 GetPitchInBytes(uint32 width, PixelFormat format)
 {
     DVASSERT(width != 0);
     DVASSERT(format != PixelFormat::FORMAT_INVALID);
