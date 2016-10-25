@@ -179,6 +179,9 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
+    auto update = [this](Window*, float32, float32, float32, float32) { UpdateMode(); };
+    sizeChangedSigConn = primaryWindow->sizeScaleChanged.Connect(update);
+
     UpdateMode();
 }
 
@@ -194,6 +197,10 @@ void FullscreenTest::UnloadResources()
     SafeRelease(currentModeText);
     SafeRelease(pinningText);
     SafeRelease(pinningMousePosText);
+
+    primaryWindow->sizeScaleChanged.Disconnect(sizeChangedSigConn);
+    sizeChangedSigConn = SigConnectionID();
+
     BaseScreen::UnloadResources();
 }
 
@@ -203,16 +210,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        // TODO: implement window mode switch in engine and testbed
-        // Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED);
+        primaryWindow->SetWindowingMode(Window::eWindowingMode::WINDOWED);
         break;
     case 1:
-        // TODO: implement window mode switch in engine and testbed
-        // Core::Instance()->SetScreenMode(Core::eScreenMode::FULLSCREEN);
-        break;
-    case 2:
-        // TODO: implement window mode switch in engine and testbed
-        // Core::Instance()->SetScreenMode(Core::eScreenMode::WINDOWED_FULLSCREEN);
+        primaryWindow->SetWindowingMode(Window::eWindowingMode::FULLSCREEN);
         break;
     case 99:
         UpdateMode();
@@ -308,42 +309,38 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 
 void FullscreenTest::UpdateMode()
 {
-    // TODO: implement window mode switch in engine and testbed
+    switch (primaryWindow->GetWindowingMode())
+    {
+    case Window::eWindowingMode::WINDOWED:
+        currentModeText->SetText(L"Windowed");
+        break;
+    case Window::eWindowingMode::FULLSCREEN:
+        currentModeText->SetText(L"Fullscreen");
+        break;
+    default:
+        currentModeText->SetText(L"Unknown");
+        break;
+    }
 
-    // switch (Core::Instance()->GetScreenMode())
-    // {
-    // case Core::eScreenMode::WINDOWED:
-    //     currentModeText->SetText(L"Windowed");
-    //     break;
-    // case Core::eScreenMode::WINDOWED_FULLSCREEN:
-    //     currentModeText->SetText(L"Windowed fullscreen");
-    //     break;
-    // case Core::eScreenMode::FULLSCREEN:
-    //     currentModeText->SetText(L"Fullscreen");
-    //     break;
-    // default:
-    //     currentModeText->SetText(L"Unknown");
-    //     break;
-    // }
+    // TODO: implement window mode switch in engine and testbed
+    //     eCaptureMode captureMode = InputSystem::Instance()->GetMouseDevice().GetMode();
+    //     switch (captureMode)
+    //     {
+    //     case eCaptureMode::OFF:
+    //         pinningText->SetText(L"Mouse capture mode: OFF");
+    //         pinningMousePosText->SetVisibilityFlag(false);
+    //         break;
     //
-    // eCaptureMode captureMode = InputSystem::Instance()->GetMouseDevice().GetMode();
-    // switch (captureMode)
-    // {
-    // case eCaptureMode::OFF:
-    //     pinningText->SetText(L"Mouse capture mode: OFF");
-    //     pinningMousePosText->SetVisibilityFlag(false);
-    //     break;
+    //     case eCaptureMode::FRAME:
+    //         pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
+    //         pinningMousePosText->SetVisibilityFlag(true);
+    //         break;
     //
-    // case eCaptureMode::FRAME:
-    //     pinningText->SetText(L"Mouse Capture = FRAME, press Mouse Button to turn off");
-    //     pinningMousePosText->SetVisibilityFlag(true);
-    //     break;
-    //
-    // case eCaptureMode::PINING:
-    //     pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
-    //     pinningMousePosText->SetVisibilityFlag(true);
-    //     break;
-    // }
+    //     case eCaptureMode::PINING:
+    //         pinningText->SetText(L"Mouse Capture = PINING, press Mouse Button to turn off");
+    //         pinningMousePosText->SetVisibilityFlag(true);
+    //         break;
+    //     }
 }
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)

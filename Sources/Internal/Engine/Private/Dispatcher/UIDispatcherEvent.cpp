@@ -31,6 +31,13 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetTitleEvent(const String& title)
     return e;
 }
 
+UIDispatcherEvent UIDispatcherEvent::CreateSetWindowingModeEvent(int32 mode)
+{
+    UIDispatcherEvent e(SET_WINDOWING_MODE);
+    e.setWindowingModeEvent.mode = mode;
+    return e;
+}
+
 UIDispatcherEvent UIDispatcherEvent::CreateFunctorEvent(const Function<void()>& functor)
 {
     UIDispatcherEvent e(FUNCTOR);

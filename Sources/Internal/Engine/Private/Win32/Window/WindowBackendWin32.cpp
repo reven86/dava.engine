@@ -30,6 +30,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
+    ::memset(&windowPlacement, 0, sizeof(windowPlacement));
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
 }
 
 WindowBackend::~WindowBackend()
@@ -52,7 +54,7 @@ bool WindowBackend::Create(float32 width, float32 height)
     HWND handle = ::CreateWindowExW(windowExStyle,
                                     windowClassName,
                                     L"DAVA_WINDOW",
-                                    windowStyle,
+                                    windowedStyle,
                                     CW_USEDEFAULT,
                                     CW_USEDEFAULT,
                                     w,
@@ -88,6 +90,16 @@ void WindowBackend::Close(bool /*appIsTerminating*/)
 void WindowBackend::SetTitle(const String& title)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
+}
+
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
+{
+    return Window::eWindowingMode::WINDOWED;
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -134,10 +146,58 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
+void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
+{
+    int32 mode = static_cast<int32>(newMode);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
+
+    switch (newMode)
+    {
+    case Window::eWindowingMode::FULLSCREEN:
+    {
+        ::GetWindowPlacement(hwnd, &windowPlacement);
+
+        // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+        // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
+        //
+        uint32 style = fullscreenStyle;
+        if (::IsWindowVisible(hwnd))
+        {
+            style |= WS_VISIBLE;
+        }
+        ::SetWindowLong(hwnd, GWL_STYLE, style);
+
+        MONITORINFO monitorInfo;
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        ::GetMonitorInfo(::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+        RECT rect(monitorInfo.rcMonitor);
+
+        ::SetWindowPos(hwnd,
+                       HWND_TOP,
+                       rect.left,
+                       rect.top,
+                       rect.right - rect.left,
+                       rect.bottom - rect.top,
+                       SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+        break;
+    }
+    case Window::eWindowingMode::WINDOWED:
+    {
+        ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
+        ::SetWindowPlacement(hwnd, &windowPlacement);
+        ::SetWindowPos(hwnd,
+                       nullptr,
+                       0, 0, 0, 0,
+                       SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+        break;
+    }
+    }
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
-    ::AdjustWindowRectEx(&rc, windowStyle, FALSE, windowExStyle);
+    ::AdjustWindowRectEx(&rc, windowedStyle, FALSE, windowExStyle);
 
     *w = rc.right - rc.left;
     *h = rc.bottom - rc.top;
@@ -171,6 +231,9 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_TITLE:
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
+        break;
+    case UIDispatcherEvent::SET_WINDOWING_MODE:
+        DoSetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

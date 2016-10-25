@@ -20,6 +20,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , mainDispatcher(engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
+    , windowingMode(windowBackend->GetInitialWindowingMode())
 {
 }
 
@@ -29,7 +30,8 @@ void Window::Resize(float32 w, float32 h)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
-    if (!engineBackend->IsEmbeddedGUIMode())
+    // Also window can be resized only in windowed mode
+    if (!engineBackend->IsEmbeddedGUIMode() && windowingMode == eWindowingMode::WINDOWED)
     {
         windowBackend->Resize(w, h);
     }
@@ -51,6 +53,15 @@ void Window::SetTitle(const String& title)
     if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->SetTitle(title);
+    }
+}
+
+void Window::SetWindowingMode(eWindowingMode newMode)
+{
+    // Window's windowing mode cannot be changed in embedded mode
+    if (!engineBackend->IsEmbeddedGUIMode() && newMode != windowingMode)
+    {
+        windowBackend->SetWindowingMode(newMode);
     }
 }
 
@@ -136,6 +147,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         break;
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
+        break;
+    case MainDispatcherEvent::WINDOW_WINDOWING_MODE_CHANGED:
+        HandleWindowingModeChanged(e);
         break;
     default:
         break;
@@ -255,6 +269,11 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);
+}
+
+void Window::HandleWindowingModeChanged(const Private::MainDispatcherEvent& e)
+{
+    windowingMode = static_cast<eWindowingMode>(e.windowingEvent.mode);
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)

@@ -69,6 +69,14 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Wind
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(Window* window, int mode)
+{
+    MainDispatcherEvent e(WINDOW_WINDOWING_MODE_CHANGED, window);
+    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.windowingEvent.mode = mode;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, bool isRepeated)
 {
     DVASSERT(keyEventType == KEY_DOWN || keyEventType == KEY_UP || keyEventType == KEY_CHAR);

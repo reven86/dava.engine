@@ -36,6 +36,8 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
+    void SetWindowingMode(Window::eWindowingMode newMode);
+    Window::eWindowingMode GetInitialWindowingMode() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -53,6 +55,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetWindowingMode(Window::eWindowingMode newMode);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
@@ -89,11 +92,13 @@ private:
     bool closeRequestByApp = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
     int32 height = 0;
+    WINDOWPLACEMENT windowPlacement;
 
     static bool windowClassRegistered;
     static const wchar_t windowClassName[];
     static const UINT WM_TRIGGER_EVENTS = WM_USER + 39;
-    static const DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD windowedStyle = WS_OVERLAPPEDWINDOW;
+    static const DWORD fullscreenStyle = WS_POPUP;
     static const DWORD windowExStyle = 0;
 };
 
