@@ -371,7 +371,15 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 #if defined(__DAVAENGINE_STEAM__)
 void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
 {
-    SetVisible(overlayActivated ? false : isVisible, false);
+    if (overlayActivated)
+    {
+        wasVisible = isVisible;
+        SetVisible(false, false);
+    }
+    else
+    {
+        SetVisible(wasVisible, false);
+    }
 }
 #endif
 
