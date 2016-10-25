@@ -8,8 +8,19 @@
 #include "steam/steam_api.h"
 namespace DAVA
 {
+struct SteamCallbacks
+{
+    STEAM_CALLBACK(SteamCallbacks, GameOverlayActivated, GameOverlayActivated_t)
+    {
+        Steam::GameOverlayActivated.Emit(pParam->m_bActive != 0);
+    }
+    // Place over Steam callback here
+};
+static std::unique_ptr<SteamCallbacks> steamCallbacks;
+
 const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
+Signal<bool> Steam::GameOverlayActivated;
 
 void Steam::Init()
 {
@@ -46,10 +57,14 @@ void Steam::Init()
     }
 
     isInited = true;
+
+    steamCallbacks = std::make_unique<SteamCallbacks>();
 }
 
 void Steam::Deinit()
 {
+    steamCallbacks.release();
+
     // Shutdown the SteamAPI
     SteamAPI_Shutdown();
     isInited = false;
