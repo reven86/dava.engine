@@ -41,12 +41,14 @@ enum class eInputDevice : uint32
 enum class eMouseButtons : uint32
 {
     NONE = 0, //!< Special value used in some cases to specify that no mouse button is involved
-    FIRST = 1,
-    LEFT = FIRST,
+
+    LEFT = 1,
     RIGHT = 2,
     MIDDLE = 3,
     EXTENDED1 = 4,
     EXTENDED2 = 5,
+
+    FIRST = LEFT,
     LAST = EXTENDED2,
 
     COUNT = LAST, //!< Number of supported mouse buttons
@@ -61,11 +63,12 @@ enum class eModifierKeys : uint32
 {
     NONE = 0, //!< No modifier keys are pressed
 
-    FIRST = 0x01,
     SHIFT = 0x01, //!< Any shift is pressed
     CONTROL = 0x02, //!< Any control is pressed
     ALT = 0x04, //!< Any alt is pressed
     COMMAND = 0x08, //!< Any command key is pressed (macOS only)
+
+    FIRST = SHIFT,
     LAST = COMMAND,
 
     MASK = LAST | ~LAST, //!< Value used to mask useful bits
