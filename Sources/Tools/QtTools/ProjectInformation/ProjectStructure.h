@@ -1,18 +1,20 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
+#include <QStringList>
+#include <memory>
 
 class ProjectStructure
 {
 public:
-    ProjectStructure(const DAVA::Vector<DAVA::String>& supportedExtensions);
+    ProjectStructure(const QStringList& supportedExtensions);
     ~ProjectStructure();
 
-    void SetProjectDirectory(const DAVA::FilePath& directory);
-    DAVA::FilePath GetProjectDirectory() const;
+    void AddProjectDirectory(const QString& directory);
+    void RemoveProjectDirectory(const QString& directory);
+    void RemoveAllProjectDirectories();
+    QStringList GetProjectDirectories() const;
 
-    DAVA::Vector<DAVA::FilePath> GetFiles(const DAVA::String& extension) const;
+    QStringList GetFiles(const QString& extension) const;
 
 private:
     class Impl;

@@ -13,8 +13,9 @@
 #include <QFileInfo>
 #include <QAbstractItemView>
 #include <QKeyEvent>
+#include <QDir>
 
-QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
+QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent)
 {
     //Qt::Popup do not prevent us to show another dialog
     static bool shown = false;
@@ -34,7 +35,7 @@ QString FindFileDialog::GetFilePath(const ProjectStructure* projectStructure, co
         QString filePath = dialog.ui->lineEdit->text();
         filePath = dialog.FromShortName(filePath);
         QFileInfo fileInfo(filePath);
-        if (fileInfo.isFile() && fileInfo.suffix().toLower() == QString::fromStdString(extension).toLower())
+        if (fileInfo.isFile() && fileInfo.suffix().toLower() == extension.toLower())
         {
             return filePath;
         }
@@ -55,14 +56,21 @@ QAction* FindFileDialog::CreateFindInFilesAction(QWidget* parent)
     return findInFilesAction;
 }
 
-FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const DAVA::String& extension, QWidget* parent)
+FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const QString& extension, QWidget* parent)
     : QDialog(parent, Qt::Popup)
     , ui(new Ui::FindFileDialog())
 {
-    DAVA::Vector<DAVA::FilePath> files = projectStructure->GetFiles(extension);
+    QStringList files = projectStructure->GetFiles(extension);
 
-    DAVA::String prefixStr = projectStructure->GetProjectDirectory().GetAbsolutePathname();
-    prefix = QString::fromStdString(prefixStr);
+    QStringList projectDirectories = projectStructure->GetProjectDirectories();
+
+    QString commonParent = projectDirectories.first();
+    for (auto it = ++projectDirectories.begin(); it != projectDirectories.end(); ++it)
+    {
+        commonParent = GetCommonParent(commonParent, (*it));
+    }
+    DVASSERT(!commonParent.isEmpty());
+    prefix = commonParent;
 
     ui->setupUi(this);
     ui->lineEdit->setFocus();
@@ -74,19 +82,17 @@ FindFileDialog::FindFileDialog(const ProjectStructure* projectStructure, const D
 
     if (files.empty())
     {
-        QString extension_ = QString::fromStdString(extension);
-        ui->lineEdit->setPlaceholderText(tr("Project not contains files with extension %1").arg(extension_));
+        ui->lineEdit->setPlaceholderText(tr("Project not contains files with extension %1").arg(extension));
     }
 }
 
-void FindFileDialog::Init(const DAVA::Vector<DAVA::FilePath>& files)
+void FindFileDialog::Init(const QStringList& files)
 {
     //collect all items in short form
     QStringList stringsToDisplay;
-    for (const DAVA::FilePath& filePath : files)
+    for (const QString& filePath : files)
     {
-        QString path = QString::fromStdString(filePath.GetAbsolutePathname());
-        stringsToDisplay << ToShortName(path);
+        stringsToDisplay << ToShortName(filePath);
     }
     stringsToDisplay.sort(Qt::CaseInsensitive);
     //the only way to not create model and use stringlist is a pass stringlist to the QCompleter c-tor :(
@@ -129,6 +135,27 @@ bool FindFileDialog::eventFilter(QObject* obj, QEvent* event)
     return QDialog::eventFilter(obj, event);
 }
 
+QString FindFileDialog::GetCommonParent(const QString& path1, const QString& path2)
+{
+    QString absPath1 = QFileInfo(path1).absoluteFilePath();
+    QString commonPath = QFileInfo(path2).absoluteFilePath();
+
+    while (!absPath1.startsWith(commonPath, Qt::CaseInsensitive))
+    {
+        QFileInfo fileInfo(commonPath);
+        QString parentDir = fileInfo.absolutePath();
+        if (commonPath == parentDir)
+        {
+            commonPath.clear();
+            break;
+        }
+
+        commonPath = parentDir;
+    }
+
+    return commonPath;
+}
+
 namespace FindFileDialogDetails
 {
 QString newPrefix = QStringLiteral("...");
@@ -142,17 +169,17 @@ QString FindFileDialog::ToShortName(const QString& name) const
         const int relPathSize = name.size() - prefixSize;
         return FindFileDialogDetails::newPrefix + name.right(relPathSize);
     }
-    else
-    {
-        return name;
-    }
+
+    return name;
 }
 
 QString FindFileDialog::FromShortName(const QString& name) const
 {
     if (!prefix.isEmpty())
     {
-        return prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size());
+        QString fileInfo(prefix + name.right(name.size() - FindFileDialogDetails::newPrefix.size()));
+        return fileInfo;
     }
+
     return name;
 }

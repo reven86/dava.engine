@@ -51,7 +51,7 @@ void MultipleFileSystemModel::delPath(const QString& path)
     }
 }
 
-void MultipleFileSystemModel::delAllPaths()
+void MultipleFileSystemModel::removeAllPaths()
 {
     beginResetModel();
     for (FileSystemInfo& info : fileSystemModels)

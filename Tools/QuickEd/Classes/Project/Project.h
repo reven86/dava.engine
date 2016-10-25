@@ -6,60 +6,48 @@
 #include "Project/EditorLocalizationSystem.h"
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include <QVector>
+#include <QPair>
 
 class Project : public QObject
 {
     Q_OBJECT
-    //     Q_PROPERTY(QString projectPath READ GetProjectPath NOTIFY ProjectPathChanged)
-    //     Q_PROPERTY(QString projectName READ GetProjectName NOTIFY ProjectNameChanged)
-
 public:
     struct Settings
     {
-        const DAVA::FilePath projectPath;
-        DAVA::FilePath fontsPath;
-        DAVA::FilePath stringLocalizationsPath;
-        DAVA::String currentLocale;
+        QString projectFile;
+        QVector<QPair<QString, QString>> sourceResourceDirectories;
+        QString intermediateResourceDirectory;
+
+        DAVA::FilePath fontsDirectory;
+        DAVA::FilePath textsDirectory;
+        DAVA::FilePath fontsConfigsDirectory;
+        DAVA::String defaultLanguage;
         DAVA::Vector<DAVA::FilePath> libraryPackages;
-        DAVA::Vector<std::pair<DAVA::String, DAVA::String>> dataFolders;
     };
+
+    static std::tuple<Settings, DAVA::ResultList> ParseProjectSettings(const QString& projectFile);
+    static const QString& GetUIRelativePath();
+    //static const QString& GetUIRelativePath();
+    static const QString& GetProjectFileName();
 
     Project(const Settings& aSettings);
     ~Project();
 
-public:
     QString GetProjectPath() const;
     QString GetProjectDirectory() const;
     QString GetProjectName() const;
 
-    //bool Open(const QString& path);
-    //void Close();
-    //bool CanOpenProject(const QString& path) const;
-
     EditorFontSystem* GetEditorFontSystem() const;
     EditorLocalizationSystem* GetEditorLocalizationSystem() const;
     const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
-    static const QString& GetScreensRelativePath();
-    static const QString& GetProjectFileName();
 
-    const DAVA::Vector<std::pair<DAVA::String, DAVA::String>>& GetDataFolders() const;
-    //QString CreateNewProject(DAVA::Result* result = nullptr);
+    const QVector<QPair<QString, QString>>& SourceResourceDirectories() const;
 
 private:
-    //bool OpenInternal(const QString& path);
-
-signals:
-    //void IsOpenChanged(bool arg);
-    //void ProjectPathChanged(QString arg);
-    //void ProjectNameChanged(QString arg);
-
-private:
-    //void SetProjectPath(QString arg);
-    //void SetProjectName(QString arg);
-
     Settings settings;
-    const DAVA::FilePath projectDirectory;
-    const DAVA::String projectName;
+    const QString projectDirectory;
+    const QString projectName;
 
     std::unique_ptr<EditorFontSystem> editorFontSystem;
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;

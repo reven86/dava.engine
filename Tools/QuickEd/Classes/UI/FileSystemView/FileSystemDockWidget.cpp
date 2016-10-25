@@ -55,7 +55,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     //, model(new FileSystemModel(this))
     , model(new MultipleFileSystemModel(this))
 {
-    DAVA::Vector<DAVA::String> extensions = { "yaml" };
+    QStringList extensions = { "yaml" };
     projectStructure.reset(new ProjectStructure(extensions));
 
     ui->setupUi(this);
@@ -135,7 +135,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::AddDirectory(const QString& path, const QString& displayName)
+void FileSystemDockWidget::AddPath(const QString& path, const QString& displayName)
 {
     QFileInfo fileInfo(path);
 
@@ -146,7 +146,7 @@ void FileSystemDockWidget::AddDirectory(const QString& path, const QString& disp
     {
         auto fRoot = model->addPath(path, displayName);
         ui->treeView->expand(fRoot);
-        projectStructure->SetProjectDirectory(path.toStdString());
+        projectStructure->AddProjectDirectory(path);
     }
 
     if (isAvailable)
@@ -157,11 +157,16 @@ void FileSystemDockWidget::AddDirectory(const QString& path, const QString& disp
     }
 }
 
-void FileSystemDockWidget::RemoveAllDirectories()
+void FileSystemDockWidget::RemovePath(const QString& path)
 {
-    model->delAllPaths();
+    projectStructure->RemoveProjectDirectory(path);
+}
+
+void FileSystemDockWidget::RemoveAllPaths()
+{
+    model->removeAllPaths();
     ui->treeView->hideColumn(0);
-    projectStructure->SetProjectDirectory(DAVA::FilePath());
+    //projectStructure->RemoveAllProjectDirectories();
     isAvailable = false;
     findInFilesAction->setEnabled(false);
 }

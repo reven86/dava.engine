@@ -283,103 +283,11 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
         return std::make_tuple(nullptr, resultList);
     }
 
-    ScopedPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
-    if (!parser)
+    Project::Settings settings;
+    std::tie(settings, resultList) = Project::ParseProjectSettings(path);
+    if (settings.projectFile.isEmpty())
     {
-        QString message = tr("Can not parse project file %1.").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-
         return std::make_tuple(nullptr, resultList);
-    }
-    //SetProjectName(fileInfo.fileName());
-
-    //editorLocalizationSystem->Cleanup();
-
-    //     QDir projectDir = fileInfo.absoluteDir(); TODO fix
-    //     if (!projectDir.mkpath("." + GetScreensRelativePath()))
-    //     {
-    //         return false;
-    //     }
-
-    //editorLocalizationSystem->Cleanup();
-
-    //SetProjectPath(fileInfo.absolutePath());
-    //FilePath projectDirectory = FilePath(path.toStdString()).GetDirectory();
-
-    Project::Settings settings{ path.toStdString() };
-
-    YamlNode* projectRoot = parser->GetRootNode();
-    if (nullptr != projectRoot)
-    {
-        const YamlNode* dataFoldersNode = projectRoot->Get("DataFolders");
-
-        // Get font node
-        if (nullptr != dataFoldersNode)
-        {
-            for (uint32 i = 0; i < dataFoldersNode->GetCount(); i++)
-            {
-                auto it = dataFoldersNode->Get(i)->AsMap().begin();
-                String key = it->first;
-                String path = it->second->AsString();
-                settings.dataFolders.push_back(std::make_pair(key, path));
-            }
-        }
-        else
-        {
-            String defaultDirectory = "./Data/";
-            QString message = tr("Data source directories not set. Used default directory: %1.").arg(QString::fromStdString(defaultDirectory));
-            resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-            settings.dataFolders.push_back(std::make_pair("Default", defaultDirectory));
-        }
-
-        const YamlNode* fontNode = projectRoot->Get("font");
-
-        // Get font node
-        if (nullptr != fontNode)
-        {
-            // Get default font node
-            const YamlNode* defaultFontPath = fontNode->Get("DefaultFontsPath");
-            if (nullptr != defaultFontPath)
-            {
-                FilePath localizationFontsPath(defaultFontPath->AsString());
-                if (FileSystem::Instance()->Exists(localizationFontsPath))
-                {
-                    settings.fontsPath = localizationFontsPath.GetDirectory();
-                    //editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());TODO fix
-                }
-            }
-        }
-
-        if (settings.fontsPath.IsEmpty())
-        {
-            settings.fontsPath = "~res:/UI/Fonts/";
-        }
-        //
-        //         editorFontSystem->LoadLocalizedFonts();
-
-        const YamlNode* localizationPathNode = projectRoot->Get("LocalizationPath");
-        const YamlNode* localeNode = projectRoot->Get("Locale");
-        if (localizationPathNode != nullptr && localeNode != nullptr)
-        {
-            FilePath localePath = localizationPathNode->AsString();
-            //QString absPath = QString::fromStdString(localePath.GetAbsolutePathname());
-            //QDir localePathDir(absPath);
-            //editorLocalizationSystem->SetDirectory(localePathDir);
-            settings.stringLocalizationsPath = localePath;
-            settings.currentLocale = localeNode->AsString();
-
-            //QString currentLocale = QString::fromStdString(localeNode->AsString());
-            //editorLocalizationSystem->SetCurrentLocaleValue(currentLocale);
-        }
-
-        const YamlNode* libraryNode = projectRoot->Get("Library");
-        if (libraryNode != nullptr)
-        {
-            for (uint32 i = 0; i < libraryNode->GetCount(); i++)
-            {
-                settings.libraryPackages.push_back(FilePath(libraryNode->Get(i)->AsString()));
-            }
-        }
     }
 
     return std::make_tuple(std::make_unique<Project>(settings), resultList);
@@ -409,7 +317,7 @@ std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
         resultList.AddResult(Result::RESULT_ERROR, String("Can not open project file ") + fullProjectFilePath.toUtf8().data());
         return std::make_tuple(QString(), resultList);
     }
-    if (!projectDir.mkpath(projectDir.canonicalPath() + Project::GetScreensRelativePath()))
+    if (!projectDir.mkpath(projectDir.canonicalPath() + Project::GetUIRelativePath()))
     {
         resultList.AddResult(Result::RESULT_ERROR, String("Can not create Data/UI folder"));
         return std::make_tuple(QString(), resultList);
@@ -522,12 +430,13 @@ void EditorCore::OnProjectOpen(const Project* newProject)
     mainWindow->menuTools->setEnabled(true);
     mainWindow->toolBarPlugins->setEnabled(true);
 
-    for (auto& item : newProject->GetDataFolders())
+    for (auto& item : newProject->SourceResourceDirectories())
     {
-        QString path = newProject->GetProjectDirectory() + QString::fromStdString(item.second) + Project::GetScreensRelativePath();
-        QString displayName = QString::fromStdString(item.first);
+        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
+        QString path = pathInfo.absoluteFilePath();
+        QString displayName = item.first;
 
-        mainWindow->fileSystemDockWidget->AddDirectory(path, displayName);
+        mainWindow->fileSystemDockWidget->AddPath(path, displayName);
     }
     mainWindow->libraryWidget->SetLibraryPackages(newProject->GetLibraryPackages());
 
@@ -575,12 +484,20 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 
 void EditorCore::OnProjectClose(const Project* currProject)
 {
+    for (auto& item : currProject->SourceResourceDirectories())
+    {
+        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
+        QString path = pathInfo.absoluteFilePath();
+
+        mainWindow->fileSystemDockWidget->RemovePath(path);
+    }
+
     mainWindow->actionClose_project->setEnabled(false);
     mainWindow->fileSystemDockWidget->setEnabled(false);
     mainWindow->menuTools->setEnabled(false);
     mainWindow->toolBarPlugins->setEnabled(false);
 
-    mainWindow->fileSystemDockWidget->RemoveAllDirectories();
+    mainWindow->fileSystemDockWidget->RemoveAllPaths();
     mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
 
     //disconnect(currProject, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);

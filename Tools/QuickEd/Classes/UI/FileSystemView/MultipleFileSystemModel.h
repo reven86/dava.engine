@@ -50,7 +50,7 @@ public:
     QModelIndex addPath(const QString& path, const QString& alias);
 
     void delPath(const QString& path);
-    void delAllPaths();
+    void removeAllPaths();
 
     QModelIndex index(const QString& path, int column = 0) const;
 

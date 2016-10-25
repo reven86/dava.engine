@@ -24,8 +24,9 @@ public:
     explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
 
-    void AddDirectory(const QString& path, const QString& displayName);
-    void RemoveAllDirectories();
+    void AddPath(const QString& path, const QString& displayName);
+    void RemovePath(const QString& path);
+    void RemoveAllPaths();
 
 signals:
     void OpenPackageFile(const QString& path);
