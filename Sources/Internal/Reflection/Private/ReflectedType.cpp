@@ -2,6 +2,8 @@
 #include "Reflection/ReflectedType.h"
 #include "Reflection/Wrappers.h"
 
+#ifndef __REFLECTION_FEATURE__
+
 namespace DAVA
 {
 UnorderedMap<const Type*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
@@ -93,3 +95,4 @@ const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
 }
 
 } // namespace DAVA
+#endif

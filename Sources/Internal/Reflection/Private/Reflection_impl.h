@@ -17,7 +17,6 @@ inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper
     if (nullptr != rtype_)
     {
         sw = rtype_->structureWrapper.get();
-        sew = rtype_->structureEditorWrapper.get();
     }
 
     if (nullptr != meta)
@@ -25,11 +24,6 @@ inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper
         if (meta->HasMeta<StructureWrapper>())
         {
             sw = meta->GetMeta<StructureWrapper>();
-        }
-
-        if (meta->HasMeta<StructureEditorWrapper>())
-        {
-            sew = meta->GetMeta<StructureEditorWrapper>();
         }
     }
 }
@@ -86,42 +80,42 @@ inline Vector<Reflection::Field> Reflection::GetFields() const
 
 inline bool Reflection::CanAddFields() const
 {
-    return sew->CanAdd(object, vw);
+    return sw->CanAdd(object, vw);
 }
 
 inline bool Reflection::CanInsertFields() const
 {
-    return sew->CanInsert(object, vw);
+    return sw->CanInsert(object, vw);
 }
 
 inline bool Reflection::CanRemoveFields() const
 {
-    return sew->CanRemove(object, vw);
+    return sw->CanRemove(object, vw);
 }
 
 inline bool Reflection::CanCreateFieldValue() const
 {
-    return sew->CanCreateValue(object, vw);
+    return sw->CanCreateValue(object, vw);
 }
 
 inline Any Reflection::CreateFieldValue() const
 {
-    return sew->CreateValue(object, vw);
+    return sw->CreateValue(object, vw);
 }
 
 inline bool Reflection::AddField(const Any& key, const Any& value) const
 {
-    return sew->AddField(object, vw, key, value);
+    return sw->AddField(object, vw, key, value);
 }
 
 inline bool Reflection::InsertField(const Any& beforeKey, const Any& key, const Any& value) const
 {
-    return sew->InsertField(object, vw, beforeKey, key, value);
+    return sw->InsertField(object, vw, beforeKey, key, value);
 }
 
 inline bool Reflection::RemoveField(const Any& key) const
 {
-    return sew->RemoveField(object, vw, key);
+    return sw->RemoveField(object, vw, key);
 }
 
 inline bool Reflection::HasMethods() const

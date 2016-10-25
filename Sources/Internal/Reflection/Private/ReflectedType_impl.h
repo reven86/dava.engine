@@ -105,7 +105,6 @@ ReflectedType* ReflectedType::Edit()
     if (nullptr == ret->type)
     {
         ret->type = Type::Instance<DecayT>();
-        ret->rttiName = typeid(DecayT).name();
         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
 

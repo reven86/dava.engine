@@ -14,7 +14,6 @@ namespace DAVA
 {
 class ValueWrapper;
 class StructureWrapper;
-class StructureEditorWrapper;
 
 /// \brief  Reflection allows to inspect and modify objects at runtime. It is some kind of runtime object reflection
 ///         with predefined methods, that are giving generic access to the real runtime object value or his fields.
@@ -166,7 +165,6 @@ public:
 private:
     const ValueWrapper* vw = nullptr;
     const StructureWrapper* sw = nullptr;
-    const StructureEditorWrapper* sew = nullptr;
     const ReflectedMeta* meta = nullptr;
     const ReflectedType* objectType = nullptr;
 

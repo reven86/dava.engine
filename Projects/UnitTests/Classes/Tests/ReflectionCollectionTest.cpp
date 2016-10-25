@@ -1,11 +1,12 @@
 #include "Base/Platform.h"
-
 #include "Base/Result.h"
 #include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
 
 #include <functional>
+
+#ifndef __REFLECTION_FEATURE__
 
 struct RelfCollectionsHolder
 {
@@ -268,3 +269,5 @@ DAVA_TESTCLASS (ReflectionCollectionTest)
         CollectionSetTestHelper<int>(setField.ref, holder.intUnorderSet.begin(), holder.intUnorderSet.end());
     }
 };
+
+#endif

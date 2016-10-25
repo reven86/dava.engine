@@ -3,78 +3,50 @@
 #include <memory>
 #include "Base/Type.h"
 #include "Base/AnyFn.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {
-class CtorWrapper;
-class DtorWrapper;
-class StructureWrapper;
-class StructureEditorWrapper;
+class ReflectedMeta;
 class ReflectedObject;
+
+struct ReflectedPropertie
+{
+    const ValueWrapper* valueWrapper;
+    const ReflectedMeta* meta;
+    const ReflectedType* rtype;
+};
+
+class ReflectedEnum final
+{
+public:
+    std::unique_ptr<EnumWrapper> enumWrapper;
+};
+
+class ReflectedMethod final
+{
+public:
+    std::unique_ptr<MethodWrapper> methodWrapper;
+    std::unique_ptr<ReflectedMeta> meta;
+};
+
+class ReflectedStructure final
+{
+public:
+    Vector<std::unique_ptr<CtorWrapper>> ctors;
+    Vector<std::unique_ptr<DtorWrapper>> dtors;
+    Vector<std::unique_ptr<Field>> fields;
+    Vector<std::unique_ptr<Method>> methods;
+    Vector<std::unique_ptr<Enum>> enums;
+};
 
 class ReflectedType final
 {
-    template <typename T>
-    friend class ReflectionRegistrator;
-
 public:
-    const Type* GetType() const;
-
-    const String& GetRttiName() const;
-    const String& GetPermanentName() const;
-    void SetPermanentName(const String&) const;
-
-    const CtorWrapper* GetCtor(const AnyFn::Params& params = AnyFn::Params()) const;
-    Vector<const CtorWrapper*> GetCtors() const;
-
-    const DtorWrapper* GetDtor() const;
-
-    // TODO:
-    // move into private section
-    // and add appropriate access methods
-    //
-    // -->
-    //
-    Set<std::unique_ptr<CtorWrapper>> ctorWrappers;
-    std::unique_ptr<DtorWrapper> dtorWrapper;
+    String name;
+    std::unique_ptr<ReflectedStructure> structure;
     std::unique_ptr<StructureWrapper> structureWrapper;
-    std::unique_ptr<StructureEditorWrapper> structureEditorWrapper;
-    //
-    // <--
-
-    template <typename T>
-    static const ReflectedType* Get();
-
-    template <typename T>
-    static const ReflectedType* GetByPointer(const T* ptr);
-
-    static const ReflectedType* GetByType(const Type* type);
-    static const ReflectedType* GetByRttiName(const String& name);
-    static const ReflectedType* GetByPermanentName(const String& name);
-
-    template <typename T, typename... Bases>
-    static void RegisterBases();
-
-protected:
-    const Type* type = nullptr;
-
-    String rttiName;
-    String permanentName;
-
-    ReflectedType() = default;
-
-    template <typename T>
-    static ReflectedType* Edit();
-
-    template <typename T>
-    static ReflectedType* Create();
-
-    static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> rttiNameToReflectedTypeMap;
+    std::unique_ptr<ReflectedMeta> meta;
 };
 
 } // namespace DAVA
-
-#define __DAVA_ReflectedType__
-#include "Reflection/Private/ReflectedType_impl.h"

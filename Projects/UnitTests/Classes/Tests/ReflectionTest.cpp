@@ -1,12 +1,12 @@
-#include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
-
 #include <iostream>
 
+#include "Base/Platform.h"
 #include "Base/Result.h"
 #include "Reflection/Registrator.h"
 #include "UnitTests/UnitTests.h"
 #include "Logger/Logger.h"
+
+#ifndef __REFLECTION_FEATURE__
 
 class StructPtr
 {
