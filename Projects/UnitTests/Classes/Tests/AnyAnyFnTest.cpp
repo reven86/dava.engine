@@ -76,21 +76,25 @@ DAVA_TESTCLASS (AnyAnyFnTest)
 
     class A1
     {
+    public:
         int a1;
     };
 
     class B : public A
     {
+    public:
         int b;
     };
 
     class D : public A, public A1
     {
+    public:
         int d;
     };
 
     class E : public D
     {
+    public:
         int e;
     };
 

@@ -1,7 +1,12 @@
 #pragma once
 
+#include "Base/Singleton.h"
+#include "FileSystem/FilePath.h"
+
 #include <QObject>
 #include <QVector>
+
+#include <memory>
 
 class SpritesPackerModule;
 class ProjectStructure;
