@@ -40,27 +40,11 @@ int BaseApplication::RunImpl()
     {
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
 
-        TestCore testCore(e);
-
-        class ErrorOutput : public DAVA::LoggerOutput
-        {
-        public:
-            void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override
-            {
-                if (ll >= DAVA::Logger::LEVEL_ERROR)
-                {
-                    int a = 0;
-                    a++;
-                }
-            }
-        };
-
-        DAVA::Logger::AddCustomOutput(new ErrorOutput());
-
         EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
         Init(*engineContext);
 
+        TestCore testCore(e);
         return e.Run();
     }
     else
