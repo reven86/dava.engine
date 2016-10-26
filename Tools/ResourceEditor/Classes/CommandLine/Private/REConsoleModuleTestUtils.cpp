@@ -18,6 +18,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
@@ -211,12 +212,47 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     Entity* entity = new Entity();
     entity->SetName(FastName("box"));
 
+    auto setupMaterial = [&](NMaterial* material, const String& fileName, const FastName& slotName)
+    {
+        FilePath textuePathname = scenePathname;
+        textuePathname.ReplaceFilename(fileName);
+        CreateTextureFiles(textuePathname, 32u, 32u, PixelFormat::FORMAT_RGBA8888);
+
+        ScopedPtr<Texture> texture(Texture::CreateFromFile(textuePathname));
+        material->AddTexture(slotName, texture);
+
+        material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, true);
+    };
+
     ScopedPtr<NMaterial> material(CreateMaterial(FastName("box"), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
+    setupMaterial(material, "box.tex", NMaterialTextureName::TEXTURE_ALBEDO);
     ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
     ScopedPtr<Mesh> ro(new Mesh());
     ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
+
+    auto addGeometry = [&](int lod, int sw)
+    {
+        String name = Format("box_%d_%d", lod, sw);
+        ScopedPtr<NMaterial> m(CreateMaterial(FastName(name), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
+        setupMaterial(m, name + ".tex", NMaterialTextureName::TEXTURE_ALBEDO);
+
+        ScopedPtr<PolygonGroup> g(CreatePolygonGroup());
+        ScopedPtr<RenderBatch> batch(new RenderBatch());
+        batch->SetMaterial(m);
+        batch->SetPolygonGroup(g);
+        ro->AddRenderBatch(batch, lod, sw);
+    };
+
+    addGeometry(0, 0);
+    addGeometry(0, 1);
+    addGeometry(1, 0);
+    addGeometry(1, 1);
+
+    entity->AddComponent(new LodComponent());
+    entity->AddComponent(new SwitchComponent());
+
 
     CreateR2OCustomProperty(entity, scenePathname);
     return entity;
