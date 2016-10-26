@@ -72,7 +72,7 @@ void RenderWidget::OnSceneGraphInvalidated()
     }
 }
 
-void RenderWidget : OnWindowVisibilityChanged(QWindow::Visibility visibility)
+void RenderWidget::OnWindowVisibilityChanged(QWindow::Visibility visibility)
 {
     bool isFullscreen;
 
