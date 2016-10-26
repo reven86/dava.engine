@@ -20,7 +20,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , mainDispatcher(engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
-    , windowingMode(windowBackend->GetInitialWindowingMode())
+    , Mode(windowBackend->GetInitialMode())
 {
 }
 
@@ -31,7 +31,7 @@ void Window::Resize(float32 w, float32 h)
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
     // Also window can be resized only in windowed mode
-    if (!engineBackend->IsEmbeddedGUIMode() && windowingMode == eWindowingMode::WINDOWED)
+    if (!engineBackend->IsEmbeddedGUIMode() && Mode == eMode::WINDOWED)
     {
         windowBackend->Resize(w, h);
     }
@@ -56,12 +56,12 @@ void Window::SetTitle(const String& title)
     }
 }
 
-void Window::SetWindowingMode(eWindowingMode newMode)
+void Window::SetMode(eMode newMode)
 {
-    // Window's windowing mode cannot be changed in embedded mode
-    if (!engineBackend->IsEmbeddedGUIMode() && newMode != windowingMode)
+    // Window's mode cannot be changed in embedded mode
+    if (!engineBackend->IsEmbeddedGUIMode() && newMode != Mode)
     {
-        windowBackend->SetWindowingMode(newMode);
+        windowBackend->SetMode(newMode);
     }
 }
 
@@ -148,8 +148,8 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
-    case MainDispatcherEvent::WINDOW_WINDOWING_MODE_CHANGED:
-        HandleWindowingModeChanged(e);
+    case MainDispatcherEvent::WINDOW_MODE_CHANGED:
+        HandleModeChanged(e);
         break;
     default:
         break;
@@ -271,9 +271,9 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
     visibilityChanged.Emit(this, isVisible);
 }
 
-void Window::HandleWindowingModeChanged(const Private::MainDispatcherEvent& e)
+void Window::HandleModeChanged(const Private::MainDispatcherEvent& e)
 {
-    windowingMode = static_cast<eWindowingMode>(e.windowingEvent.mode);
+    Mode = static_cast<eMode>(e.windowModeEvent.mode);
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)

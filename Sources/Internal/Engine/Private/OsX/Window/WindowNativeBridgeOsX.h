@@ -39,7 +39,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
-    void SetWindowingMode(Window::eWindowingMode newMode);
+    void SetMode(Window::eMode newMode);
 
     void TriggerPlatformEvents();
 

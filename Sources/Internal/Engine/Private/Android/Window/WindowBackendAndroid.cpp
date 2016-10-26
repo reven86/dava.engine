@@ -90,15 +90,15 @@ void WindowBackend::Resize(float32 /*width*/, float32 /*height*/)
     // Android windows are always stretched to display size
 }
 
-void WindowBackend::SetWindowingMode(Window::eWindowingMode /*newMode*/)
+void WindowBackend::SetMode(Window::eMode /*newMode*/)
 {
-    // Windowing mode cannot be changed on Android
+    // Window mode cannot be changed on Android
 }
 
-Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
+Window::eMode WindowBackend::GetInitialMode() const
 {
     // Android windows are always fullscreen windows
-    return Window::eWindowingMode::FULLSCREEN;
+    return Window::eMode::FULLSCREEN;
 }
 
 void WindowBackend::Close(bool appIsTerminating)

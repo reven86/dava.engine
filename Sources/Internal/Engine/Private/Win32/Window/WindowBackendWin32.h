@@ -38,8 +38,8 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
-    void SetWindowingMode(Window::eWindowingMode newMode);
-    Window::eWindowingMode GetInitialWindowingMode() const;
+    void SetMode(Window::eMode newMode);
+    Window::eMode GetInitialMode() const;
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -57,7 +57,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
-    void DoSetWindowingMode(Window::eWindowingMode newMode);
+    void DoSetMode(Window::eMode newMode);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);

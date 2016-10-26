@@ -26,7 +26,7 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
-    , isFullscreen(windowBackend->GetInitialWindowingMode() == Window::eWindowingMode::FULLSCREEN)
+    , isFullscreen(windowBackend->GetInitialMode() == Window::eMode::FULLSCREEN)
 {
 }
 
@@ -81,7 +81,7 @@ void WindowNativeBridge::SetTitle(const char8* title)
     [nsTitle release];
 }
 
-void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
+void WindowNativeBridge::SetMode(Window::eMode newMode)
 {
     // fullscreen for new 10.7+ MacOS
     if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_7)
@@ -90,7 +90,7 @@ void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
         return;
     }
 
-    bool isFullscreenRequested = newMode == Window::eWindowingMode::FULLSCREEN;
+    bool isFullscreenRequested = newMode == Window::eMode::FULLSCREEN;
 
     if (isFullscreen != isFullscreenRequested)
     {
@@ -175,15 +175,15 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
-    int32 mode = static_cast<int32>(Window::eWindowingMode::FULLSCREEN);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
+    int32 mode = static_cast<int32>(Window::eMode::FULLSCREEN);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
-    int32 mode = static_cast<int32>(Window::eWindowingMode::WINDOWED);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
+    int32 mode = static_cast<int32>(Window::eMode::WINDOWED);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)

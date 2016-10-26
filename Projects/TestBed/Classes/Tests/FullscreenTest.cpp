@@ -45,21 +45,13 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(10, 85, 300, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Windowed fullscreen (borderless)");
-    btn->SetDebugDraw(true);
-    btn->SetTag(2);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
-    AddControl(btn);
-
     currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
     currentModeText->SetFont(font);
     currentModeText->SetTextColor(Color::White);
     AddControl(currentModeText);
 
     // pinning mode
-    btn.reset(new UIButton(Rect(10, 110, 300, 20)));
+    btn.reset(new UIButton(Rect(10, 85, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mouse Capute: Frame");
     btn->SetDebugDraw(true);
@@ -67,7 +59,7 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(10, 135, 300, 20)));
+    btn.reset(new UIButton(Rect(10, 110, 300, 20)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mouse Capute: Pining");
     btn->SetDebugDraw(true);
@@ -89,14 +81,14 @@ void FullscreenTest::LoadResources()
 
     // Scale factor test
 
-    btn.reset(new UIButton(Rect(10, 160, 145, 30)));
+    btn.reset(new UIButton(Rect(10, 135, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul +0.1");
     btn->SetDebugDraw(true);
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnMulUp));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(155, 160, 145, 30)));
+    btn.reset(new UIButton(Rect(155, 135, 145, 30)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Mul -0.1");
     btn->SetDebugDraw(true);
@@ -111,7 +103,7 @@ void FullscreenTest::LoadResources()
 
     // UI3DView test
 
-    ui3dview = new UI3DView(Rect(10, 200, 320, 240));
+    ui3dview = new UI3DView(Rect(10, 180, 320, 240));
     ui3dview->SetDebugDraw(true);
 
     ScopedPtr<Scene> scene(new Scene());
@@ -210,10 +202,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        primaryWindow->SetWindowingMode(Window::eWindowingMode::WINDOWED);
+        primaryWindow->SetMode(Window::eMode::WINDOWED);
         break;
     case 1:
-        primaryWindow->SetWindowingMode(Window::eWindowingMode::FULLSCREEN);
+        primaryWindow->SetMode(Window::eMode::FULLSCREEN);
         break;
     case 99:
         UpdateMode();
@@ -309,12 +301,12 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 
 void FullscreenTest::UpdateMode()
 {
-    switch (primaryWindow->GetWindowingMode())
+    switch (primaryWindow->GetMode())
     {
-    case Window::eWindowingMode::WINDOWED:
+    case Window::eMode::WINDOWED:
         currentModeText->SetText(L"Windowed");
         break;
-    case Window::eWindowingMode::FULLSCREEN:
+    case Window::eMode::FULLSCREEN:
         currentModeText->SetText(L"Fullscreen");
         break;
     default:

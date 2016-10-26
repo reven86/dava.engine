@@ -31,10 +31,10 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetTitleEvent(const String& title)
     return e;
 }
 
-UIDispatcherEvent UIDispatcherEvent::CreateSetWindowingModeEvent(int32 mode)
+UIDispatcherEvent UIDispatcherEvent::CreateSetModeEvent(int32 mode)
 {
-    UIDispatcherEvent e(SET_WINDOWING_MODE);
-    e.setWindowingModeEvent.mode = mode;
+    UIDispatcherEvent e(SET_MODE);
+    e.setModeEvent.mode = mode;
     return e;
 }
 

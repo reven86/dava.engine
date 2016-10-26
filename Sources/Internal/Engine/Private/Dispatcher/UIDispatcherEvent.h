@@ -18,7 +18,7 @@ struct UIDispatcherEvent final
         CREATE_WINDOW,
         CLOSE_WINDOW,
         SET_TITLE,
-        SET_WINDOWING_MODE,
+        SET_MODE,
         FUNCTOR,
     };
 
@@ -33,7 +33,7 @@ struct UIDispatcherEvent final
         const char8* title;
     };
 
-    struct SetWindowingModeEvent
+    struct SetModeEvent
     {
         int32 mode;
     };
@@ -50,13 +50,13 @@ struct UIDispatcherEvent final
     {
         ResizeEvent resizeEvent;
         SetTitleEvent setTitleEvent;
-        SetWindowingModeEvent setWindowingModeEvent;
+        SetModeEvent setModeEvent;
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
-    static UIDispatcherEvent CreateSetWindowingModeEvent(int32 mode);
+    static UIDispatcherEvent CreateSetModeEvent(int32 mode);
     static UIDispatcherEvent CreateFunctorEvent(const Function<void()>& functor);
 };
 
