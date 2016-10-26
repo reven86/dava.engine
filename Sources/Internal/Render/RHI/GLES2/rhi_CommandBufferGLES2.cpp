@@ -1875,7 +1875,7 @@ void CommandBufferGLES2_t::Execute()
 //------------------------------------------------------------------------------
 
 static void
-_RejectAllFrames()
+_RejectAllFramesGLES2()
 {
     _GLES2_FrameSync.Lock();
     for (std::vector<FrameGLES2>::iterator f = _GLES2_Frame.begin(); f != _GLES2_Frame.end();)
@@ -2043,7 +2043,7 @@ _GLES2_ExecuteQueuedCommands()
         bool success = android_gl_end_frame();
         if (!success) //'false' mean lost context, need restore resources
         {
-            _RejectAllFrames();
+            _RejectAllFramesGLES2();
 
             TextureGLES2::ReCreateAll();
             VertexBufferGLES2::ReCreateAll();
@@ -2192,10 +2192,10 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
         {
 #if defined __DAVAENGINE_ANDROID__
             if (android_gl_checkSurface())
-                _RejectAllFrames();
+                _RejectAllFramesGLES2();
 #elif defined __DAVAENGINE_IPHONE__
             if (ios_gl_check_layer())
-                _RejectAllFrames();
+                _RejectAllFramesGLES2();
 #endif
 
             _GLES2_ExecuteQueuedCommands();
