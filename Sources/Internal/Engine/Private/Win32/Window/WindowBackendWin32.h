@@ -100,6 +100,8 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
+    bool isFocused = false;
+
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
