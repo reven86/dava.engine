@@ -890,12 +890,14 @@ public:
     TreeDump();
     virtual void VisitDeclaration(HLSLDeclaration* node);
     virtual void VisitStruct(HLSLStruct* node);
+    virtual void VisitStructField(HLSLStructField* node);
     virtual void VisitFunction(HLSLFunction* func);
 
 private:
     static const char* _IndentString(int indent);
     static void _DumpStatement(HLSLStatement* s, int indent);
     static void _DumpExpression(HLSLExpression* expr, int indent, bool dump_subexpr = true);
+    static const char* _TypeName(const HLSLType& type);
     int indent;
 };
 

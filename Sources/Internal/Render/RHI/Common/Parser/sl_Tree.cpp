@@ -1323,8 +1323,16 @@ TreeDump::TreeDump()
 void TreeDump::VisitDeclaration(HLSLDeclaration* node)
 {
     HLSLDeclaration* decl = (HLSLDeclaration*)node;
+    const char* dtype = "uniform";
 
-    Logger::Info("%s[declaration]  \"%s\"\n", _IndentString(indent), node->name);
+    if (decl->type.baseType == HLSLBaseType_Sampler || decl->type.baseType == HLSLBaseType_Sampler2D || decl->type.baseType == HLSLBaseType_SamplerCube)
+        dtype = "sampler";
+
+    if (decl->type.flags & HLSLTypeFlag_Property)
+        dtype = "property";
+
+    Logger::Info("%s[decl.%s]  \"%s\"  : %s", _IndentString(indent), dtype, node->name, _TypeName(decl->type));
+
     if (decl->assignment)
     {
         if (decl->assignment->nodeType == HLSLNodeType_ArrayAccess)
@@ -1335,7 +1343,7 @@ void TreeDump::VisitDeclaration(HLSLDeclaration* node)
             {
                 HLSLIdentifierExpression* ie = (HLSLIdentifierExpression*)(aa->array);
 
-                Logger::Info("    [array-access]  \"%s\"\n", ie->name);
+                Logger::Info("    [array-access]  \"%s\"", ie->name);
             }
 
             //-            M4::Log_Error("    aa  \"%s\"\n", aa->fileName);
@@ -1344,14 +1352,14 @@ void TreeDump::VisitDeclaration(HLSLDeclaration* node)
         {
             HLSLMemberAccess* ma = (HLSLMemberAccess*)(decl->assignment);
 
-            Logger::Info("    [member-access]  \"%s\"\n", ma->field);
+            Logger::Info("    [member-access]  \"%s\"", ma->field);
         }
         else if (decl->assignment->nodeType == HLSLNodeType_ConstructorExpression)
         {
             HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)(decl->assignment);
             const char* tname = "";
 
-            Logger::Info("    [ctor]  \"%s\"\n", tname);
+            Logger::Info("    [ctor]  \"%s\"", tname);
         }
     }
     HLSLTreeVisitor::VisitDeclaration(node);
@@ -1359,13 +1367,24 @@ void TreeDump::VisitDeclaration(HLSLDeclaration* node)
 
 void TreeDump::VisitStruct(HLSLStruct* node)
 {
-    Logger::Info("%s[struct]  \"%s\"\n", _IndentString(indent), node->name);
+    Logger::Info("%s[struct]  \"%s\"", _IndentString(indent), node->name);
+    ++indent;
     HLSLTreeVisitor::VisitStruct(node);
+    --indent;
+}
+
+void TreeDump::VisitStructField(HLSLStructField* node)
+{
+    HLSLStructField* field = (HLSLStructField*)node;
+
+    Logger::Info("%s[field]  \"%s\" : %s  (%s)", _IndentString(indent), field->name, _TypeName(field->type), (field->semantic) ? field->semantic : "<no-semantics>");
+
+    HLSLTreeVisitor::VisitStructField(node);
 }
 
 void TreeDump::VisitFunction(HLSLFunction* func)
 {
-    Logger::Info("%s[function]  \"%s\"\n", _IndentString(indent), func->name);
+    Logger::Info("%s[function]  \"%s\"", _IndentString(indent), func->name);
 
     for (HLSLStatement* s = func->statement; s; s = s->nextStatement)
     {
@@ -1389,8 +1408,16 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
     case HLSLNodeType_Declaration:
     {
         HLSLDeclaration* decl = (HLSLDeclaration*)s;
+        const char* dtype = "uniform";
 
-        Logger::Info("%s[decl]  \"%s\"\n", _IndentString(indent), decl->name);
+        if (decl->type.baseType == HLSLBaseType_Sampler || decl->type.baseType == HLSLBaseType_Sampler2D || decl->type.baseType == HLSLBaseType_SamplerCube)
+            dtype = "sampler";
+
+        if (decl->type.flags & HLSLTypeFlag_Property)
+            dtype = "property";
+
+        Logger::Info("%s[decl.%s]  \"%s\"  : %s", _IndentString(indent), dtype, decl->name, _TypeName(decl->type));
+
         for (HLSLExpression* e = decl->assignment; e; e = e->nextExpression)
         {
             _DumpExpression(e, indent + 1);
@@ -1400,7 +1427,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
 
     case HLSLNodeType_Expression:
     {
-        Logger::Info("  expr\n");
+        Logger::Info("  expr");
     }
     break;
 
@@ -1408,7 +1435,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
     {
         HLSLExpressionStatement* st = (HLSLExpressionStatement*)s;
 
-        Logger::Info("%s[expr.statement]\n", _IndentString(indent));
+        Logger::Info("%s[expr.statement]", _IndentString(indent));
         _DumpExpression(st->expression, indent + 1);
     }
     break;
@@ -1417,7 +1444,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
     {
         HLSLReturnStatement* ret = (HLSLReturnStatement*)s;
 
-        Logger::Info("%s[return]\n", _IndentString(indent));
+        Logger::Info("%s[return]", _IndentString(indent));
 
         for (HLSLExpression* e = ret->expression; e; e = e->nextExpression)
         {
@@ -1430,7 +1457,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
     {
         HLSLBlockStatement* block = (HLSLBlockStatement*)s;
 
-        Logger::Info("%s[block]\n", _IndentString(indent));
+        Logger::Info("%s[block]", _IndentString(indent));
         for (HLSLStatement* b = block->statement; b; b = b->nextStatement)
         {
             _DumpStatement(b, indent + 1);
@@ -1459,8 +1486,28 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
     {
         HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)expr;
 
-        Logger::Info("%s[ctor]\n", _IndentString(indent));
+        Logger::Info("%s[ctor]", _IndentString(indent));
         _DumpExpression(ctor->argument, indent + 1);
+    }
+    break;
+
+    case HLSLNodeType_LiteralExpression:
+    {
+        HLSLLiteralExpression* li = (HLSLLiteralExpression*)expr;
+
+        switch (li->type)
+        {
+        case HLSLBaseType_Float:
+        case HLSLBaseType_Half:
+            Logger::Info("%s[literal] %f", _IndentString(indent), li->fValue);
+            break;
+        case HLSLBaseType_Int:
+            Logger::Info("%s[literal] %i", _IndentString(indent), li->iValue);
+            break;
+        case HLSLBaseType_Uint:
+            Logger::Info("%s[literal] %u", _IndentString(indent), unsigned(li->iValue));
+            break;
+        }
     }
     break;
 
@@ -1533,9 +1580,11 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
             break;
         }
 
-        Logger::Info("%s[bin.expr] %s\n", _IndentString(indent), op);
-        _DumpExpression(bin->expression1, indent + 1);
-        _DumpExpression(bin->expression2, indent + 1);
+        Logger::Info("%s[bin.expr] %s", _IndentString(indent), op);
+        Logger::Info("%sarg1", _IndentString(indent + 1));
+        _DumpExpression(bin->expression1, indent + 2);
+        Logger::Info("%sarg2", _IndentString(indent + 1));
+        _DumpExpression(bin->expression2, indent + 2);
     }
     break;
 
@@ -1543,7 +1592,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
     {
         HLSLIdentifierExpression* var = (HLSLIdentifierExpression*)(expr);
 
-        Logger::Info("%s[identifier] \"%s\"\n", _IndentString(indent), var->name);
+        Logger::Info("%s[identifier] \"%s\"", _IndentString(indent), var->name);
     }
     break;
 
@@ -1551,7 +1600,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
     {
         HLSLMemberAccess* member = (HLSLMemberAccess*)(expr);
 
-        Logger::Info("%s[member.access] \"%s\"\n", _IndentString(indent), member->field);
+        Logger::Info("%s[member.access] \"%s\"", _IndentString(indent), member->field);
         _DumpExpression(member->object, indent + 1, false);
     }
     break;
@@ -1560,11 +1609,11 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
     {
         HLSLFunctionCall* call = (HLSLFunctionCall*)(expr);
 
-        Logger::Info("%s[call] \"%s\"\n", _IndentString(indent), call->function->name);
+        Logger::Info("%s[call] \"%s\"", _IndentString(indent), call->function->name);
         int a = 0;
         for (HLSLExpression *e = call->argument; e; e = e->nextExpression, ++a)
         {
-            Logger::Info("%sarg%i\n", _IndentString(indent + 1), a);
+            Logger::Info("%sarg%i", _IndentString(indent + 1), 1 + a);
             _DumpExpression(e, indent + 2, false);
         }
     }
@@ -1578,6 +1627,71 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
             _DumpExpression(e, indent + 1);
         }
     }
+}
+
+const char*
+TreeDump::_TypeName(const HLSLType& type)
+{
+    switch (type.baseType)
+    {
+    case HLSLBaseType_Void:
+        return "void";
+    case HLSLBaseType_Float:
+        return "float";
+    case HLSLBaseType_Float2:
+        return "float2";
+    case HLSLBaseType_Float3:
+        return "float3";
+    case HLSLBaseType_Float4:
+        return "float4";
+    case HLSLBaseType_Float3x3:
+        return "float3x3";
+    case HLSLBaseType_Float4x4:
+        return "float4x4";
+    case HLSLBaseType_Half:
+        return "half";
+    case HLSLBaseType_Half2:
+        return "half2";
+    case HLSLBaseType_Half3:
+        return "half3";
+    case HLSLBaseType_Half4:
+        return "half4";
+    case HLSLBaseType_Half3x3:
+        return "half3x3";
+    case HLSLBaseType_Half4x4:
+        return "half4x4";
+    case HLSLBaseType_Bool:
+        return "bool";
+    case HLSLBaseType_Int:
+        return "int";
+    case HLSLBaseType_Int2:
+        return "int2";
+    case HLSLBaseType_Int3:
+        return "int3";
+    case HLSLBaseType_Int4:
+        return "int4";
+    case HLSLBaseType_Uint:
+        return "uint";
+    case HLSLBaseType_Uint2:
+        return "uint2";
+    case HLSLBaseType_Uint3:
+        return "uint3";
+    case HLSLBaseType_Uint4:
+        return "uint4";
+    case HLSLBaseType_Texture:
+        return "texture";
+    case HLSLBaseType_Sampler:
+        return "sampler";
+    case HLSLBaseType_Sampler2D:
+        return "sampler2D";
+    case HLSLBaseType_Sampler3D:
+        return "sampler3D";
+    case HLSLBaseType_SamplerCube:
+        return "samplerCUBE";
+    case HLSLBaseType_UserDefined:
+        return type.typeName;
+    }
+    return "?";
 }
 
 } // namespace sl
