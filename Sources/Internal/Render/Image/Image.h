@@ -42,6 +42,20 @@ struct ImageInfo
     uint32 faceCount = 0;
 };
 
+namespace ImageUtils
+{
+/**
+return size of image with given `width`, `height`, `format`
+*/
+uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format);
+
+/**
+returns length in bytes of image line.
+pitch size consists of space used by line pixels plus possible additional space used for memory alignment for compressed formats
+*/
+uint32 GetPitchInBytes(uint32 width, PixelFormat format);
+}
+
 class Image : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)
@@ -52,9 +66,22 @@ protected:
 public:
     Image();
 
+    /**
+    creates new image with given `width`, `height`, `format`
+    image data is not initialized
+    */
     static Image* Create(uint32 width, uint32 height, PixelFormat format);
+
+    /**
+    creates new image with given `width`, `height`, `format`
+    image data is initialized with given `data`
+    */
     static Image* CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8* data);
-    static uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format);
+
+    /**
+    creates new image by cloning current image
+    */
+    Image* Clone() const;
 
     static Image* CreatePinkPlaceholder(bool checkers = true);
     void MakePink(bool checkers = true);

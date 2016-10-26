@@ -1,23 +1,29 @@
 #include "Base/Platform.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
+#include "Concurrency/LockGuard.h"
 
 #ifdef __DAVAENGINE_ANDROID__
-
-#include "android_gl.h"
-#include "_gl.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES/gl.h>
 #include <android/native_window.h>
 
+#include "android_gl.h"
+#include "_gl.h"
+
 static EGLDisplay _display = EGL_NO_DISPLAY;
 static EGLSurface _surface = EGL_NO_SURFACE;
 static EGLContext _context = EGL_NO_CONTEXT;
 static EGLint _format = 0;
 static EGLConfig _config = 0;
+
 static ANativeWindow* _nativeWindow = nullptr;
+static GLint backingWidth = 0;
+static GLint backingHeight = 0;
+static bool needRecreateSurface = false;
+static DAVA::Mutex surfaceMutex;
 
 PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
@@ -34,8 +40,6 @@ PFNGLENDQUERYEXTPROC glEndQuery = nullptr;
 PFNGLQUERYCOUNTEREXTPROC glQueryCounter = nullptr;
 PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuiv = nullptr;
 PFNGLGETQUERYOBJECTUI64VEXTPROC glGetQueryObjectui64v = nullptr;
-
-static bool needRecreateSurface = false;
 
 static const EGLint contextAttribs[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -104,6 +108,9 @@ void android_gl_init(void* _window)
 
     eglGetConfigAttrib(_display, _config, EGL_NATIVE_VISUAL_ID, &_format);
 
+    backingWidth = _GLES2_DefaultFrameBuffer_Width;
+    backingHeight = _GLES2_DefaultFrameBuffer_Height;
+
     ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
     _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
@@ -113,39 +120,45 @@ void android_gl_init(void* _window)
     eglMakeCurrent(_display, _surface, _surface, _context);
 }
 
-void android_gl_reset(void* _window)
+void android_gl_reset(void* _window, GLint width, GLint height)
 {
-    _nativeWindow = static_cast<ANativeWindow*>(_window);
+    DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
 
-    if (nullptr != _nativeWindow)
+    _nativeWindow = static_cast<ANativeWindow*>(_window);
+    if (nullptr != _nativeWindow || backingWidth != width || backingHeight != height)
     {
-        ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
         needRecreateSurface = true;
-    }
-    else
-    {
-        needRecreateSurface = false;
+        backingWidth = width;
+        backingHeight = height;
     }
 }
 
-void android_gl_checkSurface()
+bool android_gl_checkSurface()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
+
     if (needRecreateSurface)
     {
-#if defined(__DAVAENGINE_COREV2__)
         // Why this should work I do not fully understand, but this solution works
         // For more info see SDL sources: SDL2-2.0.4\src\core\android\SDL_android.c, Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed function
         // Also see http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
         eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-#endif
-
         eglDestroySurface(_display, _surface);
-        _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
+        _GLES2_DefaultFrameBuffer_Width = backingWidth;
+        _GLES2_DefaultFrameBuffer_Height = backingHeight;
+
+        ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
+
+        _surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
         eglMakeCurrent(_display, _surface, _surface, _context);
 
         needRecreateSurface = false;
+
+        return true;
     }
+
+    return false;
 }
 
 bool android_gl_end_frame()

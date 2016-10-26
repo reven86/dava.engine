@@ -11,8 +11,8 @@
 
 static GLuint colorRenderbuffer = -1;
 static GLuint depthRenderbuffer = -1;
-static int backingWidth = 0;
-static int backingHeight = 0;
+static GLint backingWidth = 0;
+static GLint backingHeight = 0;
 static bool resize_pending = true;
 static EAGLRenderingAPI renderingAPI = kEAGLRenderingAPIOpenGLES2;
 
@@ -21,7 +21,7 @@ static EAGLRenderingAPI renderingAPI = kEAGLRenderingAPIOpenGLES2;
 bool ios_gl_check_layer()
 {
     if (!resize_pending)
-        return YES;
+        return NO;
 
     // Allocate color buffer backing based on the current layer size
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
@@ -83,9 +83,9 @@ void ios_gl_begin_frame()
 {
 }
 
-void ios_gl_reset(void* nativeLayer)
+void ios_gl_reset(void* nativeLayer, GLint width, GLint height)
 {
-    resize_pending = (_GLES2_DefaultFrameBuffer_Width != backingWidth) || (_GLES2_DefaultFrameBuffer_Height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
+    resize_pending = (width != backingWidth) || (height != backingHeight) || (_GLES2_Native_Window != nativeLayer);
 
     _GLES2_Native_Window = nativeLayer;
 }

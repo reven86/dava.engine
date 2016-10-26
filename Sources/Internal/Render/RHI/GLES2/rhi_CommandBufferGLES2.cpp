@@ -377,6 +377,7 @@ FrameGLES2
     Handle perfQuery1;
     std::vector<Handle> pass;
     uint32 readyToExecute : 1;
+    uint32 needReject : 1;
 };
 
 static std::vector<FrameGLES2> _GLES2_Frame;
@@ -435,6 +436,7 @@ gles2_RenderPass_Begin(Handle pass)
         _GLES2_Frame.back().number = _GLES2_FrameNumber;
         _GLES2_Frame.back().sync = rhi::InvalidHandle;
         _GLES2_Frame.back().readyToExecute = false;
+        _GLES2_Frame.back().needReject = false;
 
         Trace("\n\n-------------------------------\nframe %u started\n", _GLES2_FrameNumber);
         _GLES2_FrameStarted = true;
@@ -1916,9 +1918,8 @@ void CommandBufferGLES2_t::Execute()
 
 //------------------------------------------------------------------------------
 
-#ifdef __DAVAENGINE_ANDROID__
 static void
-_RejectAllFrames()
+_RejectAllFramesGLES2()
 {
     _GLES2_FrameSync.Lock();
     for (std::vector<FrameGLES2>::iterator f = _GLES2_Frame.begin(); f != _GLES2_Frame.end();)
@@ -1958,13 +1959,13 @@ _RejectAllFrames()
         }
         else
         {
+            f->needReject = true;
             ++f;
         }
     }
 
     _GLES2_FrameSync.Unlock();
 }
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -1980,9 +1981,11 @@ _GLES2_ExecuteQueuedCommands()
     std::vector<Handle> pass_h;
     Handle framePerfQuery0 = InvalidHandle;
     Handle framePerfQuery1 = InvalidHandle;
+    Handle sync_h = InvalidHandle;
     unsigned frame_n = 0;
     bool do_exit = false;
     bool skipFramePerfQueries = false;
+    bool do_execute = false;
 
     _GLES2_FrameSync.Lock();
     if (_GLES2_Frame.size() && _GLES2_Frame.begin()->readyToExecute)
@@ -2017,28 +2020,30 @@ _GLES2_ExecuteQueuedCommands()
             }
         }
 
+        do_execute = !_GLES2_Frame.begin()->needReject;
         pass_h = _GLES2_Frame.begin()->pass;
         frame_n = _GLES2_Frame.begin()->number;
         framePerfQuery0 = _GLES2_Frame.begin()->perfQuery0;
         framePerfQuery1 = _GLES2_Frame.begin()->perfQuery1;
+        sync_h = _GLES2_Frame.begin()->sync;
     }
     else
     {
         do_exit = true;
     }
-    if (_GLES2_Frame.size() && (_GLES2_Frame.begin()->sync != InvalidHandle))
+    _GLES2_FrameSync.Unlock();
+
+    if (sync_h != InvalidHandle)
     {
-        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(_GLES2_Frame.begin()->sync);
+        SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(sync_h);
 
         sync->frame = frame_n;
         sync->is_signaled = false;
         sync->is_used = true;
     }
-    _GLES2_FrameSync.Unlock();
 
     if (do_exit)
         return;
-
     if (skipFramePerfQueries)
     {
         if (framePerfQuery0 != InvalidHandle)
@@ -2057,45 +2062,49 @@ _GLES2_ExecuteQueuedCommands()
         PerfQueryGLES2::IssueQuery(framePerfQuery0);
     }
 
-    Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
-    for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
+    if (do_execute)
     {
-        RenderPassGLES2_t* pp = *p;
-
-        for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
+        Trace("\n\n-------------------------------\nexecuting frame %u\n", frame_n);
+        for (std::vector<RenderPassGLES2_t *>::iterator p = pass.begin(), p_end = pass.end(); p != p_end; ++p)
         {
-            Handle cb_h = pp->cmdBuf[b];
-            CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+            RenderPassGLES2_t* pp = *p;
 
-            if (pp->perfQuery0 != InvalidHandle)
+            for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
-                if (cb->skipPerfQueries)
-                    PerfQueryGLES2::SkipQuery(pp->perfQuery0);
-                else
-                    PerfQueryGLES2::IssueQuery(pp->perfQuery0);
+                Handle cb_h = pp->cmdBuf[b];
+                CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
+
+                if (pp->perfQuery0 != InvalidHandle)
+                {
+                    if (cb->skipPerfQueries)
+                        PerfQueryGLES2::SkipQuery(pp->perfQuery0);
+                    else
+                        PerfQueryGLES2::IssueQuery(pp->perfQuery0);
+                }
+
+                cb->Execute();
+
+                if (pp->perfQuery1 != InvalidHandle)
+                {
+                    if (cb->skipPerfQueries)
+                        PerfQueryGLES2::SkipQuery(pp->perfQuery1);
+                    else
+                        PerfQueryGLES2::IssueQuery(pp->perfQuery1);
+                }
+
+                if (cb->sync != InvalidHandle)
+                {
+                    SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
+
+                    sync->frame = frame_n;
+                    sync->is_signaled = false;
+                    sync->is_used = true;
+                }
+
+                CommandBufferPoolGLES2::Free(cb_h);
             }
-
-            cb->Execute();
-
-            if (pp->perfQuery1 != InvalidHandle)
-            {
-                if (cb->skipPerfQueries)
-                    PerfQueryGLES2::SkipQuery(pp->perfQuery1);
-                else
-                    PerfQueryGLES2::IssueQuery(pp->perfQuery1);
-            }
-
-            if (cb->sync != InvalidHandle)
-            {
-                SyncObjectGLES2_t* sync = SyncObjectPoolGLES2::Get(cb->sync);
-
-                sync->frame = frame_n;
-                sync->is_signaled = false;
-                sync->is_used = true;
-            }
-
-            CommandBufferPoolGLES2::Free(cb_h);
         }
+        Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
     }
 
     if (framePerfQuery1 != InvalidHandle)
@@ -2116,7 +2125,7 @@ _GLES2_ExecuteQueuedCommands()
     }
     _GLES2_FrameSync.Unlock();
 
-    if (_GLES2_Context)
+    if (_GLES2_Context && do_execute)
     {
         // do swap-buffers
 
@@ -2135,7 +2144,7 @@ _GLES2_ExecuteQueuedCommands()
         bool success = android_gl_end_frame();
         if (!success) //'false' mean lost context, need restore resources
         {
-            _RejectAllFrames();
+            _RejectAllFramesGLES2();
 
             TextureGLES2::ReCreateAll();
             VertexBufferGLES2::ReCreateAll();
@@ -2146,7 +2155,6 @@ _GLES2_ExecuteQueuedCommands()
     }
 
     // update sync-objects
-
     _GLES2_SyncObjectsSync.Lock();
     for (SyncObjectPoolGLES2::Iterator s = SyncObjectPoolGLES2::Begin(), s_end = SyncObjectPoolGLES2::End(); s != s_end; ++s)
     {
@@ -2242,14 +2250,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
             GL_CALL(glFinish());
             _GLES2_RenderThreadSuspendSyncReached = true;
             _GLES2_RenderThreadSuspendSync.Wait();
-        }
-            
 
 #if defined __DAVAENGINE_ANDROID__
-        android_gl_checkSurface();
+            android_gl_checkSurface();
 #elif defined __DAVAENGINE_IPHONE__
-        ios_gl_check_layer();
+            ios_gl_check_layer();
 #endif
+        }
+
         {
             DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_FRAME);
 
@@ -2286,6 +2294,14 @@ _RenderFunc(DAVA::BaseObject* obj, void*, void*)
 
         if (!do_exit)
         {
+#if defined __DAVAENGINE_ANDROID__
+            if (android_gl_checkSurface())
+                _RejectAllFramesGLES2();
+#elif defined __DAVAENGINE_IPHONE__
+            if (ios_gl_check_layer())
+                _RejectAllFramesGLES2();
+#endif
+
             _GLES2_ExecuteQueuedCommands();
         }
 
