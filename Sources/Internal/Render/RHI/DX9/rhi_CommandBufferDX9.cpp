@@ -181,7 +181,7 @@ struct CommandBufferDX9_t
     };
 
     std::vector<uint64> _cmd;
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
     uint32 isFirstInPass : 1;
@@ -1702,7 +1702,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREATE_RENDER_TARGET:
         {
             DX9_CALL(_D3D9_Device->CreateRenderTarget((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)(arg[5] != 0),
                                                       (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateRenderTarget");
         }
@@ -1711,7 +1711,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREARE_DEPTHSTENCIL_SURFACE:
         {
             DX9_CALL(_D3D9_Device->CreateDepthStencilSurface((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], BOOL(arg[5] != 0),
                                                              (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateDepthStencilSurface");
         }

@@ -307,7 +307,7 @@ public:
 
     static const uint64 EndCmd /* = 0xFFFFFFFF*/;
 
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
@@ -915,15 +915,14 @@ gles2_SyncObject_IsSignaled(Handle obj)
 CommandBufferGLES2_t::CommandBufferGLES2_t()
     : isFirstInPass(true)
     , isLastInPass(true)
+    , usingDefaultFrameBuffer(true)
     , text(nullptr)
-    ,
 #if RHI_GLES2__USE_CMDBUF_PACKING
-    cmdData(nullptr)
+    , cmdData(nullptr)
     , cmdDataSize(0)
     , curUsedSize(0)
-    ,
 #endif
-    sync(InvalidHandle)
+    , sync(InvalidHandle)
 {
 }
 
@@ -1797,17 +1796,17 @@ void CommandBufferGLES2_t::Execute()
 
             #if defined(__DAVAENGINE_IPHONE__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
-            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+            GL_CALL(glDrawElementsInstancedEXT(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
             #elif defined(__DAVAENGINE_ANDROID__)
             DVASSERT(baseInst == 0) // it's not supported in GLES
             if (glDrawElementsInstanced)
             {
-                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount));
+                GL_CALL(glDrawElementsInstanced(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount));
             }
             #elif defined(__DAVAENGINE_MACOS__)
-            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(uint64(i_off)), instCount, baseInst));
+            GL_CALL(glDrawElementsInstancedBaseVertex(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount, baseInst));
             #else
-            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, (void*)((uint64)i_off), instCount, baseInst));
+            GL_CALL(glDrawElementsInstancedBaseInstance(mode, v_cnt, i_sz, reinterpret_cast<void*>(static_cast<uint64>(i_off)), instCount, baseInst));
             #endif
             StatSet::IncStat(stat_DIP, 1);
             switch (mode)
