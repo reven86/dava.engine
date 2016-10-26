@@ -298,6 +298,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }

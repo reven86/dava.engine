@@ -219,7 +219,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         info.emulated = env->GetBooleanField(object, fieldID);
 
         fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
-        jstring jStr = (jstring)env->GetObjectField(object, fieldID);
+        jstring jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
 
         info.path = JNI::ToString(jStr);
     }
@@ -246,7 +246,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 
     if (mid)
     {
-        jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
@@ -277,7 +277,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
 
     if (mid)
     {
-        jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
@@ -299,7 +299,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
     if (mid)
     {
-        jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jarray array = static_cast<jarray>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (array)
         {
@@ -307,7 +307,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
             for (jsize i = 0; i < length; ++i)
             {
-                jobject object = env->GetObjectArrayElement((jobjectArray)array, i);
+                jobject object = env->GetObjectArrayElement(static_cast<jobjectArray>(array), i);
 
                 if (object)
                 {

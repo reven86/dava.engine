@@ -22,7 +22,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyPr
     jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
     jsize lengthOfArray = env->GetArrayLength(replacementString);
 
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, string);
 
     env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
@@ -32,7 +32,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyPr
     jbyteArray r = env->NewByteArray(returnStr.length());
     if (r == NULL)
         return NULL;
-    env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
+    env->SetByteArrayRegion(r, 0, returnStr.length(), reinterpret_cast<const jbyte*>(returnStr.c_str()));
     return r;
 }
 
@@ -42,12 +42,12 @@ JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldOnTextChang
 
     jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
     jsize lengthOfArray = env->GetArrayLength(newText);
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, newString);
     env->ReleaseByteArrayElements(newText, bufferPtr, 0);
 
     bufferPtr = env->GetByteArrayElements(oldText, NULL);
     lengthOfArray = env->GetArrayLength(oldText);
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, oldString);
     env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
     if (newString != oldString)
     {

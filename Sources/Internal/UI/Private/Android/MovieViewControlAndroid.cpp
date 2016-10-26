@@ -167,7 +167,7 @@ void MovieViewControl::Update()
 
 namespace DAVA
 {
-JniMovieViewControl::JniMovieViewControl(uint32 id)
+JniMovieViewControl::JniMovieViewControl(uintptr_t id)
     : jniMovieViewControl("com/dava/framework/JNIMovieViewControl")
 {
     this->id = id;
@@ -251,7 +251,7 @@ bool JniMovieViewControl::IsPlaying() const
 
 MovieViewControl::MovieViewControl()
     :
-    jniMovieViewControl((uint32) this)
+    jniMovieViewControl(reinterpret_cast<uintptr_t>(this))
 {
 }
 

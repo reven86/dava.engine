@@ -2239,7 +2239,7 @@ TiledMultilayerData::SingleStretchData TiledMultilayerData::GenerateStretchData(
     SingleStretchData res;
     int32 resoureceSizeIndex = sprite->GetResourceSizeIndex();
 
-    Vector2 origSize = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT)), resoureceSizeIndex);
+    Vector2 origSize = Vector2(sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_WIDTH), sprite->GetRectOffsetValueForFrame(0, Sprite::ACTIVE_HEIGHT));
     res.uvBase = Vector2(sprite->GetTextureCoordsForFrame(0)[0], sprite->GetTextureCoordsForFrame(0)[1]);
     res.uvMax = Vector2(sprite->GetTextureCoordsForFrame(0)[2], sprite->GetTextureCoordsForFrame(0)[5]);
     Vector2 uvSize = res.uvMax - res.uvBase;

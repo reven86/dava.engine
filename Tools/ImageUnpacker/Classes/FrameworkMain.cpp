@@ -35,11 +35,7 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
     {
         ScopedPtr<Image> savedImage(Image::Create(image->width, image->height, FORMAT_RGBA8888));
 
-        bool unpacked = ImageConvert::ConvertImage(image, savedImage); //unpack compressed images (PVR2-4, DXT1-5, ...)
-        if (!unpacked)
-        { // unpack uncompressed images
-            unpacked = ImageConvert::ConvertImageDirect(image, savedImage);
-        }
+        bool unpacked = ImageConvert::ConvertImage(image, savedImage);
 
         if (unpacked)
         {
@@ -47,7 +43,7 @@ void SaveSingleImage(const FilePath& newImagePath, Image* image)
         }
         else
         {
-            Logger::Error("Cannot unapck image from %s and save it as %s", PixelFormatDescriptor::GetPixelFormatString(image->format), newImagePath.GetStringValue().c_str());
+            Logger::Error("Cannot unpack image from %s and save it as %s", PixelFormatDescriptor::GetPixelFormatString(image->format), newImagePath.GetStringValue().c_str());
         }
     }
 }
