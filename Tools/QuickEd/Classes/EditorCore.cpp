@@ -18,6 +18,7 @@
 #include "Base/Result.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
+#include "Project/Project.h"
 
 using namespace DAVA;
 
@@ -29,60 +30,40 @@ REGISTER_PREFERENCES_ON_START(EditorCore,
 
 EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
-    , spritesPacker(std::make_unique<SpritesPacker>())
-    , cacheClient(nullptr)
-    //, documentGroup(new DocumentGroup(this))
+    , cacheClient()
     , mainWindow(std::make_unique<MainWindow>())
 {
     ConnectApplicationFocus();
 
-    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
-    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
-    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
 
+    connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
     connect(mainWindow->actionOpen_project, &QAction::triggered, this, &EditorCore::OnOpenProject);
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::OnCloseProject);
     connect(mainWindow->actionExit, &QAction::triggered, this, &EditorCore::OnExit);
     connect(mainWindow->menuRecent, &QMenu::triggered, this, &EditorCore::OnRecentMenu);
-
-    //connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
-    //connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::OnExit);
-    //connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::OnRecentMenu);
-    //connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
-
-    auto previewWidget = mainWindow->previewWidget;
-
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
-
-    auto packageWidget = mainWindow->packageWidget;
-    connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-
-    connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
-    connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
-    connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
-    connect(previewWidget, &PreviewWidget::CopyRequested, packageWidget, &PackageWidget::OnCopy);
-    connect(previewWidget, &PreviewWidget::PasteRequested, packageWidget, &PackageWidget::OnPaste);
-    connect(previewWidget, &PreviewWidget::SelectionChanged, packageWidget, &PackageWidget::OnSelectionChanged);
-    connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
-    connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
-
-    connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-
-    PreferencesStorage::Instance()->RegisterPreferences(this);
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, mainWindow->previewWidget, &PreviewWidget::OnEmulationModeChanged);
+    connect(mainWindow->previewWidget, &PreviewWidget::DropRequested, mainWindow->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
+    connect(mainWindow->previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
+    connect(mainWindow->previewWidget, &PreviewWidget::ImportRequested, mainWindow->packageWidget, &PackageWidget::OnImport);
+    connect(mainWindow->previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
+    connect(mainWindow->previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
+    connect(mainWindow->previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
+    connect(mainWindow->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->packageWidget, &PackageWidget::OnSelectionChanged);
+    connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectionChanged);
+    connect(mainWindow->packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
+    connect(mainWindow->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
 }
 
 EditorCore::~EditorCore()
 {
     DVASSERT(project == nullptr);
 
-    if (cacheClient && cacheClient->IsConnected())
-    {
-        cacheClient->Disconnect();
-    }
+    DisableCacheClient();
 
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
@@ -90,32 +71,6 @@ EditorCore::~EditorCore()
 void EditorCore::Start()
 {
     mainWindow->show();
-}
-
-void EditorCore::OnReloadSpritesStarted()
-{
-    if (project == nullptr)
-        return;
-
-    for (auto& document : project->GetDocumentGroup()->GetDocuments())
-    {
-        if (!project->GetDocumentGroup()->TryCloseDocument(document))
-        {
-            return;
-        }
-    }
-    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
-}
-
-void EditorCore::OnReloadSpritesFinished()
-{
-    if (cacheClient)
-    {
-        cacheClient->Disconnect();
-        cacheClient.reset();
-    }
-
-    Sprite::ReloadSprites();
 }
 
 void EditorCore::OnGLWidgedInitialized()
@@ -184,7 +139,7 @@ void EditorCore::OpenProject(const QString& path)
     ResultList resultList;
     std::unique_ptr<Project> newProject;
 
-    std::tie(newProject, resultList) = CreateProject(path);
+    std::tie(newProject, resultList) = CreateProject(path, mainWindow.get());
 
     if (newProject.get())
     {
@@ -195,7 +150,7 @@ void EditorCore::OpenProject(const QString& path)
     mainWindow->ShowResultList(tr("Error while loading project"), resultList);
 }
 
-std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const QString& path)
+std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const QString& path, MainWindow* mainWindow)
 {
     ResultList resultList;
 
@@ -221,7 +176,7 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
         return std::make_tuple(nullptr, resultList);
     }
 
-    return std::make_tuple(std::make_unique<Project>(settings), resultList);
+    return std::make_tuple(std::make_unique<Project>(mainWindow, settings), resultList);
 }
 
 std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
@@ -317,6 +272,7 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
     if (enabled)
     {
         EnableCacheClient();
+        assetCacheEnabled = true;
     }
     else
     {
@@ -338,6 +294,7 @@ void EditorCore::EnableCacheClient()
     else
     {
         Logger::Info("Asset cache client started");
+        emit AssetCacheChanged(cacheClient.get());
     }
 }
 
@@ -347,13 +304,12 @@ void EditorCore::DisableCacheClient()
     {
         cacheClient->Disconnect();
         cacheClient.reset();
+        emit AssetCacheChanged(cacheClient.get());
     }
 }
 
 void EditorCore::OnProjectOpen(const Project* newProject)
 {
-    QWidget* widget1 = qApp->activeWindow();
-    QWidget* widget2 = mainWindow.get();
     AddRecentProject(newProject->GetProjectPath());
 
     mainWindow->SetRecentProjects(GetRecentProjects());
@@ -405,6 +361,8 @@ void EditorCore::OnProjectOpen(const Project* newProject)
     //connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     //connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
 
+    connect(this, &EditorCore::AssetCacheChanged, newProject, &Project::SetAssetCacheClient);
+
     mainWindow->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
     if (assetCacheEnabled)
@@ -412,27 +370,27 @@ void EditorCore::OnProjectOpen(const Project* newProject)
         EnableCacheClient();
     }
 
-    spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
-
-    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    spritesPacker->ClearTasks();
-    QDirIterator it(/*projectPath + */ "/DataSource"); //TODO fix
-    while (it.hasNext())
-    {
-        it.next();
-        const QFileInfo& fileInfo = it.fileInfo();
-        if (fileInfo.isDir())
-        {
-            QString outputPath = fileInfo.absoluteFilePath();
-            if (!outputPath.contains(searchOption))
-            {
-                continue;
-            }
-            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
-            QDir outputDir(outputPath);
-            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
-        }
-    }
+    //     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
+    //
+    //     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
+    //     spritesPacker->ClearTasks();
+    //     QDirIterator it(/*projectPath + */ "/DataSource"); //TODO fix
+    //     while (it.hasNext())
+    //     {
+    //         it.next();
+    //         const QFileInfo& fileInfo = it.fileInfo();
+    //         if (fileInfo.isDir())
+    //         {
+    //             QString outputPath = fileInfo.absoluteFilePath();
+    //             if (!outputPath.contains(searchOption))
+    //             {
+    //                 continue;
+    //             }
+    //             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
+    //             QDir outputDir(outputPath);
+    //             spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
+    //         }
+    //     }
 }
 
 void EditorCore::OnProjectClose(const Project* currProject)
@@ -483,6 +441,8 @@ void EditorCore::OnProjectClose(const Project* currProject)
 
     disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
     disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+
+    disconnect(this, &EditorCore::AssetCacheChanged, currProject, &Project::SetAssetCacheClient);
 
     DisableCacheClient();
 }

@@ -1,7 +1,6 @@
 #include "UI/Dialogs/TableEditorDialog.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "EditorCore.h"
 
 #include <QStandardItemModel>
 

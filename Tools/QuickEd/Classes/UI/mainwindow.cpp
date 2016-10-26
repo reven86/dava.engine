@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "Project/Project.h"
 #include "Document/Document.h"
 #include "Document/DocumentGroup.h"
 #include "Render/Texture.h"

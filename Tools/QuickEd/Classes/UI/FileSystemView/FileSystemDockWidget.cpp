@@ -11,7 +11,6 @@
 #include "QtTools/Utils/Utils.h"
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 
-#include "Project/Project.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
 
 #include "ui_FileSystemDockWidget.h"

@@ -13,6 +13,8 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
+#include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "UI/mainwindow.h"
 
 #include <QDir>
 #include <QApplication>
@@ -21,11 +23,13 @@
 
 using namespace DAVA;
 
-Project::Project(const Settings& aSettings)
+Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     : QObject(nullptr)
+    , mainWindow(aMainWindow)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(this))
+    , spritesPacker(new SpritesPacker(this))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
     , projectName(QFileInfo(aSettings.projectFile).fileName())
@@ -37,15 +41,17 @@ Project::Project(const Settings& aSettings)
     }
 
     settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
-    //FilePath::AddResourcesFolder(projectDirectory + "Data/");
 
     editorFontSystem->SetDefaultFontsPath(settings.fontsConfigsDirectory);
-    //editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
     editorFontSystem->LoadLocalizedFonts();
 
     editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(settings.textsDirectory.GetAbsolutePathname())));
     editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(settings.defaultLanguage));
+
     connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged);
+
+    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &Project::OnStartSpritesReload);
+    connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
 }
 
 Project::~Project()
@@ -56,9 +62,6 @@ Project::~Project()
     {
         FilePath::RemoveResourcesFolder(FilePath(folderInfo.second.toStdString()));
     }
-
-    //SetProjectName("");
-    //SetProjectPath("");
 }
 
 // bool Project::Open(const QString& path)
@@ -417,7 +420,7 @@ const QVector<QPair<QString, QString>>& Project::SourceResourceDirectories() con
     return settings.sourceResourceDirectories;
 }
 
-void Project::OnReloadSpritesStarted()
+void Project::OnStartSpritesReload()
 {
     for (auto& document : GetDocumentGroup()->GetDocuments())
     {
@@ -427,7 +430,7 @@ void Project::OnReloadSpritesStarted()
         }
     }
 
-    //    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
 }
 
 void Project::OnReloadSpritesFinished()
@@ -439,6 +442,11 @@ void Project::OnReloadSpritesFinished()
     //     }
 
     Sprite::ReloadSprites();
+}
+
+void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)
+{
+    spritesPacker->SetCacheClient(newCacheClient, "QuickEd.ReloadSprites");
 }
 
 // QString Project::CreateNewProject(Result* result /*=nullptr*/)

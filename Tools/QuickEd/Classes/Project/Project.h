@@ -12,6 +12,13 @@
 class EditorFontSystem;
 class EditorLocalizationSystem;
 class DocumentGroup;
+class MainWindow;
+class SpritesPacker;
+
+namespace DAVA
+{
+class AssetCacheClient;
+}
 
 class Project : public QObject
 {
@@ -34,8 +41,10 @@ public:
     static const QString& GetUIRelativePath();
     static const QString& GetProjectFileName();
 
-    Project(const Settings& aSettings);
+    Project(MainWindow* aMainWindow, const Settings& aSettings);
     ~Project();
+
+    void SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient);
 
     QString GetProjectPath() const;
     QString GetProjectDirectory() const;
@@ -55,7 +64,7 @@ public:
 
     const QVector<QPair<QString, QString>>& SourceResourceDirectories() const;
 
-    void OnReloadSpritesStarted();
+    void OnStartSpritesReload();
 
     void OnReloadSpritesFinished();
 
@@ -67,9 +76,11 @@ private:
     const QString projectDirectory;
     const QString projectName;
 
+    MainWindow* mainWindow = nullptr;
     std::unique_ptr<EditorFontSystem> editorFontSystem;
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
     std::unique_ptr<DocumentGroup> documentGroup;
+    std::unique_ptr<SpritesPacker> spritesPacker;
 };
 
 #endif // QUICKED__PROJECT_H__

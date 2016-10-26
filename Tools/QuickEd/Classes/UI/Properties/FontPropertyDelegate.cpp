@@ -1,12 +1,12 @@
 #include "FontPropertyDelegate.h"
 #include <DAVAEngine.h>
-#include <QAction>
-#include <QComboBox>
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "EditorCore.h"
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "UI/Dialogs/DialogAddPreset.h"
+#include <QAction>
+#include <QComboBox>
+#include <QApplication>
 
 using namespace DAVA;
 

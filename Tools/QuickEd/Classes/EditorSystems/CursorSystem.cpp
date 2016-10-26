@@ -1,12 +1,12 @@
 #include "EditorSystems/CursorSystem.h"
-#include <QApplication>
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
+#include "QtTools/DavaGLWidget/Davaglwidget.h"
+
+#include <QApplication>
 #include <QPixmap>
 #include <QTransform>
-#include "EditorCore.h"
-#include "QtTools/DavaGLWidget/Davaglwidget.h"
 
 using namespace DAVA;
 

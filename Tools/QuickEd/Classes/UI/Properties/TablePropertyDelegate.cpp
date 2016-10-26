@@ -5,7 +5,6 @@
 #include <QLineEdit>
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "EditorCore.h"
 #include "UI/Dialogs/TableEditorDialog.h"
 
 using namespace DAVA;

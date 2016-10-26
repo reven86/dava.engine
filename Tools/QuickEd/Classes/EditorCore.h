@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Base/Introspection.h"
-#include "Project/Project.h"
 #include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "AssetCache/AssetCacheClient.h"
 #include "UI/mainwindow.h"
+#include "AssetCache/AssetCacheClient.h"
+
 #include <QObject>
 
 class QAction;
@@ -33,6 +32,9 @@ public:
 
     void Start();
 
+signals:
+    void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
+
 private slots:
     void OnNewProject();
     void OnOpenProject();
@@ -41,13 +43,10 @@ private slots:
 
     void OnRecentMenu(QAction*);
 
-    void OnReloadSpritesStarted();
-    void OnReloadSpritesFinished();
-
     void OnGLWidgedInitialized();
 
 private:
-    static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path);
+    static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path, MainWindow* mainWindow);
     static std::tuple<QString, DAVA::ResultList> CreateNewProject();
 
     void OpenProject(const QString& path);
@@ -69,7 +68,6 @@ private:
     DAVA::String GetRecentProjectsAsString() const;
     void SetRecentProjectsFromString(const DAVA::String& str);
 
-    std::unique_ptr<SpritesPacker> spritesPacker;
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
     std::unique_ptr<Project> project;
