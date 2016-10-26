@@ -32,6 +32,7 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
     connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
+    connect(window, &QQuickWindow::visibilityChanged, this, &RenderWidget::OnWindowVisibilityChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget() = default;
@@ -69,6 +70,25 @@ void RenderWidget::OnSceneGraphInvalidated()
     {
         widgetDelegate->OnDestroyed();
     }
+}
+
+void RenderWidget : OnWindowVisibilityChanged(QWindow::Visibility visibility)
+{
+    bool isFullscreen;
+
+    switch (visibility)
+    {
+    case QWindow::FullScreen:
+        isFullscreen = true;
+        break;
+    case QWindow::Windowed:
+        isFullscreen = false;
+        break;
+    default:
+        return;
+    }
+
+    widgetDelegate->OnWindowModeChanged(isFullscreen);
 }
 
 void RenderWidget::resizeEvent(QResizeEvent* e)

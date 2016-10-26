@@ -37,6 +37,9 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    void SetWindowingMode(Window::eWindowingMode newMode);
+    Window::eWindowingMode GetInitialWindowingMode() const;
+
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
@@ -52,6 +55,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetWindowingMode(Window::eWindowingMode newMode);
 
     // RenderWidget::Delegate
     void OnCreated() override;
@@ -60,6 +64,7 @@ private:
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, float32 dpi) override;
     void OnVisibilityChanged(bool isVisible) override;
+    void OnWindowModeChanged(bool isFullscreen) override;
 
     void OnMousePressed(QMouseEvent* e) override;
     void OnMouseReleased(QMouseEvent* e) override;

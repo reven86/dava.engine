@@ -77,6 +77,17 @@ void WindowBackend::SetTitle(const String& title)
     // iOS window does not have title
 }
 
+void WindowBackend::SetWindowingMode(Window::eWindowingMode /*newMode*/)
+{
+    // Windowing mode cannot be changed on iOS
+}
+
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
+{
+    // iOS windows are always fullscreen windows
+    return Window::eWindowingMode::FULLSCREEN;
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));

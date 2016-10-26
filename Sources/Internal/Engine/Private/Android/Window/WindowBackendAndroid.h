@@ -34,6 +34,9 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
+    void SetWindowingMode(Window::eWindowingMode newMode);
+    Window::eWindowingMode GetInitialWindowingMode() const;
+
     void RunAsyncOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
