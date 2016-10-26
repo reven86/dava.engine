@@ -9693,7 +9693,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
                 {
                     if (pcmd->UserCallback)
                     {
-                        ImGui::BulletText("Callback %p, user_data %p", pcmd->UserCallback, pcmd->UserCallbackData);
+                        ImGui::BulletText("Callback %p, user_data %p", reinterpret_cast<void *>(pcmd->UserCallback), pcmd->UserCallbackData);
                         continue;
                     }
                     ImDrawIdx* idx_buffer = (draw_list->IdxBuffer.Size > 0) ? draw_list->IdxBuffer.Data : NULL;
@@ -9742,7 +9742,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
 
             static void NodeWindow(ImGuiWindow* window, const char* label)
             {
-                if (!ImGui::TreeNode(window, "%s '%s', %d @ 0x%p", label, window->Name, window->Active || window->WasActive, window))
+                if (!ImGui::TreeNode(window, "%s '%s', %d @ 0x%p", label, window->Name, window->Active || window->WasActive, reinterpret_cast<void *>(window)))
                     return;
                 NodeDrawList(window->DrawList, "DrawList");
                 ImGui::BulletText("Pos: (%.1f,%.1f)", window->Pos.x, window->Pos.y);
