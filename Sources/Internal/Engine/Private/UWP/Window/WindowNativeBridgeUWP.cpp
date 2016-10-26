@@ -215,13 +215,11 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
     eModifierKeys modifierKeys = GetModifierKeys();
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
-    if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
+    if (deviceType == PointerDeviceType::Mouse)
     {
-        std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
-
-        eMouseButtons button = GetMouseButtonIndex(state);
+        bool isPressed = false;
+        eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_DOWN, button, x, y, 1, modifierKeys, false));
-        mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -242,11 +240,11 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
     eModifierKeys modifierKeys = GetModifierKeys();
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
-    if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
+    if (deviceType == PointerDeviceType::Mouse)
     {
-        eMouseButtons button = GetMouseButtonIndex(mouseButtonState);
+        bool isPressed = false;
+        eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, false));
-        mouseButtonState.reset();
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -267,24 +265,17 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     eModifierKeys modifierKeys = GetModifierKeys();
     float32 x = pointerPoint->Position.X;
     float32 y = pointerPoint->Position.Y;
-    if (deviceType == PointerDeviceType::Mouse || deviceType == PointerDeviceType::Pen)
+    if (deviceType == PointerDeviceType::Mouse)
     {
-        std::bitset<MOUSE_BUTTON_COUNT> state = FillMouseButtonState(prop);
-        std::bitset<MOUSE_BUTTON_COUNT> change = mouseButtonState ^ state;
-
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, x, y, 1, modifierKeys, false);
-        for (size_t i = 0, n = change.size(); i < n; ++i)
+        if (prop->PointerUpdateKind != PointerUpdateKind::Other)
         {
-            if (change[i])
-            {
-                e.type = state[i] ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-                e.mouseEvent.button = static_cast<eMouseButtons>(i + 1);
-                mainDispatcher->PostEvent(e);
-            }
+            // First mouse button down (and last mouse button up) comes through OnPointerPressed/OnPointerReleased, other mouse clicks come here
+            bool isPressed = false;
+            eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, false));
         }
-
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
-        mouseButtonState = state;
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -342,40 +333,36 @@ eModifierKeys WindowNativeBridge::GetModifierKeys() const
     return result;
 }
 
-eMouseButtons WindowNativeBridge::GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props)
+eMouseButtons WindowNativeBridge::GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed)
 {
-    if (props->IsLeftButtonPressed)
-        return eMouseButtons::LEFT;
-    if (props->IsRightButtonPressed)
-        return eMouseButtons::RIGHT;
-    if (props->IsMiddleButtonPressed)
-        return eMouseButtons::MIDDLE;
-    if (props->IsXButton1Pressed)
-        return eMouseButtons::EXTENDED1;
-    if (props->IsXButton2Pressed)
-        return eMouseButtons::EXTENDED2;
-    return eMouseButtons::NONE;
-}
+    using ::Windows::UI::Input::PointerUpdateKind;
 
-eMouseButtons WindowNativeBridge::GetMouseButtonIndex(std::bitset<MOUSE_BUTTON_COUNT> state)
-{
-    for (size_t i = 0, n = state.size(); i < n; ++i)
+    *isPressed = false;
+    switch (buttonUpdateKind)
     {
-        if (state[i])
-            return static_cast<eMouseButtons>(i + 1);
+    case PointerUpdateKind::LeftButtonPressed:
+        *isPressed = true;
+    case PointerUpdateKind::LeftButtonReleased:
+        return eMouseButtons::LEFT;
+    case PointerUpdateKind::RightButtonPressed:
+        *isPressed = true;
+    case PointerUpdateKind::RightButtonReleased:
+        return eMouseButtons::RIGHT;
+    case PointerUpdateKind::MiddleButtonPressed:
+        *isPressed = true;
+    case PointerUpdateKind::MiddleButtonReleased:
+        return eMouseButtons::MIDDLE;
+    case PointerUpdateKind::XButton1Pressed:
+        *isPressed = true;
+    case PointerUpdateKind::XButton1Released:
+        return eMouseButtons::EXTENDED1;
+    case PointerUpdateKind::XButton2Pressed:
+        *isPressed = true;
+    case PointerUpdateKind::XButton2Released:
+        return eMouseButtons::EXTENDED2;
+    default:
+        return eMouseButtons::NONE;
     }
-    return eMouseButtons::NONE;
-}
-
-std::bitset<WindowNativeBridge::MOUSE_BUTTON_COUNT> WindowNativeBridge::FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props)
-{
-    std::bitset<MOUSE_BUTTON_COUNT> state;
-    state.set(0, props->IsLeftButtonPressed);
-    state.set(1, props->IsRightButtonPressed);
-    state.set(2, props->IsMiddleButtonPressed);
-    state.set(3, props->IsXButton1Pressed);
-    state.set(4, props->IsXButton2Pressed);
-    return state;
 }
 
 void WindowNativeBridge::CreateBaseXamlUI()

@@ -36,9 +36,6 @@ ref struct WindowNativeBridge sealed
     void SetTitle(const char8* title);
 
 private:
-    // Shortcut for eMouseButtons::COUNT
-    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
-
     void OnTriggerPlatformEvents();
 
     void OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::WindowActivatedEventArgs ^ arg);
@@ -56,10 +53,7 @@ private:
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
 
     eModifierKeys GetModifierKeys() const;
-
-    static eMouseButtons GetMouseButtonIndex(::Windows::UI::Input::PointerPointProperties ^ props);
-    static eMouseButtons GetMouseButtonIndex(std::bitset<MOUSE_BUTTON_COUNT> state);
-    static std::bitset<MOUSE_BUTTON_COUNT> FillMouseButtonState(::Windows::UI::Input::PointerPointProperties ^ props);
+    static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
 
     void CreateBaseXamlUI();
     void InstallEventHandlers();
@@ -74,8 +68,6 @@ private:
     ::Windows::UI::Xaml::Controls::SwapChainPanel ^ xamlSwapChainPanel = nullptr;
     ::Windows::UI::Xaml::Controls::Canvas ^ xamlCanvas = nullptr;
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
-
-    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;

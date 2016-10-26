@@ -62,7 +62,7 @@ ApiIsSupported(Api api)
 
     case RHI_DX11:
     {
-            #if defined(__DAVAENGINE_WIN32__)
+            #if defined(__DAVAENGINE_WINDOWS__)
         supported = true;
             #endif
     }
