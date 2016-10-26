@@ -263,18 +263,18 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
 {
     bool pressed = e.type == Private::MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+    eMouseButtons button = e.mouseEvent.button;
 
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = e.mouseEvent.button;
-    uie.modifiers = e.keyEvent.modifierKeys;
+    uie.mouseButton = button;
+    uie.modifiers = e.mouseEvent.modifierKeys;
 
-    bool isButtonDown = uie.phase == UIEvent::Phase::BEGAN;
-    uint32 buttonIndex = static_cast<uint32>(uie.mouseButton) - 1;
-    mouseButtonState[buttonIndex] = isButtonDown;
+    uint32 buttonIndex = static_cast<uint32>(button) - 1;
+    mouseButtonState[buttonIndex] = pressed;
 
     inputSystem->HandleInputEvent(&uie);
 }
@@ -287,7 +287,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
-    uie.modifiers = e.keyEvent.modifierKeys;
+    uie.modifiers = e.mouseEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
 }
@@ -300,7 +300,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     uie.device = eInputDevice::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;
-    uie.modifiers = e.keyEvent.modifierKeys;
+    uie.modifiers = e.mouseEvent.modifierKeys;
 
     if (mouseButtonState.any())
     {
@@ -334,7 +334,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     uie.device = eInputDevice::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
-    uie.modifiers = e.keyEvent.modifierKeys;
+    uie.modifiers = e.touchEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
 }
@@ -347,7 +347,7 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
     uie.device = eInputDevice::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
-    uie.modifiers = e.keyEvent.modifierKeys;
+    uie.modifiers = e.touchEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
 }

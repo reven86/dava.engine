@@ -10,6 +10,7 @@
 #include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
 #include "Logger/Logger.h"
@@ -244,7 +245,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
     // Windows generates WM_MOUSEMOVE event for primary touch point so check and process
     // mouse move only from mouse device. Also skip spurious move events as described in:
     // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
-    eInputDevice source = GetInputEventSource(::GetMessageExtraInfo());
+    eInputDevice source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
     if (source == eInputDevice::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
     {
         eModifierKeys modifierKeys = GetModifierKeys();
@@ -273,7 +274,7 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
 {
     // Windows generates WM_xBUTTONDONW/WM_xBUTTONUP event for primary touch point so check and process
     // mouse clicks only from mouse device.
-    eInputDevice source = GetInputEventSource(::GetMessageExtraInfo());
+    eInputDevice source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
     if (source == eInputDevice::MOUSE)
     {
         eMouseButtons button = eMouseButtons::NONE;
@@ -394,6 +395,57 @@ LRESULT WindowBackend::OnTouch(uint32 ntouch, HTOUCHINPUT htouch)
     return 0;
 }
 
+LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
+{
+    POINTER_INFO pointerInfo;
+    DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
+
+    bool isPressed = false;
+    float32 vx = static_cast<float32>(x);
+    float32 vy = static_cast<float32>(y);
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (pointerInfo.pointerType == PT_MOUSE)
+    {
+        eMouseButtons button = GetMouseButtonState(pointerInfo.ButtonChangeType, &isPressed);
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+    }
+    else if (pointerInfo.pointerType == PT_TOUCH)
+    {
+        isPressed = (pointerInfo.pointerFlags & POINTER_FLAG_DOWN) == POINTER_FLAG_DOWN;
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::TOUCH_DOWN : MainDispatcherEvent::TOUCH_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, type, pointerId, vx, vy, modifierKeys));
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
+{
+    POINTER_INFO pointerInfo;
+    DllImport::fnGetPointerInfo(pointerId, &pointerInfo);
+
+    float32 vx = static_cast<float32>(x);
+    float32 vy = static_cast<float32>(y);
+    eModifierKeys modifierKeys = GetModifierKeys();
+    if (pointerInfo.pointerType == PT_MOUSE)
+    {
+        if (pointerInfo.ButtonChangeType != POINTER_CHANGE_NONE)
+        {
+            // First mouse button down (and last mouse button up) comes with WM_POINTERDOWN/WM_POINTERUP, other mouse clicks come here
+            bool isPressed = false;
+            eMouseButtons button = GetMouseButtonState(pointerInfo.ButtonChangeType, &isPressed);
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+        }
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, vx, vy, modifierKeys, false));
+    }
+    else if (pointerInfo.pointerType == PT_TOUCH)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_MOVE, pointerId, vx, vy, modifierKeys));
+    }
+    return 0;
+}
+
 LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
     // How to distinguish left and right shift, control and alt
@@ -427,7 +479,11 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
-    ::RegisterTouchWindow(hwnd, TWF_FINETOUCH | TWF_WANTPALM);
+    // If new pointer input is available then do not handle legacy WM_TOUCH message
+    if (DllImport::fnIsMouseInPointerEnabled == nullptr || !DllImport::fnIsMouseInPointerEnabled())
+    {
+        ::RegisterTouchWindow(hwnd, TWF_FINETOUCH | TWF_WANTPALM);
+    }
 
     width = rc.right - rc.left;
     height = rc.bottom - rc.top;
@@ -489,6 +545,36 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     else if (message == WM_EXITSIZEMOVE)
     {
         lresult = OnExitSizeMove();
+    }
+    else if (message == WM_POINTERDOWN || message == WM_POINTERUP)
+    {
+        uint32 pointerId = GET_POINTERID_WPARAM(wparam);
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnPointerClick(pointerId, pt.x, pt.y);
+    }
+    else if (message == WM_POINTERUPDATE)
+    {
+        uint32 pointerId = GET_POINTERID_WPARAM(wparam);
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnPointerUpdate(pointerId, pt.x, pt.y);
+    }
+    else if (message == WM_POINTERWHEEL || message == WM_POINTERHWHEEL)
+    {
+        int32 deltaX = 0;
+        int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+        if (message == WM_POINTERHWHEEL)
+        {
+            using std::swap;
+            std::swap(deltaX, deltaY);
+        }
+        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+        ::ScreenToClient(hwnd, &pt);
+
+        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
     else if (message == WM_MOUSEMOVE)
     {
@@ -660,7 +746,7 @@ eModifierKeys WindowBackend::GetModifierKeys()
     return result;
 }
 
-eInputDevice WindowBackend::GetInputEventSource(LPARAM messageExtraInfo)
+eInputDevice WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
 {
     // How to distinguish pen input from mouse and touch
     // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
@@ -673,6 +759,36 @@ eInputDevice WindowBackend::GetInputEventSource(LPARAM messageExtraInfo)
         return eInputDevice::TOUCH_SURFACE;
     }
     return eInputDevice::MOUSE;
+}
+
+eMouseButtons WindowBackend::GetMouseButtonState(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed)
+{
+    *isPressed = false;
+    switch (buttonChangeType)
+    {
+    case POINTER_CHANGE_FIRSTBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FIRSTBUTTON_UP:
+        return eMouseButtons::LEFT;
+    case POINTER_CHANGE_SECONDBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_SECONDBUTTON_UP:
+        return eMouseButtons::RIGHT;
+    case POINTER_CHANGE_THIRDBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_THIRDBUTTON_UP:
+        return eMouseButtons::MIDDLE;
+    case POINTER_CHANGE_FOURTHBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FOURTHBUTTON_UP:
+        return eMouseButtons::EXTENDED1;
+    case POINTER_CHANGE_FIFTHBUTTON_DOWN:
+        *isPressed = true;
+    case POINTER_CHANGE_FIFTHBUTTON_UP:
+        return eMouseButtons::EXTENDED2;
+    default:
+        return eMouseButtons::NONE;
+    }
 }
 
 void WindowBackend::ChangeMouseButtonState(eMouseButtons button, bool pressed)

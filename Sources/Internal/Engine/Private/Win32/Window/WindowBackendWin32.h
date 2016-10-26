@@ -75,6 +75,8 @@ private:
     LRESULT OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, int32 y);
     LRESULT OnCaptureChanged();
     LRESULT OnTouch(uint32 ntouch, HTOUCHINPUT htouch);
+    LRESULT OnPointerClick(uint32 pointerId, int32 x, int32 y);
+    LRESULT OnPointerUpdate(uint32 pointerId, int32 x, int32 y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
@@ -84,7 +86,8 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
     static eModifierKeys GetModifierKeys();
-    static eInputDevice GetInputEventSource(LPARAM messageExtraInfo);
+    static eInputDevice GetInputEventSourceLegacy(LPARAM messageExtraInfo);
+    static eMouseButtons GetMouseButtonState(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
 
     void ChangeMouseButtonState(eMouseButtons button, bool pressed);
 
