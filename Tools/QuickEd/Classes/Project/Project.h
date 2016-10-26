@@ -2,12 +2,16 @@
 #define QUICKED__PROJECT_H__
 
 #include <QObject>
-#include "Project/EditorFontSystem.h"
-#include "Project/EditorLocalizationSystem.h"
+//#include "Project/EditorFontSystem.h"
+//#include "Project/EditorLocalizationSystem.h"
 #include "Base/Result.h"
 #include "Preferences/PreferencesRegistrator.h"
 #include <QVector>
 #include <QPair>
+
+class EditorFontSystem;
+class EditorLocalizationSystem;
+class DocumentGroup;
 
 class Project : public QObject
 {
@@ -28,7 +32,6 @@ public:
 
     static std::tuple<Settings, DAVA::ResultList> ParseProjectSettings(const QString& projectFile);
     static const QString& GetUIRelativePath();
-    //static const QString& GetUIRelativePath();
     static const QString& GetProjectFileName();
 
     Project(const Settings& aSettings);
@@ -38,11 +41,26 @@ public:
     QString GetProjectDirectory() const;
     QString GetProjectName() const;
 
-    EditorFontSystem* GetEditorFontSystem() const;
-    EditorLocalizationSystem* GetEditorLocalizationSystem() const;
+    QStringList GetAvailableLanguages() const;
+    QString GetCurrentLanguage() const;
+    void SetCurrentLanguage(const QString& newLanguageCode);
+
+    DocumentGroup* GetDocumentGroup() const;
+
+    void SetRtl(bool isRtl);
+    void SetBiDiSupport(bool support);
+    void SetGlobalStyleClasses(const QString& classesStr);
+
     const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
 
     const QVector<QPair<QString, QString>>& SourceResourceDirectories() const;
+
+    void OnReloadSpritesStarted();
+
+    void OnReloadSpritesFinished();
+
+signals:
+    void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
     Settings settings;
@@ -51,6 +69,7 @@ private:
 
     std::unique_ptr<EditorFontSystem> editorFontSystem;
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
+    std::unique_ptr<DocumentGroup> documentGroup;
 };
 
 #endif // QUICKED__PROJECT_H__

@@ -66,6 +66,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
+    connect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
 
     InitMenu();
 
@@ -79,6 +81,10 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    disconnect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    disconnect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
+    disconnect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
@@ -111,17 +117,40 @@ void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
     previewWidget->GetGLWidget()->addAction(actionReloadDocument);
 }
 
+void MainWindow::DetachDocumentGroup(DocumentGroup* documentGroup)
+{
+    Q_ASSERT(documentGroup != nullptr);
+    documentGroup->DisconnectTabBar(tabBar);
+
+    //     documentGroup->AttachRedoAction(actionRedo); TODO fix
+    //     documentGroup->AttachUndoAction(actionUndo);
+    //     actionRedo->setShortcuts(QList<QKeySequence>() << Qt::CTRL + Qt::Key_Y << Qt::CTRL + Qt::SHIFT + Qt::Key_Z); //Qt can not set multishortcut or enum shortcut in Qt designer
+    //     Q_ASSERT(documentGroup != nullptr);
+    //     documentGroup->AttachSaveAction(actionSaveDocument);
+    //     documentGroup->AttachSaveAllAction(actionForceSaveAllDocuments);
+    //
+    //     QAction* actionCloseDocument = new QAction("Close current document", this);
+    //     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
+    //     actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
+    //     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
+    //     previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    //
+    //     QAction* actionReloadDocument = new QAction("Reload current document", this);
+    //     QList<QKeySequence> shortcurs;
+    //     shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+    //         << Qt::Key_F5;
+    //     actionReloadDocument->setShortcuts(shortcurs);
+    //     actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
+    //     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
+    //     previewWidget->GetGLWidget()->addAction(actionReloadDocument);
+}
+
 void MainWindow::OnDocumentChanged(Document* document)
 {
     bool enabled = (document != nullptr);
     packageWidget->setEnabled(enabled);
     propertiesWidget->setEnabled(enabled);
     libraryWidget->setEnabled(enabled);
-}
-
-QComboBox* MainWindow::GetComboBoxLanguage()
-{
-    return comboboxLanguage;
 }
 
 bool MainWindow::IsInEmulationMode() const
@@ -146,6 +175,26 @@ void MainWindow::OnShowHelp()
     QDesktopServices::openUrl(QUrl(docsFile));
 }
 
+QString MainWindow::ConvertLangCodeToString(const QString& langCode)
+{
+    QLocale locale(langCode);
+    switch (locale.script())
+    {
+    case QLocale::SimplifiedChineseScript:
+    {
+        return "Chinese simpl.";
+    }
+
+    case QLocale::TraditionalChineseScript:
+    {
+        return "Chinese trad.";
+    }
+
+    default:
+        return QLocale::languageToString(locale.language());
+    }
+}
+
 void MainWindow::InitLanguageBox()
 {
     comboboxLanguage = new QComboBox();
@@ -161,13 +210,27 @@ void MainWindow::InitLanguageBox()
     toolBarPlugins->addWidget(wrapper);
 }
 
-void MainWindow::SetLocales(const QStringList& availableLangs, const QString& currentLang)
+void MainWindow::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
 {
     bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
     comboboxLanguage->clear();
-    comboboxLanguage->addItems(availableLangs);
-    comboboxLanguage->setCurrentText(currentLang);
+    bool currentLangPresent = false;
+    for (const QString& langCode : availableLangsCodes)
+    {
+        comboboxLanguage->addItem(ConvertLangCodeToString(langCode), langCode);
+        if (langCode == currentLangCode)
+        {
+            currentLangPresent = true;
+        }
+    }
+    DVASSERT(currentLangPresent);
+    comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
     comboboxLanguage->blockSignals(wasBlocked);
+}
+
+void MainWindow::SetCurrentLanguage(const QString& currentLangCode)
+{
+    comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
 }
 
 void MainWindow::InitRtlBox()
@@ -363,26 +426,26 @@ void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& re
     }
 }
 
-void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
-{
-    menuTools->setEnabled(resultList);
-    toolBarPlugins->setEnabled(resultList);
-    currentProjectPath = project->GetProjectDirectory() + project->GetProjectName();
-    if (resultList)
-    {
-        UpdateProjectSettings();
-    }
-    else
-    {
-        QStringList errors;
-        for (const auto& result : resultList.GetResults())
-        {
-            errors << QString::fromStdString(result.message);
-        }
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
-        this->setWindowTitle("QuickEd");
-    }
-}
+// void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
+// {
+//     menuTools->setEnabled(resultList);
+//     toolBarPlugins->setEnabled(resultList);
+//     currentProjectPath = project->GetProjectDirectory() + project->GetProjectName();
+//     if (resultList)
+//     {
+//         UpdateProjectSettings();
+//     }
+//     else
+//     {
+//         QStringList errors;
+//         for (const auto& result : resultList.GetResults())
+//         {
+//             errors << QString::fromStdString(result.message);
+//         }
+//         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
+//         this->setWindowTitle("QuickEd");
+//     }
+// }
 
 // void MainWindow::OnOpenProjectAction()
 // {
@@ -470,6 +533,12 @@ void MainWindow::OnEditorPreferencesTriggered()
 {
     PreferencesDialog dialog(this);
     dialog.exec();
+}
+
+void MainWindow::OnCurrentLanguageChanged(int newLanguageIndex)
+{
+    QString langCode = comboboxLanguage->itemData(newLanguageIndex).toString();
+    emit CurrentLanguageChanged(langCode);
 }
 
 bool MainWindow::IsPixelized() const

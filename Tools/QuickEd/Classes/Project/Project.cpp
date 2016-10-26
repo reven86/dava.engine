@@ -1,10 +1,18 @@
-#include "DAVAEngine.h"
-
 #include "Project.h"
-#include "EditorFontSystem.h"
+
+#include "Document/DocumentGroup.h"
+#include "Document/Document.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Project/EditorFontSystem.h"
+#include "Project/EditorLocalizationSystem.h"
 #include "Helpers/ResourcesManageHelper.h"
+
+#include "UI/UIControlSystem.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
+#include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/FileSystem.h"
 
 #include <QDir>
 #include <QApplication>
@@ -17,6 +25,7 @@ Project::Project(const Settings& aSettings)
     : QObject(nullptr)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
+    , documentGroup(new DocumentGroup(this))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
     , projectName(QFileInfo(aSettings.projectFile).fileName())
@@ -35,7 +44,8 @@ Project::Project(const Settings& aSettings)
     editorFontSystem->LoadLocalizedFonts();
 
     editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(settings.textsDirectory.GetAbsolutePathname())));
-    editorLocalizationSystem->SetCurrentLocaleValue(QString::fromStdString(settings.defaultLanguage));
+    editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(settings.defaultLanguage));
+    connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged);
 }
 
 Project::~Project()
@@ -177,16 +187,6 @@ Project::~Project()
 const Vector<FilePath>& Project::GetLibraryPackages() const
 {
     return settings.libraryPackages;
-}
-
-EditorFontSystem* Project::GetEditorFontSystem() const
-{
-    return editorFontSystem.get();
-}
-
-EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
-{
-    return editorLocalizationSystem.get();
 }
 
 std::tuple<Project::Settings, ResultList> Project::ParseProjectSettings(const QString& projectFile)
@@ -345,9 +345,100 @@ const QString& Project::GetProjectFileName()
     return projectFile;
 }
 
+QStringList Project::GetAvailableLanguages() const
+{
+    return editorLocalizationSystem->GetAvailableLocales();
+}
+
+QString Project::GetCurrentLanguage() const
+{
+    return editorLocalizationSystem->GetCurrentLocale();
+}
+
+void Project::SetCurrentLanguage(const QString& newLanguageCode)
+{
+    editorLocalizationSystem->SetCurrentLocale(newLanguageCode);
+    editorFontSystem->RegisterCurrentLocaleFonts();
+
+    for (auto& document : documentGroup->GetDocuments())
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+DocumentGroup* Project::GetDocumentGroup() const
+{
+    return documentGroup.get();
+}
+
+void Project::SetRtl(bool isRtl)
+{
+    UIControlSystem::Instance()->SetRtl(isRtl);
+
+    for (auto& document : documentGroup->GetDocuments())
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void Project::SetBiDiSupport(bool support)
+{
+    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
+
+    for (auto& document : documentGroup->GetDocuments())
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void Project::SetGlobalStyleClasses(const QString& classesStr)
+{
+    Vector<String> tokens;
+    Split(classesStr.toStdString(), " ", tokens);
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
+    for (String& token : tokens)
+    {
+        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
+    }
+
+    for (auto& document : documentGroup->GetDocuments())
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
 const QVector<QPair<QString, QString>>& Project::SourceResourceDirectories() const
 {
     return settings.sourceResourceDirectories;
+}
+
+void Project::OnReloadSpritesStarted()
+{
+    for (auto& document : GetDocumentGroup()->GetDocuments())
+    {
+        if (!GetDocumentGroup()->TryCloseDocument(document))
+        {
+            return;
+        }
+    }
+
+    //    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+}
+
+void Project::OnReloadSpritesFinished()
+{
+    //     if (cacheClient)
+    //     {
+    //         cacheClient->Disconnect();
+    //         cacheClient.reset();
+    //     }
+
+    Sprite::ReloadSprites();
 }
 
 // QString Project::CreateNewProject(Result* result /*=nullptr*/)

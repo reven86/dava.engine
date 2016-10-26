@@ -33,13 +33,15 @@ public:
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
     void AttachDocumentGroup(DocumentGroup* documentGroup);
+    void DetachDocumentGroup(DocumentGroup* documentGroup);
 
-    void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
+    //void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
     void ExecDialogReloadSprites(SpritesPacker* packer);
     bool IsInEmulationMode() const;
-    QComboBox* GetComboBoxLanguage();
+
     void SetRecentProjects(const QStringList& lastProjectsPathes);
-    void SetLocales(const QStringList& availableLangs, const QString& currentLang);
+    void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);
+    void SetCurrentLanguage(const QString& currentLang);
 
 signals:
     //void CloseProject();
@@ -54,6 +56,8 @@ signals:
     void EmulationModeChanged(bool emulationMode);
     bool CanClose();
 
+    void CurrentLanguageChanged(const QString& newLangCode);
+
 public slots:
     void OnDocumentChanged(Document* document);
 
@@ -67,8 +71,11 @@ private slots:
     void OnGlobalClassesChanged(const QString& str);
     void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
     void OnEditorPreferencesTriggered();
+    void OnCurrentLanguageChanged(int newLanguageIndex);
 
 private:
+    static QString ConvertLangCodeToString(const QString& langCode);
+
     void InitLanguageBox();
     void InitRtlBox();
     void InitBiDiSupportBox();

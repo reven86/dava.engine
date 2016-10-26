@@ -31,8 +31,6 @@ public:
     explicit EditorCore(QObject* parent = nullptr);
     ~EditorCore();
 
-    //MainWindow* GetMainWindow() const;
-    //Project* GetProject() const;
     void Start();
 
 private slots:
@@ -46,14 +44,7 @@ private slots:
     void OnReloadSpritesStarted();
     void OnReloadSpritesFinished();
 
-    //void OnProjectPathChanged(const QString& path);
     void OnGLWidgedInitialized();
-
-    void UpdateLanguage();
-
-    void OnRtlChanged(bool isRtl);
-    void OnBiDiSupportChanged(bool support);
-    void OnGlobalStyleClassesChanged(const QString& classesStr);
 
 private:
     static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path);
@@ -69,7 +60,6 @@ private:
     void DisableCacheClient();
 
     void OnProjectOpen(const Project* project);
-
     void OnProjectClose(const Project* project);
 
     const QStringList& GetRecentProjects() const;
@@ -83,7 +73,6 @@ private:
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 
     std::unique_ptr<Project> project;
-    DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow;
 
     DAVA::AssetCacheClient::ConnectionParams connectionParams;

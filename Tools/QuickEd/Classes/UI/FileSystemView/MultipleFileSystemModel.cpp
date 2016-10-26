@@ -29,11 +29,16 @@ QModelIndex MultipleFileSystemModel::addPath(const QString& path, const QString&
 
     ConnectToModel(model);
 
+    model->setFilter(filters);
+    model->setReadOnly(readOnlyFlag);
+    model->setNameFilterDisables(nameFilterFlag);
+    model->setNameFilters(nameFiltersList);
+
     int row = (fileSystemModels.size() - 1);
     return createIndex(row, 0, row);
 }
 
-void MultipleFileSystemModel::delPath(const QString& path)
+void MultipleFileSystemModel::removePath(const QString& path)
 {
     auto it = std::find_if(fileSystemModels.begin(), fileSystemModels.end(), [path](const FileSystemInfo& info)
                            {
@@ -81,44 +86,44 @@ QDir::Filters MultipleFileSystemModel::filter() const
 
 void MultipleFileSystemModel::setReadOnly(bool enable)
 {
-    readOnlyEnable = enable;
+    readOnlyFlag = enable;
     for (auto& info : fileSystemModels)
     {
-        info.model->setReadOnly(readOnlyEnable);
+        info.model->setReadOnly(readOnlyFlag);
     }
 }
 
 bool MultipleFileSystemModel::isReadOnly() const
 {
-    return readOnlyEnable;
+    return readOnlyFlag;
 }
 
 void MultipleFileSystemModel::setNameFilterDisables(bool enable)
 {
-    nameFilterEnabled = enable;
+    nameFilterFlag = enable;
     for (auto& info : fileSystemModels)
     {
-        info.model->setNameFilterDisables(nameFilterEnabled);
+        info.model->setNameFilterDisables(nameFilterFlag);
     }
 }
 
 bool MultipleFileSystemModel::nameFilterDisables() const
 {
-    return nameFilterEnabled;
+    return nameFilterFlag;
 }
 
 void MultipleFileSystemModel::setNameFilters(const QStringList& filters)
 {
-    localNameFilters = filters;
+    nameFiltersList = filters;
     for (auto& info : fileSystemModels)
     {
-        info.model->setNameFilters(localNameFilters);
+        info.model->setNameFilters(nameFiltersList);
     }
 }
 
 QStringList MultipleFileSystemModel::nameFilters() const
 {
-    return localNameFilters;
+    return nameFiltersList;
 }
 
 QModelIndex MultipleFileSystemModel::mkdir(const QModelIndex& parent, const QString& name)

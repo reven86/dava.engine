@@ -49,7 +49,7 @@ public:
 
     QModelIndex addPath(const QString& path, const QString& alias);
 
-    void delPath(const QString& path);
+    void removePath(const QString& path);
     void removeAllPaths();
 
     QModelIndex index(const QString& path, int column = 0) const;
@@ -121,9 +121,9 @@ private:
     }
 
     QDir::Filters filters;
-    bool readOnlyEnable = false;
-    bool nameFilterEnabled = false;
-    QStringList localNameFilters;
+    bool readOnlyFlag = false;
+    bool nameFilterFlag = false;
+    QStringList nameFiltersList;
 
     QVector<FileSystemInfo> fileSystemModels;
 

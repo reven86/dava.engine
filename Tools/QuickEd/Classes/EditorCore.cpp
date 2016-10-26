@@ -31,13 +31,12 @@ EditorCore::EditorCore(QObject* parent)
     : QObject(parent)
     , spritesPacker(std::make_unique<SpritesPacker>())
     , cacheClient(nullptr)
-    , documentGroup(new DocumentGroup(this))
+    //, documentGroup(new DocumentGroup(this))
     , mainWindow(std::make_unique<MainWindow>())
 {
     ConnectApplicationFocus();
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
-    mainWindow->AttachDocumentGroup(documentGroup);
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
@@ -55,25 +54,13 @@ EditorCore::EditorCore(QObject* parent)
     //connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::OnRecentMenu);
     //connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
 
-    connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
-    connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
-    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, this, &EditorCore::OnBiDiSupportChanged);
-    connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-
     auto previewWidget = mainWindow->previewWidget;
 
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(mainWindow.get(), &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
     auto packageWidget = mainWindow->packageWidget;
     connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
+
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
     connect(previewWidget, &PreviewWidget::ImportRequested, packageWidget, &PackageWidget::OnImport);
     connect(previewWidget, &PreviewWidget::CutRequested, packageWidget, &PackageWidget::OnCut);
@@ -84,15 +71,14 @@ EditorCore::EditorCore(QObject* parent)
     connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
     connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
-    //connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage); TODO fix
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorCore::~EditorCore()
 {
+    DVASSERT(project == nullptr);
+
     if (cacheClient && cacheClient->IsConnected())
     {
         cacheClient->Disconnect();
@@ -101,16 +87,6 @@ EditorCore::~EditorCore()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-// MainWindow* EditorCore::GetMainWindow() const
-// {
-//     return mainWindow.get();
-// }
-
-// Project* EditorCore::GetProject() const
-// {
-//     return project;
-// }
-
 void EditorCore::Start()
 {
     mainWindow->show();
@@ -118,9 +94,12 @@ void EditorCore::Start()
 
 void EditorCore::OnReloadSpritesStarted()
 {
-    for (auto& document : documentGroup->GetDocuments())
+    if (project == nullptr)
+        return;
+
+    for (auto& document : project->GetDocumentGroup()->GetDocuments())
     {
-        if (!documentGroup->TryCloseDocument(document))
+        if (!project->GetDocumentGroup()->TryCloseDocument(document))
         {
             return;
         }
@@ -193,54 +172,6 @@ void EditorCore::OnRecentMenu(QAction* recentProjectAction)
     }
 
     OpenProject(projectPath);
-}
-
-void EditorCore::UpdateLanguage()
-{
-    project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnRtlChanged(bool isRtl)
-{
-    UIControlSystem::Instance()->SetRtl(isRtl);
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnBiDiSupportChanged(bool support)
-{
-    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
-}
-
-void EditorCore::OnGlobalStyleClassesChanged(const QString& classesStr)
-{
-    Vector<String> tokens;
-    Split(classesStr.toStdString(), " ", tokens);
-
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
-    for (String& token : tokens)
-    {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
-    }
-
-    for (auto& document : documentGroup->GetDocuments())
-    {
-        document->RefreshAllControlProperties();
-        document->RefreshLayout();
-    }
 }
 
 void EditorCore::OpenProject(const QString& path)
@@ -333,11 +264,11 @@ void EditorCore::OnCloseProject()
 
 bool EditorCore::CloseProject()
 {
-    if (project.get() == nullptr /* !project->IsOpen()*/)
+    if (project == nullptr)
     {
         return true;
     }
-    auto documents = documentGroup->GetDocuments();
+    auto documents = project->GetDocumentGroup()->GetDocuments();
     bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
 
     if (hasUnsaved)
@@ -354,13 +285,13 @@ bool EditorCore::CloseProject()
         }
         else if (ret == QMessageBox::SaveAll)
         {
-            documentGroup->SaveAllDocuments();
+            project->GetDocumentGroup()->SaveAllDocuments();
         }
     }
 
-    for (auto& document : documentGroup->GetDocuments())
+    for (auto& document : project->GetDocumentGroup()->GetDocuments())
     {
-        documentGroup->CloseDocument(document);
+        project->GetDocumentGroup()->CloseDocument(document);
     }
     /*project->Close();*/
     OnProjectClose(project.get());
@@ -421,6 +352,8 @@ void EditorCore::DisableCacheClient()
 
 void EditorCore::OnProjectOpen(const Project* newProject)
 {
+    QWidget* widget1 = qApp->activeWindow();
+    QWidget* widget2 = mainWindow.get();
     AddRecentProject(newProject->GetProjectPath());
 
     mainWindow->SetRecentProjects(GetRecentProjects());
@@ -445,14 +378,34 @@ void EditorCore::OnProjectOpen(const Project* newProject)
     //connect(newProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
     //connect(newProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
 
-    EditorLocalizationSystem* editorLocalizationSystem = newProject->GetEditorLocalizationSystem();
+    //EditorLocalizationSystem* editorLocalizationSystem = newProject->GetEditorLocalizationSystem();
 
-    mainWindow->SetLocales(editorLocalizationSystem->GetAvailableLocaleNames(), editorLocalizationSystem->GetCurrentLocale());
+    mainWindow->SetLanguages(newProject->GetAvailableLanguages(), newProject->GetCurrentLanguage());
+
+    connect(mainWindow.get(), &MainWindow::CurrentLanguageChanged, newProject, &Project::SetCurrentLanguage);
+    connect(mainWindow.get(), &MainWindow::RtlChanged, newProject, &Project::SetRtl);
+    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, newProject, &Project::SetBiDiSupport);
+    connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, newProject, &Project::SetGlobalStyleClasses);
+
+    connect(newProject, &Project::CurrentLanguageChanged, mainWindow.get(), &MainWindow::SetCurrentLanguage);
+
+    DocumentGroup* documentGroup = newProject->GetDocumentGroup();
+    mainWindow->AttachDocumentGroup(documentGroup);
+    connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
+
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
+
+    //connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+    //connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+
+    //connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
+    //connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+
     mainWindow->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
-
-    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
-    connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
-    connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
     if (assetCacheEnabled)
     {
@@ -506,10 +459,30 @@ void EditorCore::OnProjectClose(const Project* currProject)
     //disconnect(currProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
     //disconnect(currProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
 
-    QComboBox* languageComboBox = mainWindow->GetComboBoxLanguage();
-    EditorLocalizationSystem* editorLocalizationSystem = currProject->GetEditorLocalizationSystem();
-    disconnect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
-    disconnect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+    //EditorLocalizationSystem* editorLocalizationSystem = currProject->GetEditorLocalizationSystem();
+    //disconnect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
+    //disconnect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
+    disconnect(mainWindow.get(), &MainWindow::CurrentLanguageChanged, currProject, &Project::SetCurrentLanguage);
+    disconnect(mainWindow.get(), &MainWindow::RtlChanged, currProject, &Project::SetRtl);
+    disconnect(mainWindow.get(), &MainWindow::BiDiSupportChanged, currProject, &Project::SetBiDiSupport);
+    disconnect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, currProject, &Project::SetGlobalStyleClasses);
+
+    disconnect(currProject, &Project::CurrentLanguageChanged, mainWindow.get(), &MainWindow::SetCurrentLanguage);
+
+    DocumentGroup* documentGroup = currProject->GetDocumentGroup();
+    mainWindow->DetachDocumentGroup(documentGroup);
+    disconnect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
+
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
+
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
     DisableCacheClient();
 }

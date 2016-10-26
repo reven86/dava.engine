@@ -9,6 +9,7 @@
 class Document;
 class CommandStackGroup;
 class PackageBaseNode;
+class PackageNode;
 class QAction;
 class QTabBar;
 
