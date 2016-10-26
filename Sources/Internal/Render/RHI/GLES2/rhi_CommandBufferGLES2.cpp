@@ -69,6 +69,7 @@ RenderPassGLES2_t
     int priority;
     Handle perfQuery0;
     Handle perfQuery1;
+    bool skipPerfQueries;
 };
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -324,7 +325,7 @@ public:
     uint32 isFirstInPass : 1;
     uint32 isLastInPass : 1;
     uint32 usingDefaultFrameBuffer : 1;
-    uint32 skipPerfQueries : 1;
+    uint32 skipPassPerfQueries : 1;
 
     //    uint32              dbgCommandCount;
     RingBuffer* text;
@@ -403,6 +404,7 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
     pass->priority = passConf.priority;
     pass->perfQuery0 = passConf.perfQueryStart;
     pass->perfQuery1 = passConf.perfQueryEnd;
+    pass->skipPerfQueries = false;
 
     for (unsigned i = 0; i != cmdBufCount; ++i)
     {
@@ -416,7 +418,7 @@ gles2_RenderPass_Allocate(const RenderPassConfig& passConf, uint32 cmdBufCount, 
         cb->isFirstInPass = i == 0;
         cb->isLastInPass = i == cmdBufCount - 1;
         cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
-        cb->skipPerfQueries = false;
+        cb->skipPassPerfQueries = false;
 
         pass->cmdBuf[i] = h;
         cmdBuf[i] = h;
@@ -661,7 +663,7 @@ static void
 gles2_CommandBuffer_IssueTimestamp(Handle cmdBuf, Handle query)
 {
     CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cmdBuf);
-    cb->skipPerfQueries = !_GLES2_TimeStampQuerySupported;
+    cb->skipPassPerfQueries = !_GLES2_TimeStampQuerySupported;
 #if RHI_GLES2__USE_CMDBUF_PACKING
     CommandGLES2_IssueTimestamp* cmd = cb->allocCmd<CommandGLES2_IssueTimestamp>();
     cmd->perfQuery = query;
@@ -2010,13 +2012,13 @@ _GLES2_ExecuteQueuedCommands()
 
             if (DeviceCaps().isPerfQuerySupported && !_GLES2_TimeStampQuerySupported)
             {
-                skipFramePerfQueries |= (pp->perfQuery0 != InvalidHandle);
-                skipFramePerfQueries |= (pp->perfQuery1 != InvalidHandle);
-
                 for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
                 {
-                    skipFramePerfQueries |= CommandBufferPoolGLES2::Get(pp->cmdBuf[b])->skipPerfQueries;
+                    pp->skipPerfQueries |= CommandBufferPoolGLES2::Get(pp->cmdBuf[b])->skipPassPerfQueries;
                 }
+
+                skipFramePerfQueries |= (pp->perfQuery0 != InvalidHandle) || pp->skipPerfQueries;
+                skipFramePerfQueries |= (pp->perfQuery1 != InvalidHandle) || pp->skipPerfQueries;
             }
         }
 
@@ -2044,6 +2046,7 @@ _GLES2_ExecuteQueuedCommands()
 
     if (do_exit)
         return;
+
     if (skipFramePerfQueries)
     {
         if (framePerfQuery0 != InvalidHandle)
@@ -2069,28 +2072,20 @@ _GLES2_ExecuteQueuedCommands()
         {
             RenderPassGLES2_t* pp = *p;
 
+            if (pp->perfQuery0 != InvalidHandle)
+            {
+                if (pp->skipPerfQueries)
+                    PerfQueryGLES2::SkipQuery(pp->perfQuery0);
+                else
+                    PerfQueryGLES2::IssueQuery(pp->perfQuery0);
+            }
+
             for (unsigned b = 0; b != pp->cmdBuf.size(); ++b)
             {
                 Handle cb_h = pp->cmdBuf[b];
                 CommandBufferGLES2_t* cb = CommandBufferPoolGLES2::Get(cb_h);
 
-                if (pp->perfQuery0 != InvalidHandle)
-                {
-                    if (cb->skipPerfQueries)
-                        PerfQueryGLES2::SkipQuery(pp->perfQuery0);
-                    else
-                        PerfQueryGLES2::IssueQuery(pp->perfQuery0);
-                }
-
                 cb->Execute();
-
-                if (pp->perfQuery1 != InvalidHandle)
-                {
-                    if (cb->skipPerfQueries)
-                        PerfQueryGLES2::SkipQuery(pp->perfQuery1);
-                    else
-                        PerfQueryGLES2::IssueQuery(pp->perfQuery1);
-                }
 
                 if (cb->sync != InvalidHandle)
                 {
@@ -2102,6 +2097,14 @@ _GLES2_ExecuteQueuedCommands()
                 }
 
                 CommandBufferPoolGLES2::Free(cb_h);
+            }
+
+            if (pp->perfQuery1 != InvalidHandle)
+            {
+                if (pp->skipPerfQueries)
+                    PerfQueryGLES2::SkipQuery(pp->perfQuery1);
+                else
+                    PerfQueryGLES2::IssueQuery(pp->perfQuery1);
             }
         }
         Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n", frame_n);
