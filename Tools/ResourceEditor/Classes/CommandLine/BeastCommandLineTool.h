@@ -5,6 +5,8 @@
 #include "FileSystem/FilePath.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
+class SceneEditor2;
+class BeastRunner;
 class BeastCommandLineTool : public REConsoleModuleCommon
 {
 public:
@@ -18,6 +20,9 @@ private:
 
     DAVA::FilePath scenePathname;
     DAVA::FilePath outputPathname;
+
+    BeastRunner *beastRunner = false;
+    SceneEditor2* scene = nullptr;
 };
 
 #endif //#if defined (__DAVAENGINE_BEAST__)

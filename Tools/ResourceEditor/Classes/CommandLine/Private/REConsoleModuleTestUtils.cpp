@@ -1,4 +1,4 @@
-#include "CommandLine/Private/REConsoleModuleTestUtils.h"
+﻿#include "CommandLine/Private/REConsoleModuleTestUtils.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
@@ -7,6 +7,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/Mesh.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
@@ -178,12 +179,9 @@ Entity* CreateWaterEntity(const FilePath& scenePathname)
     ScopedPtr<NMaterial> material(CreateMaterial(FastName("water"), NMaterialName::WATER_ALL_QUALITIES));
     material->SetQualityGroup(FastName("Water"));
     ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
-    ScopedPtr<RenderBatch> batch(new RenderBatch());
-    batch->SetMaterial(material);
-    batch->SetPolygonGroup(geometry);
 
-    ScopedPtr<RenderObject> ro(new RenderObject());
-    ro->AddRenderBatch(batch);
+    ScopedPtr<Mesh> ro(new Mesh());
+    ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
@@ -198,12 +196,9 @@ Entity* CreateSkyEntity(const FilePath& scenePathname)
 
     ScopedPtr<NMaterial> material(CreateMaterial(FastName("sky"), NMaterialName::SKYOBJECT));
     ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
-    ScopedPtr<RenderBatch> batch(new RenderBatch());
-    batch->SetMaterial(material);
-    batch->SetPolygonGroup(geometry);
 
-    ScopedPtr<RenderObject> ro(new RenderObject());
-    ro->AddRenderBatch(batch);
+    ScopedPtr<Mesh> ro(new Mesh());
+    ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
@@ -218,12 +213,8 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
 
     ScopedPtr<NMaterial> material(CreateMaterial(FastName("box"), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
     ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
-    ScopedPtr<RenderBatch> batch(new RenderBatch());
-    batch->SetMaterial(material);
-    batch->SetPolygonGroup(geometry);
-
-    ScopedPtr<RenderObject> ro(new RenderObject());
-    ro->AddRenderBatch(batch);
+    ScopedPtr<Mesh> ro(new Mesh());
+    ro->AddPolygonGroup(geometry, material);
     RenderComponent* rc = new RenderComponent(ro);
     entity->AddComponent(rc);
 
@@ -267,12 +258,8 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
             instanceMaterial->SetParent(material);
 
             ScopedPtr<PolygonGroup> geometry(CreatePolygonGroup());
-            ScopedPtr<RenderBatch> batch(new RenderBatch());
-            batch->SetMaterial(instanceMaterial);
-            batch->SetPolygonGroup(geometry);
-
-            ScopedPtr<RenderObject> ro(new RenderObject());
-            ro->AddRenderBatch(batch);
+            ScopedPtr<Mesh> ro(new Mesh());
+            ro->AddPolygonGroup(geometry, instanceMaterial);
             RenderComponent* rc = new RenderComponent(ro);
             vegetationLayer->AddComponent(rc);
             vegetationLayer->AddComponent(new LodComponent());
@@ -403,13 +390,30 @@ REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTe
 void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
 {
     DVASSERT(module != nullptr);
-    module->PostInit();
 
-    while (module->OnFrame() != REConsoleModuleCommon::eFrameResult::FINISHED)
+    InitModule(module);
+
+    while (ProcessModule(module) == false)
     {
-        //game loop
+        //module loop
     }
 
+    FinalizeModule(module);
+}
+
+void REConsoleModuleTestUtils::InitModule(REConsoleModuleCommon* module)
+{
+    module->PostInit();
+}
+
+bool REConsoleModuleTestUtils::ProcessModule(REConsoleModuleCommon* module)
+{
+    bool completed = (module->OnFrame() == REConsoleModuleCommon::eFrameResult::FINISHED);
+    return completed;
+}
+
+void REConsoleModuleTestUtils::FinalizeModule(REConsoleModuleCommon* module)
+{
     module->BeforeDestroyed();
 }
 

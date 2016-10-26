@@ -25,7 +25,7 @@ const DAVA::String outPathnameStr = projectStr + "DataSource/3d/Scene/lightmap/"
 
 DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
 {
-    void TestScene()
+    void TestScene() const
     {
         using namespace DAVA;
 
@@ -46,7 +46,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
                     Landscape* landscape = static_cast<Landscape*>(ro);
                     material = landscape->GetMaterial();
                 }
-                else
+                else if (ro->GetType() != RenderObject::TYPE_VEGETATION)
                 {
                     uint32 rbCount = ro->GetRenderBatchCount();
                     TEST_VERIFY(rbCount == 1);
@@ -80,30 +80,54 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         TEST_VERIFY(FileSystem::Instance()->Exists(BCLTestDetail::outPathnameStr + "landscape.png"));
     }
 
+    DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder; 
+    std::unique_ptr<REConsoleModuleCommon> tool;
+    bool testCompleted = false;
+
     DAVA_TEST (BeastTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        gpuLoadingOrder = DAVA::Texture::GetGPULoadingOrder();
+        Texture::SetGPULoadingOrder({ eGPUFamily::GPU_ORIGIN });
+
         REConsoleModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
 
         Vector<String> cmdLine =
         {
-          "ResourceEditor",
-          "-beast",
-          "-file",
-          FilePath(BCLTestDetail::scenePathnameStr).GetAbsolutePathname(),
-          "-output",
-          FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname(),
+            "ResourceEditor",
+            "-beast",
+            "-file",
+            FilePath(BCLTestDetail::scenePathnameStr).GetAbsolutePathname(),
+            "-output",
+            FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname(),
         };
 
-        std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<BeastCommandLineTool>(cmdLine);
-        REConsoleModuleTestUtils::ExecuteModule(tool.get());
+        tool.reset(new BeastCommandLineTool(cmdLine));
+        REConsoleModuleTestUtils::InitModule(tool.get());
+    }
 
-        TestScene();
+    void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
+    {
+        if (tool)
+        {
+            testCompleted = REConsoleModuleTestUtils::ProcessModule(tool.get());
+        }
+    }
 
-        REConsoleModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
+    bool TestComplete(const DAVA::String& testName) const override
+    {
+        if (testCompleted && tool)
+        {
+            REConsoleModuleTestUtils::FinalizeModule(tool.get());
+
+            TestScene();
+            REConsoleModuleTestUtils::ClearTestFolder(BCLTestDetail::projectStr);
+            DAVA::Texture::SetGPULoadingOrder(gpuLoadingOrder);
+        }
+
+        return testCompleted;
     }
 
     BEGIN_FILES_COVERED_BY_TESTS()

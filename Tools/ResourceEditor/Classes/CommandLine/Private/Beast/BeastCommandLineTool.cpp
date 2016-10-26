@@ -47,21 +47,31 @@ bool BeastCommandLineTool::PostInitInternal()
         return false;
     }
 
+    scene = new SceneEditor2();
+    if (scene->LoadScene(scenePathname) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
+    {
+        scene->Update(0.1f);
+        beastRunner = new BeastRunner(scene, outputPathname, BeastProxy::MODE_LIGHTMAPS, nullptr);
+        beastRunner->Start();
+    }
+    else
+    {
+        SafeRelease(scene);
+        return false;
+    }
+
     return true;
 }
 
 DAVA::TArc::ConsoleModule::eFrameResult BeastCommandLineTool::OnFrameInternal()
 {
-    DAVA::ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-
-    if (scene->LoadScene(scenePathname) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
+    if (scene != nullptr && beastRunner != nullptr)
     {
-        scene->Update(0.1f);
-
-        BeastRunner beast(scene, outputPathname, BeastProxy::MODE_LIGHTMAPS, nullptr);
-        beast.Run();
-
-        scene->SaveScene();
+        bool finished = beastRunner->Process();
+        if (finished == false)
+        {
+            return DAVA::TArc::ConsoleModule::eFrameResult::CONTINUE;
+        }
     }
 
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
@@ -69,6 +79,19 @@ DAVA::TArc::ConsoleModule::eFrameResult BeastCommandLineTool::OnFrameInternal()
 
 void BeastCommandLineTool::BeforeDestroyedInternal()
 {
+    if (beastRunner)
+    {
+        beastRunner->Finish(false);
+    }
+
+    if (scene != nullptr)
+    {
+        scene->SaveScene();
+        DAVA::SafeRelease(scene);
+    }
+
+    DAVA::SafeDelete(beastRunner);
+
     SceneConsoleHelper::FlushRHI();
 }
 

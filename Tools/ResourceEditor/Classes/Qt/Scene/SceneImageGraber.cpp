@@ -64,8 +64,7 @@ void GrabImage(Params inputParams)
                                                     DAVA::FilePath filePath = internalParams.inputParams.outputFile;
                                                     if (filePath.IsEmpty())
                                                     {
-                                                        DVASSERT(false);
-                                                        //                                                        filePath = internalParams.inputParams.scene->GetScenePath().GetDirectory();
+                                                        DVASSERT(false); // we should always setup pathname from external code
                                                     }
 
                                                     if (filePath.IsDirectoryPathname())
