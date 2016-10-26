@@ -142,7 +142,7 @@ float32 SystemTimer::ElapsedSec()
     }
 #elif defined(__DAVAENGINE_ANDROID__)
     uint64 currentTime = GetTickCount();
-    return (float32)(currentTime - t0) / 1000.f;
+    return static_cast<float32>(currentTime - t0) / 1000.f;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     uint64 current = mach_absolute_time();
     uint64 elapsed = (current - t0) * timebase.numer / timebase.denom;

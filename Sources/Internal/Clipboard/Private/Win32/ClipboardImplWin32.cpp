@@ -2,12 +2,6 @@
 #include "Base/Platform.h"
 #include <WinUser.h>
 
-#ifdef UNICODE
-#define TEXT_FORMAT CF_UNICODETEXT
-#else
-#define TEXT_FORMAT CF_TEXT
-#endif
-
 namespace DAVA
 {
 ClipboardImplWin32::ClipboardImplWin32()
@@ -28,7 +22,7 @@ bool ClipboardImplWin32::IsReadyToUse() const
     return isReady;
 }
 
-bool ClipboardImplWin32::ClearClipboard() const
+bool ClipboardImplWin32::Clear() const
 {
     if (isReady)
     {
@@ -39,7 +33,7 @@ bool ClipboardImplWin32::ClearClipboard() const
 
 bool ClipboardImplWin32::HasText() const
 {
-    return ::IsClipboardFormatAvailable(TEXT_FORMAT) != 0;
+    return ::IsClipboardFormatAvailable(CF_UNICODETEXT) != 0;
 }
 
 bool ClipboardImplWin32::SetText(const WideString& str)
@@ -57,8 +51,8 @@ bool ClipboardImplWin32::SetText(const WideString& str)
                 lptstrCopy[length] = static_cast<WideString::value_type>(0); // null character
                 ::GlobalUnlock(hglbCopy);
 
-                ClearClipboard();
-                if (::SetClipboardData(TEXT_FORMAT, hglbCopy) != nullptr)
+                Clear();
+                if (::SetClipboardData(CF_UNICODETEXT, hglbCopy) != nullptr)
                 {
                     return true;
                 }
@@ -73,7 +67,7 @@ WideString ClipboardImplWin32::GetText() const
     WideString outPut;
     if (isReady && HasText())
     {
-        auto hglb = ::GetClipboardData(TEXT_FORMAT);
+        auto hglb = ::GetClipboardData(CF_UNICODETEXT);
         if (hglb != nullptr)
         {
             auto lptstr = static_cast<LPTSTR>(::GlobalLock(hglb));
