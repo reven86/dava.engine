@@ -224,33 +224,33 @@ static void gles_check_GL_extensions()
                 Short_Int_Supported = true;
             }
 #ifdef __DAVAENGINE_ANDROID__
-            glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstanced");
+            glDrawElementsInstanced = reinterpret_cast<PFNGLEGL_GLDRAWELEMENTSINSTANCED>(eglGetProcAddress("glDrawElementsInstanced"));
             if (glDrawElementsInstanced == nullptr)
-                glDrawElementsInstanced = (PFNGLEGL_GLDRAWELEMENTSINSTANCED)eglGetProcAddress("glDrawElementsInstancedEXT");
+                glDrawElementsInstanced = reinterpret_cast<PFNGLEGL_GLDRAWELEMENTSINSTANCED>(eglGetProcAddress("glDrawElementsInstancedEXT"));
 
-            glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstanced");
+            glDrawArraysInstanced = reinterpret_cast<PFNGLEGL_GLDRAWARRAYSINSTANCED>(eglGetProcAddress("glDrawArraysInstanced"));
             if (glDrawArraysInstanced == nullptr)
-                glDrawArraysInstanced = (PFNGLEGL_GLDRAWARRAYSINSTANCED)eglGetProcAddress("glDrawArraysInstancedEXT");
+                glDrawArraysInstanced = reinterpret_cast<PFNGLEGL_GLDRAWARRAYSINSTANCED>(eglGetProcAddress("glDrawArraysInstancedEXT"));
 
-            glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisor");
+            glVertexAttribDivisor = reinterpret_cast<PFNGLEGL_GLVERTEXATTRIBDIVISOR>(eglGetProcAddress("glVertexAttribDivisor"));
             if (glVertexAttribDivisor == nullptr)
-                glVertexAttribDivisor = (PFNGLEGL_GLVERTEXATTRIBDIVISOR)eglGetProcAddress("glVertexAttribDivisorEXT");
+                glVertexAttribDivisor = reinterpret_cast<PFNGLEGL_GLVERTEXATTRIBDIVISOR>(eglGetProcAddress("glVertexAttribDivisorEXT"));
 
-            glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisample");
+            glRenderbufferStorageMultisample = reinterpret_cast<PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE>(eglGetProcAddress("glRenderbufferStorageMultisample"));
             if (glRenderbufferStorageMultisample == nullptr)
-                glRenderbufferStorageMultisample = (PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE)eglGetProcAddress("glRenderbufferStorageMultisampleEXT");
+                glRenderbufferStorageMultisample = reinterpret_cast<PFNGLEGL_GLRENDERBUFFERSTORAGEMULTISAMPLE>(eglGetProcAddress("glRenderbufferStorageMultisampleEXT"));
 
-            glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebuffer");
+            glBlitFramebuffer = reinterpret_cast<PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC>(eglGetProcAddress("glBlitFramebuffer"));
             if (glBlitFramebuffer == nullptr)
-                glBlitFramebuffer = (PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC)eglGetProcAddress("glBlitFramebufferEXT");
+                glBlitFramebuffer = reinterpret_cast<PFNGLEGL_GLBLITFRAMEBUFFERANGLEPROC>(eglGetProcAddress("glBlitFramebufferEXT"));
 
-            glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControl");
+            glDebugMessageControl = reinterpret_cast<PFNGL_DEBUGMESSAGECONTROLKHRPROC>(eglGetProcAddress("glDebugMessageControl"));
             if (glDebugMessageControl == nullptr)
-                glDebugMessageControl = (PFNGL_DEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress("glDebugMessageControlKHR");
+                glDebugMessageControl = reinterpret_cast<PFNGL_DEBUGMESSAGECONTROLKHRPROC>(eglGetProcAddress("glDebugMessageControlKHR"));
 
-            glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallback");
+            glDebugMessageCallback = reinterpret_cast<PFNGL_DEBUGMESSAGECALLBACKKHRPROC>(eglGetProcAddress("glDebugMessageCallback"));
             if (glDebugMessageCallback == nullptr)
-                glDebugMessageCallback = (PFNGL_DEBUGMESSAGECALLBACKKHRPROC)eglGetProcAddress("glDebugMessageCallbackKHR");
+                glDebugMessageCallback = reinterpret_cast<PFNGL_DEBUGMESSAGECALLBACKKHRPROC>(eglGetProcAddress("glDebugMessageCallbackKHR"));
 #endif
         }
         else
@@ -331,16 +331,17 @@ void gles2_Uninitialize()
 static void
 gles2_Reset(const ResetParam& param)
 {
-    _GLES2_DefaultFrameBuffer_Width = param.width;
-    _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
-    android_gl_reset(param.window);
+    android_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_IPHONE__)
-    ios_gl_reset(param.window);
+    ios_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
 #elif defined(__DAVAENGINE_WIN32__)
     win_gl_reset(param);
+#else
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 #endif
 }
 
