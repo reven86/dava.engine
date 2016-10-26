@@ -1,12 +1,16 @@
 #include "SceneImageGraber.h"
 
 #include "Functional/Function.h"
+#include "Job/JobManager.h"
 #include "Math/MathHelpers.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RenderBase.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 
 #include "Scene3D/Scene.h"
 

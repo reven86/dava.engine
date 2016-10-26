@@ -3,10 +3,17 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Render/RenderBase.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Utils/Random.h"
 
 #include "Testing/TArcUnitTests.h"
+
+#include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include <memory>
 

@@ -12,6 +12,8 @@
 #include "Render/RenderHelper.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Texture.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Scene.h"
 
 #include "Scene/SceneImageGraber.h"
 

@@ -5,7 +5,14 @@
 #include "CommandLine/Private/REConsoleModuleTestUtils.h"
 
 #include "Base/BaseTypes.h"
-
+#include "FileSystem/FileSystem.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Render/Material/NMaterial.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/SceneFileV2.h"
 
 #include "Testing/TArcUnitTests.h"
 
@@ -20,6 +27,8 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
 {
     void TestScene()
     {
+        using namespace DAVA;
+
         ScopedPtr<Scene> scene(new Scene());
         TEST_VERIFY(scene->LoadScene(BCLTestDetail::scenePathnameStr) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR);
 
@@ -62,7 +71,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
                         if (tx.first == FastName("lightmap"))
                         {
                             TEST_VERIFY(FileSystem::Instance()->Exists(tx.second->path));
-                            TEST_VERIFY(tx.second->path.GetDirectory().GetAbsolutePathname() == FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname));
+                            TEST_VERIFY(tx.second->path.GetDirectory().GetAbsolutePathname() == FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname());
                         }
                     }
                 }
@@ -75,7 +84,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateLoadingGuard({ eGPUFamily::GPU_ORIGIN });
+        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(BCLTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(BCLTestDetail::scenePathnameStr);
 
@@ -101,6 +110,6 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
     FIND_FILES_IN_TARGET(TArc)
     DECLARE_COVERED_FILES("BeastCommandLineTool.cpp")
     END_FILES_COVERED_BY_TESTS();
-}
+};
 
 #endif //BEAST

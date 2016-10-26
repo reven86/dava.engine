@@ -1,9 +1,11 @@
 #include "CommandLine/StaticOcclusionTool.h"
 #include "CommandLine/Private/REConsoleModuleTestUtils.h"
 
-
 #include "Base/BaseTypes.h"
-
+#include "Entity/Component.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/SceneFileV2.h"
 
 #include "Testing/TArcUnitTests.h"
 

@@ -5,6 +5,21 @@
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "Render/3D/PolygonGroup.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Material/NMaterial.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/Components/CameraComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Scene.h"
+#include "Utils/Random.h"
 
 #include <memory>
 
@@ -374,8 +389,11 @@ private:
 
 REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
     : impl(new REConsoleModuleTestUtils::TextureLoadingGuard::Impl(newLoadingOrder))
-      {
-      };
+{
+}
+
+REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
+
 
 REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {

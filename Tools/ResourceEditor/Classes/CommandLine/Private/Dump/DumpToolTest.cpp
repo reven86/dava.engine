@@ -10,6 +10,7 @@
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Testing/TArcUnitTests.h"
 

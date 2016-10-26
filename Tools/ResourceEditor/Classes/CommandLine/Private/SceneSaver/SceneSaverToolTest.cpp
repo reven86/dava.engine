@@ -2,7 +2,8 @@
 #include "CommandLine/Private/REConsoleModuleTestUtils.h"
 
 #include "Base/BaseTypes.h"
-
+#include "FileSystem/FileList.h"
+#include "Render/TextureDescriptor.h"
 
 #include "Testing/TArcUnitTests.h"
 

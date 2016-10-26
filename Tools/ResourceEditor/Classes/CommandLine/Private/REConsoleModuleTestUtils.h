@@ -1,6 +1,14 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+
 #include <memory>
+
+namespace DAVA
+{
+class FilePath;
+};
 
 class REConsoleModuleCommon;
 class REConsoleModuleTestUtils
@@ -10,6 +18,7 @@ public:
     {
     public:
         TextureLoadingGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
+        ~TextureLoadingGuard();
 
     private:
         class Impl;
