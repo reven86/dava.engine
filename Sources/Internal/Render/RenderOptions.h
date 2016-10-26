@@ -54,6 +54,11 @@ public:
 #endif
         DRAW_NONDEF_GLYPH,
         HIGHLIGHT_HARD_CONTROLS,
+
+        PROFILER_CPU,
+        PROFILER_GPU,
+        PROFILER_OVERLAY,
+
         OPTIONS_COUNT
     };
 

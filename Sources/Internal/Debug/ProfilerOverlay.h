@@ -64,7 +64,7 @@ public:
     uint32 GetTraceHistoryOffset() const;
 
 protected:
-    static const uint32 MARKER_HISTORY_LENGTH = 300;
+    static const uint32 MARKER_HISTORY_LENGTH = 120;
 
     struct MarkerHistory
     {
@@ -118,6 +118,7 @@ protected:
         BUTTON_GPU_DOWN,
         BUTTON_HISTORY_PREV,
         BUTTON_HISTORY_NEXT,
+        BUTTON_DRAW_MARKER_HISTORY,
         BUTTON_PROFILERS_START_STOP,
         BUTTON_CLOSE,
 
@@ -163,6 +164,7 @@ protected:
     bool overlayEnabled = false;
     bool overlayPaused = true;
     bool inputEnabled = false;
+    bool drawMarkerHistory = false;
 };
 
 inline void ProfilerOverlay::SetEnabled(bool enabled)

@@ -45,7 +45,11 @@ FastName optionsNames[RenderOptions::OPTIONS_COUNT] =
   FastName("Line Break Errors"),
 #endif
   FastName("Draw Nondef Glyph"),
-  FastName("Highlight Hard Controls")
+  FastName("Highlight Hard Controls"),
+
+  FastName("ProfilerCPU"),
+  FastName("ProfilerGPU"),
+  FastName("ProfilerOverlay"),
 };
 
 RenderOptions::RenderOptions()
@@ -68,6 +72,10 @@ RenderOptions::RenderOptions()
     options[HIGHLIGHT_HARD_CONTROLS] = false;
 
     options[PREVIEW_METAL_ON_GL] = false;
+
+    options[PROFILER_CPU] = false;
+    options[PROFILER_GPU] = false;
+    options[PROFILER_OVERLAY] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

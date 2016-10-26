@@ -7,6 +7,7 @@
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
+#include "Render/RenderOptions.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
 #include <ostream>
@@ -43,6 +44,7 @@ static const uint32 MAX_TRACE_LIST_ELEMENTS_TO_DRAW = 7;
 static const char* BUTTON_CLOSE_TEXT = "Close (Ctrl + F12)";
 static const char* BUTTON_HISTORY_NEXT_TEXT = "Next Trace (Ctrl + Right) ->";
 static const char* BUTTON_HISTORY_PREV_TEXT = "<- Prev Trace (Ctrl + Left)";
+static const char* BUTTON_DRAW_MARKER_HISTORY_TEXT = "Show/Hide Interest Markers";
 static const char* BUTTON_PROFILERS_UNPAUSE_TEXT = "Unpause (Ctrl + F11)";
 static const char* BUTTON_PROFILERS_PAUSE_TEXT = "Pause (Ctrl + F11)";
 };
@@ -83,10 +85,11 @@ ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCoun
 
     Memset(buttonsText, 0, sizeof(buttonsText));
 
-    buttonsText[BUTTON_CLOSE] = ProfilerOverlayDetails::BUTTON_CLOSE_TEXT;
     buttonsText[BUTTON_HISTORY_NEXT] = ProfilerOverlayDetails::BUTTON_HISTORY_NEXT_TEXT;
     buttonsText[BUTTON_HISTORY_PREV] = ProfilerOverlayDetails::BUTTON_HISTORY_PREV_TEXT;
+    buttonsText[BUTTON_DRAW_MARKER_HISTORY] = ProfilerOverlayDetails::BUTTON_DRAW_MARKER_HISTORY_TEXT;
     buttonsText[BUTTON_PROFILERS_START_STOP] = ProfilerOverlayDetails::BUTTON_PROFILERS_UNPAUSE_TEXT;
+    buttonsText[BUTTON_CLOSE] = ProfilerOverlayDetails::BUTTON_CLOSE_TEXT;
 }
 
 void ProfilerOverlay::SetPaused(bool paused)
@@ -102,6 +105,30 @@ bool ProfilerOverlay::IsPaused() const
 
 void ProfilerOverlay::OnFrameEnd()
 {
+    if (ProfilerCPU::globalProfiler)
+    {
+        if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
+            ProfilerCPU::globalProfiler->Start();
+        else
+            ProfilerCPU::globalProfiler->Stop();
+    }
+
+    if (ProfilerGPU::globalProfiler)
+    {
+        if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
+            ProfilerGPU::globalProfiler->Start();
+        else
+            ProfilerGPU::globalProfiler->Stop();
+    }
+
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
+    {
+        SetInputEnabled(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY));
+        SetEnabled(true);
+
+        Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_OVERLAY, false);
+    }
+
     if (!overlayEnabled)
         return;
 
@@ -300,6 +327,10 @@ void ProfilerOverlay::OnButtonPressed(eButton button)
         SetTraceHistoryOffset(GetTraceHistoryOffset() + 1);
         break;
 
+    case BUTTON_DRAW_MARKER_HISTORY:
+        drawMarkerHistory = !drawMarkerHistory;
+        break;
+
     case BUTTON_PROFILERS_START_STOP:
         SetPaused(!IsPaused());
         break;
@@ -492,7 +523,7 @@ void ProfilerOverlay::Draw()
     }
 
     //draw interest markers history
-    if (!interestMarkers.empty())
+    if (drawMarkerHistory && !interestMarkers.empty())
     {
         int32 chartColumnCount = (screenSize.dy - rect.y - rect.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE) / ProfilerOverlayDetails::MARKER_HISTORY_CHART_HEIGHT;
         int32 chartRowCount = int32(ceilf(float32(interestMarkers.size()) / chartColumnCount));
@@ -520,7 +551,7 @@ void ProfilerOverlay::Draw()
     static const uint32 BUTTON_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 BUTTON_BORDER_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
 
-    int32 buttonWidth = screenSize.dx / 4;
+    int32 buttonWidth = screenSize.dx / (int32(BUTTON_COUNT) - int32(BUTTON_HISTORY_PREV));
     int32 x0 = 0, x1 = 0, y0 = screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
     for (int32 i = int32(BUTTON_HISTORY_PREV); i < int32(BUTTON_COUNT); ++i)
     {
