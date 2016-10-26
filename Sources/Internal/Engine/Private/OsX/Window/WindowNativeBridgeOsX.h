@@ -80,6 +80,7 @@ struct WindowNativeBridge final
 
 private:
     void SetSystemCursorVisible(bool visible);
+    void SetSystemCursorCapture(bool capture);
 
     eCursorCapture captureMode = eCursorCapture::OFF;
     bool mouseVisible = true;
