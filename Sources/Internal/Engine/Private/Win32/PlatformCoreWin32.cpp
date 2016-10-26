@@ -11,6 +11,7 @@
 #include "Engine/Window.h"
 #include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Win32/DllImportWin32.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
 #include "Platform/SystemTimer.h"
@@ -26,6 +27,7 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
     , nativeService(new NativeService(this))
 {
+    DllImport::Initialize();
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 
