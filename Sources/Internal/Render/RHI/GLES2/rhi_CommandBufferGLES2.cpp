@@ -2762,14 +2762,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::GET_QUERYOBJECT_UIV:
         {
 #if defined(__DAVAENGINE_IPHONE__)
-            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+            EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
 #elif defined(__DAVAENGINE_ANDROID__)
             if (glGetQueryObjectuiv)
             {
-                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
             }
 #else
-            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), (GLuint*)(arg[2])));
+            EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GLenum(arg[1]), reinterpret_cast<GLuint*>(arg[2])));
 #endif
             cmd->status = err;
         }
@@ -2778,14 +2778,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
         case GLCommand::DELETE_QUERIES:
         {
 #if defined(__DAVAENGINE_IPHONE__)
-            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            EXEC_GL(glDeleteQueriesEXT(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
             if (glDeleteQueries)
             {
-                EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+                EXEC_GL(glDeleteQueries(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
             }
 #else
-            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), (const GLuint*)(arg[1])));
+            EXEC_GL(glDeleteQueries(GLsizei(arg[0]), reinterpret_cast<const GLuint*>(arg[1])));
 #endif
             cmd->status = err;
         }
@@ -2810,14 +2810,14 @@ _ExecGL(GLCommand* command, uint32 cmdCount)
             if (err == GL_NO_ERROR && result)
             {
 #if defined(__DAVAENGINE_IPHONE__)
-                EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                EXEC_GL(glGetQueryObjectuivEXT(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
 #elif defined(__DAVAENGINE_ANDROID__)
                 if (glGetQueryObjectuiv)
                 {
-                    EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                    EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
                 }
 #else
-                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, (GLuint*)(arg[1])));
+                EXEC_GL(glGetQueryObjectuiv(GLuint(arg[0]), GL_QUERY_RESULT, reinterpret_cast<GLuint*>(arg[1])));
 #endif
             }
         }
