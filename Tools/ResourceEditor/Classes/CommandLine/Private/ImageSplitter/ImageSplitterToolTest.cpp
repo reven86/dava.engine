@@ -28,7 +28,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         const uint8 b = Random::Instance()->Rand(255);
         const uint8 a = Random::Instance()->Rand(255);
 
-        FileSystem::Instance()->CreateDirectory(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory(), true);
+        REConsoleModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
 
         ScopedPtr<Image> rgbaImage(Image::Create(ISTTestDetail::width, ISTTestDetail::height, PixelFormat::FORMAT_RGBA8888));
         for (uint32 pixelPos = 0; pixelPos < rgbaImage->dataSize; pixelPos += 4)
@@ -98,7 +98,7 @@ DAVA_TARC_TESTCLASS(ImageSplitterToolTest)
         const uint8 b = Random::Instance()->Rand(255);
         const uint8 a = Random::Instance()->Rand(255);
 
-        FileSystem::Instance()->CreateDirectory(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory(), true);
+        REConsoleModuleTestUtils::CreateTestFolder(FilePath(ISTTestDetail::rgbaImagePathname).GetDirectory());
 
         auto createChannel = [](const String& channelName, uint8 channelValue)
         {

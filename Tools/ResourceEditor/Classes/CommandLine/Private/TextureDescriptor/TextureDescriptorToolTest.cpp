@@ -41,6 +41,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+
         FilePath imagePathname = TDTestDetail::testFolderStr + "123/image.tga";
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         TEST_VERIFY(TDTestDetail::CreateImageFile(imagePathname));
@@ -119,6 +121,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
 
@@ -180,6 +184,8 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
 
@@ -196,15 +202,15 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "-PowerVR_iOS",
               "A8",
               "-PowerVR_Android",
-              "RGBA_8888",
+              "RGBA8888",
               "-adreno",
-              "RGBA_5551",
+              "RGBA5551",
               "-mali",
-              "RGBA_4444",
+              "RGBA4444",
               "-tegra",
-              "RGB_888",
+              "RGB888",
               "-dx11",
-              "RGB_565",
+              "RGB565",
               "-convert",
               "-m",
               "-quality",
@@ -253,16 +259,19 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
               "-PowerVR_iOS",
               "A8",
               "-PowerVR_Android",
-              "RGBA_8888",
+              "RGBA8888",
               "-adreno",
-              "RGBA_5551",
+              "RGBA5551",
               "-mali",
-              "RGBA_4444",
+              "RGBA4444",
               "-tegra",
-              "RGB_888",
+              "RGB888",
               "-dx11",
-              "RGB_565",
+              "RGB565",
             };
+
+            std::unique_ptr<REConsoleModuleCommon> tool = std::make_unique<TextureDescriptorTool>(cmdLine);
+            REConsoleModuleTestUtils::ExecuteModule(tool.get());
 
             std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(texPathname));
             if (descriptor)
@@ -296,11 +305,15 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::CreateTestFolder(TDTestDetail::testFolderStr);
+
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         FilePath presetPathname = TDTestDetail::testFolderStr + "preset.yaml";
 
         std::unique_ptr<TextureDescriptor> sourceDescriptor(new TextureDescriptor());
         sourceDescriptor->compression[eGPUFamily::GPU_MALI].format = PixelFormat::FORMAT_RGB888;
+
+        FileSystem::Instance()->CreateDirectory(texPathname.GetDirectory(), true);
         sourceDescriptor->Save(texPathname);
 
         { // file
@@ -325,7 +338,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
             descriptor->DeserializeFromPreset(archive);
             TEST_VERIFY(descriptor->compression[eGPUFamily::GPU_MALI].format == PixelFormat::FORMAT_RGB888);
 
-            FileSystem::Instance()->DeleteFile(texPathname);
+            FileSystem::Instance()->DeleteFile(presetPathname);
         }
 
         { // folder
@@ -334,7 +347,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
                 ScopedPtr<File> linksFile(File::Create(newFile, File::WRITE | File::CREATE));
                 if (linksFile)
                 {
-                    linksFile->WriteLine(link.GetAbsolutePathname());
+                    linksFile->WriteString(link.GetAbsolutePathname(), false);
                     return true;
                 }
                 return false;
@@ -377,11 +390,14 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
     {
         using namespace DAVA;
 
+        REConsoleModuleTestUtils::ClearTestFolder(TDTestDetail::testFolderStr);
+
         FilePath imagePathname = TDTestDetail::testFolderStr + "123/image.tga";
         TEST_VERIFY(TDTestDetail::CreateImageFile(imagePathname));
 
         FilePath texPathname = TDTestDetail::testFolderStr + "123/image.tex";
         std::unique_ptr<TextureDescriptor> sourceDescriptor(new TextureDescriptor());
+        sourceDescriptor->compression[eGPUFamily::GPU_MALI].imageFormat = ImageFormat::IMAGE_FORMAT_PVR;
         sourceDescriptor->compression[eGPUFamily::GPU_MALI].format = PixelFormat::FORMAT_RGB888;
 
         FilePath presetPathname = TDTestDetail::testFolderStr + "preset.yaml";
@@ -425,8 +441,7 @@ DAVA_TARC_TESTCLASS(TextureDescriptorToolTest)
         }
 
         { // folder
-            std::unique_ptr<TextureDescriptor> emptyDescriptor(new TextureDescriptor());
-            emptyDescriptor->Save(texPathname);
+            TEST_VERIFY(TextureDescriptorUtils::CreateOrUpdateDescriptor(imagePathname));
 
             Vector<String> cmdLine =
             {

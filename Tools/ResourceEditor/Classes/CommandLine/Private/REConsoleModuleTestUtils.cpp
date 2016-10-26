@@ -395,6 +395,12 @@ void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
     module->BeforeDestroyed();
 }
 
+void REConsoleModuleTestUtils::CreateTestFolder(const DAVA::FilePath& folder)
+{
+    ClearTestFolder(folder); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
+    DAVA::FileSystem::Instance()->CreateDirectory(folder, true);
+}
+
 void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
@@ -405,6 +411,8 @@ void REConsoleModuleTestUtils::ClearTestFolder(const DAVA::FilePath& folder)
 
 void REConsoleModuleTestUtils::CreateProjectInfrastructure(const DAVA::FilePath& projectPathname)
 {
+    ClearTestFolder(projectPathname); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
+
     DAVA::FilePath dataPath = projectPathname + "Data/";
     DAVA::FilePath datasourcePath = projectPathname + "DataSource/3d/";
 
