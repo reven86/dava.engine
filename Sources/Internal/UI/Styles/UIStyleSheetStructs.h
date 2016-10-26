@@ -74,7 +74,7 @@ struct UIStyleSheetSelector
 struct UIStyleSheetProperty
 {
     UIStyleSheetProperty(uint32 aPropertyIndex,
-                         const VariantType& aValue,
+                         const Any& aValue,
                          bool aTransition = false,
                          Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR,
                          float32 aTransitionTime = 0.0f)
@@ -87,8 +87,7 @@ struct UIStyleSheetProperty
     }
 
     uint32 propertyIndex;
-    VariantType value;
-
+    Any value;
     Interpolation::FuncType transitionFunction;
     float32 transitionTime;
     bool transition;
