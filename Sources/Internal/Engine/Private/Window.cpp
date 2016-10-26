@@ -246,7 +246,6 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
     inputSystem->GetKeyboard().ClearAllKeys();
-    ClearMouseButtons();
 
     hasFocus = e.stateEvent.state != 0;
     focusChanged.Emit(this, hasFocus);
@@ -409,29 +408,6 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.keyEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::ClearMouseButtons()
-{
-    // NOTE: Taken from CoreWin32Platform::ClearMouseButtons
-
-    UIEvent uie;
-    uie.phase = UIEvent::Phase::ENDED;
-    uie.device = eInputDevice::MOUSE;
-    uie.timestamp = SystemTimer::FrameStampTimeMS() / 1000.0;
-    uie.modifiers = eModifierKeys::NONE;
-
-    uint32 firstButton = static_cast<uint32>(eMouseButtons::FIRST);
-    uint32 lastButton = static_cast<uint32>(eMouseButtons::LAST);
-    for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
-    {
-        if (mouseButtonState[buttonIndex - 1])
-        {
-            uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
-            inputSystem->HandleInputEvent(&uie);
-        }
-    }
-    mouseButtonState.reset();
 }
 
 } // namespace DAVA

@@ -277,83 +277,103 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
     eInputDevice source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
     if (source == eInputDevice::MOUSE)
     {
-        eMouseButtons button = eMouseButtons::NONE;
-        MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
+        uint32 newMouseButtonsState = mouseButtonsState;
         switch (message)
         {
         case WM_LBUTTONDOWN:
-            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-            button = eMouseButtons::LEFT;
+            newMouseButtonsState |= MK_LBUTTON;
             break;
         case WM_LBUTTONUP:
-            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-            button = eMouseButtons::LEFT;
+            newMouseButtonsState &= ~MK_LBUTTON;
             break;
-        case WM_LBUTTONDBLCLK:
-            // TODO: somehow handle mouse doubleclick
-            return 0;
         case WM_RBUTTONDOWN:
-            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-            button = eMouseButtons::RIGHT;
+            newMouseButtonsState |= MK_RBUTTON;
             break;
         case WM_RBUTTONUP:
-            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-            button = eMouseButtons::RIGHT;
+            newMouseButtonsState &= ~MK_RBUTTON;
             break;
-        case WM_RBUTTONDBLCLK:
-            // TODO: somehow handle mouse doubleclick
-            return 0;
         case WM_MBUTTONDOWN:
-            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-            button = eMouseButtons::MIDDLE;
+            newMouseButtonsState |= MK_MBUTTON;
             break;
         case WM_MBUTTONUP:
-            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-            button = eMouseButtons::MIDDLE;
+            newMouseButtonsState &= ~MK_MBUTTON;
             break;
-        case WM_MBUTTONDBLCLK:
-            // TODO: somehow handle mouse doubleclick
-            return 0;
         case WM_XBUTTONDOWN:
-            type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-            button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
+            newMouseButtonsState |= (xbutton == XBUTTON1 ? MK_XBUTTON1 : MK_XBUTTON2);
             break;
         case WM_XBUTTONUP:
-            type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-            button = xbutton == XBUTTON1 ? eMouseButtons::EXTENDED1 : eMouseButtons::EXTENDED2;
+            newMouseButtonsState &= ~(xbutton == XBUTTON1 ? MK_XBUTTON1 : MK_XBUTTON2);
             break;
-        case WM_XBUTTONDBLCLK:
-            // TODO: somehow handle mouse doubleclick
-            return 0;
         default:
             return 0;
         }
 
-        // Capture mouse on press to receive mouse clicks and moves outside window client rect while mouse button is down
-        ChangeMouseButtonState(button, type == MainDispatcherEvent::MOUSE_BUTTON_DOWN);
-        if (mouseButtonState.any())
+        bool isPressed = false;
+        eMouseButtons button = GetMouseButtonLegacy(mouseButtonsState, newMouseButtonsState, &isPressed);
+        if (button != eMouseButtons::NONE)
         {
-            if (::GetCapture() == nullptr)
+            eModifierKeys modifierKeys = GetModifierKeys();
+            float32 vx = static_cast<float32>(x);
+            float32 vy = static_cast<float32>(y);
+            MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
+
+            bool setCapture = newMouseButtonsState != 0 && mouseButtonsState == 0;
+            mouseButtonsState = newMouseButtonsState;
+            if (setCapture)
             {
                 ::SetCapture(hwnd);
             }
+            else if (newMouseButtonsState == 0)
+            {
+                ::ReleaseCapture();
+            }
         }
-        else
-        {
-            ::ReleaseCapture();
-        }
-
-        eModifierKeys modifierKeys = GetModifierKeys();
-        float32 vx = static_cast<float32>(x);
-        float32 vy = static_cast<float32>(y);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
     }
     return 0;
 }
 
 LRESULT WindowBackend::OnCaptureChanged()
 {
-    mouseButtonState.reset();
+    if (mouseButtonsState != 0)
+    {
+        POINT pt;
+        ::GetCursorPos(&pt);
+        ::ScreenToClient(hwnd, &pt);
+
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 vx = static_cast<float32>(pt.x);
+        float32 vy = static_cast<float32>(pt.y);
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, eMouseButtons::LEFT, vx, vy, 1, modifierKeys, false);
+
+        if (mouseButtonsState & MK_LBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::LEFT;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_RBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::RIGHT;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_MBUTTON)
+        {
+            e.mouseEvent.button = eMouseButtons::MIDDLE;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_XBUTTON1)
+        {
+            e.mouseEvent.button = eMouseButtons::EXTENDED1;
+            mainDispatcher->PostEvent(e);
+        }
+        if (mouseButtonsState & MK_XBUTTON2)
+        {
+            e.mouseEvent.button = eMouseButtons::EXTENDED2;
+            mainDispatcher->PostEvent(e);
+        }
+
+        mouseButtonsState = 0;
+    }
     return 0;
 }
 
@@ -406,7 +426,7 @@ LRESULT WindowBackend::OnPointerClick(uint32 pointerId, int32 x, int32 y)
     eModifierKeys modifierKeys = GetModifierKeys();
     if (pointerInfo.pointerType == PT_MOUSE)
     {
-        eMouseButtons button = GetMouseButtonState(pointerInfo.ButtonChangeType, &isPressed);
+        eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
         MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
     }
@@ -433,7 +453,7 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
         {
             // First mouse button down (and last mouse button up) comes with WM_POINTERDOWN/WM_POINTERUP, other mouse clicks come here
             bool isPressed = false;
-            eMouseButtons button = GetMouseButtonState(pointerInfo.ButtonChangeType, &isPressed);
+            eMouseButtons button = GetMouseButton(pointerInfo.ButtonChangeType, &isPressed);
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, vx, vy, 1, modifierKeys, false));
         }
@@ -761,7 +781,38 @@ eInputDevice WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
     return eInputDevice::MOUSE;
 }
 
-eMouseButtons WindowBackend::GetMouseButtonState(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed)
+eMouseButtons WindowBackend::GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed)
+{
+    uint32 changed = curState ^ newState;
+    if (changed & MK_LBUTTON)
+    {
+        *isPressed = (newState & MK_LBUTTON) != 0;
+        return eMouseButtons::LEFT;
+    }
+    if (changed & MK_RBUTTON)
+    {
+        *isPressed = (newState & MK_RBUTTON) != 0;
+        return eMouseButtons::RIGHT;
+    }
+    if (changed & MK_MBUTTON)
+    {
+        *isPressed = (newState & MK_MBUTTON) != 0;
+        return eMouseButtons::MIDDLE;
+    }
+    if (changed & MK_XBUTTON1)
+    {
+        *isPressed = (newState & MK_XBUTTON1) != 0;
+        return eMouseButtons::EXTENDED1;
+    }
+    if (changed & MK_XBUTTON2)
+    {
+        *isPressed = (newState & MK_XBUTTON2) != 0;
+        return eMouseButtons::EXTENDED2;
+    }
+    return eMouseButtons::NONE;
+}
+
+eMouseButtons WindowBackend::GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed)
 {
     *isPressed = false;
     switch (buttonChangeType)
@@ -789,12 +840,6 @@ eMouseButtons WindowBackend::GetMouseButtonState(POINTER_BUTTON_CHANGE_TYPE butt
     default:
         return eMouseButtons::NONE;
     }
-}
-
-void WindowBackend::ChangeMouseButtonState(eMouseButtons button, bool pressed)
-{
-    size_t index = static_cast<size_t>(button) - 1;
-    mouseButtonState[index] = pressed;
 }
 
 } // namespace Private

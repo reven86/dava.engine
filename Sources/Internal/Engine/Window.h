@@ -109,7 +109,6 @@ private:
 
     void CompressSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
-    void ClearMouseButtons();
 
 private:
     Private::EngineBackend* engineBackend = nullptr;

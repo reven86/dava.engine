@@ -87,9 +87,8 @@ private:
     static bool RegisterWindowClass();
     static eModifierKeys GetModifierKeys();
     static eInputDevice GetInputEventSourceLegacy(LPARAM messageExtraInfo);
-    static eMouseButtons GetMouseButtonState(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
-
-    void ChangeMouseButtonState(eMouseButtons button, bool pressed);
+    static eMouseButtons GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed);
+    static eMouseButtons GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
 
 private:
     EngineBackend* engineBackend = nullptr;
@@ -107,8 +106,7 @@ private:
     int32 height = 0;
     int32 lastMouseMoveX = -1; // Remember last mouse move position to detect
     int32 lastMouseMoveY = -1; // spurious mouse move events
-
-    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
+    uint32 mouseButtonsState = 0; // Mouse buttons state for legacy mouse events (not new pointer input events)
     Vector<TOUCHINPUT> touchInput;
 
     static bool windowClassRegistered;
