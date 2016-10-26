@@ -288,6 +288,11 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
+        if (isFocused)
+        {
+            isFocused = false;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+        }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
     }
@@ -330,6 +335,12 @@ LRESULT WindowBackend::OnExitSizeMove()
 
 LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
 {
+    isFocused = hasFocus;
+    if (hasFocus && isMinimized)
+    {
+        isMinimized = false;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+    }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
     return 0;
 }
@@ -494,15 +505,20 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
 {
     // Intentionally use 'if' instead of 'switch'
     LRESULT lresult = 0;
-    if (message == WM_WINDOWPOSCHANGED)
+    if (message == WM_ACTIVATE)
     {
-        UpdateClipCursor();
+        bool hasFocus = (LOWORD(wparam) != WA_INACTIVE);
+        if (isFocused != hasFocus)
+        {
+            OnSetKillFocus(hasFocus);
+        }
     }
     else if (message == WM_SIZE)
     {
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
+        UpdateClipCursor();
     }
     else if (message == WM_ERASEBKGND)
     {
@@ -510,10 +526,6 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_GETMINMAXINFO)
     {
-    }
-    else if (message == WM_SETFOCUS || message == WM_KILLFOCUS)
-    {
-        lresult = OnSetKillFocus(message == WM_SETFOCUS);
     }
     else if (message == WM_ENTERSIZEMOVE)
     {
