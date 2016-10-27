@@ -107,7 +107,7 @@ private:
 
     DAVA::String fileName;
     sl::HLSLTree* ast;
-    mutable DAVA::String code[RHI_COUNT];
+    mutable DAVA::String code[RHI_API_COUNT];
 
     ProgType type;
     uint32 codeLineCount;

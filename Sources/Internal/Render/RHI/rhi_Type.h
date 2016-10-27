@@ -52,7 +52,7 @@ enum Api
     RHI_GLES2,
     RHI_METAL,
 
-    RHI_COUNT
+    RHI_API_COUNT
 };
 
 enum ProgType

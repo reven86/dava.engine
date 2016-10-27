@@ -603,7 +603,7 @@ DbgDraw::Text2D(int x, int y, uint32 color, const char* format, ...)
         //            left  -= 0.5f;
         //            top   -= 0.5f;
         break;
-    case rhi::RHI_COUNT:
+    default:
         break; // to shut up goddamn warning
     }
 

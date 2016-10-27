@@ -1645,7 +1645,7 @@ ShaderSource::GetSourceCode(Api targetApi) const
                 src->clear();
         }
         break;
-        case RHI_COUNT:
+        default:
             break; // to shut up goddamn warning
         }
     }

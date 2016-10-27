@@ -79,7 +79,7 @@ ApiIsSupported(Api api)
     case RHI_GLES2:
         supported = true;
         break;
-    case rhi::RHI_COUNT:
+    default:
         break; // to shut up goddamn warning
     }
 
@@ -1029,7 +1029,7 @@ uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
     case RHI_METAL:
         color = static_cast<uint32>((((a)&0xFF) << 24) | (((b)&0xFF) << 16) | (((g)&0xFF) << 8) | ((r)&0xFF));
         break;
-    case RHI_COUNT:
+    default:
         break; // to shut up goddamn warning
     }
 
