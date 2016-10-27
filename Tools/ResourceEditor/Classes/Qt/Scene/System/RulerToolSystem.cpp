@@ -89,11 +89,11 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void RulerToolSystem::Input(DAVA::UIEvent* event)
+bool RulerToolSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
@@ -150,6 +150,7 @@ void RulerToolSystem::Input(DAVA::UIEvent* event)
     default:
         break;
     }
+    return false;
 }
 
 void RulerToolSystem::SetStartPoint(const DAVA::Vector2& point)

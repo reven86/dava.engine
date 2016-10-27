@@ -210,11 +210,11 @@ void TilemaskEditorSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
+bool TilemaskEditorSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
@@ -235,13 +235,13 @@ void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
                     {
                         copyPasteFrom = cursorPosition;
                         copyPasteOffset = DAVA::Vector2();
-                        return;
+                        return false;
                     }
                     else
                     {
                         if (copyPasteFrom == DAVA::Vector2(-1.f, -1.f))
                         {
-                            return;
+                            return false;
                         }
                         copyPasteOffset = copyPasteFrom - cursorPosition;
                     }
@@ -264,6 +264,7 @@ void TilemaskEditorSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void TilemaskEditorSystem::FinishEditing()

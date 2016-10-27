@@ -134,11 +134,11 @@ void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-void CustomColorsSystem::Input(DAVA::UIEvent* event)
+bool CustomColorsSystem::Input(DAVA::UIEvent* event)
 {
     if (!IsLandscapeEditingEnabled())
     {
-        return;
+        return false;
     }
 
     UpdateCursorPosition();
@@ -169,6 +169,7 @@ void CustomColorsSystem::Input(DAVA::UIEvent* event)
             break;
         }
     }
+    return false;
 }
 
 void CustomColorsSystem::FinishEditing(bool applyModification)

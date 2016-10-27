@@ -261,7 +261,7 @@ void SceneCameraSystem::Process(float timeElapsed)
     MoveAnimate(timeElapsed);
 }
 
-void SceneCameraSystem::Input(DAVA::UIEvent* event)
+bool SceneCameraSystem::Input(DAVA::UIEvent* event)
 {
     switch (event->phase)
     {
@@ -274,6 +274,7 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
     default:
         break;
     }
+    return false;
 }
 
 void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)

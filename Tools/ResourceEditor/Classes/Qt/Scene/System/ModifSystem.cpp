@@ -114,11 +114,11 @@ bool EntityModificationSystem::InCloneDoneState() const
     return (cloneState == CLONE_DONE);
 }
 
-void EntityModificationSystem::Input(DAVA::UIEvent* event)
+bool EntityModificationSystem::Input(DAVA::UIEvent* event)
 {
     if (IsLocked() || (collisionSystem == nullptr))
     {
-        return;
+        return false;
     }
 
     // current selected entities
@@ -252,6 +252,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent* event)
             }
         }
     }
+    return false;
 }
 
 void EntityModificationSystem::AddDelegate(EntityModificationSystemDelegate* delegate)

@@ -239,7 +239,7 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
     }
 }
 
-void WayEditSystem::Input(DAVA::UIEvent* event)
+bool WayEditSystem::Input(DAVA::UIEvent* event)
 {
     if (isEnabled && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
     {
@@ -277,14 +277,14 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             if (!shiftPressed)
             {
                 // we need to use shift key to add waypoint or edge
-                return;
+                return false;
             }
 
             DAVA::Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if (currentWayParent == nullptr)
             {
                 // we need to have entity with path component
-                return;
+                return false;
             }
 
             if (selectedWaypoints.IsEmpty() && cloneJustDone == false)
@@ -302,7 +302,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                         if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
                         {
                             // current path has waypoints but none of them was selected. Point adding is denied
-                            return;
+                            return false;
                         }
                     }
 
@@ -340,6 +340,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
             }
         }
     }
+    return false;
 }
 
 void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& ret)
