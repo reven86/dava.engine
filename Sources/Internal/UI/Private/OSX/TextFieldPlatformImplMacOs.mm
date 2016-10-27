@@ -374,15 +374,16 @@ public:
         if (overlayActivated)
         {
             visibleBeforeSteamOverlayActivated = IsNativeVisible();
-            SetVisible(false);
+            SetNativeVisible(false);
         }
         else
         {
-            SetVisible(visibleBeforeSteamOverlayActivated);
+            SetNativeVisible(visibleBeforeSteamOverlayActivated);
         }
     }
 #endif
     virtual bool IsNativeVisible() const = 0;
+    virtual void SetNativeVisible(bool visible) = 0;
 };
 
 class MultilineField : public IField
@@ -630,6 +631,11 @@ public:
     bool IsNativeVisible() const override
     {
         return nsScrollView != nil && !nsScrollView.hidden;
+    }
+
+    void SetNativeVisible(bool visible) override
+    {
+        [nsScrollView setHidden:!visible];
     }
 
     void ShowField() override
@@ -1051,6 +1057,11 @@ public:
     bool IsNativeVisible() const override
     {
         return nsTextField != nil && !nsTextField.hidden;
+    }
+
+    void SetNativeVisible(bool visible) override
+    {
+        [nsTextField setHidden:!visible];
     }
 
     void ShowField() override
