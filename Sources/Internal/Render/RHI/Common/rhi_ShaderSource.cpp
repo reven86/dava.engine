@@ -453,6 +453,8 @@ void ShaderSource::InlineFunctions()
                         }
                     }
                     break;
+                    default:
+                        break; // to shut up goddamn warning
                     }
                 }
 
