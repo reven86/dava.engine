@@ -33,7 +33,7 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_APP_UPDATE)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE)
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
@@ -59,7 +59,7 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_APP_DRAW)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW)
 
     Renderer::GetRenderStats().Reset();
 
@@ -74,14 +74,14 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_BEGIN_FRAME)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_BEGIN_FRAME)
 
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_END_FRAME)
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_END_FRAME)
 
     Renderer::EndFrame();
 }
