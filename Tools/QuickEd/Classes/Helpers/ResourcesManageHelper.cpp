@@ -1,6 +1,8 @@
 #include "ResourcesManageHelper.h"
-#include "Core/Core.h"
+#include "Engine/Engine.h"
+#include "DAVAVersion.h"
 #include "QtTools/Utils/Utils.h"
+#include "version.h"
 #include <QString>
 #include <QStringList>
 #include <QDir>
@@ -20,7 +22,7 @@ const QString PROJECT_DATA = "%1/Data";
 // Project file path
 const QString PROJECT_FILE_PATH = "%1ui.uieditor";
 // Default project title
-const QString PROJECT_TITLE = "QuickEd";
+const char* PROJECT_TITLE = "DAVA Framework - QuickEd | %s-%s [%u bit]";
 //Available fonts extensions
 const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
                                                            << "*.otf"
@@ -36,8 +38,7 @@ QString ResourcesManageHelper::projectPath;
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
 {
     using namespace ResourcesManageHelperLocal;
-    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
-                                      :
+    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname()) :
                                       QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     fontPath += resourceFileName;
 
@@ -61,18 +62,7 @@ QStringList ResourcesManageHelper::GetFontsList()
 void ResourcesManageHelper::InitInternalResources()
 {
     using namespace ResourcesManageHelperLocal;
-    // Save project default title
-    if (DAVA::Core::Instance())
-    {
-        DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
-        if (options)
-        {
-            projectTitle = options->GetString("title", PROJECT_TITLE.toStdString()).c_str();
-        }
-    }
-    // If project name wasn't set - create default name
-    if (projectTitle.isNull() || projectTitle.isEmpty())
-        projectTitle = PROJECT_TITLE;
+    projectTitle = QString::fromStdString(DAVA::Format(PROJECT_TITLE, DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION, static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8)));
 }
 
 QString ResourcesManageHelper::GetDocumentationPath()

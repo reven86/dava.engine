@@ -57,6 +57,7 @@ public:
 
 private:
     void OnKeyboardInput(DAVA::UIEvent* event);
+    void OnWheelInput(DAVA::UIEvent* event);
 
     void Draw();
 
