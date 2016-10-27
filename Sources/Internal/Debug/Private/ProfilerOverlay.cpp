@@ -581,7 +581,7 @@ void ProfilerOverlay::Draw()
         DbgDraw::FilledRect2D(int32(x0), y0, int32(x1), screenSize.dy, BUTTON_COLOR);
         DbgDraw::Rect2D(int32(x0), y0, int32(x1), screenSize.dy, BUTTON_BORDER_COLOR);
 
-        int32 xAlign = (buttonWidth - int32(strlen(buttonsText[i]) * int32(DbgDraw::NormalCharW))) / 2;
+        int32 xAlign = (int32(buttonWidth) - int32(strlen(buttonsText[i]) * int32(DbgDraw::NormalCharW))) / 2;
         int32 yAlign = (ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE - DbgDraw::NormalCharH) / 2;
         DbgDraw::Text2D(int32(x0) + xAlign, y0 + yAlign, BUTTON_TEXT_COLOR, buttonsText[i]);
 
