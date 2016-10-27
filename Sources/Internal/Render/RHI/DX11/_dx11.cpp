@@ -213,7 +213,7 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format)
 
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device)
 {
-    DXGI_FORMAT depthFormat = (_D3D11_FeatureLevel == D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
+    DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
     const DXGI_FORMAT formatsToCheck[] = { DXGI_FORMAT_B8G8R8A8_UNORM, depthFormat };
 
     uint32 sampleCount = 2;
