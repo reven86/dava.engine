@@ -454,6 +454,12 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
             [mainWindowController->mainWindow toggleFullScreen:nil];
+
+            if (_fullScreen)
+            {
+                [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+            }
+
             return YES;
         }
         else
