@@ -3,6 +3,10 @@
 
 namespace DAVA
 {
+struct ModuleManager::PointersToModules
+{
+};
+
 ModuleManager::ModuleManager(Engine* engine)
 {
 }
