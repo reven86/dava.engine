@@ -230,9 +230,13 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
-LRESULT WindowBackend::OnDpiChanged()
+LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
 {
-    float32 curDpi = GetCurrentDpi();
+    float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
+    float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
+    Resize(w, h);
+
+    float32 curDpi = GetDpi();
     if (dpi != curDpi)
     {
         dpi = curDpi;
@@ -359,7 +363,7 @@ LRESULT WindowBackend::OnCreate()
     float32 height = static_cast<float32>(lastHeight);
     float32 surfaceWidth = width;
     float32 surfaceHeight = height;
-    float32 dpi = GetCurrentDpi();
+    float32 dpi = GetDpi();
 
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, width, height, surfaceWidth, surfaceHeight, dpi));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
@@ -474,12 +478,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     }
     else if (message == WM_DPICHANGED)
     {
-        RECT* suggestedSize = reinterpret_cast<RECT*>(lparam);
-        float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
-        float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
-        Resize(w, h);
-
-        lresult = OnDpiChanged();
+        RECT* suggestedRect = reinterpret_cast<RECT*>(lparam);
+        lresult = OnDpiChanged(suggestedRect);
     }
     else
     {
@@ -547,7 +547,7 @@ bool WindowBackend::RegisterWindowClass()
     return windowClassRegistered;
 }
 
-float32 WindowBackend::GetCurrentDpi() const
+float32 WindowBackend::GetDpi() const
 {
     float32 ret = 0.0f;
 

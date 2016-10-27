@@ -111,7 +111,7 @@ final class DavaSurfaceView extends SurfaceView
 
         // Use dm.densityDpi because it returns DPI that used by system for UI scaling.
         // Values of dm.(x|y)dpi don't return correct DPI on some devices.
-        return (int) dm.densityDpi; 
+        return dm.densityDpi; 
     }
 
     @Override
@@ -151,11 +151,9 @@ final class DavaSurfaceView extends SurfaceView
         }
 
         int dpi = getDpi();
-        int surfW = w; // TODO: calucate real surfW
-        int surfH = h; // TODO: calucate real surfH
 
-        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, surfW, surfH, dpi));
-        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, surfW, surfH, dpi);
+        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
+        nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
         if (DavaActivity.davaMainThread == null)
         {
