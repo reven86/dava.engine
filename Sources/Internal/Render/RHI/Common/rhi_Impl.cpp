@@ -80,7 +80,7 @@ ApiIsSupported(Api api)
         supported = true;
         break;
     default:
-        break; // to shut up goddamn warning
+        DVASSERT(!"kaboom!"); // to shut up goddamn warning
     }
 
     return supported;
