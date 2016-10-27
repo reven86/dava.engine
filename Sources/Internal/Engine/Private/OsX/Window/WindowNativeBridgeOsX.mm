@@ -274,6 +274,10 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
     {
         SetSystemCursorVisible(false);
     }
+    if (DAVA::eCursorCapture::PINNING == captureMode)
+    {
+        SetSystemCursorCapture(true);
+    }
 }
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
@@ -281,6 +285,10 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
     if (!mouseVisible)
     {
         SetSystemCursorVisible(true);
+    }
+    if (DAVA::eCursorCapture::PINNING == captureMode)
+    {
+        SetSystemCursorCapture(false);
     }
 }
 
@@ -297,23 +305,13 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
         case DAVA::eCursorCapture::PINNING:
         {
             SetCursorVisibility(false);
-            CGAssociateMouseAndMouseCursorPosition(false);
-            // set cursor in window center
-            NSRect windowRect = [nswindow frame];
-            NSRect screenRect = [[NSScreen mainScreen] frame];
-            // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
-            windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
-            CGPoint cursorpos;
-            cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
-            cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
-            CGWarpMouseCursorPosition(cursorpos);
-            mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+            SetSystemCursorCapture(true);
             break;
         }
         case DAVA::eCursorCapture::OFF:
         {
             SetCursorVisibility(true);
-            CGAssociateMouseAndMouseCursorPosition(true);
+            SetSystemCursorCapture(false);
             break;
         }
         }
@@ -334,6 +332,28 @@ void WindowNativeBridge::SetSystemCursorVisible(bool visible)
         {
             [NSCursor hide];
         }
+    }
+}
+
+void WindowNativeBridge::SetSystemCursorCapture(bool capture)
+{
+    if (capture)
+    {
+        CGAssociateMouseAndMouseCursorPosition(false);
+        // set cursor in window center
+        NSRect windowRect = [nswindow frame];
+        NSRect screenRect = [[NSScreen mainScreen] frame];
+        // Window origin is at bottom-left edge, but CGWarpMouseCursorPosition requires point in screen coordinates
+        windowRect.origin.y = screenRect.size.height - (windowRect.origin.y + windowRect.size.height);
+        CGPoint cursorpos;
+        cursorpos.x = windowRect.origin.x + windowRect.size.width / 2.0f;
+        cursorpos.y = windowRect.origin.y + windowRect.size.height / 2.0f;
+        CGWarpMouseCursorPosition(cursorpos);
+        mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
+    }
+    else
+    {
+        CGAssociateMouseAndMouseCursorPosition(true);
     }
 }
 
