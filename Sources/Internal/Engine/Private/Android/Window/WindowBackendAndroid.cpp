@@ -177,9 +177,6 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
-    // not implemented
-    // case UIDispatcherEvent::SET_CURSOR_CAPTURE:
-    // case UIDispatcherEvent::SET_CURSOR_VISIBLE:
     default:
         break;
     }

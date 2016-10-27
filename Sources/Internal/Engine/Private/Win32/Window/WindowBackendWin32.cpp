@@ -271,7 +271,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_CURSOR_CAPTURE:
         DoSetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
-    case UIDispatcherEvent::SET_CURSOR_VISIBLE:
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         DoSetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:
@@ -281,12 +281,13 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 
 LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
 {
+    UpdateClipCursor();
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
-        if (isFocused)
+        if (hasFocus)
         {
-            isFocused = false;
+            hasFocus = false;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
         }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
@@ -329,15 +330,19 @@ LRESULT WindowBackend::OnExitSizeMove()
     return 0;
 }
 
-LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
+LRESULT WindowBackend::OnActivate(WPARAM wparam)
 {
-    isFocused = hasFocus;
-    if (hasFocus && isMinimized)
+    bool newFocus = (LOWORD(wparam) != WA_INACTIVE);
+    if (hasFocus != newFocus)
     {
-        isMinimized = false;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        hasFocus = newFocus;
+        if (hasFocus && isMinimized)
+        {
+            isMinimized = false;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        }
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
     return 0;
 }
 
@@ -350,13 +355,13 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
         ::GetClientRect(hwnd, &clientRect);
         int clientCenterX((clientRect.left + clientRect.right) / 2);
         int clientCenterY((clientRect.bottom + clientRect.top) / 2);
-        int shiftX = x - clientCenterX;
-        int shiftY = y - clientCenterY;
-        if (shiftX != 0 || shiftY != 0)
+        int deltaX = x - clientCenterX;
+        int deltaY = y - clientCenterY;
+        if (deltaX != 0 || deltaY != 0)
         {
             SetCursorInCenter();
-            x = shiftX;
-            y = shiftY;
+            x = deltaX;
+            y = deltaY;
         }
         else
         {
@@ -503,18 +508,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     LRESULT lresult = 0;
     if (message == WM_ACTIVATE)
     {
-        bool hasFocus = (LOWORD(wparam) != WA_INACTIVE);
-        if (isFocused != hasFocus)
-        {
-            OnSetKillFocus(hasFocus);
-        }
+        lresult = OnActivate(wparam);
     }
     else if (message == WM_SIZE)
     {
         int w = GET_X_LPARAM(lparam);
         int h = GET_Y_LPARAM(lparam);
         lresult = OnSize(static_cast<int>(wparam), w, h);
-        UpdateClipCursor();
     }
     else if (message == WM_ERASEBKGND)
     {

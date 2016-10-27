@@ -40,7 +40,7 @@ UIDispatcherEvent UIDispatcherEvent::CreateSetCursorCaptureEvent(eCursorCapture 
 
 UIDispatcherEvent UIDispatcherEvent::CreateSetCursorVisibilityEvent(bool visible)
 {
-    UIDispatcherEvent e(SET_CURSOR_VISIBLE);
+    UIDispatcherEvent e(SET_CURSOR_VISIBILITY);
     e.setCursorVisibilityEvent.visible = visible;
     return e;
 }

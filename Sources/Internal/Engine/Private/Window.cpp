@@ -22,7 +22,7 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , isPrimary(primary)
 {
     // TODO: Add platfom's caps check
-    //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE))
+    //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))
     {
         cursorVisible = true;
     }
@@ -106,7 +106,7 @@ eCursorCapture Window::GetCursorCapture() const
 
 void Window::SetCursorVisibility(bool visible)
 {
-    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBLE)*/) // TODO: Add platfom's caps check
+    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY)*/) // TODO: Add platfom's caps check
     {
         cursorVisible = visible;
         windowBackend->SetCursorVisibility(visible);

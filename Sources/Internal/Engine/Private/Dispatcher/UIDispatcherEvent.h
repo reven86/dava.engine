@@ -21,7 +21,7 @@ struct UIDispatcherEvent final
         SET_TITLE,
         FUNCTOR,
         SET_CURSOR_CAPTURE,
-        SET_CURSOR_VISIBLE,
+        SET_CURSOR_VISIBILITY,
     };
 
     struct ResizeEvent

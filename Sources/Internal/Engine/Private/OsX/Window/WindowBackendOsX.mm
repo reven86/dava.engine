@@ -118,7 +118,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_CURSOR_CAPTURE:
         bridge->SetCursorCapture(e.setCursorCaptureEvent.mode);
         break;
-    case UIDispatcherEvent::SET_CURSOR_VISIBLE:
+    case UIDispatcherEvent::SET_CURSOR_VISIBILITY:
         bridge->SetCursorVisibility(e.setCursorVisibilityEvent.visible);
         break;
     default:

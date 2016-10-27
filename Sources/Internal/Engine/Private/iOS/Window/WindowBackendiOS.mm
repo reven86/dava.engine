@@ -114,9 +114,6 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     // iOS windows cannot be closed and are always stretched to screen size
     // case UIDispatcherEvent::CLOSE_WINDOW:
     // case UIDispatcherEvent::RESIZE_WINDOW:
-    // not supported
-    // case UIDispatcherEvent::SET_CURSOR_CAPTURE:
-    // case UIDispatcherEvent::SET_CURSOR_VISIBLE:
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;

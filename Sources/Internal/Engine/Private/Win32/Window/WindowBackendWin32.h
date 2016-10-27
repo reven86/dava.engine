@@ -71,7 +71,7 @@ private:
     LRESULT OnSize(int resizingType, int width, int height);
     LRESULT OnEnterSizeMove();
     LRESULT OnExitSizeMove();
-    LRESULT OnSetKillFocus(bool hasFocus);
+    LRESULT OnActivate(WPARAM wparam);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
     LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
@@ -100,7 +100,7 @@ private:
     std::unique_ptr<WindowNativeService> nativeService;
 
     bool isMinimized = false;
-    bool isFocused = false;
+    bool hasFocus = false;
 
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
