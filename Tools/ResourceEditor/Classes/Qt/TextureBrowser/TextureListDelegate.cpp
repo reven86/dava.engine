@@ -20,6 +20,8 @@
 #include "QtTools/Utils/Utils.h"
 #include "QtTools/Utils/Themes/Themes.h"
 
+#include "QtHelpers/HelperFunctions.h"
+
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
 #define BORDER_MARGIN 1
@@ -415,7 +417,7 @@ void TextureListDelegate::onOpenTexturePath()
 
     const QString pathname = lastSelectedTextureDescriptor->pathname.GetAbsolutePathname().c_str();
     QFileInfo fileInfo(pathname);
-    ShowFileInExplorer(fileInfo.absoluteFilePath());
+    QtHelpers::ShowInOSFileManager(fileInfo.absoluteFilePath());
 
     lastSelectedTextureDescriptor = nullptr;
 }

@@ -1,6 +1,7 @@
 #include "DAVAEngine.h"
 
 #include "mainwindow.h"
+#include "version.h"
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
@@ -17,6 +18,7 @@
 #include "Classes/Qt/Scene/LandscapeThumbnails.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
@@ -76,13 +78,13 @@
 #include "QtTools/ConsoleWidget/LogModel.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/FileDialogs/FindFileDialog.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-#include "Platform/Qt5/QtLayer.h"
+#include "Engine/Engine.h"
+#include "Engine/Qt/RenderWidget.h"
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
@@ -90,6 +92,7 @@
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Scene/System/EditorVegetationSystem.h"
+#include "Utils/StringFormat.h"
 
 #include <QActionGroup>
 #include <QColorDialog>
@@ -238,7 +241,6 @@ QtMainWindow::QtMainWindow(QWidget* parent)
     connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &QtMainWindow::SceneSelectionChanged);
     connect(SceneSignals::Instance(), &SceneSignals::EditorLightEnabled, this, &QtMainWindow::EditorLightEnabled);
     connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
-    connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
 
     LoadGPUFormat();
     LoadMaterialLightViewMode();
@@ -292,14 +294,23 @@ QtMainWindow::~QtMainWindow()
     ActiveSceneHolder::Deinit();
 }
 
-Ui::MainWindow* QtMainWindow::GetUI()
+void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
 {
-    return ui.get();
+    ui->sceneTabWidget->InjectRenderWidget(renderWidget);
+
+    // delete
+    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
+    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
+    renderWidget->addAction(deleteSelection);
+
+    QObject::connect(renderWidget, &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
-SceneTabWidget* QtMainWindow::GetSceneWidget()
+void QtMainWindow::OnRenderingInitialized()
 {
-    return ui->sceneTabWidget;
+    ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
 }
 
 SceneEditor2* QtMainWindow::GetCurrentScene()
@@ -485,9 +496,9 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 
         SceneHelper::TextureCollector collector;
         DAVA::Set<DAVA::NMaterial*> allSceneMaterials;
-        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
         {
-            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
+            SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, collector);
             SceneHelper::EnumerateMaterials(scene, allSceneMaterials);
         }
@@ -526,9 +537,9 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             }
         }
 
-        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
         {
-            SceneEditor2* scene = GetSceneWidget()->GetTabScene(tab);
+            SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
             scene->editorVegetationSystem->ReloadVegetation();
         }
 
@@ -583,24 +594,11 @@ bool QtMainWindow::eventFilter(QObject* obj, QEvent* event)
             Qt::ApplicationState state = stateChangeEvent->applicationState();
             switch (state)
             {
-            case Qt::ApplicationInactive:
-            {
-                if (DAVA::QtLayer::Instance())
-                {
-                    DAVA::QtLayer::Instance()->OnSuspend();
-                }
-                break;
-            }
             case Qt::ApplicationActive:
             {
-                if (DAVA::QtLayer::Instance())
-                {
-                    DAVA::QtLayer::Instance()->OnResume();
-                    // Fix for menuBar rendering
-                    const auto isMenuBarEnabled = ui->menuBar->isEnabled();
-                    ui->menuBar->setEnabled(false);
-                    ui->menuBar->setEnabled(isMenuBarEnabled);
-                }
+                const auto isMenuBarEnabled = ui->menuBar->isEnabled();
+                ui->menuBar->setEnabled(false);
+                ui->menuBar->setEnabled(isMenuBarEnabled);
                 break;
             }
             default:
@@ -627,16 +625,16 @@ void QtMainWindow::closeEvent(QCloseEvent* event)
 
 void QtMainWindow::SetupTitle()
 {
-    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
-    QString title = options->GetString("title").c_str();
+    DAVA::String title = DAVA::Format("DAVA Framework - ResourceEditor | %s.%s [%u bit]", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION,
+                                      static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
 
     if (ProjectManager::Instance()->IsOpened())
     {
         title += " | Project - ";
-        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname().c_str();
+        title += ProjectManager::Instance()->GetProjectPath().GetAbsolutePathname();
     }
 
-    this->setWindowTitle(title);
+    setWindowTitle(QString::fromStdString(title));
 }
 
 void QtMainWindow::SetupMainMenu()
@@ -801,8 +799,6 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableSounds, ui->statusBar);
-
-    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
 
 void QtMainWindow::SetupDocks()
@@ -845,7 +841,7 @@ void QtMainWindow::SetupDocks()
         addDockWidget(Qt::RightDockWidgetArea, dockConsole);
     }
 
-    ui->dockProperties->Init(GetUI(), globalOperations);
+    ui->dockProperties->Init(ui.get(), globalOperations);
 }
 
 void QtMainWindow::SetupActions()
@@ -909,7 +905,10 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionDiffuse, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
     QObject::connect(ui->actionSpecular, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
 
+    bool gizmoEnabled = SettingsManager::GetValue(Settings::Internal_GizmoEnabled).AsBool();
+    OnEditorGizmoToggle(gizmoEnabled);
     QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
+
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
     QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
@@ -1060,16 +1059,6 @@ void QtMainWindow::SetupShortCuts()
 {
     // select mode
     connect(ui->sceneTabWidget, SIGNAL(Escape()), this, SLOT(OnSelectMode()));
-
-    DavaGLWidget* glWidget = GetSceneWidget()->GetDavaWidget();
-
-    // delete
-    QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
-    deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WindowShortcut);
-    connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
-    glWidget->addAction(deleteSelection);
-
     // scene tree collapse/expand
     connect(new QShortcut(QKeySequence(Qt::Key_X), ui->sceneTree), SIGNAL(activated()), ui->sceneTree, SLOT(CollapseSwitch()));
 
@@ -1121,6 +1110,7 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
     ui->actionSnapCameraToLandscape->setChecked(false);
     if (nullptr != scene)
     {
+        scene->SetHUDVisible(ui->actionShowEditorGizmo->isChecked());
         if (scene->debugDrawSystem)
             ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
 
@@ -1590,8 +1580,10 @@ void QtMainWindow::OnRedo()
 
 void QtMainWindow::OnEditorGizmoToggle(bool show)
 {
+    ui->actionShowEditorGizmo->setChecked(show);
+    SettingsManager::Instance()->SetValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(show));
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
+    if (scene != nullptr)
     {
         scene->SetHUDVisible(show);
     }
@@ -2089,7 +2081,6 @@ void QtMainWindow::LoadViewState(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
-        ui->actionShowEditorGizmo->setChecked(scene->IsHUDVisible());
         ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
 
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
@@ -3078,26 +3069,24 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 
 bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 {
-    SceneTabWidget* sceneWidget = GetSceneWidget();
-
-    int lastSceneTab = sceneWidget->GetCurrentTab();
+    int lastSceneTab = ui->sceneTabWidget->GetCurrentTab();
     int answer = QMessageBox::Cancel;
     bool needQuestion = true;
 
     // tabs range where tilemask should be saved
-    DAVA::int32 firstTab = forAllTabs ? 0 : sceneWidget->GetCurrentTab();
-    DAVA::int32 lastTab = forAllTabs ? sceneWidget->GetTabCount() : sceneWidget->GetCurrentTab() + 1;
+    DAVA::int32 firstTab = forAllTabs ? 0 : ui->sceneTabWidget->GetCurrentTab();
+    DAVA::int32 lastTab = forAllTabs ? ui->sceneTabWidget->GetTabCount() : ui->sceneTabWidget->GetCurrentTab() + 1;
 
     for (int i = firstTab; i < lastTab; ++i)
     {
-        SceneEditor2* tabEditor = sceneWidget->GetTabScene(i);
+        SceneEditor2* tabEditor = ui->sceneTabWidget->GetTabScene(i);
         if (nullptr != tabEditor)
         {
             const RECommandStack* cmdStack = tabEditor->GetCommandStack();
             if (cmdStack->IsUncleanCommandExists(CMDID_TILEMASK_MODIFY))
             {
                 // ask user about saving tilemask changes
-                sceneWidget->SetCurrentTab(i);
+                ui->sceneTabWidget->SetCurrentTab(i);
 
                 if (needQuestion)
                 {
@@ -3157,7 +3146,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
         }
     }
 
-    sceneWidget->SetCurrentTab(lastSceneTab);
+    ui->sceneTabWidget->SetCurrentTab(lastSceneTab);
 
     return true;
 }
@@ -3166,10 +3155,9 @@ void QtMainWindow::OnReloadShaders()
 {
     DAVA::ShaderDescriptorCache::RelaoadShaders();
 
-    SceneTabWidget* tabWidget = GetSceneWidget();
-    for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+    for (int tab = 0, sz = ui->sceneTabWidget->GetTabCount(); tab < sz; ++tab)
     {
-        SceneEditor2* sceneEditor = tabWidget->GetTabScene(tab);
+        SceneEditor2* sceneEditor = ui->sceneTabWidget->GetTabScene(tab);
 
         const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
 
@@ -3362,10 +3350,9 @@ void QtMainWindow::SetActionCheckedSilently(QAction* action, bool checked)
 
 void QtMainWindow::RestartParticleEffects()
 {
-    const SceneTabWidget* widget = GetSceneWidget();
-    for (int tab = 0; tab < widget->GetTabCount(); ++tab)
+    for (int tab = 0; tab < ui->sceneTabWidget->GetTabCount(); ++tab)
     {
-        SceneEditor2* scene = widget->GetTabScene(tab);
+        SceneEditor2* scene = ui->sceneTabWidget->GetTabScene(tab);
         DVASSERT(scene);
         scene->particlesSystem->RestartParticleEffects();
     }
@@ -3442,13 +3429,13 @@ void QtMainWindow::CallAction(ID id, DAVA::Any&& args)
         OpenScene(args.Cast<DAVA::String>().c_str());
         break;
     case GlobalOperations::SetNameAsFilter:
-        GetUI()->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
+        ui->sceneTreeFilterEdit->setText(args.Cast<DAVA::String>().c_str());
         break;
     case GlobalOperations::HideScenePreview:
-        GetSceneWidget()->HideScenePreview();
+        ui->sceneTabWidget->HideScenePreview();
         break;
     case GlobalOperations::ShowScenePreview:
-        GetSceneWidget()->ShowScenePreview(args.Cast<DAVA::String>().c_str());
+        ui->sceneTabWidget->ShowScenePreview(args.Cast<DAVA::String>().c_str());
         break;
     case GlobalOperations::ShowMaterial:
         OnMaterialEditor(args.Cast<DAVA::NMaterial*>());
@@ -3484,10 +3471,9 @@ void QtMainWindow::HideWaitDialog()
 
 void QtMainWindow::ForEachScene(const DAVA::Function<void(SceneEditor2*)>& functor)
 {
-    SceneTabWidget* tabWidget = GetSceneWidget();
-    for (int i = 0; i < tabWidget->GetTabCount(); ++i)
+    for (int i = 0; i < ui->sceneTabWidget->GetTabCount(); ++i)
     {
-        SceneEditor2* sceneEditor = tabWidget->GetTabScene(i);
+        SceneEditor2* sceneEditor = ui->sceneTabWidget->GetTabScene(i);
         DVASSERT(sceneEditor);
         functor(sceneEditor);
     }

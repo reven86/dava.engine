@@ -1,41 +1,108 @@
-#include "UI/mainwindow.h"
-#include "Document/DocumentGroup.h"
-#include "Document/Document.h"
 #include "EditorCore.h"
-#include "Model/PackageHierarchy/PackageNode.h"
+
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Qt/RenderWidget.h"
+#include "Engine/NativeService.h"
+
+#include "Logger/Logger.h"
+#include "Particles/ParticleEmitter.h"
+#include "FileSystem/FileSystem.h"
+#include "Utils/Utils.h"
+
+#include "Helpers/ResourcesManageHelper.h"
+#include "TextureCompression/PVRConverter.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/AssertGuard.h"
+#include "QtTools/Utils/Themes/Themes.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Utils.h"
 
+#include "Document/DocumentGroup.h"
+#include "Document/Document.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+
+#include "UI/mainwindow.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
-#include "Utils/Utils.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "UI/Package/PackageModel.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Input/UIInputSystem.h"
 
 using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(EditorCore, PREF_ARG("isUsingAssetCache", false));
 
-EditorCore::EditorCore(QObject* parent)
-    : QObject(parent)
-    , Singleton<EditorCore>()
-    , spritesPacker(std::make_unique<SpritesPacker>())
-    , cacheClient(nullptr)
-    , project(new Project(this))
-    , documentGroup(new DocumentGroup(this))
-    , mainWindow(std::make_unique<MainWindow>())
+namespace EditorCoreDetails
 {
-    ConnectApplicationFocus();
+void UnpackHelp(DAVA::FileSystem* fileSystem)
+{
+    //Unpack Help to Documents.
+    DAVA::FilePath docsPath = DAVA::FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
+    if (!fileSystem->Exists(docsPath))
+    {
+        try
+        {
+            DAVA::ResourceArchive helpRA("~res:/Help.docs");
 
-    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
-    mainWindow->AttachDocumentGroup(documentGroup);
+            fileSystem->DeleteDirectory(docsPath);
+            fileSystem->CreateDirectory(docsPath, true);
 
+            helpRA.UnpackToFolder(docsPath);
+        }
+        catch (std::exception& ex)
+        {
+            DVASSERT_MSG("can't unpack help docs to documents dir: %s", ex.what());
+        }
+    }
+}
+
+void InitPVRTexTool()
+{
+#if defined(__DAVAENGINE_MACOS__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
+#elif defined(__DAVAENGINE_WIN32__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+#endif
+    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
+}
+}
+
+EditorCore::EditorCore()
+    : QObject(nullptr)
+    , Singleton<EditorCore>()
+{
+    ParticleEmitter::FORCE_DEEP_CLONE = true;
+    ToolsAssetGuard::Instance()->Init();
+}
+
+EditorCore::~EditorCore()
+{
+    if (cacheClient && cacheClient->IsConnected())
+    {
+        cacheClient->Disconnect();
+    }
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+MainWindow* EditorCore::GetMainWindow() const
+{
+    return mainWindow.get();
+}
+
+Project* EditorCore::GetProject() const
+{
+    return project;
+}
+
+void EditorCore::ConnectInternal()
+{
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
-    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
 
     connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::CloseProject);
     connect(project, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
@@ -59,7 +126,7 @@ EditorCore::EditorCore(QObject* parent)
     connect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
     connect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
 
-    auto previewWidget = mainWindow->previewWidget;
+    PreviewWidget* previewWidget = mainWindow->previewWidget;
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
@@ -70,7 +137,7 @@ EditorCore::EditorCore(QObject* parent)
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
 
-    auto packageWidget = mainWindow->packageWidget;
+    PackageWidget* packageWidget = mainWindow->packageWidget;
     connect(previewWidget, &PreviewWidget::DropRequested, packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, packageWidget, &PackageWidget::OnDocumentChanged);
     connect(previewWidget, &PreviewWidget::DeleteRequested, packageWidget, &PackageWidget::OnDelete);
@@ -82,37 +149,74 @@ EditorCore::EditorCore(QObject* parent)
     connect(packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
     connect(packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
 
-    connect(previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &EditorCore::UpdateLanguage);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+}
 
+void EditorCore::Init(DAVA::Engine& engine)
+{
+    using namespace DAVA;
+    ResourcesManageHelper::InitInternalResources();
+    EngineContext* context = engine.GetContext();
+    UIControlSystem* uiControlSystem = context->uiControlSystem;
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+
+    UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), UIInputSystem::ACTION_FOCUS_RIGHT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::UP), UIInputSystem::ACTION_FOCUS_UP);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::DOWN), UIInputSystem::ACTION_FOCUS_DOWN);
+
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, UIEvent::Modifier::SHIFT_DOWN), UIInputSystem::ACTION_FOCUS_PREV);
+
+    context->logger->SetLogFilename("QuickEd.txt");
+
+    Renderer::SetDesiredFPS(60);
+
+    const char* settingsPath = "QuickEdSettings.archive";
+    FilePath localPrefrencesPath(context->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    EditorCoreDetails::UnpackHelp(context->fileSystem);
+    EditorCoreDetails::InitPVRTexTool();
+
+    qInstallMessageHandler(DAVAMessageHandler);
+
+    Q_INIT_RESOURCE(QtToolsResources);
+    Themes::InitFromQApplication();
+
+    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
+
+    spritesPacker.reset(new SpritesPacker());
+    project = new Project(this);
+    documentGroup = new DocumentGroup(this);
+    mainWindow.reset(new MainWindow());
+
+    mainWindow->previewWidget->InjectRenderWidget(renderWidget);
+
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
+    mainWindow->AttachDocumentGroup(documentGroup, renderWidget);
+
+    mainWindow->RebuildRecentMenu(project->GetProjectsHistory());
+
+    //we need to register preferences when whole class is initialized
     PreferencesStorage::Instance()->RegisterPreferences(this);
-}
 
-EditorCore::~EditorCore()
-{
-    if (cacheClient && cacheClient->IsConnected())
-    {
-        cacheClient->Disconnect();
-    }
+    ConnectInternal();
 
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
-}
-
-MainWindow* EditorCore::GetMainWindow() const
-{
-    return mainWindow.get();
-}
-
-Project* EditorCore::GetProject() const
-{
-    return project;
-}
-
-void EditorCore::Start()
-{
     mainWindow->show();
+}
+
+void EditorCore::OnRenderingInitialized()
+{
+    mainWindow->previewWidget->OnWindowCreated();
+    QStringList projectsPathes = project->GetProjectsHistory();
+    if (!projectsPathes.isEmpty())
+    {
+        OpenProject(projectsPathes.last());
+    }
 }
 
 void EditorCore::OnReloadSpritesStarted()
@@ -136,15 +240,6 @@ void EditorCore::OnReloadSpritesFinished()
     }
 
     Sprite::ReloadSprites();
-}
-
-void EditorCore::OnGLWidgedInitialized()
-{
-    QStringList projectsPathes = project->GetProjectsHistory();
-    if (!projectsPathes.isEmpty())
-    {
-        OpenProject(projectsPathes.last());
-    }
 }
 
 void EditorCore::OnProjectPathChanged(const QString& projectPath)
@@ -355,8 +450,8 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
 void EditorCore::EnableCacheClient()
 {
     DisableCacheClient();
-    cacheClient.reset(new AssetCacheClient(true));
-    DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
+    cacheClient.reset(new AssetCacheClient());
+    AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
     if (connected != AssetCache::Error::NO_ERRORS)
     {
         cacheClient.reset();
