@@ -99,7 +99,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
-#if 1
+#if 0
 {
     Logger::Info("\n\nsrc-code:");
 
