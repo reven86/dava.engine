@@ -15,6 +15,11 @@
 #include <QtGui>
 #include <QtWidgets>
 
+namespace DAVA
+{
+class RenderWidget;
+}
+
 class PackageWidget;
 class PropertiesWidget;
 class LibraryWidget;
@@ -33,7 +38,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspB
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
-    void AttachDocumentGroup(DocumentGroup* documentGroup);
+    void AttachDocumentGroup(DocumentGroup* documentGroup, DAVA::RenderWidget* renderWidget);
 
     void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
     void ExecDialogReloadSprites(SpritesPacker* packer);

@@ -13,7 +13,7 @@ namespace DAVA
 JniExtension::JniExtension()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
     vm = delegate->GetVM();
 #endif
@@ -25,7 +25,7 @@ JniExtension::~JniExtension()
 
 void JniExtension::SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName)
 {
-    *gJavaClass = (jclass)env->NewGlobalRef(env->FindClass(className));
+    *gJavaClass = static_cast<jclass>(env->NewGlobalRef(env->FindClass(className)));
     if (gJavaClassName)
         *gJavaClassName = className;
 }
@@ -54,7 +54,7 @@ JNIEnv* JniExtension::GetEnvironment() const
     // we shouldn't store JNIEnv.
 
     JNIEnv* env;
-    if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
