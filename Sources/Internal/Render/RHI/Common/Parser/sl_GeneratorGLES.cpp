@@ -249,7 +249,7 @@ bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* 
             }
             else
             {
-                if (field->type.baseType == HLSLBaseType_Half || field->type.baseType == HLSLBaseType_Half2 || field->type.baseType == HLSLBaseType_Half3 || field->type.baseType == HLSLBaseType_Half4)
+                if (field->type.baseType == HLSLBaseType_Half || field->type.baseType == HLSLBaseType_Half2 || field->type.baseType == HLSLBaseType_Half3 || field->type.baseType == HLSLBaseType_Half4 || field->type.baseType == HLSLBaseType_Half3x3 || field->type.baseType == HLSLBaseType_Half4x4)
                     prefix = "mediump";
             }
 
