@@ -8,6 +8,7 @@
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include "Render/RenderOptions.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
 #include <ostream>
@@ -42,9 +43,10 @@ static const uint32 MAX_CPU_FRAME_TRACES = 6;
 static const uint32 MAX_TRACE_LIST_ELEMENTS_TO_DRAW = 7;
 
 static const char* BUTTON_CLOSE_TEXT = "Close (Ctrl + F12)";
-static const char* BUTTON_HISTORY_NEXT_TEXT = "Next Trace (Ctrl + Right) ->";
-static const char* BUTTON_HISTORY_PREV_TEXT = "<- Prev Trace (Ctrl + Left)";
-static const char* BUTTON_DRAW_MARKER_HISTORY_TEXT = "Show/Hide Interest Markers";
+static const char* BUTTON_HISTORY_NEXT_TEXT = "Next (Ctrl + Right) ->";
+static const char* BUTTON_HISTORY_PREV_TEXT = "<- Prev (Ctrl + Left)";
+static const char* BUTTON_DRAW_MARKER_HISTORY_TEXT = "History (Ctrl + F9)";
+static const char* BUTTON_SCALE_TEXT = "Scale (Ctrl + F10)";
 static const char* BUTTON_PROFILERS_UNPAUSE_TEXT = "Unpause (Ctrl + F11)";
 static const char* BUTTON_PROFILERS_PAUSE_TEXT = "Pause (Ctrl + F11)";
 };
@@ -88,6 +90,7 @@ ProfilerOverlay::ProfilerOverlay(ProfilerCPU* _cpuProfiler, const char* _cpuCoun
     buttonsText[BUTTON_HISTORY_NEXT] = ProfilerOverlayDetails::BUTTON_HISTORY_NEXT_TEXT;
     buttonsText[BUTTON_HISTORY_PREV] = ProfilerOverlayDetails::BUTTON_HISTORY_PREV_TEXT;
     buttonsText[BUTTON_DRAW_MARKER_HISTORY] = ProfilerOverlayDetails::BUTTON_DRAW_MARKER_HISTORY_TEXT;
+    buttonsText[BUTTON_SCALE] = ProfilerOverlayDetails::BUTTON_SCALE_TEXT;
     buttonsText[BUTTON_PROFILERS_START_STOP] = ProfilerOverlayDetails::BUTTON_PROFILERS_UNPAUSE_TEXT;
     buttonsText[BUTTON_CLOSE] = ProfilerOverlayDetails::BUTTON_CLOSE_TEXT;
 }
@@ -107,26 +110,31 @@ void ProfilerOverlay::OnFrameEnd()
 {
     if (ProfilerCPU::globalProfiler)
     {
-        if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
+        if (!ProfilerCPU::globalProfiler->IsStarted() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
             ProfilerCPU::globalProfiler->Start();
-        else
+
+        if (ProfilerCPU::globalProfiler->IsStarted() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
             ProfilerCPU::globalProfiler->Stop();
     }
 
     if (ProfilerGPU::globalProfiler)
     {
-        if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
+        if (!ProfilerGPU::globalProfiler->IsStarted() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
             ProfilerGPU::globalProfiler->Start();
-        else
+
+        if (ProfilerGPU::globalProfiler->IsStarted() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
             ProfilerGPU::globalProfiler->Stop();
     }
 
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
+    if (!IsEnabled() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
     {
-        SetInputEnabled(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY));
         SetEnabled(true);
+        SetInputEnabled(true);
+    }
 
-        Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_OVERLAY, false);
+    if (IsEnabled() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
+    {
+        SetEnabled(false);
     }
 
     if (!overlayEnabled)
@@ -240,6 +248,14 @@ bool ProfilerOverlay::OnInput(UIEvent* input)
             {
                 switch (input->key)
                 {
+                case Key::F9:
+                    OnButtonPressed(BUTTON_DRAW_MARKER_HISTORY);
+                    break;
+
+                case Key::F10:
+                    OnButtonPressed(BUTTON_SCALE);
+                    break;
+
                 case Key::F11:
                     OnButtonPressed(BUTTON_PROFILERS_START_STOP);
                     break;
@@ -284,7 +300,8 @@ void ProfilerOverlay::ProcessTouch(UIEvent* input)
     {
         for (int32 i = 0; i < BUTTON_COUNT; ++i)
         {
-            Point2i point = Point2i(int32(input->physPoint.x / overlayScale), int32(input->physPoint.y / overlayScale));
+            Vector2 physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(input->point);
+            Point2i point = Point2i(int32(physPoint.x / overlayScale), int32(physPoint.y / overlayScale));
             if (buttons[i].PointInside(point))
                 OnButtonPressed(eButton(i));
         }
@@ -329,6 +346,10 @@ void ProfilerOverlay::OnButtonPressed(eButton button)
 
     case BUTTON_DRAW_MARKER_HISTORY:
         drawMarkerHistory = !drawMarkerHistory;
+        break;
+
+    case BUTTON_SCALE:
+        SetDrawScace(FLOAT_EQUAL(GetDrawScale(), 1.f) ? 2.f : 1.f);
         break;
 
     case BUTTON_PROFILERS_START_STOP:
@@ -551,19 +572,20 @@ void ProfilerOverlay::Draw()
     static const uint32 BUTTON_TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
     static const uint32 BUTTON_BORDER_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
 
-    int32 buttonWidth = screenSize.dx / (int32(BUTTON_COUNT) - int32(BUTTON_HISTORY_PREV));
-    int32 x0 = 0, x1 = 0, y0 = screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
+    float32 buttonWidth = screenSize.dx / float32(int32(BUTTON_COUNT) - int32(BUTTON_HISTORY_PREV));
+    float32 x0 = 0.f, x1 = 0.f;
+    int32 y0 = screenSize.dy - ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE;
     for (int32 i = int32(BUTTON_HISTORY_PREV); i < int32(BUTTON_COUNT); ++i)
     {
         x1 += buttonWidth;
-        DbgDraw::FilledRect2D(x0, y0, x1, screenSize.dy, BUTTON_COLOR);
-        DbgDraw::Rect2D(x0, y0, x1, screenSize.dy, BUTTON_BORDER_COLOR);
+        DbgDraw::FilledRect2D(int32(x0), y0, int32(x1), screenSize.dy, BUTTON_COLOR);
+        DbgDraw::Rect2D(int32(x0), y0, int32(x1), screenSize.dy, BUTTON_BORDER_COLOR);
 
         int32 xAlign = (buttonWidth - int32(strlen(buttonsText[i]) * int32(DbgDraw::NormalCharW))) / 2;
         int32 yAlign = (ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE - DbgDraw::NormalCharH) / 2;
-        DbgDraw::Text2D(x0 + xAlign, y0 + yAlign, BUTTON_TEXT_COLOR, buttonsText[i]);
+        DbgDraw::Text2D(int32(x0) + xAlign, y0 + yAlign, BUTTON_TEXT_COLOR, buttonsText[i]);
 
-        buttons[i] = Rect2i(x0, y0, buttonWidth, ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE);
+        buttons[i] = Rect2i(int32(x0), y0, int32(buttonWidth), ProfilerOverlayDetails::OVERLAY_BUTTON_SIZE);
 
         x0 += buttonWidth;
     }

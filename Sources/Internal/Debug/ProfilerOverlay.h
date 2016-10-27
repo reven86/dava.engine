@@ -119,6 +119,7 @@ protected:
         BUTTON_HISTORY_PREV,
         BUTTON_HISTORY_NEXT,
         BUTTON_DRAW_MARKER_HISTORY,
+        BUTTON_SCALE,
         BUTTON_PROFILERS_START_STOP,
         BUTTON_CLOSE,
 
@@ -170,6 +171,7 @@ protected:
 inline void ProfilerOverlay::SetEnabled(bool enabled)
 {
     overlayEnabled = enabled;
+    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_OVERLAY, overlayEnabled);
 }
 
 inline bool ProfilerOverlay::IsEnabled()
