@@ -78,14 +78,14 @@
       <string>Recent</string>
      </property>
     </widget>
-    <addaction name="actionNew_project"/>
-    <addaction name="actionOpen_project"/>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionOpenProject"/>
     <addaction name="menuRecent"/>
     <addaction name="separator"/>
     <addaction name="actionSaveDocument"/>
     <addaction name="actionForceSaveAllDocuments"/>
     <addaction name="separator"/>
-    <addaction name="actionClose_project"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -93,6 +93,20 @@
     <property name="title">
      <string>View</string>
     </property>
+    <widget class="QMenu" name="menuApplicationStyle">
+     <property name="title">
+      <string>Application style</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuGridColor">
+     <property name="title">
+      <string>Grid Color</string>
+     </property>
+    </widget>
+    <addaction name="menuApplicationStyle"/>
+    <addaction name="separator"/>
+    <addaction name="menuGridColor"/>
+    <addaction name="separator"/>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
     <addaction name="actionActualZoom"/>
@@ -112,7 +126,8 @@
     <addaction name="separator"/>
     <addaction name="menuDebug"/>
     <addaction name="separator"/>
-    <addaction name="action_preferences"/>
+    <addaction name="actionPreferences"/>
+    <addaction name="actionReloadSprites"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -123,21 +138,14 @@
     </property>
     <addaction name="actionHelp"/>
    </widget>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <addaction name="separator"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolbar">
    <property name="windowTitle">
-    <string>Edit Toolbar</string>
+    <string>Main Toolbar</string>
    </property>
    <property name="movable">
     <bool>true</bool>
@@ -154,12 +162,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNew_project"/>
-   <addaction name="actionOpen_project"/>
+   <addaction name="actionNewProject"/>
+   <addaction name="actionOpenProject"/>
    <addaction name="actionSaveDocument"/>
    <addaction name="actionForceSaveAllDocuments"/>
-   <addaction name="actionClose_project"/>
-   <addaction name="action_preferences"/>
+   <addaction name="actionCloseProject"/>
+   <addaction name="actionPreferences"/>
    <addaction name="actionPixelized"/>
    <addaction name="separator"/>
    <addaction name="actionUndo"/>
@@ -206,7 +214,7 @@
   </widget>
   <widget class="QToolBar" name="toolBarPlugins">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Project ToolBar</string>
    </property>
    <property name="iconSize">
     <size>
@@ -237,7 +245,7 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionOpen_project">
+  <action name="actionOpenProject">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -272,7 +280,7 @@
     <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
-  <action name="actionNew_project">
+  <action name="actionNewProject">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/newscene.png</normaloff>:/Icons/newscene.png</iconset>
@@ -284,34 +292,7 @@
     <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
-  <action name="actionHierarchy">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hierarchy tree</string>
-   </property>
-  </action>
-  <action name="actionLibrary">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Library</string>
-   </property>
-  </action>
-  <action name="actionProperties">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Properties</string>
-   </property>
-  </action>
-  <action name="actionClose_project">
+  <action name="actionCloseProject">
    <property name="icon">
     <iconset>
      <normaloff>:/QtTools/Icons/close-16.png</normaloff>:/QtTools/Icons/close-16.png</iconset>
@@ -402,18 +383,6 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="actionRepack_And_Reload">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/Icons/reloadtextures.png</normaloff>:/Icons/reloadtextures.png</iconset>
-   </property>
-   <property name="text">
-    <string>Repack And Reload</string>
-   </property>
-   <property name="toolTip">
-    <string>Repack and reload sprites</string>
-   </property>
-  </action>
   <action name="actionPixelized">
    <property name="checkable">
     <bool>true</bool>
@@ -427,11 +396,6 @@
    </property>
    <property name="toolTip">
     <string>Pixelized/Smooth Graphics</string>
-   </property>
-  </action>
-  <action name="menuTexturesForGPU">
-   <property name="text">
-    <string>GPU</string>
    </property>
   </action>
   <action name="actionDump_Controls">
@@ -461,7 +425,7 @@
     <string>reload sprites</string>
    </property>
   </action>
-  <action name="action_preferences">
+  <action name="actionPreferences">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/settings.png</normaloff>:/Icons/settings.png</iconset>
@@ -518,6 +482,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionReloadCurrentDocument">
+   <property name="text">
+    <string>Reload current document</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload current document</string>
+   </property>
+  </action>
+  <action name="actionCloseCurrentDocument">
+   <property name="text">
+    <string>Close current document</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>

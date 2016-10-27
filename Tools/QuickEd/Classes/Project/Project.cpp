@@ -6,7 +6,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
-#include "Helpers/ResourcesManageHelper.h"
 
 #include "UI/UIControlSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -15,6 +14,8 @@
 #include "FileSystem/FileSystem.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "UI/mainwindow.h"
+#include "UI/FileSystemView/FileSystemDockWidget.h"
+#include "UI/Library/LibraryWidget.h"
 
 #include <QDir>
 #include <QApplication>
@@ -48,14 +49,45 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(settings.textsDirectory.GetAbsolutePathname())));
     editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(settings.defaultLanguage));
 
+    for (auto& item : SourceResourceDirectories())
+    {
+        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
+        QString path = pathInfo.absoluteFilePath();
+        QString displayName = item.first;
+
+        mainWindow->GetFileSystemWidget()->AddPath(path, displayName);
+    }
+    mainWindow->GetLibraryWidget()->SetLibraryPackages(GetLibraryPackages());
+
     connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged);
 
-    connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &Project::OnStartSpritesReload);
+    connect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
+    connect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
+    connect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
+    connect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+
+    connect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
+    connect(mainWindow, &MainWindow::ReloadSprites, this, &Project::OnReloadSprites);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
 }
 
 Project::~Project()
 {
+    disconnect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
+    disconnect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
+    disconnect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
+    disconnect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+
+    disconnect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
+
+    for (auto& item : SourceResourceDirectories())
+    {
+        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
+        QString path = pathInfo.absoluteFilePath();
+
+        mainWindow->GetFileSystemWidget()->RemovePath(path);
+    }
+
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
     for (auto& folderInfo : settings.sourceResourceDirectories)
@@ -420,7 +452,7 @@ const QVector<QPair<QString, QString>>& Project::SourceResourceDirectories() con
     return settings.sourceResourceDirectories;
 }
 
-void Project::OnStartSpritesReload()
+void Project::OnReloadSprites()
 {
     for (auto& document : GetDocumentGroup()->GetDocuments())
     {

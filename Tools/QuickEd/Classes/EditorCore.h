@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Base/Introspection.h"
-#include "Base/BaseTypes.h"
-#include "UI/mainwindow.h"
 #include "AssetCache/AssetCacheClient.h"
 
 #include <QObject>
@@ -13,6 +11,7 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 class SpritesPacker;
+class MainWindow;
 
 namespace DAVA
 {
@@ -40,10 +39,8 @@ private slots:
     void OnOpenProject();
     void OnCloseProject();
     void OnExit();
-
-    void OnRecentMenu(QAction*);
-
     void OnGLWidgedInitialized();
+    void OnShowHelp();
 
 private:
     static std::tuple<std::unique_ptr<Project>, DAVA::ResultList> CreateProject(const QString& path, MainWindow* mainWindow);
@@ -67,6 +64,8 @@ private:
 
     DAVA::String GetRecentProjectsAsString() const;
     void SetRecentProjectsFromString(const DAVA::String& str);
+
+    void UnpackHelp();
 
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
 

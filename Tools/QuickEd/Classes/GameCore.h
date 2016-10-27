@@ -24,9 +24,6 @@ public:
     void BeginFrame() override;
     void Update(DAVA::float32 update) override;
     void Draw() override;
-
-protected:
-    void UnpackHelp();
 };
 }
 

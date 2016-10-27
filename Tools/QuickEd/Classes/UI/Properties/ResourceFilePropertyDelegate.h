@@ -7,7 +7,7 @@ class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit ResourceFilePropertyDelegate(const QString& extension, const QString& resourceDir, PropertiesTreeItemDelegate* delegate);
+    explicit ResourceFilePropertyDelegate(const QString& extension, const QString& defaultResourceDir, PropertiesTreeItemDelegate* delegate);
     ~ResourceFilePropertyDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
@@ -25,7 +25,7 @@ private:
     bool IsPathValid(const QString& path);
     QPointer<QLineEdit> lineEdit = nullptr;
     QString resourceExtension;
-    QString resourceDir;
+    QString defaultResourceDir;
 };
 
 #endif // __RESOURCE_FILE_PROPERTY_DELEGATE_H__

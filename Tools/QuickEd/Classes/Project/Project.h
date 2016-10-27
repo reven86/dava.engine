@@ -64,7 +64,7 @@ public:
 
     const QVector<QPair<QString, QString>>& SourceResourceDirectories() const;
 
-    void OnStartSpritesReload();
+    void OnReloadSprites();
 
     void OnReloadSpritesFinished();
 

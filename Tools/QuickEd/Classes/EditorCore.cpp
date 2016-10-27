@@ -1,7 +1,9 @@
+#include "EditorCore.h"
+
 #include "UI/mainwindow.h"
 #include "Document/DocumentGroup.h"
 #include "Document/Document.h"
-#include "EditorCore.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
@@ -13,14 +15,24 @@
 #include "Utils/Utils.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "UI/Package/PackageModel.h"
-#include "ResourcesManageHelper.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Base/Result.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "Project/Project.h"
+#include "UI/FileSystemView/FileSystemDockWidget.h"
+#include "UI/Library/LibraryWidget.h"
+#include "UI/Preview/PreviewWidget.h"
+#include "UI/Package/PackageWidget.h"
+#include "UI/Properties/PropertiesWidget.h"
 
 using namespace DAVA;
+
+namespace EditorCoreDetails
+{
+static const DAVA::String DOCUMENTATION_DIRECTORY("~doc:/Help/");
+static const DAVA::String EDITOR_TITLE("QuickEd");
+};
 
 REGISTER_PREFERENCES_ON_START(EditorCore,
                               PREF_ARG("isUsingAssetCache", false),
@@ -39,24 +51,26 @@ EditorCore::EditorCore(QObject* parent)
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
+    mainWindow->SetProjectActionsEnabled(false);
+
+    QString title;
+    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
+    if (options)
+    {
+        title = options->GetString("title", EditorCoreDetails::EDITOR_TITLE).c_str();
+    }
+    mainWindow->SetProjectTitle(title);
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
-    connect(mainWindow->actionNew_project, &QAction::triggered, this, &EditorCore::OnNewProject);
-    connect(mainWindow->actionOpen_project, &QAction::triggered, this, &EditorCore::OnOpenProject);
-    connect(mainWindow->actionClose_project, &QAction::triggered, this, &EditorCore::OnCloseProject);
-    connect(mainWindow->actionExit, &QAction::triggered, this, &EditorCore::OnExit);
-    connect(mainWindow->menuRecent, &QMenu::triggered, this, &EditorCore::OnRecentMenu);
-    connect(mainWindow.get(), &MainWindow::EmulationModeChanged, mainWindow->previewWidget, &PreviewWidget::OnEmulationModeChanged);
-    connect(mainWindow->previewWidget, &PreviewWidget::DropRequested, mainWindow->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-    connect(mainWindow->previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
-    connect(mainWindow->previewWidget, &PreviewWidget::ImportRequested, mainWindow->packageWidget, &PackageWidget::OnImport);
-    connect(mainWindow->previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
-    connect(mainWindow->previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
-    connect(mainWindow->previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
-    connect(mainWindow->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->packageWidget, &PackageWidget::OnSelectionChanged);
-    connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectionChanged);
-    connect(mainWindow->packageWidget, &PackageWidget::CurrentIndexChanged, mainWindow->propertiesWidget, &PropertiesWidget::UpdateModel);
-    connect(mainWindow->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &EditorCore::OnGLWidgedInitialized);
+    connect(mainWindow.get(), &MainWindow::NewProject, this, &EditorCore::OnNewProject);
+    connect(mainWindow.get(), &MainWindow::OpenProject, this, &EditorCore::OnOpenProject);
+    connect(mainWindow.get(), &MainWindow::RecentProject, this, &EditorCore::OpenProject);
+    connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
+    connect(mainWindow.get(), &MainWindow::Exit, this, &EditorCore::OnExit);
+    connect(mainWindow.get(), &MainWindow::GLWidgedReady, this, &EditorCore::OnGLWidgedInitialized);
+    connect(mainWindow.get(), &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
+
+    UnpackHelp();
 }
 
 EditorCore::~EditorCore()
@@ -82,51 +96,11 @@ void EditorCore::OnGLWidgedInitialized()
     }
 }
 
-// void EditorCore::OnProjectPathChanged(const QString& projectPath)
-// {
-//     DisableCacheClient();
-//     if (projectPath.isEmpty())
-//     {
-//         return;
-//     }
-//     if (assetCacheEnabled)
-//     {
-//         EnableCacheClient();
-//     }
-//
-//     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
-//
-//     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-//     spritesPacker->ClearTasks();
-//     QDirIterator it(projectPath + "/DataSource");
-//     while (it.hasNext())
-//     {
-//         it.next();
-//         const QFileInfo& fileInfo = it.fileInfo();
-//         if (fileInfo.isDir())
-//         {
-//             QString outputPath = fileInfo.absoluteFilePath();
-//             if (!outputPath.contains(searchOption))
-//             {
-//                 continue;
-//             }
-//             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
-//             QDir outputDir(outputPath);
-//             spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
-//         }
-//     }
-// }
-
-void EditorCore::OnRecentMenu(QAction* recentProjectAction)
+void EditorCore::OnShowHelp()
 {
-    QString projectPath = recentProjectAction->data().toString();
-
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-
-    OpenProject(projectPath);
+    FilePath docsPath = EditorCoreDetails::DOCUMENTATION_DIRECTORY + "index.html";
+    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+    QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void EditorCore::OpenProject(const QString& path)
@@ -229,7 +203,7 @@ bool EditorCore::CloseProject()
     if (hasUnsaved)
     {
         int ret = QMessageBox::question(
-        qApp->activeWindow(),
+        mainWindow.get(),
         tr("Save changes"),
         tr("Some files has been modified.\n"
            "Do you want to save your changes?"),
@@ -248,7 +222,7 @@ bool EditorCore::CloseProject()
     {
         project->GetDocumentGroup()->CloseDocument(document);
     }
-    /*project->Close();*/
+
     OnProjectClose(project.get());
     project = nullptr;
     return true;
@@ -312,38 +286,10 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 {
     AddRecentProject(newProject->GetProjectPath());
 
+    mainWindow->SetProjectPath(newProject->GetProjectPath());
     mainWindow->SetRecentProjects(GetRecentProjects());
-
-    mainWindow->actionClose_project->setEnabled(true);
-    mainWindow->fileSystemDockWidget->setEnabled(true);
-    mainWindow->menuTools->setEnabled(true);
-    mainWindow->toolBarPlugins->setEnabled(true);
-
-    for (auto& item : newProject->SourceResourceDirectories())
-    {
-        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
-        QString path = pathInfo.absoluteFilePath();
-        QString displayName = item.first;
-
-        mainWindow->fileSystemDockWidget->AddPath(path, displayName);
-    }
-    mainWindow->libraryWidget->SetLibraryPackages(newProject->GetLibraryPackages());
-
-    //connect(newProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    //connect(newProject, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
-    //connect(newProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
-    //connect(newProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
-
-    //EditorLocalizationSystem* editorLocalizationSystem = newProject->GetEditorLocalizationSystem();
-
     mainWindow->SetLanguages(newProject->GetAvailableLanguages(), newProject->GetCurrentLanguage());
-
-    connect(mainWindow.get(), &MainWindow::CurrentLanguageChanged, newProject, &Project::SetCurrentLanguage);
-    connect(mainWindow.get(), &MainWindow::RtlChanged, newProject, &Project::SetRtl);
-    connect(mainWindow.get(), &MainWindow::BiDiSupportChanged, newProject, &Project::SetBiDiSupport);
-    connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, newProject, &Project::SetGlobalStyleClasses);
-
-    connect(newProject, &Project::CurrentLanguageChanged, mainWindow.get(), &MainWindow::SetCurrentLanguage);
+    mainWindow->SetProjectActionsEnabled(true);
 
     DocumentGroup* documentGroup = newProject->GetDocumentGroup();
     mainWindow->AttachDocumentGroup(documentGroup);
@@ -351,19 +297,12 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
 
-    //connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
-    //connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-
-    //connect(mainWindow->actionReloadSprites, &QAction::triggered, this, &EditorCore::OnReloadSpritesStarted);
-    //connect(spritesPacker.get(), &SpritesPacker::Finished, this, &EditorCore::OnReloadSpritesFinished);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
 
     connect(this, &EditorCore::AssetCacheChanged, newProject, &Project::SetAssetCacheClient);
-
-    mainWindow->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
     if (assetCacheEnabled)
     {
@@ -395,54 +334,28 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 
 void EditorCore::OnProjectClose(const Project* currProject)
 {
-    for (auto& item : currProject->SourceResourceDirectories())
-    {
-        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
-        QString path = pathInfo.absoluteFilePath();
-
-        mainWindow->fileSystemDockWidget->RemovePath(path);
-    }
-
-    mainWindow->actionClose_project->setEnabled(false);
-    mainWindow->fileSystemDockWidget->setEnabled(false);
-    mainWindow->menuTools->setEnabled(false);
-    mainWindow->toolBarPlugins->setEnabled(false);
-
-    mainWindow->fileSystemDockWidget->RemoveAllPaths();
-    mainWindow->libraryWidget->SetLibraryPackages(Vector<FilePath>());
-
-    //disconnect(currProject, &Project::IsOpenChanged, mainWindow->actionClose_project, &QAction::setEnabled);
-    //disconnect(currProject, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    //disconnect(currProject, &Project::ProjectPathChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::SetProjectDir);
-    //disconnect(currProject, &Project::IsOpenChanged, mainWindow->fileSystemDockWidget, &FileSystemDockWidget::setEnabled);
-    //disconnect(currProject, &Project::IsOpenChanged, this, &EditorCore::OnProjectOpenChanged);
-
-    //EditorLocalizationSystem* editorLocalizationSystem = currProject->GetEditorLocalizationSystem();
-    //disconnect(languageComboBox, &QComboBox::currentTextChanged, editorLocalizationSystem, &EditorLocalizationSystem::SetCurrentLocale);
-    //disconnect(editorLocalizationSystem, &EditorLocalizationSystem::CurrentLocaleChanged, languageComboBox, &QComboBox::setCurrentText);
-    disconnect(mainWindow.get(), &MainWindow::CurrentLanguageChanged, currProject, &Project::SetCurrentLanguage);
-    disconnect(mainWindow.get(), &MainWindow::RtlChanged, currProject, &Project::SetRtl);
-    disconnect(mainWindow.get(), &MainWindow::BiDiSupportChanged, currProject, &Project::SetBiDiSupport);
-    disconnect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, currProject, &Project::SetGlobalStyleClasses);
-
-    disconnect(currProject, &Project::CurrentLanguageChanged, mainWindow.get(), &MainWindow::SetCurrentLanguage);
-
     DocumentGroup* documentGroup = currProject->GetDocumentGroup();
     mainWindow->DetachDocumentGroup(documentGroup);
     disconnect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
 
     disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
 
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
 
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
 
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
+    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
 
     disconnect(this, &EditorCore::AssetCacheChanged, currProject, &Project::SetAssetCacheClient);
+
+    mainWindow->SetProjectPath(QString());
+    mainWindow->SetProjectActionsEnabled(false);
+    mainWindow->SetLanguages(QStringList(), QString());
+    mainWindow->GetFileSystemWidget()->RemoveAllPaths();
+    mainWindow->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
 
     DisableCacheClient();
 }
@@ -521,4 +434,27 @@ void EditorCore::OnNewProject()
     }
 
     mainWindow->ShowResultList(tr("Error while creating project"), resultList);
+}
+
+void EditorCore::UnpackHelp()
+{
+    FilePath docsPath(EditorCoreDetails::DOCUMENTATION_DIRECTORY);
+    FileSystem* fs = FileSystem::Instance();
+    if (!fs->Exists(docsPath))
+    {
+        try
+        {
+            ResourceArchive helpRA("~res:/Help.docs");
+
+            fs->DeleteDirectory(docsPath);
+            fs->CreateDirectory(docsPath, true);
+
+            helpRA.UnpackToFolder(docsPath);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
+            DVASSERT(false && "can't unpack help docs to documents dir");
+        }
+    }
 }

@@ -1,59 +1,91 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "Base/Introspection.h"
-#include "Logger/Logger.h"
-#include "Render/RenderBase.h"
-#include "ui_mainwindow.h"
-
 #include "Preferences/PreferencesRegistrator.h"
+#include "Functional/SignalBase.h"
 
 #include <QtGui>
 #include <QtWidgets>
 
-class PackageWidget;
-class PropertiesWidget;
-class LibraryWidget;
-
-class LocalizationEditorDialog;
 class Document;
 class DocumentGroup;
-class SpritesPacker;
+class FileSystemDockWidget;
+class LibraryWidget;
+class LocalizationEditorDialog;
 class LoggerOutputObject;
+class PackageWidget;
+class PreviewWidget;
 class Project;
+class PropertiesWidget;
+class SpritesPacker;
 
-class MainWindow : public QMainWindow, public Ui::MainWindow, public DAVA::InspBase, public DAVA::TrackedObject
+namespace DAVA
+{
+class ResultList;
+}
+
+namespace Ui
+{
+class MainWindow;
+}
+
+class MainWindow
+: public QMainWindow
+  ,
+  public DAVA::InspBase
+  ,
+  public DAVA::TrackedObject
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+
     ~MainWindow() override;
+
+    void SetProjectTitle(const QString& projectTitle);
+    void SetProjectPath(const QString& projectPath);
+
+    void SetRecentProjects(const QStringList& lastProjectsPathes);
+    void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);
+    void SetCurrentLanguage(const QString& currentLang);
+
+    void SetProjectActionsEnabled(bool enable);
+
+    PreviewWidget* GetPreviewWidget();
+    PropertiesWidget* GetPropertiesWidget();
+    FileSystemDockWidget* GetFileSystemWidget();
+    PackageWidget* GetPackageWidget();
+    LibraryWidget* GetLibraryWidget();
+
+    void SetDocumentGroupActionsEnable(bool enable);
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
     void AttachDocumentGroup(DocumentGroup* documentGroup);
     void DetachDocumentGroup(DocumentGroup* documentGroup);
 
-    //void OnProjectOpened(const DAVA::ResultList& resultList, const Project* project);
     void ExecDialogReloadSprites(SpritesPacker* packer);
-    bool IsInEmulationMode() const;
-
-    void SetRecentProjects(const QStringList& lastProjectsPathes);
-    void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);
-    void SetCurrentLanguage(const QString& currentLang);
 
 signals:
-    //void CloseProject();
-    void ActionExitTriggered();
-    void RecentMenuTriggered(QAction*);
-    //void ActionOpenProjectTriggered(QString projectPath);
+    void NewProject();
+    void OpenProject();
+    void CloseProject();
+    void Exit();
+    void RecentProject(const QString& path);
+    void ReloadSprites();
+
+    void GLWidgedReady();
+
+    void ShowHelp();
+
     void OpenPackageFile(QString path);
+
     void RtlChanged(bool isRtl);
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);
-    void ReloadSprites(DAVA::eGPUFamily gpu);
     void EmulationModeChanged(bool emulationMode);
+
     bool CanClose();
 
     void CurrentLanguageChanged(const QString& newLangCode);
@@ -62,8 +94,8 @@ public slots:
     void OnDocumentChanged(Document* document);
 
 private slots:
-    void OnShowHelp();
-    //void OnOpenProjectAction();
+    void OnRecentMenu(QAction* action);
+
     void OnPixelizationStateChanged(bool isPixelized);
 
     void OnRtlChanged(int arg);
@@ -76,19 +108,28 @@ private slots:
 private:
     static QString ConvertLangCodeToString(const QString& langCode);
 
+    void SetupShortcuts();
+    void ConnectActions();
+
+    void InitPluginsToolBar();
+
     void InitLanguageBox();
     void InitRtlBox();
     void InitBiDiSupportBox();
     void InitGlobalClasses();
     void InitEmulationMode();
-    void InitMenu();
     void SetupViewMenu();
+
+    void SetupAppStyleMenu();
+
     void SetupBackgroundMenu();
-    void UpdateProjectSettings();
     void OnPreferencesPropertyChanged(const DAVA::InspMember* member, const DAVA::VariantType& value);
 
     bool IsPixelized() const;
     void SetPixelized(bool pixelized);
+
+    void UpdateWindowTitle();
+
     void closeEvent(QCloseEvent* event) override;
 
     DAVA::String GetState() const;
@@ -100,12 +141,16 @@ private:
     DAVA::String GetConsoleState() const;
     void SetConsoleState(const DAVA::String& array);
 
-    QCheckBox* emulationBox = nullptr;
+    std::unique_ptr<Ui::MainWindow> ui;
+
+    QString projectTitle;
+    QString projectPath;
+
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
-    QComboBox* comboboxLanguage = nullptr;
-    QString currentProjectPath;
+    std::unique_ptr<QCheckBox> emulationBox;
+    std::unique_ptr<QComboBox> comboboxLanguage;
 
     const DAVA::InspMember* backgroundIndexMember = nullptr;
     DAVA::Set<const DAVA::InspMember*> backgroundColorMembers;
@@ -119,5 +164,3 @@ public:
                   PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };
-
-#endif // MAINWINDOW_H

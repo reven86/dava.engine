@@ -7,14 +7,16 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "ResourcesManageHelper.h"
 
 using namespace DAVA;
 
-ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString& resourceExtension_, const QString& resourceDir_, PropertiesTreeItemDelegate* delegate)
+ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
+const QString& resourceExtension_,
+const QString& defaultResourceDir_,
+PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
     , resourceExtension(resourceExtension_)
-    , resourceDir(resourceDir_)
+    , defaultResourceDir(defaultResourceDir_)
 {
 }
 
@@ -92,7 +94,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
     }
     else
     {
-        dir = ResourcesManageHelper::GetResourceRootDirectory() + resourceDir;
+        dir = defaultResourceDir;
     }
 
     QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);

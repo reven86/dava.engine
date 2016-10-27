@@ -3,8 +3,6 @@
 #include "Document/DocumentGroup.h"
 #include "Render/Texture.h"
 
-#include "Helpers/ResourcesManageHelper.h"
-
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
@@ -19,6 +17,9 @@
 
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
+#include "UI/Package/PackageModel.h"
+
+#include "ui_mainwindow.h"
 
 using namespace DAVA;
 
@@ -33,93 +34,91 @@ Q_DECLARE_METATYPE(const InspMember*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
+    , ui(new Ui::MainWindow())
     , loggerOutput(new LoggerOutputObject)
 {
-    setupUi(this);
+    ui->setupUi(this);
+    DebugTools::ConnectToUI(ui.get());
 
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
+    InitPluginsToolBar();
+    SetupViewMenu();
+    ConnectActions();
 
-    DebugTools::ConnectToUI(this);
-
-    // Reload Sprites
-    menuTools->addAction(actionReloadSprites);
-    toolBarPlugins->addAction(actionReloadSprites);
-
-    toolBarPlugins->addSeparator();
-    InitLanguageBox();
-    toolBarPlugins->addSeparator();
-    InitGlobalClasses();
-    toolBarPlugins->addSeparator();
-    InitRtlBox();
-    toolBarPlugins->addSeparator();
-    InitBiDiSupportBox();
-    toolBarPlugins->addSeparator();
-    InitEmulationMode();
-
-    tabBar->setElideMode(Qt::ElideNone);
-    setWindowTitle(ResourcesManageHelper::GetProjectTitle());
-
-    tabBar->setTabsClosable(true);
-    tabBar->setUsesScrollButtons(true);
+    ui->tabBar->setElideMode(Qt::ElideNone);
+    ui->tabBar->setTabsClosable(true);
+    ui->tabBar->setUsesScrollButtons(true);
     setUnifiedTitleAndToolBarOnMac(true);
 
-    connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    connect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
-    connect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
-
-    InitMenu();
-
-    menuTools->setEnabled(false);
-    toolBarPlugins->setEnabled(false);
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 
     OnDocumentChanged(nullptr);
 
-    PreferencesStorage::Instance()->RegisterPreferences(this);
+    connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    connect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+
+    connect(ui->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &MainWindow::GLWidgedReady);
+
+    connect(this, &MainWindow::EmulationModeChanged, ui->previewWidget, &PreviewWidget::OnEmulationModeChanged);
+    connect(ui->previewWidget, &PreviewWidget::DropRequested, ui->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
+    connect(ui->previewWidget, &PreviewWidget::DeleteRequested, ui->packageWidget, &PackageWidget::OnDelete);
+    connect(ui->previewWidget, &PreviewWidget::ImportRequested, ui->packageWidget, &PackageWidget::OnImport);
+    connect(ui->previewWidget, &PreviewWidget::CutRequested, ui->packageWidget, &PackageWidget::OnCut);
+    connect(ui->previewWidget, &PreviewWidget::CopyRequested, ui->packageWidget, &PackageWidget::OnCopy);
+    connect(ui->previewWidget, &PreviewWidget::PasteRequested, ui->packageWidget, &PackageWidget::OnPaste);
+    connect(ui->previewWidget, &PreviewWidget::SelectionChanged, ui->packageWidget, &PackageWidget::OnSelectionChanged);
+
+    connect(ui->packageWidget, &PackageWidget::SelectedNodesChanged, ui->previewWidget, &PreviewWidget::OnSelectionChanged);
+
+    connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
+
+    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 }
 
 MainWindow::~MainWindow()
 {
-    disconnect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    disconnect(previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
-    disconnect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
+    disconnect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+    disconnect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
+
     PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+void MainWindow::SetProjectTitle(const QString& aProjectTitle)
+{
+    projectTitle = aProjectTitle;
+
+    UpdateWindowTitle();
+}
+
+void MainWindow::SetProjectPath(const QString& aProjectPath)
+{
+    projectPath = aProjectPath;
+
+    UpdateWindowTitle();
 }
 
 void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
 {
-    Q_ASSERT(documentGroup != nullptr);
+    DVASSERT(documentGroup != nullptr);
 
-    documentGroup->ConnectToTabBar(tabBar);
+    documentGroup->ConnectToTabBar(ui->tabBar);
 
-    documentGroup->AttachRedoAction(actionRedo);
-    documentGroup->AttachUndoAction(actionUndo);
-    actionRedo->setShortcuts(QList<QKeySequence>() << Qt::CTRL + Qt::Key_Y << Qt::CTRL + Qt::SHIFT + Qt::Key_Z); //Qt can not set multishortcut or enum shortcut in Qt designer
-    Q_ASSERT(documentGroup != nullptr);
-    documentGroup->AttachSaveAction(actionSaveDocument);
-    documentGroup->AttachSaveAllAction(actionForceSaveAllDocuments);
+    documentGroup->AttachRedoAction(ui->actionRedo);
+    documentGroup->AttachUndoAction(ui->actionUndo);
 
-    QAction* actionCloseDocument = new QAction("Close current document", this);
-    actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
-    documentGroup->AttachCloseDocumentAction(actionCloseDocument);
-    previewWidget->GetGLWidget()->addAction(actionCloseDocument);
+    documentGroup->AttachSaveAction(ui->actionSaveDocument);
+    documentGroup->AttachSaveAllAction(ui->actionForceSaveAllDocuments);
 
-    QAction* actionReloadDocument = new QAction("Reload current document", this);
-    QList<QKeySequence> shortcurs;
-    shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
-              << Qt::Key_F5;
-    actionReloadDocument->setShortcuts(shortcurs);
-    actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
-    documentGroup->AttachReloadDocumentAction(actionReloadDocument);
-    previewWidget->GetGLWidget()->addAction(actionReloadDocument);
+    documentGroup->AttachCloseDocumentAction(ui->actionCloseCurrentDocument);
+    ui->previewWidget->GetGLWidget()->addAction(ui->actionCloseCurrentDocument);
+
+    documentGroup->AttachReloadDocumentAction(ui->actionReloadCurrentDocument);
+    ui->previewWidget->GetGLWidget()->addAction(ui->actionReloadCurrentDocument);
 }
 
 void MainWindow::DetachDocumentGroup(DocumentGroup* documentGroup)
 {
-    Q_ASSERT(documentGroup != nullptr);
-    documentGroup->DisconnectTabBar(tabBar);
+    DVASSERT(documentGroup != nullptr);
+    documentGroup->DisconnectTabBar(ui->tabBar);
 
     //     documentGroup->AttachRedoAction(actionRedo); TODO fix
     //     documentGroup->AttachUndoAction(actionUndo);
@@ -147,14 +146,21 @@ void MainWindow::DetachDocumentGroup(DocumentGroup* documentGroup)
 void MainWindow::OnDocumentChanged(Document* document)
 {
     bool enabled = (document != nullptr);
-    packageWidget->setEnabled(enabled);
-    propertiesWidget->setEnabled(enabled);
-    libraryWidget->setEnabled(enabled);
+    ui->packageWidget->setEnabled(enabled);
+    ui->propertiesWidget->setEnabled(enabled);
+    ui->libraryWidget->setEnabled(enabled);
 }
 
-bool MainWindow::IsInEmulationMode() const
+void MainWindow::OnRecentMenu(QAction* action)
 {
-    return emulationBox->isChecked();
+    QString projectPath = action->data().toString();
+
+    if (projectPath.isEmpty())
+    {
+        return;
+    }
+
+    emit RecentProject(projectPath);
 }
 
 void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
@@ -165,13 +171,6 @@ void MainWindow::ExecDialogReloadSprites(SpritesPacker* packer)
     DialogReloadSprites dialogReloadSprites(packer, this);
     dialogReloadSprites.exec();
     acceptableLoggerFlags = lastFlags;
-}
-
-void MainWindow::OnShowHelp()
-{
-    FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
-    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
-    QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 QString MainWindow::ConvertLangCodeToString(const QString& langCode)
@@ -194,36 +193,96 @@ QString MainWindow::ConvertLangCodeToString(const QString& langCode)
     }
 }
 
+void MainWindow::SetupShortcuts()
+{
+    ui->actionCloseCurrentDocument->setShortcutContext(Qt::WindowShortcut);
+
+    ui->actionReloadCurrentDocument->setShortcutContext(Qt::WindowShortcut);
+
+    //Qt can not set multishortcut or enum shortcut in Qt designer
+    ui->actionReloadCurrentDocument->setShortcuts(QList<QKeySequence>()
+                                                  << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+                                                  << Qt::Key_F5);
+
+    ui->actionRedo->setShortcuts(QList<QKeySequence>()
+                                 << Qt::CTRL + Qt::Key_Y
+                                 << Qt::CTRL + Qt::SHIFT + Qt::Key_Z);
+
+// Remap zoom in/out shorcuts for windows platform
+#if defined(__DAVAENGINE_WIN32__)
+    ui->actionZoomIn->setShortcuts(QList<QKeySequence>()
+                                   << Qt::CTRL + Qt::Key_Equal
+                                   << Qt::CTRL + Qt::Key_Plus);
+#endif
+}
+
+void MainWindow::ConnectActions()
+{
+    connect(ui->actionNewProject, &QAction::triggered, this, &MainWindow::NewProject);
+    connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::OpenProject);
+    connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::CloseProject);
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::Exit);
+    connect(ui->menuRecent, &QMenu::triggered, this, &MainWindow::OnRecentMenu);
+    connect(ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ReloadSprites);
+
+    connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::ShowHelp);
+
+    connect(ui->actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
+
+    connect(ui->actionZoomOut, &QAction::triggered, ui->previewWidget, &PreviewWidget::OnDecrementScale);
+    connect(ui->actionZoomIn, &QAction::triggered, ui->previewWidget, &PreviewWidget::OnIncrementScale);
+    connect(ui->actionActualZoom, &QAction::triggered, ui->previewWidget, &PreviewWidget::SetActualScale);
+}
+
+void MainWindow::InitPluginsToolBar()
+{
+    InitLanguageBox();
+    InitGlobalClasses();
+    InitRtlBox();
+    InitBiDiSupportBox();
+    InitEmulationMode();
+}
+
 void MainWindow::InitLanguageBox()
 {
-    comboboxLanguage = new QComboBox();
+    comboboxLanguage.reset(new QComboBox());
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     QLabel* label = new QLabel(tr("language"));
-    label->setBuddy(comboboxLanguage);
+    label->setBuddy(comboboxLanguage.get());
     QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
     layout->addWidget(label);
-    layout->addWidget(comboboxLanguage);
+    layout->addWidget(comboboxLanguage.get());
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    ui->toolBarPlugins->addSeparator();
+    ui->toolBarPlugins->addWidget(wrapper);
+
+    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
+    connect(comboboxLanguage.get(), currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
 }
 
 void MainWindow::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
 {
     bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
     comboboxLanguage->clear();
-    bool currentLangPresent = false;
-    for (const QString& langCode : availableLangsCodes)
+
+    if (!availableLangsCodes.isEmpty())
     {
-        comboboxLanguage->addItem(ConvertLangCodeToString(langCode), langCode);
-        if (langCode == currentLangCode)
+        bool currentLangPresent = false;
+        for (const QString& langCode : availableLangsCodes)
         {
-            currentLangPresent = true;
+            comboboxLanguage->addItem(ConvertLangCodeToString(langCode), langCode);
+            if (langCode == currentLangCode)
+            {
+                currentLangPresent = true;
+            }
         }
+        DVASSERT(currentLangPresent);
+        comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
     }
-    DVASSERT(currentLangPresent);
-    comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
+
     comboboxLanguage->blockSignals(wasBlocked);
 }
 
@@ -232,11 +291,49 @@ void MainWindow::SetCurrentLanguage(const QString& currentLangCode)
     comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
 }
 
+PreviewWidget* MainWindow::GetPreviewWidget()
+{
+    return ui->previewWidget;
+}
+
+PropertiesWidget* MainWindow::GetPropertiesWidget()
+{
+    return ui->propertiesWidget;
+}
+
+FileSystemDockWidget* MainWindow::GetFileSystemWidget()
+{
+    return ui->fileSystemDockWidget;
+}
+
+PackageWidget* MainWindow::GetPackageWidget()
+{
+    return ui->packageWidget;
+}
+
+LibraryWidget* MainWindow::GetLibraryWidget()
+{
+    return ui->libraryWidget;
+}
+
+void MainWindow::SetProjectActionsEnabled(bool enable)
+{
+    ui->actionCloseProject->setEnabled(enable);
+    ui->fileSystemDockWidget->setEnabled(enable);
+    ui->menuTools->setEnabled(enable);
+    ui->toolBarPlugins->setEnabled(enable);
+}
+
+void MainWindow::SetDocumentGroupActionsEnable(bool enable)
+{
+}
+
 void MainWindow::InitRtlBox()
 {
     QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
     rtlBox->setLayoutDirection(Qt::RightToLeft);
-    toolBarPlugins->addWidget(rtlBox);
+    ui->toolBarPlugins->addSeparator();
+    ui->toolBarPlugins->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
@@ -244,7 +341,8 @@ void MainWindow::InitBiDiSupportBox()
 {
     QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
     bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
-    toolBarPlugins->addWidget(bidiSupportBox);
+    ui->toolBarPlugins->addSeparator();
+    ui->toolBarPlugins->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
 }
 
@@ -260,74 +358,53 @@ void MainWindow::InitGlobalClasses()
     layout->addWidget(classesEdit);
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    toolBarPlugins->addWidget(wrapper);
+    ui->toolBarPlugins->addSeparator();
+    ui->toolBarPlugins->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
 }
 
 void MainWindow::InitEmulationMode()
 {
-    emulationBox = new QCheckBox("Emulation", this);
+    emulationBox.reset(new QCheckBox("Emulation", this));
     emulationBox->setLayoutDirection(Qt::RightToLeft);
-    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
-    toolBarPlugins->addWidget(emulationBox);
-}
-
-void MainWindow::InitMenu()
-{
-    SetupViewMenu();
-
-    //connect(actionOpen_project, &QAction::triggered, this, &MainWindow::OnOpenProjectAction);
-    //connect(actionClose_project, &QAction::triggered, this, &MainWindow::CloseProject);
-
-    //connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
-    //connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
-
-    connect(actionZoomOut, &QAction::triggered, previewWidget, &PreviewWidget::OnDecrementScale);
-    connect(actionZoomIn, &QAction::triggered, previewWidget, &PreviewWidget::OnIncrementScale);
-    connect(actionActualZoom, &QAction::triggered, previewWidget, &PreviewWidget::SetActualScale);
-
-// Remap zoom in/out shorcuts for windows platform
-#if defined(__DAVAENGINE_WIN32__)
-    QList<QKeySequence> shortcuts;
-    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
-    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-    actionZoomIn->setShortcuts(shortcuts);
-#endif
-
-    //Help contents dialog
-    connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
-
-    // Pixelization.
-    connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-
-    connect(action_preferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
+    connect(emulationBox.get(), &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    ui->toolBarPlugins->addSeparator();
+    ui->toolBarPlugins->addWidget(emulationBox.get());
 }
 
 void MainWindow::SetupViewMenu()
 {
     // Setup the common menu actions.
-    menuView->addAction(propertiesWidget->toggleViewAction());
-    menuView->addAction(fileSystemDockWidget->toggleViewAction());
-    menuView->addAction(packageWidget->toggleViewAction());
-    menuView->addAction(libraryWidget->toggleViewAction());
-    menuView->addAction(consoleDockWidget->toggleViewAction());
+    QList<QAction*> dockWidgetToggleActions;
+    dockWidgetToggleActions
+    << ui->propertiesWidget->toggleViewAction()
+    << ui->fileSystemDockWidget->toggleViewAction()
+    << ui->packageWidget->toggleViewAction()
+    << ui->libraryWidget->toggleViewAction()
+    << ui->consoleDockWidget->toggleViewAction()
+    << ui->mainToolbar->toggleViewAction()
+    << ui->toolBarPlugins->toggleViewAction();
 
-    menuView->addSeparator();
-    menuView->addAction(mainToolbar->toggleViewAction());
+    QAction* separator = ui->menuView->insertSeparator(ui->menuApplicationStyle->menuAction());
+    ui->menuView->insertActions(separator, dockWidgetToggleActions);
 
-    QMenu* appStyleMenu = new QMenu(tr("Application style"), menuView);
-    menuView->addMenu(appStyleMenu);
+    SetupAppStyleMenu();
+    SetupBackgroundMenu();
+}
+
+void MainWindow::SetupAppStyleMenu()
+{
     QActionGroup* actionGroup = new QActionGroup(this);
     for (const QString& theme : Themes::ThemesNames())
     {
-        QAction* action = new QAction(theme, menuView);
+        QAction* action = new QAction(theme, ui->menuView);
         actionGroup->addAction(action);
         action->setCheckable(true);
         if (theme == Themes::GetCurrentThemeStr())
         {
             action->setChecked(true);
         }
-        appStyleMenu->addAction(action);
+        ui->menuApplicationStyle->addAction(action);
     }
     connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
         if (action->isChecked())
@@ -335,11 +412,6 @@ void MainWindow::SetupViewMenu()
             Themes::SetCurrentTheme(action->text());
         }
     });
-    SetupBackgroundMenu();
-    // Another actions below the Set Background Color.
-    menuView->addSeparator();
-    menuView->addAction(actionZoomIn);
-    menuView->addAction(actionZoomOut);
 }
 
 void MainWindow::SetupBackgroundMenu()
@@ -357,12 +429,6 @@ void MainWindow::SetupBackgroundMenu()
 
     PreferencesStorage::Instance()->valueChanged.Connect(this, &MainWindow::OnPreferencesPropertyChanged);
 
-    menuView->addSeparator();
-    // Setup the Background Color menu.
-    QMenu* backgroundColorMenu = new QMenu("Grid Color", this);
-    menuView->addSeparator();
-    menuView->addMenu(backgroundColorMenu);
-
     backgroundActions = new QActionGroup(this);
     for (int i = 0, count = inspInfo->MembersCount(), index = 0; i < count; ++i)
     {
@@ -371,7 +437,7 @@ void MainWindow::SetupBackgroundMenu()
         QString str(member->Name().c_str());
         if (str.contains(QRegExp("backgroundColor\\d+")))
         {
-            QAction* colorAction = new QAction(QString("Background color %1").arg(index), backgroundColorMenu);
+            QAction* colorAction = new QAction(QString("Background color %1").arg(index), ui->menuGridColor);
             backgroundActions->addAction(colorAction);
             colorAction->setCheckable(true);
             colorAction->setData(QVariant::fromValue<const InspMember*>(member));
@@ -379,7 +445,7 @@ void MainWindow::SetupBackgroundMenu()
             {
                 colorAction->setChecked(true);
             }
-            backgroundColorMenu->addAction(colorAction);
+            ui->menuGridColor->addAction(colorAction);
             QColor color = ColorToQColor(PreferencesStorage::Instance()->GetValue(member).AsColor());
             colorAction->setIcon(CreateIconFromColor(color));
             connect(colorAction, &QAction::toggled, [this, index](bool toggled)
@@ -397,14 +463,14 @@ void MainWindow::SetupBackgroundMenu()
 
 void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
 {
-    menuRecent->clear();
+    ui->menuRecent->clear();
     for (auto& projectPath : lastProjectsPathes)
     {
         QAction* recentProject = new QAction(projectPath, this);
         recentProject->setData(projectPath);
-        menuRecent->addAction(recentProject);
+        ui->menuRecent->addAction(recentProject);
     }
-    menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
+    ui->menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
 }
 
 void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
@@ -466,16 +532,6 @@ void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& re
 //     emit ActionOpenProjectTriggered(projectPath);
 // }
 
-void MainWindow::UpdateProjectSettings()
-{
-    // Save to settings default project directory
-    QFileInfo fileInfo(currentProjectPath);
-    QString projectDir = fileInfo.absoluteDir().absolutePath();
-
-    // Update window title
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(currentProjectPath));
-}
-
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)
 {
     QList<QAction*> actions = backgroundActions->actions();
@@ -524,7 +580,7 @@ void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& outpu
 {
     if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
     {
-        logWidget->AddMessage(logLevel, output);
+        ui->logWidget->AddMessage(logLevel, output);
     }
 }
 
@@ -542,12 +598,17 @@ void MainWindow::OnCurrentLanguageChanged(int newLanguageIndex)
 
 bool MainWindow::IsPixelized() const
 {
-    return actionPixelized->isChecked();
+    return ui->actionPixelized->isChecked();
 }
 
 void MainWindow::SetPixelized(bool pixelized)
 {
-    actionPixelized->setChecked(pixelized);
+    ui->actionPixelized->setChecked(pixelized);
+}
+
+void MainWindow::UpdateWindowTitle()
+{
+    setWindowTitle(QString("%1 | Project %2").arg(projectTitle).arg(projectPath));
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -588,12 +649,12 @@ void MainWindow::SetGeometry(const String& array)
 
 String MainWindow::GetConsoleState() const
 {
-    QByteArray consoleState = logWidget->Serialize().toBase64();
+    QByteArray consoleState = ui->logWidget->Serialize().toBase64();
     return consoleState.toStdString();
 }
 
 void MainWindow::SetConsoleState(const String& array)
 {
     QByteArray consoleState = QByteArray::fromStdString(array);
-    logWidget->Deserialize(QByteArray::fromBase64(consoleState));
+    ui->logWidget->Deserialize(QByteArray::fromBase64(consoleState));
 }
