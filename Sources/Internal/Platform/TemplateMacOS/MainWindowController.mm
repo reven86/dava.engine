@@ -457,6 +457,9 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
 
             if (_fullScreen)
             {
+                // If we're entering fullscreen we want our app to also become focused
+                // To handle cases when app is being opened with fullscreen mode,
+                // but another app gets focus before our app's window is created, thus ignoring any input afterwards
                 [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
             }
 
