@@ -14,8 +14,7 @@ vertex_out
 
 [auto][instance] property float4x4 worldViewProjMatrix;
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

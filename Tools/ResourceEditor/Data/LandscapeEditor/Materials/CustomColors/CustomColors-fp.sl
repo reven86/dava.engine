@@ -11,8 +11,7 @@ fragment_out
 
 uniform sampler2D tex;
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

@@ -6,8 +6,7 @@
 
 namespace sl
 {
-const char*
-HLSLGenerator::GetTypeName(const HLSLType& type)
+const char* HLSLGenerator::GetTypeName(const HLSLType& type)
 {
     switch (type.baseType)
     {
@@ -106,8 +105,7 @@ HLSLGenerator::HLSLGenerator(Allocator* allocator)
 // - Look at the function being generated.
 // - Return semantic, semantics associated to fields of the return structure, or output arguments, or fields of structures associated to output arguments -> output semantic replacement.
 // - Semantics associated input arguments or fields of the input arguments -> input semantic replacement.
-const char*
-HLSLGenerator::TranslateSemantic(const char* semantic, bool output, Target target) const
+const char* HLSLGenerator::TranslateSemantic(const char* semantic, bool output, Target target) const
 {
     const char* sem = nullptr;
 

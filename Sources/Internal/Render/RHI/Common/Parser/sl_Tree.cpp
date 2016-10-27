@@ -91,8 +91,7 @@ HLSLFunction* HLSLTree::FindFunction(const char* name, HLSLStatement** parent)
     return NULL;
 }
 
-unsigned
-HLSLTree::FindFunctionCall(const char* name, Array<HLSLFunctionCall*>* call)
+unsigned HLSLTree::FindFunctionCall(const char* name, Array<HLSLFunctionCall*>* call)
 {
     class
     Visitor

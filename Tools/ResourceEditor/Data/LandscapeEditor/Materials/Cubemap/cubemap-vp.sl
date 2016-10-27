@@ -15,8 +15,7 @@ vertex_out
 [auto][a] property float4x4 worldViewProjMatrix;
 [auto][a] property float4x4 worldMatrix;
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 
