@@ -125,8 +125,7 @@ void WindowBackend::SetCursorVisibility(bool visible)
 
 LRESULT WindowBackend::OnSetCursor(LPARAM lparam)
 {
-    uint16 hittest;
-    hittest = LOWORD(lparam);
+    uint16 hittest = LOWORD(lparam);
     if (hittest == HTCLIENT)
     {
         if (mouseVisible)
@@ -212,23 +211,20 @@ void WindowBackend::DoSetCursorCapture(eCursorCapture mode)
 
 void WindowBackend::UpdateClipCursor()
 {
-    ClipCursor(nullptr);
+    ::ClipCursor(nullptr);
     if (captureMode == eCursorCapture::PINNING)
     {
         RECT rect;
-        GetClientRect(hwnd, &rect);
-        ClientToScreen(hwnd, (LPPOINT)&rect);
-        ClientToScreen(hwnd, (LPPOINT)&rect + 1);
-        ClipCursor(&rect);
+        ::GetClientRect(hwnd, &rect);
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect));
+        ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&rect) + 1);
+        ::ClipCursor(&rect);
     }
 }
 
 void WindowBackend::DoSetCursorVisibility(bool visible)
 {
-    if (mouseVisible != visible)
-    {
-        mouseVisible = visible;
-    }
+    mouseVisible = visible;
 }
 
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)

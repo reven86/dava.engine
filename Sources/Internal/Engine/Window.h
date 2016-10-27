@@ -127,14 +127,13 @@ private:
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
+    bool HandleCursorCapture(const Private::MainDispatcherEvent& e);
 
     void CompressSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
     void ClearMouseButtons();
 
 private:
-    bool HandleCursorCapture(const Private::MainDispatcherEvent& e);
-
     Private::EngineBackend* engineBackend = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
     std::unique_ptr<Private::WindowBackend> windowBackend;
