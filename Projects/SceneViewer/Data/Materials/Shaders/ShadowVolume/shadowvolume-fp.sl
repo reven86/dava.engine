@@ -7,8 +7,7 @@ fragment_out
     float4  color : SV_TARGET0;
 };
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

@@ -87,37 +87,37 @@ vertex_out
     
     
     #if VERTEX_LIT
-        half varDiffuseColor : COLOR0;
+        [lowp] half varDiffuseColor : COLOR0;
         #if BLINN_PHONG
-            half varSpecularColor : TEXCOORD4;
+            [lowp] half varSpecularColor : TEXCOORD4;
         #elif NORMALIZED_BLINN_PHONG
-            half4 varSpecularColor : TEXCOORD4;
+            [lowp] half4 varSpecularColor : TEXCOORD4;
         #endif
     #endif
 
     #if PIXEL_LIT
         #if FAST_NORMALIZATION
-        half3 varHalfVec : COLOR0;
+        [lowp] half3 varHalfVec : COLOR0;
         #endif
-        half3 varToLightVec : COLOR1;
+        [lowp] half3 varToLightVec : COLOR1;
         float3 varToCameraVec : TEXCOORD7;
     #endif    
     
     #if VERTEX_COLOR || SPHERICAL_LIT
-        half4 varVertexColor : COLOR1;
+        [lowp] half4 varVertexColor : COLOR1;
     #endif
     
     #if VERTEX_FOG
-        half4 varFog : TEXCOORD5;
+        [lowp] half4 varFog : TEXCOORD5;
     #endif
 
 
     #if FRAME_BLEND
-        half varTime : TEXCOORD3;
+        [lowp] half varTime : TEXCOORD3;
     #endif
 
     #if FLOWMAP
-        float3 varFlowData : TEXCOORD4;
+        [lowp] float3 varFlowData : TEXCOORD4;
     #endif
 
 };
@@ -128,113 +128,113 @@ vertex_out
 // properties
 
 #if !SPEED_TREE_LEAF || CUT_LEAF
-[dynamic][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldViewProjMatrix;
 #endif
 
 #if VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPEED_TREE_LEAF || SPHERICAL_LIT
-[dynamic][a] property float4x4 worldViewMatrix;
+[auto][a] property float4x4 worldViewMatrix;
 #endif
 
 #if VERTEX_LIT || PIXEL_LIT /*|| (VERTEX_FOG && FOG_ATMOSPHERE)*/
-[dynamic][a] property float4x4 worldViewInvTransposeMatrix;
+[auto][a] property float4x4 worldViewInvTransposeMatrix;
 #if DISTANCE_ATTENUATION
-[statik][a] property float lightIntensity0; 
+[material][a] property float lightIntensity0; 
 #endif
 #endif
 #if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
-[dynamic][a] property float4 lightPosition0;
+[auto][a] property float4 lightPosition0;
 #endif
 
 
 #if VERTEX_LIT
-[statik][a] property float materialSpecularShininess = 0.5;
-[statik][a] property float inSpecularity = 1.0;
-[statik][a] property float inGlossiness = 0.5;
-[statik][a] property float3 metalFresnelReflectance = float3(0.5,0.5,0.5);
+[material][a] property float materialSpecularShininess = 0.5;
+[material][a] property float inSpecularity = 1.0;
+[material][a] property float inGlossiness = 0.5;
+[material][a] property float3 metalFresnelReflectance = float3(0.5,0.5,0.5);
 #endif
 
 #if SKINNING
-[dynamic][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray" ; // (x, y, z, scale)
-[dynamic][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
+[auto][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray" ; // (x, y, z, scale)
+[auto][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray";
 #endif
 
 #include "vp-fog-props.slh"
 
 #if ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) && !SETUP_LIGHTMAP
-[statik][a] property float2 uvOffset;
-[statik][a] property float2 uvScale;
+[material][a] property float2 uvOffset;
+[material][a] property float2 uvScale;
 #endif
 
 #if WIND_ANIMATION
-[dynamic][a] property float2 trunkOscillationParams;
+[auto][a] property float2 trunkOscillationParams;
 #endif
 
 #if SPEED_TREE_LEAF
-[dynamic][a] property float3 worldScale;
-[dynamic][a] property float4x4 projMatrix;
+[auto][a] property float3 worldScale;
+[auto][a] property float4x4 projMatrix;
 
     #if CUT_LEAF
-        [statik][a] property float cutDistance;
+        [material][a] property float cutDistance;
     #endif
 
     #if !SPHERICAL_LIT  //legacy for old tree lighting
-        [statik][a] property float4 treeLeafColorMul = float4(0.5,0.5,0.5,0.5) ;
-        [statik][a] property float treeLeafOcclusionOffset = 0.0 ;
-        [statik][a] property float treeLeafOcclusionMul = 0.5 ;
+        [material][a] property float4 treeLeafColorMul = float4(0.5,0.5,0.5,0.5) ;
+        [material][a] property float treeLeafOcclusionOffset = 0.0 ;
+        [material][a] property float treeLeafOcclusionMul = 0.5 ;
     #endif
     
     #if WIND_ANIMATION
-        [dynamic][a] property float2 leafOscillationParams; //x: A*sin(T); y: A*cos(T);
+        [auto][a] property float2 leafOscillationParams; //x: A*sin(T); y: A*cos(T);
     #endif
     
     #if SPHERICAL_LIT
-        [dynamic][a] property float speedTreeLightSmoothing;
+        [auto][a] property float speedTreeLightSmoothing;
     #endif
 #endif
 
 #if SPHERICAL_LIT
-[dynamic][a] property float3 worldViewObjectCenter;
-[dynamic][a] property float4x4 invViewMatrix;
-[dynamic][a] property float3 boundingBoxSize;
+[auto][a] property float3 worldViewObjectCenter;
+[auto][a] property float4x4 invViewMatrix;
+[auto][a] property float3 boundingBoxSize;
 
     #if SPHERICAL_HARMONICS_9
-        [dynamic][a] property float4 sphericalHarmonics[7];
+        [auto][sh] property float4 sphericalHarmonics[7] : "bigarray";
     #elif SPHERICAL_HARMONICS_4
-        [dynamic][a] property float4 sphericalHarmonics[3];
+        [auto][sh] property float4 sphericalHarmonics[3] : "bigarray";
     #else
-        [dynamic][a] property float4 sphericalHarmonics;
+        [auto][sh] property float4 sphericalHarmonics;
     #endif
     
 #endif
 
 #if TILED_DECAL_MASK
-[statik][a] property float2 decalTileCoordOffset = float2(0,0);
-[statik][a] property float2 decalTileCoordScale;
+[material][a] property float2 decalTileCoordOffset = float2(0,0);
+[material][a] property float2 decalTileCoordScale;
 #endif
 
 #if MATERIAL_DETAIL
-[statik][a] property float2 detailTileCoordScale;
+[material][a] property float2 detailTileCoordScale;
 #endif
 
 #if TEXTURE0_SHIFT_ENABLED
-[statik][a] property float2 texture0Shift;
+[material][a] property float2 texture0Shift;
 #endif 
 #if TEXTURE0_ANIMATION_SHIFT
-[statik][a] property float2 tex0ShiftPerSecond;
+[material][a] property float2 tex0ShiftPerSecond;
 #endif
 
 #if VERTEX_FOG 
-[dynamic][a] property float3 cameraPosition;
-[dynamic][a] property float4x4 worldMatrix;
+[auto][a] property float3 cameraPosition;
+[auto][a] property float4x4 worldMatrix;
 #endif
 
 #if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
-[dynamic][a] property float globalTime;
+[auto][a] property float globalTime;
 #endif
 
 #if FLOWMAP
-[statik][a] property float flowAnimSpeed;
-[statik][a] property float flowAnimOffset;
+[material][a] property float flowAnimSpeed;
+[material][a] property float flowAnimOffset;
 #endif
 
 // prototypes, to shut up Metal shader-compiler
@@ -411,11 +411,9 @@ vertex_out vp_main( vertex_in input )
             output.position = mul( waveValue, worldViewProjMatrix );
         #else
             #if SKINNING
-//weightedVertexPosition.w=3.0;
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, input.position.xyz);
                 float4 skinnedPosition = float4(weightedVertexPosition.xyz + (input.position.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
                 output.position = mul( skinnedPosition, worldViewProjMatrix );
-//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
             #else
                 output.position = mul( float4(input.position.xyz,1.0), worldViewProjMatrix );
             #endif
@@ -560,6 +558,7 @@ vertex_out vp_main( vertex_in input )
     
     #define FOG_eye_position cameraPosition
     #define FOG_view_position eyeCoordsPosition
+    #define FOG_in_position input.position
         
 #if FOG_ATMOSPHERE
     #define FOG_to_light_dir toLightDir

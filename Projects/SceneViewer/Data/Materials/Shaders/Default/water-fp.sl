@@ -78,28 +78,28 @@ fragment_out
 //properties
 #if SHADING == SHADING_PERPIXEL
     #if REAL_REFLECTION
-        [statik][instance] property float  distortionFallSquareDist;
-        [statik][instance] property float  reflectionDistortion;
-        [statik][instance] property float  refractionDistortion;
-        [statik][instance] property float3 refractionTintColor;
+        [material][instance] property float  distortionFallSquareDist;
+        [material][instance] property float  reflectionDistortion;
+        [material][instance] property float  refractionDistortion;
+        [material][instance] property float3 refractionTintColor;
         #if SPECULAR
-            [statik][instance] property float  inGlossiness;
-            [statik][instance] property float  inSpecularity;
-            [dynamic][instance] property float3 lightColor0;            
+            [material][instance] property float  inGlossiness;
+            [material][instance] property float  inSpecularity;
+            [auto][instance] property float3 lightColor0;            
         #endif
     #endif
 
-    [statik][instance] property float3 reflectionTintColor;
-    [statik][instance] property float  fresnelBias;
-    [statik][instance] property float  fresnelPow;
+    [material][instance] property float3 reflectionTintColor;
+    [material][instance] property float  fresnelBias;
+    [material][instance] property float  fresnelPow;
     
     #if DEBUG_Z_NORMAL_SCALE && !DEBUG_UNITY_Z_NORMAL
-        [statik][instance] property float  normal0_z_scale = 1;
-        [statik][instance] property float  normal1_z_scale = 1;
+        [material][instance] property float  normal0_z_scale = 1;
+        [material][instance] property float  normal1_z_scale = 1;
     #endif
 #elif SHADING == SHADING_PERVERTEX
-    [statik][instance] property float3 decalTintColor;
-    [statik][instance] property float3 reflectanceColor;
+    [material][instance] property float3 decalTintColor;
+    [material][instance] property float3 reflectanceColor;
 #endif
 
 
@@ -110,8 +110,7 @@ FresnelShlick(float _NdotL, float _fresnelBias, float _fresnelPow)
 }
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out output;
 
@@ -173,7 +172,7 @@ fp_main( fragment_in input )
         
         output.color = float4(resColor, 1.0);
     #else
-        float3x3 tbnToWorldMatrix = float3x3(input.tbnToWorld0, input.tbnToWorld1, input.tbnToWorld2);
+        float3x3 tbnToWorldMatrix = float3x3(float3(input.tbnToWorld0), float3(input.tbnToWorld1), float3(input.tbnToWorld2));
         float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
         reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
         float3 reflectionVectorInWorldSpace = mul (reflectionVectorInTangentSpace, tbnToWorldMatrix);    

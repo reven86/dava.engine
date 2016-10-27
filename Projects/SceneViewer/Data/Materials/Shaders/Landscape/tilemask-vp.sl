@@ -60,14 +60,14 @@ vertex_out
 #endif
 
 #if TILEMASK
-    [statik][instance] property float2 textureTiling = float2(50,50);
+    [material][instance] property float2 textureTiling = float2(50,50);
 #endif
 
-[dynamic][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldViewProjMatrix;
 
 #if LANDSCAPE_USE_INSTANCING
-    [dynamic][a] property float3 boundingBoxSize;
-    [dynamic][a] property float heightmapTextureSize;
+    [auto][a] property float3 boundingBoxSize;
+    [auto][a] property float heightmapTextureSize;
     
 #if LANDSCAPE_SPECULAR
     uniform sampler2D tangentSpace; 
@@ -76,28 +76,27 @@ vertex_out
 #endif
 
 #if VERTEX_FOG
-[dynamic][a] property float4x4 worldMatrix;
-[dynamic][a] property float3   cameraPosition;
+[auto][a] property float4x4 worldMatrix;
+[auto][a] property float3   cameraPosition;
 #endif
 #if VERTEX_FOG || LANDSCAPE_SPECULAR
-[dynamic][a] property float4x4 worldViewMatrix;
+[auto][a] property float4x4 worldViewMatrix;
 #endif
 #if (VERTEX_FOG && FOG_ATMOSPHERE) || LANDSCAPE_SPECULAR
-[dynamic][a] property float4   lightPosition0;
+[auto][a] property float4   lightPosition0;
 #endif
 
 #if LANDSCAPE_SPECULAR
-    [dynamic][a] property float4x4 worldViewInvTransposeMatrix;
+    [auto][a] property float4x4 worldViewInvTransposeMatrix;
     
-    [statik][instance] property float inSpecularity             = 1.0;
-    [statik][instance] property float inGlossiness              = 0.5;
-    [statik][instance] property float3 metalFresnelReflectance  = float3(0.5,0.5,0.5);
+    [material][instance] property float inSpecularity             = 1.0;
+    [material][instance] property float inGlossiness              = 0.5;
+    [material][instance] property float3 metalFresnelReflectance  = float3(0.5,0.5,0.5);
 #endif
 
 #include "vp-fog-props.slh"
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 
@@ -241,6 +240,7 @@ vp_main( vertex_in input )
 #endif
 
     #define FOG_eye_position cameraPosition
+    #define FOG_in_position input.pos
 
     #include "vp-fog-math.slh" // in{ float3 FOG_view_position, float3 FOG_eye_position, float3 FOG_to_light_dir, float3 FOG_world_position }; out{ float4 FOG_result };
     

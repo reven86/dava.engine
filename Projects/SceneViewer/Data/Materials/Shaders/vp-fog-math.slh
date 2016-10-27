@@ -48,7 +48,7 @@
     #if FOG_ATMOSPHERE
         float3 atmosphereColor;
         #if FOG_ATMOSPHERE_MAP
-            float3 viewDirection = normalize(float3(mul(VP_IN_POSITION,worldMatrix)) - FOG_eye_position);
+            float3 viewDirection = normalize(float3(mul(float4(FOG_in_position.xyz,1.0),worldMatrix)) - FOG_eye_position);
             viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
             atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
         #elif FOG_ATMOSPHERE_NO_SCATTERING

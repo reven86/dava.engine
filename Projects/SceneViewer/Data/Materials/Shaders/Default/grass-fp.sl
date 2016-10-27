@@ -3,7 +3,7 @@
 fragment_in
 {
     float2  texCoord        : TEXCOORD0;
-    half3   vegetationColor : COLOR0;
+    [lowp] half3   vegetationColor : COLOR0;
 
     #if VERTEX_FOG
     float4  varFog          : TEXCOORD5;
@@ -18,12 +18,11 @@ fragment_out
 uniform sampler2D albedo;
 
 #if LOD_COLOR
-[statik][instance] property float3 lodColor = float3(1,1,1);
+[material][instance] property float3 lodColor = float3(1,1,1);
 #endif
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

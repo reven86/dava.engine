@@ -9,13 +9,12 @@ vertex_out
 {
     float4  pos     : SV_POSITION;
     float2  uv      : TEXCOORD0;
-    half4   color   : COLOR0l
+    [lowp] half4   color   : COLOR0;
 };
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
     float3      in_pos      = input.pos.xyz;

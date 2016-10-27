@@ -7,10 +7,9 @@ fragment_out
     float4  color : SV_TARGET0;
 };
 
-[dynamic][instance] property float4 shadowColor = float4(1.0,0,0,1.0);
+[auto][instance] property float4 shadowColor = float4(1.0,0,0,1.0);
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 

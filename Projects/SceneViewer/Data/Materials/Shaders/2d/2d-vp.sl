@@ -13,14 +13,13 @@ vertex_out
 #if TEXTURED
     float2  uv      : TEXCOORD0;
 #endif //TEXTURED
-    half4   color   : COLOR0;
+    [lowp] half4   color   : COLOR0;
 };
 
 
-[dynamic][instance] property float4x4 worldViewProjMatrix;
+[auto][instance] property float4x4 worldViewProjMatrix;
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 

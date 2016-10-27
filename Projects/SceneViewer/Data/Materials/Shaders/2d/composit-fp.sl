@@ -16,7 +16,7 @@ fragment_in
     float2  uvDetail    : TEXCOORD1;
     float2  uvGradient  : TEXCOORD2;
     float2  uvContour   : TEXCOORD3;
-    half4   color       : COLOR0;
+    [lowp] half4   color       : COLOR0;
 };
 
 fragment_out
@@ -30,8 +30,7 @@ sampler2D gradient;
 sampler2D contour;
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 
@@ -61,6 +60,7 @@ fp_main( fragment_in input )
     float3 detailPremult = detailImpact.rgb*detailImpact.a;
     float4 resColor = float4((contourColor.rgb-detailPremult)*contourColor.a+detailPremult, detailImpact.a + contourColor.a);
 
+    in_color.rgb *= in_color.a; //as we are using premultipled alpha blending
     resColor = resColor * float4(in_color);
 
     output.color = resColor; 

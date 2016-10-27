@@ -15,7 +15,7 @@ fragment_in
 #if TEXTURED
     float2  uv      : TEXCOORD0;
 #endif //TEXTURED
-    half4   color   : COLOR0;
+    [lowp] half4   color   : COLOR0;
 };
     
 fragment_out
@@ -28,8 +28,7 @@ uniform sampler2D tex;
 #endif //TEXTURED
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main( fragment_in input )
 {
     fragment_out    output;
 
@@ -67,7 +66,7 @@ fp_main( fragment_in input )
 #endif
 
 #if ALPHATEST
-    min10float alpha = resColor.a;
+    half alpha = resColor.a;
     if( alpha < 0.5 ) discard;
 #endif
 

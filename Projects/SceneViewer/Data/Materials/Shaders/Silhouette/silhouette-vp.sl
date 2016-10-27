@@ -14,24 +14,23 @@ vertex_out
     float4  position : SV_POSITION;
 };
 
-[dynamic][a] property float4x4 worldViewProjMatrix;
-[dynamic][a] property float4x4 worldViewMatrix;
-[dynamic][a] property float4x4 projMatrix;
-[dynamic][a] property float4x4 worldViewInvTransposeMatrix;
+[auto][a] property float4x4 worldViewProjMatrix;
+[auto][a] property float4x4 worldViewMatrix;
+[auto][a] property float4x4 projMatrix;
+[auto][a] property float4x4 worldViewInvTransposeMatrix;
 
 
 
 #if SKINNING
-[dynamic][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray" ; // (x, y, z, scale)
-[dynamic][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray" ;
+[auto][jpos] property float4 jointPositions[MAX_JOINTS] : "bigarray" ; // (x, y, z, scale)
+[auto][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray" ;
 #endif
 
-[statik][a] property float silhouetteScale;
-[statik][a] property float silhouetteExponent;
+[material][a] property float silhouetteScale;
+[material][a] property float silhouetteExponent;
 
 
-vertex_out
-vp_main( vertex_in input )
+vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
 
