@@ -77,7 +77,7 @@ void GamepadDevice::Update()
                 uie.physPoint.x = elementValues[i];
                 uie.point.x = elementValues[i];
                 uie.phase = UIEvent::Phase::JOYSTICK;
-                uie.device = eInputDevice::GAMEPAD;
+                uie.device = eInputDevices::GAMEPAD;
                 uie.timestamp = elementTimestamps[i] / 1000.0;
 
                 inputSystem->HandleInputEvent(&uie);

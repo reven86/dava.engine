@@ -267,7 +267,7 @@ void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = eInputDevice::MOUSE;
+    uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = button;
     uie.modifiers = e.mouseEvent.modifierKeys;
@@ -283,7 +283,7 @@ void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::WHEEL;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = eInputDevice::MOUSE;
+    uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
     uie.modifiers = e.mouseEvent.modifierKeys;
@@ -296,7 +296,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::MOVE;
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = eInputDevice::MOUSE;
+    uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.mouseButton = UIEvent::MouseButton::NONE;
     uie.modifiers = e.mouseEvent.modifierKeys;
@@ -330,7 +330,7 @@ void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = eInputDevice::TOUCH_SURFACE;
+    uie.device = eInputDevices::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
     uie.modifiers = e.touchEvent.modifierKeys;
@@ -343,7 +343,7 @@ void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.phase = UIEvent::Phase::DRAG;
     uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = eInputDevice::TOUCH_SURFACE;
+    uie.device = eInputDevices::TOUCH_SURFACE;
     uie.timestamp = e.timestamp / 1000.0;
     uie.touchId = e.touchEvent.touchId;
     uie.modifiers = e.touchEvent.modifierKeys;
@@ -356,7 +356,7 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
-    uie.device = eInputDevice::TOUCH_PAD;
+    uie.device = eInputDevices::TOUCH_PAD;
     uie.phase = UIEvent::Phase::GESTURE;
     uie.gesture.magnification = e.trackpadGestureEvent.magnification;
     uie.gesture.rotation = e.trackpadGestureEvent.rotation;
@@ -374,7 +374,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
 
     UIEvent uie;
     uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-    uie.device = eInputDevice::KEYBOARD;
+    uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.keyEvent.modifierKeys;
 
@@ -403,7 +403,7 @@ void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
     UIEvent uie;
     uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
     uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
-    uie.device = eInputDevice::KEYBOARD;
+    uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
     uie.modifiers = e.keyEvent.modifierKeys;
 

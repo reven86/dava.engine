@@ -19,7 +19,7 @@ enum class eEngineRunMode : int32
     \ingroup engine
     Constants that name supported input device types.
 */
-enum class eInputDevice : uint32
+enum class eInputDevices : uint32
 {
     UNKNOWN = 0, //!< Special value used in some case to specify that input device is unrecognized
     TOUCH_SURFACE = 0x01, //!< Touch surface like touch screen on mobile devices
@@ -137,6 +137,6 @@ enum class eGamepadProfiles : uint32
 // clang-format on
 
 DAVA_DEFINE_ENUM_OPERATORS(eModifierKeys)
-DAVA_DEFINE_ENUM_OPERATORS(eInputDevice)
+DAVA_DEFINE_ENUM_OPERATORS(eInputDevices)
 
 } // namespace DAVA

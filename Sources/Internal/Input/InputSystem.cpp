@@ -27,7 +27,7 @@ InputSystem::InputSystem(Engine* engine)
 
 InputSystem::~InputSystem() = default;
 
-uint32 InputSystem::AddHandler(eInputDevice inputDeviceMask, const Function<bool(UIEvent*)>& callback)
+uint32 InputSystem::AddHandler(eInputDevices inputDeviceMask, const Function<bool(UIEvent*)>& callback)
 {
     DVASSERT(callback != nullptr);
 
@@ -37,7 +37,7 @@ uint32 InputSystem::AddHandler(eInputDevice inputDeviceMask, const Function<bool
     return token;
 }
 
-void InputSystem::ChangeHandlerDeviceMask(uint32 token, eInputDevice newInputDeviceMask)
+void InputSystem::ChangeHandlerDeviceMask(uint32 token, eInputDevices newInputDeviceMask)
 {
     auto it = std::find_if(begin(handlers), end(handlers), [token](const InputHandler& o) { return o.token == token; });
     if (it != end(handlers))
@@ -54,7 +54,7 @@ void InputSystem::RemoveHandler(uint32 token)
     if (it != end(handlers))
     {
         it->token = 0;
-        it->inputDeviceMask = eInputDevice::UNKNOWN;
+        it->inputDeviceMask = eInputDevices::UNKNOWN;
         pendingHandlerRemoval = true;
     }
 }
@@ -79,7 +79,7 @@ void InputSystem::HandleInputEvent(UIEvent* uie)
     bool handled = false;
     for (const InputHandler& h : handlers)
     {
-        if ((h.inputDeviceMask & uie->device) != eInputDevice::UNKNOWN)
+        if ((h.inputDeviceMask & uie->device) != eInputDevices::UNKNOWN)
         {
             handled |= h.callback(uie);
             if (handled)

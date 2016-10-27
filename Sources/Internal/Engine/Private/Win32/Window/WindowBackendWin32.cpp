@@ -245,8 +245,8 @@ LRESULT WindowBackend::OnMouseMoveEvent(int32 x, int32 y)
     // Windows generates WM_MOUSEMOVE event for primary touch point so check and process
     // mouse move only from mouse device. Also skip spurious move events as described in:
     // https://blogs.msdn.microsoft.com/oldnewthing/20031001-00/?p=42343/
-    eInputDevice source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
-    if (source == eInputDevice::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
+    eInputDevices source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
+    if (source == eInputDevices::MOUSE && (x != lastMouseMoveX || y != lastMouseMoveY))
     {
         eModifierKeys modifierKeys = GetModifierKeys();
         float32 vx = static_cast<float32>(x);
@@ -274,8 +274,8 @@ LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 xbutton, int32 x, 
 {
     // Windows generates WM_xBUTTONDONW/WM_xBUTTONUP event for primary touch point so check and process
     // mouse clicks only from mouse device.
-    eInputDevice source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
-    if (source == eInputDevice::MOUSE)
+    eInputDevices source = GetInputEventSourceLegacy(::GetMessageExtraInfo());
+    if (source == eInputDevices::MOUSE)
     {
         uint32 newMouseButtonsState = mouseButtonsState;
         switch (message)
@@ -766,7 +766,7 @@ eModifierKeys WindowBackend::GetModifierKeys()
     return result;
 }
 
-eInputDevice WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
+eInputDevices WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
 {
     // How to distinguish pen input from mouse and touch
     // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
@@ -776,9 +776,9 @@ eInputDevice WindowBackend::GetInputEventSourceLegacy(LPARAM messageExtraInfo)
 
     if ((messageExtraInfo & SIGNATURE_MASK) == MI_WP_SIGNATURE)
     {
-        return eInputDevice::TOUCH_SURFACE;
+        return eInputDevices::TOUCH_SURFACE;
     }
-    return eInputDevice::MOUSE;
+    return eInputDevices::MOUSE;
 }
 
 eMouseButtons WindowBackend::GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed)

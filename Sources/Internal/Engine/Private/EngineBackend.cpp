@@ -505,7 +505,7 @@ void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
     UIEvent uie;
     uie.key = Key::BACK;
     uie.phase = UIEvent::Phase::KEY_UP;
-    uie.device = eInputDevice::KEYBOARD;
+    uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
 
     context->inputSystem->HandleInputEvent(&uie);

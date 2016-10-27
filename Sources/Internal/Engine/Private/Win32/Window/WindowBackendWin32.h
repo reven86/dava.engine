@@ -86,7 +86,7 @@ private:
     static LRESULT CALLBACK WndProcStart(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
     static bool RegisterWindowClass();
     static eModifierKeys GetModifierKeys();
-    static eInputDevice GetInputEventSourceLegacy(LPARAM messageExtraInfo);
+    static eInputDevices GetInputEventSourceLegacy(LPARAM messageExtraInfo);
     static eMouseButtons GetMouseButtonLegacy(uint32 curState, uint32 newState, bool* isPressed);
     static eMouseButtons GetMouseButton(POINTER_BUTTON_CHANGE_TYPE buttonChangeType, bool* isPressed);
 

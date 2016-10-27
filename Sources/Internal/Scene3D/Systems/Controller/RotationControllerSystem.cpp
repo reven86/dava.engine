@@ -26,7 +26,7 @@ RotationControllerSystem::RotationControllerSystem(Scene* scene)
     , oldCamera(NULL)
 {
 #if defined(__DAVAENGINE_COREV2__)
-// inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevice::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
+// inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevices::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
 #else
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
 //    InputSystem::Instance()->AddInputCallback(*inputCallback);

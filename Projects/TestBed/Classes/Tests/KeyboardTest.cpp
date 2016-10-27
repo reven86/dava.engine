@@ -61,9 +61,9 @@ void KeyboardTest::LoadResources()
     AddControl(descriptionText);
 
     InputSystem* inputSystem = app.GetEngine().GetContext()->inputSystem;
-    pointerInputToken = inputSystem->AddHandler(eInputDevice::CLASS_POINTER, MakeFunction(this, &KeyboardTest::OnPointerEvent));
-    keyboardInputToken = inputSystem->AddHandler(eInputDevice::CLASS_KEYBOARD, MakeFunction(this, &KeyboardTest::OnKeyboardEvent));
-    gamepadInputToken = inputSystem->AddHandler(eInputDevice::CLASS_GAMEPAD, MakeFunction(this, &KeyboardTest::OnGamepadEvent));
+    pointerInputToken = inputSystem->AddHandler(eInputDevices::CLASS_POINTER, MakeFunction(this, &KeyboardTest::OnPointerEvent));
+    keyboardInputToken = inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &KeyboardTest::OnKeyboardEvent));
+    gamepadInputToken = inputSystem->AddHandler(eInputDevices::CLASS_GAMEPAD, MakeFunction(this, &KeyboardTest::OnGamepadEvent));
 
     resetButton = new UIButton(Rect(420, 30, 50, 30));
     resetButton->SetDebugDraw(true);

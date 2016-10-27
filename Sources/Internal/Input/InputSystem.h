@@ -36,8 +36,8 @@ public:
     // TODO: remove InputSystem::Instance() method
     static InputSystem* Instance();
 
-    uint32 AddHandler(eInputDevice inputDeviceMask, const Function<bool(UIEvent*)>& callback);
-    void ChangeHandlerDeviceMask(uint32 token, eInputDevice newInputDeviceMask);
+    uint32 AddHandler(eInputDevices inputDeviceMask, const Function<bool(UIEvent*)>& callback);
+    void ChangeHandlerDeviceMask(uint32 token, eInputDevices newInputDeviceMask);
     void RemoveHandler(uint32 token);
 
     KeyboardDevice& GetKeyboard();
@@ -70,10 +70,10 @@ private:
 
     struct InputHandler
     {
-        InputHandler(uint32 token_, eInputDevice inputDeviceMask_, const Function<bool(UIEvent*)>& callback_);
+        InputHandler(uint32 token_, eInputDevices inputDeviceMask_, const Function<bool(UIEvent*)>& callback_);
 
         uint32 token;
-        eInputDevice inputDeviceMask;
+        eInputDevices inputDeviceMask;
         Function<bool(UIEvent*)> callback;
     };
 
@@ -82,7 +82,7 @@ private:
     bool pendingHandlerRemoval = false;
 };
 
-inline InputSystem::InputHandler::InputHandler(uint32 token_, eInputDevice inputDeviceMask_, const Function<bool(UIEvent*)>& callback_)
+inline InputSystem::InputHandler::InputHandler(uint32 token_, eInputDevices inputDeviceMask_, const Function<bool(UIEvent*)>& callback_)
     : token(token_)
     , inputDeviceMask(inputDeviceMask_)
     , callback(callback_)

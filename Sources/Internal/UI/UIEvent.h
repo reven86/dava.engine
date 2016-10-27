@@ -75,7 +75,7 @@ public:
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    using Device = eInputDevice;
+    using Device = eInputDevices;
 #else
     enum class Device : uint32
     {
