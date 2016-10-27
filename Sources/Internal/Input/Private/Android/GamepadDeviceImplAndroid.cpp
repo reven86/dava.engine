@@ -1,4 +1,4 @@
-#include "Input/GamepadDeviceImplAndroid.h"
+#include "Input/Private/Android/GamepadDeviceImplAndroid.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_ANDROID__)

@@ -9,46 +9,13 @@
 #include "UI/UIEvent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Input/GamepadDeviceImplAndroid.h"
+#include "Input/Private/Android/GamepadDeviceImplAndroid.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "Input/GamepadDeviceImplWin10.h"
+#include "Input/Private/Win10/GamepadDeviceImplWin10.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "Input/GamepadDeviceImplIos.h"
+#include "Input/Private/Ios/GamepadDeviceImplIos.h"
 #else
-namespace DAVA
-{
-namespace Private
-{
-// Dummy GamepadDeviceImpl implementation for platforms that do not support gamepads for now.
-class GamepadDeviceImpl final
-{
-public:
-    GamepadDeviceImpl(GamepadDevice*)
-    {
-    }
-
-    void Update()
-    {
-    }
-
-    void HandleGamepadMotion(const MainDispatcherEvent&)
-    {
-    }
-    void HandleGamepadButton(const MainDispatcherEvent&)
-    {
-    }
-
-    bool HandleGamepadAdded(uint32)
-    {
-        return false;
-    }
-    bool HandleGamepadRemoved(uint32)
-    {
-        return false;
-    }
-};
-} // namespace Private
-} // namespace DAVA
+#include "Input/Private/GamepadDeviceImplStub.h"
 #endif
 
 namespace DAVA
@@ -90,14 +57,12 @@ void GamepadDevice::Update()
 void GamepadDevice::HandleGamepadAdded(const Private::MainDispatcherEvent& e)
 {
     uint32 deviceId = e.gamepadEvent.deviceId;
-    Logger::Debug("======================== GamepadDevice::HandleGamepadAdded: %u", deviceId);
     isPresent = impl->HandleGamepadAdded(deviceId);
 }
 
 void GamepadDevice::HandleGamepadRemoved(const Private::MainDispatcherEvent& e)
 {
     uint32 deviceId = e.gamepadEvent.deviceId;
-    Logger::Debug("======================== GamepadDevice::HandleGamepadRemoved: %u", deviceId);
     isPresent = impl->HandleGamepadRemoved(deviceId);
 }
 

@@ -240,7 +240,7 @@ final class DavaSurfaceView extends SurfaceView
                     int axis = r.getAxis();
                     float value = event.getAxisValue(axis, actionIndex);
                     // Notify native code only if axis value has changed
-                    // For now simply compare floats (altrnatives are floatToIntBits or java.lang.Float.compare)
+                    // For now simply compare floats (alternatives are floatToIntBits or java.lang.Float.compare)
                     if (gamepad.axisValues[i] != value)
                     {
                         gamepad.axisValues[i] = value;

@@ -1,4 +1,4 @@
-#include "Input/GamepadDeviceImplWin10.h"
+#include "Input/Private/Win10/GamepadDeviceImplWin10.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN_UAP__)
