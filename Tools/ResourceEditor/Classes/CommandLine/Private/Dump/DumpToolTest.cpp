@@ -123,7 +123,7 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(DTestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(DTestDetail::scenePathnameStr);
 

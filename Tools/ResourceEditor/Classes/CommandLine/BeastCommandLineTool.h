@@ -21,7 +21,7 @@ private:
     DAVA::FilePath scenePathname;
     DAVA::FilePath outputPathname;
 
-    BeastRunner *beastRunner = false;
+    BeastRunner* beastRunner = false;
     SceneEditor2* scene = nullptr;
 };
 

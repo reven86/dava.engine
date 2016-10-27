@@ -78,7 +78,7 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
         TEST_VERIFY(FileSystem::Instance()->Exists(BCLTestDetail::outPathnameStr + "landscape.png"));
     }
 
-    DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder; 
+    DAVA::Vector<DAVA::eGPUFamily> gpuLoadingOrder;
     std::unique_ptr<REConsoleModuleCommon> tool;
     bool testCompleted = false;
 
@@ -94,12 +94,12 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
 
         Vector<String> cmdLine =
         {
-            "ResourceEditor",
-            "-beast",
-            "-file",
-            FilePath(BCLTestDetail::scenePathnameStr).GetAbsolutePathname(),
-            "-output",
-            FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname(),
+          "ResourceEditor",
+          "-beast",
+          "-file",
+          FilePath(BCLTestDetail::scenePathnameStr).GetAbsolutePathname(),
+          "-output",
+          FilePath(BCLTestDetail::outPathnameStr).GetAbsolutePathname(),
         };
 
         tool.reset(new BeastCommandLineTool(cmdLine));

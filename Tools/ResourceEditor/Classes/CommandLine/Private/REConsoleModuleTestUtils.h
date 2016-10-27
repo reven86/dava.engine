@@ -25,13 +25,12 @@ public:
         std::unique_ptr<Impl> impl;
     };
 
-    static TextureLoadingGuard CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
+    static std::unique_ptr<TextureLoadingGuard> CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder);
 
     static void ExecuteModule(REConsoleModuleCommon* module);
     static void InitModule(REConsoleModuleCommon* module);
     static bool ProcessModule(REConsoleModuleCommon* module);
     static void FinalizeModule(REConsoleModuleCommon* module);
-
 
     static void CreateTestFolder(const DAVA::FilePath& folder);
     static void ClearTestFolder(const DAVA::FilePath& folder);

@@ -154,7 +154,6 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     float32 lighmapSize = 1024.0f;
     material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
 
-
     auto setupTexture = [&](const String& fileName, const FastName& slotName)
     {
         FilePath textuePathname = scenePathname;
@@ -231,7 +230,7 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
         material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, true);
         material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, true);
         material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, true);
-        
+
         float32 lighmapSize = 64.0f;
         material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
     };
@@ -264,7 +263,6 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
 
     entity->AddComponent(new LodComponent());
     entity->AddComponent(new SwitchComponent());
-
 
     CreateR2OCustomProperty(entity, scenePathname);
     return entity;
@@ -359,7 +357,7 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
 {
     auto setLightProperties = [](CustomPropertiesComponent* cp, bool enabled)
     {
-        KeyedArchive *archieve = cp->GetArchive();
+        KeyedArchive* archieve = cp->GetArchive();
         archieve->SetBool("editor.staticlight.enable", enabled);
         archieve->SetFloat("editor.intensity", 1.f);
         archieve->SetFloat("editor.staticlight.shadowangle", 0.f);
@@ -444,10 +442,9 @@ REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::V
 
 REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
 
-
-REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
-    return TextureLoadingGuard(newLoadingOrder);
+    return std::make_unique<TextureLoadingGuard>(newLoadingOrder);
 }
 
 void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
