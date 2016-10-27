@@ -172,6 +172,10 @@ bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* 
     #endif
     writer.WriteLine(0, "#define FP_A8(t) (t).a");
 
+    #if defined(__DAVAENGINE_MACOS__)
+    writer.WriteLine(0, "#define lerp(a,b,t) ( ( (b) - (a) ) * (t) + (a) )");
+    #endif
+
     ChooseUniqueName("matrix_row", matrixRowFunction, sizeof(matrixRowFunction));
     ChooseUniqueName("clip", clipFunction, sizeof(clipFunction));
     ChooseUniqueName("tex2Dlod", tex2DlodFunction, sizeof(tex2DlodFunction));
@@ -791,7 +795,11 @@ void GLESGenerator::OutputIdentifier(const char* name)
     }
     else if (String_Equal(name, "lerp"))
     {
+        #if defined(__DAVAENGINE_MACOS__)
+        name = "lerp";
+        #else
         name = "mix";
+        #endif
     }
     else if (String_Equal(name, "frac"))
     {
