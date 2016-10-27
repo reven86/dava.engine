@@ -12,8 +12,6 @@ import android.util.Log;
 
 public class ScheduledNotificationReceiver extends BroadcastReceiver
 {
-    public static final String LOG_TAG = "DAVA";
-
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -33,7 +31,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver
             }
             catch (ClassNotFoundException e)
             {
-                Log.d(LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
+                Log.d(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
                 return;
             }
         }
