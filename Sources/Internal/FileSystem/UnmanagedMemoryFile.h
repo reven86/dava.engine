@@ -20,12 +20,13 @@ public:
     UnmanagedMemoryFile(const uint8* p, uint32 sz);
 
     uint32 Read(void* destinationBuffer, uint32 dataSize) override;
+    bool Seek(int64 position, eFileSeek seekType) override;
+
     uint64 GetPos() const override;
     uint64 GetSize() const override;
     bool IsEof() const override;
 
 private:
-    bool Seek(int64 position, eFileSeek seekType) override;
     uint32 Write(const void* sourceBuffer, uint32 dataSize) override;
     bool Flush() override;
 
@@ -74,7 +75,40 @@ inline bool UnmanagedMemoryFile::IsEof() const
 
 inline bool UnmanagedMemoryFile::Seek(int64 position, eFileSeek seekType)
 {
-    DVASSERT_MSG(0, "Seek is not supported");
+    switch (seekType)
+    {
+    case eFileSeek::SEEK_FROM_START:
+    {
+        if ((position >= 0) && (position < static_cast<int64>(size)))
+        {
+            offset = static_cast<uint64>(position);
+            return true;
+        }
+        break;
+    }
+    case eFileSeek::SEEK_FROM_END:
+    {
+        if ((position >= 0) && (position < static_cast<int64>(size)))
+        {
+            offset = size - static_cast<uint64>(position) - 1;
+            return true;
+        }
+        break;
+    }
+    case eFileSeek::SEEK_FROM_CURRENT:
+    {
+        position += static_cast<int64>(offset);
+        if ((position >= 0) && (position < static_cast<int64>(size)))
+        {
+            offset = static_cast<uint64>(position);
+            return true;
+        }
+        break;
+    }
+    default:
+        DVASSERT(!"Invalid eFileSeek specified");
+    }
+
     return false;
 }
 
