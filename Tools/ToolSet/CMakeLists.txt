@@ -26,14 +26,20 @@ endmacro ()
 ############
 
 set( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-set( DAVA_USE_QT_WIDGETS true )
 set( DAVA_USE_RENDERSTATS true )
 set( JOIN_PROJECT_NAME 1 )
 set( DAVA_DISABLE_AUTOTESTS true )
 set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
+set( DAVA_COREV2 1 )
+
+add_definitions (-D__DAVAENGINE_COREV2__)
 
 find_package ( DavaTools     REQUIRED )
+
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 ## other
 set( DEFINITIONS           )
@@ -77,7 +83,9 @@ set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
 
 
 reset_property ( MIX_APP_DATA )
-    set( DEFINITIONS -DDAVA_MACOS_DATA_PATH="/../Data/" )
+    if( DEPLOY )
+        set( DEFINITIONS -DDAVA_MACOS_DATA_PATH="/../Data/" )
+    endif()
     add_tool     ( ResourceEditor   )
     add_tool     ( QuickEd          )
     set( DEFINITIONS  )

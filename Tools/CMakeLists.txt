@@ -23,38 +23,39 @@ endmacro ()
 
 macro ( init_project )
 
-	message("Creating " ${PROJECT_NAME} )
+    message("Creating " ${PROJECT_NAME} )
 
-	set 	( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
-	set     ( DAVA_USE_QT_WIDGETS true )
+    set     ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME true )
     set     ( DAVA_USE_RENDERSTATS true )
-	set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
-	set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    set     ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
+    set     ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     set     ( JOIN_PROJECT_NAME 1 )
+    set     ( DAVA_COREV2 1 )
 
-	include ( CMake-common )
+    add_definitions (-D__DAVAENGINE_COREV2__)
 
-	if (DEPLOY)
-	    set (DEPLOY_ROOT ${DEPLOY_DIR})
+    include ( CMake-common )
 
-	    if ( WIN32 )
-	        set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
-	    endif()
+    if (DEPLOY)
+        set (DEPLOY_ROOT ${DEPLOY_DIR})
 
-	    set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
-	   
+        if ( WIN32 )
+            set(DEPLOY_ROOT ${DEPLOY_ROOT}/${PROJECT_NAME})
+        endif()
 
-	endif()
-   
-	set          ( DAVA_DISABLE_AUTOTESTS true )
+        set (TOOL_OUTPUT_DIR ${DEPLOY_ROOT})
 
-	find_package ( DavaTools     REQUIRED )
+    endif()
 
-	set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
+    set          ( DAVA_DISABLE_AUTOTESTS true )
 
-	set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-	set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
-	set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+    find_package ( DavaTools     REQUIRED )
+
+    set          ( IGNORE_FILE_TREE_CHECK 1 )#tmp
+
+    set          ( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+    set          ( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
+    set          ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 endmacro()
 
@@ -62,50 +63,51 @@ set( TARGETS "all" CACHE STRING "" )
 
 if(TARGETS STREQUAL "all")
 
-	project      ( Megasolution )
+    project      ( Megasolution )
 
-	init_project ()
-	set          ( DAVA_MEGASOLUTION      1 )
+    init_project ()
+    set          ( DAVA_MEGASOLUTION      1 )
 
 ## tools
-	add_tool     ( ResourceEditor  )
-	add_tool     ( QuickEd         )
-##
-	add_tool     ( ResourcePacker   )
-	add_tool     ( ResourcePatcher  )
-	add_tool     ( ImageUnpacker    )
-	add_tool     ( AssetCacheClient )
-	add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceEditor   )
+    add_tool     ( QuickEd          )
+    add_tool     ( ResourcePacker   )
+    add_tool     ( ResourcePatcher  )
+    add_tool     ( ImageUnpacker    )
+    add_tool     ( AssetCacheClient )
+    add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceArchiver )
 
 ## other
     add_tool     ( Launcher )
 
-	add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
-	add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
-	add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
+    add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Projects/UnitTests"   )
+    add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Projects/TestBed"     )
+    add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Projects/SceneViewer" )
     add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Projects/PerfomanceTests" )
 
-	if ( WIN32 )
-	    add_tool ( UWPRunner )
-	endif ()
+    if ( WIN32 )
+        add_tool ( UWPRunner )
+    endif ()
 
 elseif(TARGETS STREQUAL "tools")	
 
-	project      ( Tools )
+    project      ( Tools )
 
-	init_project ()
+    init_project ()
 
-	add_tool     ( ResourceEditor   )
-	add_tool     ( QuickEd          )
-	add_tool     ( ResourcePacker   )
-	add_tool     ( ResourcePatcher  )
-	add_tool     ( ImageUnpacker    )
-	add_tool     ( AssetCacheClient )
-	add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceEditor   )
+    add_tool     ( QuickEd          )
+    add_tool     ( ResourcePacker   )
+    add_tool     ( ResourcePatcher  )
+    add_tool     ( ImageUnpacker    )
+    add_tool     ( AssetCacheClient )
+    add_tool     ( AssetCacheServer )
+    add_tool     ( ResourceArchiver )
 
 else()
 
-	message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
+    message( FATAL_ERROR "TARGETS param value is incorrect. Please set TARGETS=all or TARGETS=tools")
 
 endif()
 

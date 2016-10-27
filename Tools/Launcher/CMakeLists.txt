@@ -6,16 +6,11 @@ project               ( Launcher )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
-set                   ( DAVA_USE_QT_WIDGETS    true )
-
 find_package          ( QT5 REQUIRED  COMPONENTS Network )
-find_package          ( DavaFramework REQUIRED )
-find_package          ( DavaTools  REQUIRED )
+find_package          ( QtHelpers  REQUIRED )
 
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
 
-include_directories   ( ${DAVA_INCLUDE_DIR} ) 
-include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 
 include_directories   (.)             

@@ -331,16 +331,17 @@ void gles2_Uninitialize()
 static void
 gles2_Reset(const ResetParam& param)
 {
-    _GLES2_DefaultFrameBuffer_Width = param.width;
-    _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
-    android_gl_reset(param.window);
+    android_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_IPHONE__)
-    ios_gl_reset(param.window);
+    ios_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
 #elif defined(__DAVAENGINE_WIN32__)
     win_gl_reset(param);
+#else
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 #endif
 }
 
@@ -474,6 +475,10 @@ void gles2_Initialize(const InitParam& param)
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
+        if (param.defaultFrameBuffer != nullptr)
+        {
+            _GLES2_Default_FrameBuffer = reinterpret_cast<GLuint>(param.defaultFrameBuffer);
+        }
         if (glewInit() == GLEW_OK)
             success = true;
     }
@@ -588,6 +593,7 @@ void gles2_Initialize(const InitParam& param)
 
     _GLES2_DefaultFrameBuffer_Width = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
+    _GLES2_Default_FrameBuffer = param.defaultFrameBuffer ? static_cast<GLuint>(reinterpret_cast<size_t>(param.defaultFrameBuffer)) : 0;
 
     _GLES2_AcquireContext = (param.acquireContextFunc) ? param.acquireContextFunc : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc) ? param.releaseContextFunc : &macos_gl_release_context;

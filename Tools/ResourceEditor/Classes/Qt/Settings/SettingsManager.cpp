@@ -100,6 +100,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_Grab_Size_Height, DAVA::VariantType(1024));
 
     CreateValue(Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType(true));
+    CreateValue(Settings::General_Mouse_WheelMoveIntensity, DAVA::VariantType(180.0f));
     CreateValue(Settings::General_Mouse_InvertWheel, DAVA::VariantType(false));
 
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));

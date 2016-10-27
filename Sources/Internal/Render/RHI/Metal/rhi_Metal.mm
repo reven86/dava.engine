@@ -84,6 +84,23 @@ metal_Uninitialize()
 static void
 metal_Reset(const ResetParam& param)
 {
+    if (_Metal_DefDepthBuf)
+    {
+        [_Metal_DefDepthBuf release];
+        _Metal_DefDepthBuf = nil;
+    }
+
+    if (_Metal_DefStencilBuf)
+    {
+        [_Metal_DefStencilBuf release];
+        _Metal_DefStencilBuf = nil;
+    }
+
+    MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:param.width height:param.height mipmapped:NO];
+    MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:param.width height:param.height mipmapped:NO];
+
+    _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
+    _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
 }
 
 //------------------------------------------------------------------------------
@@ -169,7 +186,6 @@ void metal_Initialize(const InitParam& param)
     int w = param.width;
     int h = param.height;
 
-    MTLTextureDescriptor* colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
