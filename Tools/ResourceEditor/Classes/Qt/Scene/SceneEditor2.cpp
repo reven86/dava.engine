@@ -12,7 +12,7 @@
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
+#include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
 #include "Scene3D/Entity.h"
