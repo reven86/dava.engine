@@ -271,7 +271,7 @@ void WindowBackend::OnCreated()
     float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, w, h, dpi));
 }
 
 bool WindowBackend::OnUserCloseRequest()
@@ -293,11 +293,11 @@ void WindowBackend::OnFrame()
     engineBackend->OnFrame();
 }
 
-void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
+void WindowBackend::OnResized(uint32 width, uint32 height)
 {
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, w, h));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
