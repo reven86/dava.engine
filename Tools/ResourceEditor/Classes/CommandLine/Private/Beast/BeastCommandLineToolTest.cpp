@@ -46,11 +46,9 @@ DAVA_TARC_TESTCLASS(BeastCommandLineToolTest)
                     Landscape* landscape = static_cast<Landscape*>(ro);
                     material = landscape->GetMaterial();
                 }
-                else if (ro->GetType() != RenderObject::TYPE_VEGETATION)
+                else
                 {
                     uint32 rbCount = ro->GetRenderBatchCount();
-                    TEST_VERIFY(rbCount == 1);
-
                     for (uint32 r = 0; r < rbCount; ++r)
                     {
                         RenderBatch* rb = ro->GetRenderBatch(r);

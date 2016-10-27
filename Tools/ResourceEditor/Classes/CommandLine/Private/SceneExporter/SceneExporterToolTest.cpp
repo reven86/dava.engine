@@ -83,7 +83,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 
@@ -150,7 +150,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 
@@ -217,7 +217,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
     {
         using namespace DAVA;
 
-        REConsoleModuleTestUtils::TextureLoadingGuard guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> guard = REConsoleModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
         REConsoleModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
         REConsoleModuleTestUtils::CreateScene(SETestDetail::scenePathnameStr);
 

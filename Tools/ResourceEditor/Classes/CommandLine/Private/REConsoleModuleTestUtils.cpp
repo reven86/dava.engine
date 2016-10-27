@@ -147,6 +147,12 @@ Entity* CreateLandscapeEnity(const FilePath& scenePathname)
     NMaterial* material = landscape->GetMaterial();
     DVASSERT(material != nullptr);
     material->SetQualityGroup(Landscape::LANDSCAPE_QUALITY_NAME);
+    material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, true);
+    material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, true);
+    material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, true);
+
+    float32 lighmapSize = 1024.0f;
+    material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
 
     auto setupTexture = [&](const String& fileName, const FastName& slotName)
     {
@@ -222,6 +228,11 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
         material->AddTexture(slotName, texture);
 
         material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, true);
+        material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, true);
+        material->AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, true);
+
+        float32 lighmapSize = 64.0f;
+        material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
     };
 
     ScopedPtr<NMaterial> material(CreateMaterial(FastName("box"), NMaterialName::TEXTURE_LIGHTMAP_OPAQUE));
@@ -344,6 +355,18 @@ Entity* CreateCameraEntity(const FilePath& scenePathname)
 
 Entity* CreateLightsEntity(const FilePath& scenePathname)
 {
+    auto setLightProperties = [](CustomPropertiesComponent* cp, bool enabled)
+    {
+        KeyedArchive* archieve = cp->GetArchive();
+        archieve->SetBool("editor.staticlight.enable", enabled);
+        archieve->SetFloat("editor.intensity", 1.f);
+        archieve->SetFloat("editor.staticlight.shadowangle", 0.f);
+        archieve->SetFloat("editor.staticlight.shadowradius", 0.f);
+        archieve->SetInt32("editor.staticlight.shadowsamples", 1);
+        archieve->SetFloat("editor.staticlight.falloffcutoff", 1000.f);
+        archieve->SetFloat("editor.staticlight.falloffexponent", 1.f);
+    };
+
     Entity* entity = new Entity();
     entity->SetName(FastName("lights"));
 
@@ -354,6 +377,7 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
     dynamicLight->SetType(Light::TYPE_DIRECTIONAL);
     dynamicLight->SetDynamic(true);
     dynamicLightEntity->AddComponent(new LightComponent(dynamicLight));
+    setLightProperties(GetOrCreateCustomProperties(dynamicLightEntity), false);
     entity->AddNode(dynamicLightEntity);
 
     //not dynamic light
@@ -363,6 +387,7 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
     notDynamicLight->SetType(Light::TYPE_DIRECTIONAL);
     notDynamicLight->SetDynamic(false);
     notDynamicLightEntity->AddComponent(new LightComponent(notDynamicLight));
+    setLightProperties(GetOrCreateCustomProperties(notDynamicLightEntity), true);
     entity->AddNode(notDynamicLightEntity);
 
     //sky light
@@ -372,6 +397,7 @@ Entity* CreateLightsEntity(const FilePath& scenePathname)
     skyLight->SetType(Light::TYPE_SKY);
     skyLight->SetDynamic(false);
     skyLightEntity->AddComponent(new LightComponent(skyLight));
+    setLightProperties(GetOrCreateCustomProperties(skyLightEntity), true);
     entity->AddNode(skyLightEntity);
 
     CreateR2OCustomProperty(entity, scenePathname);
@@ -416,9 +442,9 @@ REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::V
 
 REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
 
-REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
+std::unique_ptr<REConsoleModuleTestUtils::TextureLoadingGuard> REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
-    return TextureLoadingGuard(newLoadingOrder);
+    return std::make_unique<TextureLoadingGuard>(newLoadingOrder);
 }
 
 void REConsoleModuleTestUtils::ExecuteModule(REConsoleModuleCommon* module)
@@ -514,5 +540,5 @@ void REConsoleModuleTestUtils::CreateScene(const DAVA::FilePath& scenePathname)
 
     scene->Update(0.1f);
 
-    scene->SaveScene(scenePathname, true);
+    scene->SaveScene(scenePathname, false);
 }
