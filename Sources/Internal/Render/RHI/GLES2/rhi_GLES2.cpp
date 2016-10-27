@@ -331,16 +331,17 @@ void gles2_Uninitialize()
 static void
 gles2_Reset(const ResetParam& param)
 {
-    _GLES2_DefaultFrameBuffer_Width = param.width;
-    _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
-    android_gl_reset(param.window);
+    android_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_IPHONE__)
-    ios_gl_reset(param.window);
+    ios_gl_reset(param.window, GLint(param.width), GLint(param.height));
 #elif defined(__DAVAENGINE_MACOS__)
     macos_gl_reset(param);
 #elif defined(__DAVAENGINE_WIN32__)
     win_gl_reset(param);
+#else
+    _GLES2_DefaultFrameBuffer_Width = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 #endif
 }
 
