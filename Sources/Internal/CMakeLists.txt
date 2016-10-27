@@ -81,7 +81,8 @@ set( SRC_FOLDERS                    "." )
  
 set( MODULE_MANAGER_TEMPLATE        ModuleManager/ModuleManager.in )
 
-set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c)
+set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c
+                                    ${DAVA_EXTERNAL_DIR}/imgui/*.cpp)
                    
 set( ERASE_FOLDERS_IOS              "DX9" "DX11" )
 set( ERASE_FOLDERS_MACOS            "Metal" "DX9" "DX11" )
@@ -94,7 +95,8 @@ set( UNITY_IGNORE_LIST              "Internal/Autotesting"
                                     "Compression/ZipCompressor.cpp"
                                     "Platform/Steam.cpp"
                                     "DataStorage/Steam/DataStorageSteam.cpp"
-                                    "UI/Private/CEF/WebViewControl.cpp" )
+                                    "UI/Private/CEF/WebViewControl.cpp"
+                                    "External/imgui")
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"

@@ -581,12 +581,11 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
 
 int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
 {
-    int32 tapCount = 0;
+    int32 tapCount = 1;
     // Observe double click, doubleClickTime - interval between newEvent and lastEvent, doubleClickRadiusSquared - radius in squared
     if (newEvent->phase == UIEvent::Phase::BEGAN)
     {
         DVASSERT(newEvent->tapCount == 0 && "Native implementation disabled, tapCount must be 0");
-        tapCount = 1;
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {

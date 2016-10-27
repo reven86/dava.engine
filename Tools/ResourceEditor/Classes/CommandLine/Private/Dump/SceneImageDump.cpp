@@ -58,6 +58,11 @@ bool SceneImageDump::PostInitInternal()
     gpuFamily = DAVA::GPUFamilyDescriptor::GetGPUByName(gpuName);
     outputFile = options.GetOption(OptionName::OutFile).AsString();
 
+    if (outputFile.IsEmpty())
+    {
+        outputFile = sceneFilePath.GetDirectory();
+    }
+
     bool qualityInitialized = SceneConsoleHelper::InitializeQualitySystem(options, sceneFilePath);
     if (!qualityInitialized)
     {

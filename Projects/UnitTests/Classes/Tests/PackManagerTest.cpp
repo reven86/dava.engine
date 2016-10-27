@@ -1,4 +1,6 @@
 #include <PackManager/PackManager.h>
+// we need include private file only to call private api in test case
+#include <PackManager/Private/PackManagerImpl.h>
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>
@@ -120,7 +122,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
                 Logger::Info("updata pack manager");
 
-                packManager.Update();
+                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
             if (packManager.GetInitError() != IPackManager::InitError::AllGood)
@@ -153,7 +155,7 @@ DAVA_TESTCLASS (PackManagerTest)
                 Thread::Sleep(100);
                 // we have to call Update() for downloadManager and packManager cause we in main thread
                 DownloadManager::Instance()->Update();
-                packManager.Update();
+                static_cast<PackManagerImpl*>(&packManager)->Update(0.1f);
             }
 
             Logger::Info("finish loading pack");

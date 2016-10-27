@@ -46,6 +46,8 @@ public:
     void RenderReset(int32 w, int32 h);
     void ProcessFrame();
 
+    void SetScreenScaleMultiplier(float32 multiplier) override;
+
     // called from Activity and manage a visible lifetime
     void StartVisible();
     void StopVisible();

@@ -301,7 +301,7 @@ void QtMainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
     // delete
     QAction* deleteSelection = new QAction(tr("Delete Selection"), this);
     deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WindowShortcut);
+    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteSelection, &QAction::triggered, this, &QtMainWindow::RemoveSelection);
     renderWidget->addAction(deleteSelection);
 
@@ -785,6 +785,7 @@ void QtMainWindow::SetupStatusBar()
     CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableVisibilitySystem, ui->statusBar);
     CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableSounds, ui->statusBar);
 }
 
 void QtMainWindow::SetupDocks()
@@ -891,7 +892,10 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionDiffuse, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
     QObject::connect(ui->actionSpecular, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
 
+    bool gizmoEnabled = SettingsManager::GetValue(Settings::Internal_GizmoEnabled).AsBool();
+    OnEditorGizmoToggle(gizmoEnabled);
     QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
+
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
     QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
@@ -902,6 +906,10 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionReleaseCurrentFrame, SIGNAL(triggered()), this, SLOT(OnReleaseVisibilityFrame()));
 
     QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
+
+    bool toEnableSounds = SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool();
+    EnableSounds(toEnableSounds);
+    QObject::connect(ui->actionEnableSounds, &QAction::toggled, this, &QtMainWindow::EnableSounds);
 
     // scene undo/redo
     QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
@@ -1089,6 +1097,7 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
     ui->actionSnapCameraToLandscape->setChecked(false);
     if (nullptr != scene)
     {
+        scene->SetHUDVisible(ui->actionShowEditorGizmo->isChecked());
         if (scene->debugDrawSystem)
             ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
 
@@ -1169,6 +1178,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionCustomColorsEditor->setEnabled(enable);
     ui->actionWayEditor->setEnabled(enable);
     ui->actionForceFirstLODonLandscape->setEnabled(enable);
+    ui->actionEnableVisibilitySystem->setEnabled(enable);
 
     ui->actionEnableCameraLight->setEnabled(enable);
     ui->actionReloadTextures->setEnabled(enable);
@@ -1557,8 +1567,10 @@ void QtMainWindow::OnRedo()
 
 void QtMainWindow::OnEditorGizmoToggle(bool show)
 {
+    ui->actionShowEditorGizmo->setChecked(show);
+    SettingsManager::Instance()->SetValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(show));
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
+    if (scene != nullptr)
     {
         scene->SetHUDVisible(show);
     }
@@ -1615,6 +1627,18 @@ void QtMainWindow::OnReleaseVisibilityFrame()
 void QtMainWindow::OnEnableDisableShadows(bool enable)
 {
     DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::SHADOWVOLUME_DRAW, enable);
+}
+
+void QtMainWindow::EnableSounds(bool toEnable)
+{
+    ui->actionEnableSounds->setChecked(toEnable);
+
+    if (toEnable != SettingsManager::GetValue(Settings::Internal_EnableSounds).AsBool())
+    {
+        SettingsManager::SetValue(Settings::Internal_EnableSounds, DAVA::VariantType(toEnable));
+    }
+
+    DAVA::SoundSystem::Instance()->Mute(!toEnable);
 }
 
 void QtMainWindow::OnReloadTextures()
@@ -2044,7 +2068,6 @@ void QtMainWindow::LoadViewState(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
-        ui->actionShowEditorGizmo->setChecked(scene->IsHUDVisible());
         ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
 
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
@@ -3330,6 +3353,8 @@ void QtMainWindow::RemoveSelection()
 bool QtMainWindow::SetVisibilityToolEnabledIfPossible(bool enabled)
 {
     SceneEditor2* scene = GetCurrentScene();
+    DVASSERT_MSG(scene != nullptr, "Switching visibility tool requires an opened scene");
+
     DAVA::int32 enabledTools = scene->GetEnabledTools();
     if (enabled && (enabledTools != 0))
     {

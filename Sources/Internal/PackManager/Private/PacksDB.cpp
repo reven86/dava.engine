@@ -1,8 +1,20 @@
 #include "PackManager/Private/PacksDB.h"
-#include <sqlite_modern_cpp.h>
 #include "MemoryManager/MemoryManager.h"
 #include "FileSystem/FileSystem.h"
 #include "PackManager/Private/VirtualFileSystemSqliteWraper.h"
+#include "Base/Exception.h"
+
+
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite_modern_cpp.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 namespace DAVA
 {
@@ -69,7 +81,7 @@ public:
         }
         else
         {
-            throw std::runtime_error("can't find db file: " + dbPath);
+            DAVA_THROW(DAVA::Exception, "can't find db file: " + dbPath);
         }
     }
     ~PacksDBData()
@@ -134,13 +146,39 @@ void PacksDB::ListFiles(const String& relativePathDir, const Function<void(const
     }
 }
 
+void PacksDB::ListDependentPacks(const String& pack, const Function<void(const String&)>& fn)
+{
+    try
+    {
+        data->GetDB() << "SELECT name FROM packs WHERE dependency LIKE ?"
+                      << "%" + pack + " %" // this space need to separete pack names
+        >> [&](String name)
+        {
+            fn(name);
+        };
+    }
+    catch (sqlite::sqlite_exception& ex)
+    {
+        Logger::Error("error while executing query to DB ListDependentPacks: %s", ex.what());
+        throw;
+    }
+}
+
 void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
 {
     packs.clear();
-    packs.reserve(911); // now we have 911 packs
 
     try
     {
+        size_t numPacks = 0;
+        data->GetDB() << "SELECT count(*) FROM packs"
+        >> [&](int64 num)
+        {
+            numPacks = static_cast<size_t>(num);
+        };
+
+        packs.reserve(numPacks);
+
         auto selectQuery = data->GetDB() << "SELECT name, hash, is_gpu, size, dependency FROM packs";
 
         selectQuery >> [&](String name, String hash, int32 isGpu, int32 size, String dependency)
@@ -176,7 +214,7 @@ void PacksDB::InitializePacks(Vector<IPackManager::Pack>& packs) const
     }
     catch (std::exception& ex)
     {
-        throw std::runtime_error("DB error, update local DB for pack manager: " + data->dbPath.GetStringValue() + " cause: " + ex.what());
+        DAVA_THROW(DAVA::Exception, "DB error, update local DB for pack manager: " + data->dbPath.GetStringValue() + " cause: " + ex.what());
     }
 }
 

@@ -77,7 +77,7 @@ namespace DAVA
 class JniMovieViewControl
 {
 public:
-    JniMovieViewControl(uint32 id);
+    JniMovieViewControl(uintptr_t id);
     void Initialize(const Rect& rect);
     void Uninitialize();
 
@@ -93,7 +93,7 @@ public:
     bool IsPlaying() const;
 
 private:
-    uint32 id;
+    uintptr_t id;
 
     JNI::JavaClass jniMovieViewControl;
     Function<void(jint, jfloat, jfloat, jfloat, jfloat)> initialize;

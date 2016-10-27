@@ -11,6 +11,7 @@
 #include "Utils/StringFormat.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 #include "Core/Core.h"
 #include "PackManager/PackManager.h"
 
@@ -176,12 +177,47 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
         if (!file)
         {
 #ifdef __DAVAENGINE_ANDROID__
-            File* fromAPK = CreateFromAPK(filePath, attributes);
-            return fromAPK; // simpler debugging on android
+            bool isFileExistOnRealFS = false;
+
+            FileAPI::Stat fileStat;
+            int result = FileAPI::FileStat(path.c_str(), &fileStat);
+            if (result == 0)
+            {
+                isFileExistOnRealFS = (0 != (fileStat.st_mode & S_IFREG));
+            }
+
+            if (isFileExistOnRealFS)
+            {
+                int32 openFileAttempt = 1;
+                while (!file && (openFileAttempt++ <= 10))
+                {
+                    if (attributes & File::WRITE)
+                    {
+                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+                    }
+                    else
+                    {
+                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
+                    }
+
+                    if (!file)
+                    {
+                        Logger::Error("can't open existing file: %s attempt: %d, errno: %s",
+                                      path.c_str(), openFileAttempt, strerror(errno));
+                        Thread::Sleep(100);
+                    }
+                } // end while
+            }
+
+            if (!file)
+            {
+                File* fromAPK = CreateFromAPK(filePath, attributes);
+                return fromAPK; // simpler debugging on android
+            }
 #else
 #ifdef __DAVAENGINE_DEBUG__
 // this is a last place where we search for file, so help
-// developers a litle and add some logs
+// developers a little and add some logs
 // String p = UTF8Utils::EncodeToUTF8(path);
 // Logger::Error("can't open: %s, cause: %s", p.c_str(), std::strerror(errno));
 #endif
@@ -483,7 +519,8 @@ String File::GetModificationDate(const FilePath& filePathname)
 #if defined(__DAVAENGINE_WINDOWS__)
         tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined(__DAVAENGINE_ANDROID__)
-        tm* utcTime = gmtime((const time_t*)&fileInfo.st_mtime);
+        time_t st_mtime = static_cast<time_t>(fileInfo.st_mtime);
+        tm* utcTime = gmtime(&st_mtime);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         tm* utcTime = gmtime(&fileInfo.st_mtimespec.tv_sec);
 #endif
