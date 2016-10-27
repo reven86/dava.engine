@@ -6,7 +6,6 @@
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 
 #include "Input/InputSystem.h"
@@ -69,7 +68,6 @@ void RenderWidget::OnInitialize()
 
 void RenderWidget::OnFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
     DVASSERT(isInPaint == false);
     isInPaint = true;
     SCOPE_EXIT
