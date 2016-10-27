@@ -435,6 +435,7 @@ void VariantType::SetVariant(const VariantType& var)
         return;
     }
 
+    ReleasePointer();
     type = TYPE_NONE;
 
     switch (var.type)
