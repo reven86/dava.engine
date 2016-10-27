@@ -2375,7 +2375,7 @@ void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mo
     const DAVA::FilePath path = outputPath.toStdString();
 
     BeastRunner beast(scene, path, mode, beastWaitDialog);
-    beast.Run();
+    beast.RunUIMode();
 
     if (mode == BeastProxy::MODE_LIGHTMAPS)
     {

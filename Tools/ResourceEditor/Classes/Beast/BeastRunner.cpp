@@ -33,10 +33,8 @@ BeastRunner::~BeastRunner()
     BeastProxy::Instance()->SafeDeleteManager(&beastManager);
 }
 
-void BeastRunner::Run()
+void BeastRunner::RunUIMode()
 {
-    bool cancelledManually = false;
-
     if (waitDialog != nullptr)
     {
         waitDialog->Show("Beast process", "Starting Beast", true, true);
@@ -69,7 +67,7 @@ void BeastRunner::Run()
         waitDialog->EnableCancel(false);
     }
 
-    Finish(cancelledManually | BeastProxy::Instance()->WasCancelled(beastManager));
+    Finish(cancelledManually || BeastProxy::Instance()->WasCancelled(beastManager));
 
     if (waitDialog != nullptr)
     {

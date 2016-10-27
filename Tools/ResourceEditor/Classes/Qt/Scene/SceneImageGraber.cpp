@@ -1,15 +1,18 @@
 #include "SceneImageGraber.h"
 
-#include "Classes/Qt/Main/mainwindow.h"
-#include "Classes/Qt/Scene/SceneTabWidget.h"
-
+#include "Functional/Function.h"
+#include "Job/JobManager.h"
+#include "Math/MathHelpers.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RenderBase.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Functional/Function.h"
-#include "Math/MathHelpers.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+
+#include "Scene3D/Scene.h"
 
 #include <QQuickWindow>
 #include <QImage>
@@ -61,7 +64,7 @@ void GrabImage(Params inputParams)
                                                     DAVA::FilePath filePath = internalParams.inputParams.outputFile;
                                                     if (filePath.IsEmpty())
                                                     {
-                                                        filePath = internalParams.inputParams.scene->GetScenePath().GetDirectory();
+                                                        DVASSERT(false); // we should always setup pathname from external code
                                                     }
 
                                                     if (filePath.IsDirectoryPathname())

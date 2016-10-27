@@ -3,6 +3,9 @@
 #include <QObject>
 #include <QVector>
 
+#include "Base/Singleton.h"
+#include "FileSystem/FilePath.h"
+
 class SpritesPackerModule;
 class ProjectStructure;
 class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>

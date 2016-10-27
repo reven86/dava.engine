@@ -6,7 +6,6 @@
 namespace DAVA
 {
 class Camera;
-class Scene;
 }
 
 class SceneImageDump : public REConsoleModuleCommon

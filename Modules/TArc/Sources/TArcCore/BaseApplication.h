@@ -9,6 +9,7 @@
 
 namespace DAVA
 {
+class EngineContext;
 namespace TArc
 {
 class Core;
@@ -30,6 +31,7 @@ protected:
     virtual EngineInitInfo GetInitInfo() const = 0;
     virtual void CreateModules(Core* tarcCore) const = 0;
     // Method init has been written only for backward compatibility. Try not using it
+    virtual void Init(EngineContext& engineContext);
     virtual void Init(Core* tarcCore);
     virtual void Cleanup();
 

@@ -4,7 +4,12 @@
 #include "FileSystem/FilePath.h"
 #include "CommandLine/Private/REConsoleModuleCommon.h"
 
-class SceneEditor2;
+namespace DAVA
+{
+class Scene;
+class StaticOcclusionBuildSystem;
+}
+
 class StaticOcclusionTool : public REConsoleModuleCommon
 {
 public:
@@ -16,7 +21,9 @@ protected:
     void BeforeDestroyedInternal() override;
     void ShowHelpInternal() override;
 
-    DAVA::ScopedPtr<SceneEditor2> scene;
+    DAVA::FilePath scenePathname;
+    DAVA::ScopedPtr<DAVA::Scene> scene;
+    DAVA::StaticOcclusionBuildSystem* staticOcclusionBuildSystem = nullptr;
 
     enum eAction : DAVA::int32
     {

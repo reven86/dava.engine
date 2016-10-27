@@ -1,7 +1,8 @@
 #include "CommandLine/DumpTool.h"
-#include "CommandLine/Private/Dump/SceneDumper.h"
 #include "CommandLine/Private/OptionName.h"
 #include "CommandLine/Private/SceneConsoleHelper.h"
+
+#include "Utils/Dump/SceneDumper.h"
 
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"

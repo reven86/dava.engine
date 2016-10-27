@@ -3,7 +3,10 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Logger/Logger.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/GPUFamilyDescriptor.h"
 #include "Render/Material/NMaterial.h"
 #include "Utils/StringFormat.h"
 
@@ -12,8 +15,6 @@
 #include "Project/ProjectManager.h"
 
 #include "Base/GlobalEnum.h"
-
-#include <QMessageBox>
 
 namespace Preset
 {

@@ -12,8 +12,9 @@
 #include "Render/RenderHelper.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/Texture.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Scene.h"
 
-#include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 
 SceneImageDump::SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine)
@@ -69,21 +70,21 @@ bool SceneImageDump::PostInitInternal()
 
 DAVA::TArc::ConsoleModule::eFrameResult SceneImageDump::OnFrameInternal()
 {
+    using namespace DAVA;
     const rhi::HTexture nullTexture;
     const rhi::Viewport nullViewport(0, 0, 1, 1);
 
-    DAVA::Vector<DAVA::eGPUFamily> textureLoadingOrder = DAVA::Texture::GetGPULoadingOrder();
-    DAVA::Texture::SetGPULoadingOrder({ gpuFamily });
+    Vector<eGPUFamily> textureLoadingOrder = Texture::GetGPULoadingOrder();
+    Texture::SetGPULoadingOrder({ gpuFamily });
 
-    DAVA::ScopedPtr<SceneEditor2> scene(new SceneEditor2());
-    if (scene->LoadScene(sceneFilePath) == DAVA::SceneFileV2::eError::ERROR_NO_ERROR)
+    ScopedPtr<Scene> scene(new Scene());
+    if (scene->LoadScene(sceneFilePath) == SceneFileV2::eError::ERROR_NO_ERROR)
     {
-        scene->EnableEditorSystems();
-        DAVA::Camera* camera = FindCamera(scene);
+        Camera* camera = FindCamera(scene);
         if (camera == nullptr)
         {
-            DAVA::Logger::Error("Camera %s not found in scene %s", cameraName.c_str(), sceneFilePath.GetAbsolutePathname().c_str());
-            return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+            Logger::Error("Camera %s not found in scene %s", cameraName.c_str(), sceneFilePath.GetAbsolutePathname().c_str());
+            return TArc::ConsoleModule::eFrameResult::FINISHED;
         }
 
         bool grabFinished = false;
@@ -91,8 +92,8 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneImageDump::OnFrameInternal()
         SceneImageGrabber::Params params;
         params.scene = scene;
         params.cameraToGrab = camera;
-        params.imageSize = DAVA::Size2i(width, height);
-        params.outputFile = DAVA::FilePath(outputFile);
+        params.imageSize = Size2i(width, height);
+        params.outputFile = FilePath(outputFile);
         params.processInDAVAFrame = false;
         params.readyCallback = [&grabFinished]()
         {
@@ -100,23 +101,23 @@ DAVA::TArc::ConsoleModule::eFrameResult SceneImageDump::OnFrameInternal()
         };
 
         scene->Update(0.1f);
-        DAVA::Renderer::BeginFrame();
-        DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+        Renderer::BeginFrame();
+        RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, Color::Clear, nullViewport);
         SceneImageGrabber::GrabImage(params);
-        DAVA::Renderer::EndFrame();
+        Renderer::EndFrame();
 
         while (grabFinished == false)
         {
-            DAVA::Renderer::BeginFrame();
-            DAVA::RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
+            Renderer::BeginFrame();
+            RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, Color::Clear, nullViewport);
             scene->Update(0.1f);
-            DAVA::Renderer::EndFrame();
+            Renderer::EndFrame();
         }
     }
 
-    DAVA::Texture::SetGPULoadingOrder(textureLoadingOrder);
+    Texture::SetGPULoadingOrder(textureLoadingOrder);
 
-    return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
+    return TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
 DAVA::Camera* SceneImageDump::FindCamera(DAVA::Entity* rootNode) const

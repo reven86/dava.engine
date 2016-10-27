@@ -98,7 +98,7 @@ void REApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     }
 }
 
-void REApplication::Init(DAVA::TArc::Core* tarcCore)
+void REApplication::Init(DAVA::EngineContext& engineContext)
 {
 #if defined(__DAVAENGINE_MACOS__)
     const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
@@ -112,7 +112,6 @@ void REApplication::Init(DAVA::TArc::Core* tarcCore)
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-    DAVA::EngineContext& engineContext = tarcCore->GetEngineContext();
     engineContext.logger->SetLogFilename("ResEditor.txt");
 
     config = new EditorConfig();

@@ -321,8 +321,8 @@ void SceneExporterTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-sceneexporter -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfile Maps/scene.sc2 -gpu mali -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
     DAVA::Logger::Info("\t-sceneexporter -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfile Maps/image/texture.tex -gpu mali -qualitycfgpath Users/SmokeTest/Data/quality.yaml");
 
-    DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfolder Maps/ -gpu adreno");
-    DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfolder Maps/ -gpu adreno");
+    DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processdir Maps/ -gpu adreno");
+    DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processdir Maps/ -gpu adreno");
 
     DAVA::Logger::Info("\t-sceneexporter -scene -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno");
     DAVA::Logger::Info("\t-sceneexporter -texture -indir /Users/SmokeTest/DataSource/3d/ -outdir /Users/SmokeTest/Data/3d/ -processfilelist /Users/files.txt -gpu adreno,PowerVR_iOS -useCache -ip 127.0.0.1");
