@@ -221,7 +221,9 @@ void UIStyleSheetSystem::DumpStats()
 {
     if (statsProcessedControls > 0)
     {
-        Logger::Debug("%s %i %f %i %f", __FUNCTION__, statsProcessedControls, statsTime / 1000000.0f, statsMatches, (float)statsStyleSheetCount / statsProcessedControls);
+        Logger::Debug("%s %i %f %i %f", __FUNCTION__, statsProcessedControls,
+                      static_cast<float>(statsTime / 1000000.0f), statsMatches,
+                      static_cast<float>(statsStyleSheetCount / statsProcessedControls));
     }
 }
 

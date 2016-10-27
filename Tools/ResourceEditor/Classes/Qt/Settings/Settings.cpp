@@ -92,6 +92,7 @@ const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
 const FastName Settings::Internal_EnableSounds = FastName("Internal/EnableSounds");
+const FastName Settings::Internal_GizmoEnabled = FastName("Internal/GizmoEnabled");
 
 DAVA::eGPUFamily Settings::GetGPUFormat()
 {

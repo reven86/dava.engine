@@ -44,8 +44,6 @@ public:
 
     static const DAVA::FastName General_AutoConvertation;
 
-    static const DAVA::FastName Internal_EnableSounds;
-
     static const DAVA::FastName Scene_GridStep;
     static const DAVA::FastName Scene_GridSize;
     static const DAVA::FastName Scene_CameraSpeed0;
@@ -108,6 +106,8 @@ public:
 
     static const DAVA::FastName Internal_CustomPalette;
     static const DAVA::FastName Internal_LogWidget;
+    static const DAVA::FastName Internal_EnableSounds;
+    static const DAVA::FastName Internal_GizmoEnabled;
 
     static DAVA::eGPUFamily GetGPUFormat();
 }; //End of Settings

@@ -905,7 +905,10 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionDiffuse, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
     QObject::connect(ui->actionSpecular, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
 
+    bool gizmoEnabled = SettingsManager::GetValue(Settings::Internal_GizmoEnabled).AsBool();
+    OnEditorGizmoToggle(gizmoEnabled);
     QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
+
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
     QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
@@ -1107,6 +1110,7 @@ void QtMainWindow::SceneActivated(SceneEditor2* scene)
     ui->actionSnapCameraToLandscape->setChecked(false);
     if (nullptr != scene)
     {
+        scene->SetHUDVisible(ui->actionShowEditorGizmo->isChecked());
         if (scene->debugDrawSystem)
             ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
 
@@ -1576,8 +1580,10 @@ void QtMainWindow::OnRedo()
 
 void QtMainWindow::OnEditorGizmoToggle(bool show)
 {
+    ui->actionShowEditorGizmo->setChecked(show);
+    SettingsManager::Instance()->SetValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(show));
     SceneEditor2* scene = GetCurrentScene();
-    if (nullptr != scene)
+    if (scene != nullptr)
     {
         scene->SetHUDVisible(show);
     }
@@ -2075,7 +2081,6 @@ void QtMainWindow::LoadViewState(SceneEditor2* scene)
 {
     if (nullptr != scene)
     {
-        ui->actionShowEditorGizmo->setChecked(scene->IsHUDVisible());
         ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
 
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();

@@ -125,6 +125,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(DAVA::String("")));
 
     CreateValue(Settings::Internal_EnableSounds, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(true));
 
     const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
     DAVA::uint32 colors[nColors]; // Init from Qt::GlobalColor
