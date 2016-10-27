@@ -21,7 +21,6 @@ public:
     void Finish(bool canceled);
 
 private:
-
     void PackLightmaps();
     DAVA::FilePath GetLightmapDirectoryPath();
 

@@ -32,7 +32,6 @@ public:
     static bool ProcessModule(REConsoleModuleCommon* module);
     static void FinalizeModule(REConsoleModuleCommon* module);
 
-
     static void CreateTestFolder(const DAVA::FilePath& folder);
     static void ClearTestFolder(const DAVA::FilePath& folder);
 

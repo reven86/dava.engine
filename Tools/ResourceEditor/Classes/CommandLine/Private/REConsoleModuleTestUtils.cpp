@@ -253,7 +253,6 @@ Entity* CreateBoxEntity(const FilePath& scenePathname)
     entity->AddComponent(new LodComponent());
     entity->AddComponent(new SwitchComponent());
 
-
     CreateR2OCustomProperty(entity, scenePathname);
     return entity;
 }
@@ -416,7 +415,6 @@ REConsoleModuleTestUtils::TextureLoadingGuard::TextureLoadingGuard(const DAVA::V
 }
 
 REConsoleModuleTestUtils::TextureLoadingGuard::~TextureLoadingGuard() = default;
-
 
 REConsoleModuleTestUtils::TextureLoadingGuard REConsoleModuleTestUtils::CreateTextureGuard(const DAVA::Vector<DAVA::eGPUFamily>& newLoadingOrder)
 {
