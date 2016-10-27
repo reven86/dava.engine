@@ -27,7 +27,7 @@
 #include "Debug/DVAssert.h"
 #include "Render/2D/TextBlock.h"
 #include "Debug/Replay.h"
-#include "Debug/CPUProfiler.h"
+#include "Debug/ProfilerCPU.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
 #include "Input/InputSystem.h"
@@ -270,7 +270,7 @@ void EngineBackend::OnEngineCleanup()
 
 void EngineBackend::DoEvents()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::DoEvents");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DO_EVENTS);
     dispatcher->ProcessEvents();
     for (Window* w : aliveWindows)
     {
@@ -323,7 +323,7 @@ int32 EngineBackend::OnFrame()
 
 void EngineBackend::OnBeginFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnBeginFrame");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_BEGIN_FRAME);
     Renderer::BeginFrame();
 
     context->inputSystem->OnBeforeUpdate();
@@ -332,7 +332,7 @@ void EngineBackend::OnBeginFrame()
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnUpdate");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE);
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
@@ -346,7 +346,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnDraw");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_DRAW);
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
@@ -361,7 +361,7 @@ void EngineBackend::OnDraw()
 
 void EngineBackend::OnEndFrame()
 {
-    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnEndFrame");
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_END_FRAME);
     context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();

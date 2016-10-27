@@ -405,7 +405,7 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_SOUND_SYSTEM);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
     if (fmodEventSystem)
     {

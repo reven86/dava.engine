@@ -6,15 +6,16 @@ namespace ProfilerCPUMarkerName
 {
 //Engine flow
 extern const char* ENGINE_ON_FRAME;
-extern const char* CORE_BEGIN_FRAME;
-extern const char* CORE_END_FRAME;
-extern const char* CORE_JOB_MANAGER;
-extern const char* CORE_APP_UPDATE;
-extern const char* CORE_APP_DRAW;
-extern const char* CORE_SOUND_SYSTEM;
-extern const char* CORE_ANIMATION_MANAGER;
-extern const char* CORE_UI_SYSTEM_UPDATE;
-extern const char* CORE_UI_SYSTEM_DRAW;
+extern const char* ENGINE_DO_EVENTS;
+extern const char* ENGINE_BEGIN_FRAME;
+extern const char* ENGINE_END_FRAME;
+extern const char* ENGINE_UPDATE;
+extern const char* ENGINE_DRAW;
+extern const char* JOB_MANAGER;
+extern const char* SOUND_SYSTEM;
+extern const char* ANIMATION_MANAGER;
+extern const char* UI_UPDATE;
+extern const char* UI_DRAW;
 
 //Scene
 extern const char* SCENE_UPDATE;

@@ -6,15 +6,16 @@ namespace ProfilerCPUMarkerName
 {
 //Engine flow
 const char* ENGINE_ON_FRAME = "Engine::OnFrame";
-const char* CORE_BEGIN_FRAME = "Core::BeginFrame";
-const char* CORE_END_FRAME = "Core::EndFrame";
-const char* CORE_JOB_MANAGER = "JobManager";
-const char* CORE_APP_UPDATE = "ApplicationCore::Update";
-const char* CORE_APP_DRAW = "ApplicationCore::Draw";
-const char* CORE_SOUND_SYSTEM = "SoundSystem";
-const char* CORE_ANIMATION_MANAGER = "AnimationManager";
-const char* CORE_UI_SYSTEM_UPDATE = "UI::Update";
-const char* CORE_UI_SYSTEM_DRAW = "UI::Draw";
+const char* ENGINE_DO_EVENTS = "Engine::DoEvents";
+const char* ENGINE_BEGIN_FRAME = "Engine::BeginFrame";
+const char* ENGINE_END_FRAME = "Engine::EndFrame";
+const char* ENGINE_UPDATE = "Engine::Update";
+const char* ENGINE_DRAW = "Engine::Draw";
+const char* JOB_MANAGER = "JobManager";
+const char* SOUND_SYSTEM = "SoundSystem";
+const char* ANIMATION_MANAGER = "AnimationManager";
+const char* UI_UPDATE = "UI::Update";
+const char* UI_DRAW = "UI::Draw";
 
 //Scene
 const char* SCENE_UPDATE = "Scene::Update";

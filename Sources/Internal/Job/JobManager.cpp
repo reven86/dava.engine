@@ -76,7 +76,7 @@ void JobManager::Update(float32 /*frameDelta*/)
 void JobManager::Update()
 #endif
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_JOB_MANAGER);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::JOB_MANAGER);
 
     bool hasFinishedJobs = false;
 

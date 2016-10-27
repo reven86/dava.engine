@@ -167,7 +167,7 @@ bool AnimationManager::HasActiveAnimations(AnimatedObject* owner) const
 
 void AnimationManager::Update(float32 timeElapsed)
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_ANIMATION_MANAGER);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ANIMATION_MANAGER);
 
     DVASSERT(Thread::IsMainThread());
 

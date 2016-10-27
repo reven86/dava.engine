@@ -53,8 +53,8 @@ static const char* BUTTON_PROFILERS_PAUSE_TEXT = "Pause (Ctrl + F11)";
 static ProfilerOverlay GLOBAL_PROFILER_OVERLAY(ProfilerCPU::globalProfiler, ProfilerCPUMarkerName::ENGINE_ON_FRAME, ProfilerGPU::globalProfiler,
                                                {
                                                FastName(ProfilerCPUMarkerName::ENGINE_ON_FRAME),
-                                               FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_UPDATE),
-                                               FastName(ProfilerCPUMarkerName::CORE_UI_SYSTEM_DRAW),
+                                               FastName(ProfilerCPUMarkerName::UI_UPDATE),
+                                               FastName(ProfilerCPUMarkerName::UI_DRAW),
                                                FastName(ProfilerCPUMarkerName::SCENE_UPDATE),
                                                FastName(ProfilerCPUMarkerName::SCENE_DRAW),
                                                FastName(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS),

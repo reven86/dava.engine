@@ -304,7 +304,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_UI_SYSTEM_UPDATE);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
     updateCounter = 0;
     ProcessScreenLogic();
@@ -339,7 +339,7 @@ void UIControlSystem::Update()
 
 void UIControlSystem::Draw()
 {
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::CORE_UI_SYSTEM_DRAW);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_DRAW);
 
     resizePerFrame = 0;
 
