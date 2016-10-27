@@ -2,6 +2,7 @@
 
 #if defined(__DAVAENGINE_STEAM__)
 #include "Base/BaseTypes.h"
+#include "Functional/Signal.h"
 
 class ISteamRemoteStorage;
 namespace DAVA
@@ -26,6 +27,8 @@ public:
     static String GetSteamLanguage();
 
     static ISteamRemoteStorage* CreateStorage();
+
+    static Signal<bool> GameOverlayActivated;
 
 private:
     static bool isInited;

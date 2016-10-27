@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "errormessenger.h"
 
-#include "QtTools/RunGuard/RunGuard.h"
+#include "QtHelpers/RunGuard.h"
 #include <QApplication>
 
 void FrameworkDidLaunched()
@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
     a.setApplicationName("Launcher");
     const QString appUid = "{E5C30634-7624-4D0F-9DD9-C8D52AECA3D0}";
     const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-    RunGuard runGuard(appUidPath);
-    if (!runGuard.tryToRun())
+    QtHelpers::RunGuard runGuard(appUidPath);
+    if (!runGuard.TryToRun())
         return 0;
 
     qInstallMessageHandler(LogMessageHandler);

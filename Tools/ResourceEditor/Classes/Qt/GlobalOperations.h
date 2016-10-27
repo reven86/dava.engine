@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Base/Any.h"
+#include "Debug/DVAssert.h"
 
+class SceneEditor2;
 class QWidget;
 class GlobalOperations
 {

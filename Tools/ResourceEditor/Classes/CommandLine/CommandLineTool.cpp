@@ -32,9 +32,9 @@ FilePath CommandLineTool::CreateQualityConfigPath(const FilePath& path) const
     return (projectPath + "Data/Quality.yaml");
 }
 
-bool CommandLineTool::ParseCommandLine(int argc, char* argv[])
+bool CommandLineTool::ParseCommandLine(const DAVA::Vector<DAVA::String>& cmdLine)
 {
-    return options.Parse(argc, argv);
+    return options.Parse(cmdLine);
 }
 
 bool CommandLineTool::Initialize()

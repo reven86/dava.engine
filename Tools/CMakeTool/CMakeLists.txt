@@ -6,14 +6,15 @@ project               ( CMakeTool )
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-set                   ( DAVA_USE_QT_WIDGETS    true )
 
 include               ( CMake-common )
 
 
-find_package          ( QT5           REQUIRED )
+find_package          ( QT5 REQUIRED )
 find_package          ( DavaFramework REQUIRED )
-find_package          ( DavaTools     REQUIRED )
+find_package          ( DavaTools REQUIRED )
+find_package          ( QtTools REQUIRED )
+find_package          ( QtHelpers REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
