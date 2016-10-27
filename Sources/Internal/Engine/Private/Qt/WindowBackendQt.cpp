@@ -5,7 +5,7 @@
 #if defined(__DAVAENGINE_QT__)
 
 #include "Engine/Window.h"
-
+#include "Engine/EngineContext.h"
 #include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
@@ -319,7 +319,7 @@ void WindowBackend::OnFrame()
     // we miss key down event, so we have to check for SHIFT, ALT, CTRL
     // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
     Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
-    KeyboardDevice& keyboard = window->inputSystem->GetKeyboard();
+    KeyboardDevice& keyboard = engineBackend->GetEngineContext()->inputSystem->GetKeyboard();
     DavaQtApplyModifier mod;
     mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
     mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);

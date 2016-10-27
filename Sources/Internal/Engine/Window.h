@@ -136,7 +136,6 @@ private:
     // Friends
     friend class Private::EngineBackend;
     friend class Private::PlatformCore;
-    friend class Private::WindowBackend;
 };
 
 inline bool Window::IsPrimary() const
