@@ -298,7 +298,7 @@ void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
     uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
     uie.device = eInputDevices::MOUSE;
     uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = UIEvent::MouseButton::NONE;
+    uie.mouseButton = eMouseButtons::NONE;
     uie.modifiers = e.mouseEvent.modifierKeys;
 
     if (mouseButtonState.any())

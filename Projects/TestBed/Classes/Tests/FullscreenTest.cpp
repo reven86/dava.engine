@@ -349,7 +349,7 @@ void FullscreenTest::UpdateMode()
 
 bool FullscreenTest::SystemInput(UIEvent* currentInput)
 {
-    if ((InputSystem::Instance()->GetMouseDevice().GetMode() != eCaptureMode::OFF) && (currentInput->device == UIEvent::Device::MOUSE))
+    if ((InputSystem::Instance()->GetMouseDevice().GetMode() != eCaptureMode::OFF) && (currentInput->device == eInputDevices::MOUSE))
     {
         switch (currentInput->phase)
         {

@@ -329,7 +329,7 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 bool SceneCollisionSystem::Input(DAVA::UIEvent* event)
 {
     // don't have to update last mouse pos when event is not from the mouse
-    if (DAVA::UIEvent::Device::MOUSE == event->device)
+    if (DAVA::eInputDevices::MOUSE == event->device)
     {
         lastMousePos = event->point;
     }

@@ -708,7 +708,11 @@ void KeyboardDevice::ClearAllKeys()
     {
         UIEvent e;
         e.phase = UIEvent::Phase::KEY_UP;
+#if defined(__DAVAENGINE_COREV2__)
+        e.device = eInputDevices::KEYBOARD;
+#else
         e.device = UIEvent::Device::KEYBOARD;
+#endif
         e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
         for (uint32 key = static_cast<uint32>(Key::ESCAPE); key < static_cast<uint32>(Key::TOTAL_KEYS_COUNT); key += 1)
         {

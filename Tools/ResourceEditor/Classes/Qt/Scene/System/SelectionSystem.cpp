@@ -395,7 +395,7 @@ void SceneSelectionSystem::RemoveEntity(DAVA::Entity* entity)
 
 bool SceneSelectionSystem::Input(DAVA::UIEvent* event)
 {
-    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::UIEvent::MouseButton::LEFT))
+    if (IsLocked() || !selectionAllowed || (0 == componentMaskForSelection) || (event->mouseButton != DAVA::eMouseButtons::LEFT))
     {
         return false;
     }
@@ -423,7 +423,7 @@ bool SceneSelectionSystem::Input(DAVA::UIEvent* event)
     }
     else if (DAVA::UIEvent::Phase::ENDED == event->phase)
     {
-        if ((event->mouseButton == DAVA::UIEvent::MouseButton::LEFT) && applyOnPhaseEnd)
+        if ((event->mouseButton == DAVA::eMouseButtons::LEFT) && applyOnPhaseEnd)
         {
             FinishSelection();
         }

@@ -138,7 +138,7 @@ bool EntityModificationSystem::Input(DAVA::UIEvent* event)
 
             if (DAVA::UIEvent::Phase::BEGAN == event->phase)
             {
-                if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+                if (event->mouseButton == DAVA::eMouseButtons::LEFT)
                 {
                     // go to modification state
                     inModifState = true;
@@ -226,7 +226,7 @@ bool EntityModificationSystem::Input(DAVA::UIEvent* event)
         // phase ended
         else if (event->phase == DAVA::UIEvent::Phase::ENDED)
         {
-            if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+            if (event->mouseButton == DAVA::eMouseButtons::LEFT)
             {
                 if (modified)
                 {

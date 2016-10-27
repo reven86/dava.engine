@@ -198,7 +198,7 @@ bool KeyboardTest::OnGamepadEvent(UIEvent* event)
 {
     //Logger::Info("gamepad tid: %2d, x: %.3f, y:%.3f", event->tid, event->point.x, event->point.y);
 
-    DVASSERT(event->device == UIEvent::Device::GAMEPAD);
+    DVASSERT(event->device == eInputDevices::GAMEPAD);
     DVASSERT(event->phase == UIEvent::Phase::JOYSTICK);
 
     switch (event->element)
@@ -257,25 +257,25 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
 {
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
 
-    if (currentInput->device == UIEvent::Device::KEYBOARD)
+    if (currentInput->device == eInputDevices::KEYBOARD)
     {
         ++numKeyboardEvents;
     }
-    else if (currentInput->device == UIEvent::Device::MOUSE)
+    else if (currentInput->device == eInputDevices::MOUSE)
     {
         ++numMouseEvents;
     }
     switch (currentInput->phase)
     {
     case UIEvent::Phase::BEGAN: //!<Screen touch or mouse button press is began.
-        if (currentInput->device == UIEvent::Device::MOUSE)
+        if (currentInput->device == eInputDevices::MOUSE)
         {
             ++numMouseDown;
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
         }
-        if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+        if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
             auto FindFirstEmptyImage = [](::Finger& t) {
                 return !t.isActive;
@@ -290,13 +290,13 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
         }
         break;
     case UIEvent::Phase::DRAG: //!<User moves mouse with presset button or finger over the screen.
-        if (currentInput->device == UIEvent::Device::MOUSE)
+        if (currentInput->device == eInputDevices::MOUSE)
         {
             ++numDrag;
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
         }
-        if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+        if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
             int32 index = currentInput->touchId;
             auto FindTouchById = [index](::Finger& t) {
@@ -314,14 +314,14 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
         }
         break;
     case UIEvent::Phase::ENDED: //!<Screen touch or mouse button press is ended.
-        if (currentInput->device == UIEvent::Device::MOUSE)
+        if (currentInput->device == eInputDevices::MOUSE)
         {
             ++numMouseUp;
             lastMouseX = static_cast<int32>(currentInput->point.x);
             lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = L'0' + static_cast<wchar_t>(currentInput->mouseButton);
         }
-        if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+        if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
             int32 index = currentInput->touchId;
             auto FindTouchById = [index](::Finger& t) {
@@ -351,7 +351,7 @@ bool KeyboardTest::OnMouseTouchOrKeyboardEvent(UIEvent* currentInput)
         break;
     case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
         ++numMouseCancel;
-        if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+        if (currentInput->device == eInputDevices::TOUCH_SURFACE)
         {
             int32 index = currentInput->touchId;
             auto FindTouchById = [index](::Finger& t) {

@@ -143,7 +143,7 @@ bool CustomColorsSystem::Input(DAVA::UIEvent* event)
 
     UpdateCursorPosition();
 
-    if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT)
+    if (event->mouseButton == DAVA::eMouseButtons::LEFT)
     {
         DAVA::Vector3 point;
 

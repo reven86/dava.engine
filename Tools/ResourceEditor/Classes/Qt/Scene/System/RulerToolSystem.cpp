@@ -127,7 +127,7 @@ bool RulerToolSystem::Input(DAVA::UIEvent* event)
         break;
 
     case DAVA::UIEvent::Phase::ENDED:
-        if (event->mouseButton == DAVA::UIEvent::MouseButton::LEFT && isIntersectsLandscape)
+        if (event->mouseButton == DAVA::eMouseButtons::LEFT && isIntersectsLandscape)
         {
             if (IsKeyModificatorPressed(DAVA::Key::LSHIFT))
             {

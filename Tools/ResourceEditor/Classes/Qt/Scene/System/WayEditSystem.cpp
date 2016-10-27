@@ -241,7 +241,7 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
 
 bool WayEditSystem::Input(DAVA::UIEvent* event)
 {
-    if (isEnabled && (DAVA::UIEvent::MouseButton::LEFT == event->mouseButton))
+    if (isEnabled && (DAVA::eMouseButtons::LEFT == event->mouseButton))
     {
         if (DAVA::UIEvent::Phase::MOVE == event->phase)
         {
