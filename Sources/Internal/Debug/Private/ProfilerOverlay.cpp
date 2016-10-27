@@ -7,7 +7,6 @@
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
-#include "Render/RenderOptions.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIEvent.h"
 #include "Input/InputSystem.h"
@@ -108,35 +107,6 @@ bool ProfilerOverlay::IsPaused() const
 
 void ProfilerOverlay::OnFrameEnd()
 {
-    if (ProfilerCPU::globalProfiler)
-    {
-        if (!ProfilerCPU::globalProfiler->IsStarted() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
-            ProfilerCPU::globalProfiler->Start();
-
-        if (ProfilerCPU::globalProfiler->IsStarted() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_CPU))
-            ProfilerCPU::globalProfiler->Stop();
-    }
-
-    if (ProfilerGPU::globalProfiler)
-    {
-        if (!ProfilerGPU::globalProfiler->IsStarted() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
-            ProfilerGPU::globalProfiler->Start();
-
-        if (ProfilerGPU::globalProfiler->IsStarted() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_GPU))
-            ProfilerGPU::globalProfiler->Stop();
-    }
-
-    if (!IsEnabled() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
-    {
-        SetEnabled(true);
-        SetInputEnabled(true);
-    }
-
-    if (IsEnabled() && !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::PROFILER_OVERLAY))
-    {
-        SetEnabled(false);
-    }
-
     if (!overlayEnabled)
         return;
 

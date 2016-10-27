@@ -171,7 +171,6 @@ protected:
 inline void ProfilerOverlay::SetEnabled(bool enabled)
 {
     overlayEnabled = enabled;
-    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_OVERLAY, overlayEnabled);
 }
 
 inline bool ProfilerOverlay::IsEnabled()

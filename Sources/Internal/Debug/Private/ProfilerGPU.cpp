@@ -3,7 +3,6 @@
 #include "Debug/DVAssert.h"
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
-#include "Render/RenderOptions.h"
 #include "Engine/Engine.h"
 #include "Core/Core.h"
 #include <ostream>
@@ -204,13 +203,11 @@ void ProfilerGPU::AddMarker(rhi::HPerfQuery* query0, rhi::HPerfQuery* query1, co
 void ProfilerGPU::Start()
 {
     profilerStarted = true;
-    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_GPU, profilerStarted);
 }
 
 void ProfilerGPU::Stop()
 {
     profilerStarted = false;
-    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_GPU, profilerStarted);
 }
 
 bool ProfilerGPU::IsStarted()

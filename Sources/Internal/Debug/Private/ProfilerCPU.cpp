@@ -3,7 +3,6 @@
 #include "Concurrency/Thread.h"
 #include "Base/AllocatorFactory.h"
 #include "Debug/DVAssert.h"
-#include "Render/RenderOptions.h"
 #include "ProfilerRingArray.h"
 #include <ostream>
 
@@ -122,13 +121,11 @@ ProfilerCPU::~ProfilerCPU()
 void ProfilerCPU::Start()
 {
     started = true;
-    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_CPU, started);
 }
 
 void ProfilerCPU::Stop()
 {
     started = false;
-    Renderer::GetOptions()->SetOption(RenderOptions::PROFILER_CPU, started);
 }
 
 bool ProfilerCPU::IsStarted()
