@@ -1200,11 +1200,19 @@ void GLESGenerator::OutputDeclaration(HLSLDeclaration* declaration)
 
         if (declaration->type.baseType == HLSLBaseType_Sampler2D)
         {
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            samplerType = "lowp sampler2D";
+            #else
             samplerType = "sampler2D";
+            #endif
         }
         else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
         {
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            samplerType = "lowp samplerCube";
+            #else
             samplerType = "samplerCube";
+            #endif
         }
 
         const char* tname = (tree->FindGlobalStruct("vertex_in")) ? "Vertex" : "Fragment";
