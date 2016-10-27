@@ -1051,6 +1051,8 @@ uint32 NativeColorRGBA(uint32 color)
     case RHI_METAL:
         c = color;
         break;
+    default:
+        break; // to shut up goddamn warning
     }
 
     return c;

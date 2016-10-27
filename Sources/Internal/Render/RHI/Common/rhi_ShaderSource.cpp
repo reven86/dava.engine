@@ -99,7 +99,7 @@ bool ShaderSource::Construct(ProgType progType, const char* srcText, const std::
     SetPreprocessCurFile(fileName.c_str());
     PreProcessText(srcText, argv, argc, &src);
 
-#if 0
+#if 1
 {
     Logger::Info("\n\nsrc-code:");
 
@@ -353,6 +353,8 @@ void ShaderSource::InlineFunctions()
                             }
                         }
                         break;
+                        default:
+                            break; // to shut up goddamn warning
                         }
 
                         sl::HLSLTreeVisitor::VisitStatements(statement);
@@ -1143,6 +1145,8 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                 case rhi::ShaderProp::TYPE_FLOAT3:
                     elem_cnt = 3;
                     break;
+                default:
+                    break; // to shut up goddamn warning
                 }
 
                 member_access->object = arr_access;
