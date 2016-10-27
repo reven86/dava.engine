@@ -72,6 +72,8 @@ const char* MSLGenerator::GetTypeName(const HLSLType& type)
         return "sampler2DMS";
     case HLSLBaseType_UserDefined:
         return type.typeName;
+    default:
+        break; // to shut up goddamn warning
     }
     return "?";
 }
@@ -500,6 +502,8 @@ void MSLGenerator::OutputArguments(HLSLArgument* argument)
         case HLSLArgumentModifier_Uniform:
             writer.Write("uniform ");
             break;
+        default:
+            break; // to shut up goddamn warning
         }
 
         const char* semantic = argument->sv_semantic ? argument->sv_semantic : argument->semantic;

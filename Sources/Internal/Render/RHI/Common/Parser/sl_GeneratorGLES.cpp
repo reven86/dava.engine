@@ -84,6 +84,8 @@ const char* GLESGenerator::GetTypeName(const HLSLType& type)
         return "samplerCube";
     case HLSLBaseType_UserDefined:
         return type.typeName;
+    default:
+        break; // to shut up goddamn warning
     }
     DVASSERT(0);
     return "?";
@@ -452,6 +454,8 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
             op = "--";
             pre = false;
             break;
+        default:
+            break; // to shut up goddamn warning
         }
         writer.Write("(");
         if (pre)
@@ -819,6 +823,8 @@ void GLESGenerator::OutputArguments(HLSLArgument* argument)
         case HLSLArgumentModifier_Inout:
             writer.Write("inout ");
             break;
+        default:
+            break; // to shut up goddamn warning
         }
 
         OutputDeclaration(argument->type, argument->name);
@@ -1253,10 +1259,13 @@ void GLESGenerator::Error(const char* format, ...)
     }
     hasError = true;
 
-    va_list arg;
-    va_start(arg, format);
-    DAVA::Logger::Error(format, arg);
-    va_end(arg);
+    char buffer[1024];
+    va_list args;
+    va_start(args, format);
+    int result = vsnprintf(buffer, sizeof(buffer) - 1, format, args);
+    va_end(args);
+
+    DAVA::Logger::Error(buffer);
 }
 
 const char* GLESGenerator::GetSafeIdentifierName(const char* name) const

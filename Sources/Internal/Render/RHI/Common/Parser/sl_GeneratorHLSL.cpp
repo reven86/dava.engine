@@ -70,6 +70,8 @@ const char* HLSLGenerator::GetTypeName(const HLSLType& type)
         return "sampler2DMS";
     case HLSLBaseType_UserDefined:
         return type.typeName;
+    default:
+        break; // to shut up goddamn warning
     }
     return "?";
 }
@@ -376,6 +378,8 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
             op = "--";
             pre = false;
             break;
+        default:
+            break; // to shut up goddamn warning
         }
         writer.Write("(");
         if (pre)
@@ -582,6 +586,8 @@ void HLSLGenerator::OutputArguments(HLSLArgument* argument)
         case HLSLArgumentModifier_Uniform:
             writer.Write("uniform ");
             break;
+        default:
+            break; // to shut up goddamn warning
         }
 
         const char* semantic = argument->sv_semantic ? argument->sv_semantic : argument->semantic;
