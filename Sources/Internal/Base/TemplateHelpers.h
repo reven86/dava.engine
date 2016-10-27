@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Base/Platform.h"
 #include "NullType.h"
 #include "TypeList.h"
 
@@ -380,8 +381,8 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 
 #define SCOPE_EXIT auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = ::DAVA::ScopeGuardOnExit() + [&]()
 
-template <typename T, std::size_t N>
-DAVA_CONSTEXPR std::size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
+template <typename T, size_t N>
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT
 {
     return N;
 }

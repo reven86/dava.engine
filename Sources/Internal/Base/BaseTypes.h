@@ -1,7 +1,8 @@
 #pragma once
 
-#include <array>
+#include <cstdint>
 #include <memory>
+#include <array>
 #include <string>
 #include <cstring>
 #include <list>
@@ -10,7 +11,6 @@
 #include <set>
 #include <stack>
 #include <queue>
-#include <array>
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
@@ -202,7 +202,7 @@ void SafeDeleteArray(TYPE*& d)
 #endif
 
 /**
- \enum Graphical object aligment.
+ \enum Graphical object alignment.
 */
 enum eAlign
 {
@@ -214,14 +214,6 @@ enum eAlign
     ALIGN_BOTTOM = 0x20, //!<Align graphical object by the bottom side.
     ALIGN_HJUSTIFY = 0x40 //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
-    
-#ifndef REMOVE_IN_RELEASE
-#if defined(__DAVAENGINE_DEBUG__)
-#define REMOVE_IN_RELEASE (x) x
-#else
-#define REMOVE_IN_RELEASE (x) 
-#endif
-#endif
 
 enum class eErrorCode
 {
