@@ -505,7 +505,7 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
 void EngineBackend::HandleLocalNotification(const MainDispatcherEvent& e)
 {
     String uid(e.localNotificationEvent.uid);
-    Engine::Instance()->GetContext()->localNotificationController->OnNotificationPressed(uid);
+    context->localNotificationController->OnNotificationPressed(uid);
     delete[] e.localNotificationEvent.uid;
 }
 

@@ -33,17 +33,7 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
-    NSUserNotification *userNotification = [notification userInfo][(id)@"NSApplicationLaunchUserNotificationKey"];
-    if (userNotification.userInfo != nil)
-    {
-        NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
-        if (uid != nil && [uid length] != 0)
-        {
-            DAVA::String uidStr = DAVA::StringFromNSString(uid);
-            bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
-    }
-    bridge->ApplicationDidFinishLaunching();
+    bridge->ApplicationDidFinishLaunching(notification);
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification*)notification
@@ -96,14 +86,7 @@
 
 - (void) userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
 {
-    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
-    if (uid != nil && [uid length] != 0)
-    {
-        DAVA::String uidStr = DAVA::StringFromNSString(uid);
-        bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        DAVA::Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
-    }
+    bridge->ApplicationDidActivateNotification(notification);
 }
 
 @end

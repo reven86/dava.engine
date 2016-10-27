@@ -22,15 +22,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
 {
-    if ([application applicationState] != UIApplicationStateActive)
-    {
-        NSString* uid = [[notification userInfo] valueForKey:@"uid"];
-        if (uid != nil && [uid length] != 0)
-        {
-            const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
-            bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
-    }
+    bridge->ApplicationDidReceiveLocalNotification([application applicationState], notification);
 }
 
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions

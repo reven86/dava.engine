@@ -82,8 +82,8 @@ namespace DAVA
 namespace Private
 {
 CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
-    : core(core),
-    mainDispatcher(core->engineBackend->GetDispatcher())
+    : core(core)
+    , mainDispatcher(core->engineBackend->GetDispatcher())
 {
     // Force init NSApplication
     [NSApplication sharedApplication];
@@ -135,8 +135,19 @@ void CoreNativeBridge::ApplicationWillFinishLaunching()
 {
 }
 
-void CoreNativeBridge::ApplicationDidFinishLaunching()
+void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
 {
+    NSUserNotification* userNotification = [notification userInfo][(id) @"NSApplicationLaunchUserNotificationKey"];
+    if (userNotification.userInfo != nil)
+    {
+        NSString* uid = [[userNotification userInfo] valueForKey:@"uid"];
+        if (uid != nil && [uid length] != 0)
+        {
+            DAVA::String uidStr = DAVA::StringFromNSString(uid);
+            mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        }
+    }
+
     core->engineBackend->OnGameLoopStarted();
 
     WindowBackend* primaryWindowBackend = PlatformCore::GetWindowBackend(core->engineBackend->GetPrimaryWindow());
@@ -203,6 +214,18 @@ void CoreNativeBridge::ApplicationWillTerminate()
     int exitCode = core->engineBackend->GetExitCode();
     core->engineBackend->OnEngineCleanup();
     std::exit(exitCode);
+}
+
+void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
+{
+    NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+    if (uid != nil && [uid length] != 0)
+    {
+        DAVA::String uidStr = DAVA::StringFromNSString(uid);
+        bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        DAVA::Engine::Instance()->PrimaryWindow()->GetNativeService()->DoWindowDeminiaturize();
+    }
 }
 
 } // namespace Private

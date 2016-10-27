@@ -40,17 +40,7 @@ void UWPApplication::OnLaunched(::Windows::ApplicationModel::Activation::LaunchA
     Resuming += ref new EventHandler<Object^>(this, &UWPApplication::OnResuming);
     UnhandledException += ref new UnhandledExceptionEventHandler(this, &UWPApplication::OnUnhandledException);
 
-    core->OnLaunched();
-
-    if (args->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
-    {
-        Platform::String^ launchArgs = args->Arguments;
-        if (!launchArgs->IsEmpty())
-        {
-            String uidStr = UTF8Utils::EncodeToUTF8(launchArgs->Data());
-            engineBackend->GetDispatcher()->PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
-        }
-    }
+    core->OnLaunched(args);
 }
 
 void UWPApplication::OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args)

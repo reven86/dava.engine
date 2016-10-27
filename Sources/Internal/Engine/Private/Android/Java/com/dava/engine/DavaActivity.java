@@ -45,7 +45,6 @@ public final class DavaActivity extends Activity
     private DavaSurfaceView primarySurfaceView;
     private DavaSplashView splashView;
     private ViewGroup layout;
-    private DavaNotificationProvider notificationProvider;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -77,9 +76,10 @@ public final class DavaActivity extends Activity
             String uid = intent.getStringExtra("uid");
             if (uid != null)
             {
-                notificationProvider.NotificationPressed(uid);
+                DavaNotificationProvider.NotificationPressed(uid);
             }
         }
+		super.onNewIntent(intent);
     }
 
     @Override
@@ -107,7 +107,7 @@ public final class DavaActivity extends Activity
         hideNavigationBar();
         
         splashView = new DavaSplashView(this);
-        notificationProvider = new DavaNotificationProvider(this);
+        DavaNotificationProvider.Init(this);
         
         layout = new FrameLayout(this);
         layout.addView(splashView);

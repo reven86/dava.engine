@@ -172,6 +172,19 @@ void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
 }
 
+void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UIApplicationState state, UILocalNotification* notification)
+{
+    if ([application applicationState] != UIApplicationStateActive)
+    {
+        NSString* uid = [[notification userInfo] valueForKey:@"uid"];
+        if (uid != nil && [uid length] != 0)
+        {
+            const DAVA::String& uidStr = DAVA::StringFromNSString(uid);
+            mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        }
+    }
+}
+
 } // namespace Private
 } // namespace DAVA
 

@@ -72,7 +72,7 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
-void PlatformCore::OnLaunched()
+void PlatformCore::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args)
 {
     Logger::FrameworkDebug("========== CoreWinUWP::OnLaunched: thread=%d", GetCurrentThreadId());
 
@@ -86,6 +86,15 @@ void PlatformCore::OnLaunched()
         //gameThread->Release();
 
         gameThreadRunning = true;
+    }
+    if (args->Kind == Windows::ApplicationModel::Activation::ActivationKind::Launch)
+    {
+        Platform::String ^ launchArgs = args->Arguments;
+        if (!launchArgs->IsEmpty())
+        {
+            String uidStr = UTF8Utils::EncodeToUTF8(launchArgs->Data());
+            dispatcher.PostEvent(MainDispatcherEvent::CreateLocalNotificationEvent(uidStr));
+        }
     }
 }
 

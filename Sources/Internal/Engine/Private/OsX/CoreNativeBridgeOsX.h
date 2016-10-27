@@ -12,6 +12,8 @@
 
 @class FrameTimer;
 @class AppDelegate;
+@class NSNotification;
+@class NSUserNotification;
 
 namespace DAVA
 {
@@ -35,7 +37,7 @@ struct CoreNativeBridge final
 
     // Callbacks from OsXAppDelegate
     void ApplicationWillFinishLaunching();
-    void ApplicationDidFinishLaunching();
+    void ApplicationDidFinishLaunching(NSNotification* notification);
     void ApplicationDidChangeScreenParameters();
     void ApplicationDidBecomeActive();
     void ApplicationDidResignActive();
@@ -44,6 +46,7 @@ struct CoreNativeBridge final
     bool ApplicationShouldTerminate();
     bool ApplicationShouldTerminateAfterLastWindowClosed();
     void ApplicationWillTerminate();
+    void ApplicationDidActivateNotification(NSUserNotification* notification);
 
     PlatformCore* core = nullptr;
 
