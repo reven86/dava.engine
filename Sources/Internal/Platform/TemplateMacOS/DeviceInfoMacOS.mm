@@ -18,6 +18,10 @@
 #include "OpenUDIDMacOS.h"
 #include "Platform/DeviceInfo.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 namespace DAVA
 {
 String GetSysCtlByName(const String& param)
@@ -83,6 +87,14 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    String locale = Steam::GetSteamLanguage();
+    if (!locale.empty())
+    {
+        return locale;
+    }
+#endif
+
     NSLocale* english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
     NSString* langID = [[NSLocale preferredLanguages] objectAtIndex:0];

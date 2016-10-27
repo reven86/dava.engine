@@ -16,6 +16,10 @@
 
 #include <VersionHelpers.h>
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 namespace DAVA
 {
 namespace RegistryReader
@@ -95,13 +99,23 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
+    String locale;
+
+#if defined(__DAVAENGINE_STEAM__)
+    locale = Steam::GetSteamLanguage();
+    if (!locale.empty())
+    {
+        return locale;
+    }
+#endif
+
     WCHAR localeBuffer[LOCALE_NAME_MAX_LENGTH];
     int size = GetUserDefaultLocaleName(localeBuffer, LOCALE_NAME_MAX_LENGTH);
-    String locale;
     if (0 != size)
     {
         locale = WStringToString(localeBuffer);
     }
+
     return locale;
 }
 

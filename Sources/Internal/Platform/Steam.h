@@ -19,6 +19,9 @@ public:
     static bool IsInited();
     static void Update();
 
+    // Get code of language, ex "ru" for "russian"
+    static String GetSteamLanguage();
+
     static ISteamRemoteStorage* CreateStorage();
 
 private:

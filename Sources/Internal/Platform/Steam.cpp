@@ -68,6 +68,63 @@ void Steam::Update()
     SteamAPI_RunCallbacks();
 }
 
+String Steam::GetSteamLanguage()
+{
+    if (!IsInited())
+    {
+        return "";
+    }
+
+    ISteamApps* apps = SteamApps();
+    if (apps == nullptr)
+    {
+        return "";
+    }
+
+    // Try to get a set language for game
+    String language = apps->GetCurrentGameLanguage();
+    if (language.empty())
+    {
+        // If it fails, use steam app language
+        ISteamUtils* steamUtils = SteamUtils();
+        language = steamUtils != nullptr ? steamUtils->GetSteamUILanguage() : "";
+    }
+
+    const UnorderedMap<String, String> steamLanguages =
+    {
+      { "brazilian", "pt" },
+      { "bulgarian", "bg" },
+      { "czech", "cs" },
+      { "danish", "da" },
+      { "dutch", "nl" },
+      { "english", "en" },
+      { "finnish", "fi" },
+      { "french", "fr" },
+      { "german", "de" },
+      { "greek", "el" },
+      { "hungarian", "hu" },
+      { "italian", "it" },
+      { "japanese", "ja" },
+      { "koreana", "ko" },
+      { "norwegian", "no" },
+      { "polish", "pl" },
+      { "portuguese", "pt" },
+      { "romanian", "ro" },
+      { "russian", "ru" },
+      { "schinese", "zh-Hans" },
+      { "spanish", "es" },
+      { "swedish", "sv" },
+      { "tchinese", "zh-Hant" },
+      { "thai", "th" },
+      { "turkish", "tr" },
+      { "arabic", "ar" },
+      { "ukrainian", "uk" }
+    };
+
+    auto iter = steamLanguages.find(language);
+    return iter != steamLanguages.end() ? iter->second : "";
+}
+
 ISteamRemoteStorage* Steam::CreateStorage()
 {
     return SteamRemoteStorage();
