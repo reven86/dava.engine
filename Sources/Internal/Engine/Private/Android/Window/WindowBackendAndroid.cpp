@@ -101,7 +101,6 @@ namespace DAVA
 {
 namespace Private
 {
-
 WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)

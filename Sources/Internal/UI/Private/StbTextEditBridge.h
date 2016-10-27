@@ -74,7 +74,7 @@ public:
     /** Copy class data to correct instance. */
     virtual void CopyStbStateFrom(const StbTextEditBridge& c);
 
-    /**
+/**
     Send specified `key` with `modifiers` from UIEvent to STB text edit.
     Return true if content of field has been changed.
     */
@@ -84,7 +84,7 @@ public:
     virtual bool SendKey(Key key, uint32 modifiers);
 #endif
 
-    /**
+/**
     Send specified `keyChar` with `modifiers` to STB text edit.
     Return true if content of field has been changed.
     */

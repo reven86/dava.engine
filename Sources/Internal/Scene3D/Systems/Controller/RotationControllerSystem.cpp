@@ -29,7 +29,7 @@ RotationControllerSystem::RotationControllerSystem(Scene* scene)
 // inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevice::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
 #else
     inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
-    //    InputSystem::Instance()->AddInputCallback(*inputCallback);
+//    InputSystem::Instance()->AddInputCallback(*inputCallback);
 #endif
 }
 
