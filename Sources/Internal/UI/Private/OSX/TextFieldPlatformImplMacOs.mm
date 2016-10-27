@@ -18,6 +18,7 @@
 #include "UI/Focus/FocusHelpers.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UITextField.h"
+#include "Platform/Steam.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/EngineModule.h"
@@ -132,9 +133,17 @@ public:
         CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
         signalMinimizeRestored = xcore->signalAppMinimizedRestored.Connect(this, &IField::OnAppMinimizedRestored);
 #endif
+
+#if defined(__DAVAENGINE_STEAM__)
+        overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &IField::OnSteamOverlayChanged);
+#endif
     }
     virtual ~IField()
     {
+#if defined(__DAVAENGINE_STEAM__)
+        Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+#endif
+
         davaText = nullptr;
         wrapper = nullptr;
 #if defined(__DAVAENGINE_COREV2__)
@@ -356,6 +365,25 @@ public:
     bool isKeyboardOpened = false; // HACK to prevent endless recursion
     bool insideTextShouldReturn = false; // HACK mark what happened
     NSRect nativeControlRect = NSMakeRect(0, 0, 0, 0);
+
+#if defined(__DAVAENGINE_STEAM__)
+    SigConnectionID overlayConnectionId = 0;
+    bool visibleBeforeSteamOverlayActivated = true;
+    virtual void OnSteamOverlayChanged(bool overlayActivated)
+    {
+        if (overlayActivated)
+        {
+            visibleBeforeSteamOverlayActivated = IsNativeVisible();
+            SetNativeVisible(false);
+        }
+        else
+        {
+            SetNativeVisible(visibleBeforeSteamOverlayActivated);
+        }
+    }
+#endif
+    virtual bool IsNativeVisible() const = 0;
+    virtual void SetNativeVisible(bool visible) = 0;
 };
 
 class MultilineField : public IField
@@ -598,6 +626,16 @@ public:
     void SetVisible(bool value) override
     {
         [nsScrollView setHidden:!value];
+    }
+
+    bool IsNativeVisible() const override
+    {
+        return nsScrollView != nil && !nsScrollView.hidden;
+    }
+
+    void SetNativeVisible(bool visible) override
+    {
+        [nsScrollView setHidden:!visible];
     }
 
     void ShowField() override
@@ -1014,6 +1052,16 @@ public:
             // force UpdateRect call when dava control is hiding. should be done to ensure that nativeControl will also become hidden (moved away from visible screen)
             UpdateRect(davaText->GetRect());
         }
+    }
+
+    bool IsNativeVisible() const override
+    {
+        return nsTextField != nil && !nsTextField.hidden;
+    }
+
+    void SetNativeVisible(bool visible) override
+    {
+        [nsTextField setHidden:!visible];
     }
 
     void ShowField() override
