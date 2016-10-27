@@ -72,11 +72,25 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
             RenderObject* ro = GetRenderObject(child);
             if (ro != nullptr)
             {
-                NMaterial* material = nullptr;
+                auto testMaterial = [&dumpedLinks](NMaterial* mat)
+                {
+                    if (mat != nullptr)
+                    {
+                        const HashMap<FastName, MaterialTextureInfo*>& textures = mat->GetLocalTextures();
+                        for (auto& tx : textures)
+                        {
+                            if (tx.first != FastName("heightmap"))
+                            {
+                                TEST_VERIFY(dumpedLinks.count(tx.second->path.GetAbsolutePathname()) == 1);
+                            }
+                        }
+                    }
+                };
+
                 if (ro->GetType() == RenderObject::TYPE_LANDSCAPE)
                 {
                     Landscape* landscape = static_cast<Landscape*>(ro);
-                    material = landscape->GetMaterial();
+                    testMaterial(landscape->GetMaterial());
 
                     TEST_VERIFY(dumpedLinks.count(landscape->GetHeightmapPathname().GetAbsolutePathname()) == 1);
                 }
@@ -89,28 +103,13 @@ DAVA_TARC_TESTCLASS(DumpToolTest)
                 else
                 {
                     uint32 rbCount = ro->GetRenderBatchCount();
-                    TEST_VERIFY(rbCount == 1);
-
                     for (uint32 r = 0; r < rbCount; ++r)
                     {
                         RenderBatch* rb = ro->GetRenderBatch(r);
                         TEST_VERIFY(rb != nullptr);
                         if (rb)
                         {
-                            material = rb->GetMaterial();
-                        }
-                    }
-                }
-
-                //test material
-                if (material != nullptr)
-                {
-                    const HashMap<FastName, MaterialTextureInfo*>& textures = material->GetLocalTextures();
-                    for (auto& tx : textures)
-                    {
-                        if (tx.first != FastName("heightmap"))
-                        {
-                            TEST_VERIFY(dumpedLinks.count(tx.second->path.GetAbsolutePathname()) == 1);
+                            testMaterial(rb->GetMaterial());
                         }
                     }
                 }
