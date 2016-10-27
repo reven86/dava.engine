@@ -13,6 +13,7 @@
 #include "Actions/DAEConverter.h"
 
 #include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include <QToolBar>
 #include <QLineEdit>
@@ -397,7 +398,7 @@ void LibraryWidget::OnRevealAtFolder()
     QVariant indexAsVariant = ((QAction*)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
 
-    ShowFileInExplorer(fileInfo.absoluteFilePath());
+    QtHelpers::ShowInOSFileManager(fileInfo.absoluteFilePath());
 }
 
 void LibraryWidget::HidePreview() const
