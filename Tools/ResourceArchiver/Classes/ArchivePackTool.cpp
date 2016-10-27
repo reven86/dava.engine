@@ -165,7 +165,7 @@ int ArchivePackTool::ProcessInternal()
     std::unique_ptr<AssetCacheClient> assetCache;
     if (useCache)
     {
-        assetCache.reset(new AssetCacheClient(true));
+        assetCache.reset(new AssetCacheClient());
         AssetCache::Error result = assetCache->ConnectSynchronously(assetCacheParams);
         if (result != AssetCache::Error::NO_ERRORS)
         {

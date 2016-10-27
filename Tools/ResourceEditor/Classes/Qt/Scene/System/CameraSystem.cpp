@@ -41,11 +41,6 @@ const auto wheelAdjust = 0.002;
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
-    , curSceneCamera(nullptr)
-    , animateToNewPos(false)
-    , animateToNewPosTime(0)
-    , distanceToCamera(0.f)
-    , activeSpeedIndex(0)
 {
 }
 
@@ -245,8 +240,12 @@ void SceneCameraSystem::Process(float timeElapsed)
             // update collision object for last camera
             if (nullptr != curSceneCamera)
             {
-                SceneCollisionSystem* collSystem = ((SceneEditor2*)GetScene())->collisionSystem;
-                collSystem->UpdateCollisionObject(Selectable(GetEntityFromCamera(curSceneCamera)));
+                DAVA::Entity* cameraOwner = GetEntityFromCamera(curSceneCamera);
+                if (cameraOwner != nullptr)
+                {
+                    SceneCollisionSystem* collSystem = (static_cast<SceneEditor2*>(GetScene()))->collisionSystem;
+                    collSystem->UpdateCollisionObject(Selectable(cameraOwner));
+                }
             }
 
             // remember current scene camera
@@ -269,9 +268,30 @@ void SceneCameraSystem::Input(DAVA::UIEvent* event)
     case DAVA::UIEvent::Phase::KEY_DOWN:
         OnKeyboardInput(event);
         break;
+    case DAVA::UIEvent::Phase::WHEEL:
+        OnWheelInput(event);
+        break;
     default:
         break;
     }
+}
+
+void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)
+{
+    bool moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
+    if (!moveCamera)
+        return;
+
+    DAVA::int32 reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
+    DAVA::float32 moveIntence = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveIntensity).AsFloat();
+    int offset = event->wheelDelta.y * moveIntence;
+#ifdef Q_OS_MAC
+    offset *= reverse * -1;
+#else
+    offset *= reverse;
+#endif
+
+    MoveToStep(offset);
 }
 
 void SceneCameraSystem::OnKeyboardInput(DAVA::UIEvent* event)

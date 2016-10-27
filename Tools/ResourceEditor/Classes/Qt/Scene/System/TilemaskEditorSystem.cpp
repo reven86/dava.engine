@@ -10,6 +10,8 @@
 
 #include "Render/Image/ImageConvert.h"
 
+#include "UI/UIEvent.h"
+
 #include <QApplication>
 
 static std::array<DAVA::FastName, 4> TILECOLOR_PARAM_NAMES;
@@ -150,6 +152,7 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     }
 
     FinishEditing();
+    needCreateUndo = false;
 
     selectionSystem->SetLocked(false);
     modifSystem->SetLocked(false);

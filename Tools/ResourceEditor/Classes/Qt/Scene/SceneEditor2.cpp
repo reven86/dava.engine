@@ -12,12 +12,13 @@
 #include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
-#include "QtTools/DavaGLWidget/DavaRenderer.h"
+#include "QtTools/Utils/RenderContextGuard.h"
 
 // framework
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
 
@@ -134,6 +135,12 @@ SceneEditor2::SceneEditor2()
 
     editorVegetationSystem = new EditorVegetationSystem(this);
     AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
 
     selectionSystem->AddDelegate(modifSystem);
     selectionSystem->AddDelegate(hoodSystem);
@@ -337,12 +344,18 @@ DAVA::String SceneEditor2::GetRedoText() const
 
 void SceneEditor2::Undo()
 {
-    commandStack->Undo();
+    if (commandStack->CanUndo())
+    {
+        commandStack->Undo();
+    }
 }
 
 void SceneEditor2::Redo()
 {
-    commandStack->Redo();
+    if (commandStack->CanRedo())
+    {
+        commandStack->Redo();
+    }
 }
 
 void SceneEditor2::BeginBatch(const DAVA::String& text, DAVA::uint32 commandsCount /*= 1*/)
@@ -823,10 +836,24 @@ void RemoveSelection(SceneEditor2* scene)
     SelectableGroup objectsToRemove;
     for (const auto& item : selection.GetContent())
     {
-        if ((item.CanBeCastedTo<DAVA::Entity>() == false) || (item.AsEntity()->GetLocked() == false))
+        if (item.CanBeCastedTo<DAVA::Entity>())
         {
-            objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
+            DAVA::Entity* entity = item.AsEntity();
+            if (entity->GetLocked() || entity->GetNotRemovable())
+            {
+                //Don't remove entity
+                continue;
+            }
+
+            DAVA::Camera* camera = DAVA::GetCamera(entity);
+            if (camera != nullptr && camera == scene->GetCurrentCamera())
+            {
+                //Don't remove current camera
+                continue;
+            }
         }
+
+        objectsToRemove.Add(item.GetContainedObject(), item.GetBoundingBox());
     }
 
     if (objectsToRemove.IsEmpty() == false)

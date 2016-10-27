@@ -16,8 +16,6 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget* parent /* = 0*/)
     , nameFont("Courier", 12, QFont::Normal)
 #endif
 {
-    backgroundBrush = palette().window();
-
     gridStyle = GRID_STYLE_LIMITS;
 
     auto dispatcher = SceneSignals::Instance();
@@ -260,7 +258,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent* e)
     QFont font("Courier", 11, QFont::Normal);
     painter.setFont(font);
 
-    painter.fillRect(this->rect(), backgroundBrush);
+    painter.fillRect(this->rect(), palette().window());
 
     QRect graphRect = GetGraphRect();
 

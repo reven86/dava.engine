@@ -4,7 +4,6 @@
 #include "Platform/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
-#include "Job/JobManager.h"
 #include "Preferences/PreferencesRegistrator.h"
 
 namespace DAVA
@@ -18,13 +17,9 @@ InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::Type
                                                                                         });
 };
 
-AssetCacheClient::AssetCacheClient(bool emulateNetworkLoop_)
+AssetCacheClient::AssetCacheClient()
     : isActive(false)
-    , isJobStarted(false)
-    , emulateNetworkLoop(emulateNetworkLoop_)
 {
-    DVASSERT(JobManager::Instance() != nullptr);
-
     client.AddListener(this);
 }
 
@@ -33,17 +28,11 @@ AssetCacheClient::~AssetCacheClient()
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);
-    DVASSERT(isJobStarted == false);
 }
 
 AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams& connectionParams)
 {
     isActive = true;
-    if (emulateNetworkLoop)
-    {
-        JobManager::Instance()->CreateWorkerJob(MakeFunction(this, &AssetCacheClient::ProcessNetwork));
-    }
-
     lightRequestTimeoutMs = connectionParams.timeoutms;
     heavyRequestTimeoutMs = lightRequestTimeoutMs + (100u * 1000u);
     currentTimeoutMs = lightRequestTimeoutMs;
@@ -61,6 +50,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         while (client.ChannelIsOpened() == false)
         {
+            PollNetworkIfSuitable();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
@@ -88,11 +78,6 @@ void AssetCacheClient::Disconnect()
     }
 
     client.Disconnect();
-
-    while (isJobStarted)
-    {
-        //wait for finishing of networking
-    }
 }
 
 AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
@@ -227,6 +212,8 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 
     while (currentRequest.recieved == false)
     {
+        PollNetworkIfSuitable();
+
         {
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
@@ -244,6 +231,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
     {
         while (currentRequest.processingRequest)
         {
+            PollNetworkIfSuitable();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -394,18 +382,6 @@ void AssetCacheClient::OnIncorrectPacketReceived(AssetCache::IncorrectPacketType
     }
 }
 
-void AssetCacheClient::ProcessNetwork()
-{
-    isJobStarted = true;
-
-    while (isActive)
-    {
-        Net::NetCore::Instance()->Poll();
-    }
-
-    isJobStarted = false;
-}
-
 void AssetCacheClient::OnClientProxyStateChanged()
 {
     if (client.ChannelIsOpened() == false)
@@ -422,6 +398,14 @@ void AssetCacheClient::OnClientProxyStateChanged()
 bool AssetCacheClient::IsConnected() const
 {
     return client.ChannelIsOpened();
+}
+
+void AssetCacheClient::PollNetworkIfSuitable()
+{
+    if (Thread::IsMainThread())
+    {
+        Net::NetCore::Instance()->Poll();
+    }
 }
 
 AssetCacheClient::ConnectionParams::ConnectionParams()

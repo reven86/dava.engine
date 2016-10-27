@@ -16,7 +16,7 @@ public:
     SceneViewModule();
 
 protected:
-    void OnRenderSystemInitialized(DAVA::Window& w) override;
+    void OnRenderSystemInitialized(DAVA::Window* w) override;
     void OnContextCreated(DAVA::TArc::DataContext& context) override;
     void OnContextDeleted(DAVA::TArc::DataContext& context) override;
     void PostInit() override;
@@ -28,7 +28,7 @@ protected:
 private:
     void SetupRenderWidget();
     void SetupActions();
-    void OnWindowResized(DAVA::Window& w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
+    void OnWindowResized(DAVA::Window* w, DAVA::float32 width, DAVA::float32 height, DAVA::float32 scaleX, DAVA::float32 scaleY);
 
     void OpenScene();
     void OpenScene(const DAVA::String& scenePath);

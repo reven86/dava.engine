@@ -103,9 +103,9 @@ void StatusBar::UpdateByTimer()
     UpdateFPS();
 }
 
-void StatusBar::OnSceneGeometryChaged(int width, int height)
+void StatusBar::OnSceneGeometryChaged(DAVA::uint32 width, DAVA::uint32 height)
 {
-    sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
+    sceneGeometry->setText(QString::fromStdString(DAVA::Format("%u x %u", width, height)));
 }
 
 void StatusBar::UpdateSelectionBoxSize(SceneEditor2* scene)

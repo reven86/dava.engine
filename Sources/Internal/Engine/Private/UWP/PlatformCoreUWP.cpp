@@ -4,6 +4,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Engine/Window.h"
 #include "Engine/UWP/NativeServiceUWP.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
@@ -15,15 +16,15 @@
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore(EngineBackend* e)
-    : engineBackend(e)
-    , dispatcher(engineBackend->GetDispatcher())
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(*engineBackend)
+    , dispatcher(*engineBackend->GetDispatcher())
     , nativeService(new NativeService(this))
 {
 }
@@ -36,13 +37,13 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    engineBackend->OnGameLoopStarted();
+    engineBackend.OnGameLoopStarted();
 
     while (!quitGameThread)
     {
         uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
 
-        int32 fps = engineBackend->OnFrame();
+        int32 fps = engineBackend.OnFrame();
 
         uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
         uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
@@ -57,8 +58,13 @@ void PlatformCore::Run()
         Sleep(sleep);
     }
 
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnBeforeTerminate();
+    engineBackend.OnGameLoopStopped();
+    engineBackend.OnEngineCleanup();
+}
+
+void PlatformCore::PrepareToQuit()
+{
+    engineBackend.PostAppTerminate(true);
 }
 
 void PlatformCore::Quit()
@@ -68,7 +74,7 @@ void PlatformCore::Quit()
 
 void PlatformCore::OnLaunched()
 {
-    Logger::Debug("****** CoreWinUWP::OnLaunched: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== CoreWinUWP::OnLaunched: thread=%d", GetCurrentThreadId());
 
     if (!gameThreadRunning)
     {
@@ -85,7 +91,7 @@ void PlatformCore::OnLaunched()
 
 void PlatformCore::OnActivated()
 {
-    Logger::Debug("****** CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== CoreWinUWP::OnActivated: thread=%d", GetCurrentThreadId());
 }
 
 static void InitScreenSizeInfo()
@@ -113,7 +119,7 @@ static void InitScreenSizeInfo()
 
 void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
 {
-    Logger::Debug("****** CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== CoreWinUWP::OnWindowCreated: thread=%d", GetCurrentThreadId());
 
     static bool firstTimeMainWindowsCreated = true;
     if (firstTimeMainWindowsCreated)
@@ -121,27 +127,30 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
         InitScreenSizeInfo();
         firstTimeMainWindowsCreated = false;
     }
-
-    WindowBackend* backendWindow = new WindowBackend(engineBackend, engineBackend->GetPrimaryWindow());
-    backendWindow->BindXamlWindow(xamlWindow);
+    // TODO: think about binding XAML window to prior created Window instance
+    Window* primaryWindow = engineBackend.GetPrimaryWindow();
+    if (primaryWindow == nullptr)
+    {
+        primaryWindow = engineBackend.InitializePrimaryWindow();
+    }
+    WindowBackend* windowBackend = primaryWindow->GetBackend();
+    windowBackend->BindXamlWindow(xamlWindow);
 }
 
 void PlatformCore::OnSuspending()
 {
-    Logger::Debug("******** CoreWinUWP::OnSuspending: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== CoreWinUWP::OnSuspending: thread=%d", GetCurrentThreadId());
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_SUSPENDED;
-    dispatcher->SendEvent(e); // Blocking call !!!
+    MainDispatcherEvent e(MainDispatcherEvent::APP_SUSPENDED);
+    dispatcher.SendEvent(e); // Blocking call !!!
 }
 
 void PlatformCore::OnResuming()
 {
-    Logger::Debug("******** CoreWinUWP::OnResuming: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== CoreWinUWP::OnResuming: thread=%d", GetCurrentThreadId());
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::APP_RESUMED;
-    dispatcher->PostEvent(e);
+    MainDispatcherEvent e(MainDispatcherEvent::APP_RESUMED);
+    dispatcher.PostEvent(e);
 }
 
 void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionEventArgs ^ arg)
@@ -151,21 +160,13 @@ void PlatformCore::OnUnhandledException(::Windows::UI::Xaml::UnhandledExceptionE
 
 void PlatformCore::GameThread()
 {
-    Logger::Debug("****** PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
+    Logger::FrameworkDebug("========== PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
 
-    try
-    {
-        Vector<String> cmdline = engineBackend->GetCommandLine();
-        GameMain(std::move(cmdline));
-    }
-    catch (const std::exception& e)
-    {
-        Logger::Error("Unhandled exception in GameThread: %s", e.what());
-        // TODO: think about rethrow
-        // throw;
-    }
+    Vector<String> cmdline = engineBackend.GetCommandLine();
+    DAVAMain(std::move(cmdline));
 
-    Logger::Debug("****** PlatformCore::GameThread leave: thread=%d", GetCurrentThreadId());
+    // DAVA::Logger is already dead
+    OutputDebugStringA("========== PlatformCore::GameThread leave\n");
 
     using namespace ::Windows::UI::Xaml;
     Application::Current->Exit();

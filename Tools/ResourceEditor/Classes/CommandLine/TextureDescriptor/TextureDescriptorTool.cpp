@@ -4,6 +4,7 @@
 
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "FileSystem/File.h"
 
 using namespace DAVA;
 

@@ -6,7 +6,6 @@
 
 #include "Engine/Window.h"
 
-#include "Engine/Engine.h"
 #include "Engine/Qt/NativeServiceQt.h"
 #include "Engine/Qt/WindowNativeServiceQt.h"
 #include "Engine/Private/EngineBackend.h"
@@ -21,10 +20,24 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
 #include <QObject>
 
 namespace DAVA
 {
+// DavaQtApplyModifier is a friend for KeyboardDevice, so it should be in DAVA namespace only.
+class DavaQtApplyModifier
+{
+public:
+    void operator()(DAVA::KeyboardDevice& keyboard, const Qt::KeyboardModifiers& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::Key davaModifier)
+    {
+        if (true == (currentModifiers.testFlag(qtModifier)))
+            keyboard.OnKeyPressed(davaModifier);
+        else
+            keyboard.OnKeyUnpressed(davaModifier);
+    }
+};
+
 namespace Private
 {
 class WindowBackend::OGLContextBinder
@@ -104,13 +117,13 @@ private:
 
 WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
 
-void AcqureContext()
+void AcqureContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->AcquireContext();
 }
 
-void ReleaseContext()
+void ReleaseContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->ReleaseContext();
@@ -162,16 +175,16 @@ private:
     TCallback destroyed;
 };
 
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::PlatformEventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
     QtEventListener::TCallback triggered = [this]()
     {
-        platformDispatcher.ProcessEvents();
+        uiDispatcher.ProcessEvents();
     };
 
     QtEventListener::TCallback destroyed = [this]()
@@ -179,7 +192,7 @@ WindowBackend::WindowBackend(EngineBackend* e, Window* w)
         qtEventListener = nullptr;
     };
 
-    qtEventListener = new QtEventListener(triggered, destroyed, engine->GetNativeService()->GetApplication());
+    qtEventListener = new QtEventListener(triggered, destroyed, engineBackend->GetNativeService()->GetApplication());
 }
 
 WindowBackend::~WindowBackend()
@@ -189,46 +202,42 @@ WindowBackend::~WindowBackend()
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+    closeRequestByApp = true;
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
 }
 
-bool WindowBackend::IsWindowReadyForRender() const
+void WindowBackend::SetTitle(const String& title)
 {
-    return renderWidget != nullptr && renderWidget->initialized;
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+bool WindowBackend::IsWindowReadyForRender() const
+{
+    return renderWidget != nullptr && renderWidget->IsInitialized();
 }
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    NativeService* service = engine->GetNativeService();
-    DVASSERT(service);
+    NativeService* service = engineBackend->GetNativeService();
     QApplication* app = service->GetApplication();
     DVASSERT(app);
-    if (app)
+    if (app != nullptr)
     {
         app->postEvent(qtEventListener, new TriggerProcessEvent());
     }
 }
 
-void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
@@ -237,6 +246,10 @@ void WindowBackend::PlatformEventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        DoSetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -266,83 +279,106 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
-    contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
+    // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
+    // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
+    // QQuickWidgetPrivate and we can get it only through context.
+    // In applications with QMainWindow (where RenderWidget is a part of MainWindow) it's good solution,
+    // But for TestBed for example this solution is not full,
+    // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
+    // I don't know what we can do with this.
+    // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
+    QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
+    contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engine->GetNativeService()->GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
-    window->PostWindowCreated(this, renderWidget->width(), renderWidget->height(), dpi, dpi);
+    float32 w = static_cast<float32>(renderWidget->width());
+    float32 h = static_cast<float32>(renderWidget->height());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
+}
+
+bool WindowBackend::OnUserCloseRequest()
+{
+    if (!closeRequestByApp)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
+    }
+    return closeRequestByApp;
 }
 
 void WindowBackend::OnDestroyed()
 {
-    window->PostWindowDestroyed();
-    renderWidget = nullptr;
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
 }
 
 void WindowBackend::OnFrame()
 {
-    engine->OnFrame();
+    // HACK Qt send key event to widget with focus not globaly
+    // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
+    // we miss key down event, so we have to check for SHIFT, ALT, CTRL
+    // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
+    using namespace DAVA;
+    Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    DavaQtApplyModifier mod;
+    mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
+    mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
+    mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
+
+    engineBackend->OnFrame();
 }
 
 void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
 {
-    window->PostSizeChanged(static_cast<float32>(width), static_cast<float32>(height), dpi, dpi);
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
-    window->PostVisibilityChanged(isVisible);
-    window->PostFocusChanged(isVisible);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
 {
-    MainDispatcherEvent e;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-    e.mclickEvent.clicks = 1;
-    e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
-    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
-    dispatcher->PostEvent(e);
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+    uint32 button = ConvertButtons(qtEvent->button());
+    float32 x = static_cast<float32>(qtEvent->x());
+    float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseReleased(QMouseEvent* qtEvent)
 {
-    MainDispatcherEvent e;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-    e.mclickEvent.clicks = 1;
-    e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
-    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
-    dispatcher->PostEvent(e);
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+    uint32 button = ConvertButtons(qtEvent->button());
+    float32 x = static_cast<float32>(qtEvent->x());
+    float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, false));
 }
 
 void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::MOUSE_MOVE;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.mmoveEvent.x = static_cast<float32>(qtEvent->x());
-    e.mmoveEvent.y = static_cast<float32>(qtEvent->y());
-    dispatcher->PostEvent(e);
+    float32 x = static_cast<float32>(qtEvent->x());
+    float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+}
+
+void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
+{
+    float32 x = static_cast<float32>(qtEvent->pos().x());
+    float32 y = static_cast<float32>(qtEvent->pos().y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
-    MainDispatcherEvent e;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-    e.mclickEvent.clicks = 2;
-    e.mclickEvent.button = ConvertButtons(qtEvent->button());
-    e.mclickEvent.x = static_cast<float32>(qtEvent->x());
-    e.mclickEvent.y = static_cast<float32>(qtEvent->y());
-    dispatcher->PostEvent(e);
+    const MainDispatcherEvent::eType type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+    uint32 button = ConvertButtons(qtEvent->button());
+    float32 x = static_cast<float32>(qtEvent->x());
+    float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 2, false));
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
@@ -352,25 +388,24 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
         return;
     }
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::MOUSE_WHEEL;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.mwheelEvent.x = static_cast<float32>(qtEvent->x());
-    e.mwheelEvent.y = static_cast<float32>(qtEvent->y());
+    float32 x = static_cast<float32>(qtEvent->x());
+    float32 y = static_cast<float32>(qtEvent->y());
+    float32 deltaX = 0.f;
+    float32 deltaY = 0.f;
+
     QPoint pixelDelta = qtEvent->pixelDelta();
     if (!pixelDelta.isNull())
     {
-        e.mwheelEvent.deltaX = static_cast<float32>(pixelDelta.x());
-        e.mwheelEvent.deltaY = static_cast<float32>(pixelDelta.y());
+        deltaX = static_cast<float32>(pixelDelta.x());
+        deltaY = static_cast<float32>(pixelDelta.y());
     }
     else
     {
         QPointF delta = QPointF(qtEvent->angleDelta()) / 180.0f;
-        e.mwheelEvent.deltaX = delta.x();
-        e.mwheelEvent.deltaY = delta.y();
+        deltaX = delta.x();
+        deltaY = delta.y();
     }
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, false));
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
@@ -378,42 +413,35 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
 #ifdef Q_OS_WIN
     uint32 nativeModif = qtEvent->nativeModifiers();
     uint32 nativeScanCode = qtEvent->nativeScanCode();
-    uint32 virtKey = qtEvent->nativeVirtualKey();
+    uint32 key = qtEvent->nativeVirtualKey();
     if ((1 << 24) & nativeModif)
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
-    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
 #else
-    uint32 virtKey = qtEvent->nativeVirtualKey();
-    if (virtKey == 0)
+    uint32 key = qtEvent->nativeVirtualKey();
+    if (key == 0)
     {
-        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
+        key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_DOWN;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.keyEvent.key = virtKey;
-    e.keyEvent.isRepeated = qtEvent->isAutoRepeat();
-    dispatcher->PostEvent(e);
-
+    bool isRepeated = qtEvent->isAutoRepeat();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, isRepeated));
     QString text = qtEvent->text();
-    for (int i = 0; i < text.size(); ++i)
+    if (!text.isEmpty())
     {
-        QCharRef charRef = text[i];
-        MainDispatcherEvent e;
-        e.type = MainDispatcherEvent::KEY_CHAR;
-        e.window = window;
-        e.timestamp = qtEvent->timestamp();
-        e.keyEvent.key = charRef.unicode();
-        e.keyEvent.isRepeated = qtEvent->isAutoRepeat();
-        dispatcher->PostEvent(e);
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, isRepeated);
+        for (int i = 0, n = text.size(); i < n; ++i)
+        {
+            QCharRef charRef = text[i];
+            e.keyEvent.key = charRef.unicode();
+            mainDispatcher->PostEvent(e);
+        }
     }
 }
 
@@ -422,30 +450,24 @@ void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 #ifdef Q_OS_WIN
     uint32 nativeModif = qtEvent->nativeModifiers();
     uint32 nativeScanCode = qtEvent->nativeScanCode();
-    uint32 virtKey = qtEvent->nativeVirtualKey();
+    uint32 key = qtEvent->nativeVirtualKey();
     if ((1 << 24) & nativeModif)
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
-    if (VK_SHIFT == virtKey && nativeScanCode == 0x36) // is right shift key
+    if (VK_SHIFT == key && nativeScanCode == 0x36) // is right shift key
     {
-        virtKey |= 0x100;
+        key |= 0x100;
     }
 #else
-    qint32 virtKey = qtEvent->nativeVirtualKey();
-    if (virtKey == 0)
+    qint32 key = qtEvent->nativeVirtualKey();
+    if (key == 0)
     {
-        virtKey = ConvertQtKeyToSystemScanCode(qtEvent->key());
+        key = ConvertQtKeyToSystemScanCode(qtEvent->key());
     }
 #endif
 
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_UP;
-    e.timestamp = qtEvent->timestamp();
-    e.window = window;
-    e.keyEvent.key = virtKey;
-    e.keyEvent.isRepeated = qtEvent->isAutoRepeat();
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_UP, key, false));
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -456,8 +478,27 @@ void WindowBackend::DoResizeWindow(float32 width, float32 height)
 
 void WindowBackend::DoCloseWindow()
 {
-    // i don't know what i can do here
-    // renderWidget->hide() ???
+    renderWidget->close();
+}
+
+void WindowBackend::DoSetTitle(const char8* title)
+{
+    renderWidget->setWindowTitle(title);
+}
+
+void WindowBackend::AcqureContext()
+{
+    AcqureContextImpl();
+}
+
+void WindowBackend::ReleaseContext()
+{
+    ReleaseContextImpl();
+}
+
+void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
 }
 
 void WindowBackend::Update()
@@ -465,6 +506,14 @@ void WindowBackend::Update()
     if (renderWidget != nullptr)
     {
         renderWidget->quickWindow()->update();
+    }
+}
+
+void WindowBackend::ActivateRendering()
+{
+    if (renderWidget != nullptr)
+    {
+        renderWidget->ActivateRendering();
     }
 }
 
@@ -481,8 +530,10 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcqureContext;
-    params.releaseContextFunc = &ReleaseContext;
+    params.acquireContextFunc = &AcqureContextImpl;
+    params.releaseContextFunc = &ReleaseContextImpl;
+    DVASSERT(renderWidget != nullptr);
+    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

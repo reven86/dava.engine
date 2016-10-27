@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/PackManager.h"
+#include "PackManager/Private/PackManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -61,7 +61,8 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include <PackManager/Private/PackManagerImpl.h>
+#include "PackManager/Private/PackManagerImpl.h"
+#include "Analytics/Analytics.h"
 
 namespace DAVA
 {
@@ -80,6 +81,7 @@ Core::Core()
         defaultUserScale = options->GetFloat("userScreenScaleFactor", 1.0f);
     }
     screenMetrics.userScale = defaultUserScale;
+    screenOrientation = SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
 }
 
 Core::~Core()
@@ -113,7 +115,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
         StringStream ss;
         ss << "floating-point structured exception: 0x" << std::hex << exceptionCode
            << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-        throw std::runtime_error(ss.str());
+        DAVA_THROW(DAVA::Exception, ss.str());
     }
     default:
         if (SEFuncPtr != nullptr)
@@ -125,7 +127,7 @@ void SEHandler(unsigned int exceptionCode, PEXCEPTION_POINTERS pExpInfo)
             StringStream ss;
             ss << "structured exception: 0x" << std::hex << exceptionCode
                << " at 0x" << pExpInfo->ExceptionRecord->ExceptionAddress;
-            throw std::runtime_error(ss.str());
+            DAVA_THROW(DAVA::Exception, ss.str());
         }
     }
 };
@@ -204,16 +206,16 @@ void Core::CreateSingletons()
     FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 
-    Logger::Info("SoundSystem init start");
+    Logger::Debug("SoundSystem init start");
     try
     {
         new SoundSystem();
     }
     catch (std::exception& ex)
     {
-        Logger::Info("%s", ex.what());
+        Logger::Error("%s", ex.what());
     }
-    Logger::Info("SoundSystem init finish");
+    Logger::Debug("SoundSystem init finish");
 
     if (isConsoleMode)
     {
@@ -252,7 +254,8 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl());
+    packManager.reset(new PackManagerImpl);
+    analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
 
@@ -293,6 +296,10 @@ void Core::CreateRenderer()
     rendererParams.maxPacketListCount = options->GetInt32("max_packet_list_count");
 
     rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
+    rendererParams.renderingNotPossibleFunc = []()
+    {
+        Core::Instance()->GetApplicationCore()->OnRenderingIsNotPossible();
+    };
 
     Renderer::Initialize(renderer, rendererParams);
 }
@@ -333,6 +340,8 @@ void Core::ReleaseSingletons()
     RenderSystem2D::Instance()->Release();
 
     packManager.reset();
+    analyticsCore.reset();
+
     DownloadManager::Instance()->Release();
 
     InputSystem::Instance()->Release();
@@ -662,7 +671,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        packManager->Update();
+        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
@@ -948,6 +957,12 @@ IPackManager& Core::GetPackManager() const
 {
     DVASSERT(packManager);
     return *packManager;
+}
+
+Analytics::Core& Core::GetAnalyticsCore() const
+{
+    DVASSERT(analyticsCore);
+    return *analyticsCore;
 }
 
 const ModuleManager& Core::GetModuleManager() const

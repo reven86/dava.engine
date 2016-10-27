@@ -1,6 +1,8 @@
 #include <QApplication>
 #include "WayEditSystem.h"
 #include "Math/AABBox3.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
@@ -15,6 +17,18 @@
 #include "Utils/Utils.h"
 
 #include "Debug/DVAssert.h"
+#include "Base/Singleton.h"
+
+namespace WayEditSystemDetail
+{
+void RemoveEntityFromSelection(SelectableGroup& group, DAVA::Entity* entity)
+{
+    if (group.ContainsObject(entity))
+    {
+        group.Remove(entity);
+    }
+}
+}
 
 WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneSelectionSystem* _selectionSystem, SceneCollisionSystem* _collisionSystem)
     : DAVA::SceneSystem(scene)
@@ -42,6 +56,9 @@ void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
 void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
 {
     DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(currentSelection, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(selectedWaypoints, removedPoint);
+    WayEditSystemDetail::RemoveEntityFromSelection(prevSelectedWaypoints, removedPoint);
 
     if (removedPoint->GetNotRemovable() == false)
         return;
@@ -270,7 +287,7 @@ void WayEditSystem::Input(DAVA::UIEvent* event)
                 return;
             }
 
-            if (selectedWaypoints.IsEmpty())
+            if (selectedWaypoints.IsEmpty() && cloneJustDone == false)
             {
                 DAVA::Vector3 lanscapeIntersectionPos;
                 bool lanscapeIntersected = collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);
@@ -526,7 +543,15 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& cu
 
 bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    DAVA::EngineContext* engineContext = engine->GetContext();
+    if (engineContext->inputSystem == nullptr)
+    {
+        return true;
+    }
+
+    const DAVA::KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
     if (isEnabled && shiftPressed)
     {

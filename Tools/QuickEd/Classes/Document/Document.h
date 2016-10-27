@@ -36,6 +36,7 @@ class Document final : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool canSave READ CanSave NOTIFY CanSaveChanged);
+    Q_PROPERTY(bool canClose READ CanClose WRITE SetCanClose NOTIFY CanCloseChanged);
 
 public:
     explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
@@ -52,14 +53,17 @@ public:
     void SetContext(void* requester, WidgetContext* widgetContext);
     void RefreshLayout();
     bool CanSave() const;
+    bool CanClose() const;
     bool IsDocumentExists() const;
 
 signals:
     void FileChanged(Document* document);
     void CanSaveChanged(bool canSave);
+    void CanCloseChanged(bool canClose);
 
 public slots:
     void RefreshAllControlProperties();
+    void SetCanClose(bool canClose);
 
 private slots:
     void OnFileChanged(const QString& path);
@@ -75,6 +79,7 @@ private:
     QFileSystemWatcher* fileSystemWatcher = nullptr;
     bool fileExists = true;
     bool canSave = false;
+    bool canClose = true;
 };
 
 #endif // __QUICKED_DOCUMENT_H__
