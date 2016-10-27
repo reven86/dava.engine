@@ -1,46 +1,43 @@
-#ifndef __GAMECORE_H__
-#define __GAMECORE_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "Database/MongodbClient.h"
 
-using namespace DAVA;
+namespace DAVA
+{
+class Engine;
+class Window;
+}
 
 class SelectSceneScreen;
 class ViewSceneScreen;
-class GameCore : public ApplicationCore
+class GameCore
 {
-protected:
-    virtual ~GameCore();
-
 public:
-    GameCore();
+    GameCore(DAVA::Engine& e);
 
     static GameCore* Instance()
     {
-        return (GameCore*)DAVA::Core::GetApplicationCore();
+        return instance;
     };
 
-    virtual void OnAppStarted();
-    virtual void OnAppFinished();
+    void OnAppStarted();
+    void OnWindowCreated(DAVA::Window* w);
+    void OnAppFinished();
 
-    virtual void OnSuspend();
-    virtual void OnResume();
+    void OnSuspend();
+    void OnResume();
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    void BeginFrame();
+    void Draw();
+    void EndFrame();
 
-    virtual void BeginFrame();
-    virtual void EndFrame();
-
-    void SetScenePath(const FilePath& path)
+    void SetScenePath(const DAVA::FilePath& path)
     {
         scenePath = path;
     };
-    const FilePath& GetScenePath() const
+
+    const DAVA::FilePath& GetScenePath() const
     {
         return scenePath;
     };
@@ -54,9 +51,10 @@ protected:
     rhi::HPerfQuerySet perfQuerySet;
     bool perfQuerySetFired;
 
-    FilePath scenePath;
+    DAVA::FilePath scenePath;
+
+private:
+    DAVA::Engine& engine;
+
+    static GameCore* instance;
 };
-
-
-
-#endif // __GAMECORE_H__

@@ -6,6 +6,7 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Material/NMaterial.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
