@@ -14,6 +14,7 @@
 
 #include "Render/RHI/rhi_Public.h"
 
+#include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "Debug/DVAssert.h"
 
@@ -317,9 +318,8 @@ void WindowBackend::OnFrame()
     // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
     // we miss key down event, so we have to check for SHIFT, ALT, CTRL
     // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
-    using namespace DAVA;
     Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    KeyboardDevice& keyboard = window->inputSystem->GetKeyboard();
     DavaQtApplyModifier mod;
     mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
     mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
@@ -372,7 +372,8 @@ void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->pos().x());
     float32 y = static_cast<float32>(qtEvent->pos().y());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+    eModifierKeys modifierKeys = GetModifierKeys();
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
 }
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)

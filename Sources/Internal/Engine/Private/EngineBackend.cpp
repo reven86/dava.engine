@@ -8,13 +8,17 @@
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
+// Please place headers in alphabetic ascending order
 #include "DAVAClassRegistrator.h"
+#include "Analytics/Analytics.h"
+#include "Analytics/LoggingBackend.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
 #include "Core/PerformanceSettings.h"
+#include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
-#include "Debug/CPUProfiler.h"
+#include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
@@ -40,8 +44,6 @@
 #include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
-#include "Analytics/Analytics.h"
-#include "Analytics/LoggingBackend.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -630,7 +632,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->fontManager = new FontManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
-    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
+    context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicationPath());
 #endif
 
     // Naive implementation of on demand module creation
