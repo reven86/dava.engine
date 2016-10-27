@@ -7,10 +7,8 @@ project               ( QuickEd )
 get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 
 set                   ( DAVA_DISABLE_AUTOTESTS true )
-set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-set                   ( DAVA_COMPONENTS "Sound")
 
 include               ( CMake-common )
 
@@ -24,18 +22,24 @@ if (DEPLOY)
     set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
 endif()
 
-add_definitions       ( 
--DDISABLE_NATIVE_WEBVIEW 
--DDISABLE_NATIVE_TEXTFIELD 
+add_definitions       (
+-D__DAVAENGINE_COREV2__
+-D__DAVAENGINE_QT__
+-DDISABLE_NATIVE_WEBVIEW
+-DDISABLE_NATIVE_TEXTFIELD
+-DDISABLE_NATIVE_MOVIEVIEW
 -DQT_QML_DEBUG_NO_WARNING
 )
-
-
-
-find_package          ( QT5           REQUIRED )
-find_package          ( DavaFramework REQUIRED ${DAVA_COMPONENTS} )
-find_package          ( DavaTools     REQUIRED )
-
+ 
+set ( DAVA_COREV2 1 )
+set ( DAVA_PLATFORM_QT 1 )
+set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
+ 
+find_package( QT5 REQUIRED)
+find_package( DavaFramework REQUIRED )
+find_package( DavaTools REQUIRED )
+find_package( QtTools REQUIRED )
+find_package( QtHelpers REQUIRED )
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)

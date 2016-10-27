@@ -214,7 +214,7 @@ public:
             ::UIApplicationMain(n, &*argv.begin(), @"principal", @"delegate");
         \endcode
     */
-    DAVA::Vector<char*> GetCommandLineAsArgv() const;
+    Vector<char*> GetCommandLineAsArgv() const;
 
 public:
     Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.

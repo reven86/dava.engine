@@ -14,6 +14,10 @@ class RenderWidget;
 
 class WindowNativeService final
 {
+public:
+    void AcqureContext();
+    void ReleaseContext();
+
 private:
     WindowNativeService(Private::WindowBackend* wbackend);
 

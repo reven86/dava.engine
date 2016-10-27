@@ -6,16 +6,23 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Debug/CPUProfiler.h"
+#include "Debug/DVAssert.h"
+
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
+
 #include "Logger/Logger.h"
 
 #include <QQuickWindow>
-#include <QQuickWindow>
 #include <QQuickItem>
 #include <QOpenGLContext>
+#include <QVariant>
 
 namespace DAVA
 {
-RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width, uint32 height)
+const char* initializedPropertyName = "initialized";
+RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint32 width, uint32 height)
     : widgetDelegate(widgetDelegate_)
 {
     setAcceptDrops(true);
@@ -28,16 +35,48 @@ RenderWidget::RenderWidget(RenderWidget::Delegate* widgetDelegate_, uint32 width
 
     QQuickWindow* window = quickWindow();
     window->installEventFilter(this);
-    window->setClearBeforeRendering(false);
-    connect(window, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    window->setClearBeforeRendering(true);
+    window->setColor(QColor(76, 76, 76, 255));
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget() = default;
 
+void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
+{
+    DVASSERT(nullptr == clientDelegate);
+    clientDelegate = delegate;
+    QObject* qobjectDelegate = dynamic_cast<QObject*>(delegate);
+    if (qobjectDelegate != nullptr)
+    {
+        QObject::connect(qobjectDelegate, &QObject::destroyed, this, &RenderWidget::OnClientDelegateDestroyed);
+    }
+}
+
+void RenderWidget::OnCreated()
+{
+    widgetDelegate->OnCreated();
+    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated);
+}
+
+void RenderWidget::OnInitialize()
+{
+    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize);
+    setProperty(initializedPropertyName, true);
+}
+
 void RenderWidget::OnFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("RenderWidget::OnFrame");
+    DVASSERT(isInPaint == false);
+    isInPaint = true;
+    SCOPE_EXIT
+    {
+        isInPaint = false;
+    };
+
     QVariant nativeHandle = quickWindow()->openglContext()->nativeHandle();
     if (!nativeHandle.isValid())
     {
@@ -45,22 +84,34 @@ void RenderWidget::OnFrame()
         DAVA_THROW(DAVA::Exception, "GL context is not valid!");
     }
 
-    if (initialized == false)
-    {
-        widgetDelegate->OnCreated();
-        initialized = true;
-    }
-
     widgetDelegate->OnFrame();
+    quickWindow()->resetOpenGLState();
+}
+
+void RenderWidget::ActivateRendering()
+{
+    QQuickWindow* w = quickWindow();
+    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnInitialize, Qt::DirectConnection);
+    connect(w, &QQuickWindow::beforeRendering, this, &RenderWidget::OnFrame, Qt::DirectConnection);
+    w->setClearBeforeRendering(false);
+}
+
+bool RenderWidget::IsInitialized()
+{
+    return property(initializedPropertyName).isValid();
 }
 
 void RenderWidget::OnActiveFocusItemChanged()
 {
     QQuickItem* item = quickWindow()->activeFocusItem();
-    if (item != nullptr)
+    bool focusRequested = item != nullptr;
+    if (focusRequested)
     {
         item->installEventFilter(this);
     }
+
+    KeyboardDevice& kd = InputSystem::Instance()->GetKeyboard();
+    kd.ClearAllKeys(); //we need only reset keyboard status on focus changing
 }
 
 void RenderWidget::OnSceneGraphInvalidated()
@@ -76,6 +127,7 @@ void RenderWidget::resizeEvent(QResizeEvent* e)
     QQuickWidget::resizeEvent(e);
     QSize size = e->size();
     widgetDelegate->OnResized(size.width(), size.height());
+    emit Resized(size.width(), size.height());
 }
 
 void RenderWidget::showEvent(QShowEvent* e)
@@ -105,55 +157,127 @@ void RenderWidget::closeEvent(QCloseEvent* e)
 
 void RenderWidget::timerEvent(QTimerEvent* e)
 {
-    if (!quickWindow()->isVisible())
-    {
-        e->ignore();
-        return;
-    }
-
     QQuickWidget::timerEvent(e);
+}
+
+void RenderWidget::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnDragEntered(e);
+    }
+}
+
+void RenderWidget::dragMoveEvent(QDragMoveEvent* e)
+{
+    widgetDelegate->OnDragMoved(e);
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnDragMoved(e);
+    }
+}
+
+void RenderWidget::dragLeaveEvent(QDragLeaveEvent* e)
+{
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnDragLeaved(e);
+    }
+}
+
+void RenderWidget::dropEvent(QDropEvent* e)
+{
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnDrop(e);
+    }
 }
 
 void RenderWidget::mousePressEvent(QMouseEvent* e)
 {
     QQuickWidget::mousePressEvent(e);
     widgetDelegate->OnMousePressed(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnMousePressed(e);
+    }
 }
 
 void RenderWidget::mouseReleaseEvent(QMouseEvent* e)
 {
     QQuickWidget::mouseReleaseEvent(e);
     widgetDelegate->OnMouseReleased(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnMouseReleased(e);
+    }
 }
 
 void RenderWidget::mouseDoubleClickEvent(QMouseEvent* e)
 {
     QQuickWidget::mouseDoubleClickEvent(e);
     widgetDelegate->OnMouseDBClick(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnMouseDBClick(e);
+    }
 }
 
 void RenderWidget::mouseMoveEvent(QMouseEvent* e)
 {
     QQuickWidget::mouseMoveEvent(e);
     widgetDelegate->OnMouseMove(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnMouseMove(e);
+    }
 }
 
 void RenderWidget::wheelEvent(QWheelEvent* e)
 {
     QQuickWidget::wheelEvent(e);
     widgetDelegate->OnWheel(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnWheel(e);
+    }
 }
 
 void RenderWidget::keyPressEvent(QKeyEvent* e)
 {
     QQuickWidget::keyPressEvent(e);
     widgetDelegate->OnKeyPressed(e);
+
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnKeyPressed(e);
+    }
 }
 
 void RenderWidget::keyReleaseEvent(QKeyEvent* e)
 {
     QQuickWidget::keyReleaseEvent(e);
     widgetDelegate->OnKeyReleased(e);
+    if (clientDelegate != nullptr)
+    {
+        clientDelegate->OnKeyReleased(e);
+    }
+}
+
+bool RenderWidget::event(QEvent* e)
+{
+    if (e->type() == QEvent::NativeGesture && clientDelegate != nullptr)
+    {
+        QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
+        clientDelegate->OnNativeGuesture(gestureEvent);
+    }
+
+    return QQuickWidget::event(e);
 }
 
 bool RenderWidget::eventFilter(QObject* object, QEvent* e)
@@ -183,6 +307,11 @@ bool RenderWidget::eventFilter(QObject* object, QEvent* e)
     }
 
     return false;
+}
+
+void RenderWidget::OnClientDelegateDestroyed()
+{
+    clientDelegate = nullptr;
 }
 
 } // namespace DAVA
