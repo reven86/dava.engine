@@ -3,6 +3,7 @@
 #include "SelectionSystem.h"
 #include "ModifSystem.h"
 #include "Scene/SceneEditor2.h"
+#include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/CustomColorsProxy.h"
@@ -249,7 +250,7 @@ void CustomColorsSystem::AddRectToAccumulator(const DAVA::Rect& rect)
 DAVA::Rect CustomColorsSystem::GetUpdatedRect()
 {
     DAVA::Rect r = updatedRectAccumulator;
-    drawSystem->ClampToTexture(DAVA::Landscape::TEXTURE_COLOR, r);
+    drawSystem->ClampToTexture(LandscapeProxy::LANDSCAPE_TEXTURE_TOOL, r);
 
     return r;
 }

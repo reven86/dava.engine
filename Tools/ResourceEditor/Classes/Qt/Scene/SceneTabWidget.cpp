@@ -26,7 +26,7 @@
 SceneTabWidget::SceneTabWidget(QWidget* parent)
     : QWidget(parent)
 {
-    this->setMouseTracking(true);
+    setMouseTracking(true);
 
     // create Qt controls and add them into layout
     //
@@ -301,12 +301,11 @@ void SceneTabWidget::SetCurrentTab(int index)
             curScene->SetViewportRect(dava3DView->GetRect());
 
             curScene->Activate();
-
-            if (renderWidget != nullptr)
-            {
-                renderWidget->setEnabled(true);
-            }
         }
+    }
+    if (renderWidget != nullptr)
+    {
+        renderWidget->setEnabled(true);
     }
 }
 
@@ -497,6 +496,15 @@ void SceneTabWidget::dropEvent(QDropEvent* event)
     else
     {
         TabBarDataDropped(data);
+    }
+}
+
+void SceneTabWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    QObject* object = GetRenderWidget();
+    if (object != nullptr)
+    { //simulate catching events at RenderWidget. I guess we should inherit SceneTabWidget from RenderWidget::IClientDelegate
+        object->event(event);
     }
 }
 

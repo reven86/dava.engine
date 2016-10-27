@@ -28,6 +28,8 @@
 #include "UI/UIControlSystem.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "UI/Package/PackageModel.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Input/UIInputSystem.h"
 
 using namespace DAVA;
 
@@ -154,11 +156,24 @@ void EditorCore::ConnectInternal()
 
 void EditorCore::Init(DAVA::Engine& engine)
 {
+    using namespace DAVA;
     ResourcesManageHelper::InitInternalResources();
-
     EngineContext* context = engine.GetContext();
+    UIControlSystem* uiControlSystem = context->uiControlSystem;
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+
+    UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), UIInputSystem::ACTION_FOCUS_RIGHT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::UP), UIInputSystem::ACTION_FOCUS_UP);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::DOWN), UIInputSystem::ACTION_FOCUS_DOWN);
+
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, UIEvent::Modifier::SHIFT_DOWN), UIInputSystem::ACTION_FOCUS_PREV);
 
     context->logger->SetLogFilename("QuickEd.txt");
+
+    Renderer::SetDesiredFPS(60);
 
     const char* settingsPath = "QuickEdSettings.archive";
     FilePath localPrefrencesPath(context->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);

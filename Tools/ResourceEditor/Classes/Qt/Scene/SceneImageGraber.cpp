@@ -29,6 +29,7 @@ struct InternalParams
 
 void GrabImage(Params inputParams)
 {
+    DVASSERT(!inputParams.outputFile.IsEmpty());
     InternalParams internalParams;
     internalParams.inputParams = std::move(inputParams);
 
@@ -62,11 +63,6 @@ void GrabImage(Params inputParams)
     DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
                                                 {
                                                     DAVA::FilePath filePath = internalParams.inputParams.outputFile;
-                                                    if (filePath.IsEmpty())
-                                                    {
-                                                        DVASSERT(false); // we should always setup pathname from external code
-                                                    }
-
                                                     if (filePath.IsDirectoryPathname())
                                                     {
                                                         filePath = DAVA::FilePath(filePath, "GrabbedScene.png");

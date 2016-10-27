@@ -142,7 +142,10 @@ bool ShortcutChecker::TryCallShortcutImpl(const QKeySequence& inputSequence, QKe
                 lastInputSequence = inputSequence;
                 lastShortcutTimestamp = event->timestamp();
                 ShortcutCheckerDetail::TriggerAction(action);
-                QTimer::singleShot(0, []()
+                // In corev2 we have additional delay on input event handling.
+                // All events from RenderWidget are pushed into queue, and core handle them on every frame.
+                // So we should wait at least 1 frame. Better 2 frames.
+                QTimer::singleShot(30, []()
                                    {
                                        // in some cases we can get KeyPressed (Ctrl + D), but not get KeyUnpressed
                                        // to fix this we will clear keyboard state in Dava if we found shortcut

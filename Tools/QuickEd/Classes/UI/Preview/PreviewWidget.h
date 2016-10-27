@@ -28,7 +28,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::ClientDelegate
+class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::IClientDelegate
 {
     Q_OBJECT
 public:
