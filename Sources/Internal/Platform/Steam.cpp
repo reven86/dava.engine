@@ -107,6 +107,7 @@ String Steam::GetSteamLanguage()
 
     const UnorderedMap<String, String> steamLanguages =
     {
+      { "arabic", "ar" },
       { "brazilian", "pt" },
       { "bulgarian", "bg" },
       { "czech", "cs" },
@@ -132,8 +133,8 @@ String Steam::GetSteamLanguage()
       { "tchinese", "zh-Hant" },
       { "thai", "th" },
       { "turkish", "tr" },
-      { "arabic", "ar" },
-      { "ukrainian", "uk" }
+      { "ukrainian", "uk" },
+      { "vietnamese", "vi" }
     };
 
     auto iter = steamLanguages.find(language);
