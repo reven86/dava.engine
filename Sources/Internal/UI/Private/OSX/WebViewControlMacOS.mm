@@ -14,6 +14,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "UI/UIWebView.h"
+#include "Platform/Steam.h"
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
@@ -223,11 +224,19 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
+#if defined(__DAVAENGINE_STEAM__)
+    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+#endif
+
     SetBackgroundTransparency(true);
 }
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
     window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
 #else
@@ -348,6 +357,21 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
         SetNativeVisible(isVisible);
     }
 }
+
+#if defined(__DAVAENGINE_STEAM__)
+void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
+{
+    if (overlayActivated)
+    {
+        wasVisible = isVisible;
+        SetVisible(false, false);
+    }
+    else
+    {
+        SetVisible(wasVisible, false);
+    }
+}
+#endif
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
