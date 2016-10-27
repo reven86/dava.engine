@@ -336,6 +336,8 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
         case HLSLBinaryOp_BitXor:
             value = value1 ^ value2;
             return true;
+        default:
+            break; // to shut up goddamn warning
         }
     }
     else if (expression->nodeType == HLSLNodeType_UnaryExpression)
@@ -361,6 +363,8 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
         case HLSLUnaryOp_BitNot:
             value = ~value;
             return true;
+        default:
+            break; // to shut up goddamn warning
         }
     }
     else if (expression->nodeType == HLSLNodeType_IdentifierExpression)
@@ -1474,6 +1478,8 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
 */
     }
     break;
+    default:
+        break; // to shut up goddamn warning
     }
 }
 
@@ -1506,6 +1512,8 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
         case HLSLBaseType_Uint:
             Logger::Info("%s[literal] %u", _IndentString(indent), unsigned(li->iValue));
             break;
+        default:
+            break; // to shut up goddamn warning
         }
     }
     break;
@@ -1617,6 +1625,8 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
         }
     }
     break;
+    default:
+        break; // to shut up goddamn warning
     }
 
     if (dump_subexpr)
@@ -1689,6 +1699,8 @@ TreeDump::_TypeName(const HLSLType& type)
         return "samplerCUBE";
     case HLSLBaseType_UserDefined:
         return type.typeName;
+    default:
+        break; // to shut up goddamn warning
     }
     return "?";
 }

@@ -308,6 +308,8 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
             op = "--";
             pre = false;
             break;
+        default:
+            break; // to shut up goddamn warning
         }
         writer.Write("(");
         if (pre)
