@@ -230,7 +230,7 @@ DAVA_TESTCLASS (FileSystemTest)
         TEST_VERIFY(NULL != f1);
         TEST_VERIFY(NULL != f2);
 
-        if (!f2 || !f2)
+        if (!f1 || !f2)
             return;
 
         uint64 size = f1->GetSize();

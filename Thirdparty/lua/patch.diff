@@ -1,0 +1,42 @@
+diff -ur ./lua_source_orig/src/linit.c ./lua_source/src/linit.c
+--- ./lua_source_orig/src/linit.c	2007-12-27 15:02:25.000000000 +0200
++++ ./lua_source/src/linit.c	2016-10-18 09:58:19.379865100 +0300
+@@ -23,6 +23,7 @@
+   {LUA_STRLIBNAME, luaopen_string},
+   {LUA_MATHLIBNAME, luaopen_math},
+   {LUA_DBLIBNAME, luaopen_debug},
++  {LUA_BITLIBNAME, luaopen_bit},
+   {NULL, NULL}
+ };
+ 
+diff -ur ./lua_source_orig/src/luaconf.h ./lua_source/src/luaconf.h
+--- ./lua_source_orig/src/luaconf.h	2008-02-11 18:25:08.000000000 +0200
++++ ./lua_source/src/luaconf.h	2016-10-18 09:57:54.253438300 +0300
+@@ -757,7 +757,14 @@
+ ** without modifying the main part of the file.
+ */
+ 
+-
++/* on Windows 10 getenv(), system() and LoadLibrary() not availabe */
++#if defined(LUA_WIN)
++#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
++#define getenv(x) (NULL)
++#define system(x) (-1)
++#undef LUA_DL_DLL
++#endif
++#endif
+ 
+ #endif
+ 
+diff -ur ./lua_source_orig/src/lualib.h ./lua_source/src/lualib.h
+--- ./lua_source_orig/src/lualib.h	2007-12-27 15:02:25.000000000 +0200
++++ ./lua_source/src/lualib.h	2016-10-18 09:58:11.713793300 +0300
+@@ -39,6 +39,8 @@
+ #define LUA_LOADLIBNAME	"package"
+ LUALIB_API int (luaopen_package) (lua_State *L);
+ 
++#define LUA_BITLIBNAME "bit"
++LUALIB_API int luaopen_bit(lua_State *L);
+ 
+ /* open all previous libraries */
+ LUALIB_API void (luaL_openlibs) (lua_State *L); 

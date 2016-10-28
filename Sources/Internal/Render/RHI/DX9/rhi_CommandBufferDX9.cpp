@@ -181,7 +181,7 @@ struct CommandBufferDX9_t
     };
 
     std::vector<uint64> _cmd;
-    RenderPassConfig passCfg;
+    RenderPassConfig passCfg; //-V730_NOINIT
     Handle sync = InvalidHandle;
     RingBuffer* text = nullptr;
     uint32 isFirstInPass : 1;
@@ -1077,7 +1077,7 @@ dx9_Present(Handle sync)
 //------------------------------------------------------------------------------
 
 static void
-_RejectAllFrames()
+_RejectAllFramesDX9()
 {
     _DX9_FrameSync.Lock();
     for (std::vector<FrameDX9>::iterator f = _DX9_Frame.begin(); f != _DX9_Frame.end();)
@@ -1176,7 +1176,7 @@ _DX9_ExecuteQueuedCommands()
                 DVASSERT_MSG(0, "Failed to restore all resources in time.");
             }
 #endif
-            _RejectAllFrames();
+            _RejectAllFramesDX9();
 
             //clear buffer
             DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
@@ -1238,7 +1238,7 @@ _DX9_ExecuteQueuedCommands()
         {
             if (hr == D3DERR_DEVICELOST)
             {
-                _RejectAllFrames();
+                _RejectAllFramesDX9();
                 _DX9_ResetPending = true;
             }
             else if (hr == 0x88760872)
@@ -1254,7 +1254,7 @@ _DX9_ExecuteQueuedCommands()
 
     while (_DX9_ResetPending)
     {
-        _RejectAllFrames();
+        _RejectAllFramesDX9();
 
         TextureDX9::ReleaseAll();
         VertexBufferDX9::ReleaseAll();
@@ -1702,7 +1702,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREATE_RENDER_TARGET:
         {
             DX9_CALL(_D3D9_Device->CreateRenderTarget((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                      static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)(arg[5] != 0),
                                                       (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateRenderTarget");
         }
@@ -1711,7 +1711,7 @@ _ExecDX9(DX9Command* command, uint32 cmdCount)
         case DX9Command::CREARE_DEPTHSTENCIL_SURFACE:
         {
             DX9_CALL(_D3D9_Device->CreateDepthStencilSurface((UINT)arg[0], (UINT)arg[1], static_cast<D3DFORMAT>(arg[2]),
-                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], (BOOL)arg[5],
+                                                             static_cast<D3DMULTISAMPLE_TYPE>(arg[3]), (DWORD)arg[4], BOOL(arg[5] != 0),
                                                              (IDirect3DSurface9**)(arg[6]), (HANDLE*)(arg[7])),
                      "CreateDepthStencilSurface");
         }

@@ -35,6 +35,7 @@ CPP_FILES_RECURSE
 HPP_FILES_RECURSE            
 CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
 HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT} 
+GROUP_SOURCE
 #
 HPP_FILES_RECURSE_STUB
 HPP_FILES_RECURSE_IMPL
@@ -76,6 +77,9 @@ FIND_SYSTEM_LIBRARY_${DAVA_PLATFORM_CURENT}
 #
 FIND_PACKAGE
 FIND_PACKAGE_${DAVA_PLATFORM_CURENT}
+#
+QT_UI_FILES
+QT_RES_FILES
 #
 DEPLOY_TO_BIN
 DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
@@ -245,8 +249,9 @@ macro( reset_MAIN_MODULE_VALUES )
                                          QT_DEPLOY_LIST_VALUE 
                                          QT_LINKAGE_LIST 
                                          QT_LINKAGE_LIST_VALUE 
-                                         DEPENDENT_LIST 
-                                         DAVA_COMPONENTS )
+                                         DEPENDENT_LIST
+                                         DAVA_COMPONENTS 
+                                         GROUP_SOURCE )
         set( ${VALUE} )
         set_property( GLOBAL PROPERTY ${VALUE} ${${VALUE}} )
     endforeach()
@@ -404,9 +409,10 @@ macro( setup_main_module )
             
             if( SRC_FOLDERS_DIR_NAME )
                 define_source( SOURCE        ${SRC_FOLDERS_DIR_NAME}
-                               IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} 
-                                             ${ERASE_FILES_DIR_NAME} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}_DIR_NAME}
-                             )
+                                           IGNORE_ITEMS  ${ERASE_FOLDERS_DIR_NAME} ${ERASE_FOLDERS_${DAVA_PLATFORM_CURENT}_DIR_NAME} 
+                                                                          ${ERASE_FILES_DIR_NAME} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}_DIR_NAME}
+                                            GROUP_SOURCE ${GROUP_SOURCE}
+                                         )
                                          
                 set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
                 list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
@@ -439,11 +445,26 @@ macro( setup_main_module )
 
         endif()
 
+        if (QT_UI_FILES OR QT_RES_FILES)
+            file              ( GLOB_RECURSE UI_LIST  ${QT_UI_FILES})
+            qt5_wrap_ui ( QT_UI_HEADERS ${UI_LIST} )
+
+            file              ( GLOB_RECURSE RCC_LIST  ${QT_RES_FILES})
+            qt5_add_resources ( QT_RCC  ${RCC_LIST} )
+
+            list(APPEND HPP_FILES ${QT_UI_HEADERS})
+            list(APPEND CPP_FILES ${QT_RCC})
+
+            set(QtGenerated ${QT_UI_HEADERS} ${QT_RCC})
+            list(APPEND GROUP_SOURCE QtGenerated)
+        endif()
+
         define_source( SOURCE         ${CPP_FILES} ${CPP_FILES_${DAVA_PLATFORM_CURENT}}
                                       ${HPP_FILES} ${HPP_FILES_${DAVA_PLATFORM_CURENT}}
                        SOURCE_RECURSE ${CPP_FILES_RECURSE} ${CPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                                       ${HPP_FILES_RECURSE} ${HPP_FILES_RECURSE_${DAVA_PLATFORM_CURENT}}
                        IGNORE_ITEMS   ${ERASE_FILES} ${ERASE_FILES_${DAVA_PLATFORM_CURENT}}
+                       GROUP_SOURCE ${GROUP_SOURCE}
                        GROUP_STRINGS  ${MODULE_GROUP_STRINGS}
                      )
 

@@ -48,6 +48,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
+    [nswindow setAcceptsMouseMovedEvents:YES];
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow setContentView:renderView];
     [nswindow setDelegate:windowDelegate];

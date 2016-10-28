@@ -133,7 +133,7 @@ JavaVM* GetJVM()
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     JNIEnv* env;
-    if (vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         LOGE("Failed get java environment");
         return -1;
@@ -230,7 +230,7 @@ void Java_com_dava_framework_JNIApplication_OnLowMemoryWarning(JNIEnv* env, jobj
 {
     if (core)
     {
-        DAVA::Logger::Info("__ LOW MEMORY ___  %p", env);
+        DAVA::Logger::Error("__ LOW MEMORY ___  %p", env);
     }
 }
 void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv* env, jobject classthis)
@@ -282,7 +282,7 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv* env, jobject cl
 
 void Java_com_dava_framework_JNIActivity_nativeOnAccelerometer(JNIEnv* env, jobject classthis, jfloat x, jfloat y, jfloat z)
 {
-    DAVA::AccelerometerAndroidImpl* accelerometer = (DAVA::AccelerometerAndroidImpl*)DAVA::Accelerometer::Instance();
+    DAVA::AccelerometerAndroidImpl* accelerometer = static_cast<DAVA::AccelerometerAndroidImpl*>(DAVA::Accelerometer::Instance());
     if (accelerometer)
     {
         accelerometer->SetAccelerationData(x, y, z);

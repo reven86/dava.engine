@@ -1,85 +1,98 @@
-#!/usr/bin/env python
-
 import os
-import sys
-import platform
 import shutil
-import stat
-from subprocess import Popen, PIPE
+import build_utils
 
-def on_rm_error(func, path, exc_info):
-    # path contains the path of the file that couldn't be removed
-    # let's just assume that it's read-only and unlink it.
-    os.chmod(path, stat.S_IWRITE)
-    os.unlink(path)
 
-def runProcess(args):
-    process = Popen(args,  shell=True, stdout=PIPE)
-    for line in iter(process.stdout.readline,''):
-        print line
+def get_supported_targets(platform):
+    if platform == 'win32':
+        return ['win32']
+    else:
+        return ['macos']
 
-def makeDirAndGo(dirName):
-    if not os.path.isdir(dirName):
-        os.mkdir(dirName)
-    os.chdir(dirName)
 
-def copyLib(src, dst):
+def get_dependencies_for_target(target):
+    return []
+
+
+def build_for_target(target, working_directory_path, root_project_path):
+    if target == 'win32':
+        _build_win32(working_directory_path, root_project_path)
+    elif target == 'macos':
+        _build_macos(working_directory_path, root_project_path)
+
+
+def get_download_info():
+    return 'https://github.com/google/googletest.git'
+
+
+def _copyLib(src, dst):
     if not os.path.isdir(dst):
         os.makedirs(dst)
     shutil.copy2(src, dst)
 
-def copyFolder(src, dst):
-    if os.path.isdir(dst):
-        shutil.rmtree(dst)
-    shutil.copytree(src, dst)
 
-def removeFolder(folder):
-    if (os.path.exists(folder) and os.path.isdir(folder)):
-        shutil.rmtree(folder, onerror=on_rm_error);
+def _download(working_directory_path):
+    source_folder_path = os.path.join(working_directory_path, 'googletest')
 
-libsFolder = os.path.join(os.getcwd(), "../../Modules/TArc/Libs")
+    build_utils.run_process(
+        'git clone ' + get_download_info(),
+        process_cwd=working_directory_path,
+        shell=True)
+
+    return source_folder_path
 
 
-removeFolder("googletest")
-runProcess("git clone https://github.com/google/googletest.git")
+@build_utils.run_once
+def _patch_sources(working_directory_path):
+    build_utils.apply_patch(
+        os.path.abspath('patch.diff'), working_directory_path)
 
-os.chdir("googletest")
-runProcess("git apply --whitespace=fix ../lib.diff")
 
-removeFolder(os.path.join(libsFolder, "Include"))
-copyFolder("googlemock/include/gmock", os.path.join(libsFolder, "Include/gmock"))
-copyFolder("googletest/include/gtest", os.path.join(libsFolder, "Include/gtest"))
+def _build_win32(working_directory_path, root_project_path):
+    source_folder_path = _download(working_directory_path)
+    _patch_sources(source_folder_path)
 
-makeDirAndGo("_build")
+    build_utils.build_and_copy_libraries_win32_cmake(
+        os.path.join(source_folder_path, '_build'),
+        source_folder_path,
+        root_project_path,
+        'googletest-distribution.sln', 'gmock',
+        'gmock.lib', 'gmock.lib',
+        'gmock.lib', 'gmock.lib',
+        'gmock.lib', 'gmock.lib',
+        target_lib_subdir='googlemock')
 
-if (platform.system() == "Windows"):
-    removeFolder(os.path.join(libsFolder, "Win32"))
-    makeDirAndGo("x86")
-    runProcess("cmake -G\"Visual Studio 12\" ../..")
-    runProcess("cmake --build . --config Debug")
-    copyLib("googlemock/Debug/gmock.lib", os.path.join(libsFolder, "Win32/x86/Debug/"))
-    runProcess("cmake --build . --config Release")
-    copyLib("googlemock/Release/gmock.lib", os.path.join(libsFolder, "Win32/x86/Release/"))
+    _copy_headers(source_folder_path, root_project_path)
 
-    os.chdir("..")
-    makeDirAndGo("x64")
-    runProcess("cmake -G\"Visual Studio 12 Win64\" ../..")
-    runProcess("cmake --build . --config Debug")
-    copyLib("googlemock/Debug/gmock.lib", os.path.join(libsFolder, "Win32/x64/Debug/"))
-    runProcess("cmake --build . --config Release")
-    copyLib("googlemock/Release/gmock.lib", os.path.join(libsFolder, "Win32/x64/Release/"))
-    os.chdir("../../..")
-elif (platform.system() == "Darwin"):
-    removeFolder(os.path.join(libsFolder, "Mac"))
-    makeDirAndGo("Debug")
-    runProcess("cmake  ../..")
-    runProcess("cmake --build . --config Debug")
-    copyLib("googlemock/libgmock.a", os.path.join(libsFolder, "Mac/Debug/"))
 
-    os.chdir("..")
-    makeDirAndGo("Release")
-    runProcess("cmake  ../..")
-    runProcess("cmake --build . --config Release")
-    copyLib("googlemock/libgmock.a", os.path.join(libsFolder, "Mac/Release/"))
-    os.chdir("../../..")
+def _build_macos(working_directory_path, root_project_path):
+    source_folder_path = _download(working_directory_path)
+    _patch_sources(source_folder_path)
+    build_utils.build_and_copy_libraries_macos_cmake(
+        os.path.join(source_folder_path, '_build'),
+        source_folder_path,
+        root_project_path,
+        'googletest-distribution.xcodeproj', 'gmock',
+        'libgmock.a', 'libgmock.a',
+        target_lib_subdir='googlemock')
 
+    _copy_headers(source_folder_path, root_project_path)
+
+
+def _copy_headers(source_folder_path, root_project_path):
+    os.path.join(root_project_path, 'Libs/include/libpng')
+    gmock_from_dir = os.path.join(
+        source_folder_path, 'googlemock/include/gmock')
+    gmock_to_dir = os.path.join(
+        root_project_path, 'Libs/include/googlemock/gmock')
+    gtest_from_dir = os.path.join(
+        source_folder_path, 'googletest/include/gtest')
+    gtest_to_dir = os.path.join(
+        root_project_path, 'Libs/include/googlemock/gtest')
+    scripts_from_dir = os.path.join(
+        source_folder_path, 'googlemock/scripts')
+    scripts_to_dir = os.path.join(
+        root_project_path, 'Thirdparty/googlemock/scripts')
+    build_utils.clean_copy_includes(gmock_from_dir, gmock_to_dir)
+    build_utils.clean_copy_includes(gtest_from_dir, gtest_to_dir)
+    build_utils.clean_copy_includes(scripts_from_dir, scripts_to_dir)

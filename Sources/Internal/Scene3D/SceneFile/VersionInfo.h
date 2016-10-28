@@ -36,8 +36,8 @@ public:
         uint32 version;
         TagsMap tags;
 
-        SceneVersion()
-            : version(0)
+        SceneVersion() //-V730 no need to init tags
+        : version(0)
         {
         }
         bool IsValid() const

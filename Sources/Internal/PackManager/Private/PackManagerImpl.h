@@ -1,17 +1,30 @@
 #pragma once
 
+#include "PackManager/PackManager.h"
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/FileSystem.h"
 
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Engine.h"
+#endif
+
 namespace DAVA
 {
 class PackManagerImpl : public IPackManager
 {
 public:
+#ifdef __DAVAENGINE_COREV2__
+    explicit PackManagerImpl(Engine& engine_);
+    ~PackManagerImpl() override;
+    Engine& engine;
+    SigConnectionID sigConnectionUpdate = 0;
+#else
     PackManagerImpl() = default;
+    ~PackManagerImpl() = default;
+#endif
 
     void Initialize(const String& architecture_,
                     const FilePath& dirToDownloadPacks_,
@@ -27,8 +40,6 @@ public:
 
     const String& GetInitErrorMessage() const override;
 
-    bool CanRetryInit() const override;
-
     void RetryInit() override;
 
     bool IsPausedInit() const override;
@@ -41,7 +52,7 @@ public:
 
     void DisableRequesting() override;
 
-    void Update() override;
+    void Update(float);
 
     const String& FindPackName(const FilePath& relativePathInPack) const override;
 
@@ -83,8 +94,7 @@ public:
     static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
 
 private:
-    void ContinueInitialization();
-    void InitializePacksAndBuildIndex();
+    // initialization state functions
     void AskFooter();
     void GetFooter();
     void AskFileTable();
@@ -96,10 +106,17 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
+    // helper functions
+    void DeleteLocalDBFiles();
+    void ContinueInitialization();
+    void InitializePacksAndBuildIndex();
+    void UnmountAllPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
+    mutable Mutex protectPM;
+
     FilePath dirToDownloadedPacks;
-    FilePath pathToBasePacksDB;
+    FilePath dbPath;
     String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
@@ -108,17 +125,17 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
-    FilePath dbZipInDoc;
-    FilePath dbZipInData;
-    FilePath dbInDoc;
+    FilePath dbLocalNameZipped;
+    FilePath dbLocalName;
 
-    String initLocalDBFileName;
+    String dbName;
     String initErrorMsg;
-    InitState initState = InitState::MountingLocalPacks;
+    InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
+    // first - relative file name in archive, second - file properties
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;

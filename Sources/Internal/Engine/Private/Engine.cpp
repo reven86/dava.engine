@@ -70,9 +70,9 @@ bool Engine::IsConsoleMode() const
     return engineBackend->IsConsoleMode();
 }
 
-void Engine::Init(eEngineRunMode runMode, const Vector<String>& modules)
+void Engine::Init(eEngineRunMode runMode, const Vector<String>& modules, KeyedArchive* options)
 {
-    engineBackend->Init(runMode, modules);
+    engineBackend->Init(runMode, modules, options);
 }
 
 int Engine::Run()
@@ -110,17 +110,12 @@ const Vector<String>& Engine::GetCommandLine() const
     return engineBackend->GetCommandLine();
 }
 
-DAVA::Vector<char*> Engine::GetCommandLineAsArgv() const
+Vector<char*> Engine::GetCommandLineAsArgv() const
 {
     return engineBackend->GetCommandLineAsArgv();
 }
 
-void Engine::SetOptions(KeyedArchive* options)
-{
-    engineBackend->SetOptions(options);
-}
-
-KeyedArchive* Engine::GetOptions()
+const KeyedArchive* Engine::GetOptions() const
 {
     return engineBackend->GetOptions();
 }

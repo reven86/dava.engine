@@ -16,7 +16,7 @@
 #include "Utils/Utils.h"
 #include "Platform/DeviceInfo.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 namespace DAVA
 {
@@ -172,7 +172,7 @@ void PlatformCore::GameThread()
     Logger::FrameworkDebug("========== PlatformCore::GameThread enter: thread=%d", GetCurrentThreadId());
 
     Vector<String> cmdline = engineBackend.GetCommandLine();
-    GameMain(std::move(cmdline));
+    DAVAMain(std::move(cmdline));
 
     // DAVA::Logger is already dead
     OutputDebugStringA("========== PlatformCore::GameThread leave\n");

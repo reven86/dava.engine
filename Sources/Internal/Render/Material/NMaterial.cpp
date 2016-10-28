@@ -43,11 +43,6 @@ struct MaterialBufferBinding
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
-RenderVariantInstance::RenderVariantInstance()
-    : shader(nullptr)
-{
-}
-
 RenderVariantInstance::~RenderVariantInstance()
 {
     rhi::ReleaseTextureSet(textureSet);
@@ -391,6 +386,11 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
     if (parent)
         return parent->GetEffectivePropValue(propName);
     return nullptr;
+}
+
+const DAVA::HashMap<DAVA::FastName, NMaterialProperty*>& NMaterial::GetLocalProperties() const
+{
+    return GetCurrentConfig().localProperties;
 }
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)

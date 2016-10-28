@@ -3,10 +3,9 @@
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Scene/SceneTabWidget.h"
 
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Render/RenderBase.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Functional/Function.h"

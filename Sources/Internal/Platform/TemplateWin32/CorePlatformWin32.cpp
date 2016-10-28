@@ -137,7 +137,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Create the rendering window
     if (isFullscreen)
     {
-        style = WS_VISIBLE | WS_POPUP;
+        style = FULLSCREEN_STYLE;
     } // End if Fullscreen
 
     AdjustWindowRect(&clientSize, style, FALSE);
@@ -424,7 +424,16 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             currentMode = fullscreenMode;
 
             GetWindowPlacement(hWindow, &windowPlacement);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+            // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
+            //
+            uint32 style = FULLSCREEN_STYLE;
+            if (IsWindowVisible(hWindow))
+            {
+                style |= WS_VISIBLE;
+            }
+            SetWindowLong(hWindow, GWL_STYLE, style);
 
             MONITORINFO monitorInfo;
             monitorInfo.cbSize = sizeof(monitorInfo);
@@ -905,8 +914,6 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     const UINT WM_ACTIVATE_POSTED = WM_USER + 12;
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-
     RECT rect;
 
     // win32 app don't have ui-scaling option,
@@ -940,6 +947,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break
     case WM_KEYUP:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -968,6 +977,8 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     // no break;
     case WM_KEYDOWN:
     {
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
         uint32 systemKeyCode = static_cast<uint32>(wParam);
         uint32 extendedKeyInfo = static_cast<uint32>(lParam);
         if ((1 << 24) & extendedKeyInfo)
@@ -1067,12 +1078,18 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         return 0;
 
     case WM_NCACTIVATE:
+    {
         // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
         // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
         // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
         // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
-        keyboard.ClearAllKeys();
+        InputSystem* inputSystem = InputSystem::Instance();
+        if (inputSystem != nullptr)
+        {
+            inputSystem->GetKeyboard().ClearAllKeys();
+        }
         break;
+    }
 
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:

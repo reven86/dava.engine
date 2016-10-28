@@ -6,10 +6,24 @@
 #include "Core/Core.h"
 
 #include "steam/steam_api.h"
+
+#include <cstdlib>
+
 namespace DAVA
 {
+struct SteamCallbacks
+{
+    STEAM_CALLBACK(SteamCallbacks, GameOverlayActivated, GameOverlayActivated_t)
+    {
+        Steam::GameOverlayActivated.Emit(pParam->m_bActive != 0);
+    }
+    // Place other Steam callbacks here
+};
+static SteamCallbacks* steamCallbacks = nullptr;
+
 const String Steam::appIdPropertyKey = "steam_appid";
 bool Steam::isInited = false;
+Signal<bool> Steam::GameOverlayActivated;
 
 void Steam::Init()
 {
@@ -23,7 +37,7 @@ void Steam::Init()
         // Once you get a public Steam AppID assigned for this game, you need to replace k_uAppIdInvalid with it and
         // removed steam_appid.txt from the game depot.
         Logger::Error("Error SteamAPI Restart.");
-        return;
+        std::exit(0);
     }
 
     // Initialize SteamAPI, if this fails we bail out since we depend on Steam for lots of stuff.
@@ -46,10 +60,14 @@ void Steam::Init()
     }
 
     isInited = true;
+
+    steamCallbacks = new SteamCallbacks();
 }
 
 void Steam::Deinit()
 {
+    SafeDelete(steamCallbacks);
+
     // Shutdown the SteamAPI
     SteamAPI_Shutdown();
     isInited = false;

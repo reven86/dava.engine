@@ -1,52 +1,19 @@
-#ifndef __LOGENGINE_EXCEPTION_H__
-#define __LOGENGINE_EXCEPTION_H__
-
+#pragma once
+#include <stdexcept>
 #include "Base/BaseTypes.h"
 
-namespace Log
+namespace DAVA
 {
-class Exception
+struct Exception : public ::std::runtime_error
 {
-public:
-    virtual ~Exception();
-    virtual const String& GetMessage()
-    {
-        return message;
-    };
+    Exception(const String& message, const char* file, size_t line);
+    Exception(const char*, const char* file, size_t line);
 
-protected:
-    Exception(const String& _message)
-        : message(_message)
-    {
-    }
-    String message;
+    String file;
+    size_t line;
+    Vector<void*> callstack;
 };
 
-// fatal exceptions
-class FindFileException : public Exception
-{
-public:
-    FindFileException()
-        : Exception("[*** FatalException] failed to find file\n")
-    {
-    }
-    ~FindFileException(){};
+} // namespace DAVA
 
-private:
-};
-
-// fatal exceptions
-class MemoryAllocateException : public Exception
-{
-public:
-    MemoryAllocateException()
-        : Exception("[*** MemoryAllocateException] failed to allocate memory\n")
-    {
-    }
-    ~MemoryAllocateException(){};
-
-private:
-};
-};
-
-#endif // __LOGENGINE_EXCEPTION_H__
+#define DAVA_THROW(e, ...) throw e(__VA_ARGS__, __FILE__, __LINE__)
