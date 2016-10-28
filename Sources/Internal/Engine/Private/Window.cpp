@@ -86,11 +86,15 @@ void Window::InitCustomRenderParams(rhi::InitParam& params)
 
 void Window::SetCursorCapture(eCursorCapture mode)
 {
-    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE)*/) // TODO: Add platfom's caps check
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
         if (cursorCapture != mode)
         {
             cursorCapture = mode;
+            if (!hasFocus)
+            {
+                deferredCursorCaptureOn = true;
+            }
             if (eCursorCapture::PINNING != mode || !deferredCursorCaptureOn)
             {
                 windowBackend->SetCursorCapture(mode);
@@ -106,10 +110,16 @@ eCursorCapture Window::GetCursorCapture() const
 
 void Window::SetCursorVisibility(bool visible)
 {
-    if (hasFocus /*&& windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY)*/) // TODO: Add platfom's caps check
+    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
     {
-        cursorVisible = visible;
-        windowBackend->SetCursorVisibility(visible);
+        if (cursorVisible != visible)
+        {
+            cursorVisible = visible;
+            if (hasFocus)
+            {
+                windowBackend->SetCursorVisibility(visible);
+            }
+        }
     }
 }
 
@@ -300,6 +310,7 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
         {
             deferredCursorCaptureOn = false;
             windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+            windowBackend->SetCursorVisibility(cursorVisible);
             return false;
         }
         else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
@@ -312,6 +323,7 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
             {
                 deferredCursorCaptureOn = false;
                 windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+                windowBackend->SetCursorVisibility(cursorVisible);
                 // return true, skip this event
             }
         }
@@ -334,14 +346,13 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
             if (eCursorCapture::PINNING != cursorCapture)
             {
                 windowBackend->SetCursorCapture(cursorCapture);
+                windowBackend->SetCursorVisibility(cursorVisible);
             }
         }
         else
         {
-            if (eCursorCapture::OFF != cursorCapture)
-            {
-                windowBackend->SetCursorCapture(eCursorCapture::OFF);
-            }
+            windowBackend->SetCursorCapture(eCursorCapture::OFF);
+            windowBackend->SetCursorVisibility(true);
         }
         deferredCursorCaptureOn = (cursorCapture == eCursorCapture::PINNING);
     }
