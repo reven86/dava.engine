@@ -52,6 +52,7 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
     mainWindow->SetProjectActionsEnabled(false);
+    mainWindow->SetDocumentGroupActionsEnable(false);
     mainWindow->SetEditorTitle(ReadEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
@@ -113,7 +114,19 @@ void EditorCore::OpenProject(const QString& path)
     if (newProject.get())
     {
         project = std::move(newProject);
-        OnProjectOpen(project.get());
+        AddRecentProject(project->GetProjectPath());
+
+        mainWindow->SetRecentProjects(GetRecentProjects());
+
+        connect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
+        connect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
+
+        if (assetCacheEnabled)
+        {
+            EnableCacheClient();
+        }
+
+        project->SetAssetCacheClient(cacheClient.get());
     }
 
     mainWindow->ShowResultList(tr("Error while loading project"), resultList);
@@ -192,33 +205,16 @@ bool EditorCore::CloseProject()
     {
         return true;
     }
-    auto documents = project->GetDocumentGroup()->GetDocuments();
-    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
 
-    if (hasUnsaved)
+    if (!TryCloseDocuments())
     {
-        int ret = QMessageBox::question(
-        mainWindow.get(),
-        tr("Save changes"),
-        tr("Some files has been modified.\n"
-           "Do you want to save your changes?"),
-        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
-        if (ret == QMessageBox::Cancel)
-        {
-            return false;
-        }
-        else if (ret == QMessageBox::SaveAll)
-        {
-            project->GetDocumentGroup()->SaveAllDocuments();
-        }
+        return false;
     }
 
-    for (auto& document : project->GetDocumentGroup()->GetDocuments())
-    {
-        project->GetDocumentGroup()->CloseDocument(document);
-    }
+    disconnect(this, &EditorCore::AssetCacheChanged, project.get(), &Project::SetAssetCacheClient);
+    disconnect(this, &EditorCore::TryCloseDocuments, project.get(), &Project::TryCloseAllDocuments);
 
-    OnProjectClose(project.get());
+    DisableCacheClient();
     project = nullptr;
     return true;
 }
@@ -275,44 +271,6 @@ void EditorCore::DisableCacheClient()
         cacheClient.reset();
         emit AssetCacheChanged(cacheClient.get());
     }
-}
-
-void EditorCore::OnProjectOpen(Project* newProject)
-{
-    AddRecentProject(newProject->GetProjectPath());
-
-    mainWindow->SetProjectPath(newProject->GetProjectPath());
-    mainWindow->SetRecentProjects(GetRecentProjects());
-    mainWindow->SetLanguages(newProject->GetAvailableLanguages(), newProject->GetCurrentLanguage());
-    mainWindow->SetProjectActionsEnabled(true);
-
-    DocumentGroup* documentGroup = newProject->GetDocumentGroup();
-    mainWindow->AttachDocumentGroup(documentGroup);
-
-    connect(this, &EditorCore::AssetCacheChanged, newProject, &Project::SetAssetCacheClient);
-
-    if (assetCacheEnabled)
-    {
-        EnableCacheClient();
-    }
-
-    newProject->SetAssetCacheClient(cacheClient.get());
-}
-
-void EditorCore::OnProjectClose(const Project* currProject)
-{
-    DocumentGroup* documentGroup = currProject->GetDocumentGroup();
-    mainWindow->DetachDocumentGroup(documentGroup);
-
-    disconnect(this, &EditorCore::AssetCacheChanged, currProject, &Project::SetAssetCacheClient);
-
-    mainWindow->SetProjectPath(QString());
-    mainWindow->SetProjectActionsEnabled(false);
-    mainWindow->SetLanguages(QStringList(), QString());
-    mainWindow->GetFileSystemWidget()->RemoveAllPaths();
-    mainWindow->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
-
-    DisableCacheClient();
 }
 
 const QStringList& EditorCore::GetRecentProjects() const

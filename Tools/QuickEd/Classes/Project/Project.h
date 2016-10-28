@@ -54,7 +54,7 @@ public:
     QString GetCurrentLanguage() const;
     void SetCurrentLanguage(const QString& newLanguageCode);
 
-    DocumentGroup* GetDocumentGroup() const;
+    //DocumentGroup* GetDocumentGroup() const;
 
     void SetRtl(bool isRtl);
     void SetBiDiSupport(bool support);
@@ -67,6 +67,8 @@ public:
     void OnReloadSprites();
 
     void OnReloadSpritesFinished();
+
+    bool TryCloseAllDocuments();
 
 signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);

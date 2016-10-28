@@ -71,11 +71,11 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuRecent">
      <property name="title">
-      <string>Recent</string>
+      <string>&amp;Recent</string>
      </property>
     </widget>
     <addaction name="actionNewProject"/>
@@ -83,7 +83,9 @@
     <addaction name="menuRecent"/>
     <addaction name="separator"/>
     <addaction name="actionSaveDocument"/>
-    <addaction name="actionForceSaveAllDocuments"/>
+    <addaction name="actionCloseDocument"/>
+    <addaction name="actionReloadDocument"/>
+    <addaction name="actionSaveAllDocuments"/>
     <addaction name="separator"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
@@ -91,7 +93,7 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <widget class="QMenu" name="menuApplicationStyle">
      <property name="title">
@@ -113,7 +115,7 @@
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>&amp;Tools</string>
     </property>
     <widget class="QMenu" name="menuDebug">
      <property name="title">
@@ -134,11 +136,19 @@
      <enum>Qt::ActionsContextMenu</enum>
     </property>
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionHelp"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
@@ -165,7 +175,7 @@
    <addaction name="actionNewProject"/>
    <addaction name="actionOpenProject"/>
    <addaction name="actionSaveDocument"/>
-   <addaction name="actionForceSaveAllDocuments"/>
+   <addaction name="actionSaveAllDocuments"/>
    <addaction name="actionCloseProject"/>
    <addaction name="actionPreferences"/>
    <addaction name="actionPixelized"/>
@@ -254,7 +264,7 @@
      <normaloff>:/Icons/openproject.png</normaloff>:/Icons/openproject.png</iconset>
    </property>
    <property name="text">
-    <string>Open project</string>
+    <string>&amp;Open project</string>
    </property>
    <property name="toolTip">
     <string>Open project</string>
@@ -271,7 +281,7 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -286,7 +296,7 @@
      <normaloff>:/Icons/newscene.png</normaloff>:/Icons/newscene.png</iconset>
    </property>
    <property name="text">
-    <string>New project</string>
+    <string>&amp;New project</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -298,7 +308,7 @@
      <normaloff>:/QtTools/Icons/close-16.png</normaloff>:/QtTools/Icons/close-16.png</iconset>
    </property>
    <property name="text">
-    <string>Close project</string>
+    <string>&amp;Close project</string>
    </property>
    <property name="toolTip">
     <string>Close project</string>
@@ -313,7 +323,7 @@
      <normaloff>:/Icons/savescene.png</normaloff>:/Icons/savescene.png</iconset>
    </property>
    <property name="text">
-    <string>Save document</string>
+    <string>&amp;Save document</string>
    </property>
    <property name="toolTip">
     <string>Save document</string>
@@ -325,13 +335,50 @@
     <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
+  <action name="actionReloadDocument">
+   <property name="text">
+    <string>Reload document</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload current document</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionCloseDocument">
+   <property name="text">
+    <string>Close document</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="actionSaveAllDocuments">
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Force Save All</string>
+   </property>
+   <property name="toolTip">
+    <string>Force save all opened documents</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
   <action name="actionHelp">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
      <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
    </property>
    <property name="text">
-    <string>UI Editor Help</string>
+    <string>QuickEd Help</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -366,21 +413,6 @@
    </property>
    <property name="visible">
     <bool>true</bool>
-   </property>
-  </action>
-  <action name="actionForceSaveAllDocuments">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
-   </property>
-   <property name="text">
-    <string>Force Save All</string>
-   </property>
-   <property name="toolTip">
-    <string>Force save all opened documents</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionPixelized">
@@ -443,7 +475,7 @@
      <normaloff>:/Icons/edit_undo.png</normaloff>:/Icons/edit_undo.png</iconset>
    </property>
    <property name="text">
-    <string>Undo</string>
+    <string>&amp;Undo</string>
    </property>
    <property name="toolTip">
     <string>Undo</string>
@@ -461,13 +493,13 @@
      <normaloff>:/Icons/edit_redo.png</normaloff>:/Icons/edit_redo.png</iconset>
    </property>
    <property name="text">
-    <string>Redo</string>
+    <string>&amp;Redo</string>
    </property>
    <property name="toolTip">
     <string>Redo</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Y, Ctrl+Shift+Z</string>
+    <string>Ctrl+Shift+Z</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -482,22 +514,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
-   </property>
-  </action>
-  <action name="actionReloadCurrentDocument">
-   <property name="text">
-    <string>Reload current document</string>
-   </property>
-   <property name="toolTip">
-    <string>Reload current document</string>
-   </property>
-  </action>
-  <action name="actionCloseCurrentDocument">
-   <property name="text">
-    <string>Close current document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>

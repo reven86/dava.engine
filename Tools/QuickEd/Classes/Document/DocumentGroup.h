@@ -54,6 +54,7 @@ signals:
     void CanRedoChanged(bool canRedo);
     void UndoTextChanged(const QString& undoText);
     void RedoTextChanged(const QString& redoText);
+    void FontPresetChanged(const DAVA::String& presetName);
 
 public slots:
     void AddDocument(const QString& path);
@@ -94,7 +95,8 @@ private:
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
 
-    Document* active;
+    MainWindow* mainWindow = nullptr;
+    Document* active = nullptr;
     QList<Document*> documents;
     std::unique_ptr<CommandStackGroup> commandStackGroup;
     QSet<Document*> changedFiles;

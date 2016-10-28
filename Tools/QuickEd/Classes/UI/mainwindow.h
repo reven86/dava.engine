@@ -29,12 +29,7 @@ namespace Ui
 class MainWindow;
 }
 
-class MainWindow
-: public QMainWindow
-  ,
-  public DAVA::InspBase
-  ,
-  public DAVA::TrackedObject
+class MainWindow : public QMainWindow, public DAVA::InspBase
 {
     Q_OBJECT
 
@@ -51,6 +46,7 @@ public:
     void SetCurrentLanguage(const QString& currentLang);
 
     void SetProjectActionsEnabled(bool enable);
+    void SetDocumentGroupActionsEnable(bool enable);
 
     PreviewWidget* GetPreviewWidget();
     PropertiesWidget* GetPropertiesWidget();
@@ -58,12 +54,16 @@ public:
     PackageWidget* GetPackageWidget();
     LibraryWidget* GetLibraryWidget();
 
-    void SetDocumentGroupActionsEnable(bool enable);
+    QTabBar* GetTabBar();
+    QAction* GetActionRedo();
+    QAction* GetActionUndo();
+
+    QAction* GetActionSaveDocument();
+    QAction* GetActionSaveAllDocuments();
+    QAction* GetActionCloseDocument();
+    QAction* GetActionReloadDocument();
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
-
-    void AttachDocumentGroup(DocumentGroup* documentGroup);
-    void DetachDocumentGroup(DocumentGroup* documentGroup);
 
     void ExecDialogReloadSprites(SpritesPacker* packer);
 
@@ -90,14 +90,12 @@ signals:
 
     void CurrentLanguageChanged(const QString& newLangCode);
 
-public slots:
-    void OnDocumentChanged(Document* document);
+    //public slots:
+    //    void OnDocumentChanged(Document* document);
 
 private slots:
     void OnRecentMenu(QAction* action);
-
     void OnPixelizationStateChanged(bool isPixelized);
-
     void OnRtlChanged(int arg);
     void OnBiDiSupportChanged(int arg);
     void OnGlobalClassesChanged(const QString& str);

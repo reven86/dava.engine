@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
     DebugTools::ConnectToUI(ui.get());
 
+    SetupShortcuts();
     InitPluginsToolBar();
     SetupViewMenu();
     ConnectActions();
@@ -51,7 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    OnDocumentChanged(nullptr);
+    //OnDocumentChanged(nullptr);
 
     connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
@@ -96,60 +97,13 @@ void MainWindow::SetProjectPath(const QString& aProjectPath)
     UpdateWindowTitle();
 }
 
-void MainWindow::AttachDocumentGroup(DocumentGroup* documentGroup)
-{
-    DVASSERT(documentGroup != nullptr);
-
-    documentGroup->ConnectToTabBar(ui->tabBar);
-
-    documentGroup->AttachRedoAction(ui->actionRedo);
-    documentGroup->AttachUndoAction(ui->actionUndo);
-
-    documentGroup->AttachSaveAction(ui->actionSaveDocument);
-    documentGroup->AttachSaveAllAction(ui->actionForceSaveAllDocuments);
-
-    documentGroup->AttachCloseDocumentAction(ui->actionCloseCurrentDocument);
-    ui->previewWidget->GetGLWidget()->addAction(ui->actionCloseCurrentDocument);
-
-    documentGroup->AttachReloadDocumentAction(ui->actionReloadCurrentDocument);
-    ui->previewWidget->GetGLWidget()->addAction(ui->actionReloadCurrentDocument);
-}
-
-void MainWindow::DetachDocumentGroup(DocumentGroup* documentGroup)
-{
-    DVASSERT(documentGroup != nullptr);
-    documentGroup->DisconnectTabBar(ui->tabBar);
-
-    //     documentGroup->AttachRedoAction(actionRedo); TODO fix
-    //     documentGroup->AttachUndoAction(actionUndo);
-    //     actionRedo->setShortcuts(QList<QKeySequence>() << Qt::CTRL + Qt::Key_Y << Qt::CTRL + Qt::SHIFT + Qt::Key_Z); //Qt can not set multishortcut or enum shortcut in Qt designer
-    //     Q_ASSERT(documentGroup != nullptr);
-    //     documentGroup->AttachSaveAction(actionSaveDocument);
-    //     documentGroup->AttachSaveAllAction(actionForceSaveAllDocuments);
-    //
-    //     QAction* actionCloseDocument = new QAction("Close current document", this);
-    //     actionCloseDocument->setShortcut(static_cast<int>(Qt::ControlModifier | Qt::Key_W));
-    //     actionCloseDocument->setShortcutContext(Qt::WindowShortcut);
-    //     documentGroup->AttachCloseDocumentAction(actionCloseDocument);
-    //     previewWidget->GetGLWidget()->addAction(actionCloseDocument);
-    //
-    //     QAction* actionReloadDocument = new QAction("Reload current document", this);
-    //     QList<QKeySequence> shortcurs;
-    //     shortcurs << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
-    //         << Qt::Key_F5;
-    //     actionReloadDocument->setShortcuts(shortcurs);
-    //     actionReloadDocument->setShortcutContext(Qt::WindowShortcut);
-    //     documentGroup->AttachReloadDocumentAction(actionReloadDocument);
-    //     previewWidget->GetGLWidget()->addAction(actionReloadDocument);
-}
-
-void MainWindow::OnDocumentChanged(Document* document)
-{
-    bool enabled = (document != nullptr);
-    ui->packageWidget->setEnabled(enabled);
-    ui->propertiesWidget->setEnabled(enabled);
-    ui->libraryWidget->setEnabled(enabled);
-}
+// void MainWindow::OnDocumentChanged(Document* document)
+// {
+//     bool enabled = (document != nullptr);
+//     ui->packageWidget->setEnabled(enabled);
+//     ui->propertiesWidget->setEnabled(enabled);
+//     ui->libraryWidget->setEnabled(enabled);
+// }
 
 void MainWindow::OnRecentMenu(QAction* action)
 {
@@ -195,14 +149,10 @@ QString MainWindow::ConvertLangCodeToString(const QString& langCode)
 
 void MainWindow::SetupShortcuts()
 {
-    ui->actionCloseCurrentDocument->setShortcutContext(Qt::WindowShortcut);
-
-    ui->actionReloadCurrentDocument->setShortcutContext(Qt::WindowShortcut);
-
     //Qt can not set multishortcut or enum shortcut in Qt designer
-    ui->actionReloadCurrentDocument->setShortcuts(QList<QKeySequence>()
-                                                  << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
-                                                  << Qt::Key_F5);
+    ui->actionReloadDocument->setShortcuts(QList<QKeySequence>()
+                                           << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+                                           << Qt::Key_F5);
 
     ui->actionRedo->setShortcuts(QList<QKeySequence>()
                                  << Qt::CTRL + Qt::Key_Y
@@ -248,7 +198,7 @@ void MainWindow::InitLanguageBox()
 {
     comboboxLanguage.reset(new QComboBox());
     comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    QLabel* label = new QLabel(tr("language"));
+    QLabel* label = new QLabel(tr("Language"));
     label->setBuddy(comboboxLanguage.get());
     QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
@@ -316,16 +266,62 @@ LibraryWidget* MainWindow::GetLibraryWidget()
     return ui->libraryWidget;
 }
 
-void MainWindow::SetProjectActionsEnabled(bool enable)
+QTabBar* MainWindow::GetTabBar()
 {
-    ui->actionCloseProject->setEnabled(enable);
-    ui->fileSystemDockWidget->setEnabled(enable);
-    ui->menuTools->setEnabled(enable);
-    ui->toolBarPlugins->setEnabled(enable);
+    return ui->tabBar;
 }
 
-void MainWindow::SetDocumentGroupActionsEnable(bool enable)
+QAction* MainWindow::GetActionRedo()
 {
+    return ui->actionRedo;
+}
+
+QAction* MainWindow::GetActionUndo()
+{
+    return ui->actionUndo;
+}
+
+QAction* MainWindow::GetActionSaveDocument()
+{
+    return ui->actionSaveDocument;
+}
+
+QAction* MainWindow::GetActionSaveAllDocuments()
+{
+    return ui->actionSaveAllDocuments;
+}
+
+QAction* MainWindow::GetActionCloseDocument()
+{
+    return ui->actionCloseDocument;
+}
+
+QAction* MainWindow::GetActionReloadDocument()
+{
+    return ui->actionReloadDocument;
+}
+
+void MainWindow::SetProjectActionsEnabled(bool enabled)
+{
+    ui->actionCloseProject->setEnabled(enabled);
+    ui->toolBarPlugins->setEnabled(enabled);
+
+    ui->fileSystemDockWidget->setEnabled(enabled);
+}
+
+void MainWindow::SetDocumentGroupActionsEnable(bool enabled)
+{
+    ui->packageWidget->setEnabled(enabled);
+    ui->propertiesWidget->setEnabled(enabled);
+    ui->libraryWidget->setEnabled(enabled);
+
+    ui->actionSaveDocument->setEnabled(enabled);
+    ui->actionSaveAllDocuments->setEnabled(enabled);
+    ui->actionReloadDocument->setEnabled(enabled);
+    ui->actionCloseDocument->setEnabled(enabled);
+
+    ui->actionRedo->setEnabled(enabled);
+    ui->actionUndo->setEnabled(enabled);
 }
 
 void MainWindow::InitRtlBox()
@@ -350,7 +346,7 @@ void MainWindow::InitGlobalClasses()
 {
     QLineEdit* classesEdit = new QLineEdit();
     classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    QLabel* label = new QLabel(tr("global classes"));
+    QLabel* label = new QLabel(tr("Global classes"));
     label->setBuddy(classesEdit);
     QHBoxLayout* layout = new QHBoxLayout;
     layout->setMargin(0);
@@ -490,47 +486,6 @@ void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& re
         QMessageBox::warning(qApp->activeWindow(), title, errors.join('\n'));
     }
 }
-
-// void MainWindow::OnProjectOpened(const ResultList& resultList, const Project* project)
-// {
-//     menuTools->setEnabled(resultList);
-//     toolBarPlugins->setEnabled(resultList);
-//     currentProjectPath = project->GetProjectDirectory() + project->GetProjectName();
-//     if (resultList)
-//     {
-//         UpdateProjectSettings();
-//     }
-//     else
-//     {
-//         QStringList errors;
-//         for (const auto& result : resultList.GetResults())
-//         {
-//             errors << QString::fromStdString(result.message);
-//         }
-//         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
-//         this->setWindowTitle("QuickEd");
-//     }
-// }
-
-// void MainWindow::OnOpenProjectAction()
-// {
-//     QString defaultPath = currentProjectPath;
-//     if (defaultPath.isNull() || defaultPath.isEmpty())
-//     {
-//         defaultPath = QDir::currentPath();
-//     }
-//
-//     QString projectPath = FileDialog::getOpenFileName(this, tr("Select a project file"),
-//                                                       defaultPath,
-//                                                       tr("Project (*.uieditor)"));
-//     if (projectPath.isEmpty())
-//     {
-//         return;
-//     }
-//     projectPath = QDir::toNativeSeparators(projectPath);
-//
-//     emit ActionOpenProjectTriggered(projectPath);
-// }
 
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)
 {

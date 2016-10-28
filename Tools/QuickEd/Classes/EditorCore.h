@@ -34,6 +34,7 @@ public:
 
 signals:
     void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
+    bool TryCloseDocuments();
 
 private slots:
     void OnNewProject();
@@ -55,9 +56,6 @@ private:
 
     void EnableCacheClient();
     void DisableCacheClient();
-
-    void OnProjectOpen(Project* project);
-    void OnProjectClose(const Project* project);
 
     const QStringList& GetRecentProjects() const;
     QString GetLastProject() const;

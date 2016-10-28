@@ -59,7 +59,12 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     }
     mainWindow->GetLibraryWidget()->SetLibraryPackages(GetLibraryPackages());
 
-    connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged);
+    mainWindow->SetProjectActionsEnabled(true);
+    mainWindow->SetProjectPath(GetProjectPath());
+    mainWindow->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
+
+    connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged, Qt::DirectConnection);
+    connect(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, documentGroup.get(), &DocumentGroup::FontPresetChanged, Qt::DirectConnection);
 
     connect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
     connect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
@@ -100,6 +105,11 @@ Project::~Project()
 
     disconnect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
 
+    mainWindow->SetLanguages(QStringList(), QString());
+    mainWindow->SetProjectPath(QString());
+    mainWindow->SetProjectActionsEnabled(false);
+
+    mainWindow->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
     for (auto& item : SourceResourceDirectories())
     {
         QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
@@ -107,6 +117,7 @@ Project::~Project()
 
         mainWindow->GetFileSystemWidget()->RemovePath(path);
     }
+    mainWindow->GetFileSystemWidget()->RemoveAllPaths();
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
@@ -115,21 +126,6 @@ Project::~Project()
         FilePath::RemoveResourcesFolder(FilePath(folderInfo.second.toStdString()));
     }
 }
-
-// bool Project::Open(const QString& path)
-// {
-//     bool result = OpenInternal(path);
-//     return result;
-// }
-
-// void Project::Close()
-// {
-//     FilePath::RemoveResourcesFolder(projectPath + "Data/");
-//
-//     SetProjectName("");
-//     SetProjectPath("");
-// }
-
 // bool Project::OpenInternal(const QString& path)
 // {
 //     // Attempt to create a project
@@ -229,16 +225,6 @@ Project::~Project()
 //     return true;
 // }
 
-// bool Project::CanOpenProject(const QString& projectPath) const
-// {
-//     if (projectPath.isEmpty())
-//     {
-//         return false; //this is not performace fix. QDir return true for empty path
-//     }
-//     QFileInfo fileInfo(projectPath);
-//     return fileInfo.exists() && fileInfo.isFile();
-// }
-
 const Vector<FilePath>& Project::GetLibraryPackages() const
 {
     return settings.libraryPackages;
@@ -326,7 +312,6 @@ std::tuple<Project::Settings, ResultList> Project::ParseProjectSettings(const QS
                 if (FileSystem::Instance()->Exists(localizationFontsPath))
                 {
                     settings.fontsConfigsDirectory = localizationFontsPath.GetDirectory();
-                    //editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());TODO fix
                 }
             }
         }
@@ -338,8 +323,6 @@ std::tuple<Project::Settings, ResultList> Project::ParseProjectSettings(const QS
             settings.fontsConfigsDirectory = defaultDirectory;
         }
     }
-    //
-    //         editorFontSystem->LoadLocalizedFonts();
 
     const YamlNode* textsDirNode = projectRoot->Get("TextsDirectory");
     if (textsDirNode != nullptr)
@@ -422,10 +405,10 @@ void Project::SetCurrentLanguage(const QString& newLanguageCode)
     }
 }
 
-DocumentGroup* Project::GetDocumentGroup() const
-{
-    return documentGroup.get();
-}
+// DocumentGroup* Project::GetDocumentGroup() const
+// {
+//     return documentGroup.get();
+// }
 
 void Project::SetRtl(bool isRtl)
 {
@@ -474,9 +457,9 @@ const QVector<QPair<QString, QString>>& Project::SourceResourceDirectories() con
 
 void Project::OnReloadSprites()
 {
-    for (auto& document : GetDocumentGroup()->GetDocuments())
+    for (auto& document : documentGroup->GetDocuments())
     {
-        if (!GetDocumentGroup()->TryCloseDocument(document))
+        if (!documentGroup->TryCloseDocument(document))
         {
             return;
         }
@@ -494,6 +477,37 @@ void Project::OnReloadSpritesFinished()
     //     }
 
     Sprite::ReloadSprites();
+}
+
+bool Project::TryCloseAllDocuments()
+{
+    auto documents = documentGroup->GetDocuments();
+    bool hasUnsaved = std::find_if(documents.begin(), documents.end(), [](Document* document) { return document->CanSave(); }) != documents.end();
+
+    if (hasUnsaved)
+    {
+        int ret = QMessageBox::question(
+        mainWindow,
+        tr("Save changes"),
+        tr("Some files has been modified.\n"
+           "Do you want to save your changes?"),
+        QMessageBox::SaveAll | QMessageBox::NoToAll | QMessageBox::Cancel);
+        if (ret == QMessageBox::Cancel)
+        {
+            return false;
+        }
+        else if (ret == QMessageBox::SaveAll)
+        {
+            documentGroup->SaveAllDocuments();
+        }
+    }
+
+    for (auto& document : documentGroup->GetDocuments())
+    {
+        documentGroup->CloseDocument(document);
+    }
+
+    return true;
 }
 
 void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)
@@ -542,28 +556,6 @@ void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)
 //     return fullProjectFilePath;
 // }
 
-// void Project::SetIsOpen(bool arg) //TODO fix
-// {
-//     if (isOpen == arg)
-//     {
-//         //return; //TODO: implement this after we create CloseProject function
-//     }
-//     isOpen = arg;
-//     if (arg)
-//     {
-//         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
-//         QString newProjectPath = GetProjectPath() + GetProjectName();
-//         //         QStringList projectsPathes = GetProjectsHistory(); TODO fix
-//         //         projectsPathes.removeAll(newProjectPath);
-//         //         projectsPathes += newProjectPath;
-//         //         while (static_cast<DAVA::uint32>(projectsPathes.size()) > projectsHistorySize)
-//         //         {
-//         //             projectsPathes.removeFirst();
-//         //         }
-//         //         projectsHistory = projectsPathes.join('\n').toStdString();
-//     }
-//     emit IsOpenChanged(arg);
-// }
 QString Project::GetProjectPath() const
 {
     return settings.projectFile;
@@ -578,30 +570,3 @@ QString Project::GetProjectName() const
 {
     return projectName;
 }
-
-// void Project::SetProjectPath(QString arg)
-// {
-//     if (GetProjectPath() != arg)
-//     {
-//         if (!projectPath.IsEmpty())
-//         {
-//             FilePath::RemoveResourcesFolder(projectPath + "Data/");
-//         }
-//         projectPath = arg.toStdString().c_str();
-//         if (!projectPath.IsEmpty())
-//         {
-//             projectPath.MakeDirectoryPathname();
-//             FilePath::AddResourcesFolder(projectPath + "Data/");
-//         }
-//         emit ProjectPathChanged(arg);
-//     }
-// }
-
-// void Project::SetProjectName(QString arg)
-// {
-//     if (projectName != arg)
-//     {
-//         projectName = arg;
-//         emit ProjectNameChanged(arg);
-//     }
-// }

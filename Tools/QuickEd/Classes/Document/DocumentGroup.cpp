@@ -25,9 +25,9 @@
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(MainWindow* mainWindow, QObject* parent)
+DocumentGroup::DocumentGroup(MainWindow* aMainWindow, QObject* parent)
     : QObject(parent)
-    , active(nullptr)
+    , mainWindow(aMainWindow)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
@@ -38,15 +38,29 @@ DocumentGroup::DocumentGroup(MainWindow* mainWindow, QObject* parent)
 
     connect(mainWindow, &MainWindow::OpenPackageFile, this, &DocumentGroup::AddDocument);
 
-    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
+    //connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
 
     connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
     connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
     connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
     connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
+
+    ConnectToTabBar(mainWindow->GetTabBar());
+
+    AttachRedoAction(mainWindow->GetActionRedo());
+    AttachUndoAction(mainWindow->GetActionUndo());
+
+    AttachSaveAction(mainWindow->GetActionSaveDocument());
+    AttachSaveAllAction(mainWindow->GetActionSaveAllDocuments());
+
+    AttachCloseDocumentAction(mainWindow->GetActionCloseDocument());
+    AttachReloadDocumentAction(mainWindow->GetActionReloadDocument());
 }
 
-DocumentGroup::~DocumentGroup() = default;
+DocumentGroup::~DocumentGroup()
+{
+    DisconnectTabBar(mainWindow->GetTabBar());
+};
 
 QList<Document*> DocumentGroup::GetDocuments() const
 {
@@ -97,7 +111,6 @@ void DocumentGroup::AttachUndoAction(QAction* undoAction) const
     undoAction->setEnabled(commandStackGroup->CanUndo());
     connect(this, &DocumentGroup::UndoTextChanged, [undoAction](const QString& text) {
         QString actionText = text.isEmpty() ? "Undo" : "Undo: " + text;
-        undoAction->setText(actionText);
         undoAction->setToolTip(actionText);
     });
     connect(this, &DocumentGroup::CanUndoChanged, undoAction, &QAction::setEnabled);
@@ -109,7 +122,6 @@ void DocumentGroup::AttachRedoAction(QAction* redoAction) const
     redoAction->setEnabled(commandStackGroup->CanRedo());
     connect(this, &DocumentGroup::RedoTextChanged, [redoAction](const QString& text) {
         QString actionText = text.isEmpty() ? "Redo" : "Redo: " + text;
-        redoAction->setText(actionText);
         redoAction->setToolTip(actionText);
     });
     connect(this, &DocumentGroup::CanRedoChanged, redoAction, &QAction::setEnabled);
@@ -594,9 +606,10 @@ Document* DocumentGroup::CreateDocument(const QString& path)
     RefPtr<PackageNode> packageRef = OpenPackage(davaPath);
     if (packageRef.Get() != nullptr)
     {
-        Document* document = new Document(packageRef, nullptr, this); //TODO fix
+        Document* document = new Document(packageRef, this);
         connect(document, &Document::FileChanged, this, &DocumentGroup::OnFileChanged);
         connect(document, &Document::CanSaveChanged, this, &DocumentGroup::OnCanSaveChanged);
+        connect(this, &DocumentGroup::FontPresetChanged, document, &Document::FontPresetChanged, Qt::DirectConnection);
         return document;
     }
     else

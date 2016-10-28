@@ -32,8 +32,6 @@ class AbstractProperty;
 
 class QFileSystemWatcher;
 
-class EditorFontSystem;
-
 class Document final : public QObject
 {
     Q_OBJECT
@@ -41,7 +39,7 @@ class Document final : public QObject
     Q_PROPERTY(bool canClose READ CanClose WRITE SetCanClose NOTIFY CanCloseChanged);
 
 public:
-    explicit Document(const DAVA::RefPtr<PackageNode>& package, EditorFontSystem* aEditorFontSystem, QObject* parent = nullptr);
+    explicit Document(const DAVA::RefPtr<PackageNode>& package, QObject* parent = nullptr);
     ~Document();
 
     const DAVA::FilePath& GetPackageFilePath() const;
@@ -57,6 +55,7 @@ public:
     bool CanSave() const;
     bool CanClose() const;
     bool IsDocumentExists() const;
+    void RefreshAllControlProperties();
 
 signals:
     void FileChanged(Document* document);
@@ -64,7 +63,7 @@ signals:
     void CanCloseChanged(bool canClose);
 
 public slots:
-    void RefreshAllControlProperties();
+    void FontPresetChanged(const DAVA::String& presetName);
     void SetCanClose(bool canClose);
 
 private slots:
@@ -78,8 +77,7 @@ private:
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     std::unique_ptr<DAVA::CommandStack> commandStack;
-    QFileSystemWatcher* fileSystemWatcher = nullptr;
-    EditorFontSystem* editorFontSystem = nullptr;
+    std::unique_ptr<QFileSystemWatcher> fileSystemWatcher;
     bool fileExists = true;
     bool canSave = false;
     bool canClose = true;
