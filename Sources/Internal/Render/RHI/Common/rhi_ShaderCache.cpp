@@ -18,7 +18,7 @@ ProgInfo
 static std::vector<ProgInfo> _ProgInfo;
 
 static std::string* _PreprocessedText = nullptr;
-
+/*
 static int
 _mcpp__fputc(int ch, OUTDEST dst)
 {
@@ -116,7 +116,7 @@ _mcpp__fprintf(OUTDEST dst, const char* format, ...)
 
     return count;
 }
-
+*/
 namespace ShaderCache
 {
 //------------------------------------------------------------------------------

@@ -164,7 +164,7 @@ void ShaderSource::InlineFunctions()
     {
         if (statement->nodeType == sl::HLSLNodeType_Function)
         {
-            sl::HLSLFunction* function = (sl::HLSLFunction*)statement;
+            sl::HLSLFunction* function = static_cast<sl::HLSLFunction*>(statement);
 
             if (stricmp(function->name, "vp_main") && stricmp(function->name, "fp_main"))
                 global_func_decl.push_back(function);
@@ -333,7 +333,7 @@ void ShaderSource::InlineFunctions()
                         {
                         case sl::HLSLNodeType_BlockStatement:
                         {
-                            sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)statement;
+                            sl::HLSLBlockStatement* block = static_cast<sl::HLSLBlockStatement*>(statement);
 
                             if (block->statement == target)
                             {
@@ -361,7 +361,7 @@ void ShaderSource::InlineFunctions()
                     }
                     virtual void VisitBlockStatement(sl::HLSLBlockStatement* node)
                     {
-                        sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)node;
+                        sl::HLSLBlockStatement* block = static_cast<sl::HLSLBlockStatement*>(node);
 
                         if (block->statement == target)
                         {
@@ -397,10 +397,10 @@ void ShaderSource::InlineFunctions()
                 rv_decl->name = ast->AddString(ret_name);
 
                 if (find_statement_expression.statement->nodeType == sl::HLSLNodeType_Declaration
-                    && ((sl::HLSLDeclaration*)(find_statement_expression.statement))->assignment == fcall[k]
+                    && (static_cast<sl::HLSLDeclaration*>(find_statement_expression.statement))->assignment == fcall[k]
                     )
                 {
-                    sl::HLSLDeclaration* decl = (sl::HLSLDeclaration*)(find_statement_expression.statement);
+                    sl::HLSLDeclaration* decl = static_cast<sl::HLSLDeclaration*>(find_statement_expression.statement);
                     sl::HLSLIdentifierExpression* val = ast->AddNode<sl::HLSLIdentifierExpression>(statement->fileName, statement->line);
 
                     val->name = ast->AddString(ret_name);
@@ -414,7 +414,7 @@ void ShaderSource::InlineFunctions()
                     {
                     case sl::HLSLNodeType_BinaryExpression:
                     {
-                        sl::HLSLBinaryExpression* bin = (sl::HLSLBinaryExpression*)(find_statement_expression.expr);
+                        sl::HLSLBinaryExpression* bin = static_cast<sl::HLSLBinaryExpression*>(find_statement_expression.expr);
                         sl::HLSLExpression** ce = NULL;
 
                         if (bin->expression1 == fcall[k])
@@ -432,7 +432,7 @@ void ShaderSource::InlineFunctions()
                     break;
                     case sl::HLSLNodeType_FunctionCall:
                     {
-                        sl::HLSLFunctionCall* call = (sl::HLSLFunctionCall*)(find_statement_expression.expr);
+                        sl::HLSLFunctionCall* call = static_cast<sl::HLSLFunctionCall*>(find_statement_expression.expr);
                         sl::HLSLExpression* prev_arg = call->argument;
 
                         for (sl::HLSLExpression* arg = call->argument; arg; arg = arg->nextExpression)
@@ -470,7 +470,7 @@ void ShaderSource::InlineFunctions()
                 {
                     if (fs->nodeType == sl::HLSLNodeType_ReturnStatement)
                     {
-                        func_ret = ((sl::HLSLReturnStatement*)(fs))->expression;
+                        func_ret = (static_cast<sl::HLSLReturnStatement*>(fs))->expression;
                         func_ret_parent = sp;
                         break;
                     }
@@ -526,7 +526,7 @@ void ShaderSource::InlineFunctions()
                 if (find_parent_prev.parent && !find_parent_prev.prev)
                 {
                     DVASSERT(find_parent_prev.parent->nodeType == sl::HLSLNodeType_BlockStatement);
-                    sl::HLSLBlockStatement* block = (sl::HLSLBlockStatement*)(find_parent_prev.parent);
+                    sl::HLSLBlockStatement* block = static_cast<sl::HLSLBlockStatement*>(find_parent_prev.parent);
                     sl::HLSLStatement* next = block->statement;
 
                     block->statement = rv_decl;
@@ -601,7 +601,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
         {
             if (statement->nodeType == sl::HLSLNodeType_Declaration)
             {
-                sl::HLSLDeclaration* decl = (sl::HLSLDeclaration*)statement;
+                sl::HLSLDeclaration* decl = static_cast<sl::HLSLDeclaration*>(statement);
 
                 if (decl->type.flags & sl::HLSLTypeFlag_Property)
                 {
@@ -618,7 +618,7 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     {
                         if (decl->type.arraySize->nodeType == sl::HLSLNodeType_LiteralExpression)
                         {
-                            sl::HLSLLiteralExpression* expr = (sl::HLSLLiteralExpression*)(decl->type.arraySize);
+                            sl::HLSLLiteralExpression* expr = static_cast<sl::HLSLLiteralExpression*>(decl->type.arraySize);
 
                             if (expr->type == sl::HLSLBaseType_Int)
                                 prop.arraySize = expr->iValue;
@@ -668,14 +668,14 @@ ShaderSource::ProcessMetaData(sl::HLSLTree* ast)
                     {
                         if (decl->assignment->nodeType == sl::HLSLNodeType_ConstructorExpression)
                         {
-                            sl::HLSLConstructorExpression* ctor = (sl::HLSLConstructorExpression*)(decl->assignment);
+                            sl::HLSLConstructorExpression* ctor = static_cast<sl::HLSLConstructorExpression*>(decl->assignment);
                             unsigned val_i = 0;
 
                             for (sl::HLSLExpression *arg = ctor->argument; arg; arg = arg->nextExpression, ++val_i)
                             {
                                 if (arg->nodeType == sl::HLSLNodeType_LiteralExpression)
                                 {
-                                    sl::HLSLLiteralExpression* expr = (sl::HLSLLiteralExpression*)(arg);
+                                    sl::HLSLLiteralExpression* expr = static_cast<sl::HLSLLiteralExpression*>(arg);
 
                                     if (expr->type == sl::HLSLBaseType_Float)
                                         prop.defaultValue[val_i] = expr->fValue;
