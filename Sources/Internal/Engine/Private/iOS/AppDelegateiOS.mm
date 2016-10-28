@@ -20,7 +20,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 @implementation AppDelegate
 
-- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+- (void)application:(UIApplication*)application didReceiveLocalNotification:(UILocalNotification*)notification
 {
     bridge->ApplicationDidReceiveLocalNotification([application applicationState], notification);
 }
@@ -33,7 +33,7 @@ extern CoreNativeBridge* coreNativeBridge;
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    UILocalNotification *notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+    UILocalNotification* notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
     if (notification != nil && [application applicationState] != UIApplicationStateActive)
     {
         NSString* uid = [[notification userInfo] valueForKey:@"uid"];

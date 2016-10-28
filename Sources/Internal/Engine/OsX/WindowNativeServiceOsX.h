@@ -20,7 +20,7 @@ public:
     void AddNSView(NSView* nsview);
     void RemoveNSView(NSView* nsview);
     void DoWindowDeminiaturize();
-    
+
 private:
     WindowNativeService(Private::WindowNativeBridge* nativeBridge);
 
