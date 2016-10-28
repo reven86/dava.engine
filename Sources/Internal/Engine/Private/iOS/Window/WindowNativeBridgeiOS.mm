@@ -51,7 +51,7 @@ bool WindowNativeBridge::CreateWindow()
 
     [uiwindow setRootViewController:renderViewController];
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, scale, scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, rect.size.width, rect.size.height, scale, scale, Fullscreen::On));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return true;
 }

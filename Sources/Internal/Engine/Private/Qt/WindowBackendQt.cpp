@@ -302,7 +302,7 @@ void WindowBackend::OnCreated()
     float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
     float32 w = static_cast<float32>(renderWidget->width());
     float32 h = static_cast<float32>(renderWidget->height());
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, dpi, dpi, Fullscreen::Off));
 }
 
 bool WindowBackend::OnUserCloseRequest()

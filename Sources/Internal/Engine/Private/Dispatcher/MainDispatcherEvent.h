@@ -153,7 +153,7 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateAppTerminateEvent(bool triggeredBySystem);
     static MainDispatcherEvent CreateUserCloseRequestEvent(Window* window);
 
-    static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY, Fullscreen fullscreen);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
     static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY, Fullscreen fullscreen);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);

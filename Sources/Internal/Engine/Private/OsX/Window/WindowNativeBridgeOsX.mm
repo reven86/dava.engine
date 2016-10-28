@@ -55,7 +55,7 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     {
         float32 scale = [nswindow backingScaleFactor];
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, scale, scale));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, viewRect.size.width, viewRect.size.height, scale, scale, Fullscreen::Off));
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     }
 

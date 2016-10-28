@@ -24,7 +24,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateUserCloseRequestEvent(Window* win
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY, Fullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -32,6 +32,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window
     e.sizeEvent.height = height;
     e.sizeEvent.scaleX = scaleX;
     e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.fullscreen = fullscreen;
     return e;
 }
 

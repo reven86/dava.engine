@@ -37,7 +37,9 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
     float32 h = xamlWindow->Bounds.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, scaleX, scaleY));
+    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
+    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, scaleX, scaleY, fullscreen));
 
     xamlWindow->Activate();
 }

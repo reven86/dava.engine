@@ -432,7 +432,7 @@ LRESULT WindowBackend::OnCreate()
     height = rc.bottom - rc.top;
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f, Fullscreen::Off));
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
 }

@@ -160,6 +160,7 @@ void Window::FinishEventHandlingOnCurrentFrame()
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     CompressSizeChangedEvents(e);
+    fullscreenMode = e.sizeEvent.fullscreen;
     sizeEventHandled = true;
 
     Logger::FrameworkDebug("=========== WINDOW_CREATED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
