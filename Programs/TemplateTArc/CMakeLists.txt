@@ -28,7 +28,6 @@ include_directories   ( "Classes" )
 if( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
 elseif( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "WinSpecific")
     set( EXECUTABLE_FLAG WIN32 )
 else()
     message(FATAL_ERROR "TArc supports only Win and Mac")
@@ -38,12 +37,12 @@ file(GLOB RCC_LIST "Resources/*.qrc")
 file(GLOB QML_LIST "Resources/*.qml")
 qt5_add_resources(RCC_APP_SRCS  ${RCC_LIST})
 set(ADDED_SRC ${RCC_APP_SRCS})
+set(QML_SCAN_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 define_source (SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} "Resources")
 
-set( APP_DATA                       ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
-set( WIN32_RESOURCES     ${CMAKE_CURRENT_LIST_DIR}/WinSpecific/Resources.rc )
+set(APP_DATA    ${CMAKE_CURRENT_LIST_DIR}/Data)
+set(MACOS_PLIST ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist)
 
 setup_main_executable()
 

@@ -4,7 +4,6 @@
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
 #include "Base/Platform.h"
-#include "Debug/Stats.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
@@ -193,6 +192,7 @@
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
+#include "Render/Highlevel/BillboardRenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"

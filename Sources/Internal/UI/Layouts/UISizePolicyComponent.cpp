@@ -47,6 +47,11 @@ UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() 
 
 void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy newPolicy)
 {
+    if (policy[Vector2::AXIS_X].policy == newPolicy)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_X].policy = newPolicy;
     SetLayoutDirty();
 }
@@ -58,6 +63,11 @@ float32 UISizePolicyComponent::GetHorizontalValue() const
 
 void UISizePolicyComponent::SetHorizontalValue(float32 value)
 {
+    if (policy[Vector2::AXIS_X].value == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_X].value = value;
     SetLayoutDirty();
 }
@@ -69,6 +79,11 @@ float32 UISizePolicyComponent::GetHorizontalMinValue() const
 
 void UISizePolicyComponent::SetHorizontalMinValue(float32 value)
 {
+    if (policy[Vector2::AXIS_X].min == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_X].min = value;
     SetLayoutDirty();
 }
@@ -80,6 +95,11 @@ float32 UISizePolicyComponent::GetHorizontalMaxValue() const
 
 void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
 {
+    if (policy[Vector2::AXIS_X].max == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_X].max = value;
     SetLayoutDirty();
 }
@@ -91,6 +111,11 @@ UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() co
 
 void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy newPolicy)
 {
+    if (policy[Vector2::AXIS_Y].policy == newPolicy)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_Y].policy = newPolicy;
     SetLayoutDirty();
 }
@@ -102,6 +127,11 @@ float32 UISizePolicyComponent::GetVerticalValue() const
 
 void UISizePolicyComponent::SetVerticalValue(float32 value)
 {
+    if (policy[Vector2::AXIS_Y].value == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_Y].value = value;
     SetLayoutDirty();
 }
@@ -113,6 +143,11 @@ float32 UISizePolicyComponent::GetVerticalMinValue() const
 
 void UISizePolicyComponent::SetVerticalMinValue(float32 value)
 {
+    if (policy[Vector2::AXIS_Y].min == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_Y].min = value;
     SetLayoutDirty();
 }
@@ -124,6 +159,11 @@ float32 UISizePolicyComponent::GetVerticalMaxValue() const
 
 void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
 {
+    if (policy[Vector2::AXIS_Y].max == value)
+    {
+        return;
+    }
+
     policy[Vector2::AXIS_Y].max = value;
     SetLayoutDirty();
 }

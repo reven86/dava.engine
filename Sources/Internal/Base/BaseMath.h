@@ -1,8 +1,5 @@
-#ifndef __DAVAENGINE_MATHBASE_H__
-#define __DAVAENGINE_MATHBASE_H__
-
-
-#include <math.h>
+#pragma once
+#include <cmath>
 
 /**
 	\defgroup math Math
@@ -26,12 +23,9 @@
 #include "Math/Polygon2.h"
 #include "Math/AABBox2.h"
 #include "Math/AABBox3.h"
-#include "Math/OOBBox.h"
 
 #include "Math/Spline.h"
 #include "Math/BezierSpline.h"
 #include "Math/Color.h"
 
 #include "Render/RGBColor.h"
-
-#endif // __DAVAENGINE_MATH_H__

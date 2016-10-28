@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "CMAKE-VARIABLES" "7" "February 18, 2016" "3.5.0" "CMake"
+.TH "CMAKE-VARIABLES" "7" "September 07, 2016" "3.6.2" "CMake"
 .SH NAME
 cmake-variables \- CMake Variables Reference
 .
@@ -111,7 +111,6 @@ Example values:
 .sp
 .nf
 .ft C
-$(IntDir)            = Visual Studio 6
 $(ConfigurationName) = Visual Studio 7, 8, 9
 $(Configuration)     = Visual Studio 10
 $(CONFIGURATION)     = Xcode
@@ -294,7 +293,7 @@ See command documentation for details.
 The generator used to build the project.  See \fBcmake\-generators(7)\fP\&.
 .sp
 The name of the generator that is being used to generate the build
-files.  (e.g.  \fBUnix Makefiles\fP, \fBVisual Studio 6\fP, etc.)
+files.  (e.g.  \fBUnix Makefiles\fP, \fBNinja\fP, etc.)
 .SS CMAKE_GENERATOR_PLATFORM
 .sp
 Generator\-specific target platform name specified by user.
@@ -436,12 +435,11 @@ a user or project explicitly adds \fBCMAKE_MAKE_PROGRAM\fP to
 the CMake cache then CMake will use the specified value.
 .IP \(bu 2
 The Visual Studio Generators set this to the full path to
-\fBMSBuild.exe\fP (VS >= 10), \fBdevenv.com\fP (VS 7,8,9),
-\fBVCExpress.exe\fP (VS Express 8,9), or \fBmsdev.exe\fP (VS 6).
+\fBMSBuild.exe\fP (VS >= 10), \fBdevenv.com\fP (VS 7,8,9), or
+\fBVCExpress.exe\fP (VS Express 8,9).
 (See also variables
-\fBCMAKE_VS_MSBUILD_COMMAND\fP,
-\fBCMAKE_VS_DEVENV_COMMAND\fP, and
-\fBCMAKE_VS_MSDEV_COMMAND\fP\&.)
+\fBCMAKE_VS_MSBUILD_COMMAND\fP and
+\fBCMAKE_VS_DEVENV_COMMAND\fP\&.
 .sp
 These generators prefer to lookup the build tool at build time
 rather than to store \fBCMAKE_MAKE_PROGRAM\fP in the CMake cache
@@ -588,12 +586,6 @@ When run in \-P script mode, CMake sets the variables
 \fBCMAKE_BINARY_DIR\fP, \fI\%CMAKE_SOURCE_DIR\fP,
 \fBCMAKE_CURRENT_BINARY_DIR\fP and
 \fBCMAKE_CURRENT_SOURCE_DIR\fP to the current working directory.
-.SS CMAKE_STANDARD_LIBRARIES
-.sp
-Libraries linked into every executable and shared library.
-.sp
-This is the list of libraries that are linked into all executables and
-libraries.
 .SS CMAKE_STATIC_LIBRARY_PREFIX
 .sp
 The prefix for static libraries that you link to.
@@ -742,15 +734,6 @@ is installed on the computer.
 .sp
 The \fBCMAKE_VS_DEVENV_COMMAND\fP is also provided for the
 non\-Express editions of Visual Studio.
-See also the \fBCMAKE_MAKE_PROGRAM\fP variable.
-.SS CMAKE_VS_MSDEV_COMMAND
-.sp
-The \fBVisual Studio 6\fP generator sets this variable to the
-\fBmsdev.exe\fP command installed with Visual Studio 6.
-.sp
-This variable is not defined by other generators even if \fBmsdev.exe\fP
-is installed on the computer.
-.sp
 See also the \fBCMAKE_MAKE_PROGRAM\fP variable.
 .SS CMAKE_VS_NsightTegra_VERSION
 .sp
@@ -958,6 +941,15 @@ only be used when evaluating the \fBINCLUDE_DIRECTORIES\fP,
 listed in \fBCOMPATIBLE_INTERFACE_STRING\fP and other
 \fBCOMPATIBLE_INTERFACE_\fP properties.  It outputs an origin for each entry in
 the target property.  Default is unset.
+.SS CMAKE_DEPENDS_IN_PROJECT_ONLY
+.sp
+When set to \fBTRUE\fP in a directory, the build system produced by the
+Makefile Generators is set up to only consider dependencies on source
+files that appear either in the source or in the binary directories.  Changes
+to source files outside of these directories will not cause rebuilds.
+.sp
+This should be used carefully in cases where some source files are picked up
+through external headers during the build.
 .SS CMAKE_DISABLE_FIND_PACKAGE_<PackageName>
 .sp
 Variable for disabling \fBfind_package()\fP calls.
@@ -973,6 +965,42 @@ the package has already been found in a previous CMake run, the
 variables which have been stored in the cache will still be there.  In
 that case it is recommended to remove the cache variables for this
 package from the cache using the cache editor or \fBcmake(1)\fP \fB\-U\fP
+.SS CMAKE_ECLIPSE_GENERATE_LINKED_RESOURCES
+.sp
+This cache variable is used by the Eclipse project generator.  See
+\fBcmake\-generators(7)\fP\&.
+.sp
+The Eclipse project generator generates so\-called linked resources
+e.g. to the subproject root dirs in the source tree or to the source files
+of targets.
+This can be disabled by setting this variable to FALSE.
+.SS CMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT
+.sp
+This cache variable is used by the Eclipse project generator.  See
+\fBcmake\-generators(7)\fP\&.
+.sp
+If this variable is set to TRUE, the Eclipse project generator will generate
+an Eclipse project in \fBCMAKE_SOURCE_DIR\fP . This project can then
+be used in Eclipse e.g. for the version control functionality.
+\fI\%CMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT\fP defaults to FALSE; so
+nothing is written into the source directory.
+.SS CMAKE_ECLIPSE_MAKE_ARGUMENTS
+.sp
+This cache variable is used by the Eclipse project generator.  See
+\fBcmake\-generators(7)\fP\&.
+.sp
+This variable holds arguments which are used when Eclipse invokes the make
+tool. By default it is initialized to hold flags to enable parallel builds
+(using \-j typically).
+.SS CMAKE_ECLIPSE_VERSION
+.sp
+This cache variable is used by the Eclipse project generator.  See
+\fBcmake\-generators(7)\fP\&.
+.sp
+When using the Eclipse project generator, CMake tries to find the Eclipse
+executable and detect the version of it. Depending on the version it finds,
+some features are enabled or disabled. If CMake doesn\(aqt find
+Eclipse, it assumes the oldest supported version, Eclipse Callisto (3.2).
 .SS CMAKE_ERROR_DEPRECATED
 .sp
 Whether to issue errors for deprecated functionality.
@@ -1367,7 +1395,7 @@ Tell cmake to use MFC for an executable or dll.
 .sp
 This can be set in a \fBCMakeLists.txt\fP file and will enable MFC in the
 application.  It should be set to \fB1\fP for the static MFC library, and \fB2\fP
-for the shared MFC library.  This is used in Visual Studio 6 and 7
+for the shared MFC library.  This is used in Visual Studio 7
 project files.  The CMakeSetup dialog used MFC and the \fBCMakeLists.txt\fP
 looks like this:
 .INDENT 0.0
@@ -1619,6 +1647,11 @@ Set to true when using the Visual Studio 2005 compiler from Microsoft.
 \fBTrue\fP for Apple OS X operating systems.
 .sp
 Set to \fBtrue\fP when the host system is Apple OS X.
+.SS CMAKE_HOST_SOLARIS
+.sp
+\fBTrue\fP for Oracle Solaris operating systems.
+.sp
+Set to \fBtrue\fP when the host system is Oracle Solaris.
 .SS CMAKE_HOST_SYSTEM_NAME
 .sp
 Name of the OS CMake is running on.
@@ -2136,6 +2169,11 @@ Default value for \fBIOS_INSTALL_COMBINED\fP of targets.
 This variable is used to initialize the \fBIOS_INSTALL_COMBINED\fP
 property on all the targets.  See that target property for additional
 information.
+.SS CMAKE_<LANG>_CLANG_TIDY
+.sp
+Default value for \fB<LANG>_CLANG_TIDY\fP target property.
+This variable is used to initialize the property on each target as it is
+created.  This is done only when \fB<LANG>\fP is \fBC\fP or \fBCXX\fP\&.
 .SS CMAKE_<LANG>_COMPILER_LAUNCHER
 .sp
 Default value for \fB<LANG>_COMPILER_LAUNCHER\fP target property.
@@ -2233,6 +2271,52 @@ Same as \fBCMAKE_C_FLAGS_*\fP but used by the linker when creating modules.
 Linker flags to be used to create modules.
 .sp
 These flags will be used by the linker when creating a module.
+.SS CMAKE_NINJA_OUTPUT_PATH_PREFIX
+.sp
+Set output files path prefix for the \fBNinja\fP generator.
+.sp
+Every output files listed in the generated \fBbuild.ninja\fP will be
+prefixed by the contents of this variable (a trailing slash is
+appended if missing).  This is useful when the generated ninja file is
+meant to be embedded as a \fBsubninja\fP file into a \fIsuper\fP ninja
+project.  For example, a ninja build file generated with a command
+like:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cd top\-build\-dir/sub &&
+cmake \-G Ninja \-DCMAKE_NINJA_OUTPUT_PATH_PREFIX=sub/ path/to/source
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+can be embedded in \fBtop\-build\-dir/build.ninja\fP with a directive like
+this:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+subninja sub/build.ninja
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBauto\-regeneration\fP rule in \fBtop\-build\-dir/build.ninja\fP must have an
+order\-only dependency on \fBsub/build.ninja\fP\&.
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+When \fBCMAKE_NINJA_OUTPUT_PATH_PREFIX\fP is set, the project generated
+by CMake cannot be used as a standalone project.  No default targets
+are specified.
+.UNINDENT
+.UNINDENT
 .SS CMAKE_NO_BUILTIN_CHRPATH
 .sp
 Do not use the builtin ELF editor to fix RPATHs on installation.
@@ -2392,6 +2476,53 @@ Projects built by \fBtry_compile()\fP and \fBtry_run()\fP are built
 synchronously during the CMake configuration step.  Therefore a specific build
 configuration must be chosen even if the generated build system
 supports multiple configurations.
+.SS CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
+.sp
+List of variables that the \fBtry_compile()\fP command source file signature
+must propagate into the test project in order to target the same platform as
+the host project.
+.sp
+This variable should not be set by project code.  It is meant to be set by
+CMake\(aqs platform information modules for the current toolchain, or by a
+toolchain file when used with \fBCMAKE_TOOLCHAIN_FILE\fP\&.
+.sp
+Variables meaningful to CMake, such as \fBCMAKE_<LANG>_FLAGS\fP, are
+propagated automatically.  The \fBCMAKE_TRY_COMPILE_PLATFORM_VARIABLES\fP
+variable may be set to pass custom variables meaningful to a toolchain file.
+For example, a toolchain file may contain:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set(CMAKE_SYSTEM_NAME ...)
+set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES MY_CUSTOM_VARIABLE)
+# ... use MY_CUSTOM_VARIABLE ...
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If a user passes \fB\-DMY_CUSTOM_VARIABLE=SomeValue\fP to CMake then this
+setting will be made visible to the toolchain file both for the main
+project and for test projects generated by the \fBtry_compile()\fP
+command source file signature.
+.SS CMAKE_TRY_COMPILE_TARGET_TYPE
+.sp
+Type of target generated for \fBtry_compile()\fP calls using the
+source file signature.  Valid values are:
+.INDENT 0.0
+.TP
+.B \fBEXECUTABLE\fP
+Use \fBadd_executable()\fP to name the source file in the
+generated project.  This is the default if no value is given.
+.TP
+.B \fBSTATIC_LIBRARY\fP
+Use \fBadd_library()\fP with the \fBSTATIC\fP option to name the
+source file in the generated project.  This avoids running the
+linker and is intended for use with cross\-compiling toolchains
+that cannot link without custom flags or linker scripts.
+.UNINDENT
 .SS CMAKE_USE_RELATIVE_PATHS
 .sp
 This variable has no effect.  The partially implemented effect it
@@ -2626,6 +2757,7 @@ Absoft = Absoft Fortran (absoft.com)
 ADSP = Analog VisualDSP++ (analog.com)
 AppleClang = Apple Clang (apple.com)
 ARMCC = ARM Compiler (arm.com)
+Bruce = Bruce C Compiler
 CCur = Concurrent Fortran (ccur.com)
 Clang = LLVM Clang (clang.llvm.org)
 Cray = Cray Compiler (cray.com)
@@ -2667,7 +2799,7 @@ set, you can not change this variable.
 .sp
 The external toolchain for cross\-compiling, if supported.
 .sp
-Some compiler toolchains do not ship their own auxilliary utilities such as
+Some compiler toolchains do not ship their own auxiliary utilities such as
 archivers and linkers.  The compiler driver may support a command\-line argument
 to specify the location of such tools.
 \fBCMAKE_<LANG>_COMPILER_EXTERNAL_TOOLCHAIN\fP may be set to a path to a path to
@@ -2873,6 +3005,30 @@ platform ABI.  It is defined for languages \fBC\fP and \fBCXX\fP (C++).
 Extensions of source files for the given language.
 .sp
 This is the list of extensions for a given language\(aqs source files.
+.SS CMAKE_<LANG>_STANDARD_INCLUDE_DIRECTORIES
+.sp
+Include directories to be used for every source file compiled with
+the \fB<LANG>\fP compiler.  This is meant for specification of system
+include directories needed by the language for the current platform.
+The directories always appear at the end of the include path passed
+to the compiler.
+.sp
+This variable should not be set by project code.  It is meant to be set by
+CMake\(aqs platform information modules for the current toolchain, or by a
+toolchain file when used with \fBCMAKE_TOOLCHAIN_FILE\fP\&.
+.sp
+See also \fBCMAKE_<LANG>_STANDARD_LIBRARIES\fP\&.
+.SS CMAKE_<LANG>_STANDARD_LIBRARIES
+.sp
+Libraries linked into every executable and shared library linked
+for language \fB<LANG>\fP\&.  This is meant for specification of system
+libraries needed by the language for the current platform.
+.sp
+This variable should not be set by project code.  It is meant to be set by
+CMake\(aqs platform information modules for the current toolchain, or by a
+toolchain file when used with \fBCMAKE_TOOLCHAIN_FILE\fP\&.
+.sp
+See also \fBCMAKE_<LANG>_STANDARD_INCLUDE_DIRECTORIES\fP\&.
 .SS CMAKE_USER_MAKE_RULES_OVERRIDE_<LANG>
 .sp
 Specify a CMake file that overrides platform information for \fB<LANG>\fP\&.
@@ -2988,7 +3144,7 @@ file format to write output in: xml or html
 .UNINDENT
 .sp
 The rest of the supplied arguments consist of the full paths to the
-\fB/src/main/java\fP directories of each module within the souce tree. These
+\fB/src/main/java\fP directories of each module within the source tree. These
 directories are needed and should not be forgotten.
 .SS CTEST_COVERAGE_EXTRA_FLAGS
 .sp
@@ -3163,6 +3319,10 @@ file. See \fBctest_read_custom_files()\fP documentation.
 .SS CTEST_GIT_COMMAND
 .sp
 Specify the CTest \fBGITCommand\fP setting
+in a \fBctest(1)\fP dashboard client script.
+.SS CTEST_GIT_INIT_SUBMODULES
+.sp
+Specify the CTest \fBGITInitSubmodules\fP setting
 in a \fBctest(1)\fP dashboard client script.
 .SS CTEST_GIT_UPDATE_CUSTOM
 .sp

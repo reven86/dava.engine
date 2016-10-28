@@ -1,4 +1,4 @@
-APP_MODULES := libpng_android
+APP_MODULES := libpng
 
 APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-10

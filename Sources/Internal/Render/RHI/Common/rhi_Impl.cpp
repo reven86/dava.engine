@@ -36,7 +36,8 @@ uint32 stat_SET_CB = DAVA::InvalidIndex;
 uint32 stat_SET_VB = DAVA::InvalidIndex;
 uint32 stat_SET_IB = DAVA::InvalidIndex;
 
-static Dispatch _Impl = { 0 };
+static Dispatch _Impl = {};
+static RenderDeviceCaps renderDeviceCaps = {};
 
 void SetDispatchTable(const Dispatch& dispatch)
 {
@@ -144,14 +145,14 @@ Api HostApi()
     return (*_Impl.impl_HostApi)();
 }
 
-bool TextureFormatSupported(TextureFormat format)
+bool TextureFormatSupported(TextureFormat format, ProgType progType)
 {
-    return (*_Impl.impl_TextureFormatSupported)(format);
+    return (*_Impl.impl_TextureFormatSupported)(format, progType);
 }
 
 const RenderDeviceCaps& DeviceCaps()
 {
-    return (*_Impl.impl_DeviceCaps)();
+    return renderDeviceCaps;
 }
 
 void SuspendRendering()
@@ -976,6 +977,18 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
         sz = ext.dx * ext.dy * sizeof(uint32);
         break;
 
+    case TEXTURE_FORMAT_R32F:
+        sz = ext.dx * ext.dy * sizeof(float32);
+        break;
+
+    case TEXTURE_FORMAT_RG32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 2;
+        break;
+
+    case TEXTURE_FORMAT_RGBA32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 4;
+        break;
+
     default:
         break;
     }
@@ -1017,6 +1030,14 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     }
 
     return color;
+}
+
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get()
+{
+    return renderDeviceCaps;
+}
 }
 
 } //namespace rhi

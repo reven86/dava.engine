@@ -51,6 +51,10 @@ const DAVA::String OptionName::AssetCacheIP("-ip");
 const DAVA::String OptionName::AssetCachePort("-p");
 const DAVA::String OptionName::AssetCacheTimeout("-t");
 
+const DAVA::String OptionName::Width("-width");
+const DAVA::String OptionName::Height("-height");
+const DAVA::String OptionName::Camera("-camera");
+
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {
     return ("-" + DAVA::GPUFamilyDescriptor::GetGPUName(gpuFamily));

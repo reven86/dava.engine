@@ -357,7 +357,7 @@ void ParticleLayer::SetSprite(const FilePath& path)
 void ParticleLayer::SetPivotPoint(Vector2 pivot)
 {
     layerPivotPoint = pivot;
-    layerPivotSizeOffsets = Vector2(1 + fabs(layerPivotPoint.x), 1 + fabs(layerPivotPoint.y));
+    layerPivotSizeOffsets = Vector2(1 + std::abs(layerPivotPoint.x), 1 + std::abs(layerPivotPoint.y));
     layerPivotSizeOffsets *= 0.5f;
 }
 

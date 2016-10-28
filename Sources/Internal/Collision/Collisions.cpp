@@ -163,7 +163,7 @@ void Collisions::FindIntersectionLineToCircle(const Vector2& p1, const Vector2& 
         return;
     }
 
-    d = sqrtf(d);
+    d = std::sqrt(d);
 
     if ((d >= 0.0f) && (d <= EPSILON))
     {

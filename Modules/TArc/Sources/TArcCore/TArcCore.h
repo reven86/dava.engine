@@ -1,10 +1,9 @@
 #pragma once
 
-#include "TArcCore/ContextAccessor.h"
-#include "TArcCore/ContextManager.h"
+#include "TArcCore/Private/CoreInterface.h"
+#include "WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
-
 #include <memory>
 
 namespace DAVA
@@ -15,60 +14,54 @@ namespace TArc
 {
 class ClientModule;
 class ControllerModule;
-class UIManager;
+class ConsoleModule;
 
-class Core final : private ContextAccessor, private ContextManager
+class Core final
 {
 public:
-    Core(DAVA::Engine& engine_);
+    Core(Engine& engine_);
     ~Core();
 
-    template<typename T>
-    void CreateModule()
+    template <typename T, typename... Args>
+    void CreateModule(Args&&... args)
     {
-        static_assert(std::is_base_of<TArc::ClientModule, T>::value ||
-                      std::is_base_of<TArc::ControllerModule, T>::value,
-                      "Module should be Derived from tarc::ControllerModule or tarc::ClientModule");
-        AddModule(new T());
+        static_assert(std::is_base_of<ConsoleModule, T>::value ||
+                      std::is_base_of<ClientModule, T>::value ||
+                      std::is_base_of<ControllerModule, T>::value,
+                      "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+
+        bool isConsoleMode = IsConsoleMode();
+        bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
+        if (isConsoleMode == true && isConsoleModule == false)
+        {
+            DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
+            return;
+        }
+
+        if (isConsoleMode == false && isConsoleModule == true)
+        {
+            DVASSERT_MSG(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
+            return;
+        }
+
+        AddModule(new T(std::forward<Args>(args)...));
     }
 
 private:
+    bool IsConsoleMode() const;
+    // Don't put AddModule methods into public sections.
+    // There is only one orthodox way to inject Module into TArcCore : CreateModule
+    void AddModule(ConsoleModule* module);
     void AddModule(ClientModule* module);
     void AddModule(ControllerModule* module);
 
-    void OnLoopStarted();
-    void OnFrame();
-    void OnLoopStopped();
-
-    // Inherited via ContextAccessor
-    void ForEachContext(const DAVA::Function<void(DataContext&)>& functor) override;
-    DataContext& GetContext(DataContext::ContextID contextID) override;
-    DataContext& GetActiveContext() override;
-    bool HasActiveContext() const override;
-    DataWrapper CreateWrapper(const DAVA::ReflectedType* type) override;
-    DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override;
-    DAVA::EngineContext& GetEngineContext() override;
-
-    // Inherited via ContextManager
-    DataContext::ContextID CreateContext() override;
-    void DeleteContext(DataContext::ContextID contextID) override;
-    void ActivateContext(DataContext::ContextID contextID) override;
-
-    void ActivateContext(DataContext* context);
-    DAVA::RenderWidget* GetRenderWidget() const;
-
 private:
-    DAVA::Engine& engine;
+    class Impl;
+    class GuiImpl;
+    class ConsoleImpl;
 
-    DAVA::Vector<std::unique_ptr<DataContext>> contexts;
-    DataContext* activeContext = nullptr;
-
-    DAVA::Vector<std::unique_ptr<ClientModule>> modules;
-    ControllerModule* controllerModule = nullptr;
-
-    DAVA::Vector<DataWrapper> wrappers;
-
-    std::unique_ptr<UIManager> uiManager;
+    std::unique_ptr<Impl> impl;
 };
+
 } // namespace TArc
 } // namespace DAVA

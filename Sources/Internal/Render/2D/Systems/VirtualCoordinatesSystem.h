@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
-#define __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -37,6 +36,7 @@ public:
     inline const Size2i& GetVirtualScreenSize() const;
     inline const Size2i& GetRequestedVirtualScreenSize() const;
     inline const Size2i& GetPhysicalScreenSize() const;
+    inline const Size2i& GetInputScreenSize() const;
     inline const Rect& GetFullScreenVirtualRect() const;
 
     inline float32 AlignVirtualToPhysicalX(float32) const;
@@ -123,6 +123,11 @@ inline const Size2i& VirtualCoordinatesSystem::GetRequestedVirtualScreenSize() c
     return requestedVirtualScreenSize;
 }
 
+inline const Size2i& VirtualCoordinatesSystem::GetInputScreenSize() const
+{
+    return inputAreaSize;
+}
+
 inline const Size2i& VirtualCoordinatesSystem::GetPhysicalScreenSize() const
 {
     return physicalScreenSize;
@@ -135,12 +140,12 @@ inline const Rect& VirtualCoordinatesSystem::GetFullScreenVirtualRect() const
 
 inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalX(float32 value) const
 {
-    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
+    return std::floor(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::AlignVirtualToPhysicalY(float32 value) const
 {
-    return floorf(value / physicalToVirtual + 0.5f) * physicalToVirtual;
+    return std::floor(value / physicalToVirtual + 0.5f) * physicalToVirtual;
 }
 
 inline float32 VirtualCoordinatesSystem::ConvertPhysicalToVirtualX(float32 value) const
@@ -280,12 +285,12 @@ inline Vector2 VirtualCoordinatesSystem::ConvertInputToVirtual(const Vector2& po
 
 inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect& rect) const
 {
-    return Rect(ConvertInputToVirtual(rect.GetPosition()) + inputOffset, ConvertInputToVirtual(rect.GetSize()));
+    return Rect(ConvertInputToVirtual(rect.GetPosition()), ConvertInputToVirtual(rect.GetSize()) - inputOffset);
 }
 
 inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect& rect) const
 {
-    return Rect(ConvertVirtualToInput(rect.GetPosition() - inputOffset), ConvertVirtualToInput(rect.GetSize()));
+    return Rect(ConvertVirtualToInput(rect.GetPosition()), ConvertVirtualToInput(rect.GetSize() + inputOffset));
 }
 
 inline const String& VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const
@@ -320,4 +325,3 @@ const Vector2& VirtualCoordinatesSystem::GetPhysicalDrawOffset() const
     return drawOffset;
 }
 };
-#endif

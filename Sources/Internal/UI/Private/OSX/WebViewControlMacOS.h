@@ -16,7 +16,11 @@ class UIWebView;
 class WebViewControl : public IWebViewControl
 {
 public:
-    explicit WebViewControl(UIWebView& uiWebView);
+#if defined(__DAVAENGINE_COREV2__)
+    WebViewControl(Window* w, UIWebView* uiWebView);
+#else
+    WebViewControl(UIWebView* uiWebView);
+#endif
     virtual ~WebViewControl();
 
     // Initialize the control.
@@ -57,6 +61,12 @@ private:
 #else
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;
+#endif
+
+#if defined(__DAVAENGINE_STEAM__)
+    SigConnectionID overlayConnectionId = 0;
+    bool wasVisible = false;
+    void OnSteamOverlayChanged(bool overlayActivated);
 #endif
 
 private:

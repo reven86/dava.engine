@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE_H__
-#define __DAVAENGINE_SCENE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -74,6 +73,8 @@ public:
 protected:
     Map<FilePath, Entity*> cachedEntities;
 };
+
+class RenderPass;
 
 class Scene : public Entity, Observer
 {
@@ -224,8 +225,11 @@ public:
 
     EntityCache cache;
 
-    rhi::RenderPassConfig& GetMainPassConfig();
-    void SetMainPassViewport(const Rect& viewport);
+    void SetMainPassProperties(uint32 priority, const Rect& viewport, uint32 width, uint32 height, PixelFormat format);
+    void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor);
+
+public: // deprecated methods
+    DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
 
 protected:
     void UpdateLights();
@@ -260,8 +264,3 @@ int32 Scene::GetCameraCount()
     return static_cast<int32>(cameras.size());
 }
 };
-
-
-
-
-#endif // __DAVAENGINE_SCENE_H__

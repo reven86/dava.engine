@@ -128,6 +128,7 @@ public:
 
     RenderMode GetRenderMode() const;
     void SetRenderMode(RenderMode mode);
+    void UpdateMaterialFlags();
 
 protected:
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
@@ -276,6 +277,7 @@ protected:
 
     Texture* heightTexture = nullptr;
     Texture* tangentTexture = nullptr;
+    bool floatHeightTexture = false;
 
     rhi::HVertexBuffer patchVertexBuffer;
     rhi::HIndexBuffer patchIndexBuffer;

@@ -105,6 +105,9 @@ public:
     void GetTransformedBox(const Matrix4& transform, AABBox3& result) const;
     void GetCorners(Vector3* cornersArray) const;
 
+    float32 GetBoundingSphereRadius() const;
+    AABBox3 GetMaxRotationExtentBox(const Vector3& rotationCenter) const;
+
 public:
     //Dizz: introspection changes
     //INTROSPECTION(AABBox3,

@@ -234,11 +234,12 @@ private:
 
 DAVA_TESTCLASS (NetworkTest)
 {
-    //BEGIN_CLASSES_COVERED_BY_TESTS()
-    //DECLARE_COVERED_FILES("NetCore")
-    //DECLARE_COVERED_FILES("NetConfig")
-    //DECLARE_COVERED_FILES("IPAddress")
-    //DECLARE_COVERED_FILES("Endpoint")
+    //BEGIN_FILES_COVERED_BY_TESTS( )
+    //FIND_FILES_IN_TARGET( DavaFramework )
+    //    DECLARE_COVERED_FILES("NetCore.cpp")
+    //    DECLARE_COVERED_FILES("NetConfig.cpp")
+    //    DECLARE_COVERED_FILES("IPAddress.cpp")
+    //    DECLARE_COVERED_FILES("Endpoint.cpp")
     //END_FILES_COVERED_BY_TESTS()
 
     enum eServiceTypes

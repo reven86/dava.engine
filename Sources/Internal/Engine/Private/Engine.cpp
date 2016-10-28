@@ -1,6 +1,6 @@
 #if defined(__DAVAENGINE_COREV2__)
 
-#include "Engine/Public/Engine.h"
+#include "Engine/Engine.h"
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -103,6 +103,11 @@ uint32 Engine::GetGlobalFrameIndex() const
 const Vector<String>& Engine::GetCommandLine() const
 {
     return engineBackend->GetCommandLine();
+}
+
+DAVA::Vector<char*> Engine::GetCommandLineAsArgv()
+{
+    return engineBackend->GetCommandLineAsArgv();
 }
 
 void Engine::SetOptions(KeyedArchive* options)
