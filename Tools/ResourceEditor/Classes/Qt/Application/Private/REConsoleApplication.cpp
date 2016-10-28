@@ -75,8 +75,8 @@ void REConsoleApplication::OnLoopStarted()
     DAVA::Renderer::Initialize(renderer, rendererParams);
 
     DAVA::EngineContext* engineContext = engine.GetContext();
-    engineContext->virtualCoordSystem->UnregisterAllAvailableResourceSizes();
-    engineContext->virtualCoordSystem->RegisterAvailableResourceSize(1, 1, "Gfx");
+    engineContext->uiControlSystem->vcs->UnregisterAllAvailableResourceSizes();
+    engineContext->uiControlSystem->vcs->RegisterAvailableResourceSize(1, 1, "Gfx");
 
     engineContext->logger->EnableConsoleMode();
     engineContext->logger->SetLogLevel(DAVA::Logger::LEVEL_INFO);
