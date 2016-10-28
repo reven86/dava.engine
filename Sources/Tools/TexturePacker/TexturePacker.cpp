@@ -60,7 +60,7 @@ TexturePacker::TexturePacker()
         int32 q = atoi(qualityName.c_str());
         if ((q >= TextureConverter::ECQ_FASTEST) && (q <= TextureConverter::ECQ_VERY_HIGH))
         {
-            quality = (TextureConverter::eConvertQuality)q;
+            quality = static_cast<TextureConverter::eConvertQuality>(q);
         }
     }
 
@@ -312,7 +312,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
     }
 
     // write real used packers count
-    fprintf(fp, "%d\n", (int)sheetIndexToFileIndex.size());
+    fprintf(fp, "%d\n", static_cast<int>(sheetIndexToFileIndex.size()));
 
     int realIndex = 0;
     // write user texture indexes

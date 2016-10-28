@@ -45,6 +45,18 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image* first, Image* sec
 {
     CompareResult compareResult = { 0 };
 
+    bool isFirstValid = PixelFormatDescriptor::IsFormatSizeByteDivisible(first->format);
+    bool isSecondValid = PixelFormatDescriptor::IsFormatSizeByteDivisible(second->format);
+    if (!isFirstValid || !isSecondValid)
+    {
+        DVASSERT_MSG(false, Format("Can't compare images of types %s and %s",
+                                   PixelFormatDescriptor::GetPixelFormatString(first->format),
+                                   PixelFormatDescriptor::GetPixelFormatString(second->format))
+                            .c_str());
+        compareResult.difference = 100;
+        return compareResult;
+    }
+
     if (first->GetWidth() != second->GetWidth() ||
         first->GetHeight() != second->GetHeight())
     {
@@ -54,14 +66,14 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image* first, Image* sec
         return compareResult;
     }
 
-    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
+    int32 imageSizeInBytes = ImageUtils::GetSizeInBytes(first->GetWidth(), first->GetHeight(), first->format);
 
     int32 step = 1;
     int32 startIndex = 0;
 
     if (FORMAT_A8 == format)
     {
-        compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
+        compareResult.bytesCount = ImageUtils::GetSizeInBytes(first->GetWidth(), first->GetHeight(), FORMAT_A8);
         step = 4;
         startIndex = 3;
     }

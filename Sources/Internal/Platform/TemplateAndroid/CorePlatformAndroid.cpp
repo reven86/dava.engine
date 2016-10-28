@@ -16,7 +16,6 @@ extern void FrameworkWillTerminate();
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Debug/DVAssertDefaultHandlers.h"
 
 namespace DAVA
 {
@@ -26,7 +25,7 @@ AndroidSystemDelegate::AndroidSystemDelegate(JavaVM* vm)
 
     this->vm = vm;
     environment = NULL;
-    if (vm->GetEnv((void**)&environment, JNI_VERSION_1_4) != JNI_OK)
+    if (vm->GetEnv(reinterpret_cast<void**>(&environment), JNI_VERSION_1_4) != JNI_OK)
     {
         Logger::Debug("Failed to get the environment using GetEnv()");
     }
@@ -48,17 +47,15 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 {
-    Assert::SetupDefaultHandlers();
-
     SetCommandLine(cmdLine);
 }
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-    // 		CoreWin32Platform * core = new CoreWin32Platform();
-    // 		core->CreateWin32Window(handle);
-    // 		core->Run();
-    // 		core->ReleaseSingletons();
+    //      CoreWin32Platform * core = new CoreWin32Platform();
+    //      core->CreateWin32Window(handle);
+    //      core->Run();
+    //      core->ReleaseSingletons();
     return 0;
 }
 
@@ -100,17 +97,27 @@ void CorePlatformAndroid::ProcessFrame()
     }
 }
 
+void CorePlatformAndroid::SetScreenScaleMultiplier(float32 multiplier)
+{
+    float32 curMultiplier = Core::GetScreenScaleMultiplier();
+    if (!FLOAT_EQUAL(multiplier, curMultiplier))
+    {
+        Core::SetScreenScaleMultiplier(multiplier);
+        RenderReset(pendingWidth, pendingHeight);
+    }
+}
+
 void CorePlatformAndroid::ApplyPendingViewSize()
 {
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] in");
-    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", pendingWidth, pendingHeight);
+    Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d, surfW = %d, surfH = %d", pendingWidth, pendingHeight, backbufferWidth, backbufferHeight);
 
     viewSizeChanged = false;
 
     DeviceInfo::InitializeScreenInfo();
 
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(pendingWidth, pendingHeight);
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(pendingWidth, pendingHeight);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(backbufferWidth, backbufferHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
     Logger::Debug("[CorePlatformAndroid::ApplyPendingViewSize] out");
@@ -138,16 +145,24 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 
     pendingWidth = w;
     pendingHeight = h;
-    backbufferWidth = int32(w * GetScreenScaleFactor());
-    backbufferHeight = int32(h * GetScreenScaleFactor());
+
+    // Android is always using hardware scaler for rendering.
+    // By specifying a scaled size for the buffer, the hardware
+    // scaler will be enabled and we will benefit in our rendering
+    // to the specified window (buffer is going to be up-scaled
+    // or down-scaled to the window size).
+    // For more info see: http://android-developers.blogspot.com.by/2013/09/using-hardware-scaler-for-performance.html
+    float32 scale = Core::GetScreenScaleMultiplier();
+    backbufferWidth = static_cast<int32>(scale * w);
+    backbufferHeight = static_cast<int32>(scale * h);
 
     viewSizeChanged = true;
 
     if (wasCreated)
     {
         rhi::ResetParam params;
-        params.width = (uint32)backbufferWidth;
-        params.height = (uint32)backbufferHeight;
+        params.width = static_cast<uint32>(backbufferWidth);
+        params.height = static_cast<uint32>(backbufferHeight);
         params.window = rendererParams.window;
         Renderer::Reset(params);
     }
@@ -156,8 +171,8 @@ void CorePlatformAndroid::RenderReset(int32 w, int32 h)
         wasCreated = true;
 
         ApplyPendingViewSize();
-        rendererParams.width = (uint32)backbufferWidth;
-        rendererParams.height = (uint32)backbufferHeight;
+        rendererParams.width = static_cast<uint32>(backbufferWidth);
+        rendererParams.height = static_cast<uint32>(backbufferHeight);
 
         // Set proper width and height before call FrameworkDidlaunched
         FrameworkDidLaunched();
@@ -191,12 +206,12 @@ void CorePlatformAndroid::OnDestroyActivity()
 
 void CorePlatformAndroid::StartVisible()
 {
-    //		Logger::Debug("[CorePlatformAndroid::StartVisible]");
+    //      Logger::Debug("[CorePlatformAndroid::StartVisible]");
 }
 
 void CorePlatformAndroid::StopVisible()
 {
-    //		Logger::Debug("[CorePlatformAndroid::StopVisible]");
+    //      Logger::Debug("[CorePlatformAndroid::StopVisible]");
 }
 
 void CorePlatformAndroid::StartForeground()

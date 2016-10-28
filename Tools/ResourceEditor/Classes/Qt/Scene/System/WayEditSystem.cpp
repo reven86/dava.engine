@@ -1,6 +1,8 @@
 #include <QApplication>
 #include "WayEditSystem.h"
 #include "Math/AABBox3.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Settings/SettingsManager.h"
@@ -541,7 +543,15 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& cu
 
 bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection)
 {
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    DAVA::EngineContext* engineContext = engine->GetContext();
+    if (engineContext->inputSystem == nullptr)
+    {
+        return true;
+    }
+
+    const DAVA::KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
     if (isEnabled && shiftPressed)
     {

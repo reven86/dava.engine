@@ -16,7 +16,7 @@ namespace DAVA
 {
 
 #ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32)((uint8)(ch0)) | ((uint32)((uint8)(ch1)) << 8) | ((uint32)((uint8)(ch2)) << 16) | ((uint32)((uint8)(ch3)) << 24))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) (static_cast<uint32>(static_cast<uint8>(ch0)) | (static_cast<uint32>(static_cast<uint8>(ch1)) << 8) | (static_cast<uint32>(static_cast<uint8>(ch2)) << 16) | (static_cast<uint32>(static_cast<uint8>(ch3)) << 24))
 #endif
 
 const uint32 FOURCC_CRC = MAKEFOURCC('C', 'R', 'C', '_');
@@ -1090,7 +1090,7 @@ bool DDSReaderImpl::GetImages(Vector<Image*>& images, const ImageSystem::Loading
     };
     auto MipSize = [d3dUsed, davaFormat, &MipSizeD3D](uint32 w, uint32 h)
     {
-        return d3dUsed ? MipSizeD3D(w, h) : Image::GetSizeInBytes(w, h, davaFormat);
+        return d3dUsed ? MipSizeD3D(w, h) : ImageUtils::GetSizeInBytes(w, h, davaFormat);
     };
 
     const uint32 largestImageSize = MipSize(info.width, info.height);

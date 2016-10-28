@@ -68,8 +68,7 @@ int DAVAMain(Vector<String> cmdline)
     };
 
     Engine e;
-    e.SetOptions(appOptions);
-    e.Init(eEngineRunMode::GUI_STANDALONE, modules);
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules, appOptions);
 
     GameCore g(e);
     e.Run();

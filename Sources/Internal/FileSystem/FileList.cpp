@@ -9,6 +9,11 @@
 #include "Core/Core.h"
 #endif
 
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#endif
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
 #include <stdio.h>

@@ -9,8 +9,6 @@
 
 #include <QVBoxLayout>
 
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-
 LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* parent)
     : QWidget(parent)
     , activeScene(nullptr)

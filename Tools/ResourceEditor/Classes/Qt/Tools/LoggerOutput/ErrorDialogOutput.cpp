@@ -1,10 +1,9 @@
 #include "Tools/LoggerOutput/ErrorDialogOutput.h"
 
+#include "Classes/Qt/GlobalOperations.h"
+
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringFormat.h"
-
-#include "Main/mainwindow.h"
-#include "QtTools/Updaters/LazyUpdater.h"
 
 #include "Settings/SettingsManager.h"
 
@@ -100,7 +99,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
         DVASSERT(waitDialogConnectionId == 0);
 
         isJobStarted = true;
-        DAVA::JobManager::Instance()->CreateMainJob(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog), DAVA::JobManager::JOB_MAINLAZY);
+        DelayedExecute(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog));
     }
 }
 

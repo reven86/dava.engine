@@ -112,12 +112,11 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 #ifdef __DAVAENGINE_COREV2__
         // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
         // access Engine object after it has beem destroyed
-        IPackManager* pm = nullptr;
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         EngineContext* context = e->GetContext();
         DVASSERT(context != nullptr);
-        pm = context->packManager;
+        IPackManager* pm = context->packManager;
 #else
         IPackManager* pm = &Core::Instance()->GetPackManager();
 #endif
@@ -521,7 +520,8 @@ String File::GetModificationDate(const FilePath& filePathname)
 #if defined(__DAVAENGINE_WINDOWS__)
         tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined(__DAVAENGINE_ANDROID__)
-        tm* utcTime = gmtime((const time_t*)&fileInfo.st_mtime);
+        time_t st_mtime = static_cast<time_t>(fileInfo.st_mtime);
+        tm* utcTime = gmtime(&st_mtime);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
         tm* utcTime = gmtime(&fileInfo.st_mtimespec.tv_sec);
 #endif
