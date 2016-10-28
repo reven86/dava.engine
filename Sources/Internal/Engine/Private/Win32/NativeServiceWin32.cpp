@@ -1,4 +1,4 @@
-#include "Engine/Public/Win32/NativeServiceWin32.h"
+#include "Engine/Win32/NativeServiceWin32.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 

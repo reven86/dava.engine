@@ -12,7 +12,7 @@ class DataListener
 {
 public:
     virtual ~DataListener();
-    virtual void OnDataChanged(const DataWrapper& wrapper, const DAVA::Set<DAVA::String>& fields) = 0;
+    virtual void OnDataChanged(const DataWrapper& wrapper, const Set<String>& fields) = 0;
 
 private:
     friend class DataWrapper;

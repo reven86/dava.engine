@@ -78,6 +78,12 @@ if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
 endif ()
 
+if (ANDROID AND DAVA_COREV2)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "gnustl_shared;TestBed")
+    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBed")
+endif()
+
 setup_main_executable()
 if (DAVA_COREV2)
     if (WIN32)

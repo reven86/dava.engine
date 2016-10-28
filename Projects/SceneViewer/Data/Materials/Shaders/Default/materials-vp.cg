@@ -117,6 +117,9 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD3_LOW(varTime,1)        
     #endif
 
+	#if FLOWMAP
+		VPROG_OUT_TEXCOORD4(varFlowData,3)
+	#endif
 
 
 
@@ -228,9 +231,15 @@ property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
 #endif
 
-#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT || FLOWMAP
 property float globalTime : dynamic,a : ;
 #endif
+
+#if FLOWMAP
+property float flowAnimSpeed : static,a : ;
+property float flowAnimOffset : static,a : ;
+#endif
+
 
 
 // prototypes, to shut up Metal shader-compiler
@@ -324,6 +333,13 @@ VPROG_BEGIN
     #if VERTEX_COLOR
     float4 inVertexColor = VP_IN_COLOR0;
     #endif
+	
+#if FLOWMAP
+    float scaledTime = globalTime * flowAnimSpeed;
+    float2 flowPhases = frac(float2(scaledTime, scaledTime+0.5))-float2(0.5, 0.5);
+    float flowBlend = abs(flowPhases.x*2.0);
+    VP_OUT(varFlowData) = float3(flowPhases * flowAnimOffset, flowBlend);
+#endif
 
 #if MATERIAL_SKYBOX
     
@@ -393,7 +409,7 @@ VPROG_BEGIN
     #else // WIND_ANIMATION
 
         #if WAVE_ANIMATION
-			float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
+            float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
             VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
         #else
             #if SKINNING
@@ -425,7 +441,7 @@ VPROG_BEGIN
 
 
 #if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
-    float3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+    float3 toLightDir = float4(lightPosition0).xyz - eyeCoordsPosition * float4(lightPosition0).w;
 #endif
 
 
@@ -473,8 +489,8 @@ VPROG_BEGIN
         
         VP_OUT(varDiffuseColor) = NdotL / _PI;
         
-        VP_OUT(varSpecularColor).xyz = Dbp * Geo * fresnelOut * specularity;
-        VP_OUT(varSpecularColor).w = NdotH;
+        VP_OUT(varSpecularColor).xyz = half3(Dbp * Geo * fresnelOut * specularity);
+        VP_OUT(varSpecularColor).w = half(NdotH); 
     
     #endif
     
@@ -504,9 +520,9 @@ VPROG_BEGIN
     v.z = dot (toLightDir, n);
     
     #if !FAST_NORMALIZATION
-        VP_OUT(varToLightVec) = v;
+        VP_OUT(varToLightVec) = half3(v);
     #else
-        VP_OUT(varToLightVec) = normalize(v);
+        VP_OUT(varToLightVec) = half3(normalize(v));
     #endif
 
     float3 toCameraDir = -eyeCoordsPosition;
@@ -531,7 +547,7 @@ VPROG_BEGIN
         v.z = dot (halfVector, n);
         
         // No need to normalize, t,b,n and halfVector are normal vectors.
-        VP_OUT(varHalfVec) = v;
+        VP_OUT(varHalfVec) = half3(v);
     #endif
 
 //    varLightPosition.x = dot (lightPosition0.xyz, t);
@@ -543,27 +559,27 @@ VPROG_BEGIN
 
 
 #if VERTEX_FOG
-	
+    
     #define FOG_eye_position cameraPosition
-	#define FOG_view_position eyeCoordsPosition
-		
+    #define FOG_view_position eyeCoordsPosition
+        
 #if FOG_ATMOSPHERE
     #define FOG_to_light_dir toLightDir
 #endif
-	
+    
 #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-	float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
-	#define FOG_world_position world_position
+    float3 world_position = mul( float4(VP_IN_POSITION.xyz,1.0), worldMatrix ).xyz;
+    #define FOG_world_position world_position
 #endif
-	
-	#include "vp-fog-math.cgh" // in{float3 FOG_view_position; float3 FOG_eye_position; float3 FOG_to_light_dir; float3 FOG_world_position; } ; out{ float4 FOG_result }
-	
-	VP_OUT(varFog) = FOG_result;
+    
+    #include "vp-fog-math.cgh" // in{float3 FOG_view_position; float3 FOG_eye_position; float3 FOG_to_light_dir; float3 FOG_world_position; } ; out{ float4 FOG_result }
+    
+    VP_OUT(varFog) = half4(FOG_result);
 
 #endif
 
 #if VERTEX_COLOR
-    VP_OUT(varVertexColor) = VP_IN_COLOR0;
+    VP_OUT(varVertexColor) = half4(VP_IN_COLOR0);
 #endif
 
 
@@ -624,7 +640,8 @@ VPROG_BEGIN
 
     #endif // !CUT_LEAF
 
-    VP_OUT(varVertexColor) = float4(sphericalLightFactor * 2.0, 1.0);
+    VP_OUT(varVertexColor).rgb = half3(sphericalLightFactor * 2.0);
+    VP_OUT(varVertexColor).a = 1.0;
 
     #undef A0     
     #undef A1     
@@ -637,7 +654,7 @@ VPROG_BEGIN
 
 #elif SPEED_TREE_LEAF //legacy for old tree lighting
     
-    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+    VP_OUT(varVertexColor).xyz = half3( float4(inVertexColor).xyz * float4(treeLeafColorMul).xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset) );
 
 #endif
 

@@ -152,4 +152,16 @@ bool DynamicMemoryFile::IsEof() const
 {
     return isEof;
 }
+
+bool DynamicMemoryFile::Truncate(uint64 size)
+{
+    if (!(fileAttributes & File::WRITE))
+        return false;
+
+    data.resize(size_t(size));
+    currentPtr = Min(currentPtr, size);
+    isEof = (currentPtr == size);
+
+    return true;
+}
 };

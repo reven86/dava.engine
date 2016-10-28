@@ -18,7 +18,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/Utils.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #if defined(__DAVAENGINE_STEAM__)
 #include "Platform/Steam.h"
 #endif
@@ -137,7 +137,7 @@ bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
     // Create the rendering window
     if (isFullscreen)
     {
-        style = WS_VISIBLE | WS_POPUP;
+        style = FULLSCREEN_STYLE;
     } // End if Fullscreen
 
     AdjustWindowRect(&clientSize, style, FALSE);
@@ -424,7 +424,16 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
             currentMode = fullscreenMode;
 
             GetWindowPlacement(hWindow, &windowPlacement);
-            SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+
+            // Add WS_VISIBLE to fullscreen style to keep it visible (if it already is)
+            // If it's not yet visible, the style should not be modified since ShowWindow(..., SW_SHOW) will occur later
+            //
+            uint32 style = FULLSCREEN_STYLE;
+            if (IsWindowVisible(hWindow))
+            {
+                style |= WS_VISIBLE;
+            }
+            SetWindowLong(hWindow, GWL_STYLE, style);
 
             MONITORINFO monitorInfo;
             monitorInfo.cbSize = sizeof(monitorInfo);
@@ -906,11 +915,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
 
     CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
     KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    //TODO: Add system scale
-    float32 scaleX = 1.f;
-    float32 scaleY = 1.f;
-    scaleX = scaleY = static_cast<float32>(DPIHelper::GetDpiScaleFactor(0));
+
     RECT rect;
+
+    // win32 app don't have ui-scaling option,
+    // so hard-code default
+    float32 uiScale = 1.0;
 
     if (IsMouseInputEvent(message, GetMessageExtraInfo()))
     {
@@ -926,9 +936,12 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
     }
     switch (message)
     {
+    case WM_DPICHANGED:
+        core->ApplyWindowSize();
+        break;
     case WM_SIZE:
         GetClientRect(hWnd, &rect);
-        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), scaleX, scaleY);
+        core->WindowSizeChanged(static_cast<float32>(rect.right), static_cast<float32>(rect.bottom), uiScale, uiScale);
         break;
     case WM_ERASEBKGND:
         return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
@@ -1062,6 +1075,14 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         PostQuitMessage(0);
         return 0;
 
+    case WM_NCACTIVATE:
+        // Workaround for cases when WM_ACTIVATE not sent by system if main thread is busy
+        // Example: resize window (forcing rhi to reset) -> press ctrl+alt+delete and unpress both ctrl and alt in system window
+        // WM_ACTIVATE won't be sent, WM_KEYDOWN for ctrl and alt will be sent without according WM_KEYUP thus making KeyboardDevice think they're still pressed
+        // But WM_NCACTIVATE will be sent and we can use it to clear keyboard state
+        keyboard.ClearAllKeys();
+        break;
+
     case WM_ACTIVATE:
         // What dava.engine does when app is launched in fullscreen:
         //  1. create window in 'window' mode
@@ -1144,6 +1165,11 @@ void CoreWin32Platform::InitArgs()
 void CoreWin32Platform::Quit()
 {
     PostQuitMessage(0);
+}
+
+void* CoreWin32Platform::GetNativeWindow() const
+{
+    return hWindow;
 }
 
 bool AlreadyRunning()

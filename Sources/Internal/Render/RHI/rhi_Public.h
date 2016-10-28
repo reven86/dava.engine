@@ -100,6 +100,7 @@ ResetParam
 struct RenderDeviceCaps
 {
     uint32 maxAnisotropy = 1;
+    uint32 maxSamples = 1;
     char deviceDescription[128];
 
     bool is32BitIndicesSupported = false;
@@ -119,6 +120,21 @@ struct RenderDeviceCaps
     {
         return maxAnisotropy > 1;
     }
+
+    bool SupportsAntialiasingType(AntialiasingType type) const
+    {
+        switch (type)
+        {
+        case AntialiasingType::MSAA_2X:
+            return (maxSamples >= 2);
+
+        case AntialiasingType::MSAA_4X:
+            return (maxSamples >= 4);
+
+        default:
+            return true;
+        }
+    }
 };
 
 bool ApiIsSupported(Api api);
@@ -130,7 +146,7 @@ bool NeedRestoreResources();
 void Present(); // execute all submitted command-buffers & do flip/present
 
 Api HostApi();
-bool TextureFormatSupported(TextureFormat format);
+bool TextureFormatSupported(TextureFormat format, ProgType progType = PROG_FRAGMENT);
 const RenderDeviceCaps& DeviceCaps();
 
 void SuspendRendering();

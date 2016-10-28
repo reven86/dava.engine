@@ -9,6 +9,11 @@ RemoteServerParams::RemoteServerParams(DAVA::String _ip, bool _enabled)
 {
 }
 
+void RemoteServerParams::Clear()
+{
+    ip.clear();
+}
+
 bool RemoteServerParams::IsEmpty() const
 {
     return ip.empty();
@@ -17,11 +22,6 @@ bool RemoteServerParams::IsEmpty() const
 bool RemoteServerParams::operator==(const RemoteServerParams& right) const
 {
     return (ip == right.ip);
-}
-
-bool RemoteServerParams::EquivalentTo(const DAVA::Net::Endpoint& right) const
-{
-    return (ip == right.Address().ToString());
 }
 
 const DAVA::String ApplicationSettings::DEFAULT_FOLDER = "~doc:/AssetServer/AssetCacheStorage";
@@ -33,6 +33,7 @@ const DAVA::uint16 ApplicationSettings::DEFAULT_HTTP_PORT = DAVA::AssetCache::AS
 const bool ApplicationSettings::DEFAULT_AUTO_START = true;
 const bool ApplicationSettings::DEFAULT_LAUNCH_ON_SYSTEM_STARTUP = true;
 const bool ApplicationSettings::DEFAULT_RESTART_ON_CRASH = false;
+const bool ApplicationSettings::DEFAULT_SHARED_FOR_OTHERS = false;
 
 void ApplicationSettings::Save() const
 {
@@ -86,23 +87,57 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
     archive->SetBool("SystemStartup", launchOnSystemStartup);
     archive->SetBool("Restart", restartOnCrash);
 
-    DAVA::uint32 size = static_cast<DAVA::uint32>(remoteServers.size());
+    DAVA::uint32 size = static_cast<DAVA::uint32>(customServers.size());
     archive->SetUInt32("ServersSize", size);
 
     DAVA::uint32 index = 0;
-    for (auto& sd : remoteServers)
+    for (const RemoteServerParams& pool : customServers)
     {
-        archive->SetString(DAVA::Format("Server_%d_ip", index), sd.ip);
-        archive->SetBool(DAVA::Format("Server_%d_enabled", index), sd.enabled);
+        archive->SetString(DAVA::Format("Server_%u_ip", index), pool.ip);
+        archive->SetBool(DAVA::Format("Server_%u_enabled", index), pool.enabled);
         ++index;
     }
+
+    DAVA::uint32 poolsSize = static_cast<DAVA::uint32>(sharedPools.size());
+    archive->SetUInt32("PoolsSize", poolsSize);
+
+    DAVA::uint32 poolIndex = 0;
+    for (auto& poolEntry : sharedPools)
+    {
+        const SharedPool& pool = poolEntry.second;
+        archive->SetUInt64(DAVA::Format("Pool_%u_ID", poolIndex), pool.poolID);
+        archive->SetString(DAVA::Format("Pool_%u_name", poolIndex), pool.poolName);
+        archive->SetString(DAVA::Format("Pool_%u_description", poolIndex), pool.poolDescription);
+        archive->SetBool(DAVA::Format("Pool_%u_enabled", poolIndex), pool.enabled);
+
+        DAVA::uint32 serversSize = static_cast<DAVA::uint32>(pool.servers.size());
+        archive->SetUInt32(DAVA::Format("Pool_%u_ServersSize", poolIndex), serversSize);
+
+        DAVA::uint32 serverIndex = 0;
+        for (auto& serverEntry : pool.servers)
+        {
+            const SharedServer& server = serverEntry.second;
+            archive->SetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), server.serverID);
+            archive->SetString(DAVA::Format("Pool_%u_Server_%u_name", poolIndex, serverIndex), server.serverName);
+            archive->SetString(DAVA::Format("Pool_%u_Server_%u_ip", poolIndex, serverIndex), server.remoteParams.ip);
+            archive->SetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex), server.remoteParams.enabled);
+            ++serverIndex;
+        }
+
+        ++poolIndex;
+    }
+
+    archive->SetBool("SharedForOthers", sharedForOthers);
+    archive->SetUInt64("OwnPoolID", ownPoolID);
+    archive->SetUInt64("OwnID", ownID);
+    archive->SetString("OwnName", ownName);
 }
 
 void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 {
     DVASSERT(nullptr != archive);
 
-    DVASSERT(remoteServers.empty());
+    DVASSERT(customServers.empty());
 
     folder = archive->GetString("FolderPath", DEFAULT_FOLDER);
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
@@ -113,14 +148,44 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
     restartOnCrash = archive->GetBool("Restart", DEFAULT_RESTART_ON_CRASH);
 
     auto count = archive->GetUInt32("ServersSize");
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (DAVA::uint32 poolIndex = 0; poolIndex < count; ++poolIndex)
     {
         RemoteServerParams sd;
-        sd.ip = archive->GetString(DAVA::Format("Server_%d_ip", i));
-        sd.enabled = archive->GetBool(DAVA::Format("Server_%d_enabled", i), false);
+        sd.ip = archive->GetString(DAVA::Format("Server_%u_ip", poolIndex));
+        sd.enabled = archive->GetBool(DAVA::Format("Server_%u_enabled", poolIndex), false);
 
-        remoteServers.push_back(sd);
+        customServers.push_back(sd);
     }
+
+    DAVA::uint32 poolsSize = archive->GetUInt32("PoolsSize");
+
+    for (DAVA::uint32 poolIndex = 0; poolIndex < poolsSize; ++poolIndex)
+    {
+        PoolID poolID = archive->GetUInt64(DAVA::Format("Pool_%u_ID", poolIndex), NullPoolID);
+        SharedPool& pool = sharedPools[poolID];
+        pool.poolID = poolID;
+        pool.poolName = archive->GetString(DAVA::Format("Pool_%u_name", poolIndex));
+        pool.poolDescription = archive->GetString(DAVA::Format("Pool_%u_description", poolIndex));
+        pool.enabled = archive->GetBool(DAVA::Format("Pool_%u_enabled", poolIndex));
+
+        DAVA::uint32 serversSize = archive->GetUInt32(DAVA::Format("Pool_%u_ServersSize", poolIndex));
+
+        for (DAVA::uint32 serverIndex = 0; serverIndex < serversSize; ++serverIndex)
+        {
+            ServerID serverID = archive->GetUInt64(DAVA::Format("Pool_%u_Server_%u_ID", poolIndex, serverIndex), NullServerID);
+            SharedServer& server = pool.servers[serverID];
+            server.serverID = serverID;
+            server.poolID = poolID;
+            server.serverName = archive->GetString(DAVA::Format("Pool_%u_Server_%u_name", poolIndex, serverIndex));
+            server.remoteParams.ip = archive->GetString(DAVA::Format("Pool_%u_Server_%u_ip", poolIndex, serverIndex));
+            server.remoteParams.enabled = archive->GetBool(DAVA::Format("Pool_%u_Server_%u_enabled", poolIndex, serverIndex));
+        }
+    }
+
+    sharedForOthers = archive->GetBool("SharedForOthers", DEFAULT_SHARED_FOR_OTHERS);
+    ownPoolID = archive->GetUInt64("OwnPoolID", NullPoolID);
+    ownID = archive->GetUInt64("OwnID", NullServerID);
+    ownName = archive->GetString("OwnName");
 }
 
 const DAVA::FilePath& ApplicationSettings::GetFolder() const
@@ -213,35 +278,255 @@ void ApplicationSettings::SetRestartOnCrash(bool val)
     restartOnCrash = val;
 }
 
-const DAVA::List<RemoteServerParams>& ApplicationSettings::GetServers() const
+bool ApplicationSettings::IsSharedForOthers() const
 {
-    return remoteServers;
+    return sharedForOthers;
 }
 
-void ApplicationSettings::ResetServers()
+void ApplicationSettings::SetSharedForOthers(bool val)
 {
-    remoteServers.clear();
+    sharedForOthers = val;
 }
 
-void ApplicationSettings::AddServer(const RemoteServerParams& server)
+ServerID ApplicationSettings::GetOwnID() const
 {
-    remoteServers.push_back(server);
+    return ownID;
 }
 
-void ApplicationSettings::RemoveServer(const RemoteServerParams& server)
+void ApplicationSettings::SetOwnID(ServerID val)
 {
-    remoteServers.remove(server);
+    ownID = val;
 }
 
-RemoteServerParams ApplicationSettings::GetCurrentServer() const
+void ApplicationSettings::ResetOwnID()
 {
-    for (auto& server : remoteServers)
+    ownID = NullServerID;
+}
+
+void ApplicationSettings::SetOwnPoolID(PoolID val)
+{
+    ownPoolID = val;
+}
+
+PoolID ApplicationSettings::GetOwnPoolID() const
+{
+    return ownPoolID;
+}
+
+void ApplicationSettings::SetOwnName(DAVA::String val)
+{
+    ownName = val;
+}
+
+const DAVA::String& ApplicationSettings::GetOwnName() const
+{
+    return ownName;
+}
+
+const DAVA::Map<PoolID, SharedPool>& ApplicationSettings::GetSharedPools() const
+{
+    return sharedPools;
+}
+
+void ApplicationSettings::ClearCustomServers()
+{
+    customServers.clear();
+}
+
+const DAVA::List<RemoteServerParams>& ApplicationSettings::GetCustomServers() const
+{
+    return customServers;
+}
+
+void ApplicationSettings::AddCustomServer(const RemoteServerParams& server)
+{
+    customServers.push_back(server);
+}
+
+void ApplicationSettings::UpdateSharedPools(const DAVA::List<SharedPoolParams>& pools, const DAVA::List<SharedServerParams>& servers)
+{
+    DAVA::Map<PoolID, SharedPool> updatedPools;
+
+    for (const SharedPoolParams& pool : pools)
     {
-        if (server.enabled)
+        SharedPool& updatedPool = updatedPools[pool.poolID];
+        updatedPool.poolID = pool.poolID;
+        updatedPool.poolName = pool.name;
+        updatedPool.poolDescription = pool.description;
+    }
+
+    for (const SharedServerParams& server : servers)
+    {
+        auto poolIter = updatedPools.find(server.poolID);
+        if (poolIter == updatedPools.end())
         {
-            return server;
+            if (server.poolID == NullPoolID)
+            {
+                poolIter = updatedPools.insert(std::make_pair(NullPoolID, SharedPool())).first;
+            }
+            else
+            {
+                DAVA::Logger::Error("Can't find pool with id %u referenced by server id %u", server.poolID, server.serverID);
+                continue;
+            }
+        }
+
+        SharedServer& updatedServer = poolIter->second.servers[server.serverID];
+        updatedServer.serverID = server.serverID;
+        updatedServer.poolID = server.poolID;
+        updatedServer.serverName = server.name;
+        updatedServer.remoteParams.ip = server.ip;
+    }
+
+    EnabledRemote currentEnabledRemote = GetEnabledRemote();
+    if (currentEnabledRemote.type == EnabledRemote::POOL)
+    {
+        auto poolIter = updatedPools.find(currentEnabledRemote.pool->poolID);
+        if (poolIter != updatedPools.end())
+        {
+            SharedPool& pool = poolIter->second;
+            pool.enabled = true;
+        }
+    }
+    else if (currentEnabledRemote.type == EnabledRemote::POOL_SERVER)
+    {
+        auto poolIter = updatedPools.find(currentEnabledRemote.server->poolID);
+        if (poolIter != updatedPools.end())
+        {
+            SharedPool& pool = poolIter->second;
+            auto serverIter = pool.servers.find(currentEnabledRemote.server->serverID);
+            if (serverIter != pool.servers.end())
+            {
+                SharedServer& server = serverIter->second;
+                server.remoteParams.enabled = true;
+            }
         }
     }
 
-    return RemoteServerParams();
+    sharedPools.swap(updatedPools);
+    emit SettingsUpdated(this);
+}
+
+void ApplicationSettings::RemoveCustomServer(const RemoteServerParams& server)
+{
+    customServers.remove(server);
+}
+
+EnabledRemote ApplicationSettings::GetEnabledRemote()
+{
+    for (auto& poolIter : sharedPools)
+    {
+        SharedPool& pool = poolIter.second;
+        if (pool.enabled)
+            return EnabledRemote(&pool);
+
+        for (auto& serverIter : pool.servers)
+        {
+            SharedServer& server = serverIter.second;
+            if (server.remoteParams.enabled)
+                return EnabledRemote(&server);
+        }
+    }
+
+    for (RemoteServerParams& customServer : customServers)
+    {
+        if (customServer.enabled)
+            return EnabledRemote(&customServer);
+    }
+
+    return EnabledRemote();
+}
+
+DAVA::List<RemoteServerParams> ApplicationSettings::GetEnabledRemoteServers()
+{
+    DAVA::List<RemoteServerParams> enabledRemotesParams;
+
+    EnabledRemote enabledRemote = GetEnabledRemote();
+    switch (enabledRemote.type)
+    {
+    case EnabledRemote::POOL:
+    {
+        for (auto serverIter : enabledRemote.pool->servers)
+        {
+            SharedServer& server = serverIter.second;
+            enabledRemotesParams.push_back(server.remoteParams);
+        }
+        break;
+    }
+    case EnabledRemote::POOL_SERVER:
+    {
+        enabledRemotesParams.push_back(enabledRemote.server->remoteParams);
+        break;
+    }
+    case EnabledRemote::CUSTOM_SERVER:
+    {
+        enabledRemotesParams.push_back(*(enabledRemote.customServer));
+        break;
+    }
+    case EnabledRemote::NONE:
+    default:
+        break;
+    }
+
+    return enabledRemotesParams;
+}
+
+void ApplicationSettings::DisableRemote()
+{
+    EnabledRemote enabledRemote = GetEnabledRemote();
+    switch (enabledRemote.type)
+    {
+    case EnabledRemote::POOL:
+        enabledRemote.pool->enabled = false;
+        break;
+    case EnabledRemote::POOL_SERVER:
+        enabledRemote.server->remoteParams.enabled = false;
+        break;
+    case EnabledRemote::CUSTOM_SERVER:
+        enabledRemote.customServer->enabled = false;
+        break;
+    default:
+        break;
+    }
+}
+
+void ApplicationSettings::EnableSharedPool(PoolID poolID)
+{
+    DVASSERT(GetEnabledRemote().type == EnabledRemote::NONE);
+
+    auto pairFound = sharedPools.find(poolID);
+    if (pairFound != sharedPools.end())
+    {
+        SharedPool& pool = pairFound->second;
+        pool.enabled = true;
+    }
+    else
+    {
+        DVASSERT_MSG(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
+    }
+}
+
+void ApplicationSettings::EnableSharedServer(PoolID poolID, ServerID serverID)
+{
+    DVASSERT(GetEnabledRemote().type == EnabledRemote::NONE);
+
+    auto pairFound = sharedPools.find(poolID);
+    if (pairFound != sharedPools.end())
+    {
+        SharedPool& pool = pairFound->second;
+        auto serverPairFound = pool.servers.find(serverID);
+        if (serverPairFound != pool.servers.end())
+        {
+            SharedServer& server = serverPairFound->second;
+            server.remoteParams.enabled = true;
+        }
+        else
+        {
+            DVASSERT_MSG(false, DAVA::Format("Can't find server with id %u inside of pool %u", serverID, poolID).c_str());
+        }
+    }
+    else
+    {
+        DVASSERT_MSG(false, DAVA::Format("Can't find pool with id %u", poolID).c_str());
+    }
 }

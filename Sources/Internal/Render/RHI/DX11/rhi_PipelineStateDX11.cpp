@@ -5,7 +5,7 @@
     #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
-    #include "Debug/Profiler.h"
+    #include "Debug/CPUProfiler.h"
     #include "Logger/Logger.h"
 using DAVA::Logger;
 using DAVA::uint32;
@@ -535,7 +535,6 @@ const void* ConstBufDX11::Instance() const
 
     if (!inst)
     {
-        //SCOPED_NAMED_TIMING("gl.cb-inst");
         inst = _DefConstRingBuf.Alloc(regCount * 4 * sizeof(float));
         memcpy(inst, value, 4 * regCount * sizeof(float));
         frame = _CurFrame;

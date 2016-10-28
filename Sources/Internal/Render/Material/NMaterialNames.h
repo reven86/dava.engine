@@ -182,6 +182,8 @@ public:
     static const FastName FLAG_LANDSCAPE_MORPHING_COLOR;
     static const FastName FLAG_LANDSCAPE_SPECULAR;
 
+    static const FastName FLAG_HEIGHTMAP_FLOAT_TEXTURE;
+
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;

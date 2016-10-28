@@ -156,7 +156,7 @@ void Matrix4::glRotate(float32 angle, float32 x, float32 y, float32 z)
 
     if (!optimized)
     {
-        const float32 mag = sqrtf(x * x + y * y + z * z);
+        const float32 mag = std::sqrt(x * x + y * y + z * z);
 
         if (mag <= 1.0e-4)
         {

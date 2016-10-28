@@ -24,8 +24,6 @@ namespace rhi
 {
 Dispatch DispatchMetal = { 0 };
 
-RenderDeviceCaps _metal_DeviceCaps;
-
 //------------------------------------------------------------------------------
 
 static Api
@@ -37,7 +35,7 @@ metal_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-metal_TextureFormatSupported(TextureFormat format)
+metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -86,14 +84,6 @@ metal_Uninitialize()
 static void
 metal_Reset(const ResetParam& param)
 {
-}
-
-//------------------------------------------------------------------------------
-
-static const RenderDeviceCaps&
-metal_DeviceCaps()
-{
-    return _metal_DeviceCaps;
 }
 
 //------------------------------------------------------------------------------
@@ -229,7 +219,6 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
-    DispatchMetal.impl_DeviceCaps = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;
     DispatchMetal.impl_SuspendRendering = &metal_Suspend;
@@ -245,14 +234,15 @@ void metal_Initialize(const InitParam& param)
     if (param.maxTextureCount)
         TextureMetal::Init(param.maxTextureCount);
 
-    _metal_DeviceCaps.is32BitIndicesSupported = true;
-    _metal_DeviceCaps.isFramebufferFetchSupported = true;
-    _metal_DeviceCaps.isVertexTextureUnitsSupported = true;
-    _metal_DeviceCaps.isZeroBaseClipRange = true;
-    _metal_DeviceCaps.isUpperLeftRTOrigin = true;
-    _metal_DeviceCaps.isCenterPixelMapping = false;
-    _metal_DeviceCaps.isInstancingSupported = true;
-    _metal_DeviceCaps.maxAnisotropy = 16;
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = false;
+    MutableDeviceCaps::Get().isInstancingSupported = true;
+    MutableDeviceCaps::Get().maxAnisotropy = 16;
+    MutableDeviceCaps::Get().maxSamples = 4;
 }
 
 } // namespace rhi

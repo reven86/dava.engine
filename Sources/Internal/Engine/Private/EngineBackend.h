@@ -5,7 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Functional.h"
 
-#include "Engine/Public/EngineTypes.h"
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 #include "UI/UIEvent.h"
@@ -107,7 +107,6 @@ private:
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
-private:
     // TODO: replace raw pointers with std::unique_ptr after work is done
     MainDispatcher* dispatcher = nullptr;
     PlatformCore* platformCore = nullptr;
@@ -127,7 +126,7 @@ private:
     int32 exitCode = 0;
 
     KeyedArchive* options = nullptr;
-    uint32 globalFrameIndex = 0;
+    uint32 globalFrameIndex = 1;
 
     static EngineBackend* instance;
 };
