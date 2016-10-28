@@ -83,7 +83,7 @@ void Steam::Update()
     SteamAPI_RunCallbacks();
 }
 
-String Steam::GetSteamLanguage()
+String Steam::GetLanguage()
 {
     if (!IsInited())
     {

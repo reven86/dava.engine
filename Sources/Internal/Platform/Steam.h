@@ -24,7 +24,7 @@ public:
     Try to return set language for app. 
     If fails, return language of Steam app or empty string if language is unsupported.
     */
-    static String GetSteamLanguage();
+    static String GetLanguage();
 
     static ISteamRemoteStorage* CreateStorage();
 

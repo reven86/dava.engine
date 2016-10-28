@@ -102,7 +102,7 @@ String DeviceInfoPrivate::GetLocale()
     String locale;
 
 #if defined(__DAVAENGINE_STEAM__)
-    locale = Steam::GetSteamLanguage();
+    locale = Steam::GetLanguage();
     if (!locale.empty())
     {
         return locale;

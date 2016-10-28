@@ -88,7 +88,7 @@ String DeviceInfoPrivate::GetModel()
 String DeviceInfoPrivate::GetLocale()
 {
 #if defined(__DAVAENGINE_STEAM__)
-    String locale = Steam::GetSteamLanguage();
+    String locale = Steam::GetLanguage();
     if (!locale.empty())
     {
         return locale;
