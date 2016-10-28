@@ -20,7 +20,6 @@ class DownloadManager;
 
 class InputSystem;
 class UIControlSystem;
-class VirtualCoordinatesSystem;
 
 class SoundSystem;
 class AnimationManager;

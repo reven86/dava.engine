@@ -21,7 +21,6 @@ namespace DAVA
 {
 namespace Private
 {
-
 float32 GetDpi(CGRect rect, float32 scale)
 {
     enum eIosDpi

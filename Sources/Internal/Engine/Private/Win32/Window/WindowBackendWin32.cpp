@@ -232,8 +232,8 @@ LRESULT WindowBackend::OnExitSizeMove()
 
 LRESULT WindowBackend::OnDpiChanged(RECT* suggestedRect)
 {
-    float32 w = static_cast<float32>(suggestedSize->right - suggestedSize->left);
-    float32 h = static_cast<float32>(suggestedSize->bottom - suggestedSize->top);
+    float32 w = static_cast<float32>(suggestedRect->right - suggestedRect->left);
+    float32 h = static_cast<float32>(suggestedRect->bottom - suggestedRect->top);
     Resize(w, h);
 
     float32 curDpi = GetDpi();
