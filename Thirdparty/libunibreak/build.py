@@ -28,7 +28,7 @@ def build_for_target(target, working_directory_path, root_project_path):
 
 
 def get_download_info():
-    return 'https://github.com/adah1972/libunibreak/releases/download/libunibreak_3_0/libunibreak-3.0.tar.gz'
+    return 'https://github.com/adah1972/libunibreak/archive/8c92b46511baf5b51457f202cf53d8602e1aef17.zip'
 
 
 def _download_and_extract(working_directory_path):
@@ -38,7 +38,7 @@ def _download_and_extract(working_directory_path):
     build_utils.download_and_extract(
         url, working_directory_path,
         source_folder_path,
-        build_utils.get_url_file_name_no_ext(url))
+        'libunibreak-8c92b46511baf5b51457f202cf53d8602e1aef17')
     return source_folder_path
 
 
@@ -86,6 +86,7 @@ def _build_macos(working_directory_path, root_project_path):
 
     install_dir_macos = os.path.join(
         working_directory_path, 'gen/install_macos')
+    build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=x86_64-apple-darwin', '--disable-shared', '--enable-static'],
@@ -106,6 +107,7 @@ def _build_ios(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
 
     install_dir_ios = os.path.join(working_directory_path, 'gen/install_ios')
+    build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=armv7-apple-darwin', '--disable-shared', '--enable-static'],
@@ -127,6 +129,7 @@ def _build_android(working_directory_path, root_project_path):
 
     install_dir_android_arm = os.path.join(
         working_directory_path, 'gen/install_android_arm')
+    build_utils.run_process(['autoreconf', '-i'], process_cwd=source_folder_path)
     build_utils.build_with_autotools(
         source_folder_path,
         ['--host=arm-linux-androideabi',
