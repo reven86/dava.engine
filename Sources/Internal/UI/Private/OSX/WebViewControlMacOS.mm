@@ -352,7 +352,11 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
 
-    if (!isRenderToTexture)
+    if (!isRenderToTexture
+#if defined(__DAVAENGINE_STEAM__)
+        && !overlayVisible
+#endif
+        )
     {
         SetNativeVisible(isVisible);
     }
@@ -361,14 +365,14 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 #if defined(__DAVAENGINE_STEAM__)
 void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
 {
+    overlayVisible = overlayActivated;
     if (overlayActivated)
     {
-        wasVisible = isVisible;
-        SetVisible(false, false);
+        SetNativeVisible(false);
     }
-    else
+    else if (!isRenderToTexture)
     {
-        SetVisible(wasVisible, false);
+        SetNativeVisible(isVisible);
     }
 }
 #endif
