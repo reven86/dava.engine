@@ -13,19 +13,19 @@ namespace ReflectionDetail
 struct Dumper
 {
     using PrinterFn = void (*)(std::ostringstream&, const Any&);
-    using PrintersTable = Map<const Type*, PrinterFn>;
+    using PrintersTable = Map<const RttiType*, PrinterFn>;
 
     static const PrintersTable pointerPrinters;
     static const PrintersTable valuePrinters;
 
-    static std::pair<PrinterFn, PrinterFn> GetPrinterFns(const Type* type)
+    static std::pair<PrinterFn, PrinterFn> GetPrinterFns(const RttiType* type)
     {
         std::pair<PrinterFn, PrinterFn> ret = { nullptr, nullptr };
 
         if (nullptr != type)
         {
             const PrintersTable* pt = &valuePrinters;
-            const Type* keyType = type;
+            const RttiType* keyType = type;
             if (type->IsPointer())
             {
                 pt = &pointerPrinters;
@@ -41,7 +41,7 @@ struct Dumper
                 ret.first = it->second;
             }
 
-            ret.second = pt->at(Type::Instance<void>());
+            ret.second = pt->at(RttiType::Instance<void>());
         }
         else
         {
@@ -57,7 +57,7 @@ struct Dumper
     static void DumpAny(std::ostringstream& out, const Any& any)
     {
         std::ostringstream line;
-        std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(any.GetType());
+        std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(any.GetRttiType());
 
         if (fns.first != nullptr)
         {
@@ -75,7 +75,7 @@ struct Dumper
     {
         if (ref.IsValid())
         {
-            const Type* valueType = ref.GetValueType();
+            const RttiType* valueType = ref.GetValueType();
 
             std::ostringstream line;
             std::pair<PrinterFn, PrinterFn> fns = GetPrinterFns(valueType);
@@ -110,7 +110,7 @@ struct Dumper
 
         if (ref.IsValid())
         {
-            const Type* valueType = ref.GetValueType();
+            const RttiType* valueType = ref.GetValueType();
             const char* typeName = valueType->GetName();
 
             std::streamsize w = 40;
@@ -236,20 +236,20 @@ struct Dumper
 };
 
 const Dumper::PrintersTable Dumper::valuePrinters = {
-    { Type::Instance<int32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int32>(); } },
-    { Type::Instance<uint32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint32>(); } },
-    { Type::Instance<int64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int64>(); } },
-    { Type::Instance<uint64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint64>(); } },
-    { Type::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
-    { Type::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
-    { Type::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
-    { Type::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
-    { Type::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
+    { RttiType::Instance<int32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int32>(); } },
+    { RttiType::Instance<uint32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint32>(); } },
+    { RttiType::Instance<int64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<int64>(); } },
+    { RttiType::Instance<uint64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<uint64>(); } },
+    { RttiType::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
+    { RttiType::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
+    { RttiType::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
+    { RttiType::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
+    { RttiType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
 };
 
 const Dumper::PrintersTable Dumper::pointerPrinters = {
-    { Type::Instance<char>(), [](std::ostringstream& out, const Any& any) { out << any.Get<const char*>(); } },
-    { Type::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "0x" << std::setw(8) << std::setfill('0') << std::hex << any.Get<void*>(); } }
+    { RttiType::Instance<char>(), [](std::ostringstream& out, const Any& any) { out << any.Get<const char*>(); } },
+    { RttiType::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "0x" << std::setw(8) << std::setfill('0') << std::hex << any.Get<void*>(); } }
 };
 
 } // ReflectionDetail

@@ -4,14 +4,14 @@
 namespace DAVA
 {
 template <typename GetT, typename SetT>
-class ValueWrapperStaticFnPtr : public ValueWrapper
+class ValueWrapperStaticFnPtr : public FieldWrapper
 {
     using Getter = GetT (*)();
     using Setter = void (*)(SetT);
 
 public:
     ValueWrapperStaticFnPtr(Getter getter_, Setter setter_ = nullptr)
-        : ValueWrapper()
+        : FieldWrapper()
         , getter(getter_)
         , setter(setter_)
     {
@@ -22,9 +22,9 @@ public:
         return (nullptr == setter);
     }
 
-    const Type* GetType() const override
+    const RttiType* GetType() const override
     {
-        return Type::Instance<GetT>();
+        return RttiType::Instance<GetT>();
     }
 
     Any GetValue(const ReflectedObject& ptr) const override
@@ -54,7 +54,7 @@ public:
         return ret;
     }
 
-    ReflectedObject GetValueObject(const ReflectedObject& object) const override
+    ReflectedObject GetFieldObject(const ReflectedObject& object) const override
     {
         auto is_pointer = std::integral_constant<bool, std::is_pointer<GetT>::value>();
         auto is_reference = std::integral_constant<bool, std::is_reference<GetT>::value>();

@@ -3,7 +3,7 @@
 #include <typeindex>
 
 #include "Base/BaseTypes.h"
-#include "Base/Type.h"
+#include "Base/RttiType.h"
 #include "Base/Exception.h"
 #include "Base/Private/AutoStorage.h"
 
@@ -45,7 +45,7 @@ public:
 
     /// \brief Gets the type of contained value.
     /// \return null if it Any is empty, else the contained value type.
-    const Type* GetType() const;
+    const RttiType* GetRttiType() const;
 
     /// \brief Determine if value with specified type T can get be from Any.
     /// \return true if we can be get, false if not.
@@ -90,7 +90,7 @@ public:
     ///         types for which Type::IsTrivial is true.
     /// \param [in,out] data    Pointer on source memory, from where value should be loaded.
     /// \param          type    The type of the loading value.
-    bool LoadValue(void* data, const Type* type);
+    bool LoadValue(void* data, const RttiType* type);
 
     /// \brief  Stores contained value into specified memory location. Storing can
     ///          be done only for values whose type Type::IsTrivial is true.
@@ -115,7 +115,7 @@ public:
 private:
     using CompareFn = bool (*)(const Any&, const Any&);
 
-    const Type* type = nullptr;
+    const RttiType* rttiType = nullptr;
     AnyStorage anyStorage;
     CompareFn compareFn = nullptr;
 };

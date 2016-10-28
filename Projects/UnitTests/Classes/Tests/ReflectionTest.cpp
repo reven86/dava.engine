@@ -394,9 +394,9 @@ DAVA_TESTCLASS (ReflectionTest)
         const DAVA::ReflectedType* rtype0 = DAVA::ReflectedType::Get<T>();
         TEST_VERIFY(nullptr != rtype0);
         TEST_VERIFY(rtype0->GetPermanentName() == permName);
-        TEST_VERIFY(rtype0->GetType() == DAVA::Type::Instance<T>());
+        TEST_VERIFY(rtype0->GetRttiType() == DAVA::RttiType::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(DAVA::Type::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(DAVA::RttiType::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
         const DAVA::ReflectedType* rtype2 = DAVA::ReflectedType::GetByRttiName(typeid(T).name());
@@ -420,16 +420,16 @@ DAVA_TESTCLASS (ReflectionTest)
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
-        TEST_VERIFY(r.GetField("basebase").ref.IsValid());
-        TEST_VERIFY(r.GetMethod("BaseMe").fn.IsValid());
+        TEST_VERIFY(r.GetField("basebase").IsValid());
+        TEST_VERIFY(r.GetMethod("BaseMe").IsValid());
 
         BaseOnlyReflection b;
         r = DAVA::Reflection::Create(&b);
 
         TEST_VERIFY(r.HasFields());
         TEST_VERIFY(r.HasMethods());
-        TEST_VERIFY(r.GetField("basebase").ref.IsValid());
-        TEST_VERIFY(r.GetMethod("BaseMe").fn.IsValid());
+        TEST_VERIFY(r.GetField("basebase").IsValid());
+        TEST_VERIFY(r.GetMethod("BaseMe").IsValid());
     }
 
     template <typename T, typename... Args>
@@ -443,7 +443,7 @@ DAVA_TESTCLASS (ReflectionTest)
         if (nullptr != ctor)
         {
             TEST_VERIFY(ctor->GetInvokeParams().argsType.size() == sizeof...(Args));
-            TEST_VERIFY(ctor->GetInvokeParams().retType == DAVA::Type::Instance<void>());
+            TEST_VERIFY(ctor->GetInvokeParams().retType == DAVA::RttiType::Instance<void>());
 
             DAVA::Any a = ctor->Create(DAVA::CtorWrapper::Policy::ByValue, args...);
             DAVA::Any b = T(args...);
@@ -465,6 +465,7 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         const DAVA::ReflectedType* rtype = DAVA::ReflectedType::Get<SimpleStruct>();
 
+#ifdef __REFLECTION_FEATURE__
         TEST_VERIFY(nullptr != rtype);
         if (nullptr != rtype)
         {
@@ -498,7 +499,7 @@ DAVA_TESTCLASS (ReflectionTest)
                 catch (const DAVA::Exception&)
                 {
                     TEST_VERIFY(!a.IsEmpty());
-                    TEST_VERIFY(a.GetType() == DAVA::Type::Instance<SimpleStruct>());
+                    TEST_VERIFY(a.GetRttiType() == DAVA::RttiType::Instance<SimpleStruct>());
                 }
 
                 a.Set(new SimpleStruct());
@@ -511,6 +512,7 @@ DAVA_TESTCLASS (ReflectionTest)
                 TEST_VERIFY(!obj.IsValid());
             }
         }
+#endif
 
         //         rtype = DAVA::ReflectedType::Get<StructPtr>();
         //         TEST_VERIFY(nullptr != rtype->GetCtor());
@@ -527,16 +529,16 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         TEST_VERIFY
         (
-        ref.GetValueType() == DAVA::Type::Instance<T>() ||
-        ref.GetValueType()->Decay() == DAVA::Type::Instance<T>()
+        ref.GetValueType() == DAVA::RttiType::Instance<T>() ||
+        ref.GetValueType()->Decay() == DAVA::RttiType::Instance<T>()
         );
 
         if (ref.GetValueObject().IsValid())
         {
             TEST_VERIFY
             (
-            ref.GetValueObject().GetType() == DAVA::Type::Instance<T*>() ||
-            ref.GetValueObject().GetType()->Decay() == DAVA::Type::Instance<T*>()
+            ref.GetValueObject().GetType() == DAVA::RttiType::Instance<T*>() ||
+            ref.GetValueObject().GetType()->Decay() == DAVA::RttiType::Instance<T*>()
             );
         }
 
@@ -567,17 +569,17 @@ DAVA_TESTCLASS (ReflectionTest)
         // static get/set
         auto realStaticGetter = []() { return TestBaseClass::staticInt; };
         auto realStaticSetter = [](int v) { TestBaseClass::staticInt = v; };
-        DoValueSetGetTest(r.GetField("staticInt").ref, realStaticGetter, realStaticSetter, 111, 222);
+        DoValueSetGetTest(r.GetField("staticInt"), realStaticGetter, realStaticSetter, 111, 222);
 
         // static const get/set
         auto realStaticConstGetter = []() { return TestBaseClass::staticIntConst; };
         auto realStaticConstSetter = [](int v) {};
-        DoValueSetGetTest(r.GetField("staticIntConst").ref, realStaticConstGetter, realStaticConstSetter, 111, 222);
+        DoValueSetGetTest(r.GetField("staticIntConst"), realStaticConstGetter, realStaticConstSetter, 111, 222);
 
         // class set/get
         auto realClassGetter = [&t]() { return t.basebase; };
         auto realClassSetter = [&t](int v) { t.basebase = v; };
-        DoValueSetGetTest(r.GetField("basebase").ref, realClassGetter, realClassSetter, 333, 444);
+        DoValueSetGetTest(r.GetField("basebase"), realClassGetter, realClassSetter, 333, 444);
     }
 
     DAVA_TEST (ValueFnSetGet)
@@ -588,23 +590,23 @@ DAVA_TESTCLASS (ReflectionTest)
         // static get/set
         auto realStaticGetter = DAVA::MakeFunction(&TestBaseClass::GetStaticIntFn);
         auto realStaticSetter = DAVA::MakeFunction(&TestBaseClass::SetStaticIntFn);
-        DoValueSetGetTest(r.GetField("StaticIntFn").ref, realStaticGetter, realStaticSetter, 111, 222);
-        DoValueSetGetTest(r.GetField("StaticIntFnFn").ref, realStaticGetter, realStaticSetter, 333, 444);
+        DoValueSetGetTest(r.GetField("StaticIntFn"), realStaticGetter, realStaticSetter, 111, 222);
+        DoValueSetGetTest(r.GetField("StaticIntFnFn"), realStaticGetter, realStaticSetter, 333, 444);
 
         // class set/get
         auto realClassGetter = DAVA::MakeFunction(&t, &TestBaseClass::GetIntFn);
         auto realClassSetter = DAVA::MakeFunction(&t, &TestBaseClass::SetIntFn);
-        DoValueSetGetTest(r.GetField("IntFn").ref, realClassGetter, realClassSetter, 1111, 2222);
-        DoValueSetGetTest(r.GetField("IntFnFn").ref, realClassGetter, realClassSetter, 3333, 4444);
+        DoValueSetGetTest(r.GetField("IntFn"), realClassGetter, realClassSetter, 1111, 2222);
+        DoValueSetGetTest(r.GetField("IntFnFn"), realClassGetter, realClassSetter, 3333, 4444);
 
         // class const set/get
         auto realClassConstGetter = DAVA::MakeFunction(&t, &TestBaseClass::GetIntFnConst);
-        DoValueSetGetTest(r.GetField("IntFnConst").ref, realClassConstGetter, [](int) {}, 1122, 2233);
+        DoValueSetGetTest(r.GetField("IntFnConst"), realClassConstGetter, [](int) {}, 1122, 2233);
 
         // class set/get str
         auto realClassStrGetter = DAVA::MakeFunction(&t, &TestBaseClass::GetBaseStr);
         auto realClassStrSetter = DAVA::MakeFunction(&t, &TestBaseClass::SetBaseStr);
-        DoValueSetGetTest(r.GetField("StrFn").ref, realClassStrGetter, realClassStrSetter, std::string("1111"), std::string("2222"));
+        DoValueSetGetTest(r.GetField("StrFn"), realClassStrGetter, realClassStrSetter, std::string("1111"), std::string("2222"));
     }
 
     DAVA_TEST (ValueSetGetByPointer)
@@ -618,7 +620,7 @@ DAVA_TESTCLASS (ReflectionTest)
         // class set/get
         auto realClassGetter = [&t]() { return t.simple; };
         auto realClassSetter = [&t](SimpleStruct* s) { t.simple = s; };
-        DoValueSetGetTest(r.GetField("simple").ref, realClassGetter, realClassSetter, &s1, &s2);
+        DoValueSetGetTest(r.GetField("simple"), realClassGetter, realClassSetter, &s1, &s2);
     }
 };
 

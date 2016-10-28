@@ -11,18 +11,18 @@ class StructureWrapperStdIndexed : public StructureWrapperDefault
 public:
     using V = typename C::value_type;
 
-    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool HasFields(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection::Field GetField(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<size_t>())
         {
             size_t i = key.Cast<size_t>();
-            C* c = vw->GetValueObject(obj).GetPtr<C>();
+            C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
             auto it = std::next(c->begin(), i);
             if (it != c->end())
@@ -35,12 +35,12 @@ public:
         return Reflection::Field();
     }
 
-    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
         Vector<Reflection::Field> ret;
 
         size_t i = 0;
-        C* c = vw->GetValueObject(obj).GetPtr<C>();
+        C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
         ret.reserve(c->size());
         for (auto& it : *c)
@@ -59,18 +59,18 @@ class StructureWrapperStdSet : public StructureWrapperDefault
 public:
     using K = typename C::key_type;
 
-    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool HasFields(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection::Field GetField(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<K>())
         {
             const K& k = key.Cast<K>();
-            C* c = vw->GetValueObject(obj).GetPtr<C>();
+            C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
             auto it = c->find(k);
             if (it != c->end())
@@ -85,11 +85,11 @@ public:
         return Reflection::Field();
     }
 
-    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
         Vector<Reflection::Field> ret;
 
-        C* c = vw->GetValueObject(obj).GetPtr<C>();
+        C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
         ret.reserve(c->size());
 
@@ -113,18 +113,18 @@ public:
     using K = typename C::key_type;
     using V = typename C::mapped_type;
 
-    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool HasFields(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
         return (c->size() > 0);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection::Field GetField(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
         if (key.CanCast<K>())
         {
             const K& k = key.Cast<K>();
-            C* c = vw->GetValueObject(obj).GetPtr<C>();
+            C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
             if (c->count(k) > 0)
             {
@@ -136,11 +136,11 @@ public:
         return Reflection::Field();
     }
 
-    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
         Vector<Reflection::Field> ret;
 
-        C* c = vw->GetValueObject(obj).GetPtr<C>();
+        C* c = vw->GetFieldObject(obj).GetPtr<C>();
 
         ret.reserve(c->size());
         for (auto& pair : *c)

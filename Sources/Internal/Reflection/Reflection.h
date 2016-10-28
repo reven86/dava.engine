@@ -4,7 +4,8 @@
 #include <sstream>
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
-#include "Base/Type.h"
+#include "Base/RttiType.h"
+#include "Base/RttiInheritance.h"
 
 #include "Reflection/ReflectedBase.h"
 #include "Reflection/ReflectedObject.h"
@@ -12,7 +13,7 @@
 
 namespace DAVA
 {
-class ValueWrapper;
+class FieldWrapper;
 class StructureWrapper;
 
 /// \brief  Reflection allows to inspect and modify objects at runtime. It is some kind of runtime object reflection
@@ -38,7 +39,7 @@ public:
     /// \param  vw      ValueWrapper, that gives direct access to the runtime object value.
     /// \param  rtype   ReflectedType, that gives access to the registered  runtime object structure.
     /// \param  meta    Additional meta info.
-    Reflection(const ReflectedObject& object, const ValueWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
+    Reflection(const ReflectedObject& object, const FieldWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
 
     /// \brief Query if reflection is valid.
     /// \return true if valid, false if not.
@@ -50,7 +51,7 @@ public:
 
     /// \brief Gets reflection value type.
     /// \return null if it fails, else the value type.
-    const Type* GetValueType() const;
+    const RttiType* GetValueType() const;
 
     /// \brief Gets reflection object.
     /// \return The reflection object.
@@ -73,7 +74,7 @@ public:
     /// \brief Gets a reflection field.
     /// \param  name    The name of the field to get.
     /// \return The field. If field with specified name isn't found empty field will be returned.
-    Field GetField(const Any& name) const;
+    Reflection GetField(const Any& name) const;
 
     /// \brief Gets all reflection fields.
     /// \return All fields.
@@ -130,7 +131,7 @@ public:
     /// \param  key Name of the method to get.
     /// \return Method that is binded to current reflection and can be called.
     /// \sa AnyFn
-    Method GetMethod(const String& key) const;
+    AnyFn GetMethod(const String& key) const;
 
     /// \brief Gets all reflection methods.
     /// \return All methods.
@@ -163,7 +164,7 @@ public:
     static Reflection Create(T* ptr, const ReflectedMeta* meta = nullptr);
 
 private:
-    const ValueWrapper* vw = nullptr;
+    const FieldWrapper* vw = nullptr;
     const StructureWrapper* sw = nullptr;
     const ReflectedMeta* meta = nullptr;
     const ReflectedType* objectType = nullptr;

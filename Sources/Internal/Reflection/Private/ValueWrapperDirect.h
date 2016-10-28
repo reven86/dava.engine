@@ -3,10 +3,10 @@
 
 namespace DAVA
 {
-class ValueWrapperDirect : public ValueWrapper
+class ValueWrapperDirect : public FieldWrapper
 {
 public:
-    ValueWrapperDirect(const Type* type_)
+    ValueWrapperDirect(const RttiType* type_)
         : type(type_)
     {
     }
@@ -16,7 +16,7 @@ public:
         return type->IsConst();
     }
 
-    const Type* GetType() const override
+    const RttiType* GetType() const override
     {
         return type;
     }
@@ -49,20 +49,20 @@ public:
         if (!IsReadonly() && object.IsValid())
         {
             void* ptr = object.GetVoidPtr();
-            const Type* inType = object.GetType()->Deref();
+            const RttiType* inType = object.GetType()->Deref();
             ret = value.StoreValue(ptr, inType->GetSize());
         }
 
         return ret;
     }
 
-    ReflectedObject GetValueObject(const ReflectedObject& object) const override
+    ReflectedObject GetFieldObject(const ReflectedObject& object) const override
     {
         return object;
     }
 
 protected:
-    const Type* type;
+    const RttiType* type;
 };
 
 } // namespace DAVA

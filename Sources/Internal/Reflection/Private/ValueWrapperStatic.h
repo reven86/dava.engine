@@ -24,7 +24,7 @@ public:
         return ValueWrapperDefault<T>::SetValueInternal(field, value);
     }
 
-    ReflectedObject GetValueObject(const ReflectedObject& object) const override
+    ReflectedObject GetFieldObject(const ReflectedObject& object) const override
     {
         return ReflectedObject(field);
     }

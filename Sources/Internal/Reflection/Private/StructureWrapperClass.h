@@ -13,10 +13,10 @@ class StructureWrapperClass : public StructureWrapper
 public:
     struct ClassBase
     {
-        const Type* type;
+        const RttiType* type;
         const ReflectedType* refType;
 
-        TypeInheritance::CastOP castToBaseOP;
+        RttiInheritance::CastOP castToBaseOP;
         ReflectedObject GetBaseObject(const ReflectedObject& obj) const;
     };
 
@@ -30,22 +30,22 @@ public:
 
         const ReflectedType* type;
 
-        std::unique_ptr<ValueWrapper> vw;
+        std::unique_ptr<FieldWrapper> vw;
         std::unique_ptr<ReflectedMeta> meta;
     };
 
-    StructureWrapperClass(const Type*);
+    StructureWrapperClass(const RttiType*);
 
-    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
-    Reflection::Field GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
-    Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    bool HasFields(const ReflectedObject& object, const FieldWrapper* vw) const override;
+    Reflection GetField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override;
+    Vector<Reflection::Field> GetFields(const ReflectedObject& object, const FieldWrapper* vw) const override;
 
-    bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
-    Reflection::Method GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
-    Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    bool HasMethods(const ReflectedObject& object, const FieldWrapper* vw) const override;
+    AnyFn GetMethod(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override;
+    Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const FieldWrapper* vw) const override;
 
     template <typename T>
-    void AddField(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
+    void AddField(const char* fieldName, std::unique_ptr<FieldWrapper>&& vw)
     {
         ClassField clField;
         clField.type = ReflectedType::Get<T>();
@@ -54,7 +54,7 @@ public:
     }
 
     template <typename T>
-    void AddFieldFn(const char* fieldName, std::unique_ptr<ValueWrapper>&& vw)
+    void AddFieldFn(const char* fieldName, std::unique_ptr<FieldWrapper>&& vw)
     {
         ClassField clField;
         clField.type = FnRetTypeToFieldType<T>::Get();
@@ -105,7 +105,7 @@ private:
         }
     };
 
-    const Type* thisType;
+    const RttiType* thisType;
 
     Vector<std::pair<String, ClassField>> fields;
     Vector<std::pair<String, AnyFn>> methods;

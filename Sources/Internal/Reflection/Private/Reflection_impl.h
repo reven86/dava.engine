@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
+inline Reflection::Reflection(const ReflectedObject& object_, const FieldWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
     : object(object_)
     , vw(vw_)
     , meta(meta_)
@@ -16,7 +16,7 @@ inline Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper
 {
     if (nullptr != rtype_)
     {
-        sw = rtype_->structureWrapper.get();
+        sw = rtype_->GetStructureWrapper();
     }
 
     if (nullptr != meta)
@@ -38,14 +38,14 @@ inline bool Reflection::IsReadonly() const
     return vw->IsReadonly();
 }
 
-inline const Type* Reflection::GetValueType() const
+inline const RttiType* Reflection::GetValueType() const
 {
     return vw->GetType();
 }
 
 inline ReflectedObject Reflection::GetValueObject() const
 {
-    return vw->GetValueObject(object);
+    return vw->GetFieldObject(object);
 }
 
 inline const DAVA::ReflectedType* Reflection::GetReflectedType() const
@@ -68,7 +68,7 @@ inline bool Reflection::HasFields() const
     return sw->HasFields(object, vw);
 }
 
-inline Reflection::Field Reflection::GetField(const Any& key) const
+inline Reflection Reflection::GetField(const Any& key) const
 {
     return sw->GetField(object, vw, key);
 }
@@ -123,7 +123,7 @@ inline bool Reflection::HasMethods() const
     return sw->HasMethods(object, vw);
 }
 
-inline Reflection::Method Reflection::GetMethod(const String& key) const
+inline AnyFn Reflection::GetMethod(const String& key) const
 {
     return sw->GetMethod(object, vw, key);
 }

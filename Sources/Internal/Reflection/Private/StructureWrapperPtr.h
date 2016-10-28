@@ -11,9 +11,9 @@ class StructureWrapperPtr final : public StructureWrapperDefault
 public:
     StructureWrapperPtr() = default;
 
-    bool HasFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    bool HasFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
         {
@@ -23,9 +23,9 @@ public:
         return StructureWrapperDefault::HasFields(obj, vw);
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection::Field GetField(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
 
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
@@ -36,9 +36,9 @@ public:
         return StructureWrapperDefault::GetField(obj, vw, key);
     }
 
-    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
 
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
@@ -49,9 +49,9 @@ public:
         return StructureWrapperDefault::GetFields(obj, vw);
     }
 
-    bool HasMethods(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    bool HasMethods(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
 
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
@@ -62,9 +62,9 @@ public:
         return StructureWrapperDefault::HasMethods(obj, vw);
     }
 
-    Reflection::Method GetMethod(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection::Method GetMethod(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
 
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)
@@ -75,9 +75,9 @@ public:
         return StructureWrapperDefault::GetMethod(obj, vw, key);
     }
 
-    Vector<Reflection::Method> GetMethods(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Method> GetMethods(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(obj).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(obj).Deref();
 
         const StructureWrapper* sw = GetInternalWrapper(derefObj);
         if (nullptr != sw)

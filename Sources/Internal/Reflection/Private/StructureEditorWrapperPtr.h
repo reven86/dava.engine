@@ -3,6 +3,8 @@
 #include "Reflection/Private/ValueWrapperDefault.h"
 #include "Reflection/Private/StructureEditorWrapperDefault.h"
 
+#ifdef __REFLECTION_FEATURE__
+
 namespace DAVA
 {
 template <typename T>
@@ -11,9 +13,9 @@ class StructureEditorWrapperPtr final : public StructureEditorWrapperDefault
 public:
     StructureEditorWrapperPtr() = default;
 
-    bool CanCreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanCreateValue(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -23,9 +25,9 @@ public:
         return StructureEditorWrapperDefault::CanCreateValue(object, vw);
     }
 
-    bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanAdd(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -35,9 +37,9 @@ public:
         return StructureEditorWrapperDefault::CanCreateValue(object, vw);
     }
 
-    bool CanInsert(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanInsert(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -47,9 +49,9 @@ public:
         return StructureEditorWrapperDefault::CanCreateValue(object, vw);
     }
 
-    bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanRemove(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -59,9 +61,9 @@ public:
         return StructureEditorWrapperDefault::CanCreateValue(object, vw);
     }
 
-    Any CreateValue(const ReflectedObject& object, const ValueWrapper* vw) const override
+    Any CreateValue(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -71,9 +73,9 @@ public:
         return StructureEditorWrapperDefault::CreateValue(object, vw);
     }
 
-    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
+    bool AddField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key, const Any& value) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -83,9 +85,9 @@ public:
         return StructureEditorWrapperDefault::AddField(object, vw, key, value);
     }
 
-    bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
+    bool InsertField(const ReflectedObject& object, const FieldWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -95,9 +97,9 @@ public:
         return StructureEditorWrapperDefault::InsertField(object, vw, beforeKey, key, value);
     }
 
-    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    bool RemoveField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override
     {
-        ReflectedObject derefObj = vw->GetValueObject(object).Deref();
+        ReflectedObject derefObj = vw->GetFieldObject(object).Deref();
         const StructureEditorWrapper* sew = GetInternalWrapper(derefObj);
         if (nullptr != sew)
         {
@@ -134,3 +136,5 @@ struct StructureEditorWrapperCreator<T*>
 };
 
 } // namespace DAVA
+
+#endif

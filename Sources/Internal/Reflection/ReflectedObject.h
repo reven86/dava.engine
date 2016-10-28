@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <type_traits>
-#include "Base/Type.h"
+#include "Base/RttiType.h"
 
 namespace DAVA
 {
@@ -17,11 +17,11 @@ public:
     template <typename T>
     ReflectedObject(const T* ptr);
 
-    ReflectedObject(void* ptr, const Type* type);
+    ReflectedObject(void* ptr, const RttiType* type);
 
     bool IsValid() const;
 
-    const Type* GetType() const;
+    const RttiType* GetType() const;
 
     template <typename T>
     T* GetPtr() const;
@@ -32,24 +32,24 @@ public:
 
 protected:
     void* ptr = nullptr;
-    const Type* type = nullptr;
+    const RttiType* type = nullptr;
 };
 
 template <typename T>
 inline ReflectedObject::ReflectedObject(T* ptr_)
     : ptr(ptr_)
-    , type(Type::Instance<T*>())
+    , type(RttiType::Instance<T*>())
 {
 }
 
 template <typename T>
 inline ReflectedObject::ReflectedObject(const T* ptr_)
     : ptr(const_cast<T*>(ptr_))
-    , type(Type::Instance<T*>())
+    , type(RttiType::Instance<T*>())
 {
 }
 
-inline ReflectedObject::ReflectedObject(void* ptr_, const Type* type_)
+inline ReflectedObject::ReflectedObject(void* ptr_, const RttiType* type_)
     : ptr(ptr_)
     , type(type_)
 {
@@ -57,7 +57,7 @@ inline ReflectedObject::ReflectedObject(void* ptr_, const Type* type_)
     assert(type_->IsPointer());
 }
 
-inline const Type* ReflectedObject::GetType() const
+inline const RttiType* ReflectedObject::GetType() const
 {
     return type;
 }
@@ -70,9 +70,9 @@ inline bool ReflectedObject::IsValid() const
 template <typename T>
 inline T* ReflectedObject::GetPtr() const
 {
-    const Type* reqType = Type::Instance<T*>();
+    const RttiType* reqType = RttiType::Instance<T*>();
 
-    assert(reqType == type || reqType->Decay() == type || TypeInheritance::CanCast(reqType, type));
+    assert(reqType == type || reqType->Decay() == type || RttiInheritance::CanCast(reqType, type));
 
     return static_cast<T*>(ptr);
 }
@@ -89,7 +89,7 @@ inline ReflectedObject ReflectedObject::Deref() const
     if (nullptr == ptr)
         return ret;
 
-    const Type* derefType = type->Deref();
+    const RttiType* derefType = type->Deref();
 
     if (nullptr == derefType)
         return ret;

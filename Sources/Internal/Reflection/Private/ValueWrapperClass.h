@@ -30,7 +30,7 @@ public:
         return ValueWrapperDefault<T>::SetValueInternal(ptr, value);
     }
 
-    inline ReflectedObject GetValueObject(const ReflectedObject& object) const override
+    inline ReflectedObject GetFieldObject(const ReflectedObject& object) const override
     {
         C* cls = object.GetPtr<C>();
         T* ptr = &(cls->*field);

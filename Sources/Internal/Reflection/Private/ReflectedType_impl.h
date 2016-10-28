@@ -99,15 +99,16 @@ ReflectedType* ReflectedType::Create()
 template <typename T>
 ReflectedType* ReflectedType::Edit()
 {
-    using DecayT = Type::DecayT<T>;
+    using DecayT = RttiType::DecayT<T>;
     ReflectedType* ret = Create<DecayT>();
 
     if (nullptr == ret->type)
     {
-        ret->type = Type::Instance<DecayT>();
-        ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
-        ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
+        ret->type = RttiType::Instance<DecayT>();
 
+        //         ret->structure.reset(new Refle)
+        //         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
+        //         ret->structureEditorWrapper.reset(StructureEditorWrapperCreator<DecayT>::Create());
         //        broken on vs 2013!
         //        TODO: fix
         //        ...
@@ -155,14 +156,15 @@ const ReflectedType* ReflectedType::GetByPointer(const T* ptr)
     return ret;
 }
 
+#ifdef __REFLECTION_FEATURE__
 template <typename T, typename... Bases>
 void ReflectedType::RegisterBases()
 {
-    TypeInheritance::RegisterBases<T, Bases...>();
+    RttiInheritance::RegisterBases<T, Bases...>();
     bool basesUnpack[] = { false, ReflectedType::Edit<Bases>() != nullptr... };
 }
 
-inline const Type* ReflectedType::GetType() const
+inline const RttiType* ReflectedType::GetRttiType() const
 {
     return type;
 }
@@ -176,5 +178,6 @@ inline const String& ReflectedType::GetRttiName() const
 {
     return rttiName;
 }
+#endif
 
 } // namespace DAVA

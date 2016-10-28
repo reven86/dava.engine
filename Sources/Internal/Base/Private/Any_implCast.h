@@ -22,18 +22,18 @@ struct AnyCast<T*>
 {
     static bool CanCast(const Any& any)
     {
-        using P = Type::DecayT<T*>;
-        return TypeInheritance::CanCast(any.GetType(), Type::Instance<P>());
+        using P = RttiType::DecayT<T*>;
+        return RttiInheritance::CanCast(any.GetRttiType(), RttiType::Instance<P>());
     }
 
     static T* Cast(const Any& any)
     {
-        using P = Type::DecayT<T*>;
+        using P = RttiType::DecayT<T*>;
 
         void* inPtr = any.Get<void*>();
         void* outPtr = nullptr;
 
-        if (TypeInheritance::Cast(any.GetType(), inPtr, Type::Instance<P>(), &outPtr))
+        if (RttiInheritance::Cast(any.GetRttiType(), inPtr, RttiType::Instance<P>(), &outPtr))
         {
             return static_cast<T*>(outPtr);
         }

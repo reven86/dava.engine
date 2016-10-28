@@ -40,8 +40,8 @@ public:
     Vector<Entity*> entities;
 };
 
-template <class Type>
-void RemovePointerFromVector(DAVA::Vector<Type*>& elements, const Type* element)
+template <class RttiType>
+void RemovePointerFromVector(DAVA::Vector<RttiType*>& elements, const RttiType* element)
 {
     size_t size = elements.size();
     for (size_t index = 0; index < size; ++index)

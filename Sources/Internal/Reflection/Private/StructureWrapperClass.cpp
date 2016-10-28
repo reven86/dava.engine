@@ -6,12 +6,12 @@
 
 namespace DAVA
 {
-StructureWrapperClass::StructureWrapperClass(const Type* type)
+StructureWrapperClass::StructureWrapperClass(const RttiType* type)
     : thisType(type)
 {
 }
 
-bool StructureWrapperClass::HasFields(const ReflectedObject& object, const ValueWrapper* vw) const
+bool StructureWrapperClass::HasFields(const ReflectedObject& object, const FieldWrapper* vw) const
 {
     bool ret = !fields.empty();
 
@@ -21,7 +21,7 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Value
 
         for (ClassBase& base : bases)
         {
-            const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+            const StructureWrapper* baseSW = base.refType->GetStructureWrapper();
             ret |= baseSW->HasFields(base.GetBaseObject(object), vw);
 
             if (ret)
@@ -34,9 +34,9 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Value
     return ret;
 }
 
-Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
+Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const
 {
-    Reflection::Field ret;
+    Reflection ret;
 
     String name;
 
@@ -58,8 +58,7 @@ Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object,
         {
             if (it->first == name)
             {
-                ret.key = key;
-                ret.ref = Reflection(vw->GetValueObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
+                ret = Reflection(vw->GetFieldObject(object), it->second.vw.get(), it->second.type, it->second.meta.get());
 
                 break;
             }
@@ -73,10 +72,10 @@ Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object,
             {
                 if (nullptr != base.refType)
                 {
-                    const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+                    const StructureWrapper* baseSW = base.refType->GetStructureWrapper();
 
                     ret = baseSW->GetField(base.GetBaseObject(object), vw, key);
-                    if (ret.ref.IsValid())
+                    if (ret.IsValid())
                     {
                         break;
                     }
@@ -88,7 +87,7 @@ Reflection::Field StructureWrapperClass::GetField(const ReflectedObject& object,
     return ret;
 }
 
-Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw) const
+Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const FieldWrapper* vw) const
 {
     Vector<Reflection::Field> ret;
 
@@ -99,7 +98,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
         const ReflectedType* baseRefType = baseIt.refType;
         if (nullptr != baseRefType)
         {
-            const StructureWrapper* baseSW = baseRefType->structureWrapper.get();
+            const StructureWrapper* baseSW = baseRefType->GetStructureWrapper();
             auto baseFields = baseSW->GetFields(baseIt.GetBaseObject(object), vw);
 
             std::move(baseFields.begin(), baseFields.end(), std::inserter(ret, ret.end()));
@@ -111,7 +110,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
         Reflection::Field rf;
 
         rf.key = it.first;
-        rf.ref = Reflection(vw->GetValueObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
+        rf.ref = Reflection(vw->GetFieldObject(object), it.second.vw.get(), it.second.type, it.second.meta.get());
 
         ret.emplace_back(std::move(rf));
     }
@@ -119,7 +118,7 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     return ret;
 }
 
-bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const
+bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const FieldWrapper* vw) const
 {
     bool ret = !methods.empty();
 
@@ -129,7 +128,7 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Valu
 
         for (ClassBase& base : bases)
         {
-            const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+            const StructureWrapper* baseSW = base.refType->GetStructureWrapper();
             ret |= baseSW->HasMethods(base.GetBaseObject(object), vw);
 
             if (ret)
@@ -142,9 +141,9 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Valu
     return ret;
 }
 
-Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
+AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const
 {
-    Reflection::Method ret;
+    AnyFn ret;
 
     if (key.CanCast<String>())
     {
@@ -157,7 +156,7 @@ Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& objec
         {
             if (it->first == name)
             {
-                ret = { it->first, it->second.BindThis(object.GetVoidPtr()) };
+                ret = it->second.BindThis(object.GetVoidPtr());
                 break;
             }
         }
@@ -170,10 +169,10 @@ Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& objec
             {
                 if (nullptr != base.refType)
                 {
-                    const StructureWrapper* baseSW = base.refType->structureWrapper.get();
+                    const StructureWrapper* baseSW = base.refType->GetStructureWrapper();
 
                     ret = baseSW->GetMethod(base.GetBaseObject(object), vw, key);
-                    if (ret.fn.IsValid())
+                    if (ret.IsValid())
                     {
                         break;
                     }
@@ -185,7 +184,7 @@ Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& objec
     return ret;
 }
 
-Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const
+Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObject& object, const FieldWrapper* vw) const
 {
     Vector<Reflection::Method> ret;
 
@@ -196,7 +195,7 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
         const ReflectedType* baseRefType = baseIt.refType;
         if (nullptr != baseRefType)
         {
-            const StructureWrapper* baseSW = baseRefType->structureWrapper.get();
+            const StructureWrapper* baseSW = baseRefType->GetStructureWrapper();
             auto baseMethods = baseSW->GetMethods(baseIt.GetBaseObject(object), vw);
 
             std::move(baseMethods.begin(), baseMethods.end(), std::inserter(ret, ret.end()));
@@ -217,7 +216,7 @@ void StructureWrapperClass::InitBaseClasses() const
     {
         basesInitialized = true;
 
-        const TypeInheritance* ti = thisType->GetInheritance();
+        const RttiInheritance* ti = thisType->GetInheritance();
         if (nullptr != ti)
         {
             auto bases_ = ti->GetBaseTypes();

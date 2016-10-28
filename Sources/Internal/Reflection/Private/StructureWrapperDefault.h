@@ -6,32 +6,32 @@ namespace DAVA
 class StructureWrapperDefault : public StructureWrapper
 {
 public:
-    bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool HasFields(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return false;
     }
 
-    Reflection::Field GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
+    Reflection GetField(const ReflectedObject& obj, const FieldWrapper* vw, const Any& key) const override
     {
-        return Reflection::Field();
+        return Reflection();
     }
 
-    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const FieldWrapper* vw) const override
     {
         return Vector<Reflection::Field>();
     }
 
-    bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool HasMethods(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return false;
     }
 
-    Reflection::Method GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    AnyFn GetMethod(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override
     {
-        return Reflection::Method();
+        return AnyFn();
     }
 
-    Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override
+    Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return Vector<Reflection::Method>();
     }

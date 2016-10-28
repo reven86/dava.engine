@@ -1,5 +1,5 @@
 #pragma once
-#include "Base/Type.h"
+#include "Base/RttiType.h"
 
 namespace DAVA
 {
@@ -39,7 +39,7 @@ public:
     template <typename Meta>
     bool HasMeta() const
     {
-        return metas.count(Type::Instance<Meta>()) > 0;
+        return metas.count(RttiType::Instance<Meta>()) > 0;
     }
 
     template <typename T>
@@ -47,7 +47,7 @@ public:
     {
         T* meta = nullptr;
 
-        auto it = metas.find(Type::Instance<T>());
+        auto it = metas.find(RttiType::Instance<T>());
         if (it != metas.end())
         {
             meta = static_cast<T*>(it->second.get());
@@ -59,11 +59,11 @@ public:
     template <typename T>
     void Emplace(Meta<T>&& meta)
     {
-        metas.emplace(Type::Instance<T>(), std::move(meta.ptr));
+        metas.emplace(RttiType::Instance<T>(), std::move(meta.ptr));
     }
 
 protected:
-    UnorderedMap<const Type*, Meta<void>::Ptr> metas;
+    UnorderedMap<const RttiType*, Meta<void>::Ptr> metas;
 };
 
 template <typename T, typename U>

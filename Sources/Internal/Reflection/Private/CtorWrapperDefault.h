@@ -26,40 +26,40 @@ public:
     //      or shared_ptr
     // ...
 
-    Any Create(CtorWrapper::Policy policy) const override
+    Any Create() const override
     {
         auto tp = std::integral_constant<bool, 0 == sizeof...(Args)>();
-        return CreateImpl(tp, policy);
+        return CreateImpl(tp);
     }
 
-    Any Create(CtorWrapper::Policy policy, const Any& a1) const override
+    Any Create(const Any& a1) const override
     {
         auto tp = std::integral_constant<bool, 1 == sizeof...(Args)>();
-        return CreateImpl(tp, policy, a1);
+        return CreateImpl(tp, a1);
     }
 
-    Any Create(CtorWrapper::Policy policy, const Any& a1, const Any& a2) const override
+    Any Create(const Any& a1, const Any& a2) const override
     {
         auto tp = std::integral_constant<bool, 2 == sizeof...(Args)>();
-        return CreateImpl(tp, policy, a1, a2);
+        return CreateImpl(tp, a1, a2);
     }
 
-    Any Create(CtorWrapper::Policy policy, const Any& a1, const Any& a2, const Any& a3) const override
+    Any Create(const Any& a1, const Any& a2, const Any& a3) const override
     {
         auto tp = std::integral_constant<bool, 3 == sizeof...(Args)>();
-        return CreateImpl(tp, policy, a1, a2, a3);
+        return CreateImpl(tp, a1, a2, a3);
     }
 
-    Any Create(CtorWrapper::Policy policy, const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
+    Any Create(const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
     {
         auto tp = std::integral_constant<bool, 4 == sizeof...(Args)>();
-        return CreateImpl(tp, policy, a1, a2, a3, a4);
+        return CreateImpl(tp, a1, a2, a3, a4);
     }
 
-    Any Create(CtorWrapper::Policy policy, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
+    Any Create(const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
     {
         auto tp = std::integral_constant<bool, 5 == sizeof...(Args)>();
-        return CreateImpl(tp, policy, a1, a2, a3, a4, a5);
+        return CreateImpl(tp, a1, a2, a3, a4, a5);
     }
 
 protected:
@@ -80,8 +80,9 @@ protected:
     }
 
     template <typename... A>
-    Any CreateImpl(std::true_type, CtorWrapper::Policy policy, A&&... args) const
+    Any CreateImpl(std::true_type, A&&... args) const
     {
+#ifdef __REFLECTION_FEATURE__
         switch (policy)
         {
         case CtorWrapper::Policy::ByValue:
@@ -89,12 +90,14 @@ protected:
         case CtorWrapper::Policy::ByPointer:
             return CreateByPointer(std::forward<A>(args)...);
         }
+#endif
+        assert(0);
 
         return Any();
     }
 
     template <typename... A>
-    Any CreateImpl(std::false_type, CtorWrapper::Policy policy, A&&... args) const
+    Any CreateImpl(std::false_type, A&&... args) const
     {
         return Any();
     }

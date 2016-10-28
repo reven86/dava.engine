@@ -2,11 +2,9 @@
 #include "Reflection/ReflectedType.h"
 #include "Reflection/Wrappers.h"
 
-#ifndef __REFLECTION_FEATURE__
-
 namespace DAVA
 {
-UnorderedMap<const Type*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
+UnorderedMap<const RttiType*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedType::rttiNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedType::permanentNameToReflectedTypeMap;
 
@@ -21,6 +19,7 @@ void ReflectedType::SetPermanentName(const String& name) const
     rt->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
+#ifdef __REFLECTION_FEATURE__
 const CtorWrapper* ReflectedType::GetCtor(const AnyFn::Params& params) const
 {
     const CtorWrapper* ret = nullptr;
@@ -55,7 +54,7 @@ const DtorWrapper* ReflectedType::GetDtor() const
     return dtorWrapper.get();
 }
 
-const ReflectedType* ReflectedType::GetByType(const Type* type)
+const ReflectedType* ReflectedType::GetByType(const RttiType* type)
 {
     const ReflectedType* ret = nullptr;
 
@@ -93,6 +92,6 @@ const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
 
     return ret;
 }
+#endif
 
 } // namespace DAVA
-#endif

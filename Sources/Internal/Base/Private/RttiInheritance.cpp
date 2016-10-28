@@ -1,15 +1,15 @@
-#include "Base/Type.h"
+#include "Base/RttiInheritance.h"
 
 namespace DAVA
 {
-bool TypeInheritance::CanDownCast(const Type* from, const Type* to)
+bool RttiInheritance::CanDownCast(const RttiType* from, const RttiType* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        const TypeInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->inheritance.get();
         if (nullptr != fti)
         {
             auto it = fti->GetBaseTypes().find(to);
@@ -33,14 +33,14 @@ bool TypeInheritance::CanDownCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypeInheritance::CanUpCast(const Type* from, const Type* to)
+bool RttiInheritance::CanUpCast(const RttiType* from, const RttiType* to)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        const TypeInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->inheritance.get();
         if (nullptr != fti)
         {
             auto it = fti->GetDerivedTypes().find(to);
@@ -64,19 +64,19 @@ bool TypeInheritance::CanUpCast(const Type* from, const Type* to)
     return false;
 }
 
-bool TypeInheritance::CanCast(const Type* from, const Type* to)
+bool RttiInheritance::CanCast(const RttiType* from, const RttiType* to)
 {
     return CanDownCast(from, to) || CanUpCast(from, to);
 }
 
-bool TypeInheritance::DownCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool RttiInheritance::DownCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        const TypeInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->inheritance.get();
         if (nullptr != fti)
         {
             auto it = fti->GetBaseTypes().find(to);
@@ -102,14 +102,14 @@ bool TypeInheritance::DownCast(const Type* from, void* inPtr, const Type* to, vo
     return false;
 }
 
-bool TypeInheritance::UpCast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool RttiInheritance::UpCast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)
 {
     if (from->IsPointer() && to->IsPointer())
     {
         to = to->Deref();
         from = from->Deref();
 
-        const TypeInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->inheritance.get();
         if (nullptr != fti)
         {
             auto it = fti->GetDerivedTypes().find(to);
@@ -135,7 +135,7 @@ bool TypeInheritance::UpCast(const Type* from, void* inPtr, const Type* to, void
     return false;
 }
 
-bool TypeInheritance::Cast(const Type* from, void* inPtr, const Type* to, void** outPtr)
+bool RttiInheritance::Cast(const RttiType* from, void* inPtr, const RttiType* to, void** outPtr)
 {
     if (DownCast(from, inPtr, to, outPtr))
     {

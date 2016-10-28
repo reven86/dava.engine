@@ -3,6 +3,8 @@
 #include "Reflection/Private/ValueWrapperDefault.h"
 #include "Reflection/Private/StructureEditorWrapperDefault.h"
 
+#ifdef __REFLECTION_FEATURE__
+
 namespace DAVA
 {
 template <typename C>
@@ -11,35 +13,35 @@ class StructureEditorWrapperStdIndexed : public StructureEditorWrapperDefault
 public:
     using V = typename C::value_type;
 
-    bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanAdd(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool CanInsert(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanInsert(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanRemove(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
+    bool AddField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key, const Any& value) const override
     {
         if (vw->IsReadonly())
         {
             return false;
         }
 
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
         c->push_back(value.Get<V>());
 
         return true;
     }
 
-    bool InsertField(const ReflectedObject& object, const ValueWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
+    bool InsertField(const ReflectedObject& object, const FieldWrapper* vw, const Any& beforeKey, const Any& key, const Any& value) const override
     {
         if (vw->IsReadonly())
         {
@@ -52,7 +54,7 @@ public:
         }
 
         size_t i = beforeKey.Cast<size_t>();
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
 
         auto it = std::next(c->begin(), i);
         c->insert(it, value.Get<V>());
@@ -60,7 +62,7 @@ public:
         return true;
     }
 
-    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    bool RemoveField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override
     {
         if (vw->IsReadonly())
         {
@@ -73,7 +75,7 @@ public:
         }
 
         size_t i = key.Cast<size_t>();
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
 
         if (i >= c->size())
         {
@@ -93,28 +95,28 @@ class StructureEditorWrapperStdSet : public StructureEditorWrapperDefault
 public:
     using K = typename C::key_type;
 
-    bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanAdd(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanRemove(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
+    bool AddField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key, const Any& value) const override
     {
         if (vw->IsReadonly())
         {
             return false;
         }
 
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
         return c->insert(value.Get<K>()).second;
     }
 
-    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    bool RemoveField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override
     {
         if (vw->IsReadonly())
         {
@@ -127,7 +129,7 @@ public:
         }
 
         K k = key.Cast<K>();
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
 
         return (c->erase(k) > 0);
     }
@@ -141,17 +143,17 @@ public:
     using V = typename C::mapped_type;
     using Pair = typename C::value_type;
 
-    bool CanAdd(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanAdd(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool CanRemove(const ReflectedObject& object, const ValueWrapper* vw) const override
+    bool CanRemove(const ReflectedObject& object, const FieldWrapper* vw) const override
     {
         return !vw->IsReadonly();
     }
 
-    bool AddField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key, const Any& value) const override
+    bool AddField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key, const Any& value) const override
     {
         if (vw->IsReadonly())
         {
@@ -164,12 +166,12 @@ public:
         }
 
         const K& k = key.Cast<K>();
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
 
         return c->insert(Pair(k, value.Get<V>())).second;
     }
 
-    bool RemoveField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override
+    bool RemoveField(const ReflectedObject& object, const FieldWrapper* vw, const Any& key) const override
     {
         if (vw->IsReadonly())
         {
@@ -182,7 +184,7 @@ public:
         }
 
         K k = key.Cast<K>();
-        C* c = vw->GetValueObject(object).GetPtr<C>();
+        C* c = vw->GetFieldObject(object).GetPtr<C>();
 
         return (c->erase(k) > 0);
     }
@@ -270,3 +272,5 @@ struct StructureEditorWrapperCreator<UnorderedMultiMap<K, V, Hash, Eq>>
 };
 
 } // namespace DAVA
+
+#endif

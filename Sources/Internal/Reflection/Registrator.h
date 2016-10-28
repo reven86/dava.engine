@@ -50,7 +50,7 @@
 
 namespace DAVA
 {
-/// \brief A reflection registrator, that is used to register complex types structure.
+/// \brief A reflection registration, that is used to register complex types structure.
 template <typename C>
 class ReflectionRegistrator final
 {
@@ -202,7 +202,7 @@ public:
 
 private:
     ReflectionRegistrator() = default;
-    std::unique_ptr<StructureWrapperClass> sw = std::make_unique<StructureWrapperClass>(Type::Instance<C>());
+    //std::unique_ptr<StructureWrapperClass> sw = std::make_unique<StructureWrapperClass>(Type::Instance<C>());
     std::unique_ptr<ReflectedMeta> meta;
 };
 
