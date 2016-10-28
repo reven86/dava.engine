@@ -5,14 +5,16 @@ project               ( ImageUnpacker )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
+set ( DAVA_COREV2 1 )
+add_definitions ( -D__DAVAENGINE_COREV2__ 
+                             -DCONSOLE)
+
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )
 
-
 define_source ( SOURCE "Classes" )
-
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 

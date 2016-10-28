@@ -52,9 +52,6 @@ using namespace DAVA;
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
 
-    // enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-
     return self;
 }
 
