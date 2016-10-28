@@ -122,6 +122,8 @@ RHI_IMPL_POOL(CommandBufferDX11_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descr
 RHI_IMPL_POOL(RenderPassDX11_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
 RHI_IMPL_POOL(SyncObjectDX11_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
+static DAVA::Mutex _DX11_SyncObjectsSync;
+
 static bool _DX11_PerfQuerySetPending = false;
 
 #if RHI_DX11__USE_DEFERRED_CONTEXTS
@@ -742,9 +744,9 @@ dx11_CommandBuffer_SetMarker(Handle cmdBuf, const char* text)
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx11_SyncObject_Create()
+static Handle dx11_SyncObject_Create()
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     Handle handle = SyncObjectPoolDX11::Alloc();
     SyncObjectDX11_t* sync = SyncObjectPoolDX11::Get(handle);
 
@@ -756,17 +758,17 @@ dx11_SyncObject_Create()
 
 //------------------------------------------------------------------------------
 
-static void
-dx11_SyncObject_Delete(Handle obj)
+static void dx11_SyncObject_Delete(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     SyncObjectPoolDX11::Free(obj);
 }
 
 //------------------------------------------------------------------------------
 
-static bool
-dx11_SyncObject_IsSignaled(Handle obj)
+static bool dx11_SyncObject_IsSignaled(Handle obj)
 {
+    DAVA::LockGuard<DAVA::Mutex> guard(_DX11_SyncObjectsSync);
     if (!SyncObjectPoolDX11::IsAlive(obj))
         return true;
 
@@ -786,6 +788,8 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     DAVA_CPU_PROFILER_SCOPE("rhi::ExecuteQueuedCmds");
 
     DVASSERT(frame.readyToExecute);
+
+    DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX11::IsAlive(frame.sync));
 
     StatSet::ResetAll();
 
@@ -904,11 +908,13 @@ static void dx11_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
     for (Handle p : frame.pass)
         RenderPassPoolDX11::Free(p);
 
+    _DX11_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX11::Iterator s = SyncObjectPoolDX11::Begin(), s_end = SyncObjectPoolDX11::End(); s != s_end; ++s)
     {
         if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
+    _DX11_SyncObjectsSync.Unlock();
 }
 
 bool dx11_PresentBuffer()

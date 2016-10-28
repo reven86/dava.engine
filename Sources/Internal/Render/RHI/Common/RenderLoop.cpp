@@ -55,11 +55,7 @@ void Present() // called from main thread
     Handle frameSync = frameSyncObjects[currFrameSyncId];
     currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
     DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
-    if (frameSyncObjects[currFrameSyncId].IsValid())
-    {
-        DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
-        frameSyncObjects[currFrameSyncId] = HSyncObject();
-    }
+    DVASSERT(!frameSyncObjects[currFrameSyncId].IsValid());
     scheduledDeleteMutex.Unlock();
 
     bool validFrame = FrameLoop::FinishFrame(frameSync);

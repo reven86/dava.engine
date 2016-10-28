@@ -996,6 +996,8 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
 
 static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 {
+    DVASSERT((frame.sync == InvalidHandle) || SyncObjectPoolDX9::IsAlive(frame.sync));
+
     StatSet::ResetAll();
 
     _DX9_FramesWithRestoreAttempt = 0;

@@ -210,8 +210,7 @@ inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT, typename DT, bool nr>
-inline void
-ResourcePool<T, RT, DT, nr>::Free(Handle h)
+inline void ResourcePool<T, RT, DT, nr>::Free(Handle h)
 {
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
     uint32 type = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;

@@ -56,8 +56,8 @@ void ProcessFrame()
             frames[frameToExecute].frameNumber = currentFrameNumber++;
             DispatchPlatform::ExecuteFrame(frames[frameToExecute]);
             frames[frameToExecute].Reset();
-            frameToExecute++;
             frameSync.Lock();
+            frameToExecute++;
             if (frameToExecute >= framePoolSize)
             {
                 frameToBuild -= framePoolSize;
