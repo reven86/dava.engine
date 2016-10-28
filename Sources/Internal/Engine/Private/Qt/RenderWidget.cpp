@@ -6,6 +6,8 @@
 
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/Exception.h"
+
 #include "Debug/CPUProfiler.h"
 #include "Debug/DVAssert.h"
 
