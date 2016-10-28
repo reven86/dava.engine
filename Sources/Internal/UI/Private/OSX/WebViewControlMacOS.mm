@@ -14,6 +14,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "UI/UIWebView.h"
+#include "Platform/Steam.h"
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
@@ -223,11 +224,19 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
+#if defined(__DAVAENGINE_STEAM__)
+    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+#endif
+
     SetBackgroundTransparency(true);
 }
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
     window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
 #else
@@ -329,23 +338,9 @@ void WebViewControl::SetRect(const Rect& srcRect)
 {
     VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    // 1. map virtual to physical
-    Rect rect = coordSystem->ConvertVirtualToPhysical(srcRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-    rect.dx = std::max(0.0f, rect.dx);
-    rect.dy = std::max(0.0f, rect.dy);
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    NSRect controlRect = [[bridge->webView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#else
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#endif
-    [bridge->webView setFrame:controlRect];
+    DAVA::Rect r = coordSystem->ConvertVirtualToInput(srcRect);
+    DAVA::float32 dy = static_cast<DAVA::float32>(coordSystem->GetInputScreenSize().dy);
+    [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)
     {
@@ -362,6 +357,21 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
         SetNativeVisible(isVisible);
     }
 }
+
+#if defined(__DAVAENGINE_STEAM__)
+void WebViewControl::OnSteamOverlayChanged(bool overlayActivated)
+{
+    if (overlayActivated)
+    {
+        wasVisible = isVisible;
+        SetVisible(false, false);
+    }
+    else
+    {
+        SetVisible(wasVisible, false);
+    }
+}
+#endif
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {

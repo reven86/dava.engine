@@ -105,6 +105,7 @@
 
 - (void)mouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)rightMouseDown:(NSEvent*)theEvent
@@ -119,6 +120,7 @@
 
 - (void)rightMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)otherMouseDown:(NSEvent*)theEvent
@@ -133,6 +135,7 @@
 
 - (void)otherMouseDragged:(NSEvent*)theEvent
 {
+    bridge->MouseMove(theEvent);
 }
 
 - (void)keyDown:(NSEvent*)theEvent
