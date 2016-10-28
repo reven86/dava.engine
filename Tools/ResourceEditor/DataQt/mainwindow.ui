@@ -444,6 +444,8 @@
     <addaction name="actionSwitchesWithDifferentLODs"/>
     <addaction name="separator"/>
     <addaction name="actionSnapCameraToLandscape"/>
+    <addaction name="separator"/>
+    <addaction name="actionValidateScene"/>
    </widget>
    <widget class="QMenu" name="menuQuality">
     <property name="title">
@@ -2290,6 +2292,14 @@
    </property>
    <property name="toolTip">
     <string>Mute scene sounds</string>
+   </property>
+  </action>
+  <action name="actionValidateScene">
+   <property name="text">
+    <string>Validate scene</string>
+   </property>
+   <property name="toolTip">
+    <string>Perform some routine checks under scene objects</string>
    </property>
   </action>
  </widget>

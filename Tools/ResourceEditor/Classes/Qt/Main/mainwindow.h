@@ -202,6 +202,8 @@ public slots:
     bool SetVisibilityToolEnabledIfPossible(bool);
     void UpdateLandscapeRenderMode();
 
+    void OnValidateScene();
+
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
     void closeEvent(QCloseEvent* event);

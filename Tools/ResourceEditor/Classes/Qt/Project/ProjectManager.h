@@ -14,13 +14,7 @@ public:
     {
         QString name;
         QString path;
-    };
-
-    struct AvailableMaterialQuality
-    {
-        QString name;
-        QString prefix;
-        QVector<QString> values;
+        QVector<QString> qualities;
     };
 
     ProjectManager();
@@ -36,7 +30,6 @@ public:
     const DAVA::FilePath& GetWorkspacePath() const;
 
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
-    const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
 
@@ -73,7 +66,6 @@ private:
     DAVA::FilePath workspacePath;
 
     QVector<AvailableMaterialTemplate> templates;
-    QVector<AvailableMaterialQuality> qualities;
 
     SpritesPackerModule* spritesPacker = nullptr;
 };

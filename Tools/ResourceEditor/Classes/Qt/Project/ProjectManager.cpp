@@ -59,11 +59,6 @@ const QVector<ProjectManager::AvailableMaterialTemplate>* ProjectManager::GetAva
     return &templates;
 }
 
-const QVector<ProjectManager::AvailableMaterialQuality>* ProjectManager::GetAvailableMaterialQualities() const
-{
-    return &qualities;
-}
-
 DAVA::FilePath ProjectManager::ProjectOpenDialog() const
 {
     QString newPathStr = FileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
@@ -176,10 +171,37 @@ void ProjectManager::LoadProjectSettings()
     EditorConfig::Instance()->ParseConfig(projectPath + "EditorConfig.yaml");
 }
 
+QVector<QString> LoadMaterialQualities(FilePath fxPath)
+{
+    QVector<QString> qualities;
+    YamlParser* parser = YamlParser::Create(fxPath);
+    if (parser)
+    {
+        YamlNode* rootNode = parser->GetRootNode();
+        if (rootNode)
+        {
+            const YamlNode* materialTemplateNode = rootNode->Get("MaterialTemplate");
+            if (materialTemplateNode)
+            {
+                static const char* QUALITIES[] = { "LOW", "MEDIUM", "HIGH", "ULTRA_HIGH" };
+                for (const char* quality : QUALITIES)
+                {
+                    const YamlNode* qualityNode = materialTemplateNode->Get(quality);
+                    if (qualityNode)
+                    {
+                        qualities.append(quality);
+                    }
+                }
+            }
+        }
+    }
+
+    return qualities;
+}
+
 void ProjectManager::LoadMaterialsSettings()
 {
     templates.clear();
-    qualities.clear();
 
     // parse available material templates
     const DAVA::FilePath materialsListPath = DAVA::FilePath("~res:/Materials/assignable.yaml");
@@ -208,8 +230,10 @@ void ProjectManager::LoadMaterialsSettings()
                         if (DAVA::FileSystem::Instance()->Exists(templatePath))
                         {
                             AvailableMaterialTemplate amt;
+
                             amt.name = name->AsString().c_str();
                             amt.path = templatePath.GetFrameworkPath().c_str();
+                            amt.qualities = LoadMaterialQualities(templatePath);
 
                             templates.append(amt);
                         }

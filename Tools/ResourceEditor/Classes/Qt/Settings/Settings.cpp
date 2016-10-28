@@ -91,6 +91,11 @@ const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
 const FastName Settings::Internal_EnableSounds = FastName("Internal/EnableSounds");
+const FastName Settings::Internal_Validate_Matrices = FastName("Internal/ValidateMatrices");
+const FastName Settings::Internal_Validate_SameNames = FastName("Internal/ValidateSameNames");
+const FastName Settings::Internal_Validate_CollisionProperties = FastName("Internal/ValidateCollisionProperties");
+const FastName Settings::Internal_Validate_TexturesRelevance = FastName("Internal/ValidateTexturesRelevance");
+const FastName Settings::Internal_Validate_MaterialGroups = FastName("Internal/ValidateMaterialGroups");
 
 DAVA::eGPUFamily Settings::GetGPUFormat()
 {

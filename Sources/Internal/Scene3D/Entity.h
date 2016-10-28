@@ -347,6 +347,13 @@ public:
     template <template <typename, typename> class Container, class A>
     void GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type);
 
+    /**
+        Puts into `container` recursively all child entities
+        that satisfy given unary predicate `pred`
+    */
+    template <template <typename, typename> class Container, class A, class Pred>
+    void GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pred pred);
+
     uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
 
     /**
@@ -497,6 +504,20 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Com
         }
 
         child->GetChildEntitiesWithComponent(container, type);
+    }
+}
+
+template <template <typename, typename> class Container, class A, class Pred>
+void Entity::GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pred pred)
+{
+    for (auto& child : children)
+    {
+        if (pred(child) == true)
+        {
+            container.push_back(child);
+        }
+
+        child->GetChildEntitiesWithCondition(container, pred);
     }
 }
 

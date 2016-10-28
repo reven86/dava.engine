@@ -1008,7 +1008,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
 
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
-    if (compression[forGPU].format == FORMAT_INVALID)
+    if (forGPU == eGPUFamily::GPU_ORIGIN || compression[forGPU].format == FORMAT_INVALID)
         return 0;
 
     ImageFormat imageFormat = GetImageFormatForGPU(forGPU);

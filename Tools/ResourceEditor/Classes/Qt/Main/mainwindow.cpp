@@ -19,6 +19,7 @@
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
+#include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
@@ -1054,6 +1055,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionBatchProcess, SIGNAL(triggered(bool)), this, SLOT(OnBatchProcessScene()));
 
     QObject::connect(ui->actionSnapCameraToLandscape, SIGNAL(triggered(bool)), this, SLOT(OnSnapCameraToLandscape(bool)));
+
+    QObject::connect(ui->actionValidateScene, SIGNAL(triggered()), this, SLOT(OnValidateScene()));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -1231,6 +1234,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
 
     ui->actionSnapCameraToLandscape->setEnabled(enable);
+
+    ui->actionValidateScene->setEnabled(enable);
 
     // Fix for menuBar rendering
     const auto isMenuBarEnabled = ui->menuBar->isEnabled();
@@ -3502,4 +3507,13 @@ void QtMainWindow::UpdateRedoActionText(const DAVA::String& text)
     QString actionText = text.empty() ? "Redo" : "Redo: " + QString::fromStdString(text);
     ui->actionRedo->setText(actionText);
     ui->actionRedo->setToolTip(actionText);
+}
+
+void QtMainWindow::OnValidateScene()
+{
+    SceneEditor2* currentScene = GetCurrentScene();
+    DVASSERT(currentScene);
+
+    SceneValidationDialog dlg(currentScene);
+    dlg.exec();
 }
