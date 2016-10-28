@@ -303,17 +303,7 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
     using Private::MainDispatcherEvent;
     if (deferredCursorCaptureOn)
     {
-        bool eventFilter = (MainDispatcherEvent::MOUSE_MOVE != e.type);
-        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_UP != e.type);
-        eventFilter &= (MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type);
-        if (eventFilter)
-        {
-            deferredCursorCaptureOn = false;
-            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
-            windowBackend->SetCursorVisibility(cursorVisible);
-            return false;
-        }
-        else if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
+        if (MainDispatcherEvent::MOUSE_BUTTON_UP == e.type)
         {
             // check, only mouse release event in work rect tern on capture mode
             bool mclickInRect = true;
@@ -326,6 +316,13 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
                 windowBackend->SetCursorVisibility(cursorVisible);
                 // return true, skip this event
             }
+        }
+        else if ((MainDispatcherEvent::MOUSE_MOVE != e.type) && (MainDispatcherEvent::MOUSE_BUTTON_DOWN != e.type))
+        {
+            deferredCursorCaptureOn = false;
+            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
+            windowBackend->SetCursorVisibility(cursorVisible);
+            return false;
         }
         return true;
     }
