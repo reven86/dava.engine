@@ -391,7 +391,7 @@ void ShaderSource::InlineFunctions()
                 sl::HLSLBlockStatement* func_block = ast->AddNode<sl::HLSLBlockStatement>(statement->fileName, statement->line);
                 char ret_name[128];
 
-                Snprintf(ret_name, sizeof(ret_name), "__ret_%s_%u", func_decl->name, k);
+                Snprintf(ret_name, sizeof(ret_name), "retval__%s_%u", func_decl->name, k);
 
                 rv_decl->type.baseType = func_decl->returnType.baseType;
                 rv_decl->name = ast->AddString(ret_name);
