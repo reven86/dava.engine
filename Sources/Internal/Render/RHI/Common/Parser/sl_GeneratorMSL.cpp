@@ -77,7 +77,7 @@ const char* MSLGenerator::GetTypeName(const HLSLType& type)
     }
     return "?";
 }
-
+/*
 static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* expression[], int maxArguments)
 {
     HLSLExpression* argument = functionCall->argument;
@@ -93,7 +93,7 @@ static int GetFunctionArguments(HLSLFunctionCall* functionCall, HLSLExpression* 
     }
     return numArguments;
 }
-
+*/
 MSLGenerator::MSLGenerator(Allocator* allocator)
 {
     tree = NULL;
@@ -106,6 +106,7 @@ MSLGenerator::MSLGenerator(Allocator* allocator)
 // - Look at the function being generated.
 // - Return semantic, semantics associated to fields of the return structure, or output arguments, or fields of structures associated to output arguments -> output semantic replacement.
 // - Semantics associated input arguments or fields of the input arguments -> input semantic replacement.
+/*
 static const char* TranslateSemantic(const char* semantic, bool output, Target target)
 {
     if (target == TARGET_VERTEX)
@@ -143,7 +144,7 @@ static const char* TranslateSemantic(const char* semantic, bool output, Target t
     }
     return NULL;
 }
-
+*/
 bool MSLGenerator::Generate(HLSLTree* tree_, Target target_, const char* entryName_, std::string* code)
 {
     tree = tree_;

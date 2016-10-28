@@ -577,7 +577,7 @@ void HLSLTokenizer::GetTokenName(int token, char buffer[s_maxIdentifier])
 {
     if (token < 256)
     {
-        buffer[0] = (char)token;
+        buffer[0] = char(token);
         buffer[1] = 0;
     }
     else if (token < HLSLToken_LessEqual)
