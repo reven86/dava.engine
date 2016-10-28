@@ -114,7 +114,6 @@ void GameCore::OnResume()
 
 void GameCore::BeginFrame()
 {
-
 }
 
 void GameCore::Draw()
