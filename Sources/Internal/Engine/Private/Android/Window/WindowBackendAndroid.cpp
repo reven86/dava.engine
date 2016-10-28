@@ -250,7 +250,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
                                                                                     w,
                                                                                     h,
                                                                                     1.0f,
-                                                                                    1.0f));
+                                                                                    1.0f,
+                                                                                    Fullscreen::On));
     }
 }
 

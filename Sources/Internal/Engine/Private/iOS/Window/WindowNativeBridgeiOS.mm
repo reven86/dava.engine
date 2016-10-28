@@ -106,7 +106,7 @@ void WindowNativeBridge::LoadView()
 void WindowNativeBridge::ViewWillTransitionToSize(float32 w, float32 h)
 {
     float32 scale = [[ ::UIScreen mainScreen] scale];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scale, scale));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scale, scale, Fullscreen::On));
 }
 
 void WindowNativeBridge::TouchesBegan(NSSet* touches)
