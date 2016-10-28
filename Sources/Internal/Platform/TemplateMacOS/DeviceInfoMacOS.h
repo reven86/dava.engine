@@ -28,12 +28,13 @@ public:
     int32 GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 private:
     DeviceInfo::ScreenInfo screenInfo;

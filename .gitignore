@@ -77,3 +77,9 @@ Projects/TestBed/android/.settings/
 global_setting.settings
 .vscode/
 Projects/AndroidFramework/tmp-src
+
+local.properties
+
+# Python scripts cache
+*.pyc
+Doc/Doxygen/doxygen/

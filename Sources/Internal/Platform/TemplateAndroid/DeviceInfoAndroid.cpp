@@ -6,7 +6,6 @@
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "Render/Renderer.h"
 #include <unistd.h>
 
@@ -30,6 +29,10 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
     getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
     isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
+    getDefaultDisplayWidth = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayWidth");
+    getDefaultDisplayHeight = jniDeviceInfo.GetStaticMethod<jint>("GetDefaultDisplayHeight");
+    getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -107,9 +110,12 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
     return screenInfo;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     eGPUFamily gpuFamily = GPU_INVALID;
+#ifdef __DAVAENGINE_COREV2__
+    gpuFamily = static_cast<eGPUFamily>(getGpuFamily());
+#else
     if (Renderer::IsInitialized())
     {
         if (rhi::TextureFormatSupported(rhi::TextureFormat::TEXTURE_FORMAT_PVRTC_4BPP_RGBA))
@@ -129,6 +135,7 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamily()
             gpuFamily = GPU_MALI;
         }
     }
+#endif
 
     return gpuFamily;
 }
@@ -166,9 +173,13 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
 #if !defined(__DAVAENGINE_COREV2__)
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     screenInfo.width = core->GetViewWidth();
     screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
+#else
+    screenInfo.width = getDefaultDisplayWidth();
+    screenInfo.height = getDefaultDisplayHeight();
     screenInfo.scale = 1;
 #endif
 }
@@ -212,7 +223,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         info.emulated = env->GetBooleanField(object, fieldID);
 
         fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
-        jstring jStr = (jstring)env->GetObjectField(object, fieldID);
+        jstring jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
 
         info.path = JNI::ToString(jStr);
     }
@@ -239,7 +250,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 
     if (mid)
     {
-        jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
@@ -270,7 +281,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
 
     if (mid)
     {
-        jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (object)
         {
@@ -292,7 +303,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
     if (mid)
     {
-        jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+        jarray array = static_cast<jarray>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK
         if (array)
         {
@@ -300,7 +311,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
             for (jsize i = 0; i < length; ++i)
             {
-                jobject object = env->GetObjectArrayElement((jobjectArray)array, i);
+                jobject object = env->GetObjectArrayElement(static_cast<jobjectArray>(array), i);
 
                 if (object)
                 {
@@ -314,6 +325,11 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
     }
 
     return list;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return JNI::ToString(getCarrierName());
 }
 }
 

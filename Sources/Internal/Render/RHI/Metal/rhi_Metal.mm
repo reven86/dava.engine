@@ -24,8 +24,6 @@ namespace rhi
 {
 Dispatch DispatchMetal = { 0 };
 
-RenderDeviceCaps _metal_DeviceCaps;
-
 //------------------------------------------------------------------------------
 
 static Api
@@ -37,7 +35,7 @@ metal_HostApi()
 //------------------------------------------------------------------------------
 
 static bool
-metal_TextureFormatSupported(TextureFormat format)
+metal_TextureFormatSupported(TextureFormat format, ProgType)
 {
     bool supported = false;
 
@@ -86,14 +84,23 @@ metal_Uninitialize()
 static void
 metal_Reset(const ResetParam& param)
 {
-}
+    if (_Metal_DefDepthBuf)
+    {
+        [_Metal_DefDepthBuf release];
+        _Metal_DefDepthBuf = nil;
+    }
 
-//------------------------------------------------------------------------------
+    if (_Metal_DefStencilBuf)
+    {
+        [_Metal_DefStencilBuf release];
+        _Metal_DefStencilBuf = nil;
+    }
 
-static const RenderDeviceCaps&
-metal_DeviceCaps()
-{
-    return _metal_DeviceCaps;
+    MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:param.width height:param.height mipmapped:NO];
+    MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:param.width height:param.height mipmapped:NO];
+
+    _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
+    _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
 }
 
 //------------------------------------------------------------------------------
@@ -179,7 +186,6 @@ void metal_Initialize(const InitParam& param)
     int w = param.width;
     int h = param.height;
 
-    MTLTextureDescriptor* colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
     MTLTextureDescriptor* depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
     MTLTextureDescriptor* stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
@@ -229,7 +235,6 @@ void metal_Initialize(const InitParam& param)
     DispatchMetal.impl_HostApi = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported = &metal_TextureFormatSupported;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
-    DispatchMetal.impl_DeviceCaps = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering = &metal_Resume;
     DispatchMetal.impl_SuspendRendering = &metal_Suspend;
@@ -245,14 +250,15 @@ void metal_Initialize(const InitParam& param)
     if (param.maxTextureCount)
         TextureMetal::Init(param.maxTextureCount);
 
-    _metal_DeviceCaps.is32BitIndicesSupported = true;
-    _metal_DeviceCaps.isFramebufferFetchSupported = true;
-    _metal_DeviceCaps.isVertexTextureUnitsSupported = true;
-    _metal_DeviceCaps.isZeroBaseClipRange = true;
-    _metal_DeviceCaps.isUpperLeftRTOrigin = true;
-    _metal_DeviceCaps.isCenterPixelMapping = false;
-    _metal_DeviceCaps.isInstancingSupported = true;
-    _metal_DeviceCaps.maxAnisotropy = 16;
+    MutableDeviceCaps::Get().is32BitIndicesSupported = true;
+    MutableDeviceCaps::Get().isFramebufferFetchSupported = true;
+    MutableDeviceCaps::Get().isVertexTextureUnitsSupported = true;
+    MutableDeviceCaps::Get().isZeroBaseClipRange = true;
+    MutableDeviceCaps::Get().isUpperLeftRTOrigin = true;
+    MutableDeviceCaps::Get().isCenterPixelMapping = false;
+    MutableDeviceCaps::Get().isInstancingSupported = true;
+    MutableDeviceCaps::Get().maxAnisotropy = 16;
+    MutableDeviceCaps::Get().maxSamples = 4;
 }
 
 } // namespace rhi

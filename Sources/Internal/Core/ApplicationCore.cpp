@@ -3,12 +3,11 @@
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
 #include "Sound/SoundSystem.h"
-#include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Debug/Profiler.h"
+#include "Debug/CPUProfiler.h"
 #include "Concurrency/Thread.h"
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
@@ -33,22 +32,16 @@ ApplicationCore::~ApplicationCore()
 
 void ApplicationCore::Update(float32 timeElapsed)
 {
-    TIME_PROFILE("ApplicationCore::Update");
+    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Update")
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     float32 realFrameDelta = SystemTimer::RealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
+
     SoundSystem::Instance()->Update(timeElapsed);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "SoundSystem::Update")
-
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
     AnimationManager::Instance()->Update(timeElapsed);
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "AnimationManager::Update")
-
-    TRACE_BEGIN_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
     UIControlSystem::Instance()->Update();
-    TRACE_END_EVENT((uint32)Thread::GetCurrentId(), "", "UIControlSystem::Update")
     
 #if defined(__DAVAENGINE_STEAM__)
     Steam::Update();
@@ -65,9 +58,10 @@ void ApplicationCore::OnExitFullscreen()
 
 void ApplicationCore::Draw()
 {
+    DAVA_CPU_PROFILER_SCOPE("ApplicationCore::Draw")
+
     Renderer::GetRenderStats().Reset();
 
-    TIME_PROFILE("ApplicationCore::Draw");
     RenderSystem2D::Instance()->BeginFrame();
 
     UIControlSystem::Instance()->Draw();
@@ -79,12 +73,23 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("Core::BeginFrame")
+
     Renderer::BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("Core::EndFrame")
+
     Renderer::EndFrame();
+}
+
+void ApplicationCore::OnRenderingIsNotPossible()
+{
+    DVASSERT(!"Rendering is not possible and no handler found. Application will likely crash or hang now.");
+    Logger::Error("Rendering is not possible and no handler found. Application will likely crash or hang now.");
+    // should we add exit(1) here?
 }
 
 void ApplicationCore::OnSuspend()

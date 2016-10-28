@@ -8,7 +8,19 @@ FileSystemModel::FileSystemModel(QObject* parent)
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex& index) const
 {
-    return QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+    Qt::ItemFlags flags = QFileSystemModel::flags(index) | Qt::ItemIsEditable;
+
+    //qfilesystemModel not detect isDir correctly after dirLoaded signal is emited
+    //same bug: https://bugreports.qt.io/browse/QTBUG-27388
+    //is reproduced on Qt 5.6
+    QFileInfo fi(filePath(index));
+    bool isDir = fi.isDir();
+    if (isDir)
+    {
+        flags &= ~Qt::ItemNeverHasChildren;
+    }
+
+    return flags;
 }
 
 QVariant FileSystemModel::data(const QModelIndex& index, int role) const

@@ -52,9 +52,6 @@ using namespace DAVA;
 
     self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
 
-    // enable retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-
     return self;
 }
 
@@ -123,6 +120,14 @@ using namespace DAVA;
 - (BOOL)resignFirstResponder
 {
     return YES;
+}
+
+- (IBAction)copy:sender
+{
+}
+
+- (IBAction)paste:sender
+{
 }
 
 static Vector<DAVA::UIEvent> activeTouches;

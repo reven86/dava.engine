@@ -46,6 +46,7 @@ private:
 
     bool IsUsingCache() const;
 
+    uint32 GetMaxTextureSize() const;
     Vector<String> FetchFlags(const FilePath& flagsPathname);
     static String GetProcessFolderName();
 
@@ -60,6 +61,7 @@ public:
     FilePath inputGfxDirectory;
     FilePath outputGfxDirectory;
     FilePath rootDirectory;
+    FilePath dataSourceDirectory;
     String gfxDirName;
 
     bool outputDirModified = true;

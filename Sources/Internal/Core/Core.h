@@ -11,6 +11,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
+#include "ModuleManager/ModuleManager.h"
 
 /**
 	\defgroup core Core
@@ -28,6 +29,11 @@ using AppHandle = uint32;
 #endif
 
 class IPackManager;
+
+namespace Analytics
+{
+class Core;
+}
 
 /**
 	\ingroup core
@@ -169,6 +175,8 @@ public:
     virtual void SetWindowMinimumSize(float32 width, float32 height);
     virtual Vector2 GetWindowMinimumSize() const;
 
+    virtual void* GetNativeWindow() const;
+
     /*
 		\brief Mouse cursor for the platforms where it make sense (Win32, MacOS X)
 	 */
@@ -240,6 +248,7 @@ public:
     // InitWindowSize, WindowSizeChanged deprecated methods
     void InitWindowSize(void* nativeView, float32 width, float32 height, float32 scaleX, float32 scaleY);
     void WindowSizeChanged(float32 width, float32 height, float32 scaleX, float32 scaleY);
+    DAVA_DEPRECATED(void ApplyWindowSize());
 
     bool IsFocused();
     rhi::InitParam rendererParams;
@@ -247,7 +256,9 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    IPackManager& GetPackManager();
+    IPackManager& GetPackManager() const;
+    Analytics::Core& GetAnalyticsCore() const;
+    const ModuleManager& GetModuleManager() const;
 
 protected:
     eScreenOrientation screenOrientation;
@@ -257,9 +268,6 @@ protected:
     void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
-    // ApplyWindowSize deprecated method
-    void ApplyWindowSize();
-
     KeyedArchive* options;
 
     bool isFocused = false;
@@ -284,8 +292,10 @@ private:
         bool initialized = false;
     };
     ScreenMetrics screenMetrics;
+    ModuleManager moduleManager;
 
     std::unique_ptr<IPackManager> packManager;
+    std::unique_ptr<Analytics::Core> analyticsCore;
 };
 
 inline bool Core::IsActive()

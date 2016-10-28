@@ -195,7 +195,7 @@ public:
         return ret;
     }
 
-    virtual void Emit(Args...) = 0;
+    virtual void Emit(Args... args) = 0;
 
 protected:
     struct ConnData

@@ -64,6 +64,8 @@ Sprite::Sprite()
     clipPolygon = 0;
 
     defaultPivotPoint = Vector2(0.0f, 0.0f);
+
+    type = SPRITE_FROM_FILE;
 }
 
 Sprite* Sprite::PureCreate(const FilePath& spriteName, Sprite* forPointer)
@@ -816,8 +818,8 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& pa
         precomputedAngle = angle;
         if (precomputedAngle != parentState.angle)
         {
-            cosA = cosf(precomputedAngle);
-            sinA = sinf(precomputedAngle);
+            cosA = std::cos(precomputedAngle);
+            sinA = std::sin(precomputedAngle);
         }
         else
         {

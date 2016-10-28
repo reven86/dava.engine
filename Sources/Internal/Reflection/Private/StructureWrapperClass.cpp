@@ -1,9 +1,8 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include "Reflection/Private/StructureWrapperClass.h"
-#include "Reflection/Public/ReflectedType.h"
-#include "Reflection/Public/ReflectedObject.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
@@ -158,7 +157,7 @@ Reflection::Method StructureWrapperClass::GetMethod(const ReflectedObject& objec
         {
             if (it->first == name)
             {
-                ret = { it->first, it->second };
+                ret = { it->first, it->second.BindThis(object.GetVoidPtr()) };
                 break;
             }
         }
@@ -206,7 +205,7 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
 
     for (auto& it : methods)
     {
-        ret.emplace_back(Reflection::Method{ it.first, it.second });
+        ret.emplace_back(Reflection::Method{ it.first, it.second.BindThis(object.GetVoidPtr()) });
     }
 
     return ret;
@@ -216,20 +215,24 @@ void StructureWrapperClass::InitBaseClasses() const
 {
     if (!basesInitialized)
     {
-        auto bases_ = thisType->BaseTypes();
-
-        bases.reserve(bases_.size());
-        for (auto bc : bases_)
-        {
-            ClassBase classBase;
-            classBase.type = bc.first;
-            classBase.castToBaseOP = bc.second;
-            classBase.refType = ReflectedType::GetByType(bc.first);
-
-            bases.emplace_back(std::move(classBase));
-        }
-
         basesInitialized = true;
+
+        const TypeInheritance* ti = thisType->GetInheritance();
+        if (nullptr != ti)
+        {
+            auto bases_ = ti->GetBaseTypes();
+
+            bases.reserve(bases_.size());
+            for (auto& bc : bases_)
+            {
+                ClassBase classBase;
+                classBase.type = bc.first;
+                classBase.castToBaseOP = bc.second;
+                classBase.refType = ReflectedType::GetByType(bc.first);
+
+                bases.emplace_back(std::move(classBase));
+            }
+        }
     }
 }
 
@@ -242,5 +245,3 @@ ReflectedObject StructureWrapperClass::ClassBase::GetBaseObject(const ReflectedO
 }
 
 } // namespace DAVA
-
-#endif

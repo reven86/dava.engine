@@ -6,11 +6,11 @@
 
 using namespace DAVA;
 
-class GameCore;
+class TestBed;
 class ClipTest : public BaseScreen
 {
 public:
-    ClipTest(GameCore* g);
+    ClipTest(TestBed& app);
 
 protected:
     void LoadResources() override;

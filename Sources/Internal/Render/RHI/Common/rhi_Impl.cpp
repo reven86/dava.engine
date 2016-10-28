@@ -1,4 +1,5 @@
 #include "rhi_Impl.h"
+#include "../rhi_Public.h"
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
@@ -36,7 +37,8 @@ uint32 stat_SET_CB = DAVA::InvalidIndex;
 uint32 stat_SET_VB = DAVA::InvalidIndex;
 uint32 stat_SET_IB = DAVA::InvalidIndex;
 
-static Dispatch _Impl = { 0 };
+static Dispatch _Impl = {};
+static RenderDeviceCaps renderDeviceCaps = {};
 
 void SetDispatchTable(const Dispatch& dispatch)
 {
@@ -144,14 +146,14 @@ Api HostApi()
     return (*_Impl.impl_HostApi)();
 }
 
-bool TextureFormatSupported(TextureFormat format)
+bool TextureFormatSupported(TextureFormat format, ProgType progType)
 {
-    return (*_Impl.impl_TextureFormatSupported)(format);
+    return (*_Impl.impl_TextureFormatSupported)(format, progType);
 }
 
 const RenderDeviceCaps& DeviceCaps()
 {
-    return (*_Impl.impl_DeviceCaps)();
+    return renderDeviceCaps;
 }
 
 void SuspendRendering()
@@ -754,14 +756,14 @@ TextureStride(TextureFormat format, Size2i size, uint32 level)
 
     case TEXTURE_FORMAT_DXT1:
     {
-        stride = (width * 8) / 4;
+        stride = 8 * std::max(1u, (width + 3) / 4);
     }
     break;
 
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
     {
-        stride = (width * 16) / 4;
+        stride = 16 * std::max(1u, (width + 3) / 4);
     }
     break;
 
@@ -976,6 +978,18 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
         sz = ext.dx * ext.dy * sizeof(uint32);
         break;
 
+    case TEXTURE_FORMAT_R32F:
+        sz = ext.dx * ext.dy * sizeof(float32);
+        break;
+
+    case TEXTURE_FORMAT_RG32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 2;
+        break;
+
+    case TEXTURE_FORMAT_RGBA32F:
+        sz = ext.dx * ext.dy * sizeof(float32) * 4;
+        break;
+
     default:
         break;
     }
@@ -985,8 +999,7 @@ TextureSize(TextureFormat format, uint32 width, uint32 height, uint32 level)
 
 //------------------------------------------------------------------------------
 
-uint32
-NativeColorRGBA(float red, float green, float blue, float alpha)
+uint32 NativeColorRGBA(float red, float green, float blue, float alpha)
 {
     uint32 color = 0;
     int r = int(red * 255.0f);
@@ -1017,6 +1030,34 @@ NativeColorRGBA(float red, float green, float blue, float alpha)
     }
 
     return color;
+}
+
+uint32 NativeColorRGBA(uint32 color)
+{
+    uint32 c = 0;
+
+    switch (HostApi())
+    {
+    case RHI_DX9:
+        c = (color & 0xff000000) | ((color & 0x000000ff) << 16) | (color & 0x0000ff00) | ((color & 0x00ff0000) >> 16);
+        break;
+
+    case RHI_DX11:
+    case RHI_GLES2:
+    case RHI_METAL:
+        c = color;
+        break;
+    }
+
+    return c;
+}
+
+namespace MutableDeviceCaps
+{
+RenderDeviceCaps& Get()
+{
+    return renderDeviceCaps;
+}
 }
 
 } //namespace rhi

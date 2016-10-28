@@ -1,5 +1,4 @@
-#ifndef __FRAMEWORK__DEVICEINFO_WIN32__
-#define __FRAMEWORK__DEVICEINFO_WIN32__
+#pragma once
 
 #include "Base/Platform.h"
 
@@ -28,12 +27,13 @@ public:
     int32 GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
@@ -41,5 +41,3 @@ private:
 };
 
 #endif //  defined(__DAVAENGINE_WIN32__)
-
-#endif //  defined(__FRAMEWORK__DEVICEINFO_WIN32__)

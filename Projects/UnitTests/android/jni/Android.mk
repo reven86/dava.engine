@@ -16,6 +16,7 @@ LOCAL_MODULE := UnitTests
 # set path for includes
 LOCAL_C_INCLUDES := $(DV_PROJECT_ROOT)/Classes
 LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
+LOCAL_C_INCLUDES += $(DAVA_ROOT)/Modules/SampleModule
 
 # set exported includes
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
@@ -26,16 +27,10 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) )
+	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) \
+	$(wildcard $(DAVA_ROOT)/Modules/SampleModule/Private/*.cpp))
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid -latomic
-
-ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
-LOCAL_ARM_NEON := true
-LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
-LOCAL_ARM_MODE := arm
-endif
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 
 ifeq ($(MEMORY_SANITIZE), true)
 LOCAL_ARM_MODE := arm

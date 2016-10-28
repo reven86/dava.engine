@@ -67,6 +67,8 @@ const FastName Settings::Scene_DefaultCustomColorIndex = FastName("Scene/Default
 const FastName Settings::Scene_Sound_SoundObjectDraw = FastName("Scene/Sound/SoundObjectDraw");
 const FastName Settings::Scene_Sound_SoundObjectBoxColor = FastName("Scene/Sound/SoundObjectBoxColor");
 const FastName Settings::Scene_Sound_SoundObjectSphereColor = FastName("Scene/Sound/SoundObjectSphereColor");
+const FastName Settings::Scene_Grab_Size_Width = FastName("Scene/Grab Scene/Width");
+const FastName Settings::Scene_Grab_Size_Height = FastName("Scene/Grab Scene/Height");
 const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/InvertWheel");
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
 const FastName Settings::InternalGroup = FastName("Internal");
@@ -88,6 +90,8 @@ const FastName Settings::Internal_ImageSplitterPath = FastName("Internal/ImageSp
 const FastName Settings::Internal_ImageSplitterPathSpecular = FastName("Internal/ImageSplitterPath_specular");
 const FastName Settings::Internal_CustomPalette = FastName("Internal/CustomPalette");
 const FastName Settings::Internal_LogWidget = FastName("Internal/LogWidget");
+const FastName Settings::Internal_EnableSounds = FastName("Internal/EnableSounds");
+const FastName Settings::Internal_GizmoEnabled = FastName("Internal/GizmoEnabled");
 
 DAVA::eGPUFamily Settings::GetGPUFormat()
 {

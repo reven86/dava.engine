@@ -10,7 +10,8 @@ public class SceneViewerApp extends JNIApplication {
 	}
 	
 	static {
-		System.loadLibrary("gnustl_shared");
+		System.loadLibrary("crystax");
+		System.loadLibrary("c++_shared");
 		System.loadLibrary("SceneViewer");
 	}
 }

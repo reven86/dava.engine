@@ -1,0 +1,37 @@
+#include "ModuleManager/ModuleManager.h"
+#include "ModuleManager/IModule.h"
+
+@IMODULE_INCLUDES@
+
+namespace DAVA
+{
+
+@IMODULE_INIT_POINTERS@
+@IMODULE_GET_MODULE_CODE@
+    ModuleManager::ModuleManager()
+        : pointersToModules( new PointersToModules )
+    {
+    }
+
+    ModuleManager::~ModuleManager()
+    {
+        ResetModules();
+    }
+
+    void ModuleManager::InitModules()
+    {
+@IMODULE_INIT_CODE@
+    }
+    
+    void  ModuleManager::ResetModules()
+    {
+        for (IModule* module : modules)
+        {
+            module->Shutdown();
+            delete module;
+        }
+        modules.clear();
+    }
+    
+
+}

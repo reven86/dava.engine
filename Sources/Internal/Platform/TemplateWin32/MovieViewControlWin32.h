@@ -10,13 +10,18 @@
 
 namespace DAVA
 {
+class Window;
 class FfmpegPlayer;
 class Texture;
 class UIControlBackground;
 class MovieViewControl : public IMovieViewControl
 {
 public:
+#if defined(__DAVAENGINE_COREV2__)
+    MovieViewControl(Window* w);
+#else
     MovieViewControl();
+#endif
     ~MovieViewControl() override;
 
     // Initialize the control.
@@ -53,7 +58,7 @@ private:
     uint32 textureWidth = 0;
     uint32 textureHeight = 0;
     uint32 textureDataLen = 0;
-    eMovieScalingMode scaling;
+    eMovieScalingMode scaling = scalingModeNone;
 };
 }
 

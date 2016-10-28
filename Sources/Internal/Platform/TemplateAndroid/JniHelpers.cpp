@@ -1,12 +1,9 @@
-#include "JniHelpers.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_COREV2__)
 
-#if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Private/Android/AndroidBridge.h"
-#else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#endif
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Job/JobManager.h"
 #include "Utils/UTF8Utils.h"
@@ -22,56 +19,44 @@ namespace JNI
 {
 JNIEnv* GetEnv()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::GetEnv();
-#else
     JNIEnv* env;
     JavaVM* vm = GetJVM();
 
-    if (nullptr == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (nullptr == vm || JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
     DVASSERT(nullptr != env);
     return env;
-#endif
 }
 
 void AttachCurrentThreadToJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::AttachCurrentThreadToJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
     JavaVM* vm = GetJVM();
     JNIEnv* env;
 
-    if (JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         if (vm->AttachCurrentThread(&env, NULL) != 0)
             Logger::Error("runtime_error(Could not attach current thread to JNI)");
     }
-#endif
 }
 
 void DetachCurrentThreadFromJVM()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    Private::AndroidBridge::DetachCurrentThreadFromJavaVM();
-#else
     if (true == Thread::IsMainThread())
         return;
 
     JavaVM* vm = GetJVM();
     JNIEnv* env;
-    if (JNI_OK == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (JNI_OK == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
         if (0 != vm->DetachCurrentThread())
             Logger::Error("runtime_error(Could not detach current thread from JNI)");
     }
-#endif
 }
 
 Rect V2I(const Rect& srcRect)
@@ -81,9 +66,6 @@ Rect V2I(const Rect& srcRect)
 
 DAVA::String ToString(const jstring jniString)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToString(jniString);
-#else
     DAVA::String result;
 
     if (jniString == nullptr)
@@ -113,31 +95,22 @@ DAVA::String ToString(const jstring jniString)
     }
 
     return result;
-#endif
 }
 
 DAVA::WideString ToWideString(const jstring jniString)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::JavaStringToWideString(jniString);
-#else
     DAVA::String utf8 = ToString(jniString);
     return DAVA::UTF8Utils::EncodeToWideString(utf8);
-#endif
 }
 
 jstring ToJNIString(const DAVA::WideString& string)
 {
-#if defined(__DAVAENGINE_COREV2__)
-    return Private::AndroidBridge::WideStringToJavaString(string);
-#else
     JNIEnv* env = GetEnv();
     DVASSERT(env);
 
     String utf8 = DAVA::UTF8Utils::EncodeToUTF8(string);
 
     return env->NewStringUTF(utf8.c_str());
-#endif
 }
 
 jobject JavaClass::classLoader = nullptr;
@@ -251,4 +224,6 @@ void JavaClass::FindJavaClass()
 }
 }
 }
-#endif
+
+#endif // !__DAVAENGINE_COREV2__
+#endif // __DAVAENGINE_ANDROID__

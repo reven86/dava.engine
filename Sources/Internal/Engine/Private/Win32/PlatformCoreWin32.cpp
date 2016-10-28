@@ -8,7 +8,8 @@
 
 #include <shellapi.h>
 
-#include "Engine/Public/Win32/NativeServiceWin32.h"
+#include "Engine/Window.h"
+#include "Engine/Win32/NativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
@@ -21,8 +22,8 @@ namespace Private
 {
 HINSTANCE PlatformCore::hinstance = nullptr;
 
-PlatformCore::PlatformCore(EngineBackend* ebackend)
-    : engineBackend(ebackend)
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(*engineBackend)
     , nativeService(new NativeService(this))
 {
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
@@ -32,6 +33,7 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    engineBackend.InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
@@ -39,8 +41,10 @@ void PlatformCore::Run()
     MSG msg;
     bool quitLoop = false;
 
-    engineBackend->OnGameLoopStarted();
-    CreateNativeWindow(engineBackend->GetPrimaryWindow(), 640.0f, 480.0f);
+    engineBackend.OnGameLoopStarted();
+
+    WindowBackend* primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
+    primaryWindowBackend->Create(640.0f, 480.0f);
 
     for (;;)
     {
@@ -56,7 +60,7 @@ void PlatformCore::Run()
             ::DispatchMessage(&msg);
         }
 
-        int32 fps = engineBackend->OnFrame();
+        int32 fps = engineBackend.OnFrame();
         uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
         uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
 
@@ -72,24 +76,18 @@ void PlatformCore::Run()
         if (quitLoop)
             break;
     }
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnBeforeTerminate();
+    engineBackend.OnGameLoopStopped();
+    engineBackend.OnEngineCleanup();
+}
+
+void PlatformCore::PrepareToQuit()
+{
+    engineBackend.PostAppTerminate(true);
 }
 
 void PlatformCore::Quit()
 {
-    ::PostQuitMessage(engineBackend->GetExitCode());
-}
-
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
-{
-    WindowBackend* nativeWindow = new WindowBackend(engineBackend, w);
-    if (!nativeWindow->Create(width, height))
-    {
-        delete nativeWindow;
-        nativeWindow = nullptr;
-    }
-    return nativeWindow;
+    ::PostQuitMessage(engineBackend.GetExitCode());
 }
 
 } // namespace Private

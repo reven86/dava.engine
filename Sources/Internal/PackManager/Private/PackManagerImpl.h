@@ -1,35 +1,44 @@
 #pragma once
 
+#include "PackManager/PackManager.h"
 #include "PackManager/Private/PacksDB.h"
 #include "PackManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/FileSystem.h"
 
+#ifdef __DAVAENGINE_COREV2__
+#include "Engine/Engine.h"
+#endif
+
 namespace DAVA
 {
 class PackManagerImpl : public IPackManager
 {
 public:
+#ifdef __DAVAENGINE_COREV2__
+    explicit PackManagerImpl(Engine& engine_);
+    ~PackManagerImpl() override;
+    Engine& engine;
+    SigConnectionID sigConnectionUpdate = 0;
+#else
     PackManagerImpl() = default;
+    ~PackManagerImpl() = default;
+#endif
 
-    void InitLocalCommonPacks(const FilePath& readOnlyPacksDir_,
-                              const FilePath& downloadPacksDir_,
-                              const Hints& hints_) override;
+    void Initialize(const String& architecture_,
+                    const FilePath& dirToDownloadPacks_,
+                    const FilePath& pathToBasePacksDB_,
+                    const String& urlToServerSuperpack_,
+                    const Hints& hints_) override;
 
-    void InitLocalGpuPacks(const String& architecture_, const String& dbFileName) override;
-
-    bool IsGpuPacksInitialized() const override;
-
-    void InitRemotePacks(const String& urlToServerSuperpack) override;
+    bool IsInitialized() const override;
 
     InitState GetInitState() const override;
 
     InitError GetInitError() const override;
 
     const String& GetInitErrorMessage() const override;
-
-    bool CanRetryInit() const override;
 
     void RetryInit() override;
 
@@ -43,11 +52,13 @@ public:
 
     void DisableRequesting() override;
 
-    void Update() override;
+    void Update(float);
 
     const String& FindPackName(const FilePath& relativePathInPack) const override;
 
     const Pack& RequestPack(const String& packName) override;
+
+    void ListFilesInPacks(const FilePath& relativePathDir, const Function<void(const FilePath&, const String&)>& fn) override;
 
     const IRequest* FindRequest(const String& pack) const override;
 
@@ -60,7 +71,7 @@ public:
 
     void MountPacks(const Set<FilePath>& basePacks);
 
-    void DeletePack(const String& packName);
+    void DeletePack(const String& packName) override;
 
     uint32_t DownloadPack(const String& packName, const FilePath& packPath);
 
@@ -68,7 +79,7 @@ public:
 
     const FilePath& GetLocalPacksDirectory() const override;
 
-    const String& GetSuperPackUrl() const;
+    const String& GetSuperPackUrl() const override;
 
     const PackFormat::PackFile::FooterBlock& GetInitFooter() const
     {
@@ -83,11 +94,7 @@ public:
     static void CollectDownloadableDependency(PackManagerImpl& pm, const String& packName, Vector<Pack*>& dependency);
 
 private:
-    void ContinueInitialization();
-    void FirstTimeInit();
-    void InitStarting();
-    void InitializePacks();
-    void MountCommonBasePacks();
+    // initialization state functions
     void AskFooter();
     void GetFooter();
     void AskFileTable();
@@ -99,11 +106,18 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromDB();
     void MountDownloadedPacks();
+    // helper functions
+    void DeleteLocalDBFiles();
+    void ContinueInitialization();
+    void InitializePacksAndBuildIndex();
+    void UnmountAllPacks();
     void MountPackWithDependencies(Pack& pack, const FilePath& path);
 
-    FilePath localPacksDir;
-    FilePath readOnlyPacksDir;
-    String superPackUrl;
+    mutable Mutex protectPM;
+
+    FilePath dirToDownloadedPacks;
+    FilePath dbPath;
+    String urlToSuperPack;
     String architecture;
     bool isProcessingEnabled = false;
     UnorderedMap<String, uint32> packsIndex;
@@ -111,24 +125,22 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PacksDB> db;
 
-    FilePath dbZipInDoc;
-    FilePath dbZipInData;
-    FilePath dbInDoc;
+    FilePath dbLocalNameZipped;
+    FilePath dbLocalName;
 
-    String initLocalDBFileName;
+    String dbName;
     String initErrorMsg;
-    InitState initState = InitState::FirstInit;
+    InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
+    // first - relative file name in archive, second - file properties
     UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
     bool initPaused = false;
-
-    List<FilePath> mountedCommonPacks;
 
     Hints hints;
 };

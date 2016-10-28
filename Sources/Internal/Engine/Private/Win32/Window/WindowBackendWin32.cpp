@@ -6,13 +6,14 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include "Engine/Public/Window.h"
-#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
+#include "Engine/Window.h"
+#include "Engine/Win32/WindowNativeServiceWin32.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
 #include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 #include "Platform/SystemTimer.h"
 
 namespace DAVA
@@ -22,11 +23,11 @@ namespace Private
 bool WindowBackend::windowClassRegistered = false;
 const wchar_t WindowBackend::windowClassName[] = L"DAVA_WND_CLASS";
 
-WindowBackend::WindowBackend(EngineBackend* e, Window* w)
-    : engine(e)
-    , dispatcher(engine->GetDispatcher())
-    , window(w)
-    , platformDispatcher(MakeFunction(this, &WindowBackend::EventHandler))
+WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
+    : engineBackend(engineBackend)
+    , window(window)
+    , mainDispatcher(engineBackend->GetDispatcher())
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
     , nativeService(new WindowNativeService(this))
 {
 }
@@ -75,18 +76,23 @@ bool WindowBackend::Create(float32 width, float32 height)
 
 void WindowBackend::Resize(float32 width, float32 height)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::RESIZE_WINDOW;
-    e.resizeEvent.width = width;
-    e.resizeEvent.height = height;
-    platformDispatcher.PostEvent(e);
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateResizeEvent(width, height));
 }
 
-void WindowBackend::Close()
+void WindowBackend::Close(bool /*appIsTerminating*/)
 {
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::CLOSE_WINDOW;
-    platformDispatcher.PostEvent(e);
+    closeRequestByApp = true;
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateCloseEvent());
+}
+
+void WindowBackend::SetTitle(const String& title)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
+}
+
+void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -94,17 +100,17 @@ bool WindowBackend::IsWindowReadyForRender() const
     return GetHandle() != nullptr;
 }
 
-void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
-{
-    UIDispatcherEvent e;
-    e.type = UIDispatcherEvent::FUNCTOR;
-    e.functor = task;
-    platformDispatcher.PostEvent(e);
-}
-
 void WindowBackend::TriggerPlatformEvents()
 {
-    ::PostMessage(hwnd, WM_CUSTOM_MESSAGE, 0, 0);
+    if (uiDispatcher.HasEvents())
+    {
+        ::PostMessage(hwnd, WM_TRIGGER_EVENTS, 0, 0);
+    }
+}
+
+void WindowBackend::ProcessPlatformEvents()
+{
+    uiDispatcher.ProcessEvents();
 }
 
 void WindowBackend::DoResizeWindow(float32 width, float32 height)
@@ -122,6 +128,12 @@ void WindowBackend::DoCloseWindow()
     ::DestroyWindow(hwnd);
 }
 
+void WindowBackend::DoSetTitle(const char8* title)
+{
+    WideString wideTitle = UTF8Utils::EncodeToWideString(title);
+    ::SetWindowTextW(hwnd, wideTitle.c_str());
+}
+
 void WindowBackend::AdjustWindowSize(int32* w, int32* h)
 {
     RECT rc = { 0, 0, *w, *h };
@@ -131,7 +143,22 @@ void WindowBackend::AdjustWindowSize(int32* w, int32* h)
     *h = rc.bottom - rc.top;
 }
 
-void WindowBackend::EventHandler(const UIDispatcherEvent& e)
+void WindowBackend::HandleSizeChanged(int32 w, int32 h)
+{
+    // Do not send excessive size changed events
+    if (width != w || height != h)
+    {
+        width = w;
+        height = h;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window,
+                                                                                    static_cast<float32>(width),
+                                                                                    static_cast<float32>(height),
+                                                                                    1.0f,
+                                                                                    1.0f));
+    }
+}
+
+void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 {
     switch (e.type)
     {
@@ -140,6 +167,10 @@ void WindowBackend::EventHandler(const UIDispatcherEvent& e)
         break;
     case UIDispatcherEvent::CLOSE_WINDOW:
         DoCloseWindow();
+        break;
+    case UIDispatcherEvent::SET_TITLE:
+        DoSetTitle(e.setTitleEvent.title);
+        delete[] e.setTitleEvent.title;
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -154,7 +185,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
     if (resizingType == SIZE_MINIMIZED)
     {
         isMinimized = true;
-        window->PostVisibilityChanged(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
     }
 
@@ -163,111 +194,121 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         if (isMinimized)
         {
             isMinimized = false;
-            window->PostVisibilityChanged(true);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
             return 0;
         }
     }
 
-    window->PostSizeChanged(static_cast<float32>(width),
-                            static_cast<float32>(height),
-                            1.0f,
-                            1.0f);
+    if (!isEnteredSizingModalLoop)
+    {
+        HandleSizeChanged(width, height);
+    }
     return 0;
 }
 
-LRESULT WindowBackend::OnSetKillFocus(bool gotFocus)
+LRESULT WindowBackend::OnEnterSizeMove()
 {
-    window->PostFocusChanged(gotFocus);
+    isEnteredSizingModalLoop = true;
+    return 0;
+}
+
+LRESULT WindowBackend::OnExitSizeMove()
+{
+    RECT rc;
+    ::GetClientRect(hwnd, &rc);
+
+    int32 w = rc.right - rc.left;
+    int32 h = rc.bottom - rc.top;
+    HandleSizeChanged(w, h);
+
+    isEnteredSizingModalLoop = false;
+    return 0;
+}
+
+LRESULT WindowBackend::OnSetKillFocus(bool hasFocus)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::MOUSE_MOVE;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-    e.mmoveEvent.x = static_cast<float32>(x);
-    e.mmoveEvent.y = static_cast<float32>(y);
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::MOUSE_WHEEL;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-    e.mwheelEvent.x = static_cast<float32>(x);
-    e.mwheelEvent.y = static_cast<float32>(y);
-    e.mwheelEvent.deltaX = 0.0f;
-    e.mwheelEvent.deltaY = static_cast<float32>(delta);
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window,
+                                                                               static_cast<float32>(x),
+                                                                               static_cast<float32>(y),
+                                                                               0.f,
+                                                                               static_cast<float32>(delta),
+                                                                               false));
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y)
 {
-    MainDispatcherEvent e;
-
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-    e.mclickEvent.clicks = 1;
-    e.mclickEvent.x = static_cast<float32>(x);
-    e.mclickEvent.y = static_cast<float32>(y);
-
+    uint32 button = 0;
+    MainDispatcherEvent::eType type = MainDispatcherEvent::DUMMY;
     switch (message)
     {
     case WM_LBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 1;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 1;
         break;
     case WM_LBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 1;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 1;
         break;
     case WM_LBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_RBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 2;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 2;
         break;
     case WM_RBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 2;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 2;
         break;
     case WM_RBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_MBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = 3;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = 3;
         break;
     case WM_MBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = 3;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = 3;
         break;
     case WM_MBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     case WM_XBUTTONDOWN:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-        e.mclickEvent.button = xbutton == XBUTTON1 ? 4 : 5;
+        type = MainDispatcherEvent::MOUSE_BUTTON_DOWN;
+        button = xbutton == XBUTTON1 ? 4 : 5;
         break;
     case WM_XBUTTONUP:
-        e.type = MainDispatcherEvent::MOUSE_BUTTON_UP;
-        e.mclickEvent.button = xbutton == XBUTTON1 ? 4 : 5;
+        type = MainDispatcherEvent::MOUSE_BUTTON_UP;
+        button = xbutton == XBUTTON1 ? 4 : 5;
         break;
     case WM_XBUTTONDBLCLK:
+        // TODO: somehow handle mouse doubleclick
         return 0;
-        break;
     default:
         return 0;
     }
 
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window,
+                                                                               type,
+                                                                               button,
+                                                                               static_cast<float32>(x),
+                                                                               static_cast<float32>(y),
+                                                                               1,
+                                                                               false));
     return 0;
 }
 
@@ -278,56 +319,49 @@ LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, b
         key |= 0x100;
     }
 
-    MainDispatcherEvent e;
-    e.type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.window = window;
-    e.keyEvent.key = key;
-    e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
+    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCharEvent(uint32 key, bool isRepeated)
 {
-    MainDispatcherEvent e;
-    e.type = MainDispatcherEvent::KEY_CHAR;
-    e.window = window;
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.keyEvent.key = key;
-    e.keyEvent.isRepeated = isRepeated;
-    dispatcher->PostEvent(e);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, key, isRepeated));
     return 0;
 }
 
 LRESULT WindowBackend::OnCreate()
 {
     RECT rc;
-    GetClientRect(hwnd, &rc);
+    ::GetClientRect(hwnd, &rc);
 
-    window->PostWindowCreated(this,
-                              static_cast<float32>(rc.right - rc.left),
-                              static_cast<float32>(rc.bottom - rc.top),
-                              1.0f,
-                              1.0f);
-    window->PostVisibilityChanged(true);
+    width = rc.right - rc.left;
+    height = rc.bottom - rc.top;
+    float32 w = static_cast<float32>(width);
+    float32 h = static_cast<float32>(height);
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, w, h, 1.0f, 1.0f));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
     return 0;
+}
+
+bool WindowBackend::OnClose()
+{
+    if (!closeRequestByApp)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateUserCloseRequestEvent(window));
+    }
+    return closeRequestByApp;
 }
 
 LRESULT WindowBackend::OnDestroy()
 {
     if (!isMinimized)
     {
-        window->PostVisibilityChanged(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
     }
-    window->PostWindowDestroyed();
-    hwnd = nullptr;
-    return 0;
-}
 
-LRESULT WindowBackend::OnCustomMessage()
-{
-    platformDispatcher.ProcessEvents();
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+    hwnd = nullptr;
     return 0;
 }
 
@@ -352,8 +386,13 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
     {
         lresult = OnSetKillFocus(message == WM_SETFOCUS);
     }
-    else if (message == WM_ENTERSIZEMOVE || message == WM_EXITSIZEMOVE)
+    else if (message == WM_ENTERSIZEMOVE)
     {
+        lresult = OnEnterSizeMove();
+    }
+    else if (message == WM_EXITSIZEMOVE)
+    {
+        lresult = OnExitSizeMove();
     }
     else if (message == WM_MOUSEMOVE)
     {
@@ -386,6 +425,8 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         bool isExtended = (HIWORD(lparam) & KF_EXTENDED) == KF_EXTENDED;
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
+        // Forward WM_SYSKEYUP and WM_SYSKEYDOWN to DefWindowProc to allow system shortcuts: Alt+F4, etc
+        isHandled = (message == WM_KEYUP || message == WM_KEYDOWN);
     }
     else if (message == WM_CHAR)
     {
@@ -393,13 +434,17 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnCharEvent(key, isRepeated);
     }
-    else if (message == WM_CUSTOM_MESSAGE)
+    else if (message == WM_TRIGGER_EVENTS)
     {
-        lresult = OnCustomMessage();
+        ProcessPlatformEvents();
     }
     else if (message == WM_CREATE)
     {
         lresult = OnCreate();
+    }
+    else if (message == WM_CLOSE)
+    {
+        isHandled = !OnClose();
     }
     else if (message == WM_DESTROY)
     {

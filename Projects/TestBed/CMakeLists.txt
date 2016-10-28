@@ -7,11 +7,12 @@ if( NOT DAVA_MEGASOLUTION )
     #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-if (DAVA_COREV2)
-    add_definitions(-D__DAVAENGINE_COREV2__)
-    # Uncomment to use local resources for android
-    # add_definitions(-DUSE_LOCAL_RESOURCES)
-endif()
+# Now testbed is core v2 only
+set (DAVA_COREV2 1)
+add_definitions(-D__DAVAENGINE_COREV2__)
+
+# Uncomment to use local resources for android
+# add_definitions(-DUSE_LOCAL_RESOURCES)
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
@@ -21,7 +22,7 @@ if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
-if (DAVA_COREV2 AND DAVA_PLATFORM_QT)
+if (DAVA_PLATFORM_QT)
     set (DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
     add_definitions(-D__DAVAENGINE_QT__)
     if ( MACOS )
@@ -43,15 +44,13 @@ if( MACOS )
 elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/TestBed.entitlements )
-
 elseif( WIN32 )
-    set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
 endif()
 
 file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
 
-define_source ( SOURCE    "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
+define_source ( SOURCE    "Classes" )
 
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
 
@@ -78,13 +77,13 @@ if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
 endif ()
 
-setup_main_executable()
-if (DAVA_COREV2)
-    if (WIN32)
-        set_property(TARGET TestBed APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-    endif()
+if (ANDROID)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;TestBed")
+    set (ANDROID_BOOT_CLASSES "com.dava.testbed.TestBedBoot")
 endif()
 
+setup_main_executable()
 convert_graphics()
 
 if (IOS)

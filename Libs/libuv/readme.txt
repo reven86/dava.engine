@@ -8,18 +8,14 @@ How to build
 
 Unpack libuv.zip to some dir, e.g. libuv
 Copy next files to libuv dir:
-    build-android-arm.sh
-    build-android-x86.sh
     build-ios.sh
     build-macos.sh
 
 Install gyp into build/gyp, see libuv/README.md
     
 Android
-    run build-android-arm.sh for arm arch
-    run build-android-x86.sh for x86 arch
-    compiled library files are placed in libuv/bin/android
-    note: ANDROID_NDK_ROOT environment variable must point to NDK location
+    enter to Android folder
+    run ndk-build
 
 iOS
     run build-ios.sh for arm64, armv7, armv7s, i386, x86_64 arch

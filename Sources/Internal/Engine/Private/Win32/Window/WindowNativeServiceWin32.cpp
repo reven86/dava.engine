@@ -1,4 +1,4 @@
-#include "Engine/Public/Win32/WindowNativeServiceWin32.h"
+#include "Engine/Win32/WindowNativeServiceWin32.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -10,9 +10,14 @@
 
 namespace DAVA
 {
-WindowNativeService::WindowNativeService(Private::WindowBackend* wbackend)
-    : windowBackend(wbackend)
+WindowNativeService::WindowNativeService(Private::WindowBackend* windowBackend)
+    : windowBackend(windowBackend)
 {
+}
+
+HWND WindowNativeService::GetHWND() const
+{
+    return windowBackend->GetHWND();
 }
 
 } // namespace DAVA

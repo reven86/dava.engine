@@ -1,5 +1,4 @@
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_ANDROID__
 
 #include <iomanip>
 #include <algorithm>
@@ -265,7 +264,7 @@ void Reflection::DumpMethods(std::ostream& out) const
     Vector<Method> methods = GetMethods();
     for (auto& method : methods)
     {
-        const AnyFn::InvokeParams& params = method.fn.GetInvokeParams();
+        const AnyFn::Params& params = method.fn.GetInvokeParams();
 
         out << params.retType->GetName() << " ";
         out << method.key << "(";
@@ -285,5 +284,3 @@ void Reflection::DumpMethods(std::ostream& out) const
 }
 
 } // namespace DAVA
-
-#endif
