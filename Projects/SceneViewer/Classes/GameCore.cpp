@@ -42,9 +42,9 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     w->SetTitle("Scene Viewer");
 #if defined(__DAVAENGINE_WIN_UAP__)
     ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
-    w->Resize(screenInfo.width, screenInfo.height);
+    w->SetSize({ screenInfo.width, screenInfo.height });
 #else
-    w->Resize(1024, 768);
+    w->SetSize({ 1024, 768 });
 #endif
 
     // TODO FullScreen

@@ -152,7 +152,7 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
-    w->Resize(1024, 768);
+    w->SetSize({ 1024, 768 });
     w->SetTitle("TestBed");
 
     // TODO FullScreen
