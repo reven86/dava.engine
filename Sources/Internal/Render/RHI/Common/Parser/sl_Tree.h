@@ -838,6 +838,7 @@ private:
 class HLSLTreeVisitor
 {
 public:
+    virtual ~HLSLTreeVisitor(){};
     virtual void VisitType(HLSLType& type);
 
     virtual void VisitRoot(HLSLRoot* node);
@@ -888,6 +889,9 @@ class TreeDump
 {
 public:
     TreeDump();
+    virtual ~TreeDump()
+    {
+    }
     virtual void VisitDeclaration(HLSLDeclaration* node);
     virtual void VisitStruct(HLSLStruct* node);
     virtual void VisitStructField(HLSLStructField* node);

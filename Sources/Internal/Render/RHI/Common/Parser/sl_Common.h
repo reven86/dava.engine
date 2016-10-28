@@ -12,22 +12,22 @@ public:
     template <typename T>
     T* New()
     {
-        return (T*)malloc(sizeof(T));
+        return reinterpret_cast<T*>(malloc(sizeof(T)));
     }
     template <typename T>
     T* New(size_t count)
     {
-        return (T*)malloc(sizeof(T) * count);
+        return reinterpret_cast<T*>(malloc(sizeof(T) * count));
     }
     template <typename T>
     void Delete(T* ptr)
     {
-        free((void*)ptr);
+        free(reinterpret_cast<void*>(ptr));
     }
     template <typename T>
     T* Realloc(T* ptr, size_t count)
     {
-        return (T*)realloc(ptr, sizeof(T) * count);
+        return reinterpret_cast<T*>(realloc(ptr, sizeof(T) * count));
     }
 };
 
