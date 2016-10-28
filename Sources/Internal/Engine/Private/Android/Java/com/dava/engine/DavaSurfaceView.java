@@ -15,6 +15,15 @@ import android.util.Log;
 
 import java.lang.reflect.Constructor;
 
+/**
+    \ingroup engine
+    DavaSurfaceView provides surface where rendering takes place. This class is tightly coupled with C++ `WindowBackend` class.
+
+    `DavaSurfaceView` does:
+        - implements SurfaceHolder.Callback interface and notifies native code about surface state changing,
+        - elementary input handling and forwards input to native code,
+        - manages native controls: creation, position, removal.
+*/
 final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
                                        View.OnTouchListener,
@@ -110,6 +119,7 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnPause(windowBackendPointer);
     }
 
+    // SurfaceHolder.Callback interaface
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -149,7 +159,7 @@ final class DavaSurfaceView extends SurfaceView
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d", w, h));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h);
         
-        if (DavaActivity.davaMainThread == null)
+        if (!DavaActivity.isNativeThreadRunning())
         {
             // continue initialization of game after creating main window
             DavaActivity.instance().onFinishCreatingMainWindowSurface();
