@@ -20,7 +20,6 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
-    , isFullscreen(windowBackend->GetInitialWindowingMode() == Window::eWindowingMode::FULLSCREEN)
 {
 }
 
@@ -33,7 +32,6 @@ void WindowNativeBridge::BindToXamlWindow(::Windows::UI::Xaml::Window ^ xamlWnd)
 
     CreateBaseXamlUI();
     InstallEventHandlers();
-    CheckWindowingModeChanging();
 
     float32 w = xamlWindow->Bounds.Width;
     float32 h = xamlWindow->Bounds.Height;
@@ -115,17 +113,17 @@ void WindowNativeBridge::SetTitle(const char8* title)
     ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(wideTitle.c_str());
 }
 
-void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
+void WindowNativeBridge::SetFullscreen(Fullscreen newMode)
 {
     using ::Windows::UI::ViewManagement::ApplicationView;
-    bool isFullscreenRequested = newMode == Window::eWindowingMode::FULLSCREEN;
+    bool isFullscreenRequested = newMode == Fullscreen::On;
 
-    if (isFullscreen == isFullscreenRequested)
+    ApplicationView ^ view = ApplicationView::GetForCurrentView();
+    if (isFullscreenRequested == view->IsFullScreenMode)
     {
         return;
     }
 
-    ApplicationView ^ view = ApplicationView::GetForCurrentView();
     if (isFullscreenRequested)
     {
         view->TryEnterFullScreenMode();
@@ -177,53 +175,26 @@ void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDisp
 
 void WindowNativeBridge::OnSizeChanged(::Platform::Object ^ /*sender*/, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg)
 {
-    CheckWindowingModeChanging();
-
     float32 w = arg->NewSize.Width;
     float32 h = arg->NewSize.Height;
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY));
+    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
+    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY, fullscreen));
 }
 
 void WindowNativeBridge::OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ /*panel*/, ::Platform::Object ^ /*obj*/)
 {
-    CheckWindowingModeChanging();
-
     float32 w = static_cast<float32>(xamlSwapChainPanel->ActualWidth);
     float32 h = static_cast<float32>(xamlSwapChainPanel->ActualHeight);
     float32 scaleX = xamlSwapChainPanel->CompositionScaleX;
     float32 scaleY = xamlSwapChainPanel->CompositionScaleY;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY));
-}
+    bool isFullscreen = ::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->IsFullScreenMode;
+    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
 
-void WindowNativeBridge::CheckWindowingModeChanging()
-{
-    if (windowBackend->IsWindowsPhone())
-    {
-        return;
-    }
-
-    using ::Windows::UI::ViewManagement::ApplicationView;
-    bool actualFullscreen = ApplicationView::GetForCurrentView()->IsFullScreenMode;
-
-    if (actualFullscreen != isFullscreen)
-    {
-        isFullscreen = actualFullscreen;
-        Window::eWindowingMode windowingMode;
-
-        if (isFullscreen)
-        {
-            windowingMode = Window::eWindowingMode::FULLSCREEN;
-        }
-        else
-        {
-            windowingMode = Window::eWindowingMode::WINDOWED;
-        }
-
-        MainDispatcherEvent event = MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, static_cast<int32>(windowingMode));
-        mainDispatcher->PostEvent(event);
-    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, scaleX, scaleY, fullscreen));
 }
 
 void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)

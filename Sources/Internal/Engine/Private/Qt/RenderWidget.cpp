@@ -40,7 +40,6 @@ RenderWidget::RenderWidget(RenderWidget::IWindowDelegate* widgetDelegate_, uint3
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidget::OnCreated, Qt::DirectConnection);
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidget::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidget::OnActiveFocusItemChanged, Qt::DirectConnection);
-    connect(window, &QQuickWindow::visibilityChanged, this, &RenderWidget::OnWindowVisibilityChanged, Qt::DirectConnection);
 }
 
 RenderWidget::~RenderWidget() = default;
@@ -123,31 +122,16 @@ void RenderWidget::OnSceneGraphInvalidated()
     }
 }
 
-void RenderWidget::OnWindowVisibilityChanged(QWindow::Visibility visibility)
-{
-    bool isFullscreen;
-
-    switch (visibility)
-    {
-    case QWindow::FullScreen:
-        isFullscreen = true;
-        break;
-    case QWindow::Windowed:
-        isFullscreen = false;
-        break;
-    default:
-        return;
-    }
-
-    widgetDelegate->OnWindowModeChanged(isFullscreen);
-}
-
 void RenderWidget::resizeEvent(QResizeEvent* e)
 {
     QQuickWidget::resizeEvent(e);
     float32 dpi = quickWindow()->effectiveDevicePixelRatio();
     QSize size = e->size();
-    widgetDelegate->OnResized(size.width(), size.height(), dpi);
+
+    QQuickWindow* qWindow = quickWindow();
+    bool isFullScreen = qWindow != nullptr ? qWindow->visibility() == QWindow::FullScreen : false;
+
+    widgetDelegate->OnResized(size.width(), size.height(), dpi, isFullScreen);
     emit Resized(size.width(), size.height());
 }
 

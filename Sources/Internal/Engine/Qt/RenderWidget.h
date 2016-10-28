@@ -22,9 +22,8 @@ public:
         virtual bool OnUserCloseRequest() = 0;
         virtual void OnDestroyed() = 0;
         virtual void OnFrame() = 0;
-        virtual void OnResized(uint32 width, uint32 height, float32 dpi) = 0;
+        virtual void OnResized(uint32 width, uint32 height, float32 dpi, bool isFullScreen) = 0;
         virtual void OnVisibilityChanged(bool isVisible) = 0;
-        virtual void OnWindowModeChanged(bool isFullscreen) = 0;
 
         virtual void OnMousePressed(QMouseEvent* e) = 0;
         virtual void OnMouseReleased(QMouseEvent* e) = 0;
@@ -116,7 +115,6 @@ private:
     Q_SLOT void OnFrame();
     Q_SLOT void OnActiveFocusItemChanged();
     Q_SLOT void OnSceneGraphInvalidated();
-    Q_SLOT void OnWindowVisibilityChanged(QWindow::Visibility visibility);
     Q_SLOT void OnClientDelegateDestroyed();
 
     void ActivateRendering();

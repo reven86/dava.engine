@@ -15,4 +15,14 @@ enum class eEngineRunMode : int32
     CONSOLE_MODE //!< Run engine as standalone console application
 };
 
+/**
+    \ingroup engine
+    Windows fullscreen switching
+*/
+enum class Fullscreen
+{
+    On = 0, //<! True full screen mode
+    Off, //<! Windowed mode
+};
+
 } // namespace DAVA

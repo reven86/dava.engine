@@ -20,7 +20,6 @@ Window::Window(Private::EngineBackend* engineBackend, bool primary)
     , mainDispatcher(engineBackend->GetDispatcher())
     , windowBackend(new Private::WindowBackend(engineBackend, this))
     , isPrimary(primary)
-    , windowingMode(windowBackend->GetInitialWindowingMode())
 {
 }
 
@@ -30,8 +29,7 @@ void Window::Resize(float32 w, float32 h)
 {
     // Window cannot be resized in embedded mode as window lifetime
     // is controlled by highlevel framework
-    // Also window can be resized only in windowed mode
-    if (!engineBackend->IsEmbeddedGUIMode() && windowingMode == eWindowingMode::WINDOWED)
+    if (!engineBackend->IsEmbeddedGUIMode())
     {
         windowBackend->Resize(w, h);
     }
@@ -56,12 +54,12 @@ void Window::SetTitle(const String& title)
     }
 }
 
-void Window::SetWindowingMode(eWindowingMode newMode)
+void Window::SetFullscreen(Fullscreen newMode)
 {
-    // Window's windowing mode cannot be changed in embedded mode
-    if (!engineBackend->IsEmbeddedGUIMode() && newMode != windowingMode)
+    // Window's fullscreen mode cannot be changed in embedded mode
+    if (!engineBackend->IsEmbeddedGUIMode() && newMode != fullscreenMode)
     {
-        windowBackend->SetWindowingMode(newMode);
+        windowBackend->SetFullscreen(newMode);
     }
 }
 
@@ -148,9 +146,6 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
-    case MainDispatcherEvent::WINDOW_WINDOWING_MODE_CHANGED:
-        HandleWindowingModeChanged(e);
-        break;
     default:
         break;
     }
@@ -201,6 +196,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
     if (!sizeEventHandled)
     {
         CompressSizeChangedEvents(e);
+        fullscreenMode = e.sizeEvent.fullscreen;
         sizeEventHandled = true;
 
         Logger::FrameworkDebug("=========== WINDOW_SIZE_SCALE_CHANGED: width=%.1f, height=%.1f, scaleX=%.3f, scaleY=%.3f", width, height, scaleX, scaleY);
@@ -269,11 +265,6 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);
-}
-
-void Window::HandleWindowingModeChanged(const Private::MainDispatcherEvent& e)
-{
-    windowingMode = static_cast<eWindowingMode>(e.windowingEvent.mode);
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)

@@ -42,27 +42,15 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
+void WindowBackend::SetFullscreen(Fullscreen newMode)
 {
-    // Windowing mode cannot be changed on phones
+    // Fullscreen mode cannot be changed on phones
     if (IsWindowsPhone())
     {
         return;
     }
 
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
-}
-
-Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
-{
-    if (IsWindowsPhone())
-    {
-        return Window::eWindowingMode::FULLSCREEN;
-    }
-    else
-    {
-        return Window::eWindowingMode::WINDOWED;
-    }
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -116,8 +104,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
-    case UIDispatcherEvent::SET_WINDOWING_MODE:
-        bridge->SetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        bridge->SetFullscreen(e.setFullscreenEvent.mode);
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

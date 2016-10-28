@@ -210,10 +210,10 @@ void FullscreenTest::OnSelectModeClick(BaseObject* sender, void* data, void* cal
     switch (btn->GetTag())
     {
     case 0:
-        primaryWindow->SetWindowingMode(Window::eWindowingMode::WINDOWED);
+        primaryWindow->SetFullscreen(Fullscreen::Off);
         break;
     case 1:
-        primaryWindow->SetWindowingMode(Window::eWindowingMode::FULLSCREEN);
+        primaryWindow->SetFullscreen(Fullscreen::On);
         break;
     case 99:
         UpdateMode();
@@ -309,12 +309,12 @@ void FullscreenTest::OnPinningClick(DAVA::BaseObject* sender, void* data, void* 
 
 void FullscreenTest::UpdateMode()
 {
-    switch (primaryWindow->GetWindowingMode())
+    switch (primaryWindow->GetFullscreen())
     {
-    case Window::eWindowingMode::WINDOWED:
+    case Fullscreen::Off:
         currentModeText->SetText(L"Windowed");
         break;
-    case Window::eWindowingMode::FULLSCREEN:
+    case Fullscreen::On:
         currentModeText->SetText(L"Fullscreen");
         break;
     default:

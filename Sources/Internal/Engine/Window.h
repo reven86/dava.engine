@@ -32,12 +32,6 @@ private:
     Window& operator=(const Window&) = delete;
 
 public:
-    enum class eWindowingMode
-    {
-        FULLSCREEN = 0, //<! True full screen mode
-        WINDOWED, //<! Windowed mode
-    };
-
     bool IsPrimary() const;
     bool IsVisible() const;
     bool HasFocus() const;
@@ -66,8 +60,13 @@ public:
     void Close();
     void SetTitle(const String& title);
 
-    eWindowingMode GetWindowingMode() const;
-    void SetWindowingMode(eWindowingMode newMode);
+    /** Get current fullscreen mode */
+    Fullscreen GetFullscreen() const;
+    /** 
+    Set fullscreen mode to window. 
+    If operation successeded, sizeScaleChanged signal will be emitted.
+    */
+    void SetFullscreen(Fullscreen newMode);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
@@ -106,7 +105,6 @@ private:
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
-    void HandleWindowingModeChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
     void HandleMouseWheel(const Private::MainDispatcherEvent& e);
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
@@ -137,7 +135,7 @@ private:
     float32 scaleY = 1.0f;
     float32 userScale = 1.0f;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
-    eWindowingMode windowingMode = eWindowingMode::WINDOWED;
+    Fullscreen fullscreenMode;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
@@ -221,9 +219,9 @@ inline void Window::Resize(Vector2 size)
     Resize(size.dx, size.dy);
 }
 
-inline Window::eWindowingMode Window::GetWindowingMode() const
+inline Fullscreen Window::GetFullscreen() const
 {
-    return windowingMode;
+    return fullscreenMode;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const

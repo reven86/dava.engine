@@ -8,7 +8,6 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Engine/Window.h"
 
 namespace rhi
 {
@@ -28,9 +27,7 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
-
-    void SetWindowingMode(Window::eWindowingMode newMode);
-    Window::eWindowingMode GetInitialWindowingMode() const;
+    void SetFullscreen(Fullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 

@@ -216,14 +216,9 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
+void WindowBackend::SetFullscreen(Fullscreen newMode)
 {
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
-}
-
-Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
-{
-    return Window::eWindowingMode::WINDOWED;
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetFullscreenEvent(newMode));
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -261,8 +256,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
-    case UIDispatcherEvent::SET_WINDOWING_MODE:
-        DoSetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
+    case UIDispatcherEvent::SET_FULLSCREEN:
+        DoSetFullscreen(e.setFullscreenEvent.mode);
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -341,22 +336,17 @@ void WindowBackend::OnFrame()
     engineBackend->OnFrame();
 }
 
-void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
+void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi, bool isFullScreen)
 {
     float32 w = static_cast<float32>(width);
     float32 h = static_cast<float32>(height);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi));
+    Fullscreen fullscreen = isFullScreen ? Fullscreen::On : Fullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, w, h, dpi, dpi, fullscreen));
 }
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
-}
-
-void WindowBackend::OnWindowModeChanged(bool isFullscreen)
-{
-    Window::eWindowingMode mode = isFullscreen ? Window::eWindowingMode::FULLSCREEN : Window::eWindowingMode::WINDOWED;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, static_cast<int32>(mode)));
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
@@ -505,7 +495,7 @@ void WindowBackend::DoSetTitle(const char8* title)
     renderWidget->setWindowTitle(title);
 }
 
-void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
+void WindowBackend::DoSetFullscreen(Fullscreen newMode)
 {
     QQuickWindow* quickWindow = renderWidget->quickWindow();
     if (quickWindow == nullptr)
@@ -513,7 +503,7 @@ void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
         return;
     }
 
-    if (newMode == Window::eWindowingMode::FULLSCREEN)
+    if (newMode == Fullscreen::On)
     {
         quickWindow->showFullScreen();
     }

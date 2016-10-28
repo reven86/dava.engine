@@ -26,7 +26,6 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend)
     : windowBackend(windowBackend)
     , window(windowBackend->window)
     , mainDispatcher(windowBackend->mainDispatcher)
-    , isFullscreen(windowBackend->GetInitialWindowingMode() == Window::eWindowingMode::FULLSCREEN)
 {
 }
 
@@ -81,16 +80,9 @@ void WindowNativeBridge::SetTitle(const char8* title)
     [nsTitle release];
 }
 
-void WindowNativeBridge::SetWindowingMode(Window::eWindowingMode newMode)
+void WindowNativeBridge::SetFullscreen(Fullscreen newMode)
 {
-    // fullscreen for new 10.7+ MacOS
-    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_7)
-    {
-        DVASSERT_MSG(false, "Fullscreen isn't supported for this MacOS version");
-        return;
-    }
-
-    bool isFullscreenRequested = newMode == Window::eWindowingMode::FULLSCREEN;
+    bool isFullscreenRequested = newMode == Fullscreen::On;
 
     if (isFullscreen != isFullscreenRequested)
     {
@@ -143,7 +135,8 @@ void WindowNativeBridge::WindowDidResize()
 {
     float32 scale = [nswindow backingScaleFactor];
     CGSize size = [renderView frame].size;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, scale, scale));
+    Fullscreen fullscreen = isFullscreen ? Fullscreen::On : Fullscreen::Off;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, scale, scale, fullscreen));
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
@@ -175,15 +168,11 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
-    int32 mode = static_cast<int32>(Window::eWindowingMode::FULLSCREEN);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
-    int32 mode = static_cast<int32>(Window::eWindowingMode::WINDOWED);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)

@@ -7,7 +7,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Window.h"
+#include "Engine/EngineTypes.h"
 
 namespace DAVA
 {
@@ -32,7 +32,7 @@ ref struct WindowNativeBridge sealed
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
-    void SetWindowingMode(Window::eWindowingMode newMode);
+    void SetFullscreen(Fullscreen newMode);
 
 private:
     void OnTriggerPlatformEvents();
@@ -45,7 +45,6 @@ private:
 
     void OnSizeChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg);
     void OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ panel, ::Platform::Object ^ obj);
-    void CheckWindowingModeChanging();
 
     void OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
@@ -71,7 +70,6 @@ private:
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
 
     std::bitset<5> mouseButtonState;
-    bool isFullscreen;
 
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;

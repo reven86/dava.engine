@@ -13,7 +13,6 @@
 
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Engine/Window.h"
 
 namespace rhi
 {
@@ -38,8 +37,8 @@ public:
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
 
-    void SetWindowingMode(Window::eWindowingMode newMode);
-    Window::eWindowingMode GetInitialWindowingMode() const;
+    Fullscreen GetFullscreen() const;
+    void SetFullscreen(Fullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
@@ -57,7 +56,10 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
-    void DoSetWindowingMode(Window::eWindowingMode newMode);
+    void DoSetFullscreen(Fullscreen newMode);
+
+    bool SetFullscreenMode();
+    bool SetWindowedMode();
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
@@ -92,6 +94,7 @@ private:
     bool isMinimized = false;
     bool isEnteredSizingModalLoop = false;
     bool closeRequestByApp = false;
+    bool isFullscreen = false;
     int32 width = 0; // Track current window size to not post excessive WINDOW_SIZE_SCALE_CHANGED events
     int32 height = 0;
     WINDOWPLACEMENT windowPlacement;
@@ -122,6 +125,11 @@ inline WindowNativeService* WindowBackend::GetNativeService() const
 inline void WindowBackend::InitCustomRenderParams(rhi::InitParam& /*params*/)
 {
     // No custom render params
+}
+
+inline Fullscreen WindowBackend::GetFullscreen() const
+{
+    return isFullscreen ? Fullscreen::On : Fullscreen::Off;
 }
 
 } // namespace Private

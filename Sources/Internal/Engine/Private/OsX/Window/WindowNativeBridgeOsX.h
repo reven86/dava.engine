@@ -9,7 +9,6 @@
 #elif defined(__DAVAENGINE_MACOS__)
 
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Window.h"
 
 @class NSEvent;
 @class NSWindow;
@@ -39,7 +38,7 @@ struct WindowNativeBridge final
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
     void SetTitle(const char8* title);
-    void SetWindowingMode(Window::eWindowingMode newMode);
+    void SetFullscreen(Window::Fullscreen newMode);
 
     void TriggerPlatformEvents();
 

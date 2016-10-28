@@ -42,7 +42,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY, Fullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_SIZE_SCALE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
@@ -50,6 +50,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* wi
     e.sizeEvent.height = height;
     e.sizeEvent.scaleX = scaleX;
     e.sizeEvent.scaleY = scaleY;
+    e.sizeEvent.fullscreen = fullscreen;
     return e;
 }
 
@@ -66,14 +67,6 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Wind
     MainDispatcherEvent e(WINDOW_VISIBILITY_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
     e.stateEvent.state = visibilityState;
-    return e;
-}
-
-MainDispatcherEvent MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(Window* window, int mode)
-{
-    MainDispatcherEvent e(WINDOW_WINDOWING_MODE_CHANGED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.windowingEvent.mode = mode;
     return e;
 }
 

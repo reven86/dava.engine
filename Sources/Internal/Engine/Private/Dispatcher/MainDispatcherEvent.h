@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 
+#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 
 namespace DAVA
@@ -21,7 +22,6 @@ struct MainDispatcherEvent final
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,
         WINDOW_SIZE_SCALE_CHANGED,
-        WINDOW_WINDOWING_MODE_CHANGED,
 
         MOUSE_BUTTON_DOWN,
         MOUSE_BUTTON_UP,
@@ -80,13 +80,7 @@ struct MainDispatcherEvent final
         float32 height;
         float32 scaleX;
         float32 scaleY;
-    };
-
-    /// Parameter for events:
-    ///     - WINDOW_WINDOWING_MODE_CHANGED
-    struct WindowWindowingEvent
-    {
-        int32 mode;
+        Fullscreen fullscreen;
     };
 
     /// Parameter for mouse events:
@@ -151,7 +145,6 @@ struct MainDispatcherEvent final
         WindowStateEvent stateEvent;
         WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
-        WindowWindowingEvent windowingEvent;
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
         KeyEvent keyEvent;
@@ -162,10 +155,9 @@ struct MainDispatcherEvent final
 
     static MainDispatcherEvent CreateWindowCreatedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
     static MainDispatcherEvent CreateWindowDestroyedEvent(Window* window);
-    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY);
+    static MainDispatcherEvent CreateWindowSizeChangedEvent(Window* window, float32 width, float32 height, float32 scaleX, float32 scaleY, Fullscreen fullscreen);
     static MainDispatcherEvent CreateWindowFocusChangedEvent(Window* window, bool focusState);
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
-    static MainDispatcherEvent CreateWindowWindowingModeChangedEvent(Window* window, int mode);
 
     static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, bool isRepeated);
     static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, uint32 button, float32 x, float32 y, uint32 clicks, bool isRelative);
