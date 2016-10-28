@@ -27,6 +27,7 @@ class EditorCore
     Q_OBJECT
 public:
     explicit EditorCore(QObject* parent = nullptr);
+
     ~EditorCore();
 
     void Start();
@@ -55,7 +56,7 @@ private:
     void EnableCacheClient();
     void DisableCacheClient();
 
-    void OnProjectOpen(const Project* project);
+    void OnProjectOpen(Project* project);
     void OnProjectClose(const Project* project);
 
     const QStringList& GetRecentProjects() const;
@@ -64,6 +65,8 @@ private:
 
     DAVA::String GetRecentProjectsAsString() const;
     void SetRecentProjectsFromString(const DAVA::String& str);
+
+    QString ReadEditorTitle() const;
 
     void UnpackHelp();
 

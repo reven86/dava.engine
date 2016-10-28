@@ -10,6 +10,7 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
+#include "UI/mainwindow.h"
 
 #include <QApplication>
 #include <QMutableListIterator>
@@ -17,9 +18,14 @@
 #include <QTabBar>
 #include <QMessageBox>
 
+#include "UI/Preview/PreviewWidget.h"
+#include "UI/Package/PackageWidget.h"
+#include "UI/Library/LibraryWidget.h"
+#include "UI/Properties/PropertiesWidget.h"
+
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(QObject* parent)
+DocumentGroup::DocumentGroup(MainWindow* mainWindow, QObject* parent)
     : QObject(parent)
     , active(nullptr)
     , commandStackGroup(new CommandStackGroup())
@@ -29,6 +35,15 @@ DocumentGroup::DocumentGroup(QObject* parent)
     commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
     commandStackGroup->undoCommandChanged.Connect([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
     commandStackGroup->redoCommandChanged.Connect([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
+
+    connect(mainWindow, &MainWindow::OpenPackageFile, this, &DocumentGroup::AddDocument);
+
+    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
+
+    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
+    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
+    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
+    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
 }
 
 DocumentGroup::~DocumentGroup() = default;

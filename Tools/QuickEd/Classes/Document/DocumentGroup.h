@@ -6,6 +6,7 @@
 #include <QList>
 #include <QPointer>
 
+class MainWindow;
 class Document;
 class CommandStackGroup;
 class PackageBaseNode;
@@ -21,7 +22,7 @@ class DocumentGroup : public QObject
     Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
     Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
-    explicit DocumentGroup(QObject* parent = nullptr);
+    explicit DocumentGroup(MainWindow* mainWindow, QObject* parent = nullptr);
     ~DocumentGroup();
 
     QList<Document*> GetDocuments() const;

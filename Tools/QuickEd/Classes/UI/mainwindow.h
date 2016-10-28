@@ -43,7 +43,7 @@ public:
 
     ~MainWindow() override;
 
-    void SetProjectTitle(const QString& projectTitle);
+    void SetEditorTitle(const QString& editorTitle);
     void SetProjectPath(const QString& projectPath);
 
     void SetRecentProjects(const QStringList& lastProjectsPathes);
@@ -143,7 +143,7 @@ private:
 
     std::unique_ptr<Ui::MainWindow> ui;
 
-    QString projectTitle;
+    QString editorTitle;
     QString projectPath;
 
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?

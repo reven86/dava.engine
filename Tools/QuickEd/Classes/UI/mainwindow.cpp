@@ -82,9 +82,9 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void MainWindow::SetProjectTitle(const QString& aProjectTitle)
+void MainWindow::SetEditorTitle(const QString& aEditorTitle)
 {
-    projectTitle = aProjectTitle;
+    editorTitle = aEditorTitle;
 
     UpdateWindowTitle();
 }
@@ -608,7 +608,16 @@ void MainWindow::SetPixelized(bool pixelized)
 
 void MainWindow::UpdateWindowTitle()
 {
-    setWindowTitle(QString("%1 | Project %2").arg(projectTitle).arg(projectPath));
+    QString title;
+    if (projectPath.isEmpty())
+    {
+        title = editorTitle;
+    }
+    else
+    {
+        title = QString("%1 | Project %2").arg(editorTitle).arg(projectPath);
+    }
+    setWindowTitle(title);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)

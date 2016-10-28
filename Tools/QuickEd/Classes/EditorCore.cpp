@@ -52,14 +52,7 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
     mainWindow->SetProjectActionsEnabled(false);
-
-    QString title;
-    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
-    if (options)
-    {
-        title = options->GetString("title", EditorCoreDetails::EDITOR_TITLE).c_str();
-    }
-    mainWindow->SetProjectTitle(title);
+    mainWindow->SetEditorTitle(ReadEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
     connect(mainWindow.get(), &MainWindow::NewProject, this, &EditorCore::OnNewProject);
@@ -89,6 +82,8 @@ void EditorCore::Start()
 
 void EditorCore::OnGLWidgedInitialized()
 {
+    mainWindow->SetEditorTitle(ReadEditorTitle());
+
     QString lastProjectPath = GetLastProject();
     if (!lastProjectPath.isEmpty())
     {
@@ -282,7 +277,7 @@ void EditorCore::DisableCacheClient()
     }
 }
 
-void EditorCore::OnProjectOpen(const Project* newProject)
+void EditorCore::OnProjectOpen(Project* newProject)
 {
     AddRecentProject(newProject->GetProjectPath());
 
@@ -293,14 +288,6 @@ void EditorCore::OnProjectOpen(const Project* newProject)
 
     DocumentGroup* documentGroup = newProject->GetDocumentGroup();
     mainWindow->AttachDocumentGroup(documentGroup);
-    connect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
 
     connect(this, &EditorCore::AssetCacheChanged, newProject, &Project::SetAssetCacheClient);
 
@@ -309,45 +296,13 @@ void EditorCore::OnProjectOpen(const Project* newProject)
         EnableCacheClient();
     }
 
-    //     spritesPacker->SetCacheClient(cacheClient.get(), "QuickEd.ReloadSprites");
-    //
-    //     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    //     spritesPacker->ClearTasks();
-    //     QDirIterator it(/*projectPath + */ "/DataSource"); //TODO fix
-    //     while (it.hasNext())
-    //     {
-    //         it.next();
-    //         const QFileInfo& fileInfo = it.fileInfo();
-    //         if (fileInfo.isDir())
-    //         {
-    //             QString outputPath = fileInfo.absoluteFilePath();
-    //             if (!outputPath.contains(searchOption))
-    //             {
-    //                 continue;
-    //             }
-    //             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
-    //             QDir outputDir(outputPath);
-    //             spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
-    //         }
-    //     }
+    newProject->SetAssetCacheClient(cacheClient.get());
 }
 
 void EditorCore::OnProjectClose(const Project* currProject)
 {
     DocumentGroup* documentGroup = currProject->GetDocumentGroup();
     mainWindow->DetachDocumentGroup(documentGroup);
-    disconnect(mainWindow.get(), &MainWindow::OpenPackageFile, documentGroup, &DocumentGroup::AddDocument);
-
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
-
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::SaveSystemsContextAndClear); //this context will affect other widgets, so he must be updated before other widgets take new document
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::LoadSystemsContext); //this context will affect other widgets, so he must be updated when other widgets took new document
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
-
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
-
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
-    disconnect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
 
     disconnect(this, &EditorCore::AssetCacheChanged, currProject, &Project::SetAssetCacheClient);
 
@@ -457,4 +412,13 @@ void EditorCore::UnpackHelp()
             DVASSERT(false && "can't unpack help docs to documents dir");
         }
     }
+}
+
+QString EditorCore::ReadEditorTitle() const
+{
+    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
+    if (!options)
+        return QString();
+
+    return QString::fromStdString(options->GetString("title", EditorCoreDetails::EDITOR_TITLE));
 }

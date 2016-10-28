@@ -29,7 +29,7 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     , mainWindow(aMainWindow)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
-    , documentGroup(new DocumentGroup(this))
+    , documentGroup(new DocumentGroup(mainWindow, this))
     , spritesPacker(new SpritesPacker(this))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
@@ -69,6 +69,26 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     connect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
     connect(mainWindow, &MainWindow::ReloadSprites, this, &Project::OnReloadSprites);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
+
+    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
+    spritesPacker->ClearTasks();
+    QDirIterator it(/*projectPath + */ "/DataSource"); //TODO fix
+    while (it.hasNext())
+    {
+        it.next();
+        const QFileInfo& fileInfo = it.fileInfo();
+        if (fileInfo.isDir())
+        {
+            QString outputPath = fileInfo.absoluteFilePath();
+            if (!outputPath.contains(searchOption))
+            {
+                continue;
+            }
+            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
+            QDir outputDir(outputPath);
+            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
+        }
+    }
 }
 
 Project::~Project()
