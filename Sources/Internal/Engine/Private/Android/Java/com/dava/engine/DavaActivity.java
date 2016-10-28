@@ -16,8 +16,7 @@ import android.widget.FrameLayout;
 import android.util.Log;
 
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -68,7 +67,7 @@ public final class DavaActivity extends Activity
         Class that implements ActivityListener interface with empty method implementations to permit override
         only necessary methods.
     */
-    public abstract class ActivityListenerImpl implements ActivityListener
+    public static abstract class ActivityListenerImpl implements ActivityListener
     {
         public void onCreate(Bundle savedInstanceState) {}
         public void onStart() {}
@@ -102,7 +101,7 @@ public final class DavaActivity extends Activity
     private DavaSurfaceView primarySurfaceView;
     private DavaSplashView splashView;
     private ViewGroup layout;
-    private HashSet<ActivityListener> activityListeners = new HashSet<ActivityListener>();
+    private ArrayList<ActivityListener> activityListeners = new ArrayList<ActivityListener>();
     private Bundle savedInstanceStateBundle;
 
     private static final int ON_ACTIVITY_CREATE = 0;
@@ -214,6 +213,9 @@ public final class DavaActivity extends Activity
 
         notifyListeners(ON_ACTIVITY_CREATE, savedInstanceStateBundle);
         savedInstanceStateBundle = null;
+
+        registerActivityListener(gamepadManager);
+        registerActivityListener(keyboardState);
     }
     
     protected void onFinishCollectDeviceInfo()
@@ -264,7 +266,6 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onPause");
         super.onPause();
 
-        keyboardState.stop();
         handlePause();
     }
 
@@ -293,6 +294,7 @@ public final class DavaActivity extends Activity
         super.onDestroy();
 
         notifyListeners(ON_ACTIVITY_DESTROY, null);
+        activityListeners.clear();
 
         nativeOnDestroy();
         if (isNativeThreadRunning())
@@ -326,7 +328,6 @@ public final class DavaActivity extends Activity
         hasFocus = hasWindowFocus;
         if (hasFocus)
         {
-            keyboardState.start();
             hideNavigationBar();
             handleResume();
         }
@@ -414,11 +415,7 @@ public final class DavaActivity extends Activity
             {
                 isPaused = false;
                 nativeOnResume();
-
                 notifyListeners(ON_ACTIVITY_RESUME, null);
-
-                primarySurfaceView.handleResume();
-                gamepadManager.onResume();
             }
         }
     }
@@ -428,11 +425,7 @@ public final class DavaActivity extends Activity
         if (!isPaused)
         {
             isPaused = true;
-            primarySurfaceView.handlePause();
-            gamepadManager.onPause();
-
             notifyListeners(ON_ACTIVITY_PAUSE, null);
-
             nativeOnPause();
         }
     }
@@ -545,32 +538,37 @@ public final class DavaActivity extends Activity
 
     private void notifyListeners(int what, Object arg)
     {
-        for (Iterator<ActivityListener> i = activityListeners.iterator();i.hasNext();)
+        if (!activityListeners.isEmpty())
         {
-            ActivityListener l = i.next();
-            switch (what)
+            // Make listeners copy to allow unregistering listeners inside callback
+            ArrayList<ActivityListener> listenersCopy = new ArrayList<ActivityListener>();
+            listenersCopy.addAll(activityListeners);
+            for (ActivityListener l : listenersCopy)
             {
-            case ON_ACTIVITY_CREATE:
-                l.onCreate((Bundle)arg);
-                break;
-            case ON_ACTIVITY_START:
-                l.onStart();
-                break;
-            case ON_ACTIVITY_RESUME:
-                l.onResume();
-                break;
-            case ON_ACTIVITY_PAUSE:
-                l.onPause();
-                break;
-            case ON_ACTIVITY_RESTART:
-                l.onRestart();
-                break;
-            case ON_ACTIVITY_STOP:
-                l.onStop();
-                break;
-            case ON_ACTIVITY_DESTROY:
-                l.onDestroy();
-                break;
+                switch (what)
+                {
+                case ON_ACTIVITY_CREATE:
+                    l.onCreate((Bundle)arg);
+                    break;
+                case ON_ACTIVITY_START:
+                    l.onStart();
+                    break;
+                case ON_ACTIVITY_RESUME:
+                    l.onResume();
+                    break;
+                case ON_ACTIVITY_PAUSE:
+                    l.onPause();
+                    break;
+                case ON_ACTIVITY_RESTART:
+                    l.onRestart();
+                    break;
+                case ON_ACTIVITY_STOP:
+                    l.onStop();
+                    break;
+                case ON_ACTIVITY_DESTROY:
+                    l.onDestroy();
+                    break;
+                }
             }
         }
     }
