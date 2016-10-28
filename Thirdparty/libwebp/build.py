@@ -27,20 +27,17 @@ def build_for_target(target, working_directory_path, root_project_path):
 
 
 def get_download_info():
-    return 'http://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz'
+    return 'https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-0.5.1.tar.gz'
 
 
 def _download_and_extract(working_directory_path):
-    source_folder_path = os.path.join(
-        working_directory_path, 'freetype_source')
-
+    source_folder_path = os.path.join(working_directory_path, 'libwebp_source')
     url = get_download_info()
     build_utils.download_and_extract(
         url,
         working_directory_path,
         source_folder_path,
         build_utils.get_url_file_name_no_ext(url))
-
     return source_folder_path
 
 
@@ -58,10 +55,10 @@ def _build_win32(working_directory_path, root_project_path):
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
         root_project_path,
-        'freetype.sln', 'freetype',
-        'freetyped.lib', 'freetype.lib',
-        'freetype246MT_D.lib', 'freetype246MT.lib',
-        'freetype.lib', 'freetype.lib')
+        'libwebp.sln', 'webp',
+        'webp.lib', 'webp.lib',
+        'libwebp.lib', 'libwebp.lib',
+        'libwebp.lib', 'libwebp.lib')
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -74,11 +71,12 @@ def _build_win10(working_directory_path, root_project_path):
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
         root_project_path,
-        'freetype.sln', 'freetype',
-        'freetyped.lib', 'freetype.lib',
-        'freetype.lib', 'freetype.lib',
-        'freetype.lib', 'freetype.lib',
-        'freetype.lib', 'freetype.lib')
+        'libwebp.sln', 'webp',
+        'webp.lib', 'webp.lib',
+        'libwebp.lib', 'libwebp.lib',
+        'libwebp.lib', 'libwebp.lib',
+        'libwebp.lib', 'libwebp.lib',
+        ['-DCMAKE_SYSTEM_PROCESSOR=arm'])
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -91,9 +89,9 @@ def _build_macos(working_directory_path, root_project_path):
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
         root_project_path,
-        'freetype.xcodeproj', 'freetype',
-        'libfreetype.a',
-        'libfreetype_macos.a')
+        'libwebp.xcodeproj', 'webp',
+        'libwebp.a',
+        'libwebp.a')
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -106,9 +104,9 @@ def _build_ios(working_directory_path, root_project_path):
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
         root_project_path,
-        'freetype.xcodeproj', 'freetype',
-        'libfreetype.a',
-        'libfreetype_ios.a')
+        'libwebp.xcodeproj', 'webp',
+        'libwebp.a',
+        'libwebp.a')
 
     _copy_headers(source_folder_path, root_project_path)
 
@@ -121,13 +119,14 @@ def _build_android(working_directory_path, root_project_path):
         os.path.join(working_directory_path, 'gen'),
         source_folder_path,
         root_project_path,
-        'libfreetype.a',
-        'libfreetype.a')
+        'libwebp.a',
+        'libwebp.a',
+        arm_abi='armeabi-v7a with NEON')
 
     _copy_headers(source_folder_path, root_project_path)
 
 
 def _copy_headers(source_folder_path, root_project_path):
-    include_path = os.path.join(root_project_path, 'Libs/include/freetype')
-    build_utils.copy_folder_recursive(
-        os.path.join(source_folder_path, 'include/freetype'), include_path)
+    include_path = os.path.join(root_project_path, 'Libs/include/webp')
+    build_utils.copy_files(
+        os.path.join(source_folder_path, 'src/webp'), include_path, '*.h')
