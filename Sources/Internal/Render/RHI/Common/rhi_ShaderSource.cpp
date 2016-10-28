@@ -45,7 +45,7 @@ ShaderSource::~ShaderSource()
 }
 
 //------------------------------------------------------------------------------
-
+/*
 static rhi::BlendOp
 BlendOpFromText(const char* op)
 {
@@ -64,7 +64,7 @@ BlendOpFromText(const char* op)
     else
         return rhi::BLENDOP_ONE;
 }
-
+*/
 //------------------------------------------------------------------------------
 
 bool ShaderSource::Construct(ProgType progType, const char* srcText)
@@ -210,7 +210,7 @@ void ShaderSource::InlineFunctions()
         public:
             FindStatementExpression(sl::HLSLFunctionCall* fc)
                 : _fcall(fc)
-                , _cur_expr(nullptr)
+                //-                , _cur_expr(nullptr)
                 , _cur_statement(nullptr)
                 , _cur_statement_parent(nullptr)
                 , expr(nullptr)
@@ -276,7 +276,7 @@ void ShaderSource::InlineFunctions()
             std::vector<sl::HLSLExpression**> _pexpr;
 
             sl::HLSLFunctionCall* _fcall;
-            sl::HLSLExpression* _cur_expr;
+            //-            sl::HLSLExpression* _cur_expr;
             sl::HLSLStatement* _cur_statement;
             sl::HLSLStatement* _cur_statement_parent;
         };
