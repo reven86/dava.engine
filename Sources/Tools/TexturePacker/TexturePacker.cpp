@@ -60,7 +60,7 @@ TexturePacker::TexturePacker()
         int32 q = atoi(qualityName.c_str());
         if ((q >= TextureConverter::ECQ_FASTEST) && (q <= TextureConverter::ECQ_VERY_HIGH))
         {
-            quality = (TextureConverter::eConvertQuality)q;
+            quality = static_cast<TextureConverter::eConvertQuality>(q);
         }
     }
 
@@ -198,7 +198,11 @@ Vector<std::unique_ptr<SpritesheetLayout>> TexturePacker::PackSprites(Vector<Spr
             }
         }
 
-        DVASSERT_MSG(bestSpritesWeight > 0, "Can't pack any sprite");
+        if (bestSpritesWeight <= 0)
+        {
+            AddError("Can't pack any sprite. Probably maxTextureSize should be altered");
+            break;
+        }
 
         spritesToPack.swap(bestSpritesRemaining);
         resultSheets.emplace_back(std::move(bestSheet));
@@ -308,7 +312,7 @@ bool TexturePacker::WriteMultipleDefinition(const Vector<std::unique_ptr<Sprites
     }
 
     // write real used packers count
-    fprintf(fp, "%d\n", (int)sheetIndexToFileIndex.size());
+    fprintf(fp, "%d\n", static_cast<int>(sheetIndexToFileIndex.size()));
 
     int realIndex = 0;
     // write user texture indexes

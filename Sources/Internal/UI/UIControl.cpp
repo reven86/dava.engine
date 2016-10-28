@@ -1,4 +1,6 @@
 #include "UI/UIControl.h"
+
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
@@ -49,6 +51,7 @@ UIControl::UIControl(const Rect& rect)
     , styleSheetInitialized(false)
     , layoutDirty(true)
     , layoutPositionDirty(true)
+    , layoutOrderDirty(true)
     , family(nullptr)
     , parentWithContext(nullptr)
 {
@@ -485,6 +488,9 @@ Vector2 UIControl::GetAbsolutePosition() const
 
 void UIControl::SetPosition(const Vector2& position)
 {
+    if (relativePosition == position)
+        return;
+
     relativePosition = position;
     SetLayoutPositionDirty();
 }
@@ -516,17 +522,25 @@ void UIControl::SetSize(const Vector2& newSize)
 
 void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
 {
-    pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
+    Vector2 newPivot((size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x),
+                     (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y));
+
+    if (pivot == newPivot)
+        return;
+
+    pivot = newPivot;
 
     SetLayoutPositionDirty();
 }
 
 void UIControl::SetPivot(const Vector2& newPivot)
 {
+    if (pivot == newPivot)
+        return;
+
     pivot = newPivot;
 
-    SetLayoutDirty();
+    SetLayoutPositionDirty();
 }
 
 void UIControl::SetAngle(float32 angleInRad)
@@ -799,7 +813,7 @@ void UIControl::BringChildFront(UIControl* _control)
             children.erase(it);
             children.push_back(_control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -814,7 +828,7 @@ void UIControl::BringChildBack(UIControl* _control)
             children.erase(it);
             children.push_front(_control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -891,7 +905,7 @@ void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
         {
             children.insert(it, _control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -921,7 +935,7 @@ void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
         {
             children.insert(++it, _control);
             isIteratorCorrupted = true;
-            SetLayoutDirty();
+            SetLayoutOrderDirty();
             return;
         }
     }
@@ -964,6 +978,8 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     styleSheetDirty = srcControl->styleSheetDirty;
     styleSheetInitialized = false;
     layoutDirty = srcControl->layoutDirty;
+    layoutPositionDirty = srcControl->layoutPositionDirty;
+    layoutOrderDirty = srcControl->layoutOrderDirty;
     packageContext = srcControl->packageContext;
 
     SafeRelease(eventDispatcher);
@@ -1032,22 +1048,8 @@ void UIControl::SystemUpdate(float32 timeElapsed)
         prevControlState = controlState;
     }
 
-    if (layoutDirty)
-    {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled())
-        {
-            layoutSystem->ApplyLayout(this, true);
-        }
-    }
-    else if (layoutPositionDirty)
-    {
-        UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-        if (layoutSystem->IsAutoupdatesEnabled() && parent != nullptr)
-        {
-            layoutSystem->ApplyLayoutNonRecursive(parent);
-        }
-    }
+    UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+    layoutSystem->ProcessControl(this);
 
     it = children.begin();
     isIteratorCorrupted = false;
@@ -1378,15 +1380,17 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                     if (totalTouches == 0)
                     {
-                        if (IsPointInside(currentInput->point, true))
+                        bool isPointInside = IsPointInside(currentInput->point, true);
+                        eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
+
+                        Analytics::EmitUIEvent(this, event, currentInput);
+                        PerformEventWithData(event, currentInput);
+
+                        if (isPointInside)
                         {
-                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
                             UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
-                        else
-                        {
-                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                        }
+
                         controlState &= ~STATE_PRESSED_INSIDE;
                         controlState &= ~STATE_PRESSED_OUTSIDE;
                         controlState |= STATE_NORMAL;
@@ -1560,9 +1564,9 @@ void UIControl::SystemVisible()
     }
 
     ChangeViewState(eViewState::VISIBLE);
+    UIControlSystem::Instance()->RegisterVisibleControl(this);
 
     SetStyleSheetDirty();
-    UIControlSystem::Instance()->OnControlVisible(this);
     OnVisible();
 
     auto it = children.begin();
@@ -1614,8 +1618,7 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
-
-    UIControlSystem::Instance()->OnControlInvisible(this);
+    UIControlSystem::Instance()->UnregisterVisibleControl(this);
     OnInvisible();
 }
 
@@ -1636,6 +1639,7 @@ void UIControl::SystemActive()
     }
 
     ChangeViewState(eViewState::ACTIVE);
+    UIControlSystem::Instance()->RegisterControl(this);
 
     OnActive();
 
@@ -1686,6 +1690,7 @@ void UIControl::SystemInactive()
     }
 
     ChangeViewState(eViewState::INACTIVE);
+    UIControlSystem::Instance()->UnregisterControl(this);
 
     OnInactive();
 }
@@ -2192,7 +2197,7 @@ String UIControl::GetInternalControlDescriptions() const
 
 void UIControl::UpdateLayout()
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+    UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(this);
 }
 
 void UIControl::OnSizeChanged()
@@ -2211,6 +2216,10 @@ void UIControl::AddComponent(UIComponent* component)
     });
     UpdateFamily();
 
+    if (viewState >= eViewState::ACTIVE)
+    {
+        UIControlSystem::Instance()->RegisterComponent(this, component);
+    }
     SetLayoutDirty();
 }
 
@@ -2230,6 +2239,11 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
         components.insert(components.begin() + insertIndex, SafeRetain(component));
 
         UpdateFamily();
+
+        if (viewState >= eViewState::ACTIVE)
+        {
+            UIControlSystem::Instance()->RegisterComponent(this, component);
+        }
 
         SetLayoutDirty();
     }
@@ -2292,11 +2306,17 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
 {
     if (it != components.end())
     {
-        UIComponent* c = *it;
+        UIComponent* component = *it;
+
+        if (viewState >= eViewState::ACTIVE)
+        {
+            UIControlSystem::Instance()->UnregisterComponent(this, component);
+        }
+
         components.erase(it);
         UpdateFamily();
-        c->SetControl(nullptr);
-        SafeRelease(c);
+        component->SetControl(nullptr);
+        SafeRelease(component);
 
         SetLayoutDirty();
     }
@@ -2441,6 +2461,11 @@ void UIControl::ResetStyleSheetDirty()
     styleSheetDirty = false;
 }
 
+bool UIControl::IsLayoutDirty() const
+{
+    return layoutDirty;
+}
+
 void UIControl::SetLayoutDirty()
 {
     layoutDirty = true;
@@ -2450,6 +2475,12 @@ void UIControl::ResetLayoutDirty()
 {
     layoutDirty = false;
     layoutPositionDirty = false;
+    layoutOrderDirty = false;
+}
+
+bool UIControl::IsLayoutPositionDirty() const
+{
+    return layoutPositionDirty;
 }
 
 void UIControl::SetLayoutPositionDirty()
@@ -2460,6 +2491,21 @@ void UIControl::SetLayoutPositionDirty()
 void UIControl::ResetLayoutPositionDirty()
 {
     layoutPositionDirty = false;
+}
+
+bool UIControl::IsLayoutOrderDirty() const
+{
+    return layoutOrderDirty;
+}
+
+void UIControl::SetLayoutOrderDirty()
+{
+    layoutOrderDirty = true;
+}
+
+void UIControl::ResetLayoutOrderDirty()
+{
+    layoutOrderDirty = false;
 }
 
 void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)

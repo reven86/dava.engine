@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 
 #include "Base/Platform.h"
+#include "Base/Exception.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -13,6 +14,8 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
+#include "Concurrency/LockGuard.h"
+#include "PackManager/PackManager.h"
 
 #include "Engine/EngineModule.h"
 
@@ -54,8 +57,6 @@ FileSystem::FileSystem()
 
 FileSystem::~FileSystem()
 {
-    resArchiveMap.clear();
-
     // All locked files should be explicitly unlocked before closing the app.
     DVASSERT(lockedFileHandles.empty());
 }
@@ -153,8 +154,8 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
     File* srcFile = File::Create(existingFile, File::OPEN | File::READ);
     File* dstFile = File::Create(newFile, File::WRITE | File::CREATE);
 
-    Logger::Info("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
-                 newFile.GetStringValue().c_str(), srcFile, dstFile);
+    Logger::Debug("copy file from %s(%p) to %s(%p)", existingFile.GetStringValue().c_str(),
+                  newFile.GetStringValue().c_str(), srcFile, dstFile);
 
     if (srcFile && dstFile)
     {
@@ -465,13 +466,33 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
             relative = str.substr(6);
         }
 
-        // TODO if packManager initialized we can use index to find pack with filePath
-
-        if (!relative.empty())
+        if (relative.empty())
         {
-            for (auto& pair : resArchiveMap)
+            return false;
+        }
+
+// now with PackManager we can improve perfomance by lookup pack name
+// from DB with all files, then check if such pack mounted and from
+// mountedPackIndex find by name archive with file or skip to next step
+#ifdef __DAVAENGINE_COREV2__
+        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
+        // access Engine object after it has beem destroyed
+        IPackManager* pm = nullptr;
+        Engine* e = Engine::Instance();
+        DVASSERT(e != nullptr);
+        EngineContext* context = e->GetContext();
+        DVASSERT(context != nullptr);
+        pm = context->packManager;
+#else
+        IPackManager* pm = &Core::Instance()->GetPackManager();
+#endif
+
+        if (nullptr != pm && pm->IsInitialized())
+        {
+            const String& packName = pm->FindPackName(pathToCheck);
+            if (!packName.empty())
             {
-                if (pair.second.archive->HasFile(relative))
+                if (File::IsFileInMountedArchive(packName, relative))
                 {
                     return true;
                 }
@@ -773,7 +794,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetInternalStoragePathname();
 #endif
 }
@@ -783,7 +804,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
 #else
-    CorePlatformAndroid* core = (CorePlatformAndroid*)Core::Instance();
+    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     return core->GetExternalStoragePathname();
 #endif
 }
@@ -869,17 +890,22 @@ void FileSystem::Mount(const FilePath& archiveName, const String& attachPath)
         item.archive.reset(new ResourceArchive(archiveName));
         item.archiveFilePath = archiveName;
 
-        resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
+        {
+            LockGuard<Mutex> lock(accessArchiveMap);
+            resArchiveMap.emplace(archiveName.GetBasename(), std::move(item));
+        }
     }
 }
 
 void FileSystem::Unmount(const FilePath& arhiveName)
 {
+    LockGuard<Mutex> lock(accessArchiveMap);
     resArchiveMap.erase(arhiveName.GetBasename());
 }
 
 bool FileSystem::IsMounted(const FilePath& archiveName) const
 {
+    LockGuard<Mutex> lock(accessArchiveMap);
     return resArchiveMap.find(archiveName.GetBasename()) != end(resArchiveMap);
 }
 
@@ -1042,7 +1068,7 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
     {
         if (fullSize > std::numeric_limits<uint32>::max())
         {
-            throw std::runtime_error("size of file: more 4Gb use 64 bit version");
+            DAVA_THROW(DAVA::Exception, "size of file: more 4Gb use 64 bit version");
         }
         size = static_cast<uint32>(fullSize);
         return true;

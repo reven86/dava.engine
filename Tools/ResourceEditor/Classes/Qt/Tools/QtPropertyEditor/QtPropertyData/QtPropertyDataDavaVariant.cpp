@@ -6,7 +6,7 @@
 #include "Tools/ColorPicker/ColorPicker.h"
 #include "Tools/Widgets/MultilineEditor.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 #include "QtTools/Utils/Utils.h"
 

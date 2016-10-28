@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILE_PATH_H__
-#define __DAVAENGINE_FILE_PATH_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -14,7 +13,7 @@ static const char8* localResourcesPath = "/mnt/sdcard/DavaProject/";
 class FilePath
 {
 public:
-    enum ePathType
+    enum ePathType : int32
     {
         PATH_EMPTY = -1, // empty path, newly created with empty string
         PATH_IN_FILESYSTEM = 0, // not framework path /Users/... or c:/...
@@ -23,7 +22,6 @@ public:
         PATH_IN_MEMORY // FBO, TEXT, memory file
     };
 
-public:
     FilePath();
     FilePath(const FilePath& path);
     FilePath(FilePath&& path);
@@ -260,8 +258,9 @@ public:
     int32 Compare(const FilePath& right) const;
 
     static bool IsAbsolutePathname(const String& pathname);
+    static String AddPath(const FilePath& folder, const String& addition);
 
-protected:
+private:
     void Initialize(const String& pathname);
     void Initialize(const WideString& pathname);
     void InitializeWithDirectoryAndName(const String& directory, const String& filename);
@@ -284,10 +283,6 @@ protected:
 
     static bool IsGlobbing(const String& pathname);
 
-public:
-    static String AddPath(const FilePath& folder, const String& addition);
-
-protected:
     String absolutePathname;
     ePathType pathType;
 
@@ -305,6 +300,4 @@ inline FilePath::ePathType FilePath::GetType() const
 {
     return pathType;
 }
-};
-
-#endif //__DAVAENGINE_FILE_PATH_H__
+} // end namespace DAVA

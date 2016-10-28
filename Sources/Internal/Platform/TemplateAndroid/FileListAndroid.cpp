@@ -1,14 +1,13 @@
 #include "FileListAndroid.h"
 #include "Logger/Logger.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 JniFileList::JniFileList()
     : jniFileList("com/dava/framework/JNIFileList")
 {
-    getFileList = jniFileList.GetStaticMethod<jstringArray, jstring>("GetFileList");
+    getFileList = jniFileList.GetStaticMethod<jobjectArray, jstring>("GetFileList");
 }
 
 Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& path)
@@ -17,7 +16,7 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
     JNIEnv* env = JNI::GetEnv();
     jstring jPath = env->NewStringUTF(path.c_str());
 
-    jstringArray jArray = getFileList(jPath);
+    jobjectArray jArray = getFileList(jPath);
     if (jArray)
     {
         jsize size = env->GetArrayLength(jArray);
@@ -26,13 +25,19 @@ Vector<JniFileList::JniFileListEntry> JniFileList::GetFileList(const String& pat
             jobject item = env->GetObjectArrayElement(jArray, i);
 
             jclass cls = env->GetObjectClass(item);
+#if defined(__DAVAENGINE_COREV2__)
+            jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeSignature<jstring>::value());
+            jfieldID jSizeField = env->GetFieldID(cls, "size", JNI::TypeSignature<jlong>::value());
+            jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeSignature<jboolean>::value());
+#else
             jfieldID jNameField = env->GetFieldID(cls, "name", JNI::TypeMetrics<jstring>());
             jfieldID jSizeField = env->GetFieldID(cls, "size", JNI::TypeMetrics<jlong>());
             jfieldID jIsDirectoryField = env->GetFieldID(cls, "isDirectory", JNI::TypeMetrics<jboolean>());
+#endif
 
             jlong jSize = env->GetLongField(item, jSizeField);
             jboolean jIsDir = env->GetBooleanField(item, jIsDirectoryField);
-            jstring jName = (jstring)env->GetObjectField(item, jNameField);
+            jstring jName = static_cast<jstring>(env->GetObjectField(item, jNameField));
 
             JniFileListEntry entry;
             entry.name = JNI::ToString(jName);

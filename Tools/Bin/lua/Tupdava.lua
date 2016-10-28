@@ -495,28 +495,35 @@ function TupState.BuildLists(self)
         -- if not - that should be thread as error
         if secondMatch ~= nil then
             print("Packs: " .. firstMatch .. " and " .. secondMatch)
-            print "File is matching more than one pack"
+            error "File is matching more than one pack"
         end
     end
     
     for pi, pack in pairs(self.packs) do
-    
         for gpu, files in pairs(pack.files) do
-            local packGroup = self:GetPackGroup(pack.name, gpu)
-            local packGroupPath = self.projectDir .. "/<" .. packGroup .. ">"
-
-            for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
-                local partCmd = self.cmd.fwdep .. " echo " .. " %\"f -o %o"
-                if self.currentDir ~= "." then 
-                    partCmd = partCmd .. " -ap \"" ..  self.currentDir .. "/\""
+            if pack.is_base == true then
+                for index, file in pairs(files) do
+                    local baseOutput = self.conf.outputDir .. "/Data/" .. self.currentDir .. "/" .. file
+                    baseOutput = UtilConvertToPlatformPath(self.platform, baseOutput) 
+                    tup.rule(file, self.cmd.fwdep .. " merge %\"f -o %\"o", {baseOutput})
                 end
-                local partCmdText = "^ Gen " .. gpu .. " list " .. i .. " for " .. pack.name .. "^ "
-                local partOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name 
-                    .. self.conf.delimiter .. self.currentDirString 
-                    .. "-" .. i .. self.conf.packlistExt
-                    
-                partOutput = UtilConvertToPlatformPath(self.platform, partOutput) 
-                tup.rule(part, partCmdText .. partCmd, { partOutput, packGroupPath })
+            else
+                local packGroup = self:GetPackGroup(pack.name, gpu)
+                local packGroupPath = self.projectDir .. "/<" .. packGroup .. ">"
+
+                for i, part in UtilIterateTable(files, self.conf.cmdMaxFilesCount) do
+                    local partCmd = self.cmd.fwdep .. " echo " .. " %\"f -o %o"
+                    if self.currentDir ~= "." then 
+                        partCmd = partCmd .. " -ap \"" ..  self.currentDir .. "/\""
+                    end
+                    local partCmdText = "^ Gen " .. gpu .. " list " .. i .. " for " .. pack.name .. "^ "
+                    local partOutput = self.packlistDir .. "/" .. gpu .. "/" .. pack.name 
+                        .. self.conf.delimiter .. self.currentDirString 
+                        .. "-" .. i .. self.conf.packlistExt
+                        
+                    partOutput = UtilConvertToPlatformPath(self.platform, partOutput) 
+                    tup.rule(part, partCmdText .. partCmd, { partOutput, packGroupPath })
+                end
             end
         end
     end    
@@ -528,6 +535,7 @@ function TupState.BuildPacks(self)
     local superPackFiles = { }
 
     for pai, pack in pairs(self.packs) do
+        -- not base pack
         -- by default gpu list contain only common folder
         local gpus = { }
         gpus[self.conf.commonGpu] = self.conf.commonGpu
@@ -562,25 +570,23 @@ function TupState.BuildPacks(self)
             
             tup.rule({ mergePackMask, packGroupPath, emptyPackOutput }, mergePackCmdText .. mergePackCmd, { mergePackOutput })
 
-            -- archivate
-            local archiveCmd = self.cmd.fwResourceArchive .. " pack -compression " .. pack.compression .. " -listfile %f %o"
-            local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
-            local archiveOutput = self:GetOutputDir(pack.is_base, self.packsDir) .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
-            tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
-
             if pack.is_base ~= true then
+                -- archivate
+                local archiveCmd = self.cmd.fwResourceArchive .. " pack -compression " .. pack.compression .. " -listfile %f %o"
+                local archiveCmdText = "^ Archive " .. pack.name .. gpu .. "^ "
+                local archiveOutput = self:GetOutputDir(pack.is_base, self.packsDir) .. "/" .. gpu .. "/" .. pack.name .. ".dvpk"
+                tup.rule(mergePackOutput, archiveCmdText .. archiveCmd, archiveOutput)
                 superPackFiles[#superPackFiles + 1] = UtilConvertToPlatformPath(self.platform, archiveOutput)
-            end
-
-            -- generate pack sql
-            local packDepends = table.concat(pack.depends, " ")
-            local isGpu = tostring(gpu ~= "common")
-            local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -g " .. isGpu .. " " .. archiveOutput .. " ".. pack.name .. " " .. packDepends .. " -o %o"
-            local sqlCmdText = "^ SQL for " .. pack.name .. gpu .. "^ "
-            local sqlOutput = self.sqlDir .. "/" .. gpu .. "/" .. pack.name .. ".sql"
-            tup.rule({ mergePackOutput, archiveOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroupPath })            
-        end
-    end
+                -- generate pack sql
+                local packDepends = table.concat(pack.depends, " ")
+                local isGpu = tostring(gpu ~= "common")
+                local sqlCmd = self.cmd.fwdep .. " sql -l " .. mergePackOutput .. " -g " .. isGpu .. " " .. archiveOutput .. " ".. pack.name .. " " .. packDepends .. " -o %o"
+                local sqlCmdText = "^ SQL for " .. pack.name .. gpu .. "^ "
+                local sqlOutput = self.sqlDir .. "/" .. gpu .. "/" .. pack.name .. ".sql"
+                tup.rule({ mergePackOutput, archiveOutput }, sqlCmdText ..sqlCmd, { sqlOutput, sqlGroupPath }) 
+            end           
+        end -- end for gpus
+    end -- end for packs
     
     -- create sqlite database for each gpu
     for gpu, gpuv in pairs(self.conf.gpus) do
@@ -589,10 +595,16 @@ function TupState.BuildPacks(self)
         local sqlCommonGroup = self:GetSqlGroup(self.conf.commonGpu)
         local sqlCommonGroupPath = self.sqlDir .. "/<" .. sqlCommonGroup .. ">"
     
+        -- generate emply sql for each gpu
+        local emptySqlCmd = self.cmd.fwdep .. " echo -o %o"
+        local emptySqlCmdText = "^ Get empty sql for " .. gpu .. "^ "
+        local emptySqlOutput = self.sqlDir .. "/" .. gpu .. "/" .. "empty.sql"
+        tup.rule(emptySqlCmdText .. emptySqlCmd, { emptySqlOutput })
+
         -- merge final sql
         local mergeSqlMaskCommon = self.sqlDir .. "/" .. self.conf.commonGpu .. "/*.sql"
         local mergeSqlMaskGpu = self.sqlDir .. "/" .. gpu .. "/*.sql"  
-        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o" --[[" -- %<" .. sqlGroup .. ">"]]
+        local mergeSqlCmd = self.cmd.fwdep .. " merge " .. mergeSqlMaskGpu .. " " .. mergeSqlMaskCommon .. " -o %o"
         local mergeSqlCmdText = "^ Gen merged sql " .. gpu .. "^ "
         local mergeSqlOutput = self.mergeDir .. "/" .. gpu .. "/final.sql" 
 
@@ -639,7 +651,7 @@ function TupState.BuildPacks(self)
 
         -- merge superpack lists
         local mergedSuperMask = self.packlistDir .. "/super-*" .. self.conf.packlistExt
-        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o" --[[" -- %<" .. superPackGroup .. ">"]]
+        local mergedSuperCmd = self.cmd.fwdep .. " merge " .. mergedSuperMask .. " > %o"
         local mergedSuperCmdText = "^ Gen merged superlist^ "
         local mergedSuperOutput = self.mergeDir .. "/super" ..  self.conf.mergedlistExt
 

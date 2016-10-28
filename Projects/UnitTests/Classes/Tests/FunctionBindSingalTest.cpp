@@ -10,10 +10,15 @@ using namespace DAVA;
 
 static String functionBindSignalResultString;
 
+void staticFn0Void()
+{
+}
+
 int staticFn0()
 {
     return 100;
 }
+
 int staticFn3(int i1, int i2, int i3)
 {
     return i1 + i2 + i3;
@@ -117,12 +122,14 @@ struct M
 
 struct V
 {
+    virtual ~V() = default;
     virtual int f2virt(int i, long j) = 0;
     char c_[2];
 };
 
 struct C : public M, virtual public V, virtual public A
 {
+    virtual ~C() = default;
     virtual void f2()
     {
     }
@@ -170,6 +177,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         // ==================================================================================
         // common functions testing
         // ==================================================================================
+        Function<void()> emptyProcedure(&staticFn0Void);
         Function<int()> static_f0(&staticFn0);
         Function<int(int, int, int)> static_f3(&staticFn3);
 

@@ -1,5 +1,6 @@
 #include "UIInputSystem.h"
 
+#include "UI/UIAnalitycs.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
@@ -415,6 +416,7 @@ bool UIInputSystem::HandleKeyEvent(UIEvent* event)
             current = c;
             if (current->SystemProcessInput(event))
             {
+                Analytics::EmitKeyEvent(current.Get(), event);
                 processed = true;
                 break;
             }
@@ -537,7 +539,8 @@ UIControl* UIInputSystem::FindNearestToUserModalControlImpl(UIControl* current) 
         }
     }
 
-    if (current->GetComponent<UIModalInputComponent>() != nullptr && current->IsVisible())
+    UIModalInputComponent* modalInputComponent = current->GetComponent<UIModalInputComponent>();
+    if (modalInputComponent != nullptr && modalInputComponent->IsEnabled() && current->IsVisible())
     {
         return current;
     }

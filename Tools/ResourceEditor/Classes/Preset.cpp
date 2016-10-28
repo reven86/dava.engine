@@ -3,11 +3,15 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Logger/Logger.h"
+
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/GPUFamilyDescriptor.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Material/NMaterial.h"
 #include "Utils/StringFormat.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include "Project/ProjectManager.h"
 

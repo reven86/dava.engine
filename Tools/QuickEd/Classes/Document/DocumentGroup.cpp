@@ -7,7 +7,7 @@
 
 #include "Debug/DVAssert.h"
 #include "UI/FileSystemView/FileSystemModel.h"
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 
@@ -54,7 +54,7 @@ bool DocumentGroup::CanSave() const
 
 bool DocumentGroup::CanClose() const
 {
-    return active != nullptr;
+    return active != nullptr && active->CanClose();
 }
 
 QString DocumentGroup::GetUndoText() const
@@ -340,6 +340,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     if (active != nullptr)
     {
         disconnect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+        disconnect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
     }
 
     active = document;
@@ -351,6 +352,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     else
     {
         connect(active, &Document::CanSaveChanged, this, &DocumentGroup::CanSaveChanged);
+        connect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
         commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
     emit ActiveDocumentChanged(document);
@@ -524,7 +526,10 @@ int DocumentGroup::GetIndexByPackagePath(const QString& path) const
 {
     for (int index = 0; index < documents.size(); ++index)
     {
-        if (documents.at(index)->GetPackageAbsolutePath() == path)
+        QString absPath = documents.at(index)->GetPackageAbsolutePath();
+        //normalize file path, because russian letter "й" will be decomposited
+        QString normalizedAbsPath = absPath.normalized(QString::NormalizationForm_C);
+        if (absPath == path || normalizedAbsPath == path)
         {
             return index;
         }

@@ -5,10 +5,10 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 #include "Platform/DeviceInfoPrivateBase.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -31,12 +31,13 @@ public:
     int32 GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int32 GetZBufferSize();
-    eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamilyImpl() override;
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
     bool IsTouchPresented();
+    String GetCarrierName();
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
@@ -65,6 +66,10 @@ private:
     Function<jint()> getNetworkType;
     Function<jint(jint)> getSignalStrength;
     Function<jboolean()> isPrimaryExternalStoragePresent;
+    Function<jstring()> getCarrierName;
+    Function<jint()> getDefaultDisplayWidth;
+    Function<jint()> getDefaultDisplayHeight;
+    Function<jbyte()> getGpuFamily;
 
     DeviceInfo::ScreenInfo screenInfo;
 };

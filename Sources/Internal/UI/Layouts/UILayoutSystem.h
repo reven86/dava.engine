@@ -4,30 +4,38 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
-#include "ControlLayoutData.h"
+#include "UI/Layouts/ControlLayoutData.h"
+#include "UI/UISystem.h"
 
 namespace DAVA
 {
 class UIControl;
 
 class UILayoutSystem
+: public UISystem
 {
 public:
     UILayoutSystem();
-    virtual ~UILayoutSystem();
+    ~UILayoutSystem() override;
 
-public:
+    void Process(DAVA::float32 elapsedTime) override{};
+
     bool IsRtl() const;
     void SetRtl(bool rtl);
 
     bool IsAutoupdatesEnabled() const;
     void SetAutoupdatesEnabled(bool enabled);
 
-    void ApplyLayout(UIControl* control, bool considerDenendenceOnChildren = false);
-    void ApplyLayoutNonRecursive(UIControl* control);
+    void ProcessControl(UIControl* control);
+    void ManualApplyLayout(UIControl* control);
 
 private:
+    void ApplyLayout(UIControl* control);
+    void ApplyLayoutNonRecursive(UIControl* control);
+
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
+    bool HaveToLayoutAfterReorder(const UIControl* control) const;
+    bool HaveToLayoutAfterReposition(const UIControl* control) const;
 
     void CollectControls(UIControl* control, bool recursive);
     void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);
@@ -39,7 +47,6 @@ private:
     void ApplySizesAndPositions();
     void ApplyPositions();
 
-private:
     bool isRtl = false;
     bool autoupdatesEnabled = true;
     Vector<ControlLayoutData> layoutData;

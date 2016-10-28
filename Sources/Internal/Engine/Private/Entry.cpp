@@ -4,7 +4,30 @@
 #include "Engine/Private/CommandArgs.h"
 #include "Engine/Private/EngineBackend.h"
 
-extern int GameMain(DAVA::Vector<DAVA::String> cmdline);
+/**
+    \ingroup engine
+    Entry point of program which uses dava.engine. An application shall implement this global function which designates
+    start of program.
+
+    This function is called after primary initialization of engine infrastructure. Thread which executes DAVAMain is considered DAVA main thread.
+    DAVAMain takes parsed command line arguments as passed from operating system. Command line always contains at least one argument - program name 
+    (on android program name is always app_process).
+
+    Return value of DAVAMain is used as process exit code if underlying operating system supports such functionality.
+
+    Minimalistic program that uses dava.engine:
+    \code
+    #include <Engine/Engine.h>
+    int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
+    {
+        using namespace DAVA;
+        Engine engine; // Create Engine object
+        engine.Init(eEngineRunMode::GUI_STANDALONE, Vector<String>(), nullptr); // Initialize engine
+        return engine.Run(); // Run game loop
+    }
+    \endcode
+*/
+extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // clang-format off
 
@@ -19,12 +42,12 @@ int main(int argc, char* argv[])
 
     Vector<String> cmdargs = Private::GetCommandArgs(argc, argv);
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN32__)
 
-#include <windows.h>
+#include <minwindef.h>
 
 // Win32
 // To use WinMain in static lib with unicode support set entry point to wWinMainCRTStartup:
@@ -36,11 +59,11 @@ int main(int argc, char* argv[])
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
-    using DAVA::Private::EngineBackend;
+    using Private::EngineBackend;
 
     Vector<String> cmdargs = Private::GetCommandArgs();
     std::unique_ptr<EngineBackend> engineBackend(new EngineBackend(cmdargs));
-    return GameMain(std::move(cmdargs));
+    return DAVAMain(std::move(cmdargs));
 }
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -74,17 +97,23 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 DAVA::Private::AndroidBridge* androidBridge = nullptr;
 
-jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 {
     JNIEnv* env = nullptr;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
     {
-        __android_log_print(ANDROID_LOG_ERROR, "DAVA", "JNI_OnLoad: failed to get environment");
+        ANDROID_LOG_FATAL("JNI_OnLoad: failed to get environment");
         return -1;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "DAVA", "JNI_OnLoad: androidBridge=%p", androidBridge);
+    if (androidBridge != nullptr)
+    {
+        ANDROID_LOG_FATAL("JNI_OnLoad: androidBridge is not null");
+        return -1;
+    }
+
     androidBridge = new DAVA::Private::AndroidBridge(vm);
+    androidBridge->InitializeJNI(env);
     return JNI_VERSION_1_6;
 }
 

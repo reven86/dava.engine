@@ -6,12 +6,10 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Engine/Android/JNIBridge.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
-#include "Functional/Function.h"
-
-#include <jni.h>
 #include <android/native_window_jni.h>
 
 namespace rhi
@@ -26,45 +24,54 @@ namespace Private
 class WindowBackend final
 {
 public:
-    WindowBackend(EngineBackend* e, Window* w);
+    WindowBackend(EngineBackend* engineBackend, Window* window);
     ~WindowBackend();
 
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
-
-    bool Create(float32 width, float32 height);
     void Resize(float32 width, float32 height);
-    void Close();
-    bool IsWindowReadyForRender() const;
-    void InitCustomRenderParams(rhi::InitParam& params);
+    void Close(bool appIsTerminating);
+    void SetTitle(const String& title);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
 
+    void* GetHandle() const;
+    WindowNativeService* GetNativeService() const;
+
+    bool IsWindowReadyForRender() const;
+    void InitCustomRenderParams(rhi::InitParam& params);
+
     void TriggerPlatformEvents();
 
-private:
-    void DoResizeWindow(float32 width, float32 height);
-    void DoCloseWindow();
+    jobject CreateNativeControl(const char8* controlClassName, void* backendPointer);
 
-    void EventHandler(const UIDispatcherEvent& e);
-
+    // These methods are public intentionally as they are accessed from
+    // extern "C" functions which are invoked by java
     void OnResume();
     void OnPause();
+    void SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance);
     void SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height);
     void SurfaceDestroyed();
+    void ProcessProperties();
     void OnTouch(int32 action, int32 touchId, float32 x, float32 y);
 
 private:
-    ANativeWindow* androidWindow = nullptr;
-    EngineBackend* engine = nullptr;
-    MainDispatcher* dispatcher = nullptr;
-    Window* window = nullptr;
+    void UIEventHandler(const UIDispatcherEvent& e);
+    void ReplaceAndroidNativeWindow(ANativeWindow* newAndroidWindow);
 
-    UIDispatcher platformDispatcher;
+    EngineBackend* engineBackend = nullptr;
+    Window* window = nullptr; // Window frontend reference
+    MainDispatcher* mainDispatcher = nullptr; // Dispatcher that dispatches events to DAVA main thread
+    UIDispatcher uiDispatcher; // Dispatcher that dispatches events to window UI thread
+
+    jobject surfaceView = nullptr;
+    ANativeWindow* androidWindow = nullptr;
     std::unique_ptr<WindowNativeService> nativeService;
+
+    std::unique_ptr<JNI::JavaClass> surfaceViewJavaClass;
+    Function<void(jobject)> triggerPlatformEvents;
+    Function<jobject(jobject, jstring, jlong)> createNativeControl;
 
     bool firstTimeSurfaceChanged = true;
 

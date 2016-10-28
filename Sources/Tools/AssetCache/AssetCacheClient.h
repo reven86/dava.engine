@@ -37,6 +37,7 @@ public:
     AssetCache::Error RemoveFromCacheSynchronously(const AssetCache::CacheItemKey& key);
     AssetCache::Error ClearCacheSynchronously();
 
+    uint64 GetTimeoutMs() const;
     bool IsConnected() const;
 
 private:
@@ -51,7 +52,7 @@ private:
     void OnReceivedFromCache(const AssetCache::CacheItemKey& key, const AssetCache::CachedItemValue& value) override;
     void OnRemovedFromCache(const AssetCache::CacheItemKey& key, bool removed) override;
     void OnCacheCleared(bool cleared) override;
-    void OnServerStatusReceived();
+    void OnServerStatusReceived() override;
     void OnIncorrectPacketReceived(AssetCache::IncorrectPacketType) override;
     void OnClientProxyStateChanged() override;
 
@@ -104,6 +105,11 @@ private:
 
     bool emulateNetworkLoop = false;
 };
+
+inline uint64 AssetCacheClient::GetTimeoutMs() const
+{
+    return timeoutms;
+}
 
 } //END of DAVA
 

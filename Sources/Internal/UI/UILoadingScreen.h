@@ -1,11 +1,13 @@
-#ifndef __DAVAENGINE_UI_LOADING_SCREEN_H__
-#define __DAVAENGINE_UI_LOADING_SCREEN_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "UI/UIScreen.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
+class Thread;
 class UILoadingScreen : public UIScreen
 {
 public:
@@ -25,8 +27,4 @@ protected:
 private:
     int32 nextScreenId = -1;
 };
-};
-
-
-
-#endif // __DAVAENGINE_UI_LOADING_SCREEN_H__
+}

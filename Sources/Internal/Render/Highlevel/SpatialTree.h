@@ -50,10 +50,10 @@ class QuadTree : public RenderHierarchy
 
     AABBox3 worldBox;
     int32 maxTreeDepth;
-    Frustum* currFrustum;
+    Frustum* currFrustum = nullptr;
 
-    Camera* currCamera;
-    uint32 currVisibilityCriteria;
+    Camera* currCamera = nullptr;
+    uint32 currVisibilityCriteria = 0;
 
     List<int32> dirtyZNodes;
     List<RenderObject*> dirtyObjects;

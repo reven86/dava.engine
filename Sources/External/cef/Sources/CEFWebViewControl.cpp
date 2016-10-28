@@ -54,14 +54,26 @@ private:
     Map<String, String> cookies;
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+CEFWebViewControl::CEFWebViewControl(Window* w, UIWebView& uiWebView)
+    : window(w)
+    , webView(uiWebView)
+{
+}
+#else
 CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
     : webView(uiWebView)
 {
 }
+#endif
 
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
+#if defined(__DAVAENGINE_COREV2__)
+    webPageRender = new CEFWebPageRender(window);
+#else
     webPageRender = new CEFWebPageRender;
+#endif
 
     CefWindowInfo windowInfo;
     windowInfo.windowless_rendering_enabled = 1;
@@ -134,8 +146,29 @@ Map<String, String> CEFWebViewControl::GetCookies(const String& url) const
 
 void CEFWebViewControl::SetRect(const Rect& rect)
 {
+    // WORKAROUND PART 1 BEGIN -->
+    // In off-screen rednering mode, when resizing webView on devices with
+    // screen scaling other than 1.0f it can be repaint with bad size (without taking into
+    // account that scale). Possible it is a CEF bug... or we don't understand how to
+    // use off-screen rendering right.
+    // But when we switch visibility off/on this cause CEF to invoke OnPaint with right sizes,
+    // so we can workaround this problem.
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(true);
+    }
+    // <--- WORKAROUND PART 1 END
+
     webPageRender->SetViewSize(rect.GetSize());
     cefBrowser->GetHost()->WasResized();
+
+    // WORKAROUND LAST PART 2 BEGIN -->
+    // See PART 1 description higher
+    if (webPageRender->IsVisible())
+    {
+        cefBrowser->GetHost()->WasHidden(false);
+    }
+    // <-- WORKAROUND PART 2 END
 }
 
 void CEFWebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
@@ -437,14 +470,10 @@ int32 GetCefKeyType(UIEvent* input)
 
 void CEFWebViewControl::Input(UIEvent* currentInput)
 {
-    VirtualCoordinatesSystem* vcs = VirtualCoordinatesSystem::Instance();
-
     switch (currentInput->device)
     {
     case DAVA::UIEvent::Device::MOUSE:
         webViewOffSet = webView.GetAbsolutePosition();
-        webViewOffSet.dx = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dx);
-        webViewOffSet.dy = vcs->ConvertVirtualToPhysicalX(webViewOffSet.dy);
         switch (currentInput->phase)
         {
         case DAVA::UIEvent::Phase::BEGAN:
@@ -478,8 +507,8 @@ void CEFWebViewControl::OnMouseClick(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int32 mouseType = CEFDetails::ConvertMouseTypeDavaToCef(input);
     CefBrowserHost::MouseButtonType type = static_cast<CefBrowserHost::MouseButtonType>(mouseType);
@@ -493,8 +522,8 @@ void CEFWebViewControl::OnMouseMove(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(input->physPoint.dx - webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(input->physPoint.dy - webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     bool mouseLeave = false;
     host->SendMouseMoveEvent(clickEvent, mouseLeave);
@@ -504,8 +533,8 @@ void CEFWebViewControl::OnMouseWheel(UIEvent* input)
 {
     CefRefPtr<CefBrowserHost> host = cefBrowser->GetHost();
     CefMouseEvent clickEvent;
-    clickEvent.x = static_cast<int>(webViewOffSet.dx);
-    clickEvent.y = static_cast<int>(webViewOffSet.dy);
+    clickEvent.x = static_cast<int>(input->point.dx - webViewOffSet.dx);
+    clickEvent.y = static_cast<int>(input->point.dy - webViewOffSet.dy);
     clickEvent.modifiers = ConvertDAVAModifiersToCef(CEFDetails::GetKeyModifier());
     int deltaX = static_cast<int>(input->wheelDelta.x * WHEEL_DELTA);
     int deltaY = static_cast<int>(input->wheelDelta.y * WHEEL_DELTA);

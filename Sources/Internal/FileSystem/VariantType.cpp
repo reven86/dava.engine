@@ -1814,7 +1814,7 @@ VariantType VariantType::LoadData(const void* src, const MetaInfo* meta)
         }
         else
         {
-            printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
+            printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), static_cast<const void*>(meta->GetIntrospection()));
             if (nullptr != meta->GetIntrospection())
             {
                 printf("Introspection: %s\n", meta->GetIntrospection()->Name().c_str());
@@ -2111,6 +2111,9 @@ VariantType Convert(T value, VariantType::eVariantType type)
 }
 VariantType VariantType::Convert(const VariantType& val, eVariantType type)
 {
+    if (val.type == type)
+        return val;
+
     switch (val.type)
     {
     case TYPE_INT8:

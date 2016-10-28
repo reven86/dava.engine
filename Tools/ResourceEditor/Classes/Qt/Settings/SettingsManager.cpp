@@ -96,6 +96,9 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
     CreateValue(Settings::Scene_Sound_SoundObjectSphereColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.1f)));
 
+    CreateValue(Settings::Scene_Grab_Size_Width, DAVA::VariantType(1280));
+    CreateValue(Settings::Scene_Grab_Size_Height, DAVA::VariantType(1024));
+
     CreateValue(Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType(true));
     CreateValue(Settings::General_Mouse_InvertWheel, DAVA::VariantType(false));
 
@@ -119,6 +122,9 @@ void SettingsManager::Init()
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
     CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(DAVA::String("")));
+
+    CreateValue(Settings::Internal_EnableSounds, DAVA::VariantType(true));
+    CreateValue(Settings::Internal_GizmoEnabled, DAVA::VariantType(true));
 
     const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
     DAVA::uint32 colors[nColors]; // Init from Qt::GlobalColor

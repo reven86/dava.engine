@@ -1,15 +1,14 @@
 #pragma once
-#include "Reflection/Private/ValueWrapperDefault.h"
-
-#if !defined(__DAVAENGINE_ANDROID__)
+#include "Functional/Function.h"
+#include "Reflection/Wrappers.h"
 
 namespace DAVA
 {
-template <typename GetT, typename SetT, typename C>
+template <typename C, typename GetT, typename SetT>
 class ValueWrapperClassFn : public ValueWrapper
 {
-    using Getter = GetT (C::*)();
-    using Setter = void (C::*)(SetT);
+    using Getter = Function<GetT(C*)>;
+    using Setter = Function<void(C*, SetT)>;
 
 public:
     ValueWrapperClassFn(Getter getter_, Setter setter_ = nullptr)
@@ -36,7 +35,7 @@ public:
         C* cls = object.GetPtr<C>();
 
         Any ret;
-        UnrefGetT v = (cls->*getter)();
+        UnrefGetT v = getter(cls);
         ret.Set(std::move(v));
         return ret;
     }
@@ -46,13 +45,12 @@ public:
         using UnrefSetT = typename std::remove_reference<SetT>::type;
 
         bool ret = false;
+        C* cls = object.GetPtr<C>();
 
         if (nullptr != setter)
         {
-            C* cls = object.GetPtr<C>();
-
             const SetT& v = value.Get<UnrefSetT>();
-            (cls->*setter)(v);
+            setter(cls, v);
 
             ret = true;
         }
@@ -81,17 +79,15 @@ private:
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::true_type /* is_pointer */, std::false_type /* is_reference */) const
     {
         C* cls = object.GetPtr<C>();
-        return ReflectedObject((cls->*getter)());
+        return ReflectedObject(getter(cls));
     }
 
     inline ReflectedObject GetValueObjectImpl(const ReflectedObject& object, std::false_type /* is_pointer */, std::true_type /* is_reference */) const
     {
         C* cls = object.GetPtr<C>();
-        GetT v = (cls->*getter)();
+        GetT v = getter(cls);
         return ReflectedObject(&v);
     }
 };
 
 } // namespace DAVA
-
-#endif

@@ -10,19 +10,20 @@
 
 extern "C"
 {
-void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
 {
     DAVA::TextFieldPlatformImpl::TextFieldShouldReturn(id);
 }
 
-jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
+JNIEXPORT jbyteArray JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env,
+                                                                                      jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 {
     DAVA::WideString string;
 
     jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
     jsize lengthOfArray = env->GetArrayLength(replacementString);
 
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, string);
 
     env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
@@ -32,22 +33,22 @@ jbyteArray Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env,
     jbyteArray r = env->NewByteArray(returnStr.length());
     if (r == NULL)
         return NULL;
-    env->SetByteArrayRegion(r, 0, returnStr.length(), (const jbyte*)returnStr.c_str());
+    env->SetByteArrayRegion(r, 0, returnStr.length(), reinterpret_cast<const jbyte*>(returnStr.c_str()));
     return r;
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jobject classthis, uint32_t id, jbyteArray newText, jbyteArray oldText)
 {
     DAVA::WideString newString, oldString;
 
     jbyte* bufferPtr = env->GetByteArrayElements(newText, NULL);
     jsize lengthOfArray = env->GetArrayLength(newText);
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, newString);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, newString);
     env->ReleaseByteArrayElements(newText, bufferPtr, 0);
 
     bufferPtr = env->GetByteArrayElements(oldText, NULL);
     lengthOfArray = env->GetArrayLength(oldText);
-    DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, oldString);
+    DAVA::UTF8Utils::EncodeToWideString(reinterpret_cast<uint8_t*>(bufferPtr), lengthOfArray, oldString);
     env->ReleaseByteArrayElements(oldText, bufferPtr, 0);
     if (newString != oldString)
     {
@@ -55,7 +56,7 @@ void Java_com_dava_framework_JNITextField_TextFieldOnTextChanged(JNIEnv* env, jo
     }
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jobject classthis, uint32_t id, int x, int y, int dx, int dy)
 {
     // Recalculate to virtual coordinates.
     DAVA::Vector2 keyboardOrigin(x, y);
@@ -67,18 +68,18 @@ void Java_com_dava_framework_JNITextField_TextFieldKeyboardShown(JNIEnv* env, jo
     DAVA::TextFieldPlatformImpl::TextFieldKeyboardShown(id, DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldKeyboardHidden(JNIEnv* env, jobject classthis, uint32_t id)
 {
     DAVA::TextFieldPlatformImpl::TextFieldKeyboardHidden(id);
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldFocusChanged(JNIEnv* env, jobject classthis, uint32_t id, bool hasFocus)
 {
     DAVA::TextFieldPlatformImpl::TextFieldFocusChanged(id, hasFocus);
 }
 
-void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
-                                                                 jobject classthis, uint32_t id, jintArray pixels, int width, int height)
+JNIEXPORT void JNICALL Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
+                                                                                   jobject classthis, uint32_t id, jintArray pixels, int width, int height)
 {
     static_assert(sizeof(jint) == sizeof(DAVA::int32), "o_O can't be");
 

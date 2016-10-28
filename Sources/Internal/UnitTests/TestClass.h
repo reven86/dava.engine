@@ -3,6 +3,8 @@
 
 #include "Base/BaseTypes.h"
 
+#include <chrono>
+
 namespace DAVA
 {
 namespace UnitTests
@@ -13,28 +15,25 @@ struct TestClassTypeKeeper
     using TestClassType = T;
 };
 
+struct TestCoverageInfo
+{
+    Vector<String> testFiles;
+    Map<String, String> targetFolders;
+};
+
 class TestClass
 {
-    struct TestInfo
-    {
-        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
-            : name(name_)
-            , testFunction(testFunction_)
-        {
-        }
-        String name;
-        void (*testFunction)(TestClass*);
-    };
-
 public:
     TestClass() = default;
     virtual ~TestClass() = default;
+
+    void InitTimeStampForTest(const String& testName);
 
     virtual void SetUp(const String& testName);
     virtual void TearDown(const String& testName);
     virtual void Update(float32 timeElapsed, const String& testName);
     virtual bool TestComplete(const String& testName) const;
-    virtual Vector<String> FilesCoveredByTests() const;
+    virtual TestCoverageInfo FilesCoveredByTests() const;
 
     const String& TestName(size_t index) const;
     size_t TestCount() const;
@@ -46,7 +45,23 @@ protected:
     String PrettifyTypeName(const String& name) const;
     String RemoveTestPostfix(const String& name) const;
 
-private:
+protected:
+    struct TestInfo
+    {
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = Clock::time_point;
+
+        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
+            : name(name_)
+            , testFunction(testFunction_)
+        {
+        }
+
+        TimePoint startTime;
+        String name;
+        void (*testFunction)(TestClass*);
+    };
+
     Vector<TestInfo> tests;
 };
 

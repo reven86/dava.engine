@@ -3,7 +3,7 @@
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
-#include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/FileDialogs/FileDialog.h"
 
 #include <QFileInfo>
 #include <QKeyEvent>

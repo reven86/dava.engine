@@ -8,7 +8,8 @@
 
 #import <AppKit/NSApplication.h>
 
-#include "Engine/Public/OsX/NativeServiceOsX.h"
+#include "Engine/Window.h"
+#include "Engine/OsX/NativeServiceOsX.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
@@ -17,8 +18,8 @@ namespace DAVA
 {
 namespace Private
 {
-PlatformCore::PlatformCore(EngineBackend* e)
-    : engineBackend(e)
+PlatformCore::PlatformCore(EngineBackend* engineBackend)
+    : engineBackend(engineBackend)
     , bridge(new CoreNativeBridge(this))
     , nativeService(new NativeService(this))
 {
@@ -28,11 +29,17 @@ PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
+    engineBackend->InitializePrimaryWindow();
 }
 
 void PlatformCore::Run()
 {
     bridge->Run();
+}
+
+void PlatformCore::PrepareToQuit()
+{
+    engineBackend->PostAppTerminate(true);
 }
 
 void PlatformCore::Quit()
@@ -45,15 +52,9 @@ int32 PlatformCore::OnFrame()
     return engineBackend->OnFrame();
 }
 
-WindowBackend* PlatformCore::CreateNativeWindow(Window* w, float32 width, float32 height)
+WindowBackend* PlatformCore::GetWindowBackend(Window* window)
 {
-    WindowBackend* wbackend = new WindowBackend(engineBackend, w);
-    if (!wbackend->Create(width, height))
-    {
-        delete wbackend;
-        wbackend = nullptr;
-    }
-    return wbackend;
+    return window->GetBackend();
 }
 
 } // namespace Private

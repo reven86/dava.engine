@@ -80,11 +80,18 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a
                                     "-llog"
                                     "-landroid"
                                     "-lGLESv2"
-                                    "-lstdc++" 
                                     "-latomic" 
-                                    )         
-
-
+                                    )
+                                    
+if( DEFINED ANDROID_NDK 
+	AND DEFINED ANDROID_STL_PREFIX 
+	AND DEFINED ANDROID_ABI 
+	AND ANDROID_STL STREQUAL c++_shared)
+# Add c++abi lib for c++_shared STL
+set( DAVA_STATIC_LIBRARIES_ANDROID ${DAVA_STATIC_LIBRARIES_ANDROID}
+                                   ${ANDROID_NDK}/sources/cxx-stl/${ANDROID_STL_PREFIX}/libs/${ANDROID_ABI}/libc++abi.a 
+                                   )
+endif()
 
 if( WIN ) 
 
@@ -205,6 +212,8 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/sqlite3.lib" )
 
     set( DAVA_STATIC_LIBRARIES_WIN64_DEBUG
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/FColladaVS2010.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/freetype.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/glew32.lib"
@@ -212,7 +221,9 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/icucommon.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/jpeg_d.lib"            
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libcurl_a_debug.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libdxtd.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libeay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libmongodb_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libogg_static.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/libpsd.lib"
@@ -225,6 +236,7 @@ if( WIN )
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/lua_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/pnglib_wind.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/PVRTexLib32.lib"
+                       "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/ssleay32_64.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/TextureConverter_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/theora_static_d.lib"
                        "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/unibreak.lib"
@@ -265,6 +277,8 @@ if( WIN )
                                       "${DAVA_TOOLS_BIN_DIR}/D3DCompiler_43.dll" 
                                       "${DAVA_TOOLS_BIN_DIR}/d3dx9_43.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/glew32.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/msvcr120.dll"
+                                      "${DAVA_TOOLS_BIN_DIR}/msvcp120.dll"
                                       "${DAVA_TOOLS_BIN_DIR}/TextureConverter.dll")
 
     set( DAVA_DYNAMIC_LIBRARIES_WIN64 ${DAVA_DYNAMIC_LIBRARIES_WIN32} )

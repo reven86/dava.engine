@@ -80,10 +80,10 @@ JniCrashReporter::JniCrashReporter(JNIEnv* env)
 
     env->ExceptionClear();
     jclass tmpClassID = env->FindClass("com/dava/framework/JNICrashReporter");
-    classID = (jclass)env->NewGlobalRef(tmpClassID);
+    classID = static_cast<jclass>(env->NewGlobalRef(tmpClassID));
 
     jclass tmpStringID = env->FindClass("java/lang/String");
-    stringID = (jclass)env->NewGlobalRef(tmpStringID);
+    stringID = static_cast<jclass>(env->NewGlobalRef(tmpStringID));
     mid = env->GetStaticMethodID(classID, "ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
 
     env->DeleteLocalRef(tmpClassID);
@@ -99,7 +99,7 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
     jintArray jFileLineArray = env->NewIntArray(chashSteps.size());
 
     int* fileLines = new int[chashSteps.size()];
-    for (uint i = 0; i < chashSteps.size(); ++i)
+    for (size_t i = 0; i < chashSteps.size(); ++i)
     {
         env->SetObjectArrayElement(jModuleArray, i, env->NewStringUTF(chashSteps[i].module));
         env->SetObjectArrayElement(jFunctionArray, i, env->NewStringUTF(chashSteps[i].function));

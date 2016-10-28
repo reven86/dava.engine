@@ -9,7 +9,7 @@
 #include "Scene3D/Scene.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
-#include "Debug/Stats.h"
+#include "Debug/CPUProfiler.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
@@ -36,7 +36,7 @@ WindSystem::WindSystem(Scene* scene)
     for (int32 i = 0; i < WIND_TABLE_SIZE; i++)
     {
         float32 t = WIND_PERIOD * i / static_cast<float32>(WIND_TABLE_SIZE);
-        windValuesTable[i] = (2.f + sinf(t) * 0.7f + cosf(t * 10) * 0.3f);
+        windValuesTable[i] = (2.f + std::sin(t) * 0.7f + std::cos(t * 10) * 0.3f);
     }
 }
 
@@ -70,7 +70,7 @@ void WindSystem::RemoveEntity(Entity* entity)
 
 void WindSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("WindSystem::Process")
+    DAVA_CPU_PROFILER_SCOPE("WindSystem::Process")
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
@@ -104,8 +104,8 @@ float32 WindSystem::GetWindValueFromTable(const Vector3& inPosition, const WindI
     Vector3 projPt = dir * (inPosition.DotProduct(dir));
     float32 t = projPt.Length() + info->timeValue;
 
-    float32 tMod = fmodf(t, WIND_PERIOD);
-    int32 i = static_cast<int32>(floorf(tMod / WIND_PERIOD * WIND_TABLE_SIZE));
+    float32 tMod = std::fmod(t, WIND_PERIOD);
+    int32 i = static_cast<int32>(std::floor(tMod / WIND_PERIOD * WIND_TABLE_SIZE));
 
     DVASSERT(i >= 0 && i < WIND_TABLE_SIZE);
     return windValuesTable[i];

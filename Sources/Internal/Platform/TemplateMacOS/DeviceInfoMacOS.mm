@@ -130,13 +130,13 @@ WideString DeviceInfoPrivate::GetName()
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return String();
+    return "";
 }
 
 // Not impletemted yet
@@ -155,7 +155,7 @@ int32 DeviceInfoPrivate::GetZBufferSize()
     return 24;
 }
 
-eGPUFamily DeviceInfoPrivate::GetGPUFamily()
+eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     return GPU_DX11;
 }
@@ -222,6 +222,11 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 bool DeviceInfoPrivate::IsTouchPresented()
 {
     return false;
+}
+
+String DeviceInfoPrivate::GetCarrierName()
+{
+    return "Not supported";
 }
 }
 

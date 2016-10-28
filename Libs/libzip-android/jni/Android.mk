@@ -16,7 +16,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := libzip_android
+LOCAL_MODULE    := libzip
 LOCAL_SRC_FILES :=\
 	zip_add.c \
 	zip_add_dir.c \

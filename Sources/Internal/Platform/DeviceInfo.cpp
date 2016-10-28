@@ -100,6 +100,16 @@ eGPUFamily DeviceInfo::GetGPUFamily()
     return GetPrivateImpl()->GetGPUFamily();
 }
 
+void DeviceInfo::SetOverridenGPU(eGPUFamily newGPU)
+{
+    GetPrivateImpl()->SetOverridenGPU(newGPU);
+}
+
+void DeviceInfo::ResetOverridenGPU()
+{
+    GetPrivateImpl()->ResetOverridenGPU();
+}
+
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 {
     return GetPrivateImpl()->GetNetworkInfo();
@@ -132,6 +142,11 @@ bool DeviceInfo::IsTouchPresented()
     return GetPrivateImpl()->IsTouchPresented();
 }
 
+String DeviceInfo::GetCarrierName()
+{
+    return GetPrivateImpl()->GetCarrierName();
+}
+
 bool DeviceInfo::IsHIDConnected(eHIDType type)
 {
     return GetPrivateImpl()->IsHIDConnected(type);
@@ -141,5 +156,7 @@ DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::
 {
     return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
+
+Signal<const String&> DeviceInfo::carrierNameChanged;
 
 } // namespace DAVA
