@@ -202,14 +202,14 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetMode(Window::eMode newMode)
+void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
 {
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetModeEvent(static_cast<int32>(newMode)));
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
 }
 
-Window::eMode WindowBackend::GetInitialMode() const
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
 {
-    return Window::eMode::WINDOWED;
+    return Window::eWindowingMode::WINDOWED;
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -247,8 +247,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
-    case UIDispatcherEvent::SET_MODE:
-        DoSetMode(static_cast<Window::eMode>(e.setModeEvent.mode));
+    case UIDispatcherEvent::SET_WINDOWING_MODE:
+        DoSetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
@@ -329,8 +329,8 @@ void WindowBackend::OnVisibilityChanged(bool isVisible)
 
 void WindowBackend::OnWindowModeChanged(bool isFullscreen)
 {
-    Window::eMode mode = isFullscreen ? Window::eMode::FULLSCREEN : Window::eMode::WINDOWED;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowModeChangedEvent(window, static_cast<int32>(mode)));
+    Window::eWindowingMode mode = isFullscreen ? Window::eWindowingMode::FULLSCREEN : Window::eWindowingMode::WINDOWED;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, static_cast<int32>(mode)));
 }
 
 void WindowBackend::OnMousePressed(QMouseEvent* qtEvent)
@@ -472,7 +472,7 @@ void WindowBackend::DoSetTitle(const char8* title)
     renderWidget->setWindowTitle(title);
 }
 
-void WindowBackend::DoSetMode(Window::eMode newMode)
+void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
 {
     QQuickWindow* quickWindow = renderWidget->quickWindow();
     if (quickWindow == nullptr)
@@ -480,7 +480,7 @@ void WindowBackend::DoSetMode(Window::eMode newMode)
         return;
     }
 
-    if (newMode == Window::eMode::FULLSCREEN)
+    if (newMode == Window::eWindowingMode::FULLSCREEN)
     {
         quickWindow->showFullScreen();
     }

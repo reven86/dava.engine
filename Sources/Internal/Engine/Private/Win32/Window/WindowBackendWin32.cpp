@@ -92,14 +92,14 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetMode(Window::eMode newMode)
+void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
 {
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetModeEvent(static_cast<int32>(newMode)));
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
 }
 
-Window::eMode WindowBackend::GetInitialMode() const
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
 {
-    return Window::eMode::WINDOWED;
+    return Window::eWindowingMode::WINDOWED;
 }
 
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
@@ -146,14 +146,14 @@ void WindowBackend::DoSetTitle(const char8* title)
     ::SetWindowTextW(hwnd, wideTitle.c_str());
 }
 
-void WindowBackend::DoSetMode(Window::eMode newMode)
+void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
 {
     int32 mode = static_cast<int32>(newMode);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowModeChangedEvent(window, mode));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(window, mode));
 
     switch (newMode)
     {
-    case Window::eMode::FULLSCREEN:
+    case Window::eWindowingMode::FULLSCREEN:
     {
         ::GetWindowPlacement(hwnd, &windowPlacement);
 
@@ -181,7 +181,7 @@ void WindowBackend::DoSetMode(Window::eMode newMode)
                        SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
         break;
     }
-    case Window::eMode::WINDOWED:
+    case Window::eWindowingMode::WINDOWED:
     {
         ::SetWindowLong(hwnd, GWL_STYLE, windowedStyle);
         ::SetWindowPlacement(hwnd, &windowPlacement);
@@ -232,8 +232,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         DoSetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
-    case UIDispatcherEvent::SET_MODE:
-        DoSetMode(static_cast<Window::eMode>(e.setModeEvent.mode));
+    case UIDispatcherEvent::SET_WINDOWING_MODE:
+        DoSetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

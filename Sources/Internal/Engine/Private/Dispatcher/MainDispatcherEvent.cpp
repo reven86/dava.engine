@@ -69,11 +69,11 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Wind
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowModeChangedEvent(Window* window, int mode)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowWindowingModeChangedEvent(Window* window, int mode)
 {
-    MainDispatcherEvent e(WINDOW_MODE_CHANGED, window);
+    MainDispatcherEvent e(WINDOW_WINDOWING_MODE_CHANGED, window);
     e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
-    e.windowModeEvent.mode = mode;
+    e.windowingEvent.mode = mode;
     return e;
 }
 

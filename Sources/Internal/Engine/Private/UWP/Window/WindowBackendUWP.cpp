@@ -42,26 +42,26 @@ void WindowBackend::SetTitle(const String& title)
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetTitleEvent(title));
 }
 
-void WindowBackend::SetMode(Window::eMode newMode)
+void WindowBackend::SetWindowingMode(Window::eWindowingMode newMode)
 {
-    // Window mode cannot be changed on phones
+    // Windowing mode cannot be changed on phones
     if (IsWindowsPhone())
     {
         return;
     }
 
-    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetModeEvent(static_cast<int32>(newMode)));
+    uiDispatcher.PostEvent(UIDispatcherEvent::CreateSetWindowingModeEvent(static_cast<int32>(newMode)));
 }
 
-Window::eMode WindowBackend::GetInitialMode() const
+Window::eWindowingMode WindowBackend::GetInitialWindowingMode() const
 {
     if (IsWindowsPhone())
     {
-        return Window::eMode::FULLSCREEN;
+        return Window::eWindowingMode::FULLSCREEN;
     }
     else
     {
-        return Window::eMode::WINDOWED;
+        return Window::eWindowingMode::WINDOWED;
     }
 }
 
@@ -116,8 +116,8 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
         bridge->SetTitle(e.setTitleEvent.title);
         delete[] e.setTitleEvent.title;
         break;
-    case UIDispatcherEvent::SET_MODE:
-        bridge->SetMode(static_cast<Window::eMode>(e.setModeEvent.mode));
+    case UIDispatcherEvent::SET_WINDOWING_MODE:
+        bridge->SetWindowingMode(static_cast<Window::eWindowingMode>(e.setWindowingModeEvent.mode));
         break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();

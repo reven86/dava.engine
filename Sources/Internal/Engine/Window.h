@@ -32,7 +32,7 @@ private:
     Window& operator=(const Window&) = delete;
 
 public:
-    enum class eMode
+    enum class eWindowingMode
     {
         FULLSCREEN = 0, //<! True full screen mode
         WINDOWED, //<! Windowed mode
@@ -66,8 +66,8 @@ public:
     void Close();
     void SetTitle(const String& title);
 
-    eMode GetMode() const;
-    void SetMode(eMode newMode);
+    eWindowingMode GetWindowingMode() const;
+    void SetWindowingMode(eWindowingMode newMode);
 
     Engine* GetEngine() const;
     void* GetNativeHandle() const;
@@ -106,7 +106,7 @@ private:
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
-    void HandleModeChanged(const Private::MainDispatcherEvent& e);
+    void HandleWindowingModeChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
     void HandleMouseWheel(const Private::MainDispatcherEvent& e);
     void HandleMouseMove(const Private::MainDispatcherEvent& e);
@@ -137,7 +137,7 @@ private:
     float32 scaleY = 1.0f;
     float32 userScale = 1.0f;
     bool sizeEventHandled = false; // Flag indicating that compressed size events are handled on current frame
-    eMode Mode = eMode::WINDOWED;
+    eWindowingMode windowingMode = eWindowingMode::WINDOWED;
 
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
 
@@ -221,9 +221,9 @@ inline void Window::Resize(Vector2 size)
     Resize(size.dx, size.dy);
 }
 
-inline Window::eMode Window::GetMode() const
+inline Window::eWindowingMode Window::GetWindowingMode() const
 {
-    return Mode;
+    return windowingMode;
 }
 
 inline Private::WindowBackend* Window::GetBackend() const
