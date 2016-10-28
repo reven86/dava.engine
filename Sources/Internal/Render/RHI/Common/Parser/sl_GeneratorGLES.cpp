@@ -98,7 +98,6 @@ static bool GetCanImplicitCast(const HLSLType& srcType, const HLSLType& dstType)
 
 static const char* GetBuiltInSemantic(const char* semantic)
 {
-    //    int numBuiltInSemantics = sizeof(_builtInSemantics) / (2 * sizeof(const char*));
     int numBuiltInSemantics = (sizeof(_builtInSemantics) / sizeof(_builtInSemantics[0])) / 2;
     for (int i = 0; i < numBuiltInSemantics; ++i)
     {
@@ -569,7 +568,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
         if (memberAccess->object->nodeType == HLSLNodeType_IdentifierExpression)
         {
-            HLSLIdentifierExpression* identifier = (HLSLIdentifierExpression*)memberAccess->object;
+            HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(memberAccess->object);
             StructUsage usage = struct_Generic;
 
             if (identifier->expressionType.baseType == HLSLBaseType_UserDefined)
@@ -976,7 +975,7 @@ void GLESGenerator::OutputStatements(int indent, HLSLStatement* statement, const
 
                 if (returnStatement->expression->nodeType == HLSLNodeType_IdentifierExpression)
                 {
-                    HLSLIdentifierExpression* id = (HLSLIdentifierExpression*)(returnStatement->expression);
+                    HLSLIdentifierExpression* id = static_cast<HLSLIdentifierExpression*>(returnStatement->expression);
 
                     if (strcmp(id->name, "output") == 0)
                         do_out_expr = false;

@@ -714,7 +714,7 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                 {
                     if (s->nodeType == HLSLNodeType_Declaration)
                     {
-                        HLSLDeclaration* decl = (HLSLDeclaration*)s;
+                        HLSLDeclaration* decl = static_cast<HLSLDeclaration*>(s);
 
                         if (decl->type.flags & HLSLTypeFlag_Property)
                         {

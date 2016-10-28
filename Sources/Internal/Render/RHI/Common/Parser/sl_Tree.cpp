@@ -74,7 +74,7 @@ HLSLFunction* HLSLTree::FindFunction(const char* name, HLSLStatement** parent)
     {
         if (statement->nodeType == HLSLNodeType_Function)
         {
-            HLSLFunction* function = (HLSLFunction*)statement;
+            HLSLFunction* function = static_cast<HLSLFunction*>(statement);
             if (String_Equal(name, function->name))
             {
                 if (parent)
@@ -128,7 +128,7 @@ HLSLDeclaration* HLSLTree::FindGlobalDeclaration(const char* name) const
     {
         if (statement->nodeType == HLSLNodeType_Declaration)
         {
-            HLSLDeclaration* declaration = (HLSLDeclaration*)statement;
+            HLSLDeclaration* declaration = static_cast<HLSLDeclaration*>(statement);
             if (String_Equal(name, declaration->name))
             {
                 return declaration;
@@ -136,7 +136,7 @@ HLSLDeclaration* HLSLTree::FindGlobalDeclaration(const char* name) const
         }
         else if (statement->nodeType == HLSLNodeType_Buffer)
         {
-            HLSLBuffer* buffer = (HLSLBuffer*)statement;
+            HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
 
             HLSLDeclaration* field = buffer->field;
             while (field != NULL)
@@ -146,7 +146,7 @@ HLSLDeclaration* HLSLTree::FindGlobalDeclaration(const char* name) const
                 {
                     return field;
                 }
-                field = (HLSLDeclaration*)field->nextStatement;
+                field = static_cast<HLSLDeclaration*>(field->nextStatement);
             }
         }
 
@@ -163,7 +163,7 @@ HLSLStruct* HLSLTree::FindGlobalStruct(const char* name) const
     {
         if (statement->nodeType == HLSLNodeType_Struct)
         {
-            HLSLStruct* declaration = (HLSLStruct*)statement;
+            HLSLStruct* declaration = static_cast<HLSLStruct*>(statement);
             if (String_Equal(name, declaration->name))
             {
                 return declaration;
@@ -183,7 +183,7 @@ HLSLTechnique* HLSLTree::FindTechnique(const char* name)
     {
         if (statement->nodeType == HLSLNodeType_Technique)
         {
-            HLSLTechnique* technique = (HLSLTechnique*)statement;
+            HLSLTechnique* technique = static_cast<HLSLTechnique*>(statement);
             if (String_Equal(name, technique->name))
             {
                 return technique;
@@ -208,7 +208,7 @@ HLSLPipeline* HLSLTree::FindNextPipeline(HLSLPipeline* current)
     {
         if (statement->nodeType == HLSLNodeType_Pipeline)
         {
-            return (HLSLPipeline*)statement;
+            return static_cast<HLSLPipeline*>(statement);
         }
 
         statement = statement->nextStatement;
@@ -224,7 +224,7 @@ HLSLPipeline* HLSLTree::FindPipeline(const char* name)
     {
         if (statement->nodeType == HLSLNodeType_Pipeline)
         {
-            HLSLPipeline* pipeline = (HLSLPipeline*)statement;
+            HLSLPipeline* pipeline = static_cast<HLSLPipeline*>(statement);
             if (String_Equal(name, pipeline->name))
             {
                 return pipeline;
@@ -244,7 +244,7 @@ HLSLBuffer* HLSLTree::FindBuffer(const char* name) const
     {
         if (statement->nodeType == HLSLNodeType_Buffer)
         {
-            HLSLBuffer* buffer = (HLSLBuffer*)statement;
+            HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
             if (String_Equal(name, buffer->name))
             {
                 return buffer;
@@ -280,7 +280,7 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
 
     if (expression->nodeType == HLSLNodeType_BinaryExpression)
     {
-        HLSLBinaryExpression* binaryExpression = (HLSLBinaryExpression*)expression;
+        HLSLBinaryExpression* binaryExpression = static_cast<HLSLBinaryExpression*>(expression);
 
         int value1, value2;
         if (!GetExpressionValue(binaryExpression->expression1, value1) ||
@@ -342,7 +342,7 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
     }
     else if (expression->nodeType == HLSLNodeType_UnaryExpression)
     {
-        HLSLUnaryExpression* unaryExpression = (HLSLUnaryExpression*)expression;
+        HLSLUnaryExpression* unaryExpression = static_cast<HLSLUnaryExpression*>(expression);
 
         if (!GetExpressionValue(unaryExpression->expression, value))
         {
@@ -369,7 +369,7 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
     }
     else if (expression->nodeType == HLSLNodeType_IdentifierExpression)
     {
-        HLSLIdentifierExpression* identifier = (HLSLIdentifierExpression*)expression;
+        HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(expression);
 
         HLSLDeclaration* declaration = FindGlobalDeclaration(identifier->name);
         if (declaration == NULL)
@@ -385,7 +385,7 @@ bool HLSLTree::GetExpressionValue(HLSLExpression* expression, int& value)
     }
     else if (expression->nodeType == HLSLNodeType_LiteralExpression)
     {
-        HLSLLiteralExpression* literal = (HLSLLiteralExpression*)expression;
+        HLSLLiteralExpression* literal = static_cast<HLSLLiteralExpression*>(expression);
         value = literal->iValue;
         return true;
     }
@@ -506,23 +506,23 @@ void HLSLTreeVisitor::VisitTopLevelStatement(HLSLStatement* node)
 {
     if (node->nodeType == HLSLNodeType_Declaration)
     {
-        VisitDeclaration((HLSLDeclaration*)node);
+        VisitDeclaration(static_cast<HLSLDeclaration*>(node));
     }
     else if (node->nodeType == HLSLNodeType_Struct)
     {
-        VisitStruct((HLSLStruct*)node);
+        VisitStruct(static_cast<HLSLStruct*>(node));
     }
     else if (node->nodeType == HLSLNodeType_Buffer)
     {
-        VisitBuffer((HLSLBuffer*)node);
+        VisitBuffer(static_cast<HLSLBuffer*>(node));
     }
     else if (node->nodeType == HLSLNodeType_Function)
     {
-        VisitFunction((HLSLFunction*)node);
+        VisitFunction(static_cast<HLSLFunction*>(node));
     }
     else if (node->nodeType == HLSLNodeType_Technique)
     {
-        VisitTechnique((HLSLTechnique*)node);
+        VisitTechnique(static_cast<HLSLTechnique*>(node));
     }
     else
     {
@@ -544,39 +544,39 @@ void HLSLTreeVisitor::VisitStatement(HLSLStatement* node)
     // Function statements
     if (node->nodeType == HLSLNodeType_Declaration)
     {
-        VisitDeclaration((HLSLDeclaration*)node);
+        VisitDeclaration(static_cast<HLSLDeclaration*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ExpressionStatement)
     {
-        VisitExpressionStatement((HLSLExpressionStatement*)node);
+        VisitExpressionStatement(static_cast<HLSLExpressionStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ReturnStatement)
     {
-        VisitReturnStatement((HLSLReturnStatement*)node);
+        VisitReturnStatement(static_cast<HLSLReturnStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_DiscardStatement)
     {
-        VisitDiscardStatement((HLSLDiscardStatement*)node);
+        VisitDiscardStatement(static_cast<HLSLDiscardStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_BreakStatement)
     {
-        VisitBreakStatement((HLSLBreakStatement*)node);
+        VisitBreakStatement(static_cast<HLSLBreakStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ContinueStatement)
     {
-        VisitContinueStatement((HLSLContinueStatement*)node);
+        VisitContinueStatement(static_cast<HLSLContinueStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_IfStatement)
     {
-        VisitIfStatement((HLSLIfStatement*)node);
+        VisitIfStatement(static_cast<HLSLIfStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ForStatement)
     {
-        VisitForStatement((HLSLForStatement*)node);
+        VisitForStatement(static_cast<HLSLForStatement*>(node));
     }
     else if (node->nodeType == HLSLNodeType_BlockStatement)
     {
-        VisitBlockStatement((HLSLBlockStatement*)node);
+        VisitBlockStatement(static_cast<HLSLBlockStatement*>(node));
     }
     else
     {
@@ -624,7 +624,7 @@ void HLSLTreeVisitor::VisitBuffer(HLSLBuffer* node)
         DVASSERT(field->nodeType == HLSLNodeType_Declaration);
         VisitDeclaration(field);
         DVASSERT(field->nextDeclaration == NULL);
-        field = (HLSLDeclaration*)field->nextStatement;
+        field = static_cast<HLSLDeclaration*>(field->nextStatement);
     }
 }
 
@@ -667,43 +667,43 @@ void HLSLTreeVisitor::VisitExpression(HLSLExpression* node)
 
     if (node->nodeType == HLSLNodeType_UnaryExpression)
     {
-        VisitUnaryExpression((HLSLUnaryExpression*)node);
+        VisitUnaryExpression(static_cast<HLSLUnaryExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_BinaryExpression)
     {
-        VisitBinaryExpression((HLSLBinaryExpression*)node);
+        VisitBinaryExpression(static_cast<HLSLBinaryExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ConditionalExpression)
     {
-        VisitConditionalExpression((HLSLConditionalExpression*)node);
+        VisitConditionalExpression(static_cast<HLSLConditionalExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_CastingExpression)
     {
-        VisitCastingExpression((HLSLCastingExpression*)node);
+        VisitCastingExpression(static_cast<HLSLCastingExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_LiteralExpression)
     {
-        VisitLiteralExpression((HLSLLiteralExpression*)node);
+        VisitLiteralExpression(static_cast<HLSLLiteralExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_IdentifierExpression)
     {
-        VisitIdentifierExpression((HLSLIdentifierExpression*)node);
+        VisitIdentifierExpression(static_cast<HLSLIdentifierExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ConstructorExpression)
     {
-        VisitConstructorExpression((HLSLConstructorExpression*)node);
+        VisitConstructorExpression(static_cast<HLSLConstructorExpression*>(node));
     }
     else if (node->nodeType == HLSLNodeType_MemberAccess)
     {
-        VisitMemberAccess((HLSLMemberAccess*)node);
+        VisitMemberAccess(static_cast<HLSLMemberAccess*>(node));
     }
     else if (node->nodeType == HLSLNodeType_ArrayAccess)
     {
-        VisitArrayAccess((HLSLArrayAccess*)node);
+        VisitArrayAccess(static_cast<HLSLArrayAccess*>(node));
     }
     else if (node->nodeType == HLSLNodeType_FunctionCall)
     {
-        VisitFunctionCall((HLSLFunctionCall*)node);
+        VisitFunctionCall(static_cast<HLSLFunctionCall*>(node));
     }
     else
     {
@@ -861,7 +861,7 @@ void HLSLTreeVisitor::VisitFunctions(HLSLRoot* root)
     {
         if (statement->nodeType == HLSLNodeType_Function)
         {
-            VisitFunction((HLSLFunction*)statement);
+            VisitFunction(static_cast<HLSLFunction*>(statement));
         }
 
         statement = statement->nextStatement;
@@ -875,7 +875,7 @@ void HLSLTreeVisitor::VisitParameters(HLSLRoot* root)
     {
         if (statement->nodeType == HLSLNodeType_Declaration)
         {
-            VisitDeclaration((HLSLDeclaration*)statement);
+            VisitDeclaration(static_cast<HLSLDeclaration*>(statement));
         }
 
         statement = statement->nextStatement;
@@ -891,7 +891,7 @@ public:
 
         if (statement->nodeType == HLSLNodeType_Buffer)
         {
-            VisitBuffer((HLSLBuffer*)statement);
+            VisitBuffer(static_cast<HLSLBuffer*>(statement));
         }
     }
 
@@ -988,7 +988,7 @@ void PruneTree(HLSLTree* tree, const char* entryName0, const char* entryName1 /*
     {
         if (statement->nodeType == HLSLNodeType_Buffer)
         {
-            HLSLBuffer* buffer = (HLSLBuffer*)statement;
+            HLSLBuffer* buffer = static_cast<HLSLBuffer*>(statement);
 
             HLSLDeclaration* field = buffer->field;
             while (field != NULL)
@@ -999,7 +999,7 @@ void PruneTree(HLSLTree* tree, const char* entryName0, const char* entryName1 /*
                     buffer->hidden = false;
                     break;
                 }
-                field = (HLSLDeclaration*)field->nextStatement;
+                field = static_cast<HLSLDeclaration*>(field->nextStatement);
             }
         }
 
@@ -1042,7 +1042,7 @@ void SortTree(HLSLTree* tree)
         }
         else if (statement->nodeType == HLSLNodeType_Declaration || statement->nodeType == HLSLNodeType_Buffer)
         {
-            if (statement->nodeType == HLSLNodeType_Declaration && (((HLSLDeclaration*)statement)->type.flags & HLSLTypeFlag_Const))
+            if (statement->nodeType == HLSLNodeType_Declaration && ((static_cast<HLSLDeclaration*>(statement))->type.flags & HLSLTypeFlag_Const))
             {
                 if (constDeclarations == NULL)
                     constDeclarations = statement;
@@ -1177,7 +1177,7 @@ void GroupParameters(HLSLTree* tree)
         }
         else if (statement->nodeType == HLSLNodeType_Declaration)
         {
-            HLSLDeclaration* declaration = (HLSLDeclaration*)statement;
+            HLSLDeclaration* declaration = static_cast<HLSLDeclaration*>(statement);
 
             // We insert buffers after the last const declaration.
             if ((declaration->type.flags & HLSLTypeFlag_Const) != 0)
@@ -1325,7 +1325,7 @@ TreeDump::TreeDump()
 
 void TreeDump::VisitDeclaration(HLSLDeclaration* node)
 {
-    HLSLDeclaration* decl = (HLSLDeclaration*)node;
+    HLSLDeclaration* decl = static_cast<HLSLDeclaration*>(node);
     const char* dtype = "uniform";
 
     if (decl->type.baseType == HLSLBaseType_Sampler || decl->type.baseType == HLSLBaseType_Sampler2D || decl->type.baseType == HLSLBaseType_SamplerCube)
@@ -1340,11 +1340,11 @@ void TreeDump::VisitDeclaration(HLSLDeclaration* node)
     {
         if (decl->assignment->nodeType == HLSLNodeType_ArrayAccess)
         {
-            HLSLArrayAccess* aa = (HLSLArrayAccess*)(decl->assignment);
+            HLSLArrayAccess* aa = static_cast<HLSLArrayAccess*>(decl->assignment);
 
             if (aa->array->nodeType == HLSLNodeType_IdentifierExpression)
             {
-                HLSLIdentifierExpression* ie = (HLSLIdentifierExpression*)(aa->array);
+                HLSLIdentifierExpression* ie = static_cast<HLSLIdentifierExpression*>(aa->array);
 
                 Logger::Info("    [array-access]  \"%s\"", ie->name);
             }
@@ -1353,13 +1353,13 @@ void TreeDump::VisitDeclaration(HLSLDeclaration* node)
         }
         else if (decl->assignment->nodeType == HLSLNodeType_MemberAccess)
         {
-            HLSLMemberAccess* ma = (HLSLMemberAccess*)(decl->assignment);
+            HLSLMemberAccess* ma = static_cast<HLSLMemberAccess*>(decl->assignment);
 
             Logger::Info("    [member-access]  \"%s\"", ma->field);
         }
         else if (decl->assignment->nodeType == HLSLNodeType_ConstructorExpression)
         {
-            HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)(decl->assignment);
+            HLSLConstructorExpression* ctor = static_cast<HLSLConstructorExpression*>(decl->assignment);
             const char* tname = "";
 
             Logger::Info("    [ctor]  \"%s\"", tname);
@@ -1378,7 +1378,7 @@ void TreeDump::VisitStruct(HLSLStruct* node)
 
 void TreeDump::VisitStructField(HLSLStructField* node)
 {
-    HLSLStructField* field = (HLSLStructField*)node;
+    HLSLStructField* field = static_cast<HLSLStructField*>(node);
 
     Logger::Info("%s[field]  \"%s\" : %s  (%s)", _IndentString(indent), field->name, _TypeName(field->type), (field->semantic) ? field->semantic : "<no-semantics>");
 
@@ -1410,7 +1410,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
     {
     case HLSLNodeType_Declaration:
     {
-        HLSLDeclaration* decl = (HLSLDeclaration*)s;
+        HLSLDeclaration* decl = static_cast<HLSLDeclaration*>(s);
         const char* dtype = "uniform";
 
         if (decl->type.baseType == HLSLBaseType_Sampler || decl->type.baseType == HLSLBaseType_Sampler2D || decl->type.baseType == HLSLBaseType_SamplerCube)
@@ -1436,7 +1436,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
 
     case HLSLNodeType_ExpressionStatement:
     {
-        HLSLExpressionStatement* st = (HLSLExpressionStatement*)s;
+        HLSLExpressionStatement* st = static_cast<HLSLExpressionStatement*>(s);
 
         Logger::Info("%s[expr.statement]", _IndentString(indent));
         _DumpExpression(st->expression, indent + 1);
@@ -1445,7 +1445,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
 
     case HLSLNodeType_ReturnStatement:
     {
-        HLSLReturnStatement* ret = (HLSLReturnStatement*)s;
+        HLSLReturnStatement* ret = static_cast<HLSLReturnStatement*>(s);
 
         Logger::Info("%s[return]", _IndentString(indent));
 
@@ -1458,7 +1458,7 @@ void TreeDump::_DumpStatement(HLSLStatement* s, int indent)
 
     case HLSLNodeType_BlockStatement:
     {
-        HLSLBlockStatement* block = (HLSLBlockStatement*)s;
+        HLSLBlockStatement* block = static_cast<HLSLBlockStatement*>(s);
 
         Logger::Info("%s[block]", _IndentString(indent));
         for (HLSLStatement* b = block->statement; b; b = b->nextStatement)
@@ -1489,7 +1489,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
     {
     case HLSLNodeType_ConstructorExpression:
     {
-        HLSLConstructorExpression* ctor = (HLSLConstructorExpression*)expr;
+        HLSLConstructorExpression* ctor = static_cast<HLSLConstructorExpression*>(expr);
 
         Logger::Info("%s[ctor]", _IndentString(indent));
         _DumpExpression(ctor->argument, indent + 1);
@@ -1498,7 +1498,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
 
     case HLSLNodeType_LiteralExpression:
     {
-        HLSLLiteralExpression* li = (HLSLLiteralExpression*)expr;
+        HLSLLiteralExpression* li = static_cast<HLSLLiteralExpression*>(expr);
 
         switch (li->type)
         {
@@ -1520,7 +1520,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
 
     case HLSLNodeType_BinaryExpression:
     {
-        HLSLBinaryExpression* bin = (HLSLBinaryExpression*)expr;
+        HLSLBinaryExpression* bin = static_cast<HLSLBinaryExpression*>(expr);
         const char* op = "";
 
         switch (bin->binaryOp)
@@ -1597,7 +1597,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
 
     case HLSLNodeType_IdentifierExpression:
     {
-        HLSLIdentifierExpression* var = (HLSLIdentifierExpression*)(expr);
+        HLSLIdentifierExpression* var = static_cast<HLSLIdentifierExpression*>(expr);
 
         Logger::Info("%s[identifier] \"%s\"", _IndentString(indent), var->name);
     }
@@ -1605,7 +1605,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
 
     case HLSLNodeType_MemberAccess:
     {
-        HLSLMemberAccess* member = (HLSLMemberAccess*)(expr);
+        HLSLMemberAccess* member = static_cast<HLSLMemberAccess*>(expr);
 
         Logger::Info("%s[member.access] \"%s\"", _IndentString(indent), member->field);
         _DumpExpression(member->object, indent + 1, false);
@@ -1614,7 +1614,7 @@ void TreeDump::_DumpExpression(HLSLExpression* expr, int indent, bool dump_subex
 
     case HLSLNodeType_FunctionCall:
     {
-        HLSLFunctionCall* call = (HLSLFunctionCall*)(expr);
+        HLSLFunctionCall* call = static_cast<HLSLFunctionCall*>(expr);
 
         Logger::Info("%s[call] \"%s\"", _IndentString(indent), call->function->name);
         int a = 0;

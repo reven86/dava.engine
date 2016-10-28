@@ -688,7 +688,7 @@ void HLSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                         writer.Write(";");
                         writer.EndLine();
                     }
-                    field = (HLSLDeclaration*)field->nextStatement;
+                    field = static_cast<HLSLDeclaration*>(field->nextStatement);
                 }
 
                 isInsideBuffer = false;
