@@ -49,10 +49,10 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image* first, Image* sec
     bool isSecondValid = PixelFormatDescriptor::IsFormatSizeByteDivisible(second->format);
     if (!isFirstValid || !isSecondValid)
     {
-        DVASSERT_MSG(false, Format("Can't compare images of types %s and %s",
-                                   PixelFormatDescriptor::GetPixelFormatString(first->format),
-                                   PixelFormatDescriptor::GetPixelFormatString(second->format))
-                            .c_str());
+        DVASSERT(false, Format("Can't compare images of types %s and %s",
+                               PixelFormatDescriptor::GetPixelFormatString(first->format),
+                               PixelFormatDescriptor::GetPixelFormatString(second->format))
+                        .c_str());
         compareResult.difference = 100;
         return compareResult;
     }

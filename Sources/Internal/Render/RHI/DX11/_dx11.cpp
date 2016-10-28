@@ -1,6 +1,9 @@
 #include <dxgiformat.h>
 #include "_dx11.h"
 #include <stdio.h>
+
+#include "Utils/StringFormat.h"
+
 #include "../rhi_Public.h"
 
 //==============================================================================
@@ -258,7 +261,7 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         DAVA::Logger::Error(info.c_str());
     #else
         // assert will automatically write to log
-        DVASSERT_MSG(0, info.c_str());
+        DVASSERT(0, info.c_str());
     #endif
 
         if (_DX11_InitParam.renderingNotPossibleFunc)

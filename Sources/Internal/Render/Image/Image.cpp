@@ -1,3 +1,4 @@
+#include "Utils/StringFormat.h"
 #include "Render/Texture.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -345,8 +346,8 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 
     PixelFormat format = imageToCopy->GetPixelFormat();
 
-    DVASSERT_MSG(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
-                 Format("Can't copy image region for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
+    DVASSERT(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
+             Format("Can't copy image region for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
 
     uint32 oldWidth = imageToCopy->GetWidth();
     uint32 oldHeight = imageToCopy->GetHeight();
@@ -397,8 +398,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
         return;
     }
 
-    DVASSERT_MSG(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
-                 Format("Can't insert images for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
+    DVASSERT(PixelFormatDescriptor::IsFormatSizeByteDivisible(format) == true,
+             Format("Can't insert images for pixel format %s", PixelFormatDescriptor::GetPixelFormatString(format)).c_str());
 
     uint32 insertWidth = (srcWidth == uint32(-1)) ? image->GetWidth() : srcWidth;
     uint32 insertHeight = (srcHeight == uint32(-1)) ? image->GetHeight() : srcHeight;
