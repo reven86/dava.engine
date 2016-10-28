@@ -20,10 +20,24 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
 #include <QObject>
 
 namespace DAVA
 {
+// DavaQtApplyModifier is a friend for KeyboardDevice, so it should be in DAVA namespace only.
+class DavaQtApplyModifier
+{
+public:
+    void operator()(DAVA::KeyboardDevice& keyboard, const Qt::KeyboardModifiers& currentModifiers, Qt::KeyboardModifier qtModifier, DAVA::Key davaModifier)
+    {
+        if (true == (currentModifiers.testFlag(qtModifier)))
+            keyboard.OnKeyPressed(davaModifier);
+        else
+            keyboard.OnKeyUnpressed(davaModifier);
+    }
+};
+
 namespace Private
 {
 class WindowBackend::OGLContextBinder
@@ -103,13 +117,13 @@ private:
 
 WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
 
-void AcqureContext()
+void AcqureContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->AcquireContext();
 }
 
-void ReleaseContext()
+void ReleaseContextImpl()
 {
     DVASSERT(WindowBackend::OGLContextBinder::binder);
     WindowBackend::OGLContextBinder::binder->ReleaseContext();
@@ -219,7 +233,7 @@ void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 
 bool WindowBackend::IsWindowReadyForRender() const
 {
-    return renderWidget != nullptr && renderWidget->initialized;
+    return renderWidget != nullptr && renderWidget->IsInitialized();
 }
 
 void WindowBackend::TriggerPlatformEvents()
@@ -278,7 +292,16 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
-    contextBinder.reset(new OGLContextBinder(renderWidget->quickWindow(), renderWidget->quickWindow()->openglContext()));
+    // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
+    // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
+    // QQuickWidgetPrivate and we can get it only through context.
+    // In applications with QMainWindow (where RenderWidget is a part of MainWindow) it's good solution,
+    // But for TestBed for example this solution is not full,
+    // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
+    // I don't know what we can do with this.
+    // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
+    QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
+    contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
     WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, engineBackend->GetNativeService()->GetApplication());
     float32 dpi = renderWidget->quickWindow()->effectiveDevicePixelRatio();
@@ -303,6 +326,18 @@ void WindowBackend::OnDestroyed()
 
 void WindowBackend::OnFrame()
 {
+    // HACK Qt send key event to widget with focus not globaly
+    // if user hold ALT(CTRL, SHIFT) and then clicked DavaWidget(focused)
+    // we miss key down event, so we have to check for SHIFT, ALT, CTRL
+    // read about same problem http://stackoverflow.com/questions/23193038/how-to-detect-global-key-sequence-press-in-qt
+    using namespace DAVA;
+    Qt::KeyboardModifiers modifiers = qApp->queryKeyboardModifiers();
+    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    DavaQtApplyModifier mod;
+    mod(keyboard, modifiers, Qt::AltModifier, Key::LALT);
+    mod(keyboard, modifiers, Qt::ShiftModifier, Key::LSHIFT);
+    mod(keyboard, modifiers, Qt::ControlModifier, Key::LCTRL);
+
     engineBackend->OnFrame();
 }
 
@@ -315,16 +350,7 @@ void WindowBackend::OnResized(uint32 width, uint32 height, float32 dpi)
 
 void WindowBackend::OnVisibilityChanged(bool isVisible)
 {
-    if (isVisible)
-    {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isVisible));
-    }
-    else
-    {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isVisible));
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
-    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
 void WindowBackend::OnWindowModeChanged(bool isFullscreen)
@@ -355,6 +381,13 @@ void WindowBackend::OnMouseMove(QMouseEvent* qtEvent)
 {
     float32 x = static_cast<float32>(qtEvent->x());
     float32 y = static_cast<float32>(qtEvent->y());
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
+}
+
+void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
+{
+    float32 x = static_cast<float32>(qtEvent->pos().x());
+    float32 y = static_cast<float32>(qtEvent->pos().y());
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, false));
 }
 
@@ -490,11 +523,34 @@ void WindowBackend::DoSetWindowingMode(Window::eWindowingMode newMode)
     }
 }
 
+void WindowBackend::AcqureContext()
+{
+    AcqureContextImpl();
+}
+
+void WindowBackend::ReleaseContext()
+{
+    ReleaseContextImpl();
+}
+
+void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, isInFocus));
+}
+
 void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
     {
         renderWidget->quickWindow()->update();
+    }
+}
+
+void WindowBackend::ActivateRendering()
+{
+    if (renderWidget != nullptr)
+    {
+        renderWidget->ActivateRendering();
     }
 }
 
@@ -511,8 +567,10 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
     params.threadedRenderEnabled = false;
     params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcqureContext;
-    params.releaseContextFunc = &ReleaseContext;
+    params.acquireContextFunc = &AcqureContextImpl;
+    params.releaseContextFunc = &ReleaseContextImpl;
+    DVASSERT(renderWidget != nullptr);
+    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
 }
 
 uint32 WindowBackend::ConvertButtons(Qt::MouseButton button)

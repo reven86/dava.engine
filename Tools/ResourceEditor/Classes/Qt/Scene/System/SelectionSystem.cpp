@@ -1,3 +1,5 @@
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/HoodSystem.h"
@@ -55,7 +57,15 @@ void SceneSelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
 
 void SceneSelectionSystem::UpdateGroupSelectionMode()
 {
-    const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
+    DAVA::Engine* engine = DAVA::Engine::Instance();
+    DVASSERT(engine != nullptr);
+    DAVA::EngineContext* engineContext = engine->GetContext();
+    DVASSERT(engineContext != nullptr);
+    if (engineContext->inputSystem == nullptr)
+    {
+        return;
+    }
+    const DAVA::KeyboardDevice& keyboard = engineContext->inputSystem->GetKeyboard();
 
     bool addSelection = keyboard.IsKeyPressed(DAVA::Key::LCTRL) || keyboard.IsKeyPressed(DAVA::Key::RCTRL);
     bool excludeSelection = keyboard.IsKeyPressed(DAVA::Key::LALT) || keyboard.IsKeyPressed(DAVA::Key::RALT);
