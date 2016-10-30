@@ -142,7 +142,7 @@ void BacktraceCorkscrewImpl::Backtrace(Function<void(pointer_size)> onFrame,
     ssize_t size = 0;
     if (context == nullptr)
     {
-        size = unwind_backtrace_signal_arch((siginfo_t*)siginfo, context,
+        size = unwind_backtrace_signal_arch(static_cast<siginfo_t*>(siginfo), context,
                                             processMap->GetMapInfo(), frames.data(), 0, 255);
     }
     else

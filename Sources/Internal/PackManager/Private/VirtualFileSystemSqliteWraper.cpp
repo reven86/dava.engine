@@ -2,12 +2,24 @@
 
 #include <sqlite3.h>
 
+#include "Base/Exception.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/Thread.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
 #include <ctime>
+
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <sqlite3.h>
+
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 static bool loadDBinRAM = false;
 
@@ -182,7 +194,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
     if (flags & SQLITE_OPEN_MAIN_JOURNAL)
     {
         // do we need in memory jornal file?
-        throw std::runtime_error("not implemented");
+        DAVA_THROW(DAVA::Exception, "not implemented");
     }
 
     if (flags & SQLITE_OPEN_EXCLUSIVE)
@@ -228,7 +240,7 @@ static int Open(sqlite3_vfs* pVfs, /* VFS */
         DAVA::uint32 size = p->file->Read(data.data(), static_cast<DAVA::uint32>(data.size()));
         if (size != data.size())
         {
-            throw std::runtime_error("can't read DB in memory");
+            DAVA_THROW(DAVA::Exception, "can't read DB in memory");
         }
         p->file->Release();
 

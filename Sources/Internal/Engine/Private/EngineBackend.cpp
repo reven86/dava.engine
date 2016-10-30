@@ -27,6 +27,7 @@
 #include "Debug/DVAssert.h"
 #include "Render/2D/TextBlock.h"
 #include "Debug/Replay.h"
+#include "Debug/CPUProfiler.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
 #include "Input/InputSystem.h"
@@ -47,6 +48,8 @@
 #include "Network/NetCore.h"
 #include "PackManager/Private/PackManagerImpl.h"
 #include "ModuleManager/ModuleManager.h"
+#include "Analytics/Analytics.h"
+#include "Analytics/LoggingBackend.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -265,6 +268,7 @@ void EngineBackend::OnEngineCleanup()
 
 void EngineBackend::DoEvents()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::DoEvents");
     dispatcher->ProcessEvents();
     for (Window* w : aliveWindows)
     {
@@ -286,6 +290,7 @@ void EngineBackend::OnFrameConsole()
 
 int32 EngineBackend::OnFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnFrame");
     context->systemTimer->Start();
     float32 frameDelta = context->systemTimer->FrameDelta();
     context->systemTimer->UpdateGlobalTime(frameDelta);
@@ -315,6 +320,7 @@ int32 EngineBackend::OnFrame()
 
 void EngineBackend::OnBeginFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnBeginFrame");
     Renderer::BeginFrame();
 
     context->inputSystem->OnBeforeUpdate();
@@ -323,6 +329,7 @@ void EngineBackend::OnBeginFrame()
 
 void EngineBackend::OnUpdate(float32 frameDelta)
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnUpdate");
     context->localNotificationController->Update();
     context->animationManager->Update(frameDelta);
 
@@ -336,6 +343,7 @@ void EngineBackend::OnUpdate(float32 frameDelta)
 
 void EngineBackend::OnDraw()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnDraw");
     Renderer::GetRenderStats().Reset();
     context->renderSystem2D->BeginFrame();
 
@@ -350,6 +358,7 @@ void EngineBackend::OnDraw()
 
 void EngineBackend::OnEndFrame()
 {
+    DAVA_CPU_PROFILER_SCOPE("EngineBackend::OnEndFrame");
     context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();
@@ -601,6 +610,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->virtualCoordSystem = new VirtualCoordinatesSystem();
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
+    context->fontManager = new FontManager();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicatiionPath());
@@ -649,26 +659,32 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->packManager == nullptr)
             {
-                context->packManager = new PackManagerImpl;
+                context->packManager = new PackManagerImpl(*engine);
             }
         }
     }
 
     if (!IsConsoleMode())
     {
-        context->fontManager = new FontManager();
         context->inputSystem = new InputSystem();
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
     }
+    else
+    {
+        context->logger->EnableConsoleMode();
+    }
 
-    context->moduleManager = new ModuleManager();
+    context->moduleManager = new ModuleManager(GetEngine());
     context->moduleManager->InitModules();
+
+    context->analyticsCore = new Analytics::Core;
 }
 
 void EngineBackend::DestroySubsystems()
 {
-    context->moduleManager->ResetModules();
+    delete context->analyticsCore;
+    context->moduleManager->ShutdownModules();
     delete context->moduleManager;
 
     if (context->jobManager != nullptr)
@@ -683,10 +699,10 @@ void EngineBackend::DestroySubsystems()
     {
         context->localNotificationController->Release();
         context->uiScreenManager->Release();
-        context->fontManager->Release();
         context->inputSystem->Release();
     }
 
+    context->fontManager->Release();
     context->uiControlSystem->Release();
     context->animationManager->Release();
     context->virtualCoordSystem->Release();

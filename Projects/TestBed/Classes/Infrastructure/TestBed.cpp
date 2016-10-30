@@ -29,6 +29,7 @@
 #include "Tests/AssertTest.h"
 #include "Tests/CoreV2Test.h"
 #include "Tests/DeviceInfoTest.h"
+#include "Tests/UILoggingTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -151,6 +152,11 @@ void TestBed::OnEngineCleanup()
 void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
+    w->Resize(1024, 768);
+    w->SetTitle("TestBed");
+
+    // TODO FullScreen
+    //w->SetFullScreen(false);
 
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
@@ -225,6 +231,7 @@ void TestBed::RegisterTests()
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
     new PackManagerTest(*this);
+    new UILoggingTest(*this);
     //$UNITTEST_CTOR
 }
 

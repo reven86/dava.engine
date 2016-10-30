@@ -110,7 +110,7 @@ const Vector<String>& Engine::GetCommandLine() const
     return engineBackend->GetCommandLine();
 }
 
-DAVA::Vector<char*> Engine::GetCommandLineAsArgv() const
+Vector<char*> Engine::GetCommandLineAsArgv() const
 {
     return engineBackend->GetCommandLineAsArgv();
 }

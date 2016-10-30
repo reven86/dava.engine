@@ -63,6 +63,7 @@ private:
 
     void UpdateTree();
     void UpdateModel();
+    void UpdateSelection();
     void PropagateSolidFlag();
     void PropagateSolidFlagRecursive(QStandardItem* root);
 
@@ -77,7 +78,8 @@ private:
     QPointer<SceneTreeModel> treeModel;
     QPointer<SceneTreeFilteringModel> filteringProxyModel;
     SceneTreeDelegate* treeDelegate = nullptr;
-    LazyUpdater* treeUpdater = nullptr;
+    LazyUpdater* treeUpdater;
+    LazyUpdater* selectionUpdater;
     bool isInSelectionSync = false;
     std::shared_ptr<GlobalOperations> globalOperations;
 };

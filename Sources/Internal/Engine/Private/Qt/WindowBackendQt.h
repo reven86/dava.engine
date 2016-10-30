@@ -9,6 +9,7 @@
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
+#include "Functional/SignalBase.h"
 
 #include <QPointer>
 
@@ -21,7 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : private RenderWidget::Delegate
+class WindowBackend final : public TrackedObject, private RenderWidget::IWindowDelegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -30,7 +31,12 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
+    void AcqureContext();
+    void ReleaseContext();
+    void OnApplicationFocusChanged(bool isInFocus);
+
     void Update();
+    void ActivateRendering();
     RenderWidget* GetRenderWidget();
 
     void Resize(float32 width, float32 height);
@@ -64,6 +70,7 @@ private:
     void OnMousePressed(QMouseEvent* e) override;
     void OnMouseReleased(QMouseEvent* e) override;
     void OnMouseMove(QMouseEvent* e) override;
+    void OnDragMoved(QDragMoveEvent* e) override;
     void OnMouseDBClick(QMouseEvent* e) override;
     void OnWheel(QWheelEvent* e) override;
     void OnKeyPressed(QKeyEvent* e) override;
@@ -90,8 +97,8 @@ private:
     QtEventListener* qtEventListener = nullptr;
 
     class OGLContextBinder;
-    friend void AcqureContext();
-    friend void ReleaseContext();
+    friend void AcqureContextImpl();
+    friend void ReleaseContextImpl();
 
     std::unique_ptr<OGLContextBinder> contextBinder;
 };

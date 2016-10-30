@@ -16,11 +16,6 @@ include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 set( ADDED_CPP_PATTERNS  AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp ResourceArchiver/*.cpp )
 set( ADDED_H_PATTERNS    AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   ResourceArchiver/*.h  )
 
-if( DAVA_USE_QT_WIDGETS )
-    add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/QtTools" ${CMAKE_CURRENT_BINARY_DIR}/QtTools )
-    set( ADDED_LIBS QtTools )
-endif()
-
 define_source  (  SOURCE ${ADDED_CPP_PATTERNS} ${ADDED_H_PATTERNS} )
 
 set_project_files_properties( "${PROJECT_SOURCE_FILES}" )
@@ -40,5 +35,3 @@ if( MACOS AND NOT ANDROID )
 elseif( WIN32 )
    	target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} )
 endif()
-
-	

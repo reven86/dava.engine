@@ -270,8 +270,9 @@ void MoveTouchsToVector(void* inTouches, DAVA::Vector<DAVA::UIEvent>* outTouches
 - (void)keyboardDidFrameChanged:(NSNotification*)notification
 {
     CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    CGRect convertedRect = [self convertRect:keyboardEndFrame fromView:nil];
+    CGRect renderRect = [self bounds];
+    if (CGRectIntersectsRect(convertedRect, renderRect))
     {
         // Keyboard did show or move
         limitKeyboardFps = true;

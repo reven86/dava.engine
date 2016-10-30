@@ -341,7 +341,7 @@ DAVA_TESTCLASS (ImageSystemTest)
             {
                 for (uint32 mip = 0; mip < td.mipmapsCount; ++mip)
                 {
-                    dataSize += Image::GetSizeInBytes(td.width >> mip, td.height >> mip, td.format);
+                    dataSize += ImageUtils::GetSizeInBytes(td.width >> mip, td.height >> mip, td.format);
                 }
             }
             TEST_VERIFY(dataSize == info.dataSize);
