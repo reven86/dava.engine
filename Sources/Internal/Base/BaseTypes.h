@@ -270,6 +270,8 @@ enum class eErrorCode
     ERROR_DECODE_FAIL
 };
 
+} // namespace DAVA
+
 // clang-format off
 /**
     \ingroup engine
@@ -287,7 +289,7 @@ enum class eErrorCode
     E e2 = e1 & ~E::FLAG1;
     e1 ^= e2;
     \endcode
-*/
+ */
 #define DAVA_DEFINE_ENUM_BITWISE_OPERATORS(enumType) \
     inline /*constexpr*/ enumType operator|(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) | static_cast<uint32>(r)); } \
     inline /*constexpr*/ enumType operator&(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) & static_cast<uint32>(r)); } \
@@ -298,7 +300,7 @@ enum class eErrorCode
     inline /*constexpr*/ enumType operator~(enumType e) { return static_cast<enumType>(~static_cast<uint32>(e)); }
 // clang-format on
 
-} // namespace DAVA
+/**
 
 /**
     \ingroup engine
