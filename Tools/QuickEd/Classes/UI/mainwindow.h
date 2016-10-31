@@ -7,6 +7,10 @@
 #include <QtGui>
 #include <QtWidgets>
 
+namespace DAVA
+{
+class RenderWidget;
+}
 class Document;
 class DocumentGroup;
 class FileSystemDockWidget;
@@ -43,6 +47,8 @@ public:
 
     void SetEditorTitle(const QString& editorTitle);
     void SetRecentProjects(const QStringList& lastProjectsPathes);
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnWindowCreated();
 
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
@@ -63,8 +69,6 @@ signals:
     void CloseProject();
     void Exit();
     void RecentProject(const QString& path);
-
-    void GLWidgedReady();
 
     void ShowHelp();
 

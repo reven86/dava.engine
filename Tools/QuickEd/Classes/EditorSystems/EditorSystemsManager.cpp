@@ -1,5 +1,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Engine/Qt/RenderWidget.h"
+
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -39,11 +41,12 @@ private:
     EditorSystemsManager* systemManager = nullptr;
 };
 
-EditorSystemsManager::EditorSystemsManager(DavaGLWidget* davaGLWidget)
+EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     : rootControl(new UIControl())
     , inputLayerControl(new InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
+    , renderWidget(renderWidget_)
 {
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -63,11 +66,16 @@ EditorSystemsManager::EditorSystemsManager(DavaGLWidget* davaGLWidget)
     systems.emplace_back(selectionSystemPtr);
     hudSystemPtr = new HUDSystem(this);
     systems.emplace_back(hudSystemPtr);
-    systems.emplace_back(new CursorSystem(this, davaGLWidget));
+    systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new EditorTransformSystem(this));
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
+
+DAVA::RenderWidget* EditorSystemsManager::GetRenderWidget() const
+{
+    return renderWidget;
+}
 
 UIControl* EditorSystemsManager::GetRootControl() const
 {

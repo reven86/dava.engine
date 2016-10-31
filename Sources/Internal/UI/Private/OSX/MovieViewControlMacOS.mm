@@ -12,6 +12,7 @@
 #include "Logger/Logger.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Platform/Steam.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
@@ -71,6 +72,7 @@ enum MoviePlayerHelperPlaybackState
 
 // Set the visible flag.
 - (void)setVisible:(bool)isVisible;
+- (bool)isVisible;
 
 // Load the movie in async way.
 - (void)loadMovie:(NSURL*)movieURL scalingMode:(DAVA::eMovieScalingMode)desiredScalingMode;
@@ -252,6 +254,11 @@ enum MoviePlayerHelperPlaybackState
     }
 }
 
+- (bool)isVisible
+{
+    return videoVisible;
+}
+
 - (void)play
 {
     [self setPlaybackState:ePlayback];
@@ -280,20 +287,9 @@ enum MoviePlayerHelperPlaybackState
 {
     DAVA::VirtualCoordinatesSystem* coordSystem = DAVA::VirtualCoordinatesSystem::Instance();
 
-    // 1. map virtual to physical
-    DAVA::Rect rect = coordSystem->ConvertVirtualToPhysical(videoRect);
-    rect += coordSystem->GetPhysicalDrawOffset();
-    rect.y = coordSystem->GetPhysicalScreenSize().dy - (rect.y + rect.dy);
-
-#if defined(__DAVAENGINE_COREV2__)
-    // 2. map physical to window
-    NSRect controlRect = [[videoView superview] convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#else
-    // 2. map physical to window
-    NSView* openGLView = static_cast<NSView*>(DAVA::Core::Instance()->GetNativeView());
-    NSRect controlRect = [openGLView convertRectFromBacking:NSMakeRect(rect.x, rect.y, rect.dx, rect.dy)];
-#endif
-    [videoView setFrame:controlRect];
+    DAVA::Rect r = coordSystem->ConvertVirtualToInput(videoRect);
+    DAVA::float32 dy = static_cast<DAVA::float32>(coordSystem->GetInputScreenSize().dy);
+    [videoView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 }
 
 - (void)applyPlaybackState
@@ -355,10 +351,18 @@ MovieViewControl::MovieViewControl()
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
 #endif
+
+#if defined(__DAVAENGINE_STEAM__)
+    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &MovieViewControl::OnSteamOverlayChanged);
+#endif
 }
 
 MovieViewControl::~MovieViewControl()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
     window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
 #else
@@ -390,6 +394,21 @@ void MovieViewControl::SetVisible(bool isVisible)
 {
     [static_cast<MoviePlayerHelper*>(moviePlayerHelper) setVisible:isVisible];
 }
+
+#if defined(__DAVAENGINE_STEAM__)
+void MovieViewControl::OnSteamOverlayChanged(bool overlayActivated)
+{
+    if (overlayActivated)
+    {
+        wasVisible = [static_cast<MoviePlayerHelper*>(moviePlayerHelper) isVisible];
+        SetVisible(false);
+    }
+    else
+    {
+        SetVisible(wasVisible);
+    }
+}
+#endif
 
 void MovieViewControl::Play()
 {

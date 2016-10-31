@@ -2,6 +2,9 @@
 #include "SelectSceneScreen.h"
 #include "ViewSceneScreen.h"
 
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
+
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RHI/dbg_Draw.h"
 #include "Render/RHI/Common/dbg_StatSet.h"
@@ -11,18 +14,42 @@
 
 using namespace DAVA;
 
-GameCore::GameCore()
+GameCore::GameCore(Engine& e)
+    : engine(e)
 {
+    DVASSERT(instance == nullptr);
+    instance = this;
+
     selectSceneScreen = NULL;
     viewSceneScreen = NULL;
-}
 
-GameCore::~GameCore()
-{
+    engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
+    engine.suspended.Connect(this, &GameCore::OnSuspend);
+    engine.resumed.Connect(this, &GameCore::OnResume);
+    engine.beginFrame.Connect(this, &GameCore::BeginFrame);
+    engine.draw.Connect(this, &GameCore::Draw);
+    engine.endFrame.Connect(this, &GameCore::EndFrame);
 }
 
 void GameCore::OnAppStarted()
 {
+}
+
+void GameCore::OnWindowCreated(DAVA::Window* w)
+{
+    w->SetTitle("Scene Viewer");
+#if defined(__DAVAENGINE_WIN_UAP__)
+    ScreenInfo& screenInfo = DeviceInfo::GetScreenInfo();
+    w->Resize(screenInfo.width, screenInfo.height);
+#else
+    w->Resize(1024, 768);
+#endif
+
+    // TODO FullScreen
+    //w->SetFullScreen(false);
+
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
     //flags[FastName("VERTEX_LIT")] = 1;
@@ -67,9 +94,6 @@ void GameCore::OnAppStarted()
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
 
     DbgDraw::EnsureInited();
-
-    perfQuerySet = rhi::CreatePerfQuerySet(16);
-    perfQuerySetFired = false;
 }
 
 void GameCore::OnAppFinished()
@@ -82,84 +106,17 @@ void GameCore::OnAppFinished()
 
 void GameCore::OnSuspend()
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
 }
 
 void GameCore::OnResume()
 {
-    ApplicationCore::OnResume();
 }
-
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-void GameCore::OnDeviceLocked()
-{
-    Core::Instance()->Quit();
-}
-
-void GameCore::OnBackground()
-{
-}
-
-void GameCore::OnForeground()
-{
-    ApplicationCore::OnForeground();
-}
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
 void GameCore::BeginFrame()
 {
-    if (perfQuerySetFired)
-    {
-        bool ready = false;
-        bool valid = false;
-        rhi::GetPerfQuerySetStatus(perfQuerySet, &ready, &valid);
-
-        if (ready && valid)
-        {
-            uint64 freq = 0;
-            uint64 frame_t0, frame_t1;
-            uint64 clear_t0, clear_t1;
-            uint64 p2d_t0, p2d_t1;
-            uint64 main_t0, main_t1;
-
-            rhi::GetPerfQuerySetFreq(perfQuerySet, &freq);
-            //            Logger::Info("perf-query:  freq= %u",uint32(freq));
-
-            rhi::GetPerfQuerySetFrameTimestamps(perfQuerySet, &frame_t0, &frame_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T0, &clear_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T1, &clear_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T0, &p2d_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T1, &p2d_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T0, &main_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T1, &main_t1);
-
-            Logger::Info("  GPU frame = %.3f ms", float(frame_t1 - frame_t0) / float(freq / 1000));
-            Logger::Info("    clear : %.3f ms", float(clear_t1 - clear_t0) / float(freq / 1000));
-            Logger::Info("    main  : %.3f ms", float(main_t1 - main_t0) / float(freq / 1000));
-            Logger::Info("    2d    : %.3f ms", float(p2d_t1 - p2d_t0) / float(freq / 1000));
-
-            perfQuerySetFired = false;
-        }
-    }
-
-    if (!perfQuerySetFired)
-    {
-        rhi::ResetPerfQuerySet(perfQuerySet);
-        rhi::SetFramePerfQuerySet(perfQuerySet);
-        perfQuerySetFired = true;
-    }
-
-    ApplicationCore::BeginFrame();
 }
 
-void GameCore::EndFrame()
+void GameCore::Draw()
 {
 #if 0
     rhi::RenderPassConfig pass_desc;
@@ -181,7 +138,10 @@ void GameCore::EndFrame()
     rhi::EndPacketList(pl);
     rhi::EndRenderPass(pass);
 #endif
-    ApplicationCore::EndFrame();
+}
+
+void GameCore::EndFrame()
+{
 #if 0
     // stats must be obtained and reset AFTER frame is finished (and Present called)
 
@@ -218,4 +178,59 @@ void GameCore::EndFrame()
 
     StatSet::ResetAll();
 #endif
+}
+
+GameCore* GameCore::instance = nullptr;
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+KeyedArchive* CreateOptions()
+{
+    KeyedArchive* appOptions = new KeyedArchive();
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    //appOptions->SetInt32("renderer", rhi::RHI_METAL);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+
+#else
+#if defined(__DAVAENGINE_WIN32__)
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    //appOptions->SetInt32("renderer", rhi::RHI_DX9);
+    //appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("rhi_threaded_frame_count", 2);
+#elif defined(__DAVAENGINE_MACOS__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+    //appOptions->SetInt("fullscreen.width",	1280);
+    //appOptions->SetInt("fullscreen.height", 800);
+
+    appOptions->SetInt32("bpp", 32);
+#endif
+
+    return appOptions;
+}
+
+int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
+{
+    Vector<String> modules =
+    {
+      "JobManager",
+      "NetCore",
+      "LocalizationSystem",
+      "SoundSystem",
+      "DownloadManager",
+    };
+    DAVA::Engine e;
+    e.Init(eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
+
+    GameCore core(e);
+    return e.Run();
 }

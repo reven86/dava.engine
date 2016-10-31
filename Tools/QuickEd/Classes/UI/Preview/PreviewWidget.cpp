@@ -14,7 +14,6 @@
 #include "UI/UIScreenManager.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Updaters/ContinuousUpdater.h"
 #include "QtTools/InputDialogs/MultilineTextInputDialog.h"
 
@@ -54,7 +53,6 @@ struct SystemsContext : WidgetContext
 
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
-    , davaGLWidget(new DavaGLWidget(this))
     , scrollAreaController(new ScrollAreaController(this))
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
@@ -74,13 +72,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::NestedControlPositionChanged, this, &PreviewWidget::OnNestedControlPositionChanged);
 
     verticalRuler->SetRulerOrientation(Qt::Vertical);
-    frame->layout()->addWidget(davaGLWidget);
-    davaGLWidget->GetGLView()->installEventFilter(this);
 
-    davaGLWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-
-    connect(davaGLWidget, &DavaGLWidget::Initialized, this, &PreviewWidget::OnGLInitialized);
-    connect(davaGLWidget, &DavaGLWidget::Resized, this, &PreviewWidget::OnGLWidgetResized);
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
@@ -102,7 +94,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
-    CreateActions();
 }
 
 PreviewWidget::~PreviewWidget()
@@ -132,31 +123,44 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+{
+    DVASSERT(renderWidget_ != nullptr);
+    renderWidget = renderWidget_;
+    renderWidget->SetClientDelegate(this);
+    frame->layout()->addWidget(renderWidget);
+
+    connect(renderWidget, &RenderWidget::Resized, scrollAreaController,
+            static_cast<void (ScrollAreaController::*)(int32, int32)>(&ScrollAreaController::SetViewSize));
+
+    CreateActions();
+}
+
 void PreviewWidget::CreateActions()
 {
     QAction* importPackageAction = new QAction(tr("Import package"), this);
     importPackageAction->setShortcut(QKeySequence::New);
-    importPackageAction->setShortcutContext(Qt::WindowShortcut);
+    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    davaGLWidget->addAction(importPackageAction);
+    renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setShortcutContext(Qt::WindowShortcut);
+    cutAction->setShortcutContext(Qt::WidgetShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    davaGLWidget->addAction(cutAction);
+    renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setShortcutContext(Qt::WindowShortcut);
+    copyAction->setShortcutContext(Qt::WidgetShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    davaGLWidget->addAction(copyAction);
+    renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
-    pasteAction->setShortcutContext(Qt::WindowShortcut);
+    pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    davaGLWidget->addAction(pasteAction);
+    renderWidget->addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -165,24 +169,24 @@ void PreviewWidget::CreateActions()
     deleteAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
 #endif // platform
 
-    deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
+    deleteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    davaGLWidget->addAction(deleteAction);
+    renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
-    selectAllAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(selectAllAction);
+    selectAllAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
-    focusNextChildAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(focusNextChildAction);
+    focusNextChildAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
-    focusPreviousChildAction->setShortcutContext(Qt::WindowShortcut);
-    davaGLWidget->addAction(focusPreviousChildAction);
+    focusPreviousChildAction->setShortcutContext(Qt::WidgetShortcut);
+    renderWidget->addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
@@ -361,10 +365,10 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
     verticalScrollBar->setSliderPosition(position.y());
 }
 
-void PreviewWidget::OnGLInitialized()
+void PreviewWidget::OnWindowCreated()
 {
     DVASSERT(nullptr == systemsManager);
-    systemsManager.reset(new EditorSystemsManager(davaGLWidget));
+    systemsManager.reset(new EditorSystemsManager(renderWidget));
     scrollAreaController->SetNestedControl(systemsManager->GetRootControl());
     scrollAreaController->SetMovableControl(systemsManager->GetScalableControl());
     systemsManager->canvasSizeChanged.Connect(scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
@@ -409,12 +413,6 @@ void PreviewWidget::OnScaleByComboText()
     scrollAreaController->SetScale(scale);
 }
 
-void PreviewWidget::OnGLWidgetResized(int width, int height)
-{
-    scrollAreaController->SetViewSize(QSize(width, height));
-    UpdateScrollArea();
-}
-
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
     QPoint canvasPosition = scrollAreaController->GetPosition();
@@ -429,64 +427,16 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     scrollAreaController->SetPosition(canvasPosition);
 }
 
-bool PreviewWidget::eventFilter(QObject* obj, QEvent* event)
-{
-    if (obj == davaGLWidget->GetGLView())
-    {
-        switch (event->type())
-        {
-        case QEvent::Wheel:
-            OnWheelEvent(static_cast<QWheelEvent*>(event));
-            break;
-        case QEvent::NativeGesture:
-            OnNativeGuestureEvent(static_cast<QNativeGestureEvent*>(event));
-            break;
-        case QEvent::MouseMove:
-            OnMoveEvent(static_cast<QMouseEvent*>(event));
-            return CanDragScreen();
-        case QEvent::MouseButtonPress:
-            OnPressEvent(static_cast<QMouseEvent*>(event));
-            return CanDragScreen();
-        case QEvent::MouseButtonRelease:
-            OnReleaseEvent(static_cast<QMouseEvent*>(event));
-            break;
-        case QEvent::MouseButtonDblClick:
-            OnDoubleClickEvent(static_cast<QMouseEvent*>(event));
-            break;
-        case QEvent::DragEnter:
-            return true;
-        case QEvent::DragMove:
-            OnDragMoveEvent(static_cast<QDragMoveEvent*>(event));
-            return true;
-        case QEvent::DragLeave:
-            OnDragLeaveEvent(static_cast<QDragLeaveEvent*>(event));
-            return true;
-        case QEvent::Drop:
-            OnDropEvent(static_cast<QDropEvent*>(event));
-            davaGLWidget->GetGLView()->requestActivate();
-            break;
-        case QEvent::KeyPress:
-            OnKeyPressed(static_cast<QKeyEvent*>(event));
-            break;
-        case QEvent::KeyRelease:
-            OnKeyReleased(static_cast<QKeyEvent*>(event));
-            break;
-        default:
-            break;
-        }
-    }
-    return QWidget::eventFilter(obj, event);
-}
-
-void PreviewWidget::ShowMenu(const QPoint& pos)
+void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
 {
     QMenu menu;
     //separator must be added by the client code, which call AddSelectionMenuSection function
-    if (AddSelectionMenuSection(&menu, pos))
+    QPoint localPos = mouseEvent->pos();
+    if (AddSelectionMenuSection(&menu, localPos))
     {
         menu.addSeparator();
     }
-    Vector2 davaPoint(pos.x(), pos.y());
+    Vector2 davaPoint(localPos.x(), localPos.y());
     ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPoint);
     if (CanChangeTextInControl(node))
     {
@@ -496,8 +446,7 @@ void PreviewWidget::ShowMenu(const QPoint& pos)
     }
     if (!menu.actions().isEmpty())
     {
-        QPoint globalPos = davaGLWidget->mapToGlobal(pos);
-        menu.exec(globalPos);
+        menu.exec(mouseEvent->globalPos());
     }
 }
 
@@ -614,7 +563,7 @@ void PreviewWidget::SaveContext()
     context->canvasPosition = scrollAreaController->GetPosition();
 }
 
-void PreviewWidget::OnWheelEvent(QWheelEvent* event)
+void PreviewWidget::OnWheel(QWheelEvent* event)
 {
     if (document.isNull())
     {
@@ -657,7 +606,7 @@ void PreviewWidget::OnWheelEvent(QWheelEvent* event)
     }
 }
 
-void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
+void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
 {
     if (document.isNull())
     {
@@ -681,7 +630,7 @@ void PreviewWidget::OnNativeGuestureEvent(QNativeGestureEvent* event)
     }
 }
 
-void PreviewWidget::OnPressEvent(QMouseEvent* event)
+void PreviewWidget::OnMousePressed(QMouseEvent* event)
 {
     Qt::MouseButtons buttons = event->buttons();
     if (buttons & Qt::LeftButton)
@@ -692,10 +641,6 @@ void PreviewWidget::OnPressEvent(QMouseEvent* event)
     {
         isMouseMidButtonPressed = true;
     }
-    if (buttons & Qt::RightButton)
-    {
-        ShowMenu(event->pos());
-    }
     UpdateDragScreenState();
     if (CanDragScreen())
     {
@@ -703,7 +648,7 @@ void PreviewWidget::OnPressEvent(QMouseEvent* event)
     }
 }
 
-void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseReleased(QMouseEvent* event)
 {
     Qt::MouseButtons buttons = event->buttons();
     if ((buttons & Qt::LeftButton) == false)
@@ -714,11 +659,20 @@ void PreviewWidget::OnReleaseEvent(QMouseEvent* event)
     {
         isMouseMidButtonPressed = false;
     }
-
     UpdateDragScreenState();
+
+    if (event->button() == Qt::RightButton)
+    {
+        ShowMenu(event);
+    }
+    if (nodeToChangeTextOnMouseRelease != nullptr)
+    {
+        ChangeControlText(nodeToChangeTextOnMouseRelease);
+        nodeToChangeTextOnMouseRelease = nullptr;
+    }
 }
 
-void PreviewWidget::OnDoubleClickEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
 {
     QPoint point = event->pos();
 
@@ -728,14 +682,12 @@ void PreviewWidget::OnDoubleClickEvent(QMouseEvent* event)
     {
         return;
     }
-    //send mouse release event manually to clear InTransform state
-    QMouseEvent mouseEvent(QEvent::MouseButtonRelease, event->pos(), event->button(), event->buttons(), event->modifiers());
-    qApp->sendEvent(davaGLWidget->GetGLView(), &mouseEvent);
+
     // call "change text" after release event will pass
-    QTimer::singleShot(0, [node, this]() { ChangeControlText(node); });
+    nodeToChangeTextOnMouseRelease = node;
 }
 
-void PreviewWidget::OnMoveEvent(QMouseEvent* event)
+void PreviewWidget::OnMouseMove(QMouseEvent* event)
 {
     DVASSERT(nullptr != event);
     rulerController->UpdateRulerMarkers(event->pos());
@@ -754,7 +706,12 @@ void PreviewWidget::OnMoveEvent(QMouseEvent* event)
     }
 }
 
-void PreviewWidget::OnDragMoveEvent(QDragMoveEvent* event)
+void PreviewWidget::OnDragEntered(QDragEnterEvent* event)
+{
+    event->accept();
+}
+
+void PreviewWidget::OnDragMoved(QDragMoveEvent* event)
 {
     DVASSERT(nullptr != event);
     ProcessDragMoveEvent(event) ? event->accept() : event->ignore();
@@ -818,12 +775,12 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     return false;
 }
 
-void PreviewWidget::OnDragLeaveEvent(QDragLeaveEvent*)
+void PreviewWidget::OnDragLeaved(QDragLeaveEvent*)
 {
     systemsManager->ClearHighlight();
 }
 
-void PreviewWidget::OnDropEvent(QDropEvent* event)
+void PreviewWidget::OnDrop(QDropEvent* event)
 {
     systemsManager->ClearHighlight();
     DVASSERT(nullptr != event);
@@ -859,6 +816,7 @@ void PreviewWidget::OnDropEvent(QDropEvent* event)
             }
         }
     }
+    renderWidget->setFocus();
 }
 
 void PreviewWidget::OnKeyPressed(QKeyEvent* event)
@@ -986,12 +944,12 @@ void PreviewWidget::UpdateDragScreenState()
     inDragScreenState = inDragScreenState_;
     if (inDragScreenState)
     {
-        lastCursor = davaGLWidget->GetCursor();
-        davaGLWidget->SetCursor(Qt::OpenHandCursor);
+        lastCursor = renderWidget->cursor();
+        renderWidget->setCursor(Qt::OpenHandCursor);
     }
     else
     {
-        davaGLWidget->SetCursor(lastCursor);
+        renderWidget->setCursor(lastCursor);
     }
 }
 

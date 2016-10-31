@@ -11,6 +11,7 @@
 #include "QtTools/ProjectInformation/ProjectStructure.h"
 
 #include "QtTools/FileDialogs/FindFileDialog.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include "ui_FileSystemDockWidget.h"
 #include <QClipboard>
@@ -330,7 +331,7 @@ void FileSystemDockWidget::onDeleteFile()
 void FileSystemDockWidget::OnShowInExplorer()
 {
     auto pathIn = GetPathByCurrentPos(AnyPath);
-    ShowFileInExplorer(pathIn);
+    QtHelpers::ShowInOSFileManager(pathIn);
 }
 
 void FileSystemDockWidget::OnRename()

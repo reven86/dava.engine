@@ -15,6 +15,7 @@ class UIControl;
 class UIEvent;
 class VariantType;
 class UIGeometricData;
+class RenderWidget;
 }
 
 struct HUDAreaInfo
@@ -77,8 +78,10 @@ class EditorSystemsManager : PackageListener
     static StopPredicate defaultStopPredicate;
 
 public:
-    explicit EditorSystemsManager(DavaGLWidget* davaGLWidget);
+    explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
     ~EditorSystemsManager();
+
+    DAVA::RenderWidget* GetRenderWidget() const;
 
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetInputLayerControl() const;
@@ -141,6 +144,7 @@ private:
     SelectionContainer selectionContainer;
     CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
+    DAVA::RenderWidget* renderWidget = nullptr;
     HUDSystem* hudSystemPtr = nullptr;
 };
 

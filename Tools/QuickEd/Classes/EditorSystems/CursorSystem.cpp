@@ -1,8 +1,8 @@
 #include "EditorSystems/CursorSystem.h"
+#include "Engine/Qt/RenderWidget.h"
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
-#include "QtTools/DavaGLWidget/Davaglwidget.h"
 
 #include <QApplication>
 #include <QPixmap>
@@ -12,25 +12,25 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(EditorSystemsManager* parent, DavaGLWidget* aDavaGLWidget)
+CursorSystem::CursorSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , davaGLWidget(aDavaGLWidget)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
+    RenderWidget* renderWidget = systemsManager->GetRenderWidget();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
-        davaGLWidget->UnsetCursor();
+        renderWidget->unsetCursor();
     }
     else
     {
         auto control = areaInfo.owner->GetControl();
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
-        davaGLWidget->SetCursor(QCursor(pixmap));
+        renderWidget->setCursor(QCursor(pixmap));
     }
 }
 

@@ -16,21 +16,19 @@ class MainWindow;
 namespace DAVA
 {
 class AssetCacheClient;
+class Engine;
 class ResultList;
 }
 
-class EditorCore
-: public QObject
-  ,
-  public DAVA::InspBase
+class EditorCore : public QObject, public DAVA::InspBase
 {
     Q_OBJECT
 public:
-    explicit EditorCore(QObject* parent = nullptr);
+    explicit EditorCore(DAVA::Engine& engine);
 
     ~EditorCore();
 
-    void Start();
+    void OnRenderingInitialized();
 
 signals:
     void AssetCacheChanged(DAVA::AssetCacheClient* assetCacheClient);
@@ -41,7 +39,6 @@ private slots:
     void OnOpenProject();
     void OnCloseProject();
     void OnExit();
-    void OnGLWidgedInitialized();
     void OnShowHelp();
 
 private:

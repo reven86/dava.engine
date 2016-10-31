@@ -7,7 +7,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/Utils/Utils.h"
 
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -26,12 +25,33 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/Properties/PropertiesWidget.h"
 
+#include "DAVAVersion.h"
+#include "TextureCompression/PVRConverter.h"
+#include "Engine/Engine.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Input/UIInputSystem.h"
+#include "QtTools/Utils/MessageHandler.h"
+#include "QtTools/Utils/Themes/Themes.h"
+#include "Engine/Qt/NativeServiceQt.h"
+#include "version.h"
+
 using namespace DAVA;
 
 namespace EditorCoreDetails
 {
+static const char* EDITOR_TITLE = "DAVA Framework - QuickEd | %s-%s [%u bit]";
 static const DAVA::String DOCUMENTATION_DIRECTORY("~doc:/Help/");
-static const DAVA::String EDITOR_TITLE("QuickEd");
+//static const DAVA::String EDITOR_TITLE("QuickEd");
+
+void InitPVRTexTool()
+{
+#if defined(__DAVAENGINE_MACOS__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
+#elif defined(__DAVAENGINE_WIN32__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+#endif
+    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
+}
 };
 
 REGISTER_PREFERENCES_ON_START(EditorCore,
@@ -40,18 +60,55 @@ REGISTER_PREFERENCES_ON_START(EditorCore,
                               PREF_ARG("projectsHistorySize", static_cast<DAVA::uint32>(5))
                               )
 
-EditorCore::EditorCore(QObject* parent)
-    : QObject(parent)
+EditorCore::EditorCore(DAVA::Engine& engine)
+    : QObject()
     , cacheClient()
-    , mainWindow(std::make_unique<MainWindow>())
 {
-    ConnectApplicationFocus();
+    using namespace DAVA;
+    EngineContext* context = engine.GetContext();
 
+    FileSystem* fs = context->fileSystem;
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
+
+    UIControlSystem* uiControlSystem = context->uiControlSystem;
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+
+    UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::RIGHT), UIInputSystem::ACTION_FOCUS_RIGHT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::UP), UIInputSystem::ACTION_FOCUS_UP);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::DOWN), UIInputSystem::ACTION_FOCUS_DOWN);
+
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
+    inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, UIEvent::Modifier::SHIFT_DOWN), UIInputSystem::ACTION_FOCUS_PREV);
+
+    context->logger->SetLogFilename("QuickEd.txt");
+
+    Renderer::SetDesiredFPS(60);
+
+    const char* settingsPath = "QuickEdSettings.archive";
+    FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
+    PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
+
+    EditorCoreDetails::InitPVRTexTool();
+
+    qInstallMessageHandler(DAVAMessageHandler);
+
+    Q_INIT_RESOURCE(QtToolsResources);
+    Themes::InitFromQApplication();
+
+    mainWindow.reset(new MainWindow());
+
+    DAVA::RenderWidget* renderWidget = engine.GetNativeService()->GetRenderWidget();
+    mainWindow->InjectRenderWidget(renderWidget);
+
+    //we need to register preferences when whole class is initialized
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
-    //documentGroupView
+
     mainWindow->SetEditorTitle(ReadEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
@@ -60,10 +117,11 @@ EditorCore::EditorCore(QObject* parent)
     connect(mainWindow.get(), &MainWindow::RecentProject, this, &EditorCore::OpenProject);
     connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::OnCloseProject);
     connect(mainWindow.get(), &MainWindow::Exit, this, &EditorCore::OnExit);
-    connect(mainWindow.get(), &MainWindow::GLWidgedReady, this, &EditorCore::OnGLWidgedInitialized);
     connect(mainWindow.get(), &MainWindow::ShowHelp, this, &EditorCore::OnShowHelp);
 
     UnpackHelp();
+
+    mainWindow->show();
 }
 
 EditorCore::~EditorCore()
@@ -75,15 +133,9 @@ EditorCore::~EditorCore()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void EditorCore::Start()
+void EditorCore::OnRenderingInitialized()
 {
-    mainWindow->show();
-}
-
-void EditorCore::OnGLWidgedInitialized()
-{
-    mainWindow->SetEditorTitle(ReadEditorTitle());
-
+    mainWindow->OnWindowCreated();
     QString lastProjectPath = GetLastProject();
     if (!lastProjectPath.isEmpty())
     {
@@ -248,7 +300,7 @@ void EditorCore::SetUsingAssetCacheEnabled(bool enabled)
 void EditorCore::EnableCacheClient()
 {
     DisableCacheClient();
-    cacheClient.reset(new AssetCacheClient(true));
+    cacheClient.reset(new AssetCacheClient());
     DAVA::AssetCache::Error connected = cacheClient->ConnectSynchronously(connectionParams);
     if (connected != AssetCache::Error::NO_ERRORS)
     {
@@ -373,9 +425,6 @@ void EditorCore::UnpackHelp()
 
 QString EditorCore::ReadEditorTitle() const
 {
-    DAVA::KeyedArchive* options = DAVA::Core::Instance()->GetOptions();
-    if (!options)
-        return QString();
-
-    return QString::fromStdString(options->GetString("title", EditorCoreDetails::EDITOR_TITLE));
+    using namespace EditorCoreDetails;
+    return QString::fromStdString(DAVA::Format(EDITOR_TITLE, DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION, static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8)));
 }

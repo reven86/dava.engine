@@ -10,7 +10,6 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "Preferences/PreferencesDialog.h"
@@ -55,8 +54,6 @@ MainWindow::MainWindow(QWidget* parent)
     ui->tabBar->setUsesScrollButtons(true);
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
-
-    connect(ui->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &MainWindow::GLWidgedReady);
 
     connect(this, &MainWindow::EmulationModeChanged, ui->previewWidget, &PreviewWidget::OnEmulationModeChanged);
     connect(ui->previewWidget, &PreviewWidget::DropRequested, ui->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
@@ -291,6 +288,16 @@ void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
         ui->menuRecent->addAction(recentProject);
     }
     ui->menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
+}
+
+void MainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
+{
+    ui->previewWidget->InjectRenderWidget(renderWidget);
+}
+
+void MainWindow::OnWindowCreated()
+{
+    ui->previewWidget->OnWindowCreated();
 }
 
 void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)

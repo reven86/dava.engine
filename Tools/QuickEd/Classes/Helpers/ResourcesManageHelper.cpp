@@ -1,5 +1,4 @@
 #include "ResourcesManageHelper.h"
-#include "Core/Core.h"
 #include "QtTools/Utils/Utils.h"
 #include <QString>
 #include <QStringList>
@@ -19,7 +18,6 @@ const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
 const QString PROJECT_DATA = "%1/Data";
 // Project file path
 const QString PROJECT_FILE_PATH = "%1ui.uieditor";
-// Default project title
 //Available fonts extensions
 const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
                                                            << "*.otf"
@@ -32,8 +30,7 @@ const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf"
 QString ResourcesManageHelper::GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
 {
     using namespace ResourcesManageHelperLocal;
-    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname())
-                                      :
+    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname()) :
                                       QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
     fontPath += resourceFileName;
 
