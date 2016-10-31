@@ -93,17 +93,23 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
 {
     branchID = ApplicationManagerDetails::RemoveWhitespace(branchID);
     appID = ApplicationManagerDetails::RemoveWhitespace(appID);
+
+    //try to get right path
     QString runPath = fileManager->GetApplicationDirectory(branchID, appID);
     if (QFile::exists(runPath))
     {
         return runPath;
     }
+
+    //try to get old ugly path with a bug on "/" symbol
     QString tmpRunPath = GetApplicationDirectory_kostil(branchID, appID);
     if (QFile::exists(tmpRunPath))
     {
         return tmpRunPath;
     }
+    //we can have old branche name or old app name
     QList<QString> branchKeys = localConfig.GetStrings().keys(branchID);
+    //it can be combination of old and new names
     branchKeys.append(branchID);
     for (const QString& branchKey : branchKeys)
     {
@@ -128,6 +134,7 @@ QString ApplicationManager::GetApplicationDirectory(QString branchID, QString ap
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Application %1 in branch %2 not exists!").arg(appID).arg(branchID));
         return "";
     }
+    //we just downloaded it and did not find original folder? make new folder with a correct name
     else
     {
         FileManager::MakeDirectory(runPath);
