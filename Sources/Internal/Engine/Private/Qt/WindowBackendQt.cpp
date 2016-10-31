@@ -538,12 +538,12 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
 }
 
-void WindowBackend::SetCursorCapture(eCursorCapture mode);
+void WindowBackend::SetCursorCapture(eCursorCapture mode)
 {
     // not implemented
 }
 
-void WindowBackend::SetCursorVisibility(bool visible);
+void WindowBackend::SetCursorVisibility(bool visible)
 {
     // not implemented
 }
