@@ -17,9 +17,4 @@ void LocalNotificationDelayed::Post()
 {
     impl->PostDelayedNotification(title, text, delaySeconds, useSound);
 }
-
-const DAVA::String& LocalNotification::GetId() const
-{
-    return impl->GetId();
-}
 }
