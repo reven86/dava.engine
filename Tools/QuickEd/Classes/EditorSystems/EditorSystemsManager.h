@@ -70,7 +70,6 @@ class PackageNode;
 class CanvasSystem;
 class SelectionSystem;
 class HUDSystem;
-class DavaGLWidget;
 
 class EditorSystemsManager : PackageListener
 {

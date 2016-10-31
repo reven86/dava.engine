@@ -4,7 +4,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIControl.h"
 
-#include <QApplication>
 #include <QPixmap>
 #include <QTransform>
 

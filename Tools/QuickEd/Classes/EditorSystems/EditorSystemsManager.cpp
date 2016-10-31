@@ -67,7 +67,7 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget_)
     hudSystemPtr = new HUDSystem(this);
     systems.emplace_back(hudSystemPtr);
     systems.emplace_back(new CursorSystem(this));
-    systems.emplace_back(new EditorTransformSystem(this));
+    systems.emplace_back(new ::EditorTransformSystem(this));
 }
 
 EditorSystemsManager::~EditorSystemsManager() = default;
