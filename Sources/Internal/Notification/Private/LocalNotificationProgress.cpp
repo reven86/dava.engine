@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationProgress.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {

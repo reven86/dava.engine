@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationText.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {

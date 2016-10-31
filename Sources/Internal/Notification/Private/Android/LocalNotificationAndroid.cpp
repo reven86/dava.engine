@@ -1,4 +1,4 @@
-#include "Notification/LocalNotificationAndroid.h"
+#include "Notification/Private/Android/LocalNotificationAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 

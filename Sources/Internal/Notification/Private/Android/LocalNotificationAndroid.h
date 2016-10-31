@@ -1,12 +1,11 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Android/JNIBridge.h"
-#include "Notification/LocalNotificationImpl.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
 #include "Concurrency/Mutex.h"
@@ -37,5 +36,3 @@ private:
 };
 }
 #endif //__DAVAENGINE_ANDROID__
-
-#endif // __NOTIFICATION_ANDROID_H__

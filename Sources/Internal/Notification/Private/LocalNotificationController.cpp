@@ -3,6 +3,9 @@
 #include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationDelayed.h"
 
+#include "Notification/Private/Android/LocalNotificationAndroid.h"
+#include "Notification/Private/LocalNotificationNotImplemented.h"
+
 #include "Base/BaseTypes.h"
 #include "Concurrency/LockGuard.h"
 

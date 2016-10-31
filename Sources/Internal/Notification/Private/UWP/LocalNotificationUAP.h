@@ -1,11 +1,10 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Notification/LocalNotificationImpl.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 #include "Base/Message.h"
 
 namespace DAVA
@@ -33,6 +32,4 @@ private:
 };
 }
 
-#endif
-
-#endif /* defined __DAVAENGINE_LOCAL_NOTIFICATION_UAP_H__ */
+#endif //__DAVAENGINE_WIN_UAP__

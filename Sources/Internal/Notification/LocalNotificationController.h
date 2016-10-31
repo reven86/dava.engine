@@ -1,12 +1,9 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_CONTROLLER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
 #include "Concurrency/Mutex.h"
-#include "Notification/LocalNotificationAndroid.h"
-#include "Notification/LocalNotificationNotImplemented.h"
 
 namespace DAVA
 {
@@ -37,5 +34,3 @@ private:
     List<LocalNotification*> notificationsList;
 };
 }
-
-#endif // __NOTIFICATION_H__

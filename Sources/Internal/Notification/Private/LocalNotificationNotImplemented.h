@@ -1,11 +1,10 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_NOT_IMPLEMENTED_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Notification/LocalNotificationImpl.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 #include "Base/Message.h"
 
 namespace DAVA
@@ -25,6 +24,4 @@ public:
 };
 }
 
-#endif
-
-#endif /* defined __DAVAENGINE_NOTIFICATION_MACOS_H__ */
+#endif //__DAVAENGINE_WIN32__

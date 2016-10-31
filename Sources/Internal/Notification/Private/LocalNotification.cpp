@@ -1,6 +1,7 @@
 #include "Notification/LocalNotification.h"
 #include "Utils/Utils.h"
 #include "Concurrency/LockGuard.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {
@@ -70,5 +71,10 @@ void LocalNotification::Update()
         impl->Hide();
 
     isChanged = false;
+}
+
+const DAVA::String& LocalNotification::GetId() const
+{
+    return impl->GetId();
 }
 }

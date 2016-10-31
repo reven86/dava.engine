@@ -1,4 +1,5 @@
 #include "Notification/LocalNotificationDelayed.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 namespace DAVA
 {
@@ -15,5 +16,10 @@ void LocalNotificationDelayed::RemoveAllDelayedNotifications()
 void LocalNotificationDelayed::Post()
 {
     impl->PostDelayedNotification(title, text, delaySeconds, useSound);
+}
+
+inline const DAVA::String& LocalNotification::GetId() const
+{
+    return impl->GetId();
 }
 }

@@ -2,8 +2,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Notification/LocalNotificationUAP.h"
-#include "Utils/Utils.h"
+#include "Notification/Private/UWP/LocalNotificationUAP.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -41,7 +41,7 @@ LocalNotificationUAP::LocalNotificationUAP(const String& _id)
     using ::Windows::UI::Notifications::ToastNotificationManager;
 
     notificationId = _id;
-    nativeNotificationId = ref new Platform::String(StringToWString(_id).c_str());
+    nativeNotificationId = ref new Platform::String(UTF8Utils::EncodeToWideString(_id).c_str());
     toastNotifier = ToastNotificationManager::CreateToastNotifier();
 }
 

@@ -1,8 +1,8 @@
-#include "Notification/LocalNotificationMac.h"
+#include "Notification/Private/OsX/LocalNotificationMac.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#import "Notification/LocalNotificationImpl.h"
+#import "Notification/Private/LocalNotificationImpl.h"
 
 #import <Foundation/Foundation.h>
 

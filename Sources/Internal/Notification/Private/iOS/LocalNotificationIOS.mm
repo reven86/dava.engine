@@ -1,8 +1,8 @@
-#include "Notification/LocalNotificationIOS.h"
+#include "Notification/Private/iOS/LocalNotificationIOS.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#import "Notification/LocalNotificationImpl.h"
+#import "Notification/Private/LocalNotificationImpl.h"
 #import <UIKit/UIApplication.h>
 #import <UIKit/UILocalNotification.h>
 #import "Utils/NSStringUtils.h"
