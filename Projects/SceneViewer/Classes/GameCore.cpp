@@ -94,9 +94,6 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
 
     DbgDraw::EnsureInited();
-
-    perfQuerySet = rhi::CreatePerfQuerySet(16);
-    perfQuerySetFired = false;
 }
 
 void GameCore::OnAppFinished()
@@ -117,49 +114,6 @@ void GameCore::OnResume()
 
 void GameCore::BeginFrame()
 {
-    if (perfQuerySetFired)
-    {
-        bool ready = false;
-        bool valid = false;
-        rhi::GetPerfQuerySetStatus(perfQuerySet, &ready, &valid);
-
-        if (ready && valid)
-        {
-            uint64 freq = 0;
-            uint64 frame_t0, frame_t1;
-            uint64 clear_t0, clear_t1;
-            uint64 p2d_t0, p2d_t1;
-            uint64 main_t0, main_t1;
-
-            rhi::GetPerfQuerySetFreq(perfQuerySet, &freq);
-            //            Logger::Info("perf-query:  freq= %u",uint32(freq));
-
-            rhi::GetPerfQuerySetFrameTimestamps(perfQuerySet, &frame_t0, &frame_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T0, &clear_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__CLEAR_PASS_T1, &clear_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T0, &p2d_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__2D_PASS_T1, &p2d_t1);
-
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T0, &main_t0);
-            rhi::GetPerfQuerySetTimestamp(perfQuerySet, PERFQUERY__MAIN_PASS_T1, &main_t1);
-
-            Logger::Info("  GPU frame = %.3f ms", float(frame_t1 - frame_t0) / float(freq / 1000));
-            Logger::Info("    clear : %.3f ms", float(clear_t1 - clear_t0) / float(freq / 1000));
-            Logger::Info("    main  : %.3f ms", float(main_t1 - main_t0) / float(freq / 1000));
-            Logger::Info("    2d    : %.3f ms", float(p2d_t1 - p2d_t0) / float(freq / 1000));
-
-            perfQuerySetFired = false;
-        }
-    }
-
-    if (!perfQuerySetFired)
-    {
-        rhi::ResetPerfQuerySet(perfQuerySet);
-        rhi::SetFramePerfQuerySet(perfQuerySet);
-        perfQuerySetFired = true;
-    }
 }
 
 void GameCore::Draw()
@@ -235,7 +189,6 @@ KeyedArchive* CreateOptions()
     KeyedArchive* appOptions = new KeyedArchive();
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     //appOptions->SetInt32("renderer", rhi::RHI_METAL);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
