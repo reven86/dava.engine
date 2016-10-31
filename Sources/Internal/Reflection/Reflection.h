@@ -1,20 +1,19 @@
-#ifndef __DAVA_Reflection_Definition__
-#define __DAVA_Reflection_Definition__
+#pragma once
 
 #include <sstream>
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/RttiType.h"
-#include "Base/RttiInheritance.h"
 
-#include "Reflection/ReflectedBase.h"
-#include "Reflection/ReflectedObject.h"
 #include "Reflection/ReflectedMeta.h"
+#include "Reflection/ReflectedObject.h"
 
 namespace DAVA
 {
-class FieldWrapper;
-class StructureWrapper;
+// class FieldWrapper;
+// class StructureWrapper;
+// class ReflectedType;
+// class ReflectedMeta;
 
 /// \brief  Reflection allows to inspect and modify objects at runtime. It is some kind of runtime object reflection
 ///         with predefined methods, that are giving generic access to the real runtime object value or his fields.
@@ -28,8 +27,8 @@ class StructureWrapper;
 class Reflection final
 {
 public:
-    struct Field;
-    struct Method;
+    class Field;
+    class Method;
 
     /// \brief Default constructor.
     Reflection() = default;
@@ -39,7 +38,7 @@ public:
     /// \param  vw      ValueWrapper, that gives direct access to the runtime object value.
     /// \param  rtype   ReflectedType, that gives access to the registered  runtime object structure.
     /// \param  meta    Additional meta info.
-    Reflection(const ReflectedObject& object, const FieldWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
+    Reflection(const ReflectedObject& object, const PropertieWrapper* vw, const ReflectedType* rtype, const ReflectedMeta* meta);
 
     /// \brief Query if reflection is valid.
     /// \return true if valid, false if not.
@@ -164,17 +163,18 @@ public:
     static Reflection Create(T* ptr, const ReflectedMeta* meta = nullptr);
 
 private:
-    const FieldWrapper* vw = nullptr;
+    ReflectedObject object;
+
+    const PropertieWrapper* vw = nullptr;
     const StructureWrapper* sw = nullptr;
     const ReflectedMeta* meta = nullptr;
     const ReflectedType* objectType = nullptr;
-
-    ReflectedObject object;
 };
 
 /// \brief A reflection field.
-struct Reflection::Field
+class Reflection::Field
 {
+public:
     Any key; ///< field key (usually name or index)
     Reflection ref; ///< field reflection
 
@@ -183,20 +183,14 @@ struct Reflection::Field
 };
 
 /// \brief A reflection method.
-struct Reflection::Method
+class Reflection::Method
 {
+public:
     String key; ///< method key (usually its name)
     AnyFn fn; ///< method itself with binded runtime object it belongs to
 };
 
 } // namespace DAVA
 
-#endif // __DAVA_Reflection_Definition__
-
-#ifndef __DAVA_Reflection_Definition_Only__
 #define __DAVA_Reflection__
-#include "Reflection/Wrappers.h"
-#include "Reflection/ReflectedType.h"
 #include "Reflection/Private/Reflection_impl.h"
-#include "Reflection/Private/StructureWrapperClass.h"
-#endif

@@ -9,7 +9,7 @@ bool RttiInheritance::CanDownCast(const RttiType* from, const RttiType* to)
         to = to->Deref();
         from = from->Deref();
 
-        const RttiInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->GetInheritance();
         if (nullptr != fti)
         {
             auto it = fti->GetBaseTypes().find(to);
@@ -40,7 +40,7 @@ bool RttiInheritance::CanUpCast(const RttiType* from, const RttiType* to)
         to = to->Deref();
         from = from->Deref();
 
-        const RttiInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->GetInheritance();
         if (nullptr != fti)
         {
             auto it = fti->GetDerivedTypes().find(to);
@@ -76,7 +76,7 @@ bool RttiInheritance::DownCast(const RttiType* from, void* inPtr, const RttiType
         to = to->Deref();
         from = from->Deref();
 
-        const RttiInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->GetInheritance();
         if (nullptr != fti)
         {
             auto it = fti->GetBaseTypes().find(to);
@@ -109,7 +109,7 @@ bool RttiInheritance::UpCast(const RttiType* from, void* inPtr, const RttiType* 
         to = to->Deref();
         from = from->Deref();
 
-        const RttiInheritance* fti = from->inheritance.get();
+        const RttiInheritance* fti = from->GetInheritance();
         if (nullptr != fti)
         {
             auto it = fti->GetDerivedTypes().find(to);

@@ -4,7 +4,7 @@
 namespace DAVA
 {
 template <typename T>
-class ValueWrapperDefault : public FieldWrapper
+class ValueWrapperDefault : public PropertieWrapper
 {
     static const bool is_const = std::is_const<T>::value;
 
@@ -37,7 +37,7 @@ public:
         return SetValueInternal(ptr, value);
     }
 
-    ReflectedObject GetFieldObject(const ReflectedObject& object) const override
+    ReflectedObject GetPropertieObject(const ReflectedObject& object) const override
     {
         return object;
     }

@@ -4,11 +4,13 @@
 #include "Reflection/Reflection.h"
 #endif
 
-#include "Reflection/Private/ValueWrapperDefault.h"
+#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedType.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
-inline Reflection::Reflection(const ReflectedObject& object_, const FieldWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
+inline Reflection::Reflection(const ReflectedObject& object_, const PropertieWrapper* vw_, const ReflectedType* rtype_, const ReflectedMeta* meta_)
     : object(object_)
     , vw(vw_)
     , meta(meta_)
@@ -16,7 +18,7 @@ inline Reflection::Reflection(const ReflectedObject& object_, const FieldWrapper
 {
     if (nullptr != rtype_)
     {
-        sw = rtype_->GetStructureWrapper();
+        sw = rtype_->structureWrapper.get();
     }
 
     if (nullptr != meta)
@@ -45,7 +47,7 @@ inline const RttiType* Reflection::GetValueType() const
 
 inline ReflectedObject Reflection::GetValueObject() const
 {
-    return vw->GetFieldObject(object);
+    return vw->GetPropertieObject(object);
 }
 
 inline const DAVA::ReflectedType* Reflection::GetReflectedType() const

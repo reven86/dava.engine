@@ -1,14 +1,12 @@
-#include "Base/Platform.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/Wrappers.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
-UnorderedMap<const RttiType*, ReflectedType*> ReflectedType::typeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedType::rttiNameToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedType::permanentNameToReflectedTypeMap;
+UnorderedMap<const RttiType*, ReflectedType*> ReflectedTypeDB::rttiTypeToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedTypeDB::rttiNameToReflectedTypeMap;
+UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
 
-void ReflectedType::SetPermanentName(const String& name) const
+void ReflectedTypeDBB : SetPermanentName(const String& name) const
 {
     ReflectedType* rt = const_cast<ReflectedType*>(this);
 
@@ -53,13 +51,14 @@ const DtorWrapper* ReflectedType::GetDtor() const
 {
     return dtorWrapper.get();
 }
+#endif
 
-const ReflectedType* ReflectedType::GetByType(const RttiType* type)
+const ReflectedType* ReflectedType::GetByRttiType(const RttiType* type)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = typeToReflectedTypeMap.find(type);
-    if (it != typeToReflectedTypeMap.end())
+    auto it = rttiTypeToReflectedTypeMap.find(type);
+    if (it != rttiTypeToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -92,6 +91,5 @@ const ReflectedType* ReflectedType::GetByPermanentName(const String& name)
 
     return ret;
 }
-#endif
 
 } // namespace DAVA

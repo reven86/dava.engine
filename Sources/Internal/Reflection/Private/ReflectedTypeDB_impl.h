@@ -1,16 +1,12 @@
 #pragma once
 
-#ifndef __DAVA_ReflectedType__
-#include "Reflection/ReflectedType.h"
+#ifndef __DAVA_ReflectedTypeDB__
+#include "Reflection/ReflectedTypeDB.h"
 #endif
-
-#include "Reflection/Wrappers.h"
-#include "Reflection/ReflectedObject.h"
-#include "Reflection/Private/CtorWrapperDefault.h"
 
 namespace DAVA
 {
-namespace ReflectionDetail
+namespace ReflectedTypeDBDetail
 {
 template <typename T>
 const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::false_type)
@@ -21,13 +17,13 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::false_type)
 template <typename T>
 const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
 {
-    return static_cast<const ReflectedBase*>(ptr)->GetReflectedType();
+    return static_cast<const ReflectionBase*>(ptr)->GetReflectedType();
 }
 
 template <typename T>
 const ReflectedType* GetVirtualReflectedType(const T* ptr)
 {
-    static const bool isReflectedBase = std::is_base_of<ReflectedBase, T>::value;
+    static const bool isReflectedBase = std::is_base_of<ReflectionBase, T>::value;
     return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isReflectedBase>());
 }
 
@@ -75,36 +71,24 @@ public:
     }
 };
 
-template <typename T>
-CtorWrapper* GetDefaultCtor(std::true_type hasDefault)
-{
-    return new CtorWrapperDefault<T>();
-}
+} // namespace ReflectedTypeDBDetail
 
 template <typename T>
-CtorWrapper* GetDefaultCtor(std::false_type hasDefault)
-{
-    return nullptr;
-}
-
-} // namespace ReflectionDetail
-
-template <typename T>
-ReflectedType* ReflectedType::Create()
+ReflectedType* ReflectedTypeDB::Create()
 {
     static ReflectedType ret;
     return &ret;
 }
 
 template <typename T>
-ReflectedType* ReflectedType::Edit()
+ReflectedType* ReflectedTypeDB::Edit()
 {
     using DecayT = RttiType::DecayT<T>;
     ReflectedType* ret = Create<DecayT>();
 
-    if (nullptr == ret->type)
+    if (nullptr == ret->rttiType)
     {
-        ret->type = RttiType::Instance<DecayT>();
+        ret->rttiType = RttiType::Instance<DecayT>();
 
         //         ret->structure.reset(new Refle)
         //         ret->structureWrapper.reset(StructureWrapperCreator<DecayT>::Create());
@@ -124,29 +108,29 @@ ReflectedType* ReflectedType::Edit()
         //             ret->ctorWrappers.insert(std::unique_ptr<CtorWrapper>(defaultCtor));
         //         }
 
-        typeToReflectedTypeMap[ret->type] = ret;
+        rttiTypeToReflectedTypeMap[ret->rttiType] = ret;
         rttiNameToReflectedTypeMap[ret->rttiName] = ret;
 
-        ReflectionDetail::ReflectionInitializerRunner<DecayT>::Run();
+        ReflectedTypeDBDetail::ReflectionInitializerRunner<DecayT>::Run();
     }
 
     return ret;
 }
 
 template <typename T>
-const ReflectedType* ReflectedType::Get()
+const ReflectedType* ReflectedTypeDB::Get()
 {
     return Edit<T>();
 }
 
 template <typename T>
-const ReflectedType* ReflectedType::GetByPointer(const T* ptr)
+const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
 {
     const ReflectedType* ret = nullptr;
 
     if (nullptr != ptr)
     {
-        ret = ReflectionDetail::GetVirtualReflectedType(ptr);
+        ret = ReflectedTypeDBDetail::GetVirtualReflectedType(ptr);
         if (nullptr == ret)
         {
             ret = ReflectedType::Edit<T>();
@@ -166,7 +150,7 @@ void ReflectedType::RegisterBases()
 
 inline const RttiType* ReflectedType::GetRttiType() const
 {
-    return type;
+    return rttiType;
 }
 
 inline const String& ReflectedType::GetPermanentName() const

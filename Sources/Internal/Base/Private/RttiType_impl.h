@@ -18,7 +18,7 @@ inline const char* RttiType::GetName() const
 
 inline const RttiInheritance* RttiType::GetInheritance() const
 {
-    return inheritance.get();
+    return inheritance;
 }
 
 inline bool RttiType::IsConst() const
@@ -44,6 +44,11 @@ inline bool RttiType::IsFundamental() const
 inline bool RttiType::IsTrivial() const
 {
     return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
+}
+
+inline bool RttiType::IsEnum() const
+{
+    return flags.test(static_cast<size_t>(TypeFlag::isEnum));
 }
 
 inline const RttiType* RttiType::Decay() const
@@ -135,6 +140,7 @@ void RttiType::Init(RttiType** ptype)
     rttiType.flags.set(isReference, std::is_reference<T>::value);
     rttiType.flags.set(isFundamental, std::is_fundamental<T>::value);
     rttiType.flags.set(isTrivial, std::is_trivial<T>::value);
+    rttiType.flags.set(isEnum, std::is_enum<T>::value);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
     rttiType.derefType = RttiTypeDetail::GetTypeIfTrue<DerefU>(condDeref);

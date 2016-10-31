@@ -20,27 +20,27 @@
 
 #define DAVA_REFLECTION(Cls) \
     template <typename FT__> \
-    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
     static void __ReflectionInitializer() \
     { \
         static_assert(!std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectedBase"); \
-        DAVA::ReflectedType::Get<Cls>()->SetPermanentName(#Cls); \
+        /*DAVA::ReflectedTypeDB::Get<Cls>()->SetPermanentName(#Cls);*/ \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
 
 #define DAVA_VIRTUAL_REFLECTION(Cls, ...) \
     template <typename FT__> \
-    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
     const DAVA::ReflectedType* GetReflectedType() const override \
     { \
-        return DAVA::ReflectionDetail::GetByThisPointer(this); \
+        return DAVA::ReflectedTypeDBDetail::GetByThisPointer(this); \
     } \
     static void __ReflectionInitializer() \
     { \
         static_assert(std::is_base_of<DAVA::ReflectedBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectedBase"); \
-        DAVA::ReflectedType::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        DAVA::ReflectedType::Get<Cls>()->SetPermanentName(#Cls); \
+        /*DAVA::ReflectedType::RegisterBases<Cls, ##__VA_ARGS__>();*/ \
+        /*DAVA::ReflectedTypeDB::Get<Cls>()->SetPermanentName(#Cls);*/ \
         __ReflectionInitializer_Impl(); \
     } \
     static void __ReflectionInitializer_Impl()
@@ -197,7 +197,7 @@ public:
     {
         // override children for class C in appropriate ReflectedType
         ReflectedType* type = ReflectedType::Edit<C>();
-        type->structureWrapper = std::move(sw);
+        //type->structureWrapper = std::move(sw);
     }
 
 private:

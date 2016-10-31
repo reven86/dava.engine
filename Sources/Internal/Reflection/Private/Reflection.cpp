@@ -1,5 +1,3 @@
-#include "Base/Platform.h"
-
 #include <iomanip>
 #include <algorithm>
 #include <cstring>
@@ -8,7 +6,7 @@
 
 namespace DAVA
 {
-namespace ReflectionDetail
+namespace ReflectedTypeDBDetail
 {
 struct Dumper
 {
@@ -256,7 +254,7 @@ const Dumper::PrintersTable Dumper::pointerPrinters = {
 
 void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 {
-    ReflectionDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
+    ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
 }
 
 void Reflection::DumpMethods(std::ostream& out) const

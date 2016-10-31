@@ -37,6 +37,7 @@ public:
     bool IsReference() const;
     bool IsFundamental() const;
     bool IsTrivial() const;
+    bool IsEnum() const;
 
     const RttiType* Decay() const;
     const RttiType* Deref() const;
@@ -53,6 +54,7 @@ private:
         isReference,
         isFundamental,
         isTrivial,
+        isEnum
     };
 
     size_t size = 0;
@@ -63,7 +65,7 @@ private:
     const RttiType* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    mutable std::unique_ptr<RttiInheritance> inheritance;
+    const RttiInheritance* inheritance = nullptr;
 
     RttiType() = default;
 
@@ -74,5 +76,4 @@ private:
 } // namespace DAVA
 
 #define __Dava_RttiType__
-#include "Base/RttiInheritance.h"
 #include "Base/Private/RttiType_impl.h"

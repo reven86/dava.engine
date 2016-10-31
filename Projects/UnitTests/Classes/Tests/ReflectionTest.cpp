@@ -99,7 +99,7 @@ struct SimpleStruct
     }
 };
 
-class BaseBase : public DAVA::ReflectedBase
+class BaseBase : public DAVA::ReflectionBase
 {
 public:
     int basebase = 99;
@@ -396,7 +396,7 @@ DAVA_TESTCLASS (ReflectionTest)
         TEST_VERIFY(rtype0->GetPermanentName() == permName);
         TEST_VERIFY(rtype0->GetRttiType() == DAVA::RttiType::Instance<T>());
 
-        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByType(DAVA::RttiType::Instance<T>());
+        const DAVA::ReflectedType* rtype1 = DAVA::ReflectedType::GetByRttiType(DAVA::RttiType::Instance<T>());
         TEST_VERIFY(rtype1 == rtype0);
 
         const DAVA::ReflectedType* rtype2 = DAVA::ReflectedType::GetByRttiName(typeid(T).name());
