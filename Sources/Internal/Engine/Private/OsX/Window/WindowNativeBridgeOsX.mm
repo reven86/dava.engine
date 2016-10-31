@@ -280,7 +280,7 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
     {
         SetSystemCursorVisible(false);
     }
-    if (DAVA::eCursorCapture::PINNING == captureMode)
+    if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(true);
     }
@@ -292,7 +292,7 @@ void WindowNativeBridge::MouseExited(NSEvent* theEvent)
     {
         SetSystemCursorVisible(true);
     }
-    if (DAVA::eCursorCapture::PINNING == captureMode)
+    if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(false);
     }
@@ -305,15 +305,15 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
         captureMode = mode;
         switch (mode)
         {
-        case DAVA::eCursorCapture::FRAME:
+        case eCursorCapture::FRAME:
             //not implemented
             break;
-        case DAVA::eCursorCapture::PINNING:
+        case eCursorCapture::PINNING:
         {
             SetSystemCursorCapture(true);
             break;
         }
-        case DAVA::eCursorCapture::OFF:
+        case eCursorCapture::OFF:
         {
             SetSystemCursorCapture(false);
             break;

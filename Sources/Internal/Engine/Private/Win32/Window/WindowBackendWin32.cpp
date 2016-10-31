@@ -216,18 +216,18 @@ void WindowBackend::UpdateClipCursor()
     }
 }
 
-void WindowBackend::DoSetFocus(Window* window, bool focusState)
+void WindowBackend::DoSetWindowFocus(bool focusState)
 {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
     if (!focusState)
     {
-        if (captureMode == eCursorCapture::PINNING)
+        if (captureMode != eCursorCapture::OFF)
         {
             DoSetCursorCapture(eCursorCapture::OFF);
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
         }
         DoSetCursorVisibility(true);
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
 }
 
 void WindowBackend::DoSetCursorVisibility(bool visible)
@@ -296,7 +296,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         if (hasFocus)
         {
             hasFocus = false;
-            DoSetFocus(window, hasFocus);
+            DoSetWindowFocus(hasFocus);
         }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
@@ -349,35 +349,40 @@ LRESULT WindowBackend::OnActivate(WPARAM wparam)
             isMinimized = false;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
         }
-        DoSetFocus(window, hasFocus);
+        DoSetWindowFocus(hasFocus);
+    }
+    return 0;
+}
+
+LRESULT WindowBackend::OnMouseMoveDeltaEvent(uint16 keyModifiers, int x, int y)
+{
+    RECT clientRect;
+    ::GetClientRect(hwnd, &clientRect);
+    int clientCenterX((clientRect.left + clientRect.right) / 2);
+    int clientCenterY((clientRect.bottom + clientRect.top) / 2);
+    int deltaX = x - clientCenterX;
+    int deltaY = y - clientCenterY;
+    if (deltaX != 0 || deltaY != 0)
+    {
+        SetCursorInCenter();
+        x = deltaX;
+        y = deltaY;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(deltaX), static_cast<float32>(deltaY), true));
+    }
+    else
+    {
+        // skip mouse moveEvent, which generate SetCursorPos
     }
     return 0;
 }
 
 LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
-    bool isPinningMode = (captureMode == eCursorCapture::PINNING);
-    if (isPinningMode)
+    if (captureMode == eCursorCapture::PINNING)
     {
-        RECT clientRect;
-        ::GetClientRect(hwnd, &clientRect);
-        int clientCenterX((clientRect.left + clientRect.right) / 2);
-        int clientCenterY((clientRect.bottom + clientRect.top) / 2);
-        int deltaX = x - clientCenterX;
-        int deltaY = y - clientCenterY;
-        if (deltaX != 0 || deltaY != 0)
-        {
-            SetCursorInCenter();
-            x = deltaX;
-            y = deltaY;
-        }
-        else
-        {
-            // skip mouse moveEvent, which generate SetCursorPos
-            return 0;
-        }
+        return OnMouseMoveDeltaEvent(keyModifiers, x, y);
     }
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), isPinningMode));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
     return 0;
 }
 

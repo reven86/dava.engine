@@ -62,7 +62,7 @@ private:
     void DoSetCursorCapture(eCursorCapture mode);
     void DoSetCursorVisibility(bool visible);
     void UpdateClipCursor();
-    void DoSetFocus(Window* window, bool focusState);
+    void DoSetWindowFocus(bool focusState);
 
     void AdjustWindowSize(int32* w, int32* h);
     void HandleSizeChanged(int32 w, int32 h);
@@ -74,6 +74,7 @@ private:
     LRESULT OnExitSizeMove();
     LRESULT OnActivate(WPARAM wparam);
     LRESULT OnMouseMoveEvent(uint16 keyModifiers, int x, int y);
+    LRESULT OnMouseMoveRelativeEvent(uint16 keyModifiers, int x, int y);
     LRESULT OnMouseWheelEvent(uint16 keyModifiers, int32 delta, int x, int y);
     LRESULT OnMouseClickEvent(UINT message, uint16 keyModifiers, uint16 xbutton, int x, int y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);

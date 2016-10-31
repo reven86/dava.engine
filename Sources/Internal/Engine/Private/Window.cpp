@@ -303,16 +303,16 @@ void Window::UpdateVirtualCoordinatesSystem()
 bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
-    if (skipMouseUpEvent)
+    if (skipFirstMouseUpEventBeforeCursorCapture)
     {
-        skipMouseUpEvent = false;
+        skipFirstMouseUpEventBeforeCursorCapture = false;
         return true;
     }
     if (deferredCursorCaptureOn)
     {
         if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
         {
-            skipMouseUpEvent = true;
+            skipFirstMouseUpEventBeforeCursorCapture = true;
         }
         else if (MainDispatcherEvent::MOUSE_MOVE == e.type)
         {
@@ -337,7 +337,6 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     {
         if (hasFocus && !deferredCursorCaptureOn)
         {
-            windowBackend->SetCursorCapture(cursorCapture);
             windowBackend->SetCursorVisibility(cursorVisible);
         }
     }
