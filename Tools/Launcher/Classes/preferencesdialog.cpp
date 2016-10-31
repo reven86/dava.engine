@@ -146,7 +146,7 @@ void PreferencesDialog::OnButtonChooseFilesPathClicked()
 
 void PreferencesDialog::ProcessSaveButtonEnabled()
 {
-    bool enabled;
+    bool enabled = true;
     for (QLineEdit* lineEdit : urlWidgets)
     {
         if (lineEdit->text().isEmpty())

@@ -93,21 +93,21 @@ FileManager::FileManager(QObject* parent /*= nullptr*/)
 
 QString FileManager::GetBaseAppsDirectory() const
 {
-    QString path = filesDirectory + FileManagerDetails::baseAppDir;
+    QString path = GetFilesDirectory() + FileManagerDetails::baseAppDir;
     MakeDirectory(path);
     return path;
 }
 
 QString FileManager::GetTempDirectory() const
 {
-    QString path = filesDirectory + FileManagerDetails::tempDir;
+    QString path = GetFilesDirectory() + FileManagerDetails::tempDir;
     MakeDirectory(path);
     return path;
 }
 
 QString FileManager::GetSelfUpdateTempDirectory() const
 {
-    QString path = filesDirectory + FileManagerDetails::tempSelfUpdateDir;
+    QString path = GetFilesDirectory() + FileManagerDetails::tempSelfUpdateDir;
     MakeDirectory(path);
     return path;
 }
@@ -274,8 +274,23 @@ void FileManager::SetFilesDirectory(const QString& newDirPath)
     DeleteDirectory(GetTempDirectory());
     DeleteDirectory(GetSelfUpdateTempDirectory());
 
-    QString oldFilesDirectory = filesDirectory;
-    filesDirectory = newDirPath;
+    QString oldFilesDirectory = GetFilesDirectory();
+    filesDirectory = QDir::fromNativeSeparators(newDirPath);
+    if (!filesDirectory.endsWith("/"))
+    {
+        filesDirectory.append("/");
+    }
+    QFileInfo oldFileInfo(oldFilesDirectory + FileManagerDetails::baseAppDir);
+    QFileInfo newFileInfo(GetFilesDirectory() + FileManagerDetails::baseAppDir);
+    if (oldFileInfo.isDir() && !newFileInfo.exists())
+    {
+        QFile file(oldFileInfo.absoluteFilePath());
+        QString newPath = newFileInfo.absoluteFilePath();
+        if (!file.rename(newPath))
+        {
+            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("Can not move folder with artifacts from %1 to %2").arg(oldFileInfo.absoluteFilePath(), newFileInfo.absoluteFilePath()));
+        }
+    }
 }
 
 QString FileManager::GetApplicationDirectory(const QString& branchID, const QString& appID) const

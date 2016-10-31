@@ -202,6 +202,7 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
     <property name="title">
      <string>Launcher</string>
     </property>
+    <addaction name="actionPreferences"/>
    </widget>
    <addaction name="menuLauncher"/>
    <addaction name="menuConfiguration"/>
