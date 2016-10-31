@@ -19,7 +19,7 @@ TablePropertyDelegate::~TablePropertyDelegate()
 {
 }
 
-QWidget* TablePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index)
+QWidget* TablePropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
     QLineEdit* lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName("lineEdit");

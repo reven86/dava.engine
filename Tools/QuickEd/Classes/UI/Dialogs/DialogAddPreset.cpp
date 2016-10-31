@@ -31,6 +31,11 @@ DialogAddPreset::DialogAddPreset(EditorFontSystem* aEditorFontSystem, const QStr
 
 DialogAddPreset::~DialogAddPreset() = default;
 
+QString DialogAddPreset::GetPresetName() const
+{
+    return ui->lineEdit_newFontPresetName->text();
+}
+
 void DialogAddPreset::OnNewPresetNameChanged()
 {
     QString baseName = ui->comboBox_baseFontPresetName->currentText();

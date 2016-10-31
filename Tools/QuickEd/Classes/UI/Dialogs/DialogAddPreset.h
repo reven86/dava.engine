@@ -16,6 +16,8 @@ public:
     explicit DialogAddPreset(EditorFontSystem* aEditorFontSystem, const QString& originalPresetName, QWidget* parent = nullptr);
     ~DialogAddPreset();
 
+    QString GetPresetName() const;
+
 private slots:
     void OnNewPresetNameChanged();
     void OnAccept();

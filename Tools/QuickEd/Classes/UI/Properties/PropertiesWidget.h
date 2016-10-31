@@ -11,6 +11,8 @@ class StyleSheetNode;
 class Document;
 class PackageBaseNode;
 class PropertiesModel;
+class PropertiesTreeItemDelegate;
+class Project;
 class QtModelPackageCommandExecutor;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
@@ -19,6 +21,7 @@ class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 public:
     PropertiesWidget(QWidget* parent = nullptr);
 
+    void SetProject(const Project* project);
 public slots:
     void UpdateModel(PackageBaseNode* node);
     void OnDocumentChanged(Document* doc);
@@ -54,6 +57,7 @@ private:
     QAction* removeAction = nullptr;
 
     PropertiesModel* propertiesModel = nullptr;
+    PropertiesTreeItemDelegate* propertiesItemsDelegate = nullptr;
 
     DAVA::Map<DAVA::String, bool> itemsState;
 

@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QList>
 #include <QPointer>
+#include "UI/mainwindow.h"
 
 class MainWindow;
 class Document;
@@ -22,8 +23,13 @@ class DocumentGroup : public QObject
     Q_PROPERTY(QString undoText READ GetUndoText NOTIFY UndoTextChanged)
     Q_PROPERTY(QString redoText READ GetRedoText NOTIFY RedoTextChanged)
 public:
-    explicit DocumentGroup(MainWindow* mainWindow, QObject* parent = nullptr);
+    explicit DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent = nullptr);
     ~DocumentGroup();
+
+    Project* GetProject() const
+    {
+        return project;
+    }
 
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
@@ -95,7 +101,8 @@ private:
     void InsertDocument(Document* document, int pos);
     DAVA::RefPtr<PackageNode> OpenPackage(const DAVA::FilePath& path);
 
-    MainWindow* mainWindow = nullptr;
+    Project* project = nullptr;
+    MainWindow::DocumentGroupView* view = nullptr;
     Document* active = nullptr;
     QList<Document*> documents;
     std::unique_ptr<CommandStackGroup> commandStackGroup;

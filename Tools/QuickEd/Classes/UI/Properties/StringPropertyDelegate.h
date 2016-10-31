@@ -10,7 +10,7 @@ public:
     explicit StringPropertyDelegate(PropertiesTreeItemDelegate* delegate);
     ~StringPropertyDelegate() override = default;
 
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) override;
+    QWidget* createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem& option, const QModelIndex& index) override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     bool setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 

@@ -7,16 +7,17 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
+#include "Project/Project.h"
 
 using namespace DAVA;
 
 ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(
 const QString& resourceExtension_,
-const QString& defaultResourceDir_,
+const QString& resourceSubDir_,
 PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
     , resourceExtension(resourceExtension_)
-    , defaultResourceDir(defaultResourceDir_)
+    , resourceSubDir(resourceSubDir_)
 {
 }
 
@@ -24,8 +25,10 @@ ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 {
 }
 
-QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
+QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem&, const QModelIndex&)
 {
+    DVASSERT(context.project != nullptr);
+    projectResourceDir = context.project->SourceResourceDirectory();
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, &QLineEdit::editingFinished, this, &ResourceFilePropertyDelegate::OnEditingFinished);
@@ -94,7 +97,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
     }
     else
     {
-        dir = defaultResourceDir;
+        dir = projectResourceDir + resourceSubDir;
     }
 
     QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, "*" + resourceExtension);

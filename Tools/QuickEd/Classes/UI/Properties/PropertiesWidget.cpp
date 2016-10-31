@@ -45,11 +45,12 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
 {
     setupUi(this);
     propertiesModel = new PropertiesModel(treeView);
+    propertiesItemsDelegate = new PropertiesTreeItemDelegate(this);
     treeView->setModel(propertiesModel);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
     connect(propertiesModel, &PropertiesModel::ComponentAdded, this, &PropertiesWidget::OnComponentAdded);
 
-    treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
+    treeView->setItemDelegate(propertiesItemsDelegate);
 
     addComponentAction = CreateAddComponentAction();
     treeView->addAction(addComponentAction);
@@ -71,6 +72,11 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     UpdateModel(nullptr);
 }
 
+void PropertiesWidget::SetProject(const Project* project)
+{
+    propertiesItemsDelegate->SetProject(project);
+}
+
 void PropertiesWidget::OnDocumentChanged(Document* document)
 {
     if (nullptr != document)
@@ -81,6 +87,7 @@ void PropertiesWidget::OnDocumentChanged(Document* document)
     {
         commandExecutor = nullptr;
     }
+
     UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
 }
 

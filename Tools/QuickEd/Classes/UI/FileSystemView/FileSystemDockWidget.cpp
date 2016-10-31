@@ -5,7 +5,6 @@
 
 
 #include "ValidatedTextInputDialog.h"
-#include "UI/FileSystemView/MultipleFileSystemModel.h"
 #include "FileSystemModel.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Utils.h"
@@ -51,12 +50,9 @@ QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
-    //, model(new FileSystemModel(this))
-    , model(new MultipleFileSystemModel(this))
+    , model(new FileSystemModel(this))
+//, model(new MultipleFileSystemModel(this))
 {
-    //QStringList extensions = { "yaml" };
-    //projectStructure.reset(new ProjectStructure(extensions));
-
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -69,14 +65,11 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     model->setNameFilterDisables(false);
     model->setReadOnly(false);
 
-    connect(model, &MultipleFileSystemModel::directoryLoaded, this, &FileSystemDockWidget::OnDirectoryLoaded);
-
     ui->treeView->setModel(model);
     ui->treeView->hideColumn(0);
     ui->treeView->hideColumn(1);
     ui->treeView->hideColumn(2);
     ui->treeView->hideColumn(3);
-    ui->treeView->setRootIndex(QModelIndex());
     ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileSystemDockWidget::OnSelectionChanged);
@@ -117,10 +110,6 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     copyInternalPathToFileAction = new QAction(tr("Copy Internal Path"), this);
     connect(copyInternalPathToFileAction, &QAction::triggered, this, &FileSystemDockWidget::OnCopyInternalPathToFile);
 
-    //findInFilesAction = FindFileDialog::CreateFindInFilesAction(parent);
-    //connect(findInFilesAction, &QAction::triggered, this, &FileSystemDockWidget::FindInFiles);
-    //addAction(findInFilesAction);
-
     ui->treeView->addAction(newFolderAction);
     ui->treeView->addAction(newFileAction);
     ui->treeView->addAction(deleteAction);
@@ -134,55 +123,31 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::AddPath(const QString& path, const QString& displayName)
+void FileSystemDockWidget::SetDirectory(const QString& path)
 {
-    QFileInfo fileInfo(path);
-
-    bool isPathAvailable = fileInfo.isDir() && fileInfo.exists();
-    isAvailable |= isPathAvailable;
-
-    if (isPathAvailable)
+    bool isAvailable = !path.isEmpty();
+    if (isAvailable)
     {
-        auto fRoot = model->addPath(path, displayName);
-        ui->treeView->expand(fRoot);
-        //projectStructure->AddProjectDirectory(path);
+        QFileInfo fileInfo(path);
+        isAvailable = fileInfo.isDir() && fileInfo.exists();
     }
 
     if (isAvailable)
     {
+        ui->treeView->setRootIndex(model->setRootPath(path));
         ui->treeView->showColumn(0);
     }
-}
-
-void FileSystemDockWidget::RemovePath(const QString& path)
-{
-    //projectStructure->RemoveProjectDirectory(path);
-}
-
-void FileSystemDockWidget::RemoveAllPaths()
-{
-    model->removeAllPaths();
-    ui->treeView->hideColumn(0);
-    //projectStructure->RemoveAllProjectDirectories();
-    isAvailable = false;
-    //findInFilesAction->setEnabled(false);
+    else
+    {
+        ui->treeView->hideColumn(0);
+    }
 }
 
 void FileSystemDockWidget::SelectFile(const QString& filePath)
 {
-    ShowAndSelectFile(filePath);
+    DVASSERT(!filePath.isEmpty());
+    ui->treeView->setCurrentIndex(model->index(filePath));
 }
-
-// void FileSystemDockWidget::FindInFiles()
-// {
-//     QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", parentWidget());
-//     if (filePath.isEmpty())
-//     {
-//         return;
-//     }
-//     ShowAndSelectFile(filePath);
-//     emit OpenPackageFile(filePath);
-// }
 
 //refresh actions by menu invoke pos
 void FileSystemDockWidget::RefreshActions()
@@ -414,53 +379,6 @@ void FileSystemDockWidget::OnSelectionChanged(const QItemSelection&, const QItem
     UpdateActionsWithShortcutsState(indexes);
 }
 
-void FileSystemDockWidget::OnDirectoryLoaded(const QString& path)
-{
-    if (!indexToSetCurrent.isValid())
-    {
-        return;
-    }
-    DAVA::Logger::Debug("=====Directory loaded %s ", path.toStdString().c_str());
-    if (path != targetDirectory)
-    {
-        return;
-    }
-    //indexToSetCurrent.parent();
-    //     ui->treeView->expand(indexToSetCurrent.parent());
-    //     ui->treeView->setCurrentIndex(indexToSetCurrent);
-    //     return;
-
-    QModelIndex rootIndex = ui->treeView->rootIndex();
-    auto predicate = [this](const QModelIndex& index) {
-        return model->canFetchMore(index);
-    };
-    QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, predicate);
-    if (!indexes.isEmpty())
-    {
-        return;
-    }
-
-    auto dummyPredicate = [this](const QModelIndex& index) {
-        return true;
-    };
-    indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, rootIndex, dummyPredicate);
-    for (const QModelIndex& index : indexes)
-    {
-        DAVA::Logger::Debug("=====index %s ", index.data(Qt::DisplayRole).toString().toStdString().c_str());
-        if (!ui->treeView->isExpanded(index))
-        {
-            ui->treeView->setExpanded(index, true);
-            bool res = ui->treeView->isExpanded(index);
-
-            int t = 0;
-        }
-    }
-
-    //ui->treeView->setCurrentIndex(indexToSetCurrent);
-    targetDirectory = QString();
-    indexToSetCurrent = QPersistentModelIndex();
-}
-
 void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList& indexes)
 {
     bool canDelete = false;
@@ -477,35 +395,4 @@ void FileSystemDockWidget::UpdateActionsWithShortcutsState(const QModelIndexList
     deleteAction->setEnabled(canDelete);
     openFileAction->setEnabled(canOpen);
     openFileAction->setVisible(canOpen);
-}
-
-void FileSystemDockWidget::ShowAndSelectFile(const QString& filePath)
-{
-    DVASSERT(!filePath.isEmpty());
-    //     QModelIndex fileIndex = model->index(filePath);
-    //     indexToSetCurrent = fileIndex;
-    //     //ui->treeView->expand(fileIndex.parent());
-    //     ui->treeView->setCurrentIndex(fileIndex);
-    //     return;
-    indexToSetCurrent = model->index(filePath);
-    QFileInfo info(filePath);
-    targetDirectory = info.absolutePath();
-    DAVA::Logger::Debug("filePath %s, targetDirectory %s", filePath.toStdString().c_str(), targetDirectory.toStdString().c_str());
-    if (indexToSetCurrent.isValid())
-    {
-        auto predicate = [this](const QModelIndex& index) -> bool {
-            return model->canFetchMore(index);
-        };
-        //get unfetched indexes
-        QModelIndexList indexes = FileSystemDockWidgetDetails::CollectParentIndexes(indexToSetCurrent, ui->treeView->rootIndex(), predicate);
-        for (const QModelIndex& index : indexes)
-        {
-            model->fetchMore(index);
-        }
-        //nothing to fetch - can show selected file
-        if (indexes.isEmpty())
-        {
-            OnDirectoryLoaded(targetDirectory);
-        }
-    }
 }

@@ -1,5 +1,5 @@
+#include "DocumentGroup.h"
 #include "Document/Document.h"
-#include "Document/DocumentGroup.h"
 #include "Command/CommandStack.h"
 #include "Document/CommandsBase/CommandStackGroup.h"
 
@@ -10,7 +10,7 @@
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Model/QuickEdPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
-#include "UI/mainwindow.h"
+#include "Project/Project.h"
 
 #include <QApplication>
 #include <QMutableListIterator>
@@ -18,16 +18,16 @@
 #include <QTabBar>
 #include <QMessageBox>
 
-#include "UI/Preview/PreviewWidget.h"
-#include "UI/Package/PackageWidget.h"
 #include "UI/Library/LibraryWidget.h"
 #include "UI/Properties/PropertiesWidget.h"
+#include "UI/DocumentGroupView.h"
 
 using namespace DAVA;
 
-DocumentGroup::DocumentGroup(MainWindow* aMainWindow, QObject* parent)
+DocumentGroup::DocumentGroup(Project* aProject, MainWindow::DocumentGroupView* aView, QObject* parent)
     : QObject(parent)
-    , mainWindow(aMainWindow)
+    , project(aProject)
+    , view(aView)
     , commandStackGroup(new CommandStackGroup())
 {
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
@@ -36,30 +36,29 @@ DocumentGroup::DocumentGroup(MainWindow* aMainWindow, QObject* parent)
     commandStackGroup->undoCommandChanged.Connect([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
     commandStackGroup->redoCommandChanged.Connect([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
 
-    connect(mainWindow, &MainWindow::OpenPackageFile, this, &DocumentGroup::AddDocument);
+    connect(view, &MainWindow::DocumentGroupView::OpenPackageFile, this, &DocumentGroup::AddDocument);
+    connect(this, &DocumentGroup::ActiveDocumentChanged, view, &MainWindow::DocumentGroupView::OnDocumentChanged);
 
-    //connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow, &MainWindow::OnDocumentChanged);
+    ConnectToTabBar(view->GetTabBar());
 
-    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPreviewWidget(), &PreviewWidget::OnDocumentChanged);
-    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPackageWidget(), &PackageWidget::OnDocumentChanged);
-    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetLibraryWidget(), &LibraryWidget::OnDocumentChanged);
-    connect(this, &DocumentGroup::ActiveDocumentChanged, mainWindow->GetPropertiesWidget(), &PropertiesWidget::OnDocumentChanged);
+    AttachRedoAction(view->GetActionRedo());
+    AttachUndoAction(view->GetActionUndo());
 
-    ConnectToTabBar(mainWindow->GetTabBar());
+    AttachSaveAction(view->GetActionSaveDocument());
+    AttachSaveAllAction(view->GetActionSaveAllDocuments());
 
-    AttachRedoAction(mainWindow->GetActionRedo());
-    AttachUndoAction(mainWindow->GetActionUndo());
+    AttachCloseDocumentAction(view->GetActionCloseDocument());
+    AttachReloadDocumentAction(view->GetActionReloadDocument());
 
-    AttachSaveAction(mainWindow->GetActionSaveDocument());
-    AttachSaveAllAction(mainWindow->GetActionSaveAllDocuments());
-
-    AttachCloseDocumentAction(mainWindow->GetActionCloseDocument());
-    AttachReloadDocumentAction(mainWindow->GetActionReloadDocument());
+    view->GetLibraryWidget()->SetLibraryPackages(project->GetLibraryPackages());
+    view->GetPropertiesWidget()->SetProject(project);
 }
 
 DocumentGroup::~DocumentGroup()
 {
-    DisconnectTabBar(mainWindow->GetTabBar());
+    view->GetPropertiesWidget()->SetProject(nullptr);
+    view->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
+    DisconnectTabBar(view->GetTabBar());
 };
 
 QList<Document*> DocumentGroup::GetDocuments() const
@@ -383,7 +382,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
 
-    mainWindow->SetDocumentActionsEnabled(active != nullptr);
+    view->SetDocumentActionsEnabled(active != nullptr);
 
     emit ActiveDocumentChanged(document);
     emit ActiveIndexChanged(documents.indexOf(document));

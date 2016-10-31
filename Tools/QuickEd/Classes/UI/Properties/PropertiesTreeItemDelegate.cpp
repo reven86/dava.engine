@@ -105,7 +105,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
     {
         PropertyWidget* editorWidget = new PropertyWidget(parent);
         editorWidget->setObjectName(QString::fromUtf8("editorWidget"));
-        QWidget* editor = currentDelegate->createEditor(editorWidget, option, sourceIndex);
+        QWidget* editor = currentDelegate->createEditor(editorWidget, context, option, sourceIndex);
         if (!editor)
         {
             DAVA::SafeDelete(editorWidget);
@@ -209,6 +209,11 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
     }
 
     return nullptr;
+}
+
+void PropertiesTreeItemDelegate::SetProject(const Project* project)
+{
+    context.project = project;
 }
 
 void PropertiesTreeItemDelegate::emitCommitData(QWidget* editor)

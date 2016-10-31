@@ -14,7 +14,7 @@ FilePathPropertyDelegate::~FilePathPropertyDelegate()
 {
 }
 
-QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&)
+QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const PropertiesContext& context, const QStyleOptionViewItem&, const QModelIndex&)
 {
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));

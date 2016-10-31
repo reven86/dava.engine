@@ -24,10 +24,7 @@ public:
     explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
 
-    void AddPath(const QString& path, const QString& displayName);
-    void RemovePath(const QString& path);
-    void RemoveAllPaths();
-
+    void SetDirectory(const QString& path);
     void SelectFile(const QString& filePath);
 
 signals:
@@ -48,14 +45,11 @@ private slots:
     void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    void OnDirectoryLoaded(const QString& path);
 
 private:
     void RefreshActions();
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
-
-    void ShowAndSelectFile(const QString& filePath);
 
     enum ePathType
     {
@@ -65,8 +59,7 @@ private:
     QString GetPathByCurrentPos(ePathType pathType);
 
     std::unique_ptr<Ui::FileSystemDockWidget> ui;
-    //    QFileSystemModel* model = nullptr;
-    class MultipleFileSystemModel* model = nullptr;
+    QFileSystemModel* model = nullptr;
     QAction* newFolderAction = nullptr;
     QAction* newFileAction = nullptr;
     QAction* deleteAction = nullptr;
@@ -75,14 +68,5 @@ private:
     QAction* openFileAction = nullptr;
     QAction* copyInternalPathToFileAction = nullptr;
 
-    //QAction* findInFilesAction = nullptr;
-
     QPoint menuInvokePos = QPoint(-1, -1);
-
-    bool isAvailable = false;
-
-    //std::unique_ptr<ProjectStructure> projectStructure;
-    //we set current index asyncronysly, when model emits signal "directoryLoaded"
-    QPersistentModelIndex indexToSetCurrent;
-    QString targetDirectory;
 };

@@ -9,6 +9,8 @@
 #include <QVector>
 #include <QPair>
 
+#include "UI/mainwindow.h"
+
 class EditorFontSystem;
 class EditorLocalizationSystem;
 class DocumentGroup;
@@ -28,7 +30,7 @@ public:
     struct Settings
     {
         QString projectFile;
-        QVector<QPair<QString, QString>> sourceResourceDirectories;
+        QString sourceResourceDirectory;
         QString intermediateResourceDirectory;
 
         DAVA::FilePath fontsDirectory;
@@ -42,7 +44,7 @@ public:
     static const QString& GetUIRelativePath();
     static const QString& GetProjectFileName();
 
-    Project(MainWindow* aMainWindow, const Settings& aSettings);
+    Project(MainWindow::ProjectView* aView, const Settings& aSettings);
     ~Project();
 
     void SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient);
@@ -55,7 +57,9 @@ public:
     QString GetCurrentLanguage() const;
     void SetCurrentLanguage(const QString& newLanguageCode);
 
-    //DocumentGroup* GetDocumentGroup() const;
+    const QStringList& GetDefaultPresetNames() const;
+
+    EditorFontSystem* GetEditorFontSystem() const;
 
     void SetRtl(bool isRtl);
     void SetBiDiSupport(bool support);
@@ -63,7 +67,7 @@ public:
 
     const DAVA::Vector<DAVA::FilePath>& GetLibraryPackages() const;
 
-    const QVector<QPair<QString, QString>>& SourceResourceDirectories() const;
+    const QString& SourceResourceDirectory() const;
 
     void OnReloadSprites();
 
@@ -81,7 +85,7 @@ private:
     const QString projectDirectory;
     const QString projectName;
 
-    MainWindow* mainWindow = nullptr;
+    MainWindow::ProjectView* view = nullptr;
     std::unique_ptr<EditorFontSystem> editorFontSystem;
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
     std::unique_ptr<DocumentGroup> documentGroup;

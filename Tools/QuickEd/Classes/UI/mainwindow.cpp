@@ -18,6 +18,8 @@
 #include "DebugTools/DebugTools.h"
 #include "QtTools/Utils/Themes/Themes.h"
 #include "UI/Package/PackageModel.h"
+#include "UI/ProjectView.h"
+#include "UI/DocumentGroupView.h"
 
 #include "ui_mainwindow.h"
 
@@ -39,25 +41,22 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
     DebugTools::ConnectToUI(ui.get());
-
     SetupShortcuts();
-    InitPluginsToolBar();
     SetupViewMenu();
+
+    projectView = new ProjectView(this);
+    documentGroupView = new DocumentGroupView(this);
+
+    InitEmulationMode();
     ConnectActions();
 
     ui->tabBar->setElideMode(Qt::ElideNone);
     ui->tabBar->setTabsClosable(true);
     ui->tabBar->setUsesScrollButtons(true);
-    setUnifiedTitleAndToolBarOnMac(true);
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    //OnDocumentChanged(nullptr);
-
-    connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    connect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(ui->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &MainWindow::GLWidgedReady);
-    connect(ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::FindFileInProject);
 
     connect(this, &MainWindow::EmulationModeChanged, ui->previewWidget, &PreviewWidget::OnEmulationModeChanged);
     connect(ui->previewWidget, &PreviewWidget::DropRequested, ui->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
@@ -77,9 +76,6 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    disconnect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-    disconnect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
@@ -176,7 +172,6 @@ void MainWindow::ConnectActions()
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::CloseProject);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::Exit);
     connect(ui->menuRecent, &QMenu::triggered, this, &MainWindow::OnRecentMenu);
-    connect(ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ReloadSprites);
 
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::ShowHelp);
 
@@ -188,188 +183,13 @@ void MainWindow::ConnectActions()
     connect(ui->actionActualZoom, &QAction::triggered, ui->previewWidget, &PreviewWidget::SetActualScale);
 }
 
-void MainWindow::InitPluginsToolBar()
-{
-    InitLanguageBox();
-    InitGlobalClasses();
-    InitRtlBox();
-    InitBiDiSupportBox();
-    InitEmulationMode();
-}
-
-void MainWindow::InitLanguageBox()
-{
-    comboboxLanguage.reset(new QComboBox());
-    comboboxLanguage->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    QLabel* label = new QLabel(tr("Language"));
-    label->setBuddy(comboboxLanguage.get());
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(comboboxLanguage.get());
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(wrapper);
-
-    void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
-    connect(comboboxLanguage.get(), currentIndexChangedFn, this, &MainWindow::OnCurrentLanguageChanged);
-}
-
-void MainWindow::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
-{
-    bool wasBlocked = comboboxLanguage->blockSignals(true); //performance fix
-    comboboxLanguage->clear();
-
-    if (!availableLangsCodes.isEmpty())
-    {
-        bool currentLangPresent = false;
-        for (const QString& langCode : availableLangsCodes)
-        {
-            comboboxLanguage->addItem(ConvertLangCodeToString(langCode), langCode);
-            if (langCode == currentLangCode)
-            {
-                currentLangPresent = true;
-            }
-        }
-        DVASSERT(currentLangPresent);
-        comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
-    }
-
-    comboboxLanguage->blockSignals(wasBlocked);
-}
-
-void MainWindow::SetCurrentLanguage(const QString& currentLangCode)
-{
-    comboboxLanguage->setCurrentText(ConvertLangCodeToString(currentLangCode));
-}
-
-PreviewWidget* MainWindow::GetPreviewWidget()
-{
-    return ui->previewWidget;
-}
-
-PropertiesWidget* MainWindow::GetPropertiesWidget()
-{
-    return ui->propertiesWidget;
-}
-
-FileSystemDockWidget* MainWindow::GetFileSystemWidget()
-{
-    return ui->fileSystemDockWidget;
-}
-
-PackageWidget* MainWindow::GetPackageWidget()
-{
-    return ui->packageWidget;
-}
-
-LibraryWidget* MainWindow::GetLibraryWidget()
-{
-    return ui->libraryWidget;
-}
-
-QTabBar* MainWindow::GetTabBar()
-{
-    return ui->tabBar;
-}
-
-QAction* MainWindow::GetActionRedo()
-{
-    return ui->actionRedo;
-}
-
-QAction* MainWindow::GetActionUndo()
-{
-    return ui->actionUndo;
-}
-
-QAction* MainWindow::GetActionSaveDocument()
-{
-    return ui->actionSaveDocument;
-}
-
-QAction* MainWindow::GetActionSaveAllDocuments()
-{
-    return ui->actionSaveAllDocuments;
-}
-
-QAction* MainWindow::GetActionCloseDocument()
-{
-    return ui->actionCloseDocument;
-}
-
-QAction* MainWindow::GetActionReloadDocument()
-{
-    return ui->actionReloadDocument;
-}
-
-void MainWindow::SetProjectActionsEnabled(bool enabled)
-{
-    ui->actionCloseProject->setEnabled(enabled);
-    ui->actionFindFileInProject->setEnabled(enabled);
-    ui->toolBarPlugins->setEnabled(enabled);
-
-    ui->fileSystemDockWidget->setEnabled(enabled);
-}
-
-void MainWindow::SetDocumentActionsEnabled(bool enabled)
-{
-    ui->packageWidget->setEnabled(enabled);
-    ui->propertiesWidget->setEnabled(enabled);
-    ui->libraryWidget->setEnabled(enabled);
-
-    ui->actionSaveDocument->setEnabled(enabled);
-    ui->actionSaveAllDocuments->setEnabled(enabled);
-    ui->actionReloadDocument->setEnabled(enabled);
-    ui->actionCloseDocument->setEnabled(enabled);
-
-    ui->actionRedo->setEnabled(enabled);
-    ui->actionUndo->setEnabled(enabled);
-}
-
-void MainWindow::InitRtlBox()
-{
-    QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
-    rtlBox->setLayoutDirection(Qt::RightToLeft);
-    ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(rtlBox);
-    connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
-}
-
-void MainWindow::InitBiDiSupportBox()
-{
-    QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
-    bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
-    ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(bidiSupportBox);
-    connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::OnBiDiSupportChanged);
-}
-
-void MainWindow::InitGlobalClasses()
-{
-    QLineEdit* classesEdit = new QLineEdit();
-    classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    QLabel* label = new QLabel(tr("Global classes"));
-    label->setBuddy(classesEdit);
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(classesEdit);
-    QWidget* wrapper = new QWidget();
-    wrapper->setLayout(layout);
-    ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(wrapper);
-    connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
-}
-
 void MainWindow::InitEmulationMode()
 {
-    emulationBox.reset(new QCheckBox("Emulation", this));
+    emulationBox = new QCheckBox("Emulation", this);
     emulationBox->setLayoutDirection(Qt::RightToLeft);
-    connect(emulationBox.get(), &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
     ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(emulationBox.get());
+    ui->toolBarPlugins->addWidget(emulationBox);
 }
 
 void MainWindow::SetupViewMenu()
@@ -520,20 +340,6 @@ void MainWindow::OnPixelizationStateChanged(bool isPixelized)
     Texture::SetPixelization(isPixelized);
 }
 
-void MainWindow::OnRtlChanged(int arg)
-{
-    emit RtlChanged(arg == Qt::Checked);
-}
-
-void MainWindow::OnBiDiSupportChanged(int arg)
-{
-    emit BiDiSupportChanged(arg == Qt::Checked);
-}
-
-void MainWindow::OnGlobalClassesChanged(const QString& str)
-{
-    emit GlobalStyleClassesChanged(str);
-}
 
 void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
 {
@@ -547,12 +353,6 @@ void MainWindow::OnEditorPreferencesTriggered()
 {
     PreferencesDialog dialog(this);
     dialog.exec();
-}
-
-void MainWindow::OnCurrentLanguageChanged(int newLanguageIndex)
-{
-    QString langCode = comboboxLanguage->itemData(newLanguageIndex).toString();
-    emit CurrentLanguageChanged(langCode);
 }
 
 bool MainWindow::IsPixelized() const

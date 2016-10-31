@@ -18,6 +18,8 @@
 #include "UI/mainwindow.h"
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "UI/Library/LibraryWidget.h"
+#include "UI/Properties/PropertiesWidget.h"
+#include "UI/ProjectView.h"
 
 #include <QDir>
 #include <QApplication>
@@ -26,24 +28,20 @@
 
 using namespace DAVA;
 
-Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
+Project::Project(MainWindow::ProjectView* aView, const Settings& aSettings)
     : QObject(nullptr)
-    , mainWindow(aMainWindow)
+    , view(aView)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
-    , documentGroup(new DocumentGroup(mainWindow, this))
+    , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker(this))
     , projectStructure(new ProjectStructure(QStringList() << "yaml"))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
     , projectName(QFileInfo(aSettings.projectFile).fileName())
 {
-    for (auto& folderInfo : settings.sourceResourceDirectories)
-    {
-        folderInfo.second = projectDirectory + folderInfo.second;
-        FilePath::AddResourcesFolder(FilePath(folderInfo.second.toStdString()));
-        projectStructure->AddProjectDirectory(folderInfo.second);
-    }
+    settings.sourceResourceDirectory = projectDirectory + settings.sourceResourceDirectory;
+    FilePath::AddResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
 
     settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
 
@@ -53,33 +51,30 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     editorLocalizationSystem->SetDirectory(QDir(QString::fromStdString(settings.textsDirectory.GetAbsolutePathname())));
     editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(settings.defaultLanguage));
 
-    for (auto& item : SourceResourceDirectories())
-    {
-        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
-        QString path = pathInfo.absoluteFilePath();
-        QString displayName = item.first;
+    QFileInfo pathInfo = settings.sourceResourceDirectory + Project::GetUIRelativePath();
+    QString path = pathInfo.absoluteFilePath();
 
-        mainWindow->GetFileSystemWidget()->AddPath(path, displayName);
-    }
-    mainWindow->GetLibraryWidget()->SetLibraryPackages(GetLibraryPackages());
+    projectStructure->AddProjectDirectory(path);
+    view->SetResourceDirectory(path);
 
-    mainWindow->SetProjectActionsEnabled(true);
-    mainWindow->SetProjectPath(GetProjectPath());
-    mainWindow->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
+    view->SetProjectActionsEnabled(true);
+    view->SetProjectPath(GetProjectPath());
+    view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
 
     connect(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, this, &Project::CurrentLanguageChanged, Qt::DirectConnection);
     connect(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, documentGroup.get(), &DocumentGroup::FontPresetChanged, Qt::DirectConnection);
 
-    connect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
-    connect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
-    connect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
-    connect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+    connect(view, &MainWindow::ProjectView::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
+    connect(view, &MainWindow::ProjectView::RtlChanged, this, &Project::SetRtl);
+    connect(view, &MainWindow::ProjectView::BiDiSupportChanged, this, &Project::SetBiDiSupport);
+    connect(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+    connect(view, &MainWindow::ProjectView::ReloadSprites, this, &Project::OnReloadSprites);
+    connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::FindFileInProject);
 
-    connect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
-    connect(mainWindow, &MainWindow::ReloadSprites, this, &Project::OnReloadSprites);
+    connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
+
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
 
-    connect(mainWindow, &MainWindow::FindFileInProject, this, &Project::FindFileInProject);
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
@@ -104,34 +99,27 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
 
 Project::~Project()
 {
-    disconnect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
-    disconnect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
-    disconnect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
-    disconnect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
+    //disconnect(mainWindow, &MainWindow::CurrentLanguageChanged, this, &Project::SetCurrentLanguage);
+    //disconnect(mainWindow, &MainWindow::RtlChanged, this, &Project::SetRtl);
+    //disconnect(mainWindow, &MainWindow::BiDiSupportChanged, this, &Project::SetBiDiSupport);
+    //disconnect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &Project::SetGlobalStyleClasses);
 
-    disconnect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
+    disconnect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
 
-    mainWindow->SetLanguages(QStringList(), QString());
-    mainWindow->SetProjectPath(QString());
-    mainWindow->SetProjectActionsEnabled(false);
+    view->SetLanguages(QStringList(), QString());
+    view->SetProjectPath(QString());
+    view->SetProjectActionsEnabled(false);
 
-    mainWindow->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
-    for (auto& item : SourceResourceDirectories())
-    {
-        QFileInfo pathInfo = item.second + Project::GetUIRelativePath();
-        QString path = pathInfo.absoluteFilePath();
-
-        mainWindow->GetFileSystemWidget()->RemovePath(path);
-    }
-    mainWindow->GetFileSystemWidget()->RemoveAllPaths();
+    //mainWindow->GetPropertiesWidget()->SetProject(nullptr);
+    //view->GetLibraryWidget()->SetLibraryPackages(Vector<FilePath>());
+    QFileInfo pathInfo = settings.sourceResourceDirectory + Project::GetUIRelativePath();
+    QString path = pathInfo.absoluteFilePath();
+    projectStructure->RemoveProjectDirectory(path);
+    view->SetResourceDirectory(QString());
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
-    for (auto& folderInfo : settings.sourceResourceDirectories)
-    {
-        projectStructure->RemoveProjectDirectory(folderInfo.second);
-        FilePath::RemoveResourcesFolder(FilePath(folderInfo.second.toStdString()));
-    }
+    FilePath::RemoveResourcesFolder(FilePath(settings.sourceResourceDirectory.toStdString()));
 }
 // bool Project::OpenInternal(const QString& path)
 // {
@@ -254,23 +242,17 @@ std::tuple<Project::Settings, ResultList> Project::ParseProjectSettings(const QS
 
     YamlNode* projectRoot = parser->GetRootNode();
 
-    const YamlNode* sourceResourceDirsNode = projectRoot->Get("SourceResourceDirectories");
-    if (nullptr != sourceResourceDirsNode)
+    const YamlNode* sourceResourceDirNode = projectRoot->Get("SourceResourceDirectory");
+    if (nullptr != sourceResourceDirNode)
     {
-        for (uint32 i = 0; i < sourceResourceDirsNode->GetCount(); i++)
-        {
-            auto it = sourceResourceDirsNode->Get(i)->AsMap().begin();
-            QString alias = QString::fromStdString(it->first);
-            QString directory = QString::fromStdString(it->second->AsString());
-            settings.sourceResourceDirectories.push_back(qMakePair(alias, directory));
-        }
+        settings.sourceResourceDirectory = QString::fromStdString(sourceResourceDirNode->AsString());
     }
     else
     {
         QString defaultDirectory = "./DataSource/";
         QString message = tr("Data source directories not set. Used default directory: %1.").arg(defaultDirectory);
         resultList.AddResult(Result::RESULT_WARNING, message.toStdString());
-        settings.sourceResourceDirectories.push_back(qMakePair(QString("Default"), defaultDirectory));
+        settings.sourceResourceDirectory = defaultDirectory;
     }
 
     const YamlNode* intermediateResourceDirNode = projectRoot->Get("IntermediateResourceDirectory");
@@ -412,10 +394,15 @@ void Project::SetCurrentLanguage(const QString& newLanguageCode)
     }
 }
 
-// DocumentGroup* Project::GetDocumentGroup() const
-// {
-//     return documentGroup.get();
-// }
+const QStringList& Project::GetDefaultPresetNames() const
+{
+    return editorFontSystem->GetDefaultPresetNames();
+}
+
+EditorFontSystem* Project::GetEditorFontSystem() const
+{
+    return editorFontSystem.get();
+}
 
 void Project::SetRtl(bool isRtl)
 {
@@ -457,9 +444,9 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
     }
 }
 
-const QVector<QPair<QString, QString>>& Project::SourceResourceDirectories() const
+const QString& Project::SourceResourceDirectory() const
 {
-    return settings.sourceResourceDirectories;
+    return settings.sourceResourceDirectory;
 }
 
 void Project::OnReloadSprites()
@@ -472,7 +459,7 @@ void Project::OnReloadSprites()
         }
     }
 
-    mainWindow->ExecDialogReloadSprites(spritesPacker.get());
+    //mainWindow->ExecDialogReloadSprites(spritesPacker.get());TODO Fix
 }
 
 void Project::OnReloadSpritesFinished()
@@ -494,7 +481,7 @@ bool Project::TryCloseAllDocuments()
     if (hasUnsaved)
     {
         int ret = QMessageBox::question(
-        mainWindow,
+        view->mainWindow,
         tr("Save changes"),
         tr("Some files has been modified.\n"
            "Do you want to save your changes?"),
@@ -519,12 +506,12 @@ bool Project::TryCloseAllDocuments()
 
 void Project::FindFileInProject()
 {
-    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", mainWindow);
+    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", view->mainWindow);
     if (filePath.isEmpty())
     {
         return;
     }
-    mainWindow->GetFileSystemWidget()->SelectFile(filePath);
+    view->SelectFile(filePath);
     //emit OpenPackageFile(filePath); TODO fix
     documentGroup->AddDocument(filePath);
 }

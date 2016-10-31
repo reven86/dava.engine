@@ -51,8 +51,7 @@ EditorCore::EditorCore(QObject* parent)
 
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
-    mainWindow->SetProjectActionsEnabled(false);
-    mainWindow->SetDocumentActionsEnabled(false);
+    //documentGroupView
     mainWindow->SetEditorTitle(ReadEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);
@@ -158,7 +157,7 @@ std::tuple<std::unique_ptr<Project>, ResultList> EditorCore::CreateProject(const
         return std::make_tuple(nullptr, resultList);
     }
 
-    return std::make_tuple(std::make_unique<Project>(mainWindow, settings), resultList);
+    return std::make_tuple(std::make_unique<Project>(mainWindow->GetProjectView(), settings), resultList);
 }
 
 std::tuple<QString, DAVA::ResultList> EditorCore::CreateNewProject()
