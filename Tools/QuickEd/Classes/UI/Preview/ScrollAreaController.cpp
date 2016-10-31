@@ -151,6 +151,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
     {
         viewSize = viewSize_;
         auto newSize = Vector2(viewSize_.width(), viewSize_.height());
+        UIControlSystem::Instance()->vcs->SetVirtualScreenSize(viewSize_.width(), viewSize_.height());
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
         UpdatePosition();
         emit ViewSizeChanged(viewSize);
