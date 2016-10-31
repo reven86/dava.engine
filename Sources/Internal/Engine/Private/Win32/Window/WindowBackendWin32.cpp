@@ -380,7 +380,7 @@ LRESULT WindowBackend::OnMouseMoveEvent(uint16 keyModifiers, int x, int y)
 {
     if (captureMode == eCursorCapture::PINNING)
     {
-        return OnMouseMoveDeltaEvent(keyModifiers, x, y);
+        return OnMouseMoveRelativeEvent(keyModifiers, x, y);
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, static_cast<float32>(x), static_cast<float32>(y), false));
     return 0;

@@ -115,7 +115,7 @@ private:
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
-    void HandleWindowCaptureLost(const Private::MainDispatcherEvent& e);
+    void HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
@@ -126,7 +126,7 @@ private:
     void HandleTouchMove(const Private::MainDispatcherEvent& e);
     void HandleKeyPress(const Private::MainDispatcherEvent& e);
     void HandleKeyChar(const Private::MainDispatcherEvent& e);
-    bool HandleCursorCapture(const Private::MainDispatcherEvent& e);
+    bool HandleInputActivation(const Private::MainDispatcherEvent& e);
 
     void CompressSizeChangedEvents(const Private::MainDispatcherEvent& e);
     void UpdateVirtualCoordinatesSystem();
@@ -154,7 +154,7 @@ private:
     Bitset<static_cast<size_t>(UIEvent::MouseButton::NUM_BUTTONS)> mouseButtonState;
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
-    bool deferredCursorCaptureOn = false;
+    bool waitInputActivation = false;
     bool skipFirstMouseUpEventBeforeCursorCapture = false;
     // Friends
     friend class Private::EngineBackend;

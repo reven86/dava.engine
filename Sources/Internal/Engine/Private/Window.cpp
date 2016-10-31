@@ -145,7 +145,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         {
             return; // if no focus - skip all input events
         }
-        if (HandleCursorCapture(e))
+        if (HandleInputActivation(e))
         {
             return;
         }
@@ -192,7 +192,7 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         HandleWindowDestroyed(e);
         break;
     case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
-        HandleWindowCaptureLost(e);
+        HandleCursorCaptuleLost(e);
         break;
     default:
         break;
@@ -239,9 +239,9 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     engineBackend->DeinitRender(this);
 }
 
-void Window::HandleWindowCaptureLost(const Private::MainDispatcherEvent& e)
+void Window::HandleCursorCaptuleLost(const Private::MainDispatcherEvent& e)
 {
-    deferredCursorCaptureOn = (cursorCapture == eCursorCapture::PINNING);
+    waitInputActivation = true;
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
@@ -300,7 +300,7 @@ void Window::UpdateVirtualCoordinatesSystem()
     virtualCoordSystem->ScreenSizeChanged();
 }
 
-bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
+bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
     if (skipFirstMouseUpEventBeforeCursorCapture)
@@ -308,7 +308,7 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
         skipFirstMouseUpEventBeforeCursorCapture = false;
         return true;
     }
-    if (deferredCursorCaptureOn)
+    if (waitInputActivation)
     {
         if (MainDispatcherEvent::MOUSE_BUTTON_DOWN == e.type)
         {
@@ -318,7 +318,7 @@ bool Window::HandleCursorCapture(const Private::MainDispatcherEvent& e)
         {
             return true;
         }
-        deferredCursorCaptureOn = false;
+        waitInputActivation = false;
         windowBackend->SetCursorCapture(cursorCapture);
         windowBackend->SetCursorVisibility(cursorVisible);
         return true;
@@ -335,7 +335,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     hasFocus = e.stateEvent.state != 0;
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
-        if (hasFocus && !deferredCursorCaptureOn)
+        if (hasFocus && !waitInputActivation)
         {
             windowBackend->SetCursorVisibility(cursorVisible);
         }
