@@ -68,6 +68,7 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask>& taskQueue, ApplicationManag
     , networkManager(new QNetworkAccessManager(this))
     , tasks(taskQueue)
     , appManager(_appManager)
+    , fileManager(appManager->GetFileManager())
 {
     ui->setupUi(this);
 #ifdef Q_OS_MAC
@@ -90,7 +91,7 @@ void UpdateDialog::OnCancelClicked()
     if (currentDownload != nullptr)
         currentDownload->abort();
 
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     close();
 }
@@ -190,7 +191,7 @@ void UpdateDialog::DownloadFinished()
         return;
     }
 
-    const QString& archiveFilepath = FileManager::GetTempDownloadFilePath();
+    const QString& archiveFilepath = fileManager->GetTempDownloadFilePath();
     QFile outputFile;
     outputFile.setFileName(archiveFilepath);
     outputFile.open(QFile::WriteOnly);
@@ -227,7 +228,7 @@ void UpdateDialog::DownloadFinished()
         BreakLog();
     }
     ui->cancelButton->setEnabled(true);
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
     tasks.dequeue();
     StartNextTask();

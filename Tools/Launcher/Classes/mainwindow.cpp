@@ -6,6 +6,7 @@
 #include "selfupdater.h"
 #include "defines.h"
 #include "filemanager.h"
+#include "preferencesdialog.h"
 #include "configdownloader.h"
 #include "errormessenger.h"
 #include "branchesListModel.h"
@@ -108,11 +109,15 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::OnRefreshClicked);
     connect(ui->action_downloadAll, &QAction::triggered, this, &MainWindow::OnInstallAll);
     connect(ui->action_removeAll, &QAction::triggered, this, &MainWindow::OnRemoveAll);
-    connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
+    connect(ui->listView, &QListView::clicked, this, &MainWindow::OnListItemClicked);
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
+    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OpenPreferencesEditor);
+
     appManager = new ApplicationManager(this);
+    fileManager = appManager->GetFileManager();
     newsDownloader = new FileDownloader(this);
+    configDownloader = new ConfigDownloader(appManager, this);
 
     connect(newsDownloader, &FileDownloader::Finished, this, &MainWindow::NewsDownloadFinished);
     listModel = new BranchesListModel(appManager, this);
@@ -128,6 +133,8 @@ MainWindow::MainWindow(QWidget* parent)
     QSettings settings;
     restoreGeometry(settings.value(geometryKey).toByteArray());
     restoreState(settings.value(stateKey).toByteArray());
+
+    PreferencesDialog::LoadPreferences(fileManager, configDownloader);
 }
 
 MainWindow::~MainWindow()
@@ -135,6 +142,8 @@ MainWindow::~MainWindow()
     QSettings settings;
     settings.setValue(geometryKey, saveGeometry());
     settings.setValue(stateKey, saveState());
+
+    PreferencesDialog::SavePreferences(fileManager, configDownloader);
     SafeDelete(ui);
 }
 
@@ -239,10 +248,9 @@ void MainWindow::OnRemove(int rowNumber)
 void MainWindow::OnRefreshClicked()
 {
     ui->action_updateConfiguration->setEnabled(false);
-    FileManager::DeleteDirectory(FileManager::GetTempDirectory());
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
-    ConfigDownloader downloader(appManager, this);
-    if (downloader.exec() == QDialog::Accepted)
+    if (configDownloader->exec() == QDialog::Accepted)
     {
         CheckUpdates();
     }
@@ -302,6 +310,11 @@ void MainWindow::NewsDownloadFinished(QByteArray downloadedData, QList<QPair<QBy
     {
         ui->textBrowser->setHtml(QString(downloadedData));
     }
+}
+
+void MainWindow::OpenPreferencesEditor()
+{
+    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, this);
 }
 
 void MainWindow::ShowTable(const QString& branchID)
@@ -428,7 +441,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask>& tasks)
         //self-update
         if (tasks.front().isSelfUpdate)
         {
-            SelfUpdater updater(tasks.front().version.url);
+            SelfUpdater updater(fileManager, tasks.front().version.url, this);
             updater.setWindowModality(Qt::ApplicationModal);
             updater.exec();
             if (updater.result() != QDialog::Rejected)

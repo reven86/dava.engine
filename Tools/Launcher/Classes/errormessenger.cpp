@@ -3,6 +3,7 @@
 #include <QString>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QApplication>
 #include <QFile>
 
 namespace ErrorMessenger
@@ -14,6 +15,7 @@ QString errorsMsg[ERROR_COUNT] = {
     "Archive unpacking error",
     "Application is running. Please, close it",
     "Updating error",
+    "Can not work with file",
     "Can not find path"
 };
 
@@ -34,7 +36,7 @@ void ShowErrorMessage(ErrorID id, int errorCode, const QString& addInfo)
 
     LogMessage(QtDebugMsg, errorMessage.toStdString().c_str());
 
-    QMessageBox msgBox(QMessageBox::Critical, title, errorMessage, QMessageBox::Ok);
+    QMessageBox msgBox(QMessageBox::Critical, title, errorMessage, QMessageBox::Ok, qApp->activeWindow());
     msgBox.exec();
 }
 

@@ -9,7 +9,7 @@
 #include <QNetworkReply>
 #include <QQueue>
 
-class ConfigDownloader;
+class FileManager;
 class ApplicationManager : public QObject
 {
     Q_OBJECT
@@ -30,22 +30,27 @@ public:
 
     bool ShouldShowNews();
     void NewsShowed();
+    void ParseRemoteConfigData(const QByteArray& data);
+    void SaveLocalConfig() const;
+
     QString GetApplicationDirectory(QString branchID, QString appID, bool mustExist = true) const;
+    FileManager* GetFileManager() const;
 
 public slots:
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
 private:
     void LoadLocalConfig(const QString& configPath);
-    void ParseRemoteConfigData(const QByteArray& data);
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
+
+    QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 
     QString localConfigFilePath;
 
     ConfigParser localConfig;
     ConfigParser remoteConfig;
 
-    friend class ConfigDownloader;
+    FileManager* fileManager;
 };
 
 #endif // APPLICATIONMANAGER_H

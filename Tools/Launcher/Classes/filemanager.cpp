@@ -9,21 +9,11 @@
 #include <QProcess>
 #include <functional>
 
-namespace FileManager
+namespace FileManagerDetails
 {
 const QString tempSelfUpdateDir = "selfupdate/";
 const QString baseAppDir = "DAVATools/";
 const QString tempDir = "temp/";
-
-using EntireList = QList<QPair<QFileInfo, QString>>;
-
-QStringList OwnDirectories()
-{
-    QString path = GetLauncherDirectory();
-    return QStringList() << path + tempSelfUpdateDir
-                         << path + baseAppDir
-                         << path + tempDir;
-}
 
 QStringList DeployDirectories()
 {
@@ -45,77 +35,6 @@ QStringList DeployFiles()
                          << "qt.conf";
 }
 
-QString GetDocumentsDirectory()
-{
-    QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
-    MakeDirectory(docDir);
-    return docDir;
-}
-
-QString GetBaseAppsDirectory()
-{
-    QString path = GetLauncherDirectory() + baseAppDir;
-    MakeDirectory(path);
-    return path;
-}
-
-QString GetTempDirectory()
-{
-    QString path = GetLauncherDirectory() + tempDir;
-    MakeDirectory(path);
-    return path;
-}
-
-QString GetSelfUpdateTempDirectory()
-{
-    QString path = GetLauncherDirectory() + tempSelfUpdateDir;
-    MakeDirectory(path);
-    return path;
-}
-
-QString GetTempDownloadFilePath()
-{
-    return GetTempDirectory() + "archive.zip";
-}
-
-QString GetLauncherDirectory()
-{
-    QString path =  
-#if defined(Q_OS_WIN)
-    qApp->applicationDirPath();
-#elif defined(Q_OS_MAC)
-    qApp->applicationDirPath().replace("/Contents/MacOS", "");
-    path = path.left(path.lastIndexOf('/'));
-#endif //platform
-    return path + "/";
-}
-
-bool CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
-{
-    QFile file(filePath);
-    if (file.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        if (file.write(data) == data.size())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool DeleteDirectory(const QString& path)
-{
-    if (path == "/" || path == "." || path == "..")
-    {
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, "trying to remove wrong path! Aborted");
-        return false;
-    }
-    QDir dir(path);
-    return dir.removeRecursively();
-}
-
-namespace FileManager_local
-{
 bool MoveEntry(const QFileInfo& fileInfo, const QString& newFilePath)
 {
     QString absPath = fileInfo.absoluteFilePath();
@@ -149,9 +68,100 @@ bool MoveEntry(const QFileInfo& fileInfo, const QString& newFilePath)
         return QFile::rename(absPath, newFilePath);
     }
 }
+} //namespace FileManagerDetails
+
+QString FileManager::GetDocumentsDirectory()
+{
+    QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/DAVALauncher/";
+    MakeDirectory(docDir);
+    return docDir;
 }
 
-EntireList CreateEntireList(const QString& pathOut, const QString& pathIn)
+FileManager::FileManager(QObject* parent /*= nullptr*/)
+    : QObject(parent)
+{
+    //init dir with default value
+    filesDirectory = GetLauncherDirectory();
+#ifdef Q_OS_MAC
+    //check that we are not located in the temp folder
+    if (filesDirectory.contains("AppTranslocation"))
+    {
+        filesDirectory = GetDocumentsDirectory();
+    }
+#endif //Q_OS_MAC
+}
+
+QString FileManager::GetBaseAppsDirectory() const
+{
+    QString path = filesDirectory + FileManagerDetails::baseAppDir;
+    MakeDirectory(path);
+    return path;
+}
+
+QString FileManager::GetTempDirectory() const
+{
+    QString path = filesDirectory + FileManagerDetails::tempDir;
+    MakeDirectory(path);
+    return path;
+}
+
+QString FileManager::GetSelfUpdateTempDirectory() const
+{
+    QString path = filesDirectory + FileManagerDetails::tempSelfUpdateDir;
+    MakeDirectory(path);
+    return path;
+}
+
+QString FileManager::GetTempDownloadFilePath() const
+{
+    return GetTempDirectory() + "archive.zip";
+}
+
+QString FileManager::GetLauncherDirectory() const
+{
+    QString path =  
+#if defined(Q_OS_WIN)
+    qApp->applicationDirPath();
+#elif defined(Q_OS_MAC)
+    qApp->applicationDirPath().replace("/Contents/MacOS", "");
+    path = path.left(path.lastIndexOf('/'));
+#endif //platform
+    return path + "/";
+}
+
+bool FileManager::CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
+{
+    QFile file(filePath);
+    if (file.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        if (file.write(data) == data.size())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FileManager::DeleteDirectory(const QString& path)
+{
+    if (path == "/" || path == "." || path == "..")
+    {
+        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, "trying to remove wrong path! Aborted");
+        return false;
+    }
+    QDir dir(path);
+    return dir.removeRecursively();
+}
+
+QStringList FileManager::OwnDirectories() const
+{
+    QString path = GetLauncherDirectory();
+    return QStringList() << path + FileManagerDetails::tempSelfUpdateDir
+                         << path + FileManagerDetails::baseAppDir
+                         << path + FileManagerDetails::tempDir;
+}
+
+FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, const QString& pathIn) const
 {
     EntireList entryList;
     QDir outDir(pathOut);
@@ -178,8 +188,8 @@ EntireList CreateEntireList(const QString& pathOut, const QString& pathIn)
     }
 #endif //Q_OS_WIN
     QStringList ownDirs = OwnDirectories();
-    QStringList deployDirs = DeployDirectories();
-    QStringList deployFiles = DeployFiles();
+    QStringList deployDirs = FileManagerDetails::DeployDirectories();
+    QStringList deployFiles = FileManagerDetails::DeployFiles();
     QDirIterator di(outDir.path(), QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
     while (di.hasNext())
     {
@@ -232,7 +242,7 @@ EntireList CreateEntireList(const QString& pathOut, const QString& pathIn)
     return entryList;
 }
 
-bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
+bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString& pathIn) const
 {
     EntireList entryList = CreateEntireList(pathOut, pathIn);
     if (entryList.isEmpty())
@@ -242,29 +252,43 @@ bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn)
     bool success = true;
     for (const QPair<QFileInfo, QString>& entry : entryList)
     {
-        success &= FileManager_local::MoveEntry(entry.first, entry.second);
+        success &= FileManagerDetails::MoveEntry(entry.first, entry.second);
     }
     return success;
 }
 
-void MakeDirectory(const QString& path)
+QString FileManager::GetFilesDirectory() const
+{
+    return filesDirectory;
+}
+
+void FileManager::MakeDirectory(const QString& path)
 {
     if (!QDir(path).exists())
         QDir().mkpath(path);
 }
 
-QString GetApplicationDirectory(const QString& branchID, const QString& appID)
+void FileManager::SetFilesDirectory(const QString& newDirPath)
+{
+    //we still have a errors with existed temp directories, so lets make sure that those directories are removed
+    DeleteDirectory(GetTempDirectory());
+    DeleteDirectory(GetSelfUpdateTempDirectory());
+
+    QString oldFilesDirectory = filesDirectory;
+    filesDirectory = newDirPath;
+}
+
+QString FileManager::GetApplicationDirectory(const QString& branchID, const QString& appID) const
 {
     QString path = GetBranchDirectory(branchID) + appID + "/";
     return path;
 }
 
-QString GetBranchDirectory(const QString& branchID)
+QString FileManager::GetBranchDirectory(const QString& branchID) const
 {
     QString dirName = branchID;
     dirName.remove("/");
     dirName.remove("\\");
     QString path = GetBaseAppsDirectory() + dirName + "/";
     return path;
-}
 }
