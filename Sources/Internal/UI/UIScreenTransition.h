@@ -17,9 +17,6 @@ protected:
 public:
     void Draw(const UIGeometricData& geometricData) override;
 
-    void OnVisible() override;
-    void OnInvisible() override;
-
     virtual void SetSourceScreen(UIControl* prevScreen, bool updateScreen = true);
     virtual void SetDestinationScreen(UIControl* nextScreen, bool updateScreen = true);
     virtual void StartTransition();

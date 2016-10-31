@@ -5,10 +5,10 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
 #include "UI/UIScreenshoter.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -16,6 +16,7 @@ UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIScreenTransition::Update, this, std::placeholders::_1));
 }
 
 UIScreenTransition::~UIScreenTransition()
@@ -109,18 +110,6 @@ void UIScreenTransition::Draw(const UIGeometricData& geometricData)
 
         RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }
-}
-
-void UIScreenTransition::OnVisible()
-{
-    UIScreen::OnVisible();
-    UIControlSystem::Instance()->update.Connect(this, &UIScreenTransition::Update);
-}
-
-void UIScreenTransition::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-    UIScreen::OnInvisible();
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)

@@ -5,6 +5,7 @@
 #include "Scene3D/Scene.h"
 #include "UI/UI3DView.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateSystem.h"
 
 namespace DAVA
 {
@@ -115,7 +116,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         UIControlSystem::Instance()->UpdateControl(control);
         // We need update all slots because we don't known
         // which slots are used in the control's hierarchy
-        UIControlSystem::Instance()->update.Emit(0.f);
+        UIControlSystem::Instance()->GetUpdateSystem()->Process(0.f);
     }
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 

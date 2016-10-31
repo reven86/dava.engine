@@ -1,4 +1,5 @@
 #include "Tests/WebViewTest.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 using namespace DAVA;
 
@@ -16,6 +17,7 @@ WebViewTest::WebViewTest(TestBed& app)
     , bgStubPanel(nullptr)
     , updateWait(false)
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&WebViewTest::Update, this, std::placeholders::_1));
 }
 
 void WebViewTest::LoadResources()
@@ -42,14 +44,10 @@ void WebViewTest::LoadResources()
     visibleBtn->SetDebugDraw(true);
     visibleBtn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &WebViewTest::OnVisibleClick));
     AddControl(visibleBtn);
-
-    UIControlSystem::Instance()->update.Connect(this, &WebViewTest::Update);
 }
 
 void WebViewTest::UnloadResources()
 {
-    UIControlSystem::Instance()->update.Disconnect(this);
-
     BaseScreen::UnloadResources();
 
     SafeRelease(webView);

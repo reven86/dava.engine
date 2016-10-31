@@ -5,6 +5,7 @@
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -35,6 +36,7 @@ UIParticles::UIParticles(const Rect& rect)
         defaultCamera->RebuildCameraFromValues();
         defaultCamera->RebuildViewMatrix();
     }
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIParticles::Update, this, std::placeholders::_1));
 }
 
 UIParticles::~UIParticles()
@@ -235,18 +237,6 @@ void UIParticles::SetExtertnalValue(const String& name, float32 value)
 {
     if (effect != nullptr)
         effect->SetExtertnalValue(name, value);
-}
-
-void UIParticles::OnVisible()
-{
-    UIControl::OnVisible();
-    UIControlSystem::Instance()->update.Connect(this, &UIParticles::Update);
-}
-
-void UIParticles::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-    UIControl::OnInvisible();
 }
 
 void UIParticles::LoadEffect(const FilePath& path)

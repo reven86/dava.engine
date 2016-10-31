@@ -2,6 +2,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #include "Engine/Engine.h"
 
@@ -38,6 +39,8 @@ UIWebView::UIWebView(const Rect& rect)
 
     UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
+
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIWebView::Update, this, std::placeholders::_1));
 }
 
 UIWebView::~UIWebView()
@@ -107,14 +110,12 @@ void UIWebView::OnVisible()
 {
     UIControl::OnVisible();
     UpdateNativeControlVisible(true);
-    UIControlSystem::Instance()->update.Connect(this, &UIWebView::Update);
 }
 
 void UIWebView::OnInvisible()
 {
     UIControl::OnInvisible();
     UpdateNativeControlVisible(false);
-    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void UIWebView::OnActive()

@@ -6,6 +6,7 @@
 #include "Notification/LocalNotificationProgress.h"
 #include "Utils/StringUtils.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -50,6 +51,7 @@ DlcTest::DlcTest(TestBed& app)
     , options(new KeyedArchive)
     , dlc(nullptr)
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&DlcTest::Update, this, std::placeholders::_1));
 }
 
 void DlcTest::LoadResources()
@@ -244,8 +246,6 @@ void DlcTest::LoadResources()
 
     SafeRelease(font);
     SafeRelease(fontSmall);
-
-    UIControlSystem::Instance()->update.Connect(this, &DlcTest::Update);
 }
 
 void DlcTest::UpdateInfoStr()
@@ -270,8 +270,6 @@ void DlcTest::UpdateInfoStr()
 
 void DlcTest::UnloadResources()
 {
-    UIControlSystem::Instance()->update.Disconnect(this);
-
     BaseScreen::UnloadResources();
 
     options->SaveToYamlFile(optionsPath);

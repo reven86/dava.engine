@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #include "Engine/Engine.h"
 
@@ -50,10 +51,9 @@ UITextField::UITextField(const Rect& rect)
     // Additional step to do impl initialization which cannot be done in impl constructor, e.g.
     // call shared_from_this() to create std::weak_ptr from std::shared_ptr
     textFieldImpl->Initialize();
-
     textFieldImpl->SetVisible(false);
-
     SetupDefaults();
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UITextField::Update, this, std::placeholders::_1));
 }
 
 void UITextField::SetupDefaults()
@@ -634,14 +634,12 @@ void UITextField::OnVisible()
 {
     UIControl::OnVisible();
     textFieldImpl->SetVisible(visible);
-    UIControlSystem::Instance()->update.Connect(this, &UITextField::Update);
 }
 
 void UITextField::OnInvisible()
 {
     UIControl::OnInvisible();
     textFieldImpl->SetVisible(false);
-    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 String UITextField::GetFontPresetName() const

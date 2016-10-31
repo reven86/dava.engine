@@ -163,9 +163,6 @@ protected:
     void OnSelectWithSlide(bool isPrevious);
     void SetupInternalControls();
 
-    void OnVisible() override;
-    void OnInvisible() override;
-
 private:
     void Update(float32 timeElapsed);
 };

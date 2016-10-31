@@ -26,6 +26,7 @@ class UIStyleSheetSystem;
 class UIFocusSystem;
 class UIInputSystem;
 class UIScreenshoter;
+class UIUpdateSystem;
 
 class ScreenSwitchListener
 {
@@ -300,6 +301,7 @@ public:
     UILayoutSystem* GetLayoutSystem() const;
     UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
+    UIUpdateSystem* GetUpdateSystem() const;
 
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
@@ -313,8 +315,6 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
     int32 GetUI3DViewCount();
-
-    Signal<float32> update;
 
     void UpdateControl(UIControl* control);
 
@@ -337,6 +337,7 @@ private:
     UIStyleSheetSystem* styleSheetSystem = nullptr;
     UIInputSystem* inputSystem = nullptr;
     UIScreenshoter* screenshoter = nullptr;
+    UIUpdateSystem* updateSystem = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 

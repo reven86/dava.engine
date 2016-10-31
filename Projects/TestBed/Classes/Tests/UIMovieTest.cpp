@@ -1,4 +1,5 @@
 #include "Tests/UIMovieTest.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace
 {
@@ -8,6 +9,7 @@ FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 UIMovieTest::UIMovieTest(TestBed& app)
     : BaseScreen(app, "UIMovieTest")
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&UIMovieTest::Update, this, std::placeholders::_1));
 }
 
 void UIMovieTest::LoadResources()
@@ -42,14 +44,10 @@ void UIMovieTest::LoadResources()
     SafeRelease(font);
 
     BaseScreen::LoadResources();
-
-    UIControlSystem::Instance()->update.Connect(this, &UIMovieTest::Update);
 }
 
 void UIMovieTest::UnloadResources()
 {
-    UIControlSystem::Instance()->update.Disconnect(this);
-
     RemoveAllControls();
 
     SafeRelease(movieView);

@@ -5,10 +5,16 @@
 #include "Debug/Replay.h"
 #include "Job/JobManager.h"
 #include "Concurrency/Thread.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
 static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
+
+UILoadingScreen::UILoadingScreen()
+{
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UILoadingScreen::Update, this, std::placeholders::_1));
+}
 
 UILoadingScreen::~UILoadingScreen()
 {
@@ -49,8 +55,6 @@ void UILoadingScreen::OnActive()
     {
         Replay::Instance()->PauseReplay(true);
     }
-
-    UIControlSystem::Instance()->update.Connect(this, &UILoadingScreen::Update);
 }
 
 void UILoadingScreen::Update(float32 timeElapsed)
@@ -77,7 +81,5 @@ void UILoadingScreen::OnInactive()
         Replay::Instance()->PauseReplay(false);
         SystemTimer::Instance()->SetFrameDelta(0.33f); //TODO: this is temporary solution for "first frame after loading" issue
     }
-
-    UIControlSystem::Instance()->update.Disconnect(this);
 }
 };

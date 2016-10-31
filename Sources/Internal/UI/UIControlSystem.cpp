@@ -19,6 +19,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "UI/Update/UIUpdateSystem.h"
 
 namespace DAVA
 {
@@ -33,10 +34,12 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UIUpdateSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
     styleSheetSystem = GetSystem<UIStyleSheetSystem>();
+    updateSystem = GetSystem<UIUpdateSystem>();
 
     screenshoter = new UIScreenshoter();
 
@@ -85,6 +88,7 @@ UIControlSystem::~UIControlSystem()
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
     layoutSystem = nullptr;
+    updateSystem = nullptr;
 
     systems.clear();
     SafeDelete(screenshoter);
@@ -335,7 +339,7 @@ void UIControlSystem::Update()
         }
         UpdateControl(popupContainer.Get());
 
-        update.Emit(timeElapsed);
+        updateSystem->Process(timeElapsed);
     }
 
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
@@ -751,6 +755,11 @@ UIFocusSystem* UIControlSystem::GetFocusSystem() const
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
+}
+
+UIUpdateSystem* UIControlSystem::GetUpdateSystem() const
+{
+    return updateSystem;
 }
 
 UIScreenshoter* UIControlSystem::GetScreenshoter()

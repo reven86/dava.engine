@@ -47,9 +47,6 @@ public:
     void SetExtertnalValue(const String& name, float32 value);
 
 protected:
-    void OnVisible() override;
-    void OnInvisible() override;
-
     void LoadEffect(const FilePath& path);
     void UnloadEffect();
 

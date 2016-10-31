@@ -12,7 +12,7 @@ class Thread;
 class UILoadingScreen : public UIScreen, public TrackedObject
 {
 public:
-    UILoadingScreen() = default;
+    UILoadingScreen();
     ~UILoadingScreen() override;
 
     virtual void SetScreenToLoad(int32 screenId);

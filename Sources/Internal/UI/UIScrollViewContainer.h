@@ -34,9 +34,6 @@ public:
     int32 GetTouchTreshold();
 
 protected:
-    void OnVisible() override;
-    void OnInvisible() override;
-
     enum
     {
         STATE_NONE = 0,

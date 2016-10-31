@@ -2,6 +2,7 @@
 #include "UI/UIEvent.h"
 #include "Animation/Animation.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -81,6 +82,8 @@ UISpinner::UISpinner(const Rect& rect)
     contentViewport->AddControl(nextContent.Get());
     contentViewport->SetInputEnabled(false);
     contentViewport->SetClipContents(true);
+
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UISpinner::Update, this, std::placeholders::_1));
 }
 
 UISpinner::~UISpinner()
@@ -356,15 +359,4 @@ void UISpinner::SetupInternalControls()
     nextContent->SetPivotPoint(newPivotPoint);
 }
 
-void UISpinner::OnVisible()
-{
-    UIControl::OnVisible();
-    UIControlSystem::Instance()->update.Connect(this, &UISpinner::Update);
-}
-
-void UISpinner::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-    UIControl::OnInvisible();
-}
 }

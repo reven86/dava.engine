@@ -27,6 +27,7 @@
 #include "Render/RenderHelper.h"
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -40,6 +41,7 @@ UIMovieView::UIMovieView(const Rect& rect)
 {
     movieViewControl->Initialize(rect);
     UpdateControlRect();
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIMovieView::Update, this, std::placeholders::_1));
 }
 
 UIMovieView::~UIMovieView()
@@ -127,14 +129,12 @@ void UIMovieView::OnVisible()
 {
     UIControl::OnVisible();
     movieViewControl->SetVisible(true);
-    UIControlSystem::Instance()->update.Connect(this, &UIMovieView::Update);
 }
 
 void UIMovieView::OnInvisible()
 {
     UIControl::OnInvisible();
     movieViewControl->SetVisible(false);
-    UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void UIMovieView::OnActive()

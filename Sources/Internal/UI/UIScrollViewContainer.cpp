@@ -2,6 +2,7 @@
 #include "UI/UIScrollView.h"
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -22,6 +23,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIScrollViewContainer::Update, this, std::placeholders::_1));
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()
@@ -93,18 +95,6 @@ void UIScrollViewContainer::SetTouchTreshold(int32 holdDelta)
 int32 UIScrollViewContainer::GetTouchTreshold()
 {
     return touchTreshold;
-}
-
-void UIScrollViewContainer::OnVisible()
-{
-    UIControl::OnVisible();
-    UIControlSystem::Instance()->update.Connect(this, &UIScrollViewContainer::Update);
-}
-
-void UIScrollViewContainer::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-    UIControl::OnInvisible();
 }
 
 void UIScrollViewContainer::Input(UIEvent* currentTouch)

@@ -211,8 +211,6 @@ protected:
 
     void FullRefresh();
 
-    void OnVisible() override;
-    void OnInvisible() override;
     void Input(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override; // Internal method used by ControlSystem
 

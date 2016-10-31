@@ -1,12 +1,14 @@
 
 #include "Tests/AssertTest.h"
 #include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
 AssertTest::AssertTest(TestBed& app)
     : BaseScreen(app, "AssertTest")
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&AssertTest::Update, this, std::placeholders::_1));
 }
 
 void AssertTest::LoadResources()
@@ -34,8 +36,6 @@ void AssertTest::LoadResources()
     }
 
     countdownText = static_cast<DAVA::UIStaticText*>(dialog->FindByName("Countdown"));
-
-    DAVA::UIControlSystem::Instance()->update.Connect(this, &AssertTest::Update);
 }
 
 void AssertTest::UnloadResources()
@@ -43,8 +43,6 @@ void AssertTest::UnloadResources()
     BaseScreen::UnloadResources();
 
     countdownText.Set(nullptr);
-
-    DAVA::UIControlSystem::Instance()->update.Disconnect(this);
 }
 
 void AssertTest::Update(DAVA::float32 timeElapsed)

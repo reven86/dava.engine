@@ -1,5 +1,6 @@
 #include "Tests/NotificationTest.h"
 #include "Base/Message.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 using namespace DAVA;
 
@@ -14,6 +15,7 @@ NotificationScreen::NotificationScreen(TestBed& app)
     , notificationText(nullptr)
     , progress(0)
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>()->SetFunction(std::bind(&NotificationScreen::Update, this, std::placeholders::_1));
 }
 
 void NotificationScreen::LoadResources()
@@ -79,14 +81,10 @@ void NotificationScreen::LoadResources()
     AddControl(hideNotificationProgress);
 
     SafeRelease(font);
-
-    UIControlSystem::Instance()->update.Connect(this, &NotificationScreen::Update);
 }
 
 void NotificationScreen::UnloadResources()
 {
-    UIControlSystem::Instance()->update.Disconnect(this);
-
     BaseScreen::UnloadResources();
 
     RemoveAllControls();

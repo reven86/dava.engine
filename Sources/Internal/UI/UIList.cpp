@@ -4,6 +4,7 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -36,6 +37,7 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , aggregatorPath(FilePath())
 {
     InitAfterYaml();
+    GetOrCreateComponent<UIUpdateComponent>()->SetFunction(std::bind(&UIList::Update, this, std::placeholders::_1));
 }
 
 void UIList::InitAfterYaml()
@@ -446,18 +448,6 @@ void UIList::Update(float32 timeElapsed)
     {
         FullRefresh();
     }
-}
-
-void UIList::OnVisible()
-{
-    UIControl::OnVisible();
-    UIControlSystem::Instance()->update.Connect(this, &UIList::Update);
-}
-
-void UIList::OnInvisible()
-{
-    UIControlSystem::Instance()->update.Disconnect(this);
-    UIControl::OnInvisible();
 }
 
 void UIList::Input(UIEvent* currentInput)

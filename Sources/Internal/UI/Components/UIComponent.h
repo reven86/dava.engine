@@ -25,6 +25,7 @@ public:
         TAB_ORDER_COMPONENT,
         ACTION_COMPONENT,
         ACTION_BINDING_COMPONENT,
+        UPDATE_COMPONENT,
 
         COMPONENT_COUNT
     };
