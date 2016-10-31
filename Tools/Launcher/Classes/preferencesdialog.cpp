@@ -1,8 +1,11 @@
 #include "preferencesdialog.h"
 #include "filemanager.h"
 #include "configdownloader.h"
+#include "errormessenger.h"
 
 #include <QFileDialog>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 namespace PreferencesDialogDetails
 {
