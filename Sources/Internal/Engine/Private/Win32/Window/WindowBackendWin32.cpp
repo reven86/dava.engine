@@ -216,7 +216,7 @@ void WindowBackend::UpdateClipCursor()
     }
 }
 
-void WindowBackend::DoSetWindowFocus(bool focusState)
+void WindowBackend::PostWindowFocusChangedEvent(bool focusState)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));
     if (!focusState)
@@ -296,7 +296,7 @@ LRESULT WindowBackend::OnSize(int resizingType, int width, int height)
         if (hasFocus)
         {
             hasFocus = false;
-            DoSetWindowFocus(hasFocus);
+            PostWindowFocusChangedEvent(hasFocus);
         }
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
         return 0;
@@ -349,7 +349,7 @@ LRESULT WindowBackend::OnActivate(WPARAM wparam)
             isMinimized = false;
             mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
         }
-        DoSetWindowFocus(hasFocus);
+        PostWindowFocusChangedEvent(hasFocus);
     }
     return 0;
 }
