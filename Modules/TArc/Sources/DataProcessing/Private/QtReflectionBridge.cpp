@@ -2,7 +2,7 @@
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
 
-#include "Reflection/Public/ReflectedType.h"
+#include "Reflection/ReflectedType.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 #include <QFileSystemModel>
@@ -231,7 +231,7 @@ void QtReflected::CreateMetaObject()
     for (const Reflection::Method& method : methods)
     {
         String signature = method.key + "(";
-        const AnyFn::InvokeParams& params = method.fn.GetInvokeParams();
+        const AnyFn::Params& params = method.fn.GetInvokeParams();
         size_t paramsCount = params.argsType.size();
         for (size_t i = 0; i < paramsCount; ++i)
         {
@@ -288,7 +288,7 @@ void QtReflected::CallMethod(int id, void** argv)
     Vector<Reflection::Method> methods = reflectedData.GetMethods();
     DVASSERT(methodIndexToCall < methods.size());
     Reflection::Method method = methods[methodIndexToCall];
-    const AnyFn::InvokeParams& args = method.fn.GetInvokeParams();
+    const AnyFn::Params& args = method.fn.GetInvokeParams();
 
     QVariant* qtResult = reinterpret_cast<QVariant*>(argv[0]);
     // first element in argv is pointer on return value

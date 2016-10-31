@@ -154,7 +154,15 @@ void SceneExporterTool::ConvertOptionsToParamsInternal()
     for (uint32 i = 0; i < count; ++i)
     {
         String gpuName = options.GetOption(OptionName::GPU, i).AsString();
-        requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+        eGPUFamily gpu = GPUFamilyDescriptor::GetGPUByName(gpuName);
+        if (gpu == eGPUFamily::GPU_INVALID)
+        {
+            Logger::Error("Wrong gpu name: %s", gpuName.c_str());
+        }
+        else
+        {
+            requestedGPUs.push_back(GPUFamilyDescriptor::GetGPUByName(gpuName));
+        }
     }
 
     const uint32 qualityValue = options.GetOption(OptionName::Quality).AsUInt32();
@@ -221,7 +229,7 @@ bool SceneExporterTool::InitializeInternal()
 
 void SceneExporterTool::ProcessInternal()
 {
-    AssetCacheClient cacheClient(true);
+    AssetCacheClient cacheClient;
 
     SceneExporter::Params exportingParams;
     exportingParams.dataFolder = outFolder;

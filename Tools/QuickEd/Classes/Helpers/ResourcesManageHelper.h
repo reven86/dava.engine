@@ -6,6 +6,7 @@ class QStringList;
 class ResourcesManageHelper
 {
 public:
+    static void InitInternalResources();
     // Helper to work with resources
     static QString GetFontRelativePath(const QString& resourceFileName, bool graphicsFont = false);
     static QStringList GetFontsList();
@@ -25,9 +26,6 @@ public:
     static QString GetDataPath(const QString& projectPath);
     // Project file path for specified project path
     static QString GetProjectFilePath(const QString& projectPath);
-    // Initialize project internal resources
-    // Do not use this function elsewhere than during application init!!!
-    static void InitInternalResources();
 
 private:
     static QString projectTitle;

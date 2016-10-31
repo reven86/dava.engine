@@ -3,7 +3,7 @@
 #include "errormessenger.h"
 #include "processhelper.h"
 
-#include "QtTools/Utils/Utils.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include <QFile>
 #include <QDebug>
@@ -236,7 +236,7 @@ void ApplicationManager::ShowApplicataionInExplorer(const QString& branchID, con
     {
         return;
     }
-    ShowFileInExplorer(runPath);
+    QtHelpers::ShowInOSFileManager(runPath);
 }
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)

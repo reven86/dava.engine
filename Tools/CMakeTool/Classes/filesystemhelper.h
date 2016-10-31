@@ -20,6 +20,7 @@ public:
     };
     explicit FileSystemHelper(QObject* parent = nullptr);
     Q_INVOKABLE QString ResolveUrl(const QString& url) const;
+    static Q_INVOKABLE QString GetDir(const QString& path);
     static Q_INVOKABLE QString NormalizePath(const QString& path);
     static bool MkPath(const QString& path);
     static Q_INVOKABLE bool IsDirExists(const QString& dirPath);

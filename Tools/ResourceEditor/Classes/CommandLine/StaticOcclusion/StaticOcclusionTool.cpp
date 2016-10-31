@@ -75,12 +75,17 @@ void StaticOcclusionTool::ProcessInternal()
 
             while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
+                QOpenGLContext* context = QOpenGLContext::currentContext();
+                if (context)
+                {
+                    context->makeCurrent(context->surface());
+                }
+
                 Renderer::BeginFrame();
                 RenderHelper::CreateClearPass(nullTexture, nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
                 Renderer::EndFrame();
 
-                QOpenGLContext* context = QOpenGLContext::currentContext();
                 if (context)
                 {
                     context->swapBuffers(context->surface());
