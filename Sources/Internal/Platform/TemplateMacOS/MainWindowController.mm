@@ -329,6 +329,15 @@ Vector2 CoreMacOSPlatform::GetWindowMinimumSize() const
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
             [mainWindowController->mainWindow toggleFullScreen:nil];
+
+            if (_fullScreen)
+            {
+                // If we're entering fullscreen we want our app to also become focused
+                // To handle cases when app is being opened with fullscreen mode,
+                // but another app gets focus before our app's window is created, thus ignoring any input afterwards
+                [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+            }
+
             return YES;
         }
         else

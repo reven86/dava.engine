@@ -9,15 +9,37 @@
 #include "Platform/TemplateMacOS/MouseDeviceMacOS.h"
 #include "UI/UIEvent.h"
 
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 namespace DAVA
 {
+MouseDeviceMacOS::MouseDeviceMacOS()
+{
+#if defined(__DAVAENGINE_STEAM__)
+    steamOverlayActivationConnId = Steam::GameOverlayActivated.Connect(this, &MouseDeviceMacOS::OnSteamActivation);
+#endif
+}
+
 MouseDeviceMacOS::~MouseDeviceMacOS()
 {
+#if defined(__DAVAENGINE_STEAM__)
+    Steam::GameOverlayActivated.Disconnect(steamOverlayActivationConnId);
+#endif
+
     if (blankCursor != nullptr)
     {
         [static_cast<NSCursor*>(blankCursor) release];
     }
 }
+    
+#if defined(__DAVAENGINE_STEAM__)
+void MouseDeviceMacOS::OnSteamActivation(bool active)
+{
+    [NSCursor setHiddenUntilMouseMoves:NO];
+}
+#endif
 
 void MouseDeviceMacOS::SetMode(eCaptureMode newMode)
 {
