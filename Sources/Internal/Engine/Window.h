@@ -117,6 +117,7 @@ private:
 
     void HandleWindowCreated(const Private::MainDispatcherEvent& e);
     void HandleWindowDestroyed(const Private::MainDispatcherEvent& e);
+    void HandleWindowCaptureLost(const Private::MainDispatcherEvent& e);
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);

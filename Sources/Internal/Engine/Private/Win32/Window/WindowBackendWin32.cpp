@@ -220,7 +220,11 @@ void WindowBackend::DoSetFocus(Window* window, bool focusState)
 {
     if (!focusState)
     {
-        DoSetCursorCapture(eCursorCapture::OFF);
+        if (captureMode == eCursorCapture::PINNING)
+        {
+            DoSetCursorCapture(eCursorCapture::OFF);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+        }
         DoSetCursorVisibility(true);
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, focusState));

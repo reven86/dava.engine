@@ -167,7 +167,11 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
     bool hasFocus = arg->WindowActivationState != CoreWindowActivationState::Deactivated;
     if (!hasFocus)
     {
-        SetCursorCapture(eCursorCapture::OFF);
+        if (captureMode == eCursorCapture::PINNING)
+        {
+            SetCursorCapture(eCursorCapture::OFF);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+        }
         SetCursorVisibility(true);
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, hasFocus));

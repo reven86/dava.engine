@@ -141,6 +141,12 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCaptureLostEvent(Window* window)
+{
+    MainDispatcherEvent e(WINDOW_CAPTURE_LOST, window);
+    return e;
+}
+
 } // namespace Private
 } // namespace DAVA
 

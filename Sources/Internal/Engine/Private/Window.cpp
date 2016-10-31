@@ -191,6 +191,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_DESTROYED:
         HandleWindowDestroyed(e);
         break;
+    case MainDispatcherEvent::WINDOW_CAPTURE_LOST:
+        HandleWindowCaptureLost(e);
+        break;
     default:
         break;
     }
@@ -234,6 +237,11 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     virtualCoordSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+}
+
+void Window::HandleWindowCaptureLost(const Private::MainDispatcherEvent& e)
+{
+    deferredCursorCaptureOn = (cursorCapture == eCursorCapture::PINNING);
 }
 
 void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
@@ -327,11 +335,10 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
     hasFocus = e.stateEvent.state != 0;
     /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
-        if (hasFocus)
+        if (hasFocus && !deferredCursorCaptureOn)
         {
-            deferredCursorCaptureOn = (cursorCapture == eCursorCapture::PINNING);
-            deferredCursorCaptureOn ? 0 : windowBackend->SetCursorCapture(cursorCapture);
-            deferredCursorCaptureOn ? 0 : windowBackend->SetCursorVisibility(cursorVisible);
+            windowBackend->SetCursorCapture(cursorCapture);
+            windowBackend->SetCursorVisibility(cursorVisible);
         }
     }
     focusChanged.Emit(this, hasFocus);

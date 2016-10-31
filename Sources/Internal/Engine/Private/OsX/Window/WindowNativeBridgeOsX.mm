@@ -114,8 +114,12 @@ void WindowNativeBridge::WindowDidBecomeKey()
 
 void WindowNativeBridge::WindowDidResignKey()
 {
+    if (capture)
+    {
+        SetSystemCursorCapture(false);
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
+    }
     SetSystemCursorVisible(false);
-    SetSystemCursorCapture(false);
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
     if (isAppHidden)
     {

@@ -21,6 +21,7 @@ struct MainDispatcherEvent final
         WINDOW_FOCUS_CHANGED,
         WINDOW_VISIBILITY_CHANGED,
         WINDOW_SIZE_SCALE_CHANGED,
+        WINDOW_CAPTURE_LOST,
 
         FIRST_INPUT_EVENT,
         MOUSE_BUTTON_DOWN = FIRST_INPUT_EVENT,
@@ -166,6 +167,7 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, bool isRelative);
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y);
+    static MainDispatcherEvent CreateWindowCaptureLostEvent(Window* window);
 };
 
 } // namespace Private
