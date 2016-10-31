@@ -29,7 +29,7 @@ namespace Ui
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow, public DAVA::InspBase
+class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
     Q_OBJECT
 
@@ -46,7 +46,7 @@ public:
     void SetCurrentLanguage(const QString& currentLang);
 
     void SetProjectActionsEnabled(bool enable);
-    void SetDocumentGroupActionsEnable(bool enable);
+    void SetDocumentActionsEnabled(bool enable);
 
     PreviewWidget* GetPreviewWidget();
     PropertiesWidget* GetPropertiesWidget();
@@ -78,6 +78,8 @@ signals:
     void GLWidgedReady();
 
     void ShowHelp();
+
+    void FindFileInProject();
 
     void OpenPackageFile(QString path);
 

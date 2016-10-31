@@ -52,7 +52,7 @@ EditorCore::EditorCore(QObject* parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->SetRecentProjects(GetRecentProjects());
     mainWindow->SetProjectActionsEnabled(false);
-    mainWindow->SetDocumentGroupActionsEnable(false);
+    mainWindow->SetDocumentActionsEnabled(false);
     mainWindow->SetEditorTitle(ReadEditorTitle());
 
     connect(mainWindow.get(), &MainWindow::CanClose, this, &EditorCore::CloseProject);

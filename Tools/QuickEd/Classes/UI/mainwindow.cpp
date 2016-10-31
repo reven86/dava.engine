@@ -56,8 +56,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     connect(ui->previewWidget, &PreviewWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-
     connect(ui->previewWidget->GetGLWidget(), &DavaGLWidget::Initialized, this, &MainWindow::GLWidgedReady);
+    connect(ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::FindFileInProject);
 
     connect(this, &MainWindow::EmulationModeChanged, ui->previewWidget, &PreviewWidget::OnEmulationModeChanged);
     connect(ui->previewWidget, &PreviewWidget::DropRequested, ui->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
@@ -151,13 +151,16 @@ void MainWindow::SetupShortcuts()
 {
     //Qt can not set multishortcut or enum shortcut in Qt designer
     ui->actionReloadDocument->setShortcuts(QList<QKeySequence>()
-                                           << static_cast<int>(Qt::ControlModifier | Qt::Key_R)
+                                           << Qt::CTRL + Qt::Key_R
                                            << Qt::Key_F5);
 
     ui->actionRedo->setShortcuts(QList<QKeySequence>()
                                  << Qt::CTRL + Qt::Key_Y
                                  << Qt::CTRL + Qt::SHIFT + Qt::Key_Z);
 
+    ui->actionFindFileInProject->setShortcuts(QList<QKeySequence>()
+                                              << Qt::CTRL + Qt::SHIFT + Qt::Key_O
+                                              << Qt::ALT + Qt::SHIFT + Qt::Key_O);
 // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
     ui->actionZoomIn->setShortcuts(QList<QKeySequence>()
@@ -304,12 +307,13 @@ QAction* MainWindow::GetActionReloadDocument()
 void MainWindow::SetProjectActionsEnabled(bool enabled)
 {
     ui->actionCloseProject->setEnabled(enabled);
+    ui->actionFindFileInProject->setEnabled(enabled);
     ui->toolBarPlugins->setEnabled(enabled);
 
     ui->fileSystemDockWidget->setEnabled(enabled);
 }
 
-void MainWindow::SetDocumentGroupActionsEnable(bool enabled)
+void MainWindow::SetDocumentActionsEnabled(bool enabled)
 {
     ui->packageWidget->setEnabled(enabled);
     ui->propertiesWidget->setEnabled(enabled);

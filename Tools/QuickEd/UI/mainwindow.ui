@@ -146,6 +146,8 @@
     </property>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionFindFileInProject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -264,7 +266,7 @@
      <normaloff>:/Icons/openproject.png</normaloff>:/Icons/openproject.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open project</string>
+    <string>&amp;Open project...</string>
    </property>
    <property name="toolTip">
     <string>Open project</string>
@@ -296,7 +298,7 @@
      <normaloff>:/Icons/newscene.png</normaloff>:/Icons/newscene.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;New project</string>
+    <string>&amp;New project...</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -514,6 +516,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionFindFileInProject">
+   <property name="text">
+    <string>Find file in project...</string>
+   </property>
+   <property name="toolTip">
+    <string>Find file in project</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+O</string>
    </property>
   </action>
  </widget>

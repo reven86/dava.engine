@@ -28,11 +28,13 @@ public:
     void RemovePath(const QString& path);
     void RemoveAllPaths();
 
+    void SelectFile(const QString& filePath);
+
 signals:
     void OpenPackageFile(const QString& path);
 
 public slots:
-    void FindInFiles();
+    //void FindInFiles();
 
 private slots:
     void onDoubleClicked(const QModelIndex& index);
@@ -46,7 +48,7 @@ private slots:
     void OnCopyInternalPathToFile();
     void OnCustomContextMenuRequested(const QPoint& pos);
     void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    void OnDirectoryLoaded();
+    void OnDirectoryLoaded(const QString& path);
 
 private:
     void RefreshActions();
@@ -73,13 +75,14 @@ private:
     QAction* openFileAction = nullptr;
     QAction* copyInternalPathToFileAction = nullptr;
 
-    QAction* findInFilesAction = nullptr;
+    //QAction* findInFilesAction = nullptr;
 
     QPoint menuInvokePos = QPoint(-1, -1);
 
     bool isAvailable = false;
 
-    std::unique_ptr<ProjectStructure> projectStructure;
+    //std::unique_ptr<ProjectStructure> projectStructure;
     //we set current index asyncronysly, when model emits signal "directoryLoaded"
     QPersistentModelIndex indexToSetCurrent;
+    QString targetDirectory;
 };

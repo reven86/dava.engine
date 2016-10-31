@@ -14,6 +14,7 @@ class EditorLocalizationSystem;
 class DocumentGroup;
 class MainWindow;
 class SpritesPacker;
+class ProjectStructure;
 
 namespace DAVA
 {
@@ -74,6 +75,8 @@ signals:
     void CurrentLanguageChanged(const QString& newLanguageCode);
 
 private:
+    void FindFileInProject();
+
     Settings settings;
     const QString projectDirectory;
     const QString projectName;
@@ -83,6 +86,7 @@ private:
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
     std::unique_ptr<DocumentGroup> documentGroup;
     std::unique_ptr<SpritesPacker> spritesPacker;
+    std::unique_ptr<ProjectStructure> projectStructure;
 };
 
 #endif // QUICKED__PROJECT_H__

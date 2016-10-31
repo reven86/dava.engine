@@ -25,6 +25,9 @@ QModelIndex MultipleFileSystemModel::addPath(const QString& path, const QString&
     info.model = model;
     info.root = root;
 
+    int row = fileSystemModels.size();
+    beginInsertRows(QModelIndex(), row, row + 1);
+
     fileSystemModels.push_back(info);
 
     ConnectToModel(model);
@@ -34,7 +37,8 @@ QModelIndex MultipleFileSystemModel::addPath(const QString& path, const QString&
     model->setNameFilterDisables(nameFilterFlag);
     model->setNameFilters(nameFiltersList);
 
-    int row = (fileSystemModels.size() - 1);
+    endInsertRows();
+
     return createIndex(row, 0, row);
 }
 
@@ -51,7 +55,7 @@ void MultipleFileSystemModel::removePath(const QString& path)
         DisconnectFromModel(it->model);
         fileSystemModels.erase(it);
         mappingToSource.clear();
-        mappingFromSource.clear();
+        //mappingFromSource.clear();
         endResetModel();
     }
 }
@@ -66,7 +70,7 @@ void MultipleFileSystemModel::removeAllPaths()
 
     fileSystemModels.clear();
     mappingToSource.clear();
-    mappingFromSource.clear();
+    //mappingFromSource.clear();
     endResetModel();
 }
 
@@ -206,13 +210,18 @@ QModelIndex MultipleFileSystemModel::index(const QString& path, int column /*= 0
 {
     for (auto& info : fileSystemModels)
     {
-        QModelIndex index = info.model->index(path, column);
-        if (index.isValid())
+        if (path.startsWith(info.path))
         {
-            return MapFromSource(index);
+            QModelIndex sourceIndex = info.model->index(path, column);
+            DVASSERT(sourceIndex.isValid());
+            QModelIndex index = createIndex(sourceIndex.row(), sourceIndex.column(), sourceIndex.internalPointer());
+            mappingToSource[index] = sourceIndex;
+
+            return index;
         }
     }
 
+    DVASSERT(false);
     return QModelIndex();
 }
 
@@ -261,14 +270,28 @@ QModelIndex MultipleFileSystemModel::parent(const QModelIndex& child) const
 
     auto sourceChild = MapToSource(child);
     auto sourceParent = sourceChild.model()->parent(sourceChild);
-
+    if (!sourceParent.isValid())
+    {
+        int t = 0;
+    }
     if (sourceParent == GetRoot(sourceChild))
     {
         int row = GetModelIndex(sourceChild);
         return createIndex(row, 0, row);
     }
 
-    return MapFromSource(sourceParent);
+    QModelIndex proxyParent = createIndex(sourceParent.row(), sourceParent.column(), sourceParent.internalPointer());
+    auto it = mappingToSource.find(proxyParent);
+    if (it == mappingToSource.end())
+    {
+        mappingToSource[proxyParent] = sourceParent;
+    }
+    else
+    {
+        DVASSERT(it.value() == sourceParent);
+    }
+
+    return proxyParent;
 }
 
 QModelIndex MultipleFileSystemModel::sibling(int row, int column, const QModelIndex& index) const
@@ -284,7 +307,23 @@ QModelIndex MultipleFileSystemModel::sibling(int row, int column, const QModelIn
     }
 
     auto sourceIndex = MapToSource(index);
-    return sourceIndex.model()->sibling(row, column, index);
+    return sourceIndex.model()->sibling(row, column, sourceIndex);
+}
+
+QModelIndex MultipleFileSystemModel::buddy(const QModelIndex& index) const
+{
+    if (!index.isValid())
+    {
+        return QModelIndex();
+    }
+
+    if (IsProxyRoot(index))
+    {
+        return QModelIndex();
+    }
+
+    auto sourceIndex = MapToSource(index);
+    return sourceIndex.model()->buddy(sourceIndex);
 }
 
 int MultipleFileSystemModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -525,6 +564,26 @@ void MultipleFileSystemModel::sort(int column, Qt::SortOrder order /*= Qt::Ascen
     }
 }
 
+void MultipleFileSystemModel::source_layoutChanged(const QList<QPersistentModelIndex>& sourceParents /*= QList<QPersistentModelIndex>()*/, QAbstractItemModel::LayoutChangeHint hint /*= QAbstractItemModel::NoLayoutChangeHint*/)
+{
+    QList<QPersistentModelIndex> proxyParents;
+    for (const QPersistentModelIndex& sourceIndex : sourceParents)
+    {
+        proxyParents << MapFromSource(sourceIndex);
+    }
+    emit layoutChanged(proxyParents, hint);
+}
+
+void MultipleFileSystemModel::source_layoutAboutToBeChanged(const QList<QPersistentModelIndex>& sourceParents /*= QList<QPersistentModelIndex>()*/, QAbstractItemModel::LayoutChangeHint hint /*= QAbstractItemModel::NoLayoutChangeHint*/)
+{
+    QList<QPersistentModelIndex> proxyParents;
+    for (const QPersistentModelIndex& sourceIndex : sourceParents)
+    {
+        proxyParents << MapFromSource(sourceIndex);
+    }
+    emit layoutAboutToBeChanged(proxyParents, hint);
+}
+
 void MultipleFileSystemModel::source_dataChanged(const QModelIndex& sourceTopLeft, const QModelIndex& sourceBottomRight, const QVector<int>& roles)
 {
     const QModelIndex topLeft = MapFromSource(sourceTopLeft);
@@ -532,23 +591,58 @@ void MultipleFileSystemModel::source_dataChanged(const QModelIndex& sourceTopLef
     emit dataChanged(topLeft, bottomRight, roles);
 }
 
-void MultipleFileSystemModel::source_rowsAboutToBeInserted(QModelIndex p, int from, int to)
+void MultipleFileSystemModel::source_rowsAboutToBeInserted(QModelIndex sourceParent, int from, int to)
 {
-    //QModelIndex p_p = mapFromSource(p);
-    //    emit rowsAboutToBeInserted(p_p, from, to);
+    //     QModelIndex p_p = MapFromSource(p);
+    //     //emit rowsAboutToBeInserted(p_p, from, to);
+    //     beginInsertRows(p_p, from, to);
+    //emit rowsAboutToBeInserted(p_p, from, to);
 }
 
-void MultipleFileSystemModel::source_rowsInserted(QModelIndex p, int from, int to)
+void MultipleFileSystemModel::source_rowsInserted(QModelIndex sourceParent, int from, int to)
 {
-    //QModelIndex p_p = mapFromSource(p);
-    //    emit rowsAboutToBeInserted(p_p, from, to);
+    QModelIndex proxyParent = createIndex(sourceParent.row(), sourceParent.column(), sourceParent.internalPointer());
+    mappingToSource[proxyParent] = sourceParent;
+    beginInsertRows(proxyParent, from, to);
+    endInsertRows();
+
+    DAVA::Logger::Debug("========rowsAboutToBeInserted %s, %d %d", sourceParent.data(Qt::DisplayRole).toString().toStdString().c_str(), from, to);
 }
 
-void MultipleFileSystemModel::source_rowsAboutToBeRemoved(QModelIndex, int, int)
+void MultipleFileSystemModel::source_rowsAboutToBeRemoved(QModelIndex p, int from, int to)
+{
+    //     QModelIndex p_p = MapFromSource(p);
+    //     //emit rowsAboutToBeInserted(p_p, from, to);
+    //     beginRemoveRows(p_p, from, to);
+}
+
+void MultipleFileSystemModel::source_rowsRemoved(QModelIndex sourceParent, int from, int to)
+{
+    beginRemoveRows(MapFromSource(sourceParent), from, to);
+    endRemoveRows();
+}
+
+void MultipleFileSystemModel::source_columnsAboutToBeInserted(const QModelIndex& parent, int first, int last)
 {
 }
 
-void MultipleFileSystemModel::source_rowsRemoved(QModelIndex, int, int)
+void MultipleFileSystemModel::source_columnsInserted(const QModelIndex& parent, int first, int last)
+{
+}
+
+void MultipleFileSystemModel::source_columnsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
+{
+}
+
+void MultipleFileSystemModel::source_columnsRemoved(const QModelIndex& parent, int first, int last)
+{
+}
+
+void MultipleFileSystemModel::source_rowsAboutToBeMoved(const QModelIndex& sourceParent, int sourceStart, int sourceEnd, const QModelIndex& destinationParent, int destinationRow)
+{
+}
+
+void MultipleFileSystemModel::source_rowsMoved(const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row)
 {
 }
 
@@ -558,8 +652,10 @@ void MultipleFileSystemModel::ConnectToModel(QFileSystemModel* model)
     connect(model, &QFileSystemModel::fileRenamed, this, &MultipleFileSystemModel::fileRenamed);
     connect(model, &QFileSystemModel::directoryLoaded, this, &MultipleFileSystemModel::directoryLoaded);
 
-    connect(model, &QFileSystemModel::layoutChanged, this, &MultipleFileSystemModel::layoutChanged);
-    connect(model, &QFileSystemModel::layoutAboutToBeChanged, this, &MultipleFileSystemModel::layoutAboutToBeChanged);
+    connect(model, &QFileSystemModel::layoutAboutToBeChanged, this, &MultipleFileSystemModel::source_layoutAboutToBeChanged);
+    connect(model, &QFileSystemModel::layoutChanged, this, &MultipleFileSystemModel::source_layoutChanged);
+
+    connect(model, &QFileSystemModel::modelAboutToBeReset, this, &MultipleFileSystemModel::modelAboutToBeReset);
     connect(model, &QFileSystemModel::modelReset, this, &MultipleFileSystemModel::modelReset);
 
     connect(model, &QFileSystemModel::dataChanged, this, &MultipleFileSystemModel::source_dataChanged);
@@ -567,6 +663,14 @@ void MultipleFileSystemModel::ConnectToModel(QFileSystemModel* model)
     connect(model, &QFileSystemModel::rowsInserted, this, &MultipleFileSystemModel::source_rowsInserted);
     connect(model, &QFileSystemModel::rowsAboutToBeRemoved, this, &MultipleFileSystemModel::source_rowsAboutToBeRemoved);
     connect(model, &QFileSystemModel::rowsRemoved, this, &MultipleFileSystemModel::source_rowsRemoved);
+
+    connect(model, &QFileSystemModel::columnsAboutToBeInserted, this, &MultipleFileSystemModel::source_columnsAboutToBeInserted);
+    connect(model, &QFileSystemModel::columnsInserted, this, &MultipleFileSystemModel::source_columnsInserted);
+    connect(model, &QFileSystemModel::columnsAboutToBeRemoved, this, &MultipleFileSystemModel::source_columnsAboutToBeRemoved);
+    connect(model, &QFileSystemModel::columnsRemoved, this, &MultipleFileSystemModel::source_columnsRemoved);
+
+    connect(model, &QFileSystemModel::rowsAboutToBeMoved, this, &MultipleFileSystemModel::source_rowsAboutToBeMoved);
+    connect(model, &QFileSystemModel::rowsMoved, this, &MultipleFileSystemModel::source_rowsMoved);
 }
 
 void MultipleFileSystemModel::DisconnectFromModel(QFileSystemModel* model)
@@ -620,15 +724,11 @@ const QModelIndex& MultipleFileSystemModel::MapFromSource(const QModelIndex& sou
 {
     DVASSERT(sourceIndex.isValid());
 
+    const auto& values = mappingToSource.values();
+    auto it = std::find(values.begin(), values.end(), sourceIndex);
+    DVASSERT(it != values.end());
+
     return createIndex(sourceIndex.row(), sourceIndex.column(), sourceIndex.internalPointer());
-    //     auto it = mappingFromSource.find(sourceIndex);
-    //     if (it != mappingFromSource.end())
-    //     {
-    //         return it.value();
-    //     }
-    //     static const QModelIndex dummyIndex;
-    //     DVASSERT(false);
-    //     return dummyIndex;
 }
 
 QFileSystemModel* MultipleFileSystemModel::GetModel(const QModelIndex& sourceIndex) const

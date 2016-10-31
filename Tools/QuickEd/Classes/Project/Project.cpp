@@ -13,6 +13,8 @@
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
+#include "QtTools/ProjectInformation/ProjectStructure.h"
+#include "QtTools/FileDialogs/FindFileDialog.h"
 #include "UI/mainwindow.h"
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "UI/Library/LibraryWidget.h"
@@ -31,6 +33,7 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
     , documentGroup(new DocumentGroup(mainWindow, this))
     , spritesPacker(new SpritesPacker(this))
+    , projectStructure(new ProjectStructure(QStringList() << "yaml"))
     , settings(aSettings)
     , projectDirectory(QFileInfo(aSettings.projectFile).absolutePath())
     , projectName(QFileInfo(aSettings.projectFile).fileName())
@@ -39,6 +42,7 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     {
         folderInfo.second = projectDirectory + folderInfo.second;
         FilePath::AddResourcesFolder(FilePath(folderInfo.second.toStdString()));
+        projectStructure->AddProjectDirectory(folderInfo.second);
     }
 
     settings.intermediateResourceDirectory = projectDirectory + settings.intermediateResourceDirectory;
@@ -74,6 +78,8 @@ Project::Project(MainWindow* aMainWindow, const Settings& aSettings)
     connect(this, &Project::CurrentLanguageChanged, mainWindow, &MainWindow::SetCurrentLanguage);
     connect(mainWindow, &MainWindow::ReloadSprites, this, &Project::OnReloadSprites);
     connect(spritesPacker.get(), &SpritesPacker::Finished, this, &Project::OnReloadSpritesFinished);
+
+    connect(mainWindow, &MainWindow::FindFileInProject, this, &Project::FindFileInProject);
 
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     spritesPacker->ClearTasks();
@@ -123,6 +129,7 @@ Project::~Project()
     editorFontSystem->ClearAllFonts();
     for (auto& folderInfo : settings.sourceResourceDirectories)
     {
+        projectStructure->RemoveProjectDirectory(folderInfo.second);
         FilePath::RemoveResourcesFolder(FilePath(folderInfo.second.toStdString()));
     }
 }
@@ -508,6 +515,18 @@ bool Project::TryCloseAllDocuments()
     }
 
     return true;
+}
+
+void Project::FindFileInProject()
+{
+    QString filePath = FindFileDialog::GetFilePath(projectStructure.get(), "yaml", mainWindow);
+    if (filePath.isEmpty())
+    {
+        return;
+    }
+    mainWindow->GetFileSystemWidget()->SelectFile(filePath);
+    //emit OpenPackageFile(filePath); TODO fix
+    documentGroup->AddDocument(filePath);
 }
 
 void Project::SetAssetCacheClient(DAVA::AssetCacheClient* newCacheClient)

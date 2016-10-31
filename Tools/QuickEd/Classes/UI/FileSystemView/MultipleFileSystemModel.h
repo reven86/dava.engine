@@ -22,7 +22,8 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
-    QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
+    QModelIndex sibling(int row, int column, const QModelIndex& index) const override;
+    QModelIndex buddy(const QModelIndex& index) const override;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -76,11 +77,22 @@ public:
     bool isDir(const QModelIndex& index) const;
 
 private slots:
+    void source_layoutChanged(const QList<QPersistentModelIndex>& parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void source_layoutAboutToBeChanged(const QList<QPersistentModelIndex>& parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+
     void source_dataChanged(const QModelIndex& topleft, const QModelIndex& bottomright, const QVector<int>& roles);
     void source_rowsAboutToBeInserted(QModelIndex p, int from, int to);
     void source_rowsInserted(QModelIndex p, int, int);
     void source_rowsAboutToBeRemoved(QModelIndex, int, int);
     void source_rowsRemoved(QModelIndex, int, int);
+
+    void source_columnsAboutToBeInserted(const QModelIndex& parent, int first, int last);
+    void source_columnsInserted(const QModelIndex& parent, int first, int last);
+    void source_columnsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
+    void source_columnsRemoved(const QModelIndex& parent, int first, int last);
+
+    void source_rowsAboutToBeMoved(const QModelIndex& sourceParent, int sourceStart, int sourceEnd, const QModelIndex& destinationParent, int destinationRow);
+    void source_rowsMoved(const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row);
 
 private:
     struct FileSystemInfo
@@ -128,5 +140,5 @@ private:
     QVector<FileSystemInfo> fileSystemModels;
 
     mutable QMap<QModelIndex, QModelIndex> mappingToSource;
-    mutable QMap<QModelIndex, QModelIndex> mappingFromSource;
+    //mutable QMap<QModelIndex, QModelIndex> mappingFromSource;
 };

@@ -382,6 +382,9 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(active, &Document::CanCloseChanged, this, &DocumentGroup::CanCloseChanged);
         commandStackGroup->SetActiveStack(active->GetCommandStack());
     }
+
+    mainWindow->SetDocumentActionsEnabled(active != nullptr);
+
     emit ActiveDocumentChanged(document);
     emit ActiveIndexChanged(documents.indexOf(document));
     emit CanSaveChanged(CanSave());
