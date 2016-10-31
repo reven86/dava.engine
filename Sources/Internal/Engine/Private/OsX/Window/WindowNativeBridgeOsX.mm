@@ -114,13 +114,13 @@ void WindowNativeBridge::WindowDidBecomeKey()
 
 void WindowNativeBridge::WindowDidResignKey()
 {
-    if (capture)
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+    if (captureMode == eCursorCapture::PINNING)
     {
-        SetSystemCursorCapture(false);
+        SetCursorCapture(eCursorCapture::OFF);
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCaptureLostEvent(window));
     }
-    SetSystemCursorVisible(false);
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, false));
+    SetCursorVisibility(false);
     if (isAppHidden)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));

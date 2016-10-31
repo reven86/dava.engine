@@ -13,7 +13,6 @@
 
 @class NSEvent;
 @class NSWindow;
-@class NSCursor;
 
 @class RenderView;
 @class WindowDelegate;
