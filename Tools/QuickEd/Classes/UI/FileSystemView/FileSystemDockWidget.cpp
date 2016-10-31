@@ -25,34 +25,11 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
-#include <QTimer>
-
-namespace FileSystemDockWidgetDetails
-{
-template <typename T>
-QModelIndexList CollectParentIndexes(const QModelIndex& index, const QModelIndex& rootIndex, T&& predicate)
-{
-    QModelIndexList modelIndexList;
-    QModelIndex parentIndex = index.parent();
-
-    while (parentIndex != rootIndex)
-    {
-        if (predicate(parentIndex))
-        {
-            //to expand or fetch items we reverse list to walk from parent to child
-            modelIndexList.push_front(parentIndex);
-        }
-        parentIndex = parentIndex.parent();
-    }
-    return modelIndexList;
-}
-}
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
     , ui(new Ui::FileSystemDockWidget())
     , model(new FileSystemModel(this))
-//, model(new MultipleFileSystemModel(this))
 {
     ui->setupUi(this);
     ui->treeView->installEventFilter(this);
@@ -124,7 +101,7 @@ FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
 
 FileSystemDockWidget::~FileSystemDockWidget() = default;
 
-void FileSystemDockWidget::SetDirectory(const QString& path)
+void FileSystemDockWidget::SetResourceDirectory(const QString& path)
 {
     bool isAvailable = !path.isEmpty();
     if (isAvailable)
@@ -203,7 +180,7 @@ QString FileSystemDockWidget::GetPathByCurrentPos(ePathType pathType)
     QString path;
     if (!index.isValid())
     {
-        //path = model->rootPath(0);
+        path = model->rootPath();
     }
     else
     {

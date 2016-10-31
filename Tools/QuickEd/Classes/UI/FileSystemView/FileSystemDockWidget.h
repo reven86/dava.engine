@@ -24,14 +24,11 @@ public:
     explicit FileSystemDockWidget(QWidget* parent = nullptr);
     ~FileSystemDockWidget();
 
-    void SetDirectory(const QString& path);
+    void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
 
 signals:
     void OpenPackageFile(const QString& path);
-
-public slots:
-    //void FindInFiles();
 
 private slots:
     void onDoubleClicked(const QModelIndex& index);
