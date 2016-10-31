@@ -2,6 +2,7 @@
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 
+#include "Engine/EngineTypes.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Autotesting/AutotestingDB.h"
 

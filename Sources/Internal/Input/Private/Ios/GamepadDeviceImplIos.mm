@@ -1,4 +1,4 @@
-#include "Input/GamepadDeviceImplIos.h"
+#include "Input/Private/Ios/GamepadDeviceImplIos.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)

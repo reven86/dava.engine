@@ -18,6 +18,7 @@ enum class eEngineRunMode : int32
 /**
     \ingroup engine
     Constants that name supported input device types.
+    Bitwise operators can be applied to enum members (|, |=, &, &=, ^, ^=, ~).
 */
 enum class eInputDevices : uint32
 {
@@ -33,6 +34,8 @@ enum class eInputDevices : uint32
     CLASS_KEYBOARD = KEYBOARD,
     CLASS_GAMEPAD = GAMEPAD,
 };
+
+DAVA_DEFINE_ENUM_BITWISE_OPERATORS(eInputDevices)
 
 /**
     \ingroup engine
@@ -57,7 +60,7 @@ enum class eMouseButtons : uint32
 /**
     \ingroup engine
     Modifier keys (shift, alt, control, etc) that accompany some input events (mouse, touch, key).
-    Bitwise operators can be applied to enum members (|, |=, &, &=, ^, ^=).
+    Bitwise operators can be applied to enum members (|, |=, &, &=, ^, ^=, ~).
 */
 enum class eModifierKeys : uint32
 {
@@ -73,6 +76,8 @@ enum class eModifierKeys : uint32
 
     MASK = LAST | ~LAST, //!< Value used to mask useful bits
 };
+
+DAVA_DEFINE_ENUM_BITWISE_OPERATORS(eModifierKeys)
 
 /**
     \ingroup engine
@@ -107,36 +112,5 @@ enum class eGamepadProfiles : uint32
     SIMPLE = 0, //!< Two shoulder buttons, directional pad
     EXTENDED, //!< Two shoulder buttons, two triggers, two thumbsticks, directional pad
 };
-
-// clang-format off
-/**
-    \ingroup engine
-    Define bitwise operators for strongly typed enums which can be used as bit flags.
-
-    \code
-    enum class E : int
-    {
-        FLAG1 = 0x01,
-        FLAG2 = 0x02
-    };
-    DAVA_DEFINE_ENUM_OPERATORS(E)
-    // Now you can use enum E without casting to int
-    E e1 = E::FLAG1 | E::FLAG2;
-    E e2 = e1 & ~E::FLAG1;
-    e1 ^= e2;
-    \endcode
-*/
-#define DAVA_DEFINE_ENUM_OPERATORS(enumType) \
-    inline /*constexpr*/ enumType operator|(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) | static_cast<uint32>(r)); } \
-    inline /*constexpr*/ enumType operator&(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) & static_cast<uint32>(r)); } \
-    inline /*constexpr*/ enumType operator^(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) ^ static_cast<uint32>(r)); } \
-    inline /*constexpr*/ enumType& operator|=(enumType& l, enumType r) { l = l | r; return l; } \
-    inline /*constexpr*/ enumType& operator&=(enumType& l, enumType r) { l = l & r; return l; } \
-    inline /*constexpr*/ enumType& operator^=(enumType& l, enumType r) { l = l ^ r; return l; } \
-    inline /*constexpr*/ enumType operator~(enumType e) { return static_cast<enumType>(~static_cast<uint32>(e)); }
-// clang-format on
-
-DAVA_DEFINE_ENUM_OPERATORS(eModifierKeys)
-DAVA_DEFINE_ENUM_OPERATORS(eInputDevices)
 
 } // namespace DAVA

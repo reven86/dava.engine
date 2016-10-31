@@ -365,6 +365,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/MemoryManager/*.cpp) \

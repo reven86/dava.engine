@@ -270,6 +270,34 @@ enum class eErrorCode
     ERROR_DECODE_FAIL
 };
 
+// clang-format off
+/**
+    \ingroup engine
+    Define bitwise operators for strongly typed enums which can be used as bit flags.
+
+    \code
+    enum class E : int
+    {
+        FLAG1 = 0x01,
+        FLAG2 = 0x02
+    };
+    DAVA_DEFINE_ENUM_BITWISE_OPERATORS(E)
+    // Now you can use enum E without casting to int
+    E e1 = E::FLAG1 | E::FLAG2;
+    E e2 = e1 & ~E::FLAG1;
+    e1 ^= e2;
+    \endcode
+*/
+#define DAVA_DEFINE_ENUM_BITWISE_OPERATORS(enumType) \
+    inline /*constexpr*/ enumType operator|(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) | static_cast<uint32>(r)); } \
+    inline /*constexpr*/ enumType operator&(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) & static_cast<uint32>(r)); } \
+    inline /*constexpr*/ enumType operator^(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) ^ static_cast<uint32>(r)); } \
+    inline /*constexpr*/ enumType& operator|=(enumType& l, enumType r) { l = l | r; return l; } \
+    inline /*constexpr*/ enumType& operator&=(enumType& l, enumType r) { l = l & r; return l; } \
+    inline /*constexpr*/ enumType& operator^=(enumType& l, enumType r) { l = l ^ r; return l; } \
+    inline /*constexpr*/ enumType operator~(enumType e) { return static_cast<enumType>(~static_cast<uint32>(e)); }
+// clang-format on
+
 } // namespace DAVA
 
 /**
