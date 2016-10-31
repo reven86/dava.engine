@@ -74,6 +74,7 @@ UIControlSystem::UIControlSystem()
     }
     doubleClickTime = defaultDoubleClickTime;
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
+    doubleClickPhysSquare = defaultDoubleClickRadiusSquared;
 #else
     SetDoubleTapSettings(0.5f, 0.5f);
 #endif
