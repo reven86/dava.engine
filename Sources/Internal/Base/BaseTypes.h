@@ -270,6 +270,8 @@ enum class eErrorCode
     ERROR_DECODE_FAIL
 };
 
+} // namespace DAVA
+
 // clang-format off
 /**
     \ingroup engine
@@ -287,7 +289,7 @@ enum class eErrorCode
     E e2 = e1 & ~E::FLAG1;
     e1 ^= e2;
     \endcode
-*/
+ */
 #define DAVA_DEFINE_ENUM_BITWISE_OPERATORS(enumType) \
     inline /*constexpr*/ enumType operator|(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) | static_cast<uint32>(r)); } \
     inline /*constexpr*/ enumType operator&(enumType l, enumType r) { return static_cast<enumType>(static_cast<uint32>(l) & static_cast<uint32>(r)); } \
@@ -298,4 +300,15 @@ enum class eErrorCode
     inline /*constexpr*/ enumType operator~(enumType e) { return static_cast<enumType>(~static_cast<uint32>(e)); }
 // clang-format on
 
-} // namespace DAVA
+/**
+    \ingroup engine
+    Forward declare Objective-C class `classname` in a manner that it can be used as either Objective-C or C++.
+
+    This is primarily intended for use in header files that may be included by both Objective-C and C++ source files.
+    Inspired by Qt Q_FORWARD_DECLARE_OBJC_CLASS.
+ */
+#if defined(__OBJC__)
+#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
+#else
+#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname;
+#endif

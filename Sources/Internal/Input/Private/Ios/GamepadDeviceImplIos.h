@@ -5,9 +5,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-@class GCController;
-@class GCExtendedGamepad;
-@class GCGamepad;
+DAVA_FORWARD_DECLARE_OBJC_CLASS(GCController);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(GCExtendedGamepad);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(GCGamepad);
 
 namespace DAVA
 {
